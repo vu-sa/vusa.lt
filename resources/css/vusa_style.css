@@ -1,0 +1,1806 @@
+/* vusa_style.css */
+
+/* Sukomentuoti CSS yra sutvarkyti. */
+
+@font-face {
+    font-family: MYRIADPRO-BLACK;
+    src: url(../fonts/MYRIADPRO-Black.otf) format("truetype");
+}
+
+@font-face {
+    font-family: MYRIADPRO-LIGHT;
+    src: url(../fonts/MYRIADPRO-light.otf);
+}
+
+@font-face {
+    font-family: MYRIADPRO-BOLD;
+    src: url(../fonts/MYRIADPRO-BOLD.otf);
+}
+
+@font-face {
+    font-family: MYRIADPRO-REGULAR;
+    src: url(../fonts/MYRIADPRO-REGULAR.otf);
+}
+
+body {
+    font-family: MYRIADPRO-LIGHT !important;
+    font-size: 16px;
+    line-height: 1.42857143;
+    color: #333;
+    background-color: #fff;
+    padding-top: 60px;
+    overflow: auto;
+}
+
+h1,
+span.title,
+.newsArchiveTitle {
+    font-family: MYRIADPRO-BOLD;
+}
+
+h3 {
+    font-family: MYRIADPRO-REGULAR !important;
+    font-weight: bold !important;
+}
+
+a {
+    color: #BD2835 !important;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+nav.navbar a,
+div.infoPageSideItem>a,
+div.infoPageSideItem>a:hover,
+button.cookie-privacy-policy>a,
+a.pkpReadMore {
+    color: #FFFFFF !important;
+    text-decoration: none;
+}
+
+a.nav-link.dropdown-item:hover {
+    background-color: rgba(189, 40, 53, 0.5)
+}
+
+.redLink>div>p>a,
+.redLink>div>p>a:hover {
+    color: #BD2835;
+    text-decoration: none;
+}
+
+.yellowLink>div>p>a,
+.yellowLink>div>p>a:hover {
+    color: #FBB03B !important;
+    text-decoration: none;
+}
+
+.greyLink>div>p>a,
+.greyLink>div>p>a:hover {
+    color: #919191;
+    text-decoration: none;
+}
+
+.container {
+    padding-right: 20px;
+    padding-left: 20px;
+}
+
+.row {
+    margin-bottom: 30px;
+}
+
+@media (max-width: 700px) {
+    .row {
+        margin-bottom: 10px;
+    }
+}
+
+.rowSlider {
+    /*margin-bottom: 0px;*/
+}
+
+.well {
+    height: 320px;
+    border-radius: 0;
+}
+
+.blackBackground {
+    background-color: #000000;
+}
+
+/** Naujienu Slaidai pradzia **/
+.carousel-caption {
+    position: absolute;
+    /*right: 0%;*/
+    /*left: 0%;*/
+    margin-left: 1%;
+    bottom: 4%;
+    z-index: 10;
+    text-align: left !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
+    opacity: 1 !important;
+}
+
+.carousel-caption .btn {
+    text-shadow: none;
+}
+
+h1.carousel-caption {
+    margin: 0.67em 0;
+}
+
+img.carousel-img {
+    position: relative;
+    height: 466px;
+    width: 100%;
+    object-fit: cover !important;
+}
+
+img.news-img {
+    position: relative;
+    max-height: 466px;
+    width: 100%;
+    object-fit: cover !important;
+}
+
+/* Naujienos autorius */
+
+div.img-caption {
+    position: absolute;
+    /* font-family: MYRIADPRO-LIGHT; */
+    right: 0%;
+    bottom: 0%;
+    padding-left: 15px;
+    padding-right: 15px;
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.layerCB {
+    opacity: 0.7;
+}
+
+.layer {
+    opacity: 0.25;
+}
+
+.newsSlideLink {
+    color: #fff;
+}
+
+.newsSlideLink:hover {
+    color: #fff;
+    text-decoration: none;
+}
+
+/** Naujienu Slaidai pabaiga **/
+
+/** NAVIGACIJOS STILIUS PRADZIA **/
+
+/* .navbar {
+    margin-bottom: 0;
+} */
+
+.navbar-static-bottom {
+    padding-right: 0;
+    padding-left: 0;
+    z-index: 100;
+}
+
+@media (min-width: 1200px) {
+
+    .container>.navbar-header,
+    .container-fluid>.navbar-header,
+    .container>.navbar-collapse,
+    .container-fluid>.navbar-collapse {
+        margin-right: 0;
+        margin-left: 0;
+    }
+
+    .navbar-static-bottom {
+        border-radius: 0;
+    }
+}
+
+@media (min-width: 768px) {
+    .navbar-expand-lg .navbar-nav .nav-link {
+        padding-right: 1rem !important;
+        padding-left: 1rem !important;
+        padding-top: 0.2rem !important;
+        padding-bottom: 0.2rem !important;
+    }
+}
+
+.navbar-brand>img {
+    display: block;
+    margin-top: -5px;
+}
+
+.navbar-fixed-top .navbar-collapse,
+.navbar-fixed-bottom .navbar-collapse {
+    max-height: 340px;
+}
+
+@media (max-device-width: 480px) and (orientation: landscape) {
+
+    .navbar-fixed-top .navbar-collapse,
+    .navbar-fixed-bottom .navbar-collapse {
+        max-height: 200px;
+    }
+}
+
+.navbar-fixed-top {
+    top: 0;
+    border-width: 0 0 0;
+}
+
+.navbar-nav>li {
+    color: #fff;
+    background-color: #000;
+    border-bottom: 6px solid #000;
+}
+
+.navbar-nav>li:not(.nav_search):hover {
+    border-bottom: 11px solid #bd2835;
+    margin-bottom: -6px;
+}
+
+.navbar-nav>li>a {
+    color: #fff;
+}
+
+.navbar-nav>li>.dropdown-menu ul {
+    background-color: #000000;
+}
+
+.navbar-nav>li ul {
+    background-color: #000000;
+    margin-top: -1px !important;
+    margin-left: -1px !important;
+    padding-bottom: 12px !important;
+}
+
+.dropdown-menu {
+    background-color: #000 !important;
+}
+
+.dropdown-menu:hover {
+    border-bottom: 12px solid #bd2835;
+    margin-bottom: -8px;
+}
+
+.dropdown-menu>li>a:hover,
+.dropdown-menu>li>a:focus {
+    color: #FFFFFF;
+    text-decoration: none;
+    background-color: #333232;
+}
+
+.dropdown-menu {
+    border-radius: 0;
+    -webkit-box-shadow: 0;
+    box-shadow: 0;
+}
+
+.dropdown-menu>li>a {
+    display: block;
+    padding: 3px 20px;
+    clear: both;
+    font-weight: normal;
+    line-height: 1.42857143;
+    color: #FFFFFF;
+    white-space: nowrap;
+}
+
+.dropdown-submenu {
+    position: relative;
+}
+
+.dropdown-submenu>.dropdown-menu {
+    top: 0;
+    left: 100%;
+    margin-top: -6px;
+    margin-left: -1px;
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    border-radius: 0;
+}
+
+.dropdown-submenu:hover>.dropdown-menu,
+.dropdown-submenu:focus>.dropdown-menu {
+    display: block;
+}
+
+.dropdown-submenu>a:after {
+    display: block;
+    content: " ";
+    float: right;
+    width: 0;
+    height: 0;
+    border-color: transparent;
+    border-style: solid;
+    border-width: 5px 0 5px 5px;
+    border-left-color: #ccc;
+    margin-top: 5px;
+    margin-right: -10px;
+}
+
+.dropdown-submenu:hover>a:after,
+.dropdown-submenu:focus>a:after {
+    border-left-color: #fff;
+}
+
+.dropdown-submenu.pull-left {
+    float: none;
+}
+
+.dropdown-submenu.pull-left>.dropdown-menu {
+    left: -100%;
+    margin-left: 10px;
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    border-radius: 0;
+}
+
+.navbar-collapse form[role="search"] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    padding: 0 0 0 30px;
+    margin: 0;
+    z-index: 0;
+}
+
+.navbar-collapse form[role="search"] button,
+.navbar-collapse form[role="search"] input {
+    /*padding: 8px 12px;*/
+    border-radius: 0;
+    border-width: 0;
+    border-color: rgb(231, 231, 231);
+    color: rgb(119, 119, 119);
+    background-color: rgb(248, 248, 248);
+    box-shadow: none;
+    outline: none;
+}
+
+.navbar-collapse form[role="search"] button {
+    background-color: inherit;
+    color: #fff;
+    font-size: 16pt;
+}
+
+.navbar-collapse form[role="search"] input {
+    padding: 16px 12px;
+    font-size: 14pt;
+    font-style: italic;
+    color: rgb(160, 160, 160);
+    box-shadow: none;
+}
+
+.navbar-collapse form[role="search"] button[type="reset"] {
+    display: none;
+}
+
+@media (min-width: 1200px) {
+    .navbar-collapse {
+        padding-top: 0 !important;
+        padding-right: 38px !important;
+    }
+
+    .navbar-collapse form[role="search"] {
+        width: 38px;
+    }
+
+    .navbar-collapse form[role="search"] button,
+    .navbar-collapse form[role="search"] input {
+        padding: 0;
+    }
+
+    .navbar-collapse form[role="search"] input {
+        font-size: 18pt;
+        opacity: 0;
+        display: none;
+        height: 50px;
+    }
+
+    .navbar-collapse form[role="search"].active {
+        width: 327px;
+    }
+
+    .navbar-collapse form[role="search"].active button,
+    .navbar-collapse form[role="search"].active input {
+        display: table-cell;
+        opacity: 1;
+    }
+
+    .navbar-collapse form[role="search"].active input {
+        width: 230px;
+        height: 40px;
+        margin-top: 3px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .nav_search {
+        display: none !important;
+    }
+}
+
+.searchButtons {
+    padding: 15px 12px;
+}
+
+.active .input-group {
+    padding: 0 40px;
+}
+
+/** NAVIGACIJOS STILIUS PABAIGA **/
+
+/** Footerio teksto STILIUS pradžia **/
+
+.myfooter {
+    font-family: MYRIADPRO-REGULAR;
+    background-color: #000;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.myfooter div {
+    background-color: black;
+}
+
+.myfooter>div {
+    color: white;
+    list-style-type: none;
+    font-size: 10px;
+    margin-top: 10px;
+    border-color: #000;
+    align-self: flex-start;
+}
+
+.myfooter>div>a {
+    font-size: 14px;
+    color: #fff;
+}
+
+.myfooter>div>a:hover {
+    color: #aaaaaa;
+}
+
+.info {
+    font-size: 14px;
+    color: #fff;
+}
+
+/** Footerio teksto STILIUS pabaiga **/
+
+/** Info puslapiu STILIUS pradzia **/
+
+#infoPage {
+    padding-bottom: 50px;
+}
+
+.infoPage h2 {
+    font-family: MYRIADPRO-BLACK;
+}
+
+.infoPage.akadem h2:after {
+    content: '';
+    display: block;
+    width: 100px;
+    border-bottom: 6px solid #BD2835;
+    margin-top: 3px;
+    margin-bottom: 25px;
+}
+
+.infoPage.soc h2:after {
+    content: '';
+    display: block;
+    width: 100px;
+    border-bottom: 6px solid #FBB03B;
+    margin-top: 3px;
+    margin-bottom: 25px;
+}
+
+.infoPage.kita h2:after {
+    content: '';
+    display: block;
+    width: 100px;
+    border-bottom: 6px solid #919191;
+    margin-top: 3px;
+    margin-bottom: 25px;
+}
+
+.infoPage h3 {
+    font-family: MYRIADPRO-BLACK;
+}
+
+.infoPage.akadem h3:after {
+    content: '';
+    display: block;
+    width: 100px;
+    border-bottom: 6px solid #BD2835;
+    margin-top: 3px;
+    margin-bottom: 25px;
+}
+
+.infoPage.soc h3:after {
+    content: '';
+    display: block;
+    width: 100px;
+    border-bottom: 6px solid #FBB03B;
+    margin-top: 3px;
+    margin-bottom: 25px;
+}
+
+.infoPage.kita h3:after {
+    content: '';
+    display: block;
+    width: 100px;
+    border-bottom: 6px solid #919191;
+    margin-top: 3px;
+    margin-bottom: 25px;
+}
+
+.infoPage strong,
+.infoPage b {
+    font-family: MYRIADPRO-BOLD;
+}
+
+@media (max-width: 1200px) {
+    #infoPage #infoPageSide {
+        display: none;
+    }
+
+    #infoPageSide {
+        margin-top: 25px;
+    }
+
+    img.infoPage {
+        width: 100%;
+        height: auto;
+    }
+
+    .container-padalinys .row {
+        margin-bottom: 0;
+    }
+}
+
+.infoPageSideItem {
+    color: #fff;
+    /*padding-left: 15px;*/
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: center;
+}
+
+.infoPageSideItem a {
+    color: #fff;
+}
+
+.pageTitle {
+    font-family: MYRIADPRO-BLACK;
+    margin-top: 2rem;
+    border-left: 5px solid #000000;
+    padding-top: 2px;
+    padding-left: 15px;
+    height: 40px;
+    font-size: 22pt;
+    color: #000;
+    margin-bottom: 3rem;
+    /*line-height: 50px;*/
+}
+
+.dukCategoryItem {
+    color: white;
+    height: 245px;
+    line-height: 245px;
+}
+
+@media (max-width: 992px) {
+    .pageTitle {
+        margin-bottom: 90px;
+    }
+}
+
+.dukItem.akadem,
+.infoPageSideItem.akadem {
+    background-color: #BD2835;
+}
+
+.dukItem.soc,
+.infoPageSideItem.soc {
+    background-color: #FBB03B;
+}
+
+.dukItem.lsp,
+.infoPageSideItem.lsp,
+.infoPageSideItem.kita {
+    background-color: #919191;
+}
+
+.dukQuestions {
+    font-family: MYRIADPRO-REGULAR;
+}
+
+.dukItem {
+    display: block;
+    margin: auto;
+    height: 300px;
+    width: 343px;
+}
+
+@media (max-width: 1200px) {
+    .dukItem {
+        margin-bottom: 20px !important;
+    }
+}
+
+.dukTitle h2 {
+    font-family: MYRIADPRO-BLACK;
+    font-size: 18pt;
+    display: inline-block;
+    vertical-align: middle;
+    color: #fff;
+    padding-top: 110px;
+    height: 300px;
+    z-index: 1000;
+
+    -webkit-transition: padding-top 500ms;
+    -moz-transition: padding-top 500ms;
+    -o-transition: padding-top 500ms;
+    transition: padding-top 500ms;
+}
+
+.dukItem:hover .dukTitle h2 {
+    padding-top: 60px;
+
+    -webkit-transition: padding-top 500ms;
+    -moz-transition: padding-top 500ms;
+    -o-transition: padding-top 500ms;
+    transition: padding-top 500ms;
+}
+
+.dukCats {
+    font-family: MYRIADPRO-LIGHT, serif;
+    font-size: 14pt;
+    /*background: rgba(0, 0, 0, 0.8);*/
+    color: white;
+    position: absolute;
+    top: 0;
+    width: 343px;
+    height: 300px;
+    opacity: 0;
+    text-align: center;
+
+    -webkit-transition: opacity 500ms;
+    -moz-transition: opacity 500ms;
+    -o-transition: opacity 500ms;
+    transition: opacity 500ms;
+
+    padding: 120px 0 0 0;
+}
+
+.dukItem:hover .dukCats {
+    opacity: 1;
+}
+
+.alert-success-member,
+.success-yellow {
+    color: #FFFFFF;
+    background-color: #FBB03B;
+    border-color: #FBB03B;
+    font-size: 18px;
+}
+
+/*PKP stilius Pradzia*/
+.pkpItem {
+    display: block;
+    margin: auto;
+    height: 300px;
+    width: 343px;
+}
+
+@media (max-width: 1200px) {
+    .pkpItem {
+        margin-bottom: 20px !important;
+    }
+}
+
+.pkpTitle h2 {
+    font-family: MYRIADPRO-BLACK;
+    font-size: 18pt;
+    display: inline-block;
+    vertical-align: middle;
+    color: #fff;
+    padding-top: 110px;
+    height: 300px;
+    z-index: 1000;
+
+    -webkit-transition: padding-top 500ms;
+    -moz-transition: padding-top 500ms;
+    -o-transition: padding-top 500ms;
+    transition: padding-top 500ms;
+}
+
+.pkpItem:hover .pkpTitle h2 {
+    font-family: MYRIADPRO-BLACK;
+    font-size: 18pt;
+    display: inline-block;
+    vertical-align: middle;
+    color: #fff;
+    padding-top: 70px;
+    height: 300px;
+
+    -webkit-transition: padding-top 500ms;
+    -moz-transition: padding-top 500ms;
+    -o-transition: padding-top 500ms;
+    transition: padding-top 500ms;
+}
+
+.pkpDescription {
+    font-family: MYRIADPRO-LIGHT;
+    /*background: rgba(0, 0, 0, 0.8);*/
+    color: white !important;
+    position: absolute;
+    top: 0;
+    width: 343px;
+    height: 300px;
+    opacity: 0;
+    margin-left: 0;
+    font-size: 12pt;
+    text-align: center;
+
+    -webkit-transition: opacity 500ms;
+    -moz-transition: opacity 500ms;
+    -o-transition: opacity 500ms;
+    transition: opacity 500ms;
+
+    padding: 150px 15px 0 15px;
+}
+
+.pkpDescription span,
+.pkpDescription * {
+    color: #fff;
+}
+
+.pkpItem:hover .pkpDescription {
+    opacity: 1;
+}
+
+.pkpReadMore {
+    font-family: MYRIADPRO-BOLD;
+}
+
+.pkpReadMore:hover {
+    font-family: MYRIADPRO-BOLD;
+    color: white;
+}
+
+/*PKP stilius pabaiga*/
+/** Info puslapiu STILIUS pabaiga **/
+
+/** Main page news begin **/
+
+img.newsImage {
+    height: 320px !important;
+    width: 100% !important;
+    object-fit: cover !important;
+
+    opacity: 0.4;
+    background: rgba(0, 0, 0, 0.7);
+}
+
+.mainNaujiena:hover.cat1 {
+    background-color: rgb(189, 40, 53);
+}
+
+.mainNaujiena:hover.cat2 {
+    background-color: rgb(251, 176, 59);
+}
+
+.mainNaujiena:hover.cat3 {
+    /*background-color: rgb(145, 145, 145);*/
+    background-color: #5D5D5D;
+}
+
+.mainNaujiena.cat3 {
+    /*background-color: rgb(140, 140, 140);*/
+    /*background-color: #5D5D5D;*/
+    background-color: #090909;
+}
+
+.newsShadow {
+    background-color: black;
+}
+
+.mainNaujiena:hover .newsImage {
+    background-color: #000;
+    opacity: 0.2;
+}
+
+@media (max-width: 1200px) {
+
+    .mainNaujiena,
+    #my-calendar,
+    .newsFoto {
+        margin-bottom: 20px !important;
+    }
+}
+
+.newsItemLink {
+    color: #fff;
+    text-decoration: none;
+}
+
+.newsFoto>img {
+    vertical-align: middle;
+    width: 100%;
+}
+
+.newsFotoBorder {
+    border: none;
+    top: 0;
+    /*height: 320px;*/
+}
+
+.newsTextMainPage {
+    position: absolute;
+    bottom: 0;
+    color: #fff;
+    margin-right: 40px;
+    margin-left: 20px;
+    margin-bottom: 40px;
+}
+
+.newsTextMainPage>.title {
+    font-weight: bold;
+    font-size: 12pt;
+}
+
+/** Main page news end **/
+
+/** Logo slider Pradžia **/
+.sliderBackground {
+    background-color: #F7F7F7 !important;
+    height: 130px;
+}
+
+@media screen and (max-width: 480px) {
+    .sliderBackground {
+        height: 220px;
+    }
+}
+
+#content-slider {
+    margin-top: 15px;
+    /*margin-bottom: 50px;*/
+}
+
+#content-slider li a img {
+    -webkit-filter: grayscale(100%);
+    -moz-filter: grayscale(100%);
+    -o-filter: grayscale(100%);
+    -ms-filter: grayscale(100%);
+    filter: grayscale(100%);
+}
+
+#content-slider li a img:hover {
+    -webkit-filter: grayscale(0);
+    -moz-filter: grayscale(0);
+    -o-filter: grayscale(0);
+    -ms-filter: grayscale(0);
+    filter: grayscale(0);
+}
+
+a.thumbnail,
+a.thumbnail:hover,
+a.thumbnail:focus,
+a.thumbnail.active {
+    /*border-color: #FFFFFF;*/
+}
+
+.thumbnail {
+    height: 100px;
+    width: auto;
+    background-color: #F7F7F7;
+}
+
+/** Logo slider Pabaiga **/
+
+/** Kontaktų pradžia **/
+
+.blackBackgroundContacts {
+    background-color: #000000;
+    margin-left: 38px;
+}
+
+.contactText>p {
+    margin-left: 20px;
+    color: #FFFFFF;
+    margin-right: 30px;
+}
+
+.infoCBinfo {
+    padding-right: 0;
+}
+
+.infoCBfoto {
+    padding-left: 0;
+    /*margin-right: -20px !important;*/
+}
+
+img.contactTopFoto {
+    height: 375px;
+    width: 100%;
+    object-fit: cover;
+}
+
+.contactTopText {
+    height: 375px;
+    margin-right: -40px;
+    background-color: #bd2835;
+}
+
+.contactFoto {
+    display: block;
+    margin: auto;
+    height: 300px;
+    width: 345px;
+}
+
+.pareigosPlaceOne {
+    opacity: 0.9999999;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    word-wrap: normal;
+    margin-top: -50px;
+    text-align: center;
+    font-size: 13pt;
+    font-weight: bold;
+    height: 50px;
+    line-height: 50px;
+
+    margin-left: 4px;
+    margin-right: 3px;
+    bottom: 0;
+}
+
+.pareigosPlaceTwo {
+    opacity: 0.9999999;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+
+    margin-top: -70px;
+    text-align: center;
+    font-size: 13pt;
+    font-weight: bold;
+    height: 70px;
+    line-height: 25px;
+
+    margin-left: 7px;
+    margin-right: 8px;
+    bottom: 0;
+
+    padding-top: 10px;
+}
+
+/* .pareigosPlaceTwo p {
+    margin-left: 30px !important;
+    margin-right: -40px !important;
+} */
+
+div.pareigosPlaceOne>p,
+div.pareigosPlaceTwo>p {
+    margin-left: 10px;
+    margin-right: 6px;
+}
+
+.contactPerson:hover .pareigosPlaceOne,
+.contactPerson:hover .pareigosPlaceTwo {
+    background-color: rgba(189, 40, 53, 1);
+}
+
+.contactPerson:hover .sritiesInfoOne,
+.contactPerson:hover .sritiesInfoTwo {
+    opacity: 1;
+}
+
+.sritiesInfoOne {
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    position: absolute;
+    top: 0;
+    width: 345px;
+    height: 250px;
+    opacity: 0;
+    margin-left: 7px;
+    font-size: 12pt;
+    padding: 50px 8px 8px;
+    text-align: center;
+
+    -webkit-transition: opacity 500ms;
+    -moz-transition: opacity 500ms;
+    -o-transition: opacity 500ms;
+    transition: opacity 500ms;
+}
+
+/*@media (max-width: 1200px) {*/
+.sritiesInfoTwo {
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    position: absolute;
+    top: 0;
+    width: 345px;
+    height: 230px;
+    opacity: 0;
+    margin-left: 7px;
+    font-size: 12pt;
+    padding: 50px 8px 8px;
+    text-align: center;
+
+    -webkit-transition: opacity 500ms;
+    -moz-transition: opacity 500ms;
+    -o-transition: opacity 500ms;
+    transition: opacity 500ms;
+}
+
+/*}*/
+
+.contactInfoMiddle {
+    padding-top: 100px;
+}
+
+.contactPersonInfo {
+    margin-top: 10px;
+    text-align: center;
+}
+
+.contactPersonName {
+    font-size: 15pt;
+    font-weight: bold;
+}
+
+.contactPersonContacts {
+    font-size: 12pt;
+}
+
+.contactRowBiuras {
+    margin-left: -25px;
+}
+
+.contactRowPadaliniai,
+.contactRowTaryba {
+    display: inline;
+}
+
+.hoverPalinys {
+    vertical-align: middle;
+}
+
+.padalinysNameShort {
+    font-size: 50pt;
+    text-align: center;
+    font-weight: bold;
+    color: #000;
+    line-height: 80%;
+    width: 245px;
+}
+
+.padalinysInfo>a {
+    color: #bd2835;
+}
+
+.padalinysNameFull,
+.tarybaNameFull {
+    text-align: center;
+    /*font-weight: bold;*/
+    color: #000;
+}
+
+.padalinysInfo {
+    text-align: center;
+    color: #000;
+}
+
+.parlamentasName {
+    font-family: MYRIADPRO-BLACK;
+    font-size: 20pt;
+    text-align: center;
+    font-weight: bold;
+    color: #000;
+    line-height: 100%;
+    padding-left: 20px;
+}
+
+.tarybaName {
+    font-family: MYRIADPRO-BLACK;
+    font-size: 20pt;
+    text-align: center;
+    /*font-weight: bold;*/
+    color: #000;
+    line-height: 100%;
+}
+
+.parlamentasLine,
+.tarybaLine {
+    height: 8px;
+    margin-bottom: 10px;
+    margin-left: 20%;
+    width: 60%;
+    margin-top: 10px;
+}
+
+.revizijaLine {
+    height: 8px;
+    margin-bottom: 10px;
+    margin-left: 10%;
+    width: 80%;
+    margin-top: 10px;
+}
+
+.parlamentasItem,
+.tarybaItem {
+    vertical-align: middle;
+}
+
+@media (max-width: 992px) {
+    .contactPerson {
+        margin-top: 90px;
+    }
+
+    .contactInfoMiddle,
+    .sritiesInfoOne {
+        display: none
+    }
+
+    .pareigosPlaceOne,
+    .pareigosPlaceTwo {
+        display: block;
+        line-height: 18px;
+        text-align: center;
+        background-color: transparent;
+        color: #333;
+        /* margin-bottom: -20px; */
+        margin-top: 20px;
+    }
+
+    .pareigosPlaceOne {
+        height: 30px;
+    }
+
+    .pareigosPlaceTwo {
+        height: 50px;
+    }
+
+    div.pareigosPlaceOne>p,
+    div.pareigosPlaceTwo>p {
+        font-weight: bold;
+    }
+
+    .contactPerson:hover .pareigosPlaceOne,
+    .contactPerson:hover .pareigosPlaceTwo {
+        background-color: inherit;
+    }
+
+    .infoCBinfo,
+    .contactTopText {
+        height: 425px;
+    }
+}
+
+/** Kontaktų pabaiga **/
+
+/** Naujienų tekstas pradžia **/
+.news {
+    right: 15%;
+    bottom: 20px;
+    left: 15%;
+    z-index: 10;
+    text-align: left;
+}
+
+.newsFullText>img {
+    width: auto;
+    max-width: 100%;
+    height: auto;
+}
+
+.news>div:not(.newsFullText) {
+    padding-left: 0;
+}
+
+.newsFullText {
+    overflow-x: auto;
+    text-align: left;
+}
+
+.newsFullText b,
+.newsFullText strong {
+    font-family: MYRIADPRO-BOLD;
+}
+
+.carousel-control {
+    position: absolute;
+    top: 50%;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    color: #fff;
+    text-align: center;
+    text-shadow: none;
+    background-color: rgba(0, 0, 0, 0);
+    filter: alpha(opacity=50);
+    opacity: 0.5;
+}
+
+@media screen and (min-width: 1200px) {
+    .carousel-caption {
+        /*right: 20%;*/
+        /*left: 20%;*/
+        padding-bottom: 30px;
+    }
+
+    .carousel-control .glyphicon-chevron-left {
+        margin-left: -10px;
+    }
+
+    .carousel-control .glyphicon-chevron-right {
+        margin-right: -10px;
+    }
+
+}
+
+.carousel-control .glyphicon-chevron-left,
+.carousel-control .glyphicon-chevron-right {
+    position: absolute;
+    top: 10%;
+    z-index: 5;
+    display: inline-block;
+    margin-top: -50px;
+    color: black;
+}
+
+.carousel-control .glyphicon-chevron-left {
+    top: 40%;
+    left: 5%;
+    /*margin-left: 20px;*/
+    position: fixed;
+}
+
+.carousel-control .glyphicon-chevron-right {
+    top: 40%;
+    right: 6%;
+    /*margin-right: -10px;*/
+    position: fixed;
+}
+
+.carousel-control.left {
+    opacity: 1;
+}
+
+.carousel-control.right {
+    opacity: 1;
+}
+
+.newsTitle {
+    /*font-weight: bold;*/
+    text-align: left;
+    font-size: 35px;
+    color: #000;
+    margin-right: 100px;
+    margin-top: 40px;
+    margin-bottom: 30px;
+}
+
+.newsEmptyPlace {
+    margin-top: 10px;
+}
+
+.newsRedLine {
+    border-top: 10px solid #bd2835;
+    padding-top: 12px;
+}
+
+.newsYellowLine {
+    border-top: 10px solid #FBB03B;
+    padding-top: 12px;
+}
+
+.newsGreyLine {
+    border-top: 10px solid #919191;
+    padding-top: 12px;
+}
+
+.newsText {
+    -webkit-column-gap: 40px;
+    -moz-column-gap: 40px;
+    column-gap: 40px;
+
+    -webkit-column-count: 3;
+    -moz-column-count: 3;
+    column-count: 3;
+
+    text-align: left;
+}
+
+.duStupleliai {
+    -webkit-column-count: 2;
+    -moz-column-count: 2;
+    column-count: 2;
+
+    text-align: left;
+}
+
+.carousel-control.left,
+.carousel-control.right {
+    background-image: none;
+}
+
+span.newsTag {
+    display: inline-block;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    padding: 3px 6px 3px 3px;
+    color: #fff;
+    text-decoration: none;
+}
+
+div.newsArchiveInfo a,
+div.newsTags a {
+    text-decoration: none
+}
+
+span.newsReadMore {
+    display: inline-block;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    padding: 3px 10px 3px 6px;
+    color: #fff;
+    text-align: left;
+    letter-spacing: 1px;
+}
+
+.newsMainPoints {
+    margin-left: -20px;
+}
+
+.newsTags a {
+    padding-right: 5px;
+}
+
+.pagination>li>a,
+.pagination>li>span,
+.pagination>li>span,
+.pagination>li>a:hover,
+.pagination>li>span:hover,
+.pagination>li>a:focus,
+.pagination>li>span:focus {
+    color: #BD2835;
+}
+
+.pagination>.active>a,
+.pagination>.active>span,
+.pagination>.active>a:hover,
+.pagination>.active>span:hover,
+.pagination>.active>a:focus,
+.pagination>.active>span:focus {
+    background-color: #BD2835;
+    border-color: #BD2835;
+}
+
+.pagination>.disabled>span,
+.pagination>.disabled>span:hover,
+.pagination>.disabled>span:focus,
+.pagination>.disabled>a,
+.pagination>.disabled>a:hover,
+.pagination>.disabled>a:focus {
+    background-color: #fff;
+    border-color: #fff;
+    color: #777;
+    cursor: not-allowed;
+}
+
+.pagination>li>a,
+.pagination>li>span {
+    background-color: #fff;
+    border: 1px solid #fff;
+    color: #bd2835;
+    float: left;
+    line-height: 1.42857;
+    margin-left: -1px;
+    padding: 6px 12px;
+    position: relative;
+    text-decoration: none;
+}
+
+/*Naujienų tekstas pabaiga*/
+
+/*Naujienų archyvas pradzia*/
+
+.newsArchive {
+    display: flex;
+}
+
+.newsArchiveInfo {
+    padding-left: 10px;
+}
+
+.newsArchiveTitle:hover,
+.newsArchiveTitle {
+    text-decoration: none;
+    color: #000000;
+    font-size: 13.5pt;
+}
+
+/*Naujienų archyvas pabaiga*/
+
+/*Socialinai naujienų tinklai pradžia*/
+
+div.socNet {
+    padding-left: 1em;
+    margin-left: -5px;
+    list-style: none;
+    align-self: center;
+}
+
+div.socNet a {
+    display: inline-block;
+    padding-right: 1rem;
+    padding-left: 1rem;
+}
+
+.socNetworks img {
+    height: 20px;
+}
+
+.socNetworks li {
+    margin-left: -8px;
+}
+
+.socNetworks li img {
+    background-color: #000;
+}
+
+.socNetworks.redLink>li:hover img {
+    background-color: #bd2835;
+    cursor: pointer;
+}
+
+.socNetworks.yellowLink li:hover img {
+    background-color: #FBB03B;
+    cursor: pointer;
+}
+
+.socNetworks.greyLink li:hover img {
+    background-color: #919191;
+    cursor: pointer;
+}
+
+.socNetworks .facebook {
+    margin-left: -5px;
+}
+
+/*Socialinai naujietų tinklai pabaiga*/
+
+/*Info page Pradzia*/
+blockquote {
+    padding: 10px 20px;
+    margin: 10px 20px 10px 50px;
+    font-size: inherit;
+}
+
+.newsFullText blockquote {
+    border-left: 5px solid #eee;
+}
+
+.infoPage blockquote {
+    border-left: 5px solid #BD2835;
+}
+
+.infoPage {
+    font-size: 12pt;
+    text-align: left;
+    /*line-height: 13pt;*/
+    /*display: block;*/
+}
+
+.readMore {
+    background-color: #fbb03b;
+    border: 5px solid #fbb03b;
+    color: #fff;
+    text-align: center;
+}
+
+.agenda .table>tbody>tr.no-border>td,
+.agenda .table>tbody>tr.no-border>th {
+    border-top: none;
+    padding: 0 4px 0 4px;
+}
+
+.agenda .table>thead>tr>th,
+.agenda .table>tbody>tr>th,
+.agenda .table>tfoot>tr>th,
+.agenda .table>thead>tr>td,
+.table>tbody>tr>td,
+.table>tfoot>tr>td {
+    padding: 2px 4px 2px 4px;
+}
+
+.agenda td.date {
+    width: 94px;
+}
+
+/*Info page Pabaiga*/
+
+/* Write message block begin */
+
+@media screen and (max-width: 1200px) {
+    .writeMessage {
+        display: none;
+    }
+}
+
+.writeMessage {
+    background-color: #000;
+    background-repeat: no-repeat;
+    bottom: 0;
+    cursor: pointer;
+    height: 30px;
+    position: fixed;
+    right: 100px;
+    width: 150px;
+    z-index: 2147483548;
+}
+
+.writeMessage .writeMessage_icon {
+    display: block;
+    float: left;
+    height: 100%;
+    width: 36px;
+    padding-left: 10px;
+    padding-top: 4px;
+}
+
+.writeMessage .writeMessage_container {
+    display: inline-block;
+    padding-left: 0;
+    padding-top: 7px;
+    line-height: 15px;
+}
+
+.writeMessage .writeMessage_container * {
+    font-family: MYRIADPRO-BOLD;
+    color: #fff;
+    font-size: 14px;
+}
+
+.message,
+.message:hover,
+.message:active,
+.message:focus {
+    background-color: #BD2835;
+    border-color: #BD2835;
+}
+
+/*  Write message block end */
+
+.agenda button,
+.agenda button:hover,
+.agenda button:active,
+.agenda button:focus,
+.agenda button:active:hover {
+    background-color: #BD2835;
+    border-color: #BD2835;
+    color: #fff;
+}
+
+/* Sąziningai exam register */
+.success-yellow {
+    background-color: #FBB03B;
+    border-color: #FBB03B;
+    font-family: MYRIADPRO-REGULAR;
+}
+
+/* Akordeono stiliaus pakeitimai */
+
+.accordion .card-header {
+    background-color: white;
+}
+
+.accordion .btn {
+    font-weight: 700;
+    color: #bd2835;
+    padding: 0em
+}
+
+/* kontaineriai iframe'ams */
+
+.resp-container {
+    position: relative;
+    overflow: hidden;
+    padding-top: 56.25%;
+}
+
+.resp-iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.row-flex {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+    margin: auto;
+}
+
+.column-flex {
+    display: flex;
+    flex-direction: column;
+    flex-basis: 100%;
+}
+
+.nuolaidos-column {
+    height: 250px;
+}
+
+@media screen and (min-width: 800px) {
+    .column-flex {
+        flex: 1;
+    }
+}
+
+div.cookie-consent {
+    display: flex;
+    justify-content: center;
+    position: fixed;
+    bottom: 0;
+    margin: 0;
+    padding: 8px;
+    text-align: center;
+    width: 100%;
+    background-color: #f0f2f1;
+    z-index: 101;
+    font-size: 0.9rem;
+    align-items: center;
+}
+
+p.cookie-consent__message {
+    color: #1F1F21;
+    margin: 10px;
+    max-width: 1024px;
+}
+
+button.js-cookie-consent-agree,
+.cookie-privacy-policy {
+    border: none;
+    border-radius: 20px;
+    background: #bd2835;
+    padding: 7px 15px;
+    font-size: 14px;
+    color: #fff;
+    margin: 8px;
+    line-height: normal;
+}
+
+
+@media (max-width: 1200px) {
+    #infoPageSide #infoPageSideItem.infoPageSideItem {
+        margin-right: 15px !important;
+        margin-left: 15px !important;
+    }
+
+    /* Padaro, kad per mobilius prietaisus sumažėtų eilučių skaičius naujienų slideryje, jeigu viršija keturias. */
+
+    .carousel-caption>p {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 4;
+        /* linijų skaičius, kurį rodyti */
+        -webkit-box-orient: vertical;
+    }
+
+    .newsTitle {
+        margin-right: 30px;
+        font-size: 24pt;
+    }
+}
+
+.carousel-caption>h4 {
+    font-size: 14pt
+}
+
+.carousel-caption>h1 {
+    font-size: 2rem
+}
+
+@media screen and (max-width: 1200px) {
+    .hide_mob {
+        display: none;
+    }
+}
+
+@media screen and (min-width: 1200px) {
+    .carousel-caption {
+        /*right: 40%;*/
+        left: 8%;
+        padding-bottom: 30px;
+    }
+
+    /* .carousel-indicators {
+        bottom: 20px;
+    } */
+}
+
+/* Naudojamas, kad apatinė juosta nuslinktų į apačią, jeigu neužtenka turinio. */
+
+.flex-wrapper {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+    justify-content: space-between
+}
+
+/* Give all transitions a delay */
+
+* {
+    transition: all 0.08s;
+}
+
+/* Fix mobile navbar, give constant height */
+
+.navbar-collapse.collapse.show {
+    max-height: 250px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.navbar-collapse.in {
+    overflow-x: hidden;
+    padding-right: 17px;
+}
+
+@media (max-width: 576px) {
+    .navbar-collapse {
+        max-height: calc(100vh - 125px);
+        overflow-y: auto;
+    }
+}
+
+navbar-expand-md {
+    @media (max-width: 768px) {
+        .navbar-collapse {
+            max-height: calc(100vh - 125px);
+            overflow-y: auto;
+        }
+    }
+}
+
+navbar-expand-lg {
+    @media (max-width: 992px) {
+        .navbar-collapse {
+            max-height: calc(100vh - 125px);
+            overflow-y: auto;
+        }
+    }
+}
+
+navbar-expand-xl {
+    @media (max-width: 1200px) {
+        .navbar-collapse {
+            max-height: calc(100vh - 125px);
+            overflow-y: auto;
+        }
+    }
+}

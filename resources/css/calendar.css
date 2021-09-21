@@ -1,0 +1,396 @@
+/* calendar.css */
+
+.month {
+    font-family: MYRIADPRO-BLACK;
+    text-transform: uppercase;
+    padding-top: 8px;
+    padding-left: 15px;
+    height: 50px;
+    font-size: 18pt;
+    color: #000;
+}
+
+.calendar {
+    margin-left: 40px;
+    margin-top: 20px;
+    height: 200px;
+    width: 80%;
+    border: 0;
+    border-radius: 0;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    background-color: #f5f5f5;
+    font-size: 15pt;
+    z-index: 100;
+}
+
+/* eventų spalvos */
+.eventDay.red {
+    background-color: #BD2835;
+    color: #fff;
+}
+
+.eventDay.yellow {
+    background-color: #FBB03B;
+    color: #fff;
+}
+
+.eventDay.grey {
+    background-color: #919191;
+    color: #fff;
+}
+
+.calendarBackground {
+    background-color: #f5f5f5;
+    padding-top: 20px;
+    /*padding-bottom: 59px;*/
+}
+
+.table-borderless tbody tr td, .table-borderless tbody tr th, .table-borderless thead tr th {
+    border: none;
+}
+
+table > tbody > tr > td, table > tbody > tr {
+    padding-top: 4px;
+}
+
+div.zabuto_calendar table th, div.zabuto_calendar table td {
+    text-align: center;
+    table-layout: fixed;
+}
+
+div.zabuto_calendar table td {
+    padding: -5px 6px 0 6px;
+    /*width: 30px;*/
+}
+
+div.zabuto_calendar table td div {
+    width: 30px;
+}
+
+div.zabuto_calendar table tr.calendar-month-header th span {
+    cursor: pointer;
+    display: inline-block;
+    padding-bottom: 10px;
+}
+
+div.zabuto_calendar table tr.calendar-month-header th {
+    padding-top: 12px;
+    padding-bottom: 4px;
+}
+
+div.zabuto_calendar .table-bordered tr.calendar-month-header th {
+    border-left: 0;
+    border-right: 0;
+}
+
+div.zabuto_calendar div.calendar-month-navigation {
+    cursor: pointer;
+    margin: 0;
+    padding: 0;
+    padding-top: 5px;
+}
+
+div.zabuto_calendar table tr td div.day {
+    margin: 0;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    text-align: center;
+}
+
+/* actions and events */
+div.zabuto_calendar table tr td.event div.day, div.zabuto_calendar ul.legend li.event {
+    background-color: #fff0c3;
+    text-align: center;
+}
+
+div.zabuto_calendar table tr td.dow-clickable, div.zabuto_calendar table tr td.event-clickable {
+    cursor: pointer;
+}
+
+/* badge */
+div.zabuto_calendar .badge-today, div.zabuto_calendar div.legend span.badge-today {
+    /*background-color: #357ebd;*/
+    /*color: #ffffff;*/
+    /*text-shadow: none;*/
+    font-family: MYRIADPRO-BLACK;
+}
+
+div.zabuto_calendar .badge-event, div.zabuto_calendar div.legend span.badge-event {
+    background-color: #ff9b08;
+    color: #ffffff;
+    text-shadow: none;
+}
+
+div.zabuto_calendar .badge-event {
+    font-size: 0.95em;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-bottom: 4px;
+}
+
+/* responsive */
+@media (max-width: 979px) {
+    div.zabuto_calendar table th,
+    div.zabuto_calendar table td {
+        padding: 2px 1px;
+    }
+}
+
+.right + .tooltip > .tooltip-inner {
+    text-align: left;
+}
+
+.left + .tooltip > .tooltip-inner {
+    text-align: right;
+}
+
+.oneNumber.left + .tooltip > .tooltip-inner {
+    margin-left: -220px;
+}
+
+.twoNumbers.left + .tooltip > .tooltip-inner {
+    margin-left: -220px;
+}
+
+.oneNumber.left.badge-today + .tooltip > .tooltip-inner {
+    margin-left: -242px;
+}
+
+.twoNumbers.left.badge-today + .tooltip > .tooltip-inner {
+    margin-left: -246px;
+}
+
+@media (max-width: 992px) {
+    .oneNumber.right + .tooltip > .tooltip-inner {
+        margin-left: -40px;
+    }
+
+    .twoNumbers.right + .tooltip > .tooltip-inner {
+        margin-left: -45px;
+    }
+
+    .oneNumber.left + .tooltip > .tooltip-inner {
+        margin-left: -180px;
+    }
+
+    .twoNumbers.left + .tooltip > .tooltip-inner {
+        margin-left: -205px;
+    }
+
+    .oneNumber.left.badge-today + .tooltip > .tooltip-inner {
+        margin-left: -192px;
+    }
+
+    .twoNumbers.left.badge-today + .tooltip > .tooltip-inner {
+        margin-left: -196px;
+    }
+}
+
+/*TOOLTIP rewrite*/
+
+.eventDescr {
+    padding-bottom: 30px;
+    margin-bottom: 30px;
+}
+
+.tooltip {
+    position: absolute;
+    z-index: 1070;
+    display: block;
+    font-family: MYRIADPRO-REGULAR;
+    font-size: 9pt;
+    font-style: normal;
+    font-weight: normal;
+    line-height: 1.42857143;
+    text-decoration: none;
+    text-shadow: none;
+    text-transform: none;
+    letter-spacing: normal;
+    word-break: normal;
+    word-spacing: normal;
+    word-wrap: normal;
+    white-space: pre-wrap;
+    filter: alpha(opacity=0);
+    opacity: 0;
+
+    line-break: auto;
+}
+
+.tooltip-inner {
+    min-width: 250px;
+    max-width: 100%;
+    padding: 6px 7px 6px 7px;
+    border-radius: 0;
+    text-align: left;
+}
+
+.grey_tooltip + .tooltip > .tooltip-inner {
+    /*color: #919191;*/
+    background-color: #919191;
+}
+
+.red_tooltip + .tooltip > .tooltip-inner {
+    /*color: #BD2835;*/
+    background-color: #BD2835;
+}
+
+.yellow_tooltip + .tooltip > .tooltip-inner {
+    /*color: #FBB03B;*/
+    background-color: #FBB03B;
+}
+
+.tooltip-inner hr {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+.tooltip.in {
+    filter: alpha(opacity=100);
+    opacity: 1;
+}
+
+.tooltip.top {
+    padding: 5px 0;
+    margin-top: -3px;
+}
+
+.tooltip.right {
+    padding: 0 5px;
+    margin-left: 3px;
+}
+
+.tooltip.bottom {
+    padding: 0;
+    margin-top: 0;
+}
+
+.tooltip.left {
+    padding: 0 5px;
+    margin-left: -3px;
+}
+
+.tooltip-arrow {
+    display: none;
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-color: transparent;
+    border-style: solid;
+}
+
+.tooltip.top .tooltip-arrow {
+    bottom: 0;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px 5px 0;
+    border-top-color: #000;
+}
+
+.tooltip.top-left .tooltip-arrow {
+    right: 5px;
+    bottom: 0;
+    margin-bottom: -5px;
+    border-width: 5px 5px 0;
+    border-top-color: #000;
+}
+
+.tooltip.top-right .tooltip-arrow {
+    bottom: 0;
+    left: 5px;
+    margin-bottom: -5px;
+    border-width: 5px 5px 0;
+    border-top-color: #000;
+}
+
+.tooltip.right .tooltip-arrow {
+    top: 50%;
+    left: 0;
+    margin-top: -5px;
+    border-width: 5px 5px 5px 0;
+    border-right-color: #000;
+}
+
+.tooltip.left .tooltip-arrow {
+    top: 50%;
+    right: 0;
+    margin-top: -5px;
+    border-width: 5px 0 5px 5px;
+    border-left-color: #000;
+}
+
+.tooltip.bottom .tooltip-arrow {
+    top: 0;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 0 5px 5px;
+    border-bottom-color: #000;
+}
+
+.tooltip.bottom-left .tooltip-arrow {
+    top: 0;
+    right: 5px;
+    margin-top: -5px;
+    border-width: 0 5px 5px;
+    border-bottom-color: #000;
+}
+
+.tooltip.bottom-right .tooltip-arrow {
+    top: 0;
+    left: 5px;
+    margin-top: -5px;
+    border-width: 0 5px 5px;
+    border-bottom-color: #000;
+}
+
+/* darbotvarkė */
+
+.agendaBackground {
+    background-color: #f5f5f5;
+    padding-top: 3px;
+}
+
+dd.red, dt.red {
+    color: #BD2835;
+}
+
+dd.yellow, dt.yellow {
+    color: #FBB03B;
+}
+
+dd.grey, dt.grey {
+    color: #919191;
+}
+
+dt, dd {
+    line-height: 1.42857143;
+}
+
+dt {
+    font-weight: bold;
+}
+
+dd {
+    margin-left: 0;
+    margin-bottom: 7px;
+    font-size: 15px;
+}
+
+@media (min-width: 768px) {
+    .dl-horizontal dt {
+        float: right;
+        width: 100%;
+        overflow: hidden;
+        clear: left;
+        text-align: left;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding-left: 10px;
+    }
+
+    .dl-horizontal dd {
+        margin-left: 10px;
+        margin-bottom: 10px;
+    }
+}
