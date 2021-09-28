@@ -8,6 +8,7 @@
     <meta property="og:title" content="VU SA | Egzamino ar kolokviumo stebėjimo registracijos forma"/>
     <meta property="og:description" content=""/>
     <meta property="og:image" content="/images/icons/logos/vusa.lin.hor.png"/>
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
 @endsection
 
 @section('content')
@@ -108,6 +109,12 @@
     
     <script type="text/javascript">
         var timesCounter = 1;
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+        
         $("#addSrautas").click(function () {
             timesCounter++;
             if (timesCounter == 2)
