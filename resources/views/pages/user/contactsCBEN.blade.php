@@ -19,7 +19,7 @@
             <div class="col-md-8 infoCBfoto hide_mob">
                 <div class="blackBackgroundContacts">
                     <div style="height: 375px;" class="layerCB">
-                        <img class="contactTopFoto" src="{!! asset('images/observatorijos_kiemelis.jpg') !!}">
+                        <img class="contactTopFoto" src="{!! asset('images/photos/observatorijos_kiemelis.jpg') !!}">
                     </div>
                 </div>
             </div>
