@@ -69,6 +69,6 @@ class User extends Authenticatable
     }
 
     public function isPadaliniaiCommunication() {
-        return Auth::user()->gid > 4 && Auth::user()->gid != 19;
+        return Auth::user()->gid > 3 && Auth::user()->gid != 19;
     }
 }

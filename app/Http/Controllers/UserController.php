@@ -74,11 +74,17 @@ class UserController extends BaseController
                 }
             }
 
+        $this->en = 0;
+        if($this->domainAlias[0] != 'naujas' && $this->domainAlias[0] != 'vusa') {
+            $padalinysAlias = "vusa" . $this->domainAlias[0];
+            $this->en = Padalinys::where('alias', '=', $padalinysAlias)->first()['en'];
+        };
+
         Log::debug('firstDomainAlias is ' . $this->domainAlias[0]);
 
         $this->outputArray = [
             'currentRoute' => $this->currentRoute, 'banners' => $this->banners, 'navLevel1' => $this->navLevel1, 
-            'navLevel2' => $this->navLevel2, 'navLevel3' => $this->navLevel2, 'navLevel4' => $this->navLevel2, 'navbarRoot' => $this->navbarRoot
+            'navLevel2' => $this->navLevel2, 'navLevel3' => $this->navLevel2, 'navLevel4' => $this->navLevel2, 'navbarRoot' => $this->navbarRoot, 'en' => $this->en 
         ];
     }
 

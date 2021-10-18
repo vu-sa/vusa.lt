@@ -13,4 +13,8 @@ class PadaliniaiPolicy
     public function handle(User $user) {
         return $user->isAdmin();
     }
+
+    public function handleEnConfiguration(User $user) {
+        return $user->isPadaliniaiCommunication();
+    }
 }

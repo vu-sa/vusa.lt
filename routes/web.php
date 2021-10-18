@@ -125,6 +125,7 @@ Log::info('Start of routes\web with ' . request()->path());
             Route::get('admin/atnaujinimai', [Admin\OtherController::class, 'getChangelog']);
 
             Route::get('admin', [Admin\OtherController::class, 'index']);
+            Route::patch('admin', [Admin\OtherController::class, 'updateEN'])->middleware('can:handleEnConfiguration,App\Models\Padaliniai');
             // Route::get('admin/profilis/{username}', [Admin\OtherController::class, 'profile']);
             Route::get('admin/failai', [Admin\OtherController::class, 'getFileManager'])->middleware('can:handleFiles,App\Models\User');
 

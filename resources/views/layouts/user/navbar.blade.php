@@ -105,15 +105,15 @@
             @endforeach
             <div class="socNet">
                 @if (Lang::locale() == 'lt')
-                    
-                    <?php $curUrl = Request::url();
-                    $pos = strpos($curUrl, '/lt');
-                    if ($pos !== false) {
-                        $curUrl = substr_replace($curUrl, '/en', $pos, strlen('/lt'));
-                    } ?>
 
-                    <a href="{{ $curUrl }}"><img src="{!!  asset('images/icons/flags/en_veliava.png') !!}"
-                            alt="Switch to english language"></a>
+                    @if ($en == 1)
+                    <a href="/en">
+                    @else
+                    <a href="{!! $navbarRoot !!}/en">
+                    @endif
+                    <img src="{!! asset('images/icons/flags/en_veliava.png') !!}"
+                        alt="Switch to english language"></a>
+                    
 
                 @elseif(Lang::locale() == 'en')
                     

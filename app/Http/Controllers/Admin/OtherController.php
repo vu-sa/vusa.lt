@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Admin;
 
+use App\Models\Padalinys;
 use App\Models\User;
 use App\Models\Users_group;
 use Illuminate\Http\Request;
@@ -9,7 +10,9 @@ class OtherController extends AdminBaseController
 {
     public function index(Request $request)
     {
-        return view('pages.admin.main', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'name' => null]);
+        $padalinys = Padalinys::where('id', '=', $request->User()->id)->first();
+        
+        return view('pages.admin.main', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'name' => null, 'padalinys' => $padalinys]);
     }
 
     public function getFileManager(Request $request)
@@ -31,5 +34,14 @@ class OtherController extends AdminBaseController
 
     public function getChangelog(Request $request) {
         return view('pages.admin.changelog', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'name' => null]);
+    }
+
+    public function updateEN(Request $request) {
+
+        Padalinys::where('id', '=', $request->User()->id)->update([
+            'en' => $request->en ?? 0
+        ]);
+
+        return redirect('/admin')->with('message', 'Nustatymai atnaujinti.');
     }
 }
