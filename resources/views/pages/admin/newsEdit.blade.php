@@ -48,10 +48,10 @@
                     <div class="form-group">
                         {{ Form::label('publish_time', 'Publikavimo data *') }}
                         <br/>
-                        {{ Form::selectYear('year', $date[0], date('Y')+1) }}:
-                        {{ Form::selectMonth('month', substr($date[1], 0, 1) == "0" ? substr($date[1], 1, 1) : $date[1]) }}:
-                        {{ Form::selectRange('day', 1, 31, substr($date[2], 0, 1) == "0" ? substr($date[2], 1, 1) : $date[2]) }} -
-                        {{ Form::selectRange('hour', 0, 24, substr($time[0], 0, 1) == "0" ? substr($time[0], 1, 1) : $time[0]) }}:
+                        {{ Form::selectYear('year', $date[0], date('Y')+1) }}
+                        {{ Form::selectMonth('month', substr($date[1], 0, 1) == "0" ? substr($date[1], 1, 1) : $date[1]) }}
+                        {{ Form::selectRange('day', 1, 31, substr($date[2], 0, 1) == "0" ? substr($date[2], 1, 1) : $date[2]) }}
+                        {{ Form::selectRange('hour', 0, 24, substr($time[0], 0, 1) == "0" ? substr($time[0], 1, 1) : $time[0]) }} :
                         {{ Form::selectRange('minute', 0, 59, substr($time[1], 0, 1) == "0" ? substr($time[1], 1, 1) : $time[1]) }}
                         {{ Form::hidden('publish_time', null, array('class'=>'form-control', 'disabled'=>'disabled')) }}
                     </div>
@@ -126,10 +126,12 @@
                         {{ Form::text('imageAuthor', null, array('class'=>'form-control')) }}
                     </div>
 
+                    @can('handleLikeCB', App\Models\Page::class)
                     <div class="form-group">
                         {{ Form::label('important', 'Svarbi naujiena') }}
                         {{ Form::checkbox('important', null) }}
                     </div>
+                    @endcan
 
                     <div class="form-group">
                         {{ Form::label('draft', 'Juodraštis') }}

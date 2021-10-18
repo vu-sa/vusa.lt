@@ -55,6 +55,7 @@ class NewsFactory extends Factory
             'text' => '<p>' . $this->faker->paragraph(3) . '</p><p>' . $this->faker->paragraph(3) . '</p>',
             'tags' => $this->faker->word(),
             'editor' => $editor,
+            'editor_time' => now(),
             'publisher' => $publisher
         ];
     }

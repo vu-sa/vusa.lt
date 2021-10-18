@@ -16,7 +16,7 @@
         </div>
 
         <section class="content">
-            @can('handleEnConfiguration', App\Models\Padalinys::class)
+            @can('handleEnConfig', App\Models\Padalinys::class)
             <div class="col-md-12">
 
                 <div>

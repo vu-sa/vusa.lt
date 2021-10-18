@@ -411,7 +411,7 @@ class PagesController extends AdminBaseController {
                 $draftValue = '0';
             }
 
-            $request->publish_time = $request->year . ':' . $request->month . ':' . $request->day . '-' . $request->hour . '-' . $request->minute;
+            $request->publish_time = date("Y-m-d H:i:s", strtotime($request->year . '-' . $request->month . '-' . $request->day . ' ' . $request->hour . ':' . $request->minute));
             News::where('permalink', '=', $permalink)->update([
                 'title' => $request->title,
                 'title_lt' => $request->title_lt,

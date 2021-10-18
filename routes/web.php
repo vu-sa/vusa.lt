@@ -125,7 +125,7 @@ Log::info('Start of routes\web with ' . request()->path());
             Route::get('admin/atnaujinimai', [Admin\OtherController::class, 'getChangelog']);
 
             Route::get('admin', [Admin\OtherController::class, 'index']);
-            Route::patch('admin', [Admin\OtherController::class, 'updateEN'])->middleware('can:handleEnConfiguration,App\Models\Padaliniai');
+            Route::patch('admin', [Admin\OtherController::class, 'updateEN'])->middleware('can:handleEnConfig,App\Models\Padaliniai');
             // Route::get('admin/profilis/{username}', [Admin\OtherController::class, 'profile']);
             Route::get('admin/failai', [Admin\OtherController::class, 'getFileManager'])->middleware('can:handleFiles,App\Models\User');
 
@@ -177,7 +177,7 @@ Log::info('Start of routes\web with ' . request()->path());
              * Puslapiai
              */
             Route::get('admin/puslapiaiLT', [Admin\PagesController::class, 'pages'])->middleware('can:handle,App\Models\Page');
-            Route::get('admin/puslapiaiEN', [Admin\PagesController::class, 'pages'])->middleware('can:handleEN,App\Models\Page');
+            Route::get('admin/puslapiaiEN', [Admin\PagesController::class, 'pages'])->middleware('can:handle,App\Models\Page');
             Route::get('admin/puslapiai/prideti', [Admin\PagesController::class, 'getAddPage'])->middleware('can:handle,App\Models\Page');
             Route::post('admin/puslapiai/prideti', [Admin\PagesController::class, 'postAddPage'])->middleware('can:handle,App\Models\Page');
             Route::get('admin/puslapiai/{permalink}/redaguoti', [Admin\PagesController::class, 'getUpdatePage'])->middleware('can:handle,App\Models\Page');
@@ -192,7 +192,7 @@ Log::info('Start of routes\web with ' . request()->path());
              * Naujienos
              */
             Route::get('admin/naujienosLT', [Admin\PagesController::class, 'news'])->middleware('can:handle,App\Models\Page');
-            Route::get('admin/naujienosEN', [Admin\PagesController::class, 'news'])->middleware('can:handleEN,App\Models\Page');
+            Route::get('admin/naujienosEN', [Admin\PagesController::class, 'news'])->middleware('can:handle,App\Models\Page');
             Route::get('admin/naujienos/prideti', [Admin\PagesController::class, 'getAddNew'])->middleware('can:handle,App\Models\Page');
             Route::post('admin/naujienos/prideti', [Admin\PagesController::class, 'postAddNew'])->middleware('can:handle,App\Models\Page');
             Route::get('admin/naujienos/{permalink}/redaguoti', [Admin\PagesController::class, 'getUpdateNew'])->middleware('can:handle,App\Models\Page');

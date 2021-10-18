@@ -27,7 +27,7 @@ class News extends Migration
             $table->string('imageAuthor', 200)->nullable()->default('VU SA archyvo nuotrauka');
             $table->tinyInteger('important')->default(0);
             $table->smallInteger('editor');
-            $table->timestamp('editorTime')->useCurrent()->useCurrentOnUpdate();
+            $table->timestamp('editor_time')->useCurrent()->useCurrentOnUpdate();
             $table->smallInteger('publisher')->nullable()->default(NULL);
             $table->timestamp('publish_time')->nullable()->default(NULL);
             $table->string('source', 100)->nullable()->default('VU SA');

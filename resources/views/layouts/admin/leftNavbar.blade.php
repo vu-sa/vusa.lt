@@ -191,7 +191,7 @@
                                     <p>Naujienos LT</p>
                                 </a>
                             </li>
-                            @can('handleEN', App\Models\Page::class)
+                            @can('handle', App\Models\Page::class)
                                 <li
                                     class="nav-item {{ strpos($currentRoute, 'admin/naujienosEN') !== false ? 'active' : '' }}">
                                     <a href="/admin/naujienosEN" class="nav-link"><i class="far fa-circle fa-sm"></i>
@@ -216,7 +216,7 @@
                                     <p>Puslapiai LT</p>
                                 </a>
                             </li>
-                            @can('handleEN', App\Models\Page::class)
+                            @can('handle', App\Models\Page::class)
                                 <li
                                     class="nav-item {{ strpos($currentRoute, 'admin/puslapiaiEN') !== false ? 'active' : '' }}">
                                     <a href="/admin/puslapiaiEN" class="nav-link"><i class="far fa-circle fa-sm"></i>
