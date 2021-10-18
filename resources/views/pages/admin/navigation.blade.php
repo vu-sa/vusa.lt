@@ -107,12 +107,12 @@
                                                                 @if ($row2->show == 1)
                                                                     <a id="{{$row2->id}}" class="changeView"
                                                                           aria-hidden="true">
-                                                                          <i class="fas fa-eye-slash"></i>
+                                                                          <i class="fas fa-eye"></i>
                                                                         </a>
                                                                 @else
                                                                     <a id="{{$row2->id}}" class="changeView"
                                                                           aria-hidden="true">
-                                                                    <i class="fas fa-eye"></i>
+                                                                    <i class="fas fa-eye-slash"></i>
                                                                         </a>
                                                                 @endif
                                                                 &nbsp;
@@ -161,12 +161,12 @@
                                                                             @if ($row3->show == 1)
                                                                                 <a style="text-decoration:none" id="{{$row3->id}}" class="changeView"
                                                                                       aria-hidden="true">
-                                                                                      <i class="fas fa-eye-slash"></i>
+                                                                                      <i class="fas fa-eye"></i>
                                                                                     </a>
                                                                             @else
                                                                                 <a style="text-decoration:none" id="{{$row3->id}}" class="changeView"
                                                                                       aria-hidden="true">
-                                                                                      <i class="fas fa-eye"></i>
+                                                                                      <i class="fas fa-eye-slash"></i>
                                                                                     </a>
                                                                             @endif
                                                                             &nbsp;
@@ -216,12 +216,12 @@
                                                                                             <a id="{{$row4->id}}"
                                                                                                   class="changeView"
                                                                                                   aria-hidden="true">
-                                                                                                  <i class="fas fa-eye-slash"></i></a>
+                                                                                                  <i class="fas fa-eye"></i></a>
                                                                                         @else
                                                                                             <a id="{{$row4->id}}"
                                                                                                   class="changeView"
                                                                                                   aria-hidden="true">
-                                                                                                  <i class="fas fa-eye"></i></a>
+                                                                                                  <i class="fas fa-eye-slash"></i></a>
                                                                                         @endif
                                                                                         &nbsp;
                                                                                         <a href="/admin/navigacija/{{$row4->id}}/redaguoti">
