@@ -10,8 +10,11 @@ class OtherController extends AdminBaseController
 {
     public function index(Request $request)
     {
-        $padalinys = Padalinys::where('id', '=', $request->User()->id)->first();
-        
+        $padalinys = Padalinys::join('users_groups', 'padaliniai.alias', '=', 'users_groups.alias')
+        ->join('users', 'users.gid', '=', 'users_groups.id')
+        ->where('users.id', '=', $request->User()->id)
+        ->select('padaliniai.*')->get()[0];
+
         return view('pages.admin.main', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'name' => null, 'padalinys' => $padalinys]);
     }
 
@@ -38,9 +41,11 @@ class OtherController extends AdminBaseController
 
     public function updateEN(Request $request) {
 
-        Padalinys::where('id', '=', $request->User()->id)->update([
-            'en' => $request->en ?? 0
-        ]);
+        Padalinys::join('users_groups', 'padaliniai.alias', '=', 'users_groups.alias')
+        ->join('users', 'users.gid', '=', 'users_groups.id')
+        ->where('users.id', '=', $request->User()->id)
+        ->select('padaliniai.en')
+        ->update(['padaliniai.en' => $request->en ?? 0]);
 
         return redirect('/admin')->with('message', 'Nustatymai atnaujinti.');
     }

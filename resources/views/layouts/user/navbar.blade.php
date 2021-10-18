@@ -10,7 +10,24 @@
 
         <div class="collapse navbar-collapse" id="navbarToggle">
             <div class="navbar-nav">
-            @foreach ($navLevel1 as $row1)
+
+                @if (Lang::locale() == 'en' && count($padaliniaiEn) )
+                    <div class="dropdown">
+                    <a class="nav-link dropdown-toggle"
+                        href="#" data-toggle="dropdown" role="button" aria-haspopup="true"
+                        aria-expanded="false">Units <span class="caret"></span>
+                    </a>
+                    <div class="dropdown-menu">
+                        @foreach ($padaliniaiEn as $padalinysEn)
+                            <a class="nav-link dropdown-item"
+                            href="http://{{ substr($padalinysEn['alias'], 4) }}.vusa.{{ env('APP_ENV') != 'local' ? 'lt' : 'testas:8000' }}/en"
+                            >{{ $padalinysEn['shortname'] }}</a>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
+                @foreach ($navLevel1 as $row1)
                 <?php $hasSubItem1 = false; ?>
                 @foreach ($navLevel2 as $row2)
                     @if ($row2->pid == $row1->id)

@@ -33,7 +33,7 @@ Log::info('Start of routes\web with ' . request()->path());
     $vusaDomains = array('vusa.lt', 'www.vusa.lt', 'naujas.vusa.lt', 'vusa.testas:8000');
 
     if (in_array($http_host, $padaliniaiDomains)) {
-        Route::get('lt/', [UserController::class, 'getPadalinysPage']);
+        Route::get('{locale}', [UserController::class, 'getPadalinysPage'])->where('locale', '(lt|en)');
         Route::get('lt/naujienos', [UserController::class, 'getNewsArchive']);
         Route::get('{locale}/{permalink}', [UserController::class, 'getInfoPage'])->where('locale', 'lt');
         Route::get('lt/naujiena/archyvas', [UserController::class, 'getNewsArchive']);

@@ -341,7 +341,7 @@ class PagesController extends AdminBaseController {
             $naujiena->imageAuthor = $request->imageAuthor;
             $naujiena->important = $request->important ?? 0;
             $naujiena->draft = $request->draft ?? 0;
-            $naujiena->publish_time = $request->year . ':' . $request->month . ':' . $request->day . '-' . $request->hour . '-' . $request->minute;
+            $naujiena->publish_time = date("Y-m-d H:i:s", strtotime($request->year . '-' . $request->month . '-' . $request->day . ' ' . $request->hour . ':' . $request->minute));
             $naujiena->editor_time = date("Y-m-d H:i:s", time());
             $naujiena->tags = $request->tags;
             $naujiena->readMore = $request->readMore;
