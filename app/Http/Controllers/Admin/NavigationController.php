@@ -67,7 +67,6 @@ class NavigationController extends AdminBaseController {
             $navItem->text = $request->text;
             $navItem->lang = $request->lang;
             $navItem->url = $request->url;
-            $navItem->relative = 0;
             $navItem->order = Navigation::where('pid', '=', $navItem->pid)->count();
             if ($request->show == null) {
                 $navItem->show = 0;
