@@ -58,10 +58,10 @@
 
                     <div class="form-group">
                         {{ Form::label('lang', 'Kalba *') }}
-                        {{ Form::select('lang', array('lt' => 'LT', 'en' => 'EN'), '', array('class'=>'form-control') )}}
+                        {{ Form::select('lang', array('lt' => 'LT', 'en' => 'EN'), 'lt', array('class'=>'form-control') )}}
                     </div>
 
-                    <div class="form-group" style="display: none" id="title_lt_input">
+                    {{-- <div class="form-group" style="display: none" id="title_lt_input">
                         {{ Form::label('title_lt', 'Naujiena LT kalba *') }}
                         {{ Form::text('title_lt', '', array('class'=>'form-control') )}}
                     </div>
@@ -69,7 +69,7 @@
                     <div class="form-group" style="display: none" id="permalink_lt_input">
                         {{ Form::label('permalink_lt', 'Nuoroda į LT naujieną') }}
                         {{ Form::text('permalink_lt', '', array('class'=>'form-control', 'readonly'=>'readonly')) }}
-                    </div>
+                    </div> --}}
 
                     <div class="form-group">
                         {{ Form::label('cat', 'Kategorija *') }}

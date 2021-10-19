@@ -335,6 +335,7 @@ class PagesController extends AdminBaseController {
             $naujiena->permalink_lt = $request->permalink_lt;
             $naujiena->short = $request->short;
             $naujiena->text = $request->text;
+            $naujiena->lang = $request->lang;
             $naujiena->mainPoints = $request->mainPoints;
             $naujiena->image = $request->image;
             $naujiena->source = $request->source;
@@ -353,7 +354,7 @@ class PagesController extends AdminBaseController {
         if ($request->lang == 'lt')
             return redirect('/admin/naujienosLT')->with('message', 'Naujiena sukurta.');
         else
-            return redirect('/admin/naujienosEN')->with('message', 'Naujiena sukurta.');
+            return redirect('/admin/naujienosEN')->with('message', 'Naujiena EN sukurta.');
     }
 
     public function deleteNew(Request $request)

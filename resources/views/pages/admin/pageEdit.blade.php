@@ -56,7 +56,7 @@
                         {{ Form::select('lang', array('lt' => 'LT', 'en' => 'EN'), null, array('class'=>'form-control') )}}
                     </div>
 
-                    <div class="form-group" style="display: none" id="title_lt_input">
+                    {{-- <div class="form-group" style="display: none" id="title_lt_input">
                         {{ Form::label('title_lt', 'Puslapis LT kalba *') }}
                         {{ Form::text('title_lt', null, array('class'=>'form-control') )}}
                     </div>
@@ -64,7 +64,7 @@
                     <div class="form-group" style="display: none" id="permalink_lt_input">
                         {{ Form::label('permalink_lt', 'Nuoroda į LT puslapį') }}
                         {{ Form::text('permalink_lt', null, array('class'=>'form-control', 'readonly'=>'readonly')) }}
-                    </div>
+                    </div> --}}
 
                     <div class="form-group">
                         {{ Form::label('text', 'Puslapio turinys *') }}
@@ -86,35 +86,35 @@
     </div>
 
     <script>
-        $(document).ready(function () {
-            $('select[name=lang]').change(function (e) {
-                if ($('select[name=lang]').val() == 'lt') {
-                    $('#title_lt_input').hide();
-                    $('#permalink_lt_input').hide();
-                }
-                if ($('select[name=lang]').val() == 'en') {
-                    $('#title_lt_input').show();
-                    $('#permalink_lt_input').show();
-                }
-            });
+        // $(document).ready(function () {
+        //     $('select[name=lang]').change(function (e) {
+        //         if ($('select[name=lang]').val() == 'lt') {
+        //             $('#title_lt_input').hide();
+        //             $('#permalink_lt_input').hide();
+        //         }
+        //         if ($('select[name=lang]').val() == 'en') {
+        //             $('#title_lt_input').show();
+        //             $('#permalink_lt_input').show();
+        //         }
+        //     });
 
-            if ($('select[name=lang]').val() == 'en') {
-                $('#title_lt_input').show();
-                $('#permalink_lt_input').show();
-            }
-            if ($('select[name=lang]').val() == 'lt') {
-                $('#title_lt_input').hide();
-                $('#permalink_lt_input').hide();
-            }
-        });
+        //     if ($('select[name=lang]').val() == 'en') {
+        //         $('#title_lt_input').show();
+        //         $('#permalink_lt_input').show();
+        //     }
+        //     if ($('select[name=lang]').val() == 'lt') {
+        //         $('#title_lt_input').hide();
+        //         $('#permalink_lt_input').hide();
+        //     }
+        // });
 
-        $("#title_lt").autocomplete({
-            source: "/admin/puslapiai/pageName",
-            minLength: 3,
-            select: function (event, ui) {
-                $('#title').val(ui.item.value);
-            }
-        });
+        // $("#title_lt").autocomplete({
+        //     source: "/admin/puslapiai/pageName",
+        //     minLength: 3,
+        //     select: function (event, ui) {
+        //         $('#title').val(ui.item.value);
+        //     }
+        // });
 
         $("#title").focusout(function () {
             var InputTitle = $('#title').val().toLowerCase();
@@ -132,19 +132,19 @@
             $("#permalink").val(InputTitle);
         });
 
-        $("#title_lt").focusout(function () {
-            var InputTitle = $('#title_lt').val().toLowerCase();
-            InputTitle = InputTitle.replace(/[ą]/g, 'a');
-            InputTitle = InputTitle.replace(/[č]/g, 'c');
-            InputTitle = InputTitle.replace(/[ęė]/g, 'e');
-            InputTitle = InputTitle.replace(/[į]/g, 'i');
-            InputTitle = InputTitle.replace(/[š]/g, 's');
-            InputTitle = InputTitle.replace(/[ūų]/g, 'u');
-            InputTitle = InputTitle.replace(/[ž]/g, 'z');
-            InputTitle = InputTitle.replace(/ /g, '-');
-            InputTitle = InputTitle.replace(/[.,:"„”“?]/g, '');
-            $("#permalink_lt").val(InputTitle);
-        });
+        // $("#title_lt").focusout(function () {
+        //     var InputTitle = $('#title_lt').val().toLowerCase();
+        //     InputTitle = InputTitle.replace(/[ą]/g, 'a');
+        //     InputTitle = InputTitle.replace(/[č]/g, 'c');
+        //     InputTitle = InputTitle.replace(/[ęė]/g, 'e');
+        //     InputTitle = InputTitle.replace(/[į]/g, 'i');
+        //     InputTitle = InputTitle.replace(/[š]/g, 's');
+        //     InputTitle = InputTitle.replace(/[ūų]/g, 'u');
+        //     InputTitle = InputTitle.replace(/[ž]/g, 'z');
+        //     InputTitle = InputTitle.replace(/ /g, '-');
+        //     InputTitle = InputTitle.replace(/[.,:"„”“?]/g, '');
+        //     $("#permalink_lt").val(InputTitle);
+        // });
 
         $('#saveContent').on('click', function (e) {
 //            $.post(window.location.pathname);
@@ -153,8 +153,8 @@
                     permalink = $form.find("input[name='permalink']").val(),
                     category = $form.find("input[name='category']").val(),
                     lang = $form.find("input[name='lang']").val(),
-                    title_lt = $form.find("input[name='title_lt']").val(),
-                    permalink_lt = $form.find("input[name='permalink_lt']").val(),
+                    // title_lt = $form.find("input[name='title_lt']").val(),
+                    // permalink_lt = $form.find("input[name='permalink_lt']").val(),
                     text = $form.find("input[name='text']").val(),
                     mainInfo = $form.find("input[name='mainInfo']").val(),
                     url = $form.attr("action");

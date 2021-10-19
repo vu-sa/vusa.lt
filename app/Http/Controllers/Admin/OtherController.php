@@ -10,11 +10,15 @@ class OtherController extends AdminBaseController
 {
     public function index(Request $request)
     {
+        $padalinys = NULL;
+        
+        if($request->User()->gid > 3 && $request->User()->gid != 19) {
+                
         $padalinys = Padalinys::join('users_groups', 'padaliniai.alias', '=', 'users_groups.alias')
         ->join('users', 'users.gid', '=', 'users_groups.id')
         ->where('users.id', '=', $request->User()->id)
         ->select('padaliniai.*')->get()[0];
-
+        }
         return view('pages.admin.main', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'name' => null, 'padalinys' => $padalinys]);
     }
 

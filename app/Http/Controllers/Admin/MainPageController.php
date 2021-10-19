@@ -152,6 +152,7 @@ class MainPageController extends AdminBaseController {
                     $mainPage->type = $request->type;
                     $mainPage->moduleName = 'links';
                     $mainPage->groupID = $request->User()->gid;
+                    $mainPage->lang = $request->lang;
                     $mainPage->save();
                 }
             }
@@ -260,7 +261,8 @@ class MainPageController extends AdminBaseController {
                         'position' => $request->position,
                         'type' => $request->type,
                         'moduleName' => 'links',
-                        'groupID' => $request->User()->gid
+                        'groupID' => $request->User()->gid,
+                        'lang' => $request->lang
                     ]);
                 }
                 $msg = 'Meniu punktas atnaujintas';

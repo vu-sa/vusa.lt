@@ -82,7 +82,7 @@
                         {{ Form::select('lang', array('lt' => 'LT', 'en' => 'EN'), null, array('class'=>'form-control') )}}
                     </div>
 
-                    <div class="form-group" style="display: none" id="title_lt_input">
+                    {{-- <div class="form-group" style="display: none" id="title_lt_input">
                         {{ Form::label('title_lt', 'Naujiena LT kalba *') }}
                         {{ Form::text('title_lt', null, array('class'=>'form-control') )}}
                     </div>
@@ -90,7 +90,7 @@
                     <div class="form-group" style="display: none" id="permalink_lt_input">
                         {{ Form::label('permalink_lt', 'Nuoroda į LT naujieną') }}
                         {{ Form::text('permalink_lt', null, array('class'=>'form-control', 'readonly'=>'readonly')) }}
-                    </div>
+                    </div> --}}
 
                     <div class="form-group">
                         {{ Form::label('cat', 'Kategorija *') }}
@@ -186,27 +186,27 @@
         };
         var cropperBox = new Croppic('cropContainerEyecandy', croppedOptions);
 
-        $(document).ready(function () {
-            $('select[name=lang]').change(function (e) {
-                if ($('select[name=lang]').val() == 'lt') {
-                    $('#title_lt_input').hide();
-                    $('#permalink_lt_input').hide();
-                }
-                if ($('select[name=lang]').val() == 'en') {
-                    $('#title_lt_input').show();
-                    $('#permalink_lt_input').show();
-                }
-            });
+        // $(document).ready(function () {
+        //     $('select[name=lang]').change(function (e) {
+        //         if ($('select[name=lang]').val() == 'lt') {
+        //             $('#title_lt_input').hide();
+        //             $('#permalink_lt_input').hide();
+        //         }
+        //         if ($('select[name=lang]').val() == 'en') {
+        //             $('#title_lt_input').show();
+        //             $('#permalink_lt_input').show();
+        //         }
+        //     });
 
-            if ($('select[name=lang]').val() == 'en') {
-                $('#title_lt_input').show();
-                $('#permalink_lt_input').show();
-            }
-            if ($('select[name=lang]').val() == 'lt') {
-                $('#title_lt_input').hide();
-                $('#permalink_lt_input').hide();
-            }
-        });
+        //     if ($('select[name=lang]').val() == 'en') {
+        //         $('#title_lt_input').show();
+        //         $('#permalink_lt_input').show();
+        //     }
+        //     if ($('select[name=lang]').val() == 'lt') {
+        //         $('#title_lt_input').hide();
+        //         $('#permalink_lt_input').hide();
+        //     }
+        // });
 
         $(document).ready(function () {
             $("#title_lt").autocomplete({

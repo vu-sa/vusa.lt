@@ -15,8 +15,9 @@
         <div class="pageTitle">{{$page['title']}}</div>
 
         @if (in_array(request()->getHttpHost(), ["vusa.lt", "naujas.vusa.lt", "vusa.testas"]) == false)
-        <p><a href="{{ '/lt' }}"><< Grįžti į pradinį puslapį</a></p>
-        <br>
+            @if (Lang::locale() == 'lt')
+            <p><a href="{{ 'https://' . request()->getHttpHost() . '/lt' }}"><< Grįžti į pradinį puslapį</a></p>
+            @endif
         @endif
 
         <?php

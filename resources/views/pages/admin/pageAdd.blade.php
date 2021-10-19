@@ -50,10 +50,10 @@
 
                     <div class="form-group">
                         {{ Form::label('lang', 'Kalba *') }}
-                        {{ Form::select('lang', array('lt' => 'LT', 'en' => 'EN'), '', array('class'=>'form-control') )}}
+                        {{ Form::select('lang', array('lt' => 'LT', 'en' => 'EN'), 'lt', array('class'=>'form-control') )}}
                     </div>
 
-                    <div class="form-group" style="display: none" id="title_lt_input">
+                    {{-- <div class="form-group" style="display: none" id="title_lt_input">
                         {{ Form::label('title_lt', 'Puslapis LT kalba *') }}
                         {{ Form::text('title_lt', '', array('class'=>'form-control') )}}
                     </div>
@@ -61,7 +61,7 @@
                     <div class="form-group" style="display: none" id="permalink_lt_input">
                         {{ Form::label('permalink_lt', 'Nuoroda į LT puslapį') }}
                         {{ Form::text('permalink_lt', '', array('class'=>'form-control', 'readonly'=>'readonly')) }}
-                    </div>
+                    </div> --}}
 
                     <div class="form-group">
                         {{ Form::label('text', 'Puslapio tekstas *') }}
@@ -81,27 +81,27 @@
         </section>
     </div>
     <script>
-        $(document).ready(function () {
-            $('select[name=lang]').change(function (e) {
-                if ($('select[name=lang]').val() == 'lt') {
-                    $('#title_lt_input').hide();
-                    $('#permalink_lt_input').hide();
-                }
-                if ($('select[name=lang]').val() == 'en') {
-                    $('#title_lt_input').show();
-                    $('#permalink_lt_input').show();
-                }
-            });
+        // $(document).ready(function () {
+        //     $('select[name=lang]').change(function (e) {
+        //         if ($('select[name=lang]').val() == 'lt') {
+        //             $('#title_lt_input').hide();
+        //             // $('#permalink_lt_input').hide();
+        //         }
+        //         if ($('select[name=lang]').val() == 'en') {
+        //             $('#title_lt_input').show();
+        //             // $('#permalink_lt_input').show();
+        //         }
+        //     });
 
-            if ($('select[name=lang]').val() == 'en') {
-                $('#title_lt_input').show();
-                $('#permalink_lt_input').show();
-            }
-            if ($('select[name=lang]').val() == 'lt') {
-                $('#title_lt_input').hide();
-                $('#permalink_lt_input').hide();
-            }
-        });
+        //     if ($('select[name=lang]').val() == 'en') {
+        //         $('#title_lt_input').show();
+        //         // $('#permalink_lt_input').show();
+        //     }
+        //     if ($('select[name=lang]').val() == 'lt') {
+        //         $('#title_lt_input').hide();
+        //         $('#permalink_lt_input').hide();
+        //     }
+        // });
 
         $("#title_lt").autocomplete({
             source: "/admin/puslapiai/pageName",

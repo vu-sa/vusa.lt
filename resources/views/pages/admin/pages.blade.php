@@ -35,9 +35,9 @@
                     <table class="table">
                         <tr class="alert alert-warning">
                             <th>Pavadinimas</th>
-                            @if ($currentRoute == 'admin/puslapiaiEN')
+                            {{-- @if ($currentRoute == 'admin/puslapiaiEN')
                                 <th>LT pavadinimas</th>
-                            @endif
+                            @endif --}}
                             <th>Kategorija</th>
                             <th>Nuoroda</th>
                             <th>Veiksmai</th>
@@ -45,15 +45,18 @@
                         @foreach ($pages as $page)
                             <tr class="alert alert-success">
                                 <td>{{ $page['title'] }}</td>
-                                @if ($currentRoute == 'admin/puslapiaiEN')
+                                {{-- @if ($currentRoute == 'admin/puslapiaiEN')
                                     <td>{{ $page['title_lt'] }}</td>
-                                @endif
+                                @endif --}}
                                 <td>
                                     {!! $page['category'] == '1' ? 'Akademinė informacija' : '' !!}
                                     {!! $page['category'] == '2' ? 'Socialinė informacija' : '' !!}
                                     {!! $page['category'] == '3' ? 'Kita informacija' : '' !!}
                                 </td>
-                                <td> <a target="_blank" href="{!! $page->alias == 'admin' ? '/' : 'http://' . substr($page->alias, 4) . '.' . request()->getHttpHost() . '/' . $page['permalink'] !!} "> /lt/{!! $page["permalink"] !!} </td>
+                                <td> <a target="_blank" 
+                                    href="{{ $page->alias == 'admin' 
+                                    ? '/' . $page->lang . '/' .  $page['permalink']
+                                    : 'http://' .  substr($page->alias, 4) . '.' . request()->getHttpHost() . '/' . $page->lang . '/' .  $page['permalink'] }} ">/{{ $page->lang }}/{!! $page["permalink"] !!} </td>
                                 <td>
                                     @if ($page['disabled'] == 1)
                                         <a style="text-decoration:none" id="{{ $page['id'] }}" class="changeView"

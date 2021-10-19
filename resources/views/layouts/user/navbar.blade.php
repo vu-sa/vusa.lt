@@ -20,7 +20,7 @@
                     <div class="dropdown-menu">
                         @foreach ($padaliniaiEn as $padalinysEn)
                             <a class="nav-link dropdown-item"
-                            href="http://{{ substr($padalinysEn['alias'], 4) }}.vusa.{{ env('APP_ENV') != 'local' ? 'lt' : 'testas:8000' }}/en"
+                            href="http://{{ substr($padalinysEn['alias'], 4) }}.{{ explode('/', env('APP_URL'))[2] }}/en"
                             >{{ $padalinysEn['shortname'] }}</a>
                         @endforeach
                     </div>

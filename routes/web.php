@@ -35,10 +35,10 @@ Log::info('Start of routes\web with ' . request()->path());
     if (in_array($http_host, $padaliniaiDomains)) {
         Route::get('{locale}', [UserController::class, 'getPadalinysPage'])->where('locale', '(lt|en)');
         Route::get('lt/naujienos', [UserController::class, 'getNewsArchive']);
-        Route::get('{locale}/{permalink}', [UserController::class, 'getInfoPage'])->where('locale', 'lt');
         Route::get('lt/naujiena/archyvas', [UserController::class, 'getNewsArchive']);
-        Route::get('lt/naujiena/{title}', [UserController::class, 'getNew']);
+        Route::get('{locale}/{news}/{title}', [UserController::class, 'getNew'])->where('locale', '(lt|en)')->where('news', '(naujienos|news)');
         Route::get('lt/kontaktai/{name}', [UserController::class, 'getContacts']);
+        Route::get('{locale}/{permalink}', [UserController::class, 'getInfoPage'])->where('locale', '(lt|en)');
         Route::get('/{permalink}', [UserController::class, 'index'])->middleware('main');
     }
 

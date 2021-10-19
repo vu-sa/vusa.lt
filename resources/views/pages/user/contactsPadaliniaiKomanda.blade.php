@@ -5,7 +5,11 @@
 @section('content')
     <div class="container">
         <div class="pageTitle">{{$title}}</div>
+        
+        @if (Lang::locale() == 'lt')
         <p><a href="{{ 'https://' . request()->getHttpHost() . '/lt' }}"><< Grįžti į pradinį puslapį</a></p>
+        @endif
+       
         <br>
         @if (strpos($title, 'koordinatoriai') !== false || strpos($title, 'biuras') !== false)
             <div class="row">
