@@ -26,9 +26,9 @@ class ContactFactory extends Factory
             'duties' => $this->faker->jobTitle(),
             'phone' => $this->faker->phoneNumber(),
             'email' => $this->faker->safeEmail(),
-            'name' => $this->faker->paragraph(2),
             'groupname' => 'centrinis-biuras',
             'grouptitle' => 0,
+            'infoText' => $this->faker->paragraph(2),
             'name_short' => NULL,
             'name_full' => NULL,
         ];

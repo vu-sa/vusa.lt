@@ -7,7 +7,7 @@
 
     @include('layouts.user.icons')
 
-    <title>VU SA | @yield('title')</title>
+    <title>{{ __('VU SA') }} | @yield('title')</title>
 
     <link href="{!! asset('css/app.css') !!}" rel="stylesheet" />
 

@@ -335,13 +335,14 @@ class PagesController extends AdminBaseController {
             $naujiena->permalink_lt = $request->permalink_lt;
             $naujiena->short = $request->short;
             $naujiena->text = $request->text;
+            $naujiena->lang = $request->lang;
             $naujiena->mainPoints = $request->mainPoints;
             $naujiena->image = $request->image;
             $naujiena->source = $request->source;
             $naujiena->imageAuthor = $request->imageAuthor;
             $naujiena->important = $request->important ?? 0;
             $naujiena->draft = $request->draft ?? 0;
-            $naujiena->publish_time = $request->year . ':' . $request->month . ':' . $request->day . '-' . $request->hour . '-' . $request->minute;
+            $naujiena->publish_time = date("Y-m-d H:i:s", strtotime($request->year . '-' . $request->month . '-' . $request->day . ' ' . $request->hour . ':' . $request->minute));
             $naujiena->editor_time = date("Y-m-d H:i:s", time());
             $naujiena->tags = $request->tags;
             $naujiena->readMore = $request->readMore;
@@ -353,7 +354,7 @@ class PagesController extends AdminBaseController {
         if ($request->lang == 'lt')
             return redirect('/admin/naujienosLT')->with('message', 'Naujiena sukurta.');
         else
-            return redirect('/admin/naujienosEN')->with('message', 'Naujiena sukurta.');
+            return redirect('/admin/naujienosEN')->with('message', 'Naujiena EN sukurta.');
     }
 
     public function deleteNew(Request $request)
@@ -369,10 +370,10 @@ class PagesController extends AdminBaseController {
     public function getUpdateNew($permalink, Request $request)
     {
         $newInfo = News::where('permalink', '=', $permalink)->first();
-        if (strpos($newInfo->image, 'vusa.lt/') !== false)
+        // if (strpos($newInfo->image, 'vusa.lt/') !== false)
             $newInfo->image = $newInfo->image;
-        else
-            $newInfo->image = 'https://vusa.lt/uploads/news/' . $newInfo->image;
+        // else
+        //     $newInfo->image = 'https://vusa.lt/uploads/news/' . $newInfo->image;
 
         $newsCats = NewsCat::all();
         $newsCatsShort = array();
@@ -411,7 +412,7 @@ class PagesController extends AdminBaseController {
                 $draftValue = '0';
             }
 
-            $request->publish_time = $request->year . ':' . $request->month . ':' . $request->day . '-' . $request->hour . '-' . $request->minute;
+            $request->publish_time = date("Y-m-d H:i:s", strtotime($request->year . '-' . $request->month . '-' . $request->day . ' ' . $request->hour . ':' . $request->minute));
             News::where('permalink', '=', $permalink)->update([
                 'title' => $request->title,
                 'title_lt' => $request->title_lt,

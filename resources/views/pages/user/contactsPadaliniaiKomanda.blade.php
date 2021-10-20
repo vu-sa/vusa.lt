@@ -1,11 +1,15 @@
 @extends('layouts.user.master')
 
-@section('title',$title)
+@section('title', $title)
 
 @section('content')
     <div class="container">
         <div class="pageTitle">{{$title}}</div>
+        
+        @if (Lang::locale() == 'lt')
         <p><a href="{{ 'https://' . request()->getHttpHost() . '/lt' }}"><< Grįžti į pradinį puslapį</a></p>
+        @endif
+       
         <br>
         @if (strpos($title, 'koordinatoriai') !== false || strpos($title, 'biuras') !== false)
             <div class="row">
@@ -50,7 +54,7 @@
                     <div class="contactPersonName">{{$contact->name}}</div>
                     <div class="contactPersonContacts">
                         @if($contact->phone != '')
-                            Tel. {{$contact->phone}} <br/>
+                        {{ __('Tel.') }} {{$contact->phone}} <br/>
                         @endif
                         <a href="mailto:{{$contact->email}}">{{$contact->email}}</a><br>
                     </div>

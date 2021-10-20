@@ -44,7 +44,7 @@
                 <div class="contactPersonInfo">
                     <div class="contactPersonName">{{$contact->name}}</div>
                     <div class="contactPersonContacts">
-                        Tel. {{$contact->phone}} <br/>
+                        {{ __('Tel.') }} {{$contact->phone}} <br/>
                         <a href="mailto:{{$contact->email}}">{{$contact->email}}</a><br>
                     </div>
                 </div>

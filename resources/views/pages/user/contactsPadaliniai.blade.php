@@ -48,7 +48,7 @@
                     <div class="padalinysInfo">
                         {{$contact->address}}<br/>
                         @if(Lang::locale() == 'lt')
-                            Tel.
+                        {{ __('Tel.') }}
                         @else
                             Phone
                         @endif

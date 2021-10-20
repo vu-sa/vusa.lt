@@ -14,7 +14,7 @@ class PagesPolicy
         return $user->isCommunication();
     }
 
-    public function handleEN(User $user) {
-        return $user->isAdmin();
+    public function handleLikeCB(User $user) {
+        return $user->isCB();
     }
 }

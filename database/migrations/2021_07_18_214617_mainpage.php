@@ -24,7 +24,8 @@ class Mainpage extends Migration
             $table->string('type', 60)->nullable()->default(NULL);
             $table->string('moduleName', 100)->nullable()->default('calendar');
             $table->smallInteger('groupID');
-            $table->timestamps();
+            $table->string('lang', 2)->nullable()->default(NULL);
+            $table->timestamp('created_time')->useCurrent();
         });
     }
 

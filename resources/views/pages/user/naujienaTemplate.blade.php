@@ -10,7 +10,7 @@ if (strtotime($news['publish_time']) < strtotime('2016-08-02')) { $imageLocation
             <img class="img-fluid news-img" src="{!! asset($imageLocation) !!}" />
             @if ($news['imageAuthor'] != '')
                 <div class="img-caption">
-                    <small>{{ $news['imageAuthor'] }}</small>
+                    <small>{{ __($news['imageAuthor']) }}</small>
                 </div>
             @endif
         </div>
@@ -30,7 +30,7 @@ if (strtotime($news['publish_time']) < strtotime('2016-08-02')) { $imageLocation
                 @endif
 
                 <div class="newsSource">
-                    <b>Šaltinis</b>: {{ $news['source'] }}
+                    <b>{{ __('Šaltinis') }}</b>: {{ __($news['source']) }}
                 </div>
                 <ul class="socNetworks list-inline {{ $linkColor }}">
                     <li class="facebook list-inline-item">

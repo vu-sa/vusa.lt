@@ -43,10 +43,10 @@
                     <div class="form-group">
                         {{ Form::label('publish_time', 'Publikavimo data *') }}
                         <br/>
-                        {{ Form::selectYear('year', '2015', date('Y')+1, date('Y')) }}:
-                        {{ Form::selectMonth('month', substr(date('m'), 0, 1) == "0" ? substr(date('m'), 1, 1) : date('m')) }}:
-                        {{ Form::selectRange('day', 1, 31, substr(date('d'), 0, 1) == "0" ? substr(date('d'), 1, 1) : date('d')) }} -
-                        {{ Form::selectRange('hour', 0, 24, substr(date('H'), 0, 1) == "0" ? substr(date('H'), 1, 1) : date('H')) }}:
+                        {{ Form::selectYear('year', '2015', date('Y')+1, date('Y')) }}
+                        {{ Form::selectMonth('month', substr(date('m'), 0, 1) == "0" ? substr(date('m'), 1, 1) : date('m')) }}
+                        {{ Form::selectRange('day', 1, 31, substr(date('d'), 0, 1) == "0" ? substr(date('d'), 1, 1) : date('d')) }}
+                        {{ Form::selectRange('hour', 0, 24, substr(date('H'), 0, 1) == "0" ? substr(date('H'), 1, 1) : date('H')) }} :
                         {{ Form::selectRange('minute', 0, 59, substr(date('m'), 0, 1) == "0" ? substr(date('m'), 1, 1) + 2 : date('m') + 2) }}
                         {{ Form::hidden('publish_time', '', array('class'=>'form-control', 'disabled'=>'disabled')) }}
                     </div>
@@ -58,10 +58,10 @@
 
                     <div class="form-group">
                         {{ Form::label('lang', 'Kalba *') }}
-                        {{ Form::select('lang', array('lt' => 'LT', 'en' => 'EN'), '', array('class'=>'form-control') )}}
+                        {{ Form::select('lang', array('lt' => 'LT', 'en' => 'EN'), 'lt', array('class'=>'form-control') )}}
                     </div>
 
-                    <div class="form-group" style="display: none" id="title_lt_input">
+                    {{-- <div class="form-group" style="display: none" id="title_lt_input">
                         {{ Form::label('title_lt', 'Naujiena LT kalba *') }}
                         {{ Form::text('title_lt', '', array('class'=>'form-control') )}}
                     </div>
@@ -69,7 +69,7 @@
                     <div class="form-group" style="display: none" id="permalink_lt_input">
                         {{ Form::label('permalink_lt', 'Nuoroda į LT naujieną') }}
                         {{ Form::text('permalink_lt', '', array('class'=>'form-control', 'readonly'=>'readonly')) }}
-                    </div>
+                    </div> --}}
 
                     <div class="form-group">
                         {{ Form::label('cat', 'Kategorija *') }}
@@ -105,10 +105,12 @@
                         {{ Form::text('imageAuthor', null, array('class'=>'form-control')) }}
                     </div>
 
+                    @can('handleLikeCB', App\Models\Page::class)
                     <div class="form-group">
                         {{ Form::label('important', 'Svarbi naujiena') }}
                         {{ Form::checkbox('important', '1', false) }}
                     </div>
+                    @endcan
 
                     <div class="form-group">
                         {{ Form::label('draft', 'Juodraštis') }}

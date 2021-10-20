@@ -42,9 +42,11 @@
                             {{ Form::select('groupname',
                                 array('0'=>'--- Parink grupę ---',
                                       'padalinio-biuras' => 'Koordinatoriai',
-                                      'padalinio-studentu-atstovai' => 'Studentų atstovai',
-                                      'padalinio-taryba' => 'Padalinio taryba',
+                                      'padalinio-biuras-en' => 'Koordinatoriai EN',
+                                    //   'padalinio-studentu-atstovai' => 'Studentų atstovai',
+                                    //   'padalinio-taryba' => 'Padalinio taryba',
                                       'padalinio-kuratoriai' => 'Padalinio kuratoriai',
+                                      'padalinio-kuratoriai-en' => 'Padalinio kuratoriai EN',
                                       'aprasymas-padalinys' => 'Kontaktų aprašymas'),
                                       $contats->groupname, array('class'=>'form-control')
                                       )}}
@@ -190,10 +192,10 @@
                         {{ Form::text('email', null, array('class'=>'form-control')) }}
                     </div>
 
-                    <div class="form-group">
+                    {{-- <div class="form-group">
                         {{ Form::label('lang', 'Kalba *') }}
                         {{ Form::select('lang', array('lt' => 'LT', 'en' => 'EN'), null, array('class'=>'form-control') )}}
-                    </div>
+                    </div> --}}
 
                     {{-- BIURAS --}}
                     <div class="form-group" style="display: none" id="infoText_input">

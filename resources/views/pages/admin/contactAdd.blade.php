@@ -33,9 +33,11 @@
                             {{ Form::select('groupname',
                                 array('0'=>'--- Parink grupę ---',
                                       'padalinio-biuras' => 'Koordinatoriai',
-                                      'padalinio-studentu-atstovai' => 'Studentų atstovai',
-                                      'padalinio-taryba' => 'Taryba',
-                                      'padalinio-kuratoriai' => 'Padalinio kuratoriai',
+                                      'padalinio-biuras-en' => 'Koordinatoriai EN',
+                                    //   'padalinio-studentu-atstovai' => 'Studentų atstovai',
+                                    //   'padalinio-taryba' => 'Taryba',
+                                      'padalinio-kuratoriai' => 'Kuratoriai',
+                                      'padalinio-kuratoriai-en' => 'Kuratoriai EN',
                                       'aprasymas-padalinys' => 'Kontaktų aprašymas'),
                                       $groupName, array('class'=>'form-control')
                                       )}}

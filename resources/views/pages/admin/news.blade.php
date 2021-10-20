@@ -40,9 +40,9 @@
                     <table class="table">
                         <tr class="alert alert-warning">
                             <th>Pavadinimas</th>
-                            @if($currentRoute == 'admin/naujienosEN')
+                            {{-- @if($currentRoute == 'admin/naujienosEN')
                                 <th>LT pavadinimas</th>
-                            @endif
+                            @endif --}}
                             <th>Data</th>
                             <th>Nuotrauka</th>
                             <th>Juodraštis</th>
@@ -52,9 +52,9 @@
                         @foreach ($news as $new)
                             <tr class="alert alert-success">
                                 <td>{{ $new['title']}}</td>
-                                @if($currentRoute == 'admin/naujienosEN')
+                                {{-- @if($currentRoute == 'admin/naujienosEN')
                                     <td>{{ $new['title_lt']}}</td>
-                                @endif
+                                @endif --}}
                                 <td>{{ substr($new['publish_time'], 0, -3) }}</td>
                                 <td class="hover_img">
                                     <a href="#">Nuotrauka
