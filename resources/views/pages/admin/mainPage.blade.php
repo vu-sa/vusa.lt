@@ -48,6 +48,7 @@
                                 <th>Pavadinimas</th>
                                 <th>Adresas</th>
                                 <th>Tipas</th>
+                                <th>Kalba</th>
                                 <th colspan="3">Veiksmai</th>
                             </tr>
                             @foreach($sideMenus as $sideMenu)
@@ -55,6 +56,7 @@
                                     <td>{{$sideMenu['text']}}</td>
                                     <td>{{$sideMenu['link']}}</td>
                                     <td>{{$sideMenu['type']}}</td>
+                                    <td>{{$sideMenu['lang']}}</td>
                                     <td>
                                         <a style="text-decoration:none" href="/admin/pagrindinis/{{$userGroupAlias}}/{{$sideMenu['id']}}/redaguoti?position=sideItem">
                                             <i class="fas fa-edit"></i>
@@ -95,6 +97,7 @@
                                 <th>Pavadinimas</th>
                                 <th>Adresas</th>
                                 <th>Tipas</th>
+                                <th>Kalba</th>
                                 <th colspan="3">Veiksmai</th>
                             </tr>
                             @foreach($bottomMenus as $bottomMenu)
@@ -102,6 +105,7 @@
                                     <td>{{$bottomMenu['text']}}</td>
                                     <td>{{$bottomMenu['link']}}</td>
                                     <td>{{$bottomMenu['type']}}</td>
+                                    <td>{{$bottomMenu['lang']}}</td>
                                     <td>
                                         <a style="text-decoration:none" href="/admin/pagrindinis/{{$userGroupAlias}}/{{$bottomMenu['id']}}/redaguoti?position=bottomItem">
                                             <i class="fas fa-edit"></i>

@@ -1,11 +1,11 @@
 @extends('layouts.user.master')
 
-@section('title'){{$padalinys['fullname']}}@endsection
+@section('title'){{ __($padalinys['fullname']) }}@endsection
 
 @section('meta')
     <meta property="og:url" content={{"http://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']}}/>
     <meta property="og:type" content="website"/>
-    <meta property="og:title" content="VU SA | {{$padalinys['shortname']}}"/>
+    <meta property="og:title" content="{{ __('VU SA') }} | {{ __($padalinys['shortname']) }}"/>
     <meta property="og:description" content=""/>
     <meta property="og:image" content="/images/icons/logos/vusa.lin.hor.png"/>
 @endsection

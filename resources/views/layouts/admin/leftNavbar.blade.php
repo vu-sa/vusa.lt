@@ -138,18 +138,34 @@
                             </li>
                             <li
                                 class="nav-item
+                    {{ strpos($currentRoute . '/' . $name, 'admin/kontaktai/padalinio-biuras-en') !== false ? 'active' : '' }}">
+                                <a href="/admin/kontaktai/padalinio-biuras-en" class="nav-link"><i
+                                        class="far fa-circle fa-sm"></i>
+                                    <p>Koordinatoriai EN</p>
+                                </a>
+                            </li>
+                            {{-- <li
+                                class="nav-item
                     {{ strpos($currentRoute . '/' . $name, 'admin/kontaktai/{name}/Centrinis biuras EN') !== false ? 'active' : '' }}">
                                 <a href="/admin/kontaktai/padalinio-studentu-atstovai" class="nav-link"><i
                                         class="far fa-circle fa-sm"></i>
                                     <p>Studentų atstovai</p>
                                 </a>
-                            </li>
+                            </li> --}}
                             <li
                                 class="nav-item
                     {{ strpos($currentRoute . '/' . $name, 'admin/kontaktai/padalinio-kuratoriai') !== false ? 'active' : '' }}">
                                 <a href="/admin/kontaktai/padalinio-kuratoriai" class="nav-link"><i
                                         class="far fa-circle fa-sm"></i>
                                     <p>Kuratoriai</p>
+                                </a>
+                            </li>
+                            <li
+                                class="nav-item
+                    {{ strpos($currentRoute . '/' . $name, 'admin/kontaktai/padalinio-kuratoriai-en') !== false ? 'active' : '' }}">
+                                <a href="/admin/kontaktai/padalinio-kuratoriai-en" class="nav-link"><i
+                                        class="far fa-circle fa-sm"></i>
+                                    <p>Kuratoriai EN</p>
                                 </a>
                             </li>
                         @endcan
@@ -323,7 +339,7 @@
                         <i class="nav-icon far fa-newspaper"></i>
                         <p>vusa.lt atnaujinimai
                             <span class="right badge badge-danger">
-                                02-17
+                                10-20
                             </span>
                         </p>
                     </a>

@@ -18,8 +18,26 @@
                 bet sąrašėlis ir taip yra nemažas.
             </p>
 
+
             <hr style="border-top: 1px solid #111">
-            <h3> <strong>2020-02-17 </strong></h3>
+            <h3> <strong>2021 m. spalio 20 d.</strong></h3>
+            <p><strong>Po 8 mėnesių atnaujinu šitą pasikeitimų sąrašą!</strong> Iš esmės nėra taip, kad nevyksta tinklalapio pokyčių, tiesiog apie juos rašyti yra papildomas darbelis, nu bet nieko.</p>
+            <p><strong>Nuo vasario mėn...</strong></p>
+            <h4> Pagrindiniai atnaujinimai:</h4>
+            <ul>
+                <li>Padaliniai savo <a href="http://vusa.lt/admin">pagrindiniuose admin puslapiuose</a> matys galimybę įjungti EN režimą, kuris daro tai, kas ten ir parašyta. :) O jei trumpai - galite įkelti EN informaciją daug sklandžiau, negu tą buvo galima daryti anksčiau.
+                </li>
+                <li>Bendrai daugiau lokalizacijos anglų kalba, pvz.: apatinėje VU SA juostoje</li>
+                <li>Pridėti FB Messenger burbuliukai, beveik visur jie yra ir specifiniai padaliniams</li>
+            </ul>
+            
+            <p>
+                Buvo ir daugiau visokių pataisymų, bet jau tingiu rašyti. :D Nuo šiol pradėsiu gal šiek tiek detaliau.
+            </p>
+
+
+            <hr style="border-top: 1px solid #111">
+            <h3> <strong>2021-02-17 </strong></h3>
             <p>Taigi, toliau tęsiasi sistemos kuopimas ir vidinis naujinimas. Papildomų funkcijų šįkart, kaip ir praeitąkart, nėra daug, bet kai kurie dalykai turbūt šiek tiek nustebins, atsidarius. :) Bet pokyčiai daugiausiai stilistiniai, puslapio funkcijos realiai visiškai nesikeitė.</p>
             <h4> Pagrindiniai atnaujinimai:</h4>
             <ul>
@@ -37,7 +55,7 @@
             </ul>
 
             <hr style="border-top: 1px solid #111">
-            <h3> <strong>2020-01-26 </strong></h3>
+            <h3> <strong>2021-01-26 </strong></h3>
             <h4> Pagrindiniai atnaujinimai:</h4>
             <ul>
                 <li> <strong>Visiškai atnaujinti puslapio griaučiai.</strong> Svarbu, nes nuo to priklausys ir ateities

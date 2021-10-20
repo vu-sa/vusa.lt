@@ -36,8 +36,11 @@ Log::info('Start of routes\web with ' . request()->path());
         Route::get('{locale}', [UserController::class, 'getPadalinysPage'])->where('locale', '(lt|en)');
         Route::get('lt/naujienos', [UserController::class, 'getNewsArchive']);
         Route::get('lt/naujiena/archyvas', [UserController::class, 'getNewsArchive']);
-        Route::get('{locale}/{news}/{title}', [UserController::class, 'getNew'])->where('locale', '(lt|en)')->where('news', '(naujienos|news)');
-        Route::get('lt/kontaktai/{name}', [UserController::class, 'getContacts']);
+
+        // This must be kept as '{permalink1}', if named '{permalink}', it skips this route and continues towards the end (maybe a bug). Basically, try to use unique names.
+        Route::get('{locale}/{newsLocale}/{permalink1}', [UserController::class, 'getNew'])->where(['locale' => '(lt|en)', 'newsLocale' => '(naujiena|news)']);
+
+        Route::get('{locale}/{contactsLocale}/{name}', [UserController::class, 'getContacts'])->where(['locale' => '(lt|en)', 'contactsLocale' => '(kontaktai|contacts)']);
         Route::get('{locale}/{permalink}', [UserController::class, 'getInfoPage'])->where('locale', '(lt|en)');
         Route::get('/{permalink}', [UserController::class, 'index'])->middleware('main');
     }
@@ -284,17 +287,19 @@ Log::info('Start of routes\web with ' . request()->path());
         });
 
         Route::get('en/scholarship/{title}', [UserController::class, 'page']);
-        Route::get('en/contacts/{name}', [UserController::class, 'getContacts']);
-        Route::get('en/news/zyme/{tag}', [UserController::class, 'getSearchByTag']);
-        Route::get('en/news/{title}', [UserController::class, 'getNew']);
+
+        Route::get('{locale}/{contactsLocale}/{name}', [UserController::class, 'getContacts'])->where(['locale' => '(lt|en)', 'contactsLocale' => '(kontaktai|contacts)']);
+
+        Route::get('en/news/tag/{tag}', [UserController::class, 'getSearchByTag']);
+        // Route::get('en/news/{title}', [UserController::class, 'getNew']);
 
         /**
          * Dinaminiai tinklapio routai
          */
 
-        Route::get('lt/kontaktai/{name}', [UserController::class, 'getContacts']);
+        // Route::get('lt/kontaktai/{name}', [UserController::class, 'getContacts']);
         Route::get('lt/naujiena/zyme/{tag}', [UserController::class, 'getSearchByTag']);
-        Route::get('lt/naujiena/{title}', [UserController::class, 'getNew']);
+        Route::get('{locale}/{newsLocale}/{permalink}', [UserController::class, 'getNew'])->where(['locale' => '(lt|en)', 'newsLocale' => '(naujiena|news)']);
 
         // Catch all
         

@@ -51,6 +51,7 @@ class UserController extends BaseController
         $this->navLevel2 = Navigation::where('pid', '!=', 0)->where('show', '=', '1')->where('lang', '=', $this->language)->orderBy('order')->get();
         $this->banners = Banner::where('hide', '=', '0')->where('editorG', '=', '1')->inRandomOrder()->get();
         $this->currentRoute = $request->path();
+        $this->appUrl = env('APP_URL');
 
         Log::debug("currentRoute is " . $this->currentRoute);
 
@@ -87,7 +88,7 @@ class UserController extends BaseController
 
         $this->outputArray = [
             'currentRoute' => $this->currentRoute, 'banners' => $this->banners, 'navLevel1' => $this->navLevel1, 
-            'navLevel2' => $this->navLevel2, 'navLevel3' => $this->navLevel2, 'navLevel4' => $this->navLevel2, 'navbarRoot' => $this->navbarRoot, 'en' => $this->en, 'padaliniaiEn' => $this->padaliniaiEn, 'domainAlias' => $this->domainAlias
+            'navLevel2' => $this->navLevel2, 'navLevel3' => $this->navLevel2, 'navLevel4' => $this->navLevel2, 'navbarRoot' => $this->navbarRoot, 'en' => $this->en, 'padaliniaiEn' => $this->padaliniaiEn, 'domainAlias' => $this->domainAlias, 'appUrl' => $this->appUrl
         ];
     }
 
@@ -118,7 +119,7 @@ class UserController extends BaseController
 
     }
 
-    public function getContacts($name)
+    public function getContacts($locale, $contactsLocale, $name)
     {
         Log::debug('Start of ' . __METHOD__ . 'function in ' . __FILE__);
         
@@ -195,37 +196,38 @@ class UserController extends BaseController
          */
         else if ($this->domainAlias[1] == 'vusa') {
             $alias = 'vusa' . $this->domainAlias[0];
-            $gid = Users_group::where('alias', '=', $alias)->first();
+            $padalinys = Padalinys::where('alias', '=', $alias)->first();
+            $userGroup = Users_group::where('alias', '=', $alias)->first();
 
             if ($name == 'taryba') {
                 $name = 'padalinio-taryba';
-                $this->outputArray['title'] = $gid->descr . ' ' . 'taryba';
+                $this->outputArray['title'] = $padalinys->shortname . ' ' . 'taryba';
             }
 
-            if ($name == 'biuras' || $name == 'koordinatoriai') {
+            if (in_array($name, ['biuras', 'koordinatoriai', 'coordinators'])) {
                 $name = 'padalinio-biuras';
-                if (substr($gid->descr, 6) == 'MIF')
-                $this->outputArray['title'] = 'VU SA MIF biuras';
+                if (substr($padalinys->shortname, 6) == 'MIF')
+                $this->outputArray['title'] = __('VU SA MIF') . ' biuras';
                 else
-                $this->outputArray['title'] = $gid->descr . ' ' . 'koordinatoriai';
+                $this->outputArray['title'] = __($padalinys->shortname) . ' ' . lcfirst(__('Koordinatoriai'));
             }
 
             if ($name == 'studentu-atstovai') {
                 $name = 'padalinio-studentu-atstovai';
-                $this->outputArray['title'] = $gid->descr . ' ' . 'studentu atstovai';
+                $this->outputArray['title'] = $padalinys->shortname . ' ' . 'studentų atstovai';
             }
 
-            if ($name == 'kuratoriai') {
+            if (in_array($name, ['kuratoriai', 'mentors'])) {
                 $name = 'padalinio-kuratoriai';
-                if (substr($gid->descr, 6) == 'FilF')
+                if (substr($padalinys->shortname, 6) == 'FilF')
                 $this->outputArray['title'] = 'VU FLF kuratoriai';
                 else
-                $this->outputArray['title'] = 'VU ' . substr($gid->descr, 6) . ' kuratoriai';
+                $this->outputArray['title'] = 'VU ' . substr($padalinys->shortname, 6) . ' ' . lcfirst(__('Kuratoriai'));
             }
 
-            $this->outputArray['contacts'] = Contact::where('groupname', 'like', $name)->where('contactGroup', '=', $gid->id)->orderBy('contactOrder')->get();
+            $this->outputArray['contacts'] = Contact::where('groupname', 'like', $name)->where('contactGroup', '=', $userGroup->id)->where('lang', '=', $locale)->orderBy('contactOrder')->get();
 
-            $contactGroupDescription = Contact::where('groupname', 'like', 'aprasymas-padalinys')->where('grouptitle', 'like', $name)->where('contactGroup', '=', $gid->id)->first();
+            $contactGroupDescription = Contact::where('groupname', 'like', 'aprasymas-padalinys')->where('grouptitle', 'like', $name)->where('contactGroup', '=', $userGroup->id)->first();
             $this->outputArray['contactGroupDescription'] = $contactGroupDescription['infoText'] ?? "";
 
             $this->outputArray['contactGroupPhoto'] = $contactGroupDescription['image'] ?? "";
@@ -235,7 +237,7 @@ class UserController extends BaseController
 
         $this->outputArray['contacts'] = null;
 
-        return view('pages.user.contactsNoInfo', $this->outputArray);
+        return response()->view('errors.404', $this->outputArray, 404);
     }
 
     public function getInfoPage($locale, $permalink = null)
@@ -293,44 +295,29 @@ class UserController extends BaseController
         return view('pages.user.pagePKP', $this->outputArray);
     }
 
-    public function getNew($title)
+    public function getNew($locale, $newsLocale, $permalink)
     {
         Log::debug('Start of ' . __METHOD__ . 'function in ' . __FILE__);
         
-        $topNews = News::where('important', '=', '1')->where('draft', '=', '0')->orderBy('publish_time', 'desc')->where('lang', '=', $this->language)->take($this->newsSlide)->get();
         $url = "https://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 
         if ($this->domainAlias[0] == 'vusa' || $this->domainAlias[0] . $this->domainAlias[1] == 'naujasvusa') {
-            $selectedNew = News::where('permalink', '=', $title)->where('lang', '=', $this->language)->first();
-            $firstID = News::where('permalink', '=', $title)->where('lang', '=', $this->language)->first();
+            $news = News::where('permalink', '=', $permalink)->where('lang', '=', $this->language)->first();
         } else if ($this->domainAlias[1] == 'vusa') {
             $groupID = Users_group::where('alias', '=', 'vusa' . $this->domainAlias[0])->first();
-            $selectedNew = News::where('permalink', '=', $title)->where('lang', '=', $this->language)->where('publisher', '=', $groupID->id)->first();
-            $firstID = News::where('permalink', '=', $title)->where('publisher', '=', $groupID->id)->where('lang', '=', $this->language)->first();
+            $news = News::where('permalink', '=', $permalink)->where('publisher', '=', $groupID->id)->where('lang', '=', $this->language)->first();
         }
 
-        $has = false;
-        foreach ($topNews as $topNew) {
-            if ($topNew['id'] == $selectedNew['id']) {
-                $has = true;
-            }
-        }
-
-        if (!$has) {
-            $topNews[] = $selectedNew;
-        }
-
-        if ($firstID == null) {
+        if ($news == null) {
 
             $this->outputArray['title'] = 'Puslapis nerastas';
             return response()->view('errors.404', $this->outputArray, 404);
 
         }
 
-        $this->outputArray['news'] = $firstID;
+        $this->outputArray['news'] = $news;
         $this->outputArray['url'] = $url;
-        $this->outputArray['topNews'] = $topNews;
-        $this->outputArray['selectedNewPermalink'] = $title;
+        $this->outputArray['selectedNewPermalink'] = $permalink;
         
         return view('pages.user.naujiena', $this->outputArray);
     }
@@ -586,8 +573,8 @@ class UserController extends BaseController
         $this->outputArray['pages'] = Page::where('editorG', '=', $gid->id)->get();
         $this->outputArray['contacts'] = Contact::where('contactGroup', '=', $gid->id)->get();
         $this->outputArray['padalinys'] = Padalinys::where('alias', '=', $alias)->first();
-        $this->outputArray['menuItemsSide'] = MainPage::where('groupID', '=', $gid->id)->where('position', '=', 'sideItem')->orderBy('orderID', 'asc')->get();
-        $this->outputArray['menuItemsBottom'] = MainPage::where('groupID', '=', $gid->id)->where('position', '=', 'bottomItem')->orderBy('orderID', 'asc')->get();
+        $this->outputArray['menuItemsSide'] = MainPage::where('groupID', '=', $gid->id)->where('position', '=', 'sideItem')->where('lang', '=', $this->language)->orderBy('orderID', 'asc')->get();
+        $this->outputArray['menuItemsBottom'] = MainPage::where('groupID', '=', $gid->id)->where('position', '=', 'bottomItem')->where('lang', '=', $this->language)->orderBy('orderID', 'asc')->get();
         $this->outputArray['additionalInfo'] = MainPage::where('groupID', '=', $gid->id)->where('position', '=', 'additionalInfo')->first();
         $this->outputArray['hasKoordinatoriaiMenuSide'] = false;
         $this->outputArray['hasKuratoriaiMenuSide'] = false;

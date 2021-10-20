@@ -1,6 +1,6 @@
 @extends('layouts.user.master')
 
-@section('title',$title)
+@section('title', $title)
 
 @section('content')
     <div class="container">
@@ -54,7 +54,7 @@
                     <div class="contactPersonName">{{$contact->name}}</div>
                     <div class="contactPersonContacts">
                         @if($contact->phone != '')
-                            Tel. {{$contact->phone}} <br/>
+                        {{ __('Tel.') }} {{$contact->phone}} <br/>
                         @endif
                         <a href="mailto:{{$contact->email}}">{{$contact->email}}</a><br>
                     </div>

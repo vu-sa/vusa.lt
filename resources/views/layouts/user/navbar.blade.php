@@ -20,7 +20,7 @@
                     <div class="dropdown-menu">
                         @foreach ($padaliniaiEn as $padalinysEn)
                             <a class="nav-link dropdown-item"
-                            href="http://{{ substr($padalinysEn['alias'], 4) }}.{{ explode('/', env('APP_URL'))[2] }}/en"
+                            href="http://{{ substr($padalinysEn['alias'], 4) }}.{{ explode('/', $appUrl)[2] }}/en"
                             >{{ $padalinysEn['shortname'] }}</a>
                         @endforeach
                     </div>
@@ -131,16 +131,15 @@
                     <img src="{!! asset('images/icons/flags/en_veliava.png') !!}"
                         alt="Switch to english language"></a>
                     
-
                 @elseif(Lang::locale() == 'en')
                     
-                    <?php $curUrl = Request::url();
+                    {{-- <?php $curUrl = Request::url();
                     $pos = strpos($curUrl, '/en');
                     if ($pos !== false) {
                         $curUrl = substr_replace($curUrl, '/lt', $pos, strlen('/en'));
-                    } ?>
+                    } ?> --}}
                     
-                    <a href="{{ $curUrl }}"><img src="{!!  asset('images/icons/flags/lt_veliava.png') !!}"
+                    <a href="/lt"><img src="{!!  asset('images/icons/flags/lt_veliava.png') !!}"
                             alt="Perjungti į lietuvių kalbą"></a>
                 @else
                     <a href="/en"><img src="{!!  asset('images/en_veliava.png') !!}"

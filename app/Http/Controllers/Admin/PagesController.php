@@ -370,10 +370,10 @@ class PagesController extends AdminBaseController {
     public function getUpdateNew($permalink, Request $request)
     {
         $newInfo = News::where('permalink', '=', $permalink)->first();
-        if (strpos($newInfo->image, 'vusa.lt/') !== false)
+        // if (strpos($newInfo->image, 'vusa.lt/') !== false)
             $newInfo->image = $newInfo->image;
-        else
-            $newInfo->image = 'https://vusa.lt/uploads/news/' . $newInfo->image;
+        // else
+        //     $newInfo->image = 'https://vusa.lt/uploads/news/' . $newInfo->image;
 
         $newsCats = NewsCat::all();
         $newsCatsShort = array();
