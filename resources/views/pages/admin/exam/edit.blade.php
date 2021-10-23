@@ -28,9 +28,9 @@
             @endif
             <div class="row">
                 <div class="col-md-12">
-                    {!! Form::model($atsiskaitymas, ['method' => 'PATCH' ]) !!}
+                    {!! Form::model($atsiskaitymas, ['method' => 'PATCH', 'route' => ['pages.admin.exam.update', $atsiskaitymas->id]]) !!}
 
-                    {{ Form::hidden('page', $_GET["page"], array('class'=>'form-control')) }}
+                    {{-- {{ Form::hidden('page', $_GET["page"], array('class'=>'form-control')) }} --}}
 
                     <div class="form-group">
                         {{ Form::label('name', 'Vardas ir pavardė') }}

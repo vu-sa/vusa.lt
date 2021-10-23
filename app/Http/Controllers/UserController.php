@@ -723,7 +723,7 @@ class UserController extends BaseController
         $rules = array(
             'uuid' => 'required',
             'name_p' => 'required',
-            'padalinys' => 'required',
+            'padalinys' => 'required|alpha',
             'flow' => 'required',
             'contact_p' => 'required',
             'acceptGDPR' => 'accepted',

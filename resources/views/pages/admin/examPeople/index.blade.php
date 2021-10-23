@@ -25,7 +25,7 @@
 
                     <div>
                         @if (Session::has('message'))
-                            <div class="alert alert-success" role="alert">{{ Session::get('message') }}</div>
+                            <div class="alert alert-info" role="alert">{{ Session::get('message') }}</div>
                         @endif
                     </div>
                     <table class="table table-bordered">

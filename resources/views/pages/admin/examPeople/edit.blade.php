@@ -32,9 +32,9 @@
             @endif
             <div class="row">
                 <div class="col-md-12">
-                    {!! Form::model($zmogus, ['method' => 'PATCH' ]) !!}
+                    {!! Form::model($zmogus, ['method' => 'PATCH', 'route' => ['pages.admin.examPeople.update', $zmogus->id]]) !!}
 
-                    {{ Form::hidden('page', $_GET["page"], array('class'=>'form-control')) }}
+                    {{-- {{ Form::hidden('page', $_GET["page"], array('class'=>'form-control')) }} --}}
 
                     <div class="form-group">
                         {{ Form::label('subject_name', 'Pavadinimas *') }}

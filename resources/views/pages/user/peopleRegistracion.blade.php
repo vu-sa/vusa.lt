@@ -49,7 +49,7 @@
 
                     <div class="form-group">
                         {{ Form::label('padalinys', 'Padalinys *') }}
-                        {{ Form::select('padalinys', array('-'=>'-- Padalinys --','chgf'=>'CHGF','evaf' => 'EVAF', 'ff'=>'FF', 'filf'=>'FiLF', 'fsf'=>'FsF', 'gmc'=>'GMC', 'if'=>'IF', 'kf'=>'KF', 'knf'=> 'KnF', 'mf'=> 'MF',
+                        {{ Form::select('padalinys', array(0 =>'-- Padalinys --','chgf'=>'CHGF','evaf' => 'EVAF', 'ff'=>'FF', 'filf'=>'FiLF', 'fsf'=>'FsF', 'gmc'=>'GMC', 'if'=>'IF', 'kf'=>'KF', 'knf'=> 'KnF', 'mf'=> 'MF',
                     'mif'=>'MIF', 'sa'=>'SA', 'tf'=> 'TF', 'tspmi'=> 'TSPMI', 'vm'=> 'VM'),'', array('class'=>'form-control'))}}
                     </div>
 
@@ -154,6 +154,9 @@
                         }
                         else if (data[index] == "The accept data management must be accepted.") {
                             msg += '<li>Turite sutikti su asmens duomenų tvarkymu.</li>';
+                        }
+                        else if (data[index] == "The padalinys may only contain letters.") {
+                            msg += '<li>Turite pasirinkti padalinį.</li>';
                         }
                         else {
                             msg += '<li>' + data[index] + '</li>';

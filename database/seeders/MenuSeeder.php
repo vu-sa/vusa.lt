@@ -66,7 +66,7 @@ class MenuSeeder extends Seeder
                     'pid' => 1,
                     'order' => 5,
                     'text' => 'Sąžiningai: stebėjimas',
-                    'url' => '/registracija-stebejimui'
+                    'url' => '/saziningai-uzregistruoti-egzaminai'
                 ],
                 [
                     'pid' => 2,
@@ -74,18 +74,6 @@ class MenuSeeder extends Seeder
                     'text' => 'Centrinis biuras',
                     'url' => '/kontaktai/centrinis-biuras'
                 ],
-                // [
-                //     'pid' => 1,
-                //     'order' => 5,
-                //     'text' => 'Sąžiningai: stebėjimas',
-                //     'url' => '/registracija-stebejimui'
-                // ],
-                // [
-                //     'pid' => 1,
-                //     'order' => 5,
-                //     'text' => 'Sąžiningai: stebėjimas',
-                //     'url' => '/registracija-stebejimui'
-                // ],
                 [
                     'pid' => 3,
                     'order' => 0,

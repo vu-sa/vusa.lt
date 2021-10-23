@@ -41,7 +41,7 @@ class ExamController extends AdminBaseController {
     {
         $atsiskaitymas = Saziningai::where('uuid', '=', $uuid)->first();
 
-        return view('pages.admin.examEdit', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'name' => null, 'atsiskaitymas' => $atsiskaitymas]);
+        return view('pages.admin.exam.edit', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'name' => null, 'atsiskaitymas' => $atsiskaitymas]);
     }
 
     public function update($uuid, Request $request)
@@ -62,7 +62,7 @@ class ExamController extends AdminBaseController {
         $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails())
-            return Redirect::to('/admin/saziningai/' . $uuid . '/redaguoti')->withInput()->withErrors(($validator));
+            return Redirect::to('/admin/exam/' . $uuid . '/edit')->withInput()->withErrors(($validator));
         else {
             Saziningai::where('uuid', '=', $uuid)->update([
                 'name' => $request->name,
@@ -77,7 +77,7 @@ class ExamController extends AdminBaseController {
                 'students_need' => $request->students_need
             ]);
         }
-        return redirect('/admin/saziningai?page=' . $request->page)->with('message', 'Atsiskaitymas sėkmingai atnaujintas.');
+        return redirect('/admin/exam?page=' . $request->page)->with('message', 'Atsiskaitymas sėkmingai atnaujintas.');
     }
 
     public function destroy(Request $request)
