@@ -21,7 +21,7 @@ class Agenda extends Migration
             $table->string('classname', 50)->default('red');
             $table->smallInteger('owner');
             $table->smallInteger('editor');
-            // $table->timestamp('editor_time')->useCurrentOnUpdate();
+            $table->timestamp('editor_time')->useCurrent()->useCurrentOnUpdate();
         });
     }
 

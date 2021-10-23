@@ -9,6 +9,8 @@ use App\Models\Contact;
 use App\Models\MainPage;
 use App\Models\News;
 use App\Models\Page;
+use App\Models\Saziningai;
+use App\Models\Saziningai_people;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 
@@ -37,6 +39,8 @@ class DatabaseSeeder extends Seeder
         MainPage::factory()->count(9)->create();
         News::factory()->count(25)->create();
         Page::factory()->count(25)->create();
+        Saziningai::factory()->count(10)->create();
+        Saziningai_people::factory()->count(10)->create();
         Banner::factory()->count(25)->create();
         
     }

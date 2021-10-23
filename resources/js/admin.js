@@ -12,5 +12,6 @@ import 'croppic';
 import 'select2'
 import 'admin-lte/plugins/fullcalendar/main';
 import './tinymce';
+window.axios = require('axios');
 
 import './custom';

@@ -5,13 +5,8 @@
         <section class="content-header">
             <h1>
                 Atnaujinti atsiskaitymą
-                <br/>
-                <small style="color: red">* - reikalingi laukai</small>
             </h1>
-            <ol class="breadcrumb">
-                {!! $currentRoute == 'admin/saziningai/{uuid}/redaguoti' ? '<li><a><i class="fas fa-tachometer-alt"></i> Home</a></li> <li>Sąžiningai</li> <li class="active">Redaguoti atsiskaitymą</li>': ''
-                 !!}
-            </ol>
+            <small style="color: red">* - reikalingi laukai</small>
         </section>
 
         <section class="content">
@@ -88,7 +83,7 @@
                         {{ Form::text('students_need', null, array('class'=>'form-control')) }}
                     </div>
 
-                    {{Form::submit('Atnaujinti',['class'=>'btn btn-primary'])}}
+                    {{ Form::submit('Atnaujinti',['class'=>'btn btn-primary']) }}
                     {{ Form::close() }}
                 </div>
             </div>

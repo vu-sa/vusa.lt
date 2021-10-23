@@ -7,6 +7,7 @@ import '@fortawesome/fontawesome-free/js/all';
 
 import './jquery.bxSlider';
 import './calendar'; // Zabuto calendar
+import 'axios'
 import './vusa'; // Custom scripts
 
 // Modernizr?

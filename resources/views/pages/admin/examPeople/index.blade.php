@@ -6,9 +6,6 @@
             <h1>
                 Užsiregistravę stebėtojai
             </h1>
-            <ol class="breadcrumb">
-                {!! $currentRoute == 'admin/saziningai' ? '<li><a><i class="fas fa-tachometer-alt"></i> Home</a></li> <li class="active">Sąžiningai</li>': '' !!}
-            </ol>
         </section>
         <section class="content">
             <div class="row">
@@ -61,7 +58,7 @@
                                 <td>{{$zmogus->status_p}}</td>
                                 <td>{{$zmogus->dateRegistered}}</td>
                                 <td>
-                                    <a href="/admin/saziningai-uzsiregistrave/{{$zmogus->id_p}}/redaguoti?page={{$_GET["page"]}}">
+                                    <a href="/admin/examPeople/{{$zmogus->id_p}}/edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     &nbsp;
@@ -97,7 +94,9 @@
         }).then((result) => {
             if (result.isConfirmed) {
                 (function () {
-                    $.get('/admin/saziningai-uzsiregistrave/delete?id=' + id, function(data) {});
+                    axios.post("{{ route('pages.admin.examPeople.destroy', '', false)}}", {
+                            id: id
+                        });
                     row.parent().parent().remove();
                     swal.fire("Ištrinta!", "Užsiregistravęs stebėjotas ištrintas.", "success");
                 })()

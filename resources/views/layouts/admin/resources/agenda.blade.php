@@ -4,11 +4,9 @@
     <div class="content-wrapper">
         <section class="content-header">
             <h1>
-                Redaguoti darbotvarės įrašą
+                @yield('title')
             </h1>
-            <ol class="breadcrumb">
-                {!! $currentRoute == 'admin/darbotvarke/{id}/redaguoti' ? '<li><a><i class="fas fa-tachometer-alt"></i> Home</a></li> <li class="active">Redaguoti darbotvarės įrašą</li>': '' !!}
-            </ol>
+            <small style="color: red">* - reikalingi laukai</small>
         </section>
 
         <section class="content">
@@ -18,9 +16,9 @@
                         <?php $errors = array_unique($errors->all());?>
                         @foreach ($errors as $error)
                             @if($error == 'validation.required')
-                                <li>Laukai su * turi būti užpildyti</li>
+                                <li>Puslapio pavadinimo, kategorijos bei puslapio teksto laukai turi būti užpildyti.</li>
                             @elseif($error == 'validation.unique')
-                                <li>Įrašas su tokiu pavadinimus jau egzistuoja</li>
+                                <li>Puslapis su tokiu pavadinimu jau egzistuoja.</li>
                             @else
                                 <li>{{$error}}</li>
                             @endif
@@ -28,30 +26,28 @@
                     </ul>
                 </div>
             @endif
-            <div class="row ">
+            <div class="row">
                 <div class="col-md-12">
-                    {!! Form::model($agenda, ['method' => 'PATCH']) !!}
+
+                    @yield('formOpen')
+
                     <div class="form-group">
                         {{ Form::label('title', 'Pavadinimas *') }}
-                        {{ Form::text('title', null, array('class'=>'form-control')) }}
+                        {{ Form::text('title', NULL, array('class'=>'form-control')) }}
                     </div>
 
                     <div class="form-group">
                         {{ Form::label('date', 'Data *') }}
                         <br/>
-                        {{-- {{ Form::selectYear('year', $date[0], date('Y')+1) }}:
-                        {{ Form::selectMonth('month', $date[1]) }}:
-                        {{ Form::selectYear('day', 1, 31, $date[2]) }}
-                        {{ Form::hidden('date', null, array('class'=>'form-control', 'disabled'=>'disabled')) }} --}}
-                        {{ Form::date('date', date("Y-m-d", strtotime($agenda['date'])   )) ;}}
+                        {{ Form::date('date'); }}
                     </div>
 
                     <div class="form-group">
-                        {{ Form::label('description', 'Aprašymas ') }}
-                        {{ Form::textarea('description', null, array('class'=>'form-control edit')) }}
+                        {{ Form::label('description', 'Aprašymas') }}
+                        {{ Form::textarea('description', NULL, array('class'=>'form-control edit')) }}
                     </div>
 
-                    {{Form::submit('Atnaujinti',['class'=>'btn btn-primary'])}}
+                    @yield('formSubmit')
 
                     {{ Form::close() }}
                 </div>

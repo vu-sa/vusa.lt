@@ -4,13 +4,9 @@
     <div class="content-wrapper">
         <section class="content-header">
             <h1>
-                Sukurti naują kalendoriaus įrašą
-                <br/>
-                <small style="color: red">* - reikalingi laukai</small>
+                @yield('title')
             </h1>
-            <ol class="breadcrumb">
-                {!! $currentRoute == 'admin/kalendorius/prideti' ? '<li><a><i class="fas fa-tachometer-alt"></i> Home</a></li> <li class="active">Pridėti kalendoriaus įrašą</li>': '' !!}
-            </ol>
+            <small style="color: red">* - reikalingi laukai</small>
         </section>
 
         <section class="content">
@@ -32,39 +28,36 @@
             @endif
             <div class="row">
                 <div class="col-md-12">
-                    {{ Form::open() }}
+
+                    @yield('formOpen')
+
                     <div class="form-group">
                         {{ Form::label('title', 'Pavadinimas *') }}
-                        {{ Form::text('title', '', array('class'=>'form-control')) }}
+                        {{ Form::text('title', NULL, array('class'=>'form-control')) }}
                     </div>
 
                     <div class="form-group">
                         {{ Form::label('date', 'Data *') }}
                         <br/>
-                        {{-- {{ Form::selectYear('year', date('Y'), date('Y')+1) }}:
-                        {{ Form::selectMonth('month', date('m')) }}:
-                        {{ Form::selectYear('day', 1, 31, date('d')) }}
-                        {{ Form::hidden('date', '', array('class'=>'form-control', 'disabled'=>'disabled')) }} --}}
-                        {{ Form::date('date', \Carbon\Carbon::now()); }}
+                        {{ Form::date('date', NULL, array('class'=>'form-control')); }}
                     </div>
 
                     <div class="form-group">
                         {{ Form::label('category', 'Kategorija *') }}
                         {{ Form::select('category',
-                            array('0' => '--- Pasirink kategoriją ---',
-                                  'akadem' => 'Komisijos, atstovavimas ir akademiniai dalykai',
+                            ['akadem' => 'Komisijos, atstovavimas ir akademiniai dalykai',
                                   'soc' => 'Socialiniai renginiai',
-                                  'sventes' => 'Valtybinės šventės'),
-                                  '0', array('class'=>'form-control')
+                                  'sventes' => 'Valstybinės šventės'],
+                                  $category ?? 'akadem', array('class'=>'form-control')
                                   )}}
                     </div>
 
                     <div class="form-group">
-                        {{ Form::label('descr', 'Aprašymas *') }}
-                        {{ Form::textarea('descr', '', array('class'=>'form-control edit')) }}
+                        {{ Form::label('descr', 'Aprašymas') }}
+                        {{ Form::textarea('descr', NULL, array('class'=>'form-control edit')) }}
                     </div>
 
-                    {{Form::submit('Sukurti',['class'=>'btn btn-primary'])}}
+                    @yield('formSubmit')
 
                     {{ Form::close() }}
                 </div>

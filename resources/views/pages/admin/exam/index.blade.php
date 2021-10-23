@@ -119,9 +119,9 @@
                                 <td>{{$atsiskaitymas->students_registered}}</td>
                                 <td>{{$atsiskaitymas->registration_time}}</td>
                                 <td>
-                                    <a href="/admin/saziningai/{{$atsiskaitymas->uuid}}/redaguoti?page={{$_GET["page"]}}">
+                                    {{-- <a href="/admin/saziningai/{{$atsiskaitymas->uuid}}/redaguoti?page={{$_GET["page"]}}">
                                         <i class="fas fa-edit"></i>
-                                    </a>
+                                    </a> --}}
                                     &nbsp;
                                     <a id="{{$atsiskaitymas->uuid}}" class="deleteRow" aria-hidden="true">
                                         <i
@@ -155,7 +155,9 @@
         }).then((result) => {
             if (result.isConfirmed) {
                 (function () {
-                    $.get('/admin/saziningai/delete?uuid=' + uuid, function(data) {});
+                    axios.post("{{ route('pages.admin.exam.destroy', '', false)}}", {
+                            id: id
+                        });
                     row.parent().parent().remove();
                     swal.fire("Ištrinta!", "Stebėjimas ištrintas.", "success");
                 })()

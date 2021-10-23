@@ -8,27 +8,24 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Validator;
 
-class AdvertController extends AdminBaseController {
+class BannerController extends AdminBaseController {
 
-    /**
-     * Reklamos - banerių valdymas
-     */
-    public function advert(Request $request)
+    public function index(Request $request)
     {
         if ($request->User()->gid > 3) {
             $banners = Banner::where('editorG', '=', $request->User()->gid)->addSelect(['descr' => Users_group::select('descr')->whereColumn('id', 'sidebar.editorG')])->orderBy('order', 'desc')->simplePaginate(10);
         } else
             $banners = Banner::addSelect(['descr' => Users_group::select('descr')->whereColumn('id', 'sidebar.editorG')])->orderBy('order', 'desc')->simplePaginate(10);
 
-        return view('pages.admin.advert', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'banners' => $banners, 'name' => null]);
+        return view('pages.admin.banner.index', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'banners' => $banners, 'name' => null]);
     }
 
-    public function getAddAdvert(Request $request)
+    public function create(Request $request)
     {
-        return view('pages.admin.advertAdd', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'name' => null]);
+        return view('pages.admin.banner.create', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'name' => null]);
     }
 
-    public function postAddAdvert(Request $request)
+    public function store(Request $request)
     {
         $rules = array(
             'title' => 'required|unique:sidebar',
@@ -37,7 +34,7 @@ class AdvertController extends AdminBaseController {
         );
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
-            return Redirect::to('/admin/reklama/prideti')->withInput()->withErrors(($validator));
+            return Redirect::to('/admin/banner/create')->withInput()->withErrors(($validator));
         } else {
             $orderID = Banner::orderBy('order', 'desc')->first();
             $banner = new Banner();
@@ -52,20 +49,51 @@ class AdvertController extends AdminBaseController {
             $banner->save();
         }
 
-        return redirect('/admin/reklama')->with('message', 'Baneris pridėtas.');
+        return redirect('/admin/banner')->with('message', 'Baneris pridėtas.');
     }
 
-    public function deleteAdvert(Request $request)
+    public function edit($id, Request $request)
     {
-        $itemId = $request->input('itemId');
-        $bannerInfo = Banner::where('id', '=', $itemId)->first();
-        if (strpos($bannerInfo['image'], 'vusa.lt') !== false) {
-            $imageLocation = $bannerInfo['image'];
+        $banner = Banner::where('id', '=', $id)->first();
+
+        return view('pages.admin.banner.edit', ['sessionInfo' => $request->User(), 'banner' => $banner, 'name' => null, 'pageInfo' => null]);
+    }
+
+    public function update($id, Request $request)
+    {
+        $rules = array(
+            'title' => 'required',
+            'value' => 'required',
+            'url' => 'required',
+        );
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return Redirect::to('/admin/banner/' . $id . '/edit')->withInput()->withErrors(($validator));
         } else {
-            $imageLocation = 'uploads/sidebar/' . $bannerInfo['value'];
+            Banner::where('id', '=', $id)->update([
+                'type' => 'image',
+                'title' => $request->title,
+                'hide' => $request->hide ?? 0 ? 1 : 0,
+                'value' => $request->value,
+                'url' => $request->url,
+                'editor' => $request->User()->id
+            ]);
         }
-//        Storage::delete($imageLocation);
-        if (Banner::where('id', '=', $itemId)->delete() == 1) {
+
+        return redirect('/admin/banner')->with('message', 'Baneris atnaujintas.');
+    }
+
+    public function destroy(Request $request)
+    {
+        $bannerId = $request->id;
+        $bannerInfo = Banner::where('id', '=', $bannerId)->first();
+        // if (strpos($bannerInfo['image'], 'vusa.lt') !== false) {
+        //     $imageLocation = $bannerInfo['image'];
+        // } else {
+        //     $imageLocation = 'uploads/sidebar/' . $bannerInfo['value'];
+        // }
+        //        Storage::delete($imageLocation);
+        if (Banner::where('id', '=', $bannerId)->delete() == 1) {
             $banners = Banner::where('order', '>', $bannerInfo['order'])->get();
             foreach ($banners as $banner) {
                 Banner::where('id', '=', $banner->id)->update(['order' => $banner->order - 1]);
@@ -76,41 +104,9 @@ class AdvertController extends AdminBaseController {
         }
     }
 
-    public function getEditAdvert($id, Request $request)
+    public function postChangeView(Request $request)
     {
-        $banners = Banner::where('id', '=', $id)->first();
-
-        return view('pages.admin.advertEdit', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'banners' => $banners, 'name' => null, 'pageInfo' => null]);
-    }
-
-    public function postEditAdvert($id, Request $request)
-    {
-        $rules = array(
-            'title' => 'required',
-            'value' => 'required',
-            'url' => 'required',
-            'hide' => 'required'
-        );
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            return Redirect::to('/admin/reklama/' . $id . '/redaguoti')->withInput()->withErrors(($validator));
-        } else {
-            Banner::where('id', '=', $id)->update([
-                'type' => 'image',
-                'title' => $request->title,
-                'hide' => $request->hide == true ? 1 : 0,
-                'value' => $request->value,
-                'url' => $request->url,
-                'editor' => $request->User()->id
-            ]);
-        }
-
-        return redirect('/admin/reklama')->with('message', 'Baneris atnaujintas.');
-    }
-
-    public function getChangeViewAdvert(Request $request)
-    {
-        $itemId = $request->input('itemId');
+        $itemId = $request->input('id');
         $showArr = Banner::select('hide')->where('id', '=', $itemId)->first();
         if ($showArr->hide == '1') {
             Banner::where('id', '=', $itemId)->update(['hide' => '0']);
