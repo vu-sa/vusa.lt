@@ -1804,3 +1804,49 @@ navbar-expand-xl {
         }
     }
 }
+
+/* Dark theme */
+
+body.dark-theme {
+    transition: all 0.8s ease-out;
+    color: #ddd;
+    background: #191919;
+  }
+
+body.dark-theme #infoPage a {
+    color: #fbb01b !important;
+}
+
+body.dark-theme div.pageTitle {
+    color: #ddd;
+    border-left: 5px solid #ddd;
+}
+
+body.dark-theme nav {
+    display: none;
+}
+
+body.dark-theme div#infoPageSideItem {
+    background-color:rgba(0, 0, 0, 0)
+}
+
+@media (max-width: 1200px) {
+body.dark-theme .flex-wrapper .row {
+    flex-direction: column-reverse;
+    }
+
+body.dark-theme .flex-wrapper #infoPage #infoPageSide {
+    display:block;
+    }
+}
+
+body.dark-theme .candle-invisible  {
+    opacity: 0;
+    height: 0px;
+    transition:opacity 1s linear;
+}
+
+body.dark-theme .candle-visible  {
+    opacity: 1 !important;
+    transition:opacity 1s linear;
+}
