@@ -7,7 +7,7 @@
         <div class="pageTitle">{{$title}}</div>
         
         @if (Lang::locale() == 'lt')
-        <p><a href="{{ 'https://' . request()->getHttpHost() . '/lt' }}"><< Grįžti į pradinį puslapį</a></p>
+        <p><strong><a href="{{ 'http://' . request()->getHttpHost() . '/lt' }}"><< Grįžti į pradinį puslapį</a></strong></p>
         @endif
        
         <br>

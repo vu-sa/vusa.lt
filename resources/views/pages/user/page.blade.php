@@ -16,7 +16,7 @@
 
         @if (in_array(request()->getHttpHost(), ["vusa.lt", "naujas.vusa.lt", "vusa.testas"]) == false)
             @if (Lang::locale() == 'lt')
-            <p><a href="{{ 'https://' . request()->getHttpHost() . '/lt' }}"><< Grįžti į pradinį puslapį</a></p>
+            <p><strong><a href="{{ 'http://' . request()->getHttpHost() . '/lt' }}"><< Grįžti į pradinį puslapį</a></strong></p>
             @endif
         @endif
 
@@ -138,4 +138,29 @@
              $('html, body').animate({scrollTop: target_top}, 750, 'easeInSine');*/
         }
     </script>
+    @if (request()->path() == 'lt/sielu-upe')
+        <script>
+                   
+            function restartCandleVideo() {
+                document.getElementById("candle").currentTime = 0.1
+                document.getElementById("candle").play();
+            }   
+            
+            document.getElementById("candle").addEventListener('ended', restartCandleVideo(), false);
+
+            document.getElementById("lightACandle").addEventListener("click", function () {
+                setTimeout(() => {
+                document.getElementById("candle").classList.toggle('d-none');
+                    }, 100)
+
+            setTimeout(() => {
+                // document.getElementById("candle").classList.toggle('d-none');
+                document.getElementById("candle").classList.toggle('candle-invisible');
+                document.getElementById("candle").classList.toggle('candle-visible');
+                document.getElementById("candle").load();
+                document.getElementById("candle").play();
+            }, 200)
+            });
+        </script>
+    @endif
 @endsection
