@@ -138,7 +138,7 @@
              $('html, body').animate({scrollTop: target_top}, 750, 'easeInSine');*/
         }
     </script>
-    @if (request()->path('/lt/sielu-upe'))
+    @if (request()->path() == 'lt/sielu-upe')
         <script>
                    
             function restartCandleVideo() {

@@ -1805,7 +1805,7 @@ navbar-expand-xl {
     }
 }
 
-/* Dark theme */
+/* Dark theme for sielu-upe candle */
 
 body.dark-theme {
     transition: all 0.8s ease-out;
@@ -1822,7 +1822,7 @@ body.dark-theme div.pageTitle {
     border-left: 5px solid #ddd;
 }
 
-body.dark-theme nav {
+body.dark-theme nav:not(.bootstrap-tab) {
     display: none;
 }
 
@@ -1849,4 +1849,8 @@ body.dark-theme .candle-invisible  {
 body.dark-theme .candle-visible  {
     opacity: 1 !important;
     transition:opacity 1s linear;
+}
+
+body.dark-theme #infoPage nav a.active {
+    color: #191919 !important
 }
