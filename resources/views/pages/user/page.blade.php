@@ -75,7 +75,10 @@
         </div>
     </div>
 
+    @if (request()->path() != 'lt/sielu-upe')
+        
     <script>
+        
         var scroll = 0;
         var marginTop = 10;
         var pageHeight = $("#infoPageText").height() - 220;
@@ -86,7 +89,7 @@
                 if (scroll < bottom) {
                     scroll = $(document).scrollTop();
                 }
-                if (marginTop < pageHeight) {
+                if (marginTop <script pageHeight) {
                     $("#infoPageSideItem").animate({"marginTop": marginTop + "px"}, {duration: 500, queue: false});
                 }
             });
@@ -94,7 +97,7 @@
 
         $(document).ready(function () {
             $(".infoPageSideItem").click(function (event) {
-//                event.preventDefault();
+               event.preventDefault();
                 var full_url = $(this).children().attr('href');
                 if (full_url.indexOf('#') > -1) {
                     var parts = full_url.split("#");
@@ -106,7 +109,10 @@
                 }
             });
         });
+    </script>
+    @endif
 
+    <script>
         $("h3").each(function () {
             var me = $(this);
             var value = me.text();
@@ -140,7 +146,11 @@
     </script>
     @if (request()->path() == 'lt/sielu-upe')
         <script>
-                   
+
+            if (navigator.appVersion.indexOf("Mac") != -1) {
+                document.getElementById("lightACandle").classList.toggle("d-none")
+            }
+
             function restartCandleVideo() {
                 document.getElementById("candle").currentTime = 0.1
                 document.getElementById("candle").play();
