@@ -7,6 +7,15 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ContactFactory extends Factory
 {
+    public $inc = 0;
+
+    private function incrementAndReturn() {
+        global $inc;
+
+        $inc = $inc + 1;
+        return strval($inc);
+    }
+
     /**
      * The name of the factory's corresponding model.
      *
@@ -31,6 +40,7 @@ class ContactFactory extends Factory
             'infoText' => $this->faker->paragraph(2),
             'name_short' => NULL,
             'name_full' => NULL,
+            'contactOrder' => $this->incrementAndReturn(),
         ];
     }
 }
