@@ -28,7 +28,7 @@
                                     <tr>
                                         <th colspan="2">Pavadinimas</th>
                                         <th></th>
-                                        <th></th>
+                                        <th>Eilės nr.</th>
                                         <th>Nuoroda</th>
                                         <th>Veiksmai</th>
                                         <th></th>

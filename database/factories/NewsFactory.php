@@ -22,7 +22,7 @@ class NewsFactory extends Factory
     
     public $inc = 0;
 
-    public function incrementAndReturn() {
+    private function incrementAndReturn() {
         global $inc;
 
         $inc = $inc + 1;

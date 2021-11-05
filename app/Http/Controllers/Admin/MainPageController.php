@@ -285,7 +285,7 @@ class MainPageController extends AdminBaseController {
     {
         $position = $request->input('position');
         $selectedElement = MainPage::where('id', '=', $id)->where('position', '=', $position)->first();
-        $upperElement = MainPage::where('groupID', '=', $selectedElement['groupID'])->where('orderID', '=', $selectedElement['orderID'] - 1)->where('position', '=', $position)->first();
+        $upperElement = MainPage::where('groupID', '=', $selectedElement['groupID'])->where('orderID', '<', $selectedElement['orderID'])->where('position', '=', $position)->get()->sortByDesc('orderID')->first();
 
         MainPage::where('id', '=', $selectedElement['id'])->update(['orderID' => $upperElement['orderID']]);
         MainPage::where('id', '=', $upperElement['id'])->update(['orderID' => $selectedElement['orderID']]);
@@ -297,7 +297,7 @@ class MainPageController extends AdminBaseController {
     {
         $position = $request->input('position');
         $selectedElement = MainPage::where('id', '=', $id)->where('position', '=', $position)->first();
-        $lowerElement = MainPage::where('groupID', '=', $selectedElement['groupID'])->where('orderID', '=', $selectedElement['orderID'] + 1)->where('position', '=', $position)->first();
+        $lowerElement = MainPage::where('groupID', '=', $selectedElement['groupID'])->where('orderID', '>', $selectedElement['orderID'])->where('position', '=', $position)->get()->sortBy('orderID')->first();
 
         MainPage::where('id', '=', $selectedElement['id'])->update(['orderID' => $lowerElement['orderID']]);
         MainPage::where('id', '=', $lowerElement['id'])->update(['orderID' => $selectedElement['orderID']]);

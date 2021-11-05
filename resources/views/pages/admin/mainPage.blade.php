@@ -66,14 +66,14 @@
                                         </a>
                                     </td>
                                     <td>
-                                        @if ($sideMenu->orderID != 1)
+                                        @if ($sideMenus->min('orderID') != $sideMenu->orderID)
                                             <a href="/admin/pagrindinis/swap/{{$sideMenu['id']}}/up?position=sideItem">
                                                 <i class="fas fa-chevron-up"></i>
                                             </a>
                                         @endif
                                     </td>
                                     <td>
-                                        @if ($sideMenu->orderID != $sideMenuSize)
+                                        @if ($sideMenus->max('orderID') != $sideMenu->orderID)
                                             <a href="/admin/pagrindinis/swap/{{$sideMenu['id']}}/down?position=sideItem">
                                                 <i class="fas fa-chevron-down"></i>
                                             </a>
@@ -113,14 +113,14 @@
                                         </a>
                                     </td>
                                     <td>
-                                        @if ($bottomMenu->orderID != 1)
+                                        @if ($bottomMenus->min('orderID') != $bottomMenu->orderID)
                                             <a href="/admin/pagrindinis/swap/{{$bottomMenu['id']}}/up?position=bottomItem">
                                                 <i class="fas fa-chevron-up"></i>
                                             </a>
                                         @endif
                                     </td>
                                     <td>
-                                        @if ($bottomMenu->orderID != $bottomMenuSize)
+                                        @if ($bottomMenus->max('orderID') != $bottomMenu->orderID)
                                             <a href="/admin/pagrindinis/swap/{{$bottomMenu['id']}}/down?position=bottomItem">
                                                 <i class="fas fa-chevron-down"></i>
                                             </a>

@@ -22,6 +22,7 @@ class Menu extends Migration
             $table->smallInteger('order');
             $table->tinyInteger('show')->default(1);
             $table->tinyInteger('readonly')->default(0);
+            $table->mediumInteger('creator');
             $table->timestamp('creator_time')->useCurrent();
         });
     }
