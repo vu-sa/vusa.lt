@@ -6,28 +6,163 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Facades\Log;
 
 class NavigationController extends AdminBaseController {
-    /**
-     * Tinklapio navigacijos valdymas
-     */
-    public function navigation(Request $request)
-    {
-        Log::info('Start of ' . __METHOD__);
+    
         
-        if (strpos($request->path(), 'navigacijaEN') !== false) {
-            $navLevel1 = Navigation::where('pid', '=', 0)->where('lang', '=', 'en')->orderBy('order')->get();
-            $navLevel2 = Navigation::where('pid', '!=', 0)->where('lang', '=', 'en')->orderBy('order')->get();
-        } elseif (strpos($request->path(), 'navigacijaLT') !== false) {
-            $navLevel1 = Navigation::where('pid', '=', 0)->where('lang', '=', 'lt')->orderBy('order')->get();
-            $navLevel2 = Navigation::where('pid', '!=', 0)->where('lang', '=', 'lt')->orderBy('order')->get();
+    /**
+     * returnParentIDfromUpdate
+     *
+     * Returns the parent ID after POST from: 
+     * Route::patch('admin/navigacija/{id}/redaguoti')
+     * 
+     * @param  mixed $request
+     * @return void
+     */
+
+    private function returnParentIDfromUpdate($request) {
+        $emptyArray = ['undefined', "", NULL];
+
+        if (in_array($request->pid3, $emptyArray)) {
+            if (in_array($request->pid2, $emptyArray)) {
+                return $request->pid;
+            } else {
+                return $request->pid2;
+            }
         } else {
-            $navLevel1 = Navigation::where('pid', '=', 0)->orderBy('order')->get();
-            $navLevel2 = Navigation::where('pid', '!=', 0)->orderBy('order')->get();
+            return $request->pid3;
+        }
+}    
+    /**
+     * getCorrectMenuIDOrder
+     * 
+     * Returns an integer of menu order after POST from:
+     * Route::patch('admin/navigacija/{id}/redaguoti')
+     *
+     * @param  mixed $pid
+     * @param  mixed $originalOrder
+     * @return int
+     */
+    private function getCorrectMenuIDOrder($pid) {
+
+        $menuChildren = Navigation::where('pid', '=', $pid)->select('order')->get();
+
+        if ($menuChildren->isEmpty()) {
+            return 0;
+        } else { 
+        return intval($menuChildren->max('order') + 1);
+        }
+    }
+
+        
+    /**
+     * getMenuTree
+     * 
+     * Returns Menu Tree for Administration navigation.index route
+     *
+     * @param  mixed $navigacija
+     * @param  mixed $pid
+     * @param  mixed $depth
+     * @return string
+     */
+    private function getMenuTree($navigacija, $pid = 0, $depth = 0) {
+        
+        $menu = "";
+        $menuPadding = $depth + 1;
+        $menuColor = "";
+        $navChildren = $navigacija->where('pid', '=', $pid);
+
+        switch ($depth) {
+            case 0:
+                $menuColor = 'success';
+                break;
+            case 1:
+                $menuColor = 'warning';
+                break;
+            case 2:
+                $menuColor = 'danger';
+                break;
+            case 3:
+                $menuColor = 'alert';
+                break;
+            default:
+                $menuColor = 'danger';
+                break;
         }
 
-        return view('pages.admin.navigation', ['navLevel1' => $navLevel1, 'navLevel2' => $navLevel2, 'navLevel3' => $navLevel2, 'navLevel4' => $navLevel2, 'currentRoute' => request()->path(), 'sessionInfo' => $request->User(), 'name' => null]);
+        foreach ($navChildren as $row) {
+
+            $menu .= '<tr class="alert alert-'. $menuColor . '">';
+            $menu .= '<td style="padding-left:' . $menuPadding . 'rem" colspan="2">' . $row->text . '</td>';
+            $menu .= '<td></td><td></td>';
+            $menu .= '<td>' . $row->url . '</td>';
+            $menu .= '<td><a class="mr-1 changeView" style="text-decoration:none" id="' . $row->id . '" aria-hidden="true"><i class="fas fa-eye';
+            $menu .= $row->show == 1 ? '' : '-slash';
+            $menu .= '"></i></a>';
+            $menu .= '<a class="mr-1" style="text-decoration:none" href="/admin/navigacija/' . $row->id . '/redaguoti"><i class="fas fa-edit"></i></a>';
+            $menu .= '<a class="mr-1 deleteRow" style="text-decoration:none" id="' . $row->id . '"aria-hidden="true"><i class="fas fa-trash"></i></a></td>';
+            
+            if ($navChildren->min('order') != $row->order) {
+                $menu .= '<td><a style="text-decoration:none" href="/admin/navigacija/swap/'. $row->id . '/up"><i class="fas fa-chevron-up"></i></a></td>';
+            } else {
+                $menu .= '<td></td>'; 
+            }
+
+            if ($navChildren->max('order') != $row->order) {
+                $menu .= '<td><a style="text-decoration:none" href="/admin/navigacija/swap/'. $row->id . '/down"><i class="fas fa-chevron-down"></i></a></td>';
+            } else {
+                $menu .= '<td></td>'; 
+            }
+            
+            $menu .= '</tr>';
+
+            if ($navChildren != NULL) {
+                $menu .= $this->getMenuTree($navigacija, $row->id, $depth + 1);
+            }
+        }
+        return $menu;
+    }
+        
+    /**
+     * cleanupAfterDeleting
+     *
+     * @param  mixed $itemId
+     * @param  mixed $navItem
+     * @return void
+     */
+    private function cleanupAfterDeleting($itemId, $navItem) {
+               
+        $navigationChildren = Navigation::where('pid', '=', $itemId)->get()->sortBy([
+            'order', 'asc'
+        ]);
+
+        $newPidLastOrder = Navigation::where('pid', '=', $navItem->pid)->select('order')->get()->max('order');
+
+        foreach ($navigationChildren as $navChild) {
+            $newPidLastOrder++;
+
+            Navigation::where('id', '=', $navChild->id)->update([
+                'order' => $newPidLastOrder,
+                'pid' => $navItem->pid,
+                'show' => 0
+            ]);
+        }
+    }
+
+     public function navigation(Request $request)
+    {  
+         $navCollection = Navigation::where('lang', '=', 'lt')->get()->sortBy(
+                    [
+                        ['pid', 'asc'],
+                        ['order', 'asc'],
+                    ]
+                );
+
+        $navigacija = $this->getMenuTree($navCollection);
+
+        return view('pages.admin.navigation', ['currentRoute' => request()->path(), 'sessionInfo' => $request->User(), 'name' => null, 'navigacija' => $navigacija]);
+
+        
     }
 
     public function getAddNavigation(Request $request)
@@ -110,9 +245,9 @@ class NavigationController extends AdminBaseController {
         $navItem = Navigation::where('id', '=', $itemId)->first();
 
         if (Navigation::where('id', '=', $itemId)->delete() == 1) {
-            $navigations = Navigation::where('order', '>', $navItem->order)->where('pid', '=', $navItem->pid)->get();
-            foreach ($navigations as $navigation) {
-                Navigation::where('id', '=', $navigation->id)->update(['order' => $navigation->order - 1]);
+
+            if (Navigation::where('pid', '=', $itemId) != null) {
+                $this->cleanupAfterDeleting($itemId, $navItem);
             }
 
             return response()->json('DELETED', 200);
@@ -192,26 +327,21 @@ class NavigationController extends AdminBaseController {
         if ($validator->fails()) {
             return Redirect::to('/admin/navigacija/' . $id . '/redaguoti')->withInput()->withErrors(($validator));
         } else {
-            $pid = null;
-            if ($request->pid3 == 'undefined' || "") {
-                if ($request->pid2 == 'undefined' || "") {
-                    $pid = $request->pid;
-                } else {
-                    $pid = $request->pid2;
-                }
-            } else {
-                $pid = $request->pid3;
-            }
+            $pid = $this->returnParentIDfromUpdate($request);
+
+            $order = $this->getCorrectMenuIDOrder($pid);
+
             Navigation::where('id', '=', $id)->update([
                 'text' => $request->text,
                 'url' => $request->url,
                 'pid' => $pid,
+                'order' => $order
             ]);
 
             if ($request->lang == 'lt')
-                return redirect('/admin/navigacijaLT')->with('message', 'Navigacijos punktas atnaujinta.');
+                return redirect('/admin/navigacijaLT')->with('message', 'Navigacijos punktas atnaujintas.');
             else
-                return redirect('/admin/navigacijaEN')->with('message', 'Navigacijos punktas atnaujinta.');
+                return redirect('/admin/navigacijaEN')->with('message', 'Navigacijos punktas atnaujintas.');
         }
     }
 
