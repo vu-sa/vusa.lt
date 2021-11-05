@@ -48,10 +48,10 @@
                     <div class="form-group">
                         {{ Form::label('publish_time', 'Publikavimo data *') }}
                         <br/>
-                        {{ Form::selectYear('year', $date[0], date('Y')+1) }}:
-                        {{ Form::selectMonth('month', substr($date[1], 0, 1) == "0" ? substr($date[1], 1, 1) : $date[1]) }}:
-                        {{ Form::selectRange('day', 1, 31, substr($date[2], 0, 1) == "0" ? substr($date[2], 1, 1) : $date[2]) }} -
-                        {{ Form::selectRange('hour', 0, 24, substr($time[0], 0, 1) == "0" ? substr($time[0], 1, 1) : $time[0]) }}:
+                        {{ Form::selectYear('year', $date[0], date('Y')+1) }}
+                        {{ Form::selectMonth('month', substr($date[1], 0, 1) == "0" ? substr($date[1], 1, 1) : $date[1]) }}
+                        {{ Form::selectRange('day', 1, 31, substr($date[2], 0, 1) == "0" ? substr($date[2], 1, 1) : $date[2]) }}
+                        {{ Form::selectRange('hour', 0, 24, substr($time[0], 0, 1) == "0" ? substr($time[0], 1, 1) : $time[0]) }} :
                         {{ Form::selectRange('minute', 0, 59, substr($time[1], 0, 1) == "0" ? substr($time[1], 1, 1) : $time[1]) }}
                         {{ Form::hidden('publish_time', null, array('class'=>'form-control', 'disabled'=>'disabled')) }}
                     </div>
@@ -82,7 +82,7 @@
                         {{ Form::select('lang', array('lt' => 'LT', 'en' => 'EN'), null, array('class'=>'form-control') )}}
                     </div>
 
-                    <div class="form-group" style="display: none" id="title_lt_input">
+                    {{-- <div class="form-group" style="display: none" id="title_lt_input">
                         {{ Form::label('title_lt', 'Naujiena LT kalba *') }}
                         {{ Form::text('title_lt', null, array('class'=>'form-control') )}}
                     </div>
@@ -90,7 +90,7 @@
                     <div class="form-group" style="display: none" id="permalink_lt_input">
                         {{ Form::label('permalink_lt', 'Nuoroda į LT naujieną') }}
                         {{ Form::text('permalink_lt', null, array('class'=>'form-control', 'readonly'=>'readonly')) }}
-                    </div>
+                    </div> --}}
 
                     <div class="form-group">
                         {{ Form::label('cat', 'Kategorija *') }}
@@ -126,10 +126,12 @@
                         {{ Form::text('imageAuthor', null, array('class'=>'form-control')) }}
                     </div>
 
+                    @can('handleLikeCB', App\Models\Page::class)
                     <div class="form-group">
                         {{ Form::label('important', 'Svarbi naujiena') }}
                         {{ Form::checkbox('important', null) }}
                     </div>
+                    @endcan
 
                     <div class="form-group">
                         {{ Form::label('draft', 'Juodraštis') }}
@@ -184,27 +186,27 @@
         };
         var cropperBox = new Croppic('cropContainerEyecandy', croppedOptions);
 
-        $(document).ready(function () {
-            $('select[name=lang]').change(function (e) {
-                if ($('select[name=lang]').val() == 'lt') {
-                    $('#title_lt_input').hide();
-                    $('#permalink_lt_input').hide();
-                }
-                if ($('select[name=lang]').val() == 'en') {
-                    $('#title_lt_input').show();
-                    $('#permalink_lt_input').show();
-                }
-            });
+        // $(document).ready(function () {
+        //     $('select[name=lang]').change(function (e) {
+        //         if ($('select[name=lang]').val() == 'lt') {
+        //             $('#title_lt_input').hide();
+        //             $('#permalink_lt_input').hide();
+        //         }
+        //         if ($('select[name=lang]').val() == 'en') {
+        //             $('#title_lt_input').show();
+        //             $('#permalink_lt_input').show();
+        //         }
+        //     });
 
-            if ($('select[name=lang]').val() == 'en') {
-                $('#title_lt_input').show();
-                $('#permalink_lt_input').show();
-            }
-            if ($('select[name=lang]').val() == 'lt') {
-                $('#title_lt_input').hide();
-                $('#permalink_lt_input').hide();
-            }
-        });
+        //     if ($('select[name=lang]').val() == 'en') {
+        //         $('#title_lt_input').show();
+        //         $('#permalink_lt_input').show();
+        //     }
+        //     if ($('select[name=lang]').val() == 'lt') {
+        //         $('#title_lt_input').hide();
+        //         $('#permalink_lt_input').hide();
+        //     }
+        // });
 
         $(document).ready(function () {
             $("#title_lt").autocomplete({

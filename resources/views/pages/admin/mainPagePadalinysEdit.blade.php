@@ -76,12 +76,17 @@
 
                         <div class="form-group" style="display: none" id="linkText_input">
                             {{ Form::label('text', 'Tekstas *') }}
-                            {{ Form::text('text', null, array('class'=>'form-control')) }}
+                            {{ Form::text('text', NULL, array('class'=>'form-control')) }}
+                        </div>
+
+                        <div class="form-group" style="display: none" id="lang_input">
+                            {{ Form::label('lang', 'Kalba') }}
+                            {{ Form::select('lang', array('lt' => 'LT', 'en' => 'EN'), NULL, array('class'=>'form-control') )}}
                         </div>
 
                         <div class="form-group" style="display: none" id="link_input">
                             {{ Form::label('link', 'Nuoroda') }}
-                            {{ Form::text('link', null, array('class'=>'form-control')) }}
+                            {{ Form::text('link', NULL, array('class'=>'form-control')) }}
                         </div>
                     @endif
 
@@ -135,6 +140,7 @@
                 $('#link_input').hide();
                 $('#submit').hide();
                 $('#linkText_input').hide();
+                $('#lang_input').hide();
             }
 
             if ($('select[name=type]').val() == 'news') {
@@ -144,6 +150,7 @@
                 $('#pages_input').hide();
                 $('#link_input').hide();
                 $('#linkText_input').hide();
+                $('#lang_input').hide()
             }
 
             if ($('select[name=type]').val() == 'page') {
@@ -153,10 +160,12 @@
                 $('#naujiena2_input').hide();
                 $('#link_input').hide();
                 $('#linkText_input').hide();
+                $('#lang_input').hide();
             }
 
             if ($('select[name=type]').val() == 'link') {
                 $('#link_input').show();
+                $('#lang_input').show();
                 $('#linkText_input').show();
                 $('#submit').show();
 
@@ -171,6 +180,7 @@
             $('#link_input').hide();
             $('#submit').hide();
             $('#linkText_input').hide();
+            $('#lang_input').hide();
         }
 
         if ($('select[name=type]').val() == 'news') {
@@ -180,6 +190,7 @@
             $('#pages_input').hide();
             $('#link_input').hide();
             $('#linkText_input').hide();
+            $('#lang_input').hide();
         }
 
         if ($('select[name=type]').val() == 'page') {
@@ -189,11 +200,13 @@
             $('#naujiena2_input').hide();
             $('#link_input').hide();
             $('#linkText_input').hide();
+            $('#lang_input').hide();
         }
 
         if ($('select[name=type]').val() == 'link') {
             $('#link_input').show();
             $('#linkText_input').show();
+            $('#lang_input').show();
             $('#submit').show();
 
             $('#pages_input').hide();

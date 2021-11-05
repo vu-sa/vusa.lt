@@ -18,6 +18,7 @@ class Padaliniai extends Migration
             $table->string('fullname', 100);
             $table->string('shortname', 100);
             $table->string('alias', 20);
+            $table->tinyInteger('en')->default(0);
         });
     }
 

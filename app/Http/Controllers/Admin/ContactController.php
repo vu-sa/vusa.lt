@@ -26,12 +26,20 @@ class ContactController extends AdminBaseController {
                 $name = 'Koordinatoriai';
             }
 
+            if ($name == 'padalinio-biuras-en') {
+                $name = 'Koordinatoriai EN';
+            }
+
             if ($name == 'padalinio-studentu-atstovai') {
                 $name = 'Studentu atstovai';
             }
 
             if ($name == 'padalinio-kuratoriai') {
                 $name = 'Kuratoriai';
+            }
+
+            if ($name == 'padalinio-kuratoriai-en') {
+                $name = 'Kuratoriai EN';
             }
         } else {
             if ($name == 'parlamentas' || $name == 'parl-pirm') {
@@ -246,16 +254,16 @@ class ContactController extends AdminBaseController {
                 $contact->name = $request->nameRevizija;
             }
 
-            if ($request->groupname == 'padalinio-taryba' || $request->groupname == 'padalinio-biuras' || $request->groupname == 'padalinio-studentu-atstovai') {
+            if ($request->groupname == 'padalinio-taryba' || $request->groupname == 'padalinio-biuras' || $request->groupname == 'padalinio-studentu-atstovai' || $request->groupname == 'padalinio-biuras-en') {
                 $contact->name = $request->name;
             }
 
-            if ($request->groupname == 'padalinio-kuratoriai') {
+            if ($request->groupname == 'padalinio-kuratoriai' || $request->groupname == 'padalinio-kuratoriai-en') {
                 $kuratoriaiContacts = Contact::where('groupname', '=', 'padalinio-kuratoriai')->where('contactGroup', '=', $request->User()->gid)->get();
                 $contact->contactOrder = sizeof($kuratoriaiContacts) + 1;
             }
 
-            if ($request->groupname == 'padalinio-biuras') {
+            if ($request->groupname == 'padalinio-biuras' || $request->groupname == 'padalinio-biuras-en') {
                 $contact->name = $request->name;
                 $padalinioBiurasContacts = Contact::where('groupname', '=', 'padalinio-biuras')->where('contactGroup', '=', $request->User()->gid)->get();
                 $contact->contactOrder = sizeof($padalinioBiurasContacts) + 1;

@@ -83,3 +83,14 @@ $(function () {
         closeSearch();
     });
 });
+
+// Candle for Sielų upė
+
+(function dim() {
+
+    if (window.location.pathname == '/lt/sielu-upe') {
+        setTimeout(() => {
+            document.body.classList.toggle('dark-theme');
+        }, 250)
+    }
+})()

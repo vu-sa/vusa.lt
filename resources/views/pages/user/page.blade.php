@@ -15,8 +15,9 @@
         <div class="pageTitle">{{$page['title']}}</div>
 
         @if (in_array(request()->getHttpHost(), ["vusa.lt", "naujas.vusa.lt", "vusa.testas"]) == false)
-        <p><a href="{{ '/lt' }}"><< Grįžti į pradinį puslapį</a></p>
-        <br>
+            @if (Lang::locale() == 'lt')
+            <p><strong><a href="{{ 'http://' . request()->getHttpHost() . '/lt' }}"><< Grįžti į pradinį puslapį</a></strong></p>
+            @endif
         @endif
 
         <?php
@@ -74,7 +75,10 @@
         </div>
     </div>
 
+    @if (request()->path() != 'lt/sielu-upe')
+        
     <script>
+        
         var scroll = 0;
         var marginTop = 10;
         var pageHeight = $("#infoPageText").height() - 220;
@@ -85,7 +89,7 @@
                 if (scroll < bottom) {
                     scroll = $(document).scrollTop();
                 }
-                if (marginTop < pageHeight) {
+                if (marginTop <script pageHeight) {
                     $("#infoPageSideItem").animate({"marginTop": marginTop + "px"}, {duration: 500, queue: false});
                 }
             });
@@ -93,7 +97,7 @@
 
         $(document).ready(function () {
             $(".infoPageSideItem").click(function (event) {
-//                event.preventDefault();
+               event.preventDefault();
                 var full_url = $(this).children().attr('href');
                 if (full_url.indexOf('#') > -1) {
                     var parts = full_url.split("#");
@@ -105,7 +109,10 @@
                 }
             });
         });
+    </script>
+    @endif
 
+    <script>
         $("h3").each(function () {
             var me = $(this);
             var value = me.text();
@@ -137,4 +144,33 @@
              $('html, body').animate({scrollTop: target_top}, 750, 'easeInSine');*/
         }
     </script>
+    @if (request()->path() == 'lt/sielu-upe')
+        <script>
+
+            if (navigator.appVersion.indexOf("Mac") != -1) {
+                document.getElementById("lightACandle").classList.toggle("d-none")
+            }
+
+            function restartCandleVideo() {
+                document.getElementById("candle").currentTime = 0.1
+                document.getElementById("candle").play();
+            }   
+            
+            document.getElementById("candle").addEventListener('ended', restartCandleVideo(), false);
+
+            document.getElementById("lightACandle").addEventListener("click", function () {
+                setTimeout(() => {
+                document.getElementById("candle").classList.toggle('d-none');
+                    }, 100)
+
+            setTimeout(() => {
+                // document.getElementById("candle").classList.toggle('d-none');
+                document.getElementById("candle").classList.toggle('candle-invisible');
+                document.getElementById("candle").classList.toggle('candle-visible');
+                document.getElementById("candle").load();
+                document.getElementById("candle").play();
+            }, 200)
+            });
+        </script>
+    @endif
 @endsection

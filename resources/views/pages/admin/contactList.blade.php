@@ -24,7 +24,7 @@
                             <div class="alert alert-success" role="alert">{{ Session::get('message') }}</div>
                         @endif
                     </div>
-                    @if ($name == 'Centrinis biuras' || $name == 'Koordinatoriai' || $name == 'Padalinio taryba' || $name == 'Studentu atstovai' || $name == 'Kuratoriai')
+                    @if ($name == 'Centrinis biuras' || $name == 'Koordinatoriai' || $name == 'Padalinio taryba' || $name == 'Studentu atstovai' || $name == 'Kuratoriai' || $name == 'Koordinatoriai EN' || $name == 'Kuratoriai EN')
                         <table class="table">
                             <tr class="alert alert-success">
                                 <th>Vardas, pavardė</th>

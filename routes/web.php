@@ -33,12 +33,15 @@ Log::info('Start of routes\web with ' . request()->path());
     $vusaDomains = array('vusa.lt', 'www.vusa.lt', 'naujas.vusa.lt', 'vusa.testas:8000');
 
     if (in_array($http_host, $padaliniaiDomains)) {
-        Route::get('lt/', [UserController::class, 'getPadalinysPage']);
+        Route::get('{locale}', [UserController::class, 'getPadalinysPage'])->where('locale', '(lt|en)');
         Route::get('lt/naujienos', [UserController::class, 'getNewsArchive']);
-        Route::get('{locale}/{permalink}', [UserController::class, 'getInfoPage'])->where('locale', 'lt');
         Route::get('lt/naujiena/archyvas', [UserController::class, 'getNewsArchive']);
-        Route::get('lt/naujiena/{title}', [UserController::class, 'getNew']);
-        Route::get('lt/kontaktai/{name}', [UserController::class, 'getContacts']);
+
+        // This must be kept as '{permalink1}', if named '{permalink}', it skips this route and continues towards the end (maybe a bug). Basically, try to use unique names.
+        Route::get('{locale}/{newsLocale}/{permalink1}', [UserController::class, 'getNew'])->where(['locale' => '(lt|en)', 'newsLocale' => '(naujiena|news)']);
+
+        Route::get('{locale}/{contactsLocale}/{name}', [UserController::class, 'getContacts'])->where(['locale' => '(lt|en)', 'contactsLocale' => '(kontaktai|contacts)']);
+        Route::get('{locale}/{permalink}', [UserController::class, 'getInfoPage'])->where('locale', '(lt|en)');
         Route::get('/{permalink}', [UserController::class, 'index'])->middleware('main');
     }
 
@@ -125,6 +128,7 @@ Log::info('Start of routes\web with ' . request()->path());
             Route::get('admin/atnaujinimai', [Admin\OtherController::class, 'getChangelog']);
 
             Route::get('admin', [Admin\OtherController::class, 'index']);
+            Route::patch('admin', [Admin\OtherController::class, 'updateEN'])->middleware('can:handleEnConfig,App\Models\Padaliniai');
             // Route::get('admin/profilis/{username}', [Admin\OtherController::class, 'profile']);
             Route::get('admin/failai', [Admin\OtherController::class, 'getFileManager'])->middleware('can:handleFiles,App\Models\User');
 
@@ -176,7 +180,7 @@ Log::info('Start of routes\web with ' . request()->path());
              * Puslapiai
              */
             Route::get('admin/puslapiaiLT', [Admin\PagesController::class, 'pages'])->middleware('can:handle,App\Models\Page');
-            Route::get('admin/puslapiaiEN', [Admin\PagesController::class, 'pages'])->middleware('can:handleEN,App\Models\Page');
+            Route::get('admin/puslapiaiEN', [Admin\PagesController::class, 'pages'])->middleware('can:handle,App\Models\Page');
             Route::get('admin/puslapiai/prideti', [Admin\PagesController::class, 'getAddPage'])->middleware('can:handle,App\Models\Page');
             Route::post('admin/puslapiai/prideti', [Admin\PagesController::class, 'postAddPage'])->middleware('can:handle,App\Models\Page');
             Route::get('admin/puslapiai/{permalink}/redaguoti', [Admin\PagesController::class, 'getUpdatePage'])->middleware('can:handle,App\Models\Page');
@@ -191,7 +195,7 @@ Log::info('Start of routes\web with ' . request()->path());
              * Naujienos
              */
             Route::get('admin/naujienosLT', [Admin\PagesController::class, 'news'])->middleware('can:handle,App\Models\Page');
-            Route::get('admin/naujienosEN', [Admin\PagesController::class, 'news'])->middleware('can:handleEN,App\Models\Page');
+            Route::get('admin/naujienosEN', [Admin\PagesController::class, 'news'])->middleware('can:handle,App\Models\Page');
             Route::get('admin/naujienos/prideti', [Admin\PagesController::class, 'getAddNew'])->middleware('can:handle,App\Models\Page');
             Route::post('admin/naujienos/prideti', [Admin\PagesController::class, 'postAddNew'])->middleware('can:handle,App\Models\Page');
             Route::get('admin/naujienos/{permalink}/redaguoti', [Admin\PagesController::class, 'getUpdateNew'])->middleware('can:handle,App\Models\Page');
@@ -283,17 +287,19 @@ Log::info('Start of routes\web with ' . request()->path());
         });
 
         Route::get('en/scholarship/{title}', [UserController::class, 'page']);
-        Route::get('en/contacts/{name}', [UserController::class, 'getContacts']);
-        Route::get('en/news/zyme/{tag}', [UserController::class, 'getSearchByTag']);
-        Route::get('en/news/{title}', [UserController::class, 'getNew']);
+
+        Route::get('{locale}/{contactsLocale}/{name}', [UserController::class, 'getContacts'])->where(['locale' => '(lt|en)', 'contactsLocale' => '(kontaktai|contacts)']);
+
+        Route::get('en/news/tag/{tag}', [UserController::class, 'getSearchByTag']);
+        // Route::get('en/news/{title}', [UserController::class, 'getNew']);
 
         /**
          * Dinaminiai tinklapio routai
          */
 
-        Route::get('lt/kontaktai/{name}', [UserController::class, 'getContacts']);
+        // Route::get('lt/kontaktai/{name}', [UserController::class, 'getContacts']);
         Route::get('lt/naujiena/zyme/{tag}', [UserController::class, 'getSearchByTag']);
-        Route::get('lt/naujiena/{title}', [UserController::class, 'getNew']);
+        Route::get('{locale}/{newsLocale}/{permalink}', [UserController::class, 'getNew'])->where(['locale' => '(lt|en)', 'newsLocale' => '(naujiena|news)']);
 
         // Catch all
         

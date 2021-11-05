@@ -79,6 +79,11 @@
                             {{ Form::label('link', 'Nuoroda') }}
                             {{ Form::text('link', '', array('class'=>'form-control')) }}
                         </div>
+
+                        <div class="form-group" style="display: none" id="lang_input">
+                            {{ Form::label('lang', 'Kalba') }}
+                            {{ Form::select('lang', array('lt' => 'LT', 'en' => 'EN'), 'lt', array('class'=>'form-control') )}}
+                        </div>
                     @endif
 
                     <div class="form-group">
@@ -127,6 +132,7 @@
                 $('#pages_input').hide();
                 $('#link_input').hide();
                 $('#submit').hide();
+                $('#lang_input').hide();
                 $('#linkText_input').hide();
             }
 
@@ -135,6 +141,7 @@
                 $('#submit').show();
 
                 $('#pages_input').hide();
+                $('#lang_input').hide();
                 $('#link_input').hide();
                 $('#linkText_input').hide();
             }
@@ -144,12 +151,14 @@
                 $('#submit').show();
 
                 $('#naujiena2_input').hide();
+                $('#lang_input').hide();
                 $('#link_input').hide();
                 $('#linkText_input').hide();
             }
 
             if ($('select[name=type]').val() == 'link') {
                 $('#link_input').show();
+                $('#lang_input').show();
                 $('#linkText_input').show();
                 $('#submit').show();
 
@@ -162,6 +171,7 @@
             $('#naujiena2_input').hide();
             $('#pages_input').hide();
             $('#link_input').hide();
+            $('#lang_input').hide();
             $('#submit').hide();
             $('#linkText_input').hide();
         }
@@ -171,6 +181,7 @@
             $('#submit').show();
 
             $('#pages_input').hide();
+            $('#lang_input').hide();
             $('#link_input').hide();
             $('#linkText_input').hide();
         }
@@ -180,6 +191,7 @@
             $('#submit').show();
 
             $('#naujiena2_input').hide();
+            $('#lang_input').hide();
             $('#link_input').hide();
             $('#linkText_input').hide();
         }
@@ -187,6 +199,7 @@
         if ($('select[name=type]').val() == 'link') {
             $('#link_input').show();
             $('#linkText_input').show();
+            $('#lang_input').show();
             $('#submit').show();
 
             $('#pages_input').hide();

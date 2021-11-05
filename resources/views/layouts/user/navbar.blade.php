@@ -10,7 +10,24 @@
 
         <div class="collapse navbar-collapse" id="navbarToggle">
             <div class="navbar-nav">
-            @foreach ($navLevel1 as $row1)
+
+                @if (Lang::locale() == 'en' && count($padaliniaiEn) )
+                    <div class="dropdown">
+                    <a class="nav-link dropdown-toggle"
+                        href="#" data-toggle="dropdown" role="button" aria-haspopup="true"
+                        aria-expanded="false">Units <span class="caret"></span>
+                    </a>
+                    <div class="dropdown-menu">
+                        @foreach ($padaliniaiEn as $padalinysEn)
+                            <a class="nav-link dropdown-item"
+                            href="http://{{ substr($padalinysEn['alias'], 4) }}.{{ explode('/', $appUrl)[2] }}/en"
+                            >{{ $padalinysEn['shortname'] }}</a>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
+                @foreach ($navLevel1 as $row1)
                 <?php $hasSubItem1 = false; ?>
                 @foreach ($navLevel2 as $row2)
                     @if ($row2->pid == $row1->id)
@@ -105,25 +122,24 @@
             @endforeach
             <div class="socNet">
                 @if (Lang::locale() == 'lt')
+
+                    @if ($en == 1)
+                    <a href="/en">
+                    @else
+                    <a href="{!! $navbarRoot !!}/en">
+                    @endif
+                    <img src="{!! asset('images/icons/flags/en_veliava.png') !!}"
+                        alt="Switch to english language"></a>
                     
-                    <?php $curUrl = Request::url();
-                    $pos = strpos($curUrl, '/lt');
-                    if ($pos !== false) {
-                        $curUrl = substr_replace($curUrl, '/en', $pos, strlen('/lt'));
-                    } ?>
-
-                    <a href="{{ $curUrl }}"><img src="{!!  asset('images/icons/flags/en_veliava.png') !!}"
-                            alt="Switch to english language"></a>
-
                 @elseif(Lang::locale() == 'en')
                     
-                    <?php $curUrl = Request::url();
+                    {{-- <?php $curUrl = Request::url();
                     $pos = strpos($curUrl, '/en');
                     if ($pos !== false) {
                         $curUrl = substr_replace($curUrl, '/lt', $pos, strlen('/en'));
-                    } ?>
+                    } ?> --}}
                     
-                    <a href="{{ $curUrl }}"><img src="{!!  asset('images/icons/flags/lt_veliava.png') !!}"
+                    <a href="/lt"><img src="{!!  asset('images/icons/flags/lt_veliava.png') !!}"
                             alt="Perjungti į lietuvių kalbą"></a>
                 @else
                     <a href="/en"><img src="{!!  asset('images/en_veliava.png') !!}"

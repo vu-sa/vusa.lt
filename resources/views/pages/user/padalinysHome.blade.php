@@ -1,11 +1,11 @@
 @extends('layouts.user.master')
 
-@section('title'){{$padalinys['fullname']}}@endsection
+@section('title'){{ __($padalinys['fullname']) }}@endsection
 
 @section('meta')
     <meta property="og:url" content={{"http://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']}}/>
     <meta property="og:type" content="website"/>
-    <meta property="og:title" content="VU SA | {{$padalinys['shortname']}}"/>
+    <meta property="og:title" content="{{ __('VU SA') }} | {{ __($padalinys['shortname']) }}"/>
     <meta property="og:description" content=""/>
     <meta property="og:image" content="/images/icons/logos/vusa.lin.hor.png"/>
 @endsection
@@ -16,7 +16,7 @@
         {{--- Padalinio pavadinimas  ---}}
         
         <div>
-            <h1 class="pageTitle">{{$padalinys['fullname']}}</h1>
+            <h1 class="pageTitle">{{ __($padalinys['fullname']) }}</h1>
         </div>
 
         <div class="row">
@@ -86,13 +86,13 @@
             @endforeach
             @if ($hasKoordinatoriaiMenuSide == false)
             <div id="infoPageSideItem" class="infoPageSideItem akadem" >
-                <a href="lt/kontaktai/koordinatoriai">Koordinatoriai</a>
+                <a href="{{ Lang::locale() . __('other.coordinator_contacts_url') }}">{{ __('Koordinatoriai') }}</a>
             </div>
             <br/>
             @endif
             @if ($hasKuratoriaiMenuSide == false)
             <div id="infoPageSideItem" class="infoPageSideItem akadem" >
-                <a href="lt/kontaktai/kuratoriai">Kuratoriai</a>
+                <a href="{{ Lang::locale() . __('other.mentor_contacts_url') }}">{{ __('Kuratoriai') }}</a>
             </div>
             <br/>
             @endif
