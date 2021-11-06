@@ -1094,6 +1094,16 @@ img.contactTopFoto {
     }
 }
 
+@media (max-width: 460px) {
+    .contactPerson {
+        margin: 4rem 1rem 0rem;
+    }
+
+    .contactTopText {
+        margin-bottom: 1rem;
+    }
+}
+
 /** Kontaktų pabaiga **/
 
 /** Naujienų tekstas pradžia **/
