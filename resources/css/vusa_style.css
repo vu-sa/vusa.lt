@@ -159,10 +159,6 @@ div.img-caption {
     background-color: rgba(0, 0, 0, 0.6);
 }
 
-.layerCB {
-    opacity: 0.7;
-}
-
 .layer {
     opacity: 0.25;
 }
@@ -917,143 +913,85 @@ a.thumbnail.active {
 
 .blackBackgroundContacts {
     background-color: #000000;
-    margin-left: 38px;
+    /* margin-left: 38px; */
 }
 
-.contactText>p {
-    margin-left: 20px;
+.contactTopText > p {
+    padding: 1rem;
     color: #FFFFFF;
-    margin-right: 30px;
-}
-
-.infoCBinfo {
-    padding-right: 0;
-}
-
-.infoCBfoto {
-    padding-left: 0;
-    /*margin-right: -20px !important;*/
 }
 
 img.contactTopFoto {
     height: 375px;
     width: 100%;
     object-fit: cover;
+    opacity: 0.7;
 }
 
 .contactTopText {
-    height: 375px;
-    margin-right: -40px;
     background-color: #bd2835;
+    background-clip: content-box;
 }
 
 .contactFoto {
     display: block;
-    margin: auto;
-    height: 300px;
-    width: 345px;
+    /* margin: auto; */
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    position:absolute;
+    top: 0
 }
 
-.pareigosPlaceOne {
-    opacity: 0.9999999;
-    background: rgba(0, 0, 0, 0.7);
+.pareigosPlace {
+    background: rgba(0, 0, 0, 0.8);
     color: white;
-    word-wrap: normal;
-    margin-top: -50px;
     text-align: center;
-    font-size: 13pt;
+    font-size: 1rem;
     font-weight: bold;
-    height: 50px;
-    line-height: 50px;
-
-    margin-left: 4px;
-    margin-right: 3px;
+    height: 17%;
+    position: absolute;
     bottom: 0;
+    padding: 1rem;
+    width:100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.pareigosPlaceTwo {
-    opacity: 0.9999999;
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
-
-    margin-top: -70px;
-    text-align: center;
-    font-size: 13pt;
-    font-weight: bold;
-    height: 70px;
-    line-height: 25px;
-
-    margin-left: 7px;
-    margin-right: 8px;
-    bottom: 0;
-
-    padding-top: 10px;
-}
-
-/* .pareigosPlaceTwo p {
-    margin-left: 30px !important;
-    margin-right: -40px !important;
-} */
-
-div.pareigosPlaceOne>p,
-div.pareigosPlaceTwo>p {
-    margin-left: 10px;
-    margin-right: 6px;
-}
-
-.contactPerson:hover .pareigosPlaceOne,
-.contactPerson:hover .pareigosPlaceTwo {
+.contactPerson:hover .pareigosPlace {
     background-color: rgba(189, 40, 53, 1);
 }
 
-.contactPerson:hover .sritiesInfoOne,
-.contactPerson:hover .sritiesInfoTwo {
+.contactPerson:hover .contactInfoMiddle {
     opacity: 1;
 }
 
-.sritiesInfoOne {
-    background: rgba(0, 0, 0, 0.6);
-    color: white;
-    position: absolute;
-    top: 0;
-    width: 345px;
-    height: 250px;
-    opacity: 0;
-    margin-left: 7px;
-    font-size: 12pt;
-    padding: 50px 8px 8px;
-    text-align: center;
-
-    -webkit-transition: opacity 500ms;
-    -moz-transition: opacity 500ms;
-    -o-transition: opacity 500ms;
-    transition: opacity 500ms;
-}
-
-/*@media (max-width: 1200px) {*/
-.sritiesInfoTwo {
-    background: rgba(0, 0, 0, 0.6);
-    color: white;
-    position: absolute;
-    top: 0;
-    width: 345px;
-    height: 230px;
-    opacity: 0;
-    margin-left: 7px;
-    font-size: 12pt;
-    padding: 50px 8px 8px;
-    text-align: center;
-
-    -webkit-transition: opacity 500ms;
-    -moz-transition: opacity 500ms;
-    -o-transition: opacity 500ms;
-    transition: opacity 500ms;
-}
-
-/*}*/
-
 .contactInfoMiddle {
-    padding-top: 100px;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    position: absolute;
+    top: 0;
+    width: auto;
+    height: 83%;
+    opacity: 0;
+    font-size: 12pt;
+    padding: 1rem;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    -webkit-transition: opacity 500ms;
+    -moz-transition: opacity 500ms;
+    -o-transition: opacity 500ms;
+    transition: opacity 500ms;
+}
+
+.contactPerson {
+    position: relative;
+    max-height: 400px;
+    min-height: 315px;
 }
 
 .contactPersonInfo {
@@ -1068,10 +1006,6 @@ div.pareigosPlaceTwo>p {
 
 .contactPersonContacts {
     font-size: 12pt;
-}
-
-.contactRowBiuras {
-    margin-left: -25px;
 }
 
 .contactRowPadaliniai,
@@ -1099,7 +1033,6 @@ div.pareigosPlaceTwo>p {
 .padalinysNameFull,
 .tarybaNameFull {
     text-align: center;
-    /*font-weight: bold;*/
     color: #000;
 }
 
@@ -1151,46 +1084,13 @@ div.pareigosPlaceTwo>p {
 
 @media (max-width: 992px) {
     .contactPerson {
-        margin-top: 90px;
+        margin: 4rem 8rem 0rem;
     }
+}
 
-    .contactInfoMiddle,
-    .sritiesInfoOne {
-        display: none
-    }
-
-    .pareigosPlaceOne,
-    .pareigosPlaceTwo {
-        display: block;
-        line-height: 18px;
-        text-align: center;
-        background-color: transparent;
-        color: #333;
-        /* margin-bottom: -20px; */
-        margin-top: 20px;
-    }
-
-    .pareigosPlaceOne {
-        height: 30px;
-    }
-
-    .pareigosPlaceTwo {
-        height: 50px;
-    }
-
-    div.pareigosPlaceOne>p,
-    div.pareigosPlaceTwo>p {
-        font-weight: bold;
-    }
-
-    .contactPerson:hover .pareigosPlaceOne,
-    .contactPerson:hover .pareigosPlaceTwo {
-        background-color: inherit;
-    }
-
-    .infoCBinfo,
-    .contactTopText {
-        height: 425px;
+@media (max-width: 680px) {
+    .contactPerson {
+        margin: 4rem 4rem 0rem;
     }
 }
 

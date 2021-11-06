@@ -35,6 +35,7 @@ class ContactFactory extends Factory
             'duties' => $this->faker->jobTitle(),
             'phone' => $this->faker->phoneNumber(),
             'email' => $this->faker->safeEmail(),
+            'image' => '/images/placeholders/foto' . rand(1,5) . '.jpg',
             'groupname' => 'centrinis-biuras',
             'grouptitle' => 0,
             'infoText' => $this->faker->paragraph(2),
