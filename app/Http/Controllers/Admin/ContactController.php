@@ -26,6 +26,7 @@ class ContactController extends AdminBaseController {
                 $name = 'Koordinatoriai';
             }
 
+            // TODO: Use 'lang' column in future!
             if ($name == 'padalinio-biuras-en') {
                 $name = 'Koordinatoriai EN';
             }
@@ -37,7 +38,8 @@ class ContactController extends AdminBaseController {
             if ($name == 'padalinio-kuratoriai') {
                 $name = 'Kuratoriai';
             }
-
+            
+            // TODO: Use 'lang' column in future!
             if ($name == 'padalinio-kuratoriai-en') {
                 $name = 'Kuratoriai EN';
             }
