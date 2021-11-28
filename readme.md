@@ -28,7 +28,7 @@ For Windows computers, WSL is a good and quite a simple solution to use in this 
 Prerequisites:
 
 * PHP 8.0 install. [Installation guide](https://linuxize.com/post/how-to-install-php-8-on-ubuntu-20-04/)
-* After PHP install, install PHP modules: `sudo apt install php8.0-curl php8.0-zip php8.0-mbstring php8.0-dom php8.0-sqlite3 php8.0-imagick`
+* After PHP install, install PHP modules: `sudo apt install php8.0-curl php8.0-zip php8.0-mbstring php8.0-dom php8.0-sqlite3 php8.0-gd`
 * Install Composer v2. [Installation guide](https://getcomposer.org/download/).
 * Install Node.js. On some computers, simple `sudo apt install nodejs` could work (check version, if below v14 and on Ubuntu, use this [guide](https://joshtronic.com/2021/05/09/how-to-install-nodejs-16-on-ubuntu-2004-lts/)
 

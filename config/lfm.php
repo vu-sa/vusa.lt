@@ -136,7 +136,7 @@ return [
      */
 
     // If true, image thumbnails would be created during upload
-    'should_create_thumbnails' => env('APP_ENV') == 'local' ? false : true,
+    'should_create_thumbnails' => true,
 
     'thumb_folder_name'        => 'thumbs',
 
