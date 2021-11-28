@@ -58,6 +58,7 @@ class UserController extends BaseController
         // Domain alias in vusa.lt is "vusa", in naujas.vusa.lt is "naujas" and so on...
         $this->domainAlias = explode('.', $request->server()['HTTP_HOST']);
 
+        // Čia yra visiška nesąmonė. Sutvarkyti, kad naudotų config() helperį.
         switch(count($this->domainAlias)) {
             case 2:
                 $this->navbarRoot = '';
@@ -67,7 +68,7 @@ class UserController extends BaseController
                     $this->navbarRoot = ''; 
                     break;
                 } elseif (strpos($this->domainAlias[2], 'testas') === 0) {
-                    $this->navbarRoot = 'http://vusa.testas:8000';
+                    $this->navbarRoot = config('app.url');
                     break;
                 } else {
                     $this->navbarRoot = 'https://vusa.lt';

@@ -28,7 +28,7 @@ For Windows computers, WSL is a good and quite a simple solution to use in this 
 Prerequisites:
 
 * PHP 8.0 install. [Installation guide](https://linuxize.com/post/how-to-install-php-8-on-ubuntu-20-04/)
-* After PHP install, install PHP modules: `sudo apt install php8.0-curl php8.0-zip php8.0-mbstring php8.0-dom php8.0-sqlite3`
+* After PHP install, install PHP modules: `sudo apt install php8.0-curl php8.0-zip php8.0-mbstring php8.0-dom php8.0-sqlite3 php8.0-imagick`
 * Install Composer v2. [Installation guide](https://getcomposer.org/download/).
 * Install Node.js. On some computers, simple `sudo apt install nodejs` could work (check version, if below v14 and on Ubuntu, use this [guide](https://joshtronic.com/2021/05/09/how-to-install-nodejs-16-on-ubuntu-2004-lts/)
 
@@ -45,10 +45,52 @@ Laravel and vusa.lt installation:
 9. `php artisan serve`
 10. Open [vusa.testas:8000](http://vusa.testas:8000)
 
+
 ### For unit (padalinių) site development
 
 1. Modify your host file to direct *if.vusa.testas* to 127.0.0.1. Only *if* domain is supported for unit site development ATM.
 2. Open [if.vusa.testas:8000](http://if.vusa.testas:8000). Make sure that the server (`php artisan serve`) is on.
+
+### Apache2 configuration
+
+Apache2 is the recommended server for development, since it may resemble the production environment more.
+
+How to setup: 
+
+1. Make sure `apache2` is installed (`sudo apt install apache2`)
+2. Create a `vusa.conf` file with this body.
+
+```{}
+<VirtualHost *:80>
+        ServerName vusa.testas
+        ServerAlias www.vusa.testas if.vusa.testas
+        ServerAdmin webmaster@localhost
+        DocumentRoot [INSERT YOUR DOCUMENT ROOT, something like .../vusa.lt/public]
+        UseCanonicalName OFF
+
+        <Directory [INSERT YOUR DOCUMENT ROOT DIRECTORY, something like .../vusa.lt/]>
+        Options Indexes FollowSymLinks MultiViews
+        AllowOverride All
+        Require all granted
+        </Directory>
+
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+```
+
+3. Modify hosts file to have a IPv6 loopback:
+
+```{}
+127.0.0.1 vusa.testas
+::1 vusa.testas
+127.0.0.1 if.vusa.testas
+::1 if.vusa.testas
+```
+
+4. Give the `www-data` user your user group permissions, like `sudo usermod -a -G justinas www-data` (or fix the permissions yourself, however you want).
+5. Give group write permissions to laravel.log `sudo chmod g+w storage/logs/laravel.log`
+6. Run `sudo a2enmod rewrite && sudo service apache2 restart`
 
 ---
 

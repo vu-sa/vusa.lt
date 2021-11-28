@@ -90,7 +90,7 @@ class MenuSeeder extends Seeder
                     'pid' => 3,
                     'order' => 0,
                     'text' => 'Istorijos fakultete',
-                    'url' => 'http://if.vusa.testas:8000',
+                    'url' => str_replace('vusa', 'if.vusa', config('app.url')),
                     'creator' => 1
                 ]
             ],
