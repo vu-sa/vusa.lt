@@ -41,9 +41,10 @@ Laravel and vusa.lt installation:
 5. Setup a database (recommended: `touch database/database.sqlite`)
 6. Run `npm install && npm run dev`
 7. Run `php artisan migrate:fresh --seed`
-8. Modify your hosts file to direct *vusa.testas* to 127.0.0.1
-9. `php artisan serve`
-10. Open [vusa.testas:8000](http://vusa.testas:8000)
+8. Run `php artisan storage:link`
+9. Modify your hosts file to direct *vusa.testas* to 127.0.0.1
+10. `php artisan serve`
+11. Open [vusa.testas:8000](http://vusa.testas:8000)
 
 
 ### For unit (padalinių) site development
