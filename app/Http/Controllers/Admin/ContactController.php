@@ -26,6 +26,7 @@ class ContactController extends AdminBaseController {
                 $name = 'Koordinatoriai';
             }
 
+            // TODO: Use 'lang' column in future!
             if ($name == 'padalinio-biuras-en') {
                 $name = 'Koordinatoriai EN';
             }
@@ -37,7 +38,8 @@ class ContactController extends AdminBaseController {
             if ($name == 'padalinio-kuratoriai') {
                 $name = 'Kuratoriai';
             }
-
+            
+            // TODO: Use 'lang' column in future!
             if ($name == 'padalinio-kuratoriai-en') {
                 $name = 'Kuratoriai EN';
             }
@@ -475,7 +477,7 @@ class ContactController extends AdminBaseController {
     {
         $contactGroup = $request->input('category');
         $selectedContactItem = Contact::where('id', '=', $id)->where('groupname', 'like', $contactGroup)->first();
-        $upperContactItem = Contact::where('contactOrder', '=', $selectedContactItem['contactOrder'] - 1)->where('groupname', 'like', $contactGroup)->first();
+        $upperContactItem = Contact::where('contactOrder', '<', $selectedContactItem['contactOrder'])->where('groupname', 'like', $contactGroup)->get()->sortByDesc('contactOrder')->first();
 
         Contact::where('id', '=', $selectedContactItem['id'])->update(['contactOrder' => $upperContactItem['contactOrder']]);
         Contact::where('id', '=', $upperContactItem['id'])->update(['contactOrder' => $selectedContactItem['contactOrder']]);
@@ -487,7 +489,7 @@ class ContactController extends AdminBaseController {
     {
         $contactGroup = $request->input('category');
         $selectedContactItem = Contact::where('id', '=', $id)->where('groupname', 'like', $contactGroup)->first();
-        $upperContactItem = Contact::where('contactOrder', '=', $selectedContactItem['contactOrder'] + 1)->where('groupname', 'like', $contactGroup)->first();
+        $upperContactItem = Contact::where('contactOrder', '>', $selectedContactItem['contactOrder'])->where('groupname', 'like', $contactGroup)->get()->sortBy('contactOrder')->first();
 
         Contact::where('id', '=', $selectedContactItem['id'])->update(['contactOrder' => $upperContactItem['contactOrder']]);
         Contact::where('id', '=', $upperContactItem['id'])->update(['contactOrder' => $selectedContactItem['contactOrder']]);

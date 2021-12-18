@@ -7,6 +7,15 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ContactFactory extends Factory
 {
+    public $inc = 0;
+
+    private function incrementAndReturn() {
+        global $inc;
+
+        $inc = $inc + 1;
+        return strval($inc);
+    }
+
     /**
      * The name of the factory's corresponding model.
      *
@@ -26,11 +35,13 @@ class ContactFactory extends Factory
             'duties' => $this->faker->jobTitle(),
             'phone' => $this->faker->phoneNumber(),
             'email' => $this->faker->safeEmail(),
+            'image' => '/images/placeholders/foto' . rand(1,5) . '.jpg',
             'groupname' => 'centrinis-biuras',
             'grouptitle' => 0,
             'infoText' => $this->faker->paragraph(2),
             'name_short' => NULL,
             'name_full' => NULL,
+            'contactOrder' => $this->incrementAndReturn(),
         ];
     }
 }

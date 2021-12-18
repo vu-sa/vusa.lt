@@ -51,13 +51,14 @@ class UserController extends BaseController
         $this->navLevel2 = Navigation::where('pid', '!=', 0)->where('show', '=', '1')->where('lang', '=', $this->language)->orderBy('order')->get();
         $this->banners = Banner::where('hide', '=', '0')->where('editorG', '=', '1')->inRandomOrder()->get();
         $this->currentRoute = $request->path();
-        $this->appUrl = env('APP_URL');
+        $this->appUrl = config('app.url');
 
         Log::debug("currentRoute is " . $this->currentRoute);
 
         // Domain alias in vusa.lt is "vusa", in naujas.vusa.lt is "naujas" and so on...
         $this->domainAlias = explode('.', $request->server()['HTTP_HOST']);
 
+        // Čia yra visiška nesąmonė. Sutvarkyti, kad naudotų config() helperį.
         switch(count($this->domainAlias)) {
             case 2:
                 $this->navbarRoot = '';
@@ -67,7 +68,7 @@ class UserController extends BaseController
                     $this->navbarRoot = ''; 
                     break;
                 } elseif (strpos($this->domainAlias[2], 'testas') === 0) {
-                    $this->navbarRoot = 'http://vusa.testas:8000';
+                    $this->navbarRoot = config('app.url');
                     break;
                 } else {
                     $this->navbarRoot = 'https://vusa.lt';
@@ -205,7 +206,8 @@ class UserController extends BaseController
             }
 
             if (in_array($name, ['biuras', 'koordinatoriai', 'coordinators'])) {
-                $name = 'padalinio-biuras';
+                
+                $name = $locale == 'en' ? 'padalinio-biuras-en' : 'padalinio-biuras';
                 if (substr($padalinys->shortname, 6) == 'MIF')
                 $this->outputArray['title'] = __('VU SA MIF') . ' biuras';
                 else
@@ -218,14 +220,16 @@ class UserController extends BaseController
             }
 
             if (in_array($name, ['kuratoriai', 'mentors'])) {
-                $name = 'padalinio-kuratoriai';
+                $name = $locale == 'en' ? 'padalinio-kuratoriai-en' : 'padalinio-kuratoriai';
                 if (substr($padalinys->shortname, 6) == 'FilF')
                 $this->outputArray['title'] = 'VU FLF kuratoriai';
                 else
                 $this->outputArray['title'] = 'VU ' . substr($padalinys->shortname, 6) . ' ' . lcfirst(__('Kuratoriai'));
             }
 
-            $this->outputArray['contacts'] = Contact::where('groupname', 'like', $name)->where('contactGroup', '=', $userGroup->id)->where('lang', '=', $locale)->orderBy('contactOrder')->get();
+            // TODO: Use 'lang' column in future!
+
+            $this->outputArray['contacts'] = Contact::where('groupname', 'like', $name)->where('contactGroup', '=', $userGroup->id)->orderBy('contactOrder')->get();
 
             $contactGroupDescription = Contact::where('groupname', 'like', 'aprasymas-padalinys')->where('grouptitle', 'like', $name)->where('contactGroup', '=', $userGroup->id)->first();
             $this->outputArray['contactGroupDescription'] = $contactGroupDescription['infoText'] ?? "";

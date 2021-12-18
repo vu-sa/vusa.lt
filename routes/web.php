@@ -28,9 +28,9 @@ Log::info('Start of routes\web with ' . request()->path());
 
     $padaliniaiDomains = array('www.chgf.vusa.lt', 'chgf.vusa.lt', 'evaf.vusa.lt', 'www.evaf.vusa.lt', 'ff.vusa.lt', 'www.ff.vusa.lt', 'filf.vusa.lt', 'www.filf.vusa.lt', 'fsf.vusa.lt',
             'www.fsf.vusa.lt', 'gmc.vusa.lt', 'www.gmc.vusa.lt', 'naujas.if.vusa.lt', 'if.vusa.lt', 'www.if.vusa.lt', 'kf.vusa.lt', 'www.kf.vusa.lt','knf.vusa.lt', 'www.knf.vusa.lt', 'knfsa.lt', 'www.knfsa.lt', 'mf.vusa.lt', 'www.mf.vusa.lt',
-            'mif.vusa.lt', 'www.sa.vusa.lt', 'sa.vusa.lt', 'www.mif.vusa.lt', 'tf.vusa.lt', 'www.tf.vusa.lt', 'tspmi.vusa.lt', 'www.tspmi.vusa.lt', 'vm.vusa.lt', 'www.vm.vusa.lt', 'if.vusa.testas:8000');
+            'mif.vusa.lt', 'www.sa.vusa.lt', 'sa.vusa.lt', 'www.mif.vusa.lt', 'tf.vusa.lt', 'www.tf.vusa.lt', 'tspmi.vusa.lt', 'www.tspmi.vusa.lt', 'vm.vusa.lt', 'www.vm.vusa.lt', 'if.vusa.testas:8000', 'if.vusa.testas');
 
-    $vusaDomains = array('vusa.lt', 'www.vusa.lt', 'naujas.vusa.lt', 'vusa.testas:8000');
+    $vusaDomains = array('vusa.lt', 'www.vusa.lt', 'naujas.vusa.lt', 'vusa.testas:8000', 'vusa.testas');
 
     if (in_array($http_host, $padaliniaiDomains)) {
         Route::get('{locale}', [UserController::class, 'getPadalinysPage'])->where('locale', '(lt|en)');

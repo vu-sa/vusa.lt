@@ -20,65 +20,78 @@ class MenuSeeder extends Seeder
                     'pid' => 0,
                     'order' => 0,
                     'text' => 'VU SA nuorodos',
-                    'url' => '/#'
+                    'url' => '/#',
+                    'creator' => 1
                 ], [
                     'pid' => 0,
                     'order' => 1,
                     'text' => 'Kontaktai',
-                    'url' => '/#'
+                    'url' => '/#',
+                    'creator' => 1
                 ], [
                     'pid' => 0,
                     'order' => 2,
                     'text' => 'Padaliniai',
-                    'url' => '/#'
+                    'url' => '/#',
+                    'creator' => 1
                 ], [
                     'pid' => 0,
                     'order' => 3,
                     'text' => 'Kita',
-                    'url' => '/#'
+                    'url' => '/#',
+                    'creator' => 1
                 ], [
                     'pid' => 1,
                     'order' => 0,
                     'text' => 'Naujienos',
-                    'url' => '/naujiena/archyvas'
+                    'url' => '/naujiena/archyvas',
+                    'creator' => 1
                 ], [
-                    // 'pid' => 1,
-                    // 'order' => 1,
-                    // 'text' => 'Paieška',
-                    // 'url' => '/paieska'
-                    // ],[
+                    'pid' => 1,
+                    'order' => 1,
+                    'text' => 'Paieška',
+                    'url' => '/paieska',
+                    'creator' => 1
+                ], [
                     'pid' => 1,
                     'order' => 2,
                     'text' => 'Renginiai',
-                    'url' => '/renginiai'
+                    'url' => '/renginiai',
+                    'creator' => 1
                 ], [
                     'pid' => 1,
                     'order' => 3,
                     'text' => 'Darbotvarkė',
-                    'url' => '/darbotvarke'
+                    'url' => '/darbotvarke',
+                    'creator' => 1
                 ], [
                     'pid' => 1,
                     'order' => 4,
                     'text' => 'Sąžiningai: registracija',
-                    'url' => '/saziningai-registracija'
+                    'url' => '/saziningai-registracija',
+                    'creator' => 1
                 ],
                 [
                     'pid' => 1,
                     'order' => 5,
                     'text' => 'Sąžiningai: stebėjimas',
-                    'url' => '/saziningai-uzregistruoti-egzaminai'
+                    'url' => '/registracija-stebejimui',
+                    'creator' => 1
                 ],
                 [
                     'pid' => 2,
                     'order' => 0,
                     'text' => 'Centrinis biuras',
-                    'url' => '/kontaktai/centrinis-biuras'
+                    'url' => '/kontaktai/centrinis-biuras',
+                    'creator' => 1
                 ],
                 [
+
                     'pid' => 3,
                     'order' => 0,
                     'text' => 'Istorijos fakultete',
-                    'url' => 'http://if.vusa.testas:8000'
+                    'url' => str_replace('vusa', 'if.vusa', config('app.url')),
+                    'creator' => 1
                 ]
             ],
         );

@@ -49,14 +49,14 @@
                                         </a>
                                     </td>
                                     <td>
-                                        @if ($contact['contactOrder'] != 1)
+                                        @if ($contacts->min('contactOrder') != $contact['contactOrder'])
                                             <a href="/admin/kontaktai/swap/{{$contact['id']}}/up?category={{$contact['groupname']}}">
                                                 <i class="fas fa-chevron-up"></i>
                                             </a>
                                         @endif
                                     </td>
                                     <td>
-                                        @if ($contact['contactOrder'] != sizeof($contacts))
+                                        @if ($contacts->max('contactOrder') != $contact['contactOrder'])
                                             <a href="/admin/kontaktai/swap/{{$contact['id']}}/down?category={{$contact['groupname']}}">
                                                 <i class="fas fa-chevron-down"></i>
                                             </a>

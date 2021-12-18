@@ -19,10 +19,10 @@ class Menu extends Migration
             $table->string('text', 100);
             $table->string('lang', 2)->default('lt');
             $table->string('url', 255)->nullable()->default(NULL);
-            $table->tinyInteger('relative')->nullable()->default(NULL);
             $table->smallInteger('order');
             $table->tinyInteger('show')->default(1);
             $table->tinyInteger('readonly')->default(0);
+            $table->mediumInteger('creator');
             $table->timestamp('creator_time')->useCurrent();
         });
     }
