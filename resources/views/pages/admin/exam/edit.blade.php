@@ -5,13 +5,8 @@
         <section class="content-header">
             <h1>
                 Atnaujinti atsiskaitymą
-                <br/>
-                <small style="color: red">* - reikalingi laukai</small>
             </h1>
-            <ol class="breadcrumb">
-                {!! $currentRoute == 'admin/saziningai/{uuid}/redaguoti' ? '<li><a><i class="fas fa-tachometer-alt"></i> Home</a></li> <li>Sąžiningai</li> <li class="active">Redaguoti atsiskaitymą</li>': ''
-                 !!}
-            </ol>
+            <small style="color: red">* - reikalingi laukai</small>
         </section>
 
         <section class="content">
@@ -33,9 +28,9 @@
             @endif
             <div class="row">
                 <div class="col-md-12">
-                    {!! Form::model($atsiskaitymas, ['method' => 'PATCH' ]) !!}
+                    {!! Form::model($atsiskaitymas, ['method' => 'PATCH', 'route' => ['pages.admin.exam.update', $atsiskaitymas->id]]) !!}
 
-                    {{ Form::hidden('page', $_GET["page"], array('class'=>'form-control')) }}
+                    {{-- {{ Form::hidden('page', $_GET["page"], array('class'=>'form-control')) }} --}}
 
                     <div class="form-group">
                         {{ Form::label('name', 'Vardas ir pavardė') }}
@@ -88,7 +83,7 @@
                         {{ Form::text('students_need', null, array('class'=>'form-control')) }}
                     </div>
 
-                    {{Form::submit('Atnaujinti',['class'=>'btn btn-primary'])}}
+                    {{ Form::submit('Atnaujinti',['class'=>'btn btn-primary']) }}
                     {{ Form::close() }}
                 </div>
             </div>

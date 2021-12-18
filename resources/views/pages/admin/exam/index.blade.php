@@ -6,9 +6,6 @@
             <h1>
                 Sąžiningai
             </h1>
-            <ol class="breadcrumb">
-                {!! $currentRoute == 'admin/saziningai' ? '<li><a><i class="fas fa-tachometer-alt"></i> Home</a></li> <li class="active">Sąžiningai</li>': '' !!}
-            </ol>
         </section>
         <section class="content">
             <div class="row">
@@ -24,13 +21,10 @@
                             {{ Form::close() }}
                         </div>
                     </div>
-                    <br/>
-                    <br/>
-                    <br/>
-
+                    <br>
                     <div>
                         @if (Session::has('message'))
-                            <div class="alert alert-success" role="alert">{{ Session::get('message') }}</div>
+                            <div class="alert alert-info" role="alert">{{ Session::get('message') }}</div>
                         @endif
                     </div>
                     <table class="table table-bordered">
@@ -119,7 +113,7 @@
                                 <td>{{$atsiskaitymas->students_registered}}</td>
                                 <td>{{$atsiskaitymas->registration_time}}</td>
                                 <td>
-                                    <a href="/admin/saziningai/{{$atsiskaitymas->uuid}}/redaguoti?page={{$_GET["page"]}}">
+                                    <a href="/admin/exam/{{$atsiskaitymas->uuid}}/edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     &nbsp;
@@ -155,7 +149,9 @@
         }).then((result) => {
             if (result.isConfirmed) {
                 (function () {
-                    $.get('/admin/saziningai/delete?uuid=' + uuid, function(data) {});
+                    axios.post("{{ route('pages.admin.exam.destroy', '', false)}}", {
+                            uuid: uuid
+                        });
                     row.parent().parent().remove();
                     swal.fire("Ištrinta!", "Stebėjimas ištrintas.", "success");
                 })()

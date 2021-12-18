@@ -6,15 +6,12 @@
             <h1>
                 Darbotvarkė
             </h1>
-            <ol class="breadcrumb">
-                {!! $currentRoute == 'admin/kalendorius' ? '<li><a><i class="fas fa-tachometer-alt"></i> Home</a></li> <li class="active">Kalendorius ir darbotvarkė</li>': '' !!}
-            </ol>
         </section>
 
         <section class="content">
             <div class="row">
                 <div class="col-md-12">
-                    <a class="btn btn-success" href="/admin/darbotvarke/prideti">Pridėti darbotvarkės įrašą</a>
+                    <a class="btn btn-success" href="/admin/agenda/create">Pridėti darbotvarkės įrašą</a>
                     <br/>
                     <br/>
 
@@ -24,16 +21,16 @@
                             <th>Data</th>
                             <th>Veiksmai</th>
                         </tr>
-                        @foreach ($agenda as $event2)
+                        @foreach ($agenda as $agendaEvent)
                             <tr class="alert alert-success">
-                                <td>{{ $event2['title']}}</td>
-                                <td>{{ $event2['date']}}</td>
+                                <td>{{ $agendaEvent['title']}}</td>
+                                <td>{{ $agendaEvent['date']}}</td>
                                 <td>
-                                    <a style="text-decoration:none" href="/admin/darbotvarke/{{$event2['id']}}/redaguoti">
+                                    <a style="text-decoration:none" href="/admin/agenda/{{$agendaEvent['id']}}/edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     &nbsp;
-                                    <a id="{{$event2['id']}}" class="deleteRowAgenda" aria-hidden="true">
+                                    <a id="{{$agendaEvent['id']}}" class="deleteRow" aria-hidden="true">
                                         <i class="fas fa-trash"></i>
                                     </a>
                                 </td>
@@ -46,7 +43,7 @@
         </section>
     </div>
     <script>
-        $('.deleteRowAgenda').on('click', function (e) {
+        $('.deleteRow').on('click', function (e) {
             var id = $(this).attr('id');
             var row = $(this);
 
@@ -62,7 +59,9 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     (function () {
-                        $.get('/admin/darbotvarke/deleteRowAgenda?itemId=' + id, function(data) {});
+                        axios.post("{{ route('pages.admin.agenda.destroy', '', false)}}", {
+                            id: id
+                        });
                         row.parent().parent().remove();
                         swal.fire("Ištrinta!", "Pasirinktas darbotvarkės punktas ištrintas.", "success");
                     })()

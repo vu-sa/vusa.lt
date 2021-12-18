@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Validator;
 
 class ExamController extends AdminBaseController {
     
-public function exams(Request $request)
+    public function index(Request $request)
     {
         $i = 0;
 
@@ -34,17 +34,17 @@ public function exams(Request $request)
             }
         }
 
-        return view('pages.admin.exams', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'name' => null, 'atsiskaitymai' => $atsiskaitymai, 'searchText' => $searchText]);
+        return view('pages.admin.exam.index', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'name' => null, 'atsiskaitymai' => $atsiskaitymai, 'searchText' => $searchText]);
     }
 
-    public function getEditExam($uuid, Request $request)
+    public function edit($uuid, Request $request)
     {
         $atsiskaitymas = Saziningai::where('uuid', '=', $uuid)->first();
 
-        return view('pages.admin.examEdit', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'name' => null, 'atsiskaitymas' => $atsiskaitymas]);
+        return view('pages.admin.exam.edit', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'name' => null, 'atsiskaitymas' => $atsiskaitymas]);
     }
 
-    public function postEditExam($uuid, Request $request)
+    public function update($uuid, Request $request)
     {
         $rules = array(
             'name' => 'required',
@@ -62,7 +62,7 @@ public function exams(Request $request)
         $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails())
-            return Redirect::to('/admin/saziningai/' . $uuid . '/redaguoti')->withInput()->withErrors(($validator));
+            return Redirect::to('/admin/exam/' . $uuid . '/edit')->withInput()->withErrors(($validator));
         else {
             Saziningai::where('uuid', '=', $uuid)->update([
                 'name' => $request->name,
@@ -77,64 +77,14 @@ public function exams(Request $request)
                 'students_need' => $request->students_need
             ]);
         }
-        return redirect('/admin/saziningai?page=' . $request->page)->with('message', 'Atsiskaitymas sėkmingai atnaujintas.');
+        return redirect('/admin/exam?page=' . $request->page)->with('message', 'Atsiskaitymas sėkmingai atnaujintas.');
     }
 
-    public function deleteExam(Request $request)
+    public function destroy(Request $request)
     {
         $uuid = $request->input('uuid');
         Saziningai::where('uuid', '=', $uuid)->delete();
 
         return response()->json('DELETED', 200);
-    }
-
-    public function getRegisteredExamPeople(Request $request)
-    {
-        $searchText = '';
-        if (isset(explode('searchText=', $request->fullUrl())[1])) {
-            $searchText = explode('&', explode('searchText=', $request->fullUrl())[1])[0];
-        }
-
-        if (isset($searchText)) {
-            $zmones = DB::table('saziningai_people')->leftJoin('saziningai', 'saziningai_people.exam_uuid', '=', 'saziningai.uuid')->where('subject_name', 'like', '%' . $request->searchText . '%')->simplePaginate(20);
-        } else {
-            $zmones = DB::table('saziningai_people')->leftJoin('saziningai', 'saziningai_people.exam_uuid', '=', 'saziningai.uuid')->simplePaginate(20);
-        }
-
-//        $zmones = DB::table('saziningai_people')->leftJoin('saziningai', 'saziningai_people.exam_uuid', '=', 'saziningai.uuid')->get();
-        return view('pages.admin.examPeople', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'name' => null, 'zmones' => $zmones, 'searchText' => $searchText]);
-    }
-
-    public function deleteRegisteredExamPeople(Request $request)
-    {
-        $id = $request->input('id');
-        Saziningai_people::where('id_p', '=', $id)->delete();
-
-        return response()->json('DELETED', 200);
-    }
-
-    public function getEditRegisteredExamPeople($id, Request $request)
-    {
-        $zmogus = DB::table('saziningai_people')->leftJoin('saziningai', 'saziningai_people.exam_uuid', '=', 'saziningai.uuid')->where('id_p', '=', $id)->first();
-        return view('pages.admin.examPeopleEdit', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'name' => null, 'zmogus' => $zmogus]);
-    }
-
-    public function postEditRegisteredExamPeople($id, Request $request)
-    {
-        $rules = array('name' => 'students_need');
-        $validator = Validator::make($request->all(), $rules);
-
-        if ($validator->fails())
-            return Redirect::to('/admin/saziningai-uzsiregistrave/' . $id . '/redaguoti')->withInput()->withErrors(($validator));
-        else {
-            Saziningai_people::where('id_p', '=', $id)->update([
-                'name_p' => $request->name_p,
-                'padalinys_p' => $request->padalinys_p,
-                'contact_p' => $request->contact_p,
-                'status_p' => $request->status_p
-            ]);
-        }
-
-        return redirect('/admin/saziningai-uzsiregistrave/?page=' . $request->page)->with('message', 'Užsiregistravęs stebėtojas sėkmingai atnaujintas.');
     }
 }

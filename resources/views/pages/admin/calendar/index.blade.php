@@ -14,13 +14,13 @@
         <section class="content">
             <div class="row">
                 <div class="col-md-12">
-                    <a class="btn btn-success" href="/admin/kalendorius/prideti">Pridėti kalendoriaus įrašą</a>
+                    <a class="btn btn-success" href="/admin/calendar/create">Pridėti kalendoriaus įrašą</a>
                     <br/>
                     <br/>
 
                     <div>
                         @if (Session::has('message'))
-                            <div class="alert alert-success-member" role="alert">{{ Session::get('message') }}</div>
+                            <div class="alert alert-info" role="alert">{{ Session::get('message') }}</div>
                         @endif
                     </div>
 
@@ -44,20 +44,22 @@
                     <table class="table">
                         <tr class="alert alert-warning">
                             <th>Pavadinimas</th>
+                            <th>Tipas</th>
                             <th>Data</th>
                             <th>Veiksmai</th>
                         </tr>
                         @foreach ($events as $event)
                             <tr class="alert alert-success">
                                 <td>{{ $event['title']}}</td>
+                                <td>{{ $event['classname'] }}</td>
                                 <td>{{ $event['date'].' '.$event['time']}}</td>
                                 <td>
-                                    <a style="text-decoration:none" href="/admin/kalendorius/{{$event['id']}}/redaguoti">
+                                    <a style="text-decoration:none" href="/admin/calendar/{{$event['id']}}/edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     &nbsp;
                                     <a id="{{$event['id']}}" 
-                                    class="deleteRowCal" 
+                                    class="deleteRow" 
                                     aria-hidden="true">
                                     <i class="fas fa-trash"></i>
                                     </a>
@@ -71,7 +73,7 @@
         </section>
     </div>
     <script>
-        $('.deleteRowCal').on('click', function(e) {
+        $('.deleteRow').on('click', function(e) {
 
         var id = $(this).attr('id');
         var row = $(this);
@@ -88,7 +90,9 @@
         }).then((result) => {
             if (result.isConfirmed) {
                 (function () {
-                    $.get('/admin/kalendorius/deleteRowCalendar?itemId=' + id, function(data) {});
+                    axios.post("{{ route('pages.admin.calendar.destroy', '', false)}}", {
+                            id: id
+                        });
                     row.parent().parent().remove();
                     swal.fire("Ištrinta!", "Pasirinktas kalendoriaus įvykis ištrintas.", "success");
                 })()

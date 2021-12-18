@@ -8,14 +8,14 @@
                 <small>Rėmėjų baneriai</small>
             </h1>
             <ol class="breadcrumb">
-                {!! $currentRoute == 'admin/reklama' ? '<li><a><i class="fas fa-tachometer-alt"></i> Home</a></li> <li class="active">Reklamos baneriai</li>': '' !!}
+                {!! $currentRoute == 'admin/banner' ? '<li><a><i class="fas fa-tachometer-alt"></i> Home</a></li> <li class="active">Reklamos baneriai</li>': '' !!}
             </ol>
         </section>
 
         <section class="content">
             <div class="row">
                 <div class="col-md-12">
-                    <a class="btn btn-success" href="/admin/reklama/prideti">Pridėti reklaminį banerį</a>
+                    <a class="btn btn-success" href="/admin/banner/create">Pridėti reklaminį banerį</a>
                     <br/>
                     <br/>
 
@@ -64,7 +64,7 @@
                                     </a>
                                     @endif
                                     &nbsp;
-                                    <a style="text-decoration:none" href="/admin/reklama/{{$banner['id']}}/redaguoti">
+                                    <a style="text-decoration:none" href="/admin/banner/{{$banner['id']}}/edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     &nbsp;
@@ -88,13 +88,15 @@
             if ($(this).children().hasClass('fa-eye-slash')) {
                 $(this).children().removeClass('fa-eye-slash');
                 $(this).children().addClass('fa-eye');
-                $.get('/admin/reklama/changeView?itemId=' + id, function (data) {
+                axios.post("{{ route('pages.admin.banner.changeView', '', false)}}", {
+                    id: id
                 });
             }
             else {
                 $(this).children().removeClass('fa-eye');
                 $(this).children().addClass('fa-eye-slash');
-                $.get('/admin/reklama/changeView?itemId=' + id, function (data) {
+                axios.post("{{ route('pages.admin.banner.changeView', '', false)}}", {
+                    id: id
                 });
             }
         });
@@ -116,7 +118,9 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     (function () {
-                        $.get('/admin/reklama/deleteRow?itemId=' + id, function(data) {});
+                        axios.post("{{ route('pages.admin.banner.destroy', '', false)}}", {
+                            id: id
+                        });
                         row.parent().parent().remove();
                         swal.fire("Ištrinta!", "Pasirinktas baneris ištrintas.", "success");
                     })()
