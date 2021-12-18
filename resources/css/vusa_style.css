@@ -875,6 +875,9 @@ img.newsImage {
 
 #content-slider {
     margin-top: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     /*margin-bottom: 50px;*/
 }
 
