@@ -27,21 +27,21 @@ class PagesController extends AdminBaseController {
 
         if (strpos($request->path(), 'puslapiaiEN') !== false) {
             if (isset($searchText)) {
-                $pages = Page::where('title', 'like', '%' . $request->searchText . '%')->where('lang', '=', 'en')->where('editorG', '=', $gid)->orderBy('page.id', 'desc')->leftJoin('users_groups', 'page.editorG', '=', 'users_groups.id')->simplePaginate(10);
+                $pages = Page::where('title', 'like', '%' . $request->searchText . '%')->where('lang', '=', 'en')->where('editorG', '=', $gid)->orderBy('page.id', 'desc')->join('users_groups', 'page.editorG', '=', 'users_groups.id')->select('page.*', 'users_groups.descr')->simplePaginate(10);
             } else {
-                $pages = Page::where('editorG', '=', $gid)->orderBy('category', 'asc')->leftJoin('users_groups', 'page.editorG', '=', 'users_groups.id')->simplePaginate(20);
+                $pages = Page::where('editorG', '=', $gid)->orderBy('category', 'asc')->join('users_groups', 'page.editorG', '=', 'users_groups.id')->select('page.*, users_groups.descr')->simplePaginate(20);
             }
         } elseif (strpos($request->path(), 'puslapiaiLT') !== false) {
             if (isset($searchText)) {
-                $pages = Page::where('title', 'like', '%' . $request->searchText . '%')->where('lang', '=', 'lt')->where('editorG', '=', $gid)->orderBy('page.id', 'desc')->leftJoin('users_groups', 'page.editorG', '=', 'users_groups.id')->simplePaginate(10);
+                $pages = Page::where('title', 'like', '%' . $request->searchText . '%')->where('lang', '=', 'lt')->where('editorG', '=', $gid)->orderBy('page.id', 'desc')->join('users_groups', 'page.editorG', '=', 'users_groups.id')->select('page.*', 'users_groups.descr')->simplePaginate(10);
             } else {
-                $pages = Page::where('editorG', '=', $gid)->orderBy('category', 'asc')->leftJoin('users_groups', 'page.editorG', '=', 'users_groups.id')->simplePaginate(20);
+                $pages = Page::where('editorG', '=', $gid)->orderBy('category', 'asc')->join('users_groups', 'page.editorG', '=', 'users_groups.id')->select('page.*, users_groups.descr')->simplePaginate(20);
             }
         } else {
             if (isset($searchText)) {
-                $pages = Page::where('title', 'like', '%' . $request->searchText . '%')->orderBy('pages.id', 'desc')->where('editorG', '=', $gid)->leftJoin('users_groups', 'page.editorG', '=', 'users_groups.id')->simplePaginate(10);
+                $pages = Page::where('title', 'like', '%' . $request->searchText . '%')->orderBy('pages.id', 'desc')->where('editorG', '=', $gid)->join('users_groups', 'page.editorG', '=', 'users_groups.id')->select('page.*, users_groups.descr')->simplePaginate(10);
             } else {
-                $pages = Page::where('editorG', '=', $gid)->orderBy('category', 'asc')->leftJoin('users_groups', 'page.editorG', '=', 'users_groups.id')->simplePaginate(20);
+                $pages = Page::where('editorG', '=', $gid)->orderBy('category', 'asc')->join('users_groups', 'page.editorG', '=', 'users_groups.id')->select('page.*, users_groups.descr')->simplePaginate(20);
             }
         }
     
