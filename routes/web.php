@@ -229,6 +229,7 @@ Log::info('Start of routes\web with ' . request()->path());
                 Route::post('banner/changeView', [Admin\BannerController::class, 'postChangeView'])->name('banner.changeView');
                 Route::post('banner/destroy', [Admin\BannerController::class, 'destroy'])->name('banner.destroy');
                 Route::resource('banner', Admin\BannerController::class)->except(['show', 'destroy']);
+            });
             
             Route::middleware('can:handle,App\Models\Agenda')->group(function () {
                 
@@ -238,7 +239,7 @@ Log::info('Start of routes\web with ' . request()->path());
                 Route::post('calendar/destroy', [Admin\CalendarController::class, 'destroy'])->name('calendar.destroy');
                 Route::resource('calendar', Admin\CalendarController::class)->except(['show', 'destroy']);
 
-                });
+            });
             
             Route::middleware('can:handle,App\Models\Saziningai')->group(function () {
                 
@@ -247,7 +248,6 @@ Log::info('Start of routes\web with ' . request()->path());
 
                 Route::post('examPeople/destroy', [Admin\ExamPeopleController::class, 'destroy'])->name('examPeople.destroy');
                 Route::resource('examPeople', Admin\ExamPeopleController::class)->except(['show', 'create', 'destroy']);
-                });
             });
         });
 
