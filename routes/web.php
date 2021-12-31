@@ -2,33 +2,31 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
-
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 use Laravel\Jetstream\Http\Controllers\CurrentTeamController;
-use Laravel\Jetstream\Http\Controllers\Inertia\ApiTokenController;
+// use Laravel\Jetstream\Http\Controllers\Inertia\ApiTokenController;
 use Laravel\Jetstream\Http\Controllers\Inertia\CurrentUserController;
 use Laravel\Jetstream\Http\Controllers\Inertia\OtherBrowserSessionsController;
-use Laravel\Jetstream\Http\Controllers\Inertia\PrivacyPolicyController;
+// use Laravel\Jetstream\Http\Controllers\Inertia\PrivacyPolicyController;
 use Laravel\Jetstream\Http\Controllers\Inertia\ProfilePhotoController;
 use Laravel\Jetstream\Http\Controllers\Inertia\TeamController;
 use Laravel\Jetstream\Http\Controllers\Inertia\TeamMemberController;
-use Laravel\Jetstream\Http\Controllers\Inertia\TermsOfServiceController;
+// use Laravel\Jetstream\Http\Controllers\Inertia\TermsOfServiceController;
 use Laravel\Jetstream\Http\Controllers\Inertia\UserProfileController;
 use Laravel\Jetstream\Http\Controllers\TeamInvitationController;
 use Laravel\Jetstream\Jetstream;
 
-
 Route::name('jetstream.')->group(function () {
     Route::group(['middleware' => config('jetstream.middleware', ['web'])], function () {
-        if (Jetstream::hasTermsAndPrivacyPolicyFeature()) {
+        /* if (Jetstream::hasTermsAndPrivacyPolicyFeature()) {
             Route::get('/terms-of-service', [TermsOfServiceController::class, 'show'])->name('terms.show');
             Route::get('/privacy-policy', [PrivacyPolicyController::class, 'show'])->name('policy.show');
-        }
+        } */
 
         Route::group(['middleware' => ['auth', 'verified']], function () {
             // User & Profile...
@@ -47,15 +45,15 @@ Route::name('jetstream.')->group(function () {
             }
 
             // API...
-            if (Jetstream::hasApiFeatures()) {
+            /* if (Jetstream::hasApiFeatures()) {
                 Route::get('/user/api-tokens', [ApiTokenController::class, 'index'])->name('api-tokens.index');
                 Route::post('/user/api-tokens', [ApiTokenController::class, 'store'])->name('api-tokens.store');
                 Route::put('/user/api-tokens/{token}', [ApiTokenController::class, 'update'])->name('api-tokens.update');
                 Route::delete('/user/api-tokens/{token}', [ApiTokenController::class, 'destroy'])->name('api-tokens.destroy');
-            }
+            } */
 
             // Teams...
-            if (Jetstream::hasTeamFeatures()) {
+            /* if (Jetstream::hasTeamFeatures()) {
                 Route::get('/teams/create', [TeamController::class, 'create'])->name('teams.create');
                 Route::post('/teams', [TeamController::class, 'store'])->name('teams.store');
                 Route::get('/teams/{team}', [TeamController::class, 'show'])->name('teams.show');
@@ -72,7 +70,7 @@ Route::name('jetstream.')->group(function () {
 
                 Route::delete('/team-invitations/{invitation}', [TeamInvitationController::class, 'destroy'])
                     ->name('team-invitations.destroy');
-            }
+            } */
         });
     });
 });
@@ -108,8 +106,6 @@ Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
 /**
  * Statiniai tinklapio routai
  */
-
-
 
 $http_host = request()->getHttpHost();
 
@@ -217,7 +213,6 @@ Route::prefix('admin')->group(function () {
 
     Route::get('/', [Admin\OtherController::class, 'index']);
     Route::patch('/', [Admin\OtherController::class, 'updateEN'])->middleware('can:handleEnConfig,App\Models\Padaliniai');
-    // Route::get('/profilis/{username}', [Admin\OtherController::class, 'profile']);
     Route::get('failai', [Admin\OtherController::class, 'getFileManager'])->middleware('can:handleFiles,App\Models\User');
 
     /**
@@ -234,8 +229,6 @@ Route::prefix('admin')->group(function () {
      */
     Route::get('padaliniai', [Admin\MainPageController::class, 'padaliniai'])->middleware('can:handle,App\Models\Padalinys');
     Route::get('padaliniai/prideti', [Admin\MainPageController::class, 'getAddPadaliniai'])->middleware('can:handle,App\Models\Padalinys');
-    // Route::get('/padaliniai/{groupAlias}/redaguoti', [Admin\MainPageController::class, '');
-    // Route::get('puslapiai/padalinys', [Admin\PagesController::class, 'getPadalinysPages']);
 
     Route::get('pagrindinis/{groupAlias}/prideti', [Admin\MainPageController::class, 'getAddPadalinysMainPageElement'])->middleware('can:handle,App\Models\MainPage');
     Route::post('pagrindinis/{groupAlias}/prideti', [Admin\MainPageController::class, 'postAddPadalinysMainPageElement'])->middleware('can:handle,App\Models\MainPage');

@@ -31,7 +31,6 @@
                 <template v-if="$page.props.jetstream.hasAccountDeletionFeatures">
                     <jet-section-border />
 
-                    <delete-user-form class="mt-10 sm:mt-0" />
                 </template>
             </div>
         </div>
@@ -40,8 +39,7 @@
 
 <script>
     import { defineComponent } from 'vue'
-    import AppLayout from '@/Layouts/AppLayout.vue'
-    import DeleteUserForm from '@/Pages/Profile/Partials/DeleteUserForm.vue'
+    import AppLayout from '@/Layouts/AdminLayout.vue'
     import JetSectionBorder from '@/Jetstream/SectionBorder.vue'
     import LogoutOtherBrowserSessionsForm from '@/Pages/Profile/Partials/LogoutOtherBrowserSessionsForm.vue'
     import TwoFactorAuthenticationForm from '@/Pages/Profile/Partials/TwoFactorAuthenticationForm.vue'
