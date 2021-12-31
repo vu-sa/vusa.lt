@@ -51,7 +51,6 @@
 
         components: {
             AppLayout,
-            DeleteUserForm,
             JetSectionBorder,
             LogoutOtherBrowserSessionsForm,
             TwoFactorAuthenticationForm,
