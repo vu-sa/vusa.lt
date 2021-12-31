@@ -11,11 +11,11 @@ CREATE TABLE `agenda` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `date` date NOT NULL,
   `title` varchar(500) COLLATE utf8mb4_lithuanian_ci NOT NULL,
-  `description` mediumtext COLLATE utf8mb4_lithuanian_ci,
+  `description` mediumtext COLLATE utf8mb4_lithuanian_ci DEFAULT NULL,
   `classname` varchar(50) COLLATE utf8mb4_lithuanian_ci NOT NULL DEFAULT 'red',
   `owner` int(11) NOT NULL,
   `editor` int(11) NOT NULL,
-  `editor_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `editor_time` timestamp /* mariadb-5.3 */ NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_lithuanian_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -27,11 +27,11 @@ CREATE TABLE `calendar` (
   `date` date NOT NULL,
   `time` varchar(10) COLLATE utf8mb4_lithuanian_ci DEFAULT NULL,
   `title` varchar(999) COLLATE utf8mb4_lithuanian_ci NOT NULL,
-  `descr` mediumtext COLLATE utf8mb4_lithuanian_ci,
+  `descr` mediumtext COLLATE utf8mb4_lithuanian_ci DEFAULT NULL,
   `classname` varchar(30) COLLATE utf8mb4_lithuanian_ci DEFAULT NULL,
-  `url` mediumtext COLLATE utf8mb4_lithuanian_ci,
+  `url` mediumtext COLLATE utf8mb4_lithuanian_ci DEFAULT NULL,
   `editor` int(1) NOT NULL,
-  `editor_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `editor_time` timestamp /* mariadb-5.3 */ NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `badge` varchar(10) COLLATE utf8mb4_lithuanian_ci DEFAULT 'true',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_lithuanian_ci;
@@ -75,7 +75,7 @@ CREATE TABLE `mainPage` (
   `moduleName` varchar(100) COLLATE utf8mb4_lithuanian_ci DEFAULT 'calendar',
   `groupID` int(11) NOT NULL,
   `lang` varchar(2) COLLATE utf8mb4_lithuanian_ci DEFAULT 'lt',
-  `created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_time` timestamp /* mariadb-5.3 */ NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_lithuanian_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -84,15 +84,25 @@ DROP TABLE IF EXISTS `menu_new`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `menu_new` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `pid` int(11) NOT NULL DEFAULT '0',
+  `pid` int(11) NOT NULL DEFAULT 0,
   `text` varchar(100) COLLATE utf8mb4_lithuanian_ci NOT NULL,
   `lang` varchar(2) COLLATE utf8mb4_lithuanian_ci NOT NULL DEFAULT 'lt',
   `url` varchar(255) COLLATE utf8mb4_lithuanian_ci DEFAULT NULL,
   `order` int(11) NOT NULL,
-  `show` tinyint(1) NOT NULL DEFAULT '1',
-  `readonly` tinyint(1) NOT NULL DEFAULT '0',
+  `show` tinyint(1) NOT NULL DEFAULT 1,
+  `readonly` tinyint(1) NOT NULL DEFAULT 0,
   `creator` int(11) NOT NULL,
-  `creator_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `creator_time` timestamp /* mariadb-5.3 */ NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_lithuanian_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `migrations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `migrations` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `migration` varchar(255) COLLATE utf8mb4_lithuanian_ci NOT NULL,
+  `batch` int(11) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_lithuanian_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -111,16 +121,16 @@ CREATE TABLE `news` (
   `lang` varchar(2) COLLATE utf8mb4_lithuanian_ci NOT NULL DEFAULT 'lt',
   `image` varchar(200) COLLATE utf8mb4_lithuanian_ci DEFAULT '058543019bc51198ea1dc255580d215be99f2297.jpeg',
   `imageAuthor` varchar(200) COLLATE utf8mb4_lithuanian_ci DEFAULT 'VU SA archyvo nuotrauka',
-  `important` tinyint(1) NOT NULL DEFAULT '0',
+  `important` tinyint(1) NOT NULL DEFAULT 0,
   `editor` int(11) NOT NULL,
-  `editor_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `editor_time` timestamp /* mariadb-5.3 */ NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `publisher` int(11) DEFAULT NULL,
-  `publish_time` timestamp NULL DEFAULT NULL,
+  `publish_time` timestamp /* mariadb-5.3 */ NULL DEFAULT NULL,
   `source` varchar(100) COLLATE utf8mb4_lithuanian_ci DEFAULT 'VU SA',
-  `mainPoints` mediumtext COLLATE utf8mb4_lithuanian_ci,
+  `mainPoints` mediumtext COLLATE utf8mb4_lithuanian_ci DEFAULT NULL,
   `tags` varchar(100) COLLATE utf8mb4_lithuanian_ci DEFAULT NULL,
   `readMore` varchar(100) COLLATE utf8mb4_lithuanian_ci DEFAULT NULL,
-  `draft` tinyint(1) DEFAULT '0',
+  `draft` tinyint(1) DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `permalink` (`permalink`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_lithuanian_ci;
@@ -142,7 +152,7 @@ CREATE TABLE `padaliniai` (
   `fullname` varchar(100) COLLATE utf8mb4_lithuanian_ci NOT NULL,
   `shortname` varchar(100) COLLATE utf8mb4_lithuanian_ci NOT NULL,
   `alias` varchar(20) COLLATE utf8mb4_lithuanian_ci NOT NULL,
-  `en` tinyint(1) NOT NULL DEFAULT '0',
+  `en` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_lithuanian_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -158,12 +168,12 @@ CREATE TABLE `page` (
   `text` mediumtext COLLATE utf8mb4_lithuanian_ci NOT NULL,
   `lang` varchar(2) COLLATE utf8mb4_lithuanian_ci NOT NULL DEFAULT 'lt',
   `category` varchar(200) COLLATE utf8mb4_lithuanian_ci NOT NULL,
-  `readonly` tinyint(1) NOT NULL DEFAULT '0',
-  `disabled` tinyint(1) NOT NULL DEFAULT '0',
+  `readonly` tinyint(1) NOT NULL DEFAULT 0,
+  `disabled` tinyint(1) NOT NULL DEFAULT 0,
   `editor` int(11) NOT NULL,
   `editorG` int(11) NOT NULL,
-  `editor_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `mainInfo` mediumtext COLLATE utf8mb4_lithuanian_ci,
+  `editor_time` timestamp /* mariadb-5.3 */ NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `mainInfo` mediumtext COLLATE utf8mb4_lithuanian_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_lithuanian_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -193,7 +203,7 @@ CREATE TABLE `saziningai` (
   `count` int(11) DEFAULT NULL,
   `students_need` varchar(11) COLLATE utf8mb4_lithuanian_ci DEFAULT NULL,
   `students_registered` int(11) DEFAULT NULL,
-  `registration_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `registration_time` timestamp /* mariadb-5.3 */ NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `uuid uniq` (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_lithuanian_ci;
@@ -208,7 +218,7 @@ CREATE TABLE `saziningai_people` (
   `padalinys_p` varchar(30) COLLATE utf8mb4_lithuanian_ci NOT NULL,
   `contact_p` varchar(100) COLLATE utf8mb4_lithuanian_ci NOT NULL,
   `flow` int(11) NOT NULL,
-  `dateRegistered` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `dateRegistered` datetime /* mariadb-5.3 */ NOT NULL DEFAULT current_timestamp(),
   `status_p` varchar(11) COLLATE utf8mb4_lithuanian_ci NOT NULL,
   PRIMARY KEY (`id_p`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_lithuanian_ci;
@@ -217,11 +227,11 @@ DROP TABLE IF EXISTS `sessions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `sessions` (
-  `id` varchar(255) CHARACTER SET utf8 COLLATE utf8_lithuanian_ci NOT NULL,
+  `id` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_lithuanian_ci NOT NULL,
   `user_id` int(11) DEFAULT NULL,
-  `ip_address` varchar(45) CHARACTER SET utf8 COLLATE utf8_lithuanian_ci DEFAULT NULL,
-  `user_agent` text CHARACTER SET utf8 COLLATE utf8_lithuanian_ci,
-  `payload` text CHARACTER SET utf8 COLLATE utf8_lithuanian_ci NOT NULL,
+  `ip_address` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_lithuanian_ci DEFAULT NULL,
+  `user_agent` text CHARACTER SET utf8mb3 COLLATE utf8mb3_lithuanian_ci DEFAULT NULL,
+  `payload` text CHARACTER SET utf8mb3 COLLATE utf8mb3_lithuanian_ci NOT NULL,
   `last_activity` int(11) NOT NULL,
   UNIQUE KEY `sessions_id_unique` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_lithuanian_ci;
@@ -231,16 +241,16 @@ DROP TABLE IF EXISTS `sidebar`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `sidebar` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `type` varchar(20) CHARACTER SET utf8 COLLATE utf8_lithuanian_ci NOT NULL,
-  `title` varchar(100) CHARACTER SET utf8 COLLATE utf8_lithuanian_ci NOT NULL,
-  `value` text CHARACTER SET utf8 COLLATE utf8_lithuanian_ci,
-  `url` text CHARACTER SET utf8 COLLATE utf8_lithuanian_ci NOT NULL,
-  `lang` varchar(2) CHARACTER SET utf8 COLLATE utf8_lithuanian_ci NOT NULL DEFAULT 'lt',
+  `type` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_lithuanian_ci NOT NULL,
+  `title` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_lithuanian_ci NOT NULL,
+  `value` text CHARACTER SET utf8mb3 COLLATE utf8mb3_lithuanian_ci DEFAULT NULL,
+  `url` text CHARACTER SET utf8mb3 COLLATE utf8mb3_lithuanian_ci NOT NULL,
+  `lang` varchar(2) CHARACTER SET utf8mb3 COLLATE utf8mb3_lithuanian_ci NOT NULL DEFAULT 'lt',
   `order` int(11) NOT NULL,
-  `hide` int(1) NOT NULL DEFAULT '0',
+  `hide` int(1) NOT NULL DEFAULT 0,
   `editor` int(11) NOT NULL,
   `editorG` int(11) NOT NULL,
-  `editor_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `editor_time` timestamp /* mariadb-5.3 */ NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_lithuanian_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -249,15 +259,15 @@ DROP TABLE IF EXISTS `users`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `username` varchar(50) CHARACTER SET utf8 COLLATE utf8_lithuanian_ci NOT NULL,
-  `realname` varchar(100) CHARACTER SET utf8 COLLATE utf8_lithuanian_ci NOT NULL,
-  `password` varchar(60) CHARACTER SET utf8 COLLATE utf8_lithuanian_ci NOT NULL,
-  `disabled` tinyint(1) NOT NULL DEFAULT '0',
+  `username` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_lithuanian_ci NOT NULL,
+  `realname` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_lithuanian_ci NOT NULL,
+  `password` varchar(60) CHARACTER SET utf8mb3 COLLATE utf8mb3_lithuanian_ci NOT NULL,
+  `disabled` tinyint(1) NOT NULL DEFAULT 0,
   `gid` int(11) DEFAULT NULL,
-  `lastlogin` timestamp NULL DEFAULT NULL,
-  `lastlogin_ip` varchar(39) CHARACTER SET utf8 COLLATE utf8_lithuanian_ci DEFAULT NULL,
-  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `remember_token` varchar(60) CHARACTER SET utf8 COLLATE utf8_lithuanian_ci DEFAULT NULL,
+  `lastlogin` timestamp /* mariadb-5.3 */ NULL DEFAULT NULL,
+  `lastlogin_ip` varchar(39) CHARACTER SET utf8mb3 COLLATE utf8mb3_lithuanian_ci DEFAULT NULL,
+  `created` timestamp /* mariadb-5.3 */ NOT NULL DEFAULT current_timestamp(),
+  `remember_token` varchar(60) CHARACTER SET utf8mb3 COLLATE utf8mb3_lithuanian_ci DEFAULT NULL,
   `updated_at` date DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
@@ -268,8 +278,8 @@ DROP TABLE IF EXISTS `users_groups`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `users_groups` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `descr` varchar(50) CHARACTER SET utf8 COLLATE utf8_lithuanian_ci NOT NULL,
-  `alias` varchar(30) CHARACTER SET utf8 COLLATE utf8_lithuanian_ci DEFAULT NULL,
+  `descr` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_lithuanian_ci NOT NULL,
+  `alias` varchar(30) CHARACTER SET utf8mb3 COLLATE utf8mb3_lithuanian_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_lithuanian_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
