@@ -26,7 +26,7 @@ class UserSeeder extends Seeder
         [
         'username' => 'padalinys',
         'realname' => 'Padalinys (VU SA IF)',
-        'email' => 'if@test.com',
+        'email' => 'if@test.comb',
         'email_verified_at' => now(),
         'password' => Hash::make('password'),
         'gid' => 4
@@ -34,7 +34,7 @@ class UserSeeder extends Seeder
         [
         'username' => 'saziningai',
         'realname' => 'Saziningai',
-        'email' => 'if@test.com',
+        'email' => 'if@test.coma',
         'email_verified_at' => now(),
         'password' => Hash::make('saziningai'),
         'gid' => 19
