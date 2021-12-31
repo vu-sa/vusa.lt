@@ -14,7 +14,13 @@ class AddEmailToUsers extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('email')->unique();
+            $table->renameColumn('username', 'email');
+            $table->renameColumn('realname', 'name');
+        });
+
+        Schema::table('users', function (Blueprint $table) {
+            $table->string('email')->unique()->change();
+            $table->string('name')->change();
             $table->timestamp('email_verified_at')->nullable();
         });
     }
@@ -27,7 +33,9 @@ class AddEmailToUsers extends Migration
     public function down()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('email');
+            $table->renameColumn('email', 'username');
+            $table->dropUnique('users_email_unique');
+            $table->renameColumn('name', 'realname');
             $table->dropColumn('email_verified_at');
         });
     }
