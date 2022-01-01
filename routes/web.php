@@ -42,7 +42,8 @@ Route::prefix('new')->group(function () {
                 ->name('current-user-photo.destroy');
             
             // Saziningai
-            Route::resource('saziningaiExams', SaziningaiExamController::class);
+            Route::resource('saziningaiExams', New\SaziningaiExamController::class);
+            Route::resource('pages', New\PageController::class);
         });
     });
 });

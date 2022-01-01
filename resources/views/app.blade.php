@@ -12,6 +12,9 @@
         <!-- Styles -->
         <link rel="stylesheet" href="{{ asset('css/app-new.css') }}">
 
+        <!-- Naive UI elements -->
+        <meta name="naive-ui-style" />
+
         <!-- Scripts -->
         @routes
         <script src={{ asset('js/app-new.js') }} defer></script>

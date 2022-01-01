@@ -1,22 +1,25 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\New;
 
-use App\Models\Saziningai;
+use App\Models\Page;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Http\Controllers\Controller as Controller;
 
-class SaziningaiExamController extends Controller
+class PageController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Inertia::render('Admin/Saziningai/Exams/Index', [
-            'exams' => Saziningai::all()
+        $pages = Page::all();
+
+        return Inertia::render('Admin/Articles/News/Index', [
+            'pages' => $pages,
         ]);
     }
 
@@ -44,10 +47,10 @@ class SaziningaiExamController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Saziningai  $saziningai
+     * @param  \App\Models\Page  $page
      * @return \Illuminate\Http\Response
      */
-    public function show(Saziningai $saziningai)
+    public function show(Page $page)
     {
         //
     }
@@ -55,10 +58,10 @@ class SaziningaiExamController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Saziningai  $saziningai
+     * @param  \App\Models\Page  $page
      * @return \Illuminate\Http\Response
      */
-    public function edit(Saziningai $saziningai)
+    public function edit(Page $page)
     {
         //
     }
@@ -67,10 +70,10 @@ class SaziningaiExamController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Saziningai  $saziningai
+     * @param  \App\Models\Page  $page
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Saziningai $saziningai)
+    public function update(Request $request, Page $page)
     {
         //
     }
@@ -78,10 +81,10 @@ class SaziningaiExamController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\SaziningaiExam  $saziningaiExam
+     * @param  \App\Models\Page $page
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Saziningai $saziningaiExam)
+    public function destroy(Page $page)
     {
         //
     }

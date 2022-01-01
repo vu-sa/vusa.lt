@@ -15,6 +15,12 @@
           </template>
           Dashboard
         </MenuButton>
+        <MenuButton menuButtonRoute="pages.index">
+          <template #icon
+            ><DocumentTextIcon class="mx-auto w-7 h-7 mb-1"
+          /></template>
+          Articles
+        </MenuButton>
         <MenuButton menuButtonRoute="saziningaiExams.index">
           <template #icon
             ><BookOpenIcon class="mx-auto w-7 h-7 mb-1"
@@ -29,14 +35,15 @@
       <template #header
         ><slot name="header">{{ title }}</slot></template
       >
+      <template #aside-header>
+        <slot name="aside-header"></slot>
+      </template>
       <div class="col-span-2 ml-12 mt-4 mb-5"></div>
       <main class="bg-white p-8 rounded-xl drop-shadow-md col-span-4">
         <slot></slot>
       </main>
       <!-- Aside Navigation -->
-      <AsideNavigation>
-        
-      </AsideNavigation>
+      <AsideNavigation> </AsideNavigation>
       <!-- Aside Navigation End -->
     </PageContent>
     <!-- Page Content End -->
@@ -53,7 +60,7 @@ import JetNavLink from "@/Jetstream/NavLink.vue";
 import JetResponsiveNavLink from "@/Jetstream/ResponsiveNavLink.vue";
 import { Head, Link } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
-import { HomeIcon, BookOpenIcon } from "@heroicons/vue/outline";
+import { HomeIcon, BookOpenIcon, DocumentTextIcon } from "@heroicons/vue/outline";
 import MetaIcons from "@/Components/MetaIcons.vue";
 import MenuButton from "@/Components/Admin/MenuButton.vue";
 import MainNavigation from "@/Layouts/Partials/MainNavigation.vue";

@@ -10,5 +10,4 @@ class Page extends Model
     use HasFactory;
     
     protected $table = 'page';
-    public $timestamps = false;
 }
