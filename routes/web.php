@@ -8,18 +8,18 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-use Laravel\Jetstream\Http\Controllers\CurrentTeamController;
+// use Laravel\Jetstream\Http\Controllers\CurrentTeamController;
 // use Laravel\Jetstream\Http\Controllers\Inertia\ApiTokenController;
-use Laravel\Jetstream\Http\Controllers\Inertia\CurrentUserController;
+// use Laravel\Jetstream\Http\Controllers\Inertia\CurrentUserController;
 use Laravel\Jetstream\Http\Controllers\Inertia\OtherBrowserSessionsController;
 // use Laravel\Jetstream\Http\Controllers\Inertia\PrivacyPolicyController;
 use Laravel\Jetstream\Http\Controllers\Inertia\ProfilePhotoController;
-use Laravel\Jetstream\Http\Controllers\Inertia\TeamController;
-use Laravel\Jetstream\Http\Controllers\Inertia\TeamMemberController;
+// use Laravel\Jetstream\Http\Controllers\Inertia\TeamController;
+// use Laravel\Jetstream\Http\Controllers\Inertia\TeamMemberController;
 // use Laravel\Jetstream\Http\Controllers\Inertia\TermsOfServiceController;
 use Laravel\Jetstream\Http\Controllers\Inertia\UserProfileController;
-use Laravel\Jetstream\Http\Controllers\TeamInvitationController;
-use Laravel\Jetstream\Jetstream;
+// use Laravel\Jetstream\Http\Controllers\TeamInvitationController;
+// use Laravel\Jetstream\Jetstream;
 
 Route::name('jetstream.')->group(function () {
     Route::group(['middleware' => config('jetstream.middleware', ['web'])], function () {
@@ -39,10 +39,10 @@ Route::name('jetstream.')->group(function () {
             Route::delete('/user/profile-photo', [ProfilePhotoController::class, 'destroy'])
                 ->name('current-user-photo.destroy');
 
-            if (Jetstream::hasAccountDeletionFeatures()) {
+            /* if (Jetstream::hasAccountDeletionFeatures()) {
                 Route::delete('/user', [CurrentUserController::class, 'destroy'])
                     ->name('current-user.destroy');
-            }
+            } */
 
             // API...
             /* if (Jetstream::hasApiFeatures()) {
@@ -100,7 +100,7 @@ Route::get('/jetstream', function () {
 });
 
 Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+    return Inertia::render('Admin/Dashboard');
 })->name('dashboard');
 
 /**

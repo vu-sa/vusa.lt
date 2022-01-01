@@ -127,7 +127,7 @@
             },
 
             logoutOtherBrowserSessions() {
-                this.form.delete(route('other-browser-sessions.destroy'), {
+                this.form.delete(route('jetstream.other-browser-sessions.destroy'), {
                     preserveScroll: true,
                     onSuccess: () => this.closeModal(),
                     onError: () => this.$refs.password.focus(),
