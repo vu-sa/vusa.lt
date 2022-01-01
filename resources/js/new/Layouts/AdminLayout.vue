@@ -45,7 +45,7 @@
 
 <script setup>
 import { ref } from "vue";
-import AppLogo from "@/Components/Admin/AppLogo.vue";
+import AppLogo from "@/Components/AppLogo.vue";
 import JetBanner from "@/Jetstream/Banner.vue";
 import JetDropdown from "@/Jetstream/Dropdown.vue";
 import JetDropdownLink from "@/Jetstream/DropdownLink.vue";
