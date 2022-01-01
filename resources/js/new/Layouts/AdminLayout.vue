@@ -15,11 +15,11 @@
           </template>
           Dashboard
         </MenuButton>
-        <MenuButton menuButtonRoute="telescope">
+        <MenuButton menuButtonRoute="saziningaiExams.index">
           <template #icon
-            ><NewspaperIcon class="mx-auto w-7 h-7 mb-1"
+            ><BookOpenIcon class="mx-auto w-7 h-7 mb-1"
           /></template>
-          Articles
+          Sažiningai
         </MenuButton>
       </div>
     </MainNavigation>
@@ -53,7 +53,7 @@ import JetNavLink from "@/Jetstream/NavLink.vue";
 import JetResponsiveNavLink from "@/Jetstream/ResponsiveNavLink.vue";
 import { Head, Link } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
-import { HomeIcon, NewspaperIcon } from "@heroicons/vue/outline";
+import { HomeIcon, BookOpenIcon } from "@heroicons/vue/outline";
 import MetaIcons from "@/Components/MetaIcons.vue";
 import MenuButton from "@/Components/Admin/MenuButton.vue";
 import MainNavigation from "@/Layouts/Partials/MainNavigation.vue";

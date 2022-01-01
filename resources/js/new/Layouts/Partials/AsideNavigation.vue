@@ -26,7 +26,7 @@
     >
       <Link
         class="flex items-center"
-        :href="route('jetstream.profile.show')"
+        :href="route('profile.show')"
         v-if="$page.props.jetstream.managesProfilePhotos"
       >
         <img

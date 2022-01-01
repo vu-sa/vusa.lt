@@ -24,15 +24,15 @@ class SaziningaiFactory extends Factory
         return [
             'uuid' => bin2hex(random_bytes(15)),
             'name' => $this->faker->name(),
-            'contact' => $this->faker->safeEmail(),
-            'exam' => 'koliokviumas',
+            'phone' => $this->faker->phoneNumber(),
+            'exam_type' => 'koliokviumas',
             'padalinys' => 'gmc',
+            'padalinys_id' => 1,
             'place' => 'ITPC',
             'time' => $this->faker->dateTimeBetween('+1 week', '+3 weeks'),
             'duration' => $this->faker->numberBetween(30, 90),
             'subject_name' => $this->faker->word(),
-            'count' => rand(30, 150),
-            'students_need' => rand(1, 6),            
+            'exam_holders' => rand(30, 150),           
         ];
     }
 }

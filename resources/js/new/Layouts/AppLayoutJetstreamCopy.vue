@@ -146,7 +146,7 @@
                       Manage Account
                     </div>
 
-                    <jet-dropdown-link :href="route('jetstream.profile.show')">
+                    <jet-dropdown-link :href="route('profile.show')">
                       Profile
                     </jet-dropdown-link>
 
@@ -254,8 +254,8 @@
 
             <div class="mt-3 space-y-1">
               <jet-responsive-nav-link
-                :href="route('jetstream.profile.show')"
-                :active="route().current('jetstream.profile.show')"
+                :href="route('profile.show')"
+                :active="route().current('profile.show')"
               >
                 Profile
               </jet-responsive-nav-link>

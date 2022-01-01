@@ -23,12 +23,13 @@ class Saziningai_peopleFactory extends Factory
     public function definition()
     {
         return [
-            'exam_uuid' => DB::table('saziningai')->inRandomOrder()->select('uuid')->first()->uuid,
-            'name_p' => $this->faker->name(),
+            'exam_uuid' => DB::table('saziningai_exams')->inRandomOrder()->select('uuid')->first()->uuid,
+            'name' => $this->faker->name(),
             'padalinys_p' => 'if',
-            'contact_p' => $this->faker->safeEmail(),
+            'padalinys_id' => 1,
+            'phone' => $this->faker->phoneNumber(),
             'flow' => rand(1,3),
-            'status_p' => 'atvyko',
+            'has_arrived' => 'atvyko',
         ];
     }
 }

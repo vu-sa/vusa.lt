@@ -15,6 +15,5 @@ class Saziningai extends Model
      *
      * @var string
      */
-    protected $table = 'saziningai';
-    public $timestamps = false;
+    protected $table = 'saziningai_exams';
 }
