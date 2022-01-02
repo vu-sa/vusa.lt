@@ -14,7 +14,7 @@
       >
         <slot name="header"></slot>
       </h1>
-      <aside class="inline-block font-bold">
+      <aside class="inline-block font-bold ml-2">
         <slot name="aside-header"></slot>
       </aside>
     </header>

@@ -13,13 +13,35 @@
           <template #icon>
             <HomeIcon class="mx-auto w-7 h-7 mb-1" />
           </template>
-          Dashboard
+          Pradžia
         </MenuButton>
         <MenuButton menuButtonRoute="pages.index">
           <template #icon
             ><DocumentTextIcon class="mx-auto w-7 h-7 mb-1"
           /></template>
-          Articles
+          Turinys
+        </MenuButton>
+        <MenuButton menuButtonRoute="dashboard">
+          <template #icon><UserIcon class="mx-auto w-7 h-7 mb-1" /></template>
+          Kontaktai
+        </MenuButton>
+        <MenuButton menuButtonRoute="dashboard">
+          <template #icon
+            ><MenuAlt2Icon class="mx-auto w-7 h-7 mb-1"
+          /></template>
+          Navigacija
+        </MenuButton>
+        <MenuButton menuButtonRoute="dashboard">
+          <template #icon
+            ><CalendarIcon class="mx-auto w-7 h-7 mb-1"
+          /></template>
+          Kalendorius
+        </MenuButton>
+        <MenuButton menuButtonRoute="saziningaiExams.index">
+          <template #icon
+            ><FolderIcon class="mx-auto w-7 h-7 mb-1"
+          /></template>
+          Failų tvarkyklė
         </MenuButton>
         <MenuButton menuButtonRoute="saziningaiExams.index">
           <template #icon
@@ -60,7 +82,15 @@ import JetNavLink from "@/Jetstream/NavLink.vue";
 import JetResponsiveNavLink from "@/Jetstream/ResponsiveNavLink.vue";
 import { Head, Link } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
-import { HomeIcon, BookOpenIcon, DocumentTextIcon } from "@heroicons/vue/outline";
+import {
+  HomeIcon,
+  BookOpenIcon,
+  DocumentTextIcon,
+  UserIcon,
+  MenuAlt2Icon,
+  CalendarIcon,
+  FolderIcon
+} from "@heroicons/vue/outline";
 import MetaIcons from "@/Components/MetaIcons.vue";
 import MenuButton from "@/Components/Admin/MenuButton.vue";
 import MainNavigation from "@/Layouts/Partials/MainNavigation.vue";
