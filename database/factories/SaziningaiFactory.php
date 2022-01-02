@@ -27,12 +27,11 @@ class SaziningaiFactory extends Factory
             'phone' => $this->faker->phoneNumber(),
             'exam_type' => 'koliokviumas',
             'padalinys' => 'gmc',
-            'padalinys_id' => 1,
             'place' => 'ITPC',
-            'time' => $this->faker->dateTimeBetween('+1 week', '+3 weeks'),
+            'time' => $this->faker->dateTimeBetween('+1 week', '+3 weeks')->format('Y-m-d H:i:s') . ' | ' . $this->faker->dateTimeBetween('+1 week', '+3 weeks')->format('Y-m-d H:i:s') . ' | ' . $this->faker->dateTimeBetween('+1 week', '+3 weeks')->format('Y-m-d H:i:s') . ' | ',
             'duration' => $this->faker->numberBetween(30, 90),
             'subject_name' => $this->faker->word(),
-            'exam_holders' => rand(30, 150),           
+            'exam_holders' => rand(30, 150),
         ];
     }
 }

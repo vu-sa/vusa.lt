@@ -28,7 +28,7 @@ class RefactorSaziningai extends Migration
         });
 
         Schema::table('saziningai_exams', function (Blueprint $table) {
-            $table->unsignedInteger('padalinys_id');
+            $table->unsignedInteger('padalinys_id')->nullable();
             $table->foreign('padalinys_id')->references('id')->on('padaliniai');
             $table->string('padalinys', 10)->comment('Should be deprecated')->change();
         });
