@@ -6,6 +6,7 @@
         bg-gradient-to-b
         from-red-200
         to-orange-200
+        px-4 pb-4
       "
     ><slot></slot>
   </div>

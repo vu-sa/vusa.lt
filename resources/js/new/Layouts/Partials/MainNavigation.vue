@@ -2,8 +2,7 @@
   <nav
     class="
       bg-white
-      mt-4
-      mx-4
+      mr-4
       drop-shadow-lg
       rounded-xl
       col-span-1

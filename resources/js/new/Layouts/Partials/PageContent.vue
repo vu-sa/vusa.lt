@@ -1,6 +1,6 @@
 <template>
   <div
-    class="col-span-8 mt-10 mx-8 grid grid-flow-row auto-rows-max grid-cols-6"
+    class="col-span-8 mt-6 mx-8 grid grid-flow-row auto-rows-max grid-cols-6"
   >
     <header class="mt-4 mb-5 col-span-4 flex flex-row items-center">
       <h1
