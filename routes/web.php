@@ -41,9 +41,18 @@ Route::prefix('new')->group(function () {
             Route::delete('/user/profile-photo', [ProfilePhotoController::class, 'destroy'])
                 ->name('current-user-photo.destroy');
             
-            // Saziningai
+            // Resources
+            Route::resource('pages', New\PagesController::class);
+            Route::resource('news', New\NewsController::class);
+            Route::resource('mainPage', New\MainPageController::class);
+            Route::resource('banners', New\BannerController::class);
+            Route::resource('navigation', New\NavigationController::class);
+            Route::resource('users', New\UserController::class);
+            Route::resource('calendar', New\CalendarController::class);
+            Route::resource('agenda', New\AgendaController::class);
             Route::resource('saziningaiExams', New\SaziningaiExamController::class);
-            Route::resource('pages', New\PageController::class);
+            Route::resource('saziningaiObservers', New\SaziningaiExamObserverController::class);
+            Route::resource('files', New\FilesController::class);
         });
     });
 });

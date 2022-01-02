@@ -5,10 +5,9 @@
     </template>
     <NDataTable
       
-      :data="props.exams"
+      :data="props.observers"
       :columns="columns"
       :row-props="rowProps"
-      :scroll-x="1200"
     >
     </NDataTable>
   </AdminLayout>
@@ -23,39 +22,23 @@ import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
 
 const props = defineProps({
-  exams: Object,
+  observers: Object,
 });
 
 const createColumns = () => {
   return [
     {
-      title: "Dalyko pavadinimas",
-      key: "subject_name",
-    },
-    {
-      title: "Laikančiųjų padalinys",
-      key: "padalinys",
-    },
-    {
-      title: "Registruotojas",
+      title: "Vardas ir pavardė",
       key: "name",
     },
     {
-      title: "Laikančiųjų skaičius",
-      key: "exam_holders",
+      title: "Padalinys",
+      key: "padalinys_p",
     },
     {
-      title: "Trukmė (min.)",
-      key: "duration",
-    },
-    {
-      title: "Vieta",
-      key: "place",
-    },
-    {
-      title: "Užregistravimo data",
-      key: "created_at",
-    },
+      title: "Telefonas",
+      key: "phone",
+    }
   ];
 };
 
@@ -65,7 +48,7 @@ const rowProps = (row) => {
   return {
     style: "cursor: pointer;",
     onClick: () => {
-      Inertia.visit(route("saziningaiExams.show", { id: row.id }));
+      Inertia.visit(route("saziningaiObservers.show", { id: row.id }));
     },
   };
 };

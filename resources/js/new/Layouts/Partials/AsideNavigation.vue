@@ -6,7 +6,7 @@
       ml-12
       shadow-inner
       drop-shadow-lg
-      duration-100
+      duration-200
       sticky
       top-4
       mb-auto
@@ -36,7 +36,7 @@
         />
         <span class="ml-2">{{ $page.props.user.name }}</span>
       </Link>
-      <button class="ml-auto mr-2" @click="logout">Log out</button>
+      <button class="ml-auto mr-2" @click="logout()">Log out</button>
     </div>
 	<slot></slot>
   </aside>
@@ -44,4 +44,9 @@
 
 <script setup>
 import { Link } from "@inertiajs/inertia-vue3";
+import { Inertia } from "@inertiajs/inertia";
+
+const logout = () => {
+  Inertia.post(route('logout'))
+}
 </script>

@@ -4,8 +4,8 @@
       <AsideHeader></AsideHeader>
     </template>
     <NDataTable
-      class="h-100"
-      :data="props.pages"
+      
+      :data="props.news"
       :columns="columns"
       :row-props="rowProps"
     >
@@ -15,14 +15,14 @@
 
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-import AsideHeader from "./AsideHeader.vue";
+import AsideHeader from "../AsideHeader.vue";
 import { NDataTable } from "naive-ui";
 import { ref } from "vue";
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
 
 const props = defineProps({
-  pages: Object,
+  news: Object,
 });
 
 const createColumns = () => {
@@ -44,7 +44,7 @@ const rowProps = (row) => {
   return {
     style: "cursor: pointer;",
     onClick: () => {
-      Inertia.visit(route("pages.edit", { id: row.permalink }));
+      Inertia.visit(route("news.edit", { id: row.permalink }));
     },
   };
 };

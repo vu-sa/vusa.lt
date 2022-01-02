@@ -1,9 +1,9 @@
 <template>
   <Link
-    :href="route(menuButtonRoute)"
-    class="block p-3 hover:bg-gray-100 last:hover:rounded-b-xl"
+    :href="route(menuButtonIndex)"
+    class="block p-3 hover:bg-gray-100 last:hover:rounded-b-xl duration-200"
     :class="
-      route().current(menuButtonRoute)
+      isCurrentRoute
         ? ['stroke-red-800', 'text-red-800', 'hover:text-red-900']
         : [
             'stroke-gray-600',
@@ -19,9 +19,26 @@
 </template>
 
 <script setup>
-import { Link } from '@inertiajs/inertia-vue3'
-import { computed } from 'vue'
+import { Link } from "@inertiajs/inertia-vue3";
+import { computed, ref } from "vue";
 
-const props = defineProps(['menuButtonRoute'])
+const props = defineProps(["menuContent"]);
 
+const menuButtonIndex = computed(() => {
+  return _.replace(props.menuContent[0], "*", "index");
+});
+
+const isCurrentRoute = computed(() => {
+  let value = false;
+
+  while (!value) {
+    props.menuContent.forEach((routeValue) => {
+      value = route().current(routeValue) || value;
+      if (value) {
+        return;
+      }
+    });
+    return value;
+  }
+});
 </script>

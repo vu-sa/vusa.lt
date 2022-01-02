@@ -1,7 +1,7 @@
 <template>
   <Link
     :href="route(asideHeaderRoute)"
-    class="mr-4 last:mr-0"
+    class="mr-4 last:mr-0 duration-200"
     :class="
       route().current(asideHeaderRoute)
         ? ['text-red-800', 'hover:text-red-900']

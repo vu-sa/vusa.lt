@@ -9,41 +9,41 @@
         <AppLogo class="mx-auto my-2" />
       </a>
       <div class="bg-gray-50 w-full h-full rounded-b-xl">
-        <MenuButton menuButtonRoute="dashboard">
+        <MenuButton :menuContent="['dashboard']">
           <template #icon>
             <HomeIcon class="mx-auto w-7 h-7 mb-1" />
           </template>
           Pradžia
         </MenuButton>
-        <MenuButton menuButtonRoute="pages.index">
+        <MenuButton :menuContent="['pages.*', 'news.*', 'mainPage.*', 'banners.*']">
           <template #icon
             ><DocumentTextIcon class="mx-auto w-7 h-7 mb-1"
           /></template>
           Turinys
         </MenuButton>
-        <MenuButton menuButtonRoute="dashboard">
+        <MenuButton :menuContent="['users.*']">
           <template #icon><UserIcon class="mx-auto w-7 h-7 mb-1" /></template>
           Kontaktai
         </MenuButton>
-        <MenuButton menuButtonRoute="dashboard">
+        <MenuButton :menuContent="['navigation.*']">
           <template #icon
             ><MenuAlt2Icon class="mx-auto w-7 h-7 mb-1"
           /></template>
           Navigacija
         </MenuButton>
-        <MenuButton menuButtonRoute="dashboard">
+        <MenuButton :menuContent="['calendar.*', 'agenda.*']">
           <template #icon
             ><CalendarIcon class="mx-auto w-7 h-7 mb-1"
           /></template>
           Kalendorius
         </MenuButton>
-        <MenuButton menuButtonRoute="saziningaiExams.index">
+        <MenuButton :menuContent="['files.*']">
           <template #icon
             ><FolderIcon class="mx-auto w-7 h-7 mb-1"
           /></template>
           Failų tvarkyklė
         </MenuButton>
-        <MenuButton menuButtonRoute="saziningaiExams.index">
+        <MenuButton :menuContent="['saziningaiExams.*', 'saziningaiObservers.*']">
           <template #icon
             ><BookOpenIcon class="mx-auto w-7 h-7 mb-1"
           /></template>
