@@ -35,6 +35,10 @@ const createColumns = () => {
       title: "Nuoroda",
       key: "permalink",
     },
+    {
+      title: "Atnaujinta",
+      key: "editor_time",
+    }
   ];
 };
 
@@ -44,7 +48,7 @@ const rowProps = (row) => {
   return {
     style: "cursor: pointer;",
     onClick: () => {
-      Inertia.visit(route("pages.edit", { id: row.permalink }));
+      Inertia.visit(route("pages.edit", { id: row.id }));
     },
   };
 };

@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout title="Puslapiai">
+  <AdminLayout title="Pradinis puslapis">
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>

@@ -4,7 +4,6 @@
       <AsideHeader></AsideHeader>
     </template>
     <NDataTable
-      
       :data="props.exams"
       :columns="columns"
       :row-props="rowProps"

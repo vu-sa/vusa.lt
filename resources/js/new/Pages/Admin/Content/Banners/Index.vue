@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout title="Puslapiai">
+  <AdminLayout title="Baneriai">
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>

@@ -63,7 +63,11 @@ class PagesController extends Controller
      */
     public function edit(Page $page)
     {
-        //
+        $id = $page->id;
+
+        return Inertia::render('Admin/Content/Pages/Edit', [
+            'page' => Page::where('id', $id)->first(),
+        ]);
     }
 
     /**
