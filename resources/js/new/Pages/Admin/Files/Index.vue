@@ -1,13 +1,18 @@
 <template>
   <AdminLayout title="Failų tvarkyklė">
     <div id="files" class="pb-4">
-      <h2 class="text-2xl my-4 font-bold">Aplankai ({{ showedDirectories.length }})</h2>
+      <h2 class="text-2xl my-4 font-bold">
+        Aplankai ({{ showedDirectories.length }})
+      </h2>
       <div class="grid grid-cols-3 gap-3 2xl:grid-cols-6 lg:grid-cols-4">
-        <FileButton @click="getAllFilesAndDirectories('../')">
+        <FolderButton
+          v-if="currentPath !== 'public/files'"
+          @click="getAllFilesAndDirectories('../')"
+        >
           <ArrowLeftIcon class="h-10 w-10 stroke-slate-600 mb-2" />
           <div class="text-sm break-all text-center">Atgal</div>
-        </FileButton>
-        <FileButton
+        </FolderButton>
+        <FolderButton
           v-for="directory in showedDirectories"
           v-bind:key="directory.id"
           @click="getAllFilesAndDirectories(directory.folderPath)"
@@ -16,15 +21,28 @@
           <div class="text-sm break-all text-center">
             {{ directory.folderName }}
           </div>
-        </FileButton>
+        </FolderButton>
       </div>
     </div>
     <div id="files" v-if="showedFiles.length > 0">
       <h2 class="text-2xl my-4 font-bold">Failai ({{ showedFiles.length }})</h2>
       <div class="grid grid-cols-3 gap-3 2xl:grid-cols-6 lg:grid-cols-4">
-        <FileButton v-for="file in showedFiles" v-bind:key="file.id">
+        <FileButton
+          v-for="file in showedFiles"
+          v-bind:key="file.id"
+          :href="route('files.show', file.id)"
+        >
           <PhotographIcon class="h-10 w-10 stroke-slate-600 mb-2" />
-          <div class="text-sm break-all text-center">{{ file.fileName }}</div>
+          <div
+            class="
+              text-sm text-center text-ellipsis
+              overflow-hidden
+              whitespace-pre-line
+              break-all
+            "
+          >
+            {{ file.fileName }}
+          </div>
         </FileButton>
       </div>
     </div>
@@ -43,6 +61,7 @@ import {
   ArrowLeftIcon,
 } from "@heroicons/vue/outline";
 import FileButton from "@/Components/Admin/FileButton.vue";
+import FolderButton from "@/Components/Admin/FolderButton.vue";
 
 // Declare props
 const props = defineProps({
@@ -82,7 +101,7 @@ const getNextPath = (selectedDirectory) => {
       selectedDirectory += element + "/";
     });
 
-    return selectedDirectory;
+    return selectedDirectory.slice(0, -1);
   } else return selectedDirectory;
 };
 
