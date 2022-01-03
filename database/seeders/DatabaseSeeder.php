@@ -40,7 +40,7 @@ class DatabaseSeeder extends Seeder
         News::factory()->count(25)->create();
         Page::factory()->count(25)->create();
         Saziningai::factory()->count(10)->create();
-        Saziningai_people::factory()->count(10)->create();
+        // Saziningai_people::factory()->count(10)->create();
         Banner::factory()->count(25)->create();
         
     }
