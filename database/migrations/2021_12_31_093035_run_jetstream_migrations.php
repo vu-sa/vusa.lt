@@ -55,10 +55,6 @@ class RunJetstreamMigrations extends Migration
             $table->foreignId('team_id')->nullable();
             $table->string('profile_photo_path', 2048)->nullable();
         });
-
-        Schema::table('users', function (Blueprint $table) {
-            $table->renameColumn('created', 'created_at');
-        });
     }
 
     /**

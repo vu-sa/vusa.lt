@@ -30,6 +30,7 @@ class PadaliniaiSeeder extends Seeder
             ['fullname' => 'Vilniaus universiteto Studentų atstovybė Tarptautinių santykių ir politikos mokslų institute', 'shortname' => 'VU SA TSPMI', 'alias' => 'vusatspmi', 'en' => 0],
             ['fullname' => 'Vilniaus universiteto Studentų atstovybė Verslo mokykloje', 'shortname' => 'VU SA VM', 'alias' => 'vusavm', 'en' => 0],
             ['fullname' => 'Vilniaus universiteto Studentų atstovybė Šiaulių akademijoje', 'shortname' => 'VU SA ŠA', 'alias' => 'vusasa', 'en' => 0],
+            ['fullname' => 'Vilniaus universiteto Studentų atstovybė', 'shortname' => 'VU SA', 'alias' => 'vusa', 'en' => 0],
         ]);
     }
 }

@@ -11,6 +11,5 @@ class Users_group extends Model
      *
      * @var string
      */
-    protected $table = 'users_groups';
-    public $timestamps = false;
+    protected $table = 'roles';
 }

@@ -24,12 +24,11 @@ class Saziningai_peopleFactory extends Factory
     {
         return [
             'exam_uuid' => DB::table('saziningai_exams')->inRandomOrder()->select('uuid')->first()->uuid,
-            'name' => $this->faker->name(),
+            'name_p' => $this->faker->name(),
             'padalinys_p' => 'if',
-            'padalinys_id' => 1,
-            'phone' => $this->faker->phoneNumber(),
+            'contact_p' => $this->faker->phoneNumber(),
             'flow' => rand(1,3),
-            'has_arrived' => 'atvyko',
+            'status_p' => 'atvyko',
         ];
     }
 }

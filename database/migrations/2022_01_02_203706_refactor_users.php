@@ -1,0 +1,67 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class RefactorUsers extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::rename('users_groups', 'roles');
+
+        Schema::table('roles', function (Blueprint $table) {
+            $table->renameColumn('descr', 'description');
+        });
+        
+        Schema::table('roles', function (Blueprint $table) {
+            $table->string('alias')->after('id')->change();
+            $table->string('name')->after('alias');
+            $table->string('description')->nullable()->change();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+        });
+
+        Schema::create('role_user', function (Blueprint $table) {
+            $table->increments('id');
+            $table->integer('user_id');
+            $table->integer('role_id');
+            $table->string('password')->nullable()->change();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+        });
+
+        Schema::table('users', function (Blueprint $table) {
+            $table->string('google_token')->nullable()->after('remember_token');
+            $table->string('microsoft_token')->nullable()->after('remember_token');
+            $table->renameColumn('disabled', 'is_active');
+            $table->renameColumn('gid', 'role_id');
+            $table->renameColumn('lastlogin', 'last_login');
+            $table->increments('id')->change();
+            $table->timestamp('created_at')->useCurrent()->after('is_active')->change();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate()->change();
+            $table->string('phone')->nullable()->after('email');
+        });
+
+        Schema::table('users', function (Blueprint $table) {
+            $table->boolean('is_active')->default(true)->change();
+            $table->dropColumn('lastlogin_ip');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('role_user');
+        Schema::dropIfExists('roles');
+    }
+}

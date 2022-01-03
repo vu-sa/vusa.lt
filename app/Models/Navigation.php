@@ -9,6 +9,6 @@ class Navigation extends Model
 {
     use HasFactory;
     
-    protected $table = 'menu_new';
-    public $timestamps = false;
+    protected $table = 'menu';
+
 }

@@ -24,14 +24,14 @@ class SaziningaiFactory extends Factory
         return [
             'uuid' => bin2hex(random_bytes(15)),
             'name' => $this->faker->name(),
-            'phone' => $this->faker->phoneNumber(),
-            'exam_type' => 'koliokviumas',
+            'contact' => $this->faker->phoneNumber(),
+            'exam' => 'koliokviumas',
             'padalinys' => 'gmc',
             'place' => 'ITPC',
             'time' => $this->faker->dateTimeBetween('+1 week', '+3 weeks')->format('Y-m-d H:i:s') . ' | ' . $this->faker->dateTimeBetween('+1 week', '+3 weeks')->format('Y-m-d H:i:s') . ' | ' . $this->faker->dateTimeBetween('+1 week', '+3 weeks')->format('Y-m-d H:i:s') . ' | ',
             'duration' => $this->faker->numberBetween(30, 90),
             'subject_name' => $this->faker->word(),
-            'exam_holders' => rand(30, 150),
+            'count' => rand(30, 150),
         ];
     }
 }

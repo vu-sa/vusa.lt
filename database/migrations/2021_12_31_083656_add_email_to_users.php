@@ -21,7 +21,7 @@ class AddEmailToUsers extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->string('email')->unique()->change();
             $table->string('name')->change();
-            $table->timestamp('email_verified_at')->nullable();
+            $table->timestamp('email_verified_at')->nullable()->after('gid');
         });
     }
 

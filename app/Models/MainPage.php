@@ -9,6 +9,5 @@ class MainPage extends Model
 {
     use HasFactory;
     
-    protected $table = 'mainPage';
-    public $timestamps = false;
+    protected $table = 'main_page';
 }

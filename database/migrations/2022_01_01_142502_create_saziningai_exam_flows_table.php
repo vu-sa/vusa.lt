@@ -26,49 +26,6 @@ class CreateSaziningaiExamFlowsTable extends Migration
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
 
-        // Seed for env in migration
-        if (config('app.env') === 'local') {
-            /* $faker = Faker\Factory::create();
-
-            DB::table('saziningai_exams')->insert([
-                'uuid' => 'abcd',
-                'name' => '',
-                'phone' => '',
-                'exam_type' => '',
-                'padalinys' => '',
-                'place' => '',
-                'time' => $faker->dateTimeBetween('+1 week', '+3 weeks')->format('Y-m-d H:i:s') .
-                    ' | ' .
-                    $faker->dateTimeBetween('+1 week', '+3 weeks')->format('Y-m-d H:i:s') .
-                    ' | ' .
-                    $faker->dateTimeBetween('+1 week', '+3 weeks')->format('Y-m-d H:i:s') .
-                    ' | ',
-                'duration' => '',
-                'subject_name' => '',
-                'exam_holders' => 60,
-            ]);
-
-            DB::table('saziningai_exams')->insert([
-                'uuid' => 'efgh',
-                'name' => '',
-                'phone' => '',
-                'exam_type' => '',
-                'padalinys' => '',
-                'place' => '',
-                'time' => $faker->dateTimeBetween('+1 week', '+3 weeks')->format('Y-m-d H:i:s') .
-                    ' | ' .
-                    $faker->dateTimeBetween('+1 week', '+3 weeks')->format('Y-m-d H:i:s') .
-                    ' | ' .
-                    $faker->dateTimeBetween('+1 week', '+3 weeks')->format('Y-m-d H:i:s') .
-                    ' | ',
-                'duration' => '',
-                'subject_name' => '',
-                'exam_holders' => 60,
-            ]); */
-
-            Saziningai::factory()->count(10)->create();
-        }
-
         // Get all times from saziningai_exams and insert them into saziningai_exam_flows
         $saziningai_exams = DB::table('saziningai_exams')->select('time', 'uuid')->get();
         $saziningai_exam_flows = [];
