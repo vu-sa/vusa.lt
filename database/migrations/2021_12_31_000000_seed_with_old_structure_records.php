@@ -18,6 +18,7 @@ class SeedWithOldStructureRecords extends Migration
         // Prerequisites
         Schema::table('users', function (Blueprint $table) {
             $table->renameColumn('created', 'created_at');
+            $table->timestamp('email_verified_at')->nullable()->after('gid');
         });
 
         Schema::rename('saziningai', 'saziningai_exams');
@@ -62,6 +63,11 @@ class SeedWithOldStructureRecords extends Migration
         });
 
         Schema::table('pages', function (Blueprint $table) {
+            $table->renameColumn('editor_time', 'updated_at');
+            $table->timestamp('created_at')->useCurrent();
+        });
+
+        Schema::table('news', function (Blueprint $table) {
             $table->renameColumn('editor_time', 'updated_at');
             $table->timestamp('created_at')->useCurrent();
         });

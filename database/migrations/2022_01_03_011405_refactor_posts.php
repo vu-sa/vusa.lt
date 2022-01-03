@@ -82,8 +82,6 @@ class RefactorPosts extends Migration
             $table->renameColumn('readMore', 'read_more');
             $table->renameColumn('mainPoints', 'main_points');
             $table->renameColumn('imageAuthor', 'image_author');
-            $table->renameColumn('editor_time', 'updated_at');
-            $table->timestamp('created_at')->useCurrent();
             $table->dropColumn('title_lt');
             $table->dropColumn('permalink_lt');
             $table->dropColumn('source');
@@ -113,7 +111,7 @@ class RefactorPosts extends Migration
             $table->increments('id');
             $table->unsignedInteger('page_id')->nullable();
             $table->foreign('page_id')->references('id')->on('pages');
-            $table->unsignedInteger('category_id');
+            $table->unsignedInteger('tag_id');
             $table->foreign('tag_id')->references('id')->on('categories');
             $table->unsignedInteger('news_id')->nullable();
             $table->foreign('news_id')->references('id')->on('news');
