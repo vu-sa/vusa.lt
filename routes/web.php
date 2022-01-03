@@ -10,6 +10,7 @@ use Inertia\Inertia;
 use Laravel\Jetstream\Http\Controllers\Inertia\OtherBrowserSessionsController;
 use Laravel\Jetstream\Http\Controllers\Inertia\ProfilePhotoController;
 use Laravel\Jetstream\Http\Controllers\Inertia\UserProfileController;
+use Laravel\Socialite\Facades\Socialite;
 
 /*
 |--------------------------------------------------------------------------
@@ -56,6 +57,16 @@ Route::prefix('new')->group(function () {
         });
     });
 });
+
+Route::get('/auth/redirect', function () {
+    return Socialite::driver('microsoft')->redirect();
+})->name('microsoft.redirect');
+
+Route::get('/auth/microsoft/callback', [New\UserController::class, 'storeFromMicrosoft'])->name('microsoft.callback');
+    // $microsoftUser = Socialite::driver('microsoft')->user();
+    // return redirect('https://graph.microsoft.com/v1.0/me/photo/$value');
+// });
+
 
 /**
  * Statiniai seni tinklapio routai

@@ -31,14 +31,14 @@ class RefactorUsers extends Migration
             $table->increments('id');
             $table->integer('user_id');
             $table->integer('role_id');
-            $table->string('password')->nullable()->change();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
 
         Schema::table('users', function (Blueprint $table) {
             $table->string('google_token')->nullable()->after('remember_token');
-            $table->string('microsoft_token')->nullable()->after('remember_token');
+            $table->text('microsoft_token')->nullable()->after('remember_token');
+            $table->string('password')->nullable()->default(NULL)->change();
             $table->renameColumn('disabled', 'is_active');
             $table->renameColumn('gid', 'role_id');
             $table->renameColumn('lastlogin', 'last_login');

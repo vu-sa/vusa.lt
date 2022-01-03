@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\New;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
@@ -87,5 +89,33 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         //
+    }
+
+    public function storeFromMicrosoft()
+    {
+        $microsoftUser = Socialite::driver('microsoft')->user();
+
+        $user = User::where('email', $microsoftUser->mail)->first();
+
+        if ($user) {
+
+            $user->microsoft_token = $microsoftUser->token;
+            $user->update([
+                'email_verified_at' => now(),
+                // 'image' => $microsoftUser->avatar,
+            ]);
+        } else {
+            $user = new User;
+            $user->role_id = 1;
+            $user->microsoft_token = $microsoftUser->token;
+            $user->name = $microsoftUser->displayName;
+            $user->email = $microsoftUser->mail;
+            $user->email_verified_at = now();
+            $user->save();
+        }
+
+        Auth::login($user);
+
+        return redirect()->route('dashboard');
     }
 }
