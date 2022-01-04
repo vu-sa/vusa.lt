@@ -3,7 +3,7 @@
 
   <jet-authentication-card>
     <template #logo>
-      <AppLogo class="w-48" />
+      <Link :href="route('dashboard')"><AppLogo class="w-48" /></Link>
     </template>
 
     <jet-validation-errors class="mb-4" />

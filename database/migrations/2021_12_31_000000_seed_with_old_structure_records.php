@@ -25,7 +25,7 @@ class SeedWithOldStructureRecords extends Migration
         Schema::rename('saziningai_people', 'saziningai_observers');
         Schema::rename('sidebar', 'banners');
         Schema::rename('mainPage', 'main_page');
-        Schema::rename('menu_new', 'menu');
+        Schema::rename('menu_new', 'navigation');
         Schema::rename('page', 'pages');
 
         Schema::table('saziningai_exams', function (Blueprint $table) {

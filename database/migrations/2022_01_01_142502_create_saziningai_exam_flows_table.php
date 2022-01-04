@@ -18,7 +18,7 @@ class CreateSaziningaiExamFlowsTable extends Migration
     {
         // Create table for storing sazininigai exam flows
         Schema::create('saziningai_exam_flows', function (Blueprint $table) {
-            $table->id();
+            $table->increments('id');
             $table->string('exam_uuid', 30);
             $table->foreign('exam_uuid')->references('uuid')->on('saziningai_exams');
             $table->datetime('start_time');

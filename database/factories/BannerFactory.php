@@ -39,7 +39,7 @@ class BannerFactory extends Factory
             'value' => '/images/placeholders/logo.png',
             'title' => $this->faker->words(3, true),
             'url' => '#',
-            'order' => $this->faker->numberBetween(0, 100),
+            'order' => $this->faker->numberBetween(0, 1000),
             'editor' => $editor,
             'editorG' => $editorG,
             'hide' => 0,

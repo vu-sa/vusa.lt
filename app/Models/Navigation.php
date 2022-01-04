@@ -9,6 +9,6 @@ class Navigation extends Model
 {
     use HasFactory;
     
-    protected $table = 'menu';
+    protected $table = 'navigation';
 
 }

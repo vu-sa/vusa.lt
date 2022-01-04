@@ -31,8 +31,21 @@ class RefactorPosts extends Migration
             ]);
         }
 
+        DB::table('categories')->where('name', '=' , 'Akademinė informacija')->update(['alias' => 'red']);
+        DB::table('categories')->where('name', '=' , 'Socialinė informacija')->update(['alias' => 'yellow']);
+        DB::table('categories')->where('name', '=' , 'Kita informacija')->update(['alias' => 'grey']);
+
         Schema::dropIfExists('news_cats');
         Schema::dropIfExists('page_cats');
+
+        Schema::table('categories', function (Blueprint $table) {
+            $table->unique('alias');
+            $table->string('alias')->change();
+        });
+
+        Schema::table('calendar', function (Blueprint $table) {
+            $table->foreign('category')->references('alias')->on('categories');
+        });
 
         Schema::table('pages', function (Blueprint $table) {
             $table->increments('id')->change();
@@ -112,7 +125,7 @@ class RefactorPosts extends Migration
             $table->unsignedInteger('page_id')->nullable();
             $table->foreign('page_id')->references('id')->on('pages');
             $table->unsignedInteger('tag_id');
-            $table->foreign('tag_id')->references('id')->on('categories');
+            $table->foreign('tag_id')->references('id')->on('tags');
             $table->unsignedInteger('news_id')->nullable();
             $table->foreign('news_id')->references('id')->on('news');
             $table->timestamp('created_at')->useCurrent();

@@ -16,6 +16,7 @@ class RefactorSaziningai extends Migration
         // Sažiningai egzaminai
 
         Schema::table('saziningai_exams', function (Blueprint $table) {
+            $table->increments('id')->change();
             $table->renameColumn('contact', 'phone');
             $table->string('email')->nullable()->after('name');
             $table->renameColumn('exam', 'exam_type');

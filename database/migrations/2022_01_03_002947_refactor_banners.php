@@ -30,6 +30,7 @@ class RefactorBanners extends Migration
             $table->foreign('padalinys_id')->references('id')->on('padaliniai');
             $table->integer('is_active')->default(1)->change();
             $table->text('image_url')->nullable(false)->change();
+            $table->unique(['order', 'padalinys_id']);
         });
     }
 

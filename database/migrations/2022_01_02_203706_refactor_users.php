@@ -20,17 +20,10 @@ class RefactorUsers extends Migration
         });
         
         Schema::table('roles', function (Blueprint $table) {
+            $table->increments('id')->change();
             $table->string('alias')->after('id')->change();
             $table->string('name')->after('alias');
             $table->string('description')->nullable()->change();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
-        });
-
-        Schema::create('role_user', function (Blueprint $table) {
-            $table->increments('id');
-            $table->integer('user_id');
-            $table->integer('role_id');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
@@ -42,10 +35,22 @@ class RefactorUsers extends Migration
             $table->renameColumn('disabled', 'is_active');
             $table->renameColumn('gid', 'role_id');
             $table->renameColumn('lastlogin', 'last_login');
+            $table->dropUnique('username');
             $table->increments('id')->change();
             $table->timestamp('created_at')->useCurrent()->after('is_active')->change();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate()->change();
             $table->string('phone')->nullable()->after('email');
+        });
+
+
+        Schema::create('role_user', function (Blueprint $table) {
+            $table->increments('id');
+            $table->unsignedInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users');
+            $table->unsignedInteger('role_id');
+            $table->foreign('role_id')->references('id')->on('roles');
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
 
         Schema::table('users', function (Blueprint $table) {
