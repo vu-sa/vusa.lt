@@ -1,6 +1,6 @@
 <template>
   <AppLayout title="Dashboard">
-    <p>You're logged in!</p>
+    <p class="main-card">You're logged in!</p>
   </AppLayout>
 </template>
 

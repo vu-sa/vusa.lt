@@ -1,7 +1,7 @@
 <template>
   <AdminLayout title="Navigacija">
     <NDataTable
-      
+      class="main-card"
       :data="props.navigation"
       :columns="columns"
       :row-props="rowProps"

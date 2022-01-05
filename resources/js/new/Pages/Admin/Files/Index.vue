@@ -1,7 +1,7 @@
 <template>
   <AdminLayout title="Failų tvarkyklė">
-    <div id="files" class="pb-4">
-      <h2 class="text-2xl my-4 font-bold">
+    <div id="folders" class="main-card">
+      <h2 class="text-2xl font-bold">
         Aplankai ({{ showedDirectories.length }})
       </h2>
       <div class="grid grid-cols-3 gap-3 2xl:grid-cols-6 lg:grid-cols-4">
@@ -24,8 +24,8 @@
         </FolderButton>
       </div>
     </div>
-    <div id="files" v-if="showedFiles.length > 0">
-      <h2 class="text-2xl my-4 font-bold">Failai ({{ showedFiles.length }})</h2>
+    <div id="files" v-if="showedFiles.length > 0" class="main-card">
+      <h2 class="text-2xl font-bold">Failai ({{ showedFiles.length }})</h2>
       <div class="grid grid-cols-3 gap-3 2xl:grid-cols-6 lg:grid-cols-4">
         <FileButton
           v-for="file in showedFiles"

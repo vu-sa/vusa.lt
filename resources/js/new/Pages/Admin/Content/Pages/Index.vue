@@ -4,7 +4,7 @@
       <AsideHeader></AsideHeader>
     </template>
     <NDataTable
-      
+      class="main-card"
       :data="props.pages"
       :columns="columns"
       :row-props="rowProps"

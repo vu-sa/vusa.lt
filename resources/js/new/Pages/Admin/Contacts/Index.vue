@@ -1,6 +1,6 @@
 <template>
   <AdminLayout title="Kontaktai">
-    <NDataTable
+    <NDataTable class="main-card"
       :data="props.users"
       :columns="columns"
       :row-props="rowProps"

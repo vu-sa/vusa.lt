@@ -11,17 +11,18 @@
       top-4
       mb-auto
       col-span-2
-      grid grid-cols-3 gap-3
+      grid grid-flow-row gap-5
+      text-sm text-gray-700
+      p-6
     "
   >
     <div
       class="
         flex
-        items-center
-        text-sm text-gray-700
+        items-center    
         hover:text-gray-900
         transition col-span-3
-        m-4
+        
       "
     >
       <Link

@@ -17,8 +17,10 @@ class SaziningaiExams extends Model
      */
     protected $table = 'saziningai_exams';
 
+    protected $guarded = ['id', 'created_at', 'updated_at'];
+
     protected $casts = [
-        'created_at' => 'datetime:Y-m-d H:i',
+        'created_at' => 'datetime:Y-m-d',
     ];
 
     public function padalinys()
@@ -28,7 +30,7 @@ class SaziningaiExams extends Model
 
     public function flows()
     {
-        return $this->hasMany(SaziningaiExamsFlow::class, 'exam_uuid', 'uuid');
+        return $this->hasMany(SaziningaiExamFlows::class, 'exam_uuid', 'uuid');
     }
 
     public function observers()

@@ -1,9 +1,6 @@
 <template>
   <AdminLayout title="Renginiai">
-    <template #aside-header>
-      <AsideHeader></AsideHeader>
-    </template>
-    <NDataTable
+    <NDataTable class="main-card"
       :data="props.calendar"
       :columns="columns"
       :row-props="rowProps"
@@ -14,7 +11,6 @@
 
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-import AsideHeader from "../AsideHeader.vue";
 import { NDataTable } from "naive-ui";
 import { ref } from "vue";
 import { Inertia } from "@inertiajs/inertia";

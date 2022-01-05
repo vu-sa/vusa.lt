@@ -34,6 +34,7 @@ class RefactorSaziningai extends Migration
         });
 
         Schema::table('saziningai_exams', function (Blueprint $table) {
+            $table->unsignedInteger('students_need')->change();
             $table->renameColumn('count', 'exam_holders');
             $table->dropColumn('students_registered');
         });

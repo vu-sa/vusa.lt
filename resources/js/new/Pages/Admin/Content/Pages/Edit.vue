@@ -1,7 +1,9 @@
 <template>
   <AdminLayout :title="page.permalink">
-    <h2 class="font-bold text-xl mb-2">Turinys</h2>
-    <div class="p-4 border-2 rounded-xl border-red-200"><TipTap v-model="content" /></div>
+    <div class="main-card">
+      <h2 class="font-bold text-xl mb-2 inline-block bg-black p-1 text-white rounded-lg ">Turinys</h2>
+      <div class="py-4"><TipTap v-model="content" /></div>
+    </div>
   </AdminLayout>
 </template>
 

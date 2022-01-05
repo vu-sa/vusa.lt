@@ -3,7 +3,7 @@
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
-    <NDataTable
+    <NDataTable class="main-card"
       :data="props.mainPage"
       :columns="columns"
       :row-props="rowProps"

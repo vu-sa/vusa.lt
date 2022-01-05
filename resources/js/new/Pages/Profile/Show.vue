@@ -34,7 +34,6 @@
 </template>
 
 <script setup>
-import { defineProps } from "vue";
 import AppLayout from "@/Layouts/AdminLayout.vue";
 import JetSectionBorder from "@/Jetstream/SectionBorder.vue";
 import LogoutOtherBrowserSessionsForm from "@/Pages/Admin/Partials/LogoutOtherBrowserSessionsForm.vue";
@@ -43,5 +42,4 @@ import UpdatePasswordForm from "@/Pages/Admin/Partials/UpdatePasswordForm.vue";
 import UpdateProfileInformationForm from "@/Pages/Admin/Partials/UpdateProfileInformationForm.vue";
 
 const props = defineProps(['sessions'])
-
 </script>

@@ -5,8 +5,7 @@
     <header class="mt-4 mb-5 col-span-4 flex flex-row items-center">
       <h1
         class="
-          font-black
-          text-3xl text-gray-800
+          text-gray-800
           leading-tight
           inline-block
           mr-2

@@ -1,5 +1,5 @@
 <template>
-    <jet-action-section>
+    <jet-action-section class="main-card">
         <template #title>
             Browser Sessions
         </template>
