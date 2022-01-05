@@ -69,10 +69,11 @@
           <p class="mr-4" v-if="flash.message">{{ flash.message[1] }}</p>
           <n-popconfirm @positive-click="destroyModel()"
             ><template #trigger>
-              <button>
-                <TrashIcon class="w-5 h-5 mr-2 stroke-red-800" />
+              <button type="button">
+                <TrashIcon class="w-5 h-5 mr-2 stroke-red-800 hover:stroke-red-900 duration-200" />
               </button> </template
-          ></n-popconfirm>
+          >
+          Ištrinto elemento nebus galima atkurti! Bus ištrinti ir srautai, ir stebėtojai.</n-popconfirm>
           <n-popconfirm @positive-click="updateModel()">
             <template #trigger>
               <NSpin :show="showSpin" size="small">
@@ -116,7 +117,7 @@ import {
   NSelect,
   NInputNumber,
   NButton,
-  NPopconfirm,
+  NPopconfirm
 } from "naive-ui";
 import { Inertia } from "@inertiajs/inertia";
 import { TrashIcon } from "@heroicons/vue/outline";
@@ -155,6 +156,10 @@ const updateModel = async () => {
   showSpin.value = !showSpin.value;
   await Inertia.patch(route("saziningaiExams.update", exam.id), exam);
   showSpin.value = !showSpin.value;
+};
+
+const destroyModel = async () => {
+  await Inertia.delete(route("saziningaiExams.destroy", exam.id));
 };
 
 </script>

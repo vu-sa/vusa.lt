@@ -20,7 +20,7 @@ class CreateSaziningaiExamFlowsTable extends Migration
         Schema::create('saziningai_exam_flows', function (Blueprint $table) {
             $table->increments('id');
             $table->string('exam_uuid', 30);
-            $table->foreign('exam_uuid')->references('uuid')->on('saziningai_exams');
+            $table->foreign('exam_uuid')->references('uuid')->on('saziningai_exams')->cascadeOnDelete();
             $table->datetime('start_time');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
@@ -59,7 +59,7 @@ class CreateSaziningaiExamFlowsTable extends Migration
 
         Schema::table('saziningai_observers', function (Blueprint $table) {
             $table->unsignedInteger('flow')->change();
-            $table->foreign('flow')->references('id')->on('saziningai_exam_flows');
+            $table->foreign('flow')->references('id')->on('saziningai_exam_flows')->cascadeOnDelete();
         });
 
         Schema::table('saziningai_exams', function (Blueprint $table) {

@@ -8,7 +8,7 @@
           <jet-section-border />
         </div>
 
-        <div v-if="$page.props.jetstream.canUpdatePassword">
+        <!-- <div v-if="$page.props.jetstream.canUpdatePassword">
           <update-password-form class="mt-10 sm:mt-0" />
 
           <jet-section-border />
@@ -18,7 +18,7 @@
           <two-factor-authentication-form class="mt-10 sm:mt-0" />
 
           <jet-section-border />
-        </div>
+        </div> -->
 
         <logout-other-browser-sessions-form
           :sessions="sessions"
@@ -37,8 +37,8 @@
 import AppLayout from "@/Layouts/AdminLayout.vue";
 import JetSectionBorder from "@/Jetstream/SectionBorder.vue";
 import LogoutOtherBrowserSessionsForm from "@/Pages/Admin/Partials/LogoutOtherBrowserSessionsForm.vue";
-import TwoFactorAuthenticationForm from "@/Pages/Admin/Partials/TwoFactorAuthenticationForm.vue";
-import UpdatePasswordForm from "@/Pages/Admin/Partials/UpdatePasswordForm.vue";
+// import TwoFactorAuthenticationForm from "@/Pages/Admin/Partials/TwoFactorAuthenticationForm.vue";
+// import UpdatePasswordForm from "@/Pages/Admin/Partials/UpdatePasswordForm.vue";
 import UpdateProfileInformationForm from "@/Pages/Admin/Partials/UpdateProfileInformationForm.vue";
 
 const props = defineProps(['sessions'])

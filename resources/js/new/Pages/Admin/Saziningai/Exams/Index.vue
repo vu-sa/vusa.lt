@@ -3,14 +3,15 @@
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
-    <NDataTable
-      :data="props.exams"
-      :columns="columns"
-      :row-props="rowProps"
-      :scroll-x="1200"
-      class="main-card"
-    >
-    </NDataTable>
+    <div class="main-card">
+      <NDataTable
+        :data="props.exams"
+        :columns="columns"
+        :row-props="rowProps"
+        :scroll-x="1200"
+      >
+      </NDataTable>
+    </div>
   </AdminLayout>
 </template>
 
@@ -24,6 +25,7 @@ import { Link } from "@inertiajs/inertia-vue3";
 
 const props = defineProps({
   exams: Object,
+  padaliniai: Object,
 });
 
 const createColumns = () => {
@@ -32,11 +34,17 @@ const createColumns = () => {
       title: "Dalyko pavadinimas",
       key: "subject_name",
       className: "w-1/6 truncate max-w-[1em]",
+      sorter: "default",
     },
     {
       title: "Laikančiųjų padalinys",
       key: "padalinys",
-      className: "break-normal",
+      // className: "break-normal",
+      // defaultFilterOptionValues: ['London', 'New York'],
+      // filterOptions: selectOptions,
+      // filter(value, row) {
+      // return ~row.padalinys.indexOf(value);
+      // },
     },
     {
       title: "Registruotojas",
@@ -52,11 +60,13 @@ const createColumns = () => {
       title: "Užregistravimo data",
       key: "created_at",
       className: "break-normal",
+      sorter: "default",
     },
     {
       title: "Egzamino pradžia",
       key: "flow_date",
       className: "break-normal",
+      sorter: "default",
     },
     {
       title: "Srautai",
@@ -65,11 +75,14 @@ const createColumns = () => {
     {
       title: "Stebėtojai",
       key: "observer_count",
+      sorter: "default",
     },
   ];
 };
 
 const columns = ref(createColumns());
+
+const dataTableInstRef = ref(null);
 
 const rowProps = (row) => {
   return {
@@ -81,6 +94,13 @@ const rowProps = (row) => {
 };
 
 const sortRef = ref(false);
+
+const selectOptions = Object.keys(props.padaliniai).map((key) => {
+  return {
+    value: key,
+    label: props.padaliniai[key],
+  };
+});
 
 const inertiaPromise = () => {
   return new Promise((resolve, reject) => {

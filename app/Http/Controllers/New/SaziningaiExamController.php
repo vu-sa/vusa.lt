@@ -19,8 +19,12 @@ class SaziningaiExamController extends Controller
     public function index()
     {
 
+        $exams = SaziningaiExams::all();
+
+        // dd($exams->unique('padalinys_id')->toArray());
+
         return Inertia::render('Admin/Saziningai/Exams/Index', [
-            'exams' => SaziningaiExams::all()->map(function ($exam) {
+            'exams' => $exams->map(function ($exam) {
 
                 return [
                     'id' => $exam->id,
@@ -33,7 +37,10 @@ class SaziningaiExamController extends Controller
                     'flow_count' => $exam->flows->count(),
                     'observer_count' => $exam->observers->count(),
                 ];
-            })
+            }),
+            'padaliniai' => $exams->unique('padalinys_id')->map(function ($exam) {
+                return $exam->padalinys->shortname_vu;
+            }),
         ]);
     }
 
@@ -125,6 +132,8 @@ class SaziningaiExamController extends Controller
      */
     public function destroy(SaziningaiExams $saziningaiExam)
     {
-        //
+        $saziningaiExam->delete();
+
+        return redirect()->route('saziningaiExams.index')->with('success', 'Sėkmingai ištrinta!');
     }
 }

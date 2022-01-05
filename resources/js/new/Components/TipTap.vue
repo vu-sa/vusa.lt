@@ -142,7 +142,7 @@ export default {
     this.editor = new Editor({
       editorProps: {
         attributes: {
-          class: "prose prose-sm sm:prose lg:prose-lg focus:outline-none",
+          class: "focus:outline-none",
         },
       },
       extensions: [StarterKit],
