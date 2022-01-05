@@ -21,7 +21,8 @@ class SeedWithOldStructureRecords extends Migration
         
         // Prerequisites
         Schema::table('users', function (Blueprint $table) {
-            $table->renameColumn('created', 'created_at');
+            $table->dropColumn('created');
+            $table->timestamp('created_at')->useCurrent();
             $table->timestamp('email_verified_at')->nullable()->after('gid');
         });
 
@@ -33,7 +34,8 @@ class SeedWithOldStructureRecords extends Migration
         Schema::rename('page', 'pages');
 
         Schema::table('saziningai_exams', function (Blueprint $table) {
-            $table->renameColumn('registration_time', 'created_at');
+            $table->dropColumn('registration_time');
+            $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
 
@@ -43,37 +45,40 @@ class SeedWithOldStructureRecords extends Migration
         });
 
         Schema::table('calendar', function (Blueprint $table) {
-            $table->renameColumn('editor_time', 'updated_at');
+            $table->dropColumn('editor_time');
         });
 
         Schema::table('calendar', function (Blueprint $table) {
             $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate()->after('created_at')->change();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
 
 
         Schema::table('banners', function (Blueprint $table) {
-            $table->renameColumn('editor_time', 'updated_at');
+            $table->dropColumn('editor_time');
         });
 
         Schema::table('banners', function (Blueprint $table) {
             $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate()->after('created_at')->change();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
 
         Schema::table('main_page', function (Blueprint $table) {
-            $table->renameColumn('created_time', 'created_at');
+            $table->dropColumn('created_time');
+            $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
 
         Schema::table('pages', function (Blueprint $table) {
-            $table->renameColumn('editor_time', 'updated_at');
+            $table->dropColumn('editor_time');
             $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
 
         Schema::table('news', function (Blueprint $table) {
-            $table->renameColumn('editor_time', 'updated_at');
+            $table->dropColumn('editor_time');
             $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
 
         // Seed with old structure records

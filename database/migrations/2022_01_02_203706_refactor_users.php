@@ -35,7 +35,8 @@ class RefactorUsers extends Migration
             $table->string('password')->nullable()->default(NULL)->change();
             $table->renameColumn('disabled', 'is_active');
             $table->renameColumn('gid', 'role_id');
-            $table->renameColumn('lastlogin', 'last_login');
+            $table->dropColumn('lastlogin');
+            $table->timestamp('last_login')->nullable()->after('remember_token');
             $table->dropUnique('username');
             $table->increments('id')->change();
             $table->timestamp('created_at')->useCurrent()->after('is_active')->change();

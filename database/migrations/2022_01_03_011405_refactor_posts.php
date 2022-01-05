@@ -62,17 +62,17 @@ class RefactorPosts extends Migration
             $table->increments('id')->change();
         });
 
-        Schema::create('posts_categories', function (Blueprint $table) {
-            $table->increments('id');
-            $table->unsignedInteger('page_id')->nullable();
-            $table->foreign('page_id')->references('id')->on('pages');
-            $table->unsignedInteger('category_id');
-            $table->foreign('category_id')->references('id')->on('categories');
-            $table->unsignedInteger('news_id')->nullable();
-            $table->foreign('news_id')->references('id')->on('news');
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate()->after('created_at')->change();
-        });
+        // Schema::create('posts_categories', function (Blueprint $table) {
+        //     $table->increments('id');
+        //     $table->unsignedInteger('page_id')->nullable();
+        //     $table->foreign('page_id')->references('id')->on('pages');
+        //     $table->unsignedInteger('category_id');
+        //     $table->foreign('category_id')->references('id')->on('categories');
+        //     $table->unsignedInteger('news_id')->nullable();
+        //     $table->foreign('news_id')->references('id')->on('news');
+        //     $table->timestamp('created_at')->useCurrent();
+        //     $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate()->after('created_at')->change();
+        // });
 
         DB::table('pages')->where('role_id', '=', 23)->delete();
 
@@ -140,6 +140,36 @@ class RefactorPosts extends Migration
             $table->foreign('news_id')->references('id')->on('news');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate()->after('created_at')->change();
+            $table->unique(['page_id', 'tag_id']);
+            $table->unique(['news_id', 'tag_id']);
+        });
+
+        $tags = DB::table('news')->whereNotNull('tags')->select('id', 'tags')->get();
+
+        foreach ($tags as $key => $value) {
+            
+            if ($value->tags == '') {
+                continue;
+            }
+
+            $tags = explode(';', $value->tags);
+            foreach ($tags as $t) {
+                $t = trim($t);
+
+                // if tag exists, get id, else insert and get id
+                $tag_id = DB::table('tags')->where('name', '=', $t)->value('id');
+
+                if (is_null($tag_id)) {
+                    $tag_id = DB::table('tags')->insertGetId(['name' => $t]);
+
+                }
+                DB::table('posts_tags')->insert(['news_id' => $value->id, 'tag_id' => $tag_id]);
+            }
+        }
+
+        Schema::table('news', function (Blueprint $table) {
+            $table->dropColumn('tags');
+            $table->foreign('category_id')->references('id')->on('categories');
         });
     }
 

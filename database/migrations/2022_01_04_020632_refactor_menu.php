@@ -22,7 +22,8 @@ class RefactorMenu extends Migration
             $table->string('url')->nullable(false)->change();
             $table->dropColumn('readonly');
             $table->dropColumn('creator');
-            $table->renameColumn('creator_time', 'created_at');
+            $table->dropColumn('creator_time');
+            $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
 

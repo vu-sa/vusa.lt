@@ -59,24 +59,4 @@ class User extends Authenticatable
     protected $appends = [
         'profile_photo_url',
     ];
-
-    public function isAdmin() {
-        return Auth::user()->gid == 1;
-    }
-
-    public function isCB() {
-        return Auth::user()->gid < 4;
-    }
-
-    public function isSaziningai() {
-        return Auth::user()->gid == 19;
-    }
-
-    public function isCommunication() {
-        return Auth::user()->gid != 3 && Auth::user()->gid != 19;
-    }
-
-    public function isPadaliniaiCommunication() {
-        return Auth::user()->gid > 3 && Auth::user()->gid != 19;
-    }
 }
