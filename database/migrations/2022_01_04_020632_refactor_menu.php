@@ -21,17 +21,18 @@ class RefactorMenu extends Migration
             $table->unsignedInteger('pid')->default(0)->change();
             $table->string('url')->nullable(false)->change();
             $table->dropColumn('readonly');
-            $table->renameColumn('creator', 'user_id');
+            $table->dropColumn('creator');
             $table->renameColumn('creator_time', 'created_at');
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
 
         Schema::table('navigation', function (Blueprint $table) {
-            $table->unsignedInteger('user_id')->after('parent_id')->change();
+            $table->unsignedInteger('user_id')->nullable()->after('parent_id');
             $table->foreign('user_id')->references('id')->on('users');
             $table->unsignedInteger('padalinys_id')->after('user_id')->default(16);
             $table->foreign('padalinys_id')->references('id')->on('padaliniai');
-            $table->unique(['parent_id', 'lang', 'order', 'padalinys_id']);
+            // TODO: need to set unique
+            // $table->unique(['parent_id', 'lang', 'order', 'padalinys_id']);
         });
     }
 

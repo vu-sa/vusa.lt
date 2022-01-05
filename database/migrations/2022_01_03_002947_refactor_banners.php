@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 class RefactorBanners extends Migration
 {
@@ -20,17 +21,19 @@ class RefactorBanners extends Migration
             $table->renameColumn('url', 'link_url');
             $table->renameColumn('hide', 'is_active');
             $table->renameColumn('editor', 'user_id');
-            $table->renameColumn('editorG', 'padalinys_id');
+            $table->renameColumn('editorG', 'role_id');
         });
+
+        DB::table('banners')->update(['user_id' => 56]);
 
         Schema::table('banners', function (Blueprint $table) {
             $table->unsignedInteger('user_id')->after('id')->change();
             $table->foreign('user_id')->references('id')->on('users');
-            $table->unsignedInteger('padalinys_id')->after('user_id')->default(1)->change();
-            $table->foreign('padalinys_id')->references('id')->on('padaliniai');
+            $table->unsignedInteger('role_id')->after('user_id')->default(1)->change();
+            $table->foreign('role_id')->references('id')->on('roles');
             $table->integer('is_active')->default(1)->change();
             $table->text('image_url')->nullable(false)->change();
-            $table->unique(['order', 'padalinys_id']);
+            $table->unique(['order', 'role_id']);
         });
     }
 

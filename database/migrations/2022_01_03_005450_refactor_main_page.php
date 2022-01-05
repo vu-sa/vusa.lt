@@ -1,8 +1,10 @@
 <?php
 
+use App\Models\Users_group;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 class RefactorMainPage extends Migration
 {
@@ -19,17 +21,19 @@ class RefactorMainPage extends Migration
             $table->dropColumn('moduleName');
             $table->renameColumn('orderID', 'order');
             $table->boolean('is_active')->default(true)->after('type');
-            $table->unsignedInteger('user_id')->default(1)->after('id');
+            $table->unsignedInteger('user_id')->nullable()->after('id');
             $table->foreign('user_id')->references('id')->on('users')->after('id');
             $table->unsignedInteger('groupID')->change();
-            $table->renameColumn('groupID', 'padalinys_id');
+            $table->renameColumn('groupID', 'role_id');
             $table->string('link')->nullable()->change();
         });
 
+        DB::table('main_page')->where('role_id', '=', 23)->delete();
+
         Schema::table('main_page', function (Blueprint $table) {
             $table->timestamp('created_at')->useCurrent()->change();
-            $table->unsignedInteger('padalinys_id')->change()->after('id');
-            $table->foreign('padalinys_id')->references('id')->on('padaliniai');
+            $table->unsignedInteger('role_id')->after('id')->change();
+            $table->foreign('role_id')->references('id')->on('roles');
         });
     }
 

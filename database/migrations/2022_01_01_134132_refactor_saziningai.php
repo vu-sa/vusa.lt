@@ -41,17 +41,16 @@ class RefactorSaziningai extends Migration
 
         Schema::table('saziningai_observers', function (Blueprint $table) {
             $table->renameColumn('id_p', 'id');
-            $table->foreign('exam_uuid')->references('uuid')->on('saziningai_exams')->change();
+            // TODO: need to set foreign. Right now there exists observers that have no exam 
+            // $table->foreign('exam_uuid')->references('uuid')->on('saziningai_exams')->change(); 
 
             $table->renameColumn('name_p', 'name');
-
             $table->string('padalinys_p', 30)->comment('Should be deprecated')->change();
 
             $table->unsignedInteger('padalinys_id')->default(16);
             $table->foreign('padalinys_id')->references('id')->on('padaliniai');
 
-            $table->renameColumn('contact_p', 'phone');
-           
+            $table->renameColumn('contact_p', 'phone');       
             $table->renameColumn('status_p', 'has_arrived');
         });
 

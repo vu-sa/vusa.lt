@@ -31,9 +31,9 @@ class RefactorPosts extends Migration
             ]);
         }
 
-        DB::table('categories')->where('name', '=' , 'Akademinė informacija')->update(['alias' => 'red']);
-        DB::table('categories')->where('name', '=' , 'Socialinė informacija')->update(['alias' => 'yellow']);
-        DB::table('categories')->where('name', '=' , 'Kita informacija')->update(['alias' => 'grey']);
+        DB::table('categories')->where('name', '=', 'Akademinė informacija')->update(['alias' => 'red']);
+        DB::table('categories')->where('name', '=', 'Socialinė informacija')->update(['alias' => 'yellow']);
+        DB::table('categories')->where('name', '=', 'Kita informacija')->update(['alias' => 'grey']);
 
         Schema::dropIfExists('news_cats');
         Schema::dropIfExists('page_cats');
@@ -43,14 +43,16 @@ class RefactorPosts extends Migration
             $table->string('alias')->change();
         });
 
+        DB::table('calendar')->where('category', '=', '')->delete();
+
         Schema::table('calendar', function (Blueprint $table) {
             $table->foreign('category')->references('alias')->on('categories');
         });
 
         Schema::table('pages', function (Blueprint $table) {
             $table->increments('id')->change();
-            $table->renameColumn('editor', 'user_id');
-            $table->renameColumn('editorG', 'padalinys_id');
+            $table->dropColumn('editor');
+            $table->renameColumn('editorG', 'role_id');
             $table->renameColumn('mainInfo', 'aside');
             $table->renameColumn('category', 'category_id');
             $table->renameColumn('disabled', 'is_active');
@@ -72,25 +74,27 @@ class RefactorPosts extends Migration
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate()->after('created_at')->change();
         });
 
+        DB::table('pages')->where('role_id', '=', 23)->delete();
+
         Schema::table('pages', function (Blueprint $table) {
             $table->dropColumn('readonly');
             $table->dropColumn('permalink_lt');
             $table->dropColumn('title_lt');
             $table->unsignedInteger('other_lang_id')->nullable()->index()->after('lang');
             $table->text('aside')->nullable()->after('text')->change();
-            $table->unique(['permalink', 'padalinys_id']);
-            $table->unique(['id', 'other_lang_id']);
-            $table->unsignedInteger('user_id')->change();
+            $table->unique(['permalink', 'role_id']);
+            $table->unique(['other_lang_id']);
+            $table->unsignedInteger('user_id')->nullable()->after('id');
             $table->foreign('user_id')->references('id')->on('users');
-            $table->unsignedInteger('padalinys_id')->change();
-            $table->foreign('padalinys_id')->references('id')->on('padaliniai');
+            $table->unsignedInteger('role_id')->change();
+            $table->foreign('role_id')->references('id')->on('roles');
             $table->unsignedInteger('category_id')->nullable()->change();
             $table->boolean('is_active')->default(true)->change();
         });
 
         Schema::table('news', function (Blueprint $table) {
-            $table->renameColumn('editor', 'user_id');
-            $table->renameColumn('publisher', 'padalinys_id');
+            $table->dropColumn('editor');
+            $table->renameColumn('publisher', 'role_id');
             $table->renameColumn('cat', 'category_id');
             $table->renameColumn('readMore', 'read_more');
             $table->renameColumn('mainPoints', 'main_points');
@@ -101,14 +105,20 @@ class RefactorPosts extends Migration
         });
 
         Schema::table('news', function (Blueprint $table) {
+            $table->unsignedInteger('role_id')->nullable(false)->after('user_id')->change();
+        });
+
+        DB::table('news')->where('role_id', '!=', 24)->where('role_id', '>', '19')->update(['role_id' => 1]);
+        DB::table('news')->where('role_id', '<=', 3)->update(['role_id' => 1]);
+
+        Schema::table('news', function (Blueprint $table) {
             $table->unsignedInteger('category_id')->nullable()->change();
-            $table->unsignedInteger('user_id')->after('id')->change();
+            $table->unsignedInteger('user_id')->after('id')->nullable();
             $table->foreign('user_id')->references('id')->on('users');
-            $table->unsignedInteger('padalinys_id')->nullable(false)->after('user_id')->change();
-            $table->foreign('padalinys_id')->references('id')->on('padaliniai');
+            $table->foreign('role_id')->references('id')->on('roles');
             $table->unsignedInteger('other_lang_id')->nullable()->index()->after('lang');
-            $table->unique(['permalink', 'padalinys_id']);
-            $table->unique(['id', 'other_lang_id']);
+            $table->unique(['permalink', 'role_id']);
+            $table->unique(['other_lang_id']);
         });
 
         Schema::create('tags', function (Blueprint $table) {

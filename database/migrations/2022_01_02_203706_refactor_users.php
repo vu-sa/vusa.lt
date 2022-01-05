@@ -23,12 +23,13 @@ class RefactorUsers extends Migration
             $table->increments('id')->change();
             $table->string('alias')->after('id')->change();
             $table->string('name')->after('alias');
-            $table->string('description')->nullable()->change();
+            $table->text('description')->nullable()->change();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
-
+        
         Schema::table('users', function (Blueprint $table) {
+            // $table->dropUnique('users_email_unique');
             $table->string('google_token')->nullable()->after('remember_token');
             $table->text('microsoft_token')->nullable()->after('remember_token');
             $table->string('password')->nullable()->default(NULL)->change();
@@ -56,6 +57,7 @@ class RefactorUsers extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->boolean('is_active')->default(true)->change();
             $table->dropColumn('lastlogin_ip');
+            // $table->unique('email');
         });
     }
 

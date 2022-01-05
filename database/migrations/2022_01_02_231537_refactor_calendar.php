@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Calendar;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -26,11 +27,12 @@ class RefactorCalendar extends Migration
             $table->dropColumn('badge');
         });
 
+        DB::table('calendar')->update(['user_id' => 56]);
+
         Schema::table('calendar', function (Blueprint $table) {
             $table->string('category')->nullable()->change();
-            $table->string('category')->nullable()->change();
             $table->text('description')->nullable()->change();
-            $table->unsignedInteger('user_id')->change();
+            $table->unsignedInteger('user_id')->nullable()->change();
             $table->foreign('user_id')->references('id')->on('users');
             $table->unsignedInteger('padalinys_id')->default(16)->after('user_id');
             $table->foreign('padalinys_id')->references('id')->on('padaliniai');
@@ -43,14 +45,12 @@ class RefactorCalendar extends Migration
             $title = $item->title;
             $description = $item->description;
             $category = $item->classname;
-            $user_id = $item->editor;
 
             DB::table('calendar')->insert([
                 'date' => $date,
                 'title' => $title,
                 'description' => $description,
-                'category' => $category,
-                'user_id' => $user_id,
+                'category' => $category
             ]);
         }
 

@@ -4,6 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 class SeedWithOldStructureRecords extends Migration
 {
@@ -14,6 +15,9 @@ class SeedWithOldStructureRecords extends Migration
      */
     public function up()
     {
+        if (config('app.env') === 'local') {
+            DB::unprepared(file_get_contents('database/vusa_www-n.sql'));
+        }
         
         // Prerequisites
         Schema::table('users', function (Blueprint $table) {
@@ -73,11 +77,13 @@ class SeedWithOldStructureRecords extends Migration
         });
 
         // Seed with old structure records
-        if (config('app.env') === 'local') {
+        /* if (config('app.env') === 'local') {
             Artisan::call('db:seed', [
                 '--class' => 'OldDatabaseSeeder',
             ]);
-        }
+        } */
+
+        DB::table('padaliniai')->insert(['id' => 16, 'fullname' => 'Vilniaus universiteto Studentų atstovybė', 'shortname' => 'VU SA', 'alias' => 'vusa', 'en' => 0]);
     }
 
     /**
