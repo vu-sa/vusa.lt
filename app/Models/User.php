@@ -21,6 +21,8 @@ class User extends Authenticatable
     use Notifiable;
     use TwoFactorAuthenticatable;
 
+    protected $table = 'users';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -59,4 +61,22 @@ class User extends Authenticatable
     protected $appends = [
         'profile_photo_url',
     ];
+
+    // Access banner with relationship
+
+    public function banners()
+    {
+        return $this->hasMany(Banner::class, 'user_id', 'id');
+    }
+
+    public function calendar()
+    {
+        return $this->hasMany(Calendar::class, 'user_id', 'id');
+    }
+
+    public function duties()
+    {
+        return $this->belongsToMany(Duty::class, 'duties_users', 'user_id', 'duty_id');
+    }
+
 }

@@ -2,10 +2,24 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Duty extends Model
 {
-    use HasFactory;
+    protected $table = 'duties';
+
+    public function users()
+    {
+        return $this->belongsToMany(Duty::class, 'duties_users', 'duty_id', 'user_id');
+    }
+
+    public function type()
+    {
+        return $this->belongsTo(DutyType::class, 'type_id');
+    }
+
+    public function institution()
+    {
+        return $this->belongsTo(DutyInstitution::class, 'institution_id');
+    }
 }

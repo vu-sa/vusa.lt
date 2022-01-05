@@ -11,4 +11,14 @@ class Navigation extends Model
     
     protected $table = 'navigation';
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function padalinys()
+    {
+        return $this->belongsTo(Padalinys::class, 'padalinys_id');
+    }
+
 }

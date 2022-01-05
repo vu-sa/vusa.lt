@@ -10,4 +10,14 @@ class MainPage extends Model
     use HasFactory;
     
     protected $table = 'main_page';
+
+    public function padalinys()
+    {
+        return $this->belongsTo(Padalinys::class, 'padalinys_id');
+    }
+
+    public function users()
+    {
+        return $this->hasMany(User::class, 'user_id');
+    }
 }

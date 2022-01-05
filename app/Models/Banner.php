@@ -9,4 +9,13 @@ class Banner extends Model
 {
     use HasFactory;
     
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function padalinys()
+    {
+        return $this->belongsTo(Padalinys::class, 'padalinys_id');
+    }
 }

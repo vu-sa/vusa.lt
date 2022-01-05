@@ -8,4 +8,16 @@ use Illuminate\Database\Eloquent\Model;
 class SaziningaiExamFlows extends Model
 {
     use HasFactory;
+
+    protected $table = 'saziningai_exam_flows';
+
+    public function exam()
+    {
+        return $this->belongsTo(SaziningaiExams::class, 'exam_uuid', 'uuid');
+    }
+
+    public function observers()
+    {
+        return $this->hasMany(SaziningaiObservers::class, 'flow_id');
+    }
 }

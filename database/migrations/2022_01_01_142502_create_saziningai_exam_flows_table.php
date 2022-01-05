@@ -47,6 +47,24 @@ class CreateSaziningaiExamFlowsTable extends Migration
                 $value
             );
         }
+
+        // get flow id for each observer, from saziningai_exam_flows and insert
+
+        $observers = DB::table('saziningai_observers')->get(['id', 'exam_uuid', 'flow']);
+        
+        foreach ($observers as $key => $value) {
+            $flow = DB::table('saziningai_exam_flows')->select('id')->where('exam_uuid', $value->exam_uuid)->get()[$value->flow - 1];
+            DB::table('saziningai_observers')->where('exam_uuid', $value->exam_uuid)->where('flow', $value->flow)->update(['flow' => $flow->id]);
+        }
+
+        Schema::table('saziningai_observers', function (Blueprint $table) {
+            $table->unsignedInteger('flow')->change();
+            $table->foreign('flow')->references('id')->on('saziningai_exam_flows');
+        });
+
+        Schema::table('saziningai_exams', function (Blueprint $table) {
+            $table->dropColumn('time');
+        });
     }
     /**
      * Reverse the migrations.
