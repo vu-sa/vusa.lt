@@ -1,7 +1,10 @@
 <template>
-  <AdminLayout :title="exam.subject_name + ' - ' + exam.created_at">
+  <AdminLayout :title="title">
     <div class="main-card">
       <h3 class="mb-4">Bendra informacija</h3>
+        <ul v-if="errors" class="mb-4 text-red-700">
+          <li v-for="error in errors">{{ error }}</li>
+        </ul>
       <form class="grid grid-cols-4 gap-8 mb-4 grid-flow-row-dense">
         <div>
           <label class="font-bold">Pavadinimas</label
@@ -84,36 +87,13 @@
         </div>
 
         <div class="col-start-3 col-span-2 flex justify-end items-center">
-          <transition name="fade"
-            ><p class="mr-4 text-green-700" v-if="flash.success">
-              {{ flash.success }}
-            </p></transition
-          >
-          <n-popconfirm positive-text="Ištrinti!" negative-text="Palikti" @positive-click="destroyModel()"
-            ><template #trigger>
-              <button type="button">
-                <TrashIcon
-                  class="
-                    w-5
-                    h-5
-                    mr-2
-                    stroke-red-800
-                    hover:stroke-red-900
-                    duration-200
-                  "
-                />
-              </button>
-            </template>
-            Ištrinto elemento nebus galima atkurti! Bus ištrinti ir srautai, ir
-            stebėtojai.</n-popconfirm
-          >
           <n-popconfirm @positive-click="updateModel()">
             <template #trigger>
               <NSpin :show="showSpin" size="small">
-                <n-button>Atnaujinti</n-button>
+                <n-button>Išsaugoti</n-button>
               </NSpin>
             </template>
-            Ar tikrai atnaujinti?
+            Ar tikrai išsaugoti?
           </n-popconfirm>
         </div>
       </form>
@@ -128,21 +108,21 @@
       </ol>
     </div>
 
-    <div class="main-card" v-if="observers.length !== 0">
+    <!-- <div class="main-card" v-if="observers.length !== 0">
       <h3>Užsiregistravę stebėtojai</h3>
       <ol>
         <li v-for="observer in observers" v-bind:key="observer.id">
           {{ observer.name }}
         </li>
       </ol>
-    </div>
+    </div> -->
   </AdminLayout>
 </template>
 
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AsideHeader from "../AsideHeader.vue";
-import { ref, reactive } from "vue";
+import { ref, reactive, computed } from "vue";
 import {
   NCheckbox,
   NSpin,
@@ -153,17 +133,16 @@ import {
   NPopconfirm,
 } from "naive-ui";
 import { Inertia } from "@inertiajs/inertia";
-import { TrashIcon } from "@heroicons/vue/outline";
 
 const props = defineProps({
-  exam: Object,
   padaliniai: Object,
   flows: Object,
   observers: Object,
   flash: Object,
+  errors: Object,
 });
 
-const exam = reactive(props.exam);
+const exam = reactive({});
 
 const padaliniai_options = props.padaliniai.map((padalinys) => ({
   value: padalinys.id,
@@ -183,15 +162,28 @@ const exam_types = [
 
 const showSpin = ref(false);
 
+const title = computed(() => {
+  return "Naujas egzaminas";
+});
+
 // Form sending
 
 const updateModel = async () => {
   showSpin.value = !showSpin.value;
-  await Inertia.patch(route("saziningaiExams.update", exam.id), exam);
+  await Inertia.post(route("saziningaiExams.store", exam.id), exam);
   showSpin.value = !showSpin.value;
 };
 
-const destroyModel = async () => {
-  await Inertia.delete(route("saziningaiExams.destroy", exam.id));
-};
 </script>
+
+<style>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0.5;
+}
+</style>

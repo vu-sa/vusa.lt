@@ -24,9 +24,9 @@
         </FolderButton>
       </div>
     </div>
-    <div id="files" v-if="showedFiles.length > 0" class="main-card">
+    <div id="files" v-if="showedFiles.length > 0" class="main-card transition-all max-h-full">
       <h2 class="text-2xl font-bold">Failai ({{ showedFiles.length }})</h2>
-      <div class="grid grid-cols-3 gap-3 2xl:grid-cols-6 lg:grid-cols-4">
+      <transition-group tag="div" name="list" class="grid grid-cols-3 gap-3 2xl:grid-cols-6 lg:grid-cols-4">
         <FileButton
           v-for="file in showedFiles"
           v-bind:key="file.id"
@@ -44,7 +44,7 @@
             {{ file.fileName }}
           </div>
         </FileButton>
-      </div>
+      </transition-group>
     </div>
   </AdminLayout>
 </template>
@@ -112,3 +112,16 @@ const getAllFilesAndDirectories = async (selectedDirectory) => {
   });
 };
 </script>
+
+<style>
+
+.list-enter-active,
+.list-leave-active {
+  transition: all 1s ease;
+}
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
+</style>

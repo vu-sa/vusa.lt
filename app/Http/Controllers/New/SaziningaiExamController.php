@@ -41,6 +41,7 @@ class SaziningaiExamController extends Controller
             'padaliniai' => $exams->unique('padalinys_id')->map(function ($exam) {
                 return $exam->padalinys->shortname_vu;
             }),
+            'create_url' => route('saziningaiExams.create'),
         ]);
     }
 
@@ -51,7 +52,14 @@ class SaziningaiExamController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('Admin/Saziningai/Exams/Create', [
+            'padaliniai' => Padalinys::orderBy('shortname_vu')->get()->map(function ($padalinys) {
+                return [
+                    'id' => $padalinys->id,
+                    'shortname_vu' => $padalinys->shortname_vu,
+                ];
+            }),
+        ]);
     }
 
     /**
@@ -62,7 +70,11 @@ class SaziningaiExamController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'first_name' => ['required', 'max:50'],
+            'last_name' => ['required', 'max:50'],
+            'email' => ['required', 'max:50', 'email'],
+        ]);
     }
 
     /**
@@ -134,6 +146,6 @@ class SaziningaiExamController extends Controller
     {
         $saziningaiExam->delete();
 
-        return redirect()->route('saziningaiExams.index')->with('success', 'Sėkmingai ištrinta!');
+        return redirect()->route('saziningaiExams.index')->with('info', 'Egzaminas ištrintas!');
     }
 }

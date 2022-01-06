@@ -57,7 +57,7 @@
     </MainNavigation>
     <!-- Main Navigation End -->
     <!-- Page Content -->
-    <PageContent>
+    <PageContent :createURL="createURL">
       <template #header
         ><slot name="header">{{ title }}</slot></template
       >
@@ -109,10 +109,11 @@ import MainNavigation from "@/Layouts/Partials/MainNavigation.vue";
 import FullWindow from "@/Layouts/Partials/FullWindow.vue";
 import PageContent from "@/Layouts/Partials/PageContent.vue";
 import AsideNavigation from "@/Layouts/Partials/AsideNavigation.vue";
-import { NConfigProvider } from "naive-ui";
+import { NConfigProvider, NAlert } from "naive-ui";
 
 const props = defineProps({
   title: String,
+  createURL: String,
 });
 
 // const themeOverrides = {
