@@ -8,7 +8,7 @@
           text-gray-800
           leading-tight
           inline-block
-          mr-2
+          mr-2 mb-0
         "
       >
         <slot name="header"></slot>
