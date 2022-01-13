@@ -20,7 +20,7 @@ class UserSeederNew extends Seeder
                 'email' => 'test@test.com',
                 'email_verified_at' => now(),
                 'password' => Hash::make('password'),
-                'gid' => 1
+                'role_id' => 1
             ]
         ]);
     }
