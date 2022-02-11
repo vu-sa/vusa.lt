@@ -34,9 +34,9 @@
                                 {!! substr($pkpDescription[$i], 0, strpos($pkpDescription[$i], '<a ')) !!}
                                 <br/>
                                 @if(Lang::locale() == 'lt')
-                                    <a class="pkpReadMore" href="/lt/{!! $pkpLinks[$i] !!}">Daugiau&nbsp;&nbsp;<span class="fa fa-caret-right"/></a>
+                                    <a class="pkpReadMore" href="/lt{!! $pkpLinks[$i] !!}">Daugiau&nbsp;&nbsp;<span class="fa fa-caret-right"/></a>
                                 @else
-                                    <a class="pkpReadMore" href="/en/{!! $pkpLinks[$i] !!}">More&nbsp;&nbsp;<span class="fa fa-caret-right"/></a>
+                                    <a class="pkpReadMore" href="/en{!! $pkpLinks[$i] !!}">More&nbsp;&nbsp;<span class="fa fa-caret-right"/></a>
                                 @endif
                             </span>
                     </div>
