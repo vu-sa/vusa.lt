@@ -42,7 +42,7 @@ return [
     |
     */
 
-    'enable_share_button' => env('IGNITION_SHARING_ENABLED', true),
+    'enable_share_button' => env('IGNITION_SHARING_ENABLED', false),
 
     /*
     |--------------------------------------------------------------------------
