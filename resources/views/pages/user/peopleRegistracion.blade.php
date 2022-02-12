@@ -63,8 +63,13 @@
                     @endif
 
                     <div class="form-group">
-                        {{ Form::label('contact_p', 'Kontaktinė informacija (telefono nr.) *') }}
+                        {{ Form::label('contact_p', 'El. paštas *') }}
                         {{ Form::text('contact_p', '', array('class'=>'form-control')) }}
+                    </div>
+
+                    <div class="form-group">
+                        {{ Form::label('phone', 'Telefono nr. *') }}
+                        {{ Form::text('phone', '', array('class'=>'form-control', 'placeholder' => '+370xxxxxxxx')) }}
                     </div>
 
                     <div class="form-group">
@@ -117,6 +122,7 @@
                     name_p = $form.find("#name_p").val(),
                     padalinys = $form.find("#padalinys").val(),
                     contact_p = $form.find("#contact_p").val(),
+                    phone = $form.find("#phone").val(),
                     flow = $form.find("#flow").val(),
                     acceptGDPR = document.getElementById('acceptGDPR'), 
                     acceptDataManagement = document.getElementById('acceptDataManagement');
@@ -126,6 +132,7 @@
                 name_p: name_p,
                 padalinys: padalinys,
                 contact_p: contact_p,
+                phone: phone,
                 flow: flow,
                 acceptGDPR: acceptGDPR.checked,
                 acceptDataManagement: acceptDataManagement.checked
@@ -157,6 +164,9 @@
                         }
                         else if (data[index] == "The padalinys may only contain letters.") {
                             msg += '<li>Turite pasirinkti padalinį.</li>';
+                        }
+                        else if (data[index] == "The contact p must be a valid email address.") {
+                            msg += '<li>Patikrinkite el. pašto laukelį.</li>';
                         }
                         else {
                             msg += '<li>' + data[index] + '</li>';

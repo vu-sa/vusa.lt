@@ -38,8 +38,13 @@
                     </div>
 
                     <div class="form-group">
-                        {{ Form::label('contact', 'Kontaktinė informacija: tel. nr/el. paštas') }}
+                        {{ Form::label('contact', 'El. paštas') }}
                         {{ Form::text('contact', null, array('class'=>'form-control')) }}
+                    </div>
+
+                    <div class="form-group">
+                        {{ Form::label('phone', 'Telefono numeris') }}
+                        {{ Form::text('phone', null, array('class'=>'form-control')) }}
                     </div>
 
                     <div class="form-group">

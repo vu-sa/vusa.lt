@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ConfirmExamRegistration;
+use App\Mail\ConfirmObserverRegistration;
+use App\Mail\InformSaziningaiAboutObserverRegistration;
+use App\Mail\InformSaziningaiAboutRegistration;
 use App\Models\Agenda;
 use App\Models\Banner;
 use App\Models\Calendar;
@@ -21,6 +25,8 @@ use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class UserController extends BaseController
 {
@@ -626,7 +632,8 @@ class UserController extends BaseController
         
         $rules = array(
             'name' => 'required',
-            'contact' => 'required',
+            'contact' => 'required|email',
+            'phone' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/|min:10',
             'exam' => 'required',
             'padalinys' => 'required',
             'place' => 'required',
@@ -651,6 +658,7 @@ class UserController extends BaseController
 
             $saziningai->uuid = bin2hex(random_bytes(15));
             $saziningai->contact = $request->contact;
+            $saziningai->phone = $request->phone;
             $saziningai->exam = $request->exam;
             $saziningai->padalinys = $request->padalinys;
             $saziningai->place = $request->place;
@@ -659,6 +667,9 @@ class UserController extends BaseController
             $saziningai->subject_name = $request->subject_name;
             $saziningai->count = $request->count;
             $saziningai->save();
+
+            Mail::to('saziningai@vusa.lt')->send(new InformSaziningaiAboutRegistration($saziningai));
+            Mail::to($request->contact)->send(new ConfirmExamRegistration($saziningai));
         }
         return response()->json('OK', 200);
     }
@@ -729,7 +740,8 @@ class UserController extends BaseController
             'name_p' => 'required',
             'padalinys' => 'required|alpha',
             'flow' => 'required',
-            'contact_p' => 'required',
+            'contact_p' => 'required|email',
+            'phone' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/|min:10',
             'acceptGDPR' => 'accepted',
             'acceptDataManagement' => 'accepted'
         );
@@ -743,9 +755,15 @@ class UserController extends BaseController
             $saziningai_people->name_p = $request->name_p;
             $saziningai_people->padalinys_p = $request->padalinys;
             $saziningai_people->contact_p = $request->contact_p;
+            $saziningai_people->phone_p = $request->phone;
             $saziningai_people->flow = $request->flow;
-            $saziningai_people->status_p = 'atvyko';
+            $saziningai_people->status_p = 'neatvyko';
             $saziningai_people->save();
+
+            $saziningai = DB::table('saziningai')->where('uuid', '=', $saziningai_people->exam_uuid)->first();
+
+            Mail::to('saziningai@vusa.lt')->send(new InformSaziningaiAboutObserverRegistration($saziningai_people, $saziningai));
+            Mail::to($request->contact_p)->send(new ConfirmObserverRegistration($saziningai_people, $saziningai));
         }
         return response()->json('OK', 200);
     }

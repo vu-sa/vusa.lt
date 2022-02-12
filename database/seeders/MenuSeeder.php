@@ -75,7 +75,7 @@ class MenuSeeder extends Seeder
                     'pid' => 1,
                     'order' => 5,
                     'text' => 'Sąžiningai: stebėjimas',
-                    'url' => '/registracija-stebejimui',
+                    'url' => '/saziningai-uzregistruoti-egzaminai',
                     'creator' => 1
                 ],
                 [

@@ -16,5 +16,8 @@ class Saziningai_people extends Model
      * @var string
      */
     protected $table = 'saziningai_people';
+
+    protected $guarded = [];
+    
     public $timestamps = false;
 }

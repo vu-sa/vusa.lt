@@ -32,7 +32,7 @@
             @endif
             <div class="row">
                 <div class="col-md-12">
-                    {!! Form::model($zmogus, ['method' => 'PATCH', 'route' => ['pages.admin.examPeople.update', $zmogus->id]]) !!}
+                    {!! Form::model($zmogus, ['method' => 'PATCH', 'route' => ['pages.admin.examPeople.update', $id_p]]) !!}
 
                     {{-- {{ Form::hidden('page', $_GET["page"], array('class'=>'form-control')) }} --}}
 
@@ -47,8 +47,13 @@
                     </div>
 
                     <div class="form-group">
-                        {{ Form::label('contact_p', 'Kontaktinė informacija') }}
+                        {{ Form::label('contact_p', 'El. paštas') }}
                         {{ Form::text('contact_p', null, array('class'=>'form-control')) }}
+                    </div>
+
+                    <div class="form-group">
+                        {{ Form::label('phone_p', 'Telefono nr.') }}
+                        {{ Form::text('phone_p', null, array('class'=>'form-control')) }}
                     </div>
 
                     <div class="form-group">
@@ -61,7 +66,7 @@
                         {{ Form::text('padalinys_p', null, array('class'=>'form-control')) }}
                     </div>
 
-                    {{Form::submit('Atnaujinti',['class'=>'btn btn-primary'])}}
+                    {{ Form::submit('Atnaujinti',['class'=>'btn btn-primary']) }}
 
                     {{ Form::close() }}
                 </div>

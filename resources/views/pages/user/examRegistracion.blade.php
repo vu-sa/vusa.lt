@@ -28,8 +28,13 @@
                 </div>
 
                 <div class="form-group">
-                    {{ Form::label('contact', 'Kontaktinė informacija: tel. nr/el. paštas *') }}
+                    {{ Form::label('contact', 'El. paštas *') }}
                     {{ Form::text('contact', '', array('class'=>'form-control')) }}
+                </div>
+
+                <div class="form-group">
+                    {{ Form::label('phone', 'Telefono nr. *') }}
+                    {{ Form::text('phone', '', array('class'=>'form-control', 'placeholder' => '+370xxxxxxxx')) }}
                 </div>
 
                 <div class="form-group">
@@ -143,6 +148,7 @@
                     url = $form.attr("action"),
                     name = $form.find("#name").val(),
                     contact = $form.find("#contact").val(),
+                    phone = $form.find("#phone").val(),
                     exam = $form.find("#exam").val(),
                     padalinys = $form.find("#padalinys").val(),
                     place = $form.find("#place").val(),
@@ -159,6 +165,7 @@
             var posting = $.post(url, {
                 name: name,
                 contact: contact,
+                phone: phone,
                 exam: exam,
                 padalinys: padalinys,
                 place: place,
@@ -191,7 +198,7 @@
                             msg += '<li>Telefono nr. laukas yra neužpildytas.</li>';
                         }
                         else if (data[index] == "The contact field is required.") {
-                            msg += '<li>Kontaktinės informacijos laukas yra neužpildytas.</li>';
+                            msg += '<li>El. paštas yra neužpildytas.</li>';
                         }
                         else if (data[index] == "The exam field is required.") {
                             msg += '<li>Atsiskaitymo pobūdžio laukas yra neužpildytas.</li>';
@@ -223,8 +230,8 @@
                         else if (data[index] == "The accept data management must be accepted.") {
                             msg += '<li>Turite sutikti su asmens duomenų tvarkymu.</li>';
                         }
-                        else if (data[index] == "The name has already been taken.") {
-                            msg += '<li>.</li>';
+                        else if (data[index] == "The contact must be a valid email address.") {
+                            msg += '<li>Patikrinkite el. pašto laukelį.</li>';
                         }
                         else {
                             msg += '<li>' + data[index] + '</li>';

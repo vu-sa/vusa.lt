@@ -14,7 +14,7 @@ class SaziningaiPeople extends Migration
     public function up()
     {
         Schema::create('saziningai_people', function (Blueprint $table) {
-            $table->integer('id_p')->primary();
+            $table->id('id_p');
             $table->string('exam_uuid', 30);
             $table->string('name_p', 100);
             $table->string('padalinys_p', 30);

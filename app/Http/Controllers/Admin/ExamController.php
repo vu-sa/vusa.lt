@@ -49,6 +49,7 @@ class ExamController extends AdminBaseController {
         $rules = array(
             'name' => 'required',
             'contact' => 'required',
+            'phone' => 'required',
             'exam' => 'required',
             'padalinys' => 'required',
             'place' => 'required',

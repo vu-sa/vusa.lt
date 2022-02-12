@@ -28,8 +28,8 @@ class ExamPeopleController extends AdminBaseController {
 
     public function edit($id, Request $request)
     {
-        $zmogus = DB::table('saziningai_people')->leftJoin('saziningai', 'saziningai_people.exam_uuid', '=', 'saziningai.uuid')->where('id_p', '=', $id)->first();
-        return view('pages.admin.examPeople.edit', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'name' => null, 'zmogus' => $zmogus]);
+        $zmogus = DB::table('saziningai_people')->rightJoin('saziningai', 'saziningai_people.exam_uuid', '=', 'saziningai.uuid')->where('id_p', '=', $id)->first();
+        return view('pages.admin.examPeople.edit', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'name' => null, 'zmogus' => $zmogus, 'id_p' => $id]);
     }
 
     public function update($id, Request $request)
@@ -44,7 +44,8 @@ class ExamPeopleController extends AdminBaseController {
                 'name_p' => $request->name_p,
                 'padalinys_p' => $request->padalinys_p,
                 'contact_p' => $request->contact_p,
-                'status_p' => $request->status_p
+                'status_p' => $request->status_p,
+                'phone_p' => $request->phone_p
             ]);
         }
 
