@@ -65,8 +65,7 @@
 
 @if(Lang::locale() == 'lt')
     <div class="container">
-        <div style="height: 30px"></div>
-        <div>
+        <div style="margin-top: 30px">
             <?php $index = 0;?>
             @foreach($mainPageInfo as $mainPageInfoItem)
                 <?php $index += 1;?>
@@ -131,6 +130,11 @@
                 {!! ($index == sizeof($mainPageInfo) ? '</div>':'') !!}
 
             @endforeach
+        </div>
+        <div style="text-align: center">
+            <a href="https://www.vu.lt/parduotuve/" target="_blank">
+            <img style="width: 70%; margin-bottom: 2em" src="/images/photos/atributika_banner.jpg" />
+        </a>
         </div>
     </div>
 

@@ -39,6 +39,10 @@
         <div class="row">
         <div class="col-lg-9 infoPage {{$pageCat}}" id="infoPageText">
             {!! $page['text'] !!}
+
+        @if (rand(1, 10) > 5)
+            <div style="margin-top: 8em"><a href="https://www.vu.lt/parduotuve/" target="_blank"><img style="width:50%;" src="/images/photos/atributika_banner.jpg" /></a></div>
+        @endif
         </div>
         @if($page['mainInfo'] != null)
             <?php
