@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Navigation extends Model
 {
     use HasFactory;
-    
+
     protected $table = 'navigation';
 
     public function user()
@@ -21,4 +21,13 @@ class Navigation extends Model
         return $this->belongsTo(Padalinys::class, 'padalinys_id');
     }
 
+    // Get parent navigation
+    public function parent()
+    {
+        if ($this->parent_id == 0) {
+            return null;
+        } else {
+            return $this->belongsTo(Navigation::class, 'parent_id');
+        }
+    }
 }

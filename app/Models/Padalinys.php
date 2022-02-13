@@ -18,15 +18,15 @@ class Padalinys extends Model
         return $this->hasMany(Calendar::class, 'padalinys_id');
     }
 
-    public function institutions()
-    {
-        return $this->hasMany(DutyInstitution::class, 'padalinys_id');
-    }
-
     public function duties()
     {
         return $this->hasManyThrough(Duty::class, DutyInstitution::class, 'padalinys_id', 'institution_id');
     }
+
+    public function institutions()
+    {
+        return $this->hasMany(DutyInstitution::class, 'padalinys_id');
+    }    
 
     public function news()
     {
@@ -36,5 +36,10 @@ class Padalinys extends Model
     public function pages()
     {
         return $this->hasMany(Page::class, 'padalinys_id');
+    }
+
+    public function users()
+    {
+        return $this->hasMany(User::class, 'padalinys_id');
     }
 }

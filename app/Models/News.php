@@ -18,4 +18,9 @@ class News extends Model
     public function padalinys() {
         return $this->belongsTo(Padalinys::class, 'padalinys_id');
     }
+
+    // Get another language news
+    public function getOtherLanguage() {
+        return News::find($this->other_lang_id);
+    }
 }
