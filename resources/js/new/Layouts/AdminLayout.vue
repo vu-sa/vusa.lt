@@ -1,6 +1,5 @@
 <template>
   <!-- <NConfigProvider :theme-overrides="themeOverrides"> -->
-  <!-- <NMessageProvider> -->
   <Head :title="title" />
   <MetaIcons />
 
@@ -69,7 +68,7 @@
       <div class="col-span-2 ml-12 mt-4 mb-5"></div>
       <transition name="fade">
         <main v-if="animated" class="col-span-4">
-          <slot></slot>
+          <slot />
         </main>
       </transition>
       <!-- Aside Navigation -->
@@ -80,7 +79,6 @@
     </PageContent>
     <!-- Page Content End -->
   </FullWindow>
-  <!-- </NMessageProvider> -->
   <!-- </NConfigProvider> -->
 </template>
 
@@ -109,7 +107,7 @@ import MainNavigation from "@/Layouts/Partials/MainNavigation.vue";
 import FullWindow from "@/Layouts/Partials/FullWindow.vue";
 import PageContent from "@/Layouts/Partials/PageContent.vue";
 import AsideNavigation from "@/Layouts/Partials/AsideNavigation.vue";
-import { NConfigProvider, NAlert } from "naive-ui";
+// import { NConfigProvider } from "naive-ui";
 
 const props = defineProps({
   title: String,
