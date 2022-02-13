@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class SaziningaiObservers extends Model
+class SaziningaiExamObserver extends Model
 {
 
     use HasFactory;
@@ -19,12 +19,12 @@ class SaziningaiObservers extends Model
 
     public function flow()
     {
-        return $this->belongsTo(SaziningaiExamFlows::class, 'flow_id');
+        return $this->belongsTo(SaziningaiExamFlow::class, 'flow_id');
     }
 
     public function exam()
     {
-        return $this->belongsTo(SaziningaiExams::class, 'exam_uuid', 'uuid');
+        return $this->belongsTo(SaziningaiExam::class, 'exam_uuid', 'uuid');
     }
 
     public function padalinys()

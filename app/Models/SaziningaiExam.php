@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class SaziningaiExams extends Model
+class SaziningaiExam extends Model
 {
 
     use HasFactory;
@@ -30,11 +30,11 @@ class SaziningaiExams extends Model
 
     public function flows()
     {
-        return $this->hasMany(SaziningaiExamFlows::class, 'exam_uuid', 'uuid');
+        return $this->hasMany(SaziningaiExamFlow::class, 'exam_uuid', 'uuid');
     }
 
     public function observers()
     {
-        return $this->hasMany(SaziningaiObservers::class, 'exam_uuid', 'uuid');
+        return $this->hasMany(SaziningaiExamObserver::class, 'exam_uuid', 'uuid');
     }
 }

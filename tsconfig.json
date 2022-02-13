@@ -2,6 +2,7 @@
 	"compilerOptions": {
 		"types": [
 			"naive-ui/volar"
-		]
+		],
+		"allowJs": true,
 	}
 }

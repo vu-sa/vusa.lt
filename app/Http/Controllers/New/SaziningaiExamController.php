@@ -4,8 +4,8 @@ namespace App\Http\Controllers\New;
 
 use App\Http\Controllers\Controller as Controller;
 use App\Models\Padalinys;
-use App\Models\SaziningaiExamFlows;
-use App\Models\SaziningaiExams;
+use App\Models\SaziningaiExamFlow;
+use App\Models\SaziningaiExam;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -19,7 +19,7 @@ class SaziningaiExamController extends Controller
     public function index()
     {
 
-        $exams = SaziningaiExams::all();
+        $exams = SaziningaiExam::all();
 
         // dd($exams->unique('padalinys_id')->toArray());
 
@@ -80,10 +80,10 @@ class SaziningaiExamController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Saziningai  $saziningai
+     * @param  \App\Models\SaziningaiExam  $saziningaiExam
      * @return \Illuminate\Http\Response
      */
-    public function show(SaziningaiExams $saziningai)
+    public function show(SaziningaiExam $saziningaiExam)
     {
     }
 
@@ -93,7 +93,7 @@ class SaziningaiExamController extends Controller
      * @param  \App\Models\Saziningai  $saziningai
      * @return \Illuminate\Http\Response
      */
-    public function edit(SaziningaiExams $saziningaiExam)
+    public function edit(SaziningaiExam $saziningaiExam)
     {
 
         return Inertia::render('Admin/Saziningai/Exams/Edit', [
@@ -127,13 +127,13 @@ class SaziningaiExamController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Saziningai  $saziningai
+     * @param  \App\Models\SaziningaiExam  $saziningaiExam
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, SaziningaiExams $saziningaiExam)
+    public function update(Request $request, SaziningaiExam $saziningaiExam)
     {
         $saziningaiExam->update($request->only('name', 'phone', 'email', 'exam_type', 'padalinys_id', 'place', 'duration', 'subject_name', 'exam_holders', 'students_need'));
-        return redirect()->back()->with('success', 'Sėkmingai atnaujinta!');
+        return redirect()->back();
     }
 
     /**
@@ -142,10 +142,10 @@ class SaziningaiExamController extends Controller
      * @param  \App\Models\SaziningaiExam  $saziningaiExam
      * @return \Illuminate\Http\Response
      */
-    public function destroy(SaziningaiExams $saziningaiExam)
+    public function destroy(SaziningaiExam $saziningaiExam)
     {
         $saziningaiExam->delete();
 
-        return redirect()->route('saziningaiExams.index')->with('info', 'Egzaminas ištrintas!');
+        return redirect()->route('saziningaiExams.index');
     }
 }

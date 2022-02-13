@@ -84,11 +84,6 @@
         </div>
 
         <div class="col-start-3 col-span-2 flex justify-end items-center">
-          <transition name="fade"
-            ><p class="mr-4 text-green-700" v-if="flash.success">
-              {{ flash.success }}
-            </p></transition
-          >
           <n-popconfirm positive-text="Ištrinti!" negative-text="Palikti" @positive-click="destroyModel()"
             ><template #trigger>
               <button type="button">
@@ -141,16 +136,15 @@
 
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-import AsideHeader from "../AsideHeader.vue";
-import { ref, reactive } from "vue";
+import { ref, reactive, useAttrs } from "vue";
 import {
-  NCheckbox,
   NSpin,
   NInput,
   NSelect,
   NInputNumber,
   NButton,
   NPopconfirm,
+useMessage,
 } from "naive-ui";
 import { Inertia } from "@inertiajs/inertia";
 import { TrashIcon } from "@heroicons/vue/outline";
@@ -160,10 +154,13 @@ const props = defineProps({
   padaliniai: Object,
   flows: Object,
   observers: Object,
-  flash: Object,
 });
 
+const attrs = useAttrs();
+
 const exam = reactive(props.exam);
+
+const message = useMessage();
 
 const padaliniai_options = props.padaliniai.map((padalinys) => ({
   value: padalinys.id,
@@ -185,13 +182,23 @@ const showSpin = ref(false);
 
 // Form sending
 
-const updateModel = async () => {
+const updateModel = () => {
   showSpin.value = !showSpin.value;
-  await Inertia.patch(route("saziningaiExams.update", exam.id), exam);
-  showSpin.value = !showSpin.value;
+  Inertia.patch(route("saziningaiExams.update", exam.id), exam , {
+    onSuccess: () => {
+      showSpin.value = !showSpin.value;
+      message.success("Sėkmingai atnaujinta!");
+    },
+    preserveScroll: true,
+  });
 };
 
-const destroyModel = async () => {
-  await Inertia.delete(route("saziningaiExams.destroy", exam.id));
+const destroyModel = () => {
+   Inertia.delete(route("saziningaiExams.destroy", exam.id), {
+     onSuccess: () => {
+       message.success("Egzaminas ištrintas!");
+     },
+      preserveScroll: true,
+   });
 };
 </script>

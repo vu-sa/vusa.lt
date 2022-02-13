@@ -3,12 +3,6 @@
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
-    <p
-      v-if="flash.info"
-      class="rounded-xl mb-4 inline-block text-sm text-red-700"
-    >
-      Egzaminas sėkmingai ištrintas!
-    </p>
     <div class="main-card">
       <NDataTable
         :data="props.exams"
@@ -32,7 +26,6 @@ import { Link } from "@inertiajs/inertia-vue3";
 const props = defineProps({
   exams: Object,
   padaliniai: Object,
-  flash: Object,
   create_url: String,
 });
 

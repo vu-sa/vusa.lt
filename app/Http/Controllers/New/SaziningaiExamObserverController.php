@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\New;
 
-use App\Models\SaziningaiObservers;
+use App\Models\SaziningaiExamObserver;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
@@ -16,7 +16,7 @@ class SaziningaiExamObserverController extends Controller
      */
     public function index()
     {
-        $observers = SaziningaiObservers::all();
+        $observers = SaziningaiExamObserver::all();
 
         return Inertia::render('Admin/Saziningai/Observers/Index', [
             'observers' => $observers,
@@ -47,10 +47,10 @@ class SaziningaiExamObserverController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\SaziningaiObservers  $saziningaiObservers
+     * @param  \App\Models\SaziningaiExamObserver  $saziningaiExamObserver
      * @return \Illuminate\Http\Response
      */
-    public function show(SaziningaiObservers $saziningaiObservers)
+    public function show(SaziningaiExamObserver $saziningaiExamObserver)
     {
         //
     }
@@ -58,10 +58,10 @@ class SaziningaiExamObserverController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\SaziningaiObservers  $saziningaiObservers
+     * @param  \App\Models\SaziningaiExamObserver  $saziningaiExamObserver
      * @return \Illuminate\Http\Response
      */
-    public function edit(SaziningaiObservers $saziningaiObservers)
+    public function edit(SaziningaiExamObserver $saziningaiExamObserver)
     {
         //
     }
@@ -70,10 +70,10 @@ class SaziningaiExamObserverController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\SaziningaiObservers  $saziningaiObservers
+     * @param  \App\Models\SaziningaiExamObserver  $saziningaiExamObserver
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, SaziningaiObservers $saziningaiObservers)
+    public function update(Request $request, SaziningaiExamObserver $saziningaiExamObserver)
     {
         //
     }
@@ -81,10 +81,10 @@ class SaziningaiExamObserverController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\SaziningaiObservers  $saziningaiObservers
+     * @param  \App\Models\SaziningaiExamObserver  $saziningaiExamObserver
      * @return \Illuminate\Http\Response
      */
-    public function destroy(SaziningaiObservers $saziningaiObservers)
+    public function destroy(SaziningaiExamObserver $saziningaiExamObserver)
     {
         //
     }

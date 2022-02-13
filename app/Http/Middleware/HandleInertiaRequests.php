@@ -40,12 +40,12 @@ class HandleInertiaRequests extends Middleware
             'app' => [
                 'env' => config('app.env'),
             ],
-            'flash' => fn () => [
-                'success' => $request->session()->get('success'),
-                'info' => $request->session()->get('info'),
-                'warning' => $request->session()->get('warning'),
-                'error' => $request->session()->get('error'),
-            ]
+            // 'flash' => fn () => [
+            //     'success' => $request->session()->get('success'),
+            //     'info' => $request->session()->get('info'),
+            //     'warning' => $request->session()->get('warning'),
+            //     'error' => $request->session()->get('error'),
+            // ]
         ]);
     }
 }

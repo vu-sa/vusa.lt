@@ -2,7 +2,7 @@
   <AsideHeaderLink asideHeaderRoute="saziningaiExams.index"
         >Egzaminai</AsideHeaderLink
       >
-      <AsideHeaderLink asideHeaderRoute="saziningaiObservers.index">Stebėtojai</AsideHeaderLink>
+      <AsideHeaderLink asideHeaderRoute="saziningaiExamObservers.index">Stebėtojai</AsideHeaderLink>
 </template>
 
 <script setup>

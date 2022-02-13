@@ -45,7 +45,7 @@
           Failų tvarkyklė
         </MenuButton>
         <MenuButton
-          :menuContent="['saziningaiExams.*', 'saziningaiObservers.*']"
+          :menuContent="['saziningaiExams.*', 'saziningaiExamObservers.*']"
         >
           <template #icon
             ><BookOpenIcon class="mx-auto w-7 h-7 mb-1"
@@ -85,12 +85,7 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import AppLogo from "@/Components/AppLogo.vue";
-import JetBanner from "@/Jetstream/Banner.vue";
-import JetDropdown from "@/Jetstream/Dropdown.vue";
-import JetDropdownLink from "@/Jetstream/DropdownLink.vue";
-import JetNavLink from "@/Jetstream/NavLink.vue";
-import JetResponsiveNavLink from "@/Jetstream/ResponsiveNavLink.vue";
-import { Head, Link } from "@inertiajs/inertia-vue3";
+import { Head } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
 import {
   HomeIcon,
@@ -107,6 +102,7 @@ import MainNavigation from "@/Layouts/Partials/MainNavigation.vue";
 import FullWindow from "@/Layouts/Partials/FullWindow.vue";
 import PageContent from "@/Layouts/Partials/PageContent.vue";
 import AsideNavigation from "@/Layouts/Partials/AsideNavigation.vue";
+import { useMessage } from "naive-ui";
 // import { NConfigProvider } from "naive-ui";
 
 const props = defineProps({
@@ -114,13 +110,13 @@ const props = defineProps({
   createURL: String,
 });
 
+const animated = ref(false);
+
 // const themeOverrides = {
 //   common: {
 //     baseColor: "#fafafa",
 //     },
-// };
-
-const animated = ref(false);
+// }; 
 
 onMounted(() => {
   animated.value = true;
@@ -129,6 +125,7 @@ onMounted(() => {
 const logout = () => {
   Inertia.post(route("logout"));
 };
+
 </script>
 
 <style>

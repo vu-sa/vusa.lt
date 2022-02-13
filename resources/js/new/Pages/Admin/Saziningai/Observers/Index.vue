@@ -48,7 +48,7 @@ const rowProps = (row) => {
   return {
     style: "cursor: pointer;",
     onClick: () => {
-      Inertia.visit(route("saziningaiObservers.show", { id: row.id }));
+      Inertia.visit(route("saziningaiExamObservers.show", { id: row.id }));
     },
   };
 };

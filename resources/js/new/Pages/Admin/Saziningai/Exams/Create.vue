@@ -138,7 +138,6 @@ const props = defineProps({
   padaliniai: Object,
   flows: Object,
   observers: Object,
-  flash: Object,
   errors: Object,
 });
 
