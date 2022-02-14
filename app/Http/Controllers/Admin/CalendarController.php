@@ -4,125 +4,88 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Calendar;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Validator;
+use Inertia\Inertia;
+use App\Http\Controllers\Controller as Controller;
 
-class CalendarController extends AdminBaseController {
-
+class CalendarController extends Controller
+{
     /**
-     * Kalendoriaus ir darbotvarkės valdymas
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
      */
     public function index(Request $request)
     {
-        $events = Calendar::orderBy('date', 'desc')->simplePaginate(15);
+        $calendar = Calendar::all();
 
-        return view('pages.admin.calendar.index', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'name' => null, 'events' => $events]);
+        return Inertia::render('Admin/Calendar/Events/Index', [
+            'calendar' => $calendar,
+        ]);
     }
 
-    public function create(Request $request)
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
     {
-        setlocale(LC_ALL, 'lt_LT.UTF-8');
-
-        return view('pages.admin.calendar.create', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'name' => null]);
+        //
     }
 
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
     public function store(Request $request)
     {
-        $rules = array(
-            'title' => 'required',
-            'category' => 'required',
-            'date' => 'required'
-        );
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            return Redirect::to('/admin/calendar/create')->withInput()->withErrors(($validator));
-        } else {
-            $color = '';
-            if ($request->category == 'akadem') {
-                $color = 'red';
-            } elseif ($request->category == 'soc') {
-                $color = 'yellow';
-            } elseif ($request->category == 'sventes') {
-                $color = 'grey';
-            } else {
-                $color = '';
-            }
-
-            $calendar = new Calendar();
-            $calendar->title = $request->title;
-            $calendar->descr = $request->descr;
-            $calendar->date = $request->date;
-            $calendar->classname = $color;
-            $calendar->editor = $request->User()->id;
-            $calendar->save();
-        }
-
-        return redirect('/admin/calendar')->with('message', 'Kalendoriaus įrašas pridėtas.');
+        //
     }
 
-    public function edit($id, Request $request)
+    /**
+     * Display the specified resource.
+     *
+     * @param  \App\Models\Calendar  $calendar
+     * @return \Illuminate\Http\Response
+     */
+    public function show(Calendar $calendar)
     {
-        $calendarEvent = Calendar::where('id', '=', $id)->first();
-        setlocale(LC_ALL, 'lt_LT.UTF-8');
-
-        $calendarEvent->date = date('Y-m-d', strtotime($calendarEvent->date));
-
-        $category = '';
-        if ($calendarEvent['classname'] == 'red') {
-            $category = 'akadem';
-        } elseif ($calendarEvent['classname'] == 'yellow') {
-            $category = 'soc';
-        } elseif ($calendarEvent['classname'] == 'grey') {
-            $category = 'sventes';
-        } else {
-            $category = '0';
-        }
-
-        return view('pages.admin.calendar.edit', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'calendarEvent' => $calendarEvent, 'category' => $category, 'name' => null]);
+        //
     }
 
-    public function update($id, Request $request)
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  \App\Models\Calendar  $calendar
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(Calendar $calendar)
     {
-        $rules = array(
-            'title' => 'required',
-            'category' => 'required',
-            'date' => 'required'
-        );
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            return Redirect::to('/admin/calendar/' . $id . '/edit')->withInput()->withErrors(($validator));
-        } else {
-            $color = '';
-            if ($request->category == 'akadem') {
-                $color = 'red';
-            } elseif ($request->category == 'soc') {
-                $color = 'yellow';
-            } elseif ($request->category == 'sventes') {
-                $color = 'grey';
-            } else {
-                $color = '';
-            }
-
-            Calendar::where('id', '=', $id)->update([
-                'title' => $request->title,
-                'descr' => $request->descr,
-                'date' => $request->date,
-                'classname' => $color,
-                'editor' => $request->User()->id
-            ]);
-        }
-
-        return redirect('/admin/calendar')->with('message', 'Kalendoriaus įrašas atnaujintas.');
+        //
     }
 
-    public function destroy(Request $request)
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Calendar  $calendar
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, Calendar $calendar)
     {
-        $itemId = $request->input('itemId');
+        //
+    }
 
-        if (Calendar::where('id', '=', $itemId)->delete() == 1) {
-            return response()->json('DELETED', 200);
-        } else {
-            return response()->json('NOT DELETED', 200);
-        }
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  \App\Models\Calendar $calendar
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy(Calendar $calendar)
+    {
+        //
     }
 }

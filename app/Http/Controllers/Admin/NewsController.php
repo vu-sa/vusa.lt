@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Http\Controllers\New;
+namespace App\Http\Controllers\Admin;
 
-use App\Models\MainPage;
+use App\Models\News;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
 
-class MainPageController extends Controller
+class NewsController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -16,10 +16,10 @@ class MainPageController extends Controller
      */
     public function index(Request $request)
     {
-        $mainPage = MainPage::all();
+        $news = News::all();
 
-        return Inertia::render('Admin/Content/MainPage/Index', [
-            'mainPage' => $mainPage,
+        return Inertia::render('Admin/Content/News/Index', [
+            'news' => $news,
         ]);
     }
 
@@ -47,10 +47,10 @@ class MainPageController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\MainPage  $mainPage
+     * @param  \App\Models\News  $news
      * @return \Illuminate\Http\Response
      */
-    public function show(MainPage $mainPage)
+    public function show(News $news)
     {
         //
     }
@@ -58,10 +58,10 @@ class MainPageController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\MainPage  $mainPage
+     * @param  \App\Models\News  $news
      * @return \Illuminate\Http\Response
      */
-    public function edit(MainPage $mainPage)
+    public function edit(News $news)
     {
         //
     }
@@ -70,10 +70,10 @@ class MainPageController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\MainPage  $mainPage
+     * @param  \App\Models\News  $news
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, MainPage $mainPage)
+    public function update(Request $request, News $news)
     {
         //
     }
@@ -81,10 +81,10 @@ class MainPageController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\MainPage $mainPage
+     * @param  \App\Models\News $news
      * @return \Illuminate\Http\Response
      */
-    public function destroy(MainPage $mainPage)
+    public function destroy(News $news)
     {
         //
     }

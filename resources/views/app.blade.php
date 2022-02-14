@@ -4,20 +4,20 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        <title inertia>{{ config('app.name', 'VU SA') }}</title>
 
         <!-- Fonts -->
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap">
 
         <!-- Styles -->
-        <link rel="stylesheet" href="{{ asset('css/app-new.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 
         <!-- Naive UI elements -->
         <meta name="naive-ui-style" />
 
         <!-- Scripts -->
         @routes
-        <script src={{ asset('js/app-new.js') }} defer></script>
+        <script src={{ asset('js/app.js') }} defer></script>
     </head>
     <body class="font-sans antialiased">
         @inertia

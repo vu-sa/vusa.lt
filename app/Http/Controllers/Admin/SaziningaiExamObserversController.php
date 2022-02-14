@@ -1,25 +1,25 @@
 <?php
 
-namespace App\Http\Controllers\New;
+namespace App\Http\Controllers\Admin;
 
-use App\Models\Calendar;
+use App\Models\SaziningaiExamObserver;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
 
-class CalendarController extends Controller
+class SaziningaiExamObserversController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index()
     {
-        $calendar = Calendar::all();
+        $observers = SaziningaiExamObserver::all();
 
-        return Inertia::render('Admin/Calendar/Events/Index', [
-            'calendar' => $calendar,
+        return Inertia::render('Admin/Saziningai/Observers/Index', [
+            'observers' => $observers,
         ]);
     }
 
@@ -47,10 +47,10 @@ class CalendarController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Calendar  $calendar
+     * @param  \App\Models\SaziningaiExamObserver  $saziningaiExamObserver
      * @return \Illuminate\Http\Response
      */
-    public function show(Calendar $calendar)
+    public function show(SaziningaiExamObserver $saziningaiExamObserver)
     {
         //
     }
@@ -58,10 +58,10 @@ class CalendarController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Calendar  $calendar
+     * @param  \App\Models\SaziningaiExamObserver  $saziningaiExamObserver
      * @return \Illuminate\Http\Response
      */
-    public function edit(Calendar $calendar)
+    public function edit(SaziningaiExamObserver $saziningaiExamObserver)
     {
         //
     }
@@ -70,10 +70,10 @@ class CalendarController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Calendar  $calendar
+     * @param  \App\Models\SaziningaiExamObserver  $saziningaiExamObserver
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Calendar $calendar)
+    public function update(Request $request, SaziningaiExamObserver $saziningaiExamObserver)
     {
         //
     }
@@ -81,10 +81,10 @@ class CalendarController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Calendar $calendar
+     * @param  \App\Models\SaziningaiExamObserver  $saziningaiExamObserver
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Calendar $calendar)
+    public function destroy(SaziningaiExamObserver $saziningaiExamObserver)
     {
         //
     }

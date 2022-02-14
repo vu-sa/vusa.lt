@@ -4,83 +4,88 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Agenda;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Validator;
+use Inertia\Inertia;
+use App\Http\Controllers\Controller as Controller;
 
-class AgendaController extends AdminBaseController {
-
+class AgendaController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function index(Request $request)
     {
-        $agenda = Agenda::orderBy('date', 'desc')->simplePaginate(15);
+        $agenda = Agenda::all();
 
-        return view('pages.admin.agenda.index', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'name' => null, 'agenda' => $agenda]);
+        return Inertia::render('Admin/Calendar/Agenda/Index', [
+            'agenda' => $agenda,
+        ]);
     }
 
-    public function create(Request $request)
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
     {
-        setlocale(LC_ALL, 'lt_LT.UTF-8');
-
-        return view('pages.admin.agenda.create', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'name' => null]);
+        //
     }
 
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
     public function store(Request $request)
     {
-        $rules = array(
-            'title' => 'required',
-            'date' => 'required'
-        );
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            return Redirect::to('/admin/agenda/create')->withInput()->withErrors(($validator));
-        } else {
-            $agenda = new Agenda();
-            $agenda->title = $request->title;
-            $agenda->description = $request->description ?? '';
-            $agenda->date = $request->date;
-            $agenda->editor = $request->User()['id'];
-            $agenda->owner = $agenda->editor;
-            $agenda->save();
-        }
-
-        return redirect('/admin/agenda')->with('message', 'Darbotvarkės įrašas pridėtas.');
+        //
     }
 
-    public function edit($id, Request $request)
+    /**
+     * Display the specified resource.
+     *
+     * @param  \App\Models\Agenda  $agenda
+     * @return \Illuminate\Http\Response
+     */
+    public function show(Agenda $agenda)
     {
-        $agendaEvent = Agenda::where('id', '=', $id)->first();
-        setlocale(LC_ALL, 'lt_LT.UTF-8');
-
-        return view('pages.admin.agenda.edit', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'agendaEvent' => $agendaEvent, 'name' => null]);
+        //
     }
 
-    public function update($id, Request $request)
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  \App\Models\Agenda  $agenda
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(Agenda $agenda)
     {
-        $rules = array(
-            'title' => 'required',
-            'date' => 'required'
-        );
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            return Redirect::to('/admin/agenda/' . $id . '/edit')->withInput()->withErrors(($validator));
-        } else {
-            Agenda::where('id', '=', $id)->update([
-                'title' => $request->title,
-                'description' => $request->description ?? '',
-                'date' => $request->date,
-                'editor' => $request->User()->id
-            ]);
-        }
-        return redirect('/admin/agenda')->with('message', 'Darbotvarkės įrašas atnaujintas.');
+        //
     }
 
-    public function destroy(Request $request)
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Agenda  $agenda
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, Agenda $agenda)
     {
-        $itemId = $request->input('id');
+        //
+    }
 
-        if (Agenda::where('id', '=', $itemId)->delete() == 1) {
-            return response()->json('DELETED', 200);
-        } else {
-            return response()->json('NOT DELETED', 200);
-        }
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  \App\Models\Agenda $agenda
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy(Agenda $agenda)
+    {
+        //
     }
 }

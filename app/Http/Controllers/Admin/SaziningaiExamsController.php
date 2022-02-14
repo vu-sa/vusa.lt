@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\New;
+namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller as Controller;
 use App\Models\Padalinys;

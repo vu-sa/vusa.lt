@@ -1,25 +1,32 @@
 <?php
 
-namespace App\Http\Controllers\New;
+namespace App\Http\Controllers\Admin;
 
-use App\Models\SaziningaiExamObserver;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
+use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 
-class SaziningaiExamObserversController extends Controller
+class FilesController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $observers = SaziningaiExamObserver::all();
+        $currentDirectory = $request->currentPath ?? 'public/files';
+        
+        $directories = Storage::directories($currentDirectory);
+        $files = Storage::files($currentDirectory);
 
-        return Inertia::render('Admin/Saziningai/Observers/Index', [
-            'observers' => $observers,
+        // dd($files, $directories);
+
+        return Inertia::render('Admin/Files/Index', [
+            'files' => $files,
+            'directories' => $directories,
+            'currentPath' => $currentDirectory,
         ]);
     }
 
@@ -47,10 +54,10 @@ class SaziningaiExamObserversController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\SaziningaiExamObserver  $saziningaiExamObserver
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(SaziningaiExamObserver $saziningaiExamObserver)
+    public function show($id)
     {
         //
     }
@@ -58,10 +65,10 @@ class SaziningaiExamObserversController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\SaziningaiExamObserver  $saziningaiExamObserver
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit(SaziningaiExamObserver $saziningaiExamObserver)
+    public function edit($id)
     {
         //
     }
@@ -70,10 +77,10 @@ class SaziningaiExamObserversController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\SaziningaiExamObserver  $saziningaiExamObserver
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, SaziningaiExamObserver $saziningaiExamObserver)
+    public function update(Request $request, $id)
     {
         //
     }
@@ -81,10 +88,10 @@ class SaziningaiExamObserversController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\SaziningaiExamObserver  $saziningaiExamObserver
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(SaziningaiExamObserver $saziningaiExamObserver)
+    public function destroy($id)
     {
         //
     }

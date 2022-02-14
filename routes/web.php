@@ -2,9 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Jetstream\Http\Controllers\Inertia\OtherBrowserSessionsController;
@@ -23,38 +20,36 @@ use Laravel\Socialite\Facades\Socialite;
 |
 */
 
-Route::prefix('new')->group(function () {
-    Route::prefix('admin')->group(function () {
-        Route::middleware(['auth', 'verified'])->group(function () {
-            
-            // Main
-            Route::get('/', function () {
-                return Inertia::render('Admin/Dashboard');
-            })->name('dashboard');
+Route::prefix('admin')->group(function () {
+    Route::middleware(['auth', 'verified'])->group(function () {
 
-            // User & Profile...
-            Route::get('/user/profile', [UserProfileController::class, 'show'])
-                ->name('profile.show');
+        // Main
+        Route::get('/', function () {
+            return Inertia::render('Admin/Dashboard');
+        })->name('dashboard');
 
-            Route::delete('/user/other-browser-sessions', [OtherBrowserSessionsController::class, 'destroy'])
-                ->name('other-browser-sessions.destroy');
+        // User & Profile...
+        Route::get('/user/profile', [UserProfileController::class, 'show'])
+            ->name('profile.show');
 
-            Route::delete('/user/profile-photo', [ProfilePhotoController::class, 'destroy'])
-                ->name('current-user-photo.destroy');
-            
-            // Resources
-            Route::resource('pages', New\PagesController::class);
-            Route::resource('news', New\NewsController::class);
-            Route::resource('mainPage', New\MainPageController::class);
-            Route::resource('banners', New\BannerController::class);
-            Route::resource('navigation', New\NavigationController::class);
-            Route::resource('users', New\UserController::class);
-            Route::resource('calendar', New\CalendarController::class);
-            Route::resource('saziningaiExams', New\SaziningaiExamsController::class);
-            Route::resource('saziningaiExamFlows', New\SaziningaiExamFlowsController::class);
-            Route::resource('saziningaiExamObservers', New\SaziningaiExamObserversController::class);
-            Route::resource('files', New\FilesController::class);
-        });
+        Route::delete('/user/other-browser-sessions', [OtherBrowserSessionsController::class, 'destroy'])
+            ->name('other-browser-sessions.destroy');
+
+        Route::delete('/user/profile-photo', [ProfilePhotoController::class, 'destroy'])
+            ->name('current-user-photo.destroy');
+
+        // Resources
+        Route::resource('pages', Admin\PagesController::class);
+        Route::resource('news', Admin\NewsController::class);
+        Route::resource('mainPage', Admin\MainPageController::class);
+        Route::resource('banners', Admin\BannerController::class);
+        Route::resource('navigation', Admin\NavigationController::class);
+        Route::resource('users', Admin\UserController::class);
+        Route::resource('calendar', Admin\CalendarController::class);
+        Route::resource('saziningaiExams', Admin\SaziningaiExamsController::class);
+        Route::resource('saziningaiExamFlows', Admin\SaziningaiExamFlowsController::class);
+        Route::resource('saziningaiExamObservers', Admin\SaziningaiExamObserversController::class);
+        Route::resource('files', Admin\FilesController::class);
     });
 });
 
@@ -62,9 +57,9 @@ Route::get('/auth/redirect', function () {
     return Socialite::driver('microsoft')->redirect();
 })->name('microsoft.redirect');
 
-Route::get('/auth/microsoft/callback', [New\UserController::class, 'storeFromMicrosoft'])->name('microsoft.callback');
-    // $microsoftUser = Socialite::driver('microsoft')->user();
-    // return redirect('https://graph.microsoft.com/v1.0/me/photo/$value');
+Route::get('/auth/microsoft/callback', [Admin\UserController::class, 'storeFromMicrosoft'])->name('microsoft.callback');
+// $microsoftUser = Socialite::driver('microsoft')->user();
+// return redirect('https://graph.microsoft.com/v1.0/me/photo/$value');
 // });
 
 
@@ -161,154 +156,6 @@ if (in_array($http_host, $vusaDomains)) {
         return redirect('login');
     })->where('url', '(login|admin)');
 }
-/**
- * |--------------------------------------------------------------------------
- * | Application Routes
- * |--------------------------------------------------------------------------
- * |
- * | This route group applies the "web" middleware group to every route
- * | it contains. The "web" middleware group is defined in your HTTP
- * | kernel and includes session state, CSRF protection, and more.
- * |
- */
-
-Route::prefix('admin')->group(function () {
-
-    Route::get('atnaujinimai', [Admin\OtherController::class, 'getChangelog']);
-
-    Route::get('/', [Admin\OtherController::class, 'index']);
-    Route::patch('/', [Admin\OtherController::class, 'updateEN'])->middleware('can:handleEnConfig,App\Models\Padaliniai');
-    Route::get('failai', [Admin\OtherController::class, 'getFileManager'])->middleware('can:handleFiles,App\Models\User');
-
-    /**
-     * Pagrindinis puslapis
-     */
-    Route::get('pagrindinis', [Admin\MainPageController::class, 'mainPage'])->middleware('can:handle,App\Models\MainPage');
-    Route::get('pagrindinis/delete', [Admin\MainPageController::class, 'getDeletePadalinysMainPageElement'])->middleware('can:handle,App\Models\MainPage');
-    Route::get('pagrindinis/{id}', [Admin\MainPageController::class, 'getEditMainPageElement'])->middleware('can:handleMain,App\Models\MainPage');
-    Route::post('pagrindinis/{id}', [Admin\MainPageController::class, 'postEditMainPageElement'])->middleware('can:handleMain,App\Models\MainPage');
-    Route::patch('pagrindinis/{id}', [Admin\MainPageController::class, 'postEditMainPageElement'])->middleware('can:handleMain,App\Models\MainPage');
-
-    /**
-     * Padaliniai
-     */
-    Route::get('padaliniai', [Admin\MainPageController::class, 'padaliniai'])->middleware('can:handle,App\Models\Padalinys');
-    Route::get('padaliniai/prideti', [Admin\MainPageController::class, 'getAddPadaliniai'])->middleware('can:handle,App\Models\Padalinys');
-
-    Route::get('pagrindinis/{groupAlias}/prideti', [Admin\MainPageController::class, 'getAddPadalinysMainPageElement'])->middleware('can:handle,App\Models\MainPage');
-    Route::post('pagrindinis/{groupAlias}/prideti', [Admin\MainPageController::class, 'postAddPadalinysMainPageElement'])->middleware('can:handle,App\Models\MainPage');
-    Route::patch('pagrindinis/{groupAlias}/prideti', [Admin\MainPageController::class, 'postAddPadalinysMainPageElement'])->middleware('can:handle,App\Models\MainPage');
-
-    Route::get('pagrindinis/{groupAlias}/{id}/redaguoti', [Admin\MainPageController::class, 'getEditPadalinysMainPageElement'])->middleware('can:handle,App\Models\MainPage');
-    Route::post('pagrindinis/{groupAlias}/{id}/redaguoti', [Admin\MainPageController::class, 'postEditPadalinysMainPageElement'])->middleware('can:handle,App\Models\MainPage');
-    Route::patch('pagrindinis/{groupAlias}/{id}/redaguoti', [Admin\MainPageController::class, 'postEditPadalinysMainPageElement'])->middleware('can:handle,App\Models\MainPage');
-
-    Route::get('pagrindinis/swap/{id}/up', [Admin\MainPageController::class, 'getSwapUpPadalinysMainPageElement'])->middleware('can:handle,App\Models\MainPage');
-    Route::get('pagrindinis/swap/{id}/down', [Admin\MainPageController::class, 'getSwapDownPadalinysMainPageElement'])->middleware('can:handle,App\Models\MainPage');
-
-    /**
-     * Navigacija
-     */
-    Route::get('navigacijaLT', [Admin\NavigationController::class, 'navigation'])->middleware('can:handle,App\Models\Navigation');
-    Route::get('navigacijaEN', [Admin\NavigationController::class, 'navigation'])->middleware('can:handle,App\Models\Navigation');
-    Route::get('navigacija/prideti', [Admin\NavigationController::class, 'getAddNavigation'])->middleware('can:handle,App\Models\Navigation');
-    Route::post('navigacija/prideti', [Admin\NavigationController::class, 'postAddNavigation'])->middleware('can:handle,App\Models\Navigation');
-    Route::get('navigacija/subcats', [Admin\NavigationController::class, 'getNavigationParent'])->middleware('can:handle,App\Models\Navigation');
-    Route::get('navigacija/changeView', [Admin\NavigationController::class, 'getChangeViewNavigation'])->middleware('can:handle,App\Models\Navigation');
-    Route::get('navigacija/deleteRow', [Admin\NavigationController::class, 'getDeleteRowNavigation'])->middleware('can:handle,App\Models\Navigation');
-    Route::get('navigacija/{id}/redaguoti', [Admin\NavigationController::class, 'getUpdateNavigation'])->middleware('can:handle,App\Models\Navigation');
-    Route::patch('navigacija/{id}/redaguoti', [Admin\NavigationController::class, 'postUpdateNavigation'])->middleware('can:handle,App\Models\Navigation');
-
-    Route::get('navigacija/swap/{id}/up', [Admin\NavigationController::class, 'getSwapUpNavigation'])->middleware('can:handle,App\Models\Navigation');
-    Route::get('navigacija/swap/{id}/down', [Admin\NavigationController::class, 'getSwapDownNavigation'])->middleware('can:handle,App\Models\Navigation');
-
-    /**
-     * Puslapiai
-     */
-    Route::get('puslapiaiLT', [Admin\PagesController::class, 'pages'])->middleware('can:handle,App\Models\Page');
-    Route::get('puslapiaiEN', [Admin\PagesController::class, 'pages'])->middleware('can:handle,App\Models\Page');
-    Route::get('puslapiai/prideti', [Admin\PagesController::class, 'getAddPage'])->middleware('can:handle,App\Models\Page');
-    Route::post('puslapiai/prideti', [Admin\PagesController::class, 'postAddPage'])->middleware('can:handle,App\Models\Page');
-    Route::get('puslapiai/{permalink}/redaguoti', [Admin\PagesController::class, 'getUpdatePage'])->middleware('can:handle,App\Models\Page');
-    Route::patch('puslapiai/{permalink}/redaguoti', [Admin\PagesController::class, 'postUpdatePage'])->middleware('can:handle,App\Models\Page');
-    Route::post('puslapiai/{permalink}/redaguoti', [Admin\PagesController::class, 'postUpdatePage'])->middleware('can:handle,App\Models\Page');
-    Route::post('puslapiai/{permalink}/prideti', [Admin\PagesController::class, 'postAddPage'])->middleware('can:handle,App\Models\Page');
-    Route::get('puslapiai/pageName', [Admin\PagesController::class, 'getInfoPagesName'])->middleware('can:handle,App\Models\Page');
-    Route::get('puslapiai/deleteRow', [Admin\PagesController::class, 'deletePage'])->middleware('can:handle,App\Models\Page');
-    Route::get('puslapiai/changeView', [Admin\PagesController::class, 'getChangeViewPage'])->middleware('can:handle,App\Models\Page');
-
-    /**
-     * Naujienos
-     */
-    Route::get('naujienosLT', [Admin\PagesController::class, 'news'])->middleware('can:handle,App\Models\Page');
-    Route::get('naujienosEN', [Admin\PagesController::class, 'news'])->middleware('can:handle,App\Models\Page');
-    Route::get('naujienos/prideti', [Admin\PagesController::class, 'getAddNew'])->middleware('can:handle,App\Models\Page');
-    Route::post('naujienos/prideti', [Admin\PagesController::class, 'postAddNew'])->middleware('can:handle,App\Models\Page');
-    Route::get('naujienos/{permalink}/redaguoti', [Admin\PagesController::class, 'getUpdateNew'])->middleware('can:handle,App\Models\Page');
-    Route::patch('naujienos/{permalink}/redaguoti', [Admin\PagesController::class, 'postUpdateNew'])->middleware('can:handle,App\Models\Page');
-    Route::get('naujienos/newsName', [Admin\PagesController::class, 'getNewsName'])->middleware('can:handle,App\Models\Page');
-    Route::get('naujienos/deleteRow', [Admin\PagesController::class, 'deleteNew'])->middleware('can:handle,App\Models\Page');
-
-    /**
-     * Vartotojai
-     */
-    Route::get('vartotojai', [Admin\UserController::class, 'users'])->middleware('can:handleUsers,App\Models\User');
-    Route::get('vartotojai/prideti', [Admin\UserController::class, 'getCreateUser'])->middleware('can:handleUsers,App\Models\User');;
-    Route::post('vartotojai/prideti', [Admin\UserController::class, 'postCreateUser'])->middleware('can:handleUsers,App\Models\User');;
-    Route::get('vartotojai/{username}/redaguoti', [Admin\UserController::class, 'getUpdateUser'])->middleware('can:handleUsers,App\Models\User');;
-    Route::post('vartotojai/{username}/redaguoti', [Admin\UserController::class, 'postUpdateUser'])->middleware('can:handleUsers,App\Models\User');;
-    Route::patch('vartotojai/{username}/redaguoti', [Admin\UserController::class, 'postUpdateUser'])->middleware('can:handleUsers,App\Models\User');;
-    Route::get('vartotojai/{username}/keistislaptazodi', [Admin\UserController::class, 'getChangeUserPassword'])->middleware('can:handleUsers,App\Models\User');;
-    Route::post('vartotojai/{username}/keistislaptazodi', [Admin\UserController::class, 'postChangeUserPassword'])->middleware('can:handleUsers,App\Models\User');;
-    Route::patch('vartotojai/{username}/keistislaptazodi', [Admin\UserController::class, 'postChangeUserPassword'])->middleware('can:handleUsers,App\Models\User');;
-    Route::get('vartotojai/deleteRow', [Admin\UserController::class, 'deleteUser'])->middleware('can:handleUsers,App\Models\User');;
-
-    /**
-     * Vartotojų grupės
-     */
-    Route::get('grupes', [Admin\UserController::class, 'groups'])->middleware('can:handleUsers,App\Models\User');
-
-    Route::name('pages.admin.')->group(function () {
-        Route::middleware('can:handle,App\Models\Banner')->group(function () {
-
-            Route::post('banner/changeView', [Admin\BannerController::class, 'postChangeView'])->name('banner.changeView');
-            Route::post('banner/destroy', [Admin\BannerController::class, 'destroy'])->name('banner.destroy');
-            Route::resource('banner', Admin\BannerController::class)->except(['show', 'destroy']);
-        });
-
-        Route::middleware('can:handle,App\Models\Agenda')->group(function () {
-
-            Route::post('agenda/destroy', [Admin\AgendaController::class, 'destroy'])->name('agenda.destroy');
-            Route::resource('agenda', Admin\AgendaController::class)->except(['show', 'destroy']);
-
-            Route::post('calendar/destroy', [Admin\CalendarController::class, 'destroy'])->name('calendar.destroy');
-            Route::resource('calendar', Admin\CalendarController::class)->except(['show', 'destroy']);
-        });
-
-        Route::middleware('can:handle,App\Models\Saziningai')->group(function () {
-
-            Route::post('exam/destroy', [Admin\ExamController::class, 'destroy'])->name('exam.destroy');
-            Route::resource('exam', Admin\ExamController::class)->except(['show', 'create', 'destroy']);
-
-            Route::post('examPeople/destroy', [Admin\ExamPeopleController::class, 'destroy'])->name('examPeople.destroy');
-            Route::resource('examPeople', Admin\ExamPeopleController::class)->except(['show', 'create', 'destroy']);
-        });
-    });
-
-    /**
-     * Kontaktai
-     */
-    Route::get('kontaktai/prideti', [Admin\ContactController::class, 'getAddContact'])->middleware('can:handle,App\Models\Contact');
-    Route::post('kontaktai/prideti', [Admin\ContactController::class, 'postAddContact'])->middleware('can:handle,App\Models\Contact');
-    Route::get('kontaktai/deleteRow', [Admin\ContactController::class, 'deleteContact'])->middleware('can:handle,App\Models\Contact');
-    Route::get('kontaktai/{id}/redaguoti', [Admin\ContactController::class, 'getEditContact'])->middleware('can:handle,App\Models\Contact');
-    Route::post('kontaktai/{id}/redaguoti', [Admin\ContactController::class, 'postEditContact'])->middleware('can:handle,App\Models\Contact');
-    Route::patch('kontaktai/{id}/redaguoti', [Admin\ContactController::class, 'postEditContact'])->middleware('can:handle,App\Models\Contact');
-    Route::get('kontaktai/{name}', [Admin\ContactController::class, 'contactList'])->middleware('can:handle,App\Models\Contact');
-
-    Route::get('kontaktai/swap/{id}/up', [Admin\ContactController::class, 'getSwapContactUp'])->middleware('can:handle,App\Models\Contact');
-    Route::get('kontaktai/swap/{id}/down', [Admin\ContactController::class, 'getSwapContactDown'])->middleware('can:handle,App\Models\Contact');
-});
 
 Route::get('en/scholarship/{title}', [UserController::class, 'page']);
 
@@ -332,5 +179,3 @@ Route::get('uploads/{permalink}')->where('permalink', '.*')->middleware('main');
 Route::get('{locale}/{permalink}', [UserController::class, 'getInfoPage'])->where('locale', '(lt|en)');
 
 Route::get('/{permalink}', [UserController::class, 'getInfoPage'])->where('permalink', '.*')->middleware('main');
-
-Log::info('End of routes\web with ' . request()->path());

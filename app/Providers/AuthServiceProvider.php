@@ -15,15 +15,6 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         Team::class => TeamPolicy::class,
-        'App\Models\Agenda' => 'App\Policies\AgendaPolicy',
-        'App\Models\Banner' => 'App\Policies\BannerPolicy',
-        'App\Models\Contact' => 'App\Policies\ContactPolicy',
-        'App\Models\MainPage' => 'App\Policies\MainPagePolicy',
-        'App\Models\Navigation' => 'App\Policies\NavigationPolicy',
-        'App\Models\Padalinys' => 'App\Policies\PadaliniaiPolicy',
-        'App\Models\Page' => 'App\Policies\PagesPolicy',
-        'App\Models\Saziningai' => 'App\Policies\SaziningaiPolicy',
-        'App\Models\User' => 'App\Policies\UserPolicy',
     ];
 
     /**

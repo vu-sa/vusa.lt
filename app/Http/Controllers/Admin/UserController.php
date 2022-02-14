@@ -1,149 +1,121 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Users_group;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Validator;
+use Inertia\Inertia;
+use App\Http\Controllers\Controller as Controller;
 
-class UserController extends AdminBaseController {
+class UserController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index(Request $request)
+    {
+        $users = User::paginate(20);
+
+        return Inertia::render('Admin/Contacts/Index', [
+            'users' => $users,
+        ]);
+    }
 
     /**
-     * Vartotojų valdymas
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
      */
-    public function Users(Request $request)
+    public function create()
     {
-        $users = User::orderBy('gid')->simplePaginate(30);
-        $userGroups = Users_group::orderBy('id')->get();
-
-        return view('pages.admin.users', ['currentRoute' => $this->currentRoute, 'users' => $users, 'sessionInfo' => $request->User(), 'name' => null, 'userGroups' => $userGroups]);
+        //
     }
 
-    public function getCreateUser(Request $request)
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
     {
-        $userGroups = Users_group::orderBy('descr')->get();
-
-        $groups = array();
-        foreach ($userGroups as $userGroup) {
-            $groups[$userGroup['id']] = $userGroup['descr'];
-        }
-
-        return view('pages.admin.userAdd', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'name' => null, 'userGroups' => $groups]);
+        //
     }
 
-    public function postCreateUser(Request $request)
+    /**
+     * Display the specified resource.
+     *
+     * @param  \App\Models\User  $user
+     * @return \Illuminate\Http\Response
+     */
+    public function show(User $user)
     {
-        $rules = array(
-            'username' => 'required|unique:users',
-            'password' => 'required|min:7',
-            'password_repeat' => 'required|same:password',
-            'realname' => 'required',
-            'gid' => 'required'
-        );
-        $validator = Validator::make($request->all(), $rules);
+        //
+    }
 
-        if ($validator->fails()) {
-            return Redirect::to('/admin/vartotojai/prideti')->withInput()->withErrors(($validator));
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  \App\Models\User  $user
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(User $user)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\User  $user
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, User $user)
+    {
+        //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  \App\Models\User $user
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy(User $user)
+    {
+        //
+    }
+
+    public function storeFromMicrosoft()
+    {
+        $microsoftUser = Socialite::driver('microsoft')->user();
+
+        $user = User::where('email', $microsoftUser->mail)->first();
+
+        if ($user) {
+
+            $user->microsoft_token = $microsoftUser->token;
+            $user->update([
+                'email_verified_at' => now(),
+                // 'image' => $microsoftUser->avatar,
+            ]);
         } else {
             $user = new User;
-            $user->username = $request->username;
-            $user->realname = $request->realname;
-            $user->password = bcrypt($request->password);
-            $user->gid = $request->gid;
-            $user->disabled = $request->disabled;
-            $user->lastlogin = $request->lastlogin;
-            $user->disabled = '0';
-            $user->lastlogin_ip = "";
-            $user->created = date("Y-m-d H:i:s", time());
+            $user->role_id = 1;
+            $user->microsoft_token = $microsoftUser->token;
+            $user->name = $microsoftUser->displayName;
+            $user->email = $microsoftUser->mail;
+            $user->email_verified_at = now();
             $user->save();
         }
 
-        return redirect('/admin/vartotojai')->with('message', 'Naudotojas sukurtas.');
-    }
+        Auth::login($user);
 
-    public function deleteUser(Request $request)
-    {
-        $userID = $request->input('userID');
-        if (User::where('id', '=', $userID)->delete() == 1) {
-            return redirect('/admin/vartotojai')->with('message', 'Naudotojas pašalintas.');
-        } else {
-            return back()->with('message', 'Naudotojo pašalinti nepavyko');
-        }
-
-    }
-
-    public function getUpdateUser($username, Request $request)
-    {
-        $userInfo = User::where('username', '=', $username)->first();
-        $userGroups = Users_group::orderBy('id')->get();
-
-        $groups = array();
-        foreach ($userGroups as $userGroup) {
-            $groups[$userGroup['id']] = $userGroup['descr'];
-        }
-
-        return view('pages.admin.userEdit', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'userInfo' => $userInfo, 'name' => null, 'userGroups' => $groups]);
-    }
-
-    public function postUpdateUser($username, Request $request)
-    {
-        $rules = array(
-            'username' => 'required',
-            'realname' => 'required',
-            'password' => 'empty',
-            'password_repeat' => 'empty',
-        );
-        $validator = Validator::make($request->all(), $rules);
-
-        if ($validator->fails()) {
-            return Redirect::to('/admin/vartotojai/' . $username . '/redaguoti')->withInput()->withErrors(($validator));
-        } else {
-            User::where('username', '=', $username)->update([
-                'username' => $request->username,
-                'realname' => $request->realname,
-                'gid' => $request->gid
-            ]);
-
-            return redirect('/admin/vartotojai')->with('message', 'Naudotojas informacija atnaujinta.');
-        }
-    }
-
-    public function getChangeUserPassword($username, Request $request)
-    {
-
-        $userInfo = User::where('username', '=', $username)->first();
-
-        return view('pages.admin.userChangePassword', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'userInfo' => $userInfo, 'name' => null]);
-    }
-
-    public function postChangeUserPassword($username, Request $request)
-    {
-        $rules = array(
-            'password' => 'required|min:7',
-            'password_repeat' => 'required|same:password'
-        );
-        $validator = Validator::make($request->all(), $rules);
-
-        if ($validator->fails()) {
-            return Redirect::to('/admin/vartotojai/prideti')->withInput()->withErrors(($validator));
-        } else {
-            User::where('username', '=', $username)->update([
-                'password' => bcrypt($request->password)
-            ]);
-        }
-
-        return redirect('/admin/vartotojai')->with('message', 'Naudotojo ' . $username . ' slaptažodis atnaujintas.');
-    }
-
-    /**
-     * Vartotojų grupių valdymas
-     */
-
-    public function groups(Request $request)
-    {
-        $groups = Users_group::simplePaginate(10);
-
-        return view('pages.admin.groups', ['currentRoute' => $this->currentRoute, 'groups' => $groups, 'sessionInfo' => $request->User(), 'name' => null]);
+        return redirect()->route('dashboard');
     }
 }

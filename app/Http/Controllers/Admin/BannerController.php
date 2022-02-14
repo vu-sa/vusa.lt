@@ -3,117 +3,89 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Banner;
-use App\Models\Users_group;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Validator;
+use Inertia\Inertia;
+use App\Http\Controllers\Controller as Controller;
 
-class BannerController extends AdminBaseController {
-
+class BannerController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function index(Request $request)
     {
-        if ($request->User()->gid > 3) {
-            $banners = Banner::where('editorG', '=', $request->User()->gid)->addSelect(['descr' => Users_group::select('descr')->whereColumn('id', 'sidebar.editorG')])->orderBy('order', 'desc')->simplePaginate(10);
-        } else
-            $banners = Banner::addSelect(['descr' => Users_group::select('descr')->whereColumn('id', 'sidebar.editorG')])->orderBy('order', 'desc')->simplePaginate(10);
+        $banners = Banner::all();
 
-        return view('pages.admin.banner.index', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'banners' => $banners, 'name' => null]);
+        return Inertia::render('Admin/Content/Banners/Index', [
+            'banners' => $banners,
+        ]);
     }
 
-    public function create(Request $request)
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
     {
-        return view('pages.admin.banner.create', ['currentRoute' => $this->currentRoute, 'sessionInfo' => $request->User(), 'name' => null]);
+        //
     }
 
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
     public function store(Request $request)
     {
-        $rules = array(
-            'title' => 'required|unique:sidebar',
-            'value' => 'required|unique:sidebar',
-            'url' => 'required',
-        );
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            return Redirect::to('/admin/banner/create')->withInput()->withErrors(($validator));
-        } else {
-            $orderID = Banner::orderBy('order', 'desc')->first();
-            $banner = new Banner();
-            $banner->type = 'image';
-            $banner->title = $request->title;
-            isset($request->hide) ? $banner->hide = $request->hide : $banner->hide = 0;
-            $banner->value = $request->value;
-            $banner->url = $request->url;
-            $banner->order = $orderID['order'] + 1;
-            $banner->editor = $request->User()->id;
-            $banner->editorG = $request->User()->gid;
-            $banner->save();
-        }
-
-        return redirect('/admin/banner')->with('message', 'Baneris pridėtas.');
+        //
     }
 
-    public function edit($id, Request $request)
+    /**
+     * Display the specified resource.
+     *
+     * @param  \App\Models\Banner  $banner
+     * @return \Illuminate\Http\Response
+     */
+    public function show(Banner $banner)
     {
-        $banner = Banner::where('id', '=', $id)->first();
-
-        return view('pages.admin.banner.edit', ['sessionInfo' => $request->User(), 'banner' => $banner, 'name' => null, 'pageInfo' => null]);
+        //
     }
 
-    public function update($id, Request $request)
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  \App\Models\Banner  $banner
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(Banner $banner)
     {
-        $rules = array(
-            'title' => 'required',
-            'value' => 'required',
-            'url' => 'required',
-        );
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            return Redirect::to('/admin/banner/' . $id . '/edit')->withInput()->withErrors(($validator));
-        } else {
-            Banner::where('id', '=', $id)->update([
-                'type' => 'image',
-                'title' => $request->title,
-                'hide' => $request->hide ?? 0 ? 1 : 0,
-                'value' => $request->value,
-                'url' => $request->url,
-                'editor' => $request->User()->id
-            ]);
-        }
-
-        return redirect('/admin/banner')->with('message', 'Baneris atnaujintas.');
+        //
     }
 
-    public function destroy(Request $request)
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Banner  $banner
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, Banner $banner)
     {
-        $bannerId = $request->id;
-        $bannerInfo = Banner::where('id', '=', $bannerId)->first();
-        // if (strpos($bannerInfo['image'], 'vusa.lt') !== false) {
-        //     $imageLocation = $bannerInfo['image'];
-        // } else {
-        //     $imageLocation = 'uploads/sidebar/' . $bannerInfo['value'];
-        // }
-        //        Storage::delete($imageLocation);
-        if (Banner::where('id', '=', $bannerId)->delete() == 1) {
-            $banners = Banner::where('order', '>', $bannerInfo['order'])->get();
-            foreach ($banners as $banner) {
-                Banner::where('id', '=', $banner->id)->update(['order' => $banner->order - 1]);
-            }
-            return response()->json('DELETED', 200);
-        } else {
-            return response()->json('NOT DELETED', 200);
-        }
+        //
     }
 
-    public function postChangeView(Request $request)
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  \App\Models\Banner $banner
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy(Banner $banner)
     {
-        $itemId = $request->input('id');
-        $showArr = Banner::select('hide')->where('id', '=', $itemId)->first();
-        if ($showArr->hide == '1') {
-            Banner::where('id', '=', $itemId)->update(['hide' => '0']);
-        } else {
-            Banner::where('id', '=', $itemId)->update(['hide' => '1']);
-        }
-
-        return "updated";
+        //
     }
 }
