@@ -50,8 +50,9 @@ Route::prefix('new')->group(function () {
             Route::resource('navigation', New\NavigationController::class);
             Route::resource('users', New\UserController::class);
             Route::resource('calendar', New\CalendarController::class);
-            Route::resource('saziningaiExams', New\SaziningaiExamController::class);
-            Route::resource('saziningaiExamObservers', New\SaziningaiExamObserverController::class);
+            Route::resource('saziningaiExams', New\SaziningaiExamsController::class);
+            Route::resource('saziningaiExamFlows', New\SaziningaiExamFlowsController::class);
+            Route::resource('saziningaiExamObservers', New\SaziningaiExamObserversController::class);
             Route::resource('files', New\FilesController::class);
         });
     });

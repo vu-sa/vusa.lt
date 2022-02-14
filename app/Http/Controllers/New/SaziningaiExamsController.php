@@ -4,12 +4,11 @@ namespace App\Http\Controllers\New;
 
 use App\Http\Controllers\Controller as Controller;
 use App\Models\Padalinys;
-use App\Models\SaziningaiExamFlow;
 use App\Models\SaziningaiExam;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class SaziningaiExamController extends Controller
+class SaziningaiExamsController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -99,6 +98,7 @@ class SaziningaiExamController extends Controller
         return Inertia::render('Admin/Saziningai/Exams/Edit', [
             'exam' => [
                 'id' => $saziningaiExam->id,
+                'uuid' => $saziningaiExam->uuid,
                 'name' => $saziningaiExam->name,
                 'phone' => $saziningaiExam->phone,
                 'email' => $saziningaiExam->email,
@@ -118,7 +118,7 @@ class SaziningaiExamController extends Controller
                     'shortname_vu' => $padalinys->shortname_vu,
                 ];
             }),
-            'flows' => $saziningaiExam->flows,
+            'flows' => $saziningaiExam->flows->sortBy('start_time')->values(),
             'observers' => $saziningaiExam->observers
         ]);
     }

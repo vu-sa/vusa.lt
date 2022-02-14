@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\New;
 
-use App\Models\SaziningaiExamObserver;
+use App\Http\Controllers\Controller;
+use App\Models\SaziningaiExamFlow;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Http\Controllers\Controller as Controller;
 
-class SaziningaiExamObserverController extends Controller
+class SaziningaiExamFlowsController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -16,11 +16,7 @@ class SaziningaiExamObserverController extends Controller
      */
     public function index()
     {
-        $observers = SaziningaiExamObserver::all();
-
-        return Inertia::render('Admin/Saziningai/Observers/Index', [
-            'observers' => $observers,
-        ]);
+        //
     }
 
     /**
@@ -41,16 +37,22 @@ class SaziningaiExamObserverController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // Store new flow
+        $saziningaiExamFlow = new SaziningaiExamFlow();
+        $saziningaiExamFlow->exam_uuid = $request->exam_uuid;
+        $saziningaiExamFlow->start_time =  date('Y-m-d H:i:s', $request->start_time);
+        $saziningaiExamFlow->save();
+
+        return redirect()->back();
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\SaziningaiExamObserver  $saziningaiExamObserver
+     * @param  \App\Models\SaziningaiExamFlow  $saziningaiExamFlow
      * @return \Illuminate\Http\Response
      */
-    public function show(SaziningaiExamObserver $saziningaiExamObserver)
+    public function show(SaziningaiExamFlow $saziningaiExamFlow)
     {
         //
     }
@@ -58,10 +60,10 @@ class SaziningaiExamObserverController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\SaziningaiExamObserver  $saziningaiExamObserver
+     * @param  \App\Models\SaziningaiExamFlow  $saziningaiExamFlow
      * @return \Illuminate\Http\Response
      */
-    public function edit(SaziningaiExamObserver $saziningaiExamObserver)
+    public function edit(SaziningaiExamFlow $saziningaiExamFlow)
     {
         //
     }
@@ -70,21 +72,26 @@ class SaziningaiExamObserverController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\SaziningaiExamObserver  $saziningaiExamObserver
+     * @param  \App\Models\SaziningaiExamFlow  $saziningaiExamFlow
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, SaziningaiExamObserver $saziningaiExamObserver)
+    public function update(Request $request, SaziningaiExamFlow $saziningaiExamFlow)
     {
-        //
+        // Update the flow time
+        $saziningaiExamFlow->start_time = date('Y-m-d H:i:s', $request->start_time);
+        $saziningaiExamFlow->save();
+
+        // Redirect to the exam
+        return redirect()->back();
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\SaziningaiExamObserver  $saziningaiExamObserver
+     * @param  \App\Models\SaziningaiExamFlow  $saziningaiExamFlow
      * @return \Illuminate\Http\Response
      */
-    public function destroy(SaziningaiExamObserver $saziningaiExamObserver)
+    public function destroy(SaziningaiExamFlow $saziningaiExamFlow)
     {
         //
     }
