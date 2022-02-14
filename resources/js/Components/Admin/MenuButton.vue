@@ -1,7 +1,7 @@
 <template>
   <Link
     :href="route(menuButtonIndex)"
-    class="block p-3 hover:bg-gray-100 last:hover:rounded-b-xl duration-200"
+    class="block p-2 md:p-3 hover:bg-gray-100 last:hover:rounded-b-xl duration-200"
     :class="
       isCurrentRoute
         ? ['stroke-red-800', 'text-red-800', 'hover:text-red-900']
@@ -14,7 +14,7 @@
     "
   >
     <slot name="icon"></slot>
-    <div class="w-full"><slot></slot></div>
+    <div class="w-full text-xs lg:text-base"><slot></slot></div>
   </Link>
 </template>
 

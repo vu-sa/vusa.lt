@@ -2,7 +2,7 @@
   <AdminLayout :title="exam.subject_name + ' - ' + exam.created_at">
     <div class="main-card">
       <h3 class="mb-4">Bendra informacija</h3>
-      <form class="grid grid-cols-4 gap-8 mb-4 grid-flow-row-dense">
+      <form class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-4 grid-flow-row-dense">
         <div>
           <label class="font-bold">Pavadinimas</label>
           <n-input
@@ -41,12 +41,12 @@
           <n-input v-model:value="exam.email" type="text" placeholder="Įrašyti el. paštą..." />
         </div>
 
-        <div class="col-span-2">
+        <div class="lg:col-span-2">
           <label class="font-bold">Vieta</label>
           <n-input v-model:value="exam.place" type="text" placeholder="Įrašyti egzamino vietą..." />
         </div>
 
-        <div class="col-span-4">
+        <div class="lg:col-span-4">
           <label class="font-bold">Trukmė</label>
           <n-input v-model:value="exam.duration" type="textarea" placeholder="Įrašyti trukmę..." />
         </div>
@@ -61,7 +61,7 @@
           <n-input-number v-model:value="exam.students_need" placeholder="Įrašyti skaičių..." />
         </div>
 
-        <div class="col-start-3 col-span-2 flex justify-end items-center">
+        <div class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center">
           <n-popconfirm
             positive-text="Ištrinti!"
             negative-text="Palikti"
@@ -115,6 +115,9 @@
     <NModal
       v-model:show="showFlowModal"
       preset="dialog"
+      closable="true"
+      icon-placement="top"
+      type="warning"
       :title="flow_id !== null ? 'Atnaujinti srauto laiką' : 'Pridėti srautą'"
       :positive-text="flow_id !== null ? 'Atnaujinti' : 'Pridėti'"
       @positive-click="submitFlow(flow_id, timestamp)"

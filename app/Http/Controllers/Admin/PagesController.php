@@ -16,7 +16,7 @@ class PagesController extends Controller
      */
     public function index(Request $request)
     {
-        $pages = Page::all();
+        $pages = Page::orderByDesc('created_at')->paginate(20);
 
         return Inertia::render('Admin/Content/Pages/Index', [
             'pages' => $pages,

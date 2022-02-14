@@ -3,11 +3,12 @@
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
-    <NDataTable
+    <NDataTable remote
       class="main-card"
-      :data="props.pages"
+      :data="props.pages.data"
       :columns="columns"
       :row-props="rowProps"
+      :pagination="pagination"
     >
     </NDataTable>
   </AdminLayout>
@@ -17,12 +18,20 @@
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AsideHeader from "../AsideHeader.vue";
 import { NDataTable } from "naive-ui";
-import { ref } from "vue";
+import { ref, reactive } from "vue";
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
 
 const props = defineProps({
   pages: Object,
+});
+
+const pagination = reactive({
+  itemCount: props.pages.total,
+  page: props.pages.current_page,
+  pageCount: props.pages.last_page,
+  pageSize: 20,
+  showQuickJumper: true,
 });
 
 const createColumns = () => {
@@ -37,7 +46,7 @@ const createColumns = () => {
     },
     {
       title: "Atnaujinta",
-      key: "editor_time",
+      key: "updated_at",
     }
   ];
 };

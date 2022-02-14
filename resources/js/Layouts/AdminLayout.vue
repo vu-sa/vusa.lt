@@ -6,13 +6,12 @@
   <FullWindow>
     <!-- Main Navigation -->
     <MainNavigation>
-      <a class="w-full" href="/">
+      <a class="w-full md:bg-white md:rounded-t-lg" href="/">
         <AppLogo class="mx-auto my-2" />
       </a>
-      <div class="bg-gray-50 w-full h-full rounded-b-xl">
         <MenuButton :menuContent="['dashboard']">
           <template #icon>
-            <HomeIcon class="mx-auto w-7 h-7 mb-1" />
+            <HomeIcon class="admin-navigation-icon" />
           </template>
           Pradžia
         </MenuButton>
@@ -20,39 +19,38 @@
           :menuContent="['pages.*', 'news.*', 'mainPage.*', 'banners.*']"
         >
           <template #icon
-            ><DocumentTextIcon class="mx-auto w-7 h-7 mb-1"
+            ><DocumentTextIcon class="admin-navigation-icon"
           /></template>
           Turinys
         </MenuButton>
         <MenuButton :menuContent="['users.*']">
-          <template #icon><UserIcon class="mx-auto w-7 h-7 mb-1" /></template>
+          <template #icon><UserIcon class="admin-navigation-icon" /></template>
           Kontaktai
         </MenuButton>
         <MenuButton :menuContent="['navigation.*']">
           <template #icon
-            ><MenuAlt2Icon class="mx-auto w-7 h-7 mb-1"
+            ><MenuAlt2Icon class="admin-navigation-icon"
           /></template>
           Navigacija
         </MenuButton>
         <MenuButton :menuContent="['calendar.*', 'agenda.*']">
           <template #icon
-            ><CalendarIcon class="mx-auto w-7 h-7 mb-1"
+            ><CalendarIcon class="admin-navigation-icon"
           /></template>
           Kalendorius
         </MenuButton>
         <MenuButton :menuContent="['files.*']">
-          <template #icon><FolderIcon class="mx-auto w-7 h-7 mb-1" /></template>
+          <template #icon><FolderIcon class="admin-navigation-icon" /></template>
           Failų tvarkyklė
         </MenuButton>
         <MenuButton
           :menuContent="['saziningaiExams.*', 'saziningaiExamObservers.*']"
         >
           <template #icon
-            ><BookOpenIcon class="mx-auto w-7 h-7 mb-1"
+            ><BookOpenIcon class="admin-navigation-icon"
           /></template>
           Sažiningai
         </MenuButton>
-      </div>
     </MainNavigation>
     <!-- Main Navigation End -->
     <!-- Page Content -->
@@ -67,7 +65,7 @@
 
       <div class="col-span-2 ml-12 mt-4 mb-5"></div>
       <transition name="fade">
-        <main v-if="animated" class="col-span-4">
+        <main v-if="animated" class="md:col-span-4 col-span-full">
           <slot />
         </main>
       </transition>

@@ -11,7 +11,7 @@
       top-4
       mb-auto
       col-span-2
-      grid grid-flow-row gap-5
+      md:grid grid-flow-row gap-5 hidden
       text-sm text-gray-700
       p-6
     "
