@@ -2,7 +2,7 @@
   <nav
     class="
       md:mr-4
-      drop-shadow-lg
+      shadow-lg
       md:rounded-xl
       col-span-1
       md:sticky

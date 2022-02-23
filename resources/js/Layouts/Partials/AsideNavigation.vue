@@ -4,8 +4,7 @@
       bg-gray-50
       rounded-xl
       ml-12
-      shadow-inner
-      drop-shadow-lg
+      shadow-lg
       duration-200
       sticky
       top-4

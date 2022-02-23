@@ -9,6 +9,7 @@
       :columns="columns"
       :row-props="rowProps"
       :pagination="pagination"
+      @update:page="handlePageChange"
     >
     </NDataTable>
   </AdminLayout>
@@ -20,7 +21,6 @@ import AsideHeader from "../AsideHeader.vue";
 import { NDataTable } from "naive-ui";
 import { ref, reactive } from "vue";
 import { Inertia } from "@inertiajs/inertia";
-import { Link } from "@inertiajs/inertia-vue3";
 
 const props = defineProps({
   pages: Object,
@@ -52,6 +52,7 @@ const createColumns = () => {
 };
 
 const columns = ref(createColumns());
+const loading = ref(false);
 
 const rowProps = (row) => {
   return {
@@ -61,4 +62,17 @@ const rowProps = (row) => {
     },
   };
 };
+
+const handlePageChange = (page) => {
+  loading.value = true;
+  pagination.page = page;
+  Inertia.get(route('pages.index'), { page: page }, {
+    preserveState: true,
+    preserveScroll: true, 
+    onSuccess: () => {
+      loading.value = false;
+    }
+  });
+};
+
 </script>

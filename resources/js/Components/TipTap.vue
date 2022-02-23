@@ -56,18 +56,6 @@
         h4
       </button>
       <button
-        @click="editor.chain().focus().toggleHeading({ level: 5 }).run()"
-        :class="{ 'is-active': editor.isActive('heading', { level: 5 }) }"
-      >
-        h5
-      </button>
-      <button
-        @click="editor.chain().focus().toggleHeading({ level: 6 }).run()"
-        :class="{ 'is-active': editor.isActive('heading', { level: 6 }) }"
-      >
-        h6
-      </button>
-      <button
         @click="editor.chain().focus().toggleBulletList().run()"
         :class="{ 'is-active': editor.isActive('bulletList') }"
       >
@@ -79,12 +67,12 @@
       >
         ordered list
       </button>
-      <button
+      <!-- <button
         @click="editor.chain().focus().toggleCodeBlock().run()"
         :class="{ 'is-active': editor.isActive('codeBlock') }"
       >
         code block
-      </button>
+      </button> -->
       <button
         @click="editor.chain().focus().toggleBlockquote().run()"
         :class="{ 'is-active': editor.isActive('blockquote') }"
@@ -100,7 +88,7 @@
       <button @click="editor.chain().focus().undo().run()">undo</button>
       <button @click="editor.chain().focus().redo().run()">redo</button>
     </div>
-    <EditorContent class="mt-2 pl-4 border-l-2 border-dotted" :editor="editor" />
+    <EditorContent class="mt-2 shadow-xl p-4 rounded-lg" :editor="editor" />
   </div>
 </template>
 
