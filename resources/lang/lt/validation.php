@@ -110,6 +110,7 @@ return [
         'email' => 'El. paštas',
         'first_name' => 'Vardas',
         'last_name' => 'Pavardė',
+        'name' => 'Pavadinimas',
     ],
 
 ];

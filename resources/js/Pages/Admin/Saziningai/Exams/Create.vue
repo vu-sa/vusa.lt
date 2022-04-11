@@ -2,13 +2,13 @@
   <AdminLayout :title="title">
     <div class="main-card">
       <h3 class="mb-4">Bendra informacija</h3>
-        <ul v-if="errors" class="mb-4 text-red-700">
-          <li v-for="error in errors">{{ error }}</li>
-        </ul>
+      <ul v-if="errors" class="mb-4 text-red-700">
+        <li v-for="error in errors">{{ error }}</li>
+      </ul>
       <form class="grid grid-cols-4 gap-8 mb-4 grid-flow-row-dense">
         <div>
-          <label class="font-bold">Pavadinimas</label
-          ><n-input
+          <label class="font-bold">Pavadinimas</label>
+          <n-input
             v-model:value="exam.subject_name"
             type="text"
             placeholder="Įrašyti pavadinimą..."
@@ -16,21 +16,18 @@
         </div>
 
         <div>
-          <label class="font-bold">Egzamino tipas</label
-          ><n-select v-model:value="exam.exam_type" :options="exam_types" />
+          <label class="font-bold">Egzamino tipas</label>
+          <n-select v-model:value="exam.exam_type" :options="exam_types" />
         </div>
 
         <div>
-          <label class="font-bold">Padalinys</label
-          ><n-select
-            v-model:value="exam.padalinys_id"
-            :options="padaliniai_options"
-          />
+          <label class="font-bold">Padalinys</label>
+          <n-select v-model:value="exam.padalinys_id" :options="padaliniai_options" />
         </div>
 
         <div>
-          <label class="font-bold">Užregistravusio vardas</label
-          ><n-input
+          <label class="font-bold">Užregistravusio vardas</label>
+          <n-input
             v-model:value="exam.name"
             type="text"
             placeholder="Įrašyti užsiregistravusio vardą..."
@@ -38,8 +35,8 @@
         </div>
 
         <div>
-          <label class="font-bold">Telefonas</label
-          ><n-input
+          <label class="font-bold">Telefonas</label>
+          <n-input
             v-model:value="exam.phone"
             type="text"
             placeholder="Įrašyti telefoną..."
@@ -47,8 +44,8 @@
         </div>
 
         <div>
-          <label class="font-bold">El. paštas</label
-          ><n-input
+          <label class="font-bold">El. paštas</label>
+          <n-input
             v-model:value="exam.email"
             type="text"
             placeholder="Įrašyti el. paštą..."
@@ -56,8 +53,8 @@
         </div>
 
         <div class="col-span-2">
-          <label class="font-bold">Vieta</label
-          ><n-input
+          <label class="font-bold">Vieta</label>
+          <n-input
             v-model:value="exam.place"
             type="text"
             placeholder="Įrašyti egzamino vietą..."
@@ -65,8 +62,8 @@
         </div>
 
         <div class="col-span-4">
-          <label class="font-bold">Trukmė</label
-          ><n-input
+          <label class="font-bold">Trukmė</label>
+          <n-input
             v-model:value="exam.duration"
             type="textarea"
             placeholder="Įrašyti trukmę..."
@@ -74,13 +71,13 @@
         </div>
 
         <div>
-          <label class="font-bold">Laikančiųjų skaičius</label
-          ><n-input-number v-model:value="exam.exam_holders" />
+          <label class="font-bold">Laikančiųjų skaičius</label>
+          <n-input-number v-model:value="exam.exam_holders" />
         </div>
 
         <div>
-          <label class="font-bold">Prašytas stebėtojų skaičius</label
-          ><n-input-number
+          <label class="font-bold">Prašytas stebėtojų skaičius</label>
+          <n-input-number
             v-model:value="exam.students_need"
             placeholder="Įrašyti skaičių..."
           />
@@ -99,14 +96,14 @@
       </form>
     </div>
 
-    <div class="main-card">
+    <!-- <div class="main-card">
       <h3>Srautai</h3>
       <ol>
         <li v-for="flow in flows" v-bind:key="flow.id">
           {{ flow.start_time }}
         </li>
       </ol>
-    </div>
+    </div>-->
 
     <!-- <div class="main-card" v-if="observers.length !== 0">
       <h3>Užsiregistravę stebėtojai</h3>
@@ -115,7 +112,7 @@
           {{ observer.name }}
         </li>
       </ol>
-    </div> -->
+    </div>-->
   </AdminLayout>
 </template>
 
@@ -131,7 +128,9 @@ import {
   NInputNumber,
   NButton,
   NPopconfirm,
+  useMessage,
 } from "naive-ui";
+
 import { Inertia } from "@inertiajs/inertia";
 
 const props = defineProps({
@@ -140,6 +139,8 @@ const props = defineProps({
   observers: Object,
   errors: Object,
 });
+
+const message = useMessage();
 
 const exam = reactive({});
 
@@ -169,20 +170,14 @@ const title = computed(() => {
 
 const updateModel = async () => {
   showSpin.value = !showSpin.value;
-  await Inertia.post(route("saziningaiExams.store", exam.id), exam);
-  showSpin.value = !showSpin.value;
+  Inertia.post(route("saziningaiExams.store", exam.id), exam, {
+    onSuccess: () => {
+      showSpin.value = !showSpin.value;
+      message.success("Egzaminas sukurtas!");
+    },
+    onError: () => {
+      showSpin.value = !showSpin.value;
+    },
+  });
 };
-
 </script>
-
-<style>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0.5;
-}
-</style>

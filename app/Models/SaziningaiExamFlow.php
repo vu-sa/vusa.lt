@@ -18,6 +18,6 @@ class SaziningaiExamFlow extends Model
 
     public function observers()
     {
-        return $this->hasMany(SaziningaiExamObserver::class, 'flow_id');
+        return $this->hasMany(SaziningaiExamObserver::class, 'flow');
     }
 }

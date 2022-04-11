@@ -30,15 +30,15 @@ class SaziningaiExamsController extends Controller
                     'name' => $exam->name,
                     'subject_name' => $exam->subject_name,
                     'exam_holders' => $exam->exam_holders,
-                    'padalinys' => $exam->padalinys->shortname_vu,
+                    'padalinys' => $exam?->padalinys?->shortname_vu,
                     'created_at' => $exam->created_at->format('Y-m-d H:i'),
-                    'flow_date' => date_create($exam->flows->first()->start_time)->format('Y-m-d H:i'),
+                    'flow_date' => date_create($exam?->flows?->first()?->start_time)->format('Y-m-d H:i'),
                     'flow_count' => $exam->flows->count(),
                     'observer_count' => $exam->observers->count(),
                 ];
             }),
             'padaliniai' => $exams->unique('padalinys_id')->map(function ($exam) {
-                return $exam->padalinys->shortname_vu;
+                return $exam->padalinys?->shortname_vu;
             }),
             'create_url' => route('saziningaiExams.create'),
         ]);
@@ -70,10 +70,24 @@ class SaziningaiExamsController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'first_name' => ['required', 'max:50'],
-            'last_name' => ['required', 'max:50'],
-            'email' => ['required', 'max:50', 'email'],
+            'email' => ['required', 'email'],
+            'subject_name' => ['required'],
+            'padalinys_id' => ['required'],
         ]);
+
+        SaziningaiExam::create([
+            'uuid' => bin2hex(random_bytes(15)),
+            'subject_name' => $request->subject_name,
+            'padalinys_id' => $request->padalinys_id,
+            'email' => $request->email,
+            'duration' => $request->duration,
+            'exam_holders' => $request->exam_holders,
+            'exam_type' => $request->exam_type,
+            'phone' => $request->phone,
+            'students_need' => $request->students_need,
+        ]);
+
+        return redirect()->route('saziningaiExams.index');
     }
 
     /**
@@ -118,8 +132,19 @@ class SaziningaiExamsController extends Controller
                     'shortname_vu' => $padalinys->shortname_vu,
                 ];
             }),
-            'flows' => $saziningaiExam->flows->sortBy('start_time')->values(),
-            'observers' => $saziningaiExam->observers
+            'flows' => $saziningaiExam->flows->sortBy('start_time')->map(function ($flow) {
+                return [
+                    'id' => $flow->id,
+                    'start_time' => $flow->start_time,
+                    'end_time' => $flow->end_time,
+                    'observers' => $flow?->observers->map(function ($observer) {
+                        return [
+                            'id' => $observer->id,
+                            'name' => $observer->name,
+                        ];
+                    }),
+                ];
+            }),
         ]);
     }
 
@@ -132,6 +157,12 @@ class SaziningaiExamsController extends Controller
      */
     public function update(Request $request, SaziningaiExam $saziningaiExam)
     {
+        $request->validate([
+            'email' => ['required', 'email'],
+            'subject_name' => ['required'],
+            'padalinys_id' => ['required'],
+        ]);
+        
         $saziningaiExam->update($request->only('name', 'phone', 'email', 'exam_type', 'padalinys_id', 'place', 'duration', 'subject_name', 'exam_holders', 'students_need'));
         return redirect()->back();
     }
