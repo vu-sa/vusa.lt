@@ -9,6 +9,44 @@ use App\Http\Controllers\Controller as Controller;
 
 class NavigationController extends Controller
 {
+
+    public function getNavigation($id, $lang)
+    {
+        $childrenNav = Navigation::where('parent_id', $id)->where('lang', '=', $lang)->get()->sortBy('order');
+        // if ($childrenNav->first() == null) {
+        //     return;
+        // }
+
+        // $navigation = [];
+
+        // foreach ($childrenNav as $child) {
+        //     $navigation[] = [
+        //         'key' => $child->id,
+        //         'label' => $child->name,
+        //         'url' => $child->url,
+        //         'children' => $this->getNavigation($child->id, $lang),
+        //     ];
+        // }
+
+        // return $navigation;
+    }
+
+    public function postNavigation($array, $id = 0)
+    {
+
+        for ($i = 0; $i < count($array); $i++) {
+            $navigation = Navigation::find($array[$i]['key']);
+            $navigation->name = $array[$i]['label'];
+            $navigation->url = $array[$i]['url'];
+            $navigation->parent_id = $id;
+            $navigation->order = $i;
+            $navigation->save();
+            if (isset($array[$i]['children'])) {
+                $this->postNavigation($array[$i]['children'], $navigation->id);
+            }
+        }
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -16,10 +54,8 @@ class NavigationController extends Controller
      */
     public function index(Request $request)
     {
-        $navigation = Navigation::all();
-
         return Inertia::render('Admin/Navigation/Index', [
-            'navigation' => $navigation,
+            'navigationLT' => Navigation::where('lang', '=', 'lt')->get(),
         ]);
     }
 
@@ -41,7 +77,9 @@ class NavigationController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $this->postNavigation($request->_value);
+
+        return redirect()->back();
     }
 
     /**
@@ -75,7 +113,6 @@ class NavigationController extends Controller
      */
     public function update(Request $request, Navigation $navigation)
     {
-        //
     }
 
     /**

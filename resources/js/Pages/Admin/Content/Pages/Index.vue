@@ -5,7 +5,7 @@
     </template>
     <NDataTable remote
       class="main-card"
-      :data="props.pages.data"
+      :data="props.pages"
       :columns="columns"
       :row-props="rowProps"
       :pagination="pagination"
@@ -39,15 +39,25 @@ const createColumns = () => {
     {
       title: "Pavadinimas",
       key: "title",
+      ellipsis: true,
+      width: 400
+    },
+    {
+      title: "Padalinys",
+      key: "padalinys",
+    },
+    {
+      title: "Sukurta",
+      key: "created_at",
+      sorter: "default",
+      defaultSortOrder: 'descend'
     },
     {
       title: "Nuoroda",
       key: "permalink",
+      // ellipsis: true,
+      // width: 400,
     },
-    {
-      title: "Atnaujinta",
-      key: "updated_at",
-    }
   ];
 };
 

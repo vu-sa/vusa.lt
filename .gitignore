@@ -46,3 +46,4 @@ public/css/admin.css.LICENSE.txt
 public/css/app.css.LICENSE.txt
 database/vusa_www-n.sql
 .DS_Store
+.vscode/settings.json

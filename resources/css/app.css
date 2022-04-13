@@ -16,10 +16,10 @@
     @apply text-base md:text-lg font-bold mb-2;
   }
   ul {
-	@apply list-disc list-inside;
+	@apply list-disc;
   }
   ol {
-	@apply list-decimal list-inside;
+	@apply list-decimal;
   }
 
   hr {

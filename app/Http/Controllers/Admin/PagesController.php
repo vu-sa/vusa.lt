@@ -19,7 +19,16 @@ class PagesController extends Controller
         $pages = Page::orderByDesc('created_at')->paginate(20);
 
         return Inertia::render('Admin/Content/Pages/Index', [
-            'pages' => $pages,
+            'pages' => $pages->map(function ($page) {
+                return [
+                    'id' => $page->id,
+                    'title' => $page->title,
+                    'padalinys' => $page->padalinys->shortname,
+                    'permalink' => $page->permalink,
+                    'created_at' => $page->created_at->format('Y-m-d H:i'),
+                    'updated_at' => $page->updated_at->format('Y-m-d H:i'),
+                ];
+            }),
         ]);
     }
 

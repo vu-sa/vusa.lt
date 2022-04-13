@@ -20,6 +20,7 @@ class CalendarController extends Controller
 
         return Inertia::render('Admin/Calendar/Events/Index', [
             'calendar' => $calendar,
+            'create_url' => route('calendar.create'),
         ]);
     }
 
@@ -30,7 +31,7 @@ class CalendarController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('Admin/Calendar/Events/Create');
     }
 
     /**
@@ -41,7 +42,21 @@ class CalendarController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'date' => 'required|date',
+            'title' => 'required',
+            'description' => 'required',
+        ]);
+
+        Calendar::create([
+            'date' => $request->date,
+            'title' => $request->title,
+            'description' => $request->description,
+            'url' => $request->url,
+            'category' => $request->category,
+        ]);
+
+        return redirect()->route('calendar.index');
     }
 
     /**
@@ -63,7 +78,9 @@ class CalendarController extends Controller
      */
     public function edit(Calendar $calendar)
     {
-        //
+        return Inertia::render('Admin/Calendar/Events/Edit', [
+            'calendar' => $calendar->toArray(),
+        ]);
     }
 
     /**
@@ -75,7 +92,9 @@ class CalendarController extends Controller
      */
     public function update(Request $request, Calendar $calendar)
     {
-        //
+        $calendar->update($request->only('title', 'date', 'description', 'category', 'url'));
+
+        return redirect()->back();
     }
 
     /**
@@ -86,6 +105,8 @@ class CalendarController extends Controller
      */
     public function destroy(Calendar $calendar)
     {
-        //
+        $calendar->delete();
+
+        return redirect()->route('calendar.index');
     }
 }

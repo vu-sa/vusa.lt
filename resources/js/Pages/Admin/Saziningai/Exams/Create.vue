@@ -170,7 +170,7 @@ const title = computed(() => {
 
 const updateModel = async () => {
   showSpin.value = !showSpin.value;
-  Inertia.post(route("saziningaiExams.store", exam.id), exam, {
+  Inertia.post(route("saziningaiExams.store"), exam, {
     onSuccess: () => {
       showSpin.value = !showSpin.value;
       message.success("Egzaminas sukurtas!");

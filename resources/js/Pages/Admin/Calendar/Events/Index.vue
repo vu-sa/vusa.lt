@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout title="Renginiai">
+  <AdminLayout title="Renginiai" :createURL="create_url">
     <NDataTable class="main-card" remote
       :data="props.calendar.data"
       :columns="columns"
@@ -19,6 +19,7 @@ import { Inertia } from "@inertiajs/inertia";
 
 const props = defineProps({
   calendar: Object,
+  create_url: String,
 });
 
 const createColumns = () => {
@@ -49,7 +50,7 @@ const rowProps = (row) => {
   return {
     style: "cursor: pointer;",
     onClick: () => {
-      Inertia.visit(route("calendar.edit", { id: row.permalink }));
+      Inertia.visit(route("calendar.edit", { id: row.id }));
     },
   };
 };

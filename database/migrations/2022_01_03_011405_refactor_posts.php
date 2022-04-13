@@ -167,9 +167,17 @@ class RefactorPosts extends Migration
             }
         }
 
+
         Schema::table('news', function (Blueprint $table) {
             $table->dropColumn('tags');
+            $table->dropColumn('editor_time');
             $table->foreign('category_id')->references('id')->on('categories');
+        });
+
+        // delete pages editor time column
+
+        Schema::table('pages', function (Blueprint $table) {
+            $table->dropColumn('editor_time');
         });
     }
 

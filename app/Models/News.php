@@ -11,6 +11,11 @@ class News extends Model
     
     protected $table = 'news';
 
+    protected $casts = [
+        'updated_at' => 'datetime:Y-m-d H:i:s',
+        'created_at' => 'datetime:Y-m-d H:i:s',
+    ];
+
     public function user() {
         return $this->belongsTo(User::class, 'user_id');
     }

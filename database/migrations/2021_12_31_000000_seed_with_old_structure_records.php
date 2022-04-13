@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\News;
+use App\Models\Page;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Artisan;
@@ -70,16 +72,32 @@ class SeedWithOldStructureRecords extends Migration
         });
 
         Schema::table('pages', function (Blueprint $table) {
-            $table->dropColumn('editor_time');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
 
         Schema::table('news', function (Blueprint $table) {
-            $table->dropColumn('editor_time');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
+
+        // update news created_at with editor_time
+
+        $news = News::all();
+
+        foreach ($news as $key => $value) {
+            $value->created_at = $value->editor_time;
+            $value->save();
+        }
+
+        // update pages created_at with editor_time
+
+        $pages = Page::all();
+
+        foreach ($pages as $key => $value) {
+            $value->created_at = $value->editor_time;
+            $value->save();
+        }
 
         // Seed with old structure records
         /* if (config('app.env') === 'local') {
