@@ -62,6 +62,7 @@ Route::get('/auth/microsoft/callback', [Admin\UserController::class, 'storeFromM
 // return redirect('https://graph.microsoft.com/v1.0/me/photo/$value');
 // });
 
+Route::get('/', [Public\MainController::class, 'home'])->name('home');
 
 /**
  * Statiniai seni tinklapio routai
