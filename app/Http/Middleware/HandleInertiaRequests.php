@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use App\Models\Padalinys;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -40,6 +41,14 @@ class HandleInertiaRequests extends Middleware
             'app' => [
                 'env' => config('app.env'),
             ],
+            'padaliniai' => Padalinys::where('type', '=', 'padalinys')->orderBy('shortname_vu')->get()->map(function ($padalinys) {
+                return [
+                    'id' => $padalinys->id,
+                    'alias' => $padalinys->alias,
+                    'shortname' => $padalinys->shortname,
+                    'fullname' => $padalinys->fullname,
+                ];
+            }),
             // 'flash' => fn () => [
             //     'success' => $request->session()->get('success'),
             //     'info' => $request->session()->get('info'),

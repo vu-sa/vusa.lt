@@ -28,4 +28,8 @@ class News extends Model
     public function getOtherLanguage() {
         return News::find($this->other_lang_id);
     }
+
+    public function tags() {
+        return $this->belongsToMany(Tag::class, 'posts_tags', 'news_id', 'tag_id');
+    }
 }

@@ -4,5 +4,6 @@
 			"naive-ui/volar"
 		],
 		"allowJs": true,
+		// "checkJs": true
 	}
 }

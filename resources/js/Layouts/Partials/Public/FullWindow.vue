@@ -1,7 +1,9 @@
 <template>
-  <div
-    class="border-4 border-orange-600 min-h-screen antialiased bg-gradient-to-b from-white to-gray-50"
-  >
+  <div class="min-h-screen antialiased bg-neutral-50">
+    <!-- style="
+      background-image: url('/images/elements/Background.svg');
+      background-size: cover;
+    " -->
     <slot></slot>
   </div>
 </template>

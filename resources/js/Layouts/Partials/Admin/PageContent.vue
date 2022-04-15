@@ -24,10 +24,9 @@ import { computed, useAttrs } from "vue";
 
 const props = defineProps({
   createURL: String,
-})
+});
 
 const isIndex = computed(() => {
   return route().current("*.index");
 });
-
 </script>

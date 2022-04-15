@@ -62,7 +62,10 @@ Route::get('/auth/microsoft/callback', [Admin\UserController::class, 'storeFromM
 // return redirect('https://graph.microsoft.com/v1.0/me/photo/$value');
 // });
 
-Route::get('/', [Public\MainController::class, 'home'])->name('home');
+Route::group(['prefix' => '/{lang}/', 'where' => ['lang' => '|lt|en']], function () {
+    Route::get('/', [Public\MainController::class, 'home'])->name('home');
+    Route::get('{news}/{permalink}', [Public\MainController::class, 'news'])->where('news', '(naujiena|news)')->name('news');
+});
 
 /**
  * Statiniai seni tinklapio routai

@@ -1,9 +1,11 @@
 <template>
   <nav
-    class="flex flex-row fixed justify-between sm:px-12 lg:px-24 border shadow-md w-full backdrop-blur-sm bg-white/80 text-gray-700 items-center py-4 z-50 top-0"
+    class="flex flex-row fixed justify-between sm:px-12 lg:px-24 border shadow-sm w-full backdrop-blur-sm bg-white/80 text-gray-700 items-center py-4 z-50 top-0"
   >
     <div class="flex flex-row space-x-4 items-center">
-      <img class="object-contain" src="/logos/vusa.lin.hor.svg" />
+      <Link :href="route('home', { lang: 'lt' })">
+        <img class="object-contain min-w-[10vw]" src="/logos/vusa.lin.hor.svg"
+      /></Link>
       <NDropdown
         :options="options"
         placement="top-start"
@@ -33,36 +35,17 @@
 <script setup>
 import { FacebookF, Instagram } from "@vicons/fa";
 import { Search20Filled, ChevronDown20Filled } from "@vicons/fluent";
-import { NIcon, NDropdown, NButton, useMessage, NGradientText, NBadge } from "naive-ui";
+import { NIcon, NDropdown, NButton, NGradientText, NBadge } from "naive-ui";
+import { usePage, Link } from "@inertiajs/inertia-vue3";
 
-const message = useMessage();
+// map padaliniai to options_padaliniai
 
-const options = [
-  {
-    label: "Chemijos ir geomokslų fakultete",
-    key: "a",
-  },
-  {
-    label: "Ekonomikos ir verslo administravimo fakultete",
-    key: "b",
-  },
-  {
-    label: "Fizikos fakultete",
-    key: "c",
-  },
-  {
-    label: "Filosofijos fakultete",
-    key: "d",
-    children: [
-      {
-        label: "Jay Gatsby",
-        key: "jay gatsby",
-      },
-    ],
-  },
-];
+const options = usePage().props.value.padaliniai.map((padalinys) => ({
+  label: _.split(padalinys.fullname, "atstovybė ")[1],
+  key: padalinys.shortname,
+}));
 
 const handleSelect = (key) => {
-  message.info(String(key));
+  console.log(key);
 };
 </script>
