@@ -1,5 +1,20 @@
 <template>
   <PublicLayout>
+    <div class="relative">
+      <ShapeDivider1 class="absolute -top-1"></ShapeDivider1>
+      <ShapeDivider1 class="absolute rotate-180 -bottom-1"></ShapeDivider1>
+      <img src="/images/placeholders/foto3.jpg" class="h-96 w-full object-cover my-4" />
+    </div>
+    <div class="px-16 mx-16">
+      <h2 class="text-5xl mb-4 text-gray-900">
+        Pasižiūrėkite, ką nuveikėme 2022 metais 💡
+      </h2>
+      <p class="w-[65ch] text-gray-700 mb-20 text-base">
+        Nuo nacionalinio atstovavimo studentų interesams iki naujų galimybių saviraiškai –
+        Vilniaus universiteto Studentų atstovybė (čia mes 👋) apima daugiau nei čia tilptų
+        parašyti. Daugiau neskaitykite, čia tik Lorem ipsum.
+      </p>
+    </div>
     <NewsElement>
       <HomeCard
         :hasMiniContent="false"
@@ -19,7 +34,8 @@
             :href="
               route('news', {
                 lang: item.lang,
-                news: 'naujiena',
+                news_string: 'naujiena',
+                padalinys: item.alias,
                 permalink: item.permalink,
               })
             "
@@ -30,7 +46,8 @@
           :href="
             route('news', {
               lang: item.lang,
-              news: 'naujiena',
+              news_string: 'naujiena',
+              padalinys: item.alias,
               permalink: item.permalink,
             })
           "
@@ -38,24 +55,6 @@
         >
       </HomeCard>
     </NewsElement>
-    <div class="relative">
-      <ShapeDivider1 class="absolute -top-1"></ShapeDivider1>
-      <ShapeDivider1 class="absolute rotate-180 -bottom-1"></ShapeDivider1>
-      <img
-        src="/images/photos/observatorijos_kiemelis.jpg"
-        class="h-96 w-full object-cover my-8"
-      />
-    </div>
-    <div class="px-16 mx-16">
-      <h2 class="text-5xl mb-4 text-gray-900">
-        Pasižiūrėkite, ką nuveikėme per metus 💡
-      </h2>
-      <p class="w-3/5 text-gray-700 mb-20 text-base leading-tight">
-        Nuo nacionalinio atstovavimo studentų interesams iki naujų galimybių saviraiškai –
-        Vilniaus universiteto Studentų atstovybė (čia mes 👋) apima daugiau nei čia tilptų
-        parašyti. Daugiau neskaitykite, čia tik Lorem ipsum.
-      </p>
-    </div>
   </PublicLayout>
 </template>
 
@@ -72,9 +71,16 @@ import {
   Clock20Regular,
   ArrowRight48Regular,
 } from "@vicons/fluent";
-import { Link } from "@inertiajs/inertia-vue3";
+import { Link, usePage } from "@inertiajs/inertia-vue3";
+import { onMounted, ref } from "vue";
 
 const props = defineProps({
   news: Object,
+});
+
+const alias = ref("");
+
+onMounted(() => {
+  alias.value = usePage().props.value.alias;
 });
 </script>

@@ -107,6 +107,7 @@ class SeedWithOldStructureRecords extends Migration
         } */
         Schema::table('padaliniai', function (Blueprint $table) {
             $table->string('type')->nullable()->after('id')->default('padalinys');
+            $table->unique('shortname');
         });
 
         DB::table('padaliniai')->insert(['id' => 16, 'fullname' => 'Vilniaus universiteto Studentų atstovybė', 'shortname' => 'VU SA', 'alias' => 'vusa', 'type' => 'pagrindinis', 'en' => 0]);
