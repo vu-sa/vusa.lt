@@ -23,7 +23,7 @@ class MainController extends Controller
 		if (request()->lang) {
 			App::setLocale(request()->lang);
 		}
-		
+
 		// get subdomain if exists
 		$host = Request::server('HTTP_HOST');
 
@@ -31,17 +31,22 @@ class MainController extends Controller
 			$subdomain = explode('.', $host)[0];
 			$this->alias = $subdomain == 'www' ? '' : $subdomain;
 			$this->alias = $subdomain == 'vusa' ? '' : $subdomain;
+			$this->alias = $subdomain == 'naujas' ? '' : $subdomain;
 			$this->alias = Route::currentRouteName() == 'home' ? '' : $this->alias;
+			$this->alias = Route::currentRouteName() == 'padalinys.home' ? '' : $this->alias;
 		} else {
 			$this->alias = '';
 		}
 
+
 		if (request()->padalinys != null) {
-			$this->alias = request()->padalinys == "Padaliniai" ? '' : request()->padalinys;
+			$this->alias = in_array(request()->padalinys, ["Padaliniai", "naujas"]) ? '' : request()->padalinys;
 		}
 
 		$vusa = Padalinys::where('shortname', 'VU SA')->first();
 		$mainNavigation = Navigation::where([['padalinys_id', $vusa->id], ['lang', app()->getLocale()]])->orderBy('order')->get();
+
+
 
 		Inertia::share('mainNavigation', $mainNavigation);
 	}
@@ -116,6 +121,9 @@ class MainController extends Controller
 	public function page()
 	{
 		$padalinys = Padalinys::where('alias', '=', $this->alias)->first();
+
+		// ddd($this->alias, Route::currentRouteName() == 'padalinys.home', request()->padalinys);
+
 
 		$page = Page::where([['permalink', '=', request()->permalink], ['padalinys_id', '=', $padalinys->id]])->first();
 
