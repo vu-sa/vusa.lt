@@ -16,9 +16,12 @@ class RefactorCalendar extends Migration
      */
     public function up()
     {
+        Calendar::where('date', '=', '0000-00-00')->delete();
+        DB::table('agenda')->where('date', '=', '0000-00-00')->delete();
+        
         Schema::table('calendar', function (Blueprint $table) {
             $table->increments('id')->change();
-            $table->string('title')->change();
+            $table->text('title')->change();
             $table->dateTimeTz('date')->change();
             $table->dropColumn('time');
             $table->renameColumn('descr', 'description');

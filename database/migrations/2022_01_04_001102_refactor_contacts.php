@@ -41,7 +41,7 @@ class RefactorContacts extends Migration
         Schema::create('duties_institutions', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('pid')->nullable();
-            $table->string('name');
+            $table->string('name')->nullable();
             $table->string('short_name')->nullable();
             $table->string('alias')->index();
             $table->text('description')->nullable();

@@ -11,6 +11,8 @@ class News extends Model
     
     protected $table = 'news';
 
+    protected $guarded = [];
+
     protected $casts = [
         'updated_at' => 'datetime:Y-m-d H:i:s',
         'created_at' => 'datetime:Y-m-d H:i:s',

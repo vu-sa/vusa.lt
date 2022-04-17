@@ -31,9 +31,9 @@ class CreateSaziningaiExamFlowsTable extends Migration
         $saziningai_exam_flows = [];
 
         foreach ($saziningai_exams as $key => $value) {
-            $times = explode(' | ', $value->time);
+            $times = explode('|', $value->time);
             foreach ($times as $timeKey => $timeValue) {
-                if ($timeValue != '') {
+                if (!in_array($timeValue, ['', ' ', '  '])) {
                     array_push($saziningai_exam_flows, [
                         'exam_uuid' => $value->uuid,
                         'start_time' => $timeValue,

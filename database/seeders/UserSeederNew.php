@@ -17,6 +17,7 @@ class UserSeederNew extends Seeder
     {
         DB::table('users')->insert([
             [
+                'name' => 'Test User',
                 'email' => 'test@test.com',
                 'email_verified_at' => now(),
                 'password' => Hash::make('password'),

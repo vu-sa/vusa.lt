@@ -104,6 +104,9 @@ class RefactorPosts extends Migration
             $table->dropColumn('source');
         });
 
+        /// update all news role_id columns where equal NULL, with 1
+        DB::table('news')->where('role_id', '=', null)->update(['role_id' => 1]);
+
         Schema::table('news', function (Blueprint $table) {
             $table->unsignedInteger('role_id')->nullable(false)->after('user_id')->change();
         });
