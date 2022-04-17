@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\App;
 use Laravel\Jetstream\Http\Controllers\Inertia\OtherBrowserSessionsController;
 use Laravel\Jetstream\Http\Controllers\Inertia\ProfilePhotoController;
 use Laravel\Jetstream\Http\Controllers\Inertia\UserProfileController;
@@ -24,6 +25,7 @@ $this->host = config('app.url');
 $this->host = explode('://', $this->host)[1];
 
 Route::group(['prefix' => '{lang?}', 'where' => ['lang' => '(lt|en)']], function () {
+    
     Route::name('padalinys.')->group(function () {
         Route::domain('{padalinys}.' . $this->host)->group(function () {
             Route::get('/', [Public\MainController::class, 'home'])->name('home');

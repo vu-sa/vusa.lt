@@ -1,5 +1,5 @@
 <template>
-  <PublicLayout>
+  <PublicLayout :title="page.title">
     <PageArticle>
       <template #title>{{ page.title }} </template>
       <div class="prose" v-html="page.text"></div>
@@ -7,7 +7,7 @@
         <ul class="prose" v-for="item in random_pages">
           <Link
             :data="{ padalinys: item.alias }"
-            :href="route('page', item.permalink)"
+            :href="route('page', { lang: locale, permalink: item.permalink })"
             preserve-state
             >{{ item.title }}</Link
           >
@@ -20,7 +20,10 @@
 <script setup>
 import PublicLayout from "../../Layouts/PublicLayout.vue";
 import PageArticle from "../../Components/Public/PageArticle.vue";
-import { Link } from "@inertiajs/inertia-vue3";
+import { Link, usePage } from "@inertiajs/inertia-vue3";
+import { ref } from "vue";
+
+const locale = ref(usePage().props.value.locale);
 
 const props = defineProps({
   page: Object,

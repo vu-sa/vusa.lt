@@ -1,5 +1,5 @@
 <template>
-  <PublicLayout>
+  <PublicLayout title="Pagrindinis">
     <div class="relative">
       <ShapeDivider1 class="absolute -top-1"></ShapeDivider1>
       <ShapeDivider1 class="absolute rotate-180 -bottom-1"></ShapeDivider1>

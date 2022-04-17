@@ -16,7 +16,7 @@
     "VU SA TF": "VU SR LF",
     "VU SA TSPMI": "VU SR IRPSI",
     "VU SA VM": "VU SR BS",
-    "Vilniaus universiteto Studentų atstovybė Chemijos ir geomokslų fakultete": "Vilnius University Students' Representation in Faculty of Chemistry and Geosciences",
+    "Chemijos ir geomokslų fakultete": "Vilnius University Students' Representation in Faculty of Chemistry and Geosciences",
     "Vilniaus universiteto Studentų atstovybė Ekonomikos ir verslo administravimo fakultete": "Vilnius University Students' Representation in Faculty of Economics­ and Business Administration",
     "Vilniaus universiteto Studentų atstovybė Filologijos fakultete": "Vilnius University Students' Representation in Faculty of Philology",
     "Vilniaus universiteto Studentų atstovybė Filosofijos fakultete": "Vilnius University Students' Representation in Faculty of Philosophy",
@@ -38,9 +38,10 @@
     "Įmonės kodas": "Company code",
     "Juridinis asmuo nėra PVM mokėtojas": "The legal entity is not a VAT payer",
     "Tel.": "Phone:",
-    "Universiteto g. 3": "University St. 3",
-    "Observatorijos kiemelis": "Observatory Yard",
+    "Universiteto g. 3, Observatorijos kiemelis": "University St. 3, Observatory Yard",
     "01513, Vilnius, Lietuva": "01513, Vilnius, Lithuania",
-    "Puslapis nerastas": "Page not found"
-
+    "Puslapis nerastas": "Page not found",
+    "Padaliniai": "Units",
+    "Kiti puslapiai": "Other pages",
+    "Ekonomikos ir verslo administravimo fakultete": "Faculty of Economics­ and Business Administration"
 }

@@ -40,6 +40,7 @@ class HandleInertiaRequests extends Middleware
         return array_merge(parent::share($request), [
             'app' => [
                 'env' => config('app.env'),
+                'url' => config('app.url'),
             ],
             'padaliniai' => Padalinys::where('type', '=', 'padalinys')->orderBy('shortname_vu')->get()->map(function ($padalinys) {
                 return [
@@ -49,6 +50,18 @@ class HandleInertiaRequests extends Middleware
                     'fullname' => $padalinys->fullname,
                 ];
             }),
+
+            'locale' => function () {
+                return app()->getLocale();
+            },
+            'language' => function () {
+                if(!file_exists(resource_path('lang/'. app()->getLocale() .'.json'))) {
+                    return [];
+                }
+                return json_decode(file_get_contents(resource_path('lang/'. app()->getLocale() .'.json')), true);   
+            }
+
+
             // 'flash' => fn () => [
             //     'success' => $request->session()->get('success'),
             //     'info' => $request->session()->get('info'),

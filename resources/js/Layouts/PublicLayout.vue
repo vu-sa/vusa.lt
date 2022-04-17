@@ -19,6 +19,10 @@ import { Head } from "@inertiajs/inertia-vue3";
 import { ref, onMounted } from "vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
 
+const props = defineProps({
+  title: String,
+});
+
 const animated = ref(false);
 
 onMounted(() => {

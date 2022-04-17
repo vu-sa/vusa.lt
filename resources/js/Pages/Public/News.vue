@@ -1,5 +1,5 @@
 <template>
-  <PublicLayout>
+  <PublicLayout :title="article.title">
     <NewsArticle>
       <template #tags>
         <template v-for="tag in article.tags" v-bind:key="tag.id">

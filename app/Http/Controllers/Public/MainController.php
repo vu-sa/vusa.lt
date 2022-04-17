@@ -14,11 +14,16 @@ use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\App;
 
 class MainController extends Controller
 {
 	public function __construct()
 	{
+		if (request()->lang) {
+			App::setLocale(request()->lang);
+		}
+		
 		// get subdomain if exists
 		$host = Request::server('HTTP_HOST');
 
@@ -36,11 +41,12 @@ class MainController extends Controller
 		}
 
 		$vusa = Padalinys::where('shortname', 'VU SA')->first();
-		$mainNavigation = Navigation::where([['padalinys_id', $vusa->id],['lang', 'lt']])->orderBy('order')->get();
-		Inertia::share('mainNavigation' , $mainNavigation);
+		$mainNavigation = Navigation::where([['padalinys_id', $vusa->id], ['lang', app()->getLocale()]])->orderBy('order')->get();
+
+		Inertia::share('mainNavigation', $mainNavigation);
 	}
 
-	public function home($lang = 'lt')
+	public function home()
 	{
 
 		// get last 4 news by publishing date
@@ -98,7 +104,8 @@ class MainController extends Controller
 		]);
 	}
 
-	public function getMainNews() {
+	public function getMainNews()
+	{
 		// get last 4 news by publishing date
 		$padalinys = Padalinys::where('shortname', '=', 'VU SA')->first();
 		$mainNews = News::select('title', 'short', 'image')->where([['padalinys_id', '=', $padalinys->id], ['draft', '=', 0]])->orderBy('publish_time', 'desc')->take(4)->get();
@@ -110,10 +117,8 @@ class MainController extends Controller
 	{
 		$padalinys = Padalinys::where('alias', '=', $this->alias)->first();
 
-		// ?? why route('permalink') is working
-
 		$page = Page::where([['permalink', '=', request()->permalink], ['padalinys_id', '=', $padalinys->id]])->first();
-		
+
 		// dd(request()->route('permalink'), request()->permalink, $page, $padalinys);
 
 		if ($page == null) {
@@ -122,7 +127,7 @@ class MainController extends Controller
 		}
 
 		// get four random pages
-		$random_pages = Page::where('padalinys_id', '=', $padalinys->id)->get()->random(4);
+		$random_pages = Page::where([['padalinys_id', '=', $padalinys->id], ['lang', app()->getLocale()]])->get()->random(4);
 
 		Inertia::share('alias', $page->padalinys->alias);
 		return Inertia::render('Public/Page', [
@@ -152,13 +157,13 @@ class MainController extends Controller
 	public function contacts()
 	{
 		$padalinys = Padalinys::where('alias', '=', $this->alias)->first();
-		
+
 		if (request()->name) {
 			$inputName = request()->name;
 			$contacts = User::where('name', 'like', "%{$inputName}%")->get();
 			// dd($contacts, request()->name);
 		} else {
-			
+
 			$duty_institutions = DutyInstitution::where('padalinys_id', '=', $padalinys->id)->get();
 
 			$contacts = [];
