@@ -20,6 +20,35 @@ use Laravel\Socialite\Facades\Socialite;
 |
 */
 
+$this->host = config('app.url');
+$this->host = explode('://', $this->host)[1];
+
+Route::group(['prefix' => '{lang?}', 'where' => ['lang' => '(lt|en)']], function () {
+    Route::name('padalinys.')->group(function () {
+        Route::domain('{padalinys}.' . $this->host)->group(function () {
+            Route::get('/', [Public\MainController::class, 'home'])->name('home');
+            Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('newsString', '(naujiena|news)')->name('news');
+            Route::get('kontaktai', [Public\MainController::class, 'contacts'])->name('contacts');
+            Route::get('{permalink}', [Public\MainController::class, 'page'])->where('permalink', '.*')->name('page');
+        });
+    });
+
+    Route::name('main.')->group(function () {
+        Route::domain($this->host)->group(function () {
+            Route::get('/', [Public\MainController::class, 'home'])->name('home');
+            Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('news_string', '(naujiena|news)')->name('news');
+            Route::get('mainNews', [Public\MainController::class, 'getMainNews']);
+            Route::get('kontaktai', [Public\MainController::class, 'contacts'])->name('contacts');
+            Route::get('{permalink}', [Public\MainController::class, 'page'])->where('permalink', '.*')->name('page');
+        });
+    });
+    
+});
+
+Route::get('/', [Public\MainController::class, 'home'])->name('home');
+Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('newsString', '(naujiena|news)')->name('news');
+Route::get('kontaktai', [Public\MainController::class, 'contacts'])->name('contacts');
+
 Route::prefix('admin')->group(function () {
     Route::middleware(['auth', 'verified'])->group(function () {
 
@@ -62,46 +91,16 @@ Route::get('/auth/microsoft/callback', [Admin\UserController::class, 'storeFromM
 // return redirect('https://graph.microsoft.com/v1.0/me/photo/$value');
 // });
 
-Route::group(['prefix' => '{lang?}', 'where' => ['lang' => '(lt|en)']], function () {
-
-    Route::name('padalinys.')->group(function () {
-        Route::domain('{padalinys}.vusa.testas')->group(function () {
-            Route::get('/', [Public\MainController::class, 'home'])->name('home');
-            Route::get('{news_string}/{permalink}', [Public\MainController::class, 'news'])->where('news', '(naujiena|news)')->name('news');
-            Route::get('{permalink}', [Public\MainController::class, 'page'])->where('permalink', '.*')->name('page');
-        });
-    });
-
-    Route::get('/', [Public\MainController::class, 'home'])->name('home');
-    Route::get('{news_string}/{permalink}', [Public\MainController::class, 'news'])->where('news', '(naujiena|news)')->name('news');
-    Route::get('{permalink}', [Public\MainController::class, 'page'])->where('permalink', '.*')->name('page');
-});
-
-Route::get('/', [Public\MainController::class, 'home'])->name('home');
-Route::get('{news_string}/{permalink}', [Public\MainController::class, 'news'])->where('news', '(naujiena|news)')->name('news');
 Route::get('{permalink}', [Public\MainController::class, 'page'])->where('permalink', '.*')->name('page');
 
 /**
  * Statiniai seni tinklapio routai
  */
 
-// $http_host = request()->getHttpHost();
-
-// $padaliniaiDomains = array(
-//     'www.chgf.vusa.lt', 'chgf.vusa.lt', 'evaf.vusa.lt', 'www.evaf.vusa.lt', 'ff.vusa.lt', 'www.ff.vusa.lt', 'filf.vusa.lt', 'www.filf.vusa.lt', 'fsf.vusa.lt',
-//     'www.fsf.vusa.lt', 'gmc.vusa.lt', 'www.gmc.vusa.lt', 'naujas.if.vusa.lt', 'if.vusa.lt', 'www.if.vusa.lt', 'kf.vusa.lt', 'www.kf.vusa.lt', 'knf.vusa.lt', 'www.knf.vusa.lt', 'knfsa.lt', 'www.knfsa.lt', 'mf.vusa.lt', 'www.mf.vusa.lt',
-//     'mif.vusa.lt', 'www.sa.vusa.lt', 'sa.vusa.lt', 'www.mif.vusa.lt', 'tf.vusa.lt', 'www.tf.vusa.lt', 'tspmi.vusa.lt', 'www.tspmi.vusa.lt', 'vm.vusa.lt', 'www.vm.vusa.lt', 'if.vusa.testas:8000', 'if.vusa.testas'
-// );
-
-// $vusaDomains = array('vusa.lt', 'www.vusa.lt', 'naujas.vusa.lt', 'vusa.testas:8000', 'vusa.testas');
-
 // if (in_array($http_host, $padaliniaiDomains)) {
 //     Route::get('{locale}', [UserController::class, 'getPadalinysPage'])->where('locale', '(lt|en)');
 //     Route::get('lt/naujienos', [UserController::class, 'getNewsArchive']);
 //     Route::get('lt/naujiena/archyvas', [UserController::class, 'getNewsArchive']);
-
-//     // This must be kept as '{permalink1}', if named '{permalink}', it skips this route and continues towards the end (maybe a bug). Basically, try to use unique names.
-//     Route::get('{locale}/{newsLocale}/{permalink1}', [UserController::class, 'getNew'])->where(['locale' => '(lt|en)', 'newsLocale' => '(naujiena|news)']);
 
 //     Route::get('{locale}/{contactsLocale}/{name}', [UserController::class, 'getContacts'])->where(['locale' => '(lt|en)', 'contactsLocale' => '(kontaktai|contacts)']);
 //     Route::get('{locale}/{permalink}', [UserController::class, 'getInfoPage'])->where('locale', '(lt|en)');
@@ -120,55 +119,12 @@ Route::get('{permalink}', [Public\MainController::class, 'page'])->where('permal
 //     Route::get('lt/renginiai', [UserController::class, 'getEvents']);
 //     Route::get('lt/darbotvarke', [UserController::class, 'getAgenda']);
 //     Route::get('lt/darbotvarke-ajax', [UserController::class, 'getAgendaAjax']);
-//     Route::get('lt/duk', [UserController::class, 'getDukPage']);
-//     Route::get('lt/programos-klubai-projektai', [UserController::class, 'getPkpPage']);
 
 //     Route::get('lt/saziningai-registracija', [UserController::class, 'getExamRegistration']);
 //     Route::post('lt/saziningai-registracija', [UserController::class, 'postExamRegistration']);
 //     Route::get('lt/registracija-stebejimui', [UserController::class, 'getPersonRegistration']);
 //     Route::post('lt/registracija-stebejimui', [UserController::class, 'postPersonRegistration']);
 //     Route::get('lt/saziningai-uzregistruoti-egzaminai', [UserController::class, 'getExamRegistrationList']);
-//     Route::get('lt/saziningai-egzaminai-ajax', [UserController::class, 'getExamRegistrationAjax']);
-
-//     /***
-//      * Redirectai
-//      */
-//     Route::get('lt/kontaktai', function () {
-//         return redirect('/lt/kontaktai/centrinis-biuras');
-//     });
-
-//     Route::get('{locale}/contacts', function () {
-//         return redirect('/en/contacts/central-office');
-//     })->where('locale', '(|lt|en)');
-
-//     Route::get('/lt/studentu-atstovai', function () {
-//         return redirect('/lt/kontaktai/studentu-atstovai');
-//     });
-
-//     Route::get('/lt/vu-sa-padaliniai', function () {
-//         return redirect('/lt/kontaktai/padaliniai');
-//     });
-
-//     Route::get('/lt/d-u-k', function () {
-//         return redirect('/lt/duk');
-//     });
-
-//     Route::get('/lt/vu-sa-revizijos-komisija', function () {
-//         return redirect('/lt/kontaktai/revizijos-komisija');
-//     });
-
-//     Route::get('{locale}/vu-atributika', function () {
-//         return redirect('https://vu.lt/parduotuve');
-//     })->where('locale', '(|lt|en)');
-
-//     Route::get('{locale}/pasiskiepyk', function () {
-//         return redirect('https://koronastop.lrv.lt/lt/vakcina');
-//     })->where('locale', '(|lt|en)');
-
-//     Route::get('/lt/{url}', function () {
-//         return redirect('login');
-//     })->where('url', '(login|admin)');
-// }
 
 // Route::get('{locale}/{contactsLocale}/{name}', [UserController::class, 'getContacts'])->where(['locale' => '(lt|en)', 'contactsLocale' => '(kontaktai|contacts)']);
 
@@ -184,8 +140,6 @@ Route::get('{permalink}', [Public\MainController::class, 'page'])->where('permal
 // Route::get('{locale}/{newsLocale}/{permalink}', [UserController::class, 'getNew'])->where(['locale' => '(lt|en)', 'newsLocale' => '(naujiena|news)']);
 
 // // Catch all
-
-// Route::get('uploads/{permalink}')->where('permalink', '.*')->middleware('main');
 
 // Route::get('{locale}/{permalink}', [UserController::class, 'getInfoPage'])->where('locale', '(lt|en)');
 

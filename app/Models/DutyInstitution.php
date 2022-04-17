@@ -11,7 +11,7 @@ class DutyInstitution extends Model
 
     protected $table = 'duties_institutions';
 
-    public function duty()
+    public function duties()
     {
         return $this->hasMany(Duty::class, 'institution_id');
     }

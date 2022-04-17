@@ -15,17 +15,20 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths' => ['*'],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*.vusa.lt', 'vusa.lt'],
+    'allowed_origins' => ['*.' . explode('://',
+    config('app.url'))[1], 
+    explode('://', config('app.url'))[1], 
+    'localhost'],
 
     'allowed_origins_patterns' => [],
 
     'allowed_headers' => ['*'],
 
-    'exposed_headers' => [],
+    'exposed_headers' => ['*'],
 
     'max_age' => 0,
 

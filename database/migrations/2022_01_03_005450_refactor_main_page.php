@@ -29,6 +29,7 @@ class RefactorMainPage extends Migration
         });
 
         DB::table('main_page')->where('role_id', '=', 23)->delete();
+        DB::table('main_page')->where('position', '=', 'additionalInfo')->delete();
 
         Schema::table('main_page', function (Blueprint $table) {
             $table->timestamp('created_at')->useCurrent()->change();

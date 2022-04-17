@@ -4,9 +4,17 @@
       <AsideHeader></AsideHeader>
     </template>
     <div class="main-card">
-      <NTree block-line :data="data" draggable @drop="handleDrop" @update:checked-keys="handleCheckedKeysChange"
-        @update:expanded-keys="handleExpandedKeysChange" />
-      <div class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center">
+      <NTree
+        block-line
+        :data="data"
+        draggable
+        @drop="handleDrop"
+        @update:checked-keys="handleCheckedKeysChange"
+        @update:expanded-keys="handleExpandedKeysChange"
+      />
+      <div
+        class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center"
+      >
         <n-popconfirm @positive-click="updateModel()">
           <template #trigger>
             <NSpin :show="showSpin" size="small">
@@ -33,14 +41,14 @@ const props = defineProps({
   navigationLT: Array,
 });
 
-const parsedNavigationRecursive = (array, id) => {
+const parseNavigation = (array, id) => {
   const result = [];
   array.forEach((item) => {
     if (item.parent_id === id) {
       result.push({
         key: item.id,
         label: item.name,
-        children: parsedNavigationRecursive(array, item.id),
+        children: parseNavigation(array, item.id),
         url: item.url,
         // suffix: () =>
         //   h(NButton, { quartenary: true, circle: true },
@@ -48,10 +56,10 @@ const parsedNavigationRecursive = (array, id) => {
         //       h(NIcon, { size: "tiny" },
         //         h(Edit16Regular)))),
       });
-      if (result[result.length - 1].children == []) {
-        delete result[result.length - 1].children
+      if (result[result.length - 1].children.length === 0) {
+        delete result[result.length - 1].children;
       }
-      console.log(result[result.length - 1].children)
+      console.log(result[result.length - 1].children);
     }
   });
   return result;
@@ -59,7 +67,7 @@ const parsedNavigationRecursive = (array, id) => {
 
 const message = useMessage();
 
-const dataRef = ref(parsedNavigationRecursive(props.navigationLT, 0));
+const dataRef = ref(parseNavigation(props.navigationLT, 0));
 const showSpin = ref(false);
 
 //////////////////////

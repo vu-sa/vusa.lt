@@ -1,5 +1,5 @@
 <template>
-  <article class="grid grid-cols-3 ml-24 pt-8 px-32 gap-y-4">
+  <article class="grid grid-cols-3 ml-[5vw] pt-8 px-16 lg:px-32 gap-y-4">
     <h1 class="col-span-2"><slot name="title"></slot></h1>
     <div class="col-span-2 col-start-1"><slot></slot></div>
     <hr class="col-span-2 col-start-1" />

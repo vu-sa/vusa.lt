@@ -34,7 +34,7 @@
             :href="
               route('news', {
                 lang: item.lang,
-                news_string: 'naujiena',
+                newsString: 'naujiena',
                 padalinys: item.alias,
                 permalink: item.permalink,
               })
@@ -46,7 +46,7 @@
           :href="
             route('news', {
               lang: item.lang,
-              news_string: 'naujiena',
+              newsString: 'naujiena',
               padalinys: item.alias,
               permalink: item.permalink,
             })

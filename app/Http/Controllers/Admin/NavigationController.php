@@ -12,7 +12,7 @@ class NavigationController extends Controller
 
     public function getNavigation($id, $lang)
     {
-        $childrenNav = Navigation::where('parent_id', $id)->where('lang', '=', $lang)->get()->sortBy('order');
+        $childrenNav = Navigation::where('parent_id', $id)->where('lang', '=', $lang)->orderBy('order')->get();
         // if ($childrenNav->first() == null) {
         //     return;
         // }
@@ -33,7 +33,6 @@ class NavigationController extends Controller
 
     public function postNavigation($array, $id = 0)
     {
-
         for ($i = 0; $i < count($array); $i++) {
             $navigation = Navigation::find($array[$i]['key']);
             $navigation->name = $array[$i]['label'];
@@ -55,7 +54,7 @@ class NavigationController extends Controller
     public function index(Request $request)
     {
         return Inertia::render('Admin/Navigation/Index', [
-            'navigationLT' => Navigation::where('lang', '=', 'lt')->get(),
+            'navigationLT' => Navigation::where('lang', '=', 'lt')->orderBy('order')->get(),
         ]);
     }
 
@@ -77,6 +76,8 @@ class NavigationController extends Controller
      */
     public function store(Request $request)
     {
+        // dd($request->_value);
+        
         $this->postNavigation($request->_value);
 
         return redirect()->back();

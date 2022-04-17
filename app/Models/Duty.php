@@ -10,7 +10,7 @@ class Duty extends Model
 
     public function users()
     {
-        return $this->belongsToMany(Duty::class, 'duties_users', 'duty_id', 'user_id');
+        return $this->belongsToMany(User::class, 'duties_users', 'duty_id', 'user_id');
     }
 
     public function type()

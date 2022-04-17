@@ -1,7 +1,9 @@
 <?php
 
+use App\Models\Navigation;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class RefactorMenu extends Migration
@@ -35,6 +37,24 @@ class RefactorMenu extends Migration
             // TODO: need to set unique
             // $table->unique(['parent_id', 'lang', 'order', 'padalinys_id']);
         });
+
+        // delete navigation item "padaliniai" and all of its children from navigation table
+        $padaliniai_menu_item = DB::table('navigation')->where('name', 'Padaliniai')->get()->first();
+
+        DB::table('navigation')->where('parent_id', $padaliniai_menu_item->id)->delete();
+        DB::table('navigation')->where('id', $padaliniai_menu_item->id)->delete();
+        
+        // delete all children of kontaktai
+
+        $kontaktai_menu_item = DB::table('navigation')->where('name', 'Kontaktai')->get()->first();
+        DB::table('navigation')->where('parent_id', $kontaktai_menu_item->id)->delete();
+
+        // remove leading slashes from table navigation url columns in every row value
+        Navigation::all()->each(function ($item) {
+            $item->url = ltrim($item->url, '/');
+            $item->save();
+        });
+
     }
 
     /**

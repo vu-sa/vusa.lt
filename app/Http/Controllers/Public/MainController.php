@@ -4,11 +4,14 @@ namespace App\Http\Controllers\Public;
 
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
+use App\Models\DutyInstitution;
+use App\Models\Navigation;
 use App\Models\News;
 use App\Models\Padalinys;
 use App\Models\Page;
 use Illuminate\Support\Facades\Route;
 use App\Models\Tag;
+use App\Models\User;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -29,8 +32,12 @@ class MainController extends Controller
 		}
 
 		if (request()->padalinys != null) {
-			$this->alias = request()->padalinys;
+			$this->alias = request()->padalinys == "Padaliniai" ? '' : request()->padalinys;
 		}
+
+		$vusa = Padalinys::where('shortname', 'VU SA')->first();
+		$mainNavigation = Navigation::where([['padalinys_id', $vusa->id],['lang', 'lt']])->orderBy('order')->get();
+		Inertia::share('mainNavigation' , $mainNavigation);
 	}
 
 	public function home($lang = 'lt')
@@ -90,11 +97,24 @@ class MainController extends Controller
 			],
 		]);
 	}
+
+	public function getMainNews() {
+		// get last 4 news by publishing date
+		$padalinys = Padalinys::where('shortname', '=', 'VU SA')->first();
+		$mainNews = News::select('title', 'short', 'image')->where([['padalinys_id', '=', $padalinys->id], ['draft', '=', 0]])->orderBy('publish_time', 'desc')->take(4)->get();
+		return response()->json($mainNews, 200, ['Content-type' => 'application/json; charset=utf-8'], JSON_UNESCAPED_UNICODE);
+		// 
+	}
+
 	public function page()
 	{
 		$padalinys = Padalinys::where('alias', '=', $this->alias)->first();
 
-		$page = Page::where([['permalink', '=', request()->route('permalink')], ['padalinys_id', '=', $padalinys->id]])->first();
+		// ?? why route('permalink') is working
+
+		$page = Page::where([['permalink', '=', request()->permalink], ['padalinys_id', '=', $padalinys->id]])->first();
+		
+		// dd(request()->route('permalink'), request()->permalink, $page, $padalinys);
 
 		if ($page == null) {
 			// return 404
@@ -124,6 +144,57 @@ class MainController extends Controller
 					'lang' => $page->lang,
 					'alias' => $page->padalinys->alias,
 					'permalink' => $page->permalink,
+				];
+			}),
+		]);
+	}
+
+	public function contacts()
+	{
+		$padalinys = Padalinys::where('alias', '=', $this->alias)->first();
+		
+		if (request()->name) {
+			$inputName = request()->name;
+			$contacts = User::where('name', 'like', "%{$inputName}%")->get();
+			// dd($contacts, request()->name);
+		} else {
+			
+			$duty_institutions = DutyInstitution::where('padalinys_id', '=', $padalinys->id)->get();
+
+			$contacts = [];
+
+			foreach ($duty_institutions as $key1 => $institution) {
+				foreach ($institution->duties as $key2 => $duty) {
+					foreach ($duty->users as $key3 => $user) {
+						array_push($contacts, $user);
+					}
+				}
+			}
+
+			$contacts = collect($contacts)->unique();
+		}
+
+		// dd($contacts, request()->name);
+
+		Inertia::share('alias', $padalinys->alias);
+		return Inertia::render('Public/Contacts', [
+			'contacts' => is_null($contacts) ? [] : $contacts->map(function ($contact) {
+				return [
+					'id' => $contact->id,
+					'name' => $contact->name,
+					'email' => $contact->email,
+					'phone' => $contact->phone,
+					'duties' => $contact->duties->map(function ($duty) {
+						return [
+							'id' => $duty->id,
+							'name' => $duty->name,
+							'institution' => $duty->institution->name,
+							'type' => $duty->type->name ?? $duty->type->short_name,
+							'description' => $duty->description,
+							'email' => $duty->email,
+						];
+					}),
+					'image' => $contact->profile_photo_path == null ? null : Storage::get($contact->profile_photo_path),
 				];
 			}),
 		]);

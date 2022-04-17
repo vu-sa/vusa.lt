@@ -5,8 +5,9 @@
     <MainNavigation></MainNavigation>
     <transition name="fade">
       <main v-if="animated">
-        <PageContent class="py-32"> <slot /> </PageContent></main></transition
-  ></FullWindow>
+        <PageContent class="py-32"> <slot /> </PageContent></main
+    ></transition>
+  </FullWindow>
 </template>
 
 <script setup>
