@@ -41,7 +41,7 @@ class RefactorMenu extends Migration
         // delete navigation item "padaliniai" and all of its children from navigation table
         $padaliniai_menu_item = DB::table('navigation')->where('name', 'Padaliniai')->get()->first();
 
-        if (!is_null($padaliniai_menu_item->id)) {
+        if (!is_null($padaliniai_menu_item)) {
             DB::table('navigation')->where('parent_id', $padaliniai_menu_item->id)->delete();
             DB::table('navigation')->where('id', $padaliniai_menu_item->id)->delete();
         }
@@ -52,10 +52,11 @@ class RefactorMenu extends Migration
 
         $kontaktai_menu_item = DB::table('navigation')->where('name', 'Kontaktai')->get()->first();
 
-        if (!is_null($kontaktai_menu_item->id)) {
+        if (!is_null($kontaktai_menu_item)) {
             DB::table('navigation')->where('parent_id', $kontaktai_menu_item->id)->delete();
             DB::table('navigation')->where('id', $kontaktai_menu_item->id)->delete();
         }
+Z
 
         // remove leading slashes from table navigation url columns in every row value
         Navigation::all()->each(function ($item) {
