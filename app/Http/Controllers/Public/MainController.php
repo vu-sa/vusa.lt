@@ -69,7 +69,13 @@ class MainController extends Controller
 					'alias' => $news->padalinys->alias,
 					'publish_time' => $news->publish_time,
 					"permalink" => $news->permalink,
-					'image' => Storage::get($news->image) == null ? '/images/icons/naujienu_foto.png' : Storage::url($news->image),
+					'image' => function () use ($news) {
+						if (substr($news->image, 0, 4) == 'http') {
+							return $news->image;
+						} else {
+							return Storage::get($news->image) == null ? '/images/icons/naujienu_foto.png' : Storage::url($news->image);
+						}
+					},
 					"important" => $news->important,
 				];
 			}),
@@ -79,6 +85,14 @@ class MainController extends Controller
 	public function news(Request $request)
 	{
 		$news = News::where('permalink', '=', request()->route('permalink'))->first();
+		
+		if (substr($news->image, 0, 4) == 'http') {
+			$image = $news->image;
+		} else {
+			$image = Storage::get($news->image) == null ? '/images/icons/naujienu_foto.png' : Storage::url($news->image);
+		}
+		
+		// Storage::get($news->image) == null ? '/images/icons/naujienu_foto.png' : Storage::url($news->image);
 
 		Inertia::share('alias', $news->padalinys->alias);
 		return Inertia::render('Public/News', [
@@ -99,7 +113,7 @@ class MainController extends Controller
 					];
 				}),
 				'content' => $news->content,
-				'image' => Storage::get($news->image) == null ? '/images/icons/naujienu_foto.png' : Storage::url($news->image),
+				'image' => $image,
 				'image_author' => $news->image_author,
 				"important" => $news->important,
 				'padalinys' => $news->padalinys->shortname,
