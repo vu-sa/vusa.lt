@@ -17,7 +17,7 @@ class SeedWithOldStructureRecords extends Migration
      */
     public function up()
     {
-        if (config('app.env') !== 'production') {
+        if (config('app.env') == 'local') {
             DB::unprepared(file_get_contents('database/vusa_www-n.sql'));
         }
         
