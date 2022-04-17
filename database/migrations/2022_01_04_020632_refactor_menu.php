@@ -56,7 +56,6 @@ class RefactorMenu extends Migration
             DB::table('navigation')->where('parent_id', $kontaktai_menu_item->id)->delete();
             DB::table('navigation')->where('id', $kontaktai_menu_item->id)->delete();
         }
-Z
 
         // remove leading slashes from table navigation url columns in every row value
         Navigation::all()->each(function ($item) {
