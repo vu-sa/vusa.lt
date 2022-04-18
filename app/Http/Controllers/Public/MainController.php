@@ -125,6 +125,19 @@ class MainController extends Controller
 		]);
 	}
 
+	public function newsArchive(Request $request)
+
+	{
+		
+		Inertia::share('alias', $this->alias);
+
+		$news = News::select('id', 'title', 'short', 'image', 'permalink', 'publish_time', 'lang')->orderBy('publish_time', 'desc')->paginate(15);
+		// ddd($news);
+		return Inertia::render('Public/NewsArchive', [
+			'news' => $news
+		]);
+	}
+	
 	public function getMainNews()
 	{
 		// get last 4 news by publishing date
@@ -139,7 +152,6 @@ class MainController extends Controller
 		$padalinys = Padalinys::where('alias', '=', $this->alias)->first();
 
 		// ddd($this->alias, Route::currentRouteName() == 'padalinys.home', request()->padalinys);
-
 
 		$page = Page::where([['permalink', '=', request()->permalink], ['padalinys_id', '=', $padalinys->id]])->first();
 		$navigation_item = Navigation::where([['padalinys_id', '=', $padalinys->id], ['name', '=', $page->title]])->get()->first();

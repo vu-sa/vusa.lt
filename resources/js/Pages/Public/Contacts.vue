@@ -2,18 +2,14 @@
   <PublicLayout>
     <div class="px-16 lg:px-32">
       <NTabs default-value="search" type="line" animated>
-        <NTabPane name="padalinys" tab="VU SA">
-          <ContactWithPhoto
-            v-for="contact in alias_contacts"
-            :key="contact.id"
-            class="text-neutral-50 p-6 shadow-lg rounded-lg grid-cols-2 col-span-2 gap-8 grid min-w-[10em] w-auto"
-          >
+        <NTabPane class="grid grid-cols-3 gap-4" name="padalinys" tab="VU SA">
+          <ContactWithPhoto v-for="contact in alias_contacts" :key="contact.id">
             <template #image
               ><img
                 loading="lazy"
                 v-if="contact.image"
                 :src="contact.image"
-                class="rounded-sm shadow-md hover:shadow-lg duration-200 w-full mb-1 object-cover"
+                class="rounded-sm shadow-md hover:shadow-lg duration-200 w-full mb-1 object-cover col-span-2"
             /></template>
             <template #name> {{ contact.name }} </template>
             <template #duty>
@@ -73,7 +69,7 @@
             <ContactWithPhoto
               v-for="contact in search_contacts"
               :key="contact.id"
-              class="text-neutral-50 p-6 shadow-lg rounded-lg grid-cols-2 col-span-2 gap-8 grid min-w-[10em] w-auto"
+              class="col-span-2"
             >
               <template #image
                 ><img

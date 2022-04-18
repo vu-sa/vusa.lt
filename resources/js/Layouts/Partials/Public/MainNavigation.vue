@@ -1,13 +1,16 @@
 <template>
   <nav
-    class="flex flex-row fixed justify-between px-12 lg:px-24 border shadow-sm w-full backdrop-blur-sm bg-white/90 text-gray-700 items-center py-2 z-50 top-0"
+    class="flex flex-row fixed justify-between px-6 lg:px-24 border shadow-sm w-full backdrop-blur-sm bg-white/90 text-gray-700 items-center py-2 z-50 top-0"
   >
     <div class="flex flex-row space-x-4 items-center">
-      <!-- <Link :href="route('main.home')"> -->
-      <a :href="locale === 'lt' ? $page.props.app.url : `${$page.props.app.url}/en`">
-        <img class="object-contain min-w-[10vw]" src="/logos/vusa.lin.hor.svg"
-      /></a>
-      <!-- </Link> -->
+      <Link :href="route('main.home', { lang: locale })" preserve-state>
+        <!-- <a :href="locale === 'lt' ? $page.props.app.url : `${$page.props.app.url}/en`"> -->
+        <img
+          class="object-contain min-w-[15vw] lg:min-w-[10vw]"
+          src="/logos/vusa.lin.hor.svg"
+        />
+        <!-- </a> -->
+      </Link>
       <NDropdown
         :options="options_padaliniai"
         placement="top-start"

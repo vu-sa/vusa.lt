@@ -12,7 +12,7 @@
       <h2 class="text-3xl lg:text-5xl mb-4 text-gray-900">
         Pasižiūrėkite, ką nuveikėme 2022 metais 💡
       </h2>
-      <p class="lg:w-[65ch] text-gray-700 mb-20 text-sm lg:text-base">
+      <p class="lg:w-[65ch] text-gray-700 mb-8 lg:mb-20 text-sm lg:text-base">
         Nuo nacionalinio atstovavimo studentų interesams iki naujų galimybių saviraiškai –
         Vilniaus universiteto Studentų atstovybė (čia mes 👋) apima daugiau nei čia tilptų
         parašyti. Daugiau neskaitykite, čia tik Lorem ipsum.

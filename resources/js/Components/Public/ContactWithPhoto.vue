@@ -1,8 +1,8 @@
 <template>
-  <div>
-    <slot name="image"
-      ><div class="bg-gray-700 rounded-md shadow-md h-auto min-h-[14em] w-full"></div
-    ></slot>
+  <div
+    class="text-neutral-50 p-6 shadow-lg rounded-lg grid-cols-2 gap-8 grid min-w-[10em] w-auto bg-white"
+  >
+    <slot name="image"></slot>
     <div class="text-gray-800">
       <h2><slot name="name"></slot></h2>
       <p class="mb-2"><slot name="duty"></slot></p>

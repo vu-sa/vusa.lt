@@ -39,3 +39,10 @@
     @apply mx-auto w-3 h-3 md:w-7 md:h-7 mb-1;
   }
 }
+
+/* :target {
+  display: block;
+  position: relative;
+  top: -120px; 
+  visibility: hidden;
+} */

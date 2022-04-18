@@ -1,12 +1,10 @@
 <template>
   <PublicLayout :title="article.title">
+    <NBackTop :right="100" />
     <NewsArticle>
       <template #tags>
-        <NBackTop :right="100" />
         <template v-for="tag in article.tags" v-bind:key="tag.id">
-          <NButton size="tiny" style="margin: 0 0.5em 0 0.5em" round>{{
-            tag.name
-          }}</NButton>
+          <NButton size="tiny" round>{{ tag.name }}</NButton>
         </template>
       </template>
       <template #author>

@@ -2,7 +2,7 @@
   <PublicLayout :title="page.title">
     <NBreadcrumb
       v-if="props.navigation_item_id != null"
-      class="ml-[5vw] pt-4 px-16 lg:px-32"
+      class="ml-[5vw] pt-4 px-8 lg:px-32"
     >
       <NBreadcrumbItem v-for="breadcrumb in breadcrumbTree" :key="breadcrumb.parent_id">
         <NIcon><HatGraduation20Filled /></NIcon> {{ breadcrumb.name }}

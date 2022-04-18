@@ -7,7 +7,7 @@
     <slot></slot>
   </div>
   <footer
-    class="bg-gray-50 border-t border-gray-100 text-gray-500 text-sm shadow-md px-32 py-8 grid gap-2 md:grid-cols-2 justify-items-center items-center"
+    class="bg-gray-50 border-t border-gray-100 text-gray-500 text-sm shadow-md px-8 lg:px-32 py-8 grid gap-2 md:grid-cols-2 justify-items-center items-center"
   >
     <div>
       <p>{{ __("Vilniaus universiteto Studentų atstovybė") }}</p>
