@@ -30,8 +30,8 @@ class MainController extends Controller
 		if ($host !== 'localhost') {
 			$subdomain = explode('.', $host)[0];
 			$this->alias = $subdomain == 'www' ? '' : $subdomain;
-			$this->alias = $subdomain == 'vusa' ? '' : $subdomain;
-			$this->alias = $subdomain == 'naujas' ? '' : $subdomain;
+			$this->alias = $subdomain == 'vusa' ? '' : $this->alias;
+			$this->alias = $subdomain == 'naujas' ? '' : $this->alias;
 			$this->alias = Route::currentRouteName() == 'home' ? '' : $this->alias;
 			$this->alias = Route::currentRouteName() == 'padalinys.home' ? '' : $this->alias;
 		} else {
@@ -56,6 +56,8 @@ class MainController extends Controller
 
 		// get last 4 news by publishing date
 		$padalinys = Padalinys::where('alias', '=', $this->alias)->first();
+
+		// dd($this->alias, $padalinys);
 
 		$news = News::where([['padalinys_id', '=', $padalinys->id], ['draft', '=', 0]])->orderBy('publish_time', 'desc')->take(4)->get();
 
@@ -85,13 +87,13 @@ class MainController extends Controller
 	public function news(Request $request)
 	{
 		$news = News::where('permalink', '=', request()->route('permalink'))->first();
-		
+
 		if (substr($news->image, 0, 4) == 'http') {
 			$image = $news->image;
 		} else {
 			$image = Storage::get($news->image) == null ? '/images/icons/naujienu_foto.png' : Storage::url($news->image);
 		}
-		
+
 		// Storage::get($news->image) == null ? '/images/icons/naujienu_foto.png' : Storage::url($news->image);
 
 		Inertia::share('alias', $news->padalinys->alias);
@@ -140,6 +142,7 @@ class MainController extends Controller
 
 
 		$page = Page::where([['permalink', '=', request()->permalink], ['padalinys_id', '=', $padalinys->id]])->first();
+		$navigation_item = Navigation::where([['padalinys_id', '=', $padalinys->id], ['name', '=', $page->title]])->get()->first();
 
 		// dd(request()->route('permalink'), request()->permalink, $page, $padalinys);
 
@@ -153,6 +156,7 @@ class MainController extends Controller
 
 		Inertia::share('alias', $page->padalinys->alias);
 		return Inertia::render('Public/Page', [
+			'navigation_item_id' => $navigation_item?->id,
 			'page' => [
 				'id' => $page->id,
 				'title' => $page->title,
@@ -180,32 +184,62 @@ class MainController extends Controller
 	{
 		$padalinys = Padalinys::where('alias', '=', $this->alias)->first();
 
+		$alias_contacts = [];
+		$search_contacts = null;
+
 		if (request()->name) {
 			$inputName = request()->name;
-			$contacts = User::where('name', 'like', "%{$inputName}%")->get();
+			$search_contacts = User::has('duties')->where('name', 'like', "%{$inputName}%")->get();
 			// dd($contacts, request()->name);
+		}
+
+		if ($padalinys->id === 16) {
+			$duty_institution = DutyInstitution::where('alias', '=', 'centrinis-biuras')->first();
 		} else {
+			$duty_institution = DutyInstitution::where('padalinys_id', '=', $padalinys->id)->first();
+		}
 
-			$duty_institutions = DutyInstitution::where('padalinys_id', '=', $padalinys->id)->get();
+		// else {
 
-			$contacts = [];
+		// 	$duty_institutions = DutyInstitution::where('padalinys_id', '=', $padalinys->id)->get();
 
-			foreach ($duty_institutions as $key1 => $institution) {
-				foreach ($institution->duties as $key2 => $duty) {
+		// 	foreach ($duty_institutions as $key1 => $institution) {
+				foreach ($duty_institution->duties as $key2 => $duty) {
 					foreach ($duty->users as $key3 => $user) {
-						array_push($contacts, $user);
+						if ($user->has('duties')) {
+							array_push($alias_contacts, $user);
+						}
 					}
 				}
-			}
+		// 	}
 
-			$contacts = collect($contacts)->unique();
-		}
+		$alias_contacts = collect($alias_contacts)->unique();
+		// }
 
 		// dd($contacts, request()->name);
 
 		Inertia::share('alias', $padalinys->alias);
 		return Inertia::render('Public/Contacts', [
-			'contacts' => is_null($contacts) ? [] : $contacts->map(function ($contact) {
+			'alias_contacts' => $alias_contacts->map(function ($contact) use ($duty_institution) {
+				return [
+					'id' => $contact->id,
+					'name' => $contact->name,
+					'email' => $contact->email,
+					'phone' => $contact->phone,
+					'duties' => $contact->duties->only($duty_institution->id),
+					'image' => function () use ($contact) {
+						if (substr($contact->profile_photo_path, 0, 4) == 'http') {
+							return $contact->profile_photo_path;
+						} else if (is_null($contact->profile_photo_path)) {
+							return null;
+						} else {
+							return Storage::get($contact->profile_photo_path) == null ? null : Storage::url($contact->profile_photo_path);
+						}
+					},
+				];
+			}),
+			'search_contacts' => is_null($search_contacts) ? [] : $search_contacts->map(function ($contact) {
+
 				return [
 					'id' => $contact->id,
 					'name' => $contact->name,
@@ -221,7 +255,15 @@ class MainController extends Controller
 							'email' => $duty->email,
 						];
 					}),
-					'image' => $contact->profile_photo_path == null ? null : Storage::get($contact->profile_photo_path),
+					'image' => function () use ($contact) {
+						if (substr($contact->profile_photo_path, 0, 4) == 'http') {
+							return $contact->profile_photo_path;
+						} else if (is_null($contact->profile_photo_path)) {
+							return null;
+						} else {
+							return Storage::get($contact->profile_photo_path) == null ? null : Storage::url($contact->profile_photo_path);
+						}
+					}
 				];
 			}),
 		]);

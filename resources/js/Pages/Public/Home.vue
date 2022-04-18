@@ -3,13 +3,16 @@
     <div class="relative">
       <ShapeDivider1 class="absolute -top-1"></ShapeDivider1>
       <ShapeDivider1 class="absolute rotate-180 -bottom-1"></ShapeDivider1>
-      <img src="/images/placeholders/foto3.jpg" class="h-96 w-full object-cover my-4" />
+      <img
+        src="/images/placeholders/foto3.jpg"
+        class="h-64 lg:h-96 w-full object-cover my-4"
+      />
     </div>
-    <div class="px-16 mx-16">
-      <h2 class="text-5xl mb-4 text-gray-900">
+    <div class="lg:px-16 lg:mx-16 mx-8">
+      <h2 class="text-3xl lg:text-5xl mb-4 text-gray-900">
         Pasižiūrėkite, ką nuveikėme 2022 metais 💡
       </h2>
-      <p class="w-[65ch] text-gray-700 mb-20 text-base">
+      <p class="lg:w-[65ch] text-gray-700 mb-20 text-sm lg:text-base">
         Nuo nacionalinio atstovavimo studentų interesams iki naujų galimybių saviraiškai –
         Vilniaus universiteto Studentų atstovybė (čia mes 👋) apima daugiau nei čia tilptų
         parašyti. Daugiau neskaitykite, čia tik Lorem ipsum.

@@ -1,17 +1,50 @@
 <template>
   <PublicLayout>
     <div class="px-16 lg:px-32">
-      <NTabs type="line" animated>
-        <NTabPane name="padalinys" tab="VU SA"></NTabPane>
+      <NTabs default-value="search" type="line" animated>
+        <NTabPane name="padalinys" tab="VU SA">
+          <ContactWithPhoto
+            v-for="contact in alias_contacts"
+            :key="contact.id"
+            class="text-neutral-50 p-6 shadow-lg rounded-lg grid-cols-2 col-span-2 gap-8 grid min-w-[10em] w-auto"
+          >
+            <template #image
+              ><img
+                loading="lazy"
+                v-if="contact.image"
+                :src="contact.image"
+                class="rounded-sm shadow-md hover:shadow-lg duration-200 w-full mb-1 object-cover"
+            /></template>
+            <template #name> {{ contact.name }} </template>
+            <template #duty>
+              <ul v-for="duty in contact.duties" :key="duty.id">
+                <li>{{ duty.name }}</li>
+              </ul>
+            </template>
+            <template #description> Aprašymas </template>
+            <template v-if="contact.phone" #phone>
+              <div class="flex flex-row items-center">
+                <NIcon class="mr-2"><Phone20Regular /></NIcon>
+                <a :href="`tel:${contact.phone}`">{{ contact.phone }}</a>
+              </div>
+            </template>
+            <template v-if="contact.email" #email>
+              <div class="flex flex-row items-center">
+                <NIcon class="mr-2"><Mail20Regular /> </NIcon
+                ><a :href="`mailto:${contact.email}`">{{ contact.email }}</a>
+              </div>
+            </template>
+          </ContactWithPhoto>
+        </NTabPane>
         <NTabPane
-          class="grid grid-cols-2 md:grid-cols-3 gap-8"
+          class="grid grid-cols-2 md:grid-cols-3 gap-6"
           name="search"
           tab="Ieškoti kontakto..."
           style="padding: 1em 0 2em 0"
         >
           <!-- <h2>Ieškoti kontakto:</h2> -->
           <NInput
-            class="col-span-3"
+            class="col-span-3 mt-2"
             type="text"
             size="large"
             round
@@ -38,11 +71,17 @@
           </NInputGroup>
           <transition-group name="list">
             <ContactWithPhoto
-              v-for="contact in contacts"
+              v-for="contact in search_contacts"
               :key="contact.id"
-              class="text-neutral-50 p-6 shadow-lg rounded-lg grid-cols-2 col-span-2 gap-8 grid"
+              class="text-neutral-50 p-6 shadow-lg rounded-lg grid-cols-2 col-span-2 gap-8 grid min-w-[10em] w-auto"
             >
-              <template #image></template>
+              <template #image
+                ><img
+                  loading="lazy"
+                  v-if="contact.image"
+                  :src="contact.image"
+                  class="rounded-sm shadow-md hover:shadow-lg duration-200 w-full mb-1 object-cover"
+              /></template>
               <template #name> {{ contact.name }} </template>
               <template #duty>
                 <ul v-for="duty in contact.duties" :key="duty.id">
@@ -88,11 +127,12 @@ import { ref } from "vue";
 import { Inertia } from "@inertiajs/inertia";
 
 const props = defineProps({
-  contacts: Array,
+  alias_contacts: Array,
+  search_contacts: Array,
 });
 
-const contacts = ref([]);
-contacts.value = props.contacts;
+const search_contacts = ref([]);
+search_contacts.value = props.search_contacts;
 
 const loadingNameInput = ref(false);
 const message = useMessage();
@@ -103,19 +143,17 @@ const handleNameInput = _.debounce((input) => {
   if (name.length > 2) {
     loadingNameInput.value = true;
     Inertia.reload({
-      only: ["contacts"],
+      only: ["search_contacts"],
       data: { name: name },
       onSuccess: () => {
         loadingNameInput.value = false;
-        contacts.value = props.contacts;
+        search_contacts.value = props.search_contacts;
 
-        if (contacts.value.length === 0) {
+        if (search_contacts.value.length === 0) {
           message.info("Nerasta kontaktų su tokiu vardu.");
         }
       },
     });
-  } else {
-    // contacts.value = props.contacts;
   }
 }, 500);
 </script>

@@ -2,6 +2,7 @@
   <PublicLayout :title="article.title">
     <NewsArticle>
       <template #tags>
+        <NBackTop :right="100" />
         <template v-for="tag in article.tags" v-bind:key="tag.id">
           <NButton size="tiny" style="margin: 0 0.5em 0 0.5em" round>{{
             tag.name
@@ -32,7 +33,7 @@
 import PublicLayout from "../../Layouts/PublicLayout.vue";
 import NewsArticle from "../../Components/Public/NewsArticle.vue";
 import ImageForNews from "../../Components/Public/ImageForNews.vue";
-import { NButton, NIcon } from "naive-ui";
+import { NButton, NIcon, NBackTop } from "naive-ui";
 import { Clock20Regular } from "@vicons/fluent";
 
 const props = defineProps({
