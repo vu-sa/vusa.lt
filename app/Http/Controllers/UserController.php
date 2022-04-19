@@ -690,7 +690,7 @@ class UserController extends BaseController
 
             $registed = array_fill(1, $flows, 0);
             for ($flow = 1; $flow <= $flows; $flow++) {
-                $registed[$flow] = Saziningai_people::where('exam_uuid', '=', $atsiskaitymas->uuid)->where('flow', '=', $flow)->where('status_p', '=', 'atvyko')->get()->count();
+                $registed[$flow] = Saziningai_people::where('exam_uuid', '=', $atsiskaitymas->uuid)->where('flow', '=', $flow)->get()->count();
             }
             $atsiskaitymai[$i]->students_registered = $registed;
             $i++;
