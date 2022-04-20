@@ -58,6 +58,26 @@
         >
       </HomeCard>
     </NewsElement>
+    <div
+      class="py-4 px-4 lg:px-8 lg:mx-16 mx-8 lg:mb-8 mb-4 rounded-lg text-gray-800 bg-white shadow-lg"
+    >
+      <h1 class="mb-2">Mūsų programos ir partneriai</h1>
+      <NCarousel
+        :space-between="30"
+        :loop="true"
+        autoplay
+        :slides-per-view="bannerCount"
+        draggable
+        :interval="2000"
+        :show-dots="false"
+      >
+        <NCarouselItem v-for="banner in props.banners" :key="banner.id">
+          <a target="_blank" :href="banner.link_url">
+            <img class="shadow-md rounded-sm" :src="banner.image_url" />
+          </a>
+        </NCarouselItem>
+      </NCarousel>
+    </div>
   </PublicLayout>
 </template>
 
@@ -68,22 +88,43 @@ import ImageForCard from "@/Components/Public/ImageForCard.vue";
 import SkeletonElement from "@/Layouts/Partials/Public/SkeletonElement.vue";
 import NewsElement from "@/Layouts/Partials/Public/NewsElement.vue";
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
-import { NIcon, NButton } from "naive-ui";
+import { NIcon, NButton, NCarousel, NCarouselItem } from "naive-ui";
 import {
   CalendarLtr20Regular,
   Clock20Regular,
   ArrowRight48Regular,
 } from "@vicons/fluent";
 import { Link, usePage } from "@inertiajs/inertia-vue3";
-import { onMounted, ref } from "vue";
+import { onBeforeUnmount, ref } from "vue";
 
 const props = defineProps({
   news: Object,
+  banners: Object,
 });
 
-const alias = ref("");
+const calculateBannerCount = (width) => {
+  if (width < 768) {
+    return 1;
+  } else if (width < 992) {
+    return 2;
+  } else if (width < 1200) {
+    return 3;
+  } else {
+    return 5;
+  }
+};
 
-onMounted(() => {
-  alias.value = usePage().props.value.alias;
+const bannerCount = ref(calculateBannerCount(window.innerWidth));
+
+window.addEventListener("resize", () => {
+  bannerCount.value = calculateBannerCount(window.innerWidth);
 });
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", () => {});
+});
+
+// console.log(this.window.width);
+
+// const alias = ref("");
 </script>

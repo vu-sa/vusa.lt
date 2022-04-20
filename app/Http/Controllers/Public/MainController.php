@@ -45,9 +45,18 @@ class MainController extends Controller
 
 		$vusa = Padalinys::where('shortname', 'VU SA')->first();
 		$mainNavigation = Navigation::where([['padalinys_id', $vusa->id], ['lang', app()->getLocale()]])->orderBy('order')->get();
+		// dd($this->alias);
+		/// pakeisti visur alias į vusa kad būtų aiškiau nes čia dabar nesąmonė
+		
 
+		if ($this->alias !== '') {
+			$banners = Padalinys::where('alias', $this->alias)->first()->banners()->inRandomOrder()->where('is_active', 1)->get();
+		} else {
+			$banners = collect([]);
+		}
 
-
+		$banners = $banners->merge(Padalinys::where('alias', '')->first()->banners()->inRandomOrder()->where('is_active', 1)->get());
+		Inertia::share('banners', $banners);
 		Inertia::share('mainNavigation', $mainNavigation);
 	}
 

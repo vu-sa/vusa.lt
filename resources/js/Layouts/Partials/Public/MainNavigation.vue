@@ -209,7 +209,7 @@ const handleSelectPadalinys = (key) => {
       padalinys: key,
     },
     preserveScroll: true,
-    only: ["alias", "news"],
+    only: ["alias", "news", "banners"],
     onSuccess: () => {
       padalinys.value = getPadalinys(key);
     },
