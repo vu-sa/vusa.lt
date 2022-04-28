@@ -19,44 +19,60 @@
     remote
     @search="handleSearch"
   /> -->
-    <div class="grid grid-cols-3 pt-8 px-8 lg:px-32 gap-8">
-      <Link
-        class="col-span-2"
-        :href="
-          route('main.news', {
-            permalink: news.permalink,
-            lang: news.lang,
-            newsString: 'naujiena',
-          })
-        "
-        v-for="news in props.news.data"
-        :key="news.id"
+    <div class="grid grid-cols-4 pt-8 px-8 lg:px-32 gap-8">
+      <HomeCard
+        :hasMiniContent="false"
+        :hasBelowCard="true"
+        v-for="item in props.news.data"
+        :key="item.id"
       >
-        <ContactWithPhoto>
-          <template #image>
-            <img
-              :src="news.image"
-              class="rounded-sm shadow-md hover:shadow-lg duration-200 h-auto max-h-48 w-full mb-1 object-cover col-span-1 col-start-1"
-            />
-          </template>
-          <template #name>{{ news.title }}</template>
-          <template #description
-            ><p class="font-normal line-clamp-3" v-html="news.short"
-          /></template>
-          <template #email>{{ news.publish_time }}</template>
-        </ContactWithPhoto>
-      </Link>
+        <template #mini> </template>
+        <template #below-card>
+          <!-- <NIcon class="mr-2" size="20"> <CalendarLtr20Regular /> </NIcon>VU SA
+          ataskaitinė-rinkiminė konferencija -->
+          <NIcon class="mr-2" size="20"> <Clock20Regular /> </NIcon
+          >{{ item.publish_time }}
+        </template>
+        <template #image>
+          <Link
+            :href="
+              route('news', {
+                lang: item.lang,
+                newsString: 'naujiena',
+                padalinys: item.alias,
+                permalink: item.permalink,
+              })
+            "
+            ><img
+              :src="item.image"
+              class="rounded-sm shadow-md hover:shadow-lg duration-200 h-40 w-full mb-1 object-cover"
+          /></Link>
+        </template>
+        <Link
+          :href="
+            route('news', {
+              lang: item.lang,
+              newsString: 'naujiena',
+              padalinys: item.alias,
+              permalink: item.permalink,
+            })
+          "
+          >{{ item.title }}</Link
+        >
+      </HomeCard>
     </div>
   </PublicLayout>
 </template>
 
 <script setup>
 import PublicLayout from "@/Layouts/PublicLayout.vue";
-import { NPagination } from "naive-ui";
+import { NPagination, NIcon } from "naive-ui";
 import { reactive, ref } from "vue";
 import { Inertia } from "@inertiajs/inertia";
 import { usePage, Link } from "@inertiajs/inertia-vue3";
 import ContactWithPhoto from "@/Components/Public/ContactWithPhoto.vue";
+import HomeCard from "@/Components/Public/HomeCard.vue";
+import { Clock20Regular } from "@vicons/fluent";
 
 const props = defineProps({
   news: Object,

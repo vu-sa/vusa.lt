@@ -42,7 +42,9 @@
                 permalink: item.permalink,
               })
             "
-            ><ImageForCard :src="item.image"
+            ><img
+              :src="item.image"
+              class="rounded-sm shadow-md hover:shadow-lg duration-200 h-40 w-full mb-1 object-cover"
           /></Link>
         </template>
         <Link
@@ -84,7 +86,6 @@
 <script setup>
 import PublicLayout from "@/Layouts/PublicLayout.vue";
 import HomeCard from "@/Components/Public/HomeCard.vue";
-import ImageForCard from "@/Components/Public/ImageForCard.vue";
 import SkeletonElement from "@/Layouts/Partials/Public/SkeletonElement.vue";
 import NewsElement from "@/Layouts/Partials/Public/NewsElement.vue";
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";

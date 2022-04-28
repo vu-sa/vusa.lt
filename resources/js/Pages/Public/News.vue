@@ -17,7 +17,9 @@
       >
       <template #title>{{ article.title }} </template>
       <template #image
-        ><ImageForNews class="my-4 col-span-4" :src="article.image"
+        ><img
+          class="my-4 col-span-4 rounded-sm shadow-md hover:shadow-lg duration-200 h-auto w-[65ch] object-cover"
+          :src="article.image"
       /></template>
       <div
         class="prose first-letter:text-7xl first-letter:font-bold first-letter:mr-3 first-letter:float-left col-span-4"
@@ -30,7 +32,6 @@
 <script setup>
 import PublicLayout from "../../Layouts/PublicLayout.vue";
 import NewsArticle from "../../Components/Public/NewsArticle.vue";
-import ImageForNews from "../../Components/Public/ImageForNews.vue";
 import { NButton, NIcon, NBackTop } from "naive-ui";
 import { Clock20Regular } from "@vicons/fluent";
 

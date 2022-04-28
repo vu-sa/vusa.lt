@@ -235,6 +235,8 @@ class MainController extends Controller
 		// 	}
 
 		$alias_contacts = collect($alias_contacts)->unique();
+
+		// dd($alias_contacts);
 		// }
 
 		// dd($contacts, request()->name);
@@ -247,7 +249,7 @@ class MainController extends Controller
 					'name' => $contact->name,
 					'email' => $contact->email,
 					'phone' => $contact->phone,
-					'duties' => $contact->duties->only($duty_institution->id),
+					'duties' => $contact->duties, //->only($duty_institution->id),
 					'image' => function () use ($contact) {
 						if (substr($contact->profile_photo_path, 0, 4) == 'http') {
 							return $contact->profile_photo_path;
