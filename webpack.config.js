@@ -6,4 +6,7 @@ module.exports = {
             '@': path.resolve('resources/js'),
         },
     },
+    output: {
+        chunkFilename: 'js/[name].js?id=[chunkhash]',
+    }
 };

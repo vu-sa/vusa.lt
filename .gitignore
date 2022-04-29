@@ -49,3 +49,5 @@ database/vusa_www-n.sql
 .vscode/settings.json
 webpack.mix.js
 .gitignore
+public/js/app/*.js
+public/js/*.js
