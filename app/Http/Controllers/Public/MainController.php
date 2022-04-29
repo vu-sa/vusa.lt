@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Public;
 
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
+use App\Models\Calendar;
 use App\Models\DutyInstitution;
 use App\Models\Navigation;
 use App\Models\News;
@@ -290,5 +291,24 @@ class MainController extends Controller
 				];
 			}),
 		]);
+	}
+
+	public function search() {
+		
+		// get search query
+		$search = request()->data['input'];
+
+		// search calendar events by title and get 5 most recent with only title, date and id, but spaces are not important
+		$calendar = Calendar::where('title', 'like', "%{$search}%")->orderBy('date', 'desc')->take(5)->get(['title', 'date', 'id']);
+
+		// search news by title and get 5 most recent with only title, publish_time and id and permalink
+		$news = News::where('title', 'like', "%{$search}%")->orderBy('publish_time', 'desc')->take(5)->get(['title', 'publish_time', 'id', 'permalink', 'lang']);
+
+		// search pages by title and get 5 most recent with only title, id and permalink
+		$pages = Page::where('title', 'like', "%{$search}%")->orderBy('created_at', 'desc')->take(5)->get(['title', 'id', 'permalink', 'lang']);
+
+		// dd($calendar, $news, $pages);
+
+		return back()->with('search_calendar', $calendar)->with('search_news', $news)->with('search_pages', $pages);
 	}
 }

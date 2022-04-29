@@ -68,7 +68,8 @@
         ><NIcon size="18"><Instagram /></NIcon
       ></NButton>
       <NBadge dot processing
-        ><NIcon color="#000000" size="22"><Search20Filled /></NIcon
+        ><NButton text @click="changeShowSearch"
+          ><NIcon color="#000000" size="22"><Search20Filled /></NIcon></NButton
       ></NBadge>
       <NDropdown
         placement="top-end"
@@ -94,6 +95,61 @@
       ></NDropdown>
     </div>
   </nav>
+  <NModal v-model:show="showSearch">
+    <div
+      class="w-1/2 h-1/2 overflow-auto p-4 bg-white/95 rounded-md border-2 border-gray-100 shadow-lg fixed inset-x-0 top-40"
+    >
+      <!-- <h3 class="mb-2">Paieška</h3> -->
+      <NInput
+        @input="handleSearchInput"
+        :loading="searchInputLoading"
+        round
+        type="text"
+        size="large"
+        placeholder="Ieškoti..."
+        class="mb-4"
+      />
+      <div v-if="$page.props.search.pages.length !== 0">
+        <h3>Puslapiai</h3>
+        <Link
+          v-for="page in $page.props.search.pages"
+          :href="route('page', { lang: page.lang, permalink: page.permalink })"
+        >
+          <div class="bg-white/95 py-2 px-4 border border-gray-200 rounded-lg mb-2">
+            <p>{{ page.title }}</p>
+          </div>
+        </Link>
+      </div>
+      <div v-if="$page.props.search.news.length !== 0">
+        <h3 v-if="$page.props.search.news">Naujienos</h3>
+        <Link
+          v-for="news in $page.props.search.news"
+          :href="
+            route('news', {
+              lang: news.lang,
+              newsString: 'naujiena',
+              permalink: news.permalink,
+            })
+          "
+        >
+          <div class="bg-white/95 p-4 border border-gray-200 rounded-lg mb-2">
+            <p>{{ news.title }}</p>
+            <p class="text-sm text-gray-500">{{ news.publish_time }}</p>
+          </div>
+        </Link>
+      </div>
+      <div v-if="$page.props.search.calendar.length !== 0">
+        <h3 v-if="$page.props.search.calendar">Kalendoriaus įrašai</h3>
+        <div
+          v-for="calendar in $page.props.search.calendar"
+          class="bg-white/95 p-4 border border-gray-200 rounded-lg mb-2"
+        >
+          <p>{{ calendar.title }}</p>
+          <p class="text-sm text-gray-500">{{ calendar.date }}</p>
+        </div>
+      </div>
+    </div>
+  </NModal>
 </template>
 
 <script setup>
@@ -106,7 +162,9 @@ import {
   NGradientText,
   NBadge,
   NScrollbar,
-  useMessage,
+  NModal,
+  NInput,
+  // useMessage,
 } from "naive-ui";
 import { usePage, Link } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
@@ -118,8 +176,36 @@ const padaliniai = usePage().props.value.padaliniai;
 const mainNavigation = usePage().props.value.mainNavigation;
 const locale = ref(usePage().props.value.locale);
 const locales = ["lt", "en"];
+const showSearch = ref(false);
+const searchInputLoading = ref(false);
 
-const message = useMessage();
+const searchResults = ref([]);
+
+const changeShowSearch = () => {
+  showSearch.value = !showSearch.value;
+};
+
+// const message = useMessage();
+
+// after half a second input delay, use Inertiapost request to fetch search results
+const handleSearchInput = _.debounce((input) => {
+  if (input.length > 2) {
+    searchInputLoading.value = true;
+    Inertia.post(
+      route("search"),
+      {
+        data: { input: input },
+      },
+      {
+        preserveState: true,
+        preserveScroll: true,
+        onSuccess: () => {
+          searchInputLoading.value = false;
+        },
+      }
+    );
+  }
+}, 500);
 
 const options_padaliniai = padaliniai.map((padalinys) => ({
   label: _.split(padalinys.fullname, "atstovybė ")[1],
@@ -231,9 +317,9 @@ const handleSelectLanguage = (key) => {
       })
     );
     // Inertia.visit(route("main.page", { lang: "lt" }));
-    message.info("Navigating to " + key);
+    // message.info("Navigating to " + key);
   } else if (key === "page") {
-    message.info("Navigating to " + key);
+    // message.info("Navigating to " + key);
   }
 };
 </script>

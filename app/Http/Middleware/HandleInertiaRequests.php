@@ -59,7 +59,12 @@ class HandleInertiaRequests extends Middleware
                     return [];
                 }
                 return json_decode(file_get_contents(resource_path('lang/'. app()->getLocale() .'.json')), true);   
-            }
+            },
+            'search' => fn () => [
+                'calendar' => $request->session()->get('search_calendar') ?? [],
+                'news' => $request->session()->get('search_news') ?? [],
+                'pages' => $request->session()->get('search_pages') ?? [],
+            ]
 
 
             // 'flash' => fn () => [

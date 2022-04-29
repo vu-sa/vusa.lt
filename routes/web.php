@@ -52,6 +52,7 @@ Route::get('/', [Public\MainController::class, 'home'])->name('home');
 Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('newsString', '(naujiena|news)')->name('news');
 Route::get('naujienos', [Public\MainController::class, 'newsArchive'])->name('newsArchive');
 Route::get('kontaktai', [Public\MainController::class, 'contacts'])->name('contacts');
+Route::post('search', [Public\MainController::class, 'search'])->name('search');
 
 Route::prefix('admin')->group(function () {
     Route::middleware(['auth', 'verified'])->group(function () {
