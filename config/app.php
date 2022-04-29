@@ -94,7 +94,7 @@ return [
     |
     */
 
-    'fallback_locale' => 'lt',
+    'fallback_locale' => 'en',
 
     /*
     |--------------------------------------------------------------------------
@@ -164,12 +164,6 @@ return [
         Illuminate\View\ViewServiceProvider::class,
 
         /*
-         * Package Service Providers...
-         */
-        Collective\Html\HtmlServiceProvider::class,
-        Spatie\CookieConsent\CookieConsentServiceProvider::class,
-
-        /*
          * Application Service Providers...
          */
         App\Providers\AppServiceProvider::class,
@@ -180,8 +174,6 @@ return [
         App\Providers\TelescopeServiceProvider::class,
         App\Providers\FortifyServiceProvider::class,
         App\Providers\JetstreamServiceProvider::class,
-
-        // Laravel\Tinker\TinkerServiceProvider::class,
 
     ],
 

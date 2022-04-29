@@ -1,7 +1,0 @@
-<?php
-
-return [
-    'message' => 'Your experience on this site will be improved by allowing cookies.',
-    'agree' => 'Allow cookies',
-    'privacy_policy' => 'Privacy policy',
-];
