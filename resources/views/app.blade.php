@@ -10,14 +10,14 @@
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap">
 
         <!-- Styles -->
-        <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+        <link rel="stylesheet" href="{{ mix('css/app.css') }}">
 
         <!-- Naive UI elements -->
         <meta name="naive-ui-style" />
 
         <!-- Scripts -->
         @routes
-        <script src={{ asset('js/app.js') }} defer></script>
+        <script src={{ mix('js/app.js') }} defer></script>
     </head>
     <body class="font-sans antialiased">
         @inertia
