@@ -311,4 +311,12 @@ class MainController extends Controller
 
 		return back()->with('search_calendar', $calendar)->with('search_news', $news)->with('search_pages', $pages);
 	}
+
+	public function ataskaita2022() {
+
+		$permalink = request()->route('permalink');
+
+		// case for permalink, render Inertia
+		
+	}
 }

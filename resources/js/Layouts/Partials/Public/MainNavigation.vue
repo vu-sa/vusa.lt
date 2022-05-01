@@ -11,31 +11,40 @@
         />
         <!-- </a> -->
       </Link>
-      <NDropdown
-        :options="options_padaliniai"
-        placement="top-start"
-        size="small"
-        @select="handleSelectPadalinys"
-      >
-        <NButton
-          :disabled="!route().current('*home')"
+      <div class="hidden md:flex">
+        <NDropdown
+          :options="options_padaliniai"
+          placement="top-start"
           size="small"
-          style="border-radius: 0.5rem"
+          @select="handleSelectPadalinys"
+          style="overflow: auto; max-height: 600px"
         >
-          <!-- <NGradientText type="warning"> -->
-          {{ __(padalinys) }}
-          <!-- </NGradientText> -->
-          <NIcon class="ml-1" size="18"><ChevronDown20Filled /></NIcon></NButton
-      ></NDropdown>
+          <NButton
+            :disabled="!route().current('*home')"
+            size="small"
+            style="border-radius: 0.5rem"
+          >
+            <!-- <NGradientText type="warning"> -->
+            {{ __(padalinys) }}
+            <!-- </NGradientText> -->
+            <NIcon class="ml-1" size="18"><ChevronDown20Filled /></NIcon></NButton
+        ></NDropdown>
+      </div>
     </div>
-    <div class="flex flex-row space-x-4 items-center">
+    <!-- Hamburger -->
+    <div class="block md:hidden">
+      <NButton style="border-radius: 0.5rem" @click="toggleMenu">
+        <NIcon><Navigation24Filled /></NIcon>
+      </NButton>
+    </div>
+    <div class="hidden md:flex flex-row space-x-4 items-center">
       <!-- <n-gradient-text type="error"> -->
       <!-- <Link :href="route('page', { permalink: 'apie' })">VU SA</Link> -->
       <!-- </n-gradient-text> -->
       <!-- <div>Studijos ir mokslas</div>
       <div>Saviraiška</div> -->
       <template v-for="item in navigation" :key="item.key">
-        <div class="hidden md:block">
+        <div>
           <NDropdown @select="handleSelectNavigation" :options="item.children">
             <NButton text>{{ item.label }}</NButton>
           </NDropdown>
@@ -67,10 +76,11 @@
         href="https://www.instagram.com/vustudentuatstovybe/"
         ><NIcon size="18"><Instagram /></NIcon
       ></NButton>
-      <NBadge dot processing
-        ><NButton text @click="changeShowSearch"
-          ><NIcon color="#000000" size="22"><Search20Filled /></NIcon></NButton
-      ></NBadge>
+      <!-- <NBadge dot processing> -->
+      <NButton text @click="changeShowSearch"
+        ><NIcon color="#000000" size="22"><Search20Filled /></NIcon
+      ></NButton>
+      <!-- </NBadge> -->
       <NDropdown
         placement="top-end"
         :options="options_language_en"
@@ -94,10 +104,70 @@
             width="16" /></NButton
       ></NDropdown>
     </div>
+    <NDrawer v-model:show="activeDrawer" :width="450" placement="left" :trap-focus="true">
+      <NDrawerContent title="Menu">
+        <NTree block-line :data="navigation" />
+        <Link
+          v-if="locale === 'lt'"
+          class="hidden md:block"
+          :data="{ padalinys: usePage().props.value.alias }"
+          :href="route('contacts')"
+          ><NButton text>
+            <NGradientText type="error" v-if="route().current('*contacts')"
+              >Kontaktai</NGradientText
+            >
+            <template v-else>Kontaktai</template>
+          </NButton>
+        </Link>
+        <div class="flex flex-row space-x-4 items-center mt-4">
+          <NButton
+            text
+            target="_blank"
+            tag="a"
+            href="https://www.facebook.com/VUstudentuatstovybe"
+            ><NIcon size="18"><FacebookF /></NIcon
+          ></NButton>
+          <NButton
+            text
+            target="_blank"
+            tag="a"
+            href="https://www.instagram.com/vustudentuatstovybe/"
+            ><NIcon size="18"><Instagram /></NIcon
+          ></NButton>
+          <!-- <NBadge dot processing> -->
+          <NButton text @click="changeShowSearch"
+            ><NIcon color="#000000" size="22"><Search20Filled /></NIcon
+          ></NButton>
+          <!-- </NBadge> -->
+          <NDropdown
+            placement="top-end"
+            :options="options_language_en"
+            v-if="locale == 'lt'"
+            @select="handleSelectLanguage"
+          >
+            <NButton text
+              ><img
+                src="https://hatscripts.github.io/circle-flags/flags/gb.svg"
+                width="16" /></NButton
+          ></NDropdown>
+          <NDropdown
+            placement="top-end"
+            :options="options_language_lt"
+            v-if="locale == 'en'"
+            @select="handleSelectLanguage"
+          >
+            <NButton text
+              ><img
+                src="https://hatscripts.github.io/circle-flags/flags/lt.svg"
+                width="16" /></NButton
+          ></NDropdown>
+        </div>
+      </NDrawerContent>
+    </NDrawer>
   </nav>
   <NModal v-model:show="showSearch">
     <div
-      class="w-1/2 h-1/2 overflow-auto p-4 bg-white/95 rounded-md border-2 border-gray-100 shadow-lg fixed inset-x-0 top-40"
+      class="w-3/4 md:w-1/2 md:h-1/2 overflow-auto p-4 bg-white/95 rounded-md border-2 border-gray-100 shadow-lg md:fixed md:inset-x-0 md:top-40"
     >
       <!-- <h3 class="mb-2">Paieška</h3> -->
       <NInput
@@ -106,7 +176,7 @@
         round
         type="text"
         size="large"
-        placeholder="Ieškoti..."
+        :placeholder="__('Ieškoti...')"
         class="mb-4"
       />
       <div v-if="$page.props.search.pages.length !== 0">
@@ -154,16 +224,19 @@
 
 <script setup>
 import { FacebookF, Instagram } from "@vicons/fa";
-import { Search20Filled, ChevronDown20Filled } from "@vicons/fluent";
+import { Search20Filled, ChevronDown20Filled, Navigation24Filled } from "@vicons/fluent";
 import {
   NIcon,
   NDropdown,
   NButton,
   NGradientText,
-  NBadge,
+  // NBadge,
   NScrollbar,
   NModal,
   NInput,
+  NDrawer,
+  NDrawerContent,
+  NTree,
   // useMessage,
 } from "naive-ui";
 import { usePage, Link } from "@inertiajs/inertia-vue3";
@@ -178,8 +251,12 @@ const locale = ref(usePage().props.value.locale);
 const locales = ["lt", "en"];
 const showSearch = ref(false);
 const searchInputLoading = ref(false);
+const activeDrawer = ref(false);
+const toggleMenu = () => {
+  activeDrawer.value = !activeDrawer.value;
+};
 
-const searchResults = ref([]);
+const searchResults = ref(false);
 
 const changeShowSearch = () => {
   showSearch.value = !showSearch.value;
