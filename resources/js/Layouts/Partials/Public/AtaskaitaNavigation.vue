@@ -92,7 +92,7 @@
       ></NDropdown>
     </div>
     <NDrawer v-model:show="activeDrawer" :width="325" placement="left" :trap-focus="true">
-      <NDrawerContent closable title="Menu">
+      <NDrawerContent closable :title="__('Ataskaita 2022')">
         <NTree
           block-line
           :data="navigationTreeMobile"

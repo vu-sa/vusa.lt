@@ -38,11 +38,12 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => '(lt|en)']], function
     Route::name('main.')->group(function () {
         Route::domain($this->host)->group(function () {
             Route::get('/', [Public\MainController::class, 'home'])->name('home');
+            Route::get('naujienos', [Public\MainController::class, 'newsArchive'])->name('newsArchive');
+            Route::get('naujiena/archyvas', [Public\MainController::class, 'newsArchive'])->name('newsArchive');
             Route::get('ataskaita2022/{permalink}', [Public\MainController::class, 'ataskaita2022'])->where('permalink', '.*')->name('ataskaita2022');
             Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('news_string', '(naujiena|news)')->name('news');
             Route::get('mainNews', [Public\MainController::class, 'getMainNews']);
-            Route::get('naujienos', [Public\MainController::class, 'newsArchive'])->name('newsArchive');
-            Route::get('naujiena/archyvas', [Public\MainController::class, 'newsArchive'])->name('newsArchive');
+            
             Route::get('kontaktai', [Public\MainController::class, 'contacts'])->name('contacts');
             Route::get('{permalink}', [Public\MainController::class, 'page'])->where('permalink', '.*')->name('page');
         });
@@ -51,11 +52,12 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => '(lt|en)']], function
 });
 
 Route::get('/', [Public\MainController::class, 'home'])->name('home');
-Route::get('ataskaita2022/{permalink}', [Public\MainController::class, 'ataskaita2022'])->where('permalink', '.*')->name('ataskaita2022');
-Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('newsString', '(naujiena|news)')->name('news');
 Route::get('naujienos', [Public\MainController::class, 'newsArchive'])->name('newsArchive');
 // redirect /naujiena/archyvas to newsArchive
 Route::get('naujiena/archyvas', [Public\MainController::class, 'newsArchive'])->name('newsArchive');
+Route::get('ataskaita2022/{permalink}', [Public\MainController::class, 'ataskaita2022'])->where('permalink', '.*')->name('ataskaita2022');
+Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('newsString', '(naujiena|news)')->name('news');
+
 Route::get('kontaktai', [Public\MainController::class, 'contacts'])->name('contacts');
 
 Route::post('search', [Public\MainController::class, 'search'])->name('search');
