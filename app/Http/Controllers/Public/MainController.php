@@ -316,7 +316,23 @@ class MainController extends Controller
 
 		$permalink = request()->route('permalink');
 
-		// case for permalink, render Inertia
-		
+		if ($permalink == 'sveikinimai') {
+			return Inertia::render('Public/Ataskaita2022/Content/1-LT');
+		} else if ($permalink == 'vu-sa') {
+			return Inertia::render('Public/Ataskaita2022/Content/2-LT');
+		} else if ($permalink == 'mvp') {
+			return Inertia::render('Public/Ataskaita2022/Content/3-LT');
+		} else if ($permalink == 'studijos') {
+			return Inertia::render('Public/Ataskaita2022/Content/4-LT');
+		} else if ($permalink == 'organizacija') {
+			return Inertia::render('Public/Ataskaita2022/Content/5-LT');
+		} else if ($permalink == 'bendruomene') {
+			return Inertia::render('Public/Ataskaita2022/Content/6-LT');
+		} else if ($permalink == 'sritys') {
+			return Inertia::render('Public/Ataskaita2022/Content/7-LT');
+		}
+
+		abort(404);
+
 	}
 }

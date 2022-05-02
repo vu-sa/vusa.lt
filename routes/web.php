@@ -43,7 +43,6 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => '(lt|en)']], function
             Route::get('mainNews', [Public\MainController::class, 'getMainNews']);
             Route::get('naujienos', [Public\MainController::class, 'newsArchive'])->name('newsArchive');
             Route::get('kontaktai', [Public\MainController::class, 'contacts'])->name('contacts');
-            
             Route::get('{permalink}', [Public\MainController::class, 'page'])->where('permalink', '.*')->name('page');
         });
     });

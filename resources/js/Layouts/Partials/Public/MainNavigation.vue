@@ -11,7 +11,7 @@
         />
         <!-- </a> -->
       </Link>
-      <div class="hidden md:flex">
+      <div>
         <NDropdown
           :options="options_padaliniai"
           placement="top-start"
@@ -104,12 +104,30 @@
             width="16" /></NButton
       ></NDropdown>
     </div>
-    <NDrawer v-model:show="activeDrawer" :width="450" placement="left" :trap-focus="true">
-      <NDrawerContent title="Menu">
-        <NTree block-line :data="navigation" />
+    <NDrawer v-model:show="activeDrawer" :width="325" placement="left" :trap-focus="true">
+      <NDrawerContent
+        closable
+        :title="padalinys == 'Padaliniai' ? 'VU SA' : __(padalinys)"
+      >
+        <NCollapse
+          ><NCollapseItem title="Padaliniai"
+            ><NTree
+              block-line
+              :data="options_padaliniai"
+              @update:selected-keys="handleSelectPadalinys"
+            >
+            </NTree></NCollapseItem
+        ></NCollapse>
+
+        <NDivider></NDivider>
+        <NTree
+          block-line
+          :data="navigation"
+          @update:selected-keys="handleSelectNavigation"
+        />
         <Link
           v-if="locale === 'lt'"
-          class="hidden md:block"
+          class="ml-7 mt-1"
           :data="{ padalinys: usePage().props.value.alias }"
           :href="route('contacts')"
           ><NButton text>
@@ -237,7 +255,10 @@ import {
   NDrawer,
   NDrawerContent,
   NTree,
-  // useMessage,
+  NDivider,
+  NCollapse,
+  NCollapseItem,
+  useMessage,
 } from "naive-ui";
 import { usePage, Link } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
@@ -262,7 +283,7 @@ const changeShowSearch = () => {
   showSearch.value = !showSearch.value;
 };
 
-// const message = useMessage();
+const message = useMessage();
 
 // after half a second input delay, use Inertiapost request to fetch search results
 const handleSearchInput = _.debounce((input) => {
@@ -319,7 +340,7 @@ const parseNavigation = (array, id) => {
   array.forEach((item) => {
     if (item[1].parent_id === id) {
       result.push({
-        key: item[1].url.replace(/^\/|\/$/g, ""),
+        key: item[1].id,
         label: item[1].name,
         children: parseNavigation(array, item[1].id),
         // trim url of slashes
@@ -367,20 +388,34 @@ padalinys.value = getPadalinys();
 // const mainHost = "http://" + getMainHost();
 
 const handleSelectPadalinys = (key) => {
+  let i = key;
+  // if padalinys is array, get first element (for mobile)
+  if (Array.isArray(i)) {
+    i = key[0];
+  }
+
   Inertia.reload({
     data: {
-      padalinys: key,
+      padalinys: i,
     },
     preserveScroll: true,
     only: ["alias", "news", "banners"],
     onSuccess: () => {
-      padalinys.value = getPadalinys(key);
+      padalinys.value = getPadalinys(i);
+      activeDrawer.value = false;
     },
   });
 };
 
-const handleSelectNavigation = (url) => {
+const handleSelectNavigation = (id) => {
   // message.info("Navigating to " + key);
+  // get url from id from mainNavigation array
+  let url = "";
+  for (let item of Object.entries(mainNavigation)) {
+    if (item[1].id == id) {
+      url = item[1].url;
+    }
+  }
   Inertia.visit(route("main.page", { lang: locale.value, permalink: url }));
 };
 

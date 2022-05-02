@@ -1,0 +1,301 @@
+<template>
+  <nav
+    class="flex flex-row fixed justify-between px-6 lg:px-24 border shadow-sm w-full backdrop-blur-sm bg-white/90 text-gray-700 items-center py-2 z-50 top-0"
+  >
+    <div class="flex flex-row space-x-4 items-center">
+      <Link :href="route('main.home', { lang: locale })" preserve-state>
+        <!-- <a :href="locale === 'lt' ? $page.props.app.url : `${$page.props.app.url}/en`"> -->
+        <img
+          class="object-contain min-w-[15vw] lg:min-w-[10vw]"
+          src="/logos/vusa.lin.hor.svg"
+        />
+        <!-- </a> -->
+      </Link>
+      <div>
+        <NButton size="small" style="border-radius: 0.5rem">
+          <!-- <NGradientText type="warning"> -->
+          <strong>Ataskaita 2022</strong>
+          <!-- </NGradientText> -->
+        </NButton>
+      </div>
+      <Link
+        class="text-gray-500 duration-200 hover:text-gray-900 hidden lg:block"
+        :href="route('main.home')"
+        >{{ __("Grįžti į vusa.lt") }}</Link
+      >
+    </div>
+    <!-- Hamburger -->
+    <div class="block lg:hidden">
+      <NButton style="border-radius: 0.5rem" @click="toggleMenu">
+        <NIcon><Navigation24Filled /></NIcon>
+      </NButton>
+    </div>
+    <div class="hidden lg:flex flex-row space-x-4 items-center">
+      <!-- <n-gradient-text type="error"> -->
+      <!-- <Link :href="route('page', { permalink: 'apie' })">VU SA</Link> -->
+      <!-- </n-gradient-text> -->
+      <!-- <div>Studijos ir mokslas</div>
+      <div>Saviraiška</div> -->
+
+      <Link
+        :href="route('main.ataskaita2022', { lang: locale, permalink: 'sveikinimai' })"
+        >Sveikinimai</Link
+      >
+      <Link :href="route('main.ataskaita2022', { lang: locale, permalink: 'vu-sa' })">{{
+        __("VU SA")
+      }}</Link>
+      <Link :href="route('main.ataskaita2022', { lang: locale, permalink: 'mvp' })"
+        >MVP</Link
+      >
+      <NDropdown :options="navigation" @select="handleSelectKryptis"
+        >VU SA strateginės kryptys</NDropdown
+      >
+      <Link :href="route('main.ataskaita2022', { lang: locale, permalink: 'sritys' })"
+        >Sritys</Link
+      >
+
+      <NButton
+        text
+        target="_blank"
+        tag="a"
+        href="https://www.facebook.com/VUstudentuatstovybe"
+        ><NIcon size="18"><FacebookF /></NIcon
+      ></NButton>
+      <NButton
+        text
+        target="_blank"
+        tag="a"
+        href="https://www.instagram.com/vustudentuatstovybe/"
+        ><NIcon size="18"><Instagram /></NIcon
+      ></NButton>
+      <NDropdown
+        placement="top-end"
+        :options="options_language_en"
+        v-if="locale == 'lt'"
+        @select="handleSelectLanguage"
+      >
+        <NButton text
+          ><img
+            src="https://hatscripts.github.io/circle-flags/flags/gb.svg"
+            width="16" /></NButton
+      ></NDropdown>
+      <NDropdown
+        placement="top-end"
+        :options="options_language_lt"
+        v-if="locale == 'en'"
+        @select="handleSelectLanguage"
+      >
+        <NButton text
+          ><img
+            src="https://hatscripts.github.io/circle-flags/flags/lt.svg"
+            width="16" /></NButton
+      ></NDropdown>
+    </div>
+    <NDrawer v-model:show="activeDrawer" :width="325" placement="left" :trap-focus="true">
+      <NDrawerContent closable title="Menu">
+        <NTree
+          block-line
+          :data="navigationTreeMobile"
+          @update:selected-keys="handleSelectKryptis"
+        />
+
+        <div class="flex flex-row space-x-4 items-center mt-4">
+          <NButton
+            text
+            target="_blank"
+            tag="a"
+            href="https://www.facebook.com/VUstudentuatstovybe"
+            ><NIcon size="18"><FacebookF /></NIcon
+          ></NButton>
+          <NButton
+            text
+            target="_blank"
+            tag="a"
+            href="https://www.instagram.com/vustudentuatstovybe/"
+            ><NIcon size="18"><Instagram /></NIcon
+          ></NButton>
+          <NDropdown
+            placement="top-end"
+            :options="options_language_en"
+            v-if="locale == 'lt'"
+            @select="handleSelectLanguage"
+          >
+            <NButton text
+              ><img
+                src="https://hatscripts.github.io/circle-flags/flags/gb.svg"
+                width="16" /></NButton
+          ></NDropdown>
+          <NDropdown
+            placement="top-end"
+            :options="options_language_lt"
+            v-if="locale == 'en'"
+            @select="handleSelectLanguage"
+          >
+            <NButton text
+              ><img
+                src="https://hatscripts.github.io/circle-flags/flags/lt.svg"
+                width="16" /></NButton
+          ></NDropdown>
+        </div>
+      </NDrawerContent>
+    </NDrawer>
+  </nav>
+</template>
+
+<script setup>
+import { FacebookF, Instagram } from "@vicons/fa";
+import { Search20Filled, ChevronDown20Filled, Navigation24Filled } from "@vicons/fluent";
+import {
+  NIcon,
+  NDropdown,
+  NButton,
+  NGradientText,
+  // NBadge,
+  NScrollbar,
+  NModal,
+  NInput,
+  NDrawer,
+  NDrawerContent,
+  NTree,
+  // useMessage,
+} from "naive-ui";
+import { usePage, Link } from "@inertiajs/inertia-vue3";
+import { Inertia } from "@inertiajs/inertia";
+import { ref, h } from "vue";
+
+// map padaliniai to options_padaliniai
+
+const padaliniai = usePage().props.value.padaliniai;
+const mainNavigation = usePage().props.value.mainNavigation;
+const locale = ref(usePage().props.value.locale);
+const locales = ["lt", "en"];
+const activeDrawer = ref(false);
+const toggleMenu = () => {
+  activeDrawer.value = !activeDrawer.value;
+};
+
+// const message = useMessage();
+
+// after half a second input delay, use Inertiapost request to fetch search results
+const handleSearchInput = _.debounce((input) => {
+  if (input.length > 2) {
+    searchInputLoading.value = true;
+    Inertia.post(
+      route("search"),
+      {
+        data: { input: input },
+      },
+      {
+        preserveState: true,
+        preserveScroll: true,
+        onSuccess: () => {
+          searchInputLoading.value = false;
+        },
+      }
+    );
+  }
+}, 500);
+
+const options_padaliniai = padaliniai.map((padalinys) => ({
+  label: _.split(padalinys.fullname, "atstovybė ")[1],
+  key: padalinys.alias,
+}));
+
+const options_language_en = [
+  {
+    label: "Change page language",
+    key: "page",
+    disabled: true,
+  },
+  {
+    label: "Go to main report page",
+    key: "home",
+  },
+];
+
+const options_language_lt = [
+  {
+    label: "Pakeisti puslapio kalbą",
+    key: "page",
+    disabled: true,
+  },
+  {
+    label: "Eiti į ataskaitos pagrindinį",
+    key: "home",
+  },
+];
+
+const navigation = [
+  {
+    label: "Kokybiškos studijos ir joms pritaikyta aplinka",
+    key: "studijos",
+  },
+  { label: "Stipri organizacija", key: "organizacija" },
+  { label: "Darni universitetinė bendruomenė", key: "bendruomene" },
+];
+
+const navigationTreeMobile = [
+  { label: "Sveikinimai", key: "sveikinimai" },
+  {
+    label: "VU SA",
+    key: "vu-sa",
+  },
+  {
+    label: "MVP",
+    key: "mvp",
+  },
+  {
+    label: "Strateginės kryptys",
+    key: "strategines",
+    children: [
+      {
+        label: "Kokybiškos studijos ir joms pritaikyta aplinka",
+        key: "studijos",
+      },
+      { label: "Stipri organizacija", key: "organizacija" },
+      { label: "Darni universitetinė bendruomenė", key: "bendruomene" },
+    ],
+  },
+  {
+    label: "Sritys",
+    key: "sritys",
+  },
+];
+
+// const handleSelectNavigation = (id) => {
+//   // message.info("Navigating to " + key);
+//   // get url from id from mainNavigation array
+//   let url = "";
+//   for (let item of Object.entries(mainNavigation)) {
+//     if (item[1].id == id) {
+//       url = item[1].url;
+//     }
+//   }
+//   Inertia.visit(route("main.page", { lang: locale.value, permalink: url }));
+// };
+
+const handleSelectKryptis = (url) => {
+  Inertia.visit(
+    route("main.ataskaita2022", {
+      lang: locale.value,
+      permalink: url,
+    })
+  );
+};
+
+const handleSelectLanguage = (key) => {
+  if (key === "home") {
+    Inertia.visit(
+      route("main.home", {
+        lang: locales.filter((l) => {
+          return l !== locale.value;
+        }),
+      })
+    );
+    // Inertia.visit(route("main.page", { lang: "lt" }));
+    // message.info("Navigating to " + key);
+  } else if (key === "page") {
+    // message.info("Navigating to " + key);
+  }
+};
+</script>

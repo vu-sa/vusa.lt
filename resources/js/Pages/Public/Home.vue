@@ -9,8 +9,18 @@
       />
     </div>
     <div class="lg:px-16 lg:mx-16 mx-8">
-      <h2 class="text-3xl lg:text-5xl mb-4 text-gray-900">
-        Pasižiūrėkite, ką nuveikėme 2022 metais 💡
+      <h2
+        class="text-3xl lg:text-5xl mb-4 text-gray-900 hover:text-gray-500 duration-200"
+      >
+        <Link
+          :href="
+            route('main.ataskaita2022', {
+              lang: $page.props.locale,
+              permalink: 'sveikinimai',
+            })
+          "
+          >Pasižiūrėkite, ką nuveikėme 2022 metais →</Link
+        >
       </h2>
       <p class="lg:w-[65ch] text-gray-700 mb-8 lg:mb-20 text-sm lg:text-base">
         Nuo nacionalinio atstovavimo studentų interesams iki naujų galimybių saviraiškai –

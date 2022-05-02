@@ -11,7 +11,7 @@
     <PageArticle>
       <template #title>{{ page.title }} </template>
       <div class="prose" v-html="page.text"></div>
-      <template #randomPages>
+      <!-- <template #randomPages>
         <ul class="prose" v-for="item in random_pages">
           <Link
             :data="{ padalinys: item.alias }"
@@ -20,7 +20,7 @@
             >{{ item.title }}</Link
           >
         </ul>
-      </template>
+      </template> -->
     </PageArticle>
   </PublicLayout>
 </template>

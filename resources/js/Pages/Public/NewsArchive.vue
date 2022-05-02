@@ -2,6 +2,7 @@
   <PublicLayout>
     <h2 class="pt-8 px-8 lg:px-32">Naujienų archyvas</h2>
     <NPagination
+      style="overflow-x: auto"
       class="pt-8 px-8 lg:px-32"
       :item-count="props.news.total"
       :page="props.news.current_page"
@@ -19,7 +20,7 @@
     remote
     @search="handleSearch"
   /> -->
-    <div class="grid grid-cols-4 pt-8 px-8 lg:px-32 gap-8">
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 pt-8 px-8 lg:px-32 gap-8">
       <HomeCard
         :hasMiniContent="false"
         :hasBelowCard="true"
