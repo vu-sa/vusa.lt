@@ -16,7 +16,7 @@
           :href="
             route('main.ataskaita2022', {
               lang: $page.props.locale,
-              permalink: 'sveikinimai',
+              permalink: 'pradzia',
             })
           "
           >Pasižiūrėkite, ką nuveikėme 2022 metais →</Link

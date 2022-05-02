@@ -316,7 +316,9 @@ class MainController extends Controller
 
 		$permalink = request()->route('permalink');
 
-		if ($permalink == 'sveikinimai') {
+		if ($permalink == 'pradzia') {
+			return Inertia::render('Public/Ataskaita2022/Content/0-LT');
+		} else if ($permalink == 'sveikinimai') {
 			return Inertia::render('Public/Ataskaita2022/Content/1-LT');
 		} else if ($permalink == 'vu-sa') {
 			return Inertia::render('Public/Ataskaita2022/Content/2-LT');

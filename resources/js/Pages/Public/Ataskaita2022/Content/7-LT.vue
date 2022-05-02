@@ -25,7 +25,7 @@
     <div class="relative">
       <img
         class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500"
-        src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/Atstovų koordinatoriai-2.jpg"
+        src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/atstovu.jpg"
       />
       <p
         class="absolute text-white font-bold text-2xl sm:text-3xl md:text-4xl w-full text-center bottom-8"
@@ -58,7 +58,7 @@
     <div class="relative">
       <img
         class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500"
-        src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/Organizacinės srities koordinatoriai-2.jpg"
+        src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/organizacines.jpg"
       />
       <p
         class="absolute text-white font-bold text-2xl sm:text-3xl md:text-4xl w-full text-center bottom-8"
@@ -113,7 +113,7 @@
     <div class="relative">
       <img
         class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500"
-        src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/Užsieniečių koordai-2.jpg"
+        src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/Uzsienieciu-koordai-2.jpg"
       />
       <p
         class="absolute text-white font-bold text-2xl sm:text-3xl md:text-4xl w-full text-center bottom-8"
