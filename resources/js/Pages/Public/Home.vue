@@ -1,16 +1,16 @@
 <template>
   <PublicLayout title="Pagrindinis">
-    <div class="relative">
+    <div class="relative group">
       <ShapeDivider1 class="absolute -top-1"></ShapeDivider1>
       <ShapeDivider1 class="absolute rotate-180 -bottom-1"></ShapeDivider1>
       <img
-        src="/images/placeholders/foto3.jpg"
+        src="/images/ataskaita2022/kitos-nuotraukos/IMG_8887.jpg"
         class="h-64 lg:h-96 w-full object-cover my-4"
       />
     </div>
     <div class="lg:px-16 lg:mx-16 mx-8">
       <h2
-        class="text-3xl lg:text-5xl mb-4 text-gray-900 hover:text-gray-500 duration-200"
+        class="text-2xl lg:text-4xl mb-4 text-gray-900 hover:text-gray-500 duration-200"
       >
         <Link
           :href="

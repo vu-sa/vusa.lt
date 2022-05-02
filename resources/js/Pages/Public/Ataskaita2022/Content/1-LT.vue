@@ -8,6 +8,56 @@
       :show-dots="false"
     >
       <NCarouselItem>
+        <img class="carousel-img" src="/images/ataskaita2022/sveikinimai/rektorius.jpg" />
+        <div class="bg-white p-6 text-sm">
+          <p>Mieli Studentai,</p>
+
+          <p>
+            pastarieji metai buvo sudėtingi ir kupini globalių iššūkių, paliečiančių visų
+            mūsų gyvenimus. Tikiu, kad jie dar labiau sustiprino Universiteto vaidmenį ir
+            atskleidė jo esmę. Būtent Universitete gimsta ir yra vystomos idėjos,
+            kuriančios, palaikančios valstybę ir visuomenę. Universitetas išlaisvina
+            mąstyti savarankiškai ir veikti visuomeniškai. Universitetas suteikia
+            instrumentus ir sąlygas įprasminti save. Ir net tampa prieglobsčiu nuo negandų
+            ir nelaimių.
+          </p>
+
+          <p>
+            Noriu nuoširdžiai pasidžiaugti, kad Vilniaus universiteto studentai tiek
+            pandemijos, tiek karo Ukrainoje akivaizdoje demonstravo ne tik solidarumą, bet
+            ir tapo tikrais visuomenės lyderiais. Jūsų dėka Universitetas deklaruojamas
+            vertybes paverčia realiais darbais. Studentai tapo savanoriais, rėmėjais,
+            mentoriais, protestuotojais, paramos rinkėjais, dalintojais ir tuo pat metu
+            išliko aktyviais ir reikšmingais akademinės bendruomenės nariais.
+          </p>
+
+          <p>
+            Sveikinu Vilniaus universiteto Studentų atstovybę, kuri reiškiasi ne tik kaip
+            aktyvi bendruomenės dalis, bet ir kaip naujų idėjų, akademinio ir socialinio
+            aktyvumo bei pagarbaus dialogo šaltinis. Tikiu, kad kasmetinis darbų
+            įsivertinimas bus proga ne tik pasidžiaugti tuo, kas atlikta, bet ir įvertinti
+            tai, ką dar galite nuveikti Universiteto, visuomenės, valstybės, o tai reiškia
+            ir savo labui.
+          </p>
+
+          <p>
+            Svarbu, kad studentų balsas būtų dar labiau girdimas ne tik Universitete, bet
+            ir visuomenėje. Tam tikras tiesas banalu kartoti, bet jas vis pakartojame
+            todėl, kad esame įsitikinę jų teisingumu. Tad pasikartosiu ir aš – Jūs esate
+            ateitis. Mūsų atsakomybė Jums padėti kilti aukštyn, Jūsų – surasti motyvacijos
+            ir drąsos ambicijų išsipildymui.
+          </p>
+
+          <p>
+            Linkiu toliau sėkmingai atstovauti Universitetą ir jo studentus, kurti idėjas
+            ir rengti siūlymus, didinančius bendrą mūsų visų gėrį.
+          </p>
+
+          <p>Vilniaus universiteto rektorius</p>
+          <strong>prof. Rimvydas Petrauskas</strong>
+        </div>
+      </NCarouselItem>
+      <NCarouselItem>
         <img
           class="carousel-img"
           src="/images/ataskaita2022/sveikinimai/Kriviene.biblioteka.jpg"
@@ -67,56 +117,6 @@
 
           <strong>Irena Krivienė</strong>
           <p>VU bibliotekos generalinė direktorė</p>
-        </div>
-      </NCarouselItem>
-      <NCarouselItem>
-        <img class="carousel-img" src="/images/ataskaita2022/sveikinimai/rektorius.jpg" />
-        <div class="bg-white p-6 text-sm">
-          <p>Mieli Studentai,</p>
-
-          <p>
-            pastarieji metai buvo sudėtingi ir kupini globalių iššūkių, paliečiančių visų
-            mūsų gyvenimus. Tikiu, kad jie dar labiau sustiprino Universiteto vaidmenį ir
-            atskleidė jo esmę. Būtent Universitete gimsta ir yra vystomos idėjos,
-            kuriančios, palaikančios valstybę ir visuomenę. Universitetas išlaisvina
-            mąstyti savarankiškai ir veikti visuomeniškai. Universitetas suteikia
-            instrumentus ir sąlygas įprasminti save. Ir net tampa prieglobsčiu nuo negandų
-            ir nelaimių.
-          </p>
-
-          <p>
-            Noriu nuoširdžiai pasidžiaugti, kad Vilniaus universiteto studentai tiek
-            pandemijos, tiek karo Ukrainoje akivaizdoje demonstravo ne tik solidarumą, bet
-            ir tapo tikrais visuomenės lyderiais. Jūsų dėka Universitetas deklaruojamas
-            vertybes paverčia realiais darbais. Studentai tapo savanoriais, rėmėjais,
-            mentoriais, protestuotojais, paramos rinkėjais, dalintojais ir tuo pat metu
-            išliko aktyviais ir reikšmingais akademinės bendruomenės nariais.
-          </p>
-
-          <p>
-            Sveikinu Vilniaus universiteto Studentų atstovybę, kuri reiškiasi ne tik kaip
-            aktyvi bendruomenės dalis, bet ir kaip naujų idėjų, akademinio ir socialinio
-            aktyvumo bei pagarbaus dialogo šaltinis. Tikiu, kad kasmetinis darbų
-            įsivertinimas bus proga ne tik pasidžiaugti tuo, kas atlikta, bet ir įvertinti
-            tai, ką dar galite nuveikti Universiteto, visuomenės, valstybės, o tai reiškia
-            ir savo labui.
-          </p>
-
-          <p>
-            Svarbu, kad studentų balsas būtų dar labiau girdimas ne tik Universitete, bet
-            ir visuomenėje. Tam tikras tiesas banalu kartoti, bet jas vis pakartojame
-            todėl, kad esame įsitikinę jų teisingumu. Tad pasikartosiu ir aš – Jūs esate
-            ateitis. Mūsų atsakomybė Jums padėti kilti aukštyn, Jūsų – surasti motyvacijos
-            ir drąsos ambicijų išsipildymui.
-          </p>
-
-          <p>
-            Linkiu toliau sėkmingai atstovauti Universitetą ir jo studentus, kurti idėjas
-            ir rengti siūlymus, didinančius bendrą mūsų visų gėrį.
-          </p>
-
-          <p>Vilniaus universiteto rektorius</p>
-          <strong>prof. Rimvydas Petrauskas</strong>
         </div>
       </NCarouselItem>
     </NCarousel>

@@ -1,12 +1,12 @@
 <template>
   <AtaskaitaLayout
-    :backgroundImage="'/images/photos/observatorijos_kiemelis.jpg'"
-    :title="'VU SA | Ataskaita 2022'"
+    :backgroundImage="'/images/ataskaita2022/kitos-nuotraukos/VU SA.jpg'"
+    :title="'Sritys | Ataskaita 2022'"
   >
-    <article class="grid grid-cols-4 justify-items-center px-8 lg:px-32 gap-y-4">
-      <div class="py-6 px-12 rounded-lg prose col-span-4">
-        <slot></slot>
-      </div>
+    <article
+      class="grid md:grid-cols-2 justify-items-center lg:px-32 gap-6 py-6 px-12 rounded-lg"
+    >
+      <slot></slot>
     </article>
   </AtaskaitaLayout>
 </template>
