@@ -6,8 +6,10 @@
     <NDivider></NDivider>
     <h3 class="text-center mb-4">VU SA strateginiai tikslai</h3>
     <NDivider></NDivider>
-    <p class="text-center font-bold text-2xl">
-      1. Vilniaus universiteto bendruomenės nariai palaiko 60 kreditų atlaisvinimo idėją.
+    <p class="text-center font-bold text-4xl">1</p>
+    <p>
+      <strong>Tikslas: </strong>Vilniaus universiteto bendruomenės nariai palaiko 60
+      kreditų atlaisvinimo idėją.
     </p>
     <p><strong>Terminas:</strong> 2022 m. liepos 1 d.</p>
     <p>
@@ -40,36 +42,23 @@
     </NTimeline>
     <NCollapse class="mt-4"
       ><NCollapseItem title="Kiek pavyko įgyvendinti:"
-        ><ul>
-          <li>
-            Suburta darbo grupė VU studijų programų ir užsienio patirčių dėl studijų
-            lankstumo ir akademinės paramos studentams suteikimo analizei atlikti.
-          </li>
-          <li>
-            Deleguota studentų atstovė į VU vidinio mobilumo darbo grupę, kurioje derintos
-            60 kreditų atlaisvinimo modelio nuostatos.
-          </li>
-          <li>
-            Siekiant užtikrinti akademinę pagalbą studentams organizuotas susitikimas su
-            VU SPKS šio klausimo suderinimui.
-          </li>
-          <li>
-            Norėdami supažindinti bendruomenę su lankstesnėmis studijų galimybėmis
-            sukūrėme tinklalaidę šia tema.
-          </li>
-          <li>
-            Šiuo metu supažindiname studentų atstovus SPK su 60 kreditų atlaisvinimo
-            modeliu, bendradarbiaudami su SPKS, KRS kuriame vaizdo įrašą apie studijų
-            lankstumą.
-          </li>
-        </ul></NCollapseItem
+        >Suburta darbo grupė VU studijų programų ir užsienio patirčių dėl studijų
+        lankstumo ir akademinės paramos studentams suteikimo analizei atlikti. Deleguota
+        studentų atstovė į VU vidinio mobilumo darbo grupę, kurioje derintos 60 kreditų
+        atlaisvinimo modelio nuostatos. Siekiant užtikrinti akademinę pagalbą studentams
+        organizuotas susitikimas su VU SPKS šio klausimo suderinimui. Norėdami
+        supažindinti bendruomenę su lankstesnėmis studijų galimybėmis sukūrėme tinklalaidę
+        šia tema. Šiuo metu supažindiname studentų atstovus SPK su 60 kreditų atlaisvinimo
+        modeliu, bendradarbiaudami su SPKS, KRS kuriame vaizdo įrašą apie studijų
+        lankstumą.</NCollapseItem
       ></NCollapse
     >
     <NDivider></NDivider>
     <!-- 2 -->
-    <p class="text-center font-bold text-2xl">
-      2. Vilniaus universiteto bendruomenė žino apie individualių poreikių turinčių asmenų
-      patirtis ir poreikius bei geba juos atliepti.
+    <p class="text-center font-bold text-4xl">2</p>
+    <p>
+      <strong>Tikslas: </strong>Vilniaus universiteto bendruomenė žino apie individualių
+      poreikių turinčių asmenų patirtis ir poreikius bei geba juos atliepti.
     </p>
     <p><strong>Terminas:</strong> 2022 m. liepos 1 d.</p>
     <p>
@@ -131,5 +120,12 @@
 
 <script setup>
 import Planas from "@/Pages/Public/Ataskaita2022/3-Planas.vue";
-import { NTimeline, NTimelineItem, NDivider, NCollapse, NCollapseItem } from "naive-ui";
+import {
+  NTimeline,
+  NTimelineItem,
+  NDivider,
+  NCollapse,
+  NCollapseItem,
+  NBadge,
+} from "naive-ui";
 </script>

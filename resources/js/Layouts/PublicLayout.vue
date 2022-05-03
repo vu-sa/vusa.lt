@@ -5,7 +5,7 @@
     <MainNavigation></MainNavigation>
     <transition name="fade">
       <main v-if="animated">
-        <PageContent class="sm:pt-20 pt-16 xl:pt-32 2xl:pt-40">
+        <PageContent class="pt-16 sm:pt-24 md:pt-28 xl:pt-32 2xl:pt-40">
           <slot />
         </PageContent></main
     ></transition>
@@ -30,6 +30,13 @@ const animated = ref(false);
 onMounted(() => {
   animated.value = true;
 });
+
+(function (d) {
+  var s = d.createElement("script");
+  s.setAttribute("data-account", "5OC3pQZI6r");
+  s.setAttribute("src", "https://cdn.userway.org/widget.js");
+  (d.body || d.head).appendChild(s);
+})(document);
 </script>
 
 <style>

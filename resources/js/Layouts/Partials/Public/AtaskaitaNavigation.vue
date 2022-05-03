@@ -38,18 +38,34 @@
       <div>Saviraiška</div> -->
 
       <Link
+        v-if="permalink === 'sveikinimai'"
+        :href="route('main.ataskaita2022', { lang: locale, permalink: 'sveikinimai' })"
+        ><NGradientText type="error">Sveikinimai</NGradientText></Link
+      >
+
+      <Link
+        v-else
         :href="route('main.ataskaita2022', { lang: locale, permalink: 'sveikinimai' })"
         >Sveikinimai</Link
       >
-      <Link :href="route('main.ataskaita2022', { lang: locale, permalink: 'vu-sa' })">{{
-        __("VU SA")
-      }}</Link>
+
+      <Link :href="route('main.ataskaita2022', { lang: locale, permalink: 'vu-sa' })">
+        <NGradientText type="error" v-if="permalink === 'vu-sa'">{{
+          __("VU SA")
+        }}</NGradientText
+        ><template v-else>{{ __("VU SA") }}</template></Link
+      >
       <Link :href="route('main.ataskaita2022', { lang: locale, permalink: 'mvp' })"
-        >MVP</Link
+        ><NGradientText type="error" v-if="permalink === 'mvp'">{{
+          __("Metų veiklos planas")
+        }}</NGradientText
+        ><template v-else>{{ __("Metų veiklos planas") }}</template></Link
       >
       <NDropdown :options="navigation" @select="handleSelectKryptis"
-        >VU SA strateginės kryptys</NDropdown
-      >
+        ><div class="flex flex-row items-center" role="button">
+          VU SA strateginės kryptys
+          <NIcon class="ml-1" size="16"><ChevronDown20Filled /></NIcon></div
+      ></NDropdown>
       <Link :href="route('main.ataskaita2022', { lang: locale, permalink: 'sritys' })"
         >Sritys</Link
       >
@@ -144,24 +160,20 @@
 
 <script setup>
 import { FacebookF, Instagram } from "@vicons/fa";
-import { Search20Filled, ChevronDown20Filled, Navigation24Filled } from "@vicons/fluent";
+import { ChevronDown20Filled, Navigation24Filled } from "@vicons/fluent";
 import {
   NIcon,
   NDropdown,
   NButton,
-  NGradientText,
-  // NBadge,
-  NScrollbar,
-  NModal,
-  NInput,
   NDrawer,
   NDrawerContent,
   NTree,
+  NGradientText,
   // useMessage,
 } from "naive-ui";
 import { usePage, Link } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
-import { ref, h } from "vue";
+import { ref } from "vue";
 
 // map padaliniai to options_padaliniai
 
@@ -175,6 +187,18 @@ const toggleMenu = () => {
 };
 
 // const message = useMessage();
+
+// get permalink from url, last part after /
+const getPermalink = () => {
+  const url = usePage().url;
+  console.log(url.value);
+  const urlParts = url.value.split("/");
+  const permalink = urlParts[urlParts.length - 1];
+  console.log(permalink);
+  return permalink;
+};
+
+const permalink = getPermalink();
 
 // after half a second input delay, use Inertiapost request to fetch search results
 const handleSearchInput = _.debounce((input) => {
@@ -284,12 +308,15 @@ const handleSelectKryptis = (url) => {
 };
 
 const handleSelectLanguage = (key) => {
+  let otherLocale = locales.filter((l) => {
+    return l !== locale.value;
+  });
+
   if (key === "home") {
     Inertia.visit(
-      route("main.home", {
-        lang: locales.filter((l) => {
-          return l !== locale.value;
-        }),
+      route("main.ataskaita2022", {
+        lang: otherLocale[0],
+        permalink: "pradzia",
       })
     );
     // Inertia.visit(route("main.page", { lang: "lt" }));

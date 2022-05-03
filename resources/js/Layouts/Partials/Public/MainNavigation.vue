@@ -45,7 +45,11 @@
       <div>Saviraiška</div> -->
       <template v-for="item in navigation" :key="item.key">
         <div>
-          <NDropdown @select="handleSelectNavigation" :options="item.children">
+          <NDropdown
+            @select="handleSelectNavigation"
+            :options="item.children"
+            :render-label="renderNavigacijaLabel"
+          >
             <NButton text>{{ item.label }}</NButton>
           </NDropdown>
         </div>
@@ -345,6 +349,7 @@ const parseNavigation = (array, id) => {
         children: parseNavigation(array, item[1].id),
         // trim url of slashes
         url: item[1].url.replace(/^\/|\/$/g, ""),
+
         // suffix: () =>
         //   h(NButton, { quartenary: true, circle: true },
         //     h('template', { slot: "icon" },

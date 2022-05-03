@@ -9,7 +9,7 @@
 
     <transition name="fade">
       <main v-if="animated">
-        <PageContent class="sm:pt-20 pt-16 xl:pt-32 2xl:pt-40">
+        <PageContent class="pt-16 sm:pt-24 md:pt-28 xl:pt-32 2xl:pt-40">
           <slot />
         </PageContent></main
     ></transition>
@@ -26,7 +26,7 @@ import PageContent from "@/Layouts/Partials/Public/PageContent.vue";
 import { Head } from "@inertiajs/inertia-vue3";
 import { ref, onMounted } from "vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
-import Footer from "./Partials/Public/Footer.vue";
+// import Footer from "./Partials/Public/Footer.vue";
 
 const props = defineProps({
   title: String,
@@ -38,6 +38,13 @@ const animated = ref(false);
 onMounted(() => {
   animated.value = true;
 });
+
+(function (d) {
+  var s = d.createElement("script");
+  s.setAttribute("data-account", "5OC3pQZI6r");
+  s.setAttribute("src", "https://cdn.userway.org/widget.js");
+  (d.body || d.head).appendChild(s);
+})(document);
 </script>
 
 <style>
