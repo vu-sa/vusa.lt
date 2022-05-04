@@ -1,5 +1,66 @@
 <template>
   <Organizacija>
+    <h3 class="border-4 rounded-lg border-neutral-800 p-2">Konsultavimo procesas</h3>
+
+    <div
+      class="bg-white py-6 px-12 prose mx-auto my-4 shadow-lg hover:shadow-xl duration-200"
+    >
+      <p>
+        VU SA konsultavimas – centralizuota VU SA konsultavimo sistema, skirta Vilniaus
+        universiteto studentų konsultacijoms akademiniais, socialiniais, saviraiškos
+        galimybių Universitete, LSP ir kitais klausimais. Programa veikia vedina VU SA
+        konsultavimo vadovo (-ės) ir konsultavimo grupės, sudarytos iš savanorių studentų
+        (-čių), studijuojančių Vilniaus universitete, išlaikiusių VU SA pagrindinių
+        socialinių-akademinių žinių testą bei išreiškusių motyvaciją veikti konsultavimo
+        grupėje.
+      </p>
+
+      <p>
+        VU SA konsultavimo grupė, savo aktyvią veiklą pradėjusi 2022 m. sausio mėn. 1 d.,
+        šiuo metu yra atsakiusi į daugiau nei 750 studentų užklausų elektroniniu paštu,
+        komunikacijos platforma tawk.to ir mobiliuoju telefonu. Šiuo metu pasitenkinimas
+        VU SA konsultavimu yra įvertintas bene 500 kartų, 97 proc. bendruomenės narių
+        konsultaciją įvertinus aukščiausiu įverčiu.
+      </p>
+
+      <p>VU SA konsultavimo grupę sudaro:</p>
+      <ul>
+        <li>Lijana Savickienė (Konsultavimo grupės vadovė, VU KnF)</li>
+        <li>Ernestas Basovas (konsultantas, VU KnF)</li>
+        <li>Kasparas Japertas (konsultantas, VU GMC)</li>
+        <li>Markas Kazlauskas (konsultantas, VU CHGF)</li>
+        <li>Raminta Klimaitė (konsultantė, VU KnF)</li>
+        <li>Neda Rasimavičiūtė (konsultantė, VU IF)</li>
+        <li>Livija Trakelytė (konsultantė, VU TSPMI)</li>
+      </ul>
+    </div>
+
+    <div
+      class="bg-white py-6 px-12 prose mx-auto my-4 shadow-lg hover:shadow-xl duration-200"
+    >
+      <h3>VU SA Strateginio plano 2022–2024 m. kūrimas</h3>
+
+      <p>...</p>
+
+      <h3>Savirefleksijų kultūra</h3>
+
+      <p>
+        Šiais metais organizacijoje sukurta naujų procesų, o vienas iš jų – pradėta diegti
+        savirefleksijų kultūra. Norint tobulėti savo srityje ir pažvelgti, ar išsikelti
+        tikslai jau pasiekti (o galbūt jų vis dar siekiama), būtina reflektuoti. Būtent
+        savirefleksijų metu suteikiama galimybė ne tik įsivertinti save bei savo
+        tobulėjimo procesą, tačiau ir padėti sau judėti tolyn. Šiais metais organizacijoje
+        buvo sukurtas savirefleksijos įrankis – gairinis klausimynas, šalia kurio
+        pateiktas maketas, kuriame būtų galima užsirašyti atsakymus. Minėtas įrankis
+        išskirtas į dvi dalis: klausimai skirti kas kelis mėnesius įsivertinti save
+        organizacijoje ir kasdieniai klausimai leidžiantys savireflektuoti apie dienos
+        veiklas bei suteikiantys galimybę tobulėti kasdien.
+      </p>
+
+      <h3>Nario kelias</h3>
+      <p>...</p>
+    </div>
+
     <div class="relative">
       <img
         class="rounded-lg md:w-2/3 w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 mx-auto"

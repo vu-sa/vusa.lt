@@ -4,13 +4,16 @@
   >
     <div class="flex flex-row space-x-4 items-center">
       <Link :href="route('main.home', { lang: locale })" preserve-state>
-        <!-- <a :href="locale === 'lt' ? $page.props.app.url : `${$page.props.app.url}/en`"> -->
         <img
           class="object-contain min-w-[15vw] lg:min-w-[10vw]"
           src="/logos/vusa.lin.hor.svg"
         />
-        <!-- </a> -->
       </Link>
+      <Link
+        class="text-gray-500 duration-200 hover:text-gray-900 hidden lg:block"
+        :href="route('main.home')"
+        >{{ __("Grįžti į vusa.lt") }}</Link
+      >
       <div>
         <NButton size="small" style="border-radius: 0.5rem">
           <!-- <NGradientText type="warning"> -->
@@ -18,11 +21,6 @@
           <!-- </NGradientText> -->
         </NButton>
       </div>
-      <Link
-        class="text-gray-500 duration-200 hover:text-gray-900 hidden lg:block"
-        :href="route('main.home')"
-        >{{ __("Grįžti į vusa.lt") }}</Link
-      >
     </div>
     <!-- Hamburger -->
     <div class="block lg:hidden">
@@ -67,23 +65,11 @@
           <NIcon class="ml-1" size="16"><ChevronDown20Filled /></NIcon></div
       ></NDropdown>
       <Link :href="route('main.ataskaita2022', { lang: locale, permalink: 'sritys' })"
-        >Sritys</Link
+        ><NGradientText type="error" v-if="permalink === 'sritys'">{{
+          __("Sritys")
+        }}</NGradientText
+        ><template v-else>{{ __("Sritys") }}</template></Link
       >
-
-      <NButton
-        text
-        target="_blank"
-        tag="a"
-        href="https://www.facebook.com/VUstudentuatstovybe"
-        ><NIcon size="18"><FacebookF /></NIcon
-      ></NButton>
-      <NButton
-        text
-        target="_blank"
-        tag="a"
-        href="https://www.instagram.com/vustudentuatstovybe/"
-        ><NIcon size="18"><Instagram /></NIcon
-      ></NButton>
       <NDropdown
         placement="top-end"
         :options="options_language_en"
@@ -191,11 +177,10 @@ const toggleMenu = () => {
 // get permalink from url, last part after /
 const getPermalink = () => {
   const url = usePage().url;
-  console.log(url.value);
   const urlParts = url.value.split("/");
   const permalink = urlParts[urlParts.length - 1];
-  console.log(permalink);
-  return permalink;
+  // also trim hashtags
+  return permalink.split("#")[0];
 };
 
 const permalink = getPermalink();
