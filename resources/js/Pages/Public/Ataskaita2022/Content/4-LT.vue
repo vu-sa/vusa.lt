@@ -1,10 +1,8 @@
 <template>
   <Studijos>
-    <h2 class="border-4 rounded-lg border-neutral-800 p-2">Atstovavimas VU</h2>
+    <h2 class="p-2">Atstovavimas VU</h2>
     <h3>VU Taryba</h3>
-    <div
-      class="bg-white py-6 px-12 prose mx-auto my-4 shadow-lg hover:shadow-xl duration-200"
-    >
+    <div class="bg-white py-6 px-12 max-w-[80ch] prose mx-auto my-4 rounded-md">
       <em>Studentų atstovai – Neda Žutautaitė, Justinas Kondratas</em>
 
       <p>
@@ -30,7 +28,7 @@
       </p>
     </div>
     <h3>VU Senatas</h3>
-    <div class="bg-white py-6 px-12 rounded-lg prose mx-auto my-4">
+    <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
       <em>
         Studentų atstovai:
         <ul>
@@ -59,26 +57,26 @@
       </p>
 
       <p>Studentams aktualiausi Senate svarstyti klausimai:</p>
-      <p>Svarstyta: Naujo Senato rinkimai.</p>
+      <p><strong>Svarstyta:</strong> Naujo Senato rinkimai.</p>
       <p>
-        Nutarta: Naujo Senato sudėtis keičiasi iki 46 asmenų, įtraukiant po vieną atstovą
-        iš VU sui generis padalinių – Šiaulių akademijos ir Verslo mokyklos. Padidėjus
-        Senato skaičiui studentų atstovų skaičius padidėja iki 9.
+        <strong>Nutarta:</strong> Naujo Senato sudėtis keičiasi iki 46 asmenų, įtraukiant
+        po vieną atstovą iš VU sui generis padalinių – Šiaulių akademijos ir Verslo
+        mokyklos. Padidėjus Senato skaičiui studentų atstovų skaičius padidėja iki 9.
       </p>
-      <p>Svarstyta: Naujų studijų programų įregistravimas.</p>
+      <p><strong>Svarstyta:</strong> Naujų studijų programų įregistravimas.</p>
       <p>
-        Nutarta: Įregistruotos trys naujos pirmos (bakalauro) pakopos programos: Globalių
-        iššūkių politika Tarptautinių santykių ir politikos mokslų institute, Kosmetinė
-        chemija Chemijos ir geomokslų fakultete, Matematikos mokymas ir edukometrija
-        Matematikos ir informatikos fakultete.
+        <strong>Nutarta:</strong> Įregistruotos trys naujos pirmos (bakalauro) pakopos
+        programos: Globalių iššūkių politika Tarptautinių santykių ir politikos mokslų
+        institute, Kosmetinė chemija Chemijos ir geomokslų fakultete, Matematikos mokymas
+        ir edukometrija Matematikos ir informatikos fakultete.
       </p>
       <NDivider></NDivider>
-      <p>Svarstyta: Lyčiai jautrios gairės ir lyčių lygybės planas.</p>
+      <p><strong>Svarstyta:</strong> Lyčiai jautrios gairės ir lyčių lygybės planas.</p>
       <p>
-        Nutarta: Gairės parengtos kaip priemonė, numatyta Vilniaus universiteto įvairovės
-        ir lygių galimybių strategijoje 2020-2025 metams, kuri buvo tvirtinama
-        ankstesniais metais Senato posėdžio metu. Gairės buvos aptariamos Senate.
-        Susipažinti galima
+        <strong>Nutarta:</strong> Gairės parengtos kaip priemonė, numatyta Vilniaus
+        universiteto įvairovės ir lygių galimybių strategijoje 2020-2025 metams, kuri buvo
+        tvirtinama ankstesniais metais Senato posėdžio metu. Gairės buvos aptariamos
+        Senate. Susipažinti galima
         <a
           target="_blank"
           href="https://vusa.lt/uploads/files/VU_lyciai_jautrios_kalbos_gaires-2.pdf"
@@ -127,7 +125,7 @@
       </p>
     </div>
     <h3>Vilniaus universiteto Senato sudaromosios komisijos</h3>
-    <div class="bg-white py-6 px-12 rounded-lg prose mx-auto my-4">
+    <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
       <h4>VU Centrinė ginčų nagrinėjimo komisija</h4>
 
       <em
@@ -240,7 +238,7 @@
       </p>
     </div>
     <h3>Vilniaus universiteto rektoriaus įsakymu sudaromos komisijos</h3>
-    <div class="bg-white py-6 px-12 rounded-lg prose mx-auto my-4">
+    <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
       <h4>VU Priėmimo komisija</h4>
 
       <em>Studentų atstovė – Neda Žutautaitė</em>
@@ -334,10 +332,10 @@
       <p>...</p>
     </div>
     <h3>
-      VILNIAUS UNIVERSITETO 2021-2025 M. STRATEGINIO PLANO ĮGYVENDINIMUI SUDARYTOS DARBO
-      GRUPĖS IR KOMISIJOS
+      Vilniaus universiteto 2021-2025 m. strateginio plano įgyvendinimui sudarytos grupės
+      ir komisijos
     </h3>
-    <div class="bg-white py-6 px-12 rounded-lg prose mx-auto my-4">
+    <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
       <h4>
         VU 2021–2025 m. strateginio plano veiklos „Studentų pasirinkimo ir
         daugiakryptiškumo galimybių didinimas“ įgyvendinimo darbo grupė
@@ -368,8 +366,8 @@
         įvyko 4 posėdžiai.
       </p>
     </div>
-    <h3>STIPENDIJŲ KOMISIJOS IR DARBO GRUPĖS</h3>
-    <div class="bg-white py-6 px-12 rounded-lg prose mx-auto my-4">
+    <h3>Stipendijų komisijos ir darbo grupės</h3>
+    <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
       <h4>VU Stipendijų darbo grupė</h4>
 
       <em>Studentų atstovės – Lijana Savickienė, Neda Žutaitaitė</em>
@@ -472,8 +470,8 @@
         stipendijų.
       </p>
     </div>
-    <h3>NUOLATINIAI STRUKTŪRINIAI VIENETAI, KOMITETAI IR KOMISIJOS</h3>
-    <div class="bg-white py-6 px-12 rounded-lg prose mx-auto my-4">
+    <h3>Nuolatiniai struktūriniai vienetai, komitetai ir komisijos</h3>
+    <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
       <h4>Trečios studijų pakopos (doktorantūros) studentų atstovavimas</h4>
       <p>
         Ataskaitiniu laikotarpiu įvyko 2 susitikimai su doktorantais, VU rektoriumi ir
@@ -563,8 +561,8 @@
         suteiktas.
       </p>
     </div>
-    <h3>LAIKINOSIOS DARBO GRUPĖS</h3>
-    <div class="bg-white py-6 px-12 rounded-lg prose mx-auto my-4">
+    <h3>Laikinosios darbo grupės</h3>
+    <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
       <h4>VU studentų paslaugų darbo grupė</h4>
       <em>Studentų atstovas – Arnoldas Solovjovas</em>
 
@@ -611,11 +609,9 @@
         įmonei sistemos programavimui.
       </p>
     </div>
-    <h2 class="border-4 rounded-lg border-neutral-800 p-2">Bendradarbiavimas</h2>
-    <h2 class="border-4 rounded-lg border-neutral-800 p-2">
-      Tarptautinis bendradarbiavimas
-    </h2>
-    <div class="bg-white py-6 px-12 rounded-lg prose mx-auto my-4">
+    <h2 class="p-2">Bendradarbiavimas</h2>
+    <h2 class="p-2">Tarptautinis bendradarbiavimas</h2>
+    <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
       <ol>
         <li>
           VU SA priėmė studentų atstovus iš Arqus universitetų aljanso - (galima
@@ -667,118 +663,153 @@
         </li>
       </ol>
     </div>
-    <h2 class="border-4 rounded-lg border-neutral-800 p-2">Raštai</h2>
-    <div class="bg-white py-6 px-12 rounded-lg prose mx-auto my-4">
-      <p>
-        2021-05-31, Dėl mokslo ir studijų įstatymo nr. XI-242 76, 82, 82(1) straipsnių
-        pakeitimo ir papildymo 82(2) straipsniu projekto
-      </p>
-      <p>
-        VU SA ataskaitiniu laikotarpiu teikė siūlymus Mokslo ir studijų įstatymo nr.
-        XI-242 76, 82, 82(1) straipsnių pakeitimo ir papildymo 82(2) straipsniu projektui,
-        kuriuo siekiama nustatyti finansinės paramos asmenims su negalia skyrimo pagrindą.
-        Siūlomi pataisymai susiję su centralizuotos paramos geresniu prieinamumu ir
-        pokyčio nepakankamumu. Taip pat atkreiptas dėmesys į negalių skirtingumą ir
-        poveikį studijoms, negalėjimą dalies pajamų panaudoti studijų ir aplinkos
-        prieinamumui didinti (dėstytojų edukacijai, infrastruktūros pokyčiams), bei jų
-        skyrimas tik turint tam tikrą darbingumo lygį, neatsižvelgiant į didesnį
-        darbingumą turinčių susidūrimą su panašaus mąsto problemomis. Siūloma teikti 8-18
-        BSI dydžio finansinę paramą, numatant 55% ir didesnio darbingumo ribą.
-        Atsižvelgiant į atliktus tyrimus siūloma panaikinti stipendijos negavimo sąlygą,
-        susijusią su akademiniais pasiekimais, specifiškai akademinėmis skolomis, kadangi
-        socialinė parama turėtų remtis poreikiais ir socialine situacija, ne akademiniais
-        pasiekimais.
-      </p>
-      <p>
-        2021-06-08, Dėl mokslo ir studijų įstatymo Nr. XI-242 46, 59, 77 straipsnių
-        pakeitimo projekto
-      </p>
-      <p>
-        VU SA teikė siūlymus Mokslo ir studijų įstatymo Nr. XI-242 46, 59, 77 straipsnių
-        pakeitimo projektui, pritariant teikiamam siūlymui suvienodinti reikalavimus
-        stojantiems į valstybės finansuojamas ir nefinansuojamas vietas. Tačiau pabrėžti
-        atsižvelgimo į tinkamo pasirengimo aukštajam mokslui užtikrinimą bei lygių
-        galimybių jame dalyvauti įgyvendinant pokyčius aspektai, siekiant mažinti
-        socialinės atskirties sukeltus sunkumus pasiekti priėmimo reikalavimus. Buvo
-        nepritarta siūlymui nustatyti finansavimą pagal tam tikras studijų kryptis
-        pastebint, kad valstybės specialistų poreikis neribotų laisvo stojančiųjų
-        pasirinkimo.
-      </p>
-      <p>
-        2021-09-24, Dėl Lietuvos Respublikos Prezidento viešoms konsultacijoms teikiamų LR
-        Mokslo ir studijų įstatymo Nr. X-242 4, 9, 53, 56, 59, 74, 77 ir LR švietimo
-        įstatymo Nr. I-1489 2, 11, 24, 38, 47 straipsnių pakeitimo įstatymo projektų
-      </p>
-      <p>
-        VU SA ataskaitiniu laikotarpiu reagavo į LR Prezidento viešoms konsultacijoms
-        teikiamų LR Mokslo ir studijų įstatymo Nr. X-242 4, 9, 53, 56, 59, 74, 77 ir LR
-        švietimo įstatymo Nr. I-1489 2, 11, 24, 38, 47 straipsnių pakeitimo įstatymo
-        projektą, kuriame numatomi pokyčiai siekiant apibrėžti ir numatyti projektus,
-        mažinančius socialinę dimensiją aukštajame moksle, tačiau nevienodai
-        paskirstančius paramą mažiau reprezentuojamoms grupėms. Buvo pritarta stojimo
-        sąlygų suvienodinimui, tačiau atsižvelgiant į Europos aukštojo mokslo erdvės darbo
-        grupių metu parengtas rekomendacijas, buvo iškelta pastaba socialinės dimensijos
-        apibrėžimo buvimui įstatyme, pastebint per metus kintantį apibrėžimą Bolonijos
-        proceso dokumentuose. Pateiktas siūlomas apibrėžimas bei pastebėta, kad daugumai
-        pasiūlymų nepritarta dėl jų neatitikimo socialinės dimensijos rengimo principams.
-      </p>
-      <p>
-        2021-09-28, Dėl Mokslo ir studijų įstatymo Nr. XI-242 9, 59, 74, 76, 77, 82 ir 83
-        straipsnių pakeitimo įstatymo projekto Nr. XIVP-562 ir švietimo įstatymo Nr.
-        I-1489 11 straipsnio pakeitimo įstatymo projekto Nr. XIVP-563
-      </p>
-      <p>
-        VU SA pasiūlymus Seimo Švietimo ir mokslo komitete svarstytame Dėl Mokslo ir
-        studijų įstatymo Nr. XI-242 9, 59, 74, 76, 77, 82 ir 83 straipsnių pakeitimo
-        įstatymo projekto Nr. XIVP-562 ir švietimo įstatymo Nr. I-1489 11 straipsnio
-        pakeitimo įstatymo projekto Nr. XIVP-563, kuriuo siūlyti pakeitimai susiję su
-        aukštojo išsilavinimo įstaigų finansavimu, stojančiųjų priėmimo sąlygų
-        suvienodinimu, skirtingu pasirengimo lygmeniu stojant į kolegijas bei
-        universitetus. Pritarta ir skatinta užtikrinti vienodas sąlygas stojantiems,
-        atsižvelgiant į žemo socioekonominio statuso moksleivių atotrūkį. Siūloma
-        finansavimo plėtrai bei skatinimui aukštosioms mokykloms turėti aiškius vertinimo
-        kriterijus, užtikrinant tinkamą investavimą į studijų prieinamumą ir kokybę.
-        Pabrėžiama svarba kartu su šio įstatymo keitimo projektu taikyti ir derinti
-        socialinę dimensiją ir prieinamumą gerinančias priemones.
-      </p>
-      <p>
-        2021-10-28, Dėl mokslo ir studijų įstatymo Nr. XI-242 77 straipsnio pakeitimo
-        įstatymo projekto Reg. Nr. XIVP-1001
-      </p>
-      <p>
-        VU SA kartu su Jaunųjų gydytojų asociacija, VU MF Rezidentų taryba, LSMU SA, LSMU
-        Rezidentų taryba ir Lietuvos medicinos studentų asociacija ataskaitiniu
-        laikotarpiu reagavo į LR Seimo užregistruotą sveikatos reikalų komiteto narių
-        Mokslo ir studijų įstatymo pakeitimo projektas, kuriuo siekiama, kad valstybės
-        lėšomis rezidentūros studijas baigę gydytojai turėtų kelerius metus po studijų
-        baigimo atidirbti viešosiose Lietuvos asmens sveikatos priežiūros įstaigose. Raštu
-        buvo siūloma atmesti pakeitimus bei atkreiptas dėmesys į prieštaravimą laisvam
-        pasirinkimui ir rėmimąsi nepagrįstais faktais, potencialiai sukelsiančiais žalos
-        sveikatos sistemai. Pažymėta, kad specialistų trūkumo regionuose problema yra
-        aktuali ir spręstina, tačiau ne studijų finansavimo būdu, o siekiant sisteminių
-        problemos sprendimų.
-      </p>
-      <p>
-        2021-10-29, Dėl 2022 metų valstybės biudžeto švietimui, mokslui ir sportui
-        projekto
-      </p>
-      <p>
-        VU SA teikė pasiūlymus valstybės biudžeto švietimo, mokslo ir sporto projektui,
-        pastebint skiriamos mokslinių tyrimų ir eksperimentinės plėtros (MTEP) veikloms
-        sumos trūkumą bei atkreipiant dėmesį į dalies lėšų skyrimo studentų MTEP veiklų
-        skatinimui, siekiant pasiekti numatytus rodiklius.
-      </p>
-      <p>2022-04-12, Dėl paramos studentų organizuojamiems mokslo renginiams</p>
-      <p>
-        VU SA ir VU teikė pasiūlymus Lietuvos mokslo tarybai pataisyti „Paramos
-        akademinėms asociacijoms skyrimo tvarkos aprašas“ punktą, susijusį su paramos
-        skiriamais apribojimais, siekiant padidinti studentų organizacijoms skiriamą
-        paramą aukšto lygio moksliniams renginiams organizuoti nepriklausomai nuo kurso ar
-        pakopos, taip suteikiant galimybes joms plėstis bei pritraukti daugiau dalyvių.
-      </p>
+    <h2 class="p-2">Raštai</h2>
+    <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
+      <NCollapse>
+        <NCollapseItem>
+          <template #header>
+            <strong>
+              2021-05-31, Dėl mokslo ir studijų įstatymo nr. XI-242 76, 82, 82(1)
+              straipsnių pakeitimo ir papildymo 82(2) straipsniu projekto
+            </strong>
+          </template>
+          <p>
+            VU SA ataskaitiniu laikotarpiu teikė siūlymus Mokslo ir studijų įstatymo nr.
+            XI-242 76, 82, 82(1) straipsnių pakeitimo ir papildymo 82(2) straipsniu
+            projektui, kuriuo siekiama nustatyti finansinės paramos asmenims su negalia
+            skyrimo pagrindą. Siūlomi pataisymai susiję su centralizuotos paramos geresniu
+            prieinamumu ir pokyčio nepakankamumu. Taip pat atkreiptas dėmesys į negalių
+            skirtingumą ir poveikį studijoms, negalėjimą dalies pajamų panaudoti studijų
+            ir aplinkos prieinamumui didinti (dėstytojų edukacijai, infrastruktūros
+            pokyčiams), bei jų skyrimas tik turint tam tikrą darbingumo lygį,
+            neatsižvelgiant į didesnį darbingumą turinčių susidūrimą su panašaus mąsto
+            problemomis. Siūloma teikti 8-18 BSI dydžio finansinę paramą, numatant 55% ir
+            didesnio darbingumo ribą. Atsižvelgiant į atliktus tyrimus siūloma panaikinti
+            stipendijos negavimo sąlygą, susijusią su akademiniais pasiekimais,
+            specifiškai akademinėmis skolomis, kadangi socialinė parama turėtų remtis
+            poreikiais ir socialine situacija, ne akademiniais pasiekimais.
+          </p>
+        </NCollapseItem>
+        <NCollapseItem>
+          <template #header>
+            <strong>
+              2021-06-08, Dėl mokslo ir studijų įstatymo Nr. XI-242 46, 59, 77 straipsnių
+              pakeitimo projekto
+            </strong>
+          </template>
+          <p>
+            VU SA teikė siūlymus Mokslo ir studijų įstatymo Nr. XI-242 46, 59, 77
+            straipsnių pakeitimo projektui, pritariant teikiamam siūlymui suvienodinti
+            reikalavimus stojantiems į valstybės finansuojamas ir nefinansuojamas vietas.
+            Tačiau pabrėžti atsižvelgimo į tinkamo pasirengimo aukštajam mokslui
+            užtikrinimą bei lygių galimybių jame dalyvauti įgyvendinant pokyčius aspektai,
+            siekiant mažinti socialinės atskirties sukeltus sunkumus pasiekti priėmimo
+            reikalavimus. Buvo nepritarta siūlymui nustatyti finansavimą pagal tam tikras
+            studijų kryptis pastebint, kad valstybės specialistų poreikis neribotų laisvo
+            stojančiųjų pasirinkimo.
+          </p>
+        </NCollapseItem>
+        <NCollapseItem>
+          <template #header>
+            <strong>
+              2021-09-24, Dėl Lietuvos Respublikos Prezidento viešoms konsultacijoms
+              teikiamų LR Mokslo ir studijų įstatymo Nr. X-242 4, 9, 53, 56, 59, 74, 77 ir
+              LR švietimo įstatymo Nr. I-1489 2, 11, 24, 38, 47 straipsnių pakeitimo
+              įstatymo projektų
+            </strong>
+          </template>
+          <p>
+            VU SA ataskaitiniu laikotarpiu reagavo į LR Prezidento viešoms konsultacijoms
+            teikiamų LR Mokslo ir studijų įstatymo Nr. X-242 4, 9, 53, 56, 59, 74, 77 ir
+            LR švietimo įstatymo Nr. I-1489 2, 11, 24, 38, 47 straipsnių pakeitimo
+            įstatymo projektą, kuriame numatomi pokyčiai siekiant apibrėžti ir numatyti
+            projektus, mažinančius socialinę dimensiją aukštajame moksle, tačiau
+            nevienodai paskirstančius paramą mažiau reprezentuojamoms grupėms. Buvo
+            pritarta stojimo sąlygų suvienodinimui, tačiau atsižvelgiant į Europos
+            aukštojo mokslo erdvės darbo grupių metu parengtas rekomendacijas, buvo
+            iškelta pastaba socialinės dimensijos apibrėžimo buvimui įstatyme, pastebint
+            per metus kintantį apibrėžimą Bolonijos proceso dokumentuose. Pateiktas
+            siūlomas apibrėžimas bei pastebėta, kad daugumai pasiūlymų nepritarta dėl jų
+            neatitikimo socialinės dimensijos rengimo principams.
+          </p>
+        </NCollapseItem>
+        <NCollapseItem>
+          <template #header>
+            <strong>
+              2021-09-28, Dėl Mokslo ir studijų įstatymo Nr. XI-242 9, 59, 74, 76, 77, 82
+              ir 83 straipsnių pakeitimo įstatymo projekto Nr. XIVP-562 ir švietimo
+              įstatymo Nr. I-1489 11 straipsnio pakeitimo įstatymo projekto Nr. XIVP-563
+            </strong>
+          </template>
+          <p>
+            VU SA pasiūlymus Seimo Švietimo ir mokslo komitete svarstytame Dėl Mokslo ir
+            studijų įstatymo Nr. XI-242 9, 59, 74, 76, 77, 82 ir 83 straipsnių pakeitimo
+            įstatymo projekto Nr. XIVP-562 ir švietimo įstatymo Nr. I-1489 11 straipsnio
+            pakeitimo įstatymo projekto Nr. XIVP-563, kuriuo siūlyti pakeitimai susiję su
+            aukštojo išsilavinimo įstaigų finansavimu, stojančiųjų priėmimo sąlygų
+            suvienodinimu, skirtingu pasirengimo lygmeniu stojant į kolegijas bei
+            universitetus. Pritarta ir skatinta užtikrinti vienodas sąlygas stojantiems,
+            atsižvelgiant į žemo socioekonominio statuso moksleivių atotrūkį. Siūloma
+            finansavimo plėtrai bei skatinimui aukštosioms mokykloms turėti aiškius
+            vertinimo kriterijus, užtikrinant tinkamą investavimą į studijų prieinamumą ir
+            kokybę. Pabrėžiama svarba kartu su šio įstatymo keitimo projektu taikyti ir
+            derinti socialinę dimensiją ir prieinamumą gerinančias priemones.
+          </p>
+        </NCollapseItem>
+        <NCollapseItem>
+          <template #header>
+            <strong>
+              2021-10-28, Dėl mokslo ir studijų įstatymo Nr. XI-242 77 straipsnio
+              pakeitimo įstatymo projekto Reg. Nr. XIVP-1001
+            </strong>
+          </template>
+          <p>
+            VU SA kartu su Jaunųjų gydytojų asociacija, VU MF Rezidentų taryba, LSMU SA,
+            LSMU Rezidentų taryba ir Lietuvos medicinos studentų asociacija ataskaitiniu
+            laikotarpiu reagavo į LR Seimo užregistruotą sveikatos reikalų komiteto narių
+            Mokslo ir studijų įstatymo pakeitimo projektas, kuriuo siekiama, kad valstybės
+            lėšomis rezidentūros studijas baigę gydytojai turėtų kelerius metus po studijų
+            baigimo atidirbti viešosiose Lietuvos asmens sveikatos priežiūros įstaigose.
+            Raštu buvo siūloma atmesti pakeitimus bei atkreiptas dėmesys į prieštaravimą
+            laisvam pasirinkimui ir rėmimąsi nepagrįstais faktais, potencialiai
+            sukelsiančiais žalos sveikatos sistemai. Pažymėta, kad specialistų trūkumo
+            regionuose problema yra aktuali ir spręstina, tačiau ne studijų finansavimo
+            būdu, o siekiant sisteminių problemos sprendimų.
+          </p>
+        </NCollapseItem>
+        <NCollapseItem>
+          <template #header>
+            <strong>
+              2021-10-29, Dėl 2022 metų valstybės biudžeto švietimui, mokslui ir sportui
+              projekto
+            </strong>
+          </template>
+          <p>
+            VU SA teikė pasiūlymus valstybės biudžeto švietimo, mokslo ir sporto
+            projektui, pastebint skiriamos mokslinių tyrimų ir eksperimentinės plėtros
+            (MTEP) veikloms sumos trūkumą bei atkreipiant dėmesį į dalies lėšų skyrimo
+            studentų MTEP veiklų skatinimui, siekiant pasiekti numatytus rodiklius.
+          </p>
+        </NCollapseItem>
+        <NCollapseItem>
+          <template #header
+            ><strong
+              >2022-04-12, Dėl paramos studentų organizuojamiems mokslo renginiams</strong
+            ></template
+          >
+          <p>
+            VU SA ir VU teikė pasiūlymus Lietuvos mokslo tarybai pataisyti „Paramos
+            akademinėms asociacijoms skyrimo tvarkos aprašas“ punktą, susijusį su paramos
+            skiriamais apribojimais, siekiant padidinti studentų organizacijoms skiriamą
+            paramą aukšto lygio moksliniams renginiams organizuoti nepriklausomai nuo
+            kurso ar pakopos, taip suteikiant galimybes joms plėstis bei pritraukti
+            daugiau dalyvių.
+          </p>
+        </NCollapseItem>
+      </NCollapse>
     </div>
-    <h2 class="border-4 rounded-lg border-neutral-800 p-2">Tyrimai</h2>
-    <div class="bg-white py-6 px-12 rounded-lg prose mx-auto my-4">
+    <h2 class="p-2">Tyrimai</h2>
+    <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
       <h3>
         Nuolatinių studentų iš užsienio studijų pradžios Vilniaus universitete (VU) bei
         Kauno technologijos universitete (KTU) patirtys
@@ -958,12 +989,24 @@
         >.
       </p>
     </div>
+    <div class="col-span-4 mb-12">
+      <Link
+        class="text-lg duration-200 hover:text-red-600 font-bold"
+        :href="
+          route('main.ataskaita2022', {
+            lang: $page.props.locale,
+            permalink: 'organizacija',
+          })
+        "
+        >Stipri organizacija >></Link
+      >
+    </div>
   </Studijos>
 </template>
 
 <script setup>
 import Studijos from "../4-Studijos.vue";
-import { NDivider } from "naive-ui";
+import { NDivider, NCollapse, NCollapseItem } from "naive-ui";
 </script>
 
 <style scoped>

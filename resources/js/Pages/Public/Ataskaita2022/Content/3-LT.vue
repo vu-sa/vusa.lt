@@ -140,22 +140,22 @@
         <NTimelineItem
           type="warning"
           title="1 uždavinys: įvykdyta"
-          content=""
+          content="Išskirti probleminiai dalykai kreditų ir krūvio analizei."
         ></NTimelineItem>
         <NTimelineItem
           type="error"
           title="2 uždavinys: atsisakyta"
-          content=""
+          content="Apskaičiuotas dalykų krūvis pagal dalykų aprašus."
         ></NTimelineItem>
         <NTimelineItem
           type="info"
           title="3 uždavinys: bus vykdoma"
-          content=""
+          content="Palyginti praktinio ir teorinio krūvio duomenys pagal suteiktus kreditus ir dalyko aprašą."
         ></NTimelineItem>
         <NTimelineItem
           type="info"
           title="4 uždavinys: bus vykdoma"
-          content=""
+          content="..."
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -187,12 +187,14 @@
         <NTimelineItem
           type="warning"
           title="1 uždavinys: vykdoma"
-          content=""
+          content="Bendradarbiaujant su dėstytojais parengta atmintinė, kurioje būtų pateikti dėstytojams naudingi
+nuotolinių studijų įrankiai, studentus įtraukiantys metodai, D.U.K. dėl metodų pritaikymo ir įrankių
+naudojimo, nuotolinių atsiskaitymų organizavimo būdai. "
         ></NTimelineItem>
         <NTimelineItem
           type="info"
           title="2 uždavinys: bus vykdoma"
-          content=""
+          content="Skatinti pildyti VU IS apklausas. "
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -235,17 +237,20 @@
         <NTimelineItem
           type="success"
           title="1 uždavinys: įvykdyta"
-          content=""
+          content="Studentai yra supažindinti su VU EVAF Studentų rašto darbų rengimo, gynimo, vertinimo ir
+saugojimo tvarkos aprašu."
         ></NTimelineItem>
         <NTimelineItem
           type="error"
           title="2 uždavinys: atsisakyta"
-          content=""
+          content="Dėstytojai yra supažindinti su VU EVAF Studentų rašto darbų rengimo, gynimo, vertinimo ir
+saugojimo tvarkos aprašu. "
         ></NTimelineItem>
         <NTimelineItem
           type="warning"
           title="3 uždavinys: vykdoma"
-          content=""
+          content="VU EVAF akademinė bendruomenė laikosi Studentų rašto darbų rengimo, gynimo, vertinimo ir
+saugojimo tvarkos aprašo. "
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -273,6 +278,7 @@
         ></NCollapse
       >
     </section>
+    <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
         6. Iki 2022 m. gegužės 1 d. yra paruoštas laboratorinių darbų atnaujinimo planas
@@ -283,17 +289,17 @@
         <NTimelineItem
           type="success"
           title="1 uždavinys: įvykdyta"
-          content=""
+          content="Atlikta gerųjų patirčių ir esamos situacijos VU FF analizė dėl vykstančių laboratorinių darbų."
         ></NTimelineItem>
         <NTimelineItem
           type="warning"
           title="2 uždavinys: vykdoma"
-          content=""
+          content="Remiantis atlikta analize paruoštas laboratorinių darbų konceptas."
         ></NTimelineItem>
         <NTimelineItem
           type="info"
           title="3 uždavinys: bus vykdoma"
-          content=""
+          content="Parengiamas laboratorinių darbų atnaujinimo planas VU FF"
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -312,6 +318,7 @@
         ></NCollapse
       >
     </section>
+    <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
         7. 2022 m. rugsėjo 1 d. yra pasiruošta VU FF antros pakopos pirmo kurso studentų,
@@ -323,27 +330,31 @@
         <NTimelineItem
           type="success"
           title="1 uždavinys: įvykdyta"
-          content=""
+          content="Atlikta kitų universitetų bei VU padalinių magistro studijų pakopos studentų akademinės integracijos
+gerųjų patirčių analizė ir išsiaiškinti konkretūs kursai, reikalingi studijuojant antrosios pakopos
+studijas."
         ></NTimelineItem>
         <NTimelineItem
           type="success"
           title="2 uždavinys: įvykdyta"
-          content=""
+          content="VU FF studijų prodekanė pritaria antros pakopos pirmo kurso studentų akademinės integracijos
+pasiūlymui."
         ></NTimelineItem>
         <NTimelineItem
           type="success"
           title="3 uždavinys: įvykdyta"
-          content=""
+          content="VU FF studijų prodekanė pritaria II pakopos pirmo kurso studentų išlyginamųjų kursų siūlymui"
         ></NTimelineItem>
         <NTimelineItem
           type="warning"
           title="4 uždavinys: vykdoma"
-          content=""
+          content="II pakopos kuratoriai yra supažindinti su VU FF II pakopos pirmo kurso akademinės integracijos
+planu."
         ></NTimelineItem>
         <NTimelineItem
           type="info"
           title="5 uždavinys: bus vykdoma"
-          content=""
+          content="Yra pasiruošta vykdyti VU FF II pakopos pirmo kurso studentų akademinės integracijos planą"
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -362,6 +373,7 @@
         ></NCollapse
       >
     </section>
+    <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
         8. Per 2021–2022 mokslo metus VU FLF yra informuota apie atviros ir saugios
@@ -374,12 +386,13 @@
         <NTimelineItem
           type="warning"
           title="1 uždavinys: vykdoma"
-          content=""
+          content="VU FLF bendruomenei yra suorganizuotos šviečiamojo pobūdžio veiklos apie psichoemocinę būseną."
         ></NTimelineItem>
         <NTimelineItem
           type="info"
           title="2 uždavinys: bus vykdoma"
-          content=""
+          content="VU SA FilF yra įgyvendintas informacijos apie psichoemocinę būklę viešinimo planas fakulteto
+bendruomenei. "
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -410,12 +423,14 @@
         <NTimelineItem
           type="success"
           title="1 uždavinys: įvykdyta"
-          content=""
+          content="Remiantis studentų išreikštu poreikiu ir karantino laikotarpio patirtimi, yra išanalizuojami I ir II
+pakopos studentų poreikiai tvarkaraščių suformavimui.  "
         ></NTimelineItem>
         <NTimelineItem
           type="info"
           title="2 uždavinys: bus vykdoma"
-          content=""
+          content="VU FLF yra priimtas dokumentas, apibrėžiantis gyvo, nuotolinio ir mišraus mokymo(si) tvarkaraščių
+formavimo principus. "
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -430,6 +445,7 @@
         ></NCollapse
       >
     </section>
+    <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
         10. Iki 2022 m. liepos 1 d. yra išsiaiškintos ir aprašytos VU FsF dėstytojų
@@ -440,17 +456,18 @@
         <NTimelineItem
           type="warning"
           title="1 uždavinys: vykdoma"
-          content=""
+          content="Iš studentų atstovų SPK ir kontaktinių asmenų yra surinkta informacija, padėsianti išsiaiškinti prastos
+komunikacijos su dėstytojais priežastis."
         ></NTimelineItem>
         <NTimelineItem
           type="warning"
           title="2 uždavinys: vykdoma"
-          content=""
+          content="Yra atlikta dėstytojų apklausa, padėsianti išsiaiškinti prastos komunikacijos su studentais priežastis."
         ></NTimelineItem>
         <NTimelineItem
           type="info"
           title="3 uždavinys: bus vykdoma"
-          content=""
+          content="Surinkta informacija yra apibendrinta, aprašyta ir pateikta analizės dokumente"
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -460,17 +477,20 @@
               Sudarytas VU FsF dėstytojams skirtas klausimynas, kuris padės išsiaiškinti
               jų komunikacijos su studentais ypatumus: gaunamų laiškų apkrovą, dažniausiai
               naudojamas ir siektinas naudoti komunikacijos platformas. Klausimynas bus
-              išsiųstas visiems fakulteto dėstytojams. Tuo pat metu planuojami susitikimai
-              su padalinio kontaktiniais asmenimis, kad pavyktų situaciją apžvelgti ir iš
-              jų perspektyvos. Surinkta informacija bus apdorota ir aprašyta viename
-              dokumente, kuriame bus pateikti ir remiantis analize sudaryti pasiūlymai
-              (bei parinktas jų pateikimo formatas), kaip gerinti komunikaciją tarp
-              dėstytojų ir studentų.
+              išsiųstas visiems fakulteto dėstytojams.
+            </li>
+            <li>
+              Tuo pat metu planuojami susitikimai su padalinio kontaktiniais asmenimis,
+              kad pavyktų situaciją apžvelgti ir iš jų perspektyvos. Surinkta informacija
+              bus apdorota ir aprašyta viename dokumente, kuriame bus pateikti ir
+              remiantis analize sudaryti pasiūlymai (bei parinktas jų pateikimo formatas),
+              kaip gerinti komunikaciją tarp dėstytojų ir studentų.
             </li>
           </ul></NCollapseItem
         ></NCollapse
       >
     </section>
+    <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
         11. Iki 2022 m. rugsėjo 1 d. VU GMC bent dviejų I (bakalauro) pakopos programų
@@ -482,17 +502,20 @@
         <NTimelineItem
           type="success"
           title="1 uždavinys: įvykdyta"
-          content=""
+          content="Parengtas pasiūlymas dėl pasirenkamųjų dalykų organizavimo VU GMC ir pristatytas VU GMC
+Studijų kolegijoje."
         ></NTimelineItem>
         <NTimelineItem
           type="warning"
           title="2 uždavinys: vykdoma"
-          content=""
+          content="Parengtas bendras neformalusis pasirenkamųjų dalykų ir individualaus studijų plano aprašas ir
+studentai yra informuoti apie jį."
         ></NTimelineItem>
         <NTimelineItem
           type="warning"
           title="3 uždavinys: vykdoma"
-          content=""
+          content="Gautas SPK pritarimas dėl bent 1 papildomo pasirenkamojo dalyko pridėjimo prie bent dviejų
+bakalauro pakopos studijų programų."
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -501,18 +524,24 @@
             <li>
               Studentams susiduriant su ribotu PD kiekiu ir didėjančiomis studentų
               grupėmis, pirmiausia išskelto tikslo buvo siekiama diskutuojant Studijų
-              kolegijoje. Bendradarbiaujant su GMC direktoriaus pavaduotoja studijoms bei
-              doktorantų atstove, rasta išeitis – didinti PD kiekį doktorantams sukuriant
-              naujus PD. Norinčiųjų pradėti dėstyti savo dalyką atsirado iškart, tačiau,
-              susidūrus su techninėmis kliūtimis, sprendimui rasti prireiks Senato
-              pritarimo. Be to, buvo surinkti visų PD dėstančių dėstytojų bei studentų
-              komentarai, pagal kuriuos bus baigtas rengti centro PD neformalusis aprašas,
-              leisiantis studentams rinktis PD susidarant ISP ir iš kitų programų.
+              kolegijoje.
+            </li>
+            <li>
+              Bendradarbiaujant su GMC direktoriaus pavaduotoja studijoms bei doktorantų
+              atstove, rasta išeitis – didinti PD kiekį doktorantams sukuriant naujus PD.
+              Norinčiųjų pradėti dėstyti savo dalyką atsirado iškart, tačiau, susidūrus su
+              techninėmis kliūtimis, sprendimui rasti prireiks Senato pritarimo.
+            </li>
+            <li>
+              Be to, buvo surinkti visų PD dėstančių dėstytojų bei studentų komentarai,
+              pagal kuriuos bus baigtas rengti centro PD neformalusis aprašas, leisiantis
+              studentams rinktis PD susidarant ISP ir iš kitų programų.
             </li>
           </ul></NCollapseItem
         ></NCollapse
       >
     </section>
+    <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
         12. Iki 2022 m. liepos 1 d. atnaujintame Studijų įvado (KIA ir Istorijos studijų
@@ -524,12 +553,12 @@
         <NTimelineItem
           type="warning"
           title="1 uždavinys: vykdoma"
-          content=""
+          content="Išrašytos Studijų įvado problemos ir parengtas atnaujinto modulio aprašo pavyzdys."
         ></NTimelineItem>
         <NTimelineItem
           type="info"
           title="2 uždavinys: bus vykdoma"
-          content=""
+          content="Atnaujintas dalyko aprašas su detalizuotomis temomis ir tolygiu krūviu yra patvirtintas SPK"
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -545,6 +574,7 @@
         ></NCollapse
       >
     </section>
+    <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
         13. Iki 2022 m. liepos 1 d. specialybės užsienio dalykų mokymo(si) procesas
@@ -556,12 +586,14 @@
         <NTimelineItem
           type="info"
           title="1 uždavinys: bus vykdoma"
-          content=""
+          content="Atnaujintas specialybės rusų kalbos dalyko aprašas yra įkeltas į Vilniaus universiteto Informacinę
+sistemą."
         ></NTimelineItem>
         <NTimelineItem
           type="warning"
           title="2 uždavinys: vykdoma"
-          content=""
+          content="Sudarytas ir vykdomas užsienio kalbų mokymo(-si) stebėsenos planas bei užtikrinamas problemos
+nagrinėjimo tęstinumas naujos VU SA IF kadencijos metu."
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -570,16 +602,19 @@
             <li>
               Sukurtas užsienio kalbų stebėsenos planas, kuris bus pradėtas vykdyti šio
               pavasario semestro pabaigoje. Planas padės stebėti specialybės kalbų
-              mokymosi kokybę bei leis anksčiau sureaguoti pablogėjus situacijai. Taip pat
-              buvo planuojamas susitikimas su Rusų filologijos ir Rusistikos SPK nariais,
-              tačiau buvo pranešta, jog norint atnaujinti modulio aprašą pirmiausia reikia
-              kreiptis į savo fakulteto SPK. Todėl būsimame Istorijos SPK posėdyje bus
-              pristatyti specialybės užsienio kalbų analizės rezultatai.
+              mokymosi kokybę bei leis anksčiau sureaguoti pablogėjus situacijai.
+            </li>
+            <li>
+              Taip pat buvo planuojamas susitikimas su Rusų filologijos ir Rusistikos SPK
+              nariais, tačiau buvo pranešta, jog norint atnaujinti modulio aprašą
+              pirmiausia reikia kreiptis į savo fakulteto SPK. Todėl būsimame Istorijos
+              SPK posėdyje bus pristatyti specialybės užsienio kalbų analizės rezultatai.
             </li>
           </ul></NCollapseItem
         ></NCollapse
       >
     </section>
+    <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
         14. Iki 2022 m. liepos 1 d. pagal VU SA KF ir VU KF studentų atstovų sukurtą
@@ -591,27 +626,29 @@
         <NTimelineItem
           type="success"
           title="1 uždavinys: įgyvendinta"
-          content=""
+          content="VU SA KF kolegialus valdymo organas patvirtina naujus I ir II pakopų studentų atstovus SPK."
         ></NTimelineItem>
         <NTimelineItem
           type="success"
           title="2 uždavinys: įgyvendinta"
-          content=""
+          content="VU SA KF bendradarbiaujant su VU KF studentų atstovais SPK, sukurta SPK studentų atstovų
+veiklos sistema."
         ></NTimelineItem>
         <NTimelineItem
           type="warning"
           title="3 uždavinys: vykdoma"
-          content=""
+          content="Pagal SPK studentų atstovų veiklos sistemą, yra sukurti bent 7 SPK studentų atstovų metų veiklos
+planai."
         ></NTimelineItem>
         <NTimelineItem
           type="warning"
           title="4 uždavinys: vykdoma"
-          content=""
+          content="Ne mažiau kaip 6 SPK yra bent 75 proc. įgyvendintas studentų atstovų MVP. "
         ></NTimelineItem>
         <NTimelineItem
           type="warning"
           title="5 uždavinys: vykdoma"
-          content=""
+          content="VU KF studentai yra supažindinti su SPK veikla. "
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -619,19 +656,39 @@
           ><ul>
             <li>
               Ne jungtiniuose bakalauro studijų programų komitetuose, studentų atstovų
-              skaičius pakilo iki 2. Išrinkti nauji, trūkstami studentų atstovai į
-              bakalauro ir magistro studijų programų komitetus. Bendradarbiaujant VU SA KF
-              ir VU KF studentų atstovams SPK, sukurta studentų atstovų veiklos sistema,
-              padėsianti efektyvinti studentų atstovavimą ir bendradarbiavimą. Skatinamas
-              glaudesnis studentų atstovų bendradarbiavimas su kursų kontaktiniais
-              asmenimis. Pirmakursių integracijos metu bei VU SA KF Facebook paskyroje
-              pristatyti SPK studentų atstovai ir jų veikla. Parengtas studentų atstovų
-              metų veiklos plano šablonas, kuris pradėtas pildyti.
+              skaičius pakilo iki 2.
+            </li>
+
+            <li>
+              Išrinkti nauji, trūkstami studentų atstovai į bakalauro ir magistro studijų
+              programų komitetus.
+            </li>
+
+            <li>
+              Bendradarbiaujant VU SA KF ir VU KF studentų atstovams SPK, sukurta studentų
+              atstovų veiklos sistema, padėsianti efektyvinti studentų atstovavimą ir
+              bendradarbiavimą.
+            </li>
+
+            <li>
+              Skatinamas glaudesnis studentų atstovų bendradarbiavimas su kursų
+              kontaktiniais asmenimis.
+            </li>
+
+            <li>
+              Pirmakursių integracijos metu bei VU SA KF Facebook paskyroje pristatyti SPK
+              studentų atstovai ir jų veikla.
+            </li>
+
+            <li>
+              Parengtas studentų atstovų metų veiklos plano šablonas, kuris pradėtas
+              pildyti.
             </li>
           </ul></NCollapseItem
         ></NCollapse
       >
     </section>
+    <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
         15. 2022 m. balandžio 30 d. daugiau nei 85 proc. VU KnF studentų rekomenduotų
@@ -642,32 +699,32 @@
         <NTimelineItem
           type="success"
           title="1 uždavinys: įvykdyta"
-          content=""
+          content="Pagal poreikį atitinkamuose SPK yra įgyvendinami studijų programos tobulinimo planai."
         ></NTimelineItem>
         <NTimelineItem
           type="success"
           title="2 uždavinys: įvykdyta"
-          content=""
+          content="VU SA KnF inicijuoja VMA kursų patikrą."
         ></NTimelineItem>
         <NTimelineItem
           type="success"
           title="3 uždavinys: įvykdyta"
-          content=""
+          content="VU KnF įkuriama bent 1 studentams skirta popaskaitinės veiklos iniciatyva"
         ></NTimelineItem>
         <NTimelineItem
           type="warning"
           title="4 uždavinys: vykdoma"
-          content=""
+          content="VU KnF studentams yra suteikiamas regualiarus psichologinis konsultavimas kontaktiniu būdu."
         ></NTimelineItem>
         <NTimelineItem
           type="success"
           title="5 uždavinys: įvykdyta"
-          content=""
+          content="Sukuriami pagrindai užsienio studentų integracijai į VU SA KnF veiklą."
         ></NTimelineItem>
         <NTimelineItem
           type="warning"
           title="6 uždavinys: vykdoma"
-          content=""
+          content="VU KnF studentams yra užtikrinamos apgyvendinimo sąlygos."
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -691,6 +748,7 @@
         ></NCollapse
       >
     </section>
+    <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
         16. 2022 m. liepos 1 d. VU SA KnF yra įgyvendinusi iniciatyvas, atliepiančias
@@ -701,12 +759,12 @@
         <NTimelineItem
           type="success"
           title="1 uždavinys: įvykdyta"
-          content=""
+          content="VU SA KnF įvykdoma komunikacijos kampanija ekologijos klausimu."
         ></NTimelineItem>
         <NTimelineItem
           type="success"
           title="2 uždavinys: įvykdyta"
-          content=""
+          content="VU SA KnF veikloje mažinamas neperdirbamų išteklių vartojimas."
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -728,6 +786,7 @@
         ></NCollapse
       >
     </section>
+    <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
         17. 2022 m. liepos 1 d. VU MF užsienio studentai jaučiasi visaverčiais
@@ -738,27 +797,29 @@
         <NTimelineItem
           type="error"
           title="1 uždavinys: atsisakyta"
-          content=""
+          content="Pasirūpinta, kad VU MF universiteto tinklalapyje būtų atnaujinta informacija užsienio studentams bei
+pateikti dokumentai anglų kalba."
         ></NTimelineItem>
         <NTimelineItem
           type="success"
           title="2 uždavinys: įvykdyta"
-          content=""
+          content="Užsienio studentai turi į ką kreiptis administracijoje bei yra supažindinti su atsakingo asmens
+kontaktine informacija."
         ></NTimelineItem>
         <NTimelineItem
           type="success"
           title="3 uždavinys: įvykdyta"
-          content=""
+          content="„MeDi“ savaitėje yra suorganizuotos bent 3 anglų kalba vykdomos veiklos."
         ></NTimelineItem>
         <NTimelineItem
           type="info"
           title="4 uždavinys: bus vykdoma"
-          content=""
+          content="Padidėja BUS, vykdomų anglų kalba, skaičius."
         ></NTimelineItem>
         <NTimelineItem
           type="info"
           title="5 uždavinys: bus vykdoma"
-          content=""
+          content="ISR nariai jaučiasi VU SA dalimi."
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -775,6 +836,7 @@
         ></NCollapse
       >
     </section>
+    <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
         18. 2022 m. birželio 30 d. yra sukurta elektronizuota internatūros registracijos
@@ -785,37 +847,42 @@
         <NTimelineItem
           type="info"
           title="1 uždavinys: bus vykdoma"
-          content=""
+          content="Sukurtas internatūros registracijos proceso žemėlapis, kuris yra pateiktas VU Studentų paslaugų ir
+karjeros skyriui."
         ></NTimelineItem>
         <NTimelineItem
           type="info"
           title="2 uždavinys: bus vykdoma"
-          content=""
+          content="Surinkta informacija apie internatūros metu įgytų praktinių įgūdžių vertinimo sistemą VU MF,
+Lietuvoje ir užsienyje. "
         ></NTimelineItem>
         <NTimelineItem
           type="info"
           title="3 uždavinys: bus vykdoma"
-          content=""
+          content="Suformuota darbo grupė elektronizuotos internatūros metu įgytų praktinių įgūdžių vertinimo sistemos
+koncepcija ir jos įgyvendinimui reikalingo biudžeto projekto parengimui."
         ></NTimelineItem>
         <NTimelineItem
           type="info"
           title="4 uždavinys: bus vykdoma"
-          content=""
+          content="VU MF Taryboje patvirtinta elektronizuotos internatūros metu įgytų praktinių įgūdžių vertinimo
+sistemos koncepcija ir jos įgyvendinimui reikalingas biudžetas."
         ></NTimelineItem>
         <NTimelineItem
           type="info"
           title="5 uždavinys: bus vykdoma"
-          content=""
+          content="Medicinos studijų programos 6 kurso studentams yra parengtas informacijos paketas apie internatūros
+atlikimą internatūros bazėse."
         ></NTimelineItem>
         <NTimelineItem
           type="info"
           title="6 uždavinys: bus vykdoma"
-          content=""
+          content="Sukurta elektroninė internatūros metu įgytų praktinių įgūdžių vertinimo sistema"
         ></NTimelineItem>
         <NTimelineItem
           type="info"
           title="7 uždavinys: bus vykdoma"
-          content=""
+          content="Įgyvendinta komunikacijos kampanija."
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -832,6 +899,7 @@
         ></NCollapse
       >
     </section>
+    <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
         19. 2022 m. balandžio 30 d. įgyvendintos bent 3 naujos VU MIF bendruomenę
@@ -842,27 +910,28 @@
         <NTimelineItem
           type="error"
           title="1 uždavinys: atsisakyta"
-          content=""
+          content="Įkurtas studentams aktualus klubas."
         ></NTimelineItem>
         <NTimelineItem
           type="success"
           title="2 uždavinys: įgyvendinta"
-          content=""
+          content="Suorganizuotas renginių ciklas įtraukiantis VU MIF bendruomenę."
         ></NTimelineItem>
         <NTimelineItem
           type="success"
           title="3 uždavinys: įgyvendinta"
-          content=""
+          content="Įgyvendintos veiklos skirtos antrakursių įtraukimui į bendruomenę (COVID-19 padarinių socialinei
+įtraukčiai į bendruomenę mažinimas)."
         ></NTimelineItem>
         <NTimelineItem
           type="success"
           title="4 uždavinys: įgyvendinta"
-          content=""
+          content="Įgyvendinta mokytis skatinanti veikla „Studentas – Studentui“."
         ></NTimelineItem>
         <NTimelineItem
           type="info"
           title="5 uždavinys: bus vykdoma"
-          content=""
+          content="Įvertintas iniciatyvų veiksmingumas pagal pasirinktus rodiklius"
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -886,6 +955,7 @@
         ></NCollapse
       >
     </section>
+    <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
         20. 2022 m. liepos 1 d. kiekviename VU MIF SPK studentų atstovai yra iškėlę
@@ -896,22 +966,22 @@
         <NTimelineItem
           type="success"
           title="1 uždavinys: įvykdyta"
-          content=""
+          content="Parengtas studentams aktualių su SP susijusių problemų sąrašas."
         ></NTimelineItem>
         <NTimelineItem
           type="warning"
           title="2 uždavinys: vykdoma"
-          content=""
+          content="Parengta studentų atstovų SPK metų veiklos programa"
         ></NTimelineItem>
         <NTimelineItem
           type="error"
           title="3 uždavinys: atsisakyta"
-          content=""
+          content="Patvirtinti kiekvienos studijų programos studentams aktualių problemų sprendimai"
         ></NTimelineItem>
         <NTimelineItem
           type="info"
           title="4 uždavinys: bus vykdoma"
-          content=""
+          content="Padidintas VU IS apklausas užpildžiusių studentų skaičius (pakiltų bent 15%)."
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -927,6 +997,7 @@
         ></NCollapse
       >
     </section>
+    <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
         21. 2022 m. liepos 1 d. bent 1 VU ŠA I pakopos studijų programų profesinių
@@ -938,27 +1009,29 @@
         <NTimelineItem
           type="error"
           title="1 uždavinys: atsisakyta"
-          content=""
+          content="VU SA ŠA yra suformavusi pasiūlymus praktikų ataskaitų atnaujinimui."
         ></NTimelineItem>
         <NTimelineItem
           type="error"
           title="2 uždavinys: atsisakyta"
-          content=""
+          content="Studijų programų studentai išsiunčia laiškus SPK pirmininkui dėl per didelės praktikų ataskaitų
+apimties."
         ></NTimelineItem>
         <NTimelineItem
           type="error"
           title="3 uždavinys: atsisakyta"
-          content=""
+          content="Studentų atstovas pateikia parengtus pasiūlymus praktikos ataskaitai SPK posėdžio metu"
         ></NTimelineItem>
         <NTimelineItem
           type="error"
           title="4 uždavinys: atsisakyta"
-          content=""
+          content="Edukologijos instituto direktorei pasiūloma instituto darbuotojų susitikimo metu iškelti
+klausimą dėl praktikų organizavimo tvarkos"
         ></NTimelineItem>
         <NTimelineItem
           type="error"
           title="5 uždavinys: įvykdyta"
-          content=""
+          content="SPK posėdyje yra patvirtinta atnaujinta praktikos ataskaitos forma."
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -973,6 +1046,7 @@
         ></NCollapse
       >
     </section>
+    <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
         22. 2022 m. kovo 29 d. VU SA ŠA narių sąraše yra ne mažiau nei 27 nariai.
@@ -982,22 +1056,27 @@
         <NTimelineItem
           type="success"
           title="1 uždavinys: įvykdyta"
-          content=""
+          content="Įvykdytas VU SA ŠA pristatymas"
         ></NTimelineItem>
         <NTimelineItem
           type="error"
           title="2 uždavinys: atsisakyta"
-          content=""
+          content="VU SA ŠA naudoja platformas, kuriomis pasiekia studentus."
         ></NTimelineItem>
         <NTimelineItem
           type="success"
           title="3 uždavinys: įvykdyta"
-          content=""
+          content="VU SA ŠA vertės pasiūlymo nariams sukūrimas."
         ></NTimelineItem>
         <NTimelineItem
           type="warning"
           title="4 uždavinys: vykdoma"
-          content=""
+          content="Įvykdytas naujų narių priėmimas."
+        ></NTimelineItem>
+        <NTimelineItem
+          type="warning"
+          title="5 uždavinys: vykdoma"
+          content="Sudarytas VU SA ŠA narių sąrašas."
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -1011,6 +1090,7 @@
         ></NCollapse
       >
     </section>
+    <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
         23. 2022 m. gegužės 2 d. VU TF yra suorganizuotos bent 5 akademinio raštingumo
@@ -1021,22 +1101,24 @@
         <NTimelineItem
           type="success"
           title="1 uždavinys: įvykdyta"
-          content=""
+          content="Surinkti duomenis siekiant identifikuoti opiausias studentų problemas akademinio raštingumo
+srityje."
         ></NTimelineItem>
         <NTimelineItem
           type="success"
           title="2 uždavinys: įvykdyta"
-          content=""
+          content="Parengti iniciatyvų planą atsižvelgus į apklausos duomenyse išgrynintas opiausias akademinio
+raštingumo problemas."
         ></NTimelineItem>
         <NTimelineItem
           type="success"
           title="3 uždavinys: įvykdyta"
-          content=""
+          content="Įgyvendinti numatytas iniciatyvas."
         ></NTimelineItem>
         <NTimelineItem
           type="warning"
           title="4 uždavinys: vykdoma"
-          content=""
+          content="Surinkti grįžtamąjį ryšį iš studentų, nustačius poreikį svarstyti dėl iniciatyvų cikliškumo."
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -1057,6 +1139,7 @@
         ></NCollapse
       >
     </section>
+    <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
         24. 2022 m. balandžio 11 d. VU TF bent 10 dieninių teisės studijų I–VII semestrų
@@ -1067,32 +1150,35 @@
         <NTimelineItem
           type="success"
           title="1 uždavinys: įvykdyta"
-          content=""
+          content="Peržiūrėti ir išanalizuoti dieninių teisės studijų I-VII semestrų dalykų aprašus."
         ></NTimelineItem>
         <NTimelineItem
           type="success"
           title="2 uždavinys: įvykdyta"
-          content=""
+          content="Remiantis naujai atliktos analizės duomenimis, suformuluoti rekomendacijas dalykų aprašų
+vertinimo skilčių tobulinimui."
         ></NTimelineItem>
         <NTimelineItem
           type="info"
           title="3 uždavinys: bus vykdoma"
-          content=""
+          content="Supažindinti studentų atstovus SPK ir VU TF Taryboje bei sesijinių studijų studentų atstovus su
+parengtomis rekomendacijomis ir pagal išsakytus komentarus pakoreguoti rekomendacijas."
         ></NTimelineItem>
         <NTimelineItem
           type="info"
           title="4 uždavinys: bus vykdoma"
-          content=""
+          content="Supažindinti Prodekaną studijoms H. Šinkūną su parengtomis rekomendacijomis ir pagal
+išsakytas pastabas pakoreguoti rekomendacijas."
         ></NTimelineItem>
         <NTimelineItem
           type="info"
           title="5 uždavinys: bus vykdoma"
-          content=""
+          content="Pristatyti rekomendacijas VU TF Taryboje."
         ></NTimelineItem>
         <NTimelineItem
           type="info"
           title="6 uždavinys: bus vykdoma"
-          content=""
+          content="Iškelti klausimą SPK dėl atnaujintų dalykų aprašų patvirtinimo."
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -1108,6 +1194,7 @@
         ></NCollapse
       >
     </section>
+    <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
         25. 2022 m. liepos 1 d. VU TSPMI magistro studentams yra suteikta galimybė
@@ -1119,12 +1206,13 @@
         <NTimelineItem
           type="warning"
           title="1 uždavinys: vykdoma"
-          content=""
+          content="VU TSPMI magistro studentams suteikta galimybė pasirinkti papildomą užsienio kalbą NSDP forma."
         ></NTimelineItem>
         <NTimelineItem
           type="warning"
           title="2 uždavinys: vykdoma"
-          content=""
+          content="VU TSPMI magistratūros studentai yra informuoti apie visas esamas galimybes mokytis papildomų
+užsienio kalbų Vilniaus universitete."
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -1142,6 +1230,7 @@
         ></NCollapse
       >
     </section>
+    <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
         26. 2022 m. liepos 1 d. veikia bent 2 proaktyvios priemonės, skirtos gerinti
@@ -1153,12 +1242,13 @@
         <NTimelineItem
           type="warning"
           title="1 uždavinys: vykdoma"
-          content=""
+          content="Veikiantis psichosocialinės būsenos įsivertinimo testas."
         ></NTimelineItem>
         <NTimelineItem
           type="warning"
           title="2 uždavinys: vykdoma"
-          content=""
+          content="Psichosocialinės būsenos atpažinimo ir reagavimo kompetencijų kėlimas VU TSPMI bendruomenės
+nariams."
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -1180,6 +1270,7 @@
         ></NCollapse
       >
     </section>
+    <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
         27. 2022 m. rugsėjo 30 d. žiniasklaidoje bus paviešinti bent 3 VU VM studentų
@@ -1190,27 +1281,27 @@
         <NTimelineItem
           type="warning"
           title="1 uždavinys: vykdoma"
-          content=""
+          content="Sudarytas bendras SMD metų veiklos planas su VU VM administracija."
         ></NTimelineItem>
         <NTimelineItem
           type="warning"
           title="2 uždavinys: vykdoma"
-          content=""
+          content="Yra surasti mentoriai, padėsiantys studentams vykdyti mokslinę veiklą."
         ></NTimelineItem>
         <NTimelineItem
           type="info"
           title="3 uždavinys: bus vykdoma"
-          content=""
+          content="Yra suorganizuoti mokslinių darbų rengimo ir studentų pritraukimo mokymai."
         ></NTimelineItem>
         <NTimelineItem
           type="info"
           title="4 uždavinys: bus vykdoma"
-          content=""
+          content="Yra surasti VU VM SMD partneriai (įmonės, alumni, žiniasklaida)."
         ></NTimelineItem>
         <NTimelineItem
           type="info"
           title="5 uždavinys: bus vykdoma"
-          content=""
+          content="Suorganizuota konferencija, kurios metu yra pristatyti geriausi studentų atlikti moksliniai darbai"
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -1228,6 +1319,15 @@
         ></NCollapse
       >
     </section>
+    <div class="col-span-4 mb-12">
+      <Link
+        class="text-lg duration-200 hover:text-red-600 font-bold"
+        :href="
+          route('main.ataskaita2022', { lang: $page.props.locale, permalink: 'studijos' })
+        "
+        >Kokybiškos studijos ir joms pritaikyta aplinka >></Link
+      >
+    </div>
   </Planas>
 </template>
 
@@ -1235,3 +1335,9 @@
 import Planas from "@/Pages/Public/Ataskaita2022/3-Planas.vue";
 import { NTimeline, NTimelineItem, NDivider, NCollapse, NCollapseItem } from "naive-ui";
 </script>
+
+<style scoped>
+h4 {
+  margin-bottom: 1.5em;
+}
+</style>

@@ -42,29 +42,40 @@
       >
 
       <Link
+        class="hover:text-red-600 duration-200"
         v-else
         :href="route('main.ataskaita2022', { lang: locale, permalink: 'sveikinimai' })"
         >Sveikinimai</Link
       >
 
-      <Link :href="route('main.ataskaita2022', { lang: locale, permalink: 'vu-sa' })">
+      <Link
+        class="hover:text-red-600 duration-200"
+        :href="route('main.ataskaita2022', { lang: locale, permalink: 'vu-sa' })"
+      >
         <NGradientText type="error" v-if="permalink === 'vu-sa'">{{
           __("VU SA")
         }}</NGradientText
         ><template v-else>{{ __("VU SA") }}</template></Link
       >
-      <Link :href="route('main.ataskaita2022', { lang: locale, permalink: 'mvp' })"
+      <Link
+        class="hover:text-red-600 duration-200"
+        :href="route('main.ataskaita2022', { lang: locale, permalink: 'mvp' })"
         ><NGradientText type="error" v-if="permalink === 'mvp'">{{
           __("Metų veiklos planas")
         }}</NGradientText
         ><template v-else>{{ __("Metų veiklos planas") }}</template></Link
       >
       <NDropdown :options="navigation" @select="handleSelectKryptis"
-        ><div class="flex flex-row items-center" role="button">
+        ><div
+          class="flex flex-row items-center hover:text-red-600 duration-200"
+          role="button"
+        >
           VU SA strateginės kryptys
           <NIcon class="ml-1" size="16"><ChevronDown20Filled /></NIcon></div
       ></NDropdown>
-      <Link :href="route('main.ataskaita2022', { lang: locale, permalink: 'sritys' })"
+      <Link
+        class="hover:text-red-600 duration-200"
+        :href="route('main.ataskaita2022', { lang: locale, permalink: 'sritys' })"
         ><NGradientText type="error" v-if="permalink === 'sritys'">{{
           __("Sritys")
         }}</NGradientText

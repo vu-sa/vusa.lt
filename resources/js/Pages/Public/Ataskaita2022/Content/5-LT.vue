@@ -1,10 +1,8 @@
 <template>
   <Organizacija>
-    <h3 class="border-4 rounded-lg border-neutral-800 p-2">Konsultavimo procesas</h3>
+    <h3 class="p-2">Konsultavimo procesas</h3>
 
-    <div
-      class="bg-white py-6 px-12 prose mx-auto my-4 shadow-lg hover:shadow-xl duration-200"
-    >
+    <div class="bg-white py-6 px-12 max-w-[80ch] prose mx-auto my-4">
       <p>
         VU SA konsultavimas – centralizuota VU SA konsultavimo sistema, skirta Vilniaus
         universiteto studentų konsultacijoms akademiniais, socialiniais, saviraiškos
@@ -35,9 +33,7 @@
       </ul>
     </div>
 
-    <div
-      class="bg-white py-6 px-12 prose mx-auto my-4 shadow-lg hover:shadow-xl duration-200"
-    >
+    <div class="bg-white py-6 px-12 max-w-[80ch] prose mx-auto my-4">
       <h3>VU SA Strateginio plano 2022–2024 m. kūrimas</h3>
 
       <p>...</p>
@@ -63,7 +59,7 @@
 
     <div class="relative">
       <img
-        class="rounded-lg md:w-2/3 w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 mx-auto"
+        class="rounded-lg max-w-[80ch] w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 mx-auto"
         src="/images/ataskaita2022/kitos-nuotraukos/ISF.jpg"
       />
       <p
@@ -72,7 +68,7 @@
         Institucinio stiprinimo fondas
       </p>
     </div>
-    <div class="bg-white py-6 px-12 rounded-lg prose mx-auto my-4">
+    <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
       <p>
         Institucinio stiprinimo fondas yra atsakingas už organizacijos narių kompetencijų
         kėlimą, žmogiškųjų išteklių valdymą. Fondas siekia užtikrinti sąlygas
@@ -146,6 +142,18 @@
         </li>
       </ul>
     </div>
+    <div class="col-span-4 mb-12">
+      <Link
+        class="text-lg duration-200 hover:text-red-600 font-bold"
+        :href="
+          route('main.ataskaita2022', {
+            lang: $page.props.locale,
+            permalink: 'bendruomene',
+          })
+        "
+        >Darni universitetinė bendruomenė >></Link
+      >
+    </div>
   </Organizacija>
 </template>
 
@@ -156,12 +164,15 @@ import Organizacija from "../5-Organizacija.vue";
 <style scoped>
 h2 {
   font-size: 2rem;
-  font-weight: bold;
   text-align: center;
   margin: 1em 0 1em 0;
+}
+h3 {
+  font-size: 1.5rem;
 }
 h3,
 h4 {
   margin: 1em 0 1em 0;
+  text-align: center;
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
   <Bendruomene>
-    <h1>DARNI UNIVERSITETINĖ BENDRUOMENĖ</h1>
-    <div class="bg-white py-6 px-12 rounded-lg prose mx-auto my-4">
+    <h1>Darni universitetinė bendruomenė</h1>
+    <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
       <p>
         Bendruomeniškumo puoselėjimas bei studentų (-čių) integracija išlieka svarbiu
         Vilniaus universiteto Studentų atstovybės veiklos prioritetu. Jau kelerius metus
@@ -186,9 +186,9 @@
         kartos, net ir tos kurios jau baigė studijas, puikiai gali bendrauti, gerai leisti
         laiką bei kurti ateitį kartu!
       </p>
-
-      <h2>STUDENTŲ (-ČIŲ) INTEGRACIJA</h2>
-
+    </div>
+    <h2>Studentų (-čių) integracija</h2>
+    <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
       <h3>VU pirmakursių stovyklos</h3>
       <p>
         Kaip ir kiekvienais metais VU SA tęsia tradiciją organizuoti stovyklas,
@@ -254,7 +254,11 @@
       </p>
     </div>
     <h3>Programos, klubai ir projektai</h3>
-    <div class="bg-white py-6 px-12 rounded-lg prose mx-auto my-4">
+    <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+      <img
+        class="w-48 h-auto mx-auto"
+        src="/images/ataskaita2022/pkp-logo/START FM logotipas.png"
+      />
       <h4>Start FM</h4>
       <em>Ataskaitiniu laikotarpiu radijui vadovavo Rimantas Murza.</em>
       <p>
@@ -284,6 +288,10 @@
         komanda kiekvieną darbo dieną rengia naujienų pranešimus, reportažus aktualiomis
         temomis bei interviu.
       </p>
+      <img
+        class="w-48 h-auto mx-auto mt-4"
+        src="/images/ataskaita2022/pkp-logo/Debatų klubų logotipas.jpg"
+      />
       <h4>VU Debatų klubas</h4>
       <em>Ataskaitiniu laikotarpiu klubo veiklą koordinavo Robertas Remeika.</em>
 
@@ -308,6 +316,10 @@
         pavyzdžiui, Jaunimo debatais. Galiausiai VU Debatų draugija buvo sėkmingai
         atidaryta pirmajame viešame renginyje, vykusiame 2022 m. balandžio 21 d.
       </p>
+      <img
+        class="w-48 h-auto mx-auto mt-4"
+        src="/images/ataskaita2022/pkp-logo/SMMS logotipas.jpg"
+      />
       <h4>SMMS</h4>
       <em
         >Ataskaitiniu laikotarpiu projekto veiklą koordinavo Rugilė Hokušaitė (iki 2021 m.
@@ -329,7 +341,10 @@
         Universitete vykdomomis studijomis, bet ir saviraiškos galimybėmis – programomis,
         klubais bei projektais.
       </p>
-
+      <img
+        class="w-48 h-auto mx-auto mt-4"
+        src="/images/ataskaita2022/pkp-logo/Teisės klinikos logotipas.png"
+      />
       <h4>VU Teisės klinika</h4>
       <em>Ataskaitiniu laikotarpiu projektą koordinavo Viktorija Medžiaušaitė.</em>
 
@@ -385,7 +400,10 @@
         nukentėjusiems nuo prekybos žmonėmis, smurto artimoje aplinkoje, dingusių žmonių
         artimiesiems.
       </p>
-
+      <img
+        class="w-48 h-auto mx-auto mt-4"
+        src="/images/ataskaita2022/pkp-logo/SIF logotipas.png"
+      />
       <h4>Vilniaus universiteto Studentų investicinis fondas (VU SIF)</h4>
       <em
         >Ataskaitiniu laikotarpiu fondui vadovavo Ieva Turskytė (iki 2022 m. sausio mėn.)
@@ -436,7 +454,10 @@
         Studentų atstovybė, Vilniaus universiteto Verslo mokykla bei Vilniaus
         universitetas.
       </p>
-
+      <img
+        class="w-48 h-auto mx-auto mt-4"
+        src="/images/ataskaita2022/pkp-logo/KD logotipas.png"
+      />
       <h4>Karjeros dienos'22</h4>
       <em>Ataskaitiniu laikotarpiu projekto veiklą koordinavo Eglė Jašinskaitė.</em>
 
@@ -461,6 +482,10 @@
         prizą įsteigtą FRANMAX.
       </p>
 
+      <img
+        class="w-48 h-auto mx-auto mt-4"
+        src="/images/ataskaita2022/pkp-logo/Be etikečių logotipas.jpg"
+      />
       <h4>Be etikečių</h4>
       <em>Ataskaitiniu laikotarpiu programos veiklą koordinavo Julija Baublinskaitė.</em>
 
@@ -499,7 +524,10 @@
         #DragZodynelis, kurio įrašuose supažindinama su drag kultūros terminais ir
         istorija.
       </p>
-
+      <img
+        class="w-48 h-auto mx-auto mt-4"
+        src="/images/ataskaita2022/pkp-logo/JEK logotipas.png"
+      />
       <h4>VU JEK</h4>
       <em>Ataskaitiniu laikotarpiu klubo veiklą koordinavo Klaudija Pukalskaitė.</em>
 
@@ -523,7 +551,10 @@
         žaidimas ar žurnalo Progressus antras numeris. Taip pat šiemet klubo nariai turėjo
         išskirtinę galimybę aplankyti Antalieptės muziejų ir jį atnaujinti mokymų metu.
       </p>
-
+      <img
+        class="w-48 h-auto mx-auto mt-4"
+        src="/images/ataskaita2022/pkp-logo/ESN logotipas.png"
+      />
       <h4>ESN VU</h4>
 
       <em>Ataskaitiniu laikotarpiu programos veiklą koordinavo Simonas Benkunskas</em>
@@ -546,6 +577,10 @@
         buvo suteikta ir kontaktinė informacija užsikrėtimo liga atveju.
       </p>
 
+      <img
+        class="w-48 h-auto mx-auto mt-4"
+        src="/images/ataskaita2022/pkp-logo/Kendo klubo logotipas.jpg"
+      />
       <h4>Kendo klubas</h4>
 
       <em>Ataskaitiniu laikotarpiu klubo veiklą koordinavo Vytenis Almonaitis.</em>
@@ -564,7 +599,10 @@
         dalyvauti varžybose. Nepaisant to, studijos atstovai socialinėse medijose sekėjams
         pristatė solinių ir porinių treniruočių galimybes bei kvietė visus sportuoti.
       </p>
-
+      <img
+        class="w-48 h-auto mx-auto mt-4"
+        src="/images/ataskaita2022/pkp-logo/SGV logotipas.png"
+      />
       <h4>SGV</h4>
 
       <em>Ataskaitiniu laikotarpiu projektui vadovavo Aurelija Vasiliauskaitė.</em>
@@ -583,6 +621,10 @@
         teikiamomis paslaugomis bei laisvalaikiu.
       </p>
 
+      <img
+        class="w-48 h-auto mx-auto mt-4"
+        src="/images/ataskaita2022/pkp-logo/Rašytojų klubo logotipas.png"
+      />
       <h4>Rašytojų klubas</h4>
 
       <em>Ataskaitiniu laikotarpiu klubo veiklą koordinavo Nikolajus Elkana Eimutis.</em>
@@ -615,6 +657,11 @@
         etninių tapatybių sandūra kaip atspirtis pokyčiams visuomenėje.
       </p>
 
+      <img
+        class="w-48 h-auto mx-auto mt-4"
+        src="/images/ataskaita2022/pkp-logo/HEMA logotipas.jpg"
+      />
+
       <h4>HEMA</h4>
 
       <em>Ataskaitiniu laikotarpiu klubo veiklą koordinavo Gintarė Vaičekauskytė.</em>
@@ -634,6 +681,10 @@
         moksleiviams, moksleiviai – studentams) stovykloje.
       </p>
 
+      <img
+        class="w-48 h-auto mx-auto mt-4"
+        src="/images/ataskaita2022/pkp-logo/Fotoklubo logotipas.jpg"
+      />
       <h4>Foto klubas</h4>
 
       <em
@@ -686,7 +737,10 @@
         Dėkojame Vilniaus universitetui ir visai VU SA už nenutrūkstantį bendradarbiavimą,
         glaudų ryšį bei suteikiamas galimybes augti, veikti ir klestėti.
       </p>
-
+      <img
+        class="w-48 h-auto mx-auto mt-4"
+        src="/images/ataskaita2022/pkp-logo/Antropologų klubo logotipas.png"
+      />
       <h4>Antropologų klubas</h4>
       <em>Ataskaitiniu laikotarpiu klubo veiklą koordinavo Ivan Trunov.</em>
 
@@ -706,6 +760,10 @@
         socialinius tyrimus.
       </p>
 
+      <img
+        class="w-48 h-auto mx-auto mt-4"
+        src="/images/ataskaita2022/pkp-logo/The COINS logotipas.jpg"
+      />
       <h4>Gyvybės mokslų konferencija The COINS 2022</h4>
 
       <em>Ataskaitiniu laikotarpiu veiklą koordinavo Daniel Šematovič</em>
@@ -743,7 +801,10 @@
         bei paskaitomis moksleiviams ir pritraukusi 120 moksleivių iš įvairių Lietuvos
         mokyklų.
       </p>
-
+      <img
+        class="w-48 h-auto mx-auto mt-4"
+        src="/images/ataskaita2022/pkp-logo/JŽD logotipas.jpg"
+      />
       <h4>Jaunųjų žurmalistų draugija</h4>
       <em>Ataskaitiniu laikotarpiu draugijai vadovavo Gabija Strumylaitė.</em>
 
@@ -864,6 +925,15 @@
         kapitalą Vilniaus universiteto studentų gerovės labui.
       </p>
     </div>
+    <div class="col-span-4 mb-12">
+      <Link
+        class="text-lg duration-200 hover:text-red-600 font-bold"
+        :href="
+          route('main.ataskaita2022', { lang: $page.props.locale, permalink: 'sritys' })
+        "
+        >Sritys >></Link
+      >
+    </div>
   </Bendruomene>
 </template>
 
@@ -873,14 +943,20 @@ import Bendruomene from "../6-Bendruomene.vue";
 </script>
 
 <style scoped>
+h1 {
+  text-align: center;
+}
 h2 {
   font-size: 2rem;
-  font-weight: bold;
   text-align: center;
   margin: 1em 0 1em 0;
+}
+h3 {
+  font-size: 1.5rem;
 }
 h3,
 h4 {
   margin: 1em 0 1em 0;
+  text-align: center;
 }
 </style>

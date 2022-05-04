@@ -1,6 +1,8 @@
 <template>
   <Sveikinimai>
-    <h1 class="text-3xl text-center col-span-4 mb-8 -order-2">Sveikinimai</h1>
+    <h1 class="text-3xl text-center col-span-4 md:col-span-3 mb-8 -order-2">
+      Sveikinimai
+    </h1>
     <div
       class="col-span-4 order-1 md:-order-1 md:col-span-3 col-start-1 prose max-w-full md:max-w-prose"
     >
@@ -551,6 +553,15 @@
         />
       </NButton>
     </div>
+    <div class="col-span-4 mb-12 order-3">
+      <Link
+        class="text-lg duration-200 hover:text-red-600 font-bold"
+        :href="
+          route('main.ataskaita2022', { lang: $page.props.locale, permalink: 'vu-sa' })
+        "
+        >Apie VU SA >></Link
+      >
+    </div>
   </Sveikinimai>
 </template>
 
@@ -558,6 +569,7 @@
 import Sveikinimai from "../1-Sveikinimai.vue";
 import { NCarousel, NCarouselItem, NButton } from "naive-ui";
 import { ref } from "vue";
+import { Link } from "@inertiajs/inertia-vue3";
 
 const carouselIndex = ref(0);
 

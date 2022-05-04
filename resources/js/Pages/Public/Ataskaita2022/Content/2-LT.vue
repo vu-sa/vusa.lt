@@ -1,23 +1,162 @@
 <template>
+  <NModal v-model:show="showTaryba">
+    <div class="w-2/3 md:w-1/2 bg-white/95 shadow-lg rounded-lg p-6">
+      <h2 class="text-center mb-4">VU SA Taryba</h2>
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 overflow-auto gap-4 duration-200"
+      >
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Ignas Mugenis_Pirmininkas_CHGF-2.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA CHGF</p>
+          <strong>Ignas Mugenis</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Justinas Sacevičius_Pirmininkas_EVAF.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA EVAF</p>
+          <strong>Justinas Sacevičius</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Raimondas Šiškevičius_Pirminkas_FF.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA FF</p>
+          <strong>Raimondas Šiškevičius</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Elena Pranevičiūtė_Pirmininkė_FilF-2.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA FilF</p>
+          <strong>Elena Pranevičiūtė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Martyna Vilutytė_Pirmininke_FsF-2.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA FsF</p>
+          <strong>Martyna Vilutytė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Kornelija Buivydaitė_Pirmininkė_GMC-2.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA GMC</p>
+          <strong>Kornelija Buivydaitė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Ieva Šiaudvytytė_Pirmininke_IF-2.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA IF</p>
+          <strong>Ieva Šiaudvytytė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Dominyka Goldbergaitė_pirmininkė_KF-2.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA KF</p>
+          <strong>Dominyka Goldbergaitė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Lijana Savickienė_Pirmininke_KnF.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA KnF</p>
+          <strong>Lijana Savickienė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Emilija Narušytė_Pirminnke_MF-2.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA MF</p>
+          <strong>Emilija Narušytė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Paulina Bilinskaitė_Pirminink_MIF-2.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA MIF</p>
+          <strong>Paulina Bilinskaitė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Paulius-Ladukas_Pirmininkas_ŠA-2.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA ŠA</p>
+          <strong>Paulius Ladukas</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Airina Mikulėnaitė_Pirmininke_TF.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA TF</p>
+          <strong>Airina Mikulėnaitė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Ugnė Bičkauskaitė_Pirmininkė_TSPMI.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA TSPMI</p>
+          <strong>Ugnė Bičkauskaitė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Justinas Brazaitis – VU SA VM Pirmininkas (iki 2021 gruodžio mėn.).jpg"
+          />
+          <p class="mt-1 text-sm">VU SA VM</p>
+          <strong>Justinas Brazaitis (iki 2021 gruodžio mėn.)</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Edgaras Kodis_Pirmininkas_VM(nuo 2021-12).jpg"
+          />
+          <p class="mt-1 text-sm">VU SA VM</p>
+          <strong>Edgaras Kodis (nuo 2021 gruodžio mėn.)</strong>
+        </div>
+      </div>
+    </div></NModal
+  >
   <VUSA>
     <div
-      class="order-1 col-span-1 top-40 sticky md:block hidden"
-      style="height: 200px; align-self: start"
+      class="order-1 col-span-1 top-40 sticky ml-4"
+      style="height: 200px; align-self: start; justify-self: start"
     >
-      <NAnchor affix :bound="24" :trigger-top="40" :top="88">
-        <n-anchor-link title="Apie VU SA" href="#apie-vu-sa" />
-        <n-anchor-link title="VU SA strategija" href="#strategija" />
-        <n-anchor-link title="VU SA valdymo schema" href="#valdymo-schema" />
-        <n-anchor-link title="Parlamentas" href="#parlamentas">
-          <n-anchor-link title="Raštai" href="#rastai" />
-        </n-anchor-link>
-        <n-anchor-link title="Taryba" href="#taryba" />
+      <NAnchor>
+        <NAnchorLink title="Apie VU SA" href="#apie-vu-sa" />
+        <NAnchorLink title="VU SA strategija" href="#strategija" />
+        <NAnchorLink title="VU SA valdymo schema" href="#valdymo-schema" />
+        <NAnchorLink title="Parlamentas" href="#parlamentas">
+          <NAnchorLink title="Raštai" href="#rastai" />
+        </NAnchorLink>
+        <NAnchorLink title="Taryba" href="#taryba" />
       </NAnchor>
     </div>
     <div class="md:col-span-3 col-span-4">
       <section id="apie-vu-sa">
         <h2 class="rounded-lg p-2">Apie VU SA</h2>
-        <div class="bg-white py-6 px-12 rounded-lg prose lg:prose-lg mx-auto my-4">
+        <div
+          class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose lg:prose-lg mx-auto my-4"
+        >
           <p>
             <strong>Vilniaus universiteto Studentų atstovybė (VU SA)</strong> – seniausia
             ir didžiausia Lietuvoje ekspertinė švietimo organizacija, atstovaujanti
@@ -58,7 +197,9 @@
       </section>
       <section id="strategija">
         <h2>Vilniaus universiteto Studentų atstovybės strategija</h2>
-        <div class="bg-white py-6 px-12 rounded-lg prose mx-auto my-4">
+        <div
+          class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose lg:prose-lg mx-auto my-4"
+        >
           <p>
             <strong>Vizija</strong> – atvira aplinka savarankiškam studento tobulėjimui
             vieningoje Vilniaus universiteto bendruomenėje.
@@ -86,7 +227,9 @@
       </section>
       <section id="valdymo-schema">
         <h2>VU SA valdymo schema</h2>
-        <div class="bg-white py-6 px-12 rounded-lg prose mx-auto my-4">
+        <div
+          class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose lg:prose-lg mx-auto my-4"
+        >
           <p>
             Vilniaus universiteto Studentų atstovybės valdymo struktūrą sudaro:
             Konferencija (aukščiausia VU SA savivaldos institucija), Prezidentas,
@@ -111,7 +254,7 @@
       <section id="parlamentas">
         <div class="relative">
           <img
-            class="rounded-lg md:w-2/3 w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 mx-auto"
+            class="max-w-[80ch] rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 mx-auto"
             src="/images/ataskaita2022/kitos-nuotraukos/Parlamentas.jpg"
           />
           <p
@@ -120,7 +263,9 @@
             Parlamentas
           </p>
         </div>
-        <div class="bg-white py-6 px-12 rounded-lg prose mx-auto my-4">
+        <div
+          class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose lg:prose-lg mx-auto my-4"
+        >
           <p>
             VU SA Parlamentui pirmininkavo Aistė Rinkevičiūtė (iki 2022 m. vasario mėn.)
             ir Ugnius Sejonas (nuo 2022 m. vasario mėn.).
@@ -263,7 +408,7 @@
             <NCollapse accordion>
               <NCollapseItem>
                 <template #header>
-                  <h4>
+                  <h4 class="mb-0">
                     Sudaryta laikinoji darbo grupė ir patvirtinta rezoliucija dėl užsienio
                     studentų integracijos Vilniaus universitete
                   </h4>
@@ -288,7 +433,7 @@
 
               <NCollapseItem>
                 <template #header>
-                  <h4>
+                  <h4 class="mb-0">
                     Sudaryta laikinoji darbo grupė ir patvirtinta pozicija dėl akademinės
                     etikos pažeidimų prevencijos
                   </h4>
@@ -310,7 +455,7 @@
 
               <NCollapseItem>
                 <template #header>
-                  <h4>
+                  <h4 class="mb-0">
                     Sudaryta laikinoji darbo grupė ir patvirtinta pozicija dėl užsienio
                     studentų (-čių) teisinės padėties
                   </h4>
@@ -332,7 +477,7 @@
 
               <NCollapseItem>
                 <template #header>
-                  <h4>
+                  <h4 class="mb-0">
                     Sudaryta laikinoji darbo grupė ir patvirtinta rezoliucija dėl studentų
                     (-čių) mokslinės veiklos Lietuvos universitetuose
                   </h4>
@@ -353,7 +498,7 @@
 
               <NCollapseItem>
                 <template #header>
-                  <h4>
+                  <h4 class="mb-0">
                     Sudaryta laikinoji darbo grupė ir patvirtinta pozicija dėl studentų
                     (-čių) praktikų organizavimo gerinimo
                   </h4>
@@ -374,7 +519,7 @@
 
               <NCollapseItem>
                 <template #header>
-                  <h4>
+                  <h4 class="mb-0">
                     Sudaryta laikinoji darbo grupė ir patvirtinta pozicija dėl Vilniaus
                     Universiteto studentų (-čių) žemo finansinio raštingumo lygio
                   </h4>
@@ -394,7 +539,7 @@
 
               <NCollapseItem>
                 <template #header>
-                  <h4>
+                  <h4 class="mb-0">
                     Posėdžio metu patvirtintas nutarimas dėl organizacijos pozicijos
                     atsižvelgiant į Ukrainoje vykstančius procesus
                   </h4>
@@ -409,6 +554,7 @@
               </NCollapseItem>
             </NCollapse>
           </section>
+          <NDivider></NDivider>
 
           <strong>Kiti nuveikti darbai</strong>
 
@@ -496,17 +642,26 @@
       </section>
       <section id="taryba">
         <div class="relative">
-          <img
-            class="rounded-lg md:w-2/3 w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 mx-auto"
-            src="/images/ataskaita2022/kitos-nuotraukos/Parlamentas.jpg"
-          />
+          <NButton
+            text
+            class="relative"
+            style="white-space: normal; margin: 0 auto 0 auto; width: 100%"
+            @click="showTaryba = true"
+          >
+            <img
+              class="rounded-lg max-w-[80ch] w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 mx-auto"
+              src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/Taryba-2.jpg"
+            />
+          </NButton>
           <p
             class="absolute text-white font-bold text-2xl sm:text-3xl md:text-4xl w-full text-center bottom-8"
           >
             VU SA Taryba
           </p>
         </div>
-        <div class="bg-white py-6 px-12 rounded-lg prose mx-auto my-4">
+        <div
+          class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose lg:prose-lg mx-auto my-4"
+        >
           <p>2021–2022 m. VU SA Tarybą sudarė:</p>
           <ul>
             <li><strong>VU SA Prezidentė:</strong> Neda Žutautaitė</li>
@@ -583,13 +738,33 @@
         </div>
       </section>
     </div>
+    <div class="col-span-4 md:col-span-3 mb-12 order-2">
+      <Link
+        class="text-lg duration-200 hover:text-red-600 font-bold"
+        :href="
+          route('main.ataskaita2022', { lang: $page.props.locale, permalink: 'mvp' })
+        "
+        >Metų veiklos planas >></Link
+      >
+    </div>
   </VUSA>
 </template>
 
 <script setup>
 import VUSA from "../2-VU-SA.vue";
 import { Link } from "@inertiajs/inertia-vue3";
-import { NCollapse, NCollapseItem, NDivider, NAnchor, NAnchorLink } from "naive-ui";
+import {
+  NCollapse,
+  NCollapseItem,
+  NDivider,
+  NAnchor,
+  NAnchorLink,
+  NModal,
+  NButton,
+} from "naive-ui";
+import { ref } from "vue";
+
+const showTaryba = ref(false);
 </script>
 
 <style scoped>
@@ -603,8 +778,11 @@ h3,
 h4 {
   margin: 1em 0 1em 0;
 }
+h4.mb-0 {
+  margin: 0em 0 0em 0;
+}
 
 section {
-  scroll-margin-top: 100px;
+  scroll-margin-top: 120px;
 }
 </style>
