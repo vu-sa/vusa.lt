@@ -154,9 +154,7 @@
     <div class="md:col-span-3 col-span-4">
       <section id="apie-vu-sa">
         <h2 class="rounded-lg p-2">Apie VU SA</h2>
-        <div
-          class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose lg:prose-lg mx-auto my-4"
-        >
+        <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
           <p>
             <strong>Vilniaus universiteto Studentų atstovybė (VU SA)</strong> – seniausia
             ir didžiausia Lietuvoje ekspertinė švietimo organizacija, atstovaujanti
@@ -197,9 +195,7 @@
       </section>
       <section id="strategija">
         <h2>Vilniaus universiteto Studentų atstovybės strategija</h2>
-        <div
-          class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose lg:prose-lg mx-auto my-4"
-        >
+        <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
           <p>
             <strong>Vizija</strong> – atvira aplinka savarankiškam studento tobulėjimui
             vieningoje Vilniaus universiteto bendruomenėje.
@@ -227,9 +223,7 @@
       </section>
       <section id="valdymo-schema">
         <h2>VU SA valdymo schema</h2>
-        <div
-          class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose lg:prose-lg mx-auto my-4"
-        >
+        <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
           <p>
             Vilniaus universiteto Studentų atstovybės valdymo struktūrą sudaro:
             Konferencija (aukščiausia VU SA savivaldos institucija), Prezidentas,
@@ -263,9 +257,7 @@
             Parlamentas
           </p>
         </div>
-        <div
-          class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose lg:prose-lg mx-auto my-4"
-        >
+        <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
           <p>
             VU SA Parlamentui pirmininkavo Aistė Rinkevičiūtė (iki 2022 m. vasario mėn.)
             ir Ugnius Sejonas (nuo 2022 m. vasario mėn.).
@@ -659,9 +651,7 @@
             VU SA Taryba
           </p>
         </div>
-        <div
-          class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose lg:prose-lg mx-auto my-4"
-        >
+        <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
           <p>2021–2022 m. VU SA Tarybą sudarė:</p>
           <ul>
             <li><strong>VU SA Prezidentė:</strong> Neda Žutautaitė</li>

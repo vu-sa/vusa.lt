@@ -312,6 +312,17 @@ class MainController extends Controller
 		return back()->with('search_calendar', $calendar)->with('search_news', $news)->with('search_pages', $pages);
 	}
 
+	public function saziningaiExamRegistration() {
+		
+		// return all padalinys but only shortname VU and id
+		$padaliniai = Padalinys::select('id', 'shortname_vu')->where('shortname', '!=', 'VU')->orderBy('shortname')->get();
+
+		
+		return Inertia::render('Public/SaziningaiExamRegistration', [
+			'padaliniaiOptions' => $padaliniai,
+		]);
+	}
+
 	public function ataskaita2022() {
 
 		$permalink = request()->route('permalink');

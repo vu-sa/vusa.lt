@@ -76,7 +76,7 @@
           <img
             class="carousel-img"
             style="object-position: 0% 20%"
-            src="/images/ataskaita2022/sveikinimai/JurgitaSiugzdiniene.20211231SMM0969.jpg"
+            src="/images/ataskaita2022/sveikinimai/JurgitaSiugzdiniene.jpg"
           />
           <div class="bg-white p-6 text-sm">
             <p>Mieli studentai,</p>
@@ -486,7 +486,7 @@
         <img
           class="w-20 h-20 object-cover rounded-lg hover:grayscale-0 duration-200"
           :class="{ grayscale: carouselIndex !== 1 }"
-          src="/images/ataskaita2022/sveikinimai/JurgitaSiugzdiniene.20211231SMM0969.jpg"
+          src="/images/ataskaita2022/sveikinimai/JurgitaSiugzdiniene.jpg"
         />
       </NButton>
       <NButton text="" @click="carouselIndex = 2">

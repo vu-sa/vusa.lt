@@ -1119,7 +1119,7 @@
         <div>
           <img
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
-            src="/images/ataskaita2022/koordinatoriu-nuotraukos/PKP/Julija Baublinskaitė Be etikečių.jpg"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/Julija Baublinskaitė Be etikečių.jpg"
           />
           <p class="mt-1 text-sm">Programa "Be etikečių"</p>
           <strong>Julija Baublinskaitė</strong>
@@ -1127,7 +1127,7 @@
         <div>
           <img
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
-            src="/images/ataskaita2022/koordinatoriu-nuotraukos/PKP/Gintarė Vaičekauskytė_HEMA.jpg"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/Gintarė Vaičekauskytė_HEMA.jpg"
           />
           <p class="mt-1 text-sm">HEMA</p>
           <strong>Gintarė Vaičekauskytė</strong>
@@ -1135,7 +1135,7 @@
         <div>
           <img
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
-            src="/images/ataskaita2022/koordinatoriu-nuotraukos/PKP/Danielius Šematovič_The COINS.jpg"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/Danielius Šematovič_The COINS.jpg"
           />
           <p class="mt-1 text-sm">The COINS</p>
           <strong>Danielius Šematovič</strong>
@@ -1143,7 +1143,7 @@
         <div>
           <img
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
-            src="/images/ataskaita2022/koordinatoriu-nuotraukos/PKP/Gabija Raubaitė VU fotoklubas.jpg"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/Gabija Raubaitė VU fotoklubas.jpg"
           />
           <p class="mt-1 text-sm">VU Foto klubas</p>
           <strong>Gabija Raubaitė</strong>
@@ -1151,7 +1151,7 @@
         <div>
           <img
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
-            src="/images/ataskaita2022/koordinatoriu-nuotraukos/PKP/Andranik Karagezian VU Fotoklubas.jpg"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/Andranik Karagezian VU Fotoklubas.jpg"
           />
           <p class="mt-1 text-sm">VU Foto klubas</p>
           <strong>Andranik Karagezian</strong>
@@ -1159,7 +1159,7 @@
         <div>
           <img
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
-            src="/images/ataskaita2022/koordinatoriu-nuotraukos/PKP/Gabija Strumylaitė VU Jaunųjų žurnalistų draugija.jpg"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/Gabija Strumylaitė VU Jaunųjų žurnalistų draugija.jpg"
           />
           <p class="mt-1 text-sm">VU Jaunųjų žurnalistų draugija</p>
           <strong>Gabija Strumylaitė</strong>
@@ -1167,7 +1167,7 @@
         <div>
           <img
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
-            src="/images/ataskaita2022/koordinatoriu-nuotraukos/PKP/Eglė Jašinskaitė VU Karjeros dienos.jpg"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/Eglė Jašinskaitė VU Karjeros dienos.jpg"
           />
           <p class="mt-1 text-sm">VU Karjeros dienos</p>
           <strong>Eglė Jašinskaitė</strong>
