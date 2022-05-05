@@ -18,7 +18,7 @@
         <NCarouselItem>
           <img
             class="carousel-img"
-            style="object-position: 0% 20%"
+            style="object-position: 0% 15%"
             src="/images/ataskaita2022/sveikinimai/MP portretas.jpg"
           />
           <div class="bg-white p-6 text-sm">
