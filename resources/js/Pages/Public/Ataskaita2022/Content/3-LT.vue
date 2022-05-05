@@ -148,15 +148,10 @@
           content="Apskaičiuotas dalykų krūvis pagal dalykų aprašus."
         ></NTimelineItem>
         <NTimelineItem
-          type="info"
           title="3 uždavinys: bus vykdoma"
           content="Palyginti praktinio ir teorinio krūvio duomenys pagal suteiktus kreditus ir dalyko aprašą."
         ></NTimelineItem>
-        <NTimelineItem
-          type="info"
-          title="4 uždavinys: bus vykdoma"
-          content="..."
-        ></NTimelineItem>
+        <NTimelineItem title="4 uždavinys: bus vykdoma" content="..."></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
@@ -192,7 +187,6 @@ nuotolinių studijų įrankiai, studentus įtraukiantys metodai, D.U.K. dėl met
 naudojimo, nuotolinių atsiskaitymų organizavimo būdai. "
         ></NTimelineItem>
         <NTimelineItem
-          type="info"
           title="2 uždavinys: bus vykdoma"
           content="Skatinti pildyti VU IS apklausas. "
         ></NTimelineItem>
@@ -297,7 +291,6 @@ saugojimo tvarkos aprašo. "
           content="Remiantis atlikta analize paruoštas laboratorinių darbų konceptas."
         ></NTimelineItem>
         <NTimelineItem
-          type="info"
           title="3 uždavinys: bus vykdoma"
           content="Parengiamas laboratorinių darbų atnaujinimo planas VU FF"
         ></NTimelineItem>
@@ -352,7 +345,6 @@ pasiūlymui."
 planu."
         ></NTimelineItem>
         <NTimelineItem
-          type="info"
           title="5 uždavinys: bus vykdoma"
           content="Yra pasiruošta vykdyti VU FF II pakopos pirmo kurso studentų akademinės integracijos planą"
         ></NTimelineItem>
@@ -389,7 +381,6 @@ planu."
           content="VU FLF bendruomenei yra suorganizuotos šviečiamojo pobūdžio veiklos apie psichoemocinę būseną."
         ></NTimelineItem>
         <NTimelineItem
-          type="info"
           title="2 uždavinys: bus vykdoma"
           content="VU SA FilF yra įgyvendintas informacijos apie psichoemocinę būklę viešinimo planas fakulteto
 bendruomenei. "
@@ -427,7 +418,6 @@ bendruomenei. "
 pakopos studentų poreikiai tvarkaraščių suformavimui.  "
         ></NTimelineItem>
         <NTimelineItem
-          type="info"
           title="2 uždavinys: bus vykdoma"
           content="VU FLF yra priimtas dokumentas, apibrėžiantis gyvo, nuotolinio ir mišraus mokymo(si) tvarkaraščių
 formavimo principus. "
@@ -465,7 +455,6 @@ komunikacijos su dėstytojais priežastis."
           content="Yra atlikta dėstytojų apklausa, padėsianti išsiaiškinti prastos komunikacijos su studentais priežastis."
         ></NTimelineItem>
         <NTimelineItem
-          type="info"
           title="3 uždavinys: bus vykdoma"
           content="Surinkta informacija yra apibendrinta, aprašyta ir pateikta analizės dokumente"
         ></NTimelineItem>
@@ -556,7 +545,6 @@ bakalauro pakopos studijų programų."
           content="Išrašytos Studijų įvado problemos ir parengtas atnaujinto modulio aprašo pavyzdys."
         ></NTimelineItem>
         <NTimelineItem
-          type="info"
           title="2 uždavinys: bus vykdoma"
           content="Atnaujintas dalyko aprašas su detalizuotomis temomis ir tolygiu krūviu yra patvirtintas SPK"
         ></NTimelineItem>
@@ -584,7 +572,6 @@ bakalauro pakopos studijų programų."
 
       <NTimeline class="mt-4">
         <NTimelineItem
-          type="info"
           title="1 uždavinys: bus vykdoma"
           content="Atnaujintas specialybės rusų kalbos dalyko aprašas yra įkeltas į Vilniaus universiteto Informacinę
 sistemą."
@@ -733,16 +720,27 @@ planai."
             <li>
               Įgyvendinta VMA kursų apžvalga ir SP tobulinimo planai – atitinkamose SP
               įtrauktos specializacijos, nauji BUS dalykai, keisti studijų tinkleliai ir
-              PD. Sukurti pagrindai Debatų klubo įsteigimui, parengta ir administracijai
+              PD.
+            </li>
+
+            <li>
+              Sukurti pagrindai Debatų klubo įsteigimui, parengta ir administracijai
               pristatyta pirmo kurso studentų iniciatyva verslumu ir investavimu
-              besidomintiems studentams. Sukurti pagrindai užsienio studentų integracijai
-              į VU SA KnF veiklą – BA ir MA užsienio studentai supažindinti su VU SA KnF
-              veikla, VU SA KnF socialinių tinklų įrašai versti į anglų kalbą, Visuotiniai
-              susirinkimai pradėti vesti anglų kalba, juose dalyvavo užsienio studentai.
-              Užsienio studentams paskirti mentoriai. Pasiektas susitarimas su VU ir VU
-              KnF dėl VU KnF bendrabučio tyrimų projekto darbų pradžios datos ir eigos.
-              Parengtas naujos studentų mokslo erdvės įrengimo projektas Fakulteto
-              patalpose.
+              besidomintiems studentams.
+            </li>
+
+            <li>
+              Sukurti pagrindai užsienio studentų integracijai į VU SA KnF veiklą – BA ir
+              MA užsienio studentai supažindinti su VU SA KnF veikla, VU SA KnF socialinių
+              tinklų įrašai versti į anglų kalbą, Visuotiniai susirinkimai pradėti vesti
+              anglų kalba, juose dalyvavo užsienio studentai. Užsienio studentams paskirti
+              mentoriai.
+            </li>
+
+            <li>
+              Pasiektas susitarimas su VU ir VU KnF dėl VU KnF bendrabučio tyrimų projekto
+              darbų pradžios datos ir eigos. Parengtas naujos studentų mokslo erdvės
+              įrengimo projektas Fakulteto patalpose.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -774,13 +772,22 @@ planai."
               Bendradarbiaujant su VU akademine bendruomene, Lietuvos bei užsienio
               iniciatyvomis, skatinančiomis ir atliepiančiomis švarų bei tvarų gyvenimo
               būdą, parengtas komunikacijos kampanijos informacinis ciklas „Žalia žinia“.
+            </li>
+
+            <li>
               Šios ekologijos komunikacijos kampanijos metu studentai informuoti apie
               tvarumo svarbą, skatinti susipažinti su švaistymo pasekmėmis bei kviesti
-              tapti ekologijos iniciatyvų dalimi. VU SA KnF renginyje „Sielų upė 2021“
-              atsisakyta aplinką teršiančių ir neperrūšiuojamų parafino žvakių, jos
-              pakeistos šviesos diodų žvakėmis, kurios yra ilgaamžės ir lengvai
-              rūšiuojamos. VU SA KnF renginiuose neperdirbamų išteklių vartojimas
-              sumažintas 80 proc.
+              tapti ekologijos iniciatyvų dalimi.
+            </li>
+
+            <li>
+              VU SA KnF renginyje „Sielų upė 2021“ atsisakyta aplinką teršiančių ir
+              neperrūšiuojamų parafino žvakių, jos pakeistos šviesos diodų žvakėmis,
+              kurios yra ilgaamžės ir lengvai rūšiuojamos.
+            </li>
+
+            <li>
+              VU SA KnF renginiuose neperdirbamų išteklių vartojimas sumažintas 80 proc.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -812,12 +819,10 @@ kontaktine informacija."
           content="„MeDi“ savaitėje yra suorganizuotos bent 3 anglų kalba vykdomos veiklos."
         ></NTimelineItem>
         <NTimelineItem
-          type="info"
           title="4 uždavinys: bus vykdoma"
           content="Padidėja BUS, vykdomų anglų kalba, skaičius."
         ></NTimelineItem>
         <NTimelineItem
-          type="info"
           title="5 uždavinys: bus vykdoma"
           content="ISR nariai jaučiasi VU SA dalimi."
         ></NTimelineItem>
@@ -828,6 +833,9 @@ kontaktine informacija."
             <li>
               MF administracija išsikėlė tikslą atnaujinti Medicinos fakulteto internetinį
               puslapį, tuo pačiu atnaujindama ir anglų kalba esančią informaciją.
+            </li>
+
+            <li>
               Tarptautiniai studentai, kartu su VU SA MF komanda, sukūrė išskirtinę Medi
               savaitę, kurioje visos veiklos vykdytos anglų kalba. Toliau bus tęsiami
               darbai ties BUS dalykų atnaujinimu.
@@ -845,42 +853,35 @@ kontaktine informacija."
 
       <NTimeline class="mt-4">
         <NTimelineItem
-          type="info"
           title="1 uždavinys: bus vykdoma"
           content="Sukurtas internatūros registracijos proceso žemėlapis, kuris yra pateiktas VU Studentų paslaugų ir
 karjeros skyriui."
         ></NTimelineItem>
         <NTimelineItem
-          type="info"
           title="2 uždavinys: bus vykdoma"
           content="Surinkta informacija apie internatūros metu įgytų praktinių įgūdžių vertinimo sistemą VU MF,
 Lietuvoje ir užsienyje. "
         ></NTimelineItem>
         <NTimelineItem
-          type="info"
           title="3 uždavinys: bus vykdoma"
           content="Suformuota darbo grupė elektronizuotos internatūros metu įgytų praktinių įgūdžių vertinimo sistemos
 koncepcija ir jos įgyvendinimui reikalingo biudžeto projekto parengimui."
         ></NTimelineItem>
         <NTimelineItem
-          type="info"
           title="4 uždavinys: bus vykdoma"
           content="VU MF Taryboje patvirtinta elektronizuotos internatūros metu įgytų praktinių įgūdžių vertinimo
 sistemos koncepcija ir jos įgyvendinimui reikalingas biudžetas."
         ></NTimelineItem>
         <NTimelineItem
-          type="info"
           title="5 uždavinys: bus vykdoma"
           content="Medicinos studijų programos 6 kurso studentams yra parengtas informacijos paketas apie internatūros
 atlikimą internatūros bazėse."
         ></NTimelineItem>
         <NTimelineItem
-          type="info"
           title="6 uždavinys: bus vykdoma"
           content="Sukurta elektroninė internatūros metu įgytų praktinių įgūdžių vertinimo sistema"
         ></NTimelineItem>
         <NTimelineItem
-          type="info"
           title="7 uždavinys: bus vykdoma"
           content="Įgyvendinta komunikacijos kampanija."
         ></NTimelineItem>
@@ -929,7 +930,6 @@ atlikimą internatūros bazėse."
           content="Įgyvendinta mokytis skatinanti veikla „Studentas – Studentui“."
         ></NTimelineItem>
         <NTimelineItem
-          type="info"
           title="5 uždavinys: bus vykdoma"
           content="Įvertintas iniciatyvų veiksmingumas pagal pasirinktus rodiklius"
         ></NTimelineItem>
@@ -979,7 +979,6 @@ atlikimą internatūros bazėse."
           content="Patvirtinti kiekvienos studijų programos studentams aktualių problemų sprendimai"
         ></NTimelineItem>
         <NTimelineItem
-          type="info"
           title="4 uždavinys: bus vykdoma"
           content="Padidintas VU IS apklausas užpildžiusių studentų skaičius (pakiltų bent 15%)."
         ></NTimelineItem>
@@ -1029,7 +1028,7 @@ apimties."
 klausimą dėl praktikų organizavimo tvarkos"
         ></NTimelineItem>
         <NTimelineItem
-          type="error"
+          type="success"
           title="5 uždavinys: įvykdyta"
           content="SPK posėdyje yra patvirtinta atnaujinta praktikos ataskaitos forma."
         ></NTimelineItem>
@@ -1159,24 +1158,20 @@ raštingumo problemas."
 vertinimo skilčių tobulinimui."
         ></NTimelineItem>
         <NTimelineItem
-          type="info"
           title="3 uždavinys: bus vykdoma"
           content="Supažindinti studentų atstovus SPK ir VU TF Taryboje bei sesijinių studijų studentų atstovus su
 parengtomis rekomendacijomis ir pagal išsakytus komentarus pakoreguoti rekomendacijas."
         ></NTimelineItem>
         <NTimelineItem
-          type="info"
           title="4 uždavinys: bus vykdoma"
           content="Supažindinti Prodekaną studijoms H. Šinkūną su parengtomis rekomendacijomis ir pagal
 išsakytas pastabas pakoreguoti rekomendacijas."
         ></NTimelineItem>
         <NTimelineItem
-          type="info"
           title="5 uždavinys: bus vykdoma"
           content="Pristatyti rekomendacijas VU TF Taryboje."
         ></NTimelineItem>
         <NTimelineItem
-          type="info"
           title="6 uždavinys: bus vykdoma"
           content="Iškelti klausimą SPK dėl atnaujintų dalykų aprašų patvirtinimo."
         ></NTimelineItem>
@@ -1289,17 +1284,14 @@ nariams."
           content="Yra surasti mentoriai, padėsiantys studentams vykdyti mokslinę veiklą."
         ></NTimelineItem>
         <NTimelineItem
-          type="info"
           title="3 uždavinys: bus vykdoma"
           content="Yra suorganizuoti mokslinių darbų rengimo ir studentų pritraukimo mokymai."
         ></NTimelineItem>
         <NTimelineItem
-          type="info"
           title="4 uždavinys: bus vykdoma"
           content="Yra surasti VU VM SMD partneriai (įmonės, alumni, žiniasklaida)."
         ></NTimelineItem>
         <NTimelineItem
-          type="info"
           title="5 uždavinys: bus vykdoma"
           content="Suorganizuota konferencija, kurios metu yra pristatyti geriausi studentų atlikti moksliniai darbai"
         ></NTimelineItem>

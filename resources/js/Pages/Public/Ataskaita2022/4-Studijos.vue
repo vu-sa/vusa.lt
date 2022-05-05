@@ -1,16 +1,46 @@
 <template>
   <AtaskaitaLayout
-    :backgroundImage="'/images/photos/observatorijos_kiemelis.jpg'"
+    :backgroundImage="'/images/ataskaita2022/kitos-nuotraukos/IMG_8817.jpg'"
     :title="'VU SA | Ataskaita 2022'"
   >
-    <article class="grid grid-cols-4 justify-items-center px-8 lg:px-32 gap-y-4">
-      <div class="py-6 px-12 col-span-4 max-w-[80ch] prose lg:prose-lg">
+    <div class="grid grid-cols-8 justify-items-center justify-center">
+      <NButton
+        @click="inertiaVisitOnClick('mvp')"
+        class="hidden md:block top-[50vh] h-fit"
+        text
+        style="font-size: 60px; align-self: flex-start; position: sticky"
+      >
+        <NIcon><ArrowCircleLeft28Regular /></NIcon
+      ></NButton>
+      <article
+        class="flex flex-col justify-items-center px-8 lg:px-32 gap-y-4 mx-auto items-center col-span-6"
+      >
         <slot></slot>
-      </div>
-    </article>
+      </article>
+      <NButton
+        @click="inertiaVisitOnClick('organizacija')"
+        class="hidden md:block top-[50vh] h-fit"
+        text
+        style="font-size: 60px; align-self: flex-start; position: sticky"
+        ><NIcon><ArrowCircleRight28Regular /></NIcon
+      ></NButton>
+    </div>
   </AtaskaitaLayout>
 </template>
 
 <script setup>
 import AtaskaitaLayout from "@/Layouts/AtaskaitaLayout.vue";
+import { NButton, NIcon } from "naive-ui";
+import { ArrowCircleLeft28Regular, ArrowCircleRight28Regular } from "@vicons/fluent";
+import { Inertia } from "@inertiajs/inertia";
+import { usePage } from "@inertiajs/inertia-vue3";
+
+const inertiaVisitOnClick = (permalink) => {
+  Inertia.visit(
+    route("main.ataskaita2022", {
+      lang: usePage().props.value.locale,
+      permalink: permalink,
+    })
+  );
+};
 </script>

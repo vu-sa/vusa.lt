@@ -15,9 +15,14 @@
         >{{ __("Grįžti į vusa.lt") }}</Link
       >
       <div>
-        <NButton size="small" style="border-radius: 0.5rem">
+        <NButton size="small" style="border-radius: 0.5rem" @click="goToAtaskaitaHome">
           <!-- <NGradientText type="warning"> -->
-          <strong>Ataskaita 2022</strong>
+          <strong
+            ><NGradientText v-if="permalink == 'pradzia'" type="error">{{
+              __("Ataskaita 2022")
+            }}</NGradientText
+            ><template v-else>{{ __("Ataskaita 2022") }}</template></strong
+          >
           <!-- </NGradientText> -->
         </NButton>
       </div>
@@ -38,7 +43,7 @@
       <Link
         v-if="permalink === 'sveikinimai'"
         :href="route('main.ataskaita2022', { lang: locale, permalink: 'sveikinimai' })"
-        ><NGradientText type="error">Sveikinimai</NGradientText></Link
+        ><NGradientText type="error">{{ __("Sveikinimai") }}</NGradientText></Link
       >
 
       <Link
@@ -77,9 +82,9 @@
         class="hover:text-red-600 duration-200"
         :href="route('main.ataskaita2022', { lang: locale, permalink: 'sritys' })"
         ><NGradientText type="error" v-if="permalink === 'sritys'">{{
-          __("Sritys")
+          __("Bendruomenė")
         }}</NGradientText
-        ><template v-else>{{ __("Sritys") }}</template></Link
+        ><template v-else>{{ __("Bendruomenė") }}</template></Link
       >
       <NDropdown
         placement="top-end"
@@ -225,7 +230,6 @@ const options_language_en = [
   {
     label: "Change page language",
     key: "page",
-    disabled: true,
   },
   {
     label: "Go to main report page",
@@ -237,7 +241,6 @@ const options_language_lt = [
   {
     label: "Pakeisti puslapio kalbą",
     key: "page",
-    disabled: true,
   },
   {
     label: "Eiti į ataskaitos pagrindinį",
@@ -303,6 +306,15 @@ const handleSelectKryptis = (url) => {
   );
 };
 
+const goToAtaskaitaHome = () => {
+  Inertia.visit(
+    route("main.ataskaita2022", {
+      lang: locale.value,
+      permalink: "pradzia",
+    })
+  );
+};
+
 const handleSelectLanguage = (key) => {
   let otherLocale = locales.filter((l) => {
     return l !== locale.value;
@@ -318,7 +330,12 @@ const handleSelectLanguage = (key) => {
     // Inertia.visit(route("main.page", { lang: "lt" }));
     // message.info("Navigating to " + key);
   } else if (key === "page") {
-    // message.info("Navigating to " + key);
+    Inertia.visit(
+      route("main.ataskaita2022", {
+        lang: otherLocale[0],
+        permalink: permalink,
+      })
+    );
   }
 };
 </script>

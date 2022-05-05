@@ -3,7 +3,9 @@
     :backgroundImage="'/images/photos/observatorijos_kiemelis.jpg'"
     :title="'VU SA | Ataskaita 2022'"
   >
-    <article class="grid grid-cols-4 justify-items-center px-8 lg:px-32 gap-y-4">
+    <article
+      class="flex flex-col justify-items-center px-8 lg:px-32 gap-y-4 mx-auto items-center"
+    >
       <slot></slot>
     </article>
   </AtaskaitaLayout>

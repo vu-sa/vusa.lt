@@ -1,4 +1,141 @@
 <template>
+  <NModal v-model:show="showTaryba">
+    <div class="w-2/3 md:w-1/2 bg-white/95 shadow-lg rounded-lg p-6">
+      <h2 class="text-center mb-4">VU SA Taryba</h2>
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 overflow-auto gap-4 duration-200"
+      >
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Ignas Mugenis_Pirmininkas_CHGF-2.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA CHGF</p>
+          <strong>Ignas Mugenis</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Justinas Sacevičius_Pirmininkas_EVAF.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA EVAF</p>
+          <strong>Justinas Sacevičius</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Raimondas Šiškevičius_Pirminkas_FF.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA FF</p>
+          <strong>Raimondas Šiškevičius</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Elena Pranevičiūtė_Pirmininkė_FilF-2.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA FilF</p>
+          <strong>Elena Pranevičiūtė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Martyna Vilutytė_Pirmininke_FsF-2.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA FsF</p>
+          <strong>Martyna Vilutytė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Kornelija Buivydaitė_Pirmininkė_GMC-2.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA GMC</p>
+          <strong>Kornelija Buivydaitė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Ieva Šiaudvytytė_Pirmininke_IF-2.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA IF</p>
+          <strong>Ieva Šiaudvytytė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Dominyka Goldbergaitė_pirmininkė_KF-2.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA KF</p>
+          <strong>Dominyka Goldbergaitė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Lijana Savickienė_Pirmininke_KnF.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA KnF</p>
+          <strong>Lijana Savickienė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Emilija Narušytė_Pirminnke_MF-2.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA MF</p>
+          <strong>Emilija Narušytė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Paulina Bilinskaitė_Pirminink_MIF-2.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA MIF</p>
+          <strong>Paulina Bilinskaitė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Paulius-Ladukas_Pirmininkas_ŠA-2.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA ŠA</p>
+          <strong>Paulius Ladukas</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Airina Mikulėnaitė_Pirmininke_TF.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA TF</p>
+          <strong>Airina Mikulėnaitė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Ugnė Bičkauskaitė_Pirmininkė_TSPMI.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA TSPMI</p>
+          <strong>Ugnė Bičkauskaitė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Justinas Brazaitis – VU SA VM Pirmininkas (iki 2021 gruodžio mėn.).jpg"
+          />
+          <p class="mt-1 text-sm">VU SA VM</p>
+          <strong>Justinas Brazaitis (iki 2021 gruodžio mėn.)</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Edgaras Kodis_Pirmininkas_VM(nuo 2021-12).jpg"
+          />
+          <p class="mt-1 text-sm">VU SA VM</p>
+          <strong>Edgaras Kodis (nuo 2021 gruodžio mėn.)</strong>
+        </div>
+      </div>
+    </div></NModal
+  >
   <NModal v-model:show="showCB">
     <div class="w-2/3 md:w-1/2 bg-white/95 shadow-lg rounded-lg p-6">
       <h2 class="text-center mb-4">Centrinis biuras</h2>
@@ -196,6 +333,14 @@
           <p class="mt-1 text-sm">VU SA GMC</p>
           <strong>Justė Žilionytė</strong>
         </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU SA IF</p>
+          <strong>Vakarė Gotautaitė (iki 2021-08)</strong>
+        </div>
         <div>
           <img
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
@@ -219,6 +364,14 @@
           />
           <p class="mt-1 text-sm">VU SA KnF</p>
           <strong>Raminta Klimaitė</strong>
+        </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU SA MF</p>
+          <strong>Snieguolė Bičkutė</strong>
         </div>
         <div>
           <img
@@ -316,6 +469,22 @@
           />
           <p class="mt-1 text-sm">VU SA GMC</p>
           <strong>Miglė Krasauskaitė</strong>
+        </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU SA IF</p>
+          <strong>Visvaldas Vačiulis (iki 2021-08)</strong>
+        </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU SA IF</p>
+          <strong>Bernadeta Lukošiūtė (nuo 2021-08 iki 2021-10)</strong>
         </div>
         <div>
           <img
@@ -445,6 +614,14 @@
           />
           <p class="mt-1 text-sm">VU SA FsF</p>
           <strong>Dovilė Mikniūtė</strong>
+        </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU SA GMC</p>
+          <strong>Aistė Andrukaitė (iki 2021-08)</strong>
         </div>
         <div>
           <img
@@ -591,6 +768,14 @@
           <p class="mt-1 text-sm">VU SA GMC</p>
           <strong>Vesta Kubiliūtė</strong>
         </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU SA IF</p>
+          <strong>Evelina Volskytė (iki 2021-08)</strong>
+        </div>
         <div>
           <img
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
@@ -696,6 +881,14 @@
           <p class="mt-1 text-sm">VU SA FsF</p>
           <strong>Vakarė Punelytė</strong>
         </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU SA GMC</p>
+          <strong>Lukas Šarauskas</strong>
+        </div>
         <div>
           <img
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
@@ -703,6 +896,14 @@
           />
           <p class="mt-1 text-sm">VU SA GMC</p>
           <strong>Rusnė Uzielaitė (nuo 2021-09)</strong>
+        </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU SA IF</p>
+          <strong>Evelina Volskytė (iki 2021-08)</strong>
         </div>
         <div>
           <img
@@ -793,6 +994,14 @@
       <div
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 overflow-auto gap-4 duration-200"
       >
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU SA CHGF</p>
+          <strong>Vėjunė Vasiliauskaitė</strong>
+        </div>
         <div>
           <img
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
@@ -856,6 +1065,14 @@
           />
           <p class="mt-1 text-sm">VU SA KnF</p>
           <strong>Indrė Bagdžiūtė (nuo 2021-11)</strong>
+        </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU SA MF</p>
+          <strong>Simona Žukauskaitė</strong>
         </div>
         <div>
           <img
@@ -977,6 +1194,14 @@
           />
           <p class="mt-1 text-sm">VU SA KF</p>
           <strong>Marija Trofimišinaitė</strong>
+        </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU SA MF</p>
+          <strong>Katažyna Aneta Borščevska (iki 2021-08)</strong>
         </div>
         <div>
           <img
@@ -1208,6 +1433,138 @@
       </div>
     </div></NModal
   >
+  <NModal v-model:show="showOther">
+    <div class="w-2/3 md:w-1/2 bg-white/95 shadow-lg rounded-lg p-6">
+      <h2 class="text-center mb-4">Kiti koordinatoriai</h2>
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 overflow-auto gap-4 duration-200"
+      >
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/Marija Kliocaitė_Studentų su individualiais poreikiais koordinatorė_FilF-2.jpg"
+          />
+          <p class="mt-1 text-sm">
+            VU SA FilF studentų su individualiais poreikiais koordinatorė
+          </p>
+          <strong>Marija Kliocaitė</strong>
+        </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU SA MIF IT koordinatorius</p>
+          <strong>Haroldas Velioniškis</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/uzsienieciu/Michaela Andie Kleynhans_Uzsienio_VM.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA VM IT koordinatorius</p>
+          <strong>Modestas Trubila (iki 2022 vasario mėn.)</strong>
+        </div>
+      </div>
+    </div></NModal
+  >
+  <NModal v-model:show="showLSP">
+    <div class="w-2/3 md:w-1/2 bg-white/95 shadow-lg rounded-lg p-6">
+      <h2 class="text-center mb-4">LSP koordinatoriai</h2>
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 overflow-auto gap-4 duration-200"
+      >
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/lsp/Milda Striupaitytė_LSP_EVAF.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA EVAF</p>
+          <strong>Milda Striupaitytė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/lsp/Viktorija Nilova_LSP_FF-2.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA FF</p>
+          <strong>Viktorija Nilova</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/lsp/Justė Vardauskaitė_LSP_FilF-2.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA FilF</p>
+          <strong>Justė Vardauskaitė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/lsp/Vilius Alvinskas_LSP_FSf-2.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA FsF</p>
+          <strong>Vilius Alvinskas</strong>
+        </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU SA IF</p>
+          <strong>Vakarė Gotautaitė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/lsp/Ernestas Rainys_LSP_KnF.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA KnF</p>
+          <strong>Ernestas Rainys</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/lsp/Nikita Česnavičiūtė_LSP_MF-2.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA MF</p>
+          <strong>Nikita Česnavičiūtė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/lsp/Gabrielė Kasperaitė_LSP_MIF-2.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA MIF</p>
+          <strong>Gabrielė Kasperaitė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/lsp/Rūta Dikčiūtė_LSP_TF-2.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA TF</p>
+          <strong>Rūta Dikčiūtė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/lsp/Ugnius Sejonas_LSP_TSPMI.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA TSPMI</p>
+          <strong>Ugnius Sejonas</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/lsp/Modestas Trubila – VU SA VM IT koordinatorius (iki 2022 vasario mėn.).jpg"
+          />
+          <p class="mt-1 text-sm">VU SA VM</p>
+          <strong>Modestas Trubila (iki 2022-02)</strong>
+        </div>
+      </div>
+    </div></NModal
+  >
   <Sritys>
     <NButton text class="relative" style="white-space: normal" @click="showCB = true">
       <img
@@ -1220,6 +1577,48 @@
         Centrinis biuras
       </p>
     </NButton>
+
+    <NButton
+      text
+      class="relative"
+      style="white-space: normal; margin: 0 auto 0 auto; width: 100%"
+      @click="showTaryba = true"
+    >
+      <img
+        class="rounded-lg max-w-[80ch] w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 mx-auto"
+        src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/Taryba-2.jpg"
+      />
+      <p
+        class="absolute text-white font-bold text-2xl sm:text-3xl md:text-4xl w-full text-center bottom-8"
+      >
+        VU SA Taryba
+      </p>
+    </NButton>
+
+    <div class="relative" style="white-space: normal; margin: 0 auto 0 auto; width: 100%">
+      <img
+        class="rounded-lg max-w-[80ch] w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 mx-auto"
+        src="/images/ataskaita2022/kitos-nuotraukos/Parlamentas.jpg"
+      />
+      <p
+        class="absolute text-white font-bold text-2xl sm:text-3xl md:text-4xl w-full text-center bottom-8"
+      >
+        VU SA Parlamentas
+      </p>
+    </div>
+
+    <div class="relative">
+      <img
+        class="rounded-lg max-w-[80ch] w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 mx-auto"
+        src="/images/ataskaita2022/kitos-nuotraukos/ISF.jpg"
+      />
+      <p
+        class="absolute text-white font-bold text-2xl sm:text-3xl md:text-4xl w-full text-center bottom-8"
+      >
+        Institucinio stiprinimo fondas
+      </p>
+    </div>
+
     <NButton
       text
       class="relative"
@@ -1323,6 +1722,17 @@
         Administratoriai
       </p>
     </NButton>
+    <NButton text class="relative" style="white-space: normal" @click="showLSP = true">
+      <img
+        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500"
+        src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/LSP koordinatoriai-2.jpg"
+      />
+      <p
+        class="absolute text-white font-bold text-2xl sm:text-3xl md:text-4xl w-full text-center bottom-8"
+      >
+        LSP koordinatoriai
+      </p>
+    </NButton>
     <NButton text class="relative" style="white-space: normal" @click="showPKP = true">
       <img
         class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500"
@@ -1350,6 +1760,11 @@
         Užsieniečių studentų koordinatoriai
       </p>
     </NButton>
+    <NButton text class="w-full" style="white-space: normal" @click="showOther = true">
+      <p class="font-bold text-2xl sm:text-3xl md:text-4xl w-full text-center">
+        ir taip pat..!
+      </p>
+    </NButton>
   </Sritys>
 </template>
 
@@ -1369,4 +1784,7 @@ const showInt = ref(false);
 const showAdministratoriai = ref(false);
 const showPKP = ref(false);
 const showUzsienieciu = ref(false);
+const showTaryba = ref(false);
+const showLSP = ref(false);
+const showOther = ref(false);
 </script>

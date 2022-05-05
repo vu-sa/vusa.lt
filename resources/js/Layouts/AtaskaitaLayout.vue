@@ -2,7 +2,10 @@
   <Head :title="title" />
   <MetaIcons />
   <transition name="fade"
-    ><img v-if="animated" class="object-cover h-full w-full fixed" :src="backgroundImage"
+    ><img
+      v-if="animated"
+      class="object-cover h-full w-full fixed opacity-50"
+      :src="backgroundImage"
   /></transition>
   <div class="min-h-screen antialiased bg-neutral-50/95 pb-8 relative">
     <AtaskaitaNavigation></AtaskaitaNavigation>

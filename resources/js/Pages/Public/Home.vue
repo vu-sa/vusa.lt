@@ -1,13 +1,22 @@
 <template>
   <PublicLayout title="Pagrindinis">
     <div class="relative group">
-      <ShapeDivider1 class="absolute -top-1"></ShapeDivider1>
-      <ShapeDivider1 class="absolute rotate-180 -bottom-1"></ShapeDivider1>
-      <img
-        src="/images/ataskaita2022/kitos-nuotraukos/VU SA.jpg"
-        class="h-64 lg:h-96 w-full object-cover my-4"
-        style="object-position: 0% 35%"
-      />
+      <ShapeDivider1 class="absolute -top-1 z-10"></ShapeDivider1>
+      <ShapeDivider1 class="absolute rotate-180 -bottom-1 z-10"></ShapeDivider1>
+      <Link
+        :href="
+          route('main.ataskaita2022', {
+            lang: $page.props.locale,
+            permalink: 'pradzia',
+          })
+        "
+      >
+        <img
+          src="/images/ataskaita2022/kitos-nuotraukos/VU SA.jpg"
+          class="h-64 lg:h-96 w-full object-cover my-4 hover:opacity-90 duration-200"
+          style="object-position: 0% 35%"
+        />
+      </Link>
     </div>
     <div class="lg:px-16 lg:mx-16 mx-8">
       <h2
