@@ -1311,7 +1311,7 @@ nariams."
         ></NCollapse
       >
     </section>
-    <div class="col-span-4 mb-12">
+    <!-- <div class="col-span-4 mb-12">
       <Link
         class="text-lg duration-200 hover:text-red-600 font-bold"
         :href="
@@ -1319,7 +1319,7 @@ nariams."
         "
         >Kokybiškos studijos ir joms pritaikyta aplinka >></Link
       >
-    </div>
+    </div> -->
   </Planas>
 </template>
 

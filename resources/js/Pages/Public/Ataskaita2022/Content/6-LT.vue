@@ -284,20 +284,34 @@
                   kieme.
                 </p>
               </div>
-              <NCollapseItem>
-                <template #header><h3>Rugsėjo 1-osios šventinė VU eisena</h3></template>
-                <p class="prose">
-                  Po metų pertraukos į VU sugrįžo Vilniaus universiteto studentų (-čių),
-                  darbuotojų ir alumnų (-ių) eisena. Šių metų rugsėjo 1 d. nuo Lietuvos
-                  Respublikos Seimo rūmų link VU Centrinių rūmų Didžiojo kiemo pajudėjo
-                  daugiau nei 3000 VU bendruomenės narių, pasipuošusių skirtingais
-                  padalinių atributais, nešusių įspūdingas dekoracijas bei garsiai per
-                  visą Gedimino prospektą skandavusių tradicinius padalinių šūkius.
-                  Visiems (-oms) susirinkus Didžiajame kieme, mokslo metų pradžios proga
-                  sveikino VU SA prezidentė Neda Žutautaitė ir VU rektorius Rimvydas
-                  Petrauskas.
-                </p>
-              </NCollapseItem>
+            </NCollapseItem>
+            <NCollapseItem>
+              <template #header><h3>Rugsėjo 1-osios šventinė VU eisena</h3></template>
+              <p class="prose">
+                Po metų pertraukos į VU sugrįžo Vilniaus universiteto studentų (-čių),
+                darbuotojų ir alumnų (-ių) eisena. Šių metų rugsėjo 1 d. nuo Lietuvos
+                Respublikos Seimo rūmų link VU Centrinių rūmų Didžiojo kiemo pajudėjo
+                daugiau nei 3000 VU bendruomenės narių, pasipuošusių skirtingais padalinių
+                atributais, nešusių įspūdingas dekoracijas bei garsiai per visą Gedimino
+                prospektą skandavusių tradicinius padalinių šūkius. Visiems (-oms)
+                susirinkus Didžiajame kieme, mokslo metų pradžios proga sveikino VU SA
+                prezidentė Neda Žutautaitė ir VU rektorius Rimvydas Petrauskas.
+              </p>
+            </NCollapseItem>
+            <NCollapseItem>
+              <template #header
+                ><h3>Ukrainiečių studentų mentorystės programa</h3></template
+              >
+              <p class="prose">
+                Iniciatyva skirta padėti iš Ukrainos atvykstantiems ir nuo karo bėgantiems
+                skirtingų pakopų ir studijų programų studentams (-ėms). Kiekvienas į VU
+                atvykęs ukrainietis (-ė) studentas (-ė) yra suporuojamas su atitinkamame
+                fakultete bei studijų programoje studijuojančiu studentu (-e), kuris (-i)
+                jį (-ą) pasitinka, konsultuoja studijų ir kitais aktualias klausimais,
+                padeda integruotis į fakulteto bei VU bendruomenę. Šiuo metu prie
+                mentorystės programos prisijungę daugiau kaip 270 mentorių ir sudarytos
+                105 mentorių ir studentų (-čių) poros.
+              </p>
             </NCollapseItem>
           </NCollapse>
         </div>

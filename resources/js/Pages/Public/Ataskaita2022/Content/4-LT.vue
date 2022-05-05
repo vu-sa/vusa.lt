@@ -54,20 +54,22 @@
               <em>Studentų atstovė – Neda Žutautaitė</em>
               <p>
                 Dalyvauta Komiteto posėdžiuose svarstant visus su aukštuoju mokslu
-                susijusius klausimus, diskutuojant, teikiant pasiūlymus bei išsakant
-                studentų nuomonę bei teikiant ekspertines įžvalgas.
+                susijusius klausimus, diskutuojant, teikiant pasiūlymus, išsakant studentų
+                nuomonę bei teikiant ekspertines įžvalgas.
               </p>
               <p>
                 Teikti pasiūlymai akademinės etikos apibrėžimo svarstyme bei peržiūrint
-                akademinės etikos ir procedūrų kontrolieriaus funkcijas. Teikti siūlymai
-                Mokslo ir studijų įstatymo pakeitimams dėl mokslo ir studijų institucijų
-                finansavimo už studijas pokyčio, palaikant siekį finansavimu skatinti ne
-                tik priimti kuo didesnį skaičių studentų, bet ir atsižvelgti į studijų
-                kokybę bei numatyti kokybės kriterijus, pagal kuriuos bus finansuojamos
-                institucijos. VU SA pasisakė už vienodus priėmimo į aukštąją mokyklą
-                reikalavimus tiek stojantiems į valstybės finansuojamas, tiek į
-                nefinansuojamas vietas, suprasdama, kad pasirengimas studijuoti yra viena
-                esminių prielaidų studijų kokybei užtikrinti.
+                akademinės etikos ir procedūrų kontrolieriaus funkcijas.
+              </p>
+              <p>
+                Teikti siūlymai Mokslo ir studijų įstatymo pakeitimams dėl mokslo ir
+                studijų institucijų finansavimo už studijas pokyčio, palaikant siekį
+                finansavimu skatinti ne tik priimti kuo didesnį skaičių studentų, bet ir
+                atsižvelgti į studijų kokybę bei numatyti kokybės kriterijus, pagal
+                kuriuos bus finansuojamos institucijos. VU SA pasisakė už vienodus
+                priėmimo į aukštąją mokyklą reikalavimus tiek stojantiems į valstybės
+                finansuojamas, tiek į nefinansuojamas vietas, suprasdama, kad pasirengimas
+                studijuoti yra viena esminių prielaidų studijų kokybei užtikrinti.
               </p>
               <p>
                 Teiktas siūlymas dėl socialinės dimensijos aukštajame moksle apibrėžimo,
@@ -75,17 +77,14 @@
                 aukštąjį mokslą patekti mažiau reprezentuojamoms grupėms, tačiau nesukurti
                 situacijos, kai alternatyviu keliu tiesiog didinamas masiškumas.
               </p>
-
               <p>
-                Diskusijoje „Socialinė dimensija – studijų kokybei" skaitytas pranešimas
+                Diskusijoje „Socialinė dimensija – studijų kokybei“ skaitytas pranešimas
                 dalijantis VU SA sukauptomis patirtimis akcentuojant, kodėl verta
                 prioritetizuoti socialinę dimensiją ir su kokiais sunkumais šiandien
                 susiduria studentai prieš stodami, stojimo metu, studijų laikotarpiu,
                 pereidami į darbo rinką bei ką galime padaryti, kad jų išvengtume.
-              </p>
-              <p>
-                Dalyvauta laikinosios Seimo ir akademinės bendruomenės bendradarbiavimo
-                grupės Targamadzes susitikimuose.
+                Dalyvauta Laikinosios Seimo ir akademinės bendruomenės bendradarbiavimo
+                grupės susitikimuose.
               </p>
             </div>
           </NCollapseItem>
@@ -96,7 +95,7 @@
               <em>Studentų atstovės – Neda Žutautaitė, Kamilė Marcinkevičiūtė</em>
               <p>
                 Dalyvauta psichikos sveikatos pakomitečio posėdžiuose, dalintasi psichikos
-                sveikatos puoselėjimo iniciatyvomis ir išsakytas poreikis psichikos
+                sveikatos puoselėjimo iniciatyvomis, išsakytas poreikis psichikos
                 sveikatos priežiūros veiklų gerinimui.
               </p>
               <p>
@@ -116,24 +115,24 @@
               <p>
                 Ataskaitiniu laikotarpiu dalyvauta tarpinstituciniuose pasitarimuose ir
                 plenariniuose LR Vyriausybės posėdžiuose pasisakant dėl LR Mokslo ir
-                studijų įstatymo pakeitimų. Prisidėta prie Vyriausybės išvadų rengimo
-                įstatymų projektams.
+                studijų įstatymo pakeitimų klausimais. Prisidėta prie Vyriausybės išvadų
+                rengimo įstatymų projektams.
               </p>
               <p>
                 Dalyvauta akademiniuose pusryčiuose su Premjere bei Švietimo, mokslo ir
                 sporto ministre, diskutuojant apie socialinę dimensiją ir labiau
-                pažeidžiamų grupių įtrauktį į aukštąjį mokslą, mokslinių veiklų
+                pažeidžiamų grupių įtraukimk1 į aukštąjį mokslą, mokslinių veiklų
                 finansavimą bei rezidentūros studijas.
               </p>
               <p>
-                VU SA pasiūlymais padidintas Vyriausybės pirminiame biudžeto plane
-                numatytas finansavimas mokslinėms veikloms, įtraukiant studentų mokslines
-                veiklas ir projektus, doktorantūros vietų, podoktorantūros stažuočių
-                didinimą, pasiektas susitarimas papildomai skirti 20 mln. eurų.
+                VU SA pasiūlius padidintas Vyriausybės pirminiame biudžeto plane numatytas
+                finansavimas mokslinėms veikloms, įtraukiant studentų mokslines veiklas ir
+                projektus, doktorantūros vietų, podoktorantūros stažuočių didinimą,
+                pasiektas susitarimas papildomai skirti 20 mln. eurų.
               </p>
               <p>
-                Prisijungta prie ilgalaikės valstybės strategijos “Lietuva 2050”
-                bendrakūrėjų.
+                Prisijungta prie ilgalaikės valstybės strategijos „Lietuva 2050“ projekto
+                rengimo.
               </p>
             </div>
           </NCollapseItem>
@@ -146,40 +145,52 @@
               <p>
                 Ataskaitiniu laikotarpiu prisidėta prie skirtingų klausimų kėlimo,
                 nagrinėjimo, dalyvauta pasitarimuose bei teikti pasiūlymai aukštojo mokslo
-                gerinimui.
+                gerinimui:
               </p>
-              <p>
-                Dalyvauta susitikimuose su EBPO ekspertais gryninantis Lietuvos mokslo ir
-                studijų institucijų misijas. Įsitraukta į studentų iškritimo prevencijos
-                priemonių darbo grupės veiklą, siekiant sisteminių priemonių, kurios
-                leistų stebėti rizikas ir mažinti studentų iškritimą iš studijų šalies
-                aukštosiose mokyklose, sukūrimo.
-              </p>
-              <p>
-                Prisidėta rengiant skatinamojo finansavimo aukštosioms mokykloms už
-                studijų kokybę modelio atsiradimą bei konkrečius rodiklius, kurie bus
-                skatinimo sistemos pagrindu ir formuos aukštųjų mokyklų prioritetus
-                kokybės gerinimui. Dalyvaujama planuojant Ukrainos piliečių priėmimo į
-                aukštąsias mokyklas tvarką, teikti pasiūlymai dėl užsieniečių teisinės
-                padėties gerinimo.
-              </p>
-              <p>
-                Pateikti siūlymai atnaujinti valstybės remiamų paskolų sistemą, atkreiptas
-                dėmesys į klausimo problematiką bei kartu su Valstybiniu studijų fondu
-                rengiamas pasiūlymas sistemos tobulinimui.
-              </p>
-              <p>
-                Išsakyti pastebėjimai iš studentų perspektyvos dėl European student card
-                (ESC) iniciatyvos įgyvendinimo Lietuvoje. Pateikti pasiūlymai ir
-                atnaujinta studentų pilietinių, mokslinių, verslumo, kūrybinių ir
-                sportinių projektų finansavimo tvarka. Kartu formuotas alternatyvaus
-                patekimo į aukštąjį mokslą kelio projektas.
-              </p>
-              <p>
-                Pateikti pasiūlymai plėsti negalios stipendiją gaunančių asmenų ratą bei
-                apjungti šiuo metu egzistuojančias kelias stipendijų rūšis sumažinant
-                administracinę naštą studentams.
-              </p>
+              <ol>
+                <li>
+                  Dalyvauta susitikimuose su EBPO ekspertais gryninantis Lietuvos mokslo
+                  ir studijų institucijų misijas.
+                </li>
+                <li>
+                  Įsitraukta į studentų iškritimo prevencijos priemonių darbo grupės
+                  veiklą, siekiant sisteminių priemonių, kurios leistų stebėti rizikas ir
+                  mažinti studentų iškritimą iš studijų šalies aukštosiose mokyklose,
+                  sukūrimo.
+                </li>
+                <li>
+                  Prisidėta rengiant skatinamojo finansavimo aukštosioms mokykloms už
+                  studijų kokybę modelio atsiradimą bei konkrečius rodiklius, kurie bus
+                  skatinimo sistemos pagrindu ir formuos aukštųjų mokyklų prioritetus
+                  kokybės gerinimui.
+                </li>
+                <li>
+                  Dalyvaujama planuojant Ukrainos piliečių priėmimo į aukštąsias mokyklas
+                  tvarką, teikti pasiūlymai dėl užsieniečių teisinės padėties gerinimo.
+                </li>
+                <li>
+                  Pateikti siūlymai atnaujinti valstybės remiamų paskolų sistemą,
+                  atkreiptas dėmesys į klausimo problematiką bei kartu su Valstybiniu
+                  studijų fondu rengiamas pasiūlymas sistemos tobulinimui.
+                </li>
+                <li>
+                  Išsakyti pastebėjimai iš studentų perspektyvos dėl European student card
+                  (ESC) iniciatyvos įgyvendinimo Lietuvoje.
+                </li>
+                <li>
+                  Pateikti pasiūlymai ir atnaujinta studentų pilietinių, mokslinių,
+                  verslumo, kūrybinių ir sportinių projektų finansavimo tvarka.
+                </li>
+                <li>
+                  Kartu formuotas alternatyvaus patekimo į aukštąjį mokslą kelio
+                  projektas.
+                </li>
+                <li>
+                  Pateikti pasiūlymai plėsti negalios stipendiją gaunančių asmenų ratą bei
+                  apjungti šiuo metu egzistuojančias kelias stipendijų rūšis sumažinant
+                  administracinę naštą studentams.
+                </li>
+              </ol>
             </div>
           </NCollapseItem>
           <NCollapseItem>
@@ -197,13 +208,13 @@
                 suvienodinant reikalavimus stojantiesiems į valstybės finansuojamas ir
                 valstybės nefinansuojamas studijų vietas, įteisinant viso priėmimo
                 organizavimą per bendrą priėmimo sistemą bei numatant daugiau galimybių
-                aukštosioms mokykloms atrinkti studentus.
+                aukštosioms mokykloms atsirinkti studentus.
               </p>
               <p>
-                Darbo grupės kontekste parengti pasiūlymai dėl reikalavimų stojantiesiems
-                į VF ir VNF vietas suvienodinimo, minimalių kriterijų nustatymo bei
-                aukštųjų mokyklų finansavimo už studijų rezultatus buvo patvirtinti ir
-                pakeitimai įsigalios nuo 2024 metų.
+                Darbo grupėje parengti pasiūlymai dėl reikalavimų stojantiesiems į VF ir
+                VNF vietas suvienodinimo, minimalių kriterijų nustatymo bei aukštųjų
+                mokyklų finansavimo už studijų rezultatus buvo patvirtinti ir įsigalios
+                nuo 2024 metų.
               </p>
             </div>
           </NCollapseItem>
@@ -226,7 +237,7 @@
               <p>
                 Rinktos užsienio patirtys socialinės dimensijos planų rengime, duomenys ir
                 analizė dabartinės mažiau reprezentuojamų grupių situacijos Lietuvoje.
-                Analizuotos jau egzistuojančios priemonės bei barjerai, su kuriomis mažiau
+                Analizuotos jau egzistuojančios priemonės bei barjerai, su kuriais mažiau
                 reprezentuojamos grupės susiduria. Rengta pirminė plano versija, kuri
                 artimiausiu metu bus pateikta Vyriausybės viešosioms konsultacijoms.
               </p>
@@ -242,8 +253,8 @@
               <em>Studentų atstovė – Neda Žutautaitė</em>
               <p>
                 Lietuvos Respublikos Seimas 2022-uosius paskelbė Lietuvos universitetų
-                metų metais. ŠMSM kaip atsakinga institucija subūrė darbo grupę
-                šventiniams minėjimo renginiams ir iniciatyvoms planuoti.
+                metais. ŠMSM kaip atsakinga institucija subūrė darbo grupę šventiniams
+                minėjimo renginiams ir iniciatyvoms planuoti.
               </p>
               <p>
                 Darbo grupėje buvo nuspręsta Universitetų metų proga išleisti elektroninį
@@ -253,7 +264,7 @@
                 minėjimas, tarptautinė konferencija „Aukštasis mokslas: pasiekimai,
                 iššūkiai ir galimybės“, Baltijos šalių studentų dainų ir šokių festivalis
                 „Gaudeamus 2022“, virtuali paroda „Mokslo šviesa“ bei VU SA pasiūlytas
-                Atvirųjų paskaitų ciklas visuomenei aktualiomis temomis.
+                atvirųjų paskaitų ciklas visuomenei aktualiomis temomis.
               </p>
             </div>
           </NCollapseItem>
@@ -285,9 +296,9 @@
               <em>Studentų atstovė – Neda Žutautaitė, Kamilė Marcinkevičiūtė</em>
 
               <p>
-                Dalyvauta SAM darbo grupėse ir pasitarimuose dėl psichikos sveikatos
-                stiprinimo Lietuvos aukštosiose mokyklose ir apskritai jaunimo tarpe,
-                išsakyti pagrindiniai pastebėjimai ir problemos.
+                Dalyvauta SAM darbo grupėse ir pasitarimuose dėl psichologinės sveikatos
+                būklės Lietuvos aukštosiose mokyklose ir jaunimo tarpe, išsakyti
+                pagrindiniai pastebėjimai ir problemos.
               </p>
               <p>
                 Teikta griežta prieštaraujanti pozicija dėl Seimo Sveikatos reikalų
@@ -307,7 +318,7 @@
               <p>
                 Pirmąjį studijų mėnesį, kai kontaktinėms studijoms Universitete galiojo
                 galimybių paso reikalavimas, pateikėme siūlymą dėl nemokamo studentų
-                testavimo nuo koronaviruso, toks nutarimas buvo įgyvendintas.
+                testavimo nuo koronaviruso. Toks nutarimas buvo įgyvendintas.
               </p>
             </div>
           </NCollapseItem>
@@ -348,7 +359,7 @@
                 reikalų departamento bei kitų jaunimo organizacijų atstovais dalintasi
                 tyrimais ir patirtimis, kaip keičiasi psichikos sveikatos padėtis tiek
                 Lietuvos mokyklose, tiek universitetuose, ir kokie iššūkiai vis dar
-                egzistuoja, pasidalinta pranešimu iš VU SA pusės. Įsitraukta į tolimesnes
+                egzistuoja. Pasidalinta pranešimu iš VU SA pusės. Įsitraukta į tolimesnes
                 darbines Psichikos sveikatos puoselėjimo tarybos sesijas.
               </p>
             </div>
@@ -364,47 +375,63 @@
               </em>
 
               <p>
-                Studentų forumas – Studijų kokybės vertinimo centro neformali darbo grupė,
-                kurioje dalyvauja Lietuvos aukštųjų mokyklų studentų interesus
-                atstovaujančių organizacijų atstovai. Ataskaitiniu laikotarpiu vyko
-                studentų forumo susitikimas, kuriame diskutuota apie studijų kokybę iš
-                studijų dalyvių perspektyvos – studentų, dėstytojų. Atkreiptas dėmesys į
-                Valstybinio audito ataskaitą, kurioje pažymima, jog Lietuvos aukštosiose
-                mokyklose studentų(-čių) nuomonė dėl studijų kokybės nepakankamai
-                išgirsta. Aptartas dėstytojų karjeros kelio plėtojimas ir didaktinių
-                kompetencijų užtikrinimas bei jų reikšmė studijų kokybei. Dalyvauta SKVC
-                tarptautinėje konferencijoje apie studijų kokybės raidą „Išorinio kokybės
-                užtikrinimo raida: pamokos ir ateities įžvalgos“ apskritojo stalo
-                diskusijoje atstovaujant studentų nuomonę. SKVC sudėtyje įsitraukta į
-                Aukštųjų mokyklų vertinimo komisijos (AMVK) veiklą. Komisija svarsto
-                tarptautinių vertinimo ekspertų pateiktas aukštųjų mokyklų veiklos
-                išorinio vertinimo išvadas. 2021/2022 akademinių metų eigoje vykusių
-                posėdžių metu buvo svarstomos ekspertų parengtos išvados dėl 11 skirtingų
-                Lietuvoje esamų aukštųjų mokyklų. Studentų atstovai Universitete prisidėjo
-                prie Universiteto savianalizės rengimo ruošiantis Instituciniam
-                vertinimui, įsitraukė į studijų krypčių vertinimus rengdami studijų
-                programų savianalizes bei dalyvaudami susitikimuose su ekspertais.
-                Lietuvos universitetų rektorių konferencija (LURK) Studentų atstovė – Neda
-                Žutautaitė Įsitraukta į Dėl Susitarimo dėl Psichikos sveikatos stiprinimo
-                Lietuvos aukštosiose mokyklose įgyvendinimo Universitetuose statuso
-                įvertinimo. Dalyvauta studentams aktualių klausimų studijų komitete
-                nagrinėjime. Į ateinančio LURK posėdžio darbotvarkę įtrauktas klausimas
-                dėl studentų mokslinės veiklos Lietuvos Universitetuose, kurio metu bus
-                pristatytas VU SA atliktas mokslinės veiklos tyrimas bei pateiktos
-                rekomendacijos studentų mokslinės veiklos skatinimo priemonėms
-                Universitetuose. Lietuvos mokslo taryba (LMT) Studentų atstovė – Neda
-                Žutautaitė Ataskaitiniu laikotarpiu kreiptasi į LMT dėl paramos studentų
+                <strong>Studentų forumas</strong> – Studijų kokybės vertinimo centro
+                neformali darbo grupė, kurioje dalyvauja Lietuvos aukštųjų mokyklų
+                studentų interesus atstovaujančių organizacijų atstovai.
+              </p>
+              <p>
+                Ataskaitiniu laikotarpiu vyko studentų forumo susitikimas, kuriame
+                diskutuota apie studijų kokybę iš studijų dalyvių perspektyvos – studentų,
+                dėstytojų. Atkreiptas dėmesys į Valstybinio audito ataskaitą, kurioje
+                pažymima, jog Lietuvos aukštosiose mokyklose studentų nuomonė dėl studijų
+                kokybės nepakankamai išgirsta. Aptartas dėstytojų karjeros kelio
+                plėtojimas ir didaktinių kompetencijų užtikrinimas bei jų reikšmė studijų
+                kokybei. Dalyvauta SKVC tarptautinėje konferencijoje apie studijų kokybės
+                raidą „Išorinio kokybės užtikrinimo raida: pamokos ir ateities įžvalgos“
+                apskritojo stalo diskusijoje atstovaujant studentų nuomonę. SKVC sudėtyje
+                VU SA deleguotas studentų atstovas įsitrauktas į Aukštųjų mokyklų
+                vertinimo komisijos (AMVK) veiklą. Komisija svarsto tarptautinių vertinimo
+                ekspertų pateiktas aukštųjų mokyklų veiklos išorinio vertinimo išvadas.
+                2021/2022 akademinių metų eigoje vykusių posėdžių metu buvo svarstomos
+                ekspertų parengtos išvados dėl 11 skirtingų Lietuvoje esamų aukštųjų
+                mokyklų. Studentų atstovai Universitete prisidėjo prie Universiteto
+                savianalizės rengimo ruošiantis Instituciniam vertinimui, įsitraukė į
+                studijų krypčių vertinimus rengdami studijų krypčių savianalizes bei
+                dalyvaudami susitikimuose su ekspertais, į kuriuos kviečiami dalyvauti
+                visi Universiteto studentai.
+              </p>
+            </div>
+          </NCollapseItem>
+          <NCollapseItem>
+            <template #header
+              >Lietuvos universitetų rektorių konferencija (LURK)
+            </template>
+            <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+              <em>Studentų atstovė – Neda Žutautaitė</em>
+              <p>
+                Įsitraukta į Susitarimo dėl psichikos sveikatos stiprinimo Lietuvos
+                aukštosiose mokyklose įgyvendinimo Universitetuose statuso įvertinimą.
+                Dalyvauta studentams aktualių klausimų studijų komitete nagrinėjime.
+              </p>
+              <p>
+                Į ateinančio LURK posėdžio darbotvarkę įtrauktas klausimas dėl studentų
+                mokslinės veiklos Lietuvos Universitetuose, kurio metu bus pristatytas VU
+                SA atliktas mokslinės veiklos tyrimas bei pateiktos rekomendacijos
+                studentų mokslinės veiklos skatinimo priemonėms Universitetuose.
+              </p>
+            </div>
+          </NCollapseItem>
+          <NCollapseItem>
+            <template #header>Lietuvos mokslo taryba (LMT)</template>
+            <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+              <em>Studentų atstovė – Neda Žutautaitė</em>
+              <p>
+                Ataskaitiniu laikotarpiu kreiptasi į LMT dėl paramos studentų
                 organizuojamiems mokslo renginiams, siekiant, jog studentų organizuojami
                 aukšto lygio mokslo renginiai būtų skatinami ir finansuojami
                 nepriklausomai nuo to, kurio kurso ar pakopos studentai juos organizuoja.
                 LMT skatinta išplėsti paramos gavimo galimybes bei dabartines sąlygas
-                studentų organizuojamiems mokslo renginiams finansuoti. Vilniaus miesto
-                savivaldybė ir Jaunimo reikalų Taryba Studentų atstovė – Neda Žutautaitė,
-                Aistė Rinkevičiūtė Ataskaitiniu laikotarpiu pakartotinai kreiptasi į
-                Vilniaus miesto savivaldybę dėl kalio jodido tablečių išdavimo jauniems
-                asmenims, gyvenantiems, bet nebūtinai deklaravusiems savo gyvenamąją vietą
-                Vilniuje. Su Vilniaus miesto Jaunimo reikalų taryba...... (Aistės
-                papildymas)
+                studentų organizuojamiems mokslo renginiams finansuoti.
               </p>
             </div>
           </NCollapseItem>
@@ -697,10 +724,10 @@
 
               <p>
                 Komisija svarsto ir teikia Universiteto rektoriui tvirtinti dėstytojų ir
-                mokslo darbuotojų kandidatūras akademinėms pareigoms užimti. Atsižvelgus į
+                mokslo darbuotojų kandidatūras akademinėms pareigoms užimti. Atsižvelgęs į
                 studentų apklausas, dėstymo patirtis ir planuojamą akademinę veiklą,
-                studentų atstovas siūlė tvirtinti ne visas kandidatūras, remdamasis
-                aukščiau išvardintais duomenimis.
+                studentų atstovas, remdamasis aukščiau išvardytais duomenimis, siūlė
+                tvirtinti ne visas kandidatūras.
               </p>
 
               <h4>VU Vienkartinių socialinių stipendijų skirstymo komisija</h4>
@@ -787,7 +814,12 @@
 
               <em>Studentų atstovė – Neda Žutautaitė</em>
 
-              <p>...</p>
+              <p>
+                Komitetas sudarytas siekiant parengti Pedagogų ugdymo plėtros koncepciją
+                Vilniaus universitete. Šiam tikslui pasiekti buvo organizuojamos XXI
+                amžiaus pedagogikos koncepcijos idėjų generavimo sesijos Universiteto
+                bendruomenėje, kuriose dalyvavo ir studentų atstovai.
+              </p>
             </div>
           </NCollapseItem>
           <NCollapseItem>
@@ -801,7 +833,17 @@
                 daugiakryptiškumo galimybių didinimas“ įgyvendinimo darbo grupė
               </h4>
               <em>Studentų atstovė – Neda Žutautaitė</em>
-              <p>...</p>
+              <p>
+                Darbo grupė suburta siekiant įgyvendinti studentų pasirinkimo ir
+                daugiakryptiškumo galimybių didinimą, bakalauro ir vientisosiose studijose
+                atveriant 60 ECTS laisvą pasirinkimą. Darbo grupėje teikti VU SA
+                pasiūlymai pasirinkimo didinimui, paremtam užsienio universitetų
+                gerosiomis praktikomis bei akademinės paramos, kuri bus reikalinga
+                atlaisvinus studijų programas, sistemos gerinimui. Šiuo metu pasiekti
+                pirminiai susitarimai, rengiama Vilniaus universiteto Studijų nuostatų
+                naujinimo redakcija, kurioje bus apibrėžtos pagrindinės sąlygos tokiam
+                studijų modelio organizavimui.
+              </p>
               <h4>VU studijų kokybės vadovo atnaujinimo darbo grupė</h4>
 
               <em>Studentų atstovė – Dominyka Goldbergaitė</em>
@@ -817,15 +859,33 @@
                 su šio vadovo atnaujinimu.
               </p>
 
-              <h4>VU studijų tarptautiškumo iniciatyvų komisija</h4>
+              <section>
+                <h4>VU studijų tarptautiškumo iniciatyvų komisija</h4>
 
-              <em>Studentų atstovė – Ugnė Bičkauskaitė</em>
+                <em>Studentų atstovė – Ugnė Bičkauskaitė</em>
 
-              <p>
-                Komisijai yra teikiamos tarptautinių iniciatyvų paraiškos, kurias
-                įvertinus priimamas sprendimas dėl lėšų skyrimo jų įgyvendinimui.
-                Ataskaitiniu laikotarpiu įvyko 4 posėdžiai.
-              </p>
+                <p>
+                  Komisijai yra teikiamos tarptautinių iniciatyvų paraiškos, kurias
+                  įvertinus priimamas sprendimas dėl lėšų skyrimo jų įgyvendinimui.
+                  Ataskaitiniu laikotarpiu įvyko 4 posėdžiai.
+                </p>
+
+                <h4>VU Edukacinių iniciatyvų komisija</h4>
+
+                <em>Studentų atstovė – Neda Žutautaitė </em>
+
+                <p>
+                  Edukacinių iniciatyvų komisija yra naujai suburta komisija, kuri
+                  svarsto, tvirtina ir skiria lėšas dėstytojų iniciatyvoms, skirtoms
+                  gerinti studijų procesą, dalykus, jų dėstymą, didinti studentų įtraukimą
+                  bei įgyvendinti inovatyvias edukacines idėjas, kurioms ne visada pakanka
+                  standartinių resursų.
+                </p>
+                <p>
+                  Šiais metais edukacinių iniciatyvų komisijoje patvirtinta 27 paraiškų ir
+                  iniciatyvų.
+                </p>
+              </section>
             </div>
           </NCollapseItem>
           <NCollapseItem>
@@ -1063,20 +1123,35 @@
               <h4>VU Covid-19 darbo grupė</h4>
               <em>Studentų atstovė – Neda Žutautaitė</em>
 
-              <p>[tekstas LT]</p>
+              <p>
+                Darbo grupė suburta Universiteto veiksmų ir procesų koordinavimui
+                reaguojant į pandemijos sąlygas ir apribojimus. Darbo grupės kontekste
+                siūlomos rekomendacijos studijų proceso organizavimui, saugumo reikalavimų
+                laikymuisi, galimybių pasų tikrinimui, studentų apgyvendinimo
+                bendrabučiuose sąlygų numatymui, kol buvo reikalinga imtis papildomų
+                saugumo priemonių.
+              </p>
 
               <h4>VU darbo grupė dėl Ukrainos padėties</h4>
 
               <em>Studentų atstovė – Neda Žutautaitė</em>
 
-              <p>[tekstas LT]</p>
+              <p>
+                Darbo grupė suburta atsižvelgiant į karo Ukrainoje situaciją ir skirta
+                Universiteto veiksmų, iniciatyvų bei komunikacijos derinimui teikiant
+                pagalbą ukrainiečių akademinei bendruomenei, atvykstantiems studentams,
+                darbuotojams, šiuo metu studijuojantiems ukrainiečiams. Darbo grupės
+                kontekste pateikti VU SA siūlymai ir sutarta atleisti ukrainiečius
+                studentus nuo mokesčių už bendrabučius, didinti finansinę, psichologinę
+                paramą bei imtasi kitų iniciatyvų įgyvendinimo.
+              </p>
 
               <h4>VU emocinės gerovės darbo grupė</h4>
 
               <em>Studentų atstovės – Julija Jarutytė, Neda Žutautaitė</em>
 
               <p>
-                Emocinės gerovė darbo grupė suburta siekiant sukurti emocinės gerovės
+                Emocinės gerovės darbo grupė suburta siekiant sukurti emocinės gerovės
                 užtikrinimo sistemą Universitete. Ataskaitiniu laikotarpiu įvyko 3 darbo
                 grupės susitikimai, kurių metu buvo pristatomos užsienio ir Lietuvos
                 universitetų gerosios patirtys emocinės gerovės stiprinimo procese,

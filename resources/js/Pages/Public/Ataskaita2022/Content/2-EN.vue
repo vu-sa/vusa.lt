@@ -298,7 +298,7 @@
           </div>
         </NCollapseItem>
         <NCollapseItem>
-          <template #header><h2 id="parlamentas">VU SA Parlamentas</h2></template>
+          <template #header><h2 id="parlamentas">VU SR Parliament</h2></template>
           <div class="relative">
             <img
               class="max-w-[80ch] rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 mx-auto"

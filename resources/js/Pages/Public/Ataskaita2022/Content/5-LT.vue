@@ -52,7 +52,14 @@
         <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
           <h3>VU SA Strateginio plano 2022–2024 m. kūrimas</h3>
 
-          <p>...</p>
+          <p>
+            Šiais metais baigiasi VU SA Strateginis veiklos planas, skirtas 2019-2022 m.
+            laikotarpiui. Dėl šios priežasties organizacijoje peržiūrėjome ir rengėme
+            atnaujintą 2022-2025 m. strateginio veiklos plano projektą. Į procesą
+            įsitraukė skirtingi organizacijos dariniai bei jų nariai, projektuojant
+            galimas ateities vizijas sukurtas naujo strateginio veiklos plano projektas
+            pateiktas VU SA Parlamentui.
+          </p>
 
           <h3>Savirefleksijų kultūra</h3>
 
