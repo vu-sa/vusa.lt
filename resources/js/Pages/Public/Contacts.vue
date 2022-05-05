@@ -1,7 +1,7 @@
 <template>
   <PublicLayout>
     <div class="px-16 lg:px-32">
-      <NTabs default-value="search" type="line" animated>
+      <NTabs default-value="padalinys" type="line" animated>
         <NTabPane class="grid md:grid-cols-3 gap-8" name="padalinys" tab="VU SA">
           <ContactWithPhoto v-for="contact in alias_contacts" :key="contact.id">
             <template #image
@@ -53,7 +53,7 @@
             @input="handleNameInput"
             :loading="loadingNameInput"
           />
-          <NInputGroup class="md:col-span-3 mb-4">
+          <!-- <NInputGroup class="md:col-span-3 mb-4">
             <NCascader
               size="small"
               style="border-radius: 6em"
@@ -72,7 +72,7 @@
               placeholder="Pasirinkti organą..."
               v-model:value="selectedDutyInstitution"
             ></NSelect>
-          </NInputGroup>
+          </NInputGroup> -->
           <transition-group name="list">
             <ContactWithPhoto v-for="contact in search_contacts" :key="contact.id">
               <template #image

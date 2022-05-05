@@ -13,7 +13,7 @@
         <NIcon><ArrowCircleLeft28Regular /></NIcon
       ></NButton>
       <article
-        class="flex flex-col justify-items-center px-8 lg:px-32 gap-y-4 mx-auto items-center col-span-6"
+        class="w-full flex flex-col justify-items-center px-8 lg:px-32 gap-y-4 mx-auto items-center col-span-6"
       >
         <slot></slot>
       </article>

@@ -29,16 +29,48 @@
               permalink: 'pradzia',
             })
           "
-          >Pasižiūrėkite, ką nuveikėme 2022 metais →</Link
+          ><template v-if="$page.props.locale === 'lt'"
+            >Ką veikė VU SA 2021–2022 metais?</template
+          ><template v-else>What did VU SR do in 2021–2022?</template></Link
         >
       </h2>
-      <p class="lg:w-[65ch] text-gray-700 mb-8 lg:mb-20 text-sm lg:text-base">
-        Nuo nacionalinio atstovavimo studentų interesams iki naujų galimybių saviraiškai –
-        Vilniaus universiteto Studentų atstovybė (čia mes 👋) apima daugiau nei čia tilptų
-        parašyti. Daugiau neskaitykite, čia tik Lorem ipsum.
-      </p>
+      <div class="flex space-between flex-row">
+        <p class="lg:max-w-[80ch] text-gray-700 mb-8 lg:mb-20 text-sm lg:text-base">
+          <template v-if="$page.props.locale === 'lt'">
+            Ataskaitos knygutė – kiekvienais metais skelbiama VU SA nuveiktų darbų,
+            atliktų projektų, įgyvendintų iniciatyvų ataskaita. Artėjant VU SA
+            ataskaitinei-rinkiminei konferencijai dalinamės ir šių, 2021–2022 metų
+            nuveiktų darbų pilna knygute. Ji papildyta ir VU SA bendruomenės narių veidais
+            bei smagiomis akimirkomis. Kviečiame skaityti!
+          </template>
+          <template v-else
+            >Report booklet – every year, a report on the work done, projects completed,
+            and initiatives implemented at VU SR is published. As the VU SR Annual
+            Convention approaches, we share a book full of these works done in 2021–2022.
+            It is also filled with faces and fun moments of the VU SR community members.
+            Feel free to read!</template
+          >
+        </p>
+        <div class="p-2 mx-auto h-fit w-fit">
+          <NButton
+            @click="
+              Inertia.visit(
+                route('main.ataskaita2022', {
+                  lang: $page.props.locale,
+                  permalink: 'pradzia',
+                })
+              )
+            "
+            type="error"
+            secondary
+            text
+            style="font-size: 72pt; height: fit-content"
+            ><NIcon><ArrowCircleRight20Regular /></NIcon
+          ></NButton>
+        </div>
+      </div>
     </div>
-    <NewsElement>
+    <NewsElement v-if="$page.props.locale === 'lt'">
       <HomeCard
         :hasMiniContent="false"
         :hasBelowCard="true"
@@ -81,6 +113,7 @@
       </HomeCard>
     </NewsElement>
     <div
+      v-if="$page.props.locale === 'lt'"
       class="py-4 px-4 lg:px-8 lg:mx-16 mx-8 lg:mb-8 mb-4 rounded-lg text-gray-800 bg-white shadow-lg"
     >
       <h1 class="mb-2">Mūsų programos ir partneriai</h1>
@@ -106,17 +139,19 @@
 <script setup>
 import PublicLayout from "@/Layouts/PublicLayout.vue";
 import HomeCard from "@/Components/Public/HomeCard.vue";
-import SkeletonElement from "@/Layouts/Partials/Public/SkeletonElement.vue";
+// import SkeletonElement from "@/Layouts/Partials/Public/SkeletonElement.vue";
 import NewsElement from "@/Layouts/Partials/Public/NewsElement.vue";
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
-import { NIcon, NButton, NCarousel, NCarouselItem } from "naive-ui";
+import { NIcon, NCarousel, NButton, NCarouselItem } from "naive-ui";
 import {
   CalendarLtr20Regular,
+  ArrowCircleRight20Regular,
   Clock20Regular,
   ArrowRight48Regular,
 } from "@vicons/fluent";
-import { Link, usePage } from "@inertiajs/inertia-vue3";
+import { Link } from "@inertiajs/inertia-vue3";
 import { onBeforeUnmount, ref } from "vue";
+import { Inertia } from "@inertiajs/inertia";
 
 const props = defineProps({
   news: Object,

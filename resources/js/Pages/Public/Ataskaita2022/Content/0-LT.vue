@@ -1,7 +1,7 @@
 <template>
   <Pradzia>
     <img
-      class="my-4 md:w-2/3 col-span-4 rounded-sm shadow-md hover:shadow-lg duration-200 h-auto object-cover mx-auto mb-4"
+      class="my-4 md:w-2/3 col-span-4 rounded-sm shadow-md hover:shadow-lg duration-200 h-auto object-cover mx-auto mb-4 w-3/4"
       src="/images/ataskaita2022/kitos-nuotraukos/KNYGUTES VIRSELIS-01.jpg"
     />
     <div class="flex gap-2 justify-center">

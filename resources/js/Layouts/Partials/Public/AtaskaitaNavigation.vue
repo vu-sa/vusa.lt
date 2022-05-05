@@ -50,7 +50,7 @@
         class="hover:text-red-600 duration-200"
         v-else
         :href="route('main.ataskaita2022', { lang: locale, permalink: 'sveikinimai' })"
-        >Sveikinimai</Link
+        >{{ __("Sveikinimai") }}</Link
       >
 
       <Link
@@ -75,7 +75,7 @@
           class="flex flex-row items-center hover:text-red-600 duration-200"
           role="button"
         >
-          VU SA strateginės kryptys
+          {{ __("Strateginės kryptys") }}
           <NIcon class="ml-1" size="16"><ChevronDown20Filled /></NIcon></div
       ></NDropdown>
       <Link
@@ -257,10 +257,47 @@ const navigation = [
   { label: "Darni universitetinė bendruomenė", key: "bendruomene" },
 ];
 
+const navigationEN = [
+  {
+    label: "High quality studies and their environment",
+    key: "studijos",
+  },
+  { label: "Strong organization", key: "organizacija" },
+  { label: "Sustainable University community", key: "bendruomene" },
+];
+
 const navigationTreeMobile = [
   { label: "Sveikinimai", key: "sveikinimai" },
   {
     label: "VU SA",
+    key: "vu-sa",
+  },
+  {
+    label: "MVP",
+    key: "mvp",
+  },
+  {
+    label: "Strategic directions",
+    key: "strategines",
+    children: [
+      {
+        label: "High quality studies and their environment",
+        key: "studijos",
+      },
+      { label: "Strong organization", key: "organizacija" },
+      { label: "Sustainable University community", key: "bendruomene" },
+    ],
+  },
+  {
+    label: "Community",
+    key: "sritys",
+  },
+];
+
+const navigationTreeMobileEN = [
+  { label: "Congratulations", key: "sveikinimai" },
+  {
+    label: "VU SR",
     key: "vu-sa",
   },
   {

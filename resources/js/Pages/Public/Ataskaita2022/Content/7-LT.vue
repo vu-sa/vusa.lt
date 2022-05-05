@@ -333,14 +333,6 @@
           <p class="mt-1 text-sm">VU SA GMC</p>
           <strong>Justė Žilionytė</strong>
         </div>
-        <div class="m-auto text-center">
-          <!-- <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
-            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
-          /> -->
-          <p class="mt-1 text-sm">VU SA IF</p>
-          <strong>Vakarė Gotautaitė (iki 2021-08)</strong>
-        </div>
         <div>
           <img
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
@@ -364,14 +356,6 @@
           />
           <p class="mt-1 text-sm">VU SA KnF</p>
           <strong>Raminta Klimaitė</strong>
-        </div>
-        <div class="m-auto text-center">
-          <!-- <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
-            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
-          /> -->
-          <p class="mt-1 text-sm">VU SA MF</p>
-          <strong>Snieguolė Bičkutė</strong>
         </div>
         <div>
           <img
@@ -404,6 +388,22 @@
           />
           <p class="mt-1 text-sm">VU SA VM</p>
           <strong>Matas Krikščiūnas</strong>
+        </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU SA IF</p>
+          <strong>Vakarė Gotautaitė (iki 2021-08)</strong>
+        </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU SA MF</p>
+          <strong>Snieguolė Bičkutė</strong>
         </div>
       </div>
     </div></NModal
@@ -469,22 +469,6 @@
           />
           <p class="mt-1 text-sm">VU SA GMC</p>
           <strong>Miglė Krasauskaitė</strong>
-        </div>
-        <div class="m-auto text-center">
-          <!-- <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
-            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
-          /> -->
-          <p class="mt-1 text-sm">VU SA IF</p>
-          <strong>Visvaldas Vačiulis (iki 2021-08)</strong>
-        </div>
-        <div class="m-auto text-center">
-          <!-- <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
-            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
-          /> -->
-          <p class="mt-1 text-sm">VU SA IF</p>
-          <strong>Bernadeta Lukošiūtė (nuo 2021-08 iki 2021-10)</strong>
         </div>
         <div>
           <img
@@ -566,6 +550,22 @@
           <p class="mt-1 text-sm">VU SA VM</p>
           <strong>Edgaras Kodis (nuo 2021-12)</strong>
         </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU SA IF</p>
+          <strong>Visvaldas Vačiulis (iki 2021-08)</strong>
+        </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU SA IF</p>
+          <strong>Bernadeta Lukošiūtė (nuo 2021-08 iki 2021-10)</strong>
+        </div>
       </div>
     </div></NModal
   >
@@ -614,14 +614,6 @@
           />
           <p class="mt-1 text-sm">VU SA FsF</p>
           <strong>Dovilė Mikniūtė</strong>
-        </div>
-        <div class="m-auto text-center">
-          <!-- <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
-            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
-          /> -->
-          <p class="mt-1 text-sm">VU SA GMC</p>
-          <strong>Aistė Andrukaitė (iki 2021-08)</strong>
         </div>
         <div>
           <img
@@ -703,6 +695,14 @@
           <p class="mt-1 text-sm">VU SA VM</p>
           <strong>Abigailė Zizaitė</strong>
         </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU SA GMC</p>
+          <strong>Aistė Andrukaitė (iki 2021-08)</strong>
+        </div>
       </div>
     </div></NModal
   >
@@ -768,14 +768,6 @@
           <p class="mt-1 text-sm">VU SA GMC</p>
           <strong>Vesta Kubiliūtė</strong>
         </div>
-        <div class="m-auto text-center">
-          <!-- <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
-            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
-          /> -->
-          <p class="mt-1 text-sm">VU SA IF</p>
-          <strong>Evelina Volskytė (iki 2021-08)</strong>
-        </div>
         <div>
           <img
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
@@ -783,14 +775,6 @@
           />
           <p class="mt-1 text-sm">VU SA KF</p>
           <strong>Lukrecija Giedraitytė</strong>
-        </div>
-        <div class="m-auto text-center">
-          <!-- <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
-            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
-          /> -->
-          <p class="mt-1 text-sm">VU SA MF</p>
-          <strong>Elas Aidukas</strong>
         </div>
         <div>
           <img
@@ -823,6 +807,22 @@
           />
           <p class="mt-1 text-sm">VU SA VM</p>
           <strong>Marja Abramavičiūtė</strong>
+        </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU SA IF</p>
+          <strong>Evelina Volskytė (iki 2021-08)</strong>
+        </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU SA MF</p>
+          <strong>Elas Aidukas</strong>
         </div>
       </div>
     </div></NModal
@@ -881,14 +881,6 @@
           <p class="mt-1 text-sm">VU SA FsF</p>
           <strong>Vakarė Punelytė</strong>
         </div>
-        <div class="m-auto text-center">
-          <!-- <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
-            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
-          /> -->
-          <p class="mt-1 text-sm">VU SA GMC</p>
-          <strong>Lukas Šarauskas</strong>
-        </div>
         <div>
           <img
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
@@ -896,14 +888,6 @@
           />
           <p class="mt-1 text-sm">VU SA GMC</p>
           <strong>Rusnė Uzielaitė (nuo 2021-09)</strong>
-        </div>
-        <div class="m-auto text-center">
-          <!-- <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
-            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
-          /> -->
-          <p class="mt-1 text-sm">VU SA IF</p>
-          <strong>Evelina Volskytė (iki 2021-08)</strong>
         </div>
         <div>
           <img
@@ -985,6 +969,22 @@
           <p class="mt-1 text-sm">VU SA VM</p>
           <strong>Goda Valtytė</strong>
         </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU SA GMC</p>
+          <strong>Lukas Šarauskas</strong>
+        </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU SA IF</p>
+          <strong>Evelina Volskytė (iki 2021-08)</strong>
+        </div>
       </div>
     </div></NModal
   >
@@ -994,14 +994,6 @@
       <div
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 overflow-auto gap-4 duration-200"
       >
-        <div class="m-auto text-center">
-          <!-- <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
-            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
-          /> -->
-          <p class="mt-1 text-sm">VU SA CHGF</p>
-          <strong>Vėjunė Vasiliauskaitė</strong>
-        </div>
         <div>
           <img
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
@@ -1066,14 +1058,6 @@
           <p class="mt-1 text-sm">VU SA KnF</p>
           <strong>Indrė Bagdžiūtė (nuo 2021-11)</strong>
         </div>
-        <div class="m-auto text-center">
-          <!-- <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
-            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
-          /> -->
-          <p class="mt-1 text-sm">VU SA MF</p>
-          <strong>Simona Žukauskaitė</strong>
-        </div>
         <div>
           <img
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
@@ -1113,6 +1097,22 @@
           />
           <p class="mt-1 text-sm">VU SA VM</p>
           <strong>Karolina Alimovaitė</strong>
+        </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU SA CHGF</p>
+          <strong>Vėjunė Vasiliauskaitė</strong>
+        </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU SA MF</p>
+          <strong>Simona Žukauskaitė</strong>
         </div>
       </div>
     </div></NModal
@@ -1195,14 +1195,6 @@
           <p class="mt-1 text-sm">VU SA KF</p>
           <strong>Marija Trofimišinaitė</strong>
         </div>
-        <div class="m-auto text-center">
-          <!-- <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
-            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
-          /> -->
-          <p class="mt-1 text-sm">VU SA MF</p>
-          <strong>Katažyna Aneta Borščevska (iki 2021-08)</strong>
-        </div>
         <div>
           <img
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
@@ -1234,6 +1226,14 @@
           />
           <p class="mt-1 text-sm">VU SA VM</p>
           <strong>Justas Petraitis</strong>
+        </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU SA MF</p>
+          <strong>Katažyna Aneta Borščevska (iki 2021-08)</strong>
         </div>
       </div>
     </div></NModal
@@ -1449,14 +1449,6 @@
           </p>
           <strong>Marija Kliocaitė</strong>
         </div>
-        <div class="m-auto text-center">
-          <!-- <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
-            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
-          /> -->
-          <p class="mt-1 text-sm">VU SA MIF IT koordinatorius</p>
-          <strong>Haroldas Velioniškis</strong>
-        </div>
         <div>
           <img
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
@@ -1464,6 +1456,14 @@
           />
           <p class="mt-1 text-sm">VU SA VM IT koordinatorius</p>
           <strong>Modestas Trubila (iki 2022 vasario mėn.)</strong>
+        </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU SA MIF IT koordinatorius</p>
+          <strong>Haroldas Velioniškis</strong>
         </div>
       </div>
     </div></NModal

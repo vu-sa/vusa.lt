@@ -1,8 +1,8 @@
 <template>
   <Studijos>
-    <div class="relative mb-4 h-1/2 w-full max-w-[92ch]">
+    <div class="relative mb-4 h-1/2 w-full max-w-[110ch]">
       <img
-        class="max-w-[92ch] rounded-lg w-full h-80 object-cover mx-auto brightness-50"
+        class="rounded-lg w-full h-80 object-cover mx-auto brightness-50"
         style="object-position: 0% 20%"
         src="/images/ataskaita2022/kitos-nuotraukos/IMG_8817.jpg"
       />

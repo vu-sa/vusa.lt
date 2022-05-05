@@ -831,7 +831,7 @@
         </NCollapseItem>
       </NCollapse>
     </div>
-    <div class="mt-6 text-right max-w-[92ch]">
+    <!-- <div class="mt-6 text-right max-w-[92ch]">
       <Link
         class="underline duration-200 hover:text-red-600"
         :href="
@@ -839,7 +839,7 @@
         "
         >Toliau: Metų veiklos planas >></Link
       >
-    </div>
+    </div> -->
   </VUSA>
 </template>
 
