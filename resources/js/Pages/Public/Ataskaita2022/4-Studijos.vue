@@ -4,26 +4,30 @@
     :title="'Kokybiškos studijos ir joms pritaikyta aplinka | Ataskaita 2022'"
   >
     <div class="grid grid-cols-8 justify-items-center justify-center">
-      <NButton
-        @click="inertiaVisitOnClick('mvp')"
-        class="hidden md:block top-[50vh] h-fit"
-        text
-        style="font-size: 60px; align-self: flex-start; position: sticky"
-      >
-        <NIcon><ArrowCircleLeft28Regular /></NIcon
-      ></NButton>
+      <div class="hidden md:block">
+        <NButton
+          @click="inertiaVisitOnClick('mvp')"
+          class="hidden md:block top-[50vh] h-fit"
+          text
+          style="font-size: 60px; align-self: flex-start; position: sticky"
+        >
+          <NIcon><ArrowCircleLeft28Regular /></NIcon
+        ></NButton>
+      </div>
       <article
-        class="w-full flex flex-col justify-items-center px-8 lg:px-32 gap-y-4 mx-auto items-center col-span-6"
+        class="w-full flex flex-col justify-items-center px-8 lg:px-32 gap-y-4 mx-auto items-center col-span-8 md:col-span-6"
       >
         <slot></slot>
       </article>
-      <NButton
-        @click="inertiaVisitOnClick('organizacija')"
-        class="hidden md:block top-[50vh] h-fit"
-        text
-        style="font-size: 60px; align-self: flex-start; position: sticky"
-        ><NIcon><ArrowCircleRight28Regular /></NIcon
-      ></NButton>
+      <div class="hidden md:block">
+        <NButton
+          @click="inertiaVisitOnClick('organizacija')"
+          class="hidden md:block top-[50vh] h-fit"
+          text
+          style="font-size: 60px; align-self: flex-start; position: sticky"
+          ><NIcon><ArrowCircleRight28Regular /></NIcon
+        ></NButton>
+      </div>
     </div>
   </AtaskaitaLayout>
 </template>

@@ -1426,7 +1426,7 @@
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/Klaudija Pukalskaitė VU JEK.jpg"
           />
-          <p class="mt-1 text-sm">Sąžiningai</p>
+          <p class="mt-1 text-sm">VU Jaunųjų energetikų klubas</p>
           <strong>Klaudija Pukalskaitė</strong>
         </div>
         <div>
@@ -1626,14 +1626,6 @@
           <p class="mt-1 text-sm">VU SA FsF</p>
           <strong>Vilius Alvinskas</strong>
         </div>
-        <div class="m-auto text-center">
-          <!-- <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
-            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
-          /> -->
-          <p class="mt-1 text-sm">VU SA IF</p>
-          <strong>Vakarė Gotautaitė</strong>
-        </div>
         <div>
           <img
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
@@ -1681,6 +1673,14 @@
           />
           <p class="mt-1 text-sm">VU SA VM</p>
           <strong>Modestas Trubila (iki 2022-02)</strong>
+        </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU SA IF</p>
+          <strong>Vakarė Gotautaitė</strong>
         </div>
       </div>
     </div></NModal

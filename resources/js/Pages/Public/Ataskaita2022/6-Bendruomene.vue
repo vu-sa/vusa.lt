@@ -15,7 +15,7 @@
         ></NButton>
       </div>
       <article
-        class="flex flex-col justify-items-center px-8 lg:px-32 gap-y-4 mx-auto items-center col-span-6 w-full"
+        class="flex flex-col justify-items-center px-8 lg:px-32 gap-y-4 mx-auto items-center col-span-8 md:col-span-6 w-full"
       >
         <slot></slot>
       </article>

@@ -1,10 +1,10 @@
 <template>
   <Sveikinimai>
-    <h1 class="text-3xl text-center col-span-4 md:col-span-3 mb-8 -order-2">
+    <h1 class="text-3xl text-center col-span-5 md:col-span-3 mt-4 mb-8 -order-2">
       Sveikinimai
     </h1>
     <div
-      class="col-span-4 order-1 md:-order-1 md:col-span-3 col-start-1 prose max-w-full md:max-w-prose"
+      class="col-span-5 order-1 md:-order-1 md:col-span-3 col-start-1 prose max-w-full md:max-w-prose"
     >
       <NCarousel
         draggable
@@ -391,6 +391,7 @@
         <NCarouselItem>
           <img
             class="carousel-img-2"
+            style="object-position: 0% 25%"
             src="/images/ataskaita2022/sveikinimai/arminas_2021_profilis.jpg"
           />
           <div class="bg-white p-6 text-sm">
@@ -434,6 +435,7 @@
         <NCarouselItem>
           <img
             class="carousel-img"
+            style="object-position: 0% 35%"
             src="/images/ataskaita2022/sveikinimai/Romas-LMT-9.jpeg"
           />
           <div class="bg-white p-6 text-sm">
@@ -471,7 +473,7 @@
       </NCarousel>
     </div>
     <div
-      class="flex flex-wrap justify-center md:justify-start md:flex-col mb-8 gap-2 col-span-4 md:col-span-1 items-start"
+      class="flex flex-wrap justify-center md:justify-start md:flex-col mb-8 gap-2 col-span-5 md:col-span-1 items-start"
     >
       <NButton text="" @click="carouselIndex = 0">
         <img
@@ -525,6 +527,7 @@
       <NButton text="" @click="carouselIndex = 7">
         <img
           class="w-20 h-20 object-cover rounded-lg hover:grayscale-0 duration-200"
+          style="object-position: 0% 10%"
           :class="{ grayscale: carouselIndex !== 7 }"
           src="/images/ataskaita2022/sveikinimai/dr. Loreta Tauginienė.MART1397B.jpg"
         />
@@ -532,6 +535,7 @@
       <NButton text="" @click="carouselIndex = 8">
         <img
           class="w-20 h-20 object-cover rounded-lg hover:grayscale-0 duration-200"
+          style="object-position: 0% 10%"
           :class="{ grayscale: carouselIndex !== 8 }"
           src="/images/ataskaita2022/sveikinimai/Simasius.jpeg"
         />
@@ -581,6 +585,14 @@ const handleCarouselIndex = (index) => {
   width: 100%;
   height: 280px;
   max-width: 65ch;
+  object-fit: cover;
+  border-radius: 1em 1em 0 0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.carousel-img-2 {
+  width: 100%;
+  height: 365px;
   object-fit: cover;
   border-radius: 1em 1em 0 0;
   margin-top: 0;

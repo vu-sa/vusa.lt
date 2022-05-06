@@ -3,17 +3,19 @@
     :backgroundImage="'/images/ataskaita2022/kitos-nuotraukos/VU SA.jpg'"
     :title="'Bendruomenė | Ataskaita 2022'"
   >
-    <div class="grid md:grid-cols-8">
-      <NButton
-        @click="inertiaVisitOnClick('bendruomene')"
-        class="hidden md:block top-[50vh] h-fit"
-        text
-        style="font-size: 60px; align-self: flex-start; position: sticky"
-      >
-        <NIcon><ArrowCircleLeft28Regular /></NIcon
-      ></NButton>
+    <div class="grid md:grid-cols-8 mx-8">
+      <div class="hidden md:block">
+        <NButton
+          @click="inertiaVisitOnClick('bendruomene')"
+          class="hidden md:block top-[50vh] h-fit"
+          text
+          style="font-size: 60px; align-self: flex-start; position: sticky"
+        >
+          <NIcon><ArrowCircleLeft28Regular /></NIcon
+        ></NButton>
+      </div>
       <article
-        class="grid md:grid-cols-2 justify-items-center md:pr-32 gap-6 py-6 pr-12 rounded-lg col-span-7"
+        class="grid md:grid-cols-2 justify-items-center md:pr-32 gap-6 py-6 rounded-lg col-span-8 md:col-span-7"
       >
         <slot></slot>
       </article>

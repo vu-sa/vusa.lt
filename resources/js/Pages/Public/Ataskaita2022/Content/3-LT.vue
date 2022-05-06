@@ -260,7 +260,8 @@ saugojimo tvarkos aprašo. "
             <li>
               Išanalizavus rudens semestro VU IS apklausų duomenis, identifikuotos ir
               studijų prodekanei R. Adomaitienei pristatytos problemos, su kuriomis
-              susiduria studentai, rengdami kursinius darbus, BBD ir MBD.
+              susiduria studentai, rengdami kursinius darbus, bakalauro baigiamiuosius
+              darbus ir magistro baigiamuosius darbus.
             </li>
             <li>
               Planuojama diskusija apie šias problemas pratęsti per kandidatų į VU EVAF
@@ -531,9 +532,9 @@ bakalauro pakopos studijų programų."
     <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
-        12. Iki 2022 m. liepos 1 d. atnaujintame Studijų įvado (KIA ir Istorijos studijų
-        programų) modulio (dalyko) apraše nurodytos temos yra detalizuotos, atitinka
-        studijų siekinius ir tolygų mokymosi krūvį.
+        12. Iki 2022 m. liepos 1 d. atnaujintame Studijų įvado (Kultūros istorijos ir
+        antropologijos bei Istorijos studijų programų) modulio (dalyko) apraše nurodytos
+        temos yra detalizuotos, atitinka studijų siekinius ir tolygų mokymosi krūvį.
       </h4>
 
       <NTimeline class="mt-4">
@@ -551,10 +552,10 @@ bakalauro pakopos studijų programų."
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
           ><ul>
             <li>
-              Buvo atlikta Istorijos, Archeologijos bei KIA ir Istorijos Studijų įvado
-              modulių analizė. Analizė padėjo suprasti, kaip būtų galima atnaujinti
-              modulio aprašą, bei leis argumentuotai ir su pasiūlymais kreiptis į
-              Fakulteto administraciją norint gerinti SĮ modulio kokybę.
+              Buvo atlikta Istorijos, Archeologijos Kultūros istorijos ir antropologijos
+              Studijų įvado modulių analizė. Analizė padėjo suprasti, kaip būtų galima
+              atnaujinti modulio aprašą, bei leis argumentuotai ir su pasiūlymais kreiptis
+              į Fakulteto administraciją norint gerinti Studijų įvado modulio kokybę.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -1065,8 +1066,8 @@ klausimą dėl praktikų organizavimo tvarkos."
           content="Įvykdytas naujų narių priėmimas."
         ></NTimelineItem>
         <NTimelineItem
-          type="warning"
-          title="5 uždavinys: vykdoma"
+          type="success"
+          title="5 uždavinys: įvykdyta"
           content="Sudarytas VU SA ŠA narių sąrašas."
         ></NTimelineItem>
       </NTimeline>

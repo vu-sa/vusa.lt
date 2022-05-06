@@ -513,6 +513,7 @@
       <NButton text="" @click="carouselIndex = 7">
         <img
           class="w-20 h-20 object-cover rounded-lg hover:grayscale-0 duration-200"
+          style="object-position: 0% 10%"
           :class="{ grayscale: carouselIndex !== 7 }"
           src="/images/ataskaita2022/sveikinimai/dr. Loreta Tauginienė.MART1397B.jpg"
         />
@@ -520,6 +521,7 @@
       <NButton text="" @click="carouselIndex = 8">
         <img
           class="w-20 h-20 object-cover rounded-lg hover:grayscale-0 duration-200"
+          style="object-position: 0% 10%"
           :class="{ grayscale: carouselIndex !== 8 }"
           src="/images/ataskaita2022/sveikinimai/Simasius.jpeg"
         />
@@ -569,6 +571,14 @@ const handleCarouselIndex = (index) => {
   width: 100%;
   height: 280px;
   max-width: 65ch;
+  object-fit: cover;
+  border-radius: 1em 1em 0 0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.carousel-img-2 {
+  width: 100%;
+  height: 365px;
   object-fit: cover;
   border-radius: 1em 1em 0 0;
   margin-top: 0;

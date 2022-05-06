@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\App;
 use App\Models\PageView;
+use Illuminate\Support\Facades\Schema;
 
 class MainController extends Controller
 {
@@ -61,7 +62,10 @@ class MainController extends Controller
 		Inertia::share('banners', $banners);
 		Inertia::share('mainNavigation', $mainNavigation);
 
-		// PageView::createViewLog();
+		// if table exists in database
+		if (Schema::hasTable('page_views')) {
+			PageView::createViewLog();
+		}
 	}
 
 	public function home()
