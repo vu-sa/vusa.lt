@@ -173,7 +173,7 @@ class MainController extends Controller
 			abort(404);
 		}
 
-		dd($page);
+		// dd($page);
 
 		$navigation_item = Navigation::where([['padalinys_id', '=', $padalinys->id], ['name', '=', $page->title]])->get()->first();
 
