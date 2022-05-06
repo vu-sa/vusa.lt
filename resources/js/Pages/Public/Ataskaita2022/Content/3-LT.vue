@@ -110,9 +110,9 @@
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
           ><ul>
             <li>
-              Universiteto bendruomenei suteiktos žinios naudojant socialines medijas bei
-              asmenines patirtis kartu suteikiant profesionalų perspektyvą įgyvendinant
-              mokymus.
+              Universiteto bendruomenei suteiktos žinios studentų su negalia istorijomis
+              bei profesionalų įžvalgomis dalinantis socialinėse medijose, gyvuose
+              renginiuose.
             </li>
             <li>Parengtas komunikacijos gidas.</li>
             <li>

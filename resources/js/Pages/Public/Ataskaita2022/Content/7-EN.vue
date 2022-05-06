@@ -420,7 +420,7 @@
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/atstovai/Monika Paulauskaitė_Atstovų koordinatorė_CHGF-2.jpg"
           />
           <p class="mt-1 text-sm">{{ __("VU SA CHGF") }}</p>
-          <strong>Monika Paulauskaitė</strong>
+          <strong>Monika Paulauskaitė (until 2021-11)</strong>
         </div>
         <div>
           <img
@@ -1234,6 +1234,14 @@
           /> -->
           <p class="mt-1 text-sm">{{ __("VU SA MF") }}</p>
           <strong>Katažyna Aneta Borščevska (iki 2021-08)</strong>
+        </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">{{ __("VU SA ŠA") }}</p>
+          <strong>Vakarė Vasiliauskaitė</strong>
         </div>
       </div>
     </div></NModal

@@ -188,14 +188,7 @@
             <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
               <em>Studentų atstovai – Justas Kvedaravičius, Neda Žutautaitė</em>
               <p>
-                Darbo grupė suburta siekiant aukštųjų mokyklų finansavimo modelio
-                atnaujinimo, aukštųjų mokyklų veiklos tikslų išgryninimo, mokslinių tyrimų
-                ir eksperimentinės plėtros vertinimo ir finansavimo modelio bei valstybės
-                finansuojamų vietų planavimo ir stojančiųjų priėmimo proceso tobulinimo,
-                suvienodinant reikalavimus stojantiesiems į valstybės finansuojamas ir
-                valstybės nefinansuojamas studijų vietas, įteisinant viso priėmimo
-                organizavimą per bendrą priėmimo sistemą bei numatant daugiau galimybių
-                aukštosioms mokykloms atsirinkti studentus.
+                Darbo grupė suburta siekiant aukštųjų mokyklų finansavimo modelio atnaujinimo bei jų veiklos tikslų išgryninimo. Taip pat mokslinių tyrimų ir eksperimentinės plėtros vertinimui, finansavimo modelio – valstybės finansuojamų vietų planavimo ir stojančiųjų priėmimo proceso tobulinimui, suvienodinant reikalavimus stojantiesiems į valstybės finansuojamas ir valstybės nefinansuojamas studijų vietas. Darbo grupėje kalbėta dėl studentų (-čių) priėmimo organizavimo įteisinimo per bendrą priėmimo sistemą taip numatant daugiau galimybių aukštosioms mokykloms atsirinkti studentus (-es).
               </p>
               <p>
                 Darbo grupėje parengti pasiūlymai dėl reikalavimų stojantiesiems į VF ir
