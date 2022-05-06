@@ -24,13 +24,13 @@
       <NTimelineItem
         type="success"
         title="2 uždavinys: įvykdyta"
-        content="Akademinės paramos sistemos, įgalinančios studentus sąmoningai išnaudoti60 kreditų atlaisvinimo (vidinio mobilumo) modelio teikiamas galimybes, parengimas ir pasiūlymų pateikimas
+        content="Akademinės paramos sistemos, įgalinančios studentus sąmoningai išnaudoti 60 kreditų atlaisvinimo (vidinio mobilumo) modelio teikiamas galimybes, parengimas ir pasiūlymų pateikimas
  atsakingiems asmenims."
       ></NTimelineItem>
       <NTimelineItem
         type="warning"
         title="3 uždavinys: vykdoma"
-        content="VU bendruomenės supažindinimas su 60 kreditų atlaisvinimo (vidinio mobilumo) idėja/modeliu."
+        content="VU bendruomenės supažindinimas su 60 kreditų atlaisvinimo (vidinio mobilumo) idėja / modeliu."
       ></NTimelineItem>
       <NTimelineItem
         type="warning"
@@ -115,13 +115,13 @@
             </li>
             <li>Parengtas komunikacijos gidas.</li>
             <li>
-              Bendradarbiaujant su BVS bei VšĮ „Vilties žiedas“ siekiama plėsti galimybes
-              studentams su individualiais poreikiais pagalbos teikimui.
+              Bendradarbiaujant su BVS bei VšĮ „Vilties žiedas“, siekiama plėsti pagalbos
+              teikimo galimybes studentams su individualiais poreikiais.
             </li>
             <li>
-              Šiuo metu organizuojama paroda, filmo peržiūra bei socialinė iniciatyva,
-              skirtos atkreipti dėmesį į matomus ir nematomus sunkumus bei bendravimo
-              ydas, su kuriomis susiduria negalią turintys bendruomenės nariai.
+              Suorganizuota paroda, filmo peržiūra bei šiuo metu organizuojama socialinė
+              iniciatyva, skirtos atkreipti dėmesį į matomus ir nematomus sunkumus bei
+              bendravimo ydas, su kuriomis susiduria negalią turintys bendruomenės nariai.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -151,7 +151,6 @@
           title="3 uždavinys: bus vykdoma"
           content="Palyginti praktinio ir teorinio krūvio duomenys pagal suteiktus kreditus ir dalyko aprašą."
         ></NTimelineItem>
-        <NTimelineItem title="4 uždavinys: bus vykdoma" content="..."></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
@@ -188,7 +187,7 @@ naudojimo, nuotolinių atsiskaitymų organizavimo būdai. "
         ></NTimelineItem>
         <NTimelineItem
           title="2 uždavinys: bus vykdoma"
-          content="Skatinti pildyti VU IS apklausas. "
+          content="Skatinti pildyti VU IS apklausas."
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -202,7 +201,7 @@ naudojimo, nuotolinių atsiskaitymų organizavimo būdai. "
             </li>
             <li>
               Atsižvelgiant į tai sukurta atmintinė dėstytojams su įvairiais patarimais,
-              supažindinimu su online platformomis.
+              supažindinimu su <em>online</em> platformomis.
             </li>
             <li>
               Atmintinė, patvirtinta VU EVAF prodekanės, netrukus bus išsiųsta visiems
@@ -256,8 +255,7 @@ saugojimo tvarkos aprašo. "
               su dažniausiai užduodamais klausimais iš aprašo.
             </li>
             <li>
-              Visi baigiamųjų kursų studentai turėjo seminarą apie kursinio darbo rengimą
-              (dėl to teko ilgai įtikinėti Ekonomikos SPK).
+              Visi baigiamųjų kursų studentai turėjo seminarą apie kursinio darbo rengimą.
             </li>
             <li>
               Išanalizavus rudens semestro VU IS apklausų duomenis, identifikuotos ir
@@ -292,7 +290,7 @@ saugojimo tvarkos aprašo. "
         ></NTimelineItem>
         <NTimelineItem
           title="3 uždavinys: bus vykdoma"
-          content="Parengiamas laboratorinių darbų atnaujinimo planas VU FF"
+          content="Parengiamas laboratorinių darbų atnaujinimo planas VU FF."
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -336,7 +334,7 @@ pasiūlymui."
         <NTimelineItem
           type="success"
           title="3 uždavinys: įvykdyta"
-          content="VU FF studijų prodekanė pritaria II pakopos pirmo kurso studentų išlyginamųjų kursų siūlymui"
+          content="VU FF studijų prodekanė pritaria II pakopos pirmo kurso studentų išlyginamųjų kursų siūlymui."
         ></NTimelineItem>
         <NTimelineItem
           type="warning"
@@ -346,7 +344,7 @@ planu."
         ></NTimelineItem>
         <NTimelineItem
           title="5 uždavinys: bus vykdoma"
-          content="Yra pasiruošta vykdyti VU FF II pakopos pirmo kurso studentų akademinės integracijos planą"
+          content="Yra pasiruošta vykdyti VU FF II pakopos pirmo kurso studentų akademinės integracijos planą."
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -354,12 +352,12 @@ planu."
           ><ul>
             <li>
               Atlikta kitų VU padalinių, universitetų (Lietuvos bei užsienio)
-              laboratorinių darbų įgyvendinimo gerųjų patirčių analizė, atrinktos
-              metodikos, taikytinos VU Fizikos fakultete.
+              laboratorinių darbų įgyvendinimo gerųjų patirčių analizė, išsigryninti du
+              pasiūlymai: išlyginamieji kursai bei ekskursijos po laboratorijas.
             </li>
             <li>
-              Šiuo metu yra kuriamas laboratorinių darbų konceptas bendradarbiaujant tiek
-              su vyresniais VU SA nariais, tiek su VU FF administracija.
+              Pasiūlymai pristatyti VU FF Studijų prodekanei, kuri juos palaikė. Šiuo metu
+              ruošiamasi tolimesnėms tikslo įgyvendinimo diskusijoms.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -456,7 +454,7 @@ komunikacijos su dėstytojais priežastis."
         ></NTimelineItem>
         <NTimelineItem
           title="3 uždavinys: bus vykdoma"
-          content="Surinkta informacija yra apibendrinta, aprašyta ir pateikta analizės dokumente"
+          content="Surinkta informacija yra apibendrinta, aprašyta ir pateikta analizės dokumente."
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -512,7 +510,7 @@ bakalauro pakopos studijų programų."
           ><ul>
             <li>
               Studentams susiduriant su ribotu PD kiekiu ir didėjančiomis studentų
-              grupėmis, pirmiausia išskelto tikslo buvo siekiama diskutuojant Studijų
+              grupėmis, pirmiausia išsikelto tikslo buvo siekiama diskutuojant Studijų
               kolegijoje.
             </li>
             <li>
@@ -546,14 +544,14 @@ bakalauro pakopos studijų programų."
         ></NTimelineItem>
         <NTimelineItem
           title="2 uždavinys: bus vykdoma"
-          content="Atnaujintas dalyko aprašas su detalizuotomis temomis ir tolygiu krūviu yra patvirtintas SPK"
+          content="Atnaujintas dalyko aprašas su detalizuotomis temomis ir tolygiu krūviu yra patvirtintas SPK."
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
           ><ul>
             <li>
-              Buvo atlikta Istorijos Archeologijos bei KIA ir Istorijos Studijų įvado
+              Buvo atlikta Istorijos, Archeologijos bei KIA ir Istorijos Studijų įvado
               modulių analizė. Analizė padėjo suprasti, kaip būtų galima atnaujinti
               modulio aprašą, bei leis argumentuotai ir su pasiūlymais kreiptis į
               Fakulteto administraciją norint gerinti SĮ modulio kokybę.
@@ -579,7 +577,7 @@ sistemą."
         <NTimelineItem
           type="warning"
           title="2 uždavinys: vykdoma"
-          content="Sudarytas ir vykdomas užsienio kalbų mokymo(-si) stebėsenos planas bei užtikrinamas problemos
+          content="Sudarytas ir vykdomas užsienio kalbų mokymo(si) stebėsenos planas bei užtikrinamas problemos
 nagrinėjimo tęstinumas naujos VU SA IF kadencijos metu."
         ></NTimelineItem>
       </NTimeline>
@@ -589,7 +587,7 @@ nagrinėjimo tęstinumas naujos VU SA IF kadencijos metu."
             <li>
               Sukurtas užsienio kalbų stebėsenos planas, kuris bus pradėtas vykdyti šio
               pavasario semestro pabaigoje. Planas padės stebėti specialybės kalbų
-              mokymosi kokybę bei leis anksčiau sureaguoti pablogėjus situacijai.
+              mokymo(si) kokybę bei leis anksčiau sureaguoti pablogėjus situacijai.
             </li>
             <li>
               Taip pat buvo planuojamas susitikimas su Rusų filologijos ir Rusistikos SPK
@@ -696,7 +694,7 @@ planai."
         <NTimelineItem
           type="success"
           title="3 uždavinys: įvykdyta"
-          content="VU KnF įkuriama bent 1 studentams skirta popaskaitinės veiklos iniciatyva"
+          content="VU KnF įkuriama bent 1 studentams skirta popaskaitinės veiklos iniciatyva."
         ></NTimelineItem>
         <NTimelineItem
           type="warning"
@@ -782,8 +780,8 @@ planai."
 
             <li>
               VU SA KnF renginyje „Sielų upė 2021“ atsisakyta aplinką teršiančių ir
-              neperrūšiuojamų parafino žvakių, jos pakeistos šviesos diodų žvakėmis,
-              kurios yra ilgaamžės ir lengvai rūšiuojamos.
+              neperdirbamų parafino žvakių, jos pakeistos šviesos diodų žvakėmis, kurios
+              yra ilgaamžės ir lengvai rūšiuojamos.
             </li>
 
             <li>
@@ -836,7 +834,7 @@ kontaktine informacija."
             </li>
 
             <li>
-              Tarptautiniai studentai, kartu su VU SA MF komanda, sukūrė išskirtinę Medi
+              Tarptautiniai studentai, kartu su VU SA MF komanda, sukūrė išskirtinę „Medi“
               savaitę, kurioje visos veiklos vykdytos anglų kalba. Toliau bus tęsiami
               darbai ties BUS dalykų atnaujinimu.
             </li>
@@ -886,19 +884,6 @@ atlikimą internatūros bazėse."
           content="Įgyvendinta komunikacijos kampanija."
         ></NTimelineItem>
       </NTimeline>
-      <NCollapse class="mt-4"
-        ><NCollapseItem title="Kiek pavyko įgyvendinti:"
-          ><ul>
-            <li>
-              Pasikalbėta su anksčiau buvusiu atsakingu už šią bylą asmeniu: kas vis dar
-              aktualu, kas buvo įvykdyta. Išsiaiškinta, kad biudžetas yra numatytas. Bus
-              pradedama rinkti informaciją, kaip sekasi užtikrinti sklandžią internatūros
-              registraciją kituose Lietuvos bei užsienio universitetuose, informacija bus
-              pristatyta VU MF taryboje bei visiems šešto kurso studentams.
-            </li>
-          </ul></NCollapseItem
-        ></NCollapse
-      >
     </section>
     <NDivider></NDivider>
     <section>
@@ -931,7 +916,7 @@ atlikimą internatūros bazėse."
         ></NTimelineItem>
         <NTimelineItem
           title="5 uždavinys: bus vykdoma"
-          content="Įvertintas iniciatyvų veiksmingumas pagal pasirinktus rodiklius"
+          content="Įvertintas iniciatyvų veiksmingumas pagal pasirinktus rodiklius."
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -940,16 +925,23 @@ atlikimą internatūros bazėse."
             <li>
               Suorganizuotas renginių ciklas, įtraukiantis VU MIF bendruomenę. Jį sudaro
               trys renginiai – du iš jų jau įvykę, o trečiasis, kurį įgyvendinti
-              planuojama gegužės mėn., jau pradėtas organizuoti. Taip pat įgyvendintos
-              veiklos, skirtos antrakursių reintegracijai: rugsėjo pirmosios eisena,
-              mini-MIDI mokymai, bendruomenės vakarai ir kita. VU MIF erdvėse pastebimas
-              gyvybingumas, COVID-19 padarinių socialinei įtraukčiai įtakos silpnėjimas.
-              Užtikrintas pagalbą skatinančios veiklos „Studentas-Studentui“ tęstinumas:
-              rastas vadovas ir komanda, išsiaiškinti studentams neaiškūs dalykų moduliai,
-              kuriems „Studentas-Studentui“ komanda galėtų vesti paskaitas. Pasirinkti
-              rodikliai šių iniciatyvų veiksmingumui vertinti: dalyvių skaičiaus pokytis
-              renginiuose, rudens ir pavasario semestrų apklausų rezultatai apie savijautą
-              bendruomenėje.
+              planuojama gegužės mėn., jau pradėtas organizuoti.
+            </li>
+            <li>
+              Taip pat įgyvendintos veiklos, skirtos antrakursių reintegracijai: rugsėjo
+              pirmosios eisena, mini-MIDI mokymai, bendruomenės vakarai ir kita.
+            </li>
+            <li>
+              VU MIF erdvėse pastebimas gyvybingumas, COVID-19 padarinių socialinei
+              įtraukčiai įtakos silpnėjimas. Užtikrintas pagalbą skatinančios veiklos
+              „Studentas-Studentui“ tęstinumas: rastas vadovas ir komanda, išsiaiškinti
+              studentams neaiškūs dalykų moduliai, kuriems „Studentas-Studentui“ komanda
+              galėtų vesti paskaitas.
+            </li>
+            <li>
+              Pasirinkti rodikliai šių iniciatyvų veiksmingumui vertinti: dalyvių
+              skaičiaus pokytis renginiuose, rudens ir pavasario semestrų apklausų
+              rezultatai apie savijautą bendruomenėje.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -971,16 +963,16 @@ atlikimą internatūros bazėse."
         <NTimelineItem
           type="warning"
           title="2 uždavinys: vykdoma"
-          content="Parengta studentų atstovų SPK metų veiklos programa"
+          content="Parengta studentų atstovų SPK metų veiklos programa."
         ></NTimelineItem>
         <NTimelineItem
           type="error"
           title="3 uždavinys: atsisakyta"
-          content="Patvirtinti kiekvienos studijų programos studentams aktualių problemų sprendimai"
+          content="Patvirtinti kiekvienos studijų programos studentams aktualių problemų sprendimai."
         ></NTimelineItem>
         <NTimelineItem
           title="4 uždavinys: bus vykdoma"
-          content="Padidintas VU IS apklausas užpildžiusių studentų skaičius (pakiltų bent 15%)."
+          content="Padidintas VU IS apklausas užpildžiusių studentų skaičius (pakiltų bent 15 proc.)."
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -1019,13 +1011,13 @@ apimties."
         <NTimelineItem
           type="error"
           title="3 uždavinys: atsisakyta"
-          content="Studentų atstovas pateikia parengtus pasiūlymus praktikos ataskaitai SPK posėdžio metu"
+          content="Studentų atstovas pateikia parengtus pasiūlymus praktikos ataskaitai SPK posėdžio metu."
         ></NTimelineItem>
         <NTimelineItem
           type="error"
           title="4 uždavinys: atsisakyta"
           content="Edukologijos instituto direktorei pasiūloma instituto darbuotojų susitikimo metu iškelti
-klausimą dėl praktikų organizavimo tvarkos"
+klausimą dėl praktikų organizavimo tvarkos."
         ></NTimelineItem>
         <NTimelineItem
           type="success"
@@ -1055,7 +1047,7 @@ klausimą dėl praktikų organizavimo tvarkos"
         <NTimelineItem
           type="success"
           title="1 uždavinys: įvykdyta"
-          content="Įvykdytas VU SA ŠA pristatymas"
+          content="Įvykdytas VU SA ŠA pristatymas."
         ></NTimelineItem>
         <NTimelineItem
           type="error"
@@ -1128,11 +1120,19 @@ raštingumo problemas."
               išsiaiškinant studentų akademinio raštingumo problemas. Jų pagrindu
               įgyvendinta paskaita apie kursinio darbo rašymo ypatumus, išliekamosios
               informacinės medžiagos sklaida su studentais („Kursinio darbo rašymas: nuo A
-              iki Z“). Skirtas didesnis dėmesys bei sklaida VU TF SMD projektui:
-              išliekamoji video medžiaga apie mokslinio straipsnio rašymą bei pristatymą
-              patalpinta „VU SA TF“ Facebook puslapyje. Vykdytas informacijos viešinimas
-              apie akademinį raštingumą VU SA TF socialiniuose tinkluose. Planuojama
-              paskaita / seminaras apie teisinių dokumentų rengimą.
+              iki Z“).
+            </li>
+
+            <li>
+              Skirtas didesnis dėmesys bei sklaida VU TF SMD projektui: išliekamoji video
+              medžiaga apie mokslinio straipsnio rašymą bei pristatymą patalpinta „VU SA
+              TF“ Facebook puslapyje.
+            </li>
+
+            <li>
+              Vykdytas informacijos viešinimas apie akademinį raštingumą VU SA TF
+              socialiniuose tinkluose. Planuojama paskaita / seminaras apie teisinių
+              dokumentų rengimą.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -1149,7 +1149,7 @@ raštingumo problemas."
         <NTimelineItem
           type="success"
           title="1 uždavinys: įvykdyta"
-          content="Peržiūrėti ir išanalizuoti dieninių teisės studijų I-VII semestrų dalykų aprašus."
+          content="Peržiūrėti ir išanalizuoti dieninių teisės studijų I–VII semestrų dalykų aprašus."
         ></NTimelineItem>
         <NTimelineItem
           type="success"
@@ -1181,9 +1181,12 @@ išsakytas pastabas pakoreguoti rekomendacijas."
           ><ul>
             <li>
               Buvo išanalizuoti ir pakomentuoti 2020–2021 m. VU TF teisės studijų I-VII
-              semestrų dalykų aprašai, pridėtos rekomendacijos tobulinimui. Taip pat
-              išanalizuoti detalūs dalykų aprašai, lyginant juos su kitais, pateikti
-              komentarai, kaip galima tobulinti nedetalius dalykų aprašus.
+              semestrų dalykų aprašai, pridėtos rekomendacijos tobulinimui.
+            </li>
+
+            <li>
+              Taip pat išanalizuoti detalūs dalykų aprašai, lyginant juos su kitais,
+              pateikti komentarai, kaip galima tobulinti nedetalius dalykų aprašus.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -1252,14 +1255,23 @@ nariams."
             <li>
               Bendradarbiaujant su VU PKMC, perduota programėlės, skirtos įsivertinti savo
               psichologinę būklę, idėja. Šiuo metu VU PKMC su VU SA parengė projektą,
-              skirtą šios programėlės sukūrimui. Bendradarbiaujant su VU TSPMI
-              administracija, VU PKMC, VU SPKS, buvo paleista komunikacinė kampanija, taip
-              pat sukurtas „podcastas“, kuriame diskutuojama apie tai, kaip studentai gali
-              atpažinti savo psichologinę būklę bei ja rūpintis. Psichosocialinės aplinkos
-              gerinimo ir konsultacijų prieinamumo klausimas buvo keliamas VU Rektorato
-              bei VU Senato posėdžių metu. Šiuo metu VU TSPMI ieškomas psichologas
-              bendruomenei, o nuo rugsėjo mėnesio institute planuojama, jog atsiras antras
-              akademinis konsultantas.
+              skirtą šios programėlės sukūrimui.
+            </li>
+
+            <li>
+              Bendradarbiaujant su VU TSPMI administracija, VU PKMC, VU SPKS, buvo
+              paleista komunikacinė kampanija, taip pat sukurta tinklalaidė, kuriame
+              diskutuojama apie tai, kaip studentai gali atpažinti savo psichologinę būklę
+              bei ja rūpintis.
+            </li>
+
+            <li>
+              Psichosocialinės aplinkos gerinimo ir konsultacijų prieinamumo klausimas
+              buvo keliamas VU Rektorato bei VU Senato posėdžių metu.
+            </li>
+            <li>
+              Šiuo metu VU TSPMI ieškomas psichologas bendruomenei, o nuo rugsėjo mėnesio
+              institute planuojama, jog atsiras antras akademinis konsultantas.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -1293,7 +1305,7 @@ nariams."
         ></NTimelineItem>
         <NTimelineItem
           title="5 uždavinys: bus vykdoma"
-          content="Suorganizuota konferencija, kurios metu yra pristatyti geriausi studentų atlikti moksliniai darbai"
+          content="Suorganizuota konferencija, kurios metu yra pristatyti geriausi studentų atlikti moksliniai darbai."
         ></NTimelineItem>
       </NTimeline>
       <NCollapse class="mt-4"
@@ -1301,11 +1313,20 @@ nariams."
           ><ul>
             <li>
               Mokslo metų pradžioje buvo surastas VU SA VM SMD koordinatorius bei sukurtas
-              pareigybinis aprašas šiai pareigybei. Organizuoti susitikimai su VU VM
-              administracijos darbuotojais, kuriuose dalyvavo VU SA VM pirmininkas ir VU
-              SA VM SMD koordinatorius, bei būtent šių susitikimų metu buvo tobulinamos VU
-              SA VM SMD veiklos ir įgyvendinimo idėjos. Su administracijos pagalba yra
-              ieškomi mentoriai, padėsiantys studentams vykdyti mokslinę veiklą.
+              pareigybinis aprašas šiai pareigybei.
+            </li>
+
+            <li>
+              Organizuoti susitikimai su VU VM administracijos darbuotojais, kuriuose
+              dalyvavo VU SA VM pirmininkas ir VU SA VM SMD koordinatorius, bei būtent šių
+              susitikimų metu buvo tobulinamos VU SA VM SMD veiklos ir įgyvendinimo
+              idėjos.
+            </li>
+
+            <li>
+              Su administracijos pagalba yra ieškomi mentoriai, padėsiantys studentams
+              vykdyti mokslinę veiklą." keisti į "yra ieškoma mentorių, padėsiančių
+              studentams (-ėms) vykdyti mokslinę veiklą.
             </li>
           </ul></NCollapseItem
         ></NCollapse

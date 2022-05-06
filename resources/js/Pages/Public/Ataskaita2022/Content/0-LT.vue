@@ -59,13 +59,13 @@
         >
       </div>
     </div>
-    <div class="col-span-4 md:col-span-2 mt-4 md:mt-0">
+    <div class="col-span-4 md:col-span-2 mt-4 md:mt-0 prose">
       <img
         class="carousel-img"
         style="object-position: 0% 20%"
         src="/images/ataskaita2022/sveikinimai/neda.jpg"
       />
-      <div class="bg-white p-6 text-sm prose prose-sm">
+      <div class="bg-white p-6 text-sm prose-sm">
         <p>
           Mielos studentės ir studentai, Vilniaus universiteto bendruomenės narės ir
           nariai, miela VU SA,
@@ -138,7 +138,7 @@ import { NButton } from "naive-ui";
 </script>
 
 f
-<style>
+<style scoped>
 .carousel-img {
   width: 100%;
   height: 280px;

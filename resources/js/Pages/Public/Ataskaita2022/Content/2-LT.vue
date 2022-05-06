@@ -617,8 +617,7 @@
               </li>
               <li>
                 Patvirtinta tvarka dėl išorinio studentų atstovo (-ės) Vilniaus
-                universiteto Taryboje rinkimų (tokio atstovo (-ės) VU SA anksčiau
-                neturėjo);
+                universiteto Taryboje rinkimų;
               </li>
               <li>Inicijuotas darbo reglamento atnaujinimo procesas;</li>
               <li>
@@ -769,10 +768,10 @@
                 savanoriai;
               </li>
               <li>
-                Patvirtinti narystės kelio organizacijoje koncepciją, kuri grindžiama
-                efektyvesniu narių iveiklinimu, kuratorių, studentų atstovų, programų,
-                klubų, projektų ir ilgamečių narių lygiaverčiu įtraukimu į vykstančius
-                procesus narystės kelią grindžiant savirefleksijų kultūra;
+                Patvirtinti narystės kelio organizacijoje koncepciją, paremtą efektyvesniu
+                narių įveiklinimu, kuratorių, studentų atstovų, programų, klubų, projektų
+                ir ilgamečių narių lygiaverčiu įtraukimu į vykstančius procesus,
+                savirefleksijų kultūra;
               </li>
               <li>
                 Narystės užfiksavimo sistemos atnaujinimui nario testą praplėsti žiniomis
@@ -829,7 +828,10 @@
             <p>
               Organizacijos veiklos vertinimo ataskaitą Revizijos komisija teikia VU SA
               ataskaitinės-rinkiminės konferencijos metu (su vertinimo ataskaita galima
-              susipažinti vusa.lt/lt/veiklos-ir-tyrimu-ataskaitos).
+              susipažinti
+              <a target="_blank" href="/lt/veiklos-ir-tyrimu-ataskaitos"
+                >vusa.lt/lt/veiklos-ir-tyrimu-ataskaitos</a
+              >).
             </p>
           </div>
         </NCollapseItem>
@@ -850,15 +852,7 @@
 <script setup>
 import VUSA from "../2-VU-SA.vue";
 import { Link } from "@inertiajs/inertia-vue3";
-import {
-  NCollapse,
-  NCollapseItem,
-  NDivider,
-  NAnchor,
-  NAnchorLink,
-  NModal,
-  NButton,
-} from "naive-ui";
+import { NCollapse, NCollapseItem, NDivider, NModal, NButton } from "naive-ui";
 import { ref } from "vue";
 
 const showTaryba = ref(false);

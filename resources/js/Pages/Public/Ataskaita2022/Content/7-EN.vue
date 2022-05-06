@@ -1688,7 +1688,7 @@
   <Sritys>
     <NButton text class="relative" style="white-space: normal" @click="showCB = true">
       <img
-        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500"
+        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 shadow-sm hover:shadow-lg"
         src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/Centrinis biuras-2.jpg"
       />
       <p
@@ -1700,7 +1700,7 @@
 
     <NButton text class="relative" style="white-space: normal" @click="showTaryba = true">
       <img
-        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500"
+        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 shadow-sm hover:shadow-lg"
         src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/Taryba-2.jpg"
       />
       <p
@@ -1712,7 +1712,7 @@
 
     <div class="relative" style="white-space: normal">
       <img
-        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500"
+        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 shadow-sm hover:shadow-lg"
         src="/images/ataskaita2022/kitos-nuotraukos/Parlamentas.jpg"
       />
       <p
@@ -1724,7 +1724,7 @@
 
     <div class="relative">
       <img
-        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500"
+        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 shadow-sm hover:shadow-lg"
         src="/images/ataskaita2022/kitos-nuotraukos/ISF.jpg"
       />
       <p
@@ -1741,7 +1741,7 @@
       @click="showSocAkad = true"
     >
       <img
-        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500"
+        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 shadow-sm hover:shadow-lg"
         src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/Socialinio-akademinio proceso koordinatoriai-2.jpg"
       />
       <p
@@ -1757,7 +1757,7 @@
       @click="showAtstovai = true"
     >
       <img
-        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500"
+        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 shadow-sm hover:shadow-lg"
         src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/atstovu.jpg"
       />
       <p
@@ -1768,7 +1768,7 @@
     </NButton>
     <NButton text class="relative" style="white-space: normal" @click="showKom = true">
       <img
-        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500"
+        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 shadow-sm hover:shadow-lg"
         src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/Komunikacijos koordinatoriai-2.jpg"
       />
       <p
@@ -1779,7 +1779,7 @@
     </NButton>
     <NButton text class="relative" style="white-space: normal" @click="showMark = true">
       <img
-        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500"
+        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 shadow-sm hover:shadow-lg"
         src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/Marketingo srities koordinatoriai-2.jpg"
       />
       <p
@@ -1790,7 +1790,7 @@
     </NButton>
     <NButton text class="relative" style="white-space: normal" @click="showOrg = true">
       <img
-        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500"
+        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 shadow-sm hover:shadow-lg"
         src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/organizacines.jpg"
       />
       <p
@@ -1801,7 +1801,7 @@
     </NButton>
     <NButton text class="relative" style="white-space: normal" @click="showHR = true">
       <img
-        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500"
+        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 shadow-sm hover:shadow-lg"
         src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/HR-2.jpg"
       />
       <p
@@ -1812,7 +1812,7 @@
     </NButton>
     <NButton text class="relative" style="white-space: normal" @click="showInt = true">
       <img
-        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500"
+        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 shadow-sm hover:shadow-lg"
         src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/Integracijos proceso koordinatoriai-2.jpg"
       />
       <p
@@ -1828,7 +1828,7 @@
       @click="showAdministratoriai = true"
     >
       <img
-        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500"
+        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 shadow-sm hover:shadow-lg"
         src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/Administratoriai-2.jpg"
       />
       <p
@@ -1839,7 +1839,7 @@
     </NButton>
     <NButton text class="relative" style="white-space: normal" @click="showLSP = true">
       <img
-        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500"
+        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 shadow-sm hover:shadow-lg"
         src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/LSP koordinatoriai-2.jpg"
       />
       <p
@@ -1850,7 +1850,7 @@
     </NButton>
     <NButton text class="relative" style="white-space: normal" @click="showPKP = true">
       <img
-        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500"
+        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 shadow-sm hover:shadow-lg"
         src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/PKP-2.jpg"
       />
       <p
@@ -1866,7 +1866,7 @@
       @click="showUzsienieciu = true"
     >
       <img
-        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500"
+        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 shadow-sm hover:shadow-lg"
         src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/Uzsienieciu-koordai-2.jpg"
       />
       <p

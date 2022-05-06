@@ -16,6 +16,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\App;
+use App\Models\PageView;
 
 class MainController extends Controller
 {
@@ -59,6 +60,8 @@ class MainController extends Controller
 		$banners = $banners->merge(Padalinys::where('alias', '')->first()->banners()->inRandomOrder()->where('is_active', 1)->get());
 		Inertia::share('banners', $banners);
 		Inertia::share('mainNavigation', $mainNavigation);
+
+		// PageView::createViewLog();
 	}
 
 	public function home()
@@ -164,14 +167,19 @@ class MainController extends Controller
 		// ddd($this->alias, Route::currentRouteName() == 'padalinys.home', request()->padalinys);
 
 		$page = Page::where([['permalink', '=', request()->permalink], ['padalinys_id', '=', $padalinys->id]])->first();
-		$navigation_item = Navigation::where([['padalinys_id', '=', $padalinys->id], ['name', '=', $page->title]])->get()->first();
-
-		// dd(request()->route('permalink'), request()->permalink, $page, $padalinys);
 
 		if ($page == null) {
 			// return 404
 			abort(404);
 		}
+
+		dd($page);
+
+		$navigation_item = Navigation::where([['padalinys_id', '=', $padalinys->id], ['name', '=', $page->title]])->get()->first();
+
+		// dd(request()->route('permalink'), request()->permalink, $page, $padalinys);
+
+		
 
 		// get four random pages
 		$random_pages = Page::where([['padalinys_id', '=', $padalinys->id], ['lang', app()->getLocale()]])->get()->random(4);

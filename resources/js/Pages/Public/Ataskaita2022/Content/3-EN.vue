@@ -546,20 +546,6 @@
         <NTimelineItem title="6th task: will be started"></NTimelineItem>
         <NTimelineItem title="7th task: will be started"></NTimelineItem>
       </NTimeline>
-      <NCollapse class="mt-4"
-        ><NCollapseItem title="To what extent have we been able to implement:"
-          ><ul>
-            <li>
-              We talked to the person who was previously responsible for this case: what
-              is still relevant, what was done. It has been clarified that the budget is
-              foreseen. Information on how to ensure smooth registration of internships at
-              other Lithuanian and foreign universities will be started to be collected,
-              the information will be presented to the VU MF Council and all sixth-year
-              students.
-            </li>
-          </ul></NCollapseItem
-        ></NCollapse
-      >
     </section>
     <NDivider></NDivider>
     <section>

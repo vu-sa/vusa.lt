@@ -101,7 +101,7 @@
               <p>
                 Atstovauta medicinos studentams bei rezidentams siekiant, jog nebūtų
                 patvirtintas įstatymų pakeitimo projektas, kuriuo siūloma valstybės
-                finansuojamas rezidentūros studijas baigusiems už studijas 2-4 metus
+                finansuojamas rezidentūros studijas baigusiems, už studijas 2–4 metus
                 atidirbti regionų pirminės sveikatos priežiūros įstaigose. Klausimas buvo
                 išimtas iš darbotvarkės.
               </p>
@@ -114,20 +114,20 @@
               <em>Studentų atstovė – Neda Žutautaitė</em>
               <p>
                 Ataskaitiniu laikotarpiu dalyvauta tarpinstituciniuose pasitarimuose ir
-                plenariniuose LR Vyriausybės posėdžiuose pasisakant dėl LR Mokslo ir
+                plenariniuose LR Vyriausybės posėdžiuose pasisakant LR Mokslo ir
                 studijų įstatymo pakeitimų klausimais. Prisidėta prie Vyriausybės išvadų
                 rengimo įstatymų projektams.
               </p>
               <p>
                 Dalyvauta akademiniuose pusryčiuose su Premjere bei Švietimo, mokslo ir
                 sporto ministre, diskutuojant apie socialinę dimensiją ir labiau
-                pažeidžiamų grupių įtraukimk1 į aukštąjį mokslą, mokslinių veiklų
+                pažeidžiamų grupių įtraukimą į aukštąjį mokslą, mokslinių veiklų
                 finansavimą bei rezidentūros studijas.
               </p>
               <p>
-                VU SA pasiūlius padidintas Vyriausybės pirminiame biudžeto plane numatytas
+                VU SA pasiūlius, padidintas Vyriausybės pirminiame biudžeto plane numatytas
                 finansavimas mokslinėms veikloms, įtraukiant studentų mokslines veiklas ir
-                projektus, doktorantūros vietų, podoktorantūros stažuočių didinimą,
+                projektus, doktorantūros vietų, podoktorantūros stažuočių skaičiaus didinimą,
                 pasiektas susitarimas papildomai skirti 20 mln. eurų.
               </p>
               <p>
@@ -147,50 +147,37 @@
                 nagrinėjimo, dalyvauta pasitarimuose bei teikti pasiūlymai aukštojo mokslo
                 gerinimui:
               </p>
-              <ol>
-                <li>
+                <p>
                   Dalyvauta susitikimuose su EBPO ekspertais gryninantis Lietuvos mokslo
-                  ir studijų institucijų misijas.
-                </li>
-                <li>
+                  ir studijų institucijų misijas ir išsakyti pastebėjimai iš studentų perspektyvos dėl European student card
+                  (ESC) iniciatyvos įgyvendinimo Lietuvoje.
+                </p>
+                <p>
                   Įsitraukta į studentų iškritimo prevencijos priemonių darbo grupės
                   veiklą, siekiant sisteminių priemonių, kurios leistų stebėti rizikas ir
                   mažinti studentų iškritimą iš studijų šalies aukštosiose mokyklose,
-                  sukūrimo.
-                </li>
-                <li>
+                  sukūrimo. Pateikti siūlymai atnaujinti valstybės remiamų paskolų sistemą,
+                  atkreiptas dėmesys į klausimo problematiką bei kartu su Valstybiniu
+                  studijų fondu rengiamas pasiūlymas sistemos tobulinimui. Kartu formuotas alternatyvaus patekimo į aukštąjį mokslą kelio
+                  projektas ir pateikti pasiūlymai plėsti negalios stipendiją gaunančių asmenų ratą bei
+                  apjungti šiuo metu egzistuojančias kelias stipendijų rūšis sumažinant
+                  administracinę naštą studentams.
+                </p>
+                <p>
                   Prisidėta rengiant skatinamojo finansavimo aukštosioms mokykloms už
                   studijų kokybę modelio atsiradimą bei konkrečius rodiklius, kurie bus
                   skatinimo sistemos pagrindu ir formuos aukštųjų mokyklų prioritetus
                   kokybės gerinimui.
-                </li>
-                <li>
+                </p>
+                <p>
                   Dalyvaujama planuojant Ukrainos piliečių priėmimo į aukštąsias mokyklas
                   tvarką, teikti pasiūlymai dėl užsieniečių teisinės padėties gerinimo.
-                </li>
-                <li>
-                  Pateikti siūlymai atnaujinti valstybės remiamų paskolų sistemą,
-                  atkreiptas dėmesys į klausimo problematiką bei kartu su Valstybiniu
-                  studijų fondu rengiamas pasiūlymas sistemos tobulinimui.
-                </li>
-                <li>
-                  Išsakyti pastebėjimai iš studentų perspektyvos dėl European student card
-                  (ESC) iniciatyvos įgyvendinimo Lietuvoje.
-                </li>
-                <li>
+                </p>
+              
+                <p>
                   Pateikti pasiūlymai ir atnaujinta studentų pilietinių, mokslinių,
                   verslumo, kūrybinių ir sportinių projektų finansavimo tvarka.
-                </li>
-                <li>
-                  Kartu formuotas alternatyvaus patekimo į aukštąjį mokslą kelio
-                  projektas.
-                </li>
-                <li>
-                  Pateikti pasiūlymai plėsti negalios stipendiją gaunančių asmenų ratą bei
-                  apjungti šiuo metu egzistuojančias kelias stipendijų rūšis sumažinant
-                  administracinę naštą studentams.
-                </li>
-              </ol>
+                </p>
             </div>
           </NCollapseItem>
           <NCollapseItem>
@@ -335,16 +322,14 @@
               >
               <p>
                 Per ataskaitinį laikotarpį dalyvauta posėdžiuose, pateikti SAM pasiūlymai
-                dėl sveikatos sistemos specialistų skaičiaus 2022-2023 mokslo metams.
+                dėl sveikatos sistemos specialistų skaičiaus 2022–2023 mokslo metams.
                 Valstybės finansuojamoms pirmosios pakopos slaugos ir akušerijos bei
                 vientisųjų medicinos krypties studijų programoms įsteigta beveik 140
                 papildomų vietų. Vilniaus universitetui iš viso medicinos krypčiai
                 numatant 181 vietą, odontologijai – 5 vietas. Sprendimai pirmą kartą
                 priimti iki nurodyto Mokslo ir studijų įstatyme termino, pagaliau
                 absolventams suteikiant ne vieną, o penkis mėnesius iš anksto žinoti apie
-                būsimas rezidentūros vietas ir planuoti savo ateitį. Visoms valstybės
-                nefinansuojamoms rezidentūros vietoms numatyta medicinos rezidentūrai 110,
-                odontologijos rezidentūrai 12 vietų.
+                būsimas rezidentūros vietas ir planuoti savo ateitį. Visoms valstybės nefinansuojamoms rezidentūros vietoms numatyta: medicinos rezidentūrai – 110, odontologijos rezidentūrai – 12 vietų.
               </p>
             </div>
           </NCollapseItem>
@@ -382,8 +367,8 @@
               <p>
                 <p>Ataskaitiniu laikotarpiu vyko studentų forumo susitikimas, kuriame diskutuota apie studijų kokybę iš studijų dalyvių perspektyvos – studentų, dėstytojų. Atkreiptas dėmesys į Valstybinio audito ataskaitą, kurioje pažymima, jog Lietuvos aukštosiose mokyklose studentų nuomonė dėl studijų kokybės nepakankamai išgirsta. Aptartas dėstytojų karjeros kelio plėtojimas ir didaktinių kompetencijų užtikrinimas bei jų reikšmė studijų kokybei. </p>
 <p>
-  Dalyvauta SKVC tarptautinėje konferencijoje apie studijų kokybės raidą „Išorinio kokybės užtikrinimo raida: pamokos ir ateities įžvalgos“ apskritojo stalo diskusijoje atstovaujant studentų nuomonę.
-  SKVC sudėtyje VU SA deleguotas studentų atstovas įsitrauktas į Aukštųjų mokyklų vertinimo komisijos (AMVK) veiklą. Komisija svarsto tarptautinių vertinimo ekspertų pateiktas aukštųjų mokyklų veiklos išorinio vertinimo išvadas. 2021/2022 akademinių metų eigoje vykusių posėdžių metu buvo svarstomos ekspertų parengtos išvados dėl 11 skirtingų Lietuvoje esamų aukštųjų mokyklų.
+Dalyvauta SKVC tarptautinėje konferencijoje apie studijų kokybės raidą „Išorinio kokybės užtikrinimo raida: pamokos ir ateities įžvalgos“ apskritojo stalo diskusijoje atstovaujant studentų nuomonę.
+SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mokyklų vertinimo komisijos (AMVK) veiklą. Komisija svarsto tarptautinių vertinimo ekspertų pateiktas aukštųjų mokyklų veiklos išorinio vertinimo išvadas. 2021–2022 akademinių metų eigoje vykusių posėdžių metu buvo svarstomos ekspertų parengtos išvados dėl 11 skirtingų Lietuvoje esamų aukštųjų mokyklų.
 </p>
 <p>Studentų atstovai Universitete prisidėjo prie Universiteto savianalizės rengimo ruošiantis Instituciniam vertinimui, įsitraukė į studijų krypčių vertinimus rengdami studijų krypčių savianalizes bei dalyvaudami susitikimuose su ekspertais, į kuriuos kviečiami dalyvauti visi Universiteto studentai.</p>
 
@@ -398,14 +383,14 @@
               <em>Studentų atstovė – Neda Žutautaitė</em>
               <p>
                 Įsitraukta į Susitarimo dėl psichikos sveikatos stiprinimo Lietuvos
-                aukštosiose mokyklose įgyvendinimo Universitetuose statuso įvertinimą.
+                aukštosiose mokyklose įgyvendinimo universitetuose statuso įvertinimą.
                 Dalyvauta studentams aktualių klausimų studijų komitete nagrinėjime.
               </p>
               <p>
                 Į ateinančio LURK posėdžio darbotvarkę įtrauktas klausimas dėl studentų
-                mokslinės veiklos Lietuvos Universitetuose, kurio metu bus pristatytas VU
+                mokslinės veiklos Lietuvos universitetuose, kurio metu bus pristatytas VU
                 SA atliktas mokslinės veiklos tyrimas bei pateiktos rekomendacijos
-                studentų mokslinės veiklos skatinimo priemonėms Universitetuose.
+                studentų mokslinės veiklos skatinimo priemonėms universitetuose.
               </p>
             </div>
           </NCollapseItem>
@@ -421,6 +406,17 @@
                 LMT skatinta išplėsti paramos gavimo galimybes bei dabartines sąlygas
                 studentų organizuojamiems mokslo renginiams finansuoti.
               </p>
+            </div>
+          </NCollapseItem>
+          <NCollapseItem>
+            <template #header>Vilniaus miesto savivaldybė ir Jaunimo reikalų Taryba</template>
+            <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+              <em>Studentų atstovė – Neda Žutautaitė, Aistė Rinkevičiūtė</em>
+              <p>
+                Ataskaitiniu laikotarpiu pakartotinai kreiptasi į Vilniaus miesto savivaldybę dėl kalio jodido tablečių išdavimo jauniems asmenims, gyvenantiems Vilniuje, bet nebūtinai deklaravusiems gyvenamąją vietą šiame mieste.</p>
+<p>Vilniaus miesto Jaunimo reikalų taryboje veikiant VU SA atstovei nagrinėti jaunimo programų ir organizacijų, vykdančių darbą su jaunimu gatvėje, finansavimo konkursų nuostatų keitimai, lytiškumo ugdymo Vilniaus mieste bei jaunimo psichinės sveikatos padėties klausimai.</p>
+
+              
             </div>
           </NCollapseItem>
         </NCollapse>
@@ -798,16 +794,7 @@
                 <li>Verslo mokyklos profesoriui Mindaugui Laužikui;</li>
                 <li>Medicinos fakulteto profesorei Dianai Ramašauskaitei.</li>
               </ul>
-              <h4>VU pedagogų rengimo plėtros komitetas</h4>
-
-              <em>Studentų atstovė – Neda Žutautaitė</em>
-
-              <p>
-                Komitetas sudarytas siekiant parengti Pedagogų ugdymo plėtros koncepciją
-                Vilniaus universitete. Šiam tikslui pasiekti buvo organizuojamos XXI
-                amžiaus pedagogikos koncepcijos idėjų generavimo sesijos Universiteto
-                bendruomenėje, kuriose dalyvavo ir studentų atstovai.
-              </p>
+              
             </div>
           </NCollapseItem>
           <NCollapseItem>
@@ -873,6 +860,16 @@
                   Šiais metais edukacinių iniciatyvų komisijoje patvirtinta 27 paraiškų ir
                   iniciatyvų.
                 </p>
+                <h4>VU pedagogų rengimo plėtros komitetas</h4>
+
+              <em>Studentų atstovė – Neda Žutautaitė</em>
+
+              <p>
+                Komitetas sudarytas siekiant parengti Pedagogų ugdymo plėtros koncepciją
+                Vilniaus universitete. Šiam tikslui pasiekti buvo organizuojamos XXI
+                amžiaus pedagogikos koncepcijos idėjų generavimo sesijos Universiteto
+                bendruomenėje, kuriose dalyvavo ir studentų atstovai.
+              </p>
               </section>
             </div>
           </NCollapseItem>
@@ -1170,18 +1167,21 @@
           <h4>VU Biblioteka</h4>
           <p>Su biblioteka bendradarbiauti sekėsi sklandžiai. Visos idėjos, susijusios su pagalba neįgaliesiems ir infrastruktūros pritaikymą, buvo priimtos ir pradėta svarstyti jų įgyvendinimą. VU SA dalinosi bibliotekai svarbiais įvykiais ir apklausomis. Vyko kasmėnesiniai susitikimai, dauguma nuotoliu, porą kartų gyvai. Buvo atsižvelgiama į VU SA nuomonę renkant idėjas naujai strategijai bei ją formuluojant.</p>
           <h4>Universiteto LGBT+ grupė</h4>
-          <p>Ataskaitiniu laikotarpiu su Universiteto LGBTQ+ grupe daugiausiai bendradarbiavo VU SA programa „Be etikečių“. Grupė prisidėjo prie programos „Be etikečių“  rengto LGBTQ+ kultūros festivalio „Kultūra visų“, po to kartu buvo organizuota diskusiją apie LGBTQ+ teises Lietuvoje ir Europoje „Sąrašo pabaigoje: istorija kartojasi“.</p>
+          <p>Ataskaitiniu laikotarpiu su Universiteto LGBTQ+ grupe daugiausiai bendradarbiavo VU SA programa „Be etikečių“. Grupė prisidėjo prie programos „Be etikečių“ rengto LGBTQ+ kultūros festivalio „Kultūra visų“, po to kartu buvo organizuota diskusiją apie LGBTQ+ teises Lietuvoje ir Europoje „Sąrašo pabaigoje: istorija kartojasi“.</p>
           <h4>KJOSAS</h4>
-          <p>Ataskaitiniu laikotarpiu su KJOSAS bendravo  VU SA Kauno fakultete. Fakulteto atstovai dalyvavo visuotiniame KJOSAS narių susirinkime, kuriame  buvo renkama nauja valdyba, kontrolės komisija bei organizacijos vadovė. Taip pat VU SA atstovai turėjo susitikimą su KJOSAS valdyba, kuriame aptarė galimas bendradarbiavimo galimybes.</p>
+          <p>Ataskaitiniu laikotarpiu su KJOSAS bendravo VU SA Kauno fakultete. Fakulteto atstovai dalyvavo visuotiniame KJOSAS narių susirinkime, kuriame buvo renkama nauja valdyba, kontrolės komisija bei organizacijos vadovė. Taip pat VU SA atstovai turėjo susitikimą su KJOSAS valdyba, kuriame aptarė galimas bendradarbiavimo galimybes.</p>
           <h4>VU Sveikatos ir sporto centras</h4>
           <p>Šiais metais bendradarbiaujant su VU Sveikatos ir sporto centru pirmą kartą buvo suburta VU Leagues Of Legends komanda, kuri Universitetui atstovavo tarpuniversitetinėse varžybose. VU SA taip pat prisidėjo prie Sveikatos ir sporto centro rengiamų orientacinių žaidynių skirtų VU gimtadieniui.</p>
+          <h4>LiJOT</h4>
+          <p>VU SA atstovai vyko į LiJOT organizuojamą konferenciją "Jauno žmogaus psichikos sveikata: jo paties ar valstybės rūpestis?" kurioje Neda Žutautaitė skaitė pranešimą. Taip pat VU SA atstovai prisidėjo prie LiJOT iniciatyvų apie psichologinę sveikatą. LiJOT ruoštame įraše "Psichikos sveikata. Šiandeinos ar rytojaus problema" Julija Jarutytė dalinosi mintimis apie studentų psichinę būklę aukštajame moksle bei kaip ją galima gerinti. Kartu buvo teiktas siūlymas Lietuvos jaunimo reikalų tarybą apie tai kaip būtų galima gerinti jaunimo psichikos sveikatą, kokių priemonių reikmėtų imtis jaunimo psichikos sveikatos gerinimui aukštosiose mokyklose, savivaldybių bei nacionaliniu lygmeniu ir kaip reiktų skatinti finansavimo didinimą šiam klausimui.</p>
           <h4>LSMU SA, LiMSA, JGA, Vilniaus universiteto rezidentų taryba</h4>
           <p>Bendradarbiaujant su šiomis organizacijomis buvo parengta bendra pozicija dėl Mokslo ir studijų įstatymo nr. XI-242 77 straipsnio pakeitimo. Naujo įstatymo projektu buvo siekiama kad valstybės lėšomis rezidentūros studijas baigę gydytojai turėtų kelerius metus po studijų baigimo atidirbti viešosiose Lietuvos asmens sveikatos priežiūros įstaigose. Drauge su minėtomis organizacijoms VU SA pasisakė prieš šį siūlymą argumentuodami, kad specialistų regionuose problemą reikia spręsti kitais būdais, kadangi šis siūlymas yra diskriminacinio pobūdžio, taip pat pabrėžiant, kad dėl šio nutarimo nebuvo tartasi su jaunuosius gydytojus atstovaujančiomis organizacijomis</p>
           <h4>KTU SA</h4>
           <p>Drauge su Kauno technologijų universiteto Studentų atstovybe buvo rengiamas tyrimas apie užsienio studentų integraciją Lietuvos universitete skirtas Vidaus reikalų ministerijos projekto įgyvendinimui. Drauge su KTU SA buvo kuriami klausimai, analizuojami duomenis. Surinkti duomenys pateikti Vidaus reikalų ministerijai.</p>
           <h4>ŽEF </h4>
           <p>Žinių ekonomikos forumas – asociacija, atvira visoms idėjoms, kurios skatina prioritetinės Lietuvos srities – žinių ekonomikos – augimą. ŽEF kviečia visuomenę kartu kurti modernesnę, šiuolaikinėmis technologijomis bei žiniomis grįstą šalies ateitį.</p>
-<p> Taip pat ŽEF ekspertai dalyvavo įgyvendinant ECSTRA (Employability Competencies for Students Through Implementation and Recognition of Activities) projektą. </p>
+<p> ŽEF dalyvauja kaip partneriai įgyvendinant ECSTRA (Employability Competencies for Students Through Implementation and Recognition of Activities) bei Viešojo vadymo švietimo srityje gerinimo įtraukiant nevyriausybines organizacijas projektus.</p>
+
 
           <h4>VJOS AS</h4>
           <p>Ataskaitiniu laikotarpiu dalyvauta VJOSAS susitikimuose, vadovų klube. VU SA atstovai taip pat turėjo ir kelis susitikimus su VJOSAS nariais, kurių metu aptarėme galimus tolimesnio bendradarbiavimo klausimus.</p>
@@ -1190,26 +1190,14 @@
           <NCollapseItem>
             <template #header>Tarptautinis bendradarbiavimas</template>
             <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
-              <ol>
+              <ul>
+              <li>
+                VU SA prezidentė dalyvavo Europos aukštojo mokslo erdvės (EAME) Bolonijos proceso tolesnės veiklos grupės socialinei dimensijai (EHEA BFUG working group on Social dimension) susitikime atstovaudama Lietuvą. Grupės veikla yra skirta užtikrinti, jog Europos aukštojo mokslo erdvės susitarimai, skirti socialinės dimensijos plėtrai šalyse būtų įgyvendinti, grupėje dalyvauja kiekvienos EAME šalies narės atstovai.
+                </li>
                 <li>
                   VU SA priėmė studentų atstovus iš Arqus universitetų aljanso - (galima
                   išvardinti 7, be lenkų ir portugalų). Organizavo vizitą, pristatė
                   gerąsias patirtis, dalyvavo studentų tarybos posėdžiuose. (spalio 3 - 7)
-                </li>
-                <li>
-                  VU SA atstovai vyko vizitui į Suomijos Helsinkio ir Aalto universitetus,
-                  susitiko su jų studentų atstovybių nariais. Sėmėsi patirties apie
-                  studentų sąjungų veiklos struktūras, studentiškas organizacijas,
-                  studentų gerovės (welfare) sistemą. Susipažino su nacionaliniu
-                  socialinės dimensijos planu ir dalinosi gerosiomis patirtimis
-                  atstovaujant universiteto valdymo organuose. (vizitas vyko per VRM
-                  projektą) (spalio 19-22)
-                </li>
-                <li>
-                  VU SA priėmė studentų atstovus iš Warsaw School of Economics. Dalinosi
-                  gerosiomis patirtimis įgyvendinant studentų verslų ir verslumo ugdymo
-                  projektus. Suorganizuotas tinklaveikos renginys su VU SIF, VU KD, VU
-                  TechHub. (gruodžio 1 - 3)
                 </li>
                 <li>
                   VU SA atstovai lankėsi pas Arqus aljanso tinklo partnerius Bergeno
@@ -1229,8 +1217,23 @@
                   kuris šiais metais tapo nauju Arqus universitetų aljanso nariu.
                   Bendraujant su studentų sąjunga gilintasi į studentų sportinių
                   organizacijų veiklos organizavimą, studentų patirtis dalyvaujant
-                  universiteto valdyme. (vėlgi vrm) (balandžio 20-23)
+                  universiteto valdyme. (balandžio 20-23)
                 </li>
+                <li>
+                  VU SA atstovai vyko vizitui į Suomijos Helsinkio ir Aalto universitetus,
+                  susitiko su jų studentų atstovybių nariais. Sėmėsi patirties apie
+                  studentų sąjungų veiklos struktūras, studentiškas organizacijas,
+                  studentų gerovės (welfare) sistemą. Susipažino su nacionaliniu
+                  socialinės dimensijos planu ir dalinosi gerosiomis patirtimis
+                  atstovaujant universiteto valdymo organuose. (spalio 19-22)
+                </li>
+                <li>
+                  VU SA priėmė studentų atstovus iš Warsaw School of Economics. Dalinosi
+                  gerosiomis patirtimis įgyvendinant studentų verslų ir verslumo ugdymo
+                  projektus. Suorganizuotas tinklaveikos renginys su VU SIF, VU KD, VU
+                  TechHub. (gruodžio 1 - 3)
+                </li>
+                
                 <li>
                   Liepos 19-21 dienomis 10 VU SA delegatų dalyvavo UNICA konferencijoje.
                   Ši konferencija pritraukia šimtus studentų iš visų Europos valstybių.
@@ -1238,10 +1241,11 @@
                   VU SA atstovai įsitraukė į skirtingas temas ir darbo grupes.
                   Konferencijoje buvo rengiami raštai, pozicijos dėl universitetų
                   tobulėjimą po pandemijos. Konferencijos metu susipažinta su studentais
-                  iš įvairių Europos šalių, susipažinta su Europos studentų unija
-                  (European student union).
+                  iš įvairių Europos šalių, susipažinta su Europos studentų sąjunga
+                  (European Student union).
                 </li>
-              </ol>
+                
+              </ul>
             </div>
           </NCollapseItem>
           <NCollapseItem>
@@ -1249,7 +1253,7 @@
             <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
 
 <h4>LiJOT konferencija „Jauno žmogaus psichikos sveikata: jo paties ar ir valstybės rūpestis“ </h4>
-<p>2021m. birželio 18d.  VU SA prezidentė Neda Žutautaitė dalyvavo konferencijoje, kurioje diskutuota, kas turi prisiimti atsakomybę už jaunų žmonių psichologinę būklę. Skaitytame pranešime N. Žutautaitė akcentavo, jog studentų (-čių) psichikos sveikata aukštojoje mokykloje nėra tik jų asmeninis rūpestis – turime suprasti, kad tai tiek akademinės bendruomenės tarpusavio ryšių, tiek studijų ir su jomis susijusios aplinkos klausimas. Taip pat pristatytos užsienio Universitetų taikomos praktikos, skirtos psichologinės aplinkos gerinimui, palaikančios bendruomenės kūrimui. </p>
+<p>2021m. birželio 18 d. VU SA prezidentė Neda Žutautaitė dalyvavo konferencijoje, kurioje diskutuota, kas turi prisiimti atsakomybę už jaunų žmonių psichologinę būklę. Skaitytame pranešime N. Žutautaitė akcentavo, jog studentų (-čių) psichikos sveikata aukštojoje mokykloje nėra tik jų asmeninis rūpestis – turime suprasti, kad tai tiek akademinės bendruomenės tarpusavio ryšių, tiek studijų ir su jomis susijusios aplinkos klausimas. Taip pat pristatytos užsienio Universitetų taikomos praktikos, skirtos psichologinės aplinkos gerinimui, palaikančios bendruomenės kūrimui. </p>
 
 <h4>LR Seimo Švietimo ir mokslo komiteto diskusija „Socialinė dimensija – studijų kokybei“</h4>
 <p>Spalio 8d. Lietuvos Respublikos Švietimo ir mokslo komiteto organizuotoje diskusijoje Neda Žutautaitė turėjo galimybę pasidalinti VU SA sukauptomis patirtimis, paakcentuoti, kodėl verta prioritetizuoti socialinę dimensiją, ir su kokiais sunkumais šiandien susiduria studentai (-ės) prieš stodami, stojimo metu, studijų laikotarpiu, pereidami į darbo rinką bei ką galime padaryti, kad jų išvengtume.</p>

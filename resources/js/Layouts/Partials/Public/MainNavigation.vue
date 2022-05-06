@@ -253,7 +253,6 @@ import {
   NButton,
   NGradientText,
   // NBadge,
-  NScrollbar,
   NModal,
   NInput,
   NDrawer,
@@ -266,7 +265,7 @@ import {
 } from "naive-ui";
 import { usePage, Link } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
-import { ref, h } from "vue";
+import { ref } from "vue";
 
 // map padaliniai to options_padaliniai
 
@@ -418,10 +417,15 @@ const handleSelectNavigation = (id) => {
   let url = "";
   for (let item of Object.entries(mainNavigation)) {
     if (item[1].id == id) {
-      url = item[1].url;
+      // if url has https or http, use it
+      if (item[1].url.includes("https://") || item[1].url.includes("http://")) {
+        window.open(item[1].url, "_blank");
+      } else {
+        url = item[1].url;
+        Inertia.visit(route("main.page", { lang: locale.value, permalink: url }));
+      }
     }
   }
-  Inertia.visit(route("main.page", { lang: locale.value, permalink: url }));
 };
 
 const handleSelectLanguage = (key) => {

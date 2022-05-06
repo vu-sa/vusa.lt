@@ -349,7 +349,7 @@
 
           <NCollapseItem>
             <template #header>
-              STATE ORDER FOR TRAINING OF NATIONAL HEALTH SYSTEM SPECIALISTS (VUK)
+              State order for training of national health system specialists (VUK)
             </template>
             <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
               <em
@@ -471,6 +471,18 @@
                 encouraged to expand the possibilities of receiving support and the
                 current conditions for the financing of scientific events organized by
                 students.
+              </p>
+            </div>
+          </NCollapseItem>
+          <NCollapseItem>
+            <template #header>Vilnius City Municipality and Youth Council </template>
+            <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+              <em>Student representatives – Neda Žutautaitė, Aistė Rinkevičiūtė </em>
+              <p>
+                During the reference period, Vilnius city municipality was repeatedly
+                approached for the issue of potassium iodide tablets to young people
+                residing in Vilnius, but who did not necessarily declare their place of
+                residence in this city.
               </p>
             </div>
           </NCollapseItem>
@@ -1305,6 +1317,20 @@
                 orienteering games organized by the Health and Sports Centre for the
                 birthday of VU.
               </p>
+              <h4>LiJOT</h4>
+              <p>
+                Representatives of VU SR went to the conference "Mental health of a young
+                person: his own or the state's concern?" organized by LiJOT, where Neda
+                Žutautaitė gave a presentation. Representatives of VU SR also contributed
+                to LiJOT initiatives on psychological health. In the post prepared by
+                LiJOT "Mental Health. The problem of today or tomorrow" Julija Jarutytė
+                shared her thoughts on the mental state of students in higher education
+                and how it can be improved. At the same time, a proposal was submitted to
+                the Lithuanian Youth Council on how to improve the mental health of young
+                people, what measures should be taken to improve the mental health of
+                young people in higher education institutions, municipal and national
+                level, and how to promote the increase of funding for this issue.
+              </p>
               <h4>LSMU SA, LiMSA, JGA, Vilniaus universiteto rezidentų taryba</h4>
               <p>
                 In cooperation with these organizations, a common position on the Law on
@@ -1332,8 +1358,10 @@
                 The Knowledge Economy Forum (ŽEF) is an association open to all ideas that
                 promote the growth of the priority area of Lithuania - the knowledge
                 economy. ŽEF invites the society to work together to create a more modern
-                future for the country based on modern technologies and knowledge. ŽEF
-                experts also participated in the implementation of the ECSTRA
+                future for the country based on modern technologies and knowledge.
+              </p>
+              <p>
+                ŽEF experts also participated in the implementation of the ECSTRA
                 (Employability Competencies for Students Through Implementation and
                 Recognition of Activities) project.
               </p>
@@ -1421,7 +1449,90 @@
           <NCollapseItem>
             <template #header>Participation in other conferences</template>
             <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
-              <p>...</p>
+              <h4>
+                LiJOT conference "Mental health of a young person: his own or the state's
+                concern"
+              </h4>
+              <p>
+                On 18th of June 2021 VU SR President Neda Žutautaitė participated in the
+                conference, which discussed who should take responsibility for the
+                psychological state of young people. In her report, N. Žutautaitė
+                emphasized that the mental health of students in higher education is not
+                only their personal concern – we must understand that this is a question
+                of relations between the academic community, studies and the environment
+                related to them. The practices applied by foreign universities aimed at
+                improving the psychological environment and supporting the creation of a
+                community were also presented.
+              </p>
+              <h4>
+                Discussion of the Committee on Education and Science of the Seimas "Social
+                dimension – for the quality of studies"
+              </h4>
+              <p>
+                On 8th of October, during a discussion organized by the Committee on
+                Education and Science of the Republic of Lithuania, Neda Žutautaitė had
+                the opportunity to share the experiences accumulated by VU SR, to
+                emphasize why it is worth prioritizing the social dimension and what
+                difficulties students face today before joining, during the period of
+                accession, during the study period, when entering the labor market and
+                what we can do to avoid them.
+              </p>
+              <p>
+                During the discussion, the President of VU SR emphasized that by
+                developing targeted measures based on good foreign experience, we will be
+                able to ensure equal conditions for studying all groups of society.
+              </p>
+              <h4>
+                4th Student Forum organized by the Centre for Quality and Evaluation of
+                Studies
+              </h4>
+              <p>
+                On 10th of December, the Centre for Quality and Evaluation of Studies
+                invited students to the forum to discuss the quality of studies and the
+                involvement of students in order to ensure it.
+              </p>
+              <p>
+                During the forum, the quality of studies was discussed from the
+                perspective of the participants – first of all, the students(s) who are
+                the main axis in the study process – the sooner the higher education
+                institution accepts this, the easier it is to strive together for the
+                quality of studies. There was also a discussion about the development of
+                the career path of the sitter(s) and the assurance of didactic
+                competences, which is no less important for the quality of studies. All
+                participants of the forum agreed that not only the functioning of student
+                representatives is important, but also the feedback provided by each
+                student(s) in the study process, without which changes are difficult to
+                achieve.
+              </p>
+              <h4>
+                Discussion on the psychological state of VU students and support measures
+                at the Meeting of the Council for the Promotion of Mental Health
+              </h4>
+              <p>
+                On 8th of April 2022, VU SR President Neda Žutautaitė participated in a
+                meeting of the Mental Health Promotion Council, where she discussed how to
+                improve the mental health of young people. Together with representatives
+                of STRATA, the World Bank Laboratory, the Department of Youth Affairs and
+                other youth organizations, it discussed how the mental health situation is
+                changing both in Lithuanian schools and universities, and what challenges
+                still exist.
+              </p>
+              <p>
+                Neda Žutautaitė presented to the participants of the meeting the problems
+                that most often arise for students(s) and the ways in which the University
+                community tries to respond to them. Situation is not ideal – the number of
+                consultations that can be provided is not enough to respond to the need of
+                students(s), in remote academic departments there is a lack of live
+                consultations, psychological measures for foreign students(s) in English
+                are already being started, but not yet developed.
+              </p>
+              <p>
+                "I am glad that Vilnius University, both during the COVID-19 pandemic and
+                now, in the context of the war, can see efforts to allocate resources to
+                ensure as much as possible that the community and students can receive
+                psychological assistance when they need it," N. Žutautaitė said in the
+                presentation.
+              </p>
             </div>
           </NCollapseItem>
         </NCollapse>

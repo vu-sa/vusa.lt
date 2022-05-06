@@ -259,7 +259,7 @@
               prasmingu laisvalaikiu ir socialine atsakomybe bei savanoryste.
             </p>
             <p>VU Tarybos pirmininkė</p>
-            <strong>Eglė Radzevičienė</strong>
+            <strong>dr. Eglė Radzevičienė</strong>
           </div>
         </NCarouselItem>
 
@@ -384,7 +384,7 @@
               studijų apsidairyti svetur. Lauksime sugrįžtant.
             </p>
 
-            <p>Vilniaus meras</p>
+            <p>Vilniaus miesto meras</p>
             <strong>Remigijus Šimašius</strong>
           </div>
         </NCarouselItem>
