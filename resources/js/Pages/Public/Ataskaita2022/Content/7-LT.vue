@@ -1153,7 +1153,7 @@
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/integr/Rūta Balsevičiūtė_Integr_FilF-2.jpg"
           />
           <p class="mt-1 text-sm">VU SA FilF</p>
-          <strong>Kornelija Račkauskaitė</strong>
+          <strong>Rūta Balsevičiūtė</strong>
         </div>
         <div>
           <img
@@ -1345,7 +1345,7 @@
   >
   <NModal v-model:show="showPKP">
     <div class="w-2/3 md:w-1/2 bg-white/95 shadow-lg rounded-lg p-6">
-      <h2 class="text-center mb-4">Programų, klubų ir projektų koordinatoriai</h2>
+      <h2 class="text-center mb-4">Programų, klubų ir projektų vadovai</h2>
       <div
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 overflow-auto gap-4 duration-200"
       >

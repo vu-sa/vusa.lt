@@ -93,14 +93,14 @@
             the preservation of student traditions. This year, nine units celebrated their
             days and have offered students a cycle of amazing and diverse events.
           </p>
-          <p>
+          <!-- <p>
             For historians, lovers of history and the past, and the entire community of
             the VU Faculty of History, VU SA IF organized <strong>IFDi'44</strong>, during
             which they invited to participate in book presentations, orienteering
             competitions and traditional football matches. Discussions and battles were
             organized during Korp!tilia, the IF theater returned from the ashes to immerse
             itself in history, and everything was crowned by a community evening.
-          </p>
+          </p> -->
           <p>
             After a long break, dictated by the pandemic, VU SA MIF took a full leg with
             the slogan "Rediscover MIDI!". The largest cycle of mathematics and computer

@@ -312,6 +312,14 @@
           </div>
           <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
             <p>
+              VU SR Parliament is the governing body of VU SR, which discusses the most
+              important social and academic issues related to students or other strategic
+              issues of VU SR. The Parliament shall consist of the president of the
+              organization, the vice-president, the chairmen of the VU SR U (unit)
+              performing the function of representation and two representatives from each
+              unit. The work of Parliament shall be organized by the President.
+            </p>
+            <p>
               The Parliament of VU SR (lt. VU SA) was chaired by Aistė Rinkevičiūtė (until
               February 2022) and Ugnius Sejonas (since February 2022).
             </p>
@@ -434,14 +442,7 @@
                 </ul>
               </NCollapseItem>
             </NCollapse>
-            <p>
-              VU SR Parliament is the governing body of VU SR, which discusses the most
-              important social and academic issues related to students or other strategic
-              issues of VU SR. The Parliament shall consist of the president of the
-              organization, the vice-president, the chairmen of the VU SR U (unit)
-              performing the function of representation and two representatives from each
-              unit. The work of Parliament shall be organized by the President.
-            </p>
+
             <p>
               During the reference period, 14 meetings of the VU SR Parliament took place
               (of which 5 electronic, 8 remote and 1 face-to-face).

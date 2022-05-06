@@ -18,7 +18,7 @@
         <NCarouselItem>
           <img
             class="carousel-img"
-            style="object-position: 0% 15%"
+            style="object-position: 50% 15%"
             src="/images/ataskaita2022/sveikinimai/MP portretas.jpg"
           />
           <div class="bg-white p-6 text-sm">
@@ -75,7 +75,7 @@
         <NCarouselItem>
           <img
             class="carousel-img"
-            style="object-position: 0% 20%"
+            style="object-position: 50% 20%"
             src="/images/ataskaita2022/sveikinimai/JurgitaSiugzdiniene.jpg"
           />
           <div class="bg-white p-6 text-sm">
@@ -107,7 +107,7 @@
         <NCarouselItem>
           <img
             class="carousel-img"
-            style="object-position: 0% 20%"
+            style="object-position: 50% 20%"
             src="/images/ataskaita2022/sveikinimai/Žukauskas.XIII-020-S20210121-O Posaškovos-0234.JPG"
           />
           <div class="bg-white p-6 text-sm">
@@ -225,7 +225,7 @@
         <NCarouselItem>
           <img
             class="carousel-img"
-            style="object-position: 0% 20%"
+            style="object-position: 50% 20%"
             src="/images/ataskaita2022/sveikinimai/Radzeviciene.5M5A1668r_3.jpg"
           />
           <div class="bg-white p-6 text-sm">
@@ -324,7 +324,7 @@
         <NCarouselItem>
           <img
             class="carousel-img-2"
-            style="object-position: 0% 20%"
+            style="object-position: 50% 20%"
             src="/images/ataskaita2022/sveikinimai/dr. Loreta Tauginienė.MART1397B.jpg"
           />
           <div class="bg-white p-6 text-sm">
@@ -353,7 +353,7 @@
         <NCarouselItem>
           <img
             class="carousel-img-2"
-            style="object-position: 0% 10%"
+            style="object-position: 50% 10%"
             src="/images/ataskaita2022/sveikinimai/Simasius.jpeg"
           />
           <div class="bg-white p-6 text-sm">
@@ -513,7 +513,7 @@
       <NButton text="" @click="carouselIndex = 7">
         <img
           class="w-20 h-20 object-cover rounded-lg hover:grayscale-0 duration-200"
-          style="object-position: 0% 10%"
+          style="object-position: 50% 10%"
           :class="{ grayscale: carouselIndex !== 7 }"
           src="/images/ataskaita2022/sveikinimai/dr. Loreta Tauginienė.MART1397B.jpg"
         />
@@ -521,7 +521,7 @@
       <NButton text="" @click="carouselIndex = 8">
         <img
           class="w-20 h-20 object-cover rounded-lg hover:grayscale-0 duration-200"
-          style="object-position: 0% 10%"
+          style="object-position: 50% 10%"
           :class="{ grayscale: carouselIndex !== 8 }"
           src="/images/ataskaita2022/sveikinimai/Simasius.jpeg"
         />

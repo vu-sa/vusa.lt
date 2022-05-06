@@ -305,6 +305,14 @@
           </div>
           <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
             <p>
+              <strong>VU SA Parlamentas</strong> – VU SA valdymo organas, svarstantis
+              svarbiausius socialinius ir akademinius, su studentais susijusius ar kitus
+              VU SA strateginius klausimus. Parlamentą sudaro organizacijos prezidentas,
+              viceprezidentas, atstovavimo funkciją vykdančių VU SA padalinių pirmininkai
+              ir po du atstovus iš kiekvieno padalinio. Parlamento darbą organizuoja
+              pirmininkas.
+            </p>
+            <p>
               VU SA Parlamentui pirmininkavo Aistė Rinkevičiūtė (iki 2022 m. vasario mėn.)
               ir Ugnius Sejonas (nuo 2022 m. vasario mėn.).
             </p>
@@ -427,14 +435,6 @@
                 </ul>
               </NCollapseItem>
             </NCollapse>
-            <p>
-              VU SA Parlamentas – VU SA valdymo organas, svarstantis svarbiausius
-              socialinius ir akademinius, su studentais susijusius ar kitus VU SA
-              strateginius klausimus. Parlamentą sudaro organizacijos prezidentas,
-              viceprezidentas, atstovavimo funkciją vykdančių VU SA padalinių pirmininkai
-              ir po du atstovus iš kiekvieno padalinio. Parlamento darbą organizuoja
-              pirmininkas.
-            </p>
             <p>
               Ataskaitiniu laikotarpiu įvyko 14 VU SA Parlamento posėdžių (iš jų – 5
               elektroniniai, 8 nuotoliniai ir 1 kontaktinis).
@@ -677,10 +677,10 @@
               </li>
             </ul>
             <p>
-              VU SA Parlamento posėdžiuose dalyvavo ir įvairiomis temomis kalbėjo
-              kviestiniai svečiai – Vilniaus universiteto Studijų kokybės ir plėtros
-              skyriaus vadovas Andrius Uždanavičius ir Vilniaus universiteto Centrinės
-              akademinės etikos komisijos pirmininkė Vigita Vėbraitė.
+              VU SA Parlamento posėdžiuose dalyvavo ir įvairias temas pristatė kviestiniai
+              svečiai – Vilniaus universiteto Studijų kokybės ir plėtros skyriaus vadovas
+              Andrius Uždanavičius ir Vilniaus universiteto Centrinės akademinės etikos
+              komisijos pirmininkė Vigita Vėbraitė.
             </p>
           </div>
         </NCollapseItem>
@@ -746,34 +746,34 @@
             </p>
             <strong>VU SA Taryba priėmė sprendimus:</strong>
             <ul>
-              <li>Patvirtinti atnaujintą VU SA mokymų organizavimo paraiškos šabloną;</li>
+              <li>Patvirtinti atnaujintą VU SA mokymų organizavimo paraiškos šabloną.</li>
 
               <li>
                 Kiekviename VU SA P turėti už egzaminų stebėjimą atsakingą asmenį taip
-                užtikrinant kokybišką VU SA programos „Sąžiningai“ veiklą;
+                užtikrinant kokybišką VU SA programos „Sąžiningai“ veiklą.
               </li>
               <li>
-                Sukuriant darbo grupę atnaujinti ,,Pirmininko vadovą“ siekiant palengvinti
-                patirties perdavimo procesą naujiems padalinių vadovams;
+                Sukurti darbo grupę „Pirmininko vadovo“ atnaujinimui siekiant palengvinti
+                patirties perdavimo procesą naujiems padalinių vadovams.
               </li>
 
-              <li>Įgyvendinti VU SA Duomenų apsaugos grupės proceso atnaujinimą;</li>
+              <li>Įgyvendinti VU SA Duomenų apsaugos grupės proceso atnaujinimą.</li>
 
               <li>
                 2022 m. ataskaitines-rinkimines konferencijas organizuoti kontaktiniu
-                būdu;
+                būdu.
               </li>
               <li>
                 Nuo 2022 m. liepos 1 d. vykdyti centralizuotą VU SA marketingo procesą,
                 kuriame veikia VU SA P marketingo srities koordinatoriai (jei tokie
                 padaliniuose yra) bei VU SA marketingo koordinatoriaus surinkti
-                savanoriai;
+                savanoriai.
               </li>
               <li>
                 Patvirtinti narystės kelio organizacijoje koncepciją, paremtą efektyvesniu
                 narių įveiklinimu, kuratorių, studentų atstovų, programų, klubų, projektų
                 ir ilgamečių narių lygiaverčiu įtraukimu į vykstančius procesus,
-                savirefleksijų kultūra;
+                savirefleksijų kultūra.
               </li>
               <li>
                 Narystės užfiksavimo sistemos atnaujinimui nario testą praplėsti žiniomis

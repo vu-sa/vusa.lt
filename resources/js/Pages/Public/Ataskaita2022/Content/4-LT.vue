@@ -148,9 +148,7 @@
                 gerinimui:
               </p>
                 <p>
-                  Dalyvauta susitikimuose su EBPO ekspertais gryninantis Lietuvos mokslo
-                  ir studijų institucijų misijas ir išsakyti pastebėjimai iš studentų perspektyvos dėl European student card
-                  (ESC) iniciatyvos įgyvendinimo Lietuvoje.
+                  Dalyvauta susitikimuose su EBPO ekspertais gryninantis Lietuvos mokslo ir studijų institucijų misijas ir išsakant pastebėjimus iš studentų perspektyvos dėl European student card (ESC) iniciatyvos įgyvendinimo Lietuvoje.
                 </p>
                 <p>
                   Įsitraukta į studentų iškritimo prevencijos priemonių darbo grupės
@@ -1188,27 +1186,27 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
                 <li>
                   VU SA priėmė studentų atstovus iš Arqus universitetų aljanso - (galima
                   išvardinti 7, be lenkų ir portugalų). Organizavo vizitą, pristatė
-                  gerąsias patirtis, dalyvavo studentų tarybos posėdžiuose. (spalio 3 - 7)
+                  gerąsias patirtis, dalyvavo studentų tarybos posėdžiuose. (spalio 3–7 d.)
                 </li>
                 <li>
                   VU SA atstovai lankėsi pas Arqus aljanso tinklo partnerius Bergeno
                   universitete Norvegijoje. Vizito metu buvo gilinamasi į studentų
                   vadovaujamą „welfare“ (gerovės) sistemą, studentų socialinius verslus ir
-                  studentų dalyvavimą akademinėse veiklose. (vasario 10-13)
+                  studentų dalyvavimą akademinėse veiklose. (vasario 10-13 d.)
                 </li>
                 <li>
                   VU SA deleguoti atstovai dalyvavo Arqus metinėje konferencijoje
                   Paduvoje, Italijoje. VU SA deleguota atstovė Dominyka Goldbergaitė tapo
                   Studentų tarybos vicepirmininke. Taip pat konferencijos metu Studentų
                   taryba priėmė VU SA atstovų rengtą rezoliuciją dėl Ukrainos akademinės
-                  bendruomenės įtraukimo į aljanso veiklas. (balandžio 2 - 7)
+                  bendruomenės įtraukimo į aljanso veiklas. (balandžio 2–7 d.)
                 </li>
                 <li>
                   VU SA atstovai vyko vizitui į Portugalijoje esančio Minho universitetą,
                   kuris šiais metais tapo nauju Arqus universitetų aljanso nariu.
                   Bendraujant su studentų sąjunga gilintasi į studentų sportinių
                   organizacijų veiklos organizavimą, studentų patirtis dalyvaujant
-                  universiteto valdyme. (balandžio 20-23)
+                  universiteto valdyme. (balandžio 20-23 d.)
                 </li>
                 <li>
                   VU SA atstovai vyko vizitui į Suomijos Helsinkio ir Aalto universitetus,
@@ -1216,13 +1214,13 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
                   studentų sąjungų veiklos struktūras, studentiškas organizacijas,
                   studentų gerovės (welfare) sistemą. Susipažino su nacionaliniu
                   socialinės dimensijos planu ir dalinosi gerosiomis patirtimis
-                  atstovaujant universiteto valdymo organuose. (spalio 19-22)
+                  atstovaujant universiteto valdymo organuose. (spalio 19-22 d.)
                 </li>
                 <li>
                   VU SA priėmė studentų atstovus iš Warsaw School of Economics. Dalinosi
                   gerosiomis patirtimis įgyvendinant studentų verslų ir verslumo ugdymo
                   projektus. Suorganizuotas tinklaveikos renginys su VU SIF, VU KD, VU
-                  TechHub. (gruodžio 1 - 3)
+                  TechHub. (gruodžio 1–3 d.)
                 </li>
                 
                 <li>
@@ -1431,11 +1429,11 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
           </h3>
 
           <p>
-            Tyrimas atliktas 2021 m. kovo 5 – 2021 m. kovo 21 d. laikotarpiu
+            Tyrimas atliktas 2021 m. kovo 5–21 d. laikotarpiu
             bendradarbiaujant su Kauno technologijos universiteto Studentų atstovybe.
             Tyrimo tikslas buvo išsiaiškinti studentų problemas nuotolinių studijų
             laikotarpiu ir išsiaiškinti veiksnius, apsunkinančius integraciją į akademinę
-            bendruomenę. Apie 40% studentų teigė, kad pradėjus studijuoti Universitetas
+            bendruomenę. Apie 40 % studentų teigė, kad pradėjus studijuoti Universitetas
             nesuteikė pakankamai informacijos su studijomis susijusiais klausimais. Tik
             23% atsakiusiųjų minėjo, jog sulaukė pagalbos iš universiteto susidūrus su
             dalykinių žinių trūkumu studijų pradžioje. Likusi dalis bando žinių trūkumą
@@ -1569,11 +1567,11 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
           <p>
             Tyrimas parengtas 2022 m. pavasario semestro metu. Šiuo tyrimu pateikiama
             tolimesnė anksčiau pristatytų studentų patiriamų barjerų ir priemonių grupių
-            analizė. Šiuo tyrimu įgyvendintos žvalgybinės <em>focus</em> grupės, skirtos pateikti
+            analizė. Tyrimu įgyvendintos žvalgybinės <em>focus</em> grupės, skirtos pateikti
             pavyzdžius apibendrinant ir tikslinant socialiai pažeidžiamų asmenų patiriamus
             barjerus. Taip pat apžvelgiami panašūs platesnio masto tyrimai, kurių metodika
             remiantis galima parengti duomenimis ir analize pagrįstus sprendimus rengiant
-            aukštojo mokslo prieinamumo planus.
+            aukštojo mokslo prieinamumo planus. <a href="/uploads/files/2021–2022/SD-priemonių-grupių-apžvalga.pdf">Nuoroda į tyrimą.</a>
           </p>
 
           <h3>Pirmakursių integracijos į universitetą tyrimas</h3>

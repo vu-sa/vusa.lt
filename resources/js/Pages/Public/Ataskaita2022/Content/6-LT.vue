@@ -94,11 +94,11 @@
           </p>
           <p>
             Istorikams, istorijos ir praeities mylėtojams bei visai VU Istorijos fakulteto
-            bendruomenei VU SA IF surengė <strong>IFDi’44</strong>, kurių metu kvietė
+            bendruomenei VU SA IF surengs <strong>IFDi’44</strong>, kurių metu kvies
             dalyvauti knygų pristatymuose, orientacinėse varžybose ir tradicija tapusiose
-            futbolo rungtynėse, Korp!tilia buvo organizuotos diskusijos ir protmūšiai,
-            pasinerti į istoriją kvietė lyg feniksas iš pelenų sugrįžęs IF teatras, o
-            viską vainikavo bendruomenės vakaras.
+            futbolo rungtynėse, Korp!tilia organizuos diskusijas ir protmūšius, pasinerti
+            į istoriją kvies lyg feniksas iš pelenų sugrįžęs IF teatras, o viską vainikuos
+            bendruomenės vakaras.
           </p>
           <p>
             Po ilgesnės, pandemijos padiktuotos, pertraukos VU SA MIF žengė pilna koja su
@@ -335,7 +335,7 @@
             menines bei socialines iniciatyvas.
           </p>
           <p>
-            2021-2022 m. per savaitę buvo transliuojama vidutiniškai 48 valandos
+            2021–2022 m. per savaitę buvo transliuojama vidutiniškai 48 valandos
             originalaus programavimo (kitą programos dalį sudaro automatinis muzikos
             grojimas), o internetu eterį įsijungdavo vidutiniškai 42 000 unikalių
             klausytojų per mėnesį.
@@ -343,25 +343,25 @@
           <p>
             Augimas nesustojo ir bendradarbiavimo vystyme – pradėti bendri projektai su
             Lietuvos tarpdisciplinio meno kūrėjų sąjunga, šiuolaikinės rimtosios muzikos
-            festivaliu Druskomanija, neformalia muzikos kūrybos mokykla Muzikalkė, radijo
-            teatru Bilietų Nėra (studijoje įrašytas ir VU radijo eteryje transliuotas
-            spektaklis Šiaurės Miestelis, Lietuvos radijo ir televizijos komisijos
-            rengiamame konkurse Pragiedruliai pripažintas originaliausia radijo laida).
-            Taip pat įvykdytas projektas 3 minutės solo, kurio metu buvo profesionaliai
-            nufilmuoti ir įrašyti 32 jaunieji Lietuvos džiazo muzikos instrumentalistai
-            atliekantys 3 min. trukmės solo pasirodymą. Rudens pradžioje iš VU studentų
-            suburta START FM žinių komanda kiekvieną darbo dieną rengia naujienų
-            pranešimus, reportažus aktualiomis temomis bei interviu.
+            festivaliu Druskomanija, neformalia muzikos kūrybos mokykla „Muzikalkė“,
+            radijo teatru Bilietų Nėra (studijoje įrašytas ir VU radijo eteryje
+            transliuotas spektaklis „Šiaurės Miestelis“, Lietuvos radijo ir televizijos
+            komisijos rengiamame konkurse „Pragiedruliai“ pripažintas originaliausia
+            radijo laida). Taip pat įvykdytas projektas 3 minutės solo, kurio metu buvo
+            profesionaliai nufilmuoti ir įrašyti 32 jaunieji Lietuvos džiazo muzikos
+            instrumentalistai atliekantys 3 min. trukmės solo pasirodymą. Rudens pradžioje
+            iš VU studentų suburta START FM žinių komanda kiekvieną darbo dieną rengia
+            naujienų pranešimus, reportažus aktualiomis temomis bei interviu.
           </p>
           <img
             class="w-48 h-auto mx-auto mt-4"
             src="/images/ataskaita2022/pkp-logo/Debatų klubų logotipas.jpg"
           />
-          <h4>VU Debatų klubas</h4>
+          <h4>VU Debatų draugija</h4>
           <em>Ataskaitiniu laikotarpiu klubo veiklą koordinavo Robertas Remeika.</em>
 
           <p>
-            VU Debatų draugija – 2004 m. įkurtas klubas, skirtas skatinti studentų,
+            VU Debatų klubas – 2004 m. įkurtas klubas, skirtas skatinti studentų,
             atstovaujančių skirtingiems fakultetams, bendravimą, suteikti erdvę lavinti
             kritinio mąstymo, argumentavimo, anglų kalbos ir viešojo kalbėjimo įgūdžius
             bei atstovauti Vilniaus universitetui debatų turnyruose.
@@ -369,18 +369,14 @@
 
           <p>
             2019 m. klubas buvo neaktyvus, tačiau šiais metais susibūrusi iniciatyvi
-            studentų grupė aktyviai ruošėsi sugrįžimui. Visų pirma, buvo keliamos
-            kvalifikacijos ir vyko paieškų bei atrankos procesas kuriant galutinę tarybą.
-            Visų antra, po preliminaraus tarybos sukūrimo vyko savaitiniai susitikimai,
-            skirti kvalifikacijų kėlimui ir bendram nutarimui dėl VU Debatų draugijos
-            ateities, veiklos, techninių klausimų. Visų trečia, pasiekus reikiamas
-            kvalifikacijas, galutinai suformavus tarybą ir Debatų draugijos veiklą bei
-            bendradarbiaujant su VU Studentų atstovybe (sukurtas logotipas, spręsti
-            organizaciniai ir techniniai klausimai, vykdytas marketingas ir kt.) buvo
-            ruošiamasi Draugijos atidarymui. Taip pat šiuo klausimu bendradarbiauta ir su
-            kitomis ne pelno siekiančiomis debatų organizacijomis, pavyzdžiui, Jaunimo
-            debatais. Galiausiai VU Debatų draugija buvo sėkmingai atidaryta pirmajame
-            viešame renginyje, vykusiame 2022 m. balandžio 21 d.
+            studentų grupė aktyviai ruošėsi sugrįžimui. Pasiekus reikiamas kvalifikacijas,
+            galutinai suformavus tarybą ir Debatų draugijos veiklą bei bendradarbiaujant
+            su VU Studentų atstovybe (sukurtas logotipas, spręsti organizaciniai ir
+            techniniai klausimai, vykdytas marketingas ir kt.) buvo ruošiamasi Draugijos
+            atidarymui. Taip pat šiuo klausimu bendradarbiauta ir su kitomis ne pelno
+            siekiančiomis debatų organizacijomis, pavyzdžiui, Jaunimo debatais. Galiausiai
+            VU Debatų klubas buvo sėkmingai atidaryta pirmajame viešame renginyje,
+            vykusiame 2022 m. balandžio 21 d.
           </p>
           <img
             class="w-48 h-auto mx-auto mt-4"
@@ -439,14 +435,14 @@
             mėnesiai. Praktikos metu studentai konsultavo interesantus šeimos,
             paveldėjimo, darbo, intelektinės nuosavybės, sutarčių, nekilnojamojo turto,
             vartotojų, administracinės, baudžiamosios teisės klausimais. Taip pat rengė
-            sutarčių projektus, procesinių dokumentų projektus teisminėms institucijos
+            sutarčių projektus, procesinių dokumentų projektus teisminėms institucijoms
             (teismams, darbo ginčų komisijoms), teisines išvadas.
           </p>
 
           <p>
             Vilniaus universiteto Teisės klinika aktyviai bendradarbiavo su visuomenės
             informavimo priemonėmis, reguliariai teikė teisinius komentarus
-            populiariausiems portalams lrt.lt, 15min.lt, teise.pro, dalyvavo radijo
+            populiariausiems portalams: lrt.lt, 15min.lt, teise.pro, dalyvavo radijo
             laidoje („Radijo byla“). Parengtos 11 publikacijų tokiomis temomis kaip:
             „Baudžiamosios atsakomybės už kyšininkavimą ypatumai“; „Nelaimingas
             atsitikimas dirbant nuotoliniu būdu – kieno tai atsakomybė?“; „Bendravimas su
@@ -510,12 +506,12 @@
             pradėta leisti tinklalaidė naujame VU SIF YouTube kanale su Viliumi Oškeliūnu.
           </p>
 
-          <p>
+          <!-- <p>
             VU SIF komandos nariai dalyvavo daugumoje mokymų, o jų metu sužinojo nemažai
             naujų dalykų, kuriuos pritaikė organizacijos veikloje, bei dalyvavo
             mentorystės programoje, kurioje buvo skatinamas narių augimas, tobulėjimas bei
             ryšių palaikymas su buvusiais VU SIF atstovais.
-          </p>
+          </p> -->
 
           <p>
             VU SIF augti ir tobulėti ataskaitiniu laikotarpiu padėjo žurnalas „Investuok“,
@@ -541,7 +537,7 @@
           <p>
             Šių metų pagrindinis renginys VU Karjeros dienos 2022 buvo suorganizuotas kovo
             21–24 d., o vasario 22 d. ir kovo 3 d. įvyko VU Karjeros diena Kauno fakultete
-            ir VU Karjeros diena Šiaulių akademijoje. Vykdant projektą rasta 76 įmonės ir
+            ir VU Karjeros diena Šiaulių akademijoje. Į projektą įsitraukė 76 įmonės ir
             finansiniai rėmėjai. Taip pat suorganizuoti 4 papildomi renginiai, kurių metu
             gvildentos įvairios temos, susijusios su karjera. Sklandžią viso projekto eigą
             padėjo užtikrinti suburta 111 vadovų, narių ir savanorių komanda. Didžiausi

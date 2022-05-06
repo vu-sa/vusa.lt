@@ -1153,7 +1153,7 @@
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/integr/Rūta Balsevičiūtė_Integr_FilF-2.jpg"
           />
           <p class="mt-1 text-sm">{{ __("VU SA FilF") }}</p>
-          <strong>Kornelija Račkauskaitė</strong>
+          <strong>Rūta Balsevičiūtė</strong>
         </div>
         <div>
           <img
