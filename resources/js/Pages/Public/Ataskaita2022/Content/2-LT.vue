@@ -470,6 +470,12 @@
                     bendruomenės nariams (pateikti ir pasiūlymai, kaip visa tai
                     įgyvendinti).
                   </p>
+
+                  <a
+                    target="_blank"
+                    href="https://vusa.lt/uploads/files/Raštai,%20pozicijos,%20dokumentai/REZOLIUCIJA%20DĖL%20UŽSIENIO%20STUDENTŲ%20INTEGRACIJOS%20VILNIAUS%20UNIVERSITETE.pdf"
+                    >Rezoliucija</a
+                  >
                 </NCollapseItem>
 
                 <NCollapseItem>
@@ -492,6 +498,11 @@
                     įtraukiant siūlymus atlikti tyrimus akademinės etikos srityje ar
                     įsteigti studentus (-es) konsultuojančio asmens pareigybę.
                   </p>
+                  <a
+                    target="_blank"
+                    href="https://vusa.lt/uploads/files/Raštai,%20pozicijos,%20dokumentai/Pozicija%20dėl%20akademinės%20etikos.pdf"
+                    >Pozicija</a
+                  >
                 </NCollapseItem>
 
                 <NCollapseItem>
@@ -515,6 +526,11 @@
                     vienodai prieinamas socialines paslaugas, vienodas akademinio
                     tobulėjimo galimybes bei finansinės naštos palengvinimą.
                   </p>
+                  <a
+                    target="_blank"
+                    href="https://vusa.lt/uploads/files/Raštai,%20pozicijos,%20dokumentai/Dėl%20užsienio%20studentų%20(-čių)%20teisinės%20padėties.pdf"
+                    >Pozicija</a
+                  >
                 </NCollapseItem>
 
                 <NCollapseItem>
@@ -536,6 +552,12 @@
                     mokslinės veiklos vykdymui bei universitetų atskaitomybės didinimą
                     sudarant tinkamas sąlygas studentams (-ėms) vykdyti mokslinę veiklą.
                   </p>
+
+                  <a
+                    target="_blank"
+                    href="https://vusa.lt/uploads/files/Raštai,%20pozicijos,%20dokumentai/REZOLIUCIJA%20DĖL%20STUDENTŲ(-ČIŲ)%20MOKSLINĖS%20VEIKLOS%20LIETUVOS%20UNIVERSITETUOSE.pdf"
+                    >Rezoliucija</a
+                  >
                 </NCollapseItem>
 
                 <NCollapseItem>
@@ -557,6 +579,10 @@
                     orientuojamasi į lygių Lietuvos ir užsienio studentų (-čių) praktikos
                     galimybių užtikrinimą praktikos atlikimo vietoje.
                   </p>
+                  <a
+                    href="https://vusa.lt/uploads/files/Protokolai/Parlamentas/2022-03-04/POZICIJA%20DĖL%20STUDENTŲ%20PRAKTIKOS.pdf"
+                    >Pozicija</a
+                  >
                 </NCollapseItem>
 
                 <NCollapseItem>

@@ -763,6 +763,14 @@
         <div>
           <img
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Nomeda Griškevičiūtė_Markas_Fsf-2.jpg"
+          />
+          <p class="mt-1 text-sm">VU SA FsF</p>
+          <strong>Nomeda Griškevičiūtė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Vesta Kubiliūtė_Markas_GMC-2.jpg"
           />
           <p class="mt-1 text-sm">VU SA GMC</p>

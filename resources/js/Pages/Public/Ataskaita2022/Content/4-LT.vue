@@ -601,7 +601,7 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
 
               <em>Studentų atstovės – Augustė Grakavinaitė, Andželika Jankauskytė</em>
               <p>
-                BUS komisija yra atsakinga už BUS koncepcijos įgyvendinimą Universitete,
+                BUS (bendrųjų universitetinių studijų) komisija yra atsakinga už BUS koncepcijos įgyvendinimą Universitete,
                 vykdo BUS dalykų įgyvendinimo stebėseną ir jų kokybės užtikrinimą.
               </p>
 
@@ -1540,6 +1540,13 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
             paskatos atliekantiems savanorišką mokslinę veiklą teikimo idėją, o tai
             galimai sumažintų laiko ar motyvacijos trūkumo atsiradimą, nes šiuo atveju
             studentams nereikėtų ieškotis papildomo darbo.
+
+            Plačiau apie tyrimą galima rasti
+            <a
+              href="https://vusa.lt/uploads/files/Tyrimai,%20ataskaitos/studentų%20mokslinės%20veiklos%20tyrimas.pdf"
+              target="_blank"
+              >čia</a
+            >.
           </p>
 
           <h3>Socialinės dimensijos priemonių ir jų grupių apžvalga</h3>

@@ -52,15 +52,16 @@
           </li>
           <li>
             Siekiant užtikrinti akademinę pagalbą studentams organizuotas susitikimas su
-            VU SPKS šio klausimo suderinimui.
+            VU SPKS (Studentų paslaugų ir karjeros skyriumi) šio klausimo suderinimui.
           </li>
           <li>
             Norėdami supažindinti bendruomenę su lankstesnėmis studijų galimybėmis
             sukūrėme tinklalaidę šia tema.
           </li>
           <li>
-            Šiuo metu supažindiname studentų atstovus SPK su 60 kreditų atlaisvinimo
-            modeliu, bendradarbiaudami su SPKS, KRS kuriame vaizdo įrašą apie studijų
+            Šiuo metu supažindiname studentų atstovus SPK (studijų programų komitetuose)
+            su 60 kreditų atlaisvinimo modeliu, bendradarbiaudami su SPKS, KRS
+            (Komunikacijos ir rinkodaros skyriumi) kuriame vaizdo įrašą apie studijų
             lankstumą.
           </li>
         </ul></NCollapseItem
@@ -116,8 +117,9 @@
             </li>
             <li>Parengtas komunikacijos gidas.</li>
             <li>
-              Bendradarbiaujant su BVS bei VšĮ „Vilties žiedas“, siekiama plėsti pagalbos
-              teikimo galimybes studentams su individualiais poreikiais.
+              Bendradarbiaujant su BVS (Bendruomenės vystymo skyriumi) bei VšĮ „Vilties
+              žiedas“, siekiama plėsti pagalbos teikimo galimybes studentams su
+              individualiais poreikiais.
             </li>
             <li>
               Suorganizuota paroda, filmo peržiūra bei šiuo metu organizuojama socialinė
@@ -511,9 +513,9 @@ bakalauro pakopos studijų programų."
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
           ><ul>
             <li>
-              Studentams susiduriant su ribotu PD kiekiu ir didėjančiomis studentų
-              grupėmis, pirmiausia išsikelto tikslo buvo siekiama diskutuojant Studijų
-              kolegijoje.
+              Studentams susiduriant su ribotu PD (pasirenkamųjų dalykų) kiekiu ir
+              didėjančiomis studentų grupėmis, pirmiausia išsikelto tikslo buvo siekiama
+              diskutuojant Studijų kolegijoje.
             </li>
             <li>
               Bendradarbiaujant su GMC direktoriaus pavaduotoja studijoms bei doktorantų
@@ -524,7 +526,8 @@ bakalauro pakopos studijų programų."
             <li>
               Be to, buvo surinkti visų PD dėstančių dėstytojų bei studentų komentarai,
               pagal kuriuos bus baigtas rengti centro PD neformalusis aprašas, leisiantis
-              studentams rinktis PD susidarant ISP ir iš kitų programų.
+              studentams rinktis PD susidarant ISP (individualų studijų planą) ir iš kitų
+              programų.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -691,7 +694,7 @@ planai."
         <NTimelineItem
           type="success"
           title="2 uždavinys: įvykdyta"
-          content="VU SA KnF inicijuoja VMA kursų patikrą."
+          content="VU SA KnF inicijuoja VMA (virtualios mokymosi aplinkos) kursų patikrą."
         ></NTimelineItem>
         <NTimelineItem
           type="success"
@@ -718,9 +721,10 @@ planai."
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
           ><ul>
             <li>
-              Įgyvendinta VMA kursų apžvalga ir SP tobulinimo planai – atitinkamose SP
-              įtrauktos specializacijos, nauji BUS dalykai, keisti studijų tinkleliai ir
-              PD.
+              Įgyvendinta VMA (virtualios mokymosi aplinkos) kursų apžvalga ir SP (studijų
+              programos) tobulinimo planai – atitinkamose SP įtrauktos specializacijos,
+              nauji BUS (bendrieji universitetiniai studijų) dalykai, keisti studijų
+              tinkleliai ir PD.
             </li>
 
             <li>
@@ -730,11 +734,11 @@ planai."
             </li>
 
             <li>
-              Sukurti pagrindai užsienio studentų integracijai į VU SA KnF veiklą – BA ir
-              MA užsienio studentai supažindinti su VU SA KnF veikla, VU SA KnF socialinių
-              tinklų įrašai versti į anglų kalbą, Visuotiniai susirinkimai pradėti vesti
-              anglų kalba, juose dalyvavo užsienio studentai. Užsienio studentams paskirti
-              mentoriai.
+              Sukurti pagrindai užsienio studentų integracijai į VU SA KnF veiklą – BA
+              (bakalauro studijų) ir MA (magistrantūros studijų) užsienio studentai
+              supažindinti su VU SA KnF veikla, VU SA KnF socialinių tinklų įrašai versti
+              į anglų kalbą, Visuotiniai susirinkimai pradėti vesti anglų kalba, juose
+              dalyvavo užsienio studentai. Užsienio studentams paskirti mentoriai.
             </li>
 
             <li>
@@ -838,7 +842,7 @@ kontaktine informacija."
             <li>
               Tarptautiniai studentai, kartu su VU SA MF komanda, sukūrė išskirtinę „Medi“
               savaitę, kurioje visos veiklos vykdytos anglų kalba. Toliau bus tęsiami
-              darbai ties BUS dalykų atnaujinimu.
+              darbai ties BUS (bendrųjų universitetinių studijų) dalykų atnaujinimu.
             </li>
           </ul></NCollapseItem
         ></NCollapse
