@@ -3,17 +3,22 @@
     class="flex flex-row fixed justify-between px-6 lg:px-24 border shadow-sm w-full backdrop-blur-sm bg-white/90 text-gray-700 items-center py-2 z-50 top-0"
   >
     <div class="flex flex-row space-x-4 items-center">
-      <Link :href="route('main.home', { lang: locale })" preserve-state>
-        <img
-          class="object-contain min-w-[15vw] lg:min-w-[10vw]"
-          src="/logos/vusa.lin.hor.svg"
-        />
-      </Link>
-      <Link
+      <NPopover>
+        <template #trigger>
+          <Link :href="route('main.home', { lang: locale })" preserve-state>
+            <img
+              class="object-contain min-w-[15vw] lg:min-w-[10vw]"
+              src="/logos/vusa.lin.hor.svg"
+            />
+          </Link>
+        </template>
+        Grįžti į vusa.lt
+      </NPopover>
+      <!-- <Link
         class="text-gray-500 duration-200 hover:text-gray-900 hidden lg:block"
         :href="route('main.home')"
         >{{ __("Grįžti į vusa.lt") }}</Link
-      >
+      > -->
       <div>
         <NButton size="small" style="border-radius: 0.5rem" @click="goToAtaskaitaHome">
           <!-- <NGradientText type="warning"> -->
@@ -47,14 +52,14 @@
       >
 
       <Link
-        class="hover:text-red-600 duration-200"
+        class="hover:text-vusa-red duration-200"
         v-else
         :href="route('main.ataskaita2022', { lang: locale, permalink: 'sveikinimai' })"
         >{{ __("Sveikinimai") }}</Link
       >
 
       <Link
-        class="hover:text-red-600 duration-200"
+        class="hover:text-vusa-red duration-200"
         :href="route('main.ataskaita2022', { lang: locale, permalink: 'vu-sa' })"
       >
         <NGradientText type="error" v-if="permalink === 'vu-sa'">{{
@@ -63,28 +68,38 @@
         ><template v-else>{{ __("VU SA") }}</template></Link
       >
       <Link
-        class="hover:text-red-600 duration-200"
+        class="hover:text-vusa-red duration-200"
         :href="route('main.ataskaita2022', { lang: locale, permalink: 'mvp' })"
         ><NGradientText type="error" v-if="permalink === 'mvp'">{{
           __("Metų veiklos planas")
         }}</NGradientText
         ><template v-else>{{ __("Metų veiklos planas") }}</template></Link
       >
-      <NDropdown :options="navigation" @select="handleSelectKryptis"
+      <NDropdown
+        :options="locale === 'lt' ? navigation : navigationEN"
+        @select="handleSelectKryptis"
         ><div
-          class="flex flex-row items-center hover:text-red-600 duration-200"
+          class="flex flex-row items-center hover:text-vusa-red duration-200"
           role="button"
         >
           {{ __("Strateginės kryptys") }}
           <NIcon class="ml-1" size="16"><ChevronDown20Filled /></NIcon></div
       ></NDropdown>
       <Link
-        class="hover:text-red-600 duration-200"
+        class="hover:text-vusa-red duration-200"
         :href="route('main.ataskaita2022', { lang: locale, permalink: 'sritys' })"
         ><NGradientText type="error" v-if="permalink === 'sritys'">{{
           __("Bendruomenė")
         }}</NGradientText
         ><template v-else>{{ __("Bendruomenė") }}</template></Link
+      >
+      <Link
+        class="hover:text-vusa-red duration-200"
+        :href="route('main.ataskaita2022', { lang: locale, permalink: 'padeka' })"
+        ><NGradientText type="error" v-if="permalink === 'padeka'">{{
+          __("Padėka")
+        }}</NGradientText
+        ><template v-else>{{ __("Padėka") }}</template></Link
       >
       <NDropdown
         placement="top-end"
@@ -113,7 +128,7 @@
       <NDrawerContent closable :title="__('Ataskaita 2022')">
         <NTree
           block-line
-          :data="navigationTreeMobile"
+          :data="locale === 'lt' ? navigationTreeMobile : navigationTreeMobileEN"
           @update:selected-keys="handleSelectKryptis"
         />
 
@@ -171,6 +186,7 @@ import {
   NDrawerContent,
   NTree,
   NGradientText,
+  NPopover,
   // useMessage,
 } from "naive-ui";
 import { usePage, Link } from "@inertiajs/inertia-vue3";
@@ -273,7 +289,39 @@ const navigationTreeMobile = [
     key: "vu-sa",
   },
   {
-    label: "MVP",
+    label: "Metų veiklos planas",
+    key: "mvp",
+  },
+  {
+    label: "Strateginės kryptys",
+    key: "strategines",
+    children: [
+      {
+        label: "Kokybiškos studijos ir joms pritaikyta aplinka",
+        key: "studijos",
+      },
+      { label: "Stipri organizacija", key: "organizacija" },
+      { label: "Darni universitetinė bendruomenė", key: "bendruomene" },
+    ],
+  },
+  {
+    label: "Bendruomenė",
+    key: "sritys",
+  },
+  {
+    label: "Padėka",
+    key: "padeka",
+  },
+];
+
+const navigationTreeMobileEN = [
+  { label: "Congratulations", key: "sveikinimai" },
+  {
+    label: "VU SR",
+    key: "vu-sa",
+  },
+  {
+    label: "Year plan",
     key: "mvp",
   },
   {
@@ -292,33 +340,9 @@ const navigationTreeMobile = [
     label: "Community",
     key: "sritys",
   },
-];
-
-const navigationTreeMobileEN = [
-  { label: "Congratulations", key: "sveikinimai" },
   {
-    label: "VU SR",
-    key: "vu-sa",
-  },
-  {
-    label: "MVP",
-    key: "mvp",
-  },
-  {
-    label: "Strateginės kryptys",
-    key: "strategines",
-    children: [
-      {
-        label: "Kokybiškos studijos ir joms pritaikyta aplinka",
-        key: "studijos",
-      },
-      { label: "Stipri organizacija", key: "organizacija" },
-      { label: "Darni universitetinė bendruomenė", key: "bendruomene" },
-    ],
-  },
-  {
-    label: "Sritys",
-    key: "sritys",
+    label: "Acknowledgements",
+    key: "padeka",
   },
 ];
 

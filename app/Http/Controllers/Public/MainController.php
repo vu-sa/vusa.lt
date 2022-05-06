@@ -348,6 +348,11 @@ class MainController extends Controller
 			} else if ($permalink == 'sritys') {
 				return Inertia::render('Public/Ataskaita2022/Content/7-EN');
 			}
+			else if ($permalink == 'padeka') {
+				return Inertia::render('Public/Ataskaita2022/Content/8-EN');
+			}
+
+			return Inertia::render('Public/Ataskaita2022/Content/0-EN');
 		}
 
 		if ($permalink == 'pradzia') {
@@ -367,8 +372,11 @@ class MainController extends Controller
 		} else if ($permalink == 'sritys') {
 			return Inertia::render('Public/Ataskaita2022/Content/7-LT');
 		}
+		else if ($permalink == 'padeka') {
+			return Inertia::render('Public/Ataskaita2022/Content/8-LT');
+		}
 
-		abort(404);
+		return Inertia::render('Public/Ataskaita2022/Content/0-LT');
 
 	}
 }

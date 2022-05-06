@@ -20,9 +20,10 @@
     </div>
     <div class="lg:px-16 lg:mx-16 mx-8">
       <h2
-        class="text-2xl lg:text-4xl mb-4 text-gray-900 hover:text-gray-500 duration-200"
+        class="text-2xl lg:text-4xl mb-4 text-gray-900 hover:text-vusa-red hover:text- duration-200"
       >
         <Link
+          class="flex flex-row w-fit gap-2 items-center"
           :href="
             route('main.ataskaita2022', {
               lang: $page.props.locale,
@@ -31,8 +32,10 @@
           "
           ><template v-if="$page.props.locale === 'lt'"
             >Ką veikė VU SA 2021–2022 metais?</template
-          ><template v-else>What did VU SR do in 2021–2022?</template></Link
-        >
+          ><template v-else>What did VU SR do in 2021–2022?</template>
+
+          <NIcon class="" style="font-size: 24pt"><ArrowCircleRight20Regular /></NIcon
+        ></Link>
       </h2>
       <div class="flex space-between flex-row">
         <p class="lg:max-w-[80ch] text-gray-700 mb-8 lg:mb-20 text-sm lg:text-base">
@@ -51,23 +54,6 @@
             Feel free to read!</template
           >
         </p>
-        <div class="p-2 mx-auto h-fit w-fit">
-          <NButton
-            @click="
-              Inertia.visit(
-                route('main.ataskaita2022', {
-                  lang: $page.props.locale,
-                  permalink: 'pradzia',
-                })
-              )
-            "
-            type="error"
-            secondary
-            text
-            style="font-size: 72pt; height: fit-content"
-            ><NIcon><ArrowCircleRight20Regular /></NIcon
-          ></NButton>
-        </div>
       </div>
     </div>
     <NewsElement v-if="$page.props.locale === 'lt'">

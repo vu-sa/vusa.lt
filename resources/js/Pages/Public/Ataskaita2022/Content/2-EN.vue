@@ -1,7 +1,7 @@
 <template>
   <NModal v-model:show="showTaryba">
     <div class="w-2/3 md:w-1/2 bg-white/95 shadow-lg rounded-lg p-6">
-      <h2 class="text-center mb-4">VU SA Council</h2>
+      <h2 class="text-center mb-4">VU SA Board</h2>
       <div
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 overflow-auto gap-4 duration-200"
       >

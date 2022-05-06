@@ -15,6 +15,50 @@
 
     <NCollapse class="max-w-[92ch] mx-auto" arrow-placement="right">
       <NCollapseItem>
+        <template #header><h2>VU SA projektai</h2></template>
+        <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
+          <h3>
+            Projektas „Studentų įsitraukimo į akademinės etikos puoselėjimą
+            universitetinėje bendruomenėje didinimas“
+          </h3>
+          <p>
+            Akademinė etika – viena pamatinių aukštojo mokslo vertybių – yra įtvirtinama
+            tiek Lietuvos Respublikos Mokslo ir studijų įstatyme, tiek aukštųjų mokyklų
+            statutuose, tad ji tampa svarbia aukštojo mokslo institucijos pareiga. Vienas
+            iš akademinės etikos principų – akademinis sąžiningumas – yra itin opi
+            problema aukštajame moksle, kurios ugdymui turi būti skiriamas dėmesys tiek
+            instituciniu, tiek nacionaliniu lygmeniu. Siekiant užtikrinti akademinės
+            etikos puoselėjimą aukštojoje mokykloje, į procesus turi įsitraukti skirtingos
+            bendruomenės grupės, todėl labai svarbus studentų, dėstytojų bei Universiteto
+            darbuotojų kompetencijų kėlimas su akademine etika susijusiais klausimais.
+            Siekiant didesnio studentų įsitraukimo puoselėjant akademinę etiką Vilniaus
+            universitete, projekto metu įgyvendinami mokymai ir planavimai, kurie turėtų
+            padėti pagrindus studentų iniciatyvų kūrimui ateityje. Projekte numatoma
+            ugdyti kompetencijas ir kurti ilgalaikes priemones – studentai bus
+            supažindinami su pagrindiniais akademinės etikos principais, bus ugdomi
+            gebėjimai atpažinti pažeidimus, skatinama jų vengti. Taip pat bus tobulinamos
+            problemų sprendimo, advokacijos, komunikacines, organizacines,
+            bendradarbiavimo ir kitas kompetencijos, reikalingos skatinti akademinės
+            etikos kultūrą universitetinėje aplinkoje.
+          </p>
+
+          <h3>
+            Projektas „ECSTRA: Employability Competencies for Students Through
+            implementation and Recognition of Activities“
+          </h3>
+          <p>
+            Vienas iš pagrindinių gebėjimų, reikalingų dirbti ir gyventi XXI amžiuje, yra
+            iniciatyvumas ir verslumas, t. y. asmens gebėjimas idėjas paversti veiksmais.
+            Tikime, jog aukštojo mokslo įstaigos turi padėti studentams(-ėms) įgyti šiuos
+            įgūdžius, todėl VU SA įgyvendina projektą, kurio tikslas – padėti
+            studentams(-ėms) įgyti būtinųjų kompetencijų (verslumo, bendradarbiavimo,
+            problemų sprendimo, tvarumo ir socialinių inovacijų kūrimo) per savanorišką
+            veiklą, kurios metu būtų sprendžiamos realaus gyvenimo problemos, pasitelkiant
+            socialines inovacijas.
+          </p>
+        </div>
+      </NCollapseItem>
+      <NCollapseItem>
         <template #header><h2>VU SA procesų atnaujinimas</h2></template>
         <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
           <h3>Konsultavimo procesas</h3>
@@ -78,7 +122,17 @@
           </p>
 
           <h3>Nario kelias</h3>
-          <p>...</p>
+          <p>
+            Pastaraisiais metais buvo peržiūrimas narystės kelias organizacijoje, o šiemet
+            priimta koncepcija, paremta efektyvesniu narių iveiklinimu, kuratorių,
+            studentų atstovų, programų, klubų, projektų ir ilgamečių narių lygiaverčiu
+            įtraukimu į vykstančius procesus narystės kelią grindžiant savirefleksijų
+            kultūra. Šios koncepcijos tikslas – daugiau dėmesio skirti kiekvieno nario
+            individualiam įgalinimui ir įtraukimui į organizuojamas veiklas. Kiekvienai
+            narių grupei (pirmamečiai nariai, kuratoriai, atstovai SPK, ilgamečiai nariai)
+            sukurta konkreti narystės kelio koncepcija atsižvelgiant į jų darbo specifiką,
+            patirties ir kompetencijų lygį.
+          </p>
         </div>
       </NCollapseItem>
 

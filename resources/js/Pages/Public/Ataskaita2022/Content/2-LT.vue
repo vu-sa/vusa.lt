@@ -247,7 +247,7 @@
             </p>
             <p>
               <strong>Misija</strong> – efektyviai atstovaujant Vilniaus universiteto
-              studentams bei puoselėjant universitetinę kultūrą kurti palankiausias
+              studentams bei puoselėjant universitetinę kultūrą, kurti palankiausias
               sąlygas studento saviraiškai.
             </p>
             <strong>Vertybės:</strong>
@@ -604,7 +604,7 @@
                 Išrinkti studentų atstovai VU Senate (Ugnė Bičkauskaitė, Kornelija
                 Buivydaitė, Julija Jarutytė, Andželika Jankauskytė, Justas Kvedaravičius,
                 Vanesa Ražinskytė, Arnoldas Solovjovas, Daniel Šematovič) ir VU Tarybos
-                išorinis studentų atstovas Justinas Kandrotas;
+                išorinis studentų atstovas Justinas Kondratas;
               </li>
               <li>
                 Patvirtinti VU SA MF nuostatai, įsteigiant Vilniaus universiteto Studentų
@@ -659,8 +659,9 @@
               <li>
                 Du kartus vykdyti individualūs pokalbiai tarp VU SA Parlamento pirmininkų
                 ir VU SA padalinių parlamentarų, skirti padalinių problemų ir nuomonės
-                rinkimui; Patvirtinta 2022 m. finansinių išlaidų ir pajamų sąmata;
+                rinkimui;
               </li>
+              <li>Patvirtinta 2022 m. finansinių išlaidų ir pajamų sąmata;</li>
               <li>
                 Posėdžių metu buvo pristatyti tyrimai apie:
                 <ul>
@@ -755,7 +756,7 @@
                 patirties perdavimo procesą naujiems padalinių vadovams;
               </li>
 
-              <li>Įgyvendinti VU SA DAG proceso atnaujinimą;</li>
+              <li>Įgyvendinti VU SA Duomenų apsaugos grupės proceso atnaujinimą;</li>
 
               <li>
                 2022 m. ataskaitines-rinkimines konferencijas organizuoti kontaktiniu
@@ -775,7 +776,10 @@
               </li>
               <li>
                 Narystės užfiksavimo sistemos atnaujinimui nario testą praplėsti žiniomis
-                apie organizaciją, atstovavimą.
+                apie VU (KAP) strukūrinius darinius, universiteto suteikiamas paslaugas,
+                VU SA strategiją, organizacijos struktūrą bei įvaizdį. Buvo nutarta šalia
+                testo kurti emokymų kursą, kuris padės užtikrinti gilesnį kompetencijų
+                kėlimą kiekvienoje temoje.
               </li>
             </ul>
           </div>
@@ -804,10 +808,10 @@
               metodiką pagal organizacijos strategiją ir organizacijoje vykstančių procesų
               aprašus. Metų eigoje pagal šią metodiką atliko tarpinį bei galutinį veiklos
               vertinimus. Vertinimo metu Revizijos komisija reguliariai palaikė ryšį su
-              revizuojamais vienetais, tikrino VU SA, VU SA P, VU SA PKP, VU SA DAG narių,
-              VU SA ISF ir VU SA Parlamento atitiktį kiekybiniams bei kokybiniams
-              vertinimo kriterijams, įvertino veiklą vykdant apklausas ir susitikimus su
-              revizuojamais vienetais.
+              revizuojamais vienetais, tikrino VU SA, VU SA P, VU SA PKP, VU SA Duomenų
+              apsaugos grupės narių, VU SA ISF ir VU SA Parlamento atitiktį kiekybiniams
+              bei kokybiniams vertinimo kriterijams, įvertino veiklą vykdant apklausas ir
+              susitikimus su revizuojamais vienetais.
             </p>
 
             <p>

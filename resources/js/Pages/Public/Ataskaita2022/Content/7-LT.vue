@@ -1397,6 +1397,126 @@
           <p class="mt-1 text-sm">VU Karjeros dienos</p>
           <strong>Eglė Jašinskaitė</strong>
         </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/Antropologų klubas Ivan Trunov_.jpg"
+          />
+          <p class="mt-1 text-sm">Antropologų klubas</p>
+          <strong>Ivan Trunov</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/Aurelija Vasiliauskaitė SGV.jpg"
+          />
+          <p class="mt-1 text-sm">Studentiško gyvenimo vadovas</p>
+          <strong>Aurelija Vasiliauskaitė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/Justinas Brazaitis (nuo 2022 m. sausio mėn.) Sąžiningai.jpg"
+          />
+          <p class="mt-1 text-sm">Sąžiningai</p>
+          <strong>Justinas Brazaitis (nuo 2022 m. sausio mėn.)</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/Klaudija Pukalskaitė VU JEK.jpg"
+          />
+          <p class="mt-1 text-sm">Sąžiningai</p>
+          <strong>Klaudija Pukalskaitė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/Rimantas Murza StartFM.jpg"
+          />
+          <p class="mt-1 text-sm">StartFM</p>
+          <strong>Rimantas Murza</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/Robertas Rameika VU Debatų klubas.jpg"
+          />
+          <p class="mt-1 text-sm">VU Debatų klubas</p>
+          <strong>Robertas Rameika</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/Simonas Bendinskas ESN Vilnius university.jpg"
+          />
+          <p class="mt-1 text-sm">ESN Vilnius University</p>
+          <strong>Simonas Bendinskas</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/SMMS Rugilė Hokušaitė (iki 2021 m. gruodžio mėn.)_.jpg"
+          />
+          <p class="mt-1 text-sm">SMMS</p>
+          <strong>Rugilė Hokušaitė (iki 2021 m. gruodžio mėn.)</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/Urtė Marija Kasnikauskaitė (nuo 2021 m. gruodžio mėn.).jpg"
+          />
+          <p class="mt-1 text-sm">SMMS</p>
+          <strong>Urtė Marija Kasnikauskaitė (nuo 2021 m. gruodžio mėn.)</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/Viktorija Medžiaušaitė Teisės klinika.jpg"
+          />
+          <p class="mt-1 text-sm">Teisės klinika</p>
+          <strong>Viktorija Medžiaušaitė</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/Vytenis Almonaitis Kendo2.jpg"
+          />
+          <p class="mt-1 text-sm">Kendo klubas</p>
+          <strong>Vytenis Almonaitis</strong>
+        </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">Sąžiningai</p>
+          <strong>Ilijas Kulinič (iki 2022 sausio mėn.)</strong>
+        </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU Rašytojų klubas</p>
+          <strong>Nikolajus Elkana Eimutis</strong>
+        </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU Studentų investicinis fondas</p>
+          <strong>Ieva Turskytė (iki 2022 sausio mėn.)</strong>
+        </div>
+        <div class="m-auto text-center">
+          <!-- <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
+          /> -->
+          <p class="mt-1 text-sm">VU Studentų investicinis fondas</p>
+          <strong>Gabrielė Stanionytė (nuo 2022 sausio mėn.)</strong>
+        </div>
       </div>
     </div></NModal
   >
@@ -1452,7 +1572,7 @@
         <div>
           <img
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
-            src="/images/ataskaita2022/koordinatoriu-nuotraukos/uzsienieciu/Michaela Andie Kleynhans_Uzsienio_VM.jpg"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/ModestasTrubilaIT.jpg"
           />
           <p class="mt-1 text-sm">VU SA VM IT koordinatorius</p>
           <strong>Modestas Trubila (iki 2022 vasario mėn.)</strong>

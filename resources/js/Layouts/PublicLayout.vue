@@ -5,7 +5,7 @@
     <MainNavigation></MainNavigation>
     <transition name="fade">
       <main v-if="animated">
-        <PageContent class="pt-16 sm:pt-24 md:pt-28 xl:pt-32 2xl:pt-40">
+        <PageContent class="pt-16 sm:pt-24 2xl:pt-36">
           <slot />
         </PageContent></main
     ></transition>
@@ -16,7 +16,7 @@
 import FullWindow from "@/Layouts/Partials/Public/FullWindow.vue";
 import MainNavigation from "@/Layouts/Partials/Public/MainNavigation.vue";
 import PageContent from "@/Layouts/Partials/Public/PageContent.vue";
-import NewsElement from "@/Layouts/Partials/Public/NewsElement.vue";
+// import NewsElement from "@/Layouts/Partials/Public/NewsElement.vue";
 import { Head, usePage } from "@inertiajs/inertia-vue3";
 import { ref, onMounted } from "vue";
 import MetaIcons from "@/Components/MetaIcons.vue";

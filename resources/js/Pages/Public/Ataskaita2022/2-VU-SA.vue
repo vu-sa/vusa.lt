@@ -1,7 +1,7 @@
 <template>
   <AtaskaitaLayout
     :backgroundImage="'/images/photos/observatorijos_kiemelis.jpg'"
-    :title="'VU SA | Ataskaita 2022'"
+    :title="'Apie VU SA | Ataskaita 2022'"
   >
     <div class="grid grid-cols-8 justify-items-center justify-center">
       <NButton

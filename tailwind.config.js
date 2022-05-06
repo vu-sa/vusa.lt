@@ -14,6 +14,10 @@ module.exports = {
             fontFamily: {
                 sans: ['Nunito', ...defaultTheme.fontFamily.sans],
             },
+            colors: {
+                'vusa-red': '#bd2835',
+                'vusa-yellow': '#fbb01b',
+            }
         },
     },
 

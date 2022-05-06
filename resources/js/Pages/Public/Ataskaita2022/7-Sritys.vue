@@ -1,7 +1,7 @@
 <template>
   <AtaskaitaLayout
     :backgroundImage="'/images/ataskaita2022/kitos-nuotraukos/VU SA.jpg'"
-    :title="'Sritys | Ataskaita 2022'"
+    :title="'Bendruomenė | Ataskaita 2022'"
   >
     <div class="grid md:grid-cols-8">
       <NButton

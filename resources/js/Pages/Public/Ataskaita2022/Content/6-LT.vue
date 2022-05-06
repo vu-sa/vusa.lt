@@ -632,7 +632,7 @@
           />
           <h4>ESN VU</h4>
 
-          <em>Ataskaitiniu laikotarpiu programos veiklą koordinavo Simonas Benkunskas</em>
+          <em>Ataskaitiniu laikotarpiu programos veiklą koordinavo Simonas Bendinskas</em>
           <p>
             ESN Vilnius University – VU SA programa, skatinanti studentų mobilumą bei
             padedanti užsienio studentams sėkmingai integruotis Vilniaus universitete.

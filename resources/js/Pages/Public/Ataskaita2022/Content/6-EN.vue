@@ -625,7 +625,7 @@
 
           <em
             >During the reference period, the program's activities were coordinated by
-            Simonas Benkunskas</em
+            Simonas Bendinskas</em
           >
           <p>
             ESN Vilnius University is a VU SR program that promotes student mobility and

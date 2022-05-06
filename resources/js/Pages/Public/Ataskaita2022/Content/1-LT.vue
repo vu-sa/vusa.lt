@@ -129,9 +129,8 @@
               energijos siekiant lyderystės ir profesionalumo savo srityse bei kilnių
               siekių išsipildymo!
             </p>
-
-            <strong>Prof. Artūras Žukauskas</strong>
             <p>LR Seimo Švietimo ir mokslo komiteto pirmininkas</p>
+            <strong>prof. Artūras Žukauskas</strong>
           </div>
         </NCarouselItem>
         <NCarouselItem>
@@ -231,7 +230,7 @@
             </p>
 
             <p>VU Senato pirmininkė</p>
-            <strong>Prof. Dainora Pociūtė-Abukevičienė</strong>
+            <strong>prof. Dainora Pociūtė-Abukevičienė</strong>
           </div>
         </NCarouselItem>
         <NCarouselItem>
@@ -259,9 +258,8 @@
               vyksta dialogas tarp skirtingų kartų, kur dera mokslas ir studijos su
               prasmingu laisvalaikiu ir socialine atsakomybe bei savanoryste.
             </p>
-
-            <strong>Eglė Radzevičienė</strong>
             <p>VU Tarybos pirmininkė</p>
+            <strong>Eglė Radzevičienė</strong>
           </div>
         </NCarouselItem>
 
@@ -323,9 +321,8 @@
               kelyje. Linkiu niekada neprarasti ryšio su savo Alma Mater. Visada esate ir
               būsite laukiami VU bibliotekoje!
             </p>
-
-            <strong>Irena Krivienė</strong>
             <p>VU bibliotekos generalinė direktorė</p>
+            <strong>Irena Krivienė</strong>
           </div>
         </NCarouselItem>
         <NCarouselItem>
@@ -425,11 +422,12 @@
               toliau augtų kaip organizacija bei išspręstų dar daugiau studentų problemų:
             </p>
             <p>
-              atvirumas, atsakomybė, veiklos kokybė, vieningumas ir tobulėjimas. Never
-              forget!
+              atvirumas, atsakomybė, veiklos kokybė, vieningumas ir tobulėjimas.
+              <em> Never forget! </em>
             </p>
 
             <p>Vieningai,</p>
+            <p>Žinių ekonomikos forumo direktorius</p>
             <strong>Arminas Varanauskas</strong>
           </div>
         </NCarouselItem>
@@ -467,7 +465,7 @@
             <p><em>Gaudeamus igitur, iuvenes dum sumus!</em></p>
 
             <p>Lietuvos mokslo tarybos pirmininkas</p>
-            <strong>Prof. Romas Baronas </strong>
+            <strong>prof. Romas Baronas </strong>
           </div>
         </NCarouselItem>
       </NCarousel>

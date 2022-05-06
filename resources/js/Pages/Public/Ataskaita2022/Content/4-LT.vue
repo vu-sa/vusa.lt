@@ -3,7 +3,7 @@
     <div class="relative mb-4 h-1/2 w-full max-w-[110ch]">
       <img
         class="rounded-lg w-full h-80 object-cover mx-auto brightness-50"
-        style="object-position: 0% 20%"
+        style="object-position: 0% 30%"
         src="/images/ataskaita2022/kitos-nuotraukos/IMG_8817.jpg"
       />
       <h1
@@ -380,25 +380,13 @@
                 studentų interesus atstovaujančių organizacijų atstovai.
               </p>
               <p>
-                Ataskaitiniu laikotarpiu vyko studentų forumo susitikimas, kuriame
-                diskutuota apie studijų kokybę iš studijų dalyvių perspektyvos – studentų,
-                dėstytojų. Atkreiptas dėmesys į Valstybinio audito ataskaitą, kurioje
-                pažymima, jog Lietuvos aukštosiose mokyklose studentų nuomonė dėl studijų
-                kokybės nepakankamai išgirsta. Aptartas dėstytojų karjeros kelio
-                plėtojimas ir didaktinių kompetencijų užtikrinimas bei jų reikšmė studijų
-                kokybei. Dalyvauta SKVC tarptautinėje konferencijoje apie studijų kokybės
-                raidą „Išorinio kokybės užtikrinimo raida: pamokos ir ateities įžvalgos“
-                apskritojo stalo diskusijoje atstovaujant studentų nuomonę. SKVC sudėtyje
-                VU SA deleguotas studentų atstovas įsitrauktas į Aukštųjų mokyklų
-                vertinimo komisijos (AMVK) veiklą. Komisija svarsto tarptautinių vertinimo
-                ekspertų pateiktas aukštųjų mokyklų veiklos išorinio vertinimo išvadas.
-                2021/2022 akademinių metų eigoje vykusių posėdžių metu buvo svarstomos
-                ekspertų parengtos išvados dėl 11 skirtingų Lietuvoje esamų aukštųjų
-                mokyklų. Studentų atstovai Universitete prisidėjo prie Universiteto
-                savianalizės rengimo ruošiantis Instituciniam vertinimui, įsitraukė į
-                studijų krypčių vertinimus rengdami studijų krypčių savianalizes bei
-                dalyvaudami susitikimuose su ekspertais, į kuriuos kviečiami dalyvauti
-                visi Universiteto studentai.
+                <p>Ataskaitiniu laikotarpiu vyko studentų forumo susitikimas, kuriame diskutuota apie studijų kokybę iš studijų dalyvių perspektyvos – studentų, dėstytojų. Atkreiptas dėmesys į Valstybinio audito ataskaitą, kurioje pažymima, jog Lietuvos aukštosiose mokyklose studentų nuomonė dėl studijų kokybės nepakankamai išgirsta. Aptartas dėstytojų karjeros kelio plėtojimas ir didaktinių kompetencijų užtikrinimas bei jų reikšmė studijų kokybei. </p>
+<p>
+  Dalyvauta SKVC tarptautinėje konferencijoje apie studijų kokybės raidą „Išorinio kokybės užtikrinimo raida: pamokos ir ateities įžvalgos“ apskritojo stalo diskusijoje atstovaujant studentų nuomonę.
+  SKVC sudėtyje VU SA deleguotas studentų atstovas įsitrauktas į Aukštųjų mokyklų vertinimo komisijos (AMVK) veiklą. Komisija svarsto tarptautinių vertinimo ekspertų pateiktas aukštųjų mokyklų veiklos išorinio vertinimo išvadas. 2021/2022 akademinių metų eigoje vykusių posėdžių metu buvo svarstomos ekspertų parengtos išvados dėl 11 skirtingų Lietuvoje esamų aukštųjų mokyklų.
+</p>
+<p>Studentų atstovai Universitete prisidėjo prie Universiteto savianalizės rengimo ruošiantis Instituciniam vertinimui, įsitraukė į studijų krypčių vertinimus rengdami studijų krypčių savianalizes bei dalyvaudami susitikimuose su ekspertais, į kuriuos kviečiami dalyvauti visi Universiteto studentai.</p>
+
               </p>
             </div>
           </NCollapseItem>
@@ -1177,6 +1165,29 @@
         <template #header><h2>Bendradarbiavimas</h2></template>
         <NCollapse>
           <NCollapseItem>
+          <template #header>Bendradarbiavimas su VU neakademiniais padaliniais ir kitomis organizacijomis</template>
+          <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
+          <h4>VU Biblioteka</h4>
+          <p>Su biblioteka bendradarbiauti sekėsi sklandžiai. Visos idėjos, susijusios su pagalba neįgaliesiems ir infrastruktūros pritaikymą, buvo priimtos ir pradėta svarstyti jų įgyvendinimą. VU SA dalinosi bibliotekai svarbiais įvykiais ir apklausomis. Vyko kasmėnesiniai susitikimai, dauguma nuotoliu, porą kartų gyvai. Buvo atsižvelgiama į VU SA nuomonę renkant idėjas naujai strategijai bei ją formuluojant.</p>
+          <h4>Universiteto LGBT+ grupė</h4>
+          <p>Ataskaitiniu laikotarpiu su Universiteto LGBTQ+ grupe daugiausiai bendradarbiavo VU SA programa „Be etikečių“. Grupė prisidėjo prie programos „Be etikečių“  rengto LGBTQ+ kultūros festivalio „Kultūra visų“, po to kartu buvo organizuota diskusiją apie LGBTQ+ teises Lietuvoje ir Europoje „Sąrašo pabaigoje: istorija kartojasi“.</p>
+          <h4>KJOSAS</h4>
+          <p>Ataskaitiniu laikotarpiu su KJOSAS bendravo  VU SA Kauno fakultete. Fakulteto atstovai dalyvavo visuotiniame KJOSAS narių susirinkime, kuriame  buvo renkama nauja valdyba, kontrolės komisija bei organizacijos vadovė. Taip pat VU SA atstovai turėjo susitikimą su KJOSAS valdyba, kuriame aptarė galimas bendradarbiavimo galimybes.</p>
+          <h4>VU Sveikatos ir sporto centras</h4>
+          <p>Šiais metais bendradarbiaujant su VU Sveikatos ir sporto centru pirmą kartą buvo suburta VU Leagues Of Legends komanda, kuri Universitetui atstovavo tarpuniversitetinėse varžybose. VU SA taip pat prisidėjo prie Sveikatos ir sporto centro rengiamų orientacinių žaidynių skirtų VU gimtadieniui.</p>
+          <h4>LSMU SA, LiMSA, JGA, Vilniaus universiteto rezidentų taryba</h4>
+          <p>Bendradarbiaujant su šiomis organizacijomis buvo parengta bendra pozicija dėl Mokslo ir studijų įstatymo nr. XI-242 77 straipsnio pakeitimo. Naujo įstatymo projektu buvo siekiama kad valstybės lėšomis rezidentūros studijas baigę gydytojai turėtų kelerius metus po studijų baigimo atidirbti viešosiose Lietuvos asmens sveikatos priežiūros įstaigose. Drauge su minėtomis organizacijoms VU SA pasisakė prieš šį siūlymą argumentuodami, kad specialistų regionuose problemą reikia spręsti kitais būdais, kadangi šis siūlymas yra diskriminacinio pobūdžio, taip pat pabrėžiant, kad dėl šio nutarimo nebuvo tartasi su jaunuosius gydytojus atstovaujančiomis organizacijomis</p>
+          <h4>KTU SA</h4>
+          <p>Drauge su Kauno technologijų universiteto Studentų atstovybe buvo rengiamas tyrimas apie užsienio studentų integraciją Lietuvos universitete skirtas Vidaus reikalų ministerijos projekto įgyvendinimui. Drauge su KTU SA buvo kuriami klausimai, analizuojami duomenis. Surinkti duomenys pateikti Vidaus reikalų ministerijai.</p>
+          <h4>ŽEF </h4>
+          <p>Žinių ekonomikos forumas – asociacija, atvira visoms idėjoms, kurios skatina prioritetinės Lietuvos srities – žinių ekonomikos – augimą. ŽEF kviečia visuomenę kartu kurti modernesnę, šiuolaikinėmis technologijomis bei žiniomis grįstą šalies ateitį.</p>
+<p> Taip pat ŽEF ekspertai dalyvavo įgyvendinant ECSTRA (Employability Competencies for Students Through Implementation and Recognition of Activities) projektą. </p>
+
+          <h4>VJOS AS</h4>
+          <p>Ataskaitiniu laikotarpiu dalyvauta VJOSAS susitikimuose, vadovų klube. VU SA atstovai taip pat turėjo ir kelis susitikimus su VJOSAS nariais, kurių metu aptarėme galimus tolimesnio bendradarbiavimo klausimus.</p>
+          </div>
+          </NCollapseItem>
+          <NCollapseItem>
             <template #header>Tarptautinis bendradarbiavimas</template>
             <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
               <ol>
@@ -1233,6 +1244,32 @@
               </ol>
             </div>
           </NCollapseItem>
+          <NCollapseItem>
+            <template #header>Dalyvavimas kitose konferencijose</template>
+            <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
+
+<h4>LiJOT konferencija „Jauno žmogaus psichikos sveikata: jo paties ar ir valstybės rūpestis“ </h4>
+<p>2021m. birželio 18d.  VU SA prezidentė Neda Žutautaitė dalyvavo konferencijoje, kurioje diskutuota, kas turi prisiimti atsakomybę už jaunų žmonių psichologinę būklę. Skaitytame pranešime N. Žutautaitė akcentavo, jog studentų (-čių) psichikos sveikata aukštojoje mokykloje nėra tik jų asmeninis rūpestis – turime suprasti, kad tai tiek akademinės bendruomenės tarpusavio ryšių, tiek studijų ir su jomis susijusios aplinkos klausimas. Taip pat pristatytos užsienio Universitetų taikomos praktikos, skirtos psichologinės aplinkos gerinimui, palaikančios bendruomenės kūrimui. </p>
+
+<h4>LR Seimo Švietimo ir mokslo komiteto diskusija „Socialinė dimensija – studijų kokybei“</h4>
+<p>Spalio 8d. Lietuvos Respublikos Švietimo ir mokslo komiteto organizuotoje diskusijoje Neda Žutautaitė turėjo galimybę pasidalinti VU SA sukauptomis patirtimis, paakcentuoti, kodėl verta prioritetizuoti socialinę dimensiją, ir su kokiais sunkumais šiandien susiduria studentai (-ės) prieš stodami, stojimo metu, studijų laikotarpiu, pereidami į darbo rinką bei ką galime padaryti, kad jų išvengtume.</p>
+
+<p>Diskusijos metu, VU SA prezidentė akcentavo, jog kurdami tikslingai nukreiptas priemones, remdamiesi gerosiomis užsienio patirtimis, galėsime užtikrinti lygiavertiškas sąlygas studijuoti visoms visuomenės grupėms.</p>
+
+<h4>Studijų kokybės ir vertinimo centro (SKVC) organizuotas 4-asis Studentų forumas</h4> 
+<p>Gruodžio 10d. Studijų kokybės ir vertinimo centras studentus (-es) kvietė į forumą, diskutuoti apie studijų kokybę ir studentų(-čių) įsitraukimą siekiant ją užtikrinti. </p>
+
+<p>Forumo metu kalbėta apie studijų kokybę iš dalyvių perspektyvos – pirmiausia, studentų (-čių), kurie yra pagrindinė ašis studijų procese – kuo greičiau aukštoji mokykla tai priima, tuo lengviau yra kartu siekti studijų kokybės. Diskutuota ir apie dėstytojo(-os) karjeros kelio plėtojimaą ir didaktinių kompetencijų užtikrinimą, kuris yra ne mažiau svarbus studijų kokybei. Visi forumo dalyviai sutarė, jog svarbus ne tik studentų atstovų veikimas, bet ir kiekvieno studento(-ės) teikiamas grįžtamasis ryšys studijų procese, be kurio pokyčių sunku pasiekti. </p>
+
+
+<h4>Pranešimas apie VU studentų(-čių) psichologinę būklę ir pagalbos priemones Psichikos sveikatos puoselėjimo Tarybos susirinkime </h4>
+<p>2022 m. balandžio 8d. VU SA prezidentė Neda Žutautaitė dalyvavo Psichikos sveikatos puoselėjimo Tarybos susitikime, kuriame diskutuota, kaip gerinti jaunimo psichikos sveikatą. Jame kartu su STRATA, Pasaulio banko laboratorijos, Jaunimo reikalų departamento bei kitų jaunimo organizacijų atstovais kalbėta, kaip keičiasi psichikos sveikatos padėtis tiek Lietuvos mokyklose, tiek universitetuose, ir kokie iššūkiai vis dar egzistuoja. </p>
+
+<p>Neda Žutautaitė susirinkimo dalyviams pristatė studentams (-ėms) dažniausiai kylančias problemas ir būdus, kaip Universiteto bendruomenė stengiasi jas atliepti. Situacija nėra ideali – galimų suteikti konsultacijų skaičius nėra pakankamas studentų(-čių) poreikiui atliepti, nutolusiuose akademiniuose padaliniuose trūksta gyvų konsultacijų, jau pradedamos, bet dar neišvystytos psichologinės priemonės užsieniečiams studentams(-ėms) anglų kalba. </p>
+
+<p>„Džiugu, jog Vilniaus universitete tiek COVID-19 pandemijos laikotarpiu, tiek ir dabar, karo kontekste, galima matyti pastangas skirti resursus kaip įmanoma labiau užtikrinti, kad bendruomenė ir studentai(-ės) galėtų gauti psichologinę pagalbą, kai jos reikia“, – pristatyme teigė N. Žutautaitė. </p> 
+            </div>
+            </NCollapseItem>
         </NCollapse>
       </NCollapseItem>
 
@@ -1578,7 +1615,7 @@
         </div>
       </NCollapseItem>
     </NCollapse>
-    <div class="col-span-4 mb-12">
+    <!-- <div class="col-span-4 mb-12">
       <Link
         class="text-lg duration-200 hover:text-red-600 font-bold"
         :href="
@@ -1589,7 +1626,7 @@
         "
         >Stipri organizacija >></Link
       >
-    </div>
+    </div> -->
   </Studijos>
 </template>
 

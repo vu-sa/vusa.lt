@@ -539,7 +539,7 @@
         />
       </NButton>
     </div>
-    <div class="col-span-4 mb-12 order-3">
+    <!-- <div class="col-span-4 mb-12 order-3">
       <Link
         class="text-lg duration-200 hover:text-red-600 font-bold"
         :href="
@@ -547,7 +547,7 @@
         "
         >Apie VU SA >></Link
       >
-    </div>
+    </div> -->
   </Sveikinimai>
 </template>
 
