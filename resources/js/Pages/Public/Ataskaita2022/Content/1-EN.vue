@@ -568,15 +568,7 @@ const handleCarouselIndex = (index) => {
 .carousel-img {
   width: 100%;
   height: 280px;
-  object-fit: cover;
-  border-radius: 1em 1em 0 0;
-  margin-top: 0;
-  margin-bottom: 0;
-}
-
-.carousel-img-2 {
-  width: 100%;
-  height: 365px;
+  max-width: 65ch;
   object-fit: cover;
   border-radius: 1em 1em 0 0;
   margin-top: 0;

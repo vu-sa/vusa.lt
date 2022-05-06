@@ -131,7 +131,7 @@ import { NButton } from "naive-ui";
 </script>
 
 f
-<style scoped>
+<style>
 .carousel-img {
   width: 100%;
   height: 280px;

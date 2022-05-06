@@ -1705,7 +1705,7 @@
       @click="showTaryba = true"
     >
       <img
-        class="rounded-lg max-w-[80ch] w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 mx-auto"
+        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500"
         src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/Taryba-2.jpg"
       />
       <p
@@ -1715,9 +1715,9 @@
       </p>
     </NButton>
 
-    <div class="relative" style="white-space: normal; margin: 0 auto 0 auto; width: 100%">
+    <div class="relative" style="white-space: normal">
       <img
-        class="rounded-lg max-w-[80ch] w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 mx-auto"
+        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500"
         src="/images/ataskaita2022/kitos-nuotraukos/Parlamentas.jpg"
       />
       <p
@@ -1727,9 +1727,9 @@
       </p>
     </div>
 
-    <div class="relative">
+    <div class="relative" style="white-space: normal">
       <img
-        class="rounded-lg max-w-[80ch] w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 mx-auto"
+        class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500"
         src="/images/ataskaita2022/kitos-nuotraukos/ISF.jpg"
       />
       <p

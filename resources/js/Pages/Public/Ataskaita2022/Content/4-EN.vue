@@ -764,7 +764,7 @@
           </NCollapseItem>
           <NCollapseItem>
             <template #header
-              >COMMISSIONS FORMED BY ORDER OF RECTOR OF VILNIUS UNIVERSITY</template
+              >Commissions formed by Order of Rector of Vilnius University</template
             >
             <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
               <h4>VU Admission Commission</h4>
@@ -889,8 +889,8 @@
           </NCollapseItem>
           <NCollapseItem>
             <template #header>
-              WORKING GROUPS AND COMMISSIONS SET UP FOR THE IMPLEMENTATION OF THE
-              STRATEGIC PLAN OF VILNIUS UNIVERSITY FOR 2021-2025
+              Working groups and commissions set up for the implementation of the
+              Strategic Plan of Vilnius University for 2021-2025
             </template>
             <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
               <h4>
@@ -960,7 +960,7 @@
             </div>
           </NCollapseItem>
           <NCollapseItem>
-            <template #header>SCHOLARSHIP COMMITTEES AND WORKING GROUPS</template>
+            <template #header>Scholarship Committees and Working Groups</template>
             <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
               <h4>VU Scholarship Working Group</h4>
 
@@ -1081,7 +1081,7 @@
             </div>
           </NCollapseItem>
           <NCollapseItem>
-            <template #header>PERMANENT DEPARTMENTS, COMMITTEES AND COMMISSIONS</template>
+            <template #header>Permanent departments, committees and commissions</template>
             <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
               <h4>Representation of students of the third (doctoral) cycle of studies</h4>
               <p>
@@ -1188,7 +1188,7 @@
             </div>
           </NCollapseItem>
           <NCollapseItem>
-            <template #header>TEMPORARY WORKING GROUPS</template>
+            <template #header>Temporary working groups</template>
             <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
               <h4>VU Student Services Working Group</h4>
               <em>Student representative - Arnoldas Solovjovas</em>
