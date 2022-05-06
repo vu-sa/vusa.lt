@@ -1686,6 +1686,7 @@
     </div></NModal
   >
   <Sritys>
+    <h2 class="col-span-2 my-4 text-3xl">Ačiū, kad esate kartu!</h2>
     <NButton text class="relative" style="white-space: normal" @click="showCB = true">
       <img
         class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 shadow-sm hover:shadow-lg"

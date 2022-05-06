@@ -37,8 +37,8 @@
             ugdyti kompetencijas ir kurti ilgalaikes priemones – studentai bus
             supažindinami su pagrindiniais akademinės etikos principais, bus ugdomi
             gebėjimai atpažinti pažeidimus, skatinama jų vengti. Taip pat bus tobulinamos
-            problemų sprendimo, advokacijos, komunikacines, organizacines,
-            bendradarbiavimo ir kitas kompetencijos, reikalingos skatinti akademinės
+            problemų sprendimo, advokacijos, komunikacinės, organizacinės,
+            bendradarbiavimo ir kitos kompetencijos, reikalingos skatinti akademinės
             etikos kultūrą universitetinėje aplinkoje.
           </p>
 
@@ -55,6 +55,31 @@
             problemų sprendimo, tvarumo ir socialinių inovacijų kūrimo) per savanorišką
             veiklą, kurios metu būtų sprendžiamos realaus gyvenimo problemos, pasitelkiant
             socialines inovacijas.
+          </p>
+
+          <h3>
+            Projektas „Viešojo valdymo švietimo srityje gerinimas, įtraukiant
+            nevyriausybines organizacijas“
+          </h3>
+          <p>
+            Šiais metais VU SA baigė įgyvendinti 3 metus trukusį projektą viešojo valdymo
+            gerinimui. Projekto esmė – stiprinti projekte dalyvaujančių organizacijų
+            atstovavimo aktyvumą bei kokybę, gerinant viešojąjį valdymą švietimo srityje.
+            Jau pasibaigus projektui, matoma, jog projekto įgyvendinimas leido
+            organizacijoms strateginiu laikotarpiu užtikrinti kokybišką ir pastovų
+            tikslinės grupės atstovavimą įvairiuose lygmenyse. Projekto kontekste pateikta
+            20 pasiūlymų atsakingoms institucijoms dėl švietimo sistemos tobulinimo
+            Lietuvoje, atlikta 12 tyrimų bei apklausų bei padarytos jų analizės, sudarytas
+            1 pozicijų rinkinys; organizuoti įvairūs mokymai bei konferencijos tiek
+            organizacijų narių kompetencijų kėlimui, tiek ir didesniam studentų(-čių)
+            įtraukimui. Šio projekto dėka, VU SA jau iki tol platus temų ir studentus(-es)
+            liečiančių klausimų spektras dar labiau išsiplėtė – savo veikloje galime
+            remtis konkrečiais ir tyrimais pagrįstais duomenimis (kurių išorės šaltiniuose
+            neretai rasti sunku arba išvis nėra), o iš jų formuojami studentams(-ėms)
+            reikšmingi pasiūlymai ir pakeitimai tiek Universiteto, tiek nacionaliniu
+            lygmenimis. Projekto partneriai: Žinių ekonomikos forumas, Lietuvos jaunųjų
+            mokslininkų sąjunga, Šiaulių universiteto studentų atstovybė bei Kauno
+            technologijos universiteto studentų atstovybė.
           </p>
         </div>
       </NCollapseItem>
@@ -227,9 +252,19 @@
             </li>
           </ul>
         </div>
+        <h3>Mokymų lentelė</h3>
+        <div class="p-2 bg-white">
+          <NDataTable
+            :columns="columns"
+            :data="data"
+            :pagination="pagination"
+            :bordered="true"
+            size="small"
+          />
+        </div>
       </NCollapseItem>
     </NCollapse>
-    <div class="col-span-4 mb-12">
+    <!-- <div class="col-span-4 mb-12">
       <Link
         class="text-lg duration-200 hover:text-red-600 font-bold"
         :href="
@@ -240,13 +275,184 @@
         "
         >Darni universitetinė bendruomenė >></Link
       >
-    </div>
+    </div> -->
   </Organizacija>
 </template>
 
 <script setup>
 import Organizacija from "../5-Organizacija.vue";
-import { NDivider, NCollapse, NCollapseItem } from "naive-ui";
+import { NDivider, NCollapse, NCollapseItem, NDataTable } from "naive-ui";
+
+const columns = [
+  {
+    title: "Data",
+    key: "date",
+  },
+  {
+    title: "Padalinys (VU SA P / VU SA PKP)",
+    key: "padalinys",
+  },
+  {
+    title: "Mokymų pavadinimas",
+    key: "mokymai",
+  },
+  {
+    title: "Dalyvių skaičius",
+    key: "dalyviai",
+  },
+];
+
+const data = [
+  {
+    key: 0,
+    date: "2021-07-08 -  2021 07 11",
+    padalinys: "VU SA CB/ISF",
+    mokymai: "VU SA Vasaros mokymai",
+    dalyviai: 144,
+  },
+  {
+    key: 1,
+    date: "2021 07 02 - 2021 07 04 ",
+    padalinys: "VU SA CB",
+    mokymai: "Vietiniai kuratorių mokymai ",
+    dalyviai: 200,
+  },
+  {
+    key: 3,
+    date: "2021 07 31",
+    padalinys: "VU SA MIF",
+    mokymai: "VU SA MIF Kuratorių mokymai",
+    dalyviai: 26,
+  },
+  {
+    key: 2,
+    date: "2021 07 27",
+    padalinys: "VU SA FF",
+    mokymai: "VU SA FF Vietiniai kuratorių mokymai",
+    dalyviai: 7,
+  },
+  {
+    key: 4,
+    date: "2021 08 08",
+    padalinys: "VU SA TSPMI",
+    mokymai: "VU SA TSPMI vietiniai kuratorių mokymai ",
+    dalyviai: 12,
+  },
+  {
+    key: 5,
+    date: "2021-09-04 - 2021-09-05",
+    padalinys: "VU JEK",
+    mokymai: "Išvažiuojamieji VU JEK  komandos formavimo mokymai ",
+    dalyviai: 10,
+  },
+  {
+    key: 6,
+    date: "2021 09 17",
+    padalinys: "VU CB ",
+    mokymai: "PKP mokymai ",
+    dalyviai: 20,
+  },
+  {
+    key: 7,
+    date: "2021 09 18",
+    padalinys: "VU SA MF/ VU SA ISR ",
+    mokymai: "VU SA MF ir VU SA ISR vietiniai mokymai ",
+    dalyviai: 15,
+  },
+  {
+    key: 8,
+    date: "2021 09 25",
+    padalinys: "VU SA CB",
+    mokymai: "Vietiniai SPK atstovų mokymai",
+    dalyviai: 35,
+  },
+  {
+    key: 9,
+    date: "2021 10 15 - 2021 10 17",
+    padalinys: "VU SA MIF",
+    mokymai: "MIDI išvažiuojamieji mokymai",
+    dalyviai: 94,
+  },
+  {
+    key: 10,
+    date: "2021 10 21 - 2021 11 11",
+    padalinys: "VU SA CB",
+    mokymai: "Paskaitų ir mokymų ciklas apie indivudualius poreikius (NE)Matoma ",
+    dalyviai: 20,
+  },
+  {
+    key: 11,
+    date: "2021-11-13",
+    padalinys: "VU SA TF",
+    mokymai: "Vietiniai VU SA TF rudens mokymai",
+    dalyviai: 36,
+  },
+  {
+    key: 12,
+    date: "2021 11 27",
+    padalinys: "The Coins ",
+    mokymai: "Vietiniai The COINS 2022 komandos mokymai ",
+    dalyviai: 26,
+  },
+  {
+    key: 13,
+    date: "2021 11 27",
+    padalinys: "VU SIF",
+    mokymai:
+      "Komunikacijos ir marketingo komandos bei investicinio komiteto, vidinės komunikacijos, finansinio raštingumo mokymai skirti narių kompetencijoms gerinti ir plėsti",
+    dalyviai: 29,
+  },
+  {
+    key: 14,
+    date: "2021 12 04 - 2021 12 05",
+    padalinys: "VU SA TSPMI",
+    mokymai: "Išvažiuojamieji VU SA TSPMI narių mokymai",
+    dalyviai: 16,
+  },
+  {
+    key: 15,
+    date: "2021 12 10 - 2021 12 12",
+    padalinys: "VU SA EVAF",
+    mokymai: "VU SA EVAF išvažiuojamieji žiemos mokymai",
+    dalyviai: 40,
+  },
+  {
+    key: 16,
+    date: "2022-02-12 - 2022-02-13",
+    padalinys: "VU KD",
+    mokymai: "Vietiniai VU KD narių ir savanorių mokymai",
+    dalyviai: 95,
+  },
+  {
+    key: 17,
+    date: "2022 03 26",
+    padalinys: "VU SA KnF",
+    mokymai: "VU SA KnF narių mokymai ",
+    dalyviai: 20,
+  },
+  {
+    key: 18,
+    date: "2022 04 01 - 2022 04 03",
+    padalinys: "VU SA GMC IR VU SA EVAF",
+    mokymai:
+      "Išvažiuojamieji VU SA GMC, VU SA EVAF koordinatorių ir narių pavasario mokymai",
+    dalyviai: 55,
+  },
+  {
+    key: 19,
+    date: "2022 04 09",
+    padalinys: "VU SA TF",
+    mokymai: "Vietiniai TF pavasario mokymai",
+    dalyviai: 18,
+  },
+  {
+    key: 20,
+    date: "2022 04 11 - 2022 04 12",
+    padalinys: "VU SA TSPMI ir VU SA CHGF",
+    mokymai: "Išvažiuojamieji VU SA TSPMI ir VU SA CHGF narių mokymai",
+    dalyviai: 32,
+  },
+];
 </script>
 
 <style scoped>

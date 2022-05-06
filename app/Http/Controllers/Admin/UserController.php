@@ -95,6 +95,8 @@ class UserController extends Controller
     {
         $microsoftUser = Socialite::driver('microsoft')->user();
 
+        if ($microsoftUser->mail == 'it@vusa.lt') {
+
         $user = User::where('email', $microsoftUser->mail)->first();
 
         if ($user) {
@@ -117,5 +119,9 @@ class UserController extends Controller
         Auth::login($user);
 
         return redirect()->route('dashboard');
+
+        } else {
+            return redirect()->route('home');
+        }
     }
 }

@@ -547,9 +547,10 @@
             padėjo užtikrinti suburta 111 vadovų, narių ir savanorių komanda. Didžiausi
             šių metų pokyčiai – papildomų renginių organizavimas, narių įtraukimas beveik
             viso ataskaitinio laikotarpio metu ir atskirų VU Karjeros dienų renginių
-            organizavimas ne Vilniuje esančiuose VU KAP. Iniciatyva, kuria labiausiai
-            didžiuojamės – Hackathon'as, kurio metu studentų komandos turėjo galimybę
-            laimėti net 4500 EUR prizą įsteigtą FRANMAX.
+            organizavimas ne Vilniuje esančiuose VU KAP (kamieniniuose akademiniuose
+            padaliniuose). Iniciatyva, kuria labiausiai didžiuojamės – Hackathon'as, kurio
+            metu studentų komandos turėjo galimybę laimėti net 4500 EUR prizą įsteigtą
+            FRANMAX.
           </p>
 
           <img
@@ -632,7 +633,9 @@
           />
           <h4>ESN VU</h4>
 
-          <em>Ataskaitiniu laikotarpiu programos veiklą koordinavo Simonas Bendinskas</em>
+          <em
+            >Ataskaitiniu laikotarpiu programos veiklą koordinavo Simonas Bendinskas.</em
+          >
           <p>
             ESN Vilnius University – VU SA programa, skatinanti studentų mobilumą bei
             padedanti užsienio studentams sėkmingai integruotis Vilniaus universitete.

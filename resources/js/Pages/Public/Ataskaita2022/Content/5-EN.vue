@@ -18,43 +18,86 @@
         <template #header><h2>VU SR projects</h2></template>
         <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
           <h3>
-            Projektas „Studentų įsitraukimo į akademinės etikos puoselėjimą
-            universitetinėje bendruomenėje didinimas“
+            Project "Increasing the involvement of students in fostering academic ethics
+            in the university community"
           </h3>
           <p>
-            Akademinė etika – viena pamatinių aukštojo mokslo vertybių – yra įtvirtinama
-            tiek Lietuvos Respublikos Mokslo ir studijų įstatyme, tiek aukštųjų mokyklų
-            statutuose, tad ji tampa svarbia aukštojo mokslo institucijos pareiga. Vienas
-            iš akademinės etikos principų – akademinis sąžiningumas – yra itin opi
-            problema aukštajame moksle, kurios ugdymui turi būti skiriamas dėmesys tiek
-            instituciniu, tiek nacionaliniu lygmeniu. Siekiant užtikrinti akademinės
-            etikos puoselėjimą aukštojoje mokykloje, į procesus turi įsitraukti skirtingos
-            bendruomenės grupės, todėl labai svarbus studentų, dėstytojų bei Universiteto
-            darbuotojų kompetencijų kėlimas su akademine etika susijusiais klausimais.
-            Siekiant didesnio studentų įsitraukimo puoselėjant akademinę etiką Vilniaus
-            universitete, projekto metu įgyvendinami mokymai ir planavimai, kurie turėtų
-            padėti pagrindus studentų iniciatyvų kūrimui ateityje. Projekte numatoma
-            ugdyti kompetencijas ir kurti ilgalaikes priemones – studentai bus
-            supažindinami su pagrindiniais akademinės etikos principais, bus ugdomi
-            gebėjimai atpažinti pažeidimus, skatinama jų vengti. Taip pat bus tobulinamos
-            problemų sprendimo, advokacijos, komunikacines, organizacines,
-            bendradarbiavimo ir kitas kompetencijos, reikalingos skatinti akademinės
-            etikos kultūrą universitetinėje aplinkoje.
+            Academic ethics – one of the fundamental values of higher education – is
+            enshrined both in the Law on Science and Studies of the Republic of Lithuania
+            and in the statutes of higher education institutions, therefore it becomes an
+            important duty of a higher education institution. One of the principles of
+            academic ethics, academic integrity, is a particularly sensitive issue in
+            higher education, the development of which must be given attention both at
+            institutional and national level. In order to increase the involvement of
+            students in fostering academic ethics at Vilnius University, VU SR implemented
+            a project during which the training and planning of the VU SR program
+            "Sąžiningai" was organized, open training courses were created in a virtual
+            learning environment about academic ethics, presentations on the topic of
+            academic ethics were organized for students, the issue of ensuring academic
+            ethics was raised in the VU SR Parliament and the position of the organization
+            was consolidated. Next, on this basis, an advocacy on the topic of academic
+            ethics takes place.
           </p>
 
           <h3>
-            Projektas „ECSTRA: Employability Competencies for Students Through
-            implementation and Recognition of Activities“
+            Project "ECSTRA: Employability Competencies for Students Through
+            implementation and Recognition of Activities"
           </h3>
           <p>
-            Vienas iš pagrindinių gebėjimų, reikalingų dirbti ir gyventi XXI amžiuje, yra
-            iniciatyvumas ir verslumas, t. y. asmens gebėjimas idėjas paversti veiksmais.
-            Tikime, jog aukštojo mokslo įstaigos turi padėti studentams(-ėms) įgyti šiuos
-            įgūdžius, todėl VU SA įgyvendina projektą, kurio tikslas – padėti
-            studentams(-ėms) įgyti būtinųjų kompetencijų (verslumo, bendradarbiavimo,
-            problemų sprendimo, tvarumo ir socialinių inovacijų kūrimo) per savanorišką
-            veiklą, kurios metu būtų sprendžiamos realaus gyvenimo problemos, pasitelkiant
-            socialines inovacijas.
+            One of the key skills needed to work and live in the 21st century is
+            initiative and entrepreneurship, i.e., a person's ability to turn ideas into
+            actions. We believe that higher education institutions must help students(s)
+            acquire these skills, therefore, VU SR is implementing a project aimed at
+            helping students(s) to acquire competences through voluntary activities,
+            during which real-life problems would be solved through social innovations. In
+            order to achieve this, we aim to enable communities to take the initiative and
+            solve problems themselves, to develop and coordinate initiatives with a
+            sustainable long-term impact, and to improve the system of recognition of
+            competences acquired informally.
+          </p>
+          <p>
+            On the basis of this project, a canvas model and template adapted for the
+            development of initiatives, volunteer management guidebook, trainings for
+            community coordinators, who could expand the development of initiatives in the
+            institutions and countries participating in the project, guidelines for the
+            system of informally acquired competences for the system of crediting of
+            competences acquired in higher education institutions and crash-course content
+            for future initiative managers and teams on important topics of organization
+            of activities are prepared.
+          </p>
+          <p>
+            VU SR is working on this project together with Vilnius University (VU) Jean
+            Monnet University (UJM) and The University of Granada (UGR).
+          </p>
+
+          <h3>
+            Project "Improving public governance in the field of education by involving
+            non-governmental organizations"
+          </h3>
+          <p>
+            This year, VU SR completed the implementation of a 3-year project to improve
+            public management. The essence of the project is to strengthen the activity
+            and quality of representation of the organizations participating in the
+            project by improving public governance in the field of education. After the
+            completion of the project, it is clear that the implementation of the project
+            allowed the organizations to ensure high-quality and constant representation
+            of the target group at various levels during the strategic period. In the
+            context of the project, 20 proposals were submitted to the responsible
+            institutions regarding the improvement of the education system in Lithuania,
+            12 studies and surveys were carried out and their analysis was carried out,
+            and 1 set of positions was drawn up; various trainings and conferences were
+            organized both for the development of competences of the members of the
+            organizations and for the greater involvement of students(s). Thanks to this
+            project, VU SR has already expanded the wide range of topics and issues
+            affecting students(s) even more – in our activities we can rely on concrete
+            and research-based data (which are often difficult or not found in external
+            sources), and from them significant proposals and changes are formed for
+            students(s) both at the University and national level.
+          </p>
+          <p>
+            Project partners: Knowledge Economy Forum, Lithuanian Union of Young
+            Scientists, Šiauliai University Students' Representation and Kaunas University
+            of Technology Students' Representation.
           </p>
         </div>
       </NCollapseItem>
@@ -96,7 +139,14 @@
         <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
           <h3>Development of VU SR Strategic Plan 2022-2024</h3>
 
-          <p>...</p>
+          <p>
+            This year, VU SR's Strategic Action Plan for the period 2019-2022 expires. For
+            this reason, we reviewed and prepared an updated draft of strategic action
+            plan for 2022-2025 in the organization. Different units of the organization
+            and their members were involved in the process, and the draft of the new
+            strategic action plan created by designing possible visions for the future,
+            was submitted to the VU SR Parliament.
+          </p>
 
           <h3>Culture of self-reflection</h3>
 
@@ -223,7 +273,7 @@
         </div>
       </NCollapseItem>
     </NCollapse>
-    <div class="col-span-4 mb-12">
+    <!-- <div class="col-span-4 mb-12">
       <Link
         class="text-lg duration-200 hover:text-red-600 font-bold"
         :href="
@@ -234,7 +284,7 @@
         "
         >Darni universitetinė bendruomenė >></Link
       >
-    </div>
+    </div> -->
   </Organizacija>
 </template>
 

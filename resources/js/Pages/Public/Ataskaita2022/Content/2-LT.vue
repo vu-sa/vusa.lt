@@ -441,7 +441,9 @@
             </p>
             <NDivider></NDivider>
             <section id="rastai">
-              <h3 class="text-center text-2xl">Raštai</h3>
+              <h3 class="text-center text-2xl">
+                Parlamento teiktos pozicijos ir rezoliucijos
+              </h3>
               <NDivider></NDivider>
               <NCollapse accordion>
                 <NCollapseItem>
@@ -775,10 +777,10 @@
               </li>
               <li>
                 Narystės užfiksavimo sistemos atnaujinimui nario testą praplėsti žiniomis
-                apie VU (KAP) strukūrinius darinius, universiteto suteikiamas paslaugas,
-                VU SA strategiją, organizacijos struktūrą bei įvaizdį. Buvo nutarta šalia
-                testo kurti emokymų kursą, kuris padės užtikrinti gilesnį kompetencijų
-                kėlimą kiekvienoje temoje.
+                apie VU (KAP (kamieninių akademinių padalinių)) strukūrinius darinius,
+                universiteto suteikiamas paslaugas, VU SA strategiją, organizacijos
+                struktūrą bei įvaizdį. Buvo nutarta šalia testo kurti emokymų kursą, kuris
+                padės užtikrinti gilesnį kompetencijų kėlimą kiekvienoje temoje.
               </li>
             </ul>
           </div>

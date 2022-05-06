@@ -379,7 +379,7 @@ class ContactRearrangement extends Migration
                 ->first();
 
             $duty_id = DB::table('duties')
-                ->where('institution_id', '=', $institution_id->id)
+                ->where([['institution_id', '=', $institution_id->id],['description', '=', 'Kuratorius']])
                 ->select('id')
                 ->first();
 

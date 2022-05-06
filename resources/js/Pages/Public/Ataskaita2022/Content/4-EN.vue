@@ -802,8 +802,8 @@
                 One-time social scholarships are support provided by the University to
                 students who are experiencing difficulties that have affected their lives
                 financially: severe illness of a student or relative, death of a relative,
-                disability and other special situations. During the reference period, 4
-                meetings were held with x scholarships for y euros.
+                disability and other special situations. During the reference period, 3
+                meetings were held with 86 scholarships for 25 874 euros.
               </p>
 
               <h4>VU One-Time Target Scholarship Distribution Commission</h4>
@@ -814,8 +814,8 @@
                 One-time targeted scholarships are incentive support provided by the
                 University to students who actively participate in social, scientific,
                 cultural or sports activities and represent and promote the name of the
-                University through their achievements. During the reporting period, x
-                scholarships were awarded for y euros.
+                University through their achievements. During the reporting period, 738
+                scholarships were awarded for 92 463 euros.
               </p>
 
               <h4>
@@ -902,12 +902,12 @@
           <NCollapseItem>
             <template #header>
               Working groups and commissions set up for the implementation of the
-              Strategic Plan of Vilnius University for 2021-2025
+              Strategic Plan of Vilnius University for 2021–2025
             </template>
             <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
               <h4>
                 Working Group on the Implementation of the Activities of the Strategic
-                Plan of VU 2021-2025 "Increasing student choice and multidirectional
+                Plan of VU 2021–2025 "Increasing student choice and multidirectional
                 opportunities"
               </h4>
               <em>Student representative - Neda Žutautaitė</em>

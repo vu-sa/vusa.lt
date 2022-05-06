@@ -12,7 +12,8 @@
     <p><strong>Terminas:</strong> 2022 m. liepos 1 d.</p>
     <p>
       <strong>Matavimo rodiklis:</strong> 75 % I pakopos ir vientisųjų studijų programų
-      komitetų pirmininkų kiekviename VU KAP palaiko 60 kreditų atlaisvinimo idėją.
+      komitetų pirmininkų kiekviename VU KAP (kamieniniame akademiniame padalinyje)
+      palaiko 60 kreditų atlaisvinimo idėją.
     </p>
     <NTimeline class="mt-4">
       <NTimelineItem
@@ -264,7 +265,7 @@ saugojimo tvarkos aprašo. "
               darbus ir magistro baigiamuosius darbus.
             </li>
             <li>
-              Planuojama diskusija apie šias problemas pratęsti per kandidatų į VU EVAF
+              Planuojama diskusiją apie šias problemas pratęsti per kandidatų į VU EVAF
               dekanus debatus.
             </li>
           </ul></NCollapseItem
@@ -1197,8 +1198,9 @@ išsakytas pastabas pakoreguoti rekomendacijas."
     <section>
       <h4 class="text-center font-bold text-xl">
         25. 2022 m. liepos 1 d. VU TSPMI magistro studentams yra suteikta galimybė
-        pasirinkti papildomą užsienio kalbą NSPD forma bei 70 proc. jų yra informuoti apie
-        kitas esamas galimybes mokytis papildomų užsienio kalbų Vilniaus universitete.
+        pasirinkti papildomą užsienio kalbą NSPD (ne studijų programos dalyko) forma bei
+        70 proc. jų yra informuoti apie kitas esamas galimybes mokytis papildomų užsienio
+        kalbų Vilniaus universitete.
       </h4>
 
       <NTimeline class="mt-4">

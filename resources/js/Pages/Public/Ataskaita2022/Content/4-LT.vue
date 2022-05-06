@@ -491,8 +491,8 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
               <p><strong>Svarstyta:</strong> Naujo Senato rinkimai.</p>
               <p>
                 <strong>Nutarta:</strong> Naujo Senato sudėtis keičiasi iki 46 asmenų,
-                įtraukiant po vieną atstovą iš VU sui generis padalinių – Šiaulių
-                akademijos ir Verslo mokyklos. Padidėjus Senato skaičiui studentų atstovų
+                įtraukiant po vieną atstovą iš VU <em>sui generis</em> padalinių – Šiaulių
+                akademijos ir Verslo mokyklos. Padidėjus Senato narių skaičiui studentų atstovų
                 skaičius padidėja iki 9.
               </p>
               <p><strong>Svarstyta:</strong> Naujų studijų programų įregistravimas.</p>
@@ -505,12 +505,12 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
               </p>
               <NDivider></NDivider>
               <p>
-                <strong>Svarstyta:</strong> Lyčiai jautrios gairės ir lyčių lygybės
+                <strong>Svarstyta:</strong> Lyčiai jautrios kalbos gairės ir lyčių lygybės
                 planas.
               </p>
               <p>
                 <strong>Nutarta:</strong> Gairės parengtos kaip priemonė, numatyta
-                Vilniaus universiteto įvairovės ir lygių galimybių strategijoje 2020-2025
+                Vilniaus universiteto įvairovės ir lygių galimybių strategijoje 2020–2025
                 metams, kuri buvo tvirtinama ankstesniais metais Senato posėdžio metu.
                 Gairės buvos aptariamos Senate. Susipažinti galima
                 <a
@@ -536,7 +536,7 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
               <NDivider></NDivider>
               <p><strong>Svarstyta</strong>: Vilniaus universiteto savianalizė.</p>
               <p>
-                <strong>Nutarta</strong>: Kas septynis metus vykstantis institucijos
+                <strong>Nutarta</strong>: Kas septynerius metus vykstantis institucijos
                 išorinis akreditavimas, kuriam yra atliekama institucijos, šiuo atveju VU,
                 savianalizė. Savianalizė buvo pristatyta Senatui ir su ja bus susitinkama
                 su ekspertais tolimesnei diskusijai.
@@ -557,7 +557,7 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
               <p>
                 Ataskaitiniu laikotarpiu aptartas ir atnaujintas Doktorantūros fondo
                 panaudojimo tvarkos aprašas suteikiant didesnę laisvę doktorantams naudoti
-                sau skirtas lėšas, aptarta Sveikatos stiprinimo ir sporto koncepcija,
+                savoms reikmėms skirtas lėšas, aptarta Sveikatos stiprinimo ir sporto koncepcija,
                 kalbų politikos gairės. Svarstytas darbuotojų darbo užmokesčio tvarkos
                 aprašas, aptartas mokymosi visą gyvenimą veiklų organizavimas Vilniaus
                 universitete. Taip pat aptarta būsima darbuotojų skatinimo už indėlį į
@@ -708,9 +708,9 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
 
               <p>
                 Komisija svarsto ir teikia Universiteto rektoriui tvirtinti dėstytojų ir
-                mokslo darbuotojų kandidatūras akademinėms pareigoms užimti. Atsižvelgęs į
+                mokslo darbuotojų kandidatūras akademinėms pareigoms užimti. Atsižvelgusi į
                 studentų apklausas, dėstymo patirtis ir planuojamą akademinę veiklą,
-                studentų atstovas, remdamasis aukščiau išvardytais duomenimis, siūlė
+                studentų atstovė, remdamasi aukščiau išvardytais duomenimis, siūlė
                 tvirtinti ne visas kandidatūras.
               </p>
 
@@ -725,8 +725,8 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
                 Vienkartinės socialinės stipendijos yra Universiteto skiriama parama
                 studentams, susidūrusiems su sunkumais, kurie paveikė jų gyvenimus
                 finansiškai: sunki studento ar artimojo liga, artimojo mirtis, negalia ir
-                kitomis ypatingomis situacijomis. Ataskaitiniu laikotarpiu vyko 4
-                posėdžiai, kurių metu skirtos x stipendijos už y eurų sumą.
+                kitomis ypatingomis situacijomis. Ataskaitiniu laikotarpiu vyko 3
+                posėdžiai, kurių metu skirtos 86 stipendijos už 25 874 eurų sumą.
               </p>
 
               <h4>VU Vienkartinių tikslinių stipendijų skirstymo komisija</h4>
@@ -737,8 +737,8 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
                 Vienkartinės tikslinės stipendijos yra Universiteto skiriama skatinamoji
                 parama studentams, kurie aktyviai dalyvauja socialinėse, mokslinėse,
                 kultūrinėse ar sportinėse veiklose bei savo pasiekimais atstovauja ir
-                garsina Universiteto vardą. Ataskaitiniu laikotarpiu buvo skirtos x
-                stipendijos už y eurų sumą.
+                garsina Universiteto vardą. Ataskaitiniu laikotarpiu buvo skirtos 738
+                stipendijos už 92 463 eurų sumą.
               </p>
 
               <h4>VU Profesoriaus ir docento pedagoginių vardų teikimo komisija</h4>
@@ -799,7 +799,7 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
           </NCollapseItem>
           <NCollapseItem>
             <template #header>
-              Vilniaus universiteto 2021-2025 m. strateginio plano įgyvendinimui sudarytos
+              Vilniaus universiteto 2021–2025 m. strateginio plano įgyvendinimui sudarytos
               grupės ir komisijos
             </template>
             <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
@@ -857,8 +857,8 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
                   standartinių resursų.
                 </p>
                 <p>
-                  Šiais metais edukacinių iniciatyvų komisijoje patvirtinta 27 paraiškų ir
-                  iniciatyvų.
+                  Šiais metais edukacinių iniciatyvų komisijoje patvirtintos 27 paraiškos ir
+                  iniciatyvos.
                 </p>
                 <h4>VU pedagogų rengimo plėtros komitetas</h4>
 
@@ -908,12 +908,12 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
                 mėnesio, siekiant mažinti socialinės atskirties problemą.
               </p>
 
-              <h4>VU Tech Hub stipendijų komisija</h4>
+              <h4>VU „Tech Hub“ stipendijų komisija</h4>
 
               <em>Studentų atstovė – Neda Žutautaitė</em>
 
               <p>
-                Vilniaus universiteto Technologijų uostas (VU Tech Hub) paskelbė konkursą
+                Vilniaus universiteto Technologijų uostas (VU „Tech Hub“) paskelbė konkursą
                 dėl vardinės stipendijos už geriausią studijų metu parengtą baigiamąjį
                 darbą. 300 eurų stipendija buvo skiriama baigiamųjų darbų autoriams šiose
                 kategorijose:
@@ -994,17 +994,17 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
               >Nuolatiniai struktūriniai vienetai, komitetai ir komisijos</template
             >
             <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
-              <h4>Trečios studijų pakopos (doktorantūros) studentų atstovavimas</h4>
+              <h4>Trečiosios studijų pakopos (doktorantūros) studentų atstovavimas</h4>
               <p>
                 Ataskaitiniu laikotarpiu įvyko 2 susitikimai su doktorantais, VU
                 rektoriumi ir mokslo prorektore. Susitikimų metu buvo aptariamos
-                aktualiausios problemos, su kuriomis susiduria trečios studijų pakopos
+                aktualiausios problemos, su kuriomis susiduria trečiosios studijų pakopos
                 studentai.
               </p>
               <p>
                 Po antrojo susitikimo VU SA iniciatyva buvo suburta neoficiali VU
                 doktorantų grupė, kurią sudaro bent po vieną atstovą iš kiekvieno VU
-                akademinio padalinio. Šios grupės tikslas - analizuoti esamas III pakopos
+                akademinio padalinio. Šios grupės tikslas – analizuoti esamas III pakopos
                 studentų problemas, numatyti prioritetus, gerinti VU SA III pakopos
                 studentų atstovavimą bei teikti siūlymus galimiems iššūkių, su kuriais
                 doktorantai susiduria, sprendimams. Grupė susirinkimus planuoja tęsti kas
@@ -1027,8 +1027,8 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
                 Siekiant užtikrinti efektyvų studentų atstovavimą SPK buvo keliamos
                 studentų atstovų kompetencijos: organizuoti centriniai bei padalinių
                 mokymai, kuriuose studentų atstovai susipažino su SPK veikla, vykdytos
-                nuomonės rinkimo ir posėdžių simuliacijose, susipažinta su kitų studentų
-                atstovų patirtis. Studentų atstovai taip pat laikė jiems skirtą testą,
+                nuomonės rinkimo ir posėdžių simuliacijos, susipažinta su kitų studentų
+                atstovų patirtimis. Studentų atstovai taip pat laikė jiems skirtą testą,
                 parodantį jų akademinių žinių lygį bei spragas. Ataskaitiniu laikotarpiu
                 studentų atstovai rinko studentų nuomonę anketavimo, virtualių tikslinių
                 grupių arba mišriuoju metodu, o surinkti ir susisteminti duomenys buvo
@@ -1081,11 +1081,7 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
                 vadovaujančias pareigas ar turintiems didžiulę praktinio darbo patirtį.
               </p>
               <p>
-                Ataskaitiniu laikotarpiu vyko 2 komiteto posėdžiai, kurių metu studentų
-                atstovė teikė studentų nuomonę apie kandidatus bei vertino kandidatus. X
-                asmenų buvo patvirtinti pareigoms, Y asmenų pedagoginės kompetencijos buvo
-                įvertintos kaip nepakankamos, todėl partnerystės profesoriaus ar docento
-                vardas jiems nebuvo suteiktas.
+                Ataskaitiniu laikotarpiu įvyko 2 komiteto posėdžiai, kurių metu studentų atstovė teikė studentų nuomonę apie kandidatus bei juos vertino. 66 kandidatai buvo patvirtinti pareigoms, 1 kandidatūrai dėl fiksuotų kontraversiškų studentų atsiliepimų priimtas kompromisinis sprendimas fakulteto lygmenyje ir sutartis sudaryta vienerių metų laikotarpiui. 
               </p>
             </div>
           </NCollapseItem>
@@ -1131,6 +1127,17 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
                 paramą bei imtasi kitų iniciatyvų įgyvendinimo.
               </p>
 
+              <h4>VU VUSIS3 projekto ekspertų darbo grupė</h4>
+
+              <em>Studentų atstovas – Arnoldas Solovjovas</em>
+
+              <p>
+                VUSIS3 projekto darbo grupė suburta dėl ketinamos atnaujinti Vilniaus
+                universiteto informacinės sistemos. Ataskaitiniu laikotarpiu įvyko 3 darbo
+                grupės susitikimai, kurių metu teikti pasiūlymai dėl naujos sistemos
+                versijos konkursą laimėjusiai įmonei sistemos programavimui.
+              </p>
+
               <h4>VU emocinės gerovės darbo grupė</h4>
 
               <em>Studentų atstovės – Julija Jarutytė, Neda Žutautaitė</em>
@@ -1143,16 +1150,7 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
                 keliami emocinės gerovės Universitete programos tikslai.
               </p>
 
-              <h4>VU VUSIS3 projekto ekspertų darbo grupė</h4>
-
-              <em>Studentų atstovas – Arnoldas Solovjovas</em>
-
-              <p>
-                VUSIS3 projekto darbo grupė suburta dėl ketinamos atnaujinti Vilniaus
-                universiteto informacinės sistemos. Ataskaitiniu laikotarpiu įvyko 3 darbo
-                grupės susitikimai, kurių metu teikti pasiūlymai dėl naujos sistemos
-                versijos konkursą laimėjusiai įmonei sistemos programavimui.
-              </p>
+              
             </div>
           </NCollapseItem>
         </NCollapse>
@@ -1249,7 +1247,7 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
             </div>
           </NCollapseItem>
           <NCollapseItem>
-            <template #header>Dalyvavimas kitose konferencijose</template>
+            <template #header>Dalyvavimas konferencijose</template>
             <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
 
 <h4>LiJOT konferencija „Jauno žmogaus psichikos sveikata: jo paties ar ir valstybės rūpestis“ </h4>
