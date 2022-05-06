@@ -128,6 +128,7 @@
       <NDrawerContent closable :title="__('Ataskaita 2022')">
         <NTree
           block-line
+          :default-expand-all="true"
           :data="locale === 'lt' ? navigationTreeMobile : navigationTreeMobileEN"
           @update:selected-keys="handleSelectKryptis"
         />
