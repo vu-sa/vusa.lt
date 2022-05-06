@@ -22,7 +22,7 @@ return [
     'allowed_origins' => ['*.' . explode('://',
     config('app.url'))[1], 
     explode('://', config('app.url'))[1], 
-    'localhost'],
+    'localhost', '*vusa.lt'],
 
     'allowed_origins_patterns' => [],
 

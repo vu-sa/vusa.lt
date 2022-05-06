@@ -62,7 +62,7 @@
     <div class="col-span-4 md:col-span-2 mt-4 md:mt-0 prose">
       <img
         class="carousel-img"
-        style="object-position: 0% 20%"
+        style="object-position: 0% 40%"
         src="/images/ataskaita2022/sveikinimai/neda.jpg"
       />
       <div class="bg-white p-6 text-sm prose-sm">

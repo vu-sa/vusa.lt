@@ -1537,10 +1537,7 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
             mokslinių žinių kūrimą ir / arba akademinį tobulėjimą, kūrybinę veiklą, kuri
             vyksta laisvu nuo studijų laiku (po užsiėmimų, atostogų metu)“. Atlikus tyrimą
             paaiškėjo, jog studentai yra labiau linkę įsitraukti į mokslinę veiklą tuomet,
-            kai gerai vertina savo studijas ir mokymosi pasiekimus. Vienos iš problemų,
-            kodėl studentai neįsitraukia į savanorišką mokslinę veiklą yra tai, jog
-            studentai nežino, kur reikėtų kreiptis norint įsitraukti bei kur galėtų šią
-            veiklą atlikti. Verta paminėti, jog, nors finansinė paskata tyrime
+            kai gerai vertina savo studijas ir mokymosi pasiekimus. Tyrime pastebėta, jog studentai neįsitraukia į savanorišką mokslinę veiklą, nes nežino, kur reikėtų kreiptis norint įsitraukt, kur galėtų tokią veiklą atlikti. Verta paminėti, jog, nors finansinė paskata tyrime
             statistiškai nebuvo reikšminga, dauguma respondentų palaikytų finansinės
             paskatos atliekantiems savanorišką mokslinę veiklą teikimo idėją, o tai
             galimai sumažintų laiko ar motyvacijos trūkumo atsiradimą, nes šiuo atveju
@@ -1572,7 +1569,7 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
           <p>
             Tyrimas parengtas 2022 m. pavasario semestro metu. Šiuo tyrimu pateikiama
             tolimesnė anksčiau pristatytų studentų patiriamų barjerų ir priemonių grupių
-            analizė. Šiuo tyrimu įgyvendintos žvalgybinės focus grupės, skirtos pateikti
+            analizė. Šiuo tyrimu įgyvendintos žvalgybinės <em>focus</em> grupės, skirtos pateikti
             pavyzdžius apibendrinant ir tikslinant socialiai pažeidžiamų asmenų patiriamus
             barjerus. Taip pat apžvelgiami panašūs platesnio masto tyrimai, kurių metodika
             remiantis galima parengti duomenimis ir analize pagrįstus sprendimus rengiant

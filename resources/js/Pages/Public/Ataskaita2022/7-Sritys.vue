@@ -4,7 +4,7 @@
     :title="'Bendruomenė | Ataskaita 2022'"
   >
     <div class="grid md:grid-cols-8 mx-8">
-      <div class="hidden md:block">
+      <div class="hidden lg:block">
         <NButton
           @click="inertiaVisitOnClick('bendruomene')"
           class="hidden md:block top-[50vh] h-fit"
@@ -15,7 +15,7 @@
         ></NButton>
       </div>
       <article
-        class="grid md:grid-cols-2 justify-items-center md:pr-32 gap-6 py-6 rounded-lg col-span-8 md:col-span-7"
+        class="grid grid-cols-1 lg:grid-cols-2 justify-items-center lg:pr-32 gap-0 gap-y-4 md:gap-6 py-6 rounded-lg col-span-8 lg:col-span-7"
       >
         <slot></slot>
       </article>

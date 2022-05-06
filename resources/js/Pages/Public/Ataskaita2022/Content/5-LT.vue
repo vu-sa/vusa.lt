@@ -49,11 +49,11 @@
           <p>
             Vienas iš pagrindinių gebėjimų, reikalingų dirbti ir gyventi XXI amžiuje, yra
             iniciatyvumas ir verslumas, t. y. asmens gebėjimas idėjas paversti veiksmais.
-            Tikime, jog aukštojo mokslo įstaigos turi padėti studentams(-ėms) įgyti šiuos
-            įgūdžius, todėl VU SA įgyvendina projektą, kurio tikslas – padėti
-            studentams(-ėms) įgyti būtinųjų kompetencijų (verslumo, bendradarbiavimo,
-            problemų sprendimo, tvarumo ir socialinių inovacijų kūrimo) per savanorišką
-            veiklą, kurios metu būtų sprendžiamos realaus gyvenimo problemos, pasitelkiant
+            Tikime, jog aukštojo mokslo įstaigos turi padėti studentams (-ėms) įgyti šiuos
+            įgūdžius, todėl VU SA įgyvendina projektą, kurio tikslas – padėti studentams
+            (-ėms) įgyti būtinųjų kompetencijų (verslumo, bendradarbiavimo, problemų
+            sprendimo, tvarumo ir socialinių inovacijų kūrimo) per savanorišką veiklą,
+            kurios metu būtų sprendžiamos realaus gyvenimo problemos, pasitelkiant
             socialines inovacijas.
           </p>
 
