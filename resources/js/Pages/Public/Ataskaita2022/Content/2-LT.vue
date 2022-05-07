@@ -603,6 +603,12 @@
                     prieinamus bendrųjų universitetinių studijų dalykus, kurie plėstų
                     studentų (-čių) finansinio raštingumo žinias.
                   </p>
+
+                  <a
+                    target="_blank"
+                    href="https://vusa.lt/uploads/files/Raštai,%20pozicijos,%20dokumentai/Pozicija-del-finansinio-rastingumo.pdf"
+                    >Pozicija</a
+                  >
                 </NCollapseItem>
 
                 <NCollapseItem>

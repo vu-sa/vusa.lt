@@ -137,7 +137,7 @@
         </div>
 
         <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
-          <h3>Development of VU SR Strategic Plan 2022-2024</h3>
+          <h3>Development of VU SR Strategic Plan 2022-2025</h3>
 
           <p>
             This year, VU SR's Strategic Action Plan for the period 2019-2022 expires. For

@@ -119,7 +119,7 @@
         </div>
 
         <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
-          <h3>VU SA Strateginio plano 2022–2024 m. kūrimas</h3>
+          <h3>VU SA Strateginio plano 2022–2025 m. kūrimas</h3>
 
           <p>
             Šiais metais baigiasi VU SA Strateginis veiklos planas, skirtas 2019-2022 m.

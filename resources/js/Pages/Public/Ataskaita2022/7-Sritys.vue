@@ -21,7 +21,7 @@
       </article>
       <div class="hidden lg:block">
         <NButton
-          @click="inertiaVisitOnClick('bendruomene')"
+          @click="inertiaVisitOnClick('padeka')"
           class="hidden md:block top-[50vh] h-fit"
           text
           style="font-size: 60px; align-self: flex-start; position: sticky"
