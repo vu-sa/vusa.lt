@@ -68,7 +68,7 @@ return [
     |
     */
 
-    'timezone' => 'EET',
+    'timezone' => env('TIMEZONE', 'Europe/Vilnius'),
 
     /*
     |--------------------------------------------------------------------------
@@ -174,6 +174,7 @@ return [
         App\Providers\TelescopeServiceProvider::class,
         App\Providers\FortifyServiceProvider::class,
         App\Providers\JetstreamServiceProvider::class,
+        Laravel\Tinker\TinkerServiceProvider::class,
 
     ],
 

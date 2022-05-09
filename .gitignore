@@ -51,3 +51,5 @@ webpack.mix.js
 .gitignore
 public/js/app/*.js
 public/js/*.js
+database/vusa_www-n.sql
+.DS_Store
