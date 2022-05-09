@@ -1,0 +1,13 @@
+{
+	"compilerOptions": {
+		"types": [
+			"naive-ui/volar"
+		],
+		"paths": {
+            "@/*": ["resources/js/*"]
+        },
+		"allowJs": true,
+		// "checkJs": true
+	},
+	"exclude": ["node_modules", "public"]
+}

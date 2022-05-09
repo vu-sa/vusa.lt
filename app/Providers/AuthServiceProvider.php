@@ -2,8 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Team;
+use App\Policies\TeamPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -13,15 +14,7 @@ class AuthServiceProvider extends ServiceProvider
      * @var array
      */
     protected $policies = [
-        'App\Models\Agenda' => 'App\Policies\AgendaPolicy',
-        'App\Models\Banner' => 'App\Policies\BannerPolicy',
-        'App\Models\Contact' => 'App\Policies\ContactPolicy',
-        'App\Models\MainPage' => 'App\Policies\MainPagePolicy',
-        'App\Models\Navigation' => 'App\Policies\NavigationPolicy',
-        'App\Models\Padalinys' => 'App\Policies\PadaliniaiPolicy',
-        'App\Models\Page' => 'App\Policies\PagesPolicy',
-        'App\Models\Saziningai' => 'App\Policies\SaziningaiPolicy',
-        'App\Models\User' => 'App\Policies\UserPolicy',
+        Team::class => TeamPolicy::class,
     ];
 
     /**

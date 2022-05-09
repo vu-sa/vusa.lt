@@ -1,0 +1,41 @@
+<template>
+  <PublicLayout :title="article.title">
+    <NBackTop :right="100" />
+    <NewsArticle>
+      <template #tags>
+        <template v-for="tag in article.tags" v-bind:key="tag.id">
+          <NButton size="tiny" round>{{ tag.name }}</NButton>
+        </template>
+      </template>
+      <template #author>
+        <!-- <img class="w-8 mr-1" src="/logos/vusa.lin.hor.svg" /> -->
+        <span>{{ article.padalinys }}</span>
+      </template>
+      <template #time>
+        <!-- <NIcon class="mr-2" size="16"> <Clock20Regular /> </NIcon> -->
+        {{ article.publish_time }}</template
+      >
+      <template #title>{{ article.title }} </template>
+      <template #image
+        ><img
+          class="my-4 col-span-4 rounded-sm shadow-md hover:shadow-lg duration-200 h-auto w-[65ch] object-cover"
+          :src="article.image"
+      /></template>
+      <div
+        class="prose first-letter:text-7xl first-letter:font-bold first-letter:mr-3 first-letter:float-left col-span-4"
+        v-html="article.text"
+      ></div>
+    </NewsArticle>
+  </PublicLayout>
+</template>
+
+<script setup>
+import PublicLayout from "../../Layouts/PublicLayout.vue";
+import NewsArticle from "../../Components/Public/NewsArticle.vue";
+import { NButton, NIcon, NBackTop } from "naive-ui";
+import { Clock20Regular } from "@vicons/fluent";
+
+const props = defineProps({
+  article: Object,
+});
+</script>

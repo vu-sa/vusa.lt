@@ -2,73 +2,81 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-// use Illuminate\Database\Eloquent\Model;
-use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Fortify\TwoFactorAuthenticatable;
+use Laravel\Jetstream\HasProfilePhoto;
+use Laravel\Jetstream\HasTeams;
+use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Facades\Auth;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasApiTokens;
+    use HasFactory;
+    use HasProfilePhoto;
+    use HasTeams;
+    use Notifiable;
+    use TwoFactorAuthenticatable;
+
+    protected $table = 'users';
 
     /**
      * The attributes that are mass assignable.
      *
-     * @var array
+     * @var string[]
      */
     protected $fillable = [
-        'name',
-        'email',
-        'password',
+        'name', 'email', 'password', 'phone', 'role_id', 'profile_photo_path'
     ];
 
     /**
-     * The attributes that should be hidden for arrays.
+     * The attributes that should be hidden for serialization.
      *
      * @var array
      */
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_recovery_codes',
+        'two_factor_secret',
     ];
 
     /**
-     * The attributes that should be cast to native types.
+     * The attributes that should be cast.
      *
      * @var array
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
-    
+
     /**
-     * The table associated with the model.
+     * The accessors to append to the model's array form.
      *
-     * @var string
+     * @var array
      */
-    protected $table = 'users';
-    public $timestamps = false;
+    protected $appends = [
+        'profile_photo_url',
+    ];
 
-    // Functions
+    // Access banner with relationship
 
-    public function isAdmin() {
-        return Auth::user()->gid == 1;
+    public function banners()
+    {
+        return $this->hasMany(Banner::class, 'user_id', 'id');
     }
 
-    public function isCB() {
-        return Auth::user()->gid < 4;
+    public function calendar()
+    {
+        return $this->hasMany(Calendar::class, 'user_id', 'id');
     }
 
-    public function isSaziningai() {
-        return Auth::user()->gid == 19;
+    public function duties()
+    {
+        return $this->belongsToMany(Duty::class, 'duties_users', 'user_id', 'duty_id');
     }
 
-    public function isCommunication() {
-        return Auth::user()->gid != 3 && Auth::user()->gid != 19;
-    }
-
-    public function isPadaliniaiCommunication() {
-        return Auth::user()->gid > 3 && Auth::user()->gid != 19;
-    }
 }

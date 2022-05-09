@@ -44,7 +44,12 @@ public/css/admin.css
 public/css/app.css
 public/css/admin.css.LICENSE.txt
 public/css/app.css.LICENSE.txt
-public/css/app-new.css
-public/js/app-new.js
+database/vusa_www-n.sql
+.DS_Store
+.vscode/settings.json
+webpack.mix.js
+.gitignore
+public/js/app/*.js
+public/js/*.js
 database/vusa_www-n.sql
 .DS_Store

@@ -9,11 +9,13 @@ class Banner extends Model
 {
     use HasFactory;
     
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
-    protected $table = 'sidebar';
-    public $timestamps = false;
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function padalinys()
+    {
+        return $this->belongsTo(Padalinys::class, 'padalinys_id');
+    }
 }

@@ -14,7 +14,7 @@ class MenuSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('menu_new')->insert(
+        DB::table('navigation')->insert(
             [
                 [
                     'pid' => 0,

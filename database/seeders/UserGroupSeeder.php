@@ -17,7 +17,7 @@ class UserGroupSeeder extends Seeder
         DB::table('users_groups')->insert([
             ['descr' => 'Administratoriai', 'alias' => 'admin'],
             ['descr' => 'Komunikacija', 'alias' => 'komunikacija'],
-            ['descr' => 'Pildo visų darbotvarkes ir kalendorių', 'alias' => 'kalendorius'],
+            ['descr' => 'Kalendorius', 'alias' => 'kalendorius'],
             ['descr' => 'VU SA IF', 'alias' => 'vusaif'],
             ['descr' => 'VU SA Other', 'alias' => 'vusaother']
         ]);

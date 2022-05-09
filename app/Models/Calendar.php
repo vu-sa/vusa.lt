@@ -10,5 +10,21 @@ class Calendar extends Model
     use HasFactory;
     
     protected $table = 'calendar';
-    public $timestamps = false;
+
+    protected $guarded = ['id', 'created_at', 'updated_at'];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+
+    public function padalinys()
+    {
+        return $this->belongsTo(Padalinys::class, 'padalinys_id', 'id');
+    }
+
+    public function category()
+    {
+        return $this->hasOne(Category::class, 'category', 'alias');
+    }
 }
