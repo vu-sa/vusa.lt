@@ -35,6 +35,7 @@ class MainController extends Controller
 			$this->alias = $subdomain == 'www' ? '' : $subdomain;
 			$this->alias = $subdomain == 'vusa' ? '' : $this->alias;
 			$this->alias = $subdomain == 'naujas' ? '' : $this->alias;
+			$this->alias = $subdomain == 'static' ? '' : $this->alias;
 			$this->alias = Route::currentRouteName() == 'home' ? '' : $this->alias;
 			$this->alias = Route::currentRouteName() == 'padalinys.home' ? '' : $this->alias;
 		} else {

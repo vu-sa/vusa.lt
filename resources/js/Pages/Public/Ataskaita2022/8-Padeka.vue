@@ -15,7 +15,7 @@
         ></NButton>
       </div>
       <article
-        class="grid grid-cols-4 justify-items-center px-8 lg:px-32 gap-y-4 col-span-6 md:col-span-5"
+        class="grid grid-cols-4 justify-items-center pr-8 lg:pr-32 gap-y-4 col-span-6 md:col-span-5"
       >
         <slot></slot>
       </article>

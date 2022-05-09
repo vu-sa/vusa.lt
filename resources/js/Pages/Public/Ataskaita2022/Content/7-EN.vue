@@ -1501,6 +1501,30 @@
           <p class="mt-1 text-sm">Kendo klubas</p>
           <strong>Vytenis Almonaitis</strong>
         </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/VU Rašytojų klubas Nikolajus Elkana Eimutis.png"
+          />
+          <p class="mt-1 text-sm">VU Rašytojų klubas</p>
+          <strong>Nikolajus Elkana Eimutis</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/VU SIF Ieva Turskytė (iki 2022 m. sausio mėn.).jpg"
+          />
+          <p class="mt-1 text-sm">VU Studentų investicinis fondas</p>
+          <strong>Ieva Turskytė (iki 2022 sausio mėn.)</strong>
+        </div>
+        <div>
+          <img
+            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/VU SIF Gabrielė Stanionytė (nuo 2022 m. sausio mėn.).jpg"
+          />
+          <p class="mt-1 text-sm">VU Studentų investicinis fondas</p>
+          <strong>Gabrielė Stanionytė (nuo 2022 sausio mėn.)</strong>
+        </div>
         <div class="m-auto text-center">
           <!-- <img
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
@@ -1508,30 +1532,6 @@
           /> -->
           <p class="mt-1 text-sm">Sąžiningai</p>
           <strong>Ilijas Kulinič (iki 2022 sausio mėn.)</strong>
-        </div>
-        <div class="m-auto text-center">
-          <!-- <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
-            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
-          /> -->
-          <p class="mt-1 text-sm">Sąžiningai</p>
-          <strong>Nikolajus Elkana Eimutis</strong>
-        </div>
-        <div class="m-auto text-center">
-          <!-- <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
-            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
-          /> -->
-          <p class="mt-1 text-sm">VU Studentų investicinis fondas</p>
-          <strong>Ieva Turskytė (iki 2022 sausio mėn.)</strong>
-        </div>
-        <div class="m-auto text-center">
-          <!-- <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
-            src="/images/ataskaita2022/koordinatoriu-nuotraukos/mark/Lukrecija Giedraitytė_Markas_KF-2.jpg"
-          /> -->
-          <p class="mt-1 text-sm">VU Studentų investicinis fondas</p>
-          <strong>Gabrielė Stanionytė (nuo 2022 sausio mėn.)</strong>
         </div>
       </div>
     </div></NModal

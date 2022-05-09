@@ -127,6 +127,8 @@
         <NTree
           block-line
           :data="navigation"
+          :expanded-keys="expandedKeys"
+          :selected-keys="selectedKeys"
           @update:selected-keys="handleSelectNavigation"
         />
         <Link
@@ -261,7 +263,7 @@ import {
   NDivider,
   NCollapse,
   NCollapseItem,
-  useMessage,
+  // useMessage,
 } from "naive-ui";
 import { usePage, Link } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
@@ -280,13 +282,16 @@ const toggleMenu = () => {
   activeDrawer.value = !activeDrawer.value;
 };
 
+const expandedKeys = ref([]);
+const selectedKeys = ref([]);
+
 const searchResults = ref(false);
 
 const changeShowSearch = () => {
   showSearch.value = !showSearch.value;
 };
 
-const message = useMessage();
+// const message = useMessage();
 
 // after half a second input delay, use Inertiapost request to fetch search results
 const handleSearchInput = _.debounce((input) => {
@@ -420,10 +425,20 @@ const handleSelectNavigation = (id) => {
       // if url has https or http, use it
       if (item[1].url.includes("https://") || item[1].url.includes("http://")) {
         window.open(item[1].url, "_blank");
+      } else if (item[1].url === "#") {
+        // if url is #, add id to checked keys
+        // if id is in expandedKeys, remove it
+        if (expandedKeys.value.includes(item[1].id)) {
+          expandedKeys.value = expandedKeys.value.filter((key) => key !== item[1].id);
+        } else {
+          expandedKeys.value.push(item[1].id);
+        }
       } else {
         url = item[1].url;
+        // message.info("Navigating to " + url);
         Inertia.visit(route("main.page", { lang: locale.value, permalink: url }));
       }
+      selectedKeys.value = [];
     }
   }
 };
