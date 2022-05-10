@@ -62,9 +62,28 @@ const createColumns = () => {
           NButton,
           {
             size: "small",
-            // onClick: () => {
-            //   Inertia.visit(route("news.show", { id: row.id }));
-            // },
+            onClick: () => {
+              if (row.padalinys.shortname == "VU SA") {
+                window.open(
+                  route("main.news", {
+                    newsString: "naujiena",
+                    lang: row.lang,
+                    permalink: row.permalink,
+                  }),
+                  "_blank"
+                );
+              } else {
+                window.open(
+                  route("padalinys.news", {
+                    lang: row.lang,
+                    newsString: "naujiena",
+                    permalink: row.permalink,
+                    padalinys: row.padalinys.alias,
+                  }),
+                  "_blank"
+                );
+              }
+            },
           },
           "Peržiūrėti"
         );

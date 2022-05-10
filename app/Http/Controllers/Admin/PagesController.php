@@ -16,19 +16,14 @@ class PagesController extends Controller
      */
     public function index(Request $request)
     {
-        $pages = Page::orderByDesc('created_at')->paginate(20);
+        // $pages = Page::orderByDesc('created_at')->paginate(20);
+
+        $pages = Page::with(['padalinys' => function ($query) {
+            $query->select('id', 'shortname', 'alias');
+        }])->orderByDesc('created_at')->paginate(20);
 
         return Inertia::render('Admin/Content/Pages/Index', [
-            'pages' => $pages->map(function ($page) {
-                return [
-                    'id' => $page->id,
-                    'title' => $page->title,
-                    'padalinys' => $page->padalinys->shortname,
-                    'permalink' => $page->permalink,
-                    'created_at' => $page->created_at->format('Y-m-d H:i'),
-                    'updated_at' => $page->updated_at->format('Y-m-d H:i'),
-                ];
-            }),
+            'pages' => $pages
         ]);
     }
 
@@ -72,10 +67,20 @@ class PagesController extends Controller
      */
     public function edit(Page $page)
     {
-        $id = $page->id;
 
         return Inertia::render('Admin/Content/Pages/Edit', [
-            'page' => Page::where('id', $id)->first(),
+            'page' => [
+                'id' => $page->id,
+                'title' => $page->title,
+                'permalink' => $page->permalink,
+                'text' => $page->text,
+                'lang' => $page->lang,
+                'other_lang_id' => $page->other_lang_id,
+                'category' => $page->category,
+                'padalinys' => $page->padalinys,
+                'is_active' => $page->is_active,
+                'aside' => $page->aside,
+            ],
         ]);
     }
 
@@ -100,5 +105,23 @@ class PagesController extends Controller
     public function destroy(Page $page)
     {
         //
+    }
+
+    public function searchForPage(Request $request)
+
+    {
+        $data = $request->collect()['data'];
+
+        $pages = Page::where('title', 'like', "%{$data['title']}%")->where('lang', $data['lang'])->get();
+
+        $pages = $pages->map(function ($page) {
+            return [
+                'id' => $page->id,
+                'title' => $page->title,
+                'padalinys' => $page->padalinys,
+            ];
+        });
+
+        return back()->with('search_pages', $pages);
     }
 }

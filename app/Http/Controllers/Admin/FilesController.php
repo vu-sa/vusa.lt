@@ -95,4 +95,21 @@ class FilesController extends Controller
     {
         //
     }
+
+    public function searchForFiles(Request $request)
+    {
+        $data = $request->collect()['data'];
+        
+        $currentDirectory = $request->currentPath ?? 'public/files';
+
+        $allfiles = Storage::allfiles($currentDirectory);
+
+        // filter files by search term
+        $files = collect($allfiles)->filter(function ($file) use ($data) {
+            // search str_contains with case insensitive
+            return str_contains(strtolower($file), strtolower($data['search']));
+        });
+
+        return back()->with('search_other', $files);
+    }
 }

@@ -79,4 +79,17 @@ class User extends Authenticatable
         return $this->belongsToMany(Duty::class, 'duties_users', 'user_id', 'duty_id');
     }
 
+    public function role()
+    {
+        return $this->belongsTo(Role::class, 'role_id', 'id');
+    }
+
+    public function isAdmin() {
+        return $this->role->alias == 'admin';
+    }
+
+    // public function isManager() {
+    //     return $this->role->alias == 'manager';
+    // }
+
 }

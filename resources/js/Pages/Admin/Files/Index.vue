@@ -1,9 +1,7 @@
 <template>
   <AdminLayout title="Failų tvarkyklė">
     <div id="folders" class="main-card">
-      <h2 class="text-2xl font-bold">
-        Aplankai ({{ showedDirectories.length }})
-      </h2>
+      <h2 class="text-2xl font-bold">Aplankai ({{ showedDirectories.length }})</h2>
       <div class="grid grid-cols-3 gap-3 2xl:grid-cols-6 lg:grid-cols-4">
         <FolderButton
           v-if="currentPath !== 'public/files'"
@@ -24,22 +22,25 @@
         </FolderButton>
       </div>
     </div>
-    <div id="files" v-if="showedFiles.length > 0" class="main-card transition-all max-h-full">
+    <div
+      id="files"
+      v-if="showedFiles.length > 0"
+      class="main-card transition-all max-h-full"
+    >
       <h2 class="text-2xl font-bold">Failai ({{ showedFiles.length }})</h2>
-      <transition-group tag="div" name="list" class="grid grid-cols-3 gap-3 2xl:grid-cols-6 lg:grid-cols-4">
+      <transition-group
+        tag="div"
+        name="list"
+        class="grid grid-cols-3 gap-3 2xl:grid-cols-6 lg:grid-cols-4"
+      >
         <FileButton
           v-for="file in showedFiles"
           v-bind:key="file.id"
-          :href="route('files.show', file.id)"
+          @click="openFile(file.filePath)"
         >
           <PhotographIcon class="h-10 w-10 stroke-slate-600 mb-2" />
           <div
-            class="
-              text-sm text-center text-ellipsis
-              overflow-hidden
-              whitespace-pre-line
-              break-all
-            "
+            class="text-sm text-center text-ellipsis overflow-hidden whitespace-pre-line break-all"
           >
             {{ file.fileName }}
           </div>
@@ -55,11 +56,7 @@ import { NDataTable } from "naive-ui";
 import { reactive, computed, onMounted } from "vue";
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
-import {
-  PhotographIcon,
-  FolderIcon,
-  ArrowLeftIcon,
-} from "@heroicons/vue/outline";
+import { PhotographIcon, FolderIcon, ArrowLeftIcon } from "@heroicons/vue/outline";
 import FileButton from "@/Components/Admin/FileButton.vue";
 import FolderButton from "@/Components/Admin/FolderButton.vue";
 
@@ -85,7 +82,7 @@ const showedFiles = computed(() => {
   let ar = [];
   props.files.forEach((element, index) => {
     let fileName = _.slice(_.split(element, "/"), -1)[0];
-    ar.push({ id: index, fileName: fileName });
+    ar.push({ id: index, fileName: fileName, filePath: element });
   });
   return ar;
 });
@@ -111,10 +108,17 @@ const getAllFilesAndDirectories = async (selectedDirectory) => {
     data: { currentPath: getNextPath(selectedDirectory) },
   });
 };
+
+const openFile = (filePath) => {
+  console.log(filePath);
+  // truncate 'public'
+  let fileName = filePath.substring(filePath.indexOf("/") + 1);
+  // console.log(fileName);
+  window.open("/uploads/" + fileName, "_blank");
+};
 </script>
 
 <style>
-
 .list-enter-active,
 .list-leave-active {
   transition: all 1s ease;

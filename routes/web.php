@@ -85,6 +85,8 @@ Route::prefix('admin')->group(function () {
 
         // Resources
         Route::resource('pages', Admin\PagesController::class);
+        Route::post('pages/search', [Admin\PagesController::class, 'searchForPage'])->name('pages.search');
+
         Route::resource('news', Admin\NewsController::class);
         Route::resource('mainPage', Admin\MainPageController::class);
         Route::resource('banners', Admin\BannerController::class);
@@ -95,6 +97,7 @@ Route::prefix('admin')->group(function () {
         Route::resource('saziningaiExamFlows', Admin\SaziningaiExamFlowsController::class);
         Route::resource('saziningaiExamObservers', Admin\SaziningaiExamObserversController::class);
         Route::resource('files', Admin\FilesController::class);
+        Route::post('files/search', [Admin\FilesController::class, 'searchForFiles'])->name('files.search');
     });
 });
 

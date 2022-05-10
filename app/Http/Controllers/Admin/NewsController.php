@@ -17,7 +17,7 @@ class NewsController extends Controller
     public function index(Request $request)
     {
         $news = News::with(['padalinys' => function ($query) {
-            $query->select('id', 'shortname');
+            $query->select('id', 'shortname', 'alias');
         }])->orderByDesc('created_at')->paginate(10);
 
         return Inertia::render('Admin/Content/News/Index', [
