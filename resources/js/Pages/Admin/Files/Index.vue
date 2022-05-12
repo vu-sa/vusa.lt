@@ -45,6 +45,18 @@
             {{ file.fileName }}
           </div>
         </FileButton>
+        <div class="h-40">
+          <NUpload class="rounded-xl" @change="uploadFile">
+            <NUploadDragger>
+              <div style="margin-bottom: 12px">
+                <!-- <n-icon size="48" :depth="3">
+                  <archive-icon />
+                </n-icon> -->
+              </div>
+              <p style="font-size: 16px">Paspausk arba įtempk failą</p>
+            </NUploadDragger>
+          </NUpload>
+        </div>
       </transition-group>
     </div>
   </AdminLayout>
@@ -52,7 +64,7 @@
 
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-import { NDataTable } from "naive-ui";
+import { useMessage, NDataTable, NUpload, NUploadDragger } from "naive-ui";
 import { reactive, computed, onMounted } from "vue";
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
@@ -66,6 +78,8 @@ const props = defineProps({
   files: Object,
   currentPath: String,
 });
+
+const message = useMessage();
 
 // Compute showed directories
 const showedDirectories = computed(() => {
@@ -115,6 +129,21 @@ const openFile = (filePath) => {
   let fileName = filePath.substring(filePath.indexOf("/") + 1);
   // console.log(fileName);
   window.open("/uploads/" + fileName, "_blank");
+};
+
+const uploadFile = (e) => {
+  let file = e.file;
+  Inertia.post(
+    route("files.store"),
+    { file, path: props.currentPath },
+    {
+      preserveScroll: true,
+      preserveState: true,
+      onSuccess: () => {
+        message.success("Failas įkeltas");
+      },
+    }
+  );
 };
 </script>
 

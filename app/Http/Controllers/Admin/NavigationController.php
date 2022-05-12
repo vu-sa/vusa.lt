@@ -10,6 +10,12 @@ use App\Http\Controllers\Controller as Controller;
 class NavigationController extends Controller
 {
 
+    public function __construct()
+    {
+        $this->authorizeResource(Navigation::class, 'navigation');
+    }
+    
+
     public function getNavigation($id, $lang)
     {
         $childrenNav = Navigation::where('parent_id', $id)->where('lang', '=', $lang)->orderBy('order')->get();

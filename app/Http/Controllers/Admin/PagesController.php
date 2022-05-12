@@ -9,6 +9,12 @@ use App\Http\Controllers\Controller as Controller;
 
 class PagesController extends Controller
 {
+    
+    public function __construct()
+    {
+        $this->authorizeResource(Page::class, 'page');
+    }
+    
     /**
      * Display a listing of the resource.
      *
@@ -18,9 +24,19 @@ class PagesController extends Controller
     {
         // $pages = Page::orderByDesc('created_at')->paginate(20);
 
+        // check if admin
+
+        // if ($request->user()->isAdmin()) {
+
         $pages = Page::with(['padalinys' => function ($query) {
             $query->select('id', 'shortname', 'alias');
         }])->orderByDesc('created_at')->paginate(20);
+
+        // } else {
+
+        //     $pages = Page::with(['padalinys' => function ($query) {
+        //         $query->select('id', 'shortname', 'alias');
+        //     }])->where('padalinys_id', '=', $request->user()->padalinys->id)->orderByDesc('created_at')->paginate(20);
 
         return Inertia::render('Admin/Content/Pages/Index', [
             'pages' => $pages
@@ -67,6 +83,13 @@ class PagesController extends Controller
      */
     public function edit(Page $page)
     {
+        
+        // if ($page->other_lang_id) {
+        //     $other_page = $page->getOtherLanguage()->only('id', 'title');
+        // } else {
+        //     // return object with id and title null
+        //     // $other_page = (object) ['id' => null, 'title' => null];
+        // }
 
         return Inertia::render('Admin/Content/Pages/Edit', [
             'page' => [
@@ -75,7 +98,7 @@ class PagesController extends Controller
                 'permalink' => $page->permalink,
                 'text' => $page->text,
                 'lang' => $page->lang,
-                'other_lang_id' => $page->other_lang_id,
+                'other_lang_page' => $page->getOtherLanguage()?->id,
                 'category' => $page->category,
                 'padalinys' => $page->padalinys,
                 'is_active' => $page->is_active,
@@ -93,7 +116,25 @@ class PagesController extends Controller
      */
     public function update(Request $request, Page $page)
     {
-        //
+        // dd($request->only('title', 'text', 'lang', 'other_lang_id', 'category', 'is_active', 'aside'));
+        
+        $page->update($request->only('title', 'text', 'lang', 'other_lang_id'));
+
+        // update other lang id page
+        if ($request->has('other_lang_id')) {
+            $other_lang_page = Page::find($request->other_lang_id);
+            $other_lang_page->other_lang_id = $page->id;
+            $other_lang_page->save();
+        } else {
+            $other_lang_page = Page::find($page->other_lang_id);
+            $other_lang_page->other_lang_id = null;
+            $other_lang_page->save();
+
+            $page->other_lang_id = null;
+            $page->save();
+        }
+
+        return redirect()->back();
     }
 
     /**

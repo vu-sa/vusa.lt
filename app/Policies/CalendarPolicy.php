@@ -11,7 +11,7 @@ class CalendarPolicy
     use HandlesAuthorization;
 
     public function before(User $user, $ability)
-    {
+    {      
         if ($user->isAdmin()) {
             return true;
         }
@@ -48,7 +48,7 @@ class CalendarPolicy
      */
     public function create(User $user)
     {
-        //
+
     }
 
     /**

@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout :title="calendar.title">
+  <AdminLayout :title="contact.name">
     <div class="main-card">
       <h3 class="mb-4">Bendra informacija</h3>
       <ul v-if="errors" class="mb-4 text-red-700">
@@ -9,46 +9,53 @@
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-4 grid-flow-row-dense"
       >
         <div class="lg:col-span-2">
-          <label class="font-bold">Pavadinimas</label>
+          <label class="font-bold">Vardas ir pavardė</label>
           <n-input
-            v-model:value="calendar.title"
+            v-model:value="contact.name"
             type="text"
             placeholder="Įrašyti pavadinimą..."
           />
         </div>
 
         <div class="lg:col-span-2">
-          <label class="font-bold">Data ir laikas</label>
-          <n-date-picker
-            v-model:formatted-value="calendar.date"
-            placeholder="Įrašyti laiką..."
-            value-format="yyyy-MM-dd HH:mm:ss"
-            type="datetime"
-          />
-        </div>
-
-        <div class="lg:col-span-2">
-          <label class="font-bold">Kategorija</label>
-          <n-select
-            v-model:value="calendar.category"
-            :options="options"
-            placeholder="Įrašyti kategoriją..."
-          />
-        </div>
-
-        <div class="lg:col-span-2">
-          <label class="font-bold">Nuoroda</label>
+          <label class="font-bold">El. paštas</label>
           <n-input
-            v-model:value="calendar.url"
+            v-model:value="contact.email"
             type="text"
-            placeholder="Įrašyti nuorodą..."
+            placeholder="Įrašyti pavadinimą..."
           />
         </div>
 
-        <div class="py-4 lg:col-span-4">
-          <TipTap
-            v-model="calendar.description"
-            :searchFiles="$page.props.search.other"
+        <div class="lg:col-span-2">
+          <label class="font-bold">Tel. nr</label>
+          <n-input
+            v-model:value="contact.phone"
+            type="text"
+            placeholder="Įrašyti pavadinimą..."
+          />
+        </div>
+
+        <div class="lg:col-span-2">
+          <label class="font-bold">Rolė</label>
+          <n-input
+            v-model:value="contact.role.name"
+            type="text"
+            placeholder="Įrašyti pavadinimą..."
+          />
+        </div>
+
+        <div class="lg:col-span-4">
+          <label class="font-bold">Pareigybės</label>
+          <n-select
+            v-model:value="contact.duties"
+            multiple
+            filterable
+            placeholder="Pasirinkti pareigybes..."
+            :options="duties"
+            clearable
+            remote
+            :clear-filter-after-select="false"
+            @search="getDutyOptions"
           />
         </div>
 
@@ -84,7 +91,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from "vue";
+import { ref, reactive, onMounted } from "vue";
 import {
   NSpin,
   NInput,
@@ -98,38 +105,52 @@ import {
 import { Inertia } from "@inertiajs/inertia";
 import { TrashIcon } from "@heroicons/vue/outline";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-import TipTap from "@/Components/TipTap.vue";
+import { usePage } from "@inertiajs/inertia-vue3";
 
 const message = useMessage();
 
 const props = defineProps({
-  calendar: Object,
+  contact: Object,
   errors: Object,
 });
 
-const calendar = reactive(props.calendar);
+const contact = reactive(props.contact);
+const duties = ref([]);
+// const selectedDuties = ref(null);
 const showSpin = ref(false);
 
-const options = [
-  {
-    value: "red",
-    label: "Akademinė informacija",
-  },
-  {
-    value: "yellow",
-    label: "Socialinė informacija",
-  },
-  {
-    value: "grey",
-    label: "Kita informacija",
-  },
-];
+const getDutyOptions = _.debounce((input) => {
+  // get other lang
+  if (input.length > 2) {
+    message.loading("Ieškoma...");
+    Inertia.post(
+      route("duties.search"),
+      {
+        data: {
+          name: input,
+        },
+      },
+      {
+        preserveState: true,
+        preserveScroll: true,
+        onSuccess: () => {
+          duties.value = usePage().props.value.search.other.map((duty) => {
+            return {
+              value: duty.id,
+              label: `${duty.name} (${duty.institution})`,
+            };
+          });
+        },
+      }
+    );
+  }
+}, 500);
 
 ////////////////////////////////////////////////////////////////////////////////
 
 const updateModel = () => {
   showSpin.value = !showSpin.value;
-  Inertia.patch(route("calendar.update", calendar.id), calendar, {
+  Inertia.patch(route("users.update", contact.id), contact, {
     onSuccess: () => {
       showSpin.value = !showSpin.value;
       message.success("Sėkmingai atnaujinta!");
@@ -149,4 +170,16 @@ const destroyModel = () => {
     preserveScroll: true,
   });
 };
+
+onMounted(() => {
+  duties.value = props.contact.duties.map((duty) => {
+    return {
+      value: duty.id,
+      label: `${duty.name} (${duty.institution.alias})`,
+    };
+  });
+  contact.duties = props.contact.duties.map((duty) => {
+    return duty.id;
+  });
+});
 </script>

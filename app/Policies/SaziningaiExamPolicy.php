@@ -12,6 +12,8 @@ class SaziningaiExamPolicy
 
     public function before(User $user, $ability)
     {
+        // dd($user->isAdmin());
+        
         if ($user->isAdmin()) {
             return true;
         }
@@ -25,7 +27,7 @@ class SaziningaiExamPolicy
      */
     public function viewAny(User $user)
     {
-        //
+        return false;
     }
 
     /**
@@ -37,7 +39,7 @@ class SaziningaiExamPolicy
      */
     public function view(User $user, SaziningaiExam $saziningaiExam)
     {
-        //
+        return false;
     }
 
     /**
@@ -48,7 +50,7 @@ class SaziningaiExamPolicy
      */
     public function create(User $user)
     {
-        //
+        return false;
     }
 
     /**
@@ -60,7 +62,7 @@ class SaziningaiExamPolicy
      */
     public function update(User $user, SaziningaiExam $saziningaiExam)
     {
-        //
+        return true;
     }
 
     /**

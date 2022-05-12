@@ -29,10 +29,12 @@
                 <a :href="`tel:${contact.phone}`">{{ contact.phone }}</a>
               </div>
             </template>
-            <template v-if="contact.email" #email>
+            <template v-if="contact.duties[0].email" #email>
               <div class="flex flex-row items-center">
                 <NIcon class="mr-2"><Mail20Regular /> </NIcon
-                ><a :href="`mailto:${contact.email}`">{{ contact.email }}</a>
+                ><a :href="`mailto:${contact.duties[0].email}`">{{
+                  contact.duties[0].email
+                }}</a>
               </div>
             </template>
           </ContactWithPhoto>

@@ -9,6 +9,11 @@ use App\Http\Controllers\Controller as Controller;
 
 class CalendarController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(Calendar::class, 'calendar');
+    }
+    
     /**
      * Display a listing of the resource.
      *

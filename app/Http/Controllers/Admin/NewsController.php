@@ -9,6 +9,11 @@ use App\Http\Controllers\Controller as Controller;
 
 class NewsController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(News::class, 'news');
+    }
+    
     /**
      * Display a listing of the resource.
      *
@@ -65,7 +70,24 @@ class NewsController extends Controller
      */
     public function edit(News $news)
     {
-        //
+        return Inertia::render('Admin/Content/News/Edit', [
+            'news' => [
+                'id' => $news->id,
+                'title' => $news->title,
+                'permalink' => $news->permalink,
+                'text' => $news->text,
+                'lang' => $news->lang,
+                'other_lang_page' => $news->getOtherLanguage()?->id,
+                'category' => $news->category,
+                'padalinys' => $news->padalinys,
+                'draft' => $news->draft,
+                'short' => $news->short,
+                'image' => $news->image,
+                'tags' => $news->tags,
+                'image_author' => $news->image_author,
+                'publish_time' => $news->publish_time,
+            ],
+        ]);
     }
 
     /**

@@ -11,6 +11,8 @@ class Page extends Model
     use HasFactory;
     
     protected $table = 'pages';
+    
+    protected $guarded = [];
 
     protected $casts = [
         'updated_at' => 'datetime:Y-m-d H:i:s',

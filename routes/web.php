@@ -97,7 +97,14 @@ Route::prefix('admin')->group(function () {
         Route::resource('saziningaiExamFlows', Admin\SaziningaiExamFlowsController::class);
         Route::resource('saziningaiExamObservers', Admin\SaziningaiExamObserversController::class);
         Route::resource('files', Admin\FilesController::class);
+        Route::resource('duties', Admin\DutyController::class);
+        Route::resource('institutions', Admin\DutyInstitutionController::class);
+        Route::resource('roles', Admin\RolesController::class);
         Route::post('files/search', [Admin\FilesController::class, 'searchForFiles'])->name('files.search');
+        Route::post('images/search', [Admin\FilesController::class, 'searchForImages'])->name('images.search');
+        Route::post('duties/search', [Admin\DutyController::class, 'searchForDuties'])->name('duties.search');
+
+        Route::post('files/uploadImage', [Admin\FilesController::class, 'uploadImage'])->name('files.uploadImage');
     });
 });
 

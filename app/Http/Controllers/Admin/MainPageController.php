@@ -9,6 +9,12 @@ use App\Http\Controllers\Controller as Controller;
 
 class MainPageController extends Controller
 {
+    
+    public function __construct()
+    {
+        $this->authorizeResource(MainPage::class, 'mainPage');
+    }
+    
     /**
      * Display a listing of the resource.
      *

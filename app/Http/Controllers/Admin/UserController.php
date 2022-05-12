@@ -11,6 +11,12 @@ use App\Http\Controllers\Controller as Controller;
 
 class UserController extends Controller
 {
+    
+    public function __construct()
+    {
+        $this->authorizeResource(User::class, 'user');
+    }
+    
     /**
      * Display a listing of the resource.
      *
@@ -20,7 +26,7 @@ class UserController extends Controller
     {
         $users = User::paginate(20);
 
-        return Inertia::render('Admin/Contacts/Index', [
+        return Inertia::render('Admin/Contacts/Users/Index', [
             'users' => $users,
         ]);
     }
@@ -65,7 +71,23 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        //
+        return Inertia::render('Admin/Contacts/Users/Edit', [
+            'contact' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                    'duties' => $user->duties->map(function ($duty) {
+                        return [
+                            'id' => $duty->id,
+                            'name' => $duty->name,
+                            'institution' => $duty->institution,
+                        ];
+                    }),
+                    'role' => $user->role ?? "",
+                ]
+        ]);
+
     }
 
     /**
@@ -77,7 +99,19 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
-        //
+        $user->update($request->only('name', 'email', 'phone'));
+
+        // get all user duties and delete all of them
+        $user->duties()->detach();
+
+        // dd($user->duties);
+
+        // add new roles
+        foreach ($request->duties as $duty) {
+            $user->duties()->attach($duty);
+        }
+
+        return redirect()->back();
     }
 
     /**

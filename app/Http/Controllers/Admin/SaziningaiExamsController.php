@@ -10,6 +10,12 @@ use Inertia\Inertia;
 
 class SaziningaiExamsController extends Controller
 {
+    
+    public function __construct()
+    {
+        $this->authorizeResource(SaziningaiExam::class, 'saziningaiExam');
+    }
+    
     /**
      * Display a listing of the resource.
      *

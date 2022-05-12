@@ -120,24 +120,38 @@
   </div>
   <NModal v-model:show="showFileModal">
     <div class="bg-white p-4 rounded-sm w-1/2">
-      <n-tabs class="" type="line" animated>
-        <n-tab-pane name="link" tab="Add link...">
+      <NTabs class="" type="line" animated>
+        <NTabPane name="link" tab="Pridėti nuorodą">
           <NInput v-model:value="previousUrl"></NInput>
-        </n-tab-pane>
-        <n-tab-pane name="file" tab="Add file..."
-          ><NSelect
+          <NButton class="mt-2" type="success" @click="updateLink">Atnaujinti</NButton>
+        </NTabPane>
+        <NTabPane name="file" tab="Pridėti failą, kaip nuorodą">
+          <p class="my-2">Įrašyk failo pavadinimą ir pasirink, kad būtų pridėtas!</p>
+          <NSelect
             v-model:value="previousUrl"
             filterable
             placeholder="Ieškoti puslapio..."
-            :options="fileOptions"
             clearable
+            :options="files"
             remote
             @search="getFiles"
           />
-        </n-tab-pane>
-        <n-tab-pane name="jay chou" tab="Jay Chou"> Qilixiang </n-tab-pane>
-      </n-tabs>
-      <NButton @click="updateLink">Update</NButton>
+          <NButton class="mt-2" type="success" @click="updateLink">Atnaujinti</NButton>
+        </NTabPane>
+        <NTabPane name="image" tab="Pridėti paveikslėlį">
+          <p class="my-2">Įrašyk paveikslėlio pavadinimą ir pasirink!</p>
+          <NSelect
+            v-model:value="previousUrl"
+            filterable
+            placeholder="Ieškoti puslapio..."
+            clearable
+            :options="files"
+            remote
+            @search="getImages"
+          />
+          <NButton class="mt-2" type="success" @click="placeImage">Atnaujinti</NButton>
+        </NTabPane>
+      </NTabs>
     </div>
   </NModal>
 </template>
@@ -171,21 +185,22 @@ import {
   useMessage,
 } from "naive-ui";
 import { Inertia } from "@inertiajs/inertia";
-import { usePage } from "@inertiajs/inertia-vue3";
-import { onMounted, watch, ref, onBeforeUnmount } from "vue";
+// import { usePage } from "@inertiajs/inertia-vue3";
+import { ref, onBeforeUnmount } from "vue";
 
 const props = defineProps({
   modelValue: String,
-  files: Array,
+  searchFiles: Object,
 });
 
 const emit = defineEmits(["update:modelValue"]);
 
 const showFileModal = ref(false);
 const previousUrl = ref("");
-const files = [];
+const files = ref([]);
 const modelValue = props.modelValue;
 const message = useMessage();
+// const searchFiles = ref(props.searchFiles);
 
 const addImage = () => {
   const url = window.prompt("URL");
@@ -198,53 +213,65 @@ const addImage = () => {
 const getLinkAndModal = () => {
   previousUrl.value = editor.value.getAttributes("link").href;
   showFileModal.value = true;
-  // const url = window.prompt("URL", previousUrl);
-  // const url = null;
-
-  // cancelled
-  // if (url === null) {
-  //   return;
-  // }
-
-  // empty
-  // if (url === "") {
-  //   this.editor.chain().focus().extendMarkRange("link").unsetLink().run();
-
-  //   return;
-  // }
-
-  // update link
-  //
 };
 
-const getFiles = () =>
-  _.debounce((query) => {
-    if (query.length > 2) {
-      // this.message.loading("Ieškoma...");
-      console.log(query);
-      Inertia.post(
-        route("files.search"),
-        {
-          data: {
-            search: query,
-          },
+const getFiles = _.debounce((query) => {
+  if (query.length > 2) {
+    message.loading("Ieškoma...");
+    Inertia.post(
+      route("files.search"),
+      {
+        data: {
+          search: query,
         },
-        {
-          preserveState: true,
-          preserveScroll: true,
-          onSuccess: () => {
-            message.success("Ieškoma...");
-            files = usePage().data.props.search.other.map((file) => {
-              return {
-                label: file,
-                value: file,
-              };
-            });
-          },
-        }
-      );
-    }
-  }, 500);
+      },
+      {
+        preserveState: true,
+        preserveScroll: true,
+        onSuccess: () => {
+          message.success("Pabaigta.");
+          let searchFiles = Object.values(props.searchFiles);
+          console.log(searchFiles);
+          files.value = searchFiles.map((file) => ({
+            // get the file name from the url
+            label: `${file.split("/").pop()} (${file})`,
+            value: file,
+          }));
+        },
+      }
+    );
+  }
+}, 500);
+
+const getImages = _.debounce((query) => {
+  if (query.length > 2) {
+    message.loading("Ieškoma...");
+    Inertia.post(
+      route("images.search"),
+      {
+        data: {
+          search: query,
+        },
+      },
+      {
+        preserveState: true,
+        preserveScroll: true,
+        onSuccess: () => {
+          message.success("Pabaigta.");
+          let searchFiles = Object.values(props.searchFiles);
+          console.log(searchFiles);
+          files.value = searchFiles.map((file) => ({
+            // get the file name from the url
+            label: `${file.split("/").pop()} (${file})`,
+            // remove 'public' and add slash to the beginning
+            value: `/uploads${file.replace("public", "")}`,
+            // value: file,
+          }));
+        },
+      }
+    );
+  }
+}, 500);
 
 const updateLink = () => {
   const url = previousUrl.value;
@@ -252,27 +279,11 @@ const updateLink = () => {
   showFileModal.value = false;
 };
 
-// watch(modelValue, () => {
-//   const isSame = editor.value.getHTML() === value;
-
-//   if (isSame) {
-//     return;
-//   }
-
-//   editor.commands.setContent(value, false);
-// });
-
-// watch: {
-//   modelValue(value) {
-//     const isSame = this.editor.getHTML() === value;
-
-//     if (isSame) {
-//       return;
-//     }
-
-//     this.editor.commands.setContent(value, false);
-//   },
-// },
+const placeImage = () => {
+  const url = previousUrl.value;
+  editor.value.chain().focus().setImage({ src: url }).run();
+  showFileModal.value = false;
+};
 
 const editor = useEditor({
   editorProps: {
@@ -296,11 +307,11 @@ const editor = useEditor({
 });
 
 onBeforeUnmount(() => {
-  editor.destroy();
+  editor.value.destroy();
 });
 </script>
 
-<style scoped lang="scss">
+<style scoped>
 /* Basic editor styles */
 .ProseMirror {
   > * + * {
@@ -344,6 +355,10 @@ onBeforeUnmount(() => {
   img {
     max-width: 100%;
     height: auto;
+
+    &.ProseMirror-selectednode {
+      outline: 3px solid #68cef8;
+    }
   }
 
   blockquote {

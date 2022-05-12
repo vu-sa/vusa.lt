@@ -1,5 +1,8 @@
 <template>
   <AdminLayout title="Kontaktai">
+    <template #aside-header>
+      <AsideHeader></AsideHeader>
+    </template>
     <NDataTable
       class="main-card"
       remote
@@ -18,6 +21,7 @@ import AdminLayout from "@/Layouts/AdminLayout.vue";
 import { NDataTable } from "naive-ui";
 import { ref, reactive } from "vue";
 import { Inertia } from "@inertiajs/inertia";
+import AsideHeader from "../AsideHeader.vue";
 
 const props = defineProps({
   users: Object,
@@ -38,7 +42,7 @@ const createColumns = () => {
     {
       title: "Telefonas",
       key: "phone",
-    }
+    },
   ];
 };
 
@@ -57,7 +61,7 @@ const rowProps = (row) => {
   return {
     style: "cursor: pointer;",
     onClick: () => {
-      Inertia.visit(route("users.edit", { id: row.permalink }));
+      Inertia.visit(route("users.edit", { id: row.id }));
     },
   };
 };
@@ -65,12 +69,16 @@ const rowProps = (row) => {
 const handlePageChange = (page) => {
   loading.value = true;
   pagination.page = page;
-  Inertia.get(route('users.index'), { page: page }, {
-    preserveState: true,
-    preserveScroll: true, 
-    onSuccess: () => {
-      loading.value = false;
+  Inertia.get(
+    route("users.index"),
+    { page: page },
+    {
+      preserveState: true,
+      preserveScroll: true,
+      onSuccess: () => {
+        loading.value = false;
+      },
     }
-  });
+  );
 };
 </script>

@@ -1,17 +1,17 @@
 <template>
-  <AdminLayout :title="`${page.title} - ${page.padalinys.shortname}`">
+  <AdminLayout :title="`${news.title} - ${news.padalinys.shortname}`">
     <form>
       <div class="main-card">
         <h2 class="mb-4">Parinktys</h2>
         <div class="mb-4">
           <label class="font-bold">Pavadinimas</label>
-          <NInput v-model:value="page.title" placeholder="Įrašyti pavadinimą..." />
+          <NInput v-model:value="news.title" placeholder="Įrašyti pavadinimą..." />
         </div>
         <div class="mb-4">
           <label class="font-bold">Nuoroda</label>
           <NInput
             disabled
-            v-model:value="page.permalink"
+            v-model:value="news.permalink"
             placeholder="Įrašyti pavadinimą..."
           />
         </div>
@@ -19,7 +19,7 @@
         <div class="mb-4">
           <label class="font-bold">Kalba</label>
           <NSelect
-            v-model:value="page.lang"
+            v-model:value="news.lang"
             :options="languages"
             placeholder="Pasirinkti kalbą..."
           />
@@ -28,20 +28,48 @@
           <label class="font-bold">Kitos kalbos puslapis</label>
           <NSelect
             disabled
-            v-model:value="page.other_lang_page"
+            v-model:value="news.other_lang_news"
             filterable
             placeholder="Ieškoti puslapio..."
-            :options="otherLangPageOptions"
+            :options="otherLangnewsOptions"
             clearable
             remote
-            @search="getOtherLangPages"
+            @search="getOtherLangNews"
           />
+        </div>
+        <div class="mb-4">
+          <label class="font-bold">Naujienos paskelbimo laikas</label>
+          <NDatePicker
+            type="datetime"
+            v-model:value="news.publish_time"
+            value-format="yyyy-MM-dd HH:mm:ss"
+          />
+        </div>
+        <NCheckbox class="mb-4" v-model:checked="news.draft"> Ar juodraštis? </NCheckbox>
+      </div>
+      <div class="main-card">
+        <h2 class="font-bold text-xl mb-2 inline-block">Nuotrauka</h2>
+        <div class="mb-4">
+          <NUpload @change="uploadFile" @before-upload="beforeUpload">
+            <NButton>Įkelti paveiksliuką</NButton>
+          </NUpload>
+        </div>
+        <img :src="news.image" />
+        <div class="mb-4">
+          <label class="font-bold">Nuotraukos autorius</label>
+          <NInput v-model:value="news.image_author" />
+        </div>
+      </div>
+      <div class="main-card">
+        <h2 class="font-bold text-xl mb-2 inline-block">Įvadas</h2>
+        <div class="py-4">
+          <TipTap v-model="news.short" :searchFiles="$page.props.search.other" />
         </div>
       </div>
       <div class="main-card">
         <h2 class="font-bold text-xl mb-2 inline-block">Turinys</h2>
         <div class="py-4">
-          <TipTap v-model="page.text" :searchFiles="$page.props.search.other" />
+          <TipTap v-model="news.text" :searchFiles="$page.props.search.other" />
         </div>
         <div
           class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center"
@@ -79,29 +107,41 @@ import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AsideHeader from "../AsideHeader.vue";
 import TipTap from "@/Components/TipTap.vue";
 import { ref, reactive } from "vue";
-import { NInput, NSelect, useMessage, NSpin, NPopconfirm, NButton } from "naive-ui";
+import {
+  NInput,
+  NSelect,
+  useMessage,
+  NSpin,
+  NPopconfirm,
+  NButton,
+  NCheckbox,
+  NDatePicker,
+  NUpload,
+} from "naive-ui";
 import { TrashIcon } from "@heroicons/vue/outline";
 import { Inertia } from "@inertiajs/inertia";
 import { usePage } from "@inertiajs/inertia-vue3";
 // import { map } from "lodash";
 
 const props = defineProps({
-  page: Object,
+  news: Object,
+  // uploaded_image_path: String,
 });
+
+const message = useMessage();
 
 const showSpin = ref(false);
 
-const page = reactive(props.page);
-const otherLangPageOptions = ref([]);
-const message = useMessage();
+const news = reactive(props.news);
+const otherLangnewsOptions = ref([]);
 
-const getOtherLangPages = _.debounce((input) => {
+const getOtherLangNews = _.debounce((input) => {
   // get other lang
   if (input.length > 2) {
     message.loading("Ieškoma...");
-    const other_lang = page.lang === "lt" ? "en" : "lt";
+    const other_lang = news.lang === "lt" ? "en" : "lt";
     Inertia.post(
-      route("pages.search"),
+      route("news.search"),
       {
         data: {
           title: input,
@@ -112,10 +152,10 @@ const getOtherLangPages = _.debounce((input) => {
         preserveState: true,
         preserveScroll: true,
         onSuccess: () => {
-          otherLangPageOptions.value = usePage().props.value.search.pages.map((page) => {
+          otherLangnewsOptions.value = usePage().props.value.search.news.map((news) => {
             return {
-              value: page.id,
-              label: `${page.title} (${page.padalinys.shortname})`,
+              value: news.id,
+              label: `${news.title} (${news.padalinys.shortname})`,
             };
           });
         },
@@ -152,7 +192,7 @@ const categories = [
 
 const updateModel = () => {
   showSpin.value = !showSpin.value;
-  Inertia.patch(route("pages.update", page.id), page, {
+  Inertia.patch(route("news.update", news.id), news, {
     onSuccess: () => {
       showSpin.value = !showSpin.value;
       message.success("Sėkmingai atnaujinta!");
@@ -162,5 +202,31 @@ const updateModel = () => {
     },
     preserveScroll: true,
   });
+};
+
+const beforeUpload = async (data) => {
+  if (!["image/png", "image/jpeg"].includes(data.file.file?.type)) {
+    message.error("Prašome kelti tik JPG arba PNG formato failus.");
+    return false;
+  }
+  return true;
+};
+
+const uploadFile = (e) => {
+  let file = e.file;
+  Inertia.post(
+    route("files.uploadImage"),
+    { file, path: "news" },
+    {
+      preserveScroll: true,
+      preserveState: true,
+      onSuccess: () => {
+        message.success("Failas įkeltas");
+        console.log(usePage().props.value.misc, usePage().props.value);
+
+        news.image = usePage().props.value.misc;
+      },
+    }
+  );
 };
 </script>

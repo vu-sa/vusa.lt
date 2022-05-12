@@ -9,6 +9,12 @@ use App\Http\Controllers\Controller as Controller;
 
 class SaziningaiExamObserversController extends Controller
 {
+    
+    public function __construct()
+    {
+        $this->authorizeResource(SaziningaiExamObserver::class, 'saziningaiExamObserver');
+    }
+    
     /**
      * Display a listing of the resource.
      *

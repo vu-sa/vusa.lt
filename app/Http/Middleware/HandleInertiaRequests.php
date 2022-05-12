@@ -65,7 +65,8 @@ class HandleInertiaRequests extends Middleware
                 'news' => $request->session()->get('search_news') ?? [],
                 'pages' => $request->session()->get('search_pages') ?? [],
                 'other' => $request->session()->get('search_other') ?? [],
-            ]
+            ],
+            'misc' => $request->session()->get('misc') ?? "",
 
 
             // 'flash' => fn () => [
