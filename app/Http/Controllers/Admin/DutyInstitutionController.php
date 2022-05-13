@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\DutyInstitution;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller as Controller;
+use Inertia\Inertia;
 
 class DutyInstitutionController extends Controller
 {
@@ -15,7 +16,11 @@ class DutyInstitutionController extends Controller
      */
     public function index()
     {
-        //
+        $dutyInstitutions = DutyInstitution::all();
+
+        return Inertia::render('Admin/Contacts/Institutions/Index', [
+            'dutyInstitutions' => $dutyInstitutions,
+        ]);
     }
 
     /**
@@ -58,7 +63,9 @@ class DutyInstitutionController extends Controller
      */
     public function edit(DutyInstitution $dutyInstitution)
     {
-        //
+        return Inertia::render('Admin/Contacts/Institutions/Edit', [
+            'dutyInstitution' => $dutyInstitution,
+        ]);
     }
 
     /**

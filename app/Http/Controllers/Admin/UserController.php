@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Models\Duty;
 use App\Http\Controllers\Controller as Controller;
 
 class UserController extends Controller
@@ -129,7 +130,8 @@ class UserController extends Controller
     {
         $microsoftUser = Socialite::driver('microsoft')->user();
 
-        if ($microsoftUser->mail == 'it@vusa.lt') {
+        // check if microsoft user mail contains 'vusa.lt'
+        if (strpos($microsoftUser->email, 'vusa.lt') == true) {
 
         $user = User::where('email', $microsoftUser->mail)->first();
 
@@ -141,21 +143,36 @@ class UserController extends Controller
                 // 'image' => $microsoftUser->avatar,
             ]);
         } else {
-            $user = new User;
-            $user->role_id = 1;
-            $user->microsoft_token = $microsoftUser->token;
-            $user->name = $microsoftUser->displayName;
-            $user->email = $microsoftUser->mail;
-            $user->email_verified_at = now();
-            $user->save();
+            
+            $duty = Duty::where('email', $microsoftUser->mail)->first();
+
+            if ($duty) {
+                $user = $duty->users()->first();
+                $user->microsoft_token = $microsoftUser->token;
+                $user->update([
+                    'email_verified_at' => now(),
+                    // 'image' => $microsoftUser->avatar,
+                ]);
+            } else {
+
+                return redirect()->route('home');
+            
+            // $user = new User;
+            // $user->role_id = 2;
+            // $user->microsoft_token = $microsoftUser->token;
+            // $user->name = $microsoftUser->displayName;
+            // $user->email = $microsoftUser->mail;
+            // $user->email_verified_at = now();
+            // $user->save();
         }
 
         Auth::login($user);
 
         return redirect()->route('dashboard');
 
-        } else {
-            return redirect()->route('home');
+        // } else {
+        //     return redirect()->route('home');
         }
     }
+}
 }

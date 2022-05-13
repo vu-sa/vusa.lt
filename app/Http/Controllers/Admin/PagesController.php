@@ -26,22 +26,24 @@ class PagesController extends Controller
 
         // check if admin
 
-        // if ($request->user()->isAdmin()) {
+        if ($request->user()->isAdmin()) {
 
         $pages = Page::with(['padalinys' => function ($query) {
             $query->select('id', 'shortname', 'alias');
         }])->orderByDesc('created_at')->paginate(20);
 
-        // } else {
+        } else {
 
-        //     $pages = Page::with(['padalinys' => function ($query) {
-        //         $query->select('id', 'shortname', 'alias');
-        //     }])->where('padalinys_id', '=', $request->user()->padalinys->id)->orderByDesc('created_at')->paginate(20);
+            $pages = Page::with(['padalinys' => function ($query) {
+                $query->select('id', 'shortname', 'alias');
+            }])->where('padalinys_id', '=', $request->user()->padalinys()->id)->orderByDesc('created_at')->paginate(20);
 
-        return Inertia::render('Admin/Content/Pages/Index', [
-            'pages' => $pages
-        ]);
+        
     }
+    return Inertia::render('Admin/Content/Pages/Index', [
+        'pages' => $pages
+    ]);
+}
 
     /**
      * Show the form for creating a new resource.
@@ -125,7 +127,7 @@ class PagesController extends Controller
             $other_lang_page = Page::find($request->other_lang_id);
             $other_lang_page->other_lang_id = $page->id;
             $other_lang_page->save();
-        } else {
+        } else if (!is_null(Page::find($page->other_lang_id))) {
             $other_lang_page = Page::find($page->other_lang_id);
             $other_lang_page->other_lang_id = null;
             $other_lang_page->save();

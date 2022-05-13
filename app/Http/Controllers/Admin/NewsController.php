@@ -21,9 +21,18 @@ class NewsController extends Controller
      */
     public function index(Request $request)
     {
+        if ($request->user()->isAdmin()) {
+        
         $news = News::with(['padalinys' => function ($query) {
             $query->select('id', 'shortname', 'alias');
-        }])->orderByDesc('created_at')->paginate(10);
+        }])->orderByDesc('created_at')->paginate(20);
+
+    } else {
+
+        $news = News::with(['padalinys' => function ($query) {
+            $query->select('id', 'shortname', 'alias');
+        }])->where('padalinys_id', '=', $request->user()->padalinys()->id)->orderByDesc('created_at')->paginate(20);
+    }
 
         return Inertia::render('Admin/Content/News/Index', [
             'news' => $news
@@ -99,7 +108,9 @@ class NewsController extends Controller
      */
     public function update(Request $request, News $news)
     {
-        //
+        $news->update($request->only('title', 'text', 'lang', 'draft', 'short', 'image', 'image_author', 'publish_time'));
+
+        return back();
     }
 
     /**

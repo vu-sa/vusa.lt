@@ -41,11 +41,18 @@
           <label class="font-bold">Naujienos paskelbimo laikas</label>
           <NDatePicker
             type="datetime"
-            v-model:value="news.publish_time"
+            v-model:formatted-value="news.publish_time"
             value-format="yyyy-MM-dd HH:mm:ss"
           />
         </div>
-        <NCheckbox class="mb-4" v-model:checked="news.draft"> Ar juodraštis? </NCheckbox>
+        <NCheckbox
+          class="mb-4"
+          v-model:checked="news.draft"
+          :checked-value="1"
+          :unchecked-value="0"
+        >
+          Ar juodraštis?
+        </NCheckbox>
       </div>
       <div class="main-card">
         <h2 class="font-bold text-xl mb-2 inline-block">Nuotrauka</h2>

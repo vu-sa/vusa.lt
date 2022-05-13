@@ -1,11 +1,11 @@
 <template>
-  <AdminLayout title="Pradinis puslapis">
+  <AdminLayout title="Institucijos">
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
     <NDataTable
       class="main-card"
-      :data="props.mainPage"
+      :data="props.dutyInstitutions"
       :columns="columns"
       :row-props="rowProps"
       :scroll-x="1200"
@@ -23,26 +23,29 @@ import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
 
 const props = defineProps({
-  mainPage: Object,
+  dutyInstitutions: Object,
 });
 
 const createColumns = () => {
   return [
     {
       title: "Pavadinimas",
-      key: "text",
+      key: "name",
+      ellipsis: true,
+      width: 300,
     },
     {
-      title: "Nuoroda",
-      key: "link",
+      title: "Trumpas",
+      key: "short_name",
     },
+    {
+      title: "Alias",
+      key: "alias",
+    },
+
     {
       title: "Padalinys",
-      key: "padalinys.shortname",
-    },
-    {
-      title: "Kalba",
-      key: "lang",
+      key: "padalinys_id",
     },
   ];
 };
@@ -53,7 +56,7 @@ const rowProps = (row) => {
   return {
     style: "cursor: pointer;",
     onClick: () => {
-      Inertia.visit(route("mainPage.edit", { id: row.id }));
+      Inertia.visit(route("institutions.edit", { id: row.id }));
     },
   };
 };

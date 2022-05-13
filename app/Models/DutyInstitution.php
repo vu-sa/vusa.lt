@@ -20,4 +20,8 @@ class DutyInstitution extends Model
     {
         return $this->belongsTo(DutyInstitutionType::class, 'type_id');
     }
+
+    public function padalinys() {
+        return $this->belongsTo(Padalinys::class, 'padalinys_id');
+    }
 }

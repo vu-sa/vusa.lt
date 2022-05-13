@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller as Controller;
+use Inertia\Inertia;
 
 class RolesController extends Controller
 {
@@ -15,7 +16,11 @@ class RolesController extends Controller
      */
     public function index()
     {
-        //
+        $roles = Role::all();
+
+        return Inertia::render('Admin/Contacts/Roles/Index', [
+            'roles' => $roles,
+        ]);
     }
 
     /**
@@ -58,7 +63,9 @@ class RolesController extends Controller
      */
     public function edit(Role $role)
     {
-        //
+        return Inertia::render('Admin/Contacts/Roles/Edit', [
+            'role' => $role,
+        ]);
     }
 
     /**
@@ -70,7 +77,9 @@ class RolesController extends Controller
      */
     public function update(Request $request, Role $role)
     {
-        //
+        $role->update($request->only('name', 'description'));
+
+        return back();
     }
 
     /**

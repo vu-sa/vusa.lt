@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout :title="contact.name">
+  <AdminLayout :title="dutyInstitution.name">
     <div class="main-card">
       <h3 class="mb-4">Bendra informacija</h3>
       <ul v-if="errors" class="mb-4 text-red-700">
@@ -11,7 +11,7 @@
         <div class="lg:col-span-2">
           <label class="font-bold">Vardas ir pavardė</label>
           <n-input
-            v-model:value="contact.name"
+            v-model:value="dutyInstitution.name"
             type="text"
             placeholder="Įrašyti pavadinimą..."
           />
@@ -20,7 +20,7 @@
         <div class="lg:col-span-2">
           <label class="font-bold">El. paštas</label>
           <n-input
-            v-model:value="contact.email"
+            v-model:value="dutyInstitution.email"
             type="text"
             placeholder="Įrašyti pavadinimą..."
           />
@@ -29,7 +29,7 @@
         <div class="lg:col-span-2">
           <label class="font-bold">Tel. nr</label>
           <n-input
-            v-model:value="contact.phone"
+            v-model:value="dutyInstitution.phone"
             type="text"
             placeholder="Įrašyti pavadinimą..."
           />
@@ -38,8 +38,7 @@
         <div class="lg:col-span-2">
           <label class="font-bold">Rolė</label>
           <n-input
-            disabled
-            v-model:value="contact.role.name"
+            v-model:value="dutyInstitution.role.name"
             type="text"
             placeholder="Įrašyti pavadinimą..."
           />
@@ -48,7 +47,7 @@
         <div class="lg:col-span-4">
           <label class="font-bold">Pareigybės</label>
           <n-select
-            v-model:value="contact.duties"
+            v-model:value="dutyInstitution.duties"
             multiple
             filterable
             placeholder="Pasirinkti pareigybes..."
@@ -111,47 +110,47 @@ import { usePage } from "@inertiajs/inertia-vue3";
 const message = useMessage();
 
 const props = defineProps({
-  contact: Object,
+  dutyInstitution: Object,
   errors: Object,
 });
 
-const contact = reactive(props.contact);
-const duties = ref([]);
+const dutyInstitution = reactive(props.dutyInstitution);
+// const duties = ref([]);
 // const selectedDuties = ref(null);
 const showSpin = ref(false);
 
-const getDutyOptions = _.debounce((input) => {
-  // get other lang
-  if (input.length > 2) {
-    message.loading("Ieškoma...");
-    Inertia.post(
-      route("duties.search"),
-      {
-        data: {
-          name: input,
-        },
-      },
-      {
-        preserveState: true,
-        preserveScroll: true,
-        onSuccess: () => {
-          duties.value = usePage().props.value.search.other.map((duty) => {
-            return {
-              value: duty.id,
-              label: `${duty.name} (${duty.institution})`,
-            };
-          });
-        },
-      }
-    );
-  }
-}, 500);
+// const getDutyOptions = _.debounce((input) => {
+//   // get other lang
+//   if (input.length > 2) {
+//     message.loading("Ieškoma...");
+//     Inertia.post(
+//       route("duties.search"),
+//       {
+//         data: {
+//           name: input,
+//         },
+//       },
+//       {
+//         preserveState: true,
+//         preserveScroll: true,
+//         onSuccess: () => {
+//           duties.value = usePage().props.value.search.other.map((duty) => {
+//             return {
+//               value: duty.id,
+//               label: `${duty.name} (${duty.institution})`,
+//             };
+//           });
+//         },
+//       }
+//     );
+//   }
+// }, 500);
 
 ////////////////////////////////////////////////////////////////////////////////
 
 const updateModel = () => {
   showSpin.value = !showSpin.value;
-  Inertia.patch(route("users.update", contact.id), contact, {
+  Inertia.patch(route("users.update", dutyInstitution.id), dutyInstitution, {
     onSuccess: () => {
       showSpin.value = !showSpin.value;
       message.success("Sėkmingai atnaujinta!");
@@ -164,23 +163,23 @@ const updateModel = () => {
 };
 
 // const destroyModel = () => {
-//   Inertia.delete(route("users.destroy", calendar.id), {
+//   Inertia.delete(route("calendar.destroy", calendar.id), {
 //     onSuccess: () => {
-//       message.success("Vartotojo įrašas ištrintas!");
+//       message.success("Kalendoriaus įrašas ištrintas!");
 //     },
 //     preserveScroll: true,
 //   });
 // };
 
-onMounted(() => {
-  duties.value = props.contact.duties.map((duty) => {
-    return {
-      value: duty.id,
-      label: `${duty.name} (${duty.institution.alias})`,
-    };
-  });
-  contact.duties = props.contact.duties.map((duty) => {
-    return duty.id;
-  });
-});
+// onMounted(() => {
+//   duties.value = props.dutyInstitution.duties.map((duty) => {
+//     return {
+//       value: duty.id,
+//       label: `${duty.name} (${duty.institution.alias})`,
+//     };
+//   });
+//   dutyInstitution.duties = props.dutyInstitution.duties.map((duty) => {
+//     return duty.id;
+//   });
+// });
 </script>

@@ -88,8 +88,17 @@ class User extends Authenticatable
         return $this->role->alias == 'admin';
     }
 
+    // if user role alias contains admin, return true
+    public function isAdminOrSuperAdmin() {
+        return $this->role->alias == 'admin' || $this->role->alias == 'padaliniai-admin';
+    }
+
     // public function isManager() {
     //     return $this->role->alias == 'manager';
     // }
+
+    public function padalinys() {
+        return $this->duties()->first()->institution->padalinys;
+    }
 
 }

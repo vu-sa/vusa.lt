@@ -56,6 +56,24 @@
         </p>
       </div>
     </div>
+    <div
+      class="lg:px-16 lg:mx-16 mx-8 mb-8"
+      v-if="$page.props.locale === 'lt' && $page.props.alias"
+    >
+      <h2 class="mb-4">Nuorodos:</h2>
+      <div class="flex flex-wrap gap-2">
+        <NButton
+          secondary
+          round
+          v-for="item in props.main_page"
+          v-bind:key="item.id"
+          @click="goToLink(item.link)"
+        >
+          {{ item.text }}
+        </NButton>
+      </div>
+    </div>
+
     <NewsElement v-if="$page.props.locale === 'lt'">
       <HomeCard
         :hasMiniContent="false"
@@ -135,13 +153,14 @@ import {
   Clock20Regular,
   ArrowRight48Regular,
 } from "@vicons/fluent";
-import { Link } from "@inertiajs/inertia-vue3";
+import { Link, usePage } from "@inertiajs/inertia-vue3";
 import { onBeforeUnmount, ref } from "vue";
 import { Inertia } from "@inertiajs/inertia";
 
 const props = defineProps({
   news: Object,
   banners: Object,
+  main_page: Object,
 });
 
 const calculateBannerCount = (width) => {
@@ -165,6 +184,27 @@ window.addEventListener("resize", () => {
 onBeforeUnmount(() => {
   window.removeEventListener("resize", () => {});
 });
+
+const goToLink = (link) => {
+  // check if link is external
+  console.log(link);
+  if (link.includes("http")) {
+    window.open(link, "_blank");
+  } else {
+    // if has /lt/, truncate it
+    if (link.includes("/lt/")) {
+      link = link.replace("/lt/", "");
+    }
+
+    Inertia.visit(
+      route("padalinys.page", {
+        lang: "lt",
+        permalink: link,
+        padalinys: usePage().props.value.alias,
+      })
+    );
+  }
+};
 
 // console.log(this.window.width);
 

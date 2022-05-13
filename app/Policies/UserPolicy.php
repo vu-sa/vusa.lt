@@ -97,4 +97,9 @@ class UserPolicy
     {
         return false;
     }
+
+    public function storeFromMicrosoft(User $user)
+    {
+        return true;
+    }
 }

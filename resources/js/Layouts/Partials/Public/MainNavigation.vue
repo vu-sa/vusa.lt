@@ -408,7 +408,7 @@ const handleSelectPadalinys = (key) => {
       padalinys: i,
     },
     preserveScroll: true,
-    only: ["alias", "news", "banners"],
+    only: ["alias", "news", "banners", "main_page"],
     onSuccess: () => {
       padalinys.value = getPadalinys(i);
       activeDrawer.value = false;

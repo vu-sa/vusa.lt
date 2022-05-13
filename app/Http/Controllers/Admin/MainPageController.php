@@ -25,7 +25,16 @@ class MainPageController extends Controller
         $mainPage = MainPage::all();
 
         return Inertia::render('Admin/Content/MainPage/Index', [
-            'mainPage' => $mainPage,
+            'mainPage' => $mainPage->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'text' => $item->text,
+                    'link' => $item->link,
+                    'padalinys' => $item->padalinys,
+                    'lang' => $item->lang,
+                    'created_at' => $item->created_at,
+                ];
+            }),
         ]);
     }
 

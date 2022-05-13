@@ -45,9 +45,8 @@
       </div>
 
       <div class="flex items-center justify-end mt-4">
-        
         <MicrosoftButton></MicrosoftButton>
-        
+
         <Link
           v-if="canResetPassword"
           :href="route('password.request')"
@@ -78,8 +77,9 @@ import JetCheckbox from "@/Jetstream/Checkbox.vue";
 import JetLabel from "@/Jetstream/Label.vue";
 import JetValidationErrors from "@/Jetstream/ValidationErrors.vue";
 import { Head, Link, useForm } from "@inertiajs/inertia-vue3";
-import { reactive } from 'vue';
-import MicrosoftButton from '@/Components/MicrosoftButton.vue';1
+import { reactive } from "vue";
+import MicrosoftButton from "@/Components/MicrosoftButton.vue";
+1;
 
 const props = defineProps({
   canResetPassword: Boolean,
@@ -88,8 +88,8 @@ const props = defineProps({
 
 const form = reactive(
   useForm({
-    email: "test@test.com",
-    password: "password",
+    email: "",
+    password: "",
     remember: false,
   })
 );

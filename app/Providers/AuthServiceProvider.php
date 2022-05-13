@@ -61,7 +61,7 @@ class AuthServiceProvider extends ServiceProvider
         $this->registerPolicies();
 
         Gate::define('manage-files', function (User $user) {
-            return $user->isAdmin();
+            return $user->isAdminOrSuperAdmin();
         });
     }
 }

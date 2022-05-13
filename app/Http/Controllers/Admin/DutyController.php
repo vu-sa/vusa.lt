@@ -6,6 +6,7 @@ use App\Models\Duty;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller as Controller;
 use Inertia\Inertia;
+use stdClass;
 
 class DutyController extends Controller
 {
@@ -63,7 +64,30 @@ class DutyController extends Controller
      */
     public function edit(Duty $duty)
     {
-        //
+        $attributes = new stdClass;
+        $attributes->en = new stdClass;
+        $attributes->en->name = '';
+        $attributes->en->description = '';
+        $attributes = json_encode($attributes);
+
+        if (!empty($duty->attributes)) {
+            $attributes = $duty->attributes;
+        }
+
+        // dd($attributes);
+
+        return Inertia::render('Admin/Contacts/Duties/Edit', [
+            'duty' => [
+                'id' => $duty->id,
+                'name' => $duty->name,
+                'description' => $duty->description,
+                'type' => $duty->type,
+                'institution' => $duty->institution,
+                'email' => $duty->email,
+                'attributes' => json_decode($attributes),
+                'places_to_occupy' => $duty->places_to_occupy,
+            ]
+        ]);
     }
 
     /**
@@ -75,7 +99,9 @@ class DutyController extends Controller
      */
     public function update(Request $request, Duty $duty)
     {
-        //
+        $duty->update($request->only('name', 'description', 'email', 'attributes'));
+
+        return back();
     }
 
     /**

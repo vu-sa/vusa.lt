@@ -6,6 +6,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
 use App\Models\Calendar;
 use App\Models\DutyInstitution;
+use App\Models\MainPage;
 use App\Models\Navigation;
 use App\Models\News;
 use App\Models\Padalinys;
@@ -99,6 +100,7 @@ class MainController extends Controller
 					"important" => $news->important,
 				];
 			}),
+			'main_page' => MainPage::where('padalinys_id', '=', $padalinys->id)->get(),
 		]);
 	}
 

@@ -25,7 +25,7 @@ class NewsPolicy
      */
     public function viewAny(User $user)
     {
-        //
+        return $user->isAdminOrSuperAdmin();
     }
 
     /**
@@ -60,7 +60,7 @@ class NewsPolicy
      */
     public function update(User $user, News $news)
     {
-        //
+        return $user->padalinys()->id == $news->padalinys->id;
     }
 
     /**
