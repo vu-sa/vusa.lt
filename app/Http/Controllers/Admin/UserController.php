@@ -166,13 +166,13 @@ class UserController extends Controller
             // $user->save();
         }
 
-        Auth::login($user);
-
-        return redirect()->route('dashboard');
-
         // } else {
         //     return redirect()->route('home');
         }
+
+        Auth::login($user);
+
+        return redirect()->route('dashboard');
     }
 }
 }
