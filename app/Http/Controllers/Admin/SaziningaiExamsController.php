@@ -74,7 +74,7 @@ class SaziningaiExamsController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {
+    {        
         $request->validate([
             'email' => ['required', 'email'],
             'subject_name' => ['required'],

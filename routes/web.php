@@ -93,6 +93,7 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => '(lt|en)']], function
             Route::get('naujienos', [Public\MainController::class, 'newsArchive'])->name('newsArchive');
             Route::get('naujiena/archyvas', [Public\MainController::class, 'newsArchive']);
             Route::get('saziningai-registracija', [Public\MainController::class, 'saziningaiExamRegistration'])->name('saziningaiExamRegistration');
+            Route::get('saziningai-uzregistruoti-egzaminai', [Public\MainController::class, 'saziningaiExams'])->name('saziningaiExams.registered');
             Route::get('ataskaita-2022', [Public\MainController::class, 'ataskaita2022']);
             Route::get('ataskaita-2022/{permalink}', [Public\MainController::class, 'ataskaita2022'])->where('permalink', '.*')->name('ataskaita2022');
             Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('news_string', '(naujiena|news)')->name('news');
@@ -109,6 +110,10 @@ Route::get('/', [Public\MainController::class, 'home'])->name('home');
 Route::get('naujienos', [Public\MainController::class, 'newsArchive'])->name('newsArchive');
 // redirect /naujiena/archyvas to newsArchive
 Route::get('naujiena/archyvas', [Public\MainController::class, 'newsArchive']);
+Route::get('saziningai-registracija', [Public\MainController::class, 'saziningaiExamRegistration'])->name('saziningaiExamRegistration');
+Route::post('saziningai-registracija', [Public\MainController::class, 'storeSaziningaiExamRegistration'])->name('saziningaiExamRegistration.store');
+Route::get('saziningai-uzregistruoti-egzaminai', [Public\MainController::class, 'saziningaiExams'])->name('saziningaiExams.registered');
+Route::post('saziningai-uzregistruoti-egzaminai', [Public\MainController::class, 'storeSaziningaiExamObserver'])->name('saziningaiExamObserver.store');
 Route::get('ataskaita-2022', [Public\MainController::class, 'ataskaita2022']);
 Route::get('ataskaita-2022/{permalink}', [Public\MainController::class, 'ataskaita2022'])->where('permalink', '.*')->name('ataskaita2022');
 Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('newsString', '(naujiena|news)')->name('news');

@@ -17,6 +17,8 @@ class SaziningaiExamObserver extends Model
      */
     protected $table = 'saziningai_observers';
 
+    protected $guarded = [];
+
     public function flow()
     {
         return $this->belongsTo(SaziningaiExamFlow::class, 'flow_id');

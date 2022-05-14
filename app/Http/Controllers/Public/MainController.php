@@ -19,6 +19,9 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\App;
 use App\Models\PageView;
 use Illuminate\Support\Facades\Schema;
+use App\Models\SaziningaiExam;
+use App\Models\SaziningaiExamFlow;
+use App\Models\SaziningaiExamObserver;
 
 class MainController extends Controller
 {
@@ -331,11 +334,90 @@ class MainController extends Controller
 		
 		// return all padalinys but only shortname VU and id
 		$padaliniai = Padalinys::select('id', 'shortname_vu')->where('shortname', '!=', 'VU')->orderBy('shortname')->get();
-
 		
 		return Inertia::render('Public/SaziningaiExamRegistration', [
 			'padaliniaiOptions' => $padaliniai,
 		]);
+	}
+
+	public function storeSaziningaiExamRegistration() {
+		// dd(request()->all());
+
+		$request = request();
+        
+        $saziningaiExam = SaziningaiExam::create([
+            'uuid' => bin2hex(random_bytes(15)),
+            'subject_name' => $request->subject_name,
+			'name' => $request->name,
+            'padalinys_id' => $request->unit,
+			'place' => $request->place,
+            'email' => $request->email,
+            'duration' => $request->duration,
+            'exam_holders' => $request->holders,
+            'exam_type' => $request->type,
+            'phone' => $request->phone,
+            'students_need' => $request->students_need,
+        ]);
+
+		// dd($saziningaiExam);
+
+		// Store new flow
+		foreach ($request->flows as $flow) {
+			// dd($flow['time'], date('Y-m-d H:i:s', strtotime($flow['time'])));
+			$saziningaiExamFlow = new SaziningaiExamFlow();
+			$saziningaiExamFlow->exam_uuid = $saziningaiExam->uuid;
+			$saziningaiExamFlow->start_time = date('Y-m-d H:i:s', strtotime($flow['time']));
+			$saziningaiExamFlow->save();
+			}
+
+		// dd($saziningaiExam, $saziningaiExamFlow);
+
+        return redirect()->route('home');
+	}
+
+	public function saziningaiExams() {
+
+		// return all padalinys but only shortname VU and id
+		$padaliniai = Padalinys::select('id', 'shortname_vu')->where('shortname', '!=', 'VU')->orderBy('shortname')->get();
+
+		// return all exams that have their flows +1 day
+
+		// $saziningaiExams = SaziningaiExam::with('flows')->whereRelation('flows', 'start_time', '>=', now()->subDay())->orderBy('created_at', 'desc')->get();
+		$saziningaiExamFlows = SaziningaiExamFlow::where('start_time', '>=', now()->subDay())->orderBy('start_time', 'asc')->get();
+		
+		return Inertia::render('Public/SaziningaiExams', [
+			'padaliniaiOptions' => $padaliniai,
+			'saziningaiExamFlows' => $saziningaiExamFlows->map(function ($saziningaiExamFlow) {
+				return [
+					'key' => $saziningaiExamFlow->id,
+					'exam_uuid' => $saziningaiExamFlow->exam_uuid,
+					'start_time' => $saziningaiExamFlow->start_time,
+					// get observers count 
+					'observers_registered' => $saziningaiExamFlow->observers->count(),
+					'exam' => $saziningaiExamFlow->exam->only(['subject_name', 'place', 'duration', 'exam_holders', 'exam_type', 'students_need']),
+					'unit' => $saziningaiExamFlow->exam->padalinys->shortname_vu,					
+				];
+			}),
+		]);
+
+	}
+
+	public function storeSaziningaiExamObserver() {
+		$request = request();
+
+		$saziningaiExamFlow = SaziningaiExamFlow::find($request->flow);
+
+		$saziningaiExamObserver = SaziningaiExamObserver::create([
+			'exam_uuid' => $saziningaiExamFlow->exam_uuid,
+			'flow' => $request->flow,
+			'name' => $request->name,
+			'email' => $request->email,
+			'phone' => $request->phone,
+			'padalinys_id' => $request->padalinys_id,
+			'has_arrived' => 'neatvyko'
+		]);
+
+		return redirect()->back();
 	}
 
 	public function ataskaita2022() {
