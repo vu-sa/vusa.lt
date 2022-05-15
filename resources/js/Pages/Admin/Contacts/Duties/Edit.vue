@@ -51,7 +51,7 @@
         <div class="lg:col-span-4">
           <label class="font-bold">Institucija</label>
           <n-select
-            v-model:value="duty.institutions"
+            v-model:value="duty.institution.id"
             filterable
             placeholder="Pasirinkti instituciją..."
             :options="institutions"
@@ -90,6 +90,17 @@
         </div>
       </form>
     </div>
+    <template #aside-navigation-options>
+      <div v-if="duty.users">
+        <strong>Šiuo metu šias pareigas užima:</strong>
+        <ul class="list-inside">
+          <li v-for="user in duty.users">
+            <Link :href="route('users.edit', { id: user.id })">{{ user.name }}</Link>
+          </li>
+        </ul>
+      </div>
+      <p v-else>Šių pareigų <strong>niekas</strong> neužima.</p>
+    </template>
   </AdminLayout>
 </template>
 
@@ -108,7 +119,7 @@ import {
 import { Inertia } from "@inertiajs/inertia";
 import { TrashIcon } from "@heroicons/vue/outline";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-import { usePage } from "@inertiajs/inertia-vue3";
+import { usePage, Link } from "@inertiajs/inertia-vue3";
 import TipTap from "@/Components/TipTap.vue";
 
 const message = useMessage();
@@ -119,7 +130,7 @@ const props = defineProps({
 });
 
 // const duty = reactive(props.duty);
-const institutions = reactive([]);
+const institutions = ref([]);
 const duty = reactive(props.duty);
 // const attributes = ref(duty.attributes);
 const showSpin = ref(false);
@@ -129,7 +140,7 @@ const getInstitutionOptions = _.debounce((input) => {
   if (input.length > 2) {
     message.loading("Ieškoma...");
     Inertia.post(
-      route("institutions.search"),
+      route("dutyInstitutions.search"),
       {
         data: {
           name: input,
@@ -185,17 +196,16 @@ const updateModel = () => {
 //   });
 // };
 
-// onMounted(() => {
-//   duties.value = props.duty.institutions.map((institution) => {
-//     return {
-//       value: institution.id,
-//       label: `${institution.name}`,
-//     };
-//   });
-//   duty.institution = props.duty.institution.map((duty) => {
-//     return institution.id;
-//   });
-// });
+onMounted(() => {
+  institutions.value = [
+    {
+      value: duty.institution.id,
+      label: `${duty.institution.name} (${duty.institution.alias})`,
+    },
+  ];
+
+  duty.institution.id = props.duty.institution.id;
+});
 
 // JSON parse props.duty.attributes
 

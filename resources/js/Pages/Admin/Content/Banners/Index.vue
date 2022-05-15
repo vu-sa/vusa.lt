@@ -17,7 +17,7 @@
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AsideHeader from "../AsideHeader.vue";
 import { NDataTable } from "naive-ui";
-import { ref } from "vue";
+import { ref, h } from "vue";
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
 
@@ -30,10 +30,19 @@ const createColumns = () => {
     {
       title: "Pavadinimas",
       key: "title",
+      render(row) {
+        return h(
+          "span",
+          {
+            class: row.is_active ? "text-green-700 font-bold" : "text-red-700",
+          },
+          row.title
+        );
+      },
     },
     {
-      title: "Nuoroda",
-      key: "permalink",
+      title: "Padalinys",
+      key: "padalinys.shortname",
     },
   ];
 };
@@ -44,7 +53,7 @@ const rowProps = (row) => {
   return {
     style: "cursor: pointer;",
     onClick: () => {
-      Inertia.visit(route("banners.edit", { id: row.permalink }));
+      Inertia.visit(route("banners.edit", { id: row.id }));
     },
   };
 };

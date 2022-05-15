@@ -8,7 +8,6 @@
       :data="props.mainPage"
       :columns="columns"
       :row-props="rowProps"
-      :scroll-x="1200"
     >
     </NDataTable>
   </AdminLayout>
@@ -33,13 +32,14 @@ const createColumns = () => {
       key: "text",
     },
     {
-      title: "Nuoroda",
-      key: "link",
-    },
-    {
       title: "Padalinys",
       key: "padalinys.shortname",
     },
+    {
+      title: "Nuoroda",
+      key: "link",
+    },
+
     {
       title: "Kalba",
       key: "lang",

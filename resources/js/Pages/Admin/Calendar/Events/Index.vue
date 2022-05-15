@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout title="Renginiai" :createURL="create_url">
+  <AdminLayout title="Renginiai" :createURL="route('calendar.create')">
     <NDataTable
       class="main-card"
       remote

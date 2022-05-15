@@ -20,7 +20,7 @@
         <!-- Current Profile Photo -->
         <div class="mt-2" v-show="!photoPreview">
           <img
-            :src="user.profile_photo_url"
+            :src="user.profile_photo_path"
             :alt="user.name"
             class="rounded-full h-20 w-20 object-cover"
           />
@@ -35,7 +35,7 @@
           </span>
         </div>
 
-        <jet-secondary-button
+        <!-- <jet-secondary-button
           class="mt-2 mr-2"
           type="button"
           @click.prevent="selectNewPhoto"
@@ -50,7 +50,7 @@
           v-if="user.profile_photo_path"
         >
           Remove Photo
-        </jet-secondary-button>
+        </jet-secondary-button> -->
 
         <jet-input-error :message="form.errors.photo" class="mt-2" />
       </div>

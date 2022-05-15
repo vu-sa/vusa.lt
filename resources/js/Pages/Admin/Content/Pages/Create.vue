@@ -1,8 +1,11 @@
 <template>
-  <AdminLayout :title="`${page.title} - ${page.padalinys.shortname}`">
+  <AdminLayout :title="page.title ? page.title : 'Naujas puslapis'">
     <form>
       <div class="main-card">
         <h2 class="mb-4">Parinktys</h2>
+        <ul v-if="errors" class="mb-4 text-red-700">
+          <li v-for="error in errors">{{ error }}</li>
+        </ul>
         <div class="mb-4">
           <label class="font-bold">Pavadinimas</label>
           <NInput v-model:value="page.title" placeholder="Įrašyti pavadinimą..." />
@@ -27,7 +30,7 @@
         <div class="mb-4">
           <label class="font-bold">Kitos kalbos puslapis</label>
           <NSelect
-            disabled
+            :disabled="!page.lang"
             v-model:value="page.other_lang_page"
             filterable
             placeholder="Ieškoti puslapio..."
@@ -46,20 +49,6 @@
         <div
           class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center"
         >
-          <!-- <n-popconfirm
-            positive-text="Ištrinti!"
-            negative-text="Palikti"
-            @positive-click="destroyModel()"
-          >
-            <template #trigger>
-              <button type="button">
-                <TrashIcon
-                  class="w-5 h-5 mr-2 stroke-red-800 hover:stroke-red-900 duration-200"
-                />
-              </button>
-            </template>
-            Ištrinto elemento nebus galima atkurti!
-          </n-popconfirm> -->
           <n-popconfirm @positive-click="updateModel()">
             <template #trigger>
               <NSpin :show="showSpin" size="small">
@@ -78,7 +67,7 @@
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AsideHeader from "../AsideHeader.vue";
 import TipTap from "@/Components/TipTap.vue";
-import { ref, reactive } from "vue";
+import { ref, reactive, computed } from "vue";
 import { NInput, NSelect, useMessage, NSpin, NPopconfirm, NButton } from "naive-ui";
 import { TrashIcon } from "@heroicons/vue/outline";
 import { Inertia } from "@inertiajs/inertia";
@@ -86,14 +75,28 @@ import { usePage } from "@inertiajs/inertia-vue3";
 // import { map } from "lodash";
 
 const props = defineProps({
-  page: Object,
+  errors: Object,
 });
 
 const showSpin = ref(false);
 
-const page = reactive(props.page);
+const page = reactive({});
 const otherLangPageOptions = ref([]);
 const message = useMessage();
+
+// compute news.permalink with snake case of title, also limit length to 25 and add random hexanumeric hash
+page.permalink = computed(() => {
+  if (page.title) {
+    return page.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-+/, "")
+      .replace(/-+$/, "")
+      .substring(0, 30);
+    // .concat("-", Math.random().toString(36).substring(2, 5));
+  }
+});
 
 const getOtherLangPages = _.debounce((input) => {
   // get other lang
@@ -152,10 +155,10 @@ const categories = [
 
 const updateModel = () => {
   showSpin.value = !showSpin.value;
-  Inertia.patch(route("pages.update", page.id), page, {
+  Inertia.post(route("pages.store"), page, {
     onSuccess: () => {
       showSpin.value = !showSpin.value;
-      message.success("Sėkmingai atnaujinta!");
+      message.success("Puslapis sėkmingai pridėtas!");
     },
     onError: () => {
       showSpin.value = !showSpin.value;

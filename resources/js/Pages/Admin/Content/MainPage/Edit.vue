@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout :title="calendar.title ? calendar.title : 'Naujas įvykis'">
+  <AdminLayout :title="mainPage.text">
     <div class="main-card">
       <h3 class="mb-4">Bendra informacija</h3>
       <ul v-if="errors" class="mb-4 text-red-700">
@@ -11,44 +11,26 @@
         <div class="lg:col-span-2">
           <label class="font-bold">Pavadinimas</label>
           <n-input
-            v-model:value="calendar.title"
+            v-model:value="mainPage.text"
             type="text"
             placeholder="Įrašyti pavadinimą..."
           />
         </div>
 
         <div class="lg:col-span-2">
-          <label class="font-bold">Data ir laikas</label>
-          <n-date-picker
-            v-model:formatted-value="calendar.date"
-            placeholder="Įrašyti laiką..."
-            value-format="yyyy-MM-dd HH:mm:ss"
-            type="datetime"
+          <label class="font-bold">Trumpinys</label>
+          <n-input
+            disabled
+            v-model:value="mainPage.alias"
+            type="text"
+            placeholder="Įrašyti pavadinimą..."
           />
         </div>
 
         <div class="lg:col-span-4">
-          <label class="font-bold">Aprašymas (HTML)</label>
-          <n-input
-            v-model:value="calendar.description"
-            type="textarea"
-            placeholder="Įrašyti aprašymą..."
-          />
-        </div>
-
-        <div class="lg:col-span-2">
-          <label class="font-bold">Kategorija</label>
-          <n-select
-            v-model:value="calendar.category"
-            :options="options"
-            placeholder="Įrašyti kategoriją..."
-          />
-        </div>
-
-        <div class="lg:col-span-2">
           <label class="font-bold">Nuoroda</label>
           <n-input
-            v-model:value="calendar.url"
+            v-model:value="mainPage.link"
             type="text"
             placeholder="Įrašyti nuorodą..."
           />
@@ -60,10 +42,10 @@
           <n-popconfirm @positive-click="updateModel()">
             <template #trigger>
               <NSpin :show="showSpin" size="small">
-                <n-button>Sukurti</n-button>
+                <n-button>Atnaujinti</n-button>
               </NSpin>
             </template>
-            Ar tikrai sukurti?
+            Ar tikrai atnaujinti?
           </n-popconfirm>
         </div>
       </form>
@@ -72,7 +54,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from "vue";
+import { ref, reactive, onMounted } from "vue";
 import {
   NSpin,
   NInput,
@@ -86,39 +68,26 @@ import {
 import { Inertia } from "@inertiajs/inertia";
 import { TrashIcon } from "@heroicons/vue/outline";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
+import { usePage } from "@inertiajs/inertia-vue3";
 
 const message = useMessage();
 
 const props = defineProps({
+  mainPage: Object,
   errors: Object,
 });
 
-const calendar = reactive({});
+const mainPage = reactive(props.mainPage);
 const showSpin = ref(false);
-
-const options = [
-  {
-    value: "red",
-    label: "Akademinė informacija",
-  },
-  {
-    value: "yellow",
-    label: "Socialinė informacija",
-  },
-  {
-    value: "grey",
-    label: "Kita informacija",
-  },
-];
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const updateModel = async () => {
+const updateModel = () => {
   showSpin.value = !showSpin.value;
-  Inertia.post(route("calendar.store"), calendar, {
+  Inertia.patch(route("mainPages.update", mainPage.id), mainPage, {
     onSuccess: () => {
       showSpin.value = !showSpin.value;
-      message.success("Renginys sukurtas!");
+      message.success("Sėkmingai atnaujinta!");
     },
     onError: () => {
       showSpin.value = !showSpin.value;

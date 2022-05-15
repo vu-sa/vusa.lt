@@ -18,44 +18,37 @@
         </div>
 
         <div class="lg:col-span-2">
-          <label class="font-bold">El. paštas</label>
+          <label class="font-bold">Trumpas pavadinimas</label>
           <n-input
-            v-model:value="dutyInstitution.email"
+            v-model:value="dutyInstitution.short_name"
             type="text"
-            placeholder="Įrašyti pavadinimą..."
+            placeholder="Įrašyti trumpą pavadinimą..."
           />
         </div>
 
         <div class="lg:col-span-2">
-          <label class="font-bold">Tel. nr</label>
+          <label class="font-bold">Nuorodos trumpinys</label>
           <n-input
-            v-model:value="dutyInstitution.phone"
-            type="text"
-            placeholder="Įrašyti pavadinimą..."
-          />
-        </div>
-
-        <div class="lg:col-span-2">
-          <label class="font-bold">Rolė</label>
-          <n-input
-            v-model:value="dutyInstitution.role.name"
+            v-model:value="dutyInstitution.alias"
             type="text"
             placeholder="Įrašyti pavadinimą..."
           />
         </div>
 
         <div class="lg:col-span-4">
-          <label class="font-bold">Pareigybės</label>
+          <label class="font-bold">Padalinys</label>
           <n-select
-            v-model:value="dutyInstitution.duties"
-            multiple
-            filterable
-            placeholder="Pasirinkti pareigybes..."
-            :options="duties"
-            clearable
-            remote
-            :clear-filter-after-select="false"
-            @search="getDutyOptions"
+            v-model:value="dutyInstitution.padalinys_id"
+            placeholder="Pasirinkti padalinį..."
+            :options="padaliniai_options"
+          />
+        </div>
+
+        <div class="lg:col-span-4">
+          <label class="font-bold">Aprašymas</label>
+          <TipTap
+            v-model="dutyInstitution.description"
+            :searchFiles="$page.props.search.other"
           />
         </div>
 
@@ -87,6 +80,17 @@
         </div>
       </form>
     </div>
+    <template #aside-navigation-options>
+      <div v-if="duties">
+        <strong>Šiuo metu institucijai priklauso šios pareigos:</strong>
+        <ul class="list-inside">
+          <li v-for="duty in duties">
+            <Link :href="route('duties.edit', { id: duty.id })">{{ duty.name }}</Link>
+          </li>
+        </ul>
+      </div>
+      <p v-else>Ši institucija <strong>neturi</strong> pareigų.</p>
+    </template>
   </AdminLayout>
 </template>
 
@@ -105,19 +109,30 @@ import {
 import { Inertia } from "@inertiajs/inertia";
 import { TrashIcon } from "@heroicons/vue/outline";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-import { usePage } from "@inertiajs/inertia-vue3";
+import { usePage, Link } from "@inertiajs/inertia-vue3";
+import TipTap from "@/Components/TipTap.vue";
 
 const message = useMessage();
 
 const props = defineProps({
   dutyInstitution: Object,
+  duties: Object,
+  padaliniai: Array,
   errors: Object,
 });
 
+console.log(props);
+
 const dutyInstitution = reactive(props.dutyInstitution);
+
 // const duties = ref([]);
 // const selectedDuties = ref(null);
 const showSpin = ref(false);
+
+const padaliniai_options = props.padaliniai.map((padalinys) => ({
+  value: padalinys.id,
+  label: padalinys.shortname,
+}));
 
 // const getDutyOptions = _.debounce((input) => {
 //   // get other lang
@@ -150,7 +165,7 @@ const showSpin = ref(false);
 
 const updateModel = () => {
   showSpin.value = !showSpin.value;
-  Inertia.patch(route("users.update", dutyInstitution.id), dutyInstitution, {
+  Inertia.patch(route("dutyInstitutions.update", dutyInstitution.id), dutyInstitution, {
     onSuccess: () => {
       showSpin.value = !showSpin.value;
       message.success("Sėkmingai atnaujinta!");

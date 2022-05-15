@@ -6,9 +6,15 @@ use App\Models\DutyInstitution;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller as Controller;
 use Inertia\Inertia;
+use App\Models\Padalinys;
 
 class DutyInstitutionController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(DutyInstitution::class, 'dutyInstitution');
+    }
+    
     /**
      * Display a listing of the resource.
      *
@@ -63,8 +69,17 @@ class DutyInstitutionController extends Controller
      */
     public function edit(DutyInstitution $dutyInstitution)
     {
+        // dd($dutyInstitution);
+        
         return Inertia::render('Admin/Contacts/Institutions/Edit', [
             'dutyInstitution' => $dutyInstitution,
+            'duties' => $dutyInstitution->duties,
+            'padaliniai' => Padalinys::orderBy('shortname_vu')->get()->map(function ($padalinys) {
+                return [
+                    'id' => $padalinys->id,
+                    'shortname' => $padalinys->shortname,
+                ];
+            }),
         ]);
     }
 
@@ -77,7 +92,9 @@ class DutyInstitutionController extends Controller
      */
     public function update(Request $request, DutyInstitution $dutyInstitution)
     {
-        //
+        $dutyInstitution->update($request->only('name', 'shortname', 'alias', 'description','padalinys_id'));
+        
+        return redirect()->back();
     }
 
     /**
@@ -89,5 +106,22 @@ class DutyInstitutionController extends Controller
     public function destroy(DutyInstitution $dutyInstitution)
     {
         //
+    }
+
+    public function searchForInstitutions(Request $request)
+    {
+        $data = $request->collect()['data'];
+
+        $institutions = DutyInstitution::where('name', 'like', "%{$data['name']}%")->get();
+
+        $institutions = $institutions->map(function ($institution) {
+            return [
+                'id' => $institution->id,
+                'name' => $institution->name,
+                'alias' => $institution->alias,
+            ];
+        });
+
+        return back()->with('search_other', $institutions);
     }
 }

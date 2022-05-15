@@ -6,6 +6,7 @@ use App\Models\Page;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
+use Illuminate\Support\Facades\Auth;
 
 class PagesController extends Controller
 {
@@ -52,7 +53,7 @@ class PagesController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('Admin/Content/Pages/Create');
     }
 
     /**
@@ -63,7 +64,23 @@ class PagesController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'text' => 'required|string',
+            'lang' => 'required|string',
+            'permalink' => 'required|string|max:255|unique:pages',
+        ]);
+
+        $page = Page::create([
+            'title' => $request->title,
+            'permalink' => $request->permalink,
+            'lang' => $request->lang,
+            'text' => $request->text,
+            'other_lang_id' => $request->other_lang_page, 
+            'padalinys_id' => Auth::user()->padalinys()->id,
+        ]);
+
+        return redirect()->route('pages.index');
     }
 
     /**

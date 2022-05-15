@@ -56,12 +56,7 @@
       </div>
       <div class="main-card">
         <h2 class="font-bold text-xl mb-2 inline-block">Nuotrauka</h2>
-        <div class="mb-4">
-          <NUpload @change="uploadFile" @before-upload="beforeUpload">
-            <NButton>Įkelti paveiksliuką</NButton>
-          </NUpload>
-        </div>
-        <img :src="news.image" />
+        <UploadImage v-model="news.image" :path="'news'"></UploadImage>
         <div class="mb-4">
           <label class="font-bold">Nuotraukos autorius</label>
           <NInput v-model:value="news.image_author" />
@@ -129,6 +124,7 @@ import { TrashIcon } from "@heroicons/vue/outline";
 import { Inertia } from "@inertiajs/inertia";
 import { usePage } from "@inertiajs/inertia-vue3";
 // import { map } from "lodash";
+import UploadImage from "@/Components/Admin/UploadImage.vue";
 
 const props = defineProps({
   news: Object,
@@ -209,31 +205,5 @@ const updateModel = () => {
     },
     preserveScroll: true,
   });
-};
-
-const beforeUpload = async (data) => {
-  if (!["image/png", "image/jpeg"].includes(data.file.file?.type)) {
-    message.error("Prašome kelti tik JPG arba PNG formato failus.");
-    return false;
-  }
-  return true;
-};
-
-const uploadFile = (e) => {
-  let file = e.file;
-  Inertia.post(
-    route("files.uploadImage"),
-    { file, path: "news" },
-    {
-      preserveScroll: true,
-      preserveState: true,
-      onSuccess: () => {
-        message.success("Failas įkeltas");
-        console.log(usePage().props.value.misc, usePage().props.value);
-
-        news.image = usePage().props.value.misc;
-      },
-    }
-  );
 };
 </script>

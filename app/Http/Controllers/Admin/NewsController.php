@@ -6,6 +6,7 @@ use App\Models\News;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
+use Illuminate\Support\Facades\Auth;
 
 class NewsController extends Controller
 {
@@ -46,7 +47,7 @@ class NewsController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('Admin/Content/News/Create');
     }
 
     /**
@@ -57,7 +58,36 @@ class NewsController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // dd(Auth::user(), $request);
+
+        $request->validate([
+            'title' => 'required',
+            'permalink' => 'required',
+            'text' => 'required',
+            'lang' => 'required',
+            'image' => 'required',
+            'publish_time' => 'required',
+        ]);
+
+        $user = Auth::user();
+
+        // dd()
+
+        News::create([
+            'title' => $request->title,
+            'permalink' => $request->permalink,
+            'text' => $request->text,
+            'short' => $request->short,
+            'lang' => $request->lang,
+            'other_lang_id' => $request->other_lang_news, 
+            'image' => $request->image,
+            'image_author' => $request->image_author,
+            'publish_time' => $request->publish_time,
+            'draft' => $request->draft ?? 0,
+            'padalinys_id' => $user->padalinys()->id,
+        ]);
+
+        return redirect()->route('news.index');
     }
 
     /**
@@ -122,5 +152,23 @@ class NewsController extends Controller
     public function destroy(News $news)
     {
         //
+    }
+
+    public function searchForNews(Request $request)
+
+    {
+        $data = $request->collect()['data'];
+
+        $news = News::where('title', 'like', "%{$data['title']}%")->where('lang', $data['lang'])->get();
+
+        $news = $news->map(function ($news) {
+            return [
+                'id' => $news->id,
+                'title' => $news->title,
+                'padalinys' => $news->padalinys,
+            ];
+        });
+
+        return back()->with('search_news', $news);
     }
 }

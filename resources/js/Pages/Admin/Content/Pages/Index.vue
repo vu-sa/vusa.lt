@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout title="Puslapiai">
+  <AdminLayout title="Puslapiai" :createURL="route('pages.create')">
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>

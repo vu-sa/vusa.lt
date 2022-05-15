@@ -56,7 +56,7 @@ const rowProps = (row) => {
   return {
     style: "cursor: pointer;",
     onClick: () => {
-      Inertia.visit(route("institutions.edit", { id: row.id }));
+      Inertia.visit(route("dutyInstitutions.edit", { id: row.id }));
     },
   };
 };

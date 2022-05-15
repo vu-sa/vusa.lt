@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout :title="calendar.title ? calendar.title : 'Naujas įvykis'">
+  <AdminLayout :title="banner.title">
     <div class="main-card">
       <h3 class="mb-4">Bendra informacija</h3>
       <ul v-if="errors" class="mb-4 text-red-700">
@@ -11,47 +11,35 @@
         <div class="lg:col-span-2">
           <label class="font-bold">Pavadinimas</label>
           <n-input
-            v-model:value="calendar.title"
+            v-model:value="banner.title"
             type="text"
             placeholder="Įrašyti pavadinimą..."
           />
         </div>
 
         <div class="lg:col-span-2">
-          <label class="font-bold">Data ir laikas</label>
-          <n-date-picker
-            v-model:formatted-value="calendar.date"
-            placeholder="Įrašyti laiką..."
-            value-format="yyyy-MM-dd HH:mm:ss"
-            type="datetime"
-          />
+          <label class="font-bold">Ar aktyvus?</label>
+          <div>
+            <NSwitch
+              :checked-value="1"
+              :unchecked-value="0"
+              v-model:value="banner.is_active"
+            />
+          </div>
         </div>
 
         <div class="lg:col-span-4">
-          <label class="font-bold">Aprašymas (HTML)</label>
+          <label class="font-bold">Nuoroda į puslapį</label>
           <n-input
-            v-model:value="calendar.description"
-            type="textarea"
-            placeholder="Įrašyti aprašymą..."
-          />
-        </div>
-
-        <div class="lg:col-span-2">
-          <label class="font-bold">Kategorija</label>
-          <n-select
-            v-model:value="calendar.category"
-            :options="options"
-            placeholder="Įrašyti kategoriją..."
-          />
-        </div>
-
-        <div class="lg:col-span-2">
-          <label class="font-bold">Nuoroda</label>
-          <n-input
-            v-model:value="calendar.url"
+            v-model:value="banner.link_url"
             type="text"
-            placeholder="Įrašyti nuorodą..."
+            placeholder="Įrašyti pavadinimą..."
           />
+        </div>
+
+        <div class="lg:col-span-2">
+          <label class="font-bold">Logotipas</label>
+          <UploadImage v-model="banner.image_url" :path="'banners'"></UploadImage>
         </div>
 
         <div
@@ -60,10 +48,10 @@
           <n-popconfirm @positive-click="updateModel()">
             <template #trigger>
               <NSpin :show="showSpin" size="small">
-                <n-button>Sukurti</n-button>
+                <n-button>Atnaujinti</n-button>
               </NSpin>
             </template>
-            Ar tikrai sukurti?
+            Ar tikrai atnaujinti?
           </n-popconfirm>
         </div>
       </form>
@@ -82,43 +70,32 @@ import {
   useMessage,
   NButton,
   NDatePicker,
+  NSwitch,
 } from "naive-ui";
 import { Inertia } from "@inertiajs/inertia";
 import { TrashIcon } from "@heroicons/vue/outline";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
+import { usePage } from "@inertiajs/inertia-vue3";
+import UploadImage from "@/Components/Admin/UploadImage.vue";
 
 const message = useMessage();
 
 const props = defineProps({
+  banner: Object,
   errors: Object,
 });
 
-const calendar = reactive({});
+const banner = reactive(props.banner);
 const showSpin = ref(false);
-
-const options = [
-  {
-    value: "red",
-    label: "Akademinė informacija",
-  },
-  {
-    value: "yellow",
-    label: "Socialinė informacija",
-  },
-  {
-    value: "grey",
-    label: "Kita informacija",
-  },
-];
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const updateModel = async () => {
+const updateModel = () => {
   showSpin.value = !showSpin.value;
-  Inertia.post(route("calendar.store"), calendar, {
+  Inertia.patch(route("banners.update", banner.id), banner, {
     onSuccess: () => {
       showSpin.value = !showSpin.value;
-      message.success("Renginys sukurtas!");
+      message.success("Sėkmingai atnaujinta!");
     },
     onError: () => {
       showSpin.value = !showSpin.value;

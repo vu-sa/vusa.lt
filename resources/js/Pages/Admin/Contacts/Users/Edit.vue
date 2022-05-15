@@ -60,6 +60,14 @@
           />
         </div>
 
+        <div class="lg:col-span-2">
+          <label class="font-bold">Logotipas</label>
+          <UploadImage
+            v-model="contact.profile_photo_path"
+            :path="'contacts'"
+          ></UploadImage>
+        </div>
+
         <div
           class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center"
         >
@@ -107,6 +115,7 @@ import { Inertia } from "@inertiajs/inertia";
 import { TrashIcon } from "@heroicons/vue/outline";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import { usePage } from "@inertiajs/inertia-vue3";
+import UploadImage from "@/Components/Admin/UploadImage.vue";
 
 const message = useMessage();
 

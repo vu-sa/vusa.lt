@@ -19,7 +19,7 @@
         <template #icon><DocumentTextIcon class="admin-navigation-icon" /></template>
         Turinys
       </MenuButton>
-      <MenuButton :menuContent="['users.*']">
+      <MenuButton :menuContent="['users.*', 'duties.*', 'dutyInstitutions.*', 'roles.*']">
         <template #icon><UserIcon class="admin-navigation-icon" /></template>
         Kontaktai
       </MenuButton>

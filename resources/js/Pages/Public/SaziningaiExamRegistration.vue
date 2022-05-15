@@ -73,6 +73,7 @@
             </NDynamicInput>
           </NFormItem>
           <NFormItem
+            class="mt-4"
             label="Atsiskaitymo trukmė (jei laikoma srautais, parašyti srautų skaičių ir kiek laiko skiriama vienam srautui)"
             path="duration"
           >

@@ -25,7 +25,14 @@ class BannerController extends Controller
         $banners = Banner::all();
 
         return Inertia::render('Admin/Content/Banners/Index', [
-            'banners' => $banners,
+            'banners' => $banners->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'title' => $item->title,
+                    'padalinys' => $item->padalinys,
+                    'is_active' => $item->is_active,
+                ];
+            }),
         ]);
     }
 
@@ -69,7 +76,9 @@ class BannerController extends Controller
      */
     public function edit(Banner $banner)
     {
-        //
+        return Inertia::render('Admin/Content/Banners/Edit', [
+            'banner' => $banner,
+        ]);
     }
 
     /**
@@ -81,7 +90,9 @@ class BannerController extends Controller
      */
     public function update(Request $request, Banner $banner)
     {
-        //
+        $banner->update($request->only('title', 'is_active', 'image_url', 'link_url'));
+
+        return redirect()->back();
     }
 
     /**

@@ -78,7 +78,9 @@ class MainPageController extends Controller
      */
     public function edit(MainPage $mainPage)
     {
-        //
+        return Inertia::render('Admin/Content/MainPage/Edit', [
+            'mainPage' => $mainPage
+        ]);
     }
 
     /**

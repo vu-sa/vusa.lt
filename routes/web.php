@@ -47,6 +47,8 @@ Route::prefix('admin')->group(function () {
         Route::post('pages/search', [Admin\PagesController::class, 'searchForPage'])->name('pages.search');
 
         Route::resource('news', Admin\NewsController::class);
+        Route::post('news/search', [Admin\NewsController::class, 'searchForNews'])->name('news.search');
+
         Route::resource('mainPage', Admin\MainPageController::class);
         Route::resource('banners', Admin\BannerController::class);
         Route::resource('navigation', Admin\NavigationController::class);
@@ -57,7 +59,9 @@ Route::prefix('admin')->group(function () {
         Route::resource('saziningaiExamObservers', Admin\SaziningaiExamObserversController::class);
         Route::resource('files', Admin\FilesController::class);
         Route::resource('duties', Admin\DutyController::class);
-        Route::resource('institutions', Admin\DutyInstitutionController::class);
+        Route::resource('dutyInstitutions', Admin\DutyInstitutionController::class);
+        Route::post('dutyInstitutions/search', [Admin\DutyInstitutionController::class, 'searchForInstitutions'])->name('dutyInstitutions.search');
+        
         Route::resource('roles', Admin\RolesController::class);
         Route::post('files/search', [Admin\FilesController::class, 'searchForFiles'])->name('files.search');
         Route::post('images/search', [Admin\FilesController::class, 'searchForImages'])->name('images.search');

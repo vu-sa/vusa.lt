@@ -10,6 +10,12 @@ use stdClass;
 
 class DutyController extends Controller
 {
+    
+    public function __construct()
+    {
+        $this->authorizeResource(Duty::class, 'duty');
+    }
+    
     /**
      * Display a listing of the resource.
      *
@@ -86,6 +92,7 @@ class DutyController extends Controller
                 'email' => $duty->email,
                 'attributes' => json_decode($attributes),
                 'places_to_occupy' => $duty->places_to_occupy,
+                'users' => $duty->users,
             ]
         ]);
     }

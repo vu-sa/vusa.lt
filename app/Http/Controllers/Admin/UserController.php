@@ -77,6 +77,7 @@ class UserController extends Controller
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
+                    'profile_photo_path' => $user->profile_photo_path,
                     'phone' => $user->phone,
                     'duties' => $user->duties->map(function ($duty) {
                         return [
@@ -100,7 +101,7 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
-        $user->update($request->only('name', 'email', 'phone'));
+        $user->update($request->only('name', 'email', 'phone', 'profile_photo_path'));
 
         // get all user duties and delete all of them
         $user->duties()->detach();

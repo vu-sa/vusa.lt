@@ -81,7 +81,7 @@ class MainController extends Controller
 
 		// dd($this->alias, $padalinys);
 
-		$news = News::where([['padalinys_id', '=', $padalinys->id], ['draft', '=', 0]])->orderBy('publish_time', 'desc')->take(4)->get();
+		$news = News::where([['padalinys_id', '=', $padalinys->id], ['draft', '=', 0]])->where('publish_time', '<=', date('Y-m-d H:i:s'))->orderBy('publish_time', 'desc')->take(4)->get();
 
 		Inertia::share('alias', $this->alias);
 		return Inertia::render('Public/Home', [

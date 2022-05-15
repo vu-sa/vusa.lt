@@ -25,7 +25,6 @@ class CalendarController extends Controller
 
         return Inertia::render('Admin/Calendar/Events/Index', [
             'calendar' => $calendar,
-            'create_url' => route('calendar.create'),
         ]);
     }
 
