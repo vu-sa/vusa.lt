@@ -6,7 +6,6 @@
       <p class="my-4">Registruotis reikia į kiekvieną srautą atskirai.</p>
       <div class="main-card">
         <NDataTable
-          class="whitespace-nowrap"
           :scroll-x="1200"
           size="small"
           :data="props.saziningaiExamFlows"

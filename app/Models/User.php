@@ -98,7 +98,7 @@ class User extends Authenticatable
     // }
 
     public function padalinys() {
-        return $this->duties()->first()->institution->padalinys;
+        return $this->duties()->first()?->institution?->padalinys;
     }
 
 }

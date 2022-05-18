@@ -1,36 +1,30 @@
 <template>
-  <PublicLayout>
+  <PublicLayout title="Kontaktai">
     <div class="px-16 lg:px-32">
       <NTabs default-value="padalinys" type="line" animated>
-        <NTabPane class="grid md:grid-cols-3 gap-8" name="padalinys" tab="VU SA">
-          <ContactWithPhoto v-for="contact in alias_contacts" :key="contact.id">
-            <template #image
-              ><img
-                loading="lazy"
-                v-if="contact.image"
-                :src="contact.image"
-                class="rounded-sm shadow-md hover:shadow-lg duration-200 w-full mb-1 object-cover"
-            /></template>
+        <NTabPane
+          class="grid sm:grid-cols-2 xl:grid-cols-3 gap-8"
+          name="padalinys"
+          tab="VU SA"
+        >
+          <ContactWithPhoto
+            v-for="contact in alias_contacts"
+            :key="contact.id"
+            :imageSrc="contact.image"
+          >
             <template #name> {{ contact.name }} </template>
-            <!-- <template #duty>
-              <ul v-for="duty in contact.duties" :key="duty.id">
-                <li>{{ duty.name }}</li>
-              </ul>
-            </template> -->
             <template #duty>
-              {{ contact.duties[0].name }}
+              <p>{{ contact.duties[0].name }}</p>
             </template>
-            <template #description>
+            <!-- <template #description>
               <div v-html="contact.duties[0].description"></div>
-            </template>
-            <template v-if="contact.phone" #phone>
-              <div class="flex flex-row items-center">
+            </template> -->
+            <template #contactInfo>
+              <div v-if="contact.phone" class="flex flex-row items-center">
                 <NIcon class="mr-2"><Phone20Regular /></NIcon>
                 <a :href="`tel:${contact.phone}`">{{ contact.phone }}</a>
               </div>
-            </template>
-            <template v-if="contact.duties[0].email" #email>
-              <div class="flex flex-row items-center">
+              <div v-if="contact.duties[0].email" class="flex flex-row items-center">
                 <NIcon class="mr-2"><Mail20Regular /> </NIcon
                 ><a :href="`mailto:${contact.duties[0].email}`">{{
                   contact.duties[0].email

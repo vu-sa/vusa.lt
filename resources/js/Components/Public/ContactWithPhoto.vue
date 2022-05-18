@@ -1,23 +1,31 @@
 <template>
-  <div
-    class="text-neutral-50 shadow-lg rounded-lg gap-2 flex flex-col min-w-[10em] w-auto bg-white relative h-min"
-  >
-    <slot name="image"></slot>
-    <div class="text-gray-800 px-4 py-2">
-      <h2><slot name="name"></slot></h2>
-      <p class="mb-2">
+  <div class="flex flex-col bg-white lg:flex-row h-auto min-h-fit rounded-lg">
+    <div class="flex-none h-60 lg:h-auto w-auto lg:w-40 relative">
+      <img
+        :src="props.imageSrc"
+        class="absolute inset-0 w-full h-full object-cover rounded-t-lg lg:rounded-t-none lg:rounded-l-lg"
+      />
+    </div>
+    <div class="flex flex-col flex-auto p-4 justify-between gap-4">
+      <div class="flex flex-wrap flex-col">
+        <h2 class="flex-auto text-slate-900 px-2">
+          <slot name="name"></slot>
+        </h2>
+        <div class="text-sm font-medium text-gray-500 w-fit p-2">
+          <slot name="duty"></slot>
+        </div>
+      </div>
+      <!-- <p class="mb-2">
         <slot name="duty"></slot
         ><NPopover :show-arrow="false" :style="{ maxWidth: '300px' }"
           ><template #trigger>
             <NIcon><QuestionCircle24Regular /></NIcon> </template
           ><slot name="description"></slot
         ></NPopover>
-      </p>
-      <div class="mb-2 flex flex-row items-center gap-2 flex-wrap">
-        <slot name="phone"></slot>
-        <slot name="email"></slot>
+      </p> -->
+      <div class="text-sm text-neutral-500 flex flex-col gap-2">
+        <slot name="contactInfo"></slot>
       </div>
-      <slot></slot>
     </div>
   </div>
 </template>
@@ -25,4 +33,8 @@
 <script setup>
 import { NPopover, NIcon } from "naive-ui";
 import { QuestionCircle24Regular } from "@vicons/fluent";
+
+const props = defineProps({
+  imageSrc: String,
+});
 </script>
