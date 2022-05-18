@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Schema;
 use App\Models\SaziningaiExam;
 use App\Models\SaziningaiExamFlow;
 use App\Models\SaziningaiExamObserver;
+use Illuminate\Support\Str;
 
 class MainController extends Controller
 {
@@ -104,6 +105,8 @@ class MainController extends Controller
 				];
 			}),
 			'main_page' => MainPage::where('padalinys_id', '=', $padalinys->id)->get(),
+		])->withViewData([
+			'description' => 'Vilniaus universiteto Studentų atstovybė (VU SA) – seniausia ir didžiausia Lietuvoje visuomeninė, ne pelno siekianti, nepolitinė, ekspertinė švietimo organizacija'
 		]);
 	}
 
@@ -145,6 +148,10 @@ class MainController extends Controller
 				'main_points' => $news->main_points,
 				'read_more' => $news->read_more,
 			],
+		])->withViewData([
+			'title' => $news->title,
+			'description' => $news->short,
+			'image' => $image,
 		]);
 	}
 
@@ -158,6 +165,9 @@ class MainController extends Controller
 		// ddd($news);
 		return Inertia::render('Public/NewsArchive', [
 			'news' => $news
+		])->withViewData([
+			'title' => 'Naujienų archyvas',
+			'description' => 'Naujienų archyvas',
 		]);
 	}
 	
@@ -217,6 +227,10 @@ class MainController extends Controller
 					'permalink' => $page->permalink,
 				];
 			}),
+		])->withViewData([
+			'title' => $page->title,
+			// truncate text to first sentence
+			'description' => Str::str_limit(strip_tags($page->text), 150),
 		]);
 	}
 
@@ -308,6 +322,9 @@ class MainController extends Controller
 					}
 				];
 			}),
+		])->withViewData([
+			'title' => $padalinys->name . ' kontaktai',
+			'description' => $padalinys->description,
 		]);
 	}
 
@@ -337,6 +354,9 @@ class MainController extends Controller
 		
 		return Inertia::render('Public/SaziningaiExamRegistration', [
 			'padaliniaiOptions' => $padaliniai,
+		])->withViewData([
+			'title' => 'Programos „Sąžiningai“ atsiskaitymų registracija',
+			'description' => 'Prašome atsiskaitymą registruoti likus bent 3 d.d. iki jo pradžios, kad būtų laiku surasti stebėtojai. Kitu atveju, kreipkitės į saziningai@vusa.lt',
 		]);
 	}
 
@@ -398,6 +418,9 @@ class MainController extends Controller
 					'unit' => $saziningaiExamFlow->exam->padalinys->shortname_vu,					
 				];
 			}),
+		])->withViewData([
+			'title' => 'Programos „Sąžiningai“ užregistruoti egzaminai',
+			'description' => 'Registruokitės į egzaminų ar atsiskaitymų stebėjimą! Registruotis reikia į kiekvieną srautą atskirai.',
 		]);
 
 	}
