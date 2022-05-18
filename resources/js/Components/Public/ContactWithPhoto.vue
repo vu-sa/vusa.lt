@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col bg-white lg:flex-row h-auto min-h-fit rounded-lg">
-    <div class="flex-none h-60 lg:h-auto w-auto lg:w-40 relative">
+    <div v-if="props.imageSrc" class="flex-none h-60 lg:h-auto w-auto lg:w-40 relative">
       <img
         :src="props.imageSrc"
         class="absolute inset-0 w-full h-full object-cover rounded-t-lg lg:rounded-t-none lg:rounded-l-lg"

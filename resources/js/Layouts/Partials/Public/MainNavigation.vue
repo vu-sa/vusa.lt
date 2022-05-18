@@ -54,7 +54,7 @@
           </NDropdown>
         </div>
       </template>
-      <Link
+      <!-- <Link
         v-if="locale === 'lt'"
         class="hidden md:block"
         :data="{ padalinys: usePage().props.value.alias }"
@@ -65,7 +65,7 @@
           >
           <template v-else>Kontaktai</template>
         </NButton>
-      </Link>
+      </Link> -->
       <NButton
         text
         target="_blank"

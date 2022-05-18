@@ -14,7 +14,7 @@
 
     <form @submit.prevent="submit">
       <div>
-        <jet-label for="email" value="Email" />
+        <jet-label for="email" value="El. paštas" />
         <jet-input
           id="email"
           type="email"
@@ -26,7 +26,7 @@
       </div>
 
       <div class="mt-4">
-        <jet-label for="password" value="Password" />
+        <jet-label for="password" value="Slaptažodis" />
         <jet-input
           id="password"
           type="password"
@@ -40,7 +40,7 @@
       <div class="block mt-4">
         <label class="flex items-center">
           <jet-checkbox name="remember" v-model:checked="form.remember" />
-          <span class="ml-2 text-sm text-gray-600">Remember me</span>
+          <span class="ml-2 text-sm text-gray-600">Prisiminti mane</span>
         </label>
       </div>
 
@@ -60,7 +60,7 @@
           :class="{ 'opacity-25': form.processing }"
           :disabled="form.processing"
         >
-          Log in
+          Prisijungti
         </jet-button>
       </div>
     </form>

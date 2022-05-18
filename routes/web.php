@@ -86,7 +86,8 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => '(lt|en)']], function
         Route::domain('{padalinys}.' . $this->host)->group(function () {
             Route::get('/', [Public\MainController::class, 'home'])->name('home');
             Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('newsString', '(naujiena|news)')->name('news');
-            Route::get('kontaktai', [Public\MainController::class, 'contacts'])->name('contacts');
+            Route::get('kontaktai', [Public\MainController::class, 'contactsCategory'])->name('contacts');
+            Route::get('kontaktai/{alias}', [Public\MainController::class, 'contacts'])->name('contacts.alias');
             Route::get('{permalink}', [Public\MainController::class, 'page'])->where('permalink', '.*')->name('page');
         });
     });
@@ -100,10 +101,11 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => '(lt|en)']], function
             Route::get('saziningai-uzregistruoti-egzaminai', [Public\MainController::class, 'saziningaiExams'])->name('saziningaiExams.registered');
             Route::get('ataskaita-2022', [Public\MainController::class, 'ataskaita2022']);
             Route::get('ataskaita-2022/{permalink}', [Public\MainController::class, 'ataskaita2022'])->where('permalink', '.*')->name('ataskaita2022');
+            Route::get('kontaktai', [Public\MainController::class, 'contactsCategory'])->name('contacts');
+            Route::get('kontaktai/paieska', [Public\MainController::class, 'searchContacts'])->name('contacts.search');
+            Route::get('kontaktai/{alias}', [Public\MainController::class, 'contacts'])->name('contacts.alias');
             Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('news_string', '(naujiena|news)')->name('news');
             Route::get('mainNews', [Public\MainController::class, 'getMainNews']);
-            
-            Route::get('kontaktai', [Public\MainController::class, 'contacts'])->name('contacts');
             Route::get('{permalink}', [Public\MainController::class, 'page'])->where('permalink', '.*')->name('page');
         });
     });
@@ -122,7 +124,9 @@ Route::get('ataskaita-2022', [Public\MainController::class, 'ataskaita2022']);
 Route::get('ataskaita-2022/{permalink}', [Public\MainController::class, 'ataskaita2022'])->where('permalink', '.*')->name('ataskaita2022');
 Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('newsString', '(naujiena|news)')->name('news');
 
-Route::get('kontaktai', [Public\MainController::class, 'contacts'])->name('contacts');
+Route::get('kontaktai', [Public\MainController::class, 'contactsCategory'])->name('contacts');
+Route::get('kontaktai/paieska', [Public\MainController::class, 'searchContacts'])->name('contacts.search');
+Route::get('kontaktai/{alias}', [Public\MainController::class, 'contacts'])->name('contacts.alias');
 
 Route::post('search', [Public\MainController::class, 'search'])->name('search');
 

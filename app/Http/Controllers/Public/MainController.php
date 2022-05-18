@@ -6,6 +6,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
 use App\Models\Calendar;
 use App\Models\DutyInstitution;
+use App\Models\DutyType;
 use App\Models\MainPage;
 use App\Models\Navigation;
 use App\Models\News;
@@ -230,59 +231,112 @@ class MainController extends Controller
 		])->withViewData([
 			'title' => $page->title,
 			// truncate text to first sentence
-			'description' => Str::str_limit(strip_tags($page->text), 150),
+			'description' => Str::limit(strip_tags($page->text), 150),
+		]);
+	}
+
+	public function contactsCategory() {
+		$padalinys = Padalinys::where('alias', '=', $this->alias)->first();
+		Inertia::share('alias', $padalinys->alias);
+
+		$duties_institutions = DutyInstitution::whereHas('duties')->where([['padalinys_id', '=', $padalinys->id], ['alias', 'not like', '%studentu-atstovai%']])->get();
+
+		// dd($duties_institutions);
+
+		// check if institution length is 1, then just return that one institution contacts 
+
+		if ($duties_institutions->count() == 1) {
+			// redirect to institution page
+			return redirect('kontaktai/' . $duties_institutions->first()->alias);
+		}
+
+		return Inertia::render('Public/Contacts/Category', [
+			'institutions' => $duties_institutions
 		]);
 	}
 
 	public function contacts()
 	{
 		$padalinys = Padalinys::where('alias', '=', $this->alias)->first();
+		Inertia::share('alias', $padalinys->alias);
+
+		$alias = request()->alias;
+
+		if (in_array($alias, [null, 'koordinatoriai', 'kuratoriai', 'studentu-atstovai'])) {
+			$duty_type = DutyType::where('alias', '=', $alias ?? "koordinatoriai")->first();
+			$child_duty_types = DutyType::where('pid', '=', $duty_type->id)->get();
+			
+			if ($padalinys->id === 16) {
+				$duty_institution = DutyInstitution::where('alias', '=', 'centrinis-biuras')->first();
+			} else {
+				$duty_institution = DutyInstitution::where('padalinys_id', '=', $padalinys->id)->first();
+			}
+
+			$alias_duties = collect([]);
+
+			foreach ($child_duty_types as $child_duty_type) {
+				$alias_duties = $alias_duties->merge($duty_institution->duties->where('type_id', '=', $child_duty_type->id));
+			}
+
+			$alias_duties = $alias_duties->merge($duty_institution->duties->where('type_id', '=', $duty_type->id));
+
+		} else {
+			$duty_institution = DutyInstitution::where('alias', '=', $alias)->first();
+
+			if (is_null($duty_institution)) {
+				abort(404);
+			}
+
+			$alias_duties = $duty_institution->duties;
+		}
+
+		// dd($duty_institution, $alias_duties);
 
 		$alias_contacts = [];
-		$search_contacts = null;
 
-		if (request()->name) {
-			$inputName = request()->name;
-			$search_contacts = User::has('duties')->where('name', 'like', "%{$inputName}%")->get();
-			// dd($contacts, request()->name);
+		foreach ($alias_duties as $key => $duty) {
+			foreach ($duty->users as $key2 => $user) {
+				if ($user->has('duties')) {
+					array_push($alias_contacts, $user);
+				}
+			}
 		}
 
-		if ($padalinys->id === 16) {
-			$duty_institution = DutyInstitution::where('alias', '=', 'centrinis-biuras')->first();
-		} else {
-			$duty_institution = DutyInstitution::where('padalinys_id', '=', $padalinys->id)->first();
-		}
+		$alias_contacts = collect($alias_contacts)->unique();
+
+
+
+		// if ($padalinys->id === 16) {
+		// 	$duty_institution = DutyInstitution::where('alias', '=', 'centrinis-biuras')->first();
+		// } else {
+		// 	$duty_institution = DutyInstitution::where('padalinys_id', '=', $padalinys->id)->first();
+		// }
 
 		// else {
 
 		// 	$duty_institutions = DutyInstitution::where('padalinys_id', '=', $padalinys->id)->get();
 
 		// 	foreach ($duty_institutions as $key1 => $institution) {
-				foreach ($duty_institution->duties as $key2 => $duty) {
-					foreach ($duty->users as $key3 => $user) {
-						if ($user->has('duties')) {
-							array_push($alias_contacts, $user);
-						}
-					}
-				}
+				// foreach ($duty_institution->duties as $key2 => $duty) {
+				// 	foreach ($duty->users as $key3 => $user) {
+				// 		if ($user->has('duties')) {
+				// 			array_push($alias_contacts, $user);
+				// 		}
+				// 	}
+				// }
 		// 	}
 
-		$alias_contacts = collect($alias_contacts)->unique();
+		// $alias_contacts = collect($alias_contacts)->unique();
 
-		// dd($alias_contacts);
-		// }
-
-		// dd($contacts, request()->name);
-
-		Inertia::share('alias', $padalinys->alias);
-		return Inertia::render('Public/Contacts', [
-			'alias_contacts' => $alias_contacts->map(function ($contact) use ($duty_institution) {
+		return Inertia::render('Public/Contacts/Contacts', [
+			'institution' => $duty_institution,
+			'contacts' => $alias_contacts->map(function ($contact) use ($duty_institution) {
 				return [
 					'id' => $contact->id,
 					'name' => $contact->name,
 					'email' => $contact->email,
 					'phone' => $contact->phone,
-					'duties' => $contact->duties, //->only($duty_institution->id),
+					'duty' => $contact->duties->where('institution_id', '=', $duty_institution->id)->first(),
 					'image' => function () use ($contact) {
 						if (substr($contact->profile_photo_path, 0, 4) == 'http') {
 							return $contact->profile_photo_path;
@@ -293,7 +347,25 @@ class MainController extends Controller
 						}
 					},
 				];
-			}),
+			})])->withViewData([
+			'title' => $padalinys->name . ' kontaktai',
+			'description' => $padalinys->description,
+		]);
+	}
+
+	public function searchContacts() {
+		$padalinys = Padalinys::where('alias', '=', $this->alias)->first();
+		$search_contacts = null;
+		
+		if (request()->name) {
+			$inputName = request()->name;
+			$search_contacts = User::has('duties')->where('name', 'like', "%{$inputName}%")->get();
+			// dd($contacts, request()->name);
+		}
+
+		Inertia::share('alias', $padalinys->alias);
+		return Inertia::render('Public/Contacts/Search', [
+
 			'search_contacts' => is_null($search_contacts) ? [] : $search_contacts->map(function ($contact) {
 
 				return [
@@ -323,8 +395,7 @@ class MainController extends Controller
 				];
 			}),
 		])->withViewData([
-			'title' => $padalinys->name . ' kontaktai',
-			'description' => $padalinys->description,
+			'title' => 'Kontaktų paieška'
 		]);
 	}
 
