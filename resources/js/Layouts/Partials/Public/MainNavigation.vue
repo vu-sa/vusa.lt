@@ -131,7 +131,7 @@
           :selected-keys="selectedKeys"
           @update:selected-keys="handleSelectNavigation"
         />
-        <Link
+        <!-- <Link
           v-if="locale === 'lt'"
           class="ml-7 mt-1"
           :data="{ padalinys: usePage().props.value.alias }"
@@ -142,7 +142,7 @@
             >
             <template v-else>Kontaktai</template>
           </NButton>
-        </Link>
+        </Link> -->
         <div class="flex flex-row space-x-4 items-center mt-4">
           <NButton
             text
