@@ -28,9 +28,7 @@ Route::prefix('admin')->group(function () {
     Route::middleware(['auth', 'verified'])->group(function () {
 
         // Main
-        Route::get('/', function () {
-            return Inertia::render('Admin/Dashboard');
-        })->name('dashboard');
+        Route::get('/', [Admin\DashboardController::class, 'dashboard'])->name('dashboard');
 
         // User & Profile...
         Route::get('/user/profile', [UserProfileController::class, 'show'])
@@ -61,7 +59,7 @@ Route::prefix('admin')->group(function () {
         Route::resource('duties', Admin\DutyController::class);
         Route::resource('dutyInstitutions', Admin\DutyInstitutionController::class);
         Route::post('dutyInstitutions/search', [Admin\DutyInstitutionController::class, 'searchForInstitutions'])->name('dutyInstitutions.search');
-        
+
         Route::resource('roles', Admin\RolesController::class);
         Route::post('files/search', [Admin\FilesController::class, 'searchForFiles'])->name('files.search');
         Route::post('images/search', [Admin\FilesController::class, 'searchForImages'])->name('images.search');
@@ -81,7 +79,7 @@ Route::get('/auth/microsoft/callback', [Admin\UserController::class, 'storeFromM
 // });
 
 Route::group(['prefix' => '{lang?}', 'where' => ['lang' => '(lt|en)']], function () {
-    
+
     Route::name('padalinys.')->group(function () {
         Route::domain('{padalinys}.' . $this->host)->group(function () {
             Route::get('/', [Public\MainController::class, 'home'])->name('home');
@@ -109,7 +107,6 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => '(lt|en)']], function
             Route::get('{permalink}', [Public\MainController::class, 'page'])->where('permalink', '.*')->name('page');
         });
     });
-    
 });
 
 Route::get('/', [Public\MainController::class, 'home'])->name('home');

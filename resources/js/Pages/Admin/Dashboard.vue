@@ -1,9 +1,27 @@
 <template>
   <AppLayout title="Pradinis">
-    <p class="main-card">Sveiki prisijungę!</p>
+    <div class="main-card">
+      <p>{{ salutation }}</p>
+      <p><strong>Rolė:</strong> {{ props.role.name }}</p>
+      <p class="my-4">{{ props.role.description }}</p>
+      <p>Jeigu kiltų klausimų, rašykite <a href="mailto:it@vusa.lt">it@vusa.lt</a></p>
+    </div>
   </AppLayout>
 </template>
 
 <script setup>
 import AppLayout from "@/Layouts/AdminLayout.vue";
+import { usePage } from "@inertiajs/inertia-vue3";
+
+import { computed } from "vue";
+
+const props = defineProps({
+  role: Object,
+});
+
+const salutation = computed(() => {
+  // change name word ending to salutation
+  const name = usePage().props.value.user.name;
+  return `Sveiki prisijungę, ${name}`;
+});
 </script>
