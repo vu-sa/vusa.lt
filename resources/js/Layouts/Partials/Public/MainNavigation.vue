@@ -66,23 +66,15 @@
           <template v-else>Kontaktai</template>
         </NButton>
       </Link> -->
-      <NButton
-        text
-        target="_blank"
-        tag="a"
-        href="https://www.facebook.com/VUstudentuatstovybe"
+      <NButton text @click="windowOpen('https://www.facebook.com/VUstudentuatstovybe')"
         ><NIcon size="18"><FacebookF /></NIcon
       ></NButton>
-      <NButton
-        text
-        target="_blank"
-        tag="a"
-        href="https://www.instagram.com/vustudentuatstovybe/"
+      <NButton text @click="windowOpen('https://www.instagram.com/vustudentuatstovybe/')"
         ><NIcon size="18"><Instagram /></NIcon
       ></NButton>
       <!-- <NBadge dot processing> -->
       <NButton text @click="changeShowSearch"
-        ><NIcon color="#000000" size="22"><Search20Filled /></NIcon
+        ><NIcon size="22"><Search20Filled /></NIcon
       ></NButton>
       <!-- </NBadge> -->
       <NDropdown
@@ -160,7 +152,7 @@
           ></NButton>
           <!-- <NBadge dot processing> -->
           <NButton text @click="changeShowSearch"
-            ><NIcon color="#000000" size="22"><Search20Filled /></NIcon
+            ><NIcon size="22"><Search20Filled /></NIcon
           ></NButton>
           <!-- </NBadge> -->
           <NDropdown
@@ -341,6 +333,10 @@ const options_language_lt = [
     key: "home",
   },
 ];
+
+const windowOpen = (url) => {
+  window.open(url, "_blank");
+};
 
 const parseNavigation = (array, id) => {
   // console.log(array);

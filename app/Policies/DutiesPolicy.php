@@ -25,7 +25,7 @@ class DutiesPolicy
      */
     public function viewAny(User $user)
     {
-        //
+        return $user->isAdminOrSuperAdmin();
     }
 
     /**
@@ -60,7 +60,7 @@ class DutiesPolicy
      */
     public function update(User $user, Duty $duty)
     {
-        //
+        return $duty->padalinys()->id === $user->padalinys()->id;
     }
 
     /**

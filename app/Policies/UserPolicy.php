@@ -13,7 +13,7 @@ class UserPolicy
             return true;
         }
     }
-    
+
     use HandlesAuthorization;
 
     /**
@@ -24,7 +24,7 @@ class UserPolicy
      */
     public function viewAny(User $user)
     {
-        return false;
+        return $user->isAdminOrSuperAdmin();
     }
 
     /**
@@ -57,9 +57,11 @@ class UserPolicy
      * @param  \App\Models\User  $model
      * @return \Illuminate\Auth\Access\Response|bool
      */
+
+    // TODO:: fix this policy to use for each
     public function update(User $user, User $model)
     {
-        return false;
+        return $model->padaliniai()->contains($user->padaliniai()->first()->id);
     }
 
     /**

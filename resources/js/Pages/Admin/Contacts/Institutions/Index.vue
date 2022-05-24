@@ -3,21 +3,26 @@
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
-    <NDataTable
-      class="main-card"
-      :data="props.dutyInstitutions"
-      :columns="columns"
-      :row-props="rowProps"
-      :scroll-x="1200"
-    >
-    </NDataTable>
+    <div class="main-card">
+      <NInput
+        class="md:col-span-4 mb-2"
+        type="text"
+        size="medium"
+        round
+        placeholder="Ieškoti pagal pavadinimą, trumpąjį pavadinimą arba trumpinį..."
+        @input="handleSearchInput"
+        :loading="loading"
+      ></NInput>
+      <NDataTable :data="props.dutyInstitutions" :columns="columns" :row-props="rowProps">
+      </NDataTable>
+    </div>
   </AdminLayout>
 </template>
 
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AsideHeader from "../AsideHeader.vue";
-import { NDataTable } from "naive-ui";
+import { NDataTable, NInput } from "naive-ui";
 import { ref } from "vue";
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
@@ -25,6 +30,8 @@ import { Link } from "@inertiajs/inertia-vue3";
 const props = defineProps({
   dutyInstitutions: Object,
 });
+
+const loading = ref(false);
 
 const createColumns = () => {
   return [
@@ -45,7 +52,7 @@ const createColumns = () => {
 
     {
       title: "Padalinys",
-      key: "padalinys_id",
+      key: "padalinys.shortname",
     },
   ];
 };
@@ -60,4 +67,18 @@ const rowProps = (row) => {
     },
   };
 };
+
+const handleSearchInput = _.debounce((input) => {
+  const search = input;
+  // if (name.length > 2) {
+  loading.value = true;
+  Inertia.reload({
+    data: { search: search },
+    onSuccess: () => {
+      console.log(props.duties);
+      loading.value = false;
+      // },
+    },
+  });
+}, 500);
 </script>

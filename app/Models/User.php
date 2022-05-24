@@ -11,6 +11,7 @@ use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Jetstream\HasTeams;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Collection;
 
 class User extends Authenticatable
 {
@@ -79,26 +80,57 @@ class User extends Authenticatable
         return $this->belongsToMany(Duty::class, 'duties_users', 'user_id', 'duty_id');
     }
 
+    public function institutions()
+    {
+        $duties = $this->duties;
+        $institutions = [];
+
+        foreach ($duties as $duty) {
+            $institutions[] = $duty->institution;
+        }
+
+        // collect unique institutions
+
+        $institutions = new Collection($institutions);
+
+        return $institutions->unique();
+    }
+
     public function role()
     {
         return $this->belongsTo(Role::class, 'role_id', 'id');
     }
 
-    public function isAdmin() {
-        return $this->role->alias == 'admin';
+    public function isAdmin()
+    {
+        return $this->role?->alias == 'admin';
     }
 
     // if user role alias contains admin, return true
-    public function isAdminOrSuperAdmin() {
-        return $this->role->alias == 'admin' || $this->role->alias == 'padaliniai-admin';
+    // TODO: no need for this function, as policy will check before 'admin'
+    public function isAdminOrSuperAdmin()
+    {
+        return $this->role?->alias == 'admin' || $this->role?->alias == 'padaliniai-admin';
     }
 
-    // public function isManager() {
-    //     return $this->role->alias == 'manager';
-    // }
-
-    public function padalinys() {
+    // TODO: more logical return of padalinys
+    public function padalinys()
+    {
         return $this->duties()->first()?->institution?->padalinys;
     }
 
+    public function padaliniai()
+    {
+        $institutions = $this->institutions();
+        $padaliniai = [];
+
+        foreach ($institutions as $institution) {
+            $padaliniai[] = $institution->padalinys;
+        }
+
+        // collect unique padaliniai
+        $padaliniai = new Collection($padaliniai);
+
+        return $padaliniai->unique();
+    }
 }

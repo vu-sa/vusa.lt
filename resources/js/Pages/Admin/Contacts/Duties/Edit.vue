@@ -62,9 +62,7 @@
           />
         </div>
 
-        <div
-          class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center"
-        >
+        <div class="col-span-full flex justify-end items-center">
           <n-popconfirm
             positive-text="Ištrinti!"
             negative-text="Palikti"

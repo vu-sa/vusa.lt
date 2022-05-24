@@ -3,25 +3,37 @@
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
-    <NDataTable
-      remote
-      class="main-card"
-      :data="props.pages.data"
-      :columns="columns"
-      :pagination="pagination"
-      @update:page="handlePageChange"
-    >
-    </NDataTable>
+    <div class="main-card">
+      <NInput
+        class="md:col-span-4 mb-2"
+        type="text"
+        size="medium"
+        round
+        placeholder="Ieškoti pagal pavadinimą..."
+        @input="handleSearchInput"
+        :loading="loading"
+      ></NInput>
+      <NDataTable
+        remote
+        size="small"
+        :data="props.pages.data"
+        :columns="columns"
+        :pagination="pagination"
+        @update:page="handlePageChange"
+        @update:filters="handleFiltersChange"
+      >
+      </NDataTable>
+    </div>
   </AdminLayout>
 </template>
 
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AsideHeader from "../AsideHeader.vue";
-import { NDataTable, NButton } from "naive-ui";
+import { NDataTable, NButton, NInput } from "naive-ui";
 import { ref, reactive, h } from "vue";
 import { Inertia } from "@inertiajs/inertia";
-import { Link } from "@inertiajs/inertia-vue3";
+import { Link, usePage } from "@inertiajs/inertia-vue3";
 
 const props = defineProps({
   pages: Object,
@@ -34,6 +46,8 @@ const pagination = reactive({
   pageSize: 20,
   showQuickJumper: true,
 });
+
+// console.log(usePage().props.value.padaliniai);
 
 const createColumns = () => {
   return [
@@ -48,13 +62,17 @@ const createColumns = () => {
           {
             href: route("pages.edit", { id: row.id }),
           },
-          row.title
+          { default: () => row.title }
         );
       },
     },
     {
       title: "Padalinys",
-      key: "padalinys",
+      key: "padalinys.id",
+      filterMultiple: true,
+      filterOptionValues: padaliniaiFilterOptionValues,
+      filterOptions: padaliniaiFilterOptions,
+      filter: true,
       render(row) {
         return row.padalinys.shortname;
       },
@@ -96,12 +114,28 @@ const createColumns = () => {
               }
             },
           },
-          "Peržiūrėti"
+          { default: () => "Pasižiūrėti" }
         );
       },
     },
   ];
 };
+
+const padaliniaiFilterOptions = ref(
+  usePage().props.value.padaliniai.map((padalinys) => {
+    return {
+      label: padalinys.shortname,
+      value: padalinys.id,
+    };
+  })
+);
+
+const padaliniaiFilterOptionValues = ref([]);
+
+padaliniaiFilterOptions.value.unshift({
+  label: "VU SA",
+  value: 16,
+});
 
 const columns = ref(createColumns());
 const loading = ref(false);
@@ -121,4 +155,45 @@ const handlePageChange = (page) => {
     }
   );
 };
+
+const handleFiltersChange = (filters) => {
+  console.log(filters);
+  loading.value = true;
+  Inertia.get(
+    route("pages.index"),
+    {
+      page: pagination.page,
+      padaliniai: filters["padalinys.id"],
+    },
+    {
+      preserveState: true,
+      preserveScroll: true,
+      onSuccess: () => {
+        padaliniaiFilterOptionValues.value = filters["padalinys.id"];
+        loading.value = false;
+      },
+    }
+  );
+};
+
+const handleSearchInput = _.debounce((input) => {
+  const title = input;
+  // if (name.length > 2) {
+  loading.value = true;
+  Inertia.reload({
+    data: { title: title },
+    onSuccess: () => {
+      console.log(props.pages);
+      pagination.value = {
+        itemCount: props.pages.total,
+        page: 1,
+        pageCount: props.pages.last_page,
+        pageSize: 20,
+        showQuickJumper: true,
+      };
+      loading.value = false;
+      // },
+    },
+  });
+}, 500);
 </script>

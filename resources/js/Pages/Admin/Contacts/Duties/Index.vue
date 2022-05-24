@@ -3,22 +3,32 @@
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
-    <NDataTable
-      class="main-card"
-      remote
-      :data="props.duties.data"
-      :columns="columns"
-      :row-props="rowProps"
-      :pagination="pagination"
-      @update:page="handlePageChange"
-    >
-    </NDataTable>
+    <div class="main-card">
+      <NInput
+        class="md:col-span-4 mb-2"
+        type="text"
+        size="medium"
+        round
+        placeholder="Ieškoti pagal pavadinimą, el. paštą..."
+        @input="handleSearchInput"
+        :loading="loading"
+      ></NInput>
+      <NDataTable
+        remote
+        :data="props.duties.data"
+        :columns="columns"
+        :row-props="rowProps"
+        :pagination="pagination"
+        @update:page="handlePageChange"
+      >
+      </NDataTable>
+    </div>
   </AdminLayout>
 </template>
 
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-import { NDataTable } from "naive-ui";
+import { NDataTable, NInput } from "naive-ui";
 import { ref, reactive } from "vue";
 import { Inertia } from "@inertiajs/inertia";
 import AsideHeader from "../AsideHeader.vue";
@@ -33,10 +43,25 @@ const createColumns = () => {
     {
       title: "Pavadinimas",
       key: "name",
+      width: 300,
+      ellipsis: {
+        tooltip: true,
+      },
+    },
+    {
+      title: "Tipas",
+      key: "type.name",
     },
     {
       title: "El. paštas",
       key: "email",
+    },
+    {
+      title: "Institucija",
+      key: "institution.id",
+      render(row) {
+        return row.institution.short_name ?? row.institution.name;
+      },
     },
   ];
 };
@@ -76,4 +101,25 @@ const handlePageChange = (page) => {
     }
   );
 };
+
+const handleSearchInput = _.debounce((input) => {
+  const title = input;
+  // if (name.length > 2) {
+  loading.value = true;
+  Inertia.reload({
+    data: { title: title },
+    onSuccess: () => {
+      console.log(props.duties);
+      pagination.value = {
+        itemCount: props.duties.total,
+        page: 1,
+        pageCount: props.duties.last_page,
+        pageSize: 20,
+        showQuickJumper: true,
+      };
+      loading.value = false;
+      // },
+    },
+  });
+}, 500);
 </script>

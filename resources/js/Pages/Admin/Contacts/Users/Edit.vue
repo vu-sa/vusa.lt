@@ -37,11 +37,13 @@
 
         <div class="lg:col-span-2">
           <label class="font-bold">Rolė</label>
-          <n-input
-            disabled
-            v-model:value="contact.role.name"
+          <NSelect
+            :disabled="$page.props.user.role.alias !== 'admin'"
+            v-model:value="contact.role.id"
+            :options="rolesOptions"
+            clearable
             type="text"
-            placeholder="Įrašyti pavadinimą..."
+            placeholder="Be rolės..."
           />
         </div>
 
@@ -122,12 +124,25 @@ const message = useMessage();
 const props = defineProps({
   contact: Object,
   errors: Object,
+  roles: Array,
 });
 
 const contact = reactive(props.contact);
+
+contact.role = {
+  id: contact.role?.id,
+  name: contact.role?.name,
+};
+
 const duties = ref([]);
 // const selectedDuties = ref(null);
 const showSpin = ref(false);
+
+// map roles to options
+const rolesOptions = props.roles.map((role) => ({
+  label: role.name,
+  value: role.id,
+}));
 
 const getDutyOptions = _.debounce((input) => {
   // get other lang

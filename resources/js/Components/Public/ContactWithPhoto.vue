@@ -15,14 +15,6 @@
           <slot name="duty"></slot>
         </div>
       </div>
-      <!-- <p class="mb-2">
-        <slot name="duty"></slot
-        ><NPopover :show-arrow="false" :style="{ maxWidth: '300px' }"
-          ><template #trigger>
-            <NIcon><QuestionCircle24Regular /></NIcon> </template
-          ><slot name="description"></slot
-        ></NPopover>
-      </p> -->
       <div class="text-sm text-neutral-500 flex flex-col gap-2">
         <slot name="contactInfo"></slot>
       </div>

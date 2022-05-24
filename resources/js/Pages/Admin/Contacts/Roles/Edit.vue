@@ -31,7 +31,7 @@
           <label class="font-bold">Aprašymas</label>
           <n-input
             v-model:value="role.description"
-            type="text"
+            type="textarea"
             placeholder="Įrašyti pavadinimą..."
           />
         </div>

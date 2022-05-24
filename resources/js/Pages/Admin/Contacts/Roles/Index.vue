@@ -8,7 +8,6 @@
       :data="props.roles"
       :columns="columns"
       :row-props="rowProps"
-      :scroll-x="1200"
     >
     </NDataTable>
   </AdminLayout>

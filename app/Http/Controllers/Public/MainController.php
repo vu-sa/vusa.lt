@@ -57,7 +57,7 @@ class MainController extends Controller
 		$mainNavigation = Navigation::where([['padalinys_id', $vusa->id], ['lang', app()->getLocale()]])->orderBy('order')->get();
 		// dd($this->alias);
 		/// pakeisti visur alias į vusa kad būtų aiškiau nes čia dabar nesąmonė
-		
+
 
 		if ($this->alias !== '') {
 			$banners = Padalinys::where('alias', $this->alias)->first()->banners()->inRandomOrder()->where('is_active', 1)->get();
@@ -115,6 +115,11 @@ class MainController extends Controller
 	{
 		$news = News::where('permalink', '=', request()->route('permalink'))->first();
 
+		if ($news == null) {
+			// 404
+			abort(404);
+		}
+
 		if (substr($news->image, 0, 4) == 'http') {
 			$image = $news->image;
 		} else {
@@ -151,7 +156,7 @@ class MainController extends Controller
 			],
 		])->withViewData([
 			'title' => $news->title,
-			'description' => $news->short,
+			'description' => strip_tags($news->short),
 			'image' => $image,
 		]);
 	}
@@ -159,7 +164,7 @@ class MainController extends Controller
 	public function newsArchive(Request $request)
 
 	{
-		
+
 		Inertia::share('alias', $this->alias);
 
 		$news = News::select('id', 'title', 'short', 'image', 'permalink', 'publish_time', 'lang')->orderBy('publish_time', 'desc')->paginate(15);
@@ -171,7 +176,7 @@ class MainController extends Controller
 			'description' => 'Naujienų archyvas',
 		]);
 	}
-	
+
 	public function getMainNews()
 	{
 		// get last 4 news by publishing date
@@ -200,10 +205,10 @@ class MainController extends Controller
 
 		// dd(request()->route('permalink'), request()->permalink, $page, $padalinys);
 
-		
+
 
 		// get four random pages
-		$random_pages = Page::where([['padalinys_id', '=', $padalinys->id], ['lang', app()->getLocale()]])->get()->random(4);
+		// $random_pages = Page::where([['padalinys_id', '=', $padalinys->id], ['lang', app()->getLocale()]])->get()->random(4);
 
 		Inertia::share('alias', $page->padalinys->alias);
 		return Inertia::render('Public/Page', [
@@ -219,15 +224,15 @@ class MainController extends Controller
 				'category' => $page->category,
 				'padalinys' => $page->padalinys->shortname,
 			],
-			'random_pages' => $random_pages->map(function ($page) {
-				return [
-					'id' => $page->id,
-					'title' => $page->title,
-					'lang' => $page->lang,
-					'alias' => $page->padalinys->alias,
-					'permalink' => $page->permalink,
-				];
-			}),
+			// 'random_pages' => $random_pages->map(function ($page) {
+			// 	return [
+			// 		'id' => $page->id,
+			// 		'title' => $page->title,
+			// 		'lang' => $page->lang,
+			// 		'alias' => $page->padalinys->alias,
+			// 		'permalink' => $page->permalink,
+			// 	];
+			// }),
 		])->withViewData([
 			'title' => $page->title,
 			// truncate text to first sentence
@@ -235,7 +240,8 @@ class MainController extends Controller
 		]);
 	}
 
-	public function contactsCategory() {
+	public function contactsCategory()
+	{
 		$padalinys = Padalinys::where('alias', '=', $this->alias)->first();
 		Inertia::share('alias', $padalinys->alias);
 
@@ -265,7 +271,7 @@ class MainController extends Controller
 		if (in_array($alias, [null, 'koordinatoriai', 'kuratoriai', 'studentu-atstovai'])) {
 			$duty_type = DutyType::where('alias', '=', $alias ?? "koordinatoriai")->first();
 			$child_duty_types = DutyType::where('pid', '=', $duty_type->id)->get();
-			
+
 			if ($padalinys->id === 16) {
 				$duty_institution = DutyInstitution::where('alias', '=', 'centrinis-biuras')->first();
 			} else {
@@ -279,7 +285,6 @@ class MainController extends Controller
 			}
 
 			$alias_duties = $alias_duties->merge($duty_institution->duties->where('type_id', '=', $duty_type->id));
-
 		} else {
 			$duty_institution = DutyInstitution::where('alias', '=', $alias)->first();
 
@@ -317,13 +322,13 @@ class MainController extends Controller
 		// 	$duty_institutions = DutyInstitution::where('padalinys_id', '=', $padalinys->id)->get();
 
 		// 	foreach ($duty_institutions as $key1 => $institution) {
-				// foreach ($duty_institution->duties as $key2 => $duty) {
-				// 	foreach ($duty->users as $key3 => $user) {
-				// 		if ($user->has('duties')) {
-				// 			array_push($alias_contacts, $user);
-				// 		}
-				// 	}
-				// }
+		// foreach ($duty_institution->duties as $key2 => $duty) {
+		// 	foreach ($duty->users as $key3 => $user) {
+		// 		if ($user->has('duties')) {
+		// 			array_push($alias_contacts, $user);
+		// 		}
+		// 	}
+		// }
 		// 	}
 
 		// $alias_contacts = collect($alias_contacts)->unique();
@@ -347,16 +352,19 @@ class MainController extends Controller
 						}
 					},
 				];
-			})])->withViewData([
+			})
+		])->withViewData([
 			'title' => $padalinys->name . ' kontaktai',
-			'description' => $padalinys->description,
+			// description html to plain text
+			'description' => strip_tags($padalinys->description),
 		]);
 	}
 
-	public function searchContacts() {
+	public function searchContacts()
+	{
 		$padalinys = Padalinys::where('alias', '=', $this->alias)->first();
 		$search_contacts = null;
-		
+
 		if (request()->name) {
 			$inputName = request()->name;
 			$search_contacts = User::has('duties')->where('name', 'like', "%{$inputName}%")->get();
@@ -399,8 +407,9 @@ class MainController extends Controller
 		]);
 	}
 
-	public function search() {
-		
+	public function search()
+	{
+
 		// get search query
 		$search = request()->data['input'];
 
@@ -418,11 +427,12 @@ class MainController extends Controller
 		return back()->with('search_calendar', $calendar)->with('search_news', $news)->with('search_pages', $pages);
 	}
 
-	public function saziningaiExamRegistration() {
-		
+	public function saziningaiExamRegistration()
+	{
+
 		// return all padalinys but only shortname VU and id
 		$padaliniai = Padalinys::select('id', 'shortname_vu')->where('shortname', '!=', 'VU')->orderBy('shortname')->get();
-		
+
 		return Inertia::render('Public/SaziningaiExamRegistration', [
 			'padaliniaiOptions' => $padaliniai,
 		])->withViewData([
@@ -431,24 +441,25 @@ class MainController extends Controller
 		]);
 	}
 
-	public function storeSaziningaiExamRegistration() {
+	public function storeSaziningaiExamRegistration()
+	{
 		// dd(request()->all());
 
 		$request = request();
-        
-        $saziningaiExam = SaziningaiExam::create([
-            'uuid' => bin2hex(random_bytes(15)),
-            'subject_name' => $request->subject_name,
+
+		$saziningaiExam = SaziningaiExam::create([
+			'uuid' => bin2hex(random_bytes(15)),
+			'subject_name' => $request->subject_name,
 			'name' => $request->name,
-            'padalinys_id' => $request->unit,
+			'padalinys_id' => $request->unit,
 			'place' => $request->place,
-            'email' => $request->email,
-            'duration' => $request->duration,
-            'exam_holders' => $request->holders,
-            'exam_type' => $request->type,
-            'phone' => $request->phone,
-            'students_need' => $request->students_need,
-        ]);
+			'email' => $request->email,
+			'duration' => $request->duration,
+			'exam_holders' => $request->holders,
+			'exam_type' => $request->type,
+			'phone' => $request->phone,
+			'students_need' => $request->students_need,
+		]);
 
 		// dd($saziningaiExam);
 
@@ -459,14 +470,15 @@ class MainController extends Controller
 			$saziningaiExamFlow->exam_uuid = $saziningaiExam->uuid;
 			$saziningaiExamFlow->start_time = date('Y-m-d H:i:s', strtotime($flow['time']));
 			$saziningaiExamFlow->save();
-			}
+		}
 
 		// dd($saziningaiExam, $saziningaiExamFlow);
 
-        return redirect()->route('home');
+		return redirect()->route('home');
 	}
 
-	public function saziningaiExams() {
+	public function saziningaiExams()
+	{
 
 		// return all padalinys but only shortname VU and id
 		$padaliniai = Padalinys::select('id', 'shortname_vu')->where('shortname', '!=', 'VU')->orderBy('shortname')->get();
@@ -475,7 +487,7 @@ class MainController extends Controller
 
 		// $saziningaiExams = SaziningaiExam::with('flows')->whereRelation('flows', 'start_time', '>=', now()->subDay())->orderBy('created_at', 'desc')->get();
 		$saziningaiExamFlows = SaziningaiExamFlow::where('start_time', '>=', now()->subDay())->orderBy('start_time', 'asc')->get();
-		
+
 		return Inertia::render('Public/SaziningaiExams', [
 			'padaliniaiOptions' => $padaliniai,
 			'saziningaiExamFlows' => $saziningaiExamFlows->map(function ($saziningaiExamFlow) {
@@ -486,17 +498,17 @@ class MainController extends Controller
 					// get observers count 
 					'observers_registered' => $saziningaiExamFlow->observers->count(),
 					'exam' => $saziningaiExamFlow->exam->only(['subject_name', 'place', 'duration', 'exam_holders', 'exam_type', 'students_need']),
-					'unit' => $saziningaiExamFlow->exam->padalinys->shortname_vu,					
+					'unit' => $saziningaiExamFlow->exam->padalinys->shortname_vu,
 				];
 			}),
 		])->withViewData([
 			'title' => 'Programos „Sąžiningai“ užregistruoti egzaminai',
 			'description' => 'Registruokitės į egzaminų ar atsiskaitymų stebėjimą! Registruotis reikia į kiekvieną srautą atskirai.',
 		]);
-
 	}
 
-	public function storeSaziningaiExamObserver() {
+	public function storeSaziningaiExamObserver()
+	{
 		$request = request();
 
 		$saziningaiExamFlow = SaziningaiExamFlow::find($request->flow);
@@ -514,13 +526,14 @@ class MainController extends Controller
 		return redirect()->back();
 	}
 
-	public function ataskaita2022() {
+	public function ataskaita2022()
+	{
 
 		$permalink = request()->route('permalink');
 
 		// get current locale
 		$locale = app()->getLocale();
-		
+
 		if ($locale == 'en') {
 			if ($permalink == 'pradzia') {
 				return Inertia::render('Public/Ataskaita2022/Content/0-EN');
@@ -538,8 +551,7 @@ class MainController extends Controller
 				return Inertia::render('Public/Ataskaita2022/Content/6-EN');
 			} else if ($permalink == 'sritys') {
 				return Inertia::render('Public/Ataskaita2022/Content/7-EN');
-			}
-			else if ($permalink == 'padeka') {
+			} else if ($permalink == 'padeka') {
 				return Inertia::render('Public/Ataskaita2022/Content/8-EN');
 			}
 
@@ -562,12 +574,10 @@ class MainController extends Controller
 			return Inertia::render('Public/Ataskaita2022/Content/6-LT');
 		} else if ($permalink == 'sritys') {
 			return Inertia::render('Public/Ataskaita2022/Content/7-LT');
-		}
-		else if ($permalink == 'padeka') {
+		} else if ($permalink == 'padeka') {
 			return Inertia::render('Public/Ataskaita2022/Content/8-LT');
 		}
 
 		return Inertia::render('Public/Ataskaita2022/Content/0-LT');
-
 	}
 }

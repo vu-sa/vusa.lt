@@ -126,7 +126,13 @@
           <NButton class="mt-2" type="success" @click="updateLink">Atnaujinti</NButton>
         </NTabPane>
         <NTabPane name="file" tab="Pridėti failą, kaip nuorodą">
-          <p class="my-2">Įrašyk failo pavadinimą ir pasirink, kad būtų pridėtas!</p>
+          <p class="my-2">
+            Įrašyk failo pavadinimą ir pasirink, kad būtų pridėtas!
+            <a class="text-vusa-red" target="_blank" :href="route('files.index')"
+              >Failo įkėlimas</a
+            >
+          </p>
+
           <NSelect
             v-model:value="previousUrl"
             filterable
@@ -139,7 +145,13 @@
           <NButton class="mt-2" type="success" @click="updateLink">Atnaujinti</NButton>
         </NTabPane>
         <NTabPane name="image" tab="Pridėti paveikslėlį">
-          <p class="my-2">Įrašyk paveikslėlio pavadinimą ir pasirink!</p>
+          <p class="my-2">
+            Įrašyk paveikslėlio pavadinimą ir pasirink!
+            <a class="text-vusa-red" target="_blank" :href="route('files.index')"
+              >Failo įkėlimas</a
+            >
+          </p>
+
           <NSelect
             v-model:value="previousUrl"
             filterable
@@ -149,7 +161,7 @@
             remote
             @search="getImages"
           />
-          <NButton class="mt-2" type="success" @click="placeImage">Atnaujinti</NButton>
+          <NButton class="mt-4" type="primary" @click="placeImage">Atnaujinti</NButton>
         </NTabPane>
       </NTabs>
     </div>
@@ -158,7 +170,7 @@
 
 <script setup>
 import { useEditor, EditorContent } from "@tiptap/vue-3";
-import Link from "@tiptap/extension-link";
+import TipTapLink from "@tiptap/extension-link";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 import {
@@ -187,6 +199,7 @@ import {
 import { Inertia } from "@inertiajs/inertia";
 // import { usePage } from "@inertiajs/inertia-vue3";
 import { ref, onBeforeUnmount } from "vue";
+import { Link } from "@inertiajs/inertia-vue3";
 
 const props = defineProps({
   modelValue: String,
@@ -294,7 +307,7 @@ const editor = useEditor({
   extensions: [
     StarterKit,
     Image,
-    Link.configure({
+    TipTapLink.configure({
       openOnClick: false,
     }),
   ],

@@ -5,12 +5,7 @@
       <h1>Programos „Sąžiningai“ užregistruoti egzaminai</h1>
       <p class="my-4">Registruotis reikia į kiekvieną srautą atskirai.</p>
       <div class="main-card">
-        <NDataTable
-          :scroll-x="1200"
-          size="small"
-          :data="props.saziningaiExamFlows"
-          :columns="columns"
-        >
+        <NDataTable size="small" :data="props.saziningaiExamFlows" :columns="columns">
         </NDataTable>
       </div>
     </div>
@@ -197,8 +192,9 @@ const rules = {
 const createColumns = () => {
   return [
     {
-      title: "Registruotis į stebėjimą",
+      // title: "Registruotis į stebėjimą",
       key: "register",
+      width: "125",
       render(row) {
         return h(
           NButton,
@@ -209,8 +205,12 @@ const createColumns = () => {
               formValue.value.start_time = row.start_time;
               showModal.value = true;
             },
+            size: "small",
+            secondary: true,
+            type:
+              row.observers_registered >= row.exam.students_need ? "default" : "warning",
           },
-          "Registruotis"
+          { default: () => "Registruotis" }
         );
       },
     },
@@ -225,6 +225,10 @@ const createColumns = () => {
     {
       title: "Vieta",
       key: "exam.place",
+      width: "10%",
+      ellipsis: {
+        tooltip: true,
+      },
     },
     {
       title: "Trukmė",
@@ -245,6 +249,10 @@ const createColumns = () => {
     {
       title: "Kiek stebėtojų jau užsiregistravo / reikia",
       key: "exam.students_need",
+      width: "10%",
+      ellipsis: {
+        tooltip: true,
+      },
       render(row) {
         return h(
           "div",

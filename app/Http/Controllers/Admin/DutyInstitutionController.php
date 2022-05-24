@@ -14,7 +14,7 @@ class DutyInstitutionController extends Controller
     {
         $this->authorizeResource(DutyInstitution::class, 'dutyInstitution');
     }
-    
+
     /**
      * Display a listing of the resource.
      *
@@ -22,7 +22,14 @@ class DutyInstitutionController extends Controller
      */
     public function index()
     {
-        $dutyInstitutions = DutyInstitution::all();
+        $search = request()->input('search');
+
+        $dutyInstitutions = DutyInstitution::with('padalinys:id,shortname')->when(!request()->user()->isAdmin(), function ($query) {
+                $query->where('padalinys_id', '=', request()->user()->padalinys()->id);
+            })->when(!is_null($search), function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%")->orWhere('short_name', 'like', "%{$search}%")->orWhere('alias', 'like', "%{$search}%");
+            })->get();
+
 
         return Inertia::render('Admin/Contacts/Institutions/Index', [
             'dutyInstitutions' => $dutyInstitutions,
@@ -70,7 +77,7 @@ class DutyInstitutionController extends Controller
     public function edit(DutyInstitution $dutyInstitution)
     {
         // dd($dutyInstitution);
-        
+
         return Inertia::render('Admin/Contacts/Institutions/Edit', [
             'dutyInstitution' => $dutyInstitution,
             'duties' => $dutyInstitution->duties,
@@ -92,8 +99,8 @@ class DutyInstitutionController extends Controller
      */
     public function update(Request $request, DutyInstitution $dutyInstitution)
     {
-        $dutyInstitution->update($request->only('name', 'shortname', 'alias', 'description','padalinys_id'));
-        
+        $dutyInstitution->update($request->only('name', 'shortname', 'alias', 'description', 'padalinys_id'));
+
         return redirect()->back();
     }
 

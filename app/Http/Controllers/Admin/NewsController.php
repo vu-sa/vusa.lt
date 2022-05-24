@@ -6,6 +6,7 @@ use App\Models\News;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 class NewsController extends Controller
@@ -14,7 +15,7 @@ class NewsController extends Controller
     {
         $this->authorizeResource(News::class, 'news');
     }
-    
+
     /**
      * Display a listing of the resource.
      *
@@ -22,18 +23,21 @@ class NewsController extends Controller
      */
     public function index(Request $request)
     {
-        if ($request->user()->isAdmin()) {
-        
-        $news = News::with(['padalinys' => function ($query) {
-            $query->select('id', 'shortname', 'alias');
-        }])->orderByDesc('created_at')->paginate(20);
+        $padaliniai = request()->input('padaliniai');
+        $title = request()->input('title');
 
-    } else {
-
-        $news = News::with(['padalinys' => function ($query) {
-            $query->select('id', 'shortname', 'alias');
-        }])->where('padalinys_id', '=', $request->user()->padalinys()->id)->orderByDesc('created_at')->paginate(20);
-    }
+        $news = News::
+            // check if admin, if not return only pages from current user padalinys
+            when(!$request->user()->isAdmin(), function ($query) use ($request) {
+                $query->where('padalinys_id', '=', $request->user()->padalinys()->id);
+                // check request for padaliniai, if not empty return only pages from request padaliniai
+            })->when(!empty($padaliniai), function ($query) use ($padaliniai) {
+                $query->whereIn('padalinys_id', $padaliniai);
+            })->when(!is_null($title), function ($query) use ($title) {
+                $query->where('title', 'like', "%{$title}%");
+            })->with(['padalinys' => function ($query) {
+                $query->select('id', 'shortname', 'alias');
+            }])->orderByDesc('created_at')->paginate(20);
 
         return Inertia::render('Admin/Content/News/Index', [
             'news' => $news
@@ -69,8 +73,6 @@ class NewsController extends Controller
             'publish_time' => 'required',
         ]);
 
-        $user = Auth::user();
-
         // dd()
 
         News::create([
@@ -79,12 +81,12 @@ class NewsController extends Controller
             'text' => $request->text,
             'short' => $request->short,
             'lang' => $request->lang,
-            'other_lang_id' => $request->other_lang_news, 
+            'other_lang_id' => $request->other_lang_news,
             'image' => $request->image,
             'image_author' => $request->image_author,
             'publish_time' => $request->publish_time,
             'draft' => $request->draft ?? 0,
-            'padalinys_id' => $user->padalinys()->id,
+            'padalinys_id' => User::find(Auth::user()->id)->padalinys()->id,
         ]);
 
         return redirect()->route('news.index');

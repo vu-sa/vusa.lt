@@ -8,8 +8,14 @@
         <NIcon><HatGraduation20Filled /></NIcon> {{ breadcrumb.name }}
       </NBreadcrumbItem>
     </NBreadcrumb>
+
     <PageArticle>
       <template #title>{{ page.title }} </template>
+      <div class="col-span-full mb-4">
+        <NButton text v-if="$page.props.user" @click="editPage"
+          ><NIcon size="40"><DocumentEdit24Regular></DocumentEdit24Regular></NIcon
+        ></NButton>
+      </div>
       <div class="prose" v-html="page.text"></div>
       <!-- <template #randomPages>
         <ul class="prose" v-for="item in random_pages">
@@ -30,13 +36,14 @@ import PublicLayout from "../../Layouts/PublicLayout.vue";
 import PageArticle from "../../Components/Public/PageArticle.vue";
 import { Link, usePage } from "@inertiajs/inertia-vue3";
 import { ref } from "vue";
-import { NBreadcrumb, NBreadcrumbItem, NIcon } from "naive-ui";
-import { HatGraduation20Filled } from "@vicons/fluent";
+import { NBreadcrumb, NBreadcrumbItem, NIcon, NButton } from "naive-ui";
+import { HatGraduation20Filled, DocumentEdit24Regular } from "@vicons/fluent";
+import { Inertia } from "@inertiajs/inertia";
 
 const props = defineProps({
   navigation_item_id: Number,
   page: Object,
-  random_pages: Array,
+  // random_pages: Array,
 });
 
 const locale = ref(usePage().props.value.locale);
@@ -54,4 +61,8 @@ const getBreadcrumbTree = (navigationItemId) => {
 };
 
 const breadcrumbTree = getBreadcrumbTree(props.navigation_item_id);
+
+const editPage = () => {
+  Inertia.visit(route("pages.edit", { id: props.page.id }));
+};
 </script>

@@ -24,4 +24,9 @@ class Duty extends Model
     {
         return $this->belongsTo(DutyInstitution::class, 'institution_id');
     }
+
+    public function padalinys()
+    {
+        return $this->institution->padalinys;
+    }
 }

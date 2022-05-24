@@ -7,23 +7,28 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller as Controller;
 use Inertia\Inertia;
 use stdClass;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class DutyController extends Controller
 {
-    
+
     public function __construct()
     {
         $this->authorizeResource(Duty::class, 'duty');
     }
-    
+
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $duties = Duty::paginate(20);
+        $title = request()->input('title');
+
+        $duties = Duty::when(!is_null($title), function ($query) use ($title) {
+            $query->where('name', 'like', "%{$title}%")->orWhere('email', 'like', "%{$title}%");
+        })->with('type:id,name')->with('institution:id,name,short_name')->paginate(20);
 
         return Inertia::render('Admin/Contacts/Duties/Index', [
             'duties' => $duties,

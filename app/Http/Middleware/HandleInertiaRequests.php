@@ -2,10 +2,16 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Calendar;
+use App\Models\Navigation;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use App\Models\Padalinys;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Page;
+use App\Models\SaziningaiExam;
+use App\Models\User;
+use Illuminate\Support\Facades\Route;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -43,6 +49,16 @@ class HandleInertiaRequests extends Middleware
                 'env' => config('app.env'),
                 'url' => config('app.url'),
             ],
+            // check if route name contains 'admin'
+            // 'admin' => strpos(Route::currentRouteName(), 'admin') !== false,
+            // 'can' => [
+            //     'index_content' => $request->user()->can('viewAny', Page::class),
+            //     'index_users' => $request->user()->can('viewAny', User::class),
+            //     'index_navigation' => $request->user()->can('viewAny', Navigation::class),
+            //     'index_calendar' => $request->user()->can('viewAny', Calendar::class),
+            //     'index_files' => true,
+            //     'index_saziningai' => $request->user()->can('viewAny', SaziningaiExam::class),
+            // ],
             'padaliniai' => Padalinys::where('type', '=', 'padalinys')->orderBy('shortname_vu')->get()->map(function ($padalinys) {
                 return [
                     'id' => $padalinys->id,
@@ -56,10 +72,10 @@ class HandleInertiaRequests extends Middleware
                 return app()->getLocale();
             },
             'language' => function () {
-                if(!file_exists(resource_path('lang/'. app()->getLocale() .'.json'))) {
+                if (!file_exists(resource_path('lang/' . app()->getLocale() . '.json'))) {
                     return [];
                 }
-                return json_decode(file_get_contents(resource_path('lang/'. app()->getLocale() .'.json')), true);   
+                return json_decode(file_get_contents(resource_path('lang/' . app()->getLocale() . '.json')), true);
             },
             'search' => fn () => [
                 'calendar' => $request->session()->get('search_calendar') ?? [],

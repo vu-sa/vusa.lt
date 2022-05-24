@@ -3,22 +3,32 @@
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
-    <NDataTable
-      class="main-card"
-      remote
-      :data="props.users.data"
-      :loading="loading"
-      :columns="columns"
-      :pagination="pagination"
-      :row-props="rowProps"
-      @update:page="handlePageChange"
-    ></NDataTable>
+    <div class="main-card">
+      <NInput
+        class="md:col-span-4 mb-2"
+        type="text"
+        size="medium"
+        round
+        placeholder="Ieškoti pagal vardą, el. paštą..."
+        @input="handleSearchInput"
+        :loading="loading"
+      ></NInput>
+      <NDataTable
+        remote
+        :data="props.users.data"
+        :loading="loading"
+        :columns="columns"
+        :pagination="pagination"
+        :row-props="rowProps"
+        @update:page="handlePageChange"
+      ></NDataTable>
+    </div>
   </AdminLayout>
 </template>
 
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-import { NDataTable } from "naive-ui";
+import { NDataTable, NInput } from "naive-ui";
 import { ref, reactive } from "vue";
 import { Inertia } from "@inertiajs/inertia";
 import AsideHeader from "../AsideHeader.vue";
@@ -46,13 +56,15 @@ const createColumns = () => {
   ];
 };
 
-const pagination = reactive({
+const pagination = ref({});
+
+pagination.value = {
   itemCount: props.users.total,
   page: props.users.current_page,
   pageCount: props.users.last_page,
   pageSize: 20,
   showQuickJumper: true,
-});
+};
 
 const columns = ref(createColumns());
 const loading = ref(false);
@@ -77,8 +89,37 @@ const handlePageChange = (page) => {
       preserveScroll: true,
       onSuccess: () => {
         loading.value = false;
+
+        pagination.value = {
+          itemCount: props.users.total,
+          page: props.users.current_page,
+          pageCount: props.users.last_page,
+          pageSize: 20,
+          showQuickJumper: true,
+        };
       },
     }
   );
 };
+
+const handleSearchInput = _.debounce((input) => {
+  const name = input;
+  // if (name.length > 2) {
+  loading.value = true;
+  Inertia.reload({
+    data: { name: name },
+    onSuccess: () => {
+      console.log(props.users);
+      pagination.value = {
+        itemCount: props.users.total,
+        page: 1,
+        pageCount: props.users.last_page,
+        pageSize: 20,
+        showQuickJumper: true,
+      };
+      loading.value = false;
+      // },
+    },
+  });
+}, 500);
 </script>

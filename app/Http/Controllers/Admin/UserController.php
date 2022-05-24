@@ -9,15 +9,16 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Duty;
 use App\Http\Controllers\Controller as Controller;
+use App\Models\Role;
 
 class UserController extends Controller
 {
-    
+
     public function __construct()
     {
         $this->authorizeResource(User::class, 'user');
     }
-    
+
     /**
      * Display a listing of the resource.
      *
@@ -25,7 +26,11 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $users = User::paginate(20);
+        $name = request()->input('name');
+
+        $users = User::when(!is_null($name), function ($query) use ($name) {
+            $query->where('name', 'like', "%{$name}%")->orWhere('email', 'like', "%{$name}%");
+        })->paginate(20);
 
         return Inertia::render('Admin/Contacts/Users/Index', [
             'users' => $users,
@@ -74,22 +79,22 @@ class UserController extends Controller
     {
         return Inertia::render('Admin/Contacts/Users/Edit', [
             'contact' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'profile_photo_path' => $user->profile_photo_path,
-                    'phone' => $user->phone,
-                    'duties' => $user->duties->map(function ($duty) {
-                        return [
-                            'id' => $duty->id,
-                            'name' => $duty->name,
-                            'institution' => $duty->institution,
-                        ];
-                    }),
-                    'role' => $user->role ?? "",
-                ]
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'profile_photo_path' => $user->profile_photo_path,
+                'phone' => $user->phone,
+                'duties' => $user->duties->map(function ($duty) {
+                    return [
+                        'id' => $duty->id,
+                        'name' => $duty->name,
+                        'institution' => $duty->institution,
+                    ];
+                }),
+                'role' => $user->role,
+            ],
+            'roles' => Role::all(),
         ]);
-
     }
 
     /**
@@ -101,7 +106,13 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+
         $user->update($request->only('name', 'email', 'phone', 'profile_photo_path'));
+
+        if (User::find(Auth::user()->id)->isAdmin()) {
+            $user->role_id = $request->role['id'];
+            $user->save();
+        }
 
         // get all user duties and delete all of them
         $user->duties()->detach();
@@ -134,46 +145,64 @@ class UserController extends Controller
         // check if microsoft user mail contains 'vusa.lt'
         if (strpos($microsoftUser->email, 'vusa.lt') == true) {
 
-        $user = User::where('email', $microsoftUser->mail)->first();
+            // pirmiausia ieškome per vartotoją, per paštą
+            $user = User::where('email', $microsoftUser->mail)->first();
+            $standardRole = Role::where('name', 'vartotojas')->first();
 
-        if ($user) {
+            if ($user) {
+                // jei randama per vartotojo paštą, prijungiam
 
-            $user->microsoft_token = $microsoftUser->token;
-            $user->update([
-                'email_verified_at' => now(),
-                // 'image' => $microsoftUser->avatar,
-            ]);
-        } else {
-            
-            $duty = Duty::where('email', $microsoftUser->mail)->first();
-
-            if ($duty) {
-                $user = $duty->users()->first();
+                // if user role is null, add role
                 $user->microsoft_token = $microsoftUser->token;
                 $user->update([
                     'email_verified_at' => now(),
                     // 'image' => $microsoftUser->avatar,
                 ]);
+
+                if ($user->role_id == null) {
+                    $user->role()->associate($standardRole);
+                    $user->save();
+                }
             } else {
 
-                return redirect()->route('home');
-            
-            // $user = new User;
-            // $user->role_id = 2;
-            // $user->microsoft_token = $microsoftUser->token;
-            // $user->name = $microsoftUser->displayName;
-            // $user->email = $microsoftUser->mail;
-            // $user->email_verified_at = now();
-            // $user->save();
+                // jei nerandama per vartotojo paštą, ieškome per pareigybės paštą
+                $duty = Duty::where('email', $microsoftUser->mail)->first();
+
+                if ($duty) {
+                    $user = $duty->users()->first();
+                    $user->microsoft_token = $microsoftUser->token;
+                    $user->update([
+                        'email_verified_at' => now(),
+                        // 'image' => $microsoftUser->avatar,
+                    ]);
+
+                    // if user role is null, add role
+
+                    if ($user->role_id == null) {
+                        $user->role()->associate($standardRole);
+                        $user->save();
+                    }
+                } else {
+
+                    $user = new User;
+                    $user->role_id = $standardRole->id;
+
+                    $user->microsoft_token = $microsoftUser->token;
+                    $user->name = $microsoftUser->displayName;
+                    $user->email = $microsoftUser->mail;
+                    $user->email_verified_at = now();
+                    $user->save();
+                }
+
+                // } else {
+                //     return redirect()->route('home');
+            }
+
+            Auth::login($user);
+
+            return redirect()->route('dashboard');
         }
 
-        // } else {
-        //     return redirect()->route('home');
-        }
-
-        Auth::login($user);
-
-        return redirect()->route('dashboard');
+        return redirect()->route('home');
     }
-}
 }
