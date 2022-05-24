@@ -1,29 +1,40 @@
 <template>
-  <AdminLayout title="Naujienos">
+  <AdminLayout title="Naujienos" :createURL="route('news.create')">
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
-    <NDataTable
-      remote
-      class="main-card"
-      size="small"
-      :data="props.news.data"
-      :columns="columns"
-      :row-props="rowProps"
-      :pagination="pagination"
-      @update:page="handlePageChange"
-    >
-    </NDataTable>
+    <div class="main-card">
+      <NInput
+        class="md:col-span-4 mb-2"
+        type="text"
+        size="medium"
+        round
+        placeholder="Ieškoti pagal pavadinimą..."
+        @input="handleSearchInput"
+        :loading="loading"
+      ></NInput>
+      <NDataTable
+        remote
+        size="small"
+        :data="props.news.data"
+        :columns="columns"
+        :row-props="rowProps"
+        :pagination="pagination"
+        @update:page="handlePageChange"
+        @update:filters="handleFiltersChange"
+      >
+      </NDataTable>
+    </div>
   </AdminLayout>
 </template>
 
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AsideHeader from "../AsideHeader.vue";
-import { NDataTable, NButton } from "naive-ui";
+import { NDataTable, NButton, NInput } from "naive-ui";
 import { ref, h, reactive } from "vue";
 import { Inertia } from "@inertiajs/inertia";
-import { Link } from "@inertiajs/inertia-vue3";
+import { Link, usePage } from "@inertiajs/inertia-vue3";
 
 const props = defineProps({
   news: Object,
@@ -41,7 +52,11 @@ const createColumns = () => {
     },
     {
       title: "Padalinys",
-      key: "padalinys_id",
+      key: "padalinys.id",
+      filter: true,
+      filterMultiple: true,
+      filterOptionValues: padaliniaiFilterOptionValues,
+      filterOptions: padaliniaiFilterOptions,
       render(row) {
         return row.padalinys.shortname;
       },
@@ -62,16 +77,51 @@ const createColumns = () => {
           NButton,
           {
             size: "small",
-            // onClick: () => {
-            //   Inertia.visit(route("news.show", { id: row.id }));
-            // },
+            onClick: () => {
+              if (row.padalinys.shortname == "VU SA") {
+                window.open(
+                  route("main.news", {
+                    newsString: "naujiena",
+                    lang: row.lang,
+                    permalink: row.permalink,
+                  }),
+                  "_blank"
+                );
+              } else {
+                window.open(
+                  route("padalinys.news", {
+                    lang: row.lang,
+                    newsString: "naujiena",
+                    permalink: row.permalink,
+                    padalinys: row.padalinys.alias,
+                  }),
+                  "_blank"
+                );
+              }
+            },
           },
-          "Peržiūrėti"
+          { default: () => "Peržiūrėti" }
         );
       },
     },
   ];
 };
+
+const padaliniaiFilterOptions = ref(
+  usePage().props.value.padaliniai.map((padalinys) => {
+    return {
+      label: padalinys.shortname,
+      value: padalinys.id,
+    };
+  })
+);
+
+const padaliniaiFilterOptionValues = ref([]);
+
+padaliniaiFilterOptions.value.unshift({
+  label: "VU SA",
+  value: 16,
+});
 
 const columns = ref(createColumns());
 
@@ -107,4 +157,45 @@ const handlePageChange = (page) => {
     }
   );
 };
+
+const handleFiltersChange = (filters) => {
+  console.log(filters);
+  loading.value = true;
+  Inertia.get(
+    route("news.index"),
+    {
+      page: pagination.page,
+      padaliniai: filters["padalinys.id"],
+    },
+    {
+      preserveState: true,
+      preserveScroll: true,
+      onSuccess: () => {
+        padaliniaiFilterOptionValues.value = filters["padalinys.id"];
+        loading.value = false;
+      },
+    }
+  );
+};
+
+const handleSearchInput = _.debounce((input) => {
+  const title = input;
+  // if (name.length > 2) {
+  loading.value = true;
+  Inertia.reload({
+    data: { title: title },
+    onSuccess: () => {
+      // console.log(props.pages);
+      pagination.value = {
+        itemCount: props.news.total,
+        page: 1,
+        pageCount: props.news.last_page,
+        pageSize: 20,
+        showQuickJumper: true,
+      };
+      loading.value = false;
+      // },
+    },
+  });
+}, 500);
 </script>

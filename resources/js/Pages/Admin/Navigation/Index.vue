@@ -3,22 +3,25 @@
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
-    <div class="main-card">
+    <div class="main-card under">
       <NTree
         block-line
         :data="data"
         draggable
         @drop="handleDrop"
+        :checked-keys="checkedKeys"
+        :expanded-keys="expandedKeys"
         @update:checked-keys="handleCheckedKeysChange"
         @update:expanded-keys="handleExpandedKeysChange"
+        :render-suffix="renderSuffix"
       />
       <div
-        class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center"
+        class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center mt-4"
       >
         <n-popconfirm @positive-click="updateModel()">
           <template #trigger>
             <NSpin :show="showSpin" size="small">
-              <n-button>Atnaujinti</n-button>
+              <n-button>Atnaujinti tvarką</n-button>
             </NSpin>
           </template>
           Ar tikrai atnaujinti?
@@ -35,10 +38,10 @@ import { NTree, NSpin, NButton, NPopconfirm, NIcon, useMessage } from "naive-ui"
 import { ref, h } from "vue";
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
-// import { Edit16Regular } from '@vicons/fluent'
+import { Edit16Regular } from "@vicons/fluent";
 
 const props = defineProps({
-  navigationLT: Array,
+  navigation: Array,
 });
 
 const parseNavigation = (array, id) => {
@@ -65,9 +68,23 @@ const parseNavigation = (array, id) => {
   return result;
 };
 
+const renderSuffix = ({ option }) => {
+  return h(
+    NButton,
+    {
+      size: "tiny",
+    },
+    h(
+      Link,
+      { class: "no-underline", href: route("navigation.edit", { id: option.key }) },
+      "Atnaujinti"
+    )
+  );
+};
+
 const message = useMessage();
 
-const dataRef = ref(parseNavigation(props.navigationLT, 0));
+const dataRef = ref(parseNavigation(props.navigation, 0));
 const showSpin = ref(false);
 
 //////////////////////

@@ -1,70 +1,68 @@
 <template>
-  <PublicLayout>
+  <PublicLayout title="Sąžiningai atsiskaitymo registravimo forma">
     <PageArticle>
       <template #title>Egzamino ar kolokviumo stebėjimo registracijos forma</template>
       <div class="prose">
-        <strong class="text-red-600">
+        <!-- <strong class="text-red-600">
           Registracijos forma šiuo metu yra uždaryta, greitu metu ją vėl atidarysime.
           Prašome kreiptis į
           <a href="mailto:saziningai@vusa.lt">saziningai@vusa.lt</a> dėl stebėjimo
           registracijos.
-        </strong>
+        </strong> -->
         <p>
-          Taip pat, prašome atsiskaitymą registruoti likus bent 3 d.d. iki jo pradžios,
-          kad būtų laiku surasti stebėtojai. Kitu atveju, kreipkitės į
+          Prašome atsiskaitymą registruoti likus bent 3 d.d. iki jo pradžios, kad būtų
+          laiku surasti stebėtojai. Kitu atveju, kreipkitės į
           <a href="mailto:saziningai@vusa.lt">saziningai@vusa.lt</a>
         </p>
         <NForm
-          disabled
           ref="formRef"
           :label-width="80"
           :model="formValue"
           :rules="rules"
           size="medium"
         >
-          <NFormItem label="Vardas ir pavardė" path="user.name">
-            <NInput
-              disabl
-              v-model:value="formValue.user.name"
-              placeholder=""
-              type="text"
-            />
+          <NFormItem label="Vardas ir pavardė" path="name">
+            <NInput v-model:value="formValue.name" placeholder="" type="text" />
           </NFormItem>
-          <NFormItem label="El. paštas" path="user.email">
-            <NInput v-model:value="formValue.user.email" placeholder="" type="email" />
+          <NFormItem label="El. paštas" path="email">
+            <NInput v-model:value="formValue.email" placeholder="" type="email" />
           </NFormItem>
-          <NFormItem label="Telefono numeris" path="user.phone">
-            <NInput v-model:value="formValue.user.phone" placeholder="" type="tel" />
+          <NFormItem label="Telefono numeris" path="phone">
+            <NInput v-model:value="formValue.phone" placeholder="" type="tel" />
           </NFormItem>
-          <NFormItem label="Atsiskaitymo pobūdis" path="exam.type">
+          <NFormItem label="Atsiskaitymo pobūdis" path="type">
+            <NSelect v-model:value="formValue.type" :options="examTypes" placeholder="" />
+          </NFormItem>
+          <NFormItem label="Atsiskaitymą laikančiųjų padalinys" path="unit">
             <NSelect
-              v-model:value="formValue.exam.type"
-              :options="examTypes"
-              placeholder=""
-            />
-          </NFormItem>
-          <NFormItem label="Atsiskaitymą laikančiųjų padalinys" path="exam.unit">
-            <NSelect
-              v-model:value="formValue.exam.unit"
+              v-model:value="formValue.unit"
               :options="padaliniaiOptions"
               placeholder=""
             />
           </NFormItem>
-          <NFormItem label="Atsiskaitomo dalyko pavadinimas" path="exam.subject_name">
-            <NInput v-model:value="formValue.exam.subject_name" placeholder="" />
+          <NFormItem label="Atsiskaitomo dalyko pavadinimas" path="subject_name">
+            <NInput v-model:value="formValue.subject_name" placeholder="" />
           </NFormItem>
-          <NFormItem label="Atsiskaitymą laikančių studentų skaičius" path="exam.holders">
-            <NInput v-model:value="formValue.exam.holders" placeholder="" />
+          <NFormItem label="Atsiskaitymo vieta: padalinys ir auditorija" path="place">
+            <NInput type="textarea" v-model:value="formValue.place" placeholder="" />
           </NFormItem>
-          <NFormItem label="Reikalingas stebėtojų skaičius" path="exam.students_need">
-            <NInput v-model:value="formValue.exam.students_need" placeholder="" />
+          <NFormItem label="Atsiskaitymą laikančių studentų skaičius" path="holders">
+            <NInputNumber v-model:value="formValue.holders" placeholder="" />
           </NFormItem>
-          <NFormItem label="Atsiskaitymo srautai" path="exam.flows">
-            <NDynamicInput v-model:value="formValue.exam.flows" :min="1" :max="4">
+          <NFormItem label="Reikalingas stebėtojų skaičius" path="students_need">
+            <NInputNumber v-model:value="formValue.students_need" placeholder="" />
+          </NFormItem>
+          <NFormItem label="Atsiskaitymo srautai" path="flows">
+            <NDynamicInput
+              v-model:value="formValue.flows"
+              :min="1"
+              :max="4"
+              :on-create="onCreate"
+            >
               <template #create-button-default> Pridėti srautą</template>
               <template #default="{ value }">
                 <NDatePicker
-                  v-model:formatted-value="formattedTime"
+                  v-model:formatted-value="value.time"
                   value-format="yyyy-MM-dd HH:mm"
                   type="datetime"
                   placeholder="Pasirinkti srauto laiką..."
@@ -75,13 +73,38 @@
             </NDynamicInput>
           </NFormItem>
           <NFormItem
+            class="mt-4"
             label="Atsiskaitymo trukmė (jei laikoma srautais, parašyti srautų skaičių ir kiek laiko skiriama vienam srautui)"
-            path="exam.duration"
+            path="duration"
           >
-            <NInput v-model:value="formValue.exam.duration" placeholder="" />
+            <NInput type="textarea" v-model:value="formValue.duration" placeholder="" />
           </NFormItem>
+          <NFormItem path="acceptGDPR"
+            ><NCheckbox
+              v-model:checked="formValue.acceptGDPR"
+              :label="labelGDPR"
+            ></NCheckbox
+          ></NFormItem>
+          <NFormItem path="acceptDataManagement">
+            <NCheckbox
+              v-model:checked="formValue.acceptDataManagement"
+              :label="labelAcceptDataManagement"
+            ></NCheckbox>
+          </NFormItem>
+          <p>
+            Duomenų valdytojas yra Vilniaus universiteto Studentų atstovybė (adresas:
+            Universiteto g. 3, Observatorijos kiemelis, Vilnius, tel.:, el. paštas:
+            info@vusa.lt). Jūsų pateikti duomenys bus naudojami susisiekti su jumis.
+          </p>
+          <p>
+            Duomenų subjektas turi teisę susipažinti su savo asmens duomenimis, teisę
+            reikalauti ištaisyti neteisingus, neišsamius, netikslius savo asmens duomenis
+            ir kitas teisės aktais numatytas teises. Kilus klausimams ir norint realizuoti
+            savo, kaip duomenų subjekto, teises, galite kreiptis į
+            <a href="mailto:dap@vusa.lt">dap@vusa.lt</a>.
+          </p>
           <NFormItem>
-            <NButton @click="handleValidateClick"> Pateikti </NButton>
+            <NButton type="success" @click="handleValidateClick"> Pateikti </NButton>
           </NFormItem>
         </NForm>
       </div>
@@ -92,7 +115,7 @@
 <script setup>
 import PublicLayout from "@/Layouts/PublicLayout.vue";
 import PageArticle from "../../Components/Public/PageArticle.vue";
-import { ref } from "vue";
+import { ref, h } from "vue";
 import {
   NForm,
   NFormItem,
@@ -102,7 +125,10 @@ import {
   NDynamicInput,
   NDatePicker,
   useMessage,
+  NInputNumber,
+  NCheckbox,
 } from "naive-ui";
+import { Inertia } from "@inertiajs/inertia";
 
 const props = defineProps({
   padaliniaiOptions: Array,
@@ -110,84 +136,165 @@ const props = defineProps({
 const message = useMessage();
 const formRef = ref(null);
 
+const labelGDPR = h("label", {}, [
+  "Susipažinau su ",
+  h(
+    "a",
+    {
+      target: "_blank",
+      href:
+        "https://vusa.lt/uploads/Dokumentų šablonai/Asmens_duomenu_tvarkymo_VUSA_tvarkos_aprasas.pdf",
+    },
+    "Asmens duomenų tvarkymo Vilniaus universiteto Studentų atstovybėje tvarkos aprašu"
+  ),
+  " ir sutinku.",
+]);
+
+const labelAcceptDataManagement = h(
+  "label",
+  {},
+  "Sutinku, kad mano pateikti asmens duomenys būtų tvarkomi vidaus administravimo tikslu pagal Asmens duomenų tvarkymo Vilniaus universiteto Studentų atstovybėje tvarkos aprašą."
+);
+
 const formValue = ref({
-  user: {
-    name: "",
-    email: "",
-    phone: "",
-  },
-  exam: {
-    type: "",
-    unit: null,
-    subject_name: "",
-    duration: "",
-    place: "",
-    holders: "",
-    students_need: "",
-    flows: [""],
-  },
+  name: null,
+  email: null,
+  phone: null,
+  type: null,
+  unit: null,
+  subject_name: null,
+  duration: null,
+  place: null,
+  holders: null,
+  students_need: null,
+  flows: [
+    {
+      time: null,
+    },
+  ],
+  acceptGDPR: false,
+  acceptDataManagement: false,
 });
 
 const rules = {
-  user: {
-    name: {
-      required: true,
-      message: "Įrašykite savo vardą ir pavardę",
-      trigger: "blur",
-    },
-    email: {
-      required: true,
-      message: "Įrašykite savo el. paštą",
-      trigger: "blur",
-    },
-    phone: {
-      required: true,
-      message: "Įrašykite savo telefono numerį",
-      trigger: "blur",
+  name: {
+    required: true,
+    message: "Įrašykite savo vardą ir pavardę",
+    trigger: "blur",
+  },
+  email: {
+    required: true,
+    trigger: "blur",
+    validator(rule, value) {
+      if (!value) {
+        return new Error("Įrašykite savo el. paštą");
+      }
+      if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(value)) {
+        return new Error("Neteisingas el. pašto formatas");
+      }
+      return true;
     },
   },
-  exam: {
-    type: {
-      required: true,
-      message: "Atsiskaitymo pobūdis",
-      trigger: "blur",
-    },
-    unit: {
-      required: true,
-      message: "Atsiskaitymą laikančiųjų padalinys",
-      trigger: "blur",
-    },
-    subject_name: {
-      required: true,
-      message: "Atsiskaitomo dalyko pavadinimas",
-      trigger: "blur",
-    },
-    duration: {
-      required: true,
-      message: "Atsiskaitymo data ir laikas",
-      trigger: "blur",
-    },
-    place: {
-      required: true,
-      message: "Atsiskaitymo vieta: padalinys ir auditorija",
-      trigger: "blur",
-    },
-    holders: {
-      required: true,
-      message: "Atsiskaitymą laikančių studentų skaičius",
-      trigger: "blur",
-    },
-    students_need: {
-      required: true,
-      message: "Reikalingas stebėtojų skaičius",
-      trigger: "blur",
-    },
-    flows: {
-      required: true,
-      message: "Atsiskaitymą laikančių studentų skaičius",
-      trigger: "blur",
+
+  phone: {
+    required: true,
+    // message: "Įrašykite savo telefono numerį",
+    trigger: "blur",
+    // validate phone number with + sign and spaces
+    validator(rule, value) {
+      if (!value) {
+        return new Error("Įrašykite savo telefono numerį");
+      }
+      if (!/^\+?[0-9\s]*$/i.test(value)) {
+        return new Error("Neteisingas telefono numerio formatas");
+      }
+      return true;
     },
   },
+
+  type: {
+    required: true,
+    message: "Pasirinkite atsiskaitymo pobūdį.",
+    trigger: "blur",
+  },
+  unit: {
+    required: true,
+    message: "Pasirinkite atsiskaitymą laikančiųjų padalinį",
+    trigger: ["blur", "change"],
+    type: "number",
+  },
+  subject_name: {
+    required: true,
+    message: "Atsiskaitomo dalyko pavadinimas",
+    trigger: "blur",
+  },
+  duration: {
+    required: true,
+    message: "Atsiskaitymo data ir laikas",
+    trigger: "blur",
+  },
+  place: {
+    required: true,
+    message: "Atsiskaitymo vieta: padalinys ir auditorija",
+    trigger: "blur",
+  },
+  holders: {
+    required: true,
+    message: "Atsiskaitymą laikančių studentų skaičius",
+    trigger: "blur",
+    type: "number",
+  },
+  students_need: {
+    required: true,
+    message: "Reikalingas stebėtojų skaičius",
+    trigger: "blur",
+    type: "number",
+  },
+  flows: {
+    required: true,
+    trigger: "blur",
+    // check if any item in array is empty
+    validator(rule, value) {
+      if (!value) {
+        return new Error("Įveskite laiką ir laiką");
+      }
+      if (value.some((item) => !item.time)) {
+        return new Error("Įveskite laiką arba pašalinkite srautą");
+      }
+      return true;
+    },
+  },
+
+  acceptGDPR: {
+    required: true,
+    message: "Turite sutikti su GDPR taisyklėmis",
+    trigger: "blur",
+    validator(rule, value) {
+      return value;
+    },
+  },
+  acceptDataManagement: {
+    required: true,
+    message: "Turite sutikti su duomenų tvarkymu",
+    trigger: "blur",
+    // validate if false, then error
+    validator(rule, value) {
+      return value;
+    },
+  },
+
+  // flows: {
+  //   required: true,
+  //   message: "Atsiskaitymą laikančių studentų skaičius",
+  //   trigger: "blur",
+  // },
+};
+
+const onCreate = () => {
+  return {
+    // return time now in format yyyy-MM-dd HH:mm
+    time: null,
+  };
 };
 
 const examTypes = [
@@ -211,10 +318,16 @@ const handleValidateClick = (e) => {
   e.preventDefault();
   formRef.value?.validate((errors) => {
     if (!errors) {
-      message.success("Valid");
+      Inertia.post(route("saziningaiExamRegistration.store"), formValue.value, {
+        onSuccess: () => {
+          message.success(
+            `Ačiū už atsiskaitymo „${formValue.value.subject_name}“ užregistravimą!`
+          );
+        },
+      });
     } else {
-      console.log(errors);
-      message.error("Invalid");
+      // console.log(errors);
+      message.error("Užpildykite visus laukelius.");
     }
   });
 };

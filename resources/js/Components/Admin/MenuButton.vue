@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import { Link } from "@inertiajs/inertia-vue3";
+import { Link, usePage } from "@inertiajs/inertia-vue3";
 import { computed, ref } from "vue";
 
 const props = defineProps(["menuContent"]);

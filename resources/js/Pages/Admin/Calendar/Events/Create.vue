@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout :title="calendar.title">
+  <AdminLayout :title="calendar.title ? calendar.title : 'Naujas įvykis'">
     <div class="main-card">
       <h3 class="mb-4">Bendra informacija</h3>
       <ul v-if="errors" class="mb-4 text-red-700">
@@ -32,13 +32,14 @@
           <n-input
             v-model:value="calendar.description"
             type="textarea"
-            placeholder="Įrašyti aprašymą..."/>
+            placeholder="Įrašyti aprašymą..."
+          />
         </div>
 
         <div class="lg:col-span-2">
           <label class="font-bold">Kategorija</label>
-          <n-select 
-            v-model:value="calendar.category" 
+          <n-select
+            v-model:value="calendar.category"
             :options="options"
             placeholder="Įrašyti kategoriją..."
           />
@@ -89,7 +90,7 @@ import AdminLayout from "@/Layouts/AdminLayout.vue";
 const message = useMessage();
 
 const props = defineProps({
-  errors: Object
+  errors: Object,
 });
 
 const calendar = reactive({});
@@ -125,5 +126,4 @@ const updateModel = async () => {
     preserveScroll: true,
   });
 };
-
 </script>

@@ -1,6 +1,8 @@
 <template>
-  <AdminLayout title="Renginiai" :createURL="create_url">
-    <NDataTable class="main-card" remote
+  <AdminLayout title="Renginiai" :createURL="route('calendar.create')">
+    <NDataTable
+      class="main-card"
+      remote
       :data="props.calendar.data"
       :columns="columns"
       :row-props="rowProps"
@@ -58,12 +60,16 @@ const rowProps = (row) => {
 const handlePageChange = (page) => {
   loading.value = true;
   pagination.page = page;
-  Inertia.get(route('calendar.index'), { page: page }, {
-    preserveState: true,
-    preserveScroll: true, 
-    onSuccess: () => {
-      loading.value = false;
+  Inertia.get(
+    route("calendar.index"),
+    { page: page },
+    {
+      preserveState: true,
+      preserveScroll: true,
+      onSuccess: () => {
+        loading.value = false;
+      },
     }
-  });
+  );
 };
 </script>

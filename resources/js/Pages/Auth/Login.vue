@@ -14,7 +14,7 @@
 
     <form @submit.prevent="submit">
       <div>
-        <jet-label for="email" value="Email" />
+        <jet-label for="email" value="El. paštas" />
         <jet-input
           id="email"
           type="email"
@@ -26,7 +26,7 @@
       </div>
 
       <div class="mt-4">
-        <jet-label for="password" value="Password" />
+        <jet-label for="password" value="Slaptažodis" />
         <jet-input
           id="password"
           type="password"
@@ -40,14 +40,13 @@
       <div class="block mt-4">
         <label class="flex items-center">
           <jet-checkbox name="remember" v-model:checked="form.remember" />
-          <span class="ml-2 text-sm text-gray-600">Remember me</span>
+          <span class="ml-2 text-sm text-gray-600">Prisiminti mane</span>
         </label>
       </div>
 
       <div class="flex items-center justify-end mt-4">
-        
         <MicrosoftButton></MicrosoftButton>
-        
+
         <Link
           v-if="canResetPassword"
           :href="route('password.request')"
@@ -61,7 +60,7 @@
           :class="{ 'opacity-25': form.processing }"
           :disabled="form.processing"
         >
-          Log in
+          Prisijungti
         </jet-button>
       </div>
     </form>
@@ -78,8 +77,9 @@ import JetCheckbox from "@/Jetstream/Checkbox.vue";
 import JetLabel from "@/Jetstream/Label.vue";
 import JetValidationErrors from "@/Jetstream/ValidationErrors.vue";
 import { Head, Link, useForm } from "@inertiajs/inertia-vue3";
-import { reactive } from 'vue';
-import MicrosoftButton from '@/Components/MicrosoftButton.vue';1
+import { reactive } from "vue";
+import MicrosoftButton from "@/Components/MicrosoftButton.vue";
+1;
 
 const props = defineProps({
   canResetPassword: Boolean,
@@ -88,8 +88,8 @@ const props = defineProps({
 
 const form = reactive(
   useForm({
-    email: "test@test.com",
-    password: "password",
+    email: "",
+    password: "",
     remember: false,
   })
 );

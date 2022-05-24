@@ -1,175 +1,333 @@
 <template>
-  <div class="">
-    <div class="sticky" v-if="editor">
-      <button @click="editor.chain().focus().toggleBold().run()" :class="{ 'is-active': editor.isActive('bold') }">
-        bold
-      </button>
-      <button @click="editor.chain().focus().toggleItalic().run()" :class="{ 'is-active': editor.isActive('italic') }">
-        italic
-      </button>
-      <button @click="editor.chain().focus().toggleStrike().run()" :class="{ 'is-active': editor.isActive('strike') }">
-        strike
-      </button>
-      <button @click="editor.chain().focus().unsetAllMarks().run()">
-        clear marks
-      </button>
-      <button @click="editor.chain().focus().clearNodes().run()">
-        clear nodes
-      </button>
-      <button @click="setLink" :class="{ 'is-active': editor.isActive('link') }">
-        setLink
-      </button>
-      <button @click="editor.chain().focus().unsetLink().run()" :disabled="!editor.isActive('link')">
-        unsetLink
-      </button>
-      <button @click="editor.chain().focus().setParagraph().run()"
-        :class="{ 'is-active': editor.isActive('paragraph') }">
-        paragraph
-      </button>
-      <button @click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
-        :class="{ 'is-active': editor.isActive('heading', { level: 1 }) }">
-        h1
-      </button>
-      <button @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
-        :class="{ 'is-active': editor.isActive('heading', { level: 2 }) }">
-        h2
-      </button>
-      <button @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
-        :class="{ 'is-active': editor.isActive('heading', { level: 3 }) }">
-        h3
-      </button>
-      <button @click="editor.chain().focus().toggleHeading({ level: 4 }).run()"
-        :class="{ 'is-active': editor.isActive('heading', { level: 4 }) }">
-        h4
-      </button>
-      <button @click="editor.chain().focus().toggleBulletList().run()"
-        :class="{ 'is-active': editor.isActive('bulletList') }">
-        bullet list
-      </button>
-      <button @click="editor.chain().focus().toggleOrderedList().run()"
-        :class="{ 'is-active': editor.isActive('orderedList') }">
-        ordered list
-      </button>
+  <div class="relative rounded-xl border-4 border-black">
+    <div
+      class="absolute top-0 p-4 w-full border-b-4 border-black bg-white rounded-t-xl z-10"
+      v-if="editor"
+    >
+      <!-- <strong class="mb-4">Funkcijos</strong> -->
+      <!-- <br /> -->
+      <div>
+        <button
+          type="button"
+          @click="editor.chain().focus().toggleBold().run()"
+          :class="{ 'is-active': editor.isActive('bold') }"
+        >
+          <NIcon><TextBold20Regular></TextBold20Regular></NIcon>
+        </button>
+
+        <button
+          type="button"
+          @click="editor.chain().focus().toggleItalic().run()"
+          :class="{ 'is-active': editor.isActive('italic') }"
+        >
+          <NIcon><TextItalic20Regular></TextItalic20Regular></NIcon>
+        </button>
+        <!-- <button @click="editor.chain().focus().clearNodes().run()">clear nodes</button> -->
+        <button
+          type="button"
+          @click="getLinkAndModal"
+          :class="{ 'is-active': editor.isActive('link') }"
+        >
+          <NIcon><Link20Regular></Link20Regular></NIcon>
+        </button>
+        <button
+          type="button"
+          @click="editor.chain().focus().unsetLink().run()"
+          :disabled="!editor.isActive('link')"
+        >
+          <NIcon><LinkDismiss20Filled></LinkDismiss20Filled></NIcon>
+        </button>
+        <button
+          type="button"
+          @click="editor.chain().focus().setParagraph().run()"
+          :class="{ 'is-active': editor.isActive('paragraph') }"
+        >
+          P
+        </button>
+        <button
+          type="button"
+          @click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
+          :class="{ 'is-active': editor.isActive('heading', { level: 1 }) }"
+        >
+          H1
+        </button>
+        <button
+          type="button"
+          @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
+          :class="{ 'is-active': editor.isActive('heading', { level: 2 }) }"
+        >
+          H2
+        </button>
+        <button
+          type="button"
+          @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
+          :class="{ 'is-active': editor.isActive('heading', { level: 3 }) }"
+        >
+          H3
+        </button>
+        <button
+          type="button"
+          @click="editor.chain().focus().toggleBulletList().run()"
+          :class="{ 'is-active': editor.isActive('bulletList') }"
+        >
+          <NIcon><TextBulletListLtr24Filled></TextBulletListLtr24Filled></NIcon>
+        </button>
+        <button
+          type="button"
+          @click="editor.chain().focus().toggleOrderedList().run()"
+          :class="{ 'is-active': editor.isActive('orderedList') }"
+        >
+          <NIcon><TextNumberListLtr20Filled></TextNumberListLtr20Filled></NIcon>
+        </button>
+        <button
+          type="button"
+          @click="editor.chain().focus().toggleBlockquote().run()"
+          :class="{ 'is-active': editor.isActive('blockquote') }"
+        >
+          <NIcon><TextQuote20Filled></TextQuote20Filled></NIcon>
+        </button>
+        <button type="button" @click="editor.chain().focus().setHorizontalRule().run()">
+          <NIcon><LineHorizontal120Regular></LineHorizontal120Regular></NIcon>
+        </button>
+      </div>
+      <div>
+        <button type="button" @click="editor.chain().focus().undo().run()">
+          <NIcon><ArrowUndo20Filled></ArrowUndo20Filled></NIcon>
+        </button>
+        <button type="button" @click="editor.chain().focus().redo().run()">
+          <NIcon><ArrowRedo20Filled></ArrowRedo20Filled></NIcon>
+        </button>
+        <button type="button" @click="editor.chain().focus().unsetAllMarks().run()">
+          <NIcon><ClearFormatting20Filled></ClearFormatting20Filled></NIcon>
+        </button>
+      </div>
       <!-- <button
         @click="editor.chain().focus().toggleCodeBlock().run()"
         :class="{ 'is-active': editor.isActive('codeBlock') }"
       >
         code block
       </button> -->
-      <!-- <button @click="editor.chain().focus().toggleBlockquote().run()"
-        :class="{ 'is-active': editor.isActive('blockquote') }">
-        blockquote
-      </button>
-      <button @click="editor.chain().focus().setHorizontalRule().run()">
-        horizontal rule
-      </button>
-      <button @click="editor.chain().focus().setHardBreak().run()">
+
+      <!-- <button @click="editor.chain().focus().setHardBreak().run()">
         hard break
       </button> -->
-      <button @click="editor.chain().focus().undo().run()">undo</button>
-      <button @click="editor.chain().focus().redo().run()">redo</button>
     </div>
 
-    <EditorContent class="mt-2 shadow-xl p-4 rounded-lg" :editor="editor" />
+    <EditorContent
+      class="mt-2 shadow-xl px-2 py-8 rounded-lg overflow-y-auto h-fit max-h-[40rem]"
+      :editor="editor"
+    />
   </div>
+  <NModal v-model:show="showFileModal">
+    <div class="bg-white p-4 rounded-sm w-1/2">
+      <NTabs class="" type="line" animated>
+        <NTabPane name="link" tab="Pridėti nuorodą">
+          <NInput v-model:value="previousUrl"></NInput>
+          <NButton class="mt-2" type="success" @click="updateLink">Atnaujinti</NButton>
+        </NTabPane>
+        <NTabPane name="file" tab="Pridėti failą, kaip nuorodą">
+          <p class="my-2">
+            Įrašyk failo pavadinimą ir pasirink, kad būtų pridėtas!
+            <a class="text-vusa-red" target="_blank" :href="route('files.index')"
+              >Failo įkėlimas</a
+            >
+          </p>
+
+          <NSelect
+            v-model:value="previousUrl"
+            filterable
+            placeholder="Ieškoti puslapio..."
+            clearable
+            :options="files"
+            remote
+            @search="getFiles"
+          />
+          <NButton class="mt-2" type="success" @click="updateLink">Atnaujinti</NButton>
+        </NTabPane>
+        <NTabPane name="image" tab="Pridėti paveikslėlį">
+          <p class="my-2">
+            Įrašyk paveikslėlio pavadinimą ir pasirink!
+            <a class="text-vusa-red" target="_blank" :href="route('files.index')"
+              >Failo įkėlimas</a
+            >
+          </p>
+
+          <NSelect
+            v-model:value="previousUrl"
+            filterable
+            placeholder="Ieškoti puslapio..."
+            clearable
+            :options="files"
+            remote
+            @search="getImages"
+          />
+          <NButton class="mt-4" type="primary" @click="placeImage">Atnaujinti</NButton>
+        </NTabPane>
+      </NTabs>
+    </div>
+  </NModal>
 </template>
 
-<script>
-import { Editor, EditorContent } from "@tiptap/vue-3";
-import Link from '@tiptap/extension-link'
+<script setup>
+import { useEditor, EditorContent } from "@tiptap/vue-3";
+import TipTapLink from "@tiptap/extension-link";
 import StarterKit from "@tiptap/starter-kit";
+import Image from "@tiptap/extension-image";
+import {
+  Link20Regular,
+  LinkDismiss20Filled,
+  TextBulletListLtr24Filled,
+  TextNumberListLtr20Filled,
+  ArrowUndo20Filled,
+  ArrowRedo20Filled,
+  ClearFormatting20Filled,
+  TextBold20Regular,
+  TextItalic20Regular,
+  LineHorizontal120Regular,
+  TextQuote20Filled,
+} from "@vicons/fluent";
+import {
+  NIcon,
+  NModal,
+  NTabs,
+  NTabPane,
+  NInput,
+  NButton,
+  NSelect,
+  useMessage,
+} from "naive-ui";
+import { Inertia } from "@inertiajs/inertia";
+// import { usePage } from "@inertiajs/inertia-vue3";
+import { ref, onBeforeUnmount } from "vue";
+import { Link } from "@inertiajs/inertia-vue3";
 
-export default {
-  components: {
-    EditorContent,
-  },
+const props = defineProps({
+  modelValue: String,
+  searchFiles: Object,
+});
 
-  props: {
-    modelValue: {
-      type: String,
-      default: "",
-    },
-  },
+const emit = defineEmits(["update:modelValue"]);
 
-  data() {
-    return {
-      editor: null,
-    };
-  },
+const showFileModal = ref(false);
+const previousUrl = ref("");
+const files = ref([]);
+const modelValue = props.modelValue;
+const message = useMessage();
+// const searchFiles = ref(props.searchFiles);
 
-  methods: {
-    setLink() {
-      const previousUrl = this.editor.getAttributes('link').href
-      const url = window.prompt('URL', previousUrl)
+const addImage = () => {
+  const url = window.prompt("URL");
 
-      // cancelled
-      if (url === null) {
-        return
-      }
+  if (url) {
+    editor.chain().focus().setImage({ src: url }).run();
+  }
+};
 
-      // empty
-      if (url === '') {
-        this.editor
-          .chain()
-          .focus()
-          .extendMarkRange('link')
-          .unsetLink()
-          .run()
+const getLinkAndModal = () => {
+  previousUrl.value = editor.value.getAttributes("link").href;
+  showFileModal.value = true;
+};
 
-        return
-      }
-
-      // update link
-      this.editor
-        .chain()
-        .focus()
-        .extendMarkRange('link')
-        .setLink({ href: url })
-        .run()
-    },
-  },
-
-
-  watch: {
-    modelValue(value) {
-      const isSame = this.editor.getHTML() === value;
-
-      if (isSame) {
-        return;
-      }
-
-      this.editor.commands.setContent(value, false);
-    },
-  },
-
-  mounted() {
-    this.editor = new Editor({
-      editorProps: {
-        attributes: {
-          class: "prose prose-sm sm:prose m-5 focus:outline-none",
+const getFiles = _.debounce((query) => {
+  if (query.length > 2) {
+    message.loading("Ieškoma...");
+    Inertia.post(
+      route("files.search"),
+      {
+        data: {
+          search: query,
         },
       },
-      extensions: [StarterKit, Link.configure({
-        openOnClick: false,
-      })],
-      content: this.modelValue,
-      onUpdate: () => {
-        // HTML
-        this.$emit("update:modelValue", this.editor.getHTML());
-      },
-    });
-  },
+      {
+        preserveState: true,
+        preserveScroll: true,
+        onSuccess: () => {
+          message.success("Pabaigta.");
+          let searchFiles = Object.values(props.searchFiles);
+          console.log(searchFiles);
+          files.value = searchFiles.map((file) => ({
+            // get the file name from the url
+            label: `${file.split("/").pop()} (${file})`,
+            value: file,
+          }));
+        },
+      }
+    );
+  }
+}, 500);
 
-  beforeUnmount() {
-    this.editor.destroy();
-  },
+const getImages = _.debounce((query) => {
+  if (query.length > 2) {
+    message.loading("Ieškoma...");
+    Inertia.post(
+      route("images.search"),
+      {
+        data: {
+          search: query,
+        },
+      },
+      {
+        preserveState: true,
+        preserveScroll: true,
+        onSuccess: () => {
+          message.success("Pabaigta.");
+          let searchFiles = Object.values(props.searchFiles);
+          console.log(searchFiles);
+          files.value = searchFiles.map((file) => ({
+            // get the file name from the url
+            label: `${file.split("/").pop()} (${file})`,
+            // remove 'public' and add slash to the beginning
+            value: `/uploads${file.replace("public", "")}`,
+            // value: file,
+          }));
+        },
+      }
+    );
+  }
+}, 500);
+
+const updateLink = () => {
+  const url = previousUrl.value;
+  editor.value.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
+  showFileModal.value = false;
 };
+
+const placeImage = () => {
+  const url = previousUrl.value;
+  editor.value.chain().focus().setImage({ src: url }).run();
+  showFileModal.value = false;
+};
+
+const editor = useEditor({
+  editorProps: {
+    attributes: {
+      class: "prose prose-sm sm:prose m-5 focus:outline-none mt-24",
+    },
+  },
+  extensions: [
+    StarterKit,
+    Image,
+    TipTapLink.configure({
+      openOnClick: false,
+    }),
+  ],
+  content: modelValue,
+  onUpdate: () => {
+    // HTML
+    // console.log(editor);
+    emit("update:modelValue", editor.value.getHTML());
+  },
+});
+
+onBeforeUnmount(() => {
+  editor.value.destroy();
+});
 </script>
 
 <style scoped>
 /* Basic editor styles */
 .ProseMirror {
-  >*+* {
+  > * + * {
     margin-top: 0.75em;
   }
 
@@ -193,9 +351,9 @@ export default {
   }
 
   pre {
-    background: #0D0D0D;
-    color: #FFF;
-    font-family: 'JetBrainsMono', monospace;
+    background: #0d0d0d;
+    color: #fff;
+    font-family: "JetBrainsMono", monospace;
     padding: 0.75rem 1rem;
     border-radius: 0.5rem;
 
@@ -210,16 +368,20 @@ export default {
   img {
     max-width: 100%;
     height: auto;
+
+    &.ProseMirror-selectednode {
+      outline: 3px solid #68cef8;
+    }
   }
 
   blockquote {
     padding-left: 1rem;
-    border-left: 2px solid rgba(#0D0D0D, 0.1);
+    border-left: 2px solid rgba(#0d0d0d, 0.1);
   }
 
   hr {
     border: none;
-    border-top: 2px solid rgba(#0D0D0D, 0.1);
+    border-top: 2px solid rgba(#0d0d0d, 0.1);
     margin: 2rem 0;
   }
 }
@@ -227,19 +389,28 @@ export default {
 button {
   color: #000;
   background-color: #fff;
-  border: 1px solid #000;
+  /* border: 1px solid #000; */
   border-radius: 0.25rem;
   padding: 0.1rem 0.25rem;
   margin: 0.25rem 0.2rem;
   cursor: pointer;
-  font-size: 0.8rem;
+  font-size: 1rem;
   transition: all 0.2s ease-in-out;
+}
+
+button:hover {
+  background-color: rgb(215, 215, 215);
 }
 
 button.is-active {
   color: #fff;
   background-color: #000;
   border: 1px solid #000;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
 }
 
 /* .bubble-menu {

@@ -54,7 +54,7 @@
           </NDropdown>
         </div>
       </template>
-      <Link
+      <!-- <Link
         v-if="locale === 'lt'"
         class="hidden md:block"
         :data="{ padalinys: usePage().props.value.alias }"
@@ -65,24 +65,16 @@
           >
           <template v-else>Kontaktai</template>
         </NButton>
-      </Link>
-      <NButton
-        text
-        target="_blank"
-        tag="a"
-        href="https://www.facebook.com/VUstudentuatstovybe"
+      </Link> -->
+      <NButton text @click="windowOpen('https://www.facebook.com/VUstudentuatstovybe')"
         ><NIcon size="18"><FacebookF /></NIcon
       ></NButton>
-      <NButton
-        text
-        target="_blank"
-        tag="a"
-        href="https://www.instagram.com/vustudentuatstovybe/"
+      <NButton text @click="windowOpen('https://www.instagram.com/vustudentuatstovybe/')"
         ><NIcon size="18"><Instagram /></NIcon
       ></NButton>
       <!-- <NBadge dot processing> -->
       <NButton text @click="changeShowSearch"
-        ><NIcon color="#000000" size="22"><Search20Filled /></NIcon
+        ><NIcon size="22"><Search20Filled /></NIcon
       ></NButton>
       <!-- </NBadge> -->
       <NDropdown
@@ -131,7 +123,7 @@
           :selected-keys="selectedKeys"
           @update:selected-keys="handleSelectNavigation"
         />
-        <Link
+        <!-- <Link
           v-if="locale === 'lt'"
           class="ml-7 mt-1"
           :data="{ padalinys: usePage().props.value.alias }"
@@ -142,7 +134,7 @@
             >
             <template v-else>Kontaktai</template>
           </NButton>
-        </Link>
+        </Link> -->
         <div class="flex flex-row space-x-4 items-center mt-4">
           <NButton
             text
@@ -160,7 +152,7 @@
           ></NButton>
           <!-- <NBadge dot processing> -->
           <NButton text @click="changeShowSearch"
-            ><NIcon color="#000000" size="22"><Search20Filled /></NIcon
+            ><NIcon size="22"><Search20Filled /></NIcon
           ></NButton>
           <!-- </NBadge> -->
           <NDropdown
@@ -342,6 +334,10 @@ const options_language_lt = [
   },
 ];
 
+const windowOpen = (url) => {
+  window.open(url, "_blank");
+};
+
 const parseNavigation = (array, id) => {
   // console.log(array);
   const result = [];
@@ -408,7 +404,7 @@ const handleSelectPadalinys = (key) => {
       padalinys: i,
     },
     preserveScroll: true,
-    only: ["alias", "news", "banners"],
+    only: ["alias", "news", "banners", "main_page"],
     onSuccess: () => {
       padalinys.value = getPadalinys(i);
       activeDrawer.value = false;

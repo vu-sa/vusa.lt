@@ -3,7 +3,8 @@
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
-    <NDataTable class="main-card"
+    <NDataTable
+      class="main-card"
       :data="props.mainPage"
       :columns="columns"
       :row-props="rowProps"
@@ -28,11 +29,20 @@ const createColumns = () => {
   return [
     {
       title: "Pavadinimas",
-      key: "title",
+      key: "text",
+    },
+    {
+      title: "Padalinys",
+      key: "padalinys.shortname",
     },
     {
       title: "Nuoroda",
-      key: "permalink",
+      key: "link",
+    },
+
+    {
+      title: "Kalba",
+      key: "lang",
     },
   ];
 };
@@ -43,7 +53,7 @@ const rowProps = (row) => {
   return {
     style: "cursor: pointer;",
     onClick: () => {
-      Inertia.visit(route("mainPage.edit", { id: row.permalink }));
+      Inertia.visit(route("mainPage.edit", { id: row.id }));
     },
   };
 };

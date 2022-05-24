@@ -11,6 +11,8 @@ class DutyInstitution extends Model
 
     protected $table = 'duties_institutions';
 
+    protected $guarded = [];
+
     public function duties()
     {
         return $this->hasMany(Duty::class, 'institution_id');
@@ -19,5 +21,9 @@ class DutyInstitution extends Model
     public function type()
     {
         return $this->belongsTo(DutyInstitutionType::class, 'type_id');
+    }
+
+    public function padalinys() {
+        return $this->belongsTo(Padalinys::class, 'padalinys_id');
     }
 }

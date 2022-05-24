@@ -6,7 +6,7 @@
       href="https://fonts.googleapis.com/css2?family=Spline+Sans&display=swap"
       rel="stylesheet"
     />
-    <div class="microsoft-btn">
+    <div class="microsoft-btn pr-2">
       <div class="microsoft-icon-wrapper">
         <img
           class="microsoft-icon-svg"
@@ -14,7 +14,7 @@
         />
       </div>
       <p class="btn-text">
-        <b><slot>Continue with Microsoft</slot></b>
+        <b><slot>Tęsti su Microsoft</slot></b>
       </p>
     </div>
   </a>
@@ -32,9 +32,9 @@ export default {
 
 <style scoped>
 .microsoft-btn {
-  width: 80%;
-  min-width: 184px;
-  max-width: 184px;
+  /* width: fit-content; */
+  /* min-width: 184px; */
+  /* max-width: 184px; */
   height: 35px;
   background-color: #fcfcfc;
   border-radius: 8px;
@@ -64,7 +64,7 @@ export default {
   color: #757575;
   font-size: 0.7em;
   letter-spacing: 0.2px;
-  font-family: 'Spline Sans', sans-serif;
+  font-family: "Spline Sans", sans-serif;
   user-select: none;
 }
 .microsoft-btn:hover {

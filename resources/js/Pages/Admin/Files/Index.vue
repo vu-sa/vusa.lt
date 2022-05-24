@@ -1,9 +1,7 @@
 <template>
   <AdminLayout title="Failų tvarkyklė">
     <div id="folders" class="main-card">
-      <h2 class="text-2xl font-bold">
-        Aplankai ({{ showedDirectories.length }})
-      </h2>
+      <h2 class="text-2xl font-bold">Aplankai ({{ showedDirectories.length }})</h2>
       <div class="grid grid-cols-3 gap-3 2xl:grid-cols-6 lg:grid-cols-4">
         <FolderButton
           v-if="currentPath !== 'public/files'"
@@ -24,26 +22,41 @@
         </FolderButton>
       </div>
     </div>
-    <div id="files" v-if="showedFiles.length > 0" class="main-card transition-all max-h-full">
+    <div
+      id="files"
+      v-if="showedFiles.length > 0"
+      class="main-card transition-all max-h-full"
+    >
       <h2 class="text-2xl font-bold">Failai ({{ showedFiles.length }})</h2>
-      <transition-group tag="div" name="list" class="grid grid-cols-3 gap-3 2xl:grid-cols-6 lg:grid-cols-4">
+      <transition-group
+        tag="div"
+        name="list"
+        class="grid grid-cols-3 gap-3 2xl:grid-cols-6 lg:grid-cols-4"
+      >
         <FileButton
           v-for="file in showedFiles"
           v-bind:key="file.id"
-          :href="route('files.show', file.id)"
+          @click="openFile(file.filePath)"
         >
           <PhotographIcon class="h-10 w-10 stroke-slate-600 mb-2" />
           <div
-            class="
-              text-sm text-center text-ellipsis
-              overflow-hidden
-              whitespace-pre-line
-              break-all
-            "
+            class="text-sm text-center text-ellipsis overflow-hidden whitespace-pre-line break-all"
           >
             {{ file.fileName }}
           </div>
         </FileButton>
+        <div class="h-40">
+          <NUpload class="rounded-xl" @change="uploadFile">
+            <NUploadDragger>
+              <div style="margin-bottom: 12px">
+                <!-- <n-icon size="48" :depth="3">
+                  <archive-icon />
+                </n-icon> -->
+              </div>
+              <p style="font-size: 16px">Paspausk arba įtempk failą</p>
+            </NUploadDragger>
+          </NUpload>
+        </div>
       </transition-group>
     </div>
   </AdminLayout>
@@ -51,15 +64,11 @@
 
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-import { NDataTable } from "naive-ui";
+import { useMessage, NDataTable, NUpload, NUploadDragger } from "naive-ui";
 import { reactive, computed, onMounted } from "vue";
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
-import {
-  PhotographIcon,
-  FolderIcon,
-  ArrowLeftIcon,
-} from "@heroicons/vue/outline";
+import { PhotographIcon, FolderIcon, ArrowLeftIcon } from "@heroicons/vue/outline";
 import FileButton from "@/Components/Admin/FileButton.vue";
 import FolderButton from "@/Components/Admin/FolderButton.vue";
 
@@ -69,6 +78,8 @@ const props = defineProps({
   files: Object,
   currentPath: String,
 });
+
+const message = useMessage();
 
 // Compute showed directories
 const showedDirectories = computed(() => {
@@ -85,7 +96,7 @@ const showedFiles = computed(() => {
   let ar = [];
   props.files.forEach((element, index) => {
     let fileName = _.slice(_.split(element, "/"), -1)[0];
-    ar.push({ id: index, fileName: fileName });
+    ar.push({ id: index, fileName: fileName, filePath: element });
   });
   return ar;
 });
@@ -111,10 +122,32 @@ const getAllFilesAndDirectories = async (selectedDirectory) => {
     data: { currentPath: getNextPath(selectedDirectory) },
   });
 };
+
+const openFile = (filePath) => {
+  console.log(filePath);
+  // truncate 'public'
+  let fileName = filePath.substring(filePath.indexOf("/") + 1);
+  // console.log(fileName);
+  window.open("/uploads/" + fileName, "_blank");
+};
+
+const uploadFile = (e) => {
+  let file = e.file;
+  Inertia.post(
+    route("files.store"),
+    { file, path: props.currentPath },
+    {
+      preserveScroll: true,
+      preserveState: true,
+      onSuccess: () => {
+        message.success("Failas įkeltas");
+      },
+    }
+  );
+};
 </script>
 
 <style>
-
 .list-enter-active,
 .list-leave-active {
   transition: all 1s ease;

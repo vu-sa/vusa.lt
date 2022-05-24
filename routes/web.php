@@ -24,47 +24,6 @@ use Laravel\Socialite\Facades\Socialite;
 $this->host = config('app.url');
 $this->host = explode('://', $this->host)[1];
 
-Route::group(['prefix' => '{lang?}', 'where' => ['lang' => '(lt|en)']], function () {
-    
-    Route::name('padalinys.')->group(function () {
-        Route::domain('{padalinys}.' . $this->host)->group(function () {
-            Route::get('/', [Public\MainController::class, 'home'])->name('home');
-            Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('newsString', '(naujiena|news)')->name('news');
-            Route::get('kontaktai', [Public\MainController::class, 'contacts'])->name('contacts');
-            Route::get('{permalink}', [Public\MainController::class, 'page'])->where('permalink', '.*')->name('page');
-        });
-    });
-
-    Route::name('main.')->group(function () {
-        Route::domain($this->host)->group(function () {
-            Route::get('/', [Public\MainController::class, 'home'])->name('home');
-            Route::get('naujienos', [Public\MainController::class, 'newsArchive'])->name('newsArchive');
-            Route::get('naujiena/archyvas', [Public\MainController::class, 'newsArchive']);
-            Route::get('saziningai-registracija', [Public\MainController::class, 'saziningaiExamRegistration'])->name('saziningaiExamRegistration');
-            Route::get('ataskaita-2022', [Public\MainController::class, 'ataskaita2022']);
-            Route::get('ataskaita-2022/{permalink}', [Public\MainController::class, 'ataskaita2022'])->where('permalink', '.*')->name('ataskaita2022');
-            Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('news_string', '(naujiena|news)')->name('news');
-            Route::get('mainNews', [Public\MainController::class, 'getMainNews']);
-            
-            Route::get('kontaktai', [Public\MainController::class, 'contacts'])->name('contacts');
-            Route::get('{permalink}', [Public\MainController::class, 'page'])->where('permalink', '.*')->name('page');
-        });
-    });
-    
-});
-
-Route::get('/', [Public\MainController::class, 'home'])->name('home');
-Route::get('naujienos', [Public\MainController::class, 'newsArchive'])->name('newsArchive');
-// redirect /naujiena/archyvas to newsArchive
-Route::get('naujiena/archyvas', [Public\MainController::class, 'newsArchive']);
-Route::get('ataskaita-2022', [Public\MainController::class, 'ataskaita2022']);
-Route::get('ataskaita-2022/{permalink}', [Public\MainController::class, 'ataskaita2022'])->where('permalink', '.*')->name('ataskaita2022');
-Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('newsString', '(naujiena|news)')->name('news');
-
-Route::get('kontaktai', [Public\MainController::class, 'contacts'])->name('contacts');
-
-Route::post('search', [Public\MainController::class, 'search'])->name('search');
-
 Route::prefix('admin')->group(function () {
     Route::middleware(['auth', 'verified'])->group(function () {
 
@@ -85,7 +44,11 @@ Route::prefix('admin')->group(function () {
 
         // Resources
         Route::resource('pages', Admin\PagesController::class);
+        Route::post('pages/search', [Admin\PagesController::class, 'searchForPage'])->name('pages.search');
+
         Route::resource('news', Admin\NewsController::class);
+        Route::post('news/search', [Admin\NewsController::class, 'searchForNews'])->name('news.search');
+
         Route::resource('mainPage', Admin\MainPageController::class);
         Route::resource('banners', Admin\BannerController::class);
         Route::resource('navigation', Admin\NavigationController::class);
@@ -95,6 +58,16 @@ Route::prefix('admin')->group(function () {
         Route::resource('saziningaiExamFlows', Admin\SaziningaiExamFlowsController::class);
         Route::resource('saziningaiExamObservers', Admin\SaziningaiExamObserversController::class);
         Route::resource('files', Admin\FilesController::class);
+        Route::resource('duties', Admin\DutyController::class);
+        Route::resource('dutyInstitutions', Admin\DutyInstitutionController::class);
+        Route::post('dutyInstitutions/search', [Admin\DutyInstitutionController::class, 'searchForInstitutions'])->name('dutyInstitutions.search');
+        
+        Route::resource('roles', Admin\RolesController::class);
+        Route::post('files/search', [Admin\FilesController::class, 'searchForFiles'])->name('files.search');
+        Route::post('images/search', [Admin\FilesController::class, 'searchForImages'])->name('images.search');
+        Route::post('duties/search', [Admin\DutyController::class, 'searchForDuties'])->name('duties.search');
+
+        Route::post('files/uploadImage', [Admin\FilesController::class, 'uploadImage'])->name('files.uploadImage');
     });
 });
 
@@ -106,6 +79,56 @@ Route::get('/auth/microsoft/callback', [Admin\UserController::class, 'storeFromM
 // $microsoftUser = Socialite::driver('microsoft')->user();
 // return redirect('https://graph.microsoft.com/v1.0/me/photo/$value');
 // });
+
+Route::group(['prefix' => '{lang?}', 'where' => ['lang' => '(lt|en)']], function () {
+    
+    Route::name('padalinys.')->group(function () {
+        Route::domain('{padalinys}.' . $this->host)->group(function () {
+            Route::get('/', [Public\MainController::class, 'home'])->name('home');
+            Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('newsString', '(naujiena|news)')->name('news');
+            Route::get('kontaktai', [Public\MainController::class, 'contactsCategory'])->name('contacts');
+            Route::get('kontaktai/{alias}', [Public\MainController::class, 'contacts'])->name('contacts.alias');
+            Route::get('{permalink}', [Public\MainController::class, 'page'])->where('permalink', '.*')->name('page');
+        });
+    });
+
+    Route::name('main.')->group(function () {
+        Route::domain($this->host)->group(function () {
+            Route::get('/', [Public\MainController::class, 'home'])->name('home');
+            Route::get('naujienos', [Public\MainController::class, 'newsArchive'])->name('newsArchive');
+            Route::get('naujiena/archyvas', [Public\MainController::class, 'newsArchive']);
+            Route::get('saziningai-registracija', [Public\MainController::class, 'saziningaiExamRegistration'])->name('saziningaiExamRegistration');
+            Route::get('saziningai-uzregistruoti-egzaminai', [Public\MainController::class, 'saziningaiExams'])->name('saziningaiExams.registered');
+            Route::get('ataskaita-2022', [Public\MainController::class, 'ataskaita2022']);
+            Route::get('ataskaita-2022/{permalink}', [Public\MainController::class, 'ataskaita2022'])->where('permalink', '.*')->name('ataskaita2022');
+            Route::get('kontaktai', [Public\MainController::class, 'contactsCategory'])->name('contacts');
+            Route::get('kontaktai/paieska', [Public\MainController::class, 'searchContacts'])->name('contacts.search');
+            Route::get('kontaktai/{alias}', [Public\MainController::class, 'contacts'])->name('contacts.alias');
+            Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('news_string', '(naujiena|news)')->name('news');
+            Route::get('mainNews', [Public\MainController::class, 'getMainNews']);
+            Route::get('{permalink}', [Public\MainController::class, 'page'])->where('permalink', '.*')->name('page');
+        });
+    });
+    
+});
+
+Route::get('/', [Public\MainController::class, 'home'])->name('home');
+Route::get('naujienos', [Public\MainController::class, 'newsArchive'])->name('newsArchive');
+// redirect /naujiena/archyvas to newsArchive
+Route::get('naujiena/archyvas', [Public\MainController::class, 'newsArchive']);
+Route::get('saziningai-registracija', [Public\MainController::class, 'saziningaiExamRegistration'])->name('saziningaiExamRegistration');
+Route::post('saziningai-registracija', [Public\MainController::class, 'storeSaziningaiExamRegistration'])->name('saziningaiExamRegistration.store');
+Route::get('saziningai-uzregistruoti-egzaminai', [Public\MainController::class, 'saziningaiExams'])->name('saziningaiExams.registered');
+Route::post('saziningai-uzregistruoti-egzaminai', [Public\MainController::class, 'storeSaziningaiExamObserver'])->name('saziningaiExamObserver.store');
+Route::get('ataskaita-2022', [Public\MainController::class, 'ataskaita2022']);
+Route::get('ataskaita-2022/{permalink}', [Public\MainController::class, 'ataskaita2022'])->where('permalink', '.*')->name('ataskaita2022');
+Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('newsString', '(naujiena|news)')->name('news');
+
+Route::get('kontaktai', [Public\MainController::class, 'contactsCategory'])->name('contacts');
+Route::get('kontaktai/paieska', [Public\MainController::class, 'searchContacts'])->name('contacts.search');
+Route::get('kontaktai/{alias}', [Public\MainController::class, 'contacts'])->name('contacts.alias');
+
+Route::post('search', [Public\MainController::class, 'search'])->name('search');
 
 Route::get('{permalink}', [Public\MainController::class, 'page'])->where('permalink', '.*')->name('page');
 

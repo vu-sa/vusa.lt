@@ -10,6 +10,12 @@ use Inertia\Inertia;
 
 class SaziningaiExamsController extends Controller
 {
+    
+    public function __construct()
+    {
+        $this->authorizeResource(SaziningaiExam::class, 'saziningaiExam');
+    }
+    
     /**
      * Display a listing of the resource.
      *
@@ -68,7 +74,7 @@ class SaziningaiExamsController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {
+    {        
         $request->validate([
             'email' => ['required', 'email'],
             'subject_name' => ['required'],

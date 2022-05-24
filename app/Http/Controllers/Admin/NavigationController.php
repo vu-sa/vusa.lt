@@ -10,6 +10,12 @@ use App\Http\Controllers\Controller as Controller;
 class NavigationController extends Controller
 {
 
+    public function __construct()
+    {
+        $this->authorizeResource(Navigation::class, 'navigation');
+    }
+    
+
     public function getNavigation($id, $lang)
     {
         $childrenNav = Navigation::where('parent_id', $id)->where('lang', '=', $lang)->orderBy('order')->get();
@@ -54,7 +60,7 @@ class NavigationController extends Controller
     public function index(Request $request)
     {
         return Inertia::render('Admin/Navigation/Index', [
-            'navigationLT' => Navigation::where('lang', '=', 'lt')->orderBy('order')->get(),
+            'navigation' => Navigation::where('lang', '=', 'lt')->orderBy('order')->get(),
         ]);
     }
 
@@ -102,7 +108,9 @@ class NavigationController extends Controller
      */
     public function edit(Navigation $navigation)
     {
-        //
+        return Inertia::render('Admin/Navigation/Edit', [
+            'navigation' => $navigation,
+        ]);
     }
 
     /**
@@ -114,6 +122,12 @@ class NavigationController extends Controller
      */
     public function update(Request $request, Navigation $navigation)
     {
+        $navigation->name = $request->name;
+        $navigation->url = $request->url;
+        // $navigation->order = $request->order;
+        $navigation->save();
+
+        return redirect()->back();
     }
 
     /**

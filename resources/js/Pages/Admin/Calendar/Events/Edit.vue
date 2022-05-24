@@ -27,18 +27,10 @@
           />
         </div>
 
-        <div class="lg:col-span-4">
-          <label class="font-bold">Aprašymas (HTML)</label>
-          <n-input
-            v-model:value="calendar.description"
-            type="textarea"
-            placeholder="Įrašyti aprašymą..."/>
-        </div>
-
         <div class="lg:col-span-2">
           <label class="font-bold">Kategorija</label>
-          <n-select 
-            v-model:value="calendar.category" 
+          <n-select
+            v-model:value="calendar.category"
             :options="options"
             placeholder="Įrašyti kategoriją..."
           />
@@ -50,6 +42,13 @@
             v-model:value="calendar.url"
             type="text"
             placeholder="Įrašyti nuorodą..."
+          />
+        </div>
+
+        <div class="py-4 lg:col-span-4">
+          <TipTap
+            v-model="calendar.description"
+            :searchFiles="$page.props.search.other"
           />
         </div>
 
@@ -99,12 +98,13 @@ import {
 import { Inertia } from "@inertiajs/inertia";
 import { TrashIcon } from "@heroicons/vue/outline";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
+import TipTap from "@/Components/TipTap.vue";
 
 const message = useMessage();
 
 const props = defineProps({
-  calendar: String,
-  errors: Object
+  calendar: Object,
+  errors: Object,
 });
 
 const calendar = reactive(props.calendar);

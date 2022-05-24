@@ -9,6 +9,12 @@ use App\Http\Controllers\Controller as Controller;
 
 class MainPageController extends Controller
 {
+    
+    public function __construct()
+    {
+        $this->authorizeResource(MainPage::class, 'mainPage');
+    }
+    
     /**
      * Display a listing of the resource.
      *
@@ -19,7 +25,16 @@ class MainPageController extends Controller
         $mainPage = MainPage::all();
 
         return Inertia::render('Admin/Content/MainPage/Index', [
-            'mainPage' => $mainPage,
+            'mainPage' => $mainPage->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'text' => $item->text,
+                    'link' => $item->link,
+                    'padalinys' => $item->padalinys,
+                    'lang' => $item->lang,
+                    'created_at' => $item->created_at,
+                ];
+            }),
         ]);
     }
 
@@ -63,7 +78,9 @@ class MainPageController extends Controller
      */
     public function edit(MainPage $mainPage)
     {
-        //
+        return Inertia::render('Admin/Content/MainPage/Edit', [
+            'mainPage' => $mainPage
+        ]);
     }
 
     /**

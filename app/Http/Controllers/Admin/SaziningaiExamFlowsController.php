@@ -9,6 +9,11 @@ use Inertia\Inertia;
 
 class SaziningaiExamFlowsController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(SaziningaiExamFlow::class, 'saziningaiExamFlow');
+    }
+    
     /**
      * Display a listing of the resource.
      *

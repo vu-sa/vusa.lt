@@ -24,7 +24,8 @@
     RewriteRule ^ index.php [L]
 </IfModule>
 
-<IfModule mod_headers.c>
-    Header set Access-Control-Allow-Origin "*"
-</IfModule>
+# <IfModule mod_headers.c>
+#     Header set Access-Control-Allow-Origin "*"
+# </IfModule>
+
 SetEnvIf X-Forwarded-Proto https HTTPS=on
