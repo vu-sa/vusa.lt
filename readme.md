@@ -4,7 +4,7 @@
 
 Daugiau skaitykite [diskusijoje](https://github.com/vu-sa/vusa.lt/discussions/21), čia.
 
-Kaip susikurti lokalią erdvę, parodyta sekcijoje [For start of development](#for-start-of-development-on-linux)
+Kaip susikurti lokalią erdvę, parodyta sekcijoje [For start of development](#for-start-of-development)
 
 Keletas taisyklių:
 
@@ -19,9 +19,26 @@ This is the repo for vusa.lt website. Everyone is welcome to help. :) More about
 
 ---
 
-### For start of development (*on linux*)
+### For start of development
+
+#### Laravel Sail, i.e. Docker (Recommended!)
+
+The easiest method to develop. You have to be able to run Docker on your machine.
+
+**Steps:**
+
+1. Clone the repository
+2. After pulling the repository, run ./vendor/bin/sail up -d
+3. Other setup steps:
+   1. 
+
+More instructions on [Laravel Sail](https://laravel.com/docs/9.x/sail)
+
+#### On linux
 
 There still should be some prerequisites missing, so I'll update this in time.
+
+**UPDATE:** The repo is on PHP 8.1, so some steps may not work. If you don't want to run docker, then I'll advise to substitute `php8.0` with `php8.1`.
 
 For Windows computers, WSL is a good and quite a simple solution to use in this case. [Installation guide](https://pureinfotech.com/install-windows-subsystem-linux-2-windows-10/)
 
