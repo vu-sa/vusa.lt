@@ -23,14 +23,15 @@ This is the repo for vusa.lt website. Everyone is welcome to help. :) More about
 
 #### Laravel Sail, i.e. Docker (Recommended!)
 
-The easiest method to develop. You have to be able to run Docker on your machine.
+The easiest method to develop. You have to be able to run Docker and PHP (temporarily) on your machine.
 
 **Steps:**
 
 1. Clone the repository
-2. After pulling the repository, run ./vendor/bin/sail up -d
-3. Other setup steps:
-   1. 
+2. Download composer, run `composer update`
+3. After updating the repository, run `./vendor/bin/sail up -d`
+4. Other setup steps:
+   1. Copy `.env.example` and rename it to `.env`
 
 More instructions on [Laravel Sail](https://laravel.com/docs/9.x/sail)
 
