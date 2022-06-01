@@ -25,26 +25,30 @@
         >
           <template #name> {{ contact.name }} </template>
           <template #duty>
-            <NPopover
-              v-if="contact.duty.description"
-              trigger="hover"
-              :style="{ maxWidth: '250px' }"
-              ><template #trigger
-                ><p class="cursor-pointer">{{ contact.duty.name }}</p></template
-              >
-              <span v-html="contact.duty.description"></span>
-            </NPopover>
-            <p v-else>{{ contact.duty.name }}</p>
+            <template v-for="duty in contact.duties">
+              <NPopover
+                v-if="duty.description"
+                trigger="hover"
+                :style="{ maxWidth: '250px' }"
+                ><template #trigger
+                  ><p class="cursor-pointer my-1">{{ duty.name }}</p></template
+                >
+                <span v-html="duty.description"></span>
+              </NPopover>
+              <p class="my-1" v-else>{{ duty.name }}</p>
+            </template>
           </template>
           <template #contactInfo>
             <div v-if="contact.phone" class="flex flex-row items-center">
               <NIcon class="mr-2"><Phone20Regular /></NIcon>
               <a :href="`tel:${contact.phone}`">{{ contact.phone }}</a>
             </div>
-            <div v-if="contact.duty.email" class="flex flex-row items-center">
-              <NIcon class="mr-2"><Mail20Regular /> </NIcon
-              ><a :href="`mailto:${contact.duty.email}`">{{ contact.duty.email }}</a>
-            </div>
+            <template v-for="duty in contact.duties">
+              <div v-if="duty.email" class="flex flex-row items-center">
+                <NIcon class="mr-2"><Mail20Regular /> </NIcon
+                ><a :href="`mailto:${duty.email}`">{{ duty.email }}</a>
+              </div>
+            </template>
           </template>
         </ContactWithPhoto>
       </div>
