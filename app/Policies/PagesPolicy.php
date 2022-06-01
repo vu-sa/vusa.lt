@@ -26,7 +26,7 @@ class PagesPolicy
     public function viewAny(User $user)
     {
         // dd($user->isAdminOrSuperAdmin());
-        
+
         return $user->isAdminOrSuperAdmin();
     }
 
@@ -50,7 +50,7 @@ class PagesPolicy
      */
     public function create(User $user)
     {
-        //
+        return $user->isAdminOrSuperAdmin();
     }
 
     /**
@@ -63,7 +63,7 @@ class PagesPolicy
     public function update(User $user, Page $page)
     {
         // dd($user->padalinys()->id, $page->padalinys->id);
-        
+
         return $user->padalinys()->id == $page->padalinys->id;
     }
 

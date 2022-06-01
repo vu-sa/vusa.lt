@@ -48,7 +48,7 @@ class NewsPolicy
      */
     public function create(User $user)
     {
-        //
+        return $user->isAdminOrSuperAdmin();
     }
 
     /**
