@@ -348,7 +348,7 @@ class MainController extends Controller
 						} else if (is_null($contact->profile_photo_path)) {
 							return null;
 						} else {
-							return Storage::get($contact->profile_photo_path) == null ? null : Storage::url($contact->profile_photo_path);
+							return Storage::get(str_replace('uploads', 'public', $contact->profile_photo_path)) == null ? null : $contact->profile_photo_path;
 						}
 					},
 				];
@@ -397,7 +397,7 @@ class MainController extends Controller
 						} else if (is_null($contact->profile_photo_path)) {
 							return null;
 						} else {
-							return Storage::get($contact->profile_photo_path) == null ? null : Storage::url($contact->profile_photo_path);
+							return Storage::get(str_replace('uploads', 'public', $contact->profile_photo_path)) == null ? null : $contact->profile_photo_path;
 						}
 					}
 				];
