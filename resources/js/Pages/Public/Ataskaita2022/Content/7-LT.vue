@@ -1337,7 +1337,7 @@
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/admin/Aistė Prialgauskaitė_admin_VM(iki 2021-09).jpg"
           />
-          <p class="mt-1 text-sm">VU SA GMC</p>
+          <p class="mt-1 text-sm">VU SA VM</p>
           <strong>Aistė Prialgauskaitė (iki 2021-09)</strong>
         </div>
         <div>
@@ -1345,7 +1345,7 @@
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/admin/Erika Radiun_admin_VM(nuo 2021-09).jpg"
           />
-          <p class="mt-1 text-sm">VU SA GMC</p>
+          <p class="mt-1 text-sm">VU SA VM</p>
           <strong>Erika Radiun (nuo 2021-09)</strong>
         </div>
       </div>

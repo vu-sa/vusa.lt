@@ -1337,7 +1337,7 @@
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/admin/Aistė Prialgauskaitė_admin_VM(iki 2021-09).jpg"
           />
-          <p class="mt-1 text-sm">{{ __("VU SA GMC") }}</p>
+          <p class="mt-1 text-sm">{{ __("VU SA VM") }}</p>
           <strong>Aistė Prialgauskaitė (iki 2021-09)</strong>
         </div>
         <div>
@@ -1345,7 +1345,7 @@
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/admin/Erika Radiun_admin_VM(nuo 2021-09).jpg"
           />
-          <p class="mt-1 text-sm">{{ __("VU SA GMC") }}</p>
+          <p class="mt-1 text-sm">{{ __("VU SA VM") }}</p>
           <strong>Erika Radiun (nuo 2021-09)</strong>
         </div>
       </div>
@@ -1386,7 +1386,7 @@
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/Gabija Raubaitė VU fotoklubas.jpg"
           />
-          <p class="mt-1 text-sm">VU Foto klubas</p>
+          <p class="mt-1 text-sm">VU Foto Club</p>
           <strong>Gabija Raubaitė</strong>
         </div>
         <div>
@@ -1394,7 +1394,7 @@
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/Andranik Karagezian VU Fotoklubas.jpg"
           />
-          <p class="mt-1 text-sm">VU Foto klubas</p>
+          <p class="mt-1 text-sm">VU Foto Club</p>
           <strong>Andranik Karagezian</strong>
         </div>
         <div>
@@ -1410,7 +1410,7 @@
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/Eglė Jašinskaitė VU Karjeros dienos.jpg"
           />
-          <p class="mt-1 text-sm">VU Karjeros dienos</p>
+          <p class="mt-1 text-sm">VU Career Days</p>
           <strong>Eglė Jašinskaitė</strong>
         </div>
         <div>
@@ -1418,7 +1418,7 @@
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/Antropologų klubas Ivan Trunov_.jpg"
           />
-          <p class="mt-1 text-sm">Antropologų klubas</p>
+          <p class="mt-1 text-sm">Anthropology Club</p>
           <strong>Ivan Trunov</strong>
         </div>
         <div>
@@ -1426,7 +1426,7 @@
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/Aurelija Vasiliauskaitė SGV.jpg"
           />
-          <p class="mt-1 text-sm">Studentiško gyvenimo vadovas</p>
+          <p class="mt-1 text-sm">Student Life Guidebook</p>
           <strong>Aurelija Vasiliauskaitė</strong>
         </div>
         <div>
@@ -1458,7 +1458,7 @@
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/Robertas Rameika VU Debatų klubas.jpg"
           />
-          <p class="mt-1 text-sm">VU Debatų klubas</p>
+          <p class="mt-1 text-sm">VU Debate Club</p>
           <strong>Robertas Rameika</strong>
         </div>
         <div>
@@ -1490,7 +1490,7 @@
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/Viktorija Medžiaušaitė Teisės klinika.jpg"
           />
-          <p class="mt-1 text-sm">Teisės klinika</p>
+          <p class="mt-1 text-sm">Law Clinic</p>
           <strong>Viktorija Medžiaušaitė</strong>
         </div>
         <div>
@@ -1498,7 +1498,7 @@
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/Vytenis Almonaitis Kendo2.jpg"
           />
-          <p class="mt-1 text-sm">Kendo klubas</p>
+          <p class="mt-1 text-sm">Kendo Club</p>
           <strong>Vytenis Almonaitis</strong>
         </div>
         <div>
@@ -1506,7 +1506,7 @@
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/VU Rašytojų klubas Nikolajus Elkana Eimutis.png"
           />
-          <p class="mt-1 text-sm">VU Rašytojų klubas</p>
+          <p class="mt-1 text-sm">VU Writers' Club</p>
           <strong>Nikolajus Elkana Eimutis</strong>
         </div>
         <div>
@@ -1514,7 +1514,7 @@
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/VU SIF Ieva Turskytė (iki 2022 m. sausio mėn.).jpg"
           />
-          <p class="mt-1 text-sm">VU Studentų investicinis fondas</p>
+          <p class="mt-1 text-sm">VU Student Investment Fund</p>
           <strong>Ieva Turskytė (iki 2022 sausio mėn.)</strong>
         </div>
         <div>
@@ -1522,7 +1522,7 @@
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/VU SIF Gabrielė Stanionytė (nuo 2022 m. sausio mėn.).jpg"
           />
-          <p class="mt-1 text-sm">VU Studentų investicinis fondas</p>
+          <p class="mt-1 text-sm">VU Student Investment Fund</p>
           <strong>Gabrielė Stanionytė (nuo 2022 sausio mėn.)</strong>
         </div>
         <div class="m-auto text-center">
