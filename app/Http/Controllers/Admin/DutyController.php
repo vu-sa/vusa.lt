@@ -53,7 +53,24 @@ class DutyController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required',
+            'email' => 'email|unique:users|unique:duties',
+        ]);
+
+        // dd($request->all());
+
+        $duty = new Duty();
+
+        $duty->name = $request->name;
+        $duty->email = $request->email;
+        $duty->description = $request->description;
+        $duty->institution()->associate($request->institution['id']);
+        // TODO: sutvarkyti
+        $duty->type_id = 3;
+        $duty->save();
+
+        return redirect()->route('duties.index');
     }
 
     /**

@@ -177,7 +177,7 @@ const updateModel = () => {
   console.log("Po JSON");
   console.log(duty, duty.attributes);
 
-  Inertia.patch(route("duties.update", duty.id), duty, {
+  Inertia.post(route("duties.store"), duty, {
     // preserveState: true,
     onSuccess: () => {
       // console.log("Success");
