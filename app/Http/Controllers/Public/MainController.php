@@ -24,6 +24,7 @@ use App\Models\SaziningaiExam;
 use App\Models\SaziningaiExamFlow;
 use App\Models\SaziningaiExamObserver;
 use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
 class MainController extends Controller
 {
@@ -307,9 +308,11 @@ class MainController extends Controller
 			}
 		}
 
-		$alias_contacts = collect($alias_contacts)->unique();
+		$alias_contact_collection = new EloquentCollection($alias_contacts);
 
+		$alias_contact_collection = $alias_contact_collection->unique();
 
+		// dd($alias_contact_collection);
 
 		// if ($padalinys->id === 16) {
 		// 	$duty_institution = DutyInstitution::where('alias', '=', 'centrinis-biuras')->first();
@@ -335,13 +338,13 @@ class MainController extends Controller
 
 		return Inertia::render('Public/Contacts/Contacts', [
 			'institution' => $duty_institution,
-			'contacts' => $alias_contacts->map(function ($contact) use ($duty_institution) {
+			'contacts' => $alias_contact_collection->map(function ($contact) use ($duty_institution) {
 				return [
 					'id' => $contact->id,
 					'name' => $contact->name,
 					'email' => $contact->email,
 					'phone' => $contact->phone,
-					'duty' => $contact->duties->where('institution_id', '=', $duty_institution->id)->first(),
+					'duties' => $contact->duties->where('institution_id', '=', $duty_institution->id),
 					'image' => function () use ($contact) {
 						if (substr($contact->profile_photo_path, 0, 4) == 'http') {
 							return $contact->profile_photo_path;
