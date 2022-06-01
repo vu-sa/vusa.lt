@@ -99,7 +99,7 @@ class MainController extends Controller
 						if (substr($news->image, 0, 4) == 'http') {
 							return $news->image;
 						} else {
-							return Storage::get($news->image) == null ? '/images/icons/naujienu_foto.png' : Storage::url($news->image);
+							return Storage::get(str_replace('uploads', 'public', $news->image)) == null ? '/images/icons/naujienu_foto.png' : $news->image;
 						}
 					},
 					"important" => $news->important,
@@ -123,7 +123,7 @@ class MainController extends Controller
 		if (substr($news->image, 0, 4) == 'http') {
 			$image = $news->image;
 		} else {
-			$image = Storage::get($news->image) == null ? '/images/icons/naujienu_foto.png' : Storage::url($news->image);
+			$image = Storage::get(str_replace('uploads', 'public', $news->image)) == null ? '/images/icons/naujienu_foto.png' : $news->image;
 		}
 
 		// Storage::get($news->image) == null ? '/images/icons/naujienu_foto.png' : Storage::url($news->image);
