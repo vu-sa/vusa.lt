@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout title="Pareigos" :createURL="create_url">
+  <AdminLayout title="Pareigos" :createURL="route('duties.create')">
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>

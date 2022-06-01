@@ -123,13 +123,13 @@ import TipTap from "@/Components/TipTap.vue";
 const message = useMessage();
 
 const props = defineProps({
-  duty: Object,
   errors: Object,
 });
 
 // const duty = reactive(props.duty);
 const institutions = ref([]);
-const duty = reactive(props.duty);
+const duty = reactive({});
+duty.institution = {};
 
 // duty.attributes = {
 //   en: {
@@ -201,16 +201,16 @@ const updateModel = () => {
 //   });
 // };
 
-onMounted(() => {
-  institutions.value = [
-    {
-      value: duty.institution.id,
-      label: `${duty.institution.name} (${duty.institution.alias})`,
-    },
-  ];
+// onMounted(() => {
+//   institutions.value = [
+//     {
+//       value: duty.institution.id,
+//       label: `${duty.institution.name} (${duty.institution.alias})`,
+//     },
+//   ];
 
-  duty.institution.id = props.duty.institution.id;
-});
+//   duty.institution.id = props.duty.institution.id;
+// });
 
 // JSON parse props.duty.attributes
 

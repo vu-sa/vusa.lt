@@ -48,7 +48,7 @@ class DutiesPolicy
      */
     public function create(User $user)
     {
-        //
+        return $user->isAdminOrSuperAdmin();
     }
 
     /**

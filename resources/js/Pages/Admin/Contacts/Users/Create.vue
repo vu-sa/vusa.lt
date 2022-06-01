@@ -122,12 +122,11 @@ import UploadImage from "@/Components/Admin/UploadImage.vue";
 const message = useMessage();
 
 const props = defineProps({
-  contact: Object,
   errors: Object,
   roles: Array,
 });
 
-const contact = reactive(props.contact);
+const contact = reactive({});
 
 contact.role = {
   id: contact.role?.id,
@@ -162,7 +161,7 @@ const getDutyOptions = _.debounce((input) => {
           duties.value = usePage().props.value.search.other.map((duty) => {
             return {
               value: duty.id,
-              label: `${duty.name} (${duty.institution})`,
+              label: `${duty.name} - ${duty.shortname} (${duty.institution})`,
             };
           });
         },
@@ -175,10 +174,10 @@ const getDutyOptions = _.debounce((input) => {
 
 const updateModel = () => {
   showSpin.value = !showSpin.value;
-  Inertia.patch(route("users.update", contact.id), contact, {
+  Inertia.post(route("users.store", contact.id), contact, {
     onSuccess: () => {
       showSpin.value = !showSpin.value;
-      message.success("Sėkmingai atnaujinta!");
+      message.success("Sėkmingai sukurtas vartotojas!");
     },
     onError: () => {
       showSpin.value = !showSpin.value;
@@ -196,15 +195,15 @@ const updateModel = () => {
 //   });
 // };
 
-onMounted(() => {
-  duties.value = props.contact.duties.map((duty) => {
-    return {
-      value: duty.id,
-      label: `${duty.name} - ${duty.institution.short_name} (${duty.institution.alias})`,
-    };
-  });
-  contact.duties = props.contact.duties.map((duty) => {
-    return duty.id;
-  });
-});
+// onMounted(() => {
+//   duties.value = props.contact.duties.map((duty) => {
+//     return {
+//       value: duty.id,
+//       label: `${duty.name} (${duty.institution.alias})`,
+//     };
+//   });
+//   contact.duties = props.contact.duties.map((duty) => {
+//     return duty.id;
+//   });
+// });
 </script>
