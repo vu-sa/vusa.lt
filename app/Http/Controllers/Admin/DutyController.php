@@ -42,7 +42,7 @@ class DutyController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('Admin/Contacts/Duties/Create');
     }
 
     /**
@@ -75,15 +75,15 @@ class DutyController extends Controller
      */
     public function edit(Duty $duty)
     {
-        $attributes = new stdClass;
-        $attributes->en = new stdClass;
-        $attributes->en->name = '';
-        $attributes->en->description = '';
-        $attributes = json_encode($attributes);
+        // $attributes = new stdClass;
+        // $attributes->en = new stdClass;
+        // $attributes->en->name = '';
+        // $attributes->en->description = '';
+        // $attributes = json_encode($attributes);
 
-        if (!empty($duty->attributes)) {
-            $attributes = $duty->attributes;
-        }
+        // if (!empty($duty->attributes)) {
+        //     $attributes = $duty->attributes;
+        // }
 
         // dd($attributes);
 
@@ -95,7 +95,7 @@ class DutyController extends Controller
                 'type' => $duty->type,
                 'institution' => $duty->institution,
                 'email' => $duty->email,
-                'attributes' => json_decode($attributes),
+                // 'attributes' => json_decode($attributes),
                 'places_to_occupy' => $duty->places_to_occupy,
                 'users' => $duty->users,
             ]
@@ -111,7 +111,7 @@ class DutyController extends Controller
      */
     public function update(Request $request, Duty $duty)
     {
-        $duty->update($request->only('name', 'description', 'email', 'attributes'));
+        $duty->update($request->only('name', 'description', 'email')); // attributes
 
         return back();
     }

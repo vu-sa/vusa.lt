@@ -45,6 +45,9 @@ class UserController extends Controller
     public function create()
     {
         //
+        return Inertia::render('Admin/Contacts/Users/Create', [
+            'roles' => Role::all(),
+        ]);
     }
 
     /**
@@ -55,7 +58,33 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required',
+            'email' => 'email|unique:users|unique:duties',
+        ]);
+
+        // dd($request->all());
+
+        $user = new User();
+
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->phone = $request->phone;
+        $user->role_id = $request->role_id;
+        $user->profile_photo_path = $request->profile_photo_path;
+
+        $user->save();
+
+        if (User::find(Auth::user()->id)->isAdmin()) {
+            $user->role_id = $request->role['id'];
+            $user->save();
+        }
+
+        foreach ($request->duties as $duty) {
+            $user->duties()->attach($duty);
+        }
+
+        return redirect()->route('users.index');
     }
 
     /**

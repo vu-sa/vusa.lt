@@ -25,10 +25,10 @@ class DutyInstitutionController extends Controller
         $search = request()->input('search');
 
         $dutyInstitutions = DutyInstitution::with('padalinys:id,shortname')->when(!request()->user()->isAdmin(), function ($query) {
-                $query->where('padalinys_id', '=', request()->user()->padalinys()->id);
-            })->when(!is_null($search), function ($query) use ($search) {
-                $query->where('name', 'like', "%{$search}%")->orWhere('short_name', 'like', "%{$search}%")->orWhere('alias', 'like', "%{$search}%");
-            })->get();
+            $query->where('padalinys_id', '=', request()->user()->padalinys()->id);
+        })->when(!is_null($search), function ($query) use ($search) {
+            $query->where('name', 'like', "%{$search}%")->orWhere('short_name', 'like', "%{$search}%")->orWhere('alias', 'like', "%{$search}%");
+        })->get();
 
 
         return Inertia::render('Admin/Contacts/Institutions/Index', [
@@ -119,7 +119,12 @@ class DutyInstitutionController extends Controller
     {
         $data = $request->collect()['data'];
 
-        $institutions = DutyInstitution::where('name', 'like', "%{$data['name']}%")->get();
+        $institutions = DutyInstitution::when(!$request->user()->isAdmin(), function ($query) use ($request) {
+            $query->where('padalinys_id', '=', $request->user()->padalinys()->id);
+            // check request for padaliniai, if not empty return only pages from request padaliniai
+        })->where(function ($query) use ($data) {
+            $query->where('name', 'like', "%{$data['name']}%")->orWhere('short_name', 'like', "%{$data['name']}%")->orWhere('alias', 'like', "%{$data['name']}%");
+        })->get();
 
         $institutions = $institutions->map(function ($institution) {
             return [
