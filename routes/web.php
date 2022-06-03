@@ -95,6 +95,7 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => '(lt|en)']], function
 
             Route::get('kontaktai', [Public\MainController::class, 'contactsCategory'])->name('contacts');
             Route::get('kontaktai/paieska', [Public\MainController::class, 'searchContacts'])->name('contacts.search');
+            Route::get('kontaktai/kategorija/{alias}', [Public\MainController::class, 'contactsCategory'])->name('contacts.category');
             Route::get('kontaktai/{alias}', [Public\MainController::class, 'contacts'])->name('contacts.alias');
 
             Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('news_string', '(naujiena|news)')->name('news');
@@ -121,6 +122,7 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => '(lt|en)']], function
 
             Route::get('kontaktai', [Public\MainController::class, 'contactsCategory'])->name('contacts');
             Route::get('kontaktai/paieska', [Public\MainController::class, 'searchContacts'])->name('contacts.search');
+            Route::get('kontaktai/kategorija/{alias}', [Public\MainController::class, 'contactsCategory'])->name('contacts.category');
             Route::get('kontaktai/{alias}', [Public\MainController::class, 'contacts'])->name('contacts.alias');
 
             Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('news_string', '(naujiena|news)')->name('news');
@@ -149,6 +151,7 @@ Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->
 
 Route::get('kontaktai', [Public\MainController::class, 'contactsCategory'])->name('contacts');
 Route::get('kontaktai/paieska', [Public\MainController::class, 'searchContacts'])->name('contacts.search');
+Route::get('kontaktai/kategorija/{alias}', [Public\MainController::class, 'contactsCategory'])->name('contacts.category');
 Route::get('kontaktai/{alias}', [Public\MainController::class, 'contacts'])->name('contacts.alias');
 
 Route::post('search', [Public\MainController::class, 'search'])->name('search');
