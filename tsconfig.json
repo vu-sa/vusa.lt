@@ -1,13 +1,19 @@
 {
 	"compilerOptions": {
+		"outDir": "dist",
 		"types": [
 			"naive-ui/volar"
 		],
 		"paths": {
-            "@/*": ["resources/js/*"]
-        },
+			"@/*": [
+				"./resources/js/*"
+			]
+		},
 		"allowJs": true,
 		// "checkJs": true
 	},
-	"exclude": ["node_modules", "public"]
+	"exclude": [
+		"./node_modules/**/*",
+		"./public/**/*"
+	]
 }

@@ -15,7 +15,7 @@ mix.js('resources/js/app.js', 'public/js/app.js').vue()
     .postCss('resources/css/app.css', 'public/css/app.css', [
         require('postcss-import'),
         require('tailwindcss'),
-    ])
+    ]).sourceMaps()
     // .extract()
     // .version()
     .webpackConfig(require('./webpack.config'));
