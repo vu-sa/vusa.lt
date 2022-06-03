@@ -20,21 +20,26 @@
           style="overflow: auto; max-height: 600px"
         >
           <NButton
-            :disabled="!route().current('*home')"
+            :disabled="route().current('*page')"
             size="small"
             style="border-radius: 0.5rem"
           >
             <!-- <NGradientText type="warning"> -->
             {{ __(padalinys) }}
             <!-- </NGradientText> -->
-            <NIcon class="ml-1" size="18"><ChevronDown20Filled /></NIcon></NButton
-        ></NDropdown>
+            <NIcon class="ml-1" size="18">
+              <ChevronDown20Filled />
+            </NIcon>
+          </NButton>
+        </NDropdown>
       </div>
     </div>
     <!-- Hamburger -->
     <div class="block md:hidden">
       <NButton style="border-radius: 0.5rem" @click="toggleMenu">
-        <NIcon><Navigation24Filled /></NIcon>
+        <NIcon>
+          <Navigation24Filled />
+        </NIcon>
       </NButton>
     </div>
     <div class="hidden md:flex flex-row space-x-4 items-center">
@@ -66,16 +71,22 @@
           <template v-else>Kontaktai</template>
         </NButton>
       </Link> -->
-      <NButton text @click="windowOpen('https://www.facebook.com/VUstudentuatstovybe')"
-        ><NIcon size="18"><FacebookF /></NIcon
-      ></NButton>
-      <NButton text @click="windowOpen('https://www.instagram.com/vustudentuatstovybe/')"
-        ><NIcon size="18"><Instagram /></NIcon
-      ></NButton>
+      <NButton text @click="windowOpen('https://www.facebook.com/VUstudentuatstovybe')">
+        <NIcon size="18">
+          <FacebookF />
+        </NIcon>
+      </NButton>
+      <NButton text @click="windowOpen('https://www.instagram.com/vustudentuatstovybe/')">
+        <NIcon size="18">
+          <Instagram />
+        </NIcon>
+      </NButton>
       <!-- <NBadge dot processing> -->
-      <NButton text @click="changeShowSearch"
-        ><NIcon size="22"><Search20Filled /></NIcon
-      ></NButton>
+      <NButton text @click="changeShowSearch">
+        <NIcon size="22">
+          <Search20Filled />
+        </NIcon>
+      </NButton>
       <!-- </NBadge> -->
       <NDropdown
         placement="top-end"
@@ -84,10 +95,9 @@
         @select="handleSelectLanguage"
       >
         <NButton text
-          ><img
-            src="https://hatscripts.github.io/circle-flags/flags/gb.svg"
-            width="16" /></NButton
-      ></NDropdown>
+          ><img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" width="16"
+        /></NButton>
+      </NDropdown>
       <NDropdown
         placement="top-end"
         :options="options_language_lt"
@@ -95,27 +105,29 @@
         @select="handleSelectLanguage"
       >
         <NButton text
-          ><img
-            src="https://hatscripts.github.io/circle-flags/flags/lt.svg"
-            width="16" /></NButton
-      ></NDropdown>
+          ><img src="https://hatscripts.github.io/circle-flags/flags/lt.svg" width="16"
+        /></NButton>
+      </NDropdown>
     </div>
     <NDrawer v-model:show="activeDrawer" :width="325" placement="left" :trap-focus="true">
       <NDrawerContent
         closable
         :title="padalinys == 'Padaliniai' ? 'VU SA' : __(padalinys)"
       >
-        <NCollapse
-          ><NCollapseItem title="Padaliniai"
-            ><NTree
-              block-line
-              :data="options_padaliniai"
-              @update:selected-keys="handleSelectPadalinys"
-            >
-            </NTree></NCollapseItem
-        ></NCollapse>
+        <template v-if="!route().current('*page')">
+          <NCollapse>
+            <NCollapseItem title="Padaliniai">
+              <NTree
+                block-line
+                :data="options_padaliniai"
+                @update:selected-keys="handleSelectPadalinys"
+              >
+              </NTree>
+            </NCollapseItem>
+          </NCollapse>
 
-        <NDivider></NDivider>
+          <NDivider></NDivider>
+        </template>
         <NTree
           block-line
           :data="navigation"
@@ -141,19 +153,27 @@
             target="_blank"
             tag="a"
             href="https://www.facebook.com/VUstudentuatstovybe"
-            ><NIcon size="18"><FacebookF /></NIcon
-          ></NButton>
+          >
+            <NIcon size="18">
+              <FacebookF />
+            </NIcon>
+          </NButton>
           <NButton
             text
             target="_blank"
             tag="a"
             href="https://www.instagram.com/vustudentuatstovybe/"
-            ><NIcon size="18"><Instagram /></NIcon
-          ></NButton>
+          >
+            <NIcon size="18">
+              <Instagram />
+            </NIcon>
+          </NButton>
           <!-- <NBadge dot processing> -->
-          <NButton text @click="changeShowSearch"
-            ><NIcon size="22"><Search20Filled /></NIcon
-          ></NButton>
+          <NButton text @click="changeShowSearch">
+            <NIcon size="22">
+              <Search20Filled />
+            </NIcon>
+          </NButton>
           <!-- </NBadge> -->
           <NDropdown
             placement="top-end"
@@ -164,8 +184,9 @@
             <NButton text
               ><img
                 src="https://hatscripts.github.io/circle-flags/flags/gb.svg"
-                width="16" /></NButton
-          ></NDropdown>
+                width="16"
+            /></NButton>
+          </NDropdown>
           <NDropdown
             placement="top-end"
             :options="options_language_lt"
@@ -175,8 +196,9 @@
             <NButton text
               ><img
                 src="https://hatscripts.github.io/circle-flags/flags/lt.svg"
-                width="16" /></NButton
-          ></NDropdown>
+                width="16"
+            /></NButton>
+          </NDropdown>
         </div>
       </NDrawerContent>
     </NDrawer>
@@ -403,8 +425,8 @@ const handleSelectPadalinys = (key) => {
     data: {
       padalinys: i,
     },
-    preserveScroll: true,
-    only: ["alias", "news", "banners", "main_page"],
+    preserveScroll: false,
+    // only: ["alias", "news", "banners", "main_page"],
     onSuccess: () => {
       padalinys.value = getPadalinys(i);
       activeDrawer.value = false;
@@ -432,7 +454,13 @@ const handleSelectNavigation = (id) => {
       } else {
         url = item[1].url;
         // message.info("Navigating to " + url);
-        Inertia.visit(route("main.page", { lang: locale.value, permalink: url }));
+        Inertia.visit(
+          route("main.page", { lang: locale.value, permalink: url }),
+          {},
+          {
+            preserveScroll: false,
+          }
+        );
       }
       selectedKeys.value = [];
     }

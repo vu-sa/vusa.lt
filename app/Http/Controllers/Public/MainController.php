@@ -39,14 +39,14 @@ class MainController extends Controller
 
 		if ($host !== 'localhost') {
 			$subdomain = explode('.', $host)[0];
-			$this->alias = $subdomain == 'www' ? '' : $subdomain;
-			$this->alias = $subdomain == 'vusa' ? '' : $this->alias;
-			$this->alias = $subdomain == 'naujas' ? '' : $this->alias;
-			$this->alias = $subdomain == 'static' ? '' : $this->alias;
-			$this->alias = Route::currentRouteName() == 'home' ? '' : $this->alias;
-			$this->alias = Route::currentRouteName() == 'padalinys.home' ? '' : $this->alias;
+			$this->alias = $subdomain == 'www' ? 'vusa' : $subdomain;
+			$this->alias = $subdomain == 'vusa' ? 'vusa' : $this->alias;
+			$this->alias = $subdomain == 'naujas' ? 'vusa' : $this->alias;
+			$this->alias = $subdomain == 'static' ? 'vusa' : $this->alias;
+			$this->alias = Route::currentRouteName() == 'home' ? 'vusa' : $this->alias;
+			$this->alias = Route::currentRouteName() == 'padalinys.home' ? 'vusa' : $this->alias;
 		} else {
-			$this->alias = '';
+			$this->alias = 'vusa';
 		}
 
 
@@ -66,7 +66,7 @@ class MainController extends Controller
 			$banners = collect([]);
 		}
 
-		$banners = $banners->merge(Padalinys::where('alias', '')->first()->banners()->inRandomOrder()->where('is_active', 1)->get());
+		$banners = $banners->merge(Padalinys::where('type', 'pagrindinis')->first()->banners()->inRandomOrder()->where('is_active', 1)->get());
 		Inertia::share('banners', $banners);
 		Inertia::share('mainNavigation', $mainNavigation);
 
@@ -246,14 +246,38 @@ class MainController extends Controller
 		$padalinys = Padalinys::where('alias', '=', $this->alias)->first();
 		Inertia::share('alias', $padalinys->alias);
 
-		$duties_institutions = DutyInstitution::whereHas('duties')->where([['padalinys_id', '=', $padalinys->id], ['alias', 'not like', '%studentu-atstovai%']])->get();
+		// Special case for 'padaliniai' alias, since it's a special category, fetched from 'padaliniai' table
 
-		// dd($duties_institutions);
+		if (request()->alias == 'padaliniai') {
+			$padaliniai = Padalinys::where('type', '=', 'padalinys')->orderBy('shortname')->get();
+			$padaliniaiInstitutions = [];
+			foreach ($padaliniai as $key => $padalinys) {
+				$institution = DutyInstitution::where('alias', '=', $padalinys->alias)->first();
+				// add institution to array
+				array_push($padaliniaiInstitutions, $institution);
+			}
 
-		// check if institution length is 1, then just return that one institution contacts 
+			$duties_institutions = new EloquentCollection($padaliniaiInstitutions);
+		} else {
+			$duties_institutions = DutyInstitution::whereHas('duties')
+				// TODO: Čia reikia aiškesnės logikos
+				->when(
+					!request()->alias,
+					// If /kontaktai/{} or /kontaktai/kategorija/{}
+					function ($query) use ($padalinys) {
+						return $query->where([['padalinys_id', '=', $padalinys->id], ['alias', 'not like', '%studentu-atstovai%']]);
+					},
+					// If there's an alias in the url
+					function ($query) {
+						return $query->where('alias', '=', request()->alias);
+					}
+				)->get();
+		}
+
+		// check if institution array length is 1, then just return that one institution contacts.
 
 		if ($duties_institutions->count() == 1) {
-			// redirect to institution page
+			// redirect to that one institution page
 			return redirect('kontaktai/' . $duties_institutions->first()->alias);
 		}
 
