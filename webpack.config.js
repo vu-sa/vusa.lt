@@ -14,14 +14,14 @@ module.exports = {
   module: {
     rules: [
       // not working properly
-      {
-        test: /\.scss$/,
-        use: [
-          'vue-style-loader',
-          'css-loader',
-          'sass-loader'
-        ]
-      },
+      // {
+      //   test: /\.scss$/,
+      //   use: [
+      //     'vue-style-loader',
+      //     'css-loader',
+      //     'sass-loader'
+      //   ]
+      // },
       // working
       {
         test: /\.ts$/,

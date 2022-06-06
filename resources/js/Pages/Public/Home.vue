@@ -1,4 +1,12 @@
 <template>
+  <Head>
+    <link
+      rel="preload"
+      href="/images/ataskaita2022/kitos-nuotraukos/VU SA.jpg"
+      as="image"
+    />
+  </Head>
+
   <PublicLayout title="Pagrindinis">
     <div class="relative group">
       <ShapeDivider1 class="absolute -top-1 z-10"></ShapeDivider1>
@@ -34,8 +42,10 @@
             >Ką veikė VU SA 2021–2022 metais?</template
           ><template v-else>What did VU SR do in 2021–2022?</template>
 
-          <NIcon class="" style="font-size: 24pt"><ArrowCircleRight20Regular /></NIcon
-        ></Link>
+          <NIcon class="" style="font-size: 24pt">
+            <ArrowCircleRight20Regular />
+          </NIcon>
+        </Link>
       </h2>
       <div class="flex space-between flex-row">
         <p class="lg:max-w-[80ch] text-gray-700 mb-8 lg:mb-20 text-sm lg:text-base">
@@ -85,7 +95,8 @@
         <template #below-card>
           <!-- <NIcon class="mr-2" size="20"> <CalendarLtr20Regular /> </NIcon>VU SA
           ataskaitinė-rinkiminė konferencija -->
-          <NIcon class="mr-2" size="20"> <Clock20Regular /> </NIcon
+          <NIcon class="mr-2" size="20">
+            <Clock20Regular /> </NIcon
           >{{ item.publish_time }}
         </template>
         <template #image>
@@ -153,7 +164,7 @@ import {
   Clock20Regular,
   ArrowRight48Regular,
 } from "@vicons/fluent";
-import { Link, usePage } from "@inertiajs/inertia-vue3";
+import { Link, usePage, Head } from "@inertiajs/inertia-vue3";
 import { onBeforeUnmount, ref } from "vue";
 import { Inertia } from "@inertiajs/inertia";
 

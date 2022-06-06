@@ -7,9 +7,13 @@
       <main v-if="animated">
         <PageContent class="pt-16 sm:pt-24 2xl:pt-36">
           <slot />
-        </PageContent></main
-    ></transition>
+        </PageContent>
+      </main>
+    </transition>
   </FullWindow>
+
+  <!-- preconnect to tawk.to -->
+  <link rel="preconnect" href="https://embed.tawk.to" />
 </template>
 
 <script setup>
