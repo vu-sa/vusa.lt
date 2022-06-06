@@ -4,6 +4,7 @@ module.exports = {
   resolve: {
     alias: {
       '@': path.resolve('resources/js'),
+      'ziggy': path.resolve("vendor/tightenco/ziggy/dist/vue")
     },
     extensions: ['.ts', '.js']
   },
@@ -12,6 +13,7 @@ module.exports = {
   },
   module: {
     rules: [
+      // not working properly
       {
         test: /\.scss$/,
         use: [
@@ -20,6 +22,7 @@ module.exports = {
           'sass-loader'
         ]
       },
+      // working
       {
         test: /\.ts$/,
         loader: 'ts-loader',
