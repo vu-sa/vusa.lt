@@ -169,6 +169,8 @@ class UserController extends Controller
 
     public function storeFromMicrosoft()
     {
+        // dd(Socialite::driver('microsoft'));
+
         $microsoftUser = Socialite::driver('microsoft')->user();
 
         // check if microsoft user mail contains 'vusa.lt'

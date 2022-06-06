@@ -20,6 +20,6 @@ const message = useMessage();
 
 const microsoftRedirect = () => {
   loadingRef.value = true;
-  window.location.href = route("microsoft.callback");
+  window.location.href = route("microsoft.redirect");
 };
 </script>
