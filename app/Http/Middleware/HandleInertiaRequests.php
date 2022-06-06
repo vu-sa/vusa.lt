@@ -84,8 +84,9 @@ class HandleInertiaRequests extends Middleware
                 'other' => $request->session()->get('search_other') ?? [],
             ],
             'misc' => $request->session()->get('misc') ?? "",
+            // current user
+            'user' => Auth::user(),
             'user_padalinys' => Auth::user()?->padalinys()?->shortname
-
 
             // 'flash' => fn () => [
             //     'success' => $request->session()->get('success'),

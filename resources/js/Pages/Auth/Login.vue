@@ -1,88 +1,85 @@
 <template>
   <Head title="Log in" />
 
-  <jet-authentication-card>
-    <template #logo>
-      <Link :href="route('dashboard')"><AppLogo class="w-48" /></Link>
-    </template>
-
-    <jet-validation-errors class="mb-4" />
-
-    <div v-if="status" class="mb-4 font-medium text-sm text-green-600">
-      {{ status }}
+  <div
+    class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100"
+  >
+    <div>
+      <AppLogo class="w-48" />
     </div>
 
-    <form @submit.prevent="submit">
-      <div>
-        <jet-label for="email" value="El. paštas" />
-        <jet-input
-          id="email"
-          type="email"
-          class="mt-1 block w-full"
-          v-model="form.email"
-          required
-          autofocus
-        />
+    <div
+      class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg"
+    >
+      <validation-errors class="mb-4" />
+
+      <div v-if="status" class="mb-4 font-medium text-sm text-green-600">
+        {{ status }}
       </div>
 
-      <div class="mt-4">
-        <jet-label for="password" value="Slaptažodis" />
-        <jet-input
-          id="password"
-          type="password"
-          class="mt-1 block w-full"
-          v-model="form.password"
-          required
-          autocomplete="current-password"
-        />
-      </div>
+      <form @submit.prevent="submit">
+        <div>
+          <NInput
+            placeholder="El. paštas"
+            id="email"
+            type="email"
+            class="mt-1 block w-full"
+            v-model:value="form.email"
+            required
+            autofocus
+          />
+        </div>
 
-      <div class="block mt-4">
+        <div class="mt-4">
+          <NInput
+            id="password"
+            type="password"
+            class="mt-1 block w-full"
+            placeholder="Slaptažodis"
+            v-model:value="form.password"
+            required
+            autocomplete="current-password"
+          />
+        </div>
+
+        <!-- <div class="block mt-4">
         <label class="flex items-center">
           <jet-checkbox name="remember" v-model:checked="form.remember" />
           <span class="ml-2 text-sm text-gray-600">Prisiminti mane</span>
         </label>
-      </div>
+      </div> -->
 
-      <div class="flex items-center justify-end mt-4">
-        <MicrosoftButton></MicrosoftButton>
+        <div class="flex items-center justify-end mt-4 gap-4">
+          <NPopover
+            ><template #trigger>
+              <MicrosoftButton></MicrosoftButton> </template
+            ><span>Tik su VU SA paskyromis.</span></NPopover
+          >
 
-        <Link
-          v-if="canResetPassword"
-          :href="route('password.request')"
-          class="underline text-sm text-gray-600 hover:text-gray-900"
-        >
-          Forgot your password?
-        </Link>
+          <!-- <Link
+            v-if="canResetPassword"
+            :href="route('password.request')"
+            class="underline text-sm text-gray-600 hover:text-gray-900"
+          >
+            Forgot your password?
+          </Link> -->
 
-        <jet-button
-          class="ml-4"
-          :class="{ 'opacity-25': form.processing }"
-          :disabled="form.processing"
-        >
-          Prisijungti
-        </jet-button>
-      </div>
-    </form>
-  </jet-authentication-card>
+          <NButton attr-type="submit" :disabled="form.processing"> Prisijungti </NButton>
+        </div>
+      </form>
+    </div>
+  </div>
 </template>
 
 <script setup>
 import AppLogo from "@/Components/AppLogo.vue";
-import JetAuthenticationCard from "@/Jetstream/AuthenticationCard.vue";
-import JetAuthenticationCardLogo from "@/Jetstream/AuthenticationCardLogo.vue";
-import JetButton from "@/Jetstream/Button.vue";
-import JetInput from "@/Jetstream/Input.vue";
-import JetCheckbox from "@/Jetstream/Checkbox.vue";
-import JetLabel from "@/Jetstream/Label.vue";
-import JetValidationErrors from "@/Jetstream/ValidationErrors.vue";
+import ValidationErrors from "@/Components/Public/ValidationErrors.vue";
 import { Head, Link, useForm } from "@inertiajs/inertia-vue3";
 import { reactive } from "vue";
 import MicrosoftButton from "@/Components/MicrosoftButton.vue";
-1;
+import { NButton, NInput, NPopover } from "naive-ui";
 
 const props = defineProps({
-  canResetPassword: Boolean,
   status: String,
 });
 

@@ -3,11 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-use Illuminate\Support\Facades\App;
-use Laravel\Jetstream\Http\Controllers\Inertia\OtherBrowserSessionsController;
-use Laravel\Jetstream\Http\Controllers\Inertia\ProfilePhotoController;
-use Laravel\Jetstream\Http\Controllers\Inertia\UserProfileController;
 use Laravel\Socialite\Facades\Socialite;
 
 /*
@@ -31,14 +26,14 @@ Route::prefix('admin')->group(function () {
         Route::get('/', [Admin\DashboardController::class, 'dashboard'])->name('dashboard');
 
         // User & Profile...
-        Route::get('/user/profile', [UserProfileController::class, 'show'])
-            ->name('profile.show');
+        // Route::get('/user/profile', [UserProfileController::class, 'show'])
+        //     ->name('profile.show');
 
-        Route::delete('/user/other-browser-sessions', [OtherBrowserSessionsController::class, 'destroy'])
-            ->name('other-browser-sessions.destroy');
+        // Route::delete('/user/other-browser-sessions', [OtherBrowserSessionsController::class, 'destroy'])
+        //     ->name('other-browser-sessions.destroy');
 
-        Route::delete('/user/profile-photo', [ProfilePhotoController::class, 'destroy'])
-            ->name('current-user-photo.destroy');
+        // Route::delete('/user/profile-photo', [ProfilePhotoController::class, 'destroy'])
+        //     ->name('current-user-photo.destroy');
 
         // Resources
         Route::resource('pages', Admin\PagesController::class);
@@ -139,6 +134,10 @@ Route::get('/', [Public\MainController::class, 'home'])->name('home');
 Route::get('naujienos', [Public\MainController::class, 'newsArchive'])->name('newsArchive');
 // redirect /naujiena/archyvas to newsArchive
 Route::get('naujiena/archyvas', [Public\MainController::class, 'newsArchive']);
+
+// render login form
+Route::inertia('login', 'Auth/Login')->middleware('guest')->name('login');
+// Route::post('logout', [Auth\LoginController::class, 'logout'])->name('logout');
 
 Route::get('saziningai-registracija', [Public\MainController::class, 'saziningaiExamRegistration'])->name('saziningaiExamRegistration');
 Route::post('saziningai-registracija', [Public\MainController::class, 'storeSaziningaiExamRegistration'])->name('saziningaiExamRegistration.store');

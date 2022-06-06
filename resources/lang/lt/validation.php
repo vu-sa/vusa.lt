@@ -111,6 +111,7 @@ return [
         'first_name' => 'Vardas',
         'last_name' => 'Pavardė',
         'name' => 'Pavadinimas',
+        'password' => 'Slaptažodis',
     ],
 
 ];

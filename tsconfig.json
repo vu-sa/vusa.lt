@@ -2,11 +2,15 @@
 	"compilerOptions": {
 		"outDir": "dist",
 		"types": [
-			"naive-ui/volar"
+			"naive-ui/volar",
+			"@types/ziggy-js"
 		],
 		"paths": {
 			"@/*": [
 				"./resources/js/*"
+			],
+			"ziggy": [
+				"./vendor/tightenco/ziggy/dist/vue"
 			]
 		},
 		"allowJs": true,
