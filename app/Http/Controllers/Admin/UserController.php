@@ -187,6 +187,14 @@ class UserController extends Controller
         //
     }
 
+    public function detachFromDuty(User $user, Duty $duty)
+    {
+        $user->duties()->detach($duty);
+        $user->save();
+
+        return redirect()->back();
+    }
+
     public function storeFromMicrosoft()
     {
         // dd(Socialite::driver('microsoft'));

@@ -89,11 +89,23 @@
       </form>
     </div>
     <template #aside-navigation-options>
-      <div v-if="duty.users">
+      <div v-if="users">
         <strong>Šiuo metu šias pareigas užima:</strong>
         <ul class="list-inside">
-          <li v-for="user in duty.users">
+          <li v-for="user in users">
             <Link :href="route('users.edit', { id: user.id })">{{ user.name }}</Link>
+            <NPopconfirm @positive-click="detachUserFromDuty(user)">
+              <template #trigger>
+                <span class="ml-2">
+                  <NButton text>
+                    <NIcon>
+                      <LinkDismiss20Filled />
+                    </NIcon>
+                  </NButton>
+                </span>
+              </template>
+              Elementas bus atsietas, tačiau nebus ištrintas. Tęsti?
+            </NPopconfirm>
           </li>
         </ul>
       </div>
@@ -113,17 +125,20 @@ import {
   useMessage,
   NButton,
   NDatePicker,
+  NIcon,
 } from "naive-ui";
 import { Inertia } from "@inertiajs/inertia";
 import { TrashIcon } from "@heroicons/vue/outline";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import { usePage, Link } from "@inertiajs/inertia-vue3";
 import TipTap from "@/Components/TipTap.vue";
+import { LinkDismiss20Filled } from "@vicons/fluent";
 
 const message = useMessage();
 
 const props = defineProps({
   duty: Object,
+  users: Array,
   errors: Object,
 });
 
@@ -190,6 +205,26 @@ const updateModel = () => {
     preserveScroll: true,
     preserveState: true,
   });
+};
+
+const detachUserFromDuty = (user) => {
+  Inertia.post(
+    route("users.detach", {
+      user: user.id,
+      duty: duty.id,
+    }),
+    {},
+    {
+      preserveScroll: true,
+      only: ["users"],
+      onSuccess: () => {
+        message.success(`Sėkmingai atsieta nuo pareigos!`);
+      },
+      onError: () => {
+        message.error("Nepavyko atsieti!");
+      },
+    }
+  );
 };
 
 // const destroyModel = () => {

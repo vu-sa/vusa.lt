@@ -46,6 +46,8 @@ Route::prefix('admin')->group(function () {
         Route::resource('banners', Admin\BannerController::class);
         Route::resource('navigation', Admin\NavigationController::class);
         Route::resource('users', Admin\UserController::class);
+        Route::post('users/{user}/detach/{duty}', [Admin\UserController::class, 'detachFromDuty'])->name('users.detach');
+
         Route::resource('calendar', Admin\CalendarController::class);
         Route::resource('saziningaiExams', Admin\SaziningaiExamsController::class);
         Route::resource('saziningaiExamFlows', Admin\SaziningaiExamFlowsController::class);

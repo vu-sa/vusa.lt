@@ -114,8 +114,8 @@ class DutyController extends Controller
                 'email' => $duty->email,
                 // 'attributes' => json_decode($attributes),
                 'places_to_occupy' => $duty->places_to_occupy,
-                'users' => $duty->users,
-            ]
+            ],
+            'users' => $duty->users,
         ]);
     }
 
@@ -160,4 +160,14 @@ class DutyController extends Controller
 
         return back()->with('search_other', $duties);
     }
+
+    // public function detachFromInstitution(Duty $duty, Request $request)
+    // {
+    //     // dd($duty);
+
+    //     $duty->institution()->dissociate();
+    //     $duty->save();
+
+    //     return back();
+    // }
 }
