@@ -1,5 +1,6 @@
 <template>
   <!-- <NConfigProvider :theme-overrides="themeOverrides"> -->
+
   <Head :title="title" />
   <MetaIcons />
 
@@ -16,36 +17,61 @@
         Pradžia
       </MenuButton>
       <MenuButton :menuContent="['pages.*', 'news.*', 'mainPage.*', 'banners.*']">
-        <template #icon><DocumentTextIcon class="admin-navigation-icon" /></template>
+        <template #icon>
+          <DocumentTextIcon class="admin-navigation-icon" />
+        </template>
         Turinys
       </MenuButton>
       <MenuButton :menuContent="['users.*', 'duties.*', 'dutyInstitutions.*', 'roles.*']">
-        <template #icon><UserIcon class="admin-navigation-icon" /></template>
+        <template #icon>
+          <UserIcon class="admin-navigation-icon" />
+        </template>
         Kontaktai
       </MenuButton>
       <MenuButton :menuContent="['navigation.*']">
-        <template #icon><MenuAlt2Icon class="admin-navigation-icon" /></template>
+        <template #icon>
+          <MenuAlt2Icon class="admin-navigation-icon" />
+        </template>
         Navigacija
       </MenuButton>
       <MenuButton :menuContent="['calendar.*', 'agenda.*']">
-        <template #icon><CalendarIcon class="admin-navigation-icon" /></template>
+        <template #icon>
+          <CalendarIcon class="admin-navigation-icon" />
+        </template>
         Kalendorius
       </MenuButton>
       <MenuButton :menuContent="['files.*']">
-        <template #icon><FolderIcon class="admin-navigation-icon" /></template>
+        <template #icon>
+          <FolderIcon class="admin-navigation-icon" />
+        </template>
         Failų tvarkyklė
       </MenuButton>
       <MenuButton :menuContent="['saziningaiExams.*', 'saziningaiExamObservers.*']">
-        <template #icon><BookOpenIcon class="admin-navigation-icon" /></template>
+        <template #icon>
+          <BookOpenIcon class="admin-navigation-icon" />
+        </template>
         Sažiningai
       </MenuButton>
+      <div class="py-2">
+        <NButton
+          style="font-size: 8pt"
+          class="hover:text-vusa-red text-gray-600"
+          text
+          @click="showModal = true"
+        >
+          v0.1.0 (2022-06-11)
+        </NButton>
+      </div>
+      <NModal v-model:show="showModal">
+        <Changelog></Changelog>
+      </NModal>
     </MainNavigation>
     <!-- Main Navigation End -->
     <!-- Page Content -->
     <PageContent :createURL="createURL">
-      <template #header
-        ><slot name="header">{{ title }}</slot></template
-      >
+      <template #header>
+        <slot name="header">{{ title }}</slot>
+      </template>
 
       <template #aside-header>
         <slot name="aside-header"></slot>
@@ -88,7 +114,8 @@ import MainNavigation from "@/Layouts/Partials/Admin/MainNavigation.vue";
 import FullWindow from "@/Layouts/Partials/Admin/FullWindow.vue";
 import PageContent from "@/Layouts/Partials/Admin/PageContent.vue";
 import AsideNavigation from "@/Layouts/Partials/Admin/AsideNavigation.vue";
-import { useMessage } from "naive-ui";
+import { useMessage, NModal, NButton } from "naive-ui";
+import Changelog from "@/Components/Admin/Changelog.vue";
 // import { NConfigProvider } from "naive-ui";
 
 const props = defineProps({
@@ -97,6 +124,7 @@ const props = defineProps({
 });
 
 const animated = ref(false);
+const showModal = ref(false);
 
 // const themeOverrides = {
 //   common: {

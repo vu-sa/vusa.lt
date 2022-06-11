@@ -33,6 +33,18 @@
         name="list"
         class="grid grid-cols-3 gap-3 2xl:grid-cols-6 lg:grid-cols-4"
       >
+        <div class="h-40">
+          <NUpload class="rounded-xl h-40" @change="uploadFile">
+            <NUploadDragger style="height: 100%">
+              <div style="margin-bottom: 12px">
+                <!-- <n-icon size="48" :depth="3">
+                  <archive-icon />
+                </n-icon> -->
+              </div>
+              <p style="font-size: 16px">Paspausk arba įtempk failą</p>
+            </NUploadDragger>
+          </NUpload>
+        </div>
         <FileButton
           v-for="file in showedFiles"
           v-bind:key="file.id"
@@ -45,18 +57,6 @@
             {{ file.fileName }}
           </div>
         </FileButton>
-        <div class="h-40">
-          <NUpload class="rounded-xl" @change="uploadFile">
-            <NUploadDragger>
-              <div style="margin-bottom: 12px">
-                <!-- <n-icon size="48" :depth="3">
-                  <archive-icon />
-                </n-icon> -->
-              </div>
-              <p style="font-size: 16px">Paspausk arba įtempk failą</p>
-            </NUploadDragger>
-          </NUpload>
-        </div>
       </transition-group>
     </div>
   </AdminLayout>
@@ -152,6 +152,7 @@ const uploadFile = (e) => {
 .list-leave-active {
   transition: all 1s ease;
 }
+
 .list-enter-from,
 .list-leave-to {
   opacity: 0;
