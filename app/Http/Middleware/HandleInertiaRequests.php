@@ -49,16 +49,15 @@ class HandleInertiaRequests extends Middleware
                 'env' => config('app.env'),
                 'url' => config('app.url'),
             ],
-            // check if route name contains 'admin'
-            // 'admin' => strpos(Route::currentRouteName(), 'admin') !== false,
-            // 'can' => [
-            //     'index_content' => $request->user()->can('viewAny', Page::class),
-            //     'index_users' => $request->user()->can('viewAny', User::class),
-            //     'index_navigation' => $request->user()->can('viewAny', Navigation::class),
-            //     'index_calendar' => $request->user()->can('viewAny', Calendar::class),
-            //     'index_files' => true,
-            //     'index_saziningai' => $request->user()->can('viewAny', SaziningaiExam::class),
-            // ],
+            // is used in the admin navigation to show only the allowed pages
+            'can' => is_null($request->user()) ? false : [
+                'content' => $request->user()->can('viewAny', Page::class),
+                'users' => $request->user()->can('viewAny', User::class),
+                'navigation' => $request->user()->can('viewAny', Navigation::class),
+                'calendar' => $request->user()->can('viewAny', Calendar::class),
+                'files' => true,
+                'saziningai' => $request->user()->can('viewAny', SaziningaiExam::class),
+            ],
             'padaliniai' => Padalinys::where('type', '=', 'padalinys')->orderBy('shortname_vu')->get()->map(function ($padalinys) {
                 return [
                     'id' => $padalinys->id,

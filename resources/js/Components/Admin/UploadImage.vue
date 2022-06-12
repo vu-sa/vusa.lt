@@ -4,9 +4,10 @@
       <NUpload @change="uploadFile" @before-upload="beforeUpload">
         <NButton>Įkelti paveiksliuką</NButton>
       </NUpload>
+      <NButton v-if="modelValue" type="error" @click="removeLink">Pašalinti</NButton>
     </div>
 
-    <img :src="modelValue" />
+    <img v-if="modelValue" :src="modelValue" />
   </div>
 </template>
 
@@ -21,11 +22,10 @@ const props = defineProps({
   path: String,
 });
 
-const emit = defineEmits(["update:modelValue"]);
-
 const modelValue = ref(props.modelValue);
-
 const message = useMessage();
+
+const emit = defineEmits(["update:modelValue"]);
 
 const beforeUpload = async (data) => {
   if (!["image/png", "image/jpeg"].includes(data.file.file?.type)) {
@@ -53,5 +53,10 @@ const uploadFile = (e) => {
       },
     }
   );
+};
+
+const removeLink = () => {
+  modelValue.value = null;
+  emit("update:modelValue", modelValue.value);
 };
 </script>

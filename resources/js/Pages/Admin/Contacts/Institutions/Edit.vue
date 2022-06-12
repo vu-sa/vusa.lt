@@ -28,6 +28,7 @@
 
         <div class="lg:col-span-2">
           <label class="font-bold">Nuorodos trumpinys</label>
+          <!-- TODO: disable input in the future -->
           <n-input
             v-model:value="dutyInstitution.alias"
             type="text"
@@ -35,7 +36,7 @@
           />
         </div>
 
-        <div class="lg:col-span-4">
+        <div class="lg:col-span-2">
           <label class="font-bold">Padalinys</label>
           <n-select
             v-model:value="dutyInstitution.padalinys_id"

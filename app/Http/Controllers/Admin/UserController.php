@@ -10,6 +10,7 @@ use Inertia\Inertia;
 use App\Models\Duty;
 use App\Http\Controllers\Controller as Controller;
 use App\Models\Role;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class UserController extends Controller
 {
@@ -30,7 +31,26 @@ class UserController extends Controller
 
         $users = User::when(!is_null($name), function ($query) use ($name) {
             $query->where('name', 'like', "%{$name}%")->orWhere('email', 'like', "%{$name}%");
+        })->when(!User::find(Auth::id())->isAdmin(), function ($query) {
+            // join with institutions table and padali
+            // $query->addSelect(['institution_id' => Duty::select('institution_id')]);
+            // $query->rightJoin('duties_institutions', 'duties_institutions.id', '=', 'duties.institution_id');
+            // })->paginate(20);
         })->paginate(20);
+
+        // create lengthawarepaginator manually because need some more filtering
+        // $users = new LengthAwarePaginator(
+        //     $users->slice($request->page * 20, 20)->values(),
+        //     count($users),
+        //     20,
+        //     $request->page,
+        //     [
+        //         'path' => $request->url(),
+        //         'query' => $request->query()
+        //     ]
+        // );
+
+        // dd($users, $usersGet);
 
         return Inertia::render('Admin/Contacts/Users/Index', [
             'users' => $users,
@@ -139,8 +159,14 @@ class UserController extends Controller
         $user->update($request->only('name', 'email', 'phone', 'profile_photo_path'));
 
         if (User::find(Auth::user()->id)->isAdmin()) {
-            $user->role_id = $request->role['id'];
+
+            // if admin, they can edit role. but not everyone has a role assigned and sometimes it lead to a bug, 
+            // this automatically assigned a least permissive role
+            $role = $request->role !== [] ? $request->role : ['id' => Role::where('alias', 'naudotojai')->first()->id];
+
+            $user->role_id = $role['id'];
             $user->save();
+            // TODO: role revamp with Spatie permissions or smth
         }
 
         // get all user duties and delete all of them
@@ -165,6 +191,14 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         //
+    }
+
+    public function detachFromDuty(User $user, Duty $duty)
+    {
+        $user->duties()->detach($duty);
+        $user->save();
+
+        return redirect()->back();
     }
 
     public function storeFromMicrosoft()

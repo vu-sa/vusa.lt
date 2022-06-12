@@ -23,8 +23,8 @@ class NewsController extends Controller
      */
     public function index(Request $request)
     {
-        $padaliniai = request()->input('padaliniai');
-        $title = request()->input('title');
+        $padaliniai = $request->padaliniai;
+        $title = $request->title;
 
         $news = News::
             // check if admin, if not return only pages from current user padalinys

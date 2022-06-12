@@ -48,7 +48,7 @@
         </Link>
       </h2>
       <div class="flex space-between flex-row">
-        <p class="lg:max-w-[80ch] text-gray-700 mb-8 lg:mb-20 text-sm lg:text-base">
+        <p class="lg:max-w-[80ch] text-gray-700 mb-4 text-sm lg:text-base">
           <template v-if="$page.props.locale === 'lt'">
             Ataskaitos knygutė – kiekvienais metais skelbiama VU SA nuveiktų darbų,
             atliktų projektų, įgyvendintų iniciatyvų ataskaita. Artėjant VU SA
@@ -65,12 +65,14 @@
           >
         </p>
       </div>
+      <NDivider />
     </div>
+
     <div
       class="lg:px-16 lg:mx-16 mx-8 mb-8"
       v-if="$page.props.locale === 'lt' && $page.props.alias"
     >
-      <h2 class="mb-4">Nuorodos:</h2>
+      <h2 class="mb-4">Pagrindinės nuorodos:</h2>
       <div class="flex flex-wrap gap-2">
         <NButton
           secondary
@@ -157,7 +159,7 @@ import HomeCard from "@/Components/Public/HomeCard.vue";
 // import SkeletonElement from "@/Layouts/Partials/Public/SkeletonElement.vue";
 import NewsElement from "@/Layouts/Partials/Public/NewsElement.vue";
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
-import { NIcon, NCarousel, NButton, NCarouselItem } from "naive-ui";
+import { NIcon, NCarousel, NButton, NCarouselItem, NDivider } from "naive-ui";
 import {
   CalendarLtr20Regular,
   ArrowCircleRight20Regular,

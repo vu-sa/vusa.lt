@@ -109,7 +109,11 @@ class User extends Authenticatable
         $padaliniai = [];
 
         foreach ($institutions as $institution) {
-            $padaliniai[] = $institution->padalinys;
+            // check for null, as some institutions may not have padalinys
+            // TODO: they should have
+            if ($institution->padalinys) {
+                $padaliniai[] = $institution->padalinys;
+            }
         }
 
         // collect unique padaliniai

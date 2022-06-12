@@ -1,5 +1,5 @@
 <template>
-  <PublicLayout title="Kontaktai">
+  <PublicLayout :title="`${institution.short_name ?? institution.name} kontaktai`">
     <div class="px-16 lg:px-32">
       <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-8">
         <div v-if="institution.image_url" class="relative group sm:col-span-2">
@@ -30,9 +30,9 @@
                 v-if="duty.description"
                 trigger="hover"
                 :style="{ maxWidth: '250px' }"
-                ><template #trigger
-                  ><p class="cursor-pointer my-1">{{ duty.name }}</p></template
-                >
+                ><template #trigger>
+                  <p class="cursor-pointer my-1">{{ duty.name }}</p>
+                </template>
                 <span v-html="duty.description"></span>
               </NPopover>
               <p class="my-1" v-else>{{ duty.name }}</p>
@@ -40,12 +40,15 @@
           </template>
           <template #contactInfo>
             <div v-if="contact.phone" class="flex flex-row items-center">
-              <NIcon class="mr-2"><Phone20Regular /></NIcon>
+              <NIcon class="mr-2">
+                <Phone20Regular />
+              </NIcon>
               <a :href="`tel:${contact.phone}`">{{ contact.phone }}</a>
             </div>
             <template v-for="duty in contact.duties">
               <div v-if="duty.email" class="flex flex-row items-center">
-                <NIcon class="mr-2"><Mail20Regular /> </NIcon
+                <NIcon class="mr-2">
+                  <Mail20Regular /> </NIcon
                 ><a :href="`mailto:${duty.email}`">{{ duty.email }}</a>
               </div>
             </template>
@@ -60,20 +63,9 @@
 import PublicLayout from "@/Layouts/PublicLayout.vue";
 import ContactWithPhoto from "@/Components/Public/ContactWithPhoto.vue";
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
-import {
-  NSelect,
-  NCascader,
-  NInput,
-  NInputGroup,
-  useMessage,
-  NIcon,
-  NTabs,
-  NTabPane,
-  NPopover,
-} from "naive-ui";
+import { useMessage, NIcon, NPopover } from "naive-ui";
 import { Mail20Regular, Phone20Regular } from "@vicons/fluent";
 import { ref } from "vue";
-import { Inertia } from "@inertiajs/inertia";
 
 const props = defineProps({
   contacts: Array,
@@ -88,9 +80,11 @@ const message = useMessage();
 .list-enter-active {
   transition: all 0.3s ease-out;
 }
+
 .list-leave-active {
   transition: all 0.3s cubic-bezier(1, 0.5, 0.8, 1);
 }
+
 .list-enter-from,
 .list-leave-to {
   opacity: 0;
