@@ -24,7 +24,8 @@ class DutyController extends Controller
      */
     public function index(Request $request)
     {
-        $title = request()->input('title');
+
+        $title = $request->title;
 
         $duties = Duty::when(!is_null($title), function ($query) use ($title) {
             $query->where('name', 'like', "%{$title}%")->orWhere('email', 'like', "%{$title}%");
