@@ -3,7 +3,7 @@
     class="flex flex-row fixed justify-between px-6 lg:px-24 border shadow-sm w-full backdrop-blur-sm bg-white/90 text-gray-700 items-center py-2 z-50 top-0"
   >
     <div class="flex flex-row space-x-4 items-center">
-      <Link :href="route('main.home', { lang: locale })" preserve-state>
+      <Link :href="route('main.home', { lang: locale })">
         <!-- <a :href="locale === 'lt' ? $page.props.app.url : `${$page.props.app.url}/en`"> -->
         <img
           class="object-contain min-w-[15vw] lg:min-w-[10vw]"
@@ -50,12 +50,19 @@
       <div>Saviraiška</div> -->
       <template v-for="item in navigation" :key="item.key">
         <div>
-          <NDropdown
-            @select="handleSelectNavigation"
-            :options="item.children"
-            :render-label="renderNavigacijaLabel"
-          >
-            <NButton text>{{ item.label }}</NButton>
+          <NDropdown @select="handleSelectNavigation" :options="item.children">
+            <NButton
+              text
+              icon-placement="right"
+              size="small"
+              style="padding: 2px"
+              class="hover:bg-neutral-300"
+            >
+              <template #icon>
+                <NIcon :component="ChevronDown12Regular" :size="16" />
+              </template>
+              {{ item.label }}
+            </NButton>
           </NDropdown>
         </div>
       </template>
@@ -262,7 +269,12 @@
 
 <script setup>
 import { FacebookF, Instagram } from "@vicons/fa";
-import { Search20Filled, ChevronDown20Filled, Navigation24Filled } from "@vicons/fluent";
+import {
+  Search20Filled,
+  ChevronDown12Regular,
+  ChevronDown20Filled,
+  Navigation24Filled,
+} from "@vicons/fluent";
 import {
   NIcon,
   NDropdown,
@@ -426,6 +438,7 @@ const handleSelectPadalinys = (key) => {
       padalinys: i,
     },
     preserveScroll: false,
+    preserveState: false,
     // only: ["alias", "news", "banners", "main_page"],
     onSuccess: () => {
       padalinys.value = getPadalinys(i);
