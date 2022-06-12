@@ -99,7 +99,8 @@ class DutyInstitutionController extends Controller
      */
     public function update(Request $request, DutyInstitution $dutyInstitution)
     {
-        $dutyInstitution->update($request->only('name', 'shortname', 'alias', 'description', 'padalinys_id'));
+        // TODO: short_name and shortname are used as columns in some tables. Need to make the same name.
+        $dutyInstitution->update($request->only('name', 'short_name', 'description', 'padalinys_id'));
 
         return redirect()->back();
     }
