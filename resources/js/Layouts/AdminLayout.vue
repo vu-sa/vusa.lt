@@ -16,37 +16,49 @@
         </template>
         Pradžia
       </MenuButton>
-      <MenuButton :menuContent="['pages.*', 'news.*', 'mainPage.*', 'banners.*']">
+      <MenuButton
+        v-if="$page.props.can.content"
+        :menuContent="['pages.*', 'news.*', 'mainPage.*', 'banners.*']"
+      >
         <template #icon>
           <DocumentTextIcon class="admin-navigation-icon" />
         </template>
         Turinys
       </MenuButton>
-      <MenuButton :menuContent="['users.*', 'duties.*', 'dutyInstitutions.*', 'roles.*']">
+      <MenuButton
+        v-if="$page.props.can.users"
+        :menuContent="['users.*', 'duties.*', 'dutyInstitutions.*', 'roles.*']"
+      >
         <template #icon>
           <UserIcon class="admin-navigation-icon" />
         </template>
         Kontaktai
       </MenuButton>
-      <MenuButton :menuContent="['navigation.*']">
+      <MenuButton v-if="$page.props.can.navigation" :menuContent="['navigation.*']">
         <template #icon>
           <MenuAlt2Icon class="admin-navigation-icon" />
         </template>
         Navigacija
       </MenuButton>
-      <MenuButton :menuContent="['calendar.*', 'agenda.*']">
+      <MenuButton
+        v-if="$page.props.can.calendar"
+        :menuContent="['calendar.*', 'agenda.*']"
+      >
         <template #icon>
           <CalendarIcon class="admin-navigation-icon" />
         </template>
         Kalendorius
       </MenuButton>
-      <MenuButton :menuContent="['files.*']">
+      <MenuButton v-if="$page.props.can.files" :menuContent="['files.*']">
         <template #icon>
           <FolderIcon class="admin-navigation-icon" />
         </template>
         Failų tvarkyklė
       </MenuButton>
-      <MenuButton :menuContent="['saziningaiExams.*', 'saziningaiExamObservers.*']">
+      <MenuButton
+        v-if="$page.props.can.saziningai"
+        :menuContent="['saziningaiExams.*', 'saziningaiExamObservers.*']"
+      >
         <template #icon>
           <BookOpenIcon class="admin-navigation-icon" />
         </template>
@@ -59,7 +71,7 @@
           text
           @click="showModal = true"
         >
-          v0.1.0 (2022-06-11)
+          v0.1.1 (2022-06-12)
         </NButton>
       </div>
       <NModal v-model:show="showModal">
