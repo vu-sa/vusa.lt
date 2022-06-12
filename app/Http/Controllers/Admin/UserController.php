@@ -159,8 +159,14 @@ class UserController extends Controller
         $user->update($request->only('name', 'email', 'phone', 'profile_photo_path'));
 
         if (User::find(Auth::user()->id)->isAdmin()) {
-            $user->role_id = $request->role['id'];
+
+            // if admin, they can edit role. but not everyone has a role assigned and sometimes it lead to a bug, 
+            // this automatically assigned a least permissive role
+            $role = $request->role !== [] ? $request->role : ['id' => Role::where('alias', 'naudotojai')->first()->id];
+
+            $user->role_id = $role['id'];
             $user->save();
+            // TODO: role revamp with Spatie permissions or smth
         }
 
         // get all user duties and delete all of them
