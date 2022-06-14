@@ -28,10 +28,20 @@ The easiest method to develop. You have to be able to run Docker and PHP (tempor
 **Steps:**
 
 1. Clone the repository
-2. Download composer, run `composer update`
-3. After updating the repository, run `./vendor/bin/sail up -d`
-4. Other setup steps:
+2. Install PHP8 (used only for comoposer and sail setup)
+3. Download composer, run `composer update`
+4. After updating the repository, run `./vendor/bin/sail up -d`
+5. Other setup steps:
    1. Copy `.env.example` and rename it to `.env`
+   2. `./vendor/bin/sail composer update`
+   3. `./vendor/bin/sail artisan key:generate`
+   4. `./vendor/bin/sail npm update`
+   5. `./vendor/bin/sail npm run dev`
+   6. `./vendor/bin/sail artisan storage:link`
+   7. Go to <http://localhost:8080> and create database manually, with name `vusa`, collation `utf8mb4_lithuanian_ci`.
+   8. `./vendor/bin/sail artisan migrate:fresh`
+
+For optimal installation you'll also need the SQL file of database records. Please contact @justinaskav for this. I haven't had the time for any seeders.
 
 More instructions on [Laravel Sail](https://laravel.com/docs/9.x/sail)
 
