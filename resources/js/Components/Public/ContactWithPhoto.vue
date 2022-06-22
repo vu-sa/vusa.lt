@@ -4,6 +4,7 @@
       <img
         :src="props.imageSrc"
         class="absolute inset-0 w-full h-full object-cover rounded-t-lg lg:rounded-t-none lg:rounded-l-lg"
+        style="object-position: 50% 25%"
       />
     </div>
     <div class="flex flex-col flex-auto p-4 justify-between gap-4">
