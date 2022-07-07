@@ -32,7 +32,7 @@ createInertiaApp({
           return await langs[`../../lang/${lang}.json`]();
         },
       })
-      .mixin({ methods: { route } })
+      .mixin({ methods: { route: window.route } })
       .mount(el);
   },
 });

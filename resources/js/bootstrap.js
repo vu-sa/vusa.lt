@@ -1,5 +1,5 @@
-import lodash from 'lodash';
-import axios from 'axios';
+import axios from "axios";
+import lodash from "lodash";
 
 window._ = lodash;
 
@@ -8,8 +8,6 @@ window._ = lodash;
  * to our Laravel back-end. This library automatically handles sending the
  * CSRF token as a header based on the value of the "XSRF" token cookie.
  */
-
-
 
 window.axios = axios;
 

@@ -4,7 +4,9 @@
       <NUpload @change="uploadFile" @before-upload="beforeUpload">
         <NButton>Įkelti paveiksliuką</NButton>
       </NUpload>
-      <NButton v-if="modelValue" type="error" @click="removeLink">Pašalinti</NButton>
+      <NButton v-if="modelValue" type="error" @click="removeLink"
+        >Pašalinti</NButton
+      >
     </div>
 
     <img v-if="modelValue" :src="modelValue" />
@@ -12,10 +14,10 @@
 </template>
 
 <script setup>
-import { NUpload, NButton, useMessage } from "naive-ui";
-import { usePage } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
+import { NButton, NUpload, useMessage } from "naive-ui";
 import { ref } from "vue";
+import { usePage } from "@inertiajs/inertia-vue3";
 
 const props = defineProps({
   modelValue: String,
@@ -39,6 +41,7 @@ const uploadFile = (e) => {
   let file = e.file;
 
   Inertia.post(
+    // eslint-disable-next-line no-undef
     route("files.uploadImage"),
     { file, path: props.path },
     {
