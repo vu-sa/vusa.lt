@@ -41,7 +41,6 @@ const uploadFile = (e) => {
   let file = e.file;
 
   Inertia.post(
-    // eslint-disable-next-line no-undef
     route("files.uploadImage"),
     { file, path: props.path },
     {

@@ -3,7 +3,7 @@
     <NConfigProvider :theme-overrides="themeOverrides">
       <Head :title="title" />
       <MetaIcons />
-      <FullWindow>
+      <div class="min-h-screen antialiased bg-neutral-50 pb-8">
         <MainNavigation></MainNavigation>
         <transition name="fade">
           <main v-if="animated">
@@ -18,7 +18,8 @@
             </PageContent>
           </main>
         </transition>
-      </FullWindow>
+      </div>
+      <Footer />
 
       <!-- preconnect to tawk.to -->
       <link rel="preconnect" href="https://embed.tawk.to" />
@@ -27,7 +28,7 @@
 </template>
 
 <script setup>
-import FullWindow from "@/Layouts/Partials/Public/FullWindow.vue";
+import Footer from "@/Layouts/Partials/Public/Footer.vue";
 import MainNavigation from "@/Layouts/Partials/Public/MainNavigation.vue";
 import PageContent from "@/Layouts/Partials/Public/PageContent.vue";
 // import NewsElement from "@/Layouts/Partials/Public/NewsElement.vue";

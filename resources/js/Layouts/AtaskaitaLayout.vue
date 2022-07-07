@@ -22,12 +22,11 @@
 </template>
 
 <script setup>
-// import FullWindow from "@/Layouts/Partials/Public/FullWindow.vue";
 import AtaskaitaNavigation from "@/Layouts/Partials/Public/AtaskaitaNavigation.vue";
 import PageContent from "@/Layouts/Partials/Public/PageContent.vue";
 // import NewsElement from "@/Layouts/Partials/Public/NewsElement.vue";
 import { Head } from "@inertiajs/inertia-vue3";
-import { ref, onMounted } from "vue";
+import { onMounted, ref } from "vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
 // import Footer from "./Partials/Public/Footer.vue";
 

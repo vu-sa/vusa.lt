@@ -8,12 +8,12 @@
         block-line
         :data="data"
         draggable
-        @drop="handleDrop"
         :checked-keys="checkedKeys"
         :expanded-keys="expandedKeys"
+        :render-suffix="renderSuffix"
+        @drop="handleDrop"
         @update:checked-keys="handleCheckedKeysChange"
         @update:expanded-keys="handleExpandedKeysChange"
-        :render-suffix="renderSuffix"
       />
       <div
         class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center mt-4"
@@ -32,13 +32,20 @@
 </template>
 
 <script setup>
-import AdminLayout from "@/Layouts/AdminLayout.vue";
-import AsideHeader from "./AsideHeader.vue";
-import { NTree, NSpin, NButton, NPopconfirm, NIcon, useMessage } from "naive-ui";
-import { ref, h } from "vue";
+import { Edit16Regular } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
-import { Edit16Regular } from "@vicons/fluent";
+import {
+  NButton,
+  NIcon,
+  NPopconfirm,
+  NSpin,
+  NTree,
+  useMessage,
+} from "naive-ui";
+import { h, ref } from "vue";
+import AdminLayout from "@/Layouts/AdminLayout.vue";
+import AsideHeader from "./AsideHeader.vue";
 
 const props = defineProps({
   navigation: Array,
@@ -76,7 +83,10 @@ const renderSuffix = ({ option }) => {
     },
     h(
       Link,
-      { class: "no-underline", href: route("navigation.edit", { id: option.key }) },
+      {
+        class: "no-underline",
+        href: route("navigation.edit", { id: option.key }),
+      },
       "Atnaujinti"
     )
   );
@@ -115,7 +125,10 @@ const handleCheckedKeysChange = (checkedKeys) => {
 };
 
 const handleDrop = ({ node, dragNode, dropPosition }) => {
-  const [dragNodeSiblings, dragNodeIndex] = findSiblingsAndIndex(dragNode, dataRef.value);
+  const [dragNodeSiblings, dragNodeIndex] = findSiblingsAndIndex(
+    dragNode,
+    dataRef.value
+  );
   if (dragNodeSiblings === null || dragNodeIndex === null) return;
   dragNodeSiblings.splice(dragNodeIndex, 1);
   if (dropPosition === "inside") {

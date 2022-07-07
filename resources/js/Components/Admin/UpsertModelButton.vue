@@ -1,5 +1,5 @@
 <template>
-  <NPopconfirm @positive-click="updateModel">
+  <NPopconfirm @positive-click="upsertModel">
     <template #trigger>
       <NSpin :show="showSpin" size="small">
         <NButton>Atnaujinti</NButton>
@@ -16,13 +16,13 @@ import { ref } from "vue";
 
 const props = defineProps({
   model: { type: Object, default: null },
-  modelUpdateRoute: { type: String, default: null },
+  modelRoute: { type: String, default: null },
 });
 
 const showSpin = ref(false);
 const message = useMessage();
 
-const updateModel = () => {
+const upsertModel = () => {
   showSpin.value = !showSpin.value;
   Inertia.patch(route(props.modelUpdateRoute, props.model.id), props.model, {
     onSuccess: () => {

@@ -57,14 +57,10 @@
         <div
           class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center"
         >
-          <n-popconfirm @positive-click="updateModel()">
-            <template #trigger>
-              <NSpin :show="showSpin" size="small">
-                <n-button>Sukurti</n-button>
-              </NSpin>
-            </template>
-            Ar tikrai sukurti?
-          </n-popconfirm>
+          <UpsertModelButton
+            :model="calendar"
+            model-route="calendar.store"
+          ></UpsertModelButton>
         </div>
       </form>
     </div>
@@ -72,29 +68,16 @@
 </template>
 
 <script setup>
-import { ref, reactive } from "vue";
-import {
-  NSpin,
-  NInput,
-  NSelect,
-  NInputNumber,
-  NPopconfirm,
-  useMessage,
-  NButton,
-  NDatePicker,
-} from "naive-ui";
-import { Inertia } from "@inertiajs/inertia";
-import { TrashIcon } from "@heroicons/vue/outline";
+import { NDatePicker, NInput, NSelect } from "naive-ui";
+import { reactive } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
+import UpsertModelButton from "../../../../Components/Admin/UpsertModelButton.vue";
 
-const message = useMessage();
-
-const props = defineProps({
+defineProps({
   errors: Object,
 });
 
 const calendar = reactive({});
-const showSpin = ref(false);
 
 const options = [
   {
@@ -110,20 +93,4 @@ const options = [
     label: "Kita informacija",
   },
 ];
-
-////////////////////////////////////////////////////////////////////////////////
-
-const updateModel = async () => {
-  showSpin.value = !showSpin.value;
-  Inertia.post(route("calendar.store"), calendar, {
-    onSuccess: () => {
-      showSpin.value = !showSpin.value;
-      message.success("Renginys sukurtas!");
-    },
-    onError: () => {
-      showSpin.value = !showSpin.value;
-    },
-    preserveScroll: true,
-  });
-};
 </script>

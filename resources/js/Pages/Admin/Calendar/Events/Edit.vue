@@ -46,37 +46,25 @@
         </div>
 
         <div class="py-4 lg:col-span-4">
-          <TipTap
-            v-model="calendar.description"
-            :searchFiles="$page.props.search.other"
-          />
+          <NMessageProvider>
+            <TipTap
+              v-model="calendar.description"
+              :search-files="$page.props.search.other"
+            />
+          </NMessageProvider>
         </div>
 
         <div
           class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center"
         >
-          <n-popconfirm
-            positive-text="Ištrinti!"
-            negative-text="Palikti"
-            @positive-click="destroyModel()"
-          >
-            <template #trigger>
-              <button type="button">
-                <TrashIcon
-                  class="w-5 h-5 mr-2 stroke-red-800 hover:stroke-red-900 duration-200"
-                />
-              </button>
-            </template>
-            Ištrinto elemento nebus galima atkurti!
-          </n-popconfirm>
-          <n-popconfirm @positive-click="updateModel()">
-            <template #trigger>
-              <NSpin :show="showSpin" size="small">
-                <n-button>Atnaujinti</n-button>
-              </NSpin>
-            </template>
-            Ar tikrai atnaujinti?
-          </n-popconfirm>
+          <NMessageProvider
+            ><DeleteModelButton
+              :model="calendar"
+              model-route="calendar.destroy"
+          /></NMessageProvider>
+          <NMessageProvider
+            ><UpsertModelButton :model="calendar" model-route="calendar.update"
+          /></NMessageProvider>
         </div>
       </form>
     </div>
@@ -84,23 +72,13 @@
 </template>
 
 <script setup>
-import { ref, reactive } from "vue";
-import {
-  NSpin,
-  NInput,
-  NSelect,
-  NInputNumber,
-  NPopconfirm,
-  useMessage,
-  NButton,
-  NDatePicker,
-} from "naive-ui";
 import { Inertia } from "@inertiajs/inertia";
-import { TrashIcon } from "@heroicons/vue/outline";
+import { NDatePicker, NInput, NMessageProvider, NSelect } from "naive-ui";
+import { reactive } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
+import DeleteModelButton from "@/Components/Admin/DeleteModelButton.vue";
 import TipTap from "@/Components/TipTap.vue";
-
-const message = useMessage();
+import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
 
 const props = defineProps({
   calendar: Object,
@@ -108,7 +86,6 @@ const props = defineProps({
 });
 
 const calendar = reactive(props.calendar);
-const showSpin = ref(false);
 
 const options = [
   {
@@ -124,29 +101,4 @@ const options = [
     label: "Kita informacija",
   },
 ];
-
-////////////////////////////////////////////////////////////////////////////////
-
-const updateModel = () => {
-  showSpin.value = !showSpin.value;
-  Inertia.patch(route("calendar.update", calendar.id), calendar, {
-    onSuccess: () => {
-      showSpin.value = !showSpin.value;
-      message.success("Sėkmingai atnaujinta!");
-    },
-    onError: () => {
-      showSpin.value = !showSpin.value;
-    },
-    preserveScroll: true,
-  });
-};
-
-const destroyModel = () => {
-  Inertia.delete(route("calendar.destroy", calendar.id), {
-    onSuccess: () => {
-      message.success("Kalendoriaus įrašas ištrintas!");
-    },
-    preserveScroll: true,
-  });
-};
 </script>

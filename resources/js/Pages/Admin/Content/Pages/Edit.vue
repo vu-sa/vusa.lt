@@ -53,22 +53,8 @@
         <div
           class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center"
         >
-          <!-- <n-popconfirm
-            positive-text="Ištrinti!"
-            negative-text="Palikti"
-            @positive-click="destroyModel()"
-          >
-            <template #trigger>
-              <button type="button">
-                <TrashIcon
-                  class="w-5 h-5 mr-2 stroke-red-800 hover:stroke-red-900 duration-200"
-                />
-              </button>
-            </template>
-            Ištrinto elemento nebus galima atkurti!
-          </n-popconfirm> -->
           <NMessageProvider
-            ><UpdateModel :model="page" model-update-route="pages.update"
+            ><UpsertModelButton :model="page" model-route="pages.update"
           /></NMessageProvider>
         </div>
       </div>
@@ -87,13 +73,12 @@ import {
   // NSpin,
   // useMessage,
 } from "naive-ui";
-import { TrashIcon } from "@heroicons/vue/outline";
 import { reactive, ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AsideHeader from "../AsideHeader.vue";
 import TipTap from "@/Components/TipTap.vue";
-import UpdateModel from "@/Components/Admin/UpdateModel.vue";
+import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
 
 const props = defineProps({
   page: Object,
@@ -109,7 +94,6 @@ const getOtherLangPages = _.debounce((input) => {
     // message.loading("Ieškoma...");
     const other_lang = page.lang === "lt" ? "en" : "lt";
     Inertia.post(
-      // eslint-disable-next-line no-undef
       route("pages.search"),
       {
         data: {

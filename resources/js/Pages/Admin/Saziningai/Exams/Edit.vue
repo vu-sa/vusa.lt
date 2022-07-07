@@ -24,7 +24,10 @@
 
         <div>
           <label class="font-bold">Padalinys</label>
-          <n-select v-model:value="exam.padalinys_id" :options="padaliniai_options" />
+          <n-select
+            v-model:value="exam.padalinys_id"
+            :options="padaliniai_options"
+          />
         </div>
 
         <div>
@@ -103,14 +106,11 @@
             Ištrinto elemento nebus galima atkurti! Bus ištrinti ir srautai, ir
             stebėtojai.
           </n-popconfirm>
-          <n-popconfirm @positive-click="updateModel()">
-            <template #trigger>
-              <NSpin :show="showSpin" size="small">
-                <n-button>Atnaujinti</n-button>
-              </NSpin>
-            </template>
-            Ar tikrai atnaujinti?
-          </n-popconfirm>
+          <NMessageProvider
+            ><UpsertModelButton
+              :model="exam"
+              model-route="saziningaiExams.update"
+          /></NMessageProvider>
         </div>
       </form>
     </div>
@@ -118,24 +118,30 @@
     <div class="main-card">
       <h3 class="flex items-center">
         Srautai
-        <NButton @click="manageFlowModal()" text style="margin-left: 0.5em">
+        <NButton text style="margin-left: 0.5em" @click="manageFlowModal()">
           <NIcon>
             <AddCircle20Regular />
           </NIcon>
         </NButton>
       </h3>
       <ol>
-        <template v-for="flow in flows" v-bind:key="flow.id">
+        <template v-for="flow in flows" :key="flow.id">
           <n-popover>
             <template #trigger>
-              <li class="inline-block list-disc" role="button" @click="manageFlowModal(flow.id, flow.start_time)">
+              <li
+                class="inline-block list-disc"
+                role="button"
+                @click="manageFlowModal(flow.id, flow.start_time)"
+              >
                 {{ flow.start_time }}
               </li>
             </template>
             <span>Atnaujinti srauto laiką</span>
           </n-popover>
           <ul v-if="flow.observers" class="mb-2">
-            <li class="ml-4" v-for="observer in flow.observers">{{ observer.name }}</li>
+            <li v-for="observer in flow.observers" class="ml-4">
+              {{ observer.name }}
+            </li>
           </ul>
         </template>
       </ol>
@@ -148,46 +154,42 @@
       type="warning"
       :title="flow_id !== null ? 'Atnaujinti srauto laiką' : 'Pridėti srautą'"
       :positive-text="flow_id !== null ? 'Atnaujinti' : 'Pridėti'"
-      @positive-click="submitFlow(flow_id, timestamp)"
       negative-text="Atšaukti"
+      @positive-click="submitFlow(flow_id, timestamp)"
     >
-      <NDatePicker type="datetime" v-model:value="timestamp" />
+      <NDatePicker v-model:value="timestamp" type="datetime" />
     </NModal>
   </AdminLayout>
 </template>
 
 <script setup>
-import { ref, reactive } from "vue";
-import {
-  NSpin,
-  NInput,
-  NSelect,
-  NInputNumber,
-  NPopconfirm,
-  useMessage,
-  NButton,
-  NIcon,
-  NModal,
-  NDatePicker,
-  NPopover,
-} from "naive-ui";
-import { Inertia } from "@inertiajs/inertia";
-import { TrashIcon } from "@heroicons/vue/outline";
 import { AddCircle20Regular } from "@vicons/fluent";
+import { Inertia } from "@inertiajs/inertia";
+import {
+  NButton,
+  NDatePicker,
+  NIcon,
+  NInput,
+  NInputNumber,
+  NMessageProvider,
+  NModal,
+  NPopconfirm,
+  NPopover,
+  NSelect,
+} from "naive-ui";
+import { TrashIcon } from "@heroicons/vue/outline";
+import { reactive, ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-
-const message = useMessage();
 
 const props = defineProps({
   exam: Object,
   padaliniai: Object,
   flows: Object,
   observers: Object,
-  errors: Object
+  errors: Object,
 });
 
 const exam = reactive(props.exam);
-const showSpin = ref(false);
 
 const padaliniai_options = props.padaliniai.map((padalinys) => ({
   value: padalinys.id,
@@ -255,22 +257,6 @@ const submitFlow = (flow_id, timestamp) => {
       }
     );
   }
-};
-
-////////////////////////////////////////////////////////////////////////////////
-
-const updateModel = () => {
-  showSpin.value = !showSpin.value;
-  Inertia.patch(route("saziningaiExams.update", exam.id), exam, {
-    onSuccess: () => {
-      showSpin.value = !showSpin.value;
-      message.success("Sėkmingai atnaujinta!");
-    },
-    onError: () => {
-      showSpin.value = !showSpin.value;
-    },
-    preserveScroll: true,
-  });
 };
 
 const destroyModel = () => {

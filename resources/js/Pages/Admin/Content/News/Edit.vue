@@ -106,7 +106,7 @@
             Ištrinto elemento nebus galima atkurti!
           </n-popconfirm>
           <NMessageProvider
-            ><UpdateModel :model="news" model-update-route="news.update"
+            ><UpsertModelButton :model="news" model-route="news.update"
           /></NMessageProvider>
         </div>
       </div>
@@ -130,7 +130,7 @@ import { usePage } from "@inertiajs/inertia-vue3";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 // import AsideHeader from "../AsideHeader.vue";
 import TipTap from "@/Components/TipTap.vue";
-import UpdateModel from "@/Components/Admin/UpdateModel.vue";
+import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
 // import { map } from "lodash";
 import UploadImage from "@/Components/Admin/UploadImage.vue";
 // import route from "ziggy";
@@ -150,7 +150,6 @@ const getOtherLangNews = _.debounce((input) => {
     // message.loading("Ieškoma...");
     const other_lang = news.lang === "lt" ? "en" : "lt";
     Inertia.post(
-      // eslint-disable-next-line no-undef
       route("news.search"),
       {
         data: {

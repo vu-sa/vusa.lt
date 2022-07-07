@@ -18,7 +18,6 @@ const loadingRef = ref(false);
 
 const microsoftRedirect = () => {
   loadingRef.value = true;
-  // eslint-disable-next-line no-undef
   window.location.href = route("microsoft.redirect");
 };
 </script>

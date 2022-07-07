@@ -18,9 +18,9 @@
 </template>
 
 <script setup>
-import { PlusCircleIcon } from "@heroicons/vue/outline";
 import { Link } from "@inertiajs/inertia-vue3";
-import { computed, useAttrs } from "vue";
+import { PlusCircleIcon } from "@heroicons/vue/outline";
+import { computed } from "vue";
 
 const props = defineProps({
   createURL: String,
