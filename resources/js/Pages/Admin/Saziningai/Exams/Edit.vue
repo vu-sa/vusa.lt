@@ -91,21 +91,11 @@
         <div
           class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center"
         >
-          <n-popconfirm
-            positive-text="Ištrinti!"
-            negative-text="Palikti"
-            @positive-click="destroyModel()"
-          >
-            <template #trigger>
-              <button type="button">
-                <TrashIcon
-                  class="w-5 h-5 mr-2 stroke-red-800 hover:stroke-red-900 duration-200"
-                />
-              </button>
-            </template>
-            Ištrinto elemento nebus galima atkurti! Bus ištrinti ir srautai, ir
-            stebėtojai.
-          </n-popconfirm>
+          <NMessageProvider
+            ><DeleteModelButton
+              :model="exam"
+              model-route="saziningaiExams.destroy"
+          /></NMessageProvider>
           <NMessageProvider
             ><UpsertModelButton
               :model="exam"
@@ -173,13 +163,14 @@ import {
   NInputNumber,
   NMessageProvider,
   NModal,
-  NPopconfirm,
   NPopover,
   NSelect,
 } from "naive-ui";
-import { TrashIcon } from "@heroicons/vue/outline";
 import { reactive, ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
+
+import DeleteModelButton from "@/Components/Admin/DeleteModelButton.vue";
+import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
 
 const props = defineProps({
   exam: Object,
@@ -235,7 +226,7 @@ const submitFlow = (flow_id, timestamp) => {
         preserveScroll: true,
         onSuccess: () => {
           showFlowModal.value = false;
-          message.success("Srautas atnaujintas!");
+          // message.success("Srautas atnaujintas!");
         },
       }
     );
@@ -252,19 +243,10 @@ const submitFlow = (flow_id, timestamp) => {
         preserveScroll: true,
         onSuccess: () => {
           showFlowModal.value = false;
-          message.success("Srautas pridėtas!");
+          // message.success("Srautas pridėtas!");
         },
       }
     );
   }
-};
-
-const destroyModel = () => {
-  Inertia.delete(route("saziningaiExams.destroy", exam.id), {
-    onSuccess: () => {
-      message.success("Egzaminas ištrintas!");
-    },
-    preserveScroll: true,
-  });
 };
 </script>

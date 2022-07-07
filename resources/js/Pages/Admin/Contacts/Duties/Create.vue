@@ -106,7 +106,6 @@
 import { Inertia } from "@inertiajs/inertia";
 import { Link, usePage } from "@inertiajs/inertia-vue3";
 import { NInput, NMessageProvider, NPopconfirm, NSelect } from "naive-ui";
-import { TrashIcon } from "@heroicons/vue/outline";
 import { reactive, ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import TipTap from "@/Components/TipTap.vue";

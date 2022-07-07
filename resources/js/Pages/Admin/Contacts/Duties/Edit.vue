@@ -66,20 +66,9 @@
         </div>
 
         <div class="col-span-full flex justify-end items-center">
-          <n-popconfirm
-            positive-text="Ištrinti!"
-            negative-text="Palikti"
-            @positive-click="destroyModel()"
-          >
-            <template #trigger>
-              <button type="button">
-                <TrashIcon
-                  class="w-5 h-5 mr-2 stroke-red-800 hover:stroke-red-900 duration-200"
-                />
-              </button>
-            </template>
-            Ištrinto elemento nebus galima atkurti!
-          </n-popconfirm>
+          <NMessageProvider
+            ><DeleteModelButton :model="duty" model-route="duties.destroy"
+          /></NMessageProvider>
           <NMessageProvider
             ><UpsertModelButton :model="duty" model-route="duties.update"
           /></NMessageProvider>
@@ -126,9 +115,9 @@ import {
   NSelect,
   useMessage,
 } from "naive-ui";
-import { TrashIcon } from "@heroicons/vue/outline";
 import { onMounted, reactive, ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
+import DeleteModelButton from "@/Components/Admin/DeleteModelButton.vue";
 import TipTap from "@/Components/TipTap.vue";
 import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
 
@@ -202,15 +191,6 @@ const detachUserFromDuty = (user) => {
     }
   );
 };
-
-// const destroyModel = () => {
-//   Inertia.delete(route("duties.destroy", duty.id), {
-//     onSuccess: () => {
-//       message.success("Kalendoriaus įrašas ištrintas!");
-//     },
-//     preserveScroll: true,
-//   });
-// };
 
 onMounted(() => {
   institutions.value = [

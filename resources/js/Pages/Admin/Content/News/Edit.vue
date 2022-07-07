@@ -91,20 +91,9 @@
         <div
           class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center"
         >
-          <n-popconfirm
-            positive-text="Ištrinti!"
-            negative-text="Palikti"
-            @positive-click="destroyModel()"
-          >
-            <template #trigger>
-              <button type="button">
-                <TrashIcon
-                  class="w-5 h-5 mr-2 stroke-red-800 hover:stroke-red-900 duration-200"
-                />
-              </button>
-            </template>
-            Ištrinto elemento nebus galima atkurti!
-          </n-popconfirm>
+          <NMessageProvider
+            ><DeleteModelButton :model="news" model-route="news.destroy"
+          /></NMessageProvider>
           <NMessageProvider
             ><UpsertModelButton :model="news" model-route="news.update"
           /></NMessageProvider>
@@ -121,19 +110,16 @@ import {
   NDatePicker,
   NInput,
   NMessageProvider,
-  NPopconfirm,
   NSelect,
 } from "naive-ui";
-import { TrashIcon } from "@heroicons/vue/outline";
 import { reactive, ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-// import AsideHeader from "../AsideHeader.vue";
 import TipTap from "@/Components/TipTap.vue";
-import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
-// import { map } from "lodash";
 import UploadImage from "@/Components/Admin/UploadImage.vue";
-// import route from "ziggy";
+
+import DeleteModelButton from "@/Components/Admin/DeleteModelButton.vue";
+import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
 
 const props = defineProps({
   news: Object,

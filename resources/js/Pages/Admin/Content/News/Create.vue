@@ -92,20 +92,6 @@
         <div
           class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center"
         >
-          <n-popconfirm
-            positive-text="Ištrinti!"
-            negative-text="Palikti"
-            @positive-click="destroyModel()"
-          >
-            <template #trigger>
-              <button type="button">
-                <TrashIcon
-                  class="w-5 h-5 mr-2 stroke-red-800 hover:stroke-red-900 duration-200"
-                />
-              </button>
-            </template>
-            Ištrinto elemento nebus galima atkurti!
-          </n-popconfirm>
           <NMessageProvider
             ><UpsertModelButton :model="news" model-route="news.store"
           /></NMessageProvider>
@@ -125,7 +111,6 @@ import {
   NPopconfirm,
   NSelect,
 } from "naive-ui";
-import { TrashIcon } from "@heroicons/vue/outline";
 import { computed, reactive, ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
 import AdminLayout from "@/Layouts/AdminLayout.vue";

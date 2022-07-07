@@ -11,9 +11,7 @@
         <AppLogo class="mx-auto my-2" />
       </a>
       <MenuButton :menu-content="['dashboard']">
-        <template #icon>
-          <HomeIcon class="admin-navigation-icon" />
-        </template>
+        <template #icon> <Home48Regular /> </template>
         Pradžia
       </MenuButton>
       <MenuButton
@@ -21,7 +19,7 @@
         :menu-content="['pages.*', 'news.*', 'mainPage.*', 'banners.*']"
       >
         <template #icon>
-          <DocumentTextIcon class="admin-navigation-icon" />
+          <SlideText48Regular />
         </template>
         Turinys
       </MenuButton>
@@ -30,7 +28,7 @@
         :menu-content="['users.*', 'duties.*', 'dutyInstitutions.*', 'roles.*']"
       >
         <template #icon>
-          <UserIcon class="admin-navigation-icon" />
+          <Person48Regular />
         </template>
         Kontaktai
       </MenuButton>
@@ -39,7 +37,7 @@
         :menu-content="['navigation.*']"
       >
         <template #icon>
-          <MenuAlt2Icon class="admin-navigation-icon" />
+          <Navigation24Regular />
         </template>
         Navigacija
       </MenuButton>
@@ -48,13 +46,13 @@
         :menu-content="['calendar.*', 'agenda.*']"
       >
         <template #icon>
-          <CalendarIcon class="admin-navigation-icon" />
+          <CalendarLtr48Regular />
         </template>
         Kalendorius
       </MenuButton>
       <MenuButton v-if="$page.props.can.files" :menu-content="['files.*']">
         <template #icon>
-          <FolderIcon class="admin-navigation-icon" />
+          <Folder48Regular />
         </template>
         Failų tvarkyklė
       </MenuButton>
@@ -63,7 +61,7 @@
         :menu-content="['saziningaiExams.*', 'saziningaiExamObservers.*']"
       >
         <template #icon>
-          <BookOpenIcon class="admin-navigation-icon" />
+          <BookOpen48Regular />
         </template>
         Sažiningai
       </MenuButton>
@@ -110,15 +108,6 @@
 </template>
 
 <script setup>
-import {
-  BookOpenIcon,
-  CalendarIcon,
-  DocumentTextIcon,
-  FolderIcon,
-  HomeIcon,
-  MenuAlt2Icon,
-  UserIcon,
-} from "@heroicons/vue/outline";
 import { Head } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
 import { NButton, NMessageProvider, NModal } from "naive-ui";
@@ -131,8 +120,17 @@ import MenuButton from "@/Components/Admin/MenuButton.vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
 import PageContent from "@/Layouts/Partials/Admin/PageContent.vue";
 // import { NConfigProvider } from "naive-ui";
+import {
+  BookOpen48Regular,
+  CalendarLtr48Regular,
+  Folder48Regular,
+  Home48Regular,
+  Navigation24Regular,
+  Person48Regular,
+  SlideText48Regular,
+} from "@vicons/fluent";
 
-const props = defineProps({
+defineProps({
   title: String,
   createURL: String,
 });
