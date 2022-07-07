@@ -2,9 +2,6 @@
   <NThemeEditor>
     <NConfigProvider :theme-overrides="themeOverrides">
       <Head :title="title" />
-      <Head>
-        <meta name="naive-ui-style" />
-      </Head>
       <MetaIcons />
       <FullWindow>
         <MainNavigation></MainNavigation>
