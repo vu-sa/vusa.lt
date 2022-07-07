@@ -5,7 +5,11 @@
       <h1>Programos „Sąžiningai“ užregistruoti egzaminai</h1>
       <p class="my-4">Registruotis reikia į kiekvieną srautą atskirai.</p>
       <div class="main-card">
-        <NDataTable size="small" :data="props.saziningaiExamFlows" :columns="columns">
+        <NDataTable
+          size="small"
+          :data="props.saziningaiExamFlows"
+          :columns="columns"
+        >
         </NDataTable>
       </div>
     </div>
@@ -63,7 +67,16 @@
           ></NCheckbox>
         </NFormItem>
         <NFormItem>
-          <NButton type="success" @click="handleValidateClick"> Pateikti </NButton>
+          <NMessageProvider>
+            <FormSubmitButton
+              submit-route="saziningaiExamObserver.store"
+              :form-ref="formRef"
+              :form-value="formValue"
+              @reset-form="resetForm"
+            >
+              Pateikti
+            </FormSubmitButton>
+          </NMessageProvider>
         </NFormItem>
       </NForm>
     </NCard>
@@ -71,32 +84,33 @@
 </template>
 
 <script setup>
-import PublicLayout from "@/Layouts/PublicLayout.vue";
-import PageArticle from "../../Components/Public/PageArticle.vue";
-import { ref, h } from "vue";
+import { Inertia } from "@inertiajs/inertia";
 import {
+  NButton,
+  NCard,
+  NCheckbox,
+  NDataTable,
+  NDatePicker,
+  NDynamicInput,
   NForm,
   NFormItem,
   NInput,
-  NSelect,
-  NDynamicInput,
-  NDatePicker,
-  useMessage,
   NInputNumber,
-  NCheckbox,
-  NDataTable,
-  NButton,
+  NMessageProvider,
   NModal,
-  NCard,
+  NSelect,
 } from "naive-ui";
-import { Inertia } from "@inertiajs/inertia";
+import { h, ref } from "vue";
+import FormSubmitButton from "@/Components/Public/FormSubmitButton.vue";
+import PageArticle from "../../Components/Public/PageArticle.vue";
+import PublicLayout from "@/Layouts/PublicLayout.vue";
 
 const props = defineProps({
   padaliniaiOptions: Array,
   saziningaiExamFlows: Array,
 });
 
-const message = useMessage();
+// const message = useMessage();
 const showModal = ref(false);
 const formRef = ref(null);
 const formValue = ref({
@@ -117,8 +131,7 @@ const labelGDPR = h("label", {}, [
     "a",
     {
       target: "_blank",
-      href:
-        "https://vusa.lt/uploads/Dokumentų šablonai/Asmens_duomenu_tvarkymo_VUSA_tvarkos_aprasas.pdf",
+      href: "https://vusa.lt/uploads/Dokumentų šablonai/Asmens_duomenu_tvarkymo_VUSA_tvarkos_aprasas.pdf",
     },
     "Asmens duomenų tvarkymo Vilniaus universiteto Studentų atstovybėje tvarkos aprašu"
   ),
@@ -208,7 +221,9 @@ const createColumns = () => {
             size: "small",
             secondary: true,
             type:
-              row.observers_registered >= row.exam.students_need ? "default" : "warning",
+              row.observers_registered >= row.exam.students_need
+                ? "default"
+                : "warning",
           },
           { default: () => "Registruotis" }
         );
@@ -287,7 +302,9 @@ const handleValidateClick = (e) => {
           message.success(
             `Ačiū už užsiregistravimą stebėti „${formValue.value.exam_name}“!`
           );
-          Object.keys(formValue.value).forEach((i) => (formValue.value[i] = null));
+          Object.keys(formValue.value).forEach(
+            (i) => (formValue.value[i] = null)
+          );
         },
       });
     } else {
@@ -295,5 +312,9 @@ const handleValidateClick = (e) => {
       message.error("Užpildykite visus laukelius.");
     }
   });
+};
+
+const resetForm = () => {
+  Object.keys(formValue.value).forEach((i) => (formValue.value[i] = null));
 };
 </script>

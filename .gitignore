@@ -50,3 +50,9 @@ public/js/app/*.js
 public/js/*.js
 database/vusa_www-2022.sql
 .DS_Store
+
+# vite builds
+/public/build
+public/hot
+lang/php_en.json
+lang/php_lt.json

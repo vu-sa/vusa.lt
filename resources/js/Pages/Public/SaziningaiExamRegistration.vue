@@ -1,7 +1,9 @@
 <template>
   <PublicLayout title="Sąžiningai atsiskaitymo registravimo forma">
     <PageArticle>
-      <template #title>Egzamino ar kolokviumo stebėjimo registracijos forma</template>
+      <template #title
+        >Egzamino ar kolokviumo stebėjimo registracijos forma</template
+      >
       <div class="prose">
         <!-- <strong class="text-red-600">
           Registracijos forma šiuo metu yra uždaryta, greitu metu ją vėl atidarysime.
@@ -10,8 +12,8 @@
           registracijos.
         </strong> -->
         <p>
-          Prašome atsiskaitymą registruoti likus bent 3 d.d. iki jo pradžios, kad būtų
-          laiku surasti stebėtojai. Kitu atveju, kreipkitės į
+          Prašome atsiskaitymą registruoti likus bent 3 d.d. iki jo pradžios,
+          kad būtų laiku surasti stebėtojai. Kitu atveju, kreipkitės į
           <a href="mailto:saziningai@vusa.lt">saziningai@vusa.lt</a>
         </p>
         <NForm
@@ -25,13 +27,21 @@
             <NInput v-model:value="formValue.name" placeholder="" type="text" />
           </NFormItem>
           <NFormItem label="El. paštas" path="email">
-            <NInput v-model:value="formValue.email" placeholder="" type="email" />
+            <NInput
+              v-model:value="formValue.email"
+              placeholder=""
+              type="email"
+            />
           </NFormItem>
           <NFormItem label="Telefono numeris" path="phone">
             <NInput v-model:value="formValue.phone" placeholder="" type="tel" />
           </NFormItem>
           <NFormItem label="Atsiskaitymo pobūdis" path="type">
-            <NSelect v-model:value="formValue.type" :options="examTypes" placeholder="" />
+            <NSelect
+              v-model:value="formValue.type"
+              :options="examTypes"
+              placeholder=""
+            />
           </NFormItem>
           <NFormItem label="Atsiskaitymą laikančiųjų padalinys" path="unit">
             <NSelect
@@ -40,17 +50,36 @@
               placeholder=""
             />
           </NFormItem>
-          <NFormItem label="Atsiskaitomo dalyko pavadinimas" path="subject_name">
+          <NFormItem
+            label="Atsiskaitomo dalyko pavadinimas"
+            path="subject_name"
+          >
             <NInput v-model:value="formValue.subject_name" placeholder="" />
           </NFormItem>
-          <NFormItem label="Atsiskaitymo vieta: padalinys ir auditorija" path="place">
-            <NInput type="textarea" v-model:value="formValue.place" placeholder="" />
+          <NFormItem
+            label="Atsiskaitymo vieta: padalinys ir auditorija"
+            path="place"
+          >
+            <NInput
+              v-model:value="formValue.place"
+              type="textarea"
+              placeholder=""
+            />
           </NFormItem>
-          <NFormItem label="Atsiskaitymą laikančių studentų skaičius" path="holders">
+          <NFormItem
+            label="Atsiskaitymą laikančių studentų skaičius"
+            path="holders"
+          >
             <NInputNumber v-model:value="formValue.holders" placeholder="" />
           </NFormItem>
-          <NFormItem label="Reikalingas stebėtojų skaičius" path="students_need">
-            <NInputNumber v-model:value="formValue.students_need" placeholder="" />
+          <NFormItem
+            label="Reikalingas stebėtojų skaičius"
+            path="students_need"
+          >
+            <NInputNumber
+              v-model:value="formValue.students_need"
+              placeholder=""
+            />
           </NFormItem>
           <NFormItem label="Atsiskaitymo srautai" path="flows">
             <NDynamicInput
@@ -77,7 +106,11 @@
             label="Atsiskaitymo trukmė (jei laikoma srautais, parašyti srautų skaičių ir kiek laiko skiriama vienam srautui)"
             path="duration"
           >
-            <NInput type="textarea" v-model:value="formValue.duration" placeholder="" />
+            <NInput
+              v-model:value="formValue.duration"
+              type="textarea"
+              placeholder=""
+            />
           </NFormItem>
           <NFormItem path="acceptGDPR"
             ><NCheckbox
@@ -92,19 +125,30 @@
             ></NCheckbox>
           </NFormItem>
           <p>
-            Duomenų valdytojas yra Vilniaus universiteto Studentų atstovybė (adresas:
-            Universiteto g. 3, Observatorijos kiemelis, Vilnius, tel.:, el. paštas:
-            info@vusa.lt). Jūsų pateikti duomenys bus naudojami susisiekti su jumis.
+            Duomenų valdytojas yra Vilniaus universiteto Studentų atstovybė
+            (adresas: Universiteto g. 3, Observatorijos kiemelis, Vilnius,
+            tel.:, el. paštas: info@vusa.lt). Jūsų pateikti duomenys bus
+            naudojami susisiekti su jumis.
           </p>
           <p>
-            Duomenų subjektas turi teisę susipažinti su savo asmens duomenimis, teisę
-            reikalauti ištaisyti neteisingus, neišsamius, netikslius savo asmens duomenis
-            ir kitas teisės aktais numatytas teises. Kilus klausimams ir norint realizuoti
-            savo, kaip duomenų subjekto, teises, galite kreiptis į
+            Duomenų subjektas turi teisę susipažinti su savo asmens duomenimis,
+            teisę reikalauti ištaisyti neteisingus, neišsamius, netikslius savo
+            asmens duomenis ir kitas teisės aktais numatytas teises. Kilus
+            klausimams ir norint realizuoti savo, kaip duomenų subjekto, teises,
+            galite kreiptis į
             <a href="mailto:dap@vusa.lt">dap@vusa.lt</a>.
           </p>
           <NFormItem>
-            <NButton type="success" @click="handleValidateClick"> Pateikti </NButton>
+            <NMessageProvider>
+              <FormSubmitButton
+                submit-route="saziningaiExamRegistration.store"
+                :form-ref="formRef"
+                :form-value="formValue"
+                @reset-form="resetForm"
+              >
+                Pateikti
+              </FormSubmitButton>
+            </NMessageProvider>
           </NFormItem>
         </NForm>
       </div>
@@ -113,27 +157,29 @@
 </template>
 
 <script setup>
-import PublicLayout from "@/Layouts/PublicLayout.vue";
-import PageArticle from "../../Components/Public/PageArticle.vue";
-import { ref, h } from "vue";
+// import { Inertia } from "@inertiajs/inertia";
 import {
+  NCheckbox,
+  NDatePicker,
+  NDynamicInput,
   NForm,
   NFormItem,
-  NButton,
   NInput,
-  NSelect,
-  NDynamicInput,
-  NDatePicker,
-  useMessage,
   NInputNumber,
-  NCheckbox,
+  NMessageProvider,
+  NSelect,
 } from "naive-ui";
-import { Inertia } from "@inertiajs/inertia";
+import { h, ref } from "vue";
+import { useRemember } from "@inertiajs/inertia-vue3";
+import FormSubmitButton from "@/Components/Public/FormSubmitButton.vue";
+import PageArticle from "../../Components/Public/PageArticle.vue";
+import PublicLayout from "@/Layouts/PublicLayout.vue";
 
 const props = defineProps({
   padaliniaiOptions: Array,
 });
-const message = useMessage();
+
+// const message = useMessage();
 const formRef = ref(null);
 
 const labelGDPR = h("label", {}, [
@@ -142,8 +188,7 @@ const labelGDPR = h("label", {}, [
     "a",
     {
       target: "_blank",
-      href:
-        "https://vusa.lt/uploads/Dokumentų šablonai/Asmens_duomenu_tvarkymo_VUSA_tvarkos_aprasas.pdf",
+      href: "https://vusa.lt/uploads/Dokumentų šablonai/Asmens_duomenu_tvarkymo_VUSA_tvarkos_aprasas.pdf",
     },
     "Asmens duomenų tvarkymo Vilniaus universiteto Studentų atstovybėje tvarkos aprašu"
   ),
@@ -156,25 +201,31 @@ const labelAcceptDataManagement = h(
   "Sutinku, kad mano pateikti asmens duomenys būtų tvarkomi vidaus administravimo tikslu pagal Asmens duomenų tvarkymo Vilniaus universiteto Studentų atstovybėje tvarkos aprašą."
 );
 
-const formValue = ref({
-  name: null,
-  email: null,
-  phone: null,
-  type: null,
-  unit: null,
-  subject_name: null,
-  duration: null,
-  place: null,
-  holders: null,
-  students_need: null,
-  flows: [
-    {
-      time: null,
-    },
-  ],
-  acceptGDPR: false,
-  acceptDataManagement: false,
-});
+const resetForm = () => {
+  Object.keys(formValue.value).forEach((i) => (formValue.value[i] = null));
+};
+
+const formValue = useRemember(
+  ref({
+    name: null,
+    email: null,
+    phone: null,
+    type: null,
+    unit: null,
+    subject_name: null,
+    duration: null,
+    place: null,
+    holders: null,
+    students_need: null,
+    flows: [
+      {
+        time: null,
+      },
+    ],
+    acceptGDPR: false,
+    acceptDataManagement: false,
+  })
+);
 
 const rules = {
   name: {
@@ -313,22 +364,4 @@ const padaliniaiOptions = props.padaliniaiOptions.map((padalinys) => ({
   value: padalinys.id,
   label: padalinys.shortname_vu,
 }));
-
-const handleValidateClick = (e) => {
-  e.preventDefault();
-  formRef.value?.validate((errors) => {
-    if (!errors) {
-      Inertia.post(route("saziningaiExamRegistration.store"), formValue.value, {
-        onSuccess: () => {
-          message.success(
-            `Ačiū už atsiskaitymo „${formValue.value.subject_name}“ užregistravimą!`
-          );
-        },
-      });
-    } else {
-      // console.log(errors);
-      message.error("Užpildykite visus laukelius.");
-    }
-  });
-};
 </script>

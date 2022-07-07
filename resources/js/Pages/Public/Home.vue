@@ -50,18 +50,19 @@
       <div class="flex space-between flex-row">
         <p class="lg:max-w-[80ch] text-gray-700 mb-4 text-sm lg:text-base">
           <template v-if="$page.props.locale === 'lt'">
-            Ataskaitos knygutė – kiekvienais metais skelbiama VU SA nuveiktų darbų,
-            atliktų projektų, įgyvendintų iniciatyvų ataskaita. Artėjant VU SA
-            ataskaitinei-rinkiminei konferencijai dalinamės ir šių, 2021–2022 metų
-            nuveiktų darbų pilna knygute. Ji papildyta ir VU SA bendruomenės narių veidais
-            bei smagiomis akimirkomis. Kviečiame skaityti!
+            Ataskaitos knygutė – kiekvienais metais skelbiama VU SA nuveiktų
+            darbų, atliktų projektų, įgyvendintų iniciatyvų ataskaita. Artėjant
+            VU SA ataskaitinei-rinkiminei konferencijai dalinamės ir šių,
+            2021–2022 metų nuveiktų darbų pilna knygute. Ji papildyta ir VU SA
+            bendruomenės narių veidais bei smagiomis akimirkomis. Kviečiame
+            skaityti!
           </template>
           <template v-else
-            >Report booklet – every year, a report on the work done, projects completed,
-            and initiatives implemented at VU SR is published. As the VU SR Annual
-            Convention approaches, we share a book full of these works done in 2021–2022.
-            It is also filled with faces and fun moments of the VU SR community members.
-            Feel free to read!</template
+            >Report booklet – every year, a report on the work done, projects
+            completed, and initiatives implemented at VU SR is published. As the
+            VU SR Annual Convention approaches, we share a book full of these
+            works done in 2021–2022. It is also filled with faces and fun
+            moments of the VU SR community members. Feel free to read!</template
           >
         </p>
       </div>
@@ -69,16 +70,16 @@
     </div>
 
     <div
-      class="lg:px-16 lg:mx-16 mx-8 mb-8"
       v-if="$page.props.locale === 'lt' && $page.props.alias"
+      class="lg:px-16 lg:mx-16 mx-8 mb-8"
     >
       <h2 class="mb-4">Pagrindinės nuorodos:</h2>
       <div class="flex flex-wrap gap-2">
         <NButton
+          v-for="item in props.main_page"
+          :key="item.id"
           secondary
           round
-          v-for="item in props.main_page"
-          v-bind:key="item.id"
           @click="goToLink(item.link)"
         >
           {{ item.text }}
@@ -88,17 +89,16 @@
 
     <NewsElement v-if="$page.props.locale === 'lt'">
       <HomeCard
-        :hasMiniContent="false"
-        :hasBelowCard="true"
         v-for="item in news"
         :key="item.id"
+        :has-mini-content="false"
+        :has-below-card="true"
       >
         <template #mini> </template>
         <template #below-card>
           <!-- <NIcon class="mr-2" size="20"> <CalendarLtr20Regular /> </NIcon>VU SA
           ataskaitinė-rinkiminė konferencija -->
-          <NIcon class="mr-2" size="20">
-            <Clock20Regular /> </NIcon
+          <NIcon class="mr-2" size="20"> <Clock20Regular /> </NIcon
           >{{ item.publish_time }}
         </template>
         <template #image>
@@ -154,21 +154,21 @@
 </template>
 
 <script setup>
-import PublicLayout from "@/Layouts/PublicLayout.vue";
 import HomeCard from "@/Components/Public/HomeCard.vue";
+import PublicLayout from "@/Layouts/PublicLayout.vue";
 // import SkeletonElement from "@/Layouts/Partials/Public/SkeletonElement.vue";
+import {
+  ArrowCircleRight20Regular,
+  ArrowRight48Regular,
+  CalendarLtr20Regular,
+  Clock20Regular,
+} from "@vicons/fluent";
+import { Head, Link, usePage } from "@inertiajs/inertia-vue3";
+import { Inertia } from "@inertiajs/inertia";
+import { NButton, NCarousel, NCarouselItem, NDivider, NIcon } from "naive-ui";
+import { onBeforeUnmount, ref } from "vue";
 import NewsElement from "@/Layouts/Partials/Public/NewsElement.vue";
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
-import { NIcon, NCarousel, NButton, NCarouselItem, NDivider } from "naive-ui";
-import {
-  CalendarLtr20Regular,
-  ArrowCircleRight20Regular,
-  Clock20Regular,
-  ArrowRight48Regular,
-} from "@vicons/fluent";
-import { Link, usePage, Head } from "@inertiajs/inertia-vue3";
-import { onBeforeUnmount, ref } from "vue";
-import { Inertia } from "@inertiajs/inertia";
 
 const props = defineProps({
   news: Object,

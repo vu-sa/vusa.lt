@@ -19,14 +19,14 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="{{ mix('/css/app.css') }}">
-
-    <!-- Naive UI elements -->
+    @vite(['resources/css/app.css'])
     <meta name="naive-ui-style" />
 
     <!-- Scripts -->
     @routes
-    <script src={{ mix('/js/app.js') }} defer></script>
+    {{-- <script src={{ mix('/js/app.js') }} defer></script> --}}
+    @vite(['resources/js/app.js'])
+    <!-- Naive UI elements -->
     @inertiaHead
 </head>
 

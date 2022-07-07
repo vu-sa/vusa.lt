@@ -17,16 +17,20 @@
       <!-- <Link
         class="text-gray-500 duration-200 hover:text-gray-900 hidden lg:block"
         :href="route('main.home')"
-        >{{ __("Grįžti į vusa.lt") }}</Link
+        >{{ $t("Grįžti į vusa.lt") }}</Link
       > -->
       <div>
-        <NButton size="small" style="border-radius: 0.5rem" @click="goToAtaskaitaHome">
+        <NButton
+          size="small"
+          style="border-radius: 0.5rem"
+          @click="goToAtaskaitaHome"
+        >
           <!-- <NGradientText type="warning"> -->
           <strong
             ><NGradientText v-if="permalink == 'pradzia'" type="error">{{
-              __("Ataskaita 2022")
+              $t("Ataskaita 2022")
             }}</NGradientText
-            ><template v-else>{{ __("Ataskaita 2022") }}</template></strong
+            ><template v-else>{{ $t("Ataskaita 2022") }}</template></strong
           >
           <!-- </NGradientText> -->
         </NButton>
@@ -47,33 +51,47 @@
 
       <Link
         v-if="permalink === 'sveikinimai'"
-        :href="route('main.ataskaita2022', { lang: locale, permalink: 'sveikinimai' })"
-        ><NGradientText type="error">{{ __("Sveikinimai") }}</NGradientText></Link
+        :href="
+          route('main.ataskaita2022', {
+            lang: locale,
+            permalink: 'sveikinimai',
+          })
+        "
+        ><NGradientText type="error">{{
+          $t("Sveikinimai")
+        }}</NGradientText></Link
       >
 
       <Link
-        class="hover:text-vusa-red duration-200"
         v-else
-        :href="route('main.ataskaita2022', { lang: locale, permalink: 'sveikinimai' })"
-        >{{ __("Sveikinimai") }}</Link
+        class="hover:text-vusa-red duration-200"
+        :href="
+          route('main.ataskaita2022', {
+            lang: locale,
+            permalink: 'sveikinimai',
+          })
+        "
+        >{{ $t("Sveikinimai") }}</Link
       >
 
       <Link
         class="hover:text-vusa-red duration-200"
-        :href="route('main.ataskaita2022', { lang: locale, permalink: 'vu-sa' })"
+        :href="
+          route('main.ataskaita2022', { lang: locale, permalink: 'vu-sa' })
+        "
       >
-        <NGradientText type="error" v-if="permalink === 'vu-sa'">{{
-          __("VU SA")
+        <NGradientText v-if="permalink === 'vu-sa'" type="error">{{
+          $t("VU SA")
         }}</NGradientText
-        ><template v-else>{{ __("VU SA") }}</template></Link
+        ><template v-else>{{ $t("VU SA") }}</template></Link
       >
       <Link
         class="hover:text-vusa-red duration-200"
         :href="route('main.ataskaita2022', { lang: locale, permalink: 'mvp' })"
-        ><NGradientText type="error" v-if="permalink === 'mvp'">{{
-          __("Metų veiklos planas")
+        ><NGradientText v-if="permalink === 'mvp'" type="error">{{
+          $t("Metų veiklos planas")
         }}</NGradientText
-        ><template v-else>{{ __("Metų veiklos planas") }}</template></Link
+        ><template v-else>{{ $t("Metų veiklos planas") }}</template></Link
       >
       <NDropdown
         :options="locale === 'lt' ? navigation : navigationEN"
@@ -82,29 +100,33 @@
           class="flex flex-row items-center hover:text-vusa-red duration-200"
           role="button"
         >
-          {{ __("Strateginės kryptys") }}
+          {{ $t("Strateginės kryptys") }}
           <NIcon class="ml-1" size="16"><ChevronDown20Filled /></NIcon></div
       ></NDropdown>
       <Link
         class="hover:text-vusa-red duration-200"
-        :href="route('main.ataskaita2022', { lang: locale, permalink: 'sritys' })"
-        ><NGradientText type="error" v-if="permalink === 'sritys'">{{
-          __("Bendruomenė")
+        :href="
+          route('main.ataskaita2022', { lang: locale, permalink: 'sritys' })
+        "
+        ><NGradientText v-if="permalink === 'sritys'" type="error">{{
+          $t("Bendruomenė")
         }}</NGradientText
-        ><template v-else>{{ __("Bendruomenė") }}</template></Link
+        ><template v-else>{{ $t("Bendruomenė") }}</template></Link
       >
       <Link
         class="hover:text-vusa-red duration-200"
-        :href="route('main.ataskaita2022', { lang: locale, permalink: 'padeka' })"
-        ><NGradientText type="error" v-if="permalink === 'padeka'">{{
-          __("Padėka")
+        :href="
+          route('main.ataskaita2022', { lang: locale, permalink: 'padeka' })
+        "
+        ><NGradientText v-if="permalink === 'padeka'" type="error">{{
+          $t("Padėka")
         }}</NGradientText
-        ><template v-else>{{ __("Padėka") }}</template></Link
+        ><template v-else>{{ $t("Padėka") }}</template></Link
       >
       <NDropdown
+        v-if="locale == 'lt'"
         placement="top-end"
         :options="options_language_en"
-        v-if="locale == 'lt'"
         @select="handleSelectLanguage"
       >
         <NButton text
@@ -113,9 +135,9 @@
             width="16" /></NButton
       ></NDropdown>
       <NDropdown
+        v-if="locale == 'en'"
         placement="top-end"
         :options="options_language_lt"
-        v-if="locale == 'en'"
         @select="handleSelectLanguage"
       >
         <NButton text
@@ -124,12 +146,19 @@
             width="16" /></NButton
       ></NDropdown>
     </div>
-    <NDrawer v-model:show="activeDrawer" :width="325" placement="left" :trap-focus="true">
-      <NDrawerContent closable :title="__('Ataskaita 2022')">
+    <NDrawer
+      v-model:show="activeDrawer"
+      :width="325"
+      placement="left"
+      :trap-focus="true"
+    >
+      <NDrawerContent closable :title="$t('Ataskaita 2022')">
         <NTree
           block-line
           :default-expand-all="true"
-          :data="locale === 'lt' ? navigationTreeMobile : navigationTreeMobileEN"
+          :data="
+            locale === 'lt' ? navigationTreeMobile : navigationTreeMobileEN
+          "
           @update:selected-keys="handleSelectKryptis"
         />
 
@@ -149,9 +178,9 @@
             ><NIcon size="18"><Instagram /></NIcon
           ></NButton>
           <NDropdown
+            v-if="locale == 'lt'"
             placement="top-end"
             :options="options_language_en"
-            v-if="locale == 'lt'"
             @select="handleSelectLanguage"
           >
             <NButton text
@@ -160,9 +189,9 @@
                 width="16" /></NButton
           ></NDropdown>
           <NDropdown
+            v-if="locale == 'en'"
             placement="top-end"
             :options="options_language_lt"
-            v-if="locale == 'en'"
             @select="handleSelectLanguage"
           >
             <NButton text
@@ -177,21 +206,21 @@
 </template>
 
 <script setup>
-import { FacebookF, Instagram } from "@vicons/fa";
 import { ChevronDown20Filled, Navigation24Filled } from "@vicons/fluent";
+import { FacebookF, Instagram } from "@vicons/fa";
+import { Inertia } from "@inertiajs/inertia";
+import { Link, usePage } from "@inertiajs/inertia-vue3";
 import {
-  NIcon,
-  NDropdown,
   NButton,
   NDrawer,
   NDrawerContent,
-  NTree,
+  NDropdown,
   NGradientText,
+  NIcon,
   NPopover,
+  NTree,
   // useMessage,
 } from "naive-ui";
-import { usePage, Link } from "@inertiajs/inertia-vue3";
-import { Inertia } from "@inertiajs/inertia";
 import { ref } from "vue";
 
 // map padaliniai to options_padaliniai

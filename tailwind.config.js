@@ -1,25 +1,27 @@
-const defaultTheme = require('tailwindcss/defaultTheme');
+const defaultTheme = require("tailwindcss/defaultTheme");
 
 module.exports = {
-    content: [
-        './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
-        './storage/framework/views/*.php',
-        './resources/views/**/*.blade.php',
-        './resources/js/**/*.vue',
-    ],
+  content: [
+    "./vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php",
+    "./storage/framework/views/*.php",
+    "./resources/views/**/*.blade.php",
+    "./resources/js/**/*.vue",
+  ],
 
-    theme: {
-        extend: {
-            fontFamily: {
-                sans: ['Nunito', ...defaultTheme.fontFamily.sans],
-            },
-            colors: {
-                'vusa-red': '#bd2835',
-                'vusa-yellow': '#fbb01b',
-            }
-        },
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ["Nunito", ...defaultTheme.fontFamily.sans],
+      },
+      colors: {
+        "vusa-red": "#bd2835",
+        "vusa-yellow": "#fbb01b",
+      },
     },
+  },
 
-    plugins: [require('@tailwindcss/typography'),
-    require('@tailwindcss/line-clamp')],
+  plugins: [
+    require("@tailwindcss/typography"),
+    require("@tailwindcss/line-clamp"),
+  ],
 };

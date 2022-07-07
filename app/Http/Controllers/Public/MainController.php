@@ -501,7 +501,7 @@ class MainController extends Controller
 
 		// dd($saziningaiExam, $saziningaiExamFlow);
 
-		return redirect()->route('home');
+		return redirect()->back();
 	}
 
 	public function saziningaiExams()

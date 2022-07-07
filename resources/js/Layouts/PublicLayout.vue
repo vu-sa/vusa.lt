@@ -1,19 +1,32 @@
 <template>
-  <Head :title="title" />
-  <MetaIcons />
-  <FullWindow>
-    <MainNavigation></MainNavigation>
-    <transition name="fade">
-      <main v-if="animated">
-        <PageContent class="pt-16 sm:pt-24 2xl:pt-36">
-          <slot />
-        </PageContent>
-      </main>
-    </transition>
-  </FullWindow>
+  <NThemeEditor>
+    <NConfigProvider :theme-overrides="themeOverrides">
+      <Head :title="title" />
+      <Head>
+        <meta name="naive-ui-style" />
+      </Head>
+      <MetaIcons />
+      <FullWindow>
+        <MainNavigation></MainNavigation>
+        <transition name="fade">
+          <main v-if="animated">
+            <PageContent class="pt-16 sm:pt-24 2xl:pt-36">
+              <!-- <NThemeEditor v-if="$page.props.app.env == 'local'"> -->
 
-  <!-- preconnect to tawk.to -->
-  <link rel="preconnect" href="https://embed.tawk.to" />
+              <!-- <NMessageProvider> -->
+              <slot></slot>
+              <!-- </NMessageProvider> -->
+              <!-- </NConfigProvider> -->
+              <!-- </NThemeEditor> -->
+            </PageContent>
+          </main>
+        </transition>
+      </FullWindow>
+
+      <!-- preconnect to tawk.to -->
+      <link rel="preconnect" href="https://embed.tawk.to" />
+    </NConfigProvider>
+  </NThemeEditor>
 </template>
 
 <script setup>
@@ -21,16 +34,33 @@ import FullWindow from "@/Layouts/Partials/Public/FullWindow.vue";
 import MainNavigation from "@/Layouts/Partials/Public/MainNavigation.vue";
 import PageContent from "@/Layouts/Partials/Public/PageContent.vue";
 // import NewsElement from "@/Layouts/Partials/Public/NewsElement.vue";
-import { Head, usePage } from "@inertiajs/inertia-vue3";
-import { ref, onMounted } from "vue";
+import { Head } from "@inertiajs/inertia-vue3";
+import {
+  NConfigProvider,
+  // NDialogProvider,
+  // NMessageProvider,
+  // NNotificationProvider,
+  NThemeEditor,
+  // darkTheme,
+} from "naive-ui";
+import { onMounted, ref } from "vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
 
-const props = defineProps({
-  title: String,
+const themeOverrides = {
+  common: {
+    primaryColor: "#bd2835FF",
+    primaryColorHover: "#CD3543FF",
+    primaryColorPressed: "#CC2130FF",
+    primaryColorSuppl: "#B93945FF",
+  },
+};
+
+defineProps({
+  title: { type: String, default: "" },
 });
 
 const animated = ref(false);
-const locale = ref(usePage().props.value.locale);
+// const locale = ref(usePage().props.value.locale);
 
 onMounted(() => {
   animated.value = true;
