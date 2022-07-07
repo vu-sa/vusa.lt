@@ -227,7 +227,7 @@
   </nav>
   <NModal v-model:show="showSearch">
     <div
-      class="w-3/4 md:w-1/2 md:h-1/2 overflow-auto p-4 bg-white/95 rounded-md border-2 border-gray-100 shadow-lg md:fixed md:inset-x-0 md:top-40"
+      class="w-3/4 md:w-1/2 md:h-1/2 overflow-auto p-4 bg-white/95 rounded-md border-2 border-gray-100 shadow-lg"
     >
       <!-- <h3 class="mb-2">Paieška</h3> -->
       <NInput
