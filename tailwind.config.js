@@ -1,4 +1,4 @@
-const defaultTheme = require("tailwindcss/defaultTheme");
+/** @type {import('tailwindcss').Config} */
 
 module.exports = {
   content: [
@@ -10,9 +10,6 @@ module.exports = {
 
   theme: {
     extend: {
-      fontFamily: {
-        sans: ["Nunito", ...defaultTheme.fontFamily.sans],
-      },
       colors: {
         "vusa-red": "#bd2835",
         "vusa-yellow": "#fbb01b",
