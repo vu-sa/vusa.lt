@@ -1,10 +1,14 @@
 <template>
-  <PublicLayout :title="`${institution.short_name ?? institution.name} kontaktai`">
+  <PublicLayout
+    :title="`${institution.short_name ?? institution.name} kontaktai`"
+  >
     <div class="px-16 lg:px-32">
       <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-8">
         <div v-if="institution.image_url" class="relative group sm:col-span-2">
           <ShapeDivider1 class="absolute -top-1 z-10"></ShapeDivider1>
-          <ShapeDivider1 class="absolute rotate-180 -bottom-1 z-10"></ShapeDivider1>
+          <ShapeDivider1
+            class="absolute rotate-180 -bottom-1 z-10"
+          ></ShapeDivider1>
           <img
             :src="institution.image_url"
             class="h-64 lg:h-96 w-full object-cover my-4 hover:opacity-90 duration-200"
@@ -21,7 +25,7 @@
         <ContactWithPhoto
           v-for="contact in contacts"
           :key="contact.id"
-          :imageSrc="contact.image"
+          :image-src="contact.image"
         >
           <template #name> {{ contact.name }} </template>
           <template #duty>
@@ -35,7 +39,7 @@
                 </template>
                 <span v-html="duty.description"></span>
               </NPopover>
-              <p class="my-1" v-else>{{ duty.name }}</p>
+              <p v-else class="my-1">{{ duty.name }}</p>
             </template>
           </template>
           <template #contactInfo>
@@ -47,8 +51,7 @@
             </div>
             <template v-for="duty in contact.duties">
               <div v-if="duty.email" class="flex flex-row items-center">
-                <NIcon class="mr-2">
-                  <Mail20Regular /> </NIcon
+                <NIcon class="mr-2"> <Mail20Regular /> </NIcon
                 ><a :href="`mailto:${duty.email}`">{{ duty.email }}</a>
               </div>
             </template>
@@ -60,12 +63,12 @@
 </template>
 
 <script setup>
-import PublicLayout from "@/Layouts/PublicLayout.vue";
-import ContactWithPhoto from "@/Components/Public/ContactWithPhoto.vue";
-import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
-import { useMessage, NIcon, NPopover } from "naive-ui";
 import { Mail20Regular, Phone20Regular } from "@vicons/fluent";
+import { NIcon, NPopover } from "naive-ui";
 import { ref } from "vue";
+import ContactWithPhoto from "@/Components/Public/ContactWithPhoto.vue";
+import PublicLayout from "@/Layouts/PublicLayout.vue";
+import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 
 const props = defineProps({
   contacts: Array,
@@ -73,7 +76,6 @@ const props = defineProps({
 });
 
 const loadingNameInput = ref(false);
-const message = useMessage();
 </script>
 
 <style>
