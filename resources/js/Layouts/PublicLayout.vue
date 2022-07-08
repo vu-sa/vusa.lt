@@ -1,30 +1,28 @@
 <template>
-  <NThemeEditor>
-    <NConfigProvider :theme-overrides="themeOverrides">
-      <Head :title="title" />
-      <MetaIcons />
-      <div class="min-h-screen antialiased bg-neutral-50 pb-8">
-        <MainNavigation></MainNavigation>
-        <transition name="fade">
-          <main v-if="animated">
-            <PageContent class="pt-16 sm:pt-24 2xl:pt-36">
-              <!-- <NThemeEditor v-if="$page.props.app.env == 'local'"> -->
+  <NConfigProvider :theme-overrides="themeOverrides">
+    <Head :title="title" />
+    <MetaIcons />
+    <div class="min-h-screen antialiased bg-neutral-50 pb-8">
+      <MainNavigation></MainNavigation>
+      <transition name="fade">
+        <main v-if="animated">
+          <PageContent class="pt-16 sm:pt-24 2xl:pt-36">
+            <!-- <NThemeEditor v-if="$page.props.app.env == 'local'"> -->
 
-              <!-- <NMessageProvider> -->
-              <slot></slot>
-              <!-- </NMessageProvider> -->
-              <!-- </NConfigProvider> -->
-              <!-- </NThemeEditor> -->
-            </PageContent>
-          </main>
-        </transition>
-      </div>
-      <Footer />
+            <!-- <NMessageProvider> -->
+            <slot></slot>
+            <!-- </NMessageProvider> -->
+            <!-- </NConfigProvider> -->
+            <!-- </NThemeEditor> -->
+          </PageContent>
+        </main>
+      </transition>
+    </div>
+    <Footer />
 
-      <!-- preconnect to tawk.to -->
-      <link rel="preconnect" href="https://embed.tawk.to" />
-    </NConfigProvider>
-  </NThemeEditor>
+    <!-- preconnect to tawk.to -->
+    <link rel="preconnect" href="https://embed.tawk.to" />
+  </NConfigProvider>
 </template>
 
 <script setup>
@@ -38,7 +36,7 @@ import {
   // NDialogProvider,
   // NMessageProvider,
   // NNotificationProvider,
-  NThemeEditor,
+  // NThemeEditor,
   // darkTheme,
 } from "naive-ui";
 import { onMounted, ref } from "vue";
@@ -88,6 +86,23 @@ var Tawk_API = Tawk_API || {},
   s1.setAttribute("crossorigin", "*");
   s0.parentNode.insertBefore(s1, s0);
 })();
+
+onMounted(() => {
+  animated.value = true;
+
+  (function (c, l, a, r, i, t, y) {
+    c[a] =
+      c[a] ||
+      function () {
+        (c[a].q = c[a].q || []).push(arguments);
+      };
+    t = l.createElement(r);
+    t.async = 1;
+    t.src = "https://www.clarity.ms/tag/" + i;
+    y = l.getElementsByTagName(r)[0];
+    y.parentNode.insertBefore(t, y);
+  })(window, document, "clarity", "script", "bs7culn3gp");
+});
 </script>
 
 <style>
