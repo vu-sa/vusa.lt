@@ -49,7 +49,7 @@ class News extends Model implements Feedable
             ->title($this->title)
             ->summary($this->short)
             ->updated($this->publish_time)
-            ->image($this->image)
+            ->image($this->image) // TODO: fix, as this doesn't show an image
             ->link('naujiena/' . $this->permalink)
             ->authorName($this->padalinys->shortname);
     }

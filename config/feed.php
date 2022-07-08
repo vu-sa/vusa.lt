@@ -27,7 +27,7 @@ return [
              * a banner/logo; for RSS and JSON feeds, it's displayed as an icon.
              * An empty value omits the image attribute from the feed.
              */
-            'image' => '/images/icons/logos/vusa_color_logo.png',
+            'image' => 'https://vusa.lt/images/icons/logos/vusa.lin.hor.png',
 
             /*
              * The format of the feed. Acceptable values are 'rss', 'atom', or 'json'.
