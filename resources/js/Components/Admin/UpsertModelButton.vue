@@ -24,7 +24,7 @@ const message = useMessage();
 
 const upsertModel = () => {
   showSpin.value = !showSpin.value;
-  Inertia.patch(route(props.modelUpdateRoute, props.model.id), props.model, {
+  Inertia.patch(route(props.modelRoute, props.model.id), props.model, {
     onSuccess: () => {
       showSpin.value = !showSpin.value;
       message.success("Sėkmingai atnaujinta!");

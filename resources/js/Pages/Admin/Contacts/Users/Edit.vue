@@ -119,8 +119,6 @@ contact.role = {
 };
 
 const duties = ref([]);
-// const selectedDuties = ref(null);
-const showSpin = ref(false);
 
 // map roles to options
 const rolesOptions = props.roles.map((role) => ({
