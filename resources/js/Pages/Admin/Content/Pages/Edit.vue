@@ -5,13 +5,16 @@
         <h2 class="mb-4">Parinktys</h2>
         <div class="mb-4">
           <label class="font-bold">Pavadinimas</label>
-          <NInput v-model:value="page.title" placeholder="Įrašyti pavadinimą..." />
+          <NInput
+            v-model:value="page.title"
+            placeholder="Įrašyti pavadinimą..."
+          />
         </div>
         <div class="mb-4">
           <label class="font-bold">Nuoroda</label>
           <NInput
-            disabled
             v-model:value="page.permalink"
+            disabled
             placeholder="Įrašyti pavadinimą..."
           />
         </div>
@@ -27,8 +30,8 @@
         <div class="mb-4">
           <label class="font-bold">Kitos kalbos puslapis</label>
           <NSelect
-            disabled
             v-model:value="page.other_lang_page"
+            disabled
             filterable
             placeholder="Ieškoti puslapio..."
             :options="otherLangPageOptions"
@@ -41,33 +44,18 @@
       <div class="main-card">
         <h2 class="font-bold text-xl mb-2 inline-block">Turinys</h2>
         <div class="py-4">
-          <TipTap v-model="page.text" :searchFiles="$page.props.search.other" />
+          <NMessageProvider
+            ><TipTap
+              v-model="page.text"
+              :search-files="$page.props.search.other"
+          /></NMessageProvider>
         </div>
         <div
           class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center"
         >
-          <!-- <n-popconfirm
-            positive-text="Ištrinti!"
-            negative-text="Palikti"
-            @positive-click="destroyModel()"
-          >
-            <template #trigger>
-              <button type="button">
-                <TrashIcon
-                  class="w-5 h-5 mr-2 stroke-red-800 hover:stroke-red-900 duration-200"
-                />
-              </button>
-            </template>
-            Ištrinto elemento nebus galima atkurti!
-          </n-popconfirm> -->
-          <n-popconfirm @positive-click="updateModel()">
-            <template #trigger>
-              <NSpin :show="showSpin" size="small">
-                <n-button>Atnaujinti</n-button>
-              </NSpin>
-            </template>
-            Ar tikrai atnaujinti?
-          </n-popconfirm>
+          <NMessageProvider
+            ><UpsertModelButton :model="page" model-route="pages.update"
+          /></NMessageProvider>
         </div>
       </div>
     </form>
@@ -75,30 +63,35 @@
 </template>
 
 <script setup>
+import { Inertia } from "@inertiajs/inertia";
+import {
+  // NButton,
+  NInput,
+  NMessageProvider,
+  // NPopconfirm,
+  NSelect,
+  // NSpin,
+  // useMessage,
+} from "naive-ui";
+import { reactive, ref } from "vue";
+import { usePage } from "@inertiajs/inertia-vue3";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AsideHeader from "../AsideHeader.vue";
 import TipTap from "@/Components/TipTap.vue";
-import { ref, reactive } from "vue";
-import { NInput, NSelect, useMessage, NSpin, NPopconfirm, NButton } from "naive-ui";
-import { TrashIcon } from "@heroicons/vue/outline";
-import { Inertia } from "@inertiajs/inertia";
-import { usePage } from "@inertiajs/inertia-vue3";
-// import { map } from "lodash";
+import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
 
 const props = defineProps({
   page: Object,
 });
 
-const showSpin = ref(false);
-
 const page = reactive(props.page);
 const otherLangPageOptions = ref([]);
-const message = useMessage();
+// const message = useMessage();
 
 const getOtherLangPages = _.debounce((input) => {
   // get other lang
   if (input.length > 2) {
-    message.loading("Ieškoma...");
+    // message.loading("Ieškoma...");
     const other_lang = page.lang === "lt" ? "en" : "lt";
     Inertia.post(
       route("pages.search"),
@@ -112,12 +105,14 @@ const getOtherLangPages = _.debounce((input) => {
         preserveState: true,
         preserveScroll: true,
         onSuccess: () => {
-          otherLangPageOptions.value = usePage().props.value.search.pages.map((page) => {
-            return {
-              value: page.id,
-              label: `${page.title} (${page.padalinys.shortname})`,
-            };
-          });
+          otherLangPageOptions.value = usePage().props.value.search.pages.map(
+            (page) => {
+              return {
+                value: page.id,
+                label: `${page.title} (${page.padalinys.shortname})`,
+              };
+            }
+          );
         },
       }
     );
@@ -149,18 +144,4 @@ const categories = [
     label: "Kita informacija",
   },
 ];
-
-const updateModel = () => {
-  showSpin.value = !showSpin.value;
-  Inertia.patch(route("pages.update", page.id), page, {
-    onSuccess: () => {
-      showSpin.value = !showSpin.value;
-      message.success("Sėkmingai atnaujinta!");
-    },
-    onError: () => {
-      showSpin.value = !showSpin.value;
-    },
-    preserveScroll: true,
-  });
-};
 </script>

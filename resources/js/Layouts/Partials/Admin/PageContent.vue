@@ -6,9 +6,13 @@
       <h1 class="text-gray-800 leading-tight inline-block mr-2 mb-0">
         <slot name="header"></slot>
       </h1>
-      <Link v-if="isIndex" class="mr-auto" :href="createURL"
-        ><PlusCircleIcon class="w-6 h-6 hover:stroke-red-900 duration-200"
-      /></Link>
+      <Link v-if="isIndex" class="mr-auto" :href="createURL">
+        <div class="flex">
+          <NIcon size="28"
+            ><AddCircle32Regular
+              class="w-6 h-6 hover:text-red-800 duration-200"
+          /></NIcon></div
+      ></Link>
       <aside class="inline-block font-bold ml-2 duration-200 md:text-xs">
         <slot name="aside-header"></slot>
       </aside>
@@ -18,9 +22,10 @@
 </template>
 
 <script setup>
-import { PlusCircleIcon } from "@heroicons/vue/outline";
+import { AddCircle32Regular } from "@vicons/fluent";
 import { Link } from "@inertiajs/inertia-vue3";
-import { computed, useAttrs } from "vue";
+import { NIcon } from "naive-ui";
+import { computed } from "vue";
 
 const props = defineProps({
   createURL: String,

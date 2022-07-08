@@ -5,13 +5,16 @@
         <h2 class="mb-4">Parinktys</h2>
         <div class="mb-4">
           <label class="font-bold">Pavadinimas</label>
-          <NInput v-model:value="news.title" placeholder="Įrašyti pavadinimą..." />
+          <NInput
+            v-model:value="news.title"
+            placeholder="Įrašyti pavadinimą..."
+          />
         </div>
         <div class="mb-4">
           <label class="font-bold">Nuoroda</label>
           <NInput
-            disabled
             v-model:value="news.permalink"
+            disabled
             placeholder="Įrašyti pavadinimą..."
           />
         </div>
@@ -27,8 +30,8 @@
         <div class="mb-4">
           <label class="font-bold">Kitos kalbos puslapis</label>
           <NSelect
-            disabled
             v-model:value="news.other_lang_news"
+            disabled
             filterable
             placeholder="Ieškoti puslapio..."
             :options="otherLangnewsOptions"
@@ -40,14 +43,14 @@
         <div class="mb-4">
           <label class="font-bold">Naujienos paskelbimo laikas</label>
           <NDatePicker
-            type="datetime"
             v-model:formatted-value="news.publish_time"
+            type="datetime"
             value-format="yyyy-MM-dd HH:mm:ss"
           />
         </div>
         <NCheckbox
-          class="mb-4"
           v-model:checked="news.draft"
+          class="mb-4"
           :checked-value="1"
           :unchecked-value="0"
         >
@@ -56,7 +59,9 @@
       </div>
       <div class="main-card">
         <h2 class="font-bold text-xl mb-2 inline-block">Nuotrauka</h2>
-        <UploadImage v-model="news.image" :path="'news'"></UploadImage>
+        <NMessageProvider
+          ><UploadImage v-model="news.image" :path="'news'"></UploadImage
+        ></NMessageProvider>
         <div class="mb-4">
           <label class="font-bold">Nuotraukos autorius</label>
           <NInput v-model:value="news.image_author" />
@@ -65,39 +70,33 @@
       <div class="main-card">
         <h2 class="font-bold text-xl mb-2 inline-block">Įvadas</h2>
         <div class="py-4">
-          <TipTap v-model="news.short" :searchFiles="$page.props.search.other" />
+          <NMessageProvider>
+            <TipTap
+              v-model="news.short"
+              :search-files="$page.props.search.other"
+            />
+          </NMessageProvider>
         </div>
       </div>
       <div class="main-card">
         <h2 class="font-bold text-xl mb-2 inline-block">Turinys</h2>
         <div class="py-4">
-          <TipTap v-model="news.text" :searchFiles="$page.props.search.other" />
+          <NMessageProvider>
+            <TipTap
+              v-model="news.text"
+              :search-files="$page.props.search.other"
+            />
+          </NMessageProvider>
         </div>
         <div
           class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center"
         >
-          <n-popconfirm
-            positive-text="Ištrinti!"
-            negative-text="Palikti"
-            @positive-click="destroyModel()"
-          >
-            <template #trigger>
-              <button type="button">
-                <TrashIcon
-                  class="w-5 h-5 mr-2 stroke-red-800 hover:stroke-red-900 duration-200"
-                />
-              </button>
-            </template>
-            Ištrinto elemento nebus galima atkurti!
-          </n-popconfirm>
-          <n-popconfirm @positive-click="updateModel()">
-            <template #trigger>
-              <NSpin :show="showSpin" size="small">
-                <n-button>Atnaujinti</n-button>
-              </NSpin>
-            </template>
-            Ar tikrai atnaujinti?
-          </n-popconfirm>
+          <NMessageProvider
+            ><DeleteModelButton :model="news" model-route="news.destroy"
+          /></NMessageProvider>
+          <NMessageProvider
+            ><UpsertModelButton :model="news" model-route="news.update"
+          /></NMessageProvider>
         </div>
       </div>
     </form>
@@ -105,43 +104,36 @@
 </template>
 
 <script setup>
-import AdminLayout from "@/Layouts/AdminLayout.vue";
-import AsideHeader from "../AsideHeader.vue";
-import TipTap from "@/Components/TipTap.vue";
-import { ref, reactive } from "vue";
+import { Inertia } from "@inertiajs/inertia";
 import {
-  NInput,
-  NSelect,
-  useMessage,
-  NSpin,
-  NPopconfirm,
-  NButton,
   NCheckbox,
   NDatePicker,
-  NUpload,
+  NInput,
+  NMessageProvider,
+  NSelect,
 } from "naive-ui";
-import { TrashIcon } from "@heroicons/vue/outline";
-import { Inertia } from "@inertiajs/inertia";
+import { reactive, ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
-// import { map } from "lodash";
+import AdminLayout from "@/Layouts/AdminLayout.vue";
+import TipTap from "@/Components/TipTap.vue";
 import UploadImage from "@/Components/Admin/UploadImage.vue";
+
+import DeleteModelButton from "@/Components/Admin/DeleteModelButton.vue";
+import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
 
 const props = defineProps({
   news: Object,
   // uploaded_image_path: String,
 });
 
-const message = useMessage();
-
-const showSpin = ref(false);
-
+// const message = useMessage();
 const news = reactive(props.news);
 const otherLangnewsOptions = ref([]);
 
 const getOtherLangNews = _.debounce((input) => {
   // get other lang
   if (input.length > 2) {
-    message.loading("Ieškoma...");
+    // message.loading("Ieškoma...");
     const other_lang = news.lang === "lt" ? "en" : "lt";
     Inertia.post(
       route("news.search"),
@@ -155,12 +147,14 @@ const getOtherLangNews = _.debounce((input) => {
         preserveState: true,
         preserveScroll: true,
         onSuccess: () => {
-          otherLangnewsOptions.value = usePage().props.value.search.news.map((news) => {
-            return {
-              value: news.id,
-              label: `${news.title} (${news.padalinys.shortname})`,
-            };
-          });
+          otherLangnewsOptions.value = usePage().props.value.search.news.map(
+            (news) => {
+              return {
+                value: news.id,
+                label: `${news.title} (${news.padalinys.shortname})`,
+              };
+            }
+          );
         },
       }
     );
@@ -192,18 +186,4 @@ const categories = [
     label: "Kita informacija",
   },
 ];
-
-const updateModel = () => {
-  showSpin.value = !showSpin.value;
-  Inertia.patch(route("news.update", news.id), news, {
-    onSuccess: () => {
-      showSpin.value = !showSpin.value;
-      message.success("Sėkmingai atnaujinta!");
-    },
-    onError: () => {
-      showSpin.value = !showSpin.value;
-    },
-    preserveScroll: true,
-  });
-};
 </script>

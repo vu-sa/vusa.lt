@@ -20,11 +20,11 @@
       <form @submit.prevent="submit">
         <div>
           <NInput
-            placeholder="El. paštas"
             id="email"
+            v-model:value="form.email"
+            placeholder="El. paštas"
             type="email"
             class="mt-1 block w-full"
-            v-model:value="form.email"
             required
             autofocus
           />
@@ -33,10 +33,10 @@
         <div class="mt-4">
           <NInput
             id="password"
+            v-model:value="form.password"
             type="password"
             class="mt-1 block w-full"
             placeholder="Slaptažodis"
-            v-model:value="form.password"
             required
             autocomplete="current-password"
           />
@@ -52,7 +52,9 @@
         <div class="flex items-center justify-end mt-4 gap-4">
           <NPopover
             ><template #trigger>
-              <MicrosoftButton></MicrosoftButton> </template
+              <NMessageProvider
+                ><MicrosoftButton></MicrosoftButton
+              ></NMessageProvider> </template
             ><span>Tik su VU SA paskyromis.</span></NPopover
           >
 
@@ -64,7 +66,9 @@
             Forgot your password?
           </Link> -->
 
-          <NButton attr-type="submit" :disabled="form.processing"> Prisijungti </NButton>
+          <NButton attr-type="submit" :disabled="form.processing">
+            Prisijungti
+          </NButton>
         </div>
       </form>
     </div>
@@ -72,14 +76,14 @@
 </template>
 
 <script setup>
-import AppLogo from "@/Components/AppLogo.vue";
-import ValidationErrors from "@/Components/Public/ValidationErrors.vue";
-import { Head, Link, useForm } from "@inertiajs/inertia-vue3";
+import { Head, useForm } from "@inertiajs/inertia-vue3";
+import { NButton, NInput, NMessageProvider, NPopover } from "naive-ui";
 import { reactive } from "vue";
+import AppLogo from "@/Components/AppLogo.vue";
 import MicrosoftButton from "@/Components/MicrosoftButton.vue";
-import { NButton, NInput, NPopover } from "naive-ui";
+import ValidationErrors from "@/Components/Public/ValidationErrors.vue";
 
-const props = defineProps({
+defineProps({
   status: String,
 });
 

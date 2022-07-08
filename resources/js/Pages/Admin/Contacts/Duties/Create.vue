@@ -37,7 +37,10 @@
 
         <div class="col-span-4">
           <label class="font-bold">Aprašymas</label>
-          <TipTap v-model="duty.description" :searchFiles="$page.props.search.other" />
+          <TipTap
+            v-model="duty.description"
+            :search-files="$page.props.search.other"
+          />
         </div>
 
         <!-- <div class="col-span-4">
@@ -77,14 +80,9 @@
             </template>
             Ištrinto elemento nebus galima atkurti!
           </n-popconfirm>
-          <n-popconfirm @positive-click="updateModel()">
-            <template #trigger>
-              <NSpin :show="showSpin" size="small">
-                <n-button>Atnaujinti</n-button>
-              </NSpin>
-            </template>
-            Ar tikrai atnaujinti?
-          </n-popconfirm>
+          <NMessageProvider
+            ><UpsertModelButton :model="duty" model-route="duties.store"
+          /></NMessageProvider>
         </div>
       </form>
     </div>
@@ -93,7 +91,9 @@
         <strong>Šiuo metu šias pareigas užima:</strong>
         <ul class="list-inside">
           <li v-for="user in duty.users">
-            <Link :href="route('users.edit', { id: user.id })">{{ user.name }}</Link>
+            <Link :href="route('users.edit', { id: user.id })">{{
+              user.name
+            }}</Link>
           </li>
         </ul>
       </div>
@@ -103,24 +103,13 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onBeforeMount } from "vue";
-import {
-  NSpin,
-  NInput,
-  NSelect,
-  NInputNumber,
-  NPopconfirm,
-  useMessage,
-  NButton,
-  NDatePicker,
-} from "naive-ui";
 import { Inertia } from "@inertiajs/inertia";
-import { TrashIcon } from "@heroicons/vue/outline";
+import { Link, usePage } from "@inertiajs/inertia-vue3";
+import { NInput, NMessageProvider, NPopconfirm, NSelect } from "naive-ui";
+import { reactive, ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-import { usePage, Link } from "@inertiajs/inertia-vue3";
 import TipTap from "@/Components/TipTap.vue";
-
-const message = useMessage();
+import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
 
 const props = defineProps({
   errors: Object,
@@ -138,12 +127,10 @@ duty.institution = {};
 //   },
 // };
 // const attributes = ref(duty.attributes);
-const showSpin = ref(false);
 
 const getInstitutionOptions = _.debounce((input) => {
   // get other lang
   if (input.length > 2) {
-    message.loading("Ieškoma...");
     Inertia.post(
       route("dutyInstitutions.search"),
       {
@@ -155,12 +142,14 @@ const getInstitutionOptions = _.debounce((input) => {
         preserveState: true,
         preserveScroll: true,
         onSuccess: () => {
-          institutions.value = usePage().props.value.search.other.map((institution) => {
-            return {
-              value: institution.id,
-              label: `${institution.name} (${institution.alias})`,
-            };
-          });
+          institutions.value = usePage().props.value.search.other.map(
+            (institution) => {
+              return {
+                value: institution.id,
+                label: `${institution.name} (${institution.alias})`,
+              };
+            }
+          );
         },
       }
     );
@@ -168,29 +157,6 @@ const getInstitutionOptions = _.debounce((input) => {
 }, 500);
 
 ////////////////////////////////////////////////////////////////////////////////
-
-const updateModel = () => {
-  showSpin.value = !showSpin.value;
-  // jsonify attributes
-  console.log("Prieš JSON");
-  duty.attributes = JSON.stringify(duty.attributes);
-  console.log("Po JSON");
-  console.log(duty, duty.attributes);
-
-  Inertia.post(route("duties.store"), duty, {
-    // preserveState: true,
-    onSuccess: () => {
-      // console.log("Success");
-      showSpin.value = !showSpin.value;
-      message.success("Sėkmingai atnaujintas!");
-    },
-    onError: () => {
-      showSpin.value = !showSpin.value;
-    },
-    preserveScroll: true,
-    preserveState: true,
-  });
-};
 
 // const destroyModel = () => {
 //   Inertia.delete(route("duties.destroy", duty.id), {

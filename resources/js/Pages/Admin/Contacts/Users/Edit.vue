@@ -38,8 +38,8 @@
         <div class="lg:col-span-2">
           <label class="font-bold">Rolė</label>
           <NSelect
-            :disabled="$page.props.user.role.alias !== 'admin'"
             v-model:value="contact.role.id"
+            :disabled="$page.props.user.role.alias !== 'admin'"
             :options="rolesOptions"
             clearable
             type="text"
@@ -87,14 +87,9 @@
             </template>
             Ištrinto elemento nebus galima atkurti!
           </n-popconfirm> -->
-          <n-popconfirm @positive-click="updateModel()">
-            <template #trigger>
-              <NSpin :show="showSpin" size="small">
-                <n-button>Atnaujinti</n-button>
-              </NSpin>
-            </template>
-            Ar tikrai atnaujinti?
-          </n-popconfirm>
+          <NMessageProvider
+            ><UpsertModelButton :model="contact" model-route="users.update"
+          /></NMessageProvider>
         </div>
       </form>
     </div>
@@ -102,24 +97,13 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from "vue";
-import {
-  NSpin,
-  NInput,
-  NSelect,
-  NInputNumber,
-  NPopconfirm,
-  useMessage,
-  NButton,
-  NDatePicker,
-} from "naive-ui";
 import { Inertia } from "@inertiajs/inertia";
-import { TrashIcon } from "@heroicons/vue/outline";
-import AdminLayout from "@/Layouts/AdminLayout.vue";
+import { NInput, NMessageProvider, NSelect } from "naive-ui";
+import { onMounted, reactive, ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
+import AdminLayout from "@/Layouts/AdminLayout.vue";
 import UploadImage from "@/Components/Admin/UploadImage.vue";
-
-const message = useMessage();
+import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
 
 const props = defineProps({
   contact: Object,
@@ -147,7 +131,7 @@ const rolesOptions = props.roles.map((role) => ({
 const getDutyOptions = _.debounce((input) => {
   // get other lang
   if (input.length > 2) {
-    message.loading("Ieškoma...");
+    // message.loading("Ieškoma...");
     Inertia.post(
       route("duties.search"),
       {
@@ -172,29 +156,6 @@ const getDutyOptions = _.debounce((input) => {
 }, 500);
 
 ////////////////////////////////////////////////////////////////////////////////
-
-const updateModel = () => {
-  showSpin.value = !showSpin.value;
-  Inertia.patch(route("users.update", contact.id), contact, {
-    onSuccess: () => {
-      showSpin.value = !showSpin.value;
-      message.success("Sėkmingai atnaujinta!");
-    },
-    onError: () => {
-      showSpin.value = !showSpin.value;
-    },
-    preserveScroll: true,
-  });
-};
-
-// const destroyModel = () => {
-//   Inertia.delete(route("users.destroy", calendar.id), {
-//     onSuccess: () => {
-//       message.success("Vartotojo įrašas ištrintas!");
-//     },
-//     preserveScroll: true,
-//   });
-// };
 
 onMounted(() => {
   duties.value = props.contact.duties.map((duty) => {

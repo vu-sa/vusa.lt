@@ -15,18 +15,22 @@
     <meta name="image" content="{{ $image ?? '' }}">
     <meta name="og:image" content="{{ $image ?? '' }}">
 
-    <!-- Fonts -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap">
+    {{-- Atom Feed --}}
+    @include('feed::links')
+
+    {{-- Fonts --}}
+    @googlefonts
 
     <!-- Styles -->
-    <link rel="stylesheet" href="{{ mix('/css/app.css') }}">
+    @vite(['resources/css/app.css'])
 
-    <!-- Naive UI elements -->
+    {{-- Naive UI must be after, because Tailwind has preflight styles which, otherwise, reset Naive UI --}}
     <meta name="naive-ui-style" />
 
-    <!-- Scripts -->
+    {{-- Ziggy Routes --}}
     @routes
-    <script src={{ mix('/js/app.js') }} defer></script>
+
+    @vite(['resources/js/app.js'])
     @inertiaHead
 </head>
 

@@ -1,92 +1,95 @@
 <template>
   <div class="relative rounded-xl border-4 border-black">
     <div
-      class="absolute top-0 p-4 w-full border-b-4 border-black bg-white rounded-t-xl z-10"
       v-if="editor"
+      class="absolute top-0 p-4 w-full border-b-4 border-black bg-white rounded-t-xl z-10"
     >
       <!-- <strong class="mb-4">Funkcijos</strong> -->
       <!-- <br /> -->
       <div>
         <button
           type="button"
-          @click="editor.chain().focus().toggleBold().run()"
           :class="{ 'is-active': editor.isActive('bold') }"
+          @click="editor.chain().focus().toggleBold().run()"
         >
           <NIcon><TextBold20Regular></TextBold20Regular></NIcon>
         </button>
 
         <button
           type="button"
-          @click="editor.chain().focus().toggleItalic().run()"
           :class="{ 'is-active': editor.isActive('italic') }"
+          @click="editor.chain().focus().toggleItalic().run()"
         >
           <NIcon><TextItalic20Regular></TextItalic20Regular></NIcon>
         </button>
         <!-- <button @click="editor.chain().focus().clearNodes().run()">clear nodes</button> -->
         <button
           type="button"
-          @click="getLinkAndModal"
           :class="{ 'is-active': editor.isActive('link') }"
+          @click="getLinkAndModal"
         >
           <NIcon><Link20Regular></Link20Regular></NIcon>
         </button>
         <button
           type="button"
-          @click="editor.chain().focus().unsetLink().run()"
           :disabled="!editor.isActive('link')"
+          @click="editor.chain().focus().unsetLink().run()"
         >
           <NIcon><LinkDismiss20Filled></LinkDismiss20Filled></NIcon>
         </button>
         <button
           type="button"
-          @click="editor.chain().focus().setParagraph().run()"
           :class="{ 'is-active': editor.isActive('paragraph') }"
+          @click="editor.chain().focus().setParagraph().run()"
         >
           P
         </button>
         <button
           type="button"
-          @click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
           :class="{ 'is-active': editor.isActive('heading', { level: 1 }) }"
+          @click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
         >
           H1
         </button>
         <button
           type="button"
-          @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
           :class="{ 'is-active': editor.isActive('heading', { level: 2 }) }"
+          @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
         >
           H2
         </button>
         <button
           type="button"
-          @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
           :class="{ 'is-active': editor.isActive('heading', { level: 3 }) }"
+          @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
         >
           H3
         </button>
         <button
           type="button"
-          @click="editor.chain().focus().toggleBulletList().run()"
           :class="{ 'is-active': editor.isActive('bulletList') }"
+          @click="editor.chain().focus().toggleBulletList().run()"
         >
           <NIcon><TextBulletListLtr24Filled></TextBulletListLtr24Filled></NIcon>
         </button>
         <button
           type="button"
-          @click="editor.chain().focus().toggleOrderedList().run()"
           :class="{ 'is-active': editor.isActive('orderedList') }"
+          @click="editor.chain().focus().toggleOrderedList().run()"
         >
           <NIcon><TextNumberListLtr20Filled></TextNumberListLtr20Filled></NIcon>
         </button>
         <button
           type="button"
-          @click="editor.chain().focus().toggleBlockquote().run()"
           :class="{ 'is-active': editor.isActive('blockquote') }"
+          @click="editor.chain().focus().toggleBlockquote().run()"
         >
           <NIcon><TextQuote20Filled></TextQuote20Filled></NIcon>
         </button>
-        <button type="button" @click="editor.chain().focus().setHorizontalRule().run()">
+        <button
+          type="button"
+          @click="editor.chain().focus().setHorizontalRule().run()"
+        >
           <NIcon><LineHorizontal120Regular></LineHorizontal120Regular></NIcon>
         </button>
       </div>
@@ -97,7 +100,10 @@
         <button type="button" @click="editor.chain().focus().redo().run()">
           <NIcon><ArrowRedo20Filled></ArrowRedo20Filled></NIcon>
         </button>
-        <button type="button" @click="editor.chain().focus().unsetAllMarks().run()">
+        <button
+          type="button"
+          @click="editor.chain().focus().unsetAllMarks().run()"
+        >
           <NIcon><ClearFormatting20Filled></ClearFormatting20Filled></NIcon>
         </button>
       </div>
@@ -123,12 +129,17 @@
       <NTabs class="" type="line" animated>
         <NTabPane name="link" tab="Pridėti nuorodą">
           <NInput v-model:value="previousUrl"></NInput>
-          <NButton class="mt-2" type="success" @click="updateLink">Atnaujinti</NButton>
+          <NButton class="mt-2" type="success" @click="updateLink"
+            >Atnaujinti</NButton
+          >
         </NTabPane>
         <NTabPane name="file" tab="Pridėti failą, kaip nuorodą">
           <p class="my-2">
             Įrašyk failo pavadinimą ir pasirink, kad būtų pridėtas!
-            <a class="text-vusa-red" target="_blank" :href="route('files.index')"
+            <a
+              class="text-vusa-red"
+              target="_blank"
+              :href="route('files.index')"
               >Failo įkėlimas</a
             >
           </p>
@@ -142,12 +153,17 @@
             remote
             @search="getFiles"
           />
-          <NButton class="mt-2" type="success" @click="updateLink">Atnaujinti</NButton>
+          <NButton class="mt-2" type="success" @click="updateLink"
+            >Atnaujinti</NButton
+          >
         </NTabPane>
         <NTabPane name="image" tab="Pridėti paveikslėlį">
           <p class="my-2">
             Įrašyk paveikslėlio pavadinimą ir pasirink!
-            <a class="text-vusa-red" target="_blank" :href="route('files.index')"
+            <a
+              class="text-vusa-red"
+              target="_blank"
+              :href="route('files.index')"
               >Failo įkėlimas</a
             >
           </p>
@@ -161,7 +177,9 @@
             remote
             @search="getImages"
           />
-          <NButton class="mt-4" type="primary" @click="placeImage">Atnaujinti</NButton>
+          <NButton class="mt-4" type="primary" @click="placeImage"
+            >Atnaujinti</NButton
+          >
         </NTabPane>
       </NTabs>
     </div>
@@ -169,37 +187,37 @@
 </template>
 
 <script setup>
-import { useEditor, EditorContent } from "@tiptap/vue-3";
-import TipTapLink from "@tiptap/extension-link";
-import StarterKit from "@tiptap/starter-kit";
-import Image from "@tiptap/extension-image";
 import {
+  ArrowRedo20Filled,
+  ArrowUndo20Filled,
+  ClearFormatting20Filled,
+  LineHorizontal120Regular,
   Link20Regular,
   LinkDismiss20Filled,
-  TextBulletListLtr24Filled,
-  TextNumberListLtr20Filled,
-  ArrowUndo20Filled,
-  ArrowRedo20Filled,
-  ClearFormatting20Filled,
   TextBold20Regular,
+  TextBulletListLtr24Filled,
   TextItalic20Regular,
-  LineHorizontal120Regular,
+  TextNumberListLtr20Filled,
   TextQuote20Filled,
 } from "@vicons/fluent";
+import { EditorContent, useEditor } from "@tiptap/vue-3";
+import { Inertia } from "@inertiajs/inertia";
 import {
-  NIcon,
-  NModal,
-  NTabs,
-  NTabPane,
-  NInput,
   NButton,
+  NIcon,
+  NInput,
+  NModal,
   NSelect,
+  NTabPane,
+  NTabs,
   useMessage,
 } from "naive-ui";
-import { Inertia } from "@inertiajs/inertia";
+import Image from "@tiptap/extension-image";
+import StarterKit from "@tiptap/starter-kit";
+import TipTapLink from "@tiptap/extension-link";
 // import { usePage } from "@inertiajs/inertia-vue3";
-import { ref, onBeforeUnmount } from "vue";
 import { Link } from "@inertiajs/inertia-vue3";
+import { onBeforeUnmount, ref } from "vue";
 
 const props = defineProps({
   modelValue: String,
@@ -288,7 +306,12 @@ const getImages = _.debounce((query) => {
 
 const updateLink = () => {
   const url = previousUrl.value;
-  editor.value.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
+  editor.value
+    .chain()
+    .focus()
+    .extendMarkRange("link")
+    .setLink({ href: url })
+    .run();
   showFileModal.value = false;
 };
 
@@ -324,7 +347,7 @@ onBeforeUnmount(() => {
 });
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 /* Basic editor styles */
 .ProseMirror {
   > * + * {

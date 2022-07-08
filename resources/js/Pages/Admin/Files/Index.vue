@@ -1,21 +1,27 @@
 <template>
   <AdminLayout title="Failų tvarkyklė">
     <div id="folders" class="main-card">
-      <h2 class="text-2xl font-bold">Aplankai ({{ showedDirectories.length }})</h2>
+      <h2 class="text-2xl font-bold">
+        Aplankai ({{ showedDirectories.length }})
+      </h2>
       <div class="grid grid-cols-3 gap-3 2xl:grid-cols-6 lg:grid-cols-4">
         <FolderButton
           v-if="currentPath !== 'public/files'"
           @click="getAllFilesAndDirectories('../')"
         >
-          <ArrowLeftIcon class="h-10 w-10 stroke-slate-600 mb-2" />
+          <div class="mb-2">
+            <NIcon size="32"><ArrowCircleLeft28Regular /></NIcon>
+          </div>
           <div class="text-sm break-all text-center">Atgal</div>
         </FolderButton>
         <FolderButton
           v-for="directory in showedDirectories"
-          v-bind:key="directory.id"
+          :key="directory.id"
           @click="getAllFilesAndDirectories(directory.folderPath)"
         >
-          <FolderIcon class="h-10 w-10 stroke-slate-600 mb-2" />
+          <div class="mb-2">
+            <NIcon size="32"><Folder48Regular /></NIcon>
+          </div>
           <div class="text-sm break-all text-center">
             {{ directory.folderName }}
           </div>
@@ -23,8 +29,8 @@
       </div>
     </div>
     <div
-      id="files"
       v-if="showedFiles.length > 0"
+      id="files"
       class="main-card transition-all max-h-full"
     >
       <h2 class="text-2xl font-bold">Failai ({{ showedFiles.length }})</h2>
@@ -47,10 +53,12 @@
         </div>
         <FileButton
           v-for="file in showedFiles"
-          v-bind:key="file.id"
+          :key="file.id"
           @click="openFile(file.filePath)"
         >
-          <PhotographIcon class="h-10 w-10 stroke-slate-600 mb-2" />
+          <div class="mb-2">
+            <NIcon size="32"><Image48Regular /></NIcon>
+          </div>
           <div
             class="text-sm text-center text-ellipsis overflow-hidden whitespace-pre-line break-all"
           >
@@ -63,12 +71,15 @@
 </template>
 
 <script setup>
-import AdminLayout from "@/Layouts/AdminLayout.vue";
-import { useMessage, NDataTable, NUpload, NUploadDragger } from "naive-ui";
-import { reactive, computed, onMounted } from "vue";
+import {
+  ArrowCircleLeft28Regular,
+  Folder48Regular,
+  Image48Regular,
+} from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
-import { Link } from "@inertiajs/inertia-vue3";
-import { PhotographIcon, FolderIcon, ArrowLeftIcon } from "@heroicons/vue/outline";
+import { NIcon, NUpload, NUploadDragger } from "naive-ui";
+import { computed } from "vue";
+import AdminLayout from "@/Layouts/AdminLayout.vue";
 import FileButton from "@/Components/Admin/FileButton.vue";
 import FolderButton from "@/Components/Admin/FolderButton.vue";
 
@@ -79,7 +90,7 @@ const props = defineProps({
   currentPath: String,
 });
 
-const message = useMessage();
+// const message = useMessage();
 
 // Compute showed directories
 const showedDirectories = computed(() => {
@@ -140,7 +151,7 @@ const uploadFile = (e) => {
       preserveScroll: true,
       preserveState: true,
       onSuccess: () => {
-        message.success("Failas įkeltas");
+        // message.success("Failas įkeltas");
       },
     }
   );

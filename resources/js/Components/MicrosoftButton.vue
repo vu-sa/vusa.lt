@@ -1,5 +1,5 @@
 <template>
-  <NButton @click="microsoftRedirect" :loading="loadingRef" type="warning">
+  <NButton :loading="loadingRef" type="warning" @click="microsoftRedirect">
     <template #icon>
       <NIcon>
         <Microsoft />
@@ -10,13 +10,11 @@
 </template>
 
 <script setup>
-import { Inertia } from "@inertiajs/inertia";
-import { NButton, NIcon, useMessage } from "naive-ui";
 import { Microsoft } from "@vicons/fa";
+import { NButton, NIcon } from "naive-ui";
 import { ref } from "vue";
 
 const loadingRef = ref(false);
-const message = useMessage();
 
 const microsoftRedirect = () => {
   loadingRef.value = true;

@@ -22,7 +22,10 @@
 
         <div>
           <label class="font-bold">Padalinys</label>
-          <n-select v-model:value="exam.padalinys_id" :options="padaliniai_options" />
+          <n-select
+            v-model:value="exam.padalinys_id"
+            :options="padaliniai_options"
+          />
         </div>
 
         <div>
@@ -84,14 +87,11 @@
         </div>
 
         <div class="col-start-3 col-span-2 flex justify-end items-center">
-          <n-popconfirm @positive-click="updateModel()">
-            <template #trigger>
-              <NSpin :show="showSpin" size="small">
-                <n-button>Išsaugoti</n-button>
-              </NSpin>
-            </template>
-            Ar tikrai išsaugoti?
-          </n-popconfirm>
+          <NMessageProvider
+            ><UpsertModelButton
+              :model="exam"
+              model-route="saziningaiExams.store"
+          /></NMessageProvider>
         </div>
       </form>
     </div>
@@ -117,21 +117,10 @@
 </template>
 
 <script setup>
+import { NInput, NInputNumber, NMessageProvider, NSelect } from "naive-ui";
+import { computed, reactive } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-import AsideHeader from "../AsideHeader.vue";
-import { ref, reactive, computed } from "vue";
-import {
-  NCheckbox,
-  NSpin,
-  NInput,
-  NSelect,
-  NInputNumber,
-  NButton,
-  NPopconfirm,
-  useMessage,
-} from "naive-ui";
-
-import { Inertia } from "@inertiajs/inertia";
+import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
 
 const props = defineProps({
   padaliniai: Object,
@@ -139,8 +128,6 @@ const props = defineProps({
   observers: Object,
   errors: Object,
 });
-
-const message = useMessage();
 
 const exam = reactive({});
 
@@ -160,24 +147,7 @@ const exam_types = [
   },
 ];
 
-const showSpin = ref(false);
-
 const title = computed(() => {
   return "Naujas egzaminas";
 });
-
-// Form sending
-
-const updateModel = async () => {
-  showSpin.value = !showSpin.value;
-  Inertia.post(route("saziningaiExams.store"), exam, {
-    onSuccess: () => {
-      showSpin.value = !showSpin.value;
-      message.success("Egzaminas sukurtas!");
-    },
-    onError: () => {
-      showSpin.value = !showSpin.value;
-    },
-  });
-};
 </script>

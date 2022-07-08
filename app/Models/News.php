@@ -4,11 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Feed\Feedable;
+use Spatie\Feed\FeedItem;
 
-class News extends Model
+class News extends Model implements Feedable
 {
     use HasFactory;
-    
+
     protected $table = 'news';
 
     protected $guarded = [];
@@ -16,22 +18,44 @@ class News extends Model
     protected $casts = [
         'updated_at' => 'datetime:Y-m-d H:i:s',
         'created_at' => 'datetime:Y-m-d H:i:s',
+        'publish_time' => 'datetime:Y-m-d H:i:s',
     ];
 
-    public function user() {
+    public function user()
+    {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function padalinys() {
+    public function padalinys()
+    {
         return $this->belongsTo(Padalinys::class, 'padalinys_id');
     }
 
     // Get another language news
-    public function getOtherLanguage() {
+    public function getOtherLanguage()
+    {
         return News::find($this->other_lang_id);
     }
 
-    public function tags() {
+    public function tags()
+    {
         return $this->belongsToMany(Tag::class, 'posts_tags', 'news_id', 'tag_id');
+    }
+
+    public function toFeedItem(): FeedItem
+    {
+        return FeedItem::create()
+            ->id($this->id)
+            ->title($this->title)
+            ->summary($this->short)
+            ->updated($this->publish_time)
+            ->image($this->image)
+            ->link('naujiena/' . $this->permalink)
+            ->authorName($this->padalinys->shortname);
+    }
+
+    public static function getFeedItems()
+    {
+        return News::orderByDesc('publish_time')->take(15)->get();
     }
 }

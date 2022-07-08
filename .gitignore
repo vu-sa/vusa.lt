@@ -5,11 +5,6 @@
 .env.backup
 .phpunit.result.cache
 docker-compose.override.yml
-Homestead.json
-Homestead.yaml
-npm-debug.log
-yarn-error.log
-/.vagrant
 composer.lock
 package-lock.json
 
@@ -19,34 +14,17 @@ public/uploads
 ## Other
 .jshintrc
 
-# Tinymce
-public/js/plugins
-public/js/skins
-public/js/icons
-
-## Mix
-public/js/admin.js
-public/css/admin.css
-public/mix-manifest.json
-public/fonts
-public/images/vendor
-
-public/js/admin.js
-public/js/app.js
-public/js/admin.js.LICENSE.txt
-public/js/app.js.LICENSE.txt
-
-public/css/admin.css
-public/css/app.css
-public/css/admin.css.LICENSE.txt
-public/css/app.css.LICENSE.txt
-
 .DS_Store
 .vscode/settings.json
 webpack.mix.js
 
-.gitignore
 public/js/app/*.js
 public/js/*.js
 database/vusa_www-2022.sql
 .DS_Store
+
+# vite builds
+/public/build
+public/hot
+lang/php_en.json
+lang/php_lt.json

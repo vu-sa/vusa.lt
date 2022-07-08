@@ -49,7 +49,7 @@
           <label class="font-bold">Aprašymas</label>
           <TipTap
             v-model="dutyInstitution.description"
-            :searchFiles="$page.props.search.other"
+            :search-files="$page.props.search.other"
           />
         </div>
 
@@ -70,14 +70,11 @@
             </template>
             Ištrinto elemento nebus galima atkurti!
           </n-popconfirm> -->
-          <n-popconfirm @positive-click="updateModel()">
-            <template #trigger>
-              <NSpin :show="showSpin" size="small">
-                <n-button>Atnaujinti</n-button>
-              </NSpin>
-            </template>
-            Ar tikrai atnaujinti?
-          </n-popconfirm>
+          <NMessageProvider
+            ><UpsertModelButton
+              :model="dutyInstitution"
+              model-route="dutyInstitutions.update"
+          /></NMessageProvider>
         </div>
       </form>
     </div>
@@ -86,7 +83,9 @@
         <strong>Šiuo metu institucijai priklauso šios pareigos:</strong>
         <ul class="list-inside">
           <li v-for="duty in duties">
-            <Link :href="route('duties.edit', { id: duty.id })">{{ duty.name }}</Link>
+            <Link :href="route('duties.edit', { id: duty.id })">{{
+              duty.name
+            }}</Link>
           </li>
         </ul>
       </div>
@@ -96,24 +95,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from "vue";
-import {
-  NSpin,
-  NInput,
-  NSelect,
-  NInputNumber,
-  NPopconfirm,
-  useMessage,
-  NButton,
-  NDatePicker,
-} from "naive-ui";
-import { Inertia } from "@inertiajs/inertia";
-import { TrashIcon } from "@heroicons/vue/outline";
+import { Link } from "@inertiajs/inertia-vue3";
+import { NInput, NMessageProvider, NSelect } from "naive-ui";
+import { reactive } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-import { usePage, Link } from "@inertiajs/inertia-vue3";
 import TipTap from "@/Components/TipTap.vue";
-
-const message = useMessage();
+import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
 
 const props = defineProps({
   dutyInstitution: Object,
@@ -128,7 +115,6 @@ const dutyInstitution = reactive(props.dutyInstitution);
 
 // const duties = ref([]);
 // const selectedDuties = ref(null);
-const showSpin = ref(false);
 
 const padaliniai_options = props.padaliniai.map((padalinys) => ({
   value: padalinys.id,
@@ -163,20 +149,6 @@ const padaliniai_options = props.padaliniai.map((padalinys) => ({
 // }, 500);
 
 ////////////////////////////////////////////////////////////////////////////////
-
-const updateModel = () => {
-  showSpin.value = !showSpin.value;
-  Inertia.patch(route("dutyInstitutions.update", dutyInstitution.id), dutyInstitution, {
-    onSuccess: () => {
-      showSpin.value = !showSpin.value;
-      message.success("Sėkmingai atnaujinta!");
-    },
-    onError: () => {
-      showSpin.value = !showSpin.value;
-    },
-    preserveScroll: true,
-  });
-};
 
 // const destroyModel = () => {
 //   Inertia.delete(route("calendar.destroy", calendar.id), {

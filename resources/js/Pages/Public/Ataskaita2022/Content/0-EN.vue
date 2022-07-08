@@ -15,7 +15,9 @@
               permalink: 'sveikinimai',
             })
           "
-          ><NButton strong round secondary>{{ __("Sveikinimai") }}</NButton></Link
+          ><NButton strong round secondary>{{
+            $t("Sveikinimai")
+          }}</NButton></Link
         >
 
         <Link
@@ -26,7 +28,7 @@
             })
           "
         >
-          <NButton strong round secondary>{{ __("Apie VU SA") }}</NButton></Link
+          <NButton strong round secondary>{{ $t("Apie VU SA") }}</NButton></Link
         >
 
         <Link
@@ -36,7 +38,9 @@
               permalink: 'mvp',
             })
           "
-          ><NButton strong round secondary>{{ __("Metų veiklos planas") }}</NButton></Link
+          ><NButton strong round secondary>{{
+            $t("Metų veiklos planas")
+          }}</NButton></Link
         >
         <Link
           :href="
@@ -45,7 +49,9 @@
               permalink: 'studijos',
             })
           "
-          ><NButton strong round secondary>{{ __("Strateginės kryptys") }}</NButton></Link
+          ><NButton strong round secondary>{{
+            $t("Strateginės kryptys")
+          }}</NButton></Link
         >
 
         <Link
@@ -55,7 +61,9 @@
               permalink: 'sritys',
             })
           "
-          ><NButton strong round secondary>{{ __("Bendruomenė") }}</NButton></Link
+          ><NButton strong round secondary>{{
+            $t("Bendruomenė")
+          }}</NButton></Link
         >
       </div>
     </div>
@@ -66,53 +74,61 @@
         src="/images/ataskaita2022/sveikinimai/neda.jpg"
       />
       <div class="bg-white p-6 text-sm prose-sm">
-        <p>Dear students, members of the Vilnius University community, and dear VU SR,</p>
-
         <p>
-          This year has been truly extraordinary - you want to be happy and thank you, and
-          at the same time, it's hard to see how much is going on around you!
+          Dear students, members of the Vilnius University community, and dear
+          VU SR,
         </p>
 
         <p>
-          This year we have managed to achieve significant results both in representing
-          students and strengthening the Organization: the consultation process of VU SR
-          students has been renewed, the development of a culture of self-reflection has
-          started, the Organization's strategic action plan has been developed,
-          requirements for higher education have been harmonised, the financing mechanism
-          of higher education institutions has been supplemented with an incentive for the
-          quality of studies, the state budget provides for a larger share of funds to
-          finance research activities, a preliminary draft of the social dimension plan
-          has been prepared and the legal status of international students.
+          This year has been truly extraordinary - you want to be happy and
+          thank you, and at the same time, it's hard to see how much is going on
+          around you!
         </p>
 
         <p>
-          I am proud of the Organization that all this work has been achieved in a
-          still-pending pandemic situation. I am even more proud that we have been able to
-          respond quickly and meaningfully to Russia's war in Ukraine by expanding the
-          mentoring program for students from Ukraine, initiating more financial support,
-          and providing free accommodation at the University.
+          This year we have managed to achieve significant results both in
+          representing students and strengthening the Organization: the
+          consultation process of VU SR students has been renewed, the
+          development of a culture of self-reflection has started, the
+          Organization's strategic action plan has been developed, requirements
+          for higher education have been harmonised, the financing mechanism of
+          higher education institutions has been supplemented with an incentive
+          for the quality of studies, the state budget provides for a larger
+          share of funds to finance research activities, a preliminary draft of
+          the social dimension plan has been prepared and the legal status of
+          international students.
         </p>
 
         <p>
-          This year we completed the three-year project “Improving Public Governance in
-          Education with the Involvement of Non-Governmental Organizations”, thanks to
-          which VU SR has already expanded the wide range of topics and issues related to
-          students - we can rely on specific and research-based data. (which are often
-          difficult or non-existent in external sources) and have been and will be the
-          subject of significant proposals and changes for students at both the University
-          and national levels.
+          I am proud of the Organization that all this work has been achieved in
+          a still-pending pandemic situation. I am even more proud that we have
+          been able to respond quickly and meaningfully to Russia's war in
+          Ukraine by expanding the mentoring program for students from Ukraine,
+          initiating more financial support, and providing free accommodation at
+          the University.
         </p>
 
         <p>
-          We would not have done all this and many things not yet listed without solid
-          partnerships and united work together! So I would like to say a big THANK YOU to
-          everyone who contributed to making it better for the students and the
-          Organization.
+          This year we completed the three-year project “Improving Public
+          Governance in Education with the Involvement of Non-Governmental
+          Organizations”, thanks to which VU SR has already expanded the wide
+          range of topics and issues related to students - we can rely on
+          specific and research-based data. (which are often difficult or
+          non-existent in external sources) and have been and will be the
+          subject of significant proposals and changes for students at both the
+          University and national levels.
         </p>
 
         <p>
-          I invite you to get acquainted with the works and changes that we have created
-          and for which we have laid the foundations!
+          We would not have done all this and many things not yet listed without
+          solid partnerships and united work together! So I would like to say a
+          big THANK YOU to everyone who contributed to making it better for the
+          students and the Organization.
+        </p>
+
+        <p>
+          I invite you to get acquainted with the works and changes that we have
+          created and for which we have laid the foundations!
         </p>
 
         <p>Unanimously for the Future of Students!</p>

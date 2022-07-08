@@ -8,13 +8,16 @@
         </ul>
         <div class="mb-4">
           <label class="font-bold">Pavadinimas</label>
-          <NInput v-model:value="page.title" placeholder="Įrašyti pavadinimą..." />
+          <NInput
+            v-model:value="page.title"
+            placeholder="Įrašyti pavadinimą..."
+          />
         </div>
         <div class="mb-4">
           <label class="font-bold">Nuoroda</label>
           <NInput
-            disabled
             v-model:value="page.permalink"
+            disabled
             placeholder="Įrašyti pavadinimą..."
           />
         </div>
@@ -30,8 +33,8 @@
         <div class="mb-4">
           <label class="font-bold">Kitos kalbos puslapis</label>
           <NSelect
-            :disabled="!page.lang"
             v-model:value="page.other_lang_page"
+            :disabled="!page.lang"
             filterable
             placeholder="Ieškoti puslapio..."
             :options="otherLangPageOptions"
@@ -44,19 +47,17 @@
       <div class="main-card">
         <h2 class="font-bold text-xl mb-2 inline-block">Turinys</h2>
         <div class="py-4">
-          <TipTap v-model="page.text" :searchFiles="$page.props.search.other" />
+          <TipTap
+            v-model="page.text"
+            :search-files="$page.props.search.other"
+          />
         </div>
         <div
           class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center"
         >
-          <n-popconfirm @positive-click="updateModel()">
-            <template #trigger>
-              <NSpin :show="showSpin" size="small">
-                <n-button>Atnaujinti</n-button>
-              </NSpin>
-            </template>
-            Ar tikrai atnaujinti?
-          </n-popconfirm>
+          <NMessageProvider
+            ><UpsertModelButton :model="page" model-route="pages.store"
+          /></NMessageProvider>
         </div>
       </div>
     </form>
@@ -64,21 +65,17 @@
 </template>
 
 <script setup>
-import AdminLayout from "@/Layouts/AdminLayout.vue";
-import AsideHeader from "../AsideHeader.vue";
-import TipTap from "@/Components/TipTap.vue";
-import { ref, reactive, computed } from "vue";
-import { NInput, NSelect, useMessage, NSpin, NPopconfirm, NButton } from "naive-ui";
-import { TrashIcon } from "@heroicons/vue/outline";
 import { Inertia } from "@inertiajs/inertia";
+import { NInput, NMessageProvider, NSelect, useMessage } from "naive-ui";
+import { computed, reactive, ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
+import AdminLayout from "@/Layouts/AdminLayout.vue";
+import TipTap from "@/Components/TipTap.vue";
 // import { map } from "lodash";
 
 const props = defineProps({
   errors: Object,
 });
-
-const showSpin = ref(false);
 
 const page = reactive({});
 const otherLangPageOptions = ref([]);
@@ -95,6 +92,8 @@ page.permalink = computed(() => {
       .replace(/-+$/, "")
       .substring(0, 30);
     // .concat("-", Math.random().toString(36).substring(2, 5));
+  } else {
+    return "";
   }
 });
 
@@ -115,12 +114,14 @@ const getOtherLangPages = _.debounce((input) => {
         preserveState: true,
         preserveScroll: true,
         onSuccess: () => {
-          otherLangPageOptions.value = usePage().props.value.search.pages.map((page) => {
-            return {
-              value: page.id,
-              label: `${page.title} (${page.padalinys.shortname})`,
-            };
-          });
+          otherLangPageOptions.value = usePage().props.value.search.pages.map(
+            (page) => {
+              return {
+                value: page.id,
+                label: `${page.title} (${page.padalinys.shortname})`,
+              };
+            }
+          );
         },
       }
     );
@@ -152,18 +153,4 @@ const categories = [
     label: "Kita informacija",
   },
 ];
-
-const updateModel = () => {
-  showSpin.value = !showSpin.value;
-  Inertia.post(route("pages.store"), page, {
-    onSuccess: () => {
-      showSpin.value = !showSpin.value;
-      message.success("Puslapis sėkmingai pridėtas!");
-    },
-    onError: () => {
-      showSpin.value = !showSpin.value;
-    },
-    preserveScroll: true,
-  });
-};
 </script>

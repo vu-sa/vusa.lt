@@ -13,13 +13,16 @@
           ]
     "
   >
-    <slot name="icon"></slot>
+    <div class="admin-navigation-icon">
+      <NIcon size="24"><slot name="icon"></slot></NIcon>
+    </div>
     <div class="w-full text-xs lg:text-base"><slot></slot></div>
   </Link>
 </template>
 
 <script setup>
 import { Link, usePage } from "@inertiajs/inertia-vue3";
+import { NIcon } from "naive-ui";
 import { computed, ref } from "vue";
 
 const props = defineProps(["menuContent"]);

@@ -10,7 +10,7 @@
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Ignas Mugenis_Pirmininkas_CHGF-2.jpg"
           />
-          <p class="mt-1 text-sm">{{ __("VU SA CHGF") }}</p>
+          <p class="mt-1 text-sm">{{ $t("VU SA CHGF") }}</p>
           <strong>Ignas Mugenis</strong>
         </div>
         <div>
@@ -18,7 +18,7 @@
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Justinas Sacevičius_Pirmininkas_EVAF.jpg"
           />
-          <p class="mt-1 text-sm">{{ __("VU SA EVAF") }}</p>
+          <p class="mt-1 text-sm">{{ $t("VU SA EVAF") }}</p>
           <strong>Justinas Sacevičius</strong>
         </div>
         <div>
@@ -194,38 +194,44 @@
           <template #header
             ><h2 id="apie-vu-sa" class="rounded-lg">About SR</h2></template
           >
-          <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+          <div
+            class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4"
+          >
             <p>
-              Vilnius University Students’ Representation (VU SR) is the oldest and the
-              biggest expert education organization in Lithuania. It represents the
-              interests of students at Vilnius University and beyond, fostering university
-              culture and creating the most favorable conditions for students’
-              self-expression.
+              Vilnius University Students’ Representation (VU SR) is the oldest
+              and the biggest expert education organization in Lithuania. It
+              represents the interests of students at Vilnius University and
+              beyond, fostering university culture and creating the most
+              favorable conditions for students’ self-expression.
             </p>
             <p>
-              In total, VU SR has 15 units in each core academic unit (faculty, institute,
-              or center) that represent students locally. VU SR also has 15 programs,
-              clubs, projects and public bodies (hereinafter - PCP) as well as one Central
-              Office, which coordinates all the units, PCP and Vilnius University Alumni
-              Society. For this day VU SR unites around 1 000 members.
+              In total, VU SR has 15 units in each core academic unit (faculty,
+              institute, or center) that represent students locally. VU SR also
+              has 15 programs, clubs, projects and public bodies (hereinafter -
+              PCP) as well as one Central Office, which coordinates all the
+              units, PCP and Vilnius University Alumni Society. For this day VU
+              SR unites around 1 000 members.
             </p>
             <p>VU SR:</p>
             <ul>
               <li>
-                represents students – defends students’ rights in University’s governing
-                bodies and on the national level;
+                represents students – defends students’ rights in University’s
+                governing bodies and on the national level;
               </li>
               <li>
-                contributes to the improvement of the study process in the University, is
-                a part of all the most important governing bodies of Vilnius University;
+                contributes to the improvement of the study process in the
+                University, is a part of all the most important governing bodies
+                of Vilnius University;
               </li>
               <li>
-                takes care of social welfare – provides a comfortable and student–friendly
-                environment, takes care of student integration, participates in the
-                distribution of scholarships; organizes meaningful leisure time;
+                takes care of social welfare – provides a comfortable and
+                student–friendly environment, takes care of student integration,
+                participates in the distribution of scholarships; organizes
+                meaningful leisure time;
               </li>
               <li>
-                spreads the information so that all relevant news reaches the students.
+                spreads the information so that all relevant news reaches the
+                students.
               </li>
             </ul>
           </div>
@@ -236,15 +242,19 @@
               The Strategy of Vilnius University Students’ Representation
             </h2></template
           >
-          <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+          <div
+            class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4"
+          >
             <p>
-              <strong>VU SR Vision</strong> – an open environment for independent student
-              development in the unified community of Vilnius University.
+              <strong>VU SR Vision</strong> – an open environment for
+              independent student development in the unified community of
+              Vilnius University.
             </p>
             <p>
-              <strong>VU SR Mission</strong> – to create the most favourable conditions
-              for student self-expression by effectively representing the students of
-              Vilnius University and fostering the university culture.
+              <strong>VU SR Mission</strong> – to create the most favourable
+              conditions for student self-expression by effectively representing
+              the students of Vilnius University and fostering the university
+              culture.
             </p>
             <p><strong>Core values</strong>:</p>
 
@@ -274,13 +284,16 @@
           <template #header
             ><h2 id="valdymo-schema">VU SR management scheme</h2></template
           >
-          <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+          <div
+            class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4"
+          >
             <p>
-              The governance structure of the Vilnius University Students' Representation
-              consists of: Conference (the highest self-government institution of VU SR),
-              the President, parliament, the Board and the Revision Commission. These
-              management bodies, within their remit, shall take decisions in the areas
-              assigned to them or ensure the implementation of the resolutions adopted in
+              The governance structure of the Vilnius University Students'
+              Representation consists of: Conference (the highest
+              self-government institution of VU SR), the President, parliament,
+              the Board and the Revision Commission. These management bodies,
+              within their remit, shall take decisions in the areas assigned to
+              them or ensure the implementation of the resolutions adopted in
               other management bodies of VU SR.
             </p>
             <p>
@@ -298,7 +311,9 @@
           </div>
         </NCollapseItem>
         <NCollapseItem>
-          <template #header><h2 id="parlamentas">VU SR Parliament</h2></template>
+          <template #header
+            ><h2 id="parlamentas">VU SR Parliament</h2></template
+          >
           <div class="relative">
             <img
               class="max-w-[80ch] rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 mx-auto"
@@ -310,18 +325,22 @@
               Parlamentas
             </p>
           </div>
-          <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+          <div
+            class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4"
+          >
             <p>
-              VU SR Parliament is the governing body of VU SR, which discusses the most
-              important social and academic issues related to students or other strategic
-              issues of VU SR. The Parliament shall consist of the president of the
-              organization, the vice-president, the chairmen of the VU SR U (unit)
-              performing the function of representation and two representatives from each
-              unit. The work of Parliament shall be organized by the President.
+              VU SR Parliament is the governing body of VU SR, which discusses
+              the most important social and academic issues related to students
+              or other strategic issues of VU SR. The Parliament shall consist
+              of the president of the organization, the vice-president, the
+              chairmen of the VU SR U (unit) performing the function of
+              representation and two representatives from each unit. The work of
+              Parliament shall be organized by the President.
             </p>
             <p>
-              The Parliament of VU SR (lt. VU SA) was chaired by Aistė Rinkevičiūtė (until
-              February 2022) and Ugnius Sejonas (since February 2022).
+              The Parliament of VU SR (lt. VU SA) was chaired by Aistė
+              Rinkevičiūtė (until February 2022) and Ugnius Sejonas (since
+              February 2022).
             </p>
 
             <p>In 2021-2022, the VU SR Parliament consisted of:</p>
@@ -444,8 +463,8 @@
             </NCollapse>
 
             <p>
-              During the reference period, 14 meetings of the VU SR Parliament took place
-              (of which 5 electronic, 8 remote and 1 face-to-face).
+              During the reference period, 14 meetings of the VU SR Parliament
+              took place (of which 5 electronic, 8 remote and 1 face-to-face).
             </p>
             <NDivider></NDivider>
             <section id="rastai">
@@ -455,135 +474,149 @@
                 <NCollapseItem>
                   <template #header>
                     <h4 class="mb-0">
-                      A temporary working group was set up and a resolution on the
-                      integration of foreign students at Vilnius University was accepted
+                      A temporary working group was set up and a resolution on
+                      the integration of foreign students at Vilnius University
+                      was accepted
                     </h4>
                   </template>
 
                   <p>
-                    The Parliament of VU SR, confirming the main preconditions for the
-                    integration process and submitting proposals for the improvement of
-                    this process, adopted a resolution on the integration of foreign
-                    students at the University. Realizing the importance of integration,
-                    which is evident when foreign students try to integrate into the
-                    social and academic life of the University, the Parliament of VU SR
-                    tries in this letter to draw attention to the dissemination of
-                    information in the University's communication channels and physical
-                    spaces – it encourages to spread the message not only in Lithuanian,
-                    but also in English, and thus to provide all the necessary information
-                    to foreign students(s). The letter also emphasizes the topic of
-                    foreign language competences of the University's staff, accountability
-                    and inclusiveness of university formations, creation of additional
-                    activities in a foreign language for all members of the community
-                    (proposals on how to implement all this were also submitted).
+                    The Parliament of VU SR, confirming the main preconditions
+                    for the integration process and submitting proposals for the
+                    improvement of this process, adopted a resolution on the
+                    integration of foreign students at the University. Realizing
+                    the importance of integration, which is evident when foreign
+                    students try to integrate into the social and academic life
+                    of the University, the Parliament of VU SR tries in this
+                    letter to draw attention to the dissemination of information
+                    in the University's communication channels and physical
+                    spaces – it encourages to spread the message not only in
+                    Lithuanian, but also in English, and thus to provide all the
+                    necessary information to foreign students(s). The letter
+                    also emphasizes the topic of foreign language competences of
+                    the University's staff, accountability and inclusiveness of
+                    university formations, creation of additional activities in
+                    a foreign language for all members of the community
+                    (proposals on how to implement all this were also
+                    submitted).
                   </p>
                 </NCollapseItem>
 
                 <NCollapseItem>
                   <template #header>
                     <h4 class="mb-0">
-                      A temporary working group has been set up and a position on the
-                      prevention of violations of academic ethics has been accepted
-                    </h4>
-                  </template>
-
-                  <p>
-                    Based on the position on the prevention of violations of academic
-                    ethics, the VU SR Parliament declared its intention to contribute to
-                    the elimination of violations of the principal provisions of the Code
-                    of Academic Ethics. The main problems raised are: the difficulty of
-                    access to information and the lack of a position as an academic ethics
-                    consultant(s) for students – the letter contains proposals on how to
-                    solve these problems, including proposals to conduct research in the
-                    field of academic ethics or to establish a post of a person consulting
-                    students.
-                  </p>
-                </NCollapseItem>
-
-                <NCollapseItem>
-                  <template #header>
-                    <h4 class="mb-0">
-                      A temporary working group has been set up and a position on the
-                      legal situation of foreign students(s) has been approved
-                    </h4>
-                  </template>
-
-                  <p>
-                    In order to draw the attention of the State of Lithuania to the legal
-                    situation of foreign students in Lithuania and their growing number,
-                    the Parliament of VU SR emphasizes that the legal status of foreign
-                    and Lithuanian students must be equivalent, thus creating suitable
-                    conditions for foreign students(s) to become full residents of the
-                    Republic of Lithuania. The main proposals to solve this problem are
-                    focused on equally accessible social services, equal opportunities for
-                    academic development and relief of financial burdens.
-                  </p>
-                </NCollapseItem>
-
-                <NCollapseItem>
-                  <template #header>
-                    <h4 class="mb-0">
-                      A temporary working group has been set up and a resolution on the
-                      scientific activities of students(s) in Lithuanian universities has
+                      A temporary working group has been set up and a position
+                      on the prevention of violations of academic ethics has
                       been accepted
                     </h4>
                   </template>
 
                   <p>
-                    In order to draw attention to the importance of students' scientific
-                    activities and understanding their needs and untapped opportunities in
-                    the course of scientific activities, the Parliament of VU SR included
-                    proposals in the letter aimed at improving the possibilities and
-                    quality of scientific activities of students(s). The main proposals
-                    mentioned in the resolution are focused on the definition of the
-                    concept of "student(s) scientific activity", increasing the funding of
-                    scientific activities of students(s), creating appropriate conditions
-                    for the conduct of scientific activities and increasing the
-                    accountability of universities by creating suitable conditions for
-                    students(s) to carry out scientific activities.
+                    Based on the position on the prevention of violations of
+                    academic ethics, the VU SR Parliament declared its intention
+                    to contribute to the elimination of violations of the
+                    principal provisions of the Code of Academic Ethics. The
+                    main problems raised are: the difficulty of access to
+                    information and the lack of a position as an academic ethics
+                    consultant(s) for students – the letter contains proposals
+                    on how to solve these problems, including proposals to
+                    conduct research in the field of academic ethics or to
+                    establish a post of a person consulting students.
                   </p>
                 </NCollapseItem>
 
                 <NCollapseItem>
                   <template #header>
                     <h4 class="mb-0">
-                      A temporary working group has been set up and a position on
-                      improving the organization of student(s) practices has been accepted
+                      A temporary working group has been set up and a position
+                      on the legal situation of foreign students(s) has been
+                      approved
                     </h4>
                   </template>
 
                   <p>
-                    In order to draw attention to the problems arising in the process of
-                    organizing practices, by this letter the Parliament of VU SR draws
-                    attention to the shortcomings of both Vilnius University and the
-                    mechanisms regulating and regulating the quality of practice at the
-                    national level. The main proposals are focused on compensating for the
-                    costs incurred during unpaid internships or in the creation of paid
-                    placements, as well as the creation of a culture of feedback and a
-                    system during practice. In addition, the focus is on ensuring equal
-                    practice opportunities for Lithuanian and foreign students at the
-                    place of practice.
+                    In order to draw the attention of the State of Lithuania to
+                    the legal situation of foreign students in Lithuania and
+                    their growing number, the Parliament of VU SR emphasizes
+                    that the legal status of foreign and Lithuanian students
+                    must be equivalent, thus creating suitable conditions for
+                    foreign students(s) to become full residents of the Republic
+                    of Lithuania. The main proposals to solve this problem are
+                    focused on equally accessible social services, equal
+                    opportunities for academic development and relief of
+                    financial burdens.
                   </p>
                 </NCollapseItem>
 
                 <NCollapseItem>
                   <template #header>
                     <h4 class="mb-0">
-                      A temporary working group has been set up and a position on the low
-                      level of financial literacy of Vilnius University students(s) has
-                      been approved
+                      A temporary working group has been set up and a resolution
+                      on the scientific activities of students(s) in Lithuanian
+                      universities has been accepted
                     </h4>
                   </template>
 
                   <p>
-                    In order to draw attention to the low level of financial literacy of
-                    students at Vilnius University, in this letter the VU SR Parliament
-                    submits proposals for solutions to the problem, emphasizing the
-                    importance of financial literacy through the prism of study
-                    accommodation and the financial well-being of the student(s). The main
-                    proposals are focused on the preparation of training, public education
-                    and general university studies subjects available to the entire
-                    Vilnius University student(s) community, which would expand the
+                    In order to draw attention to the importance of students'
+                    scientific activities and understanding their needs and
+                    untapped opportunities in the course of scientific
+                    activities, the Parliament of VU SR included proposals in
+                    the letter aimed at improving the possibilities and quality
+                    of scientific activities of students(s). The main proposals
+                    mentioned in the resolution are focused on the definition of
+                    the concept of "student(s) scientific activity", increasing
+                    the funding of scientific activities of students(s),
+                    creating appropriate conditions for the conduct of
+                    scientific activities and increasing the accountability of
+                    universities by creating suitable conditions for students(s)
+                    to carry out scientific activities.
+                  </p>
+                </NCollapseItem>
+
+                <NCollapseItem>
+                  <template #header>
+                    <h4 class="mb-0">
+                      A temporary working group has been set up and a position
+                      on improving the organization of student(s) practices has
+                      been accepted
+                    </h4>
+                  </template>
+
+                  <p>
+                    In order to draw attention to the problems arising in the
+                    process of organizing practices, by this letter the
+                    Parliament of VU SR draws attention to the shortcomings of
+                    both Vilnius University and the mechanisms regulating and
+                    regulating the quality of practice at the national level.
+                    The main proposals are focused on compensating for the costs
+                    incurred during unpaid internships or in the creation of
+                    paid placements, as well as the creation of a culture of
+                    feedback and a system during practice. In addition, the
+                    focus is on ensuring equal practice opportunities for
+                    Lithuanian and foreign students at the place of practice.
+                  </p>
+                </NCollapseItem>
+
+                <NCollapseItem>
+                  <template #header>
+                    <h4 class="mb-0">
+                      A temporary working group has been set up and a position
+                      on the low level of financial literacy of Vilnius
+                      University students(s) has been approved
+                    </h4>
+                  </template>
+
+                  <p>
+                    In order to draw attention to the low level of financial
+                    literacy of students at Vilnius University, in this letter
+                    the VU SR Parliament submits proposals for solutions to the
+                    problem, emphasizing the importance of financial literacy
+                    through the prism of study accommodation and the financial
+                    well-being of the student(s). The main proposals are focused
+                    on the preparation of training, public education and general
+                    university studies subjects available to the entire Vilnius
+                    University student(s) community, which would expand the
                     knowledge of financial literacy of students(s).
                   </p>
                 </NCollapseItem>
@@ -591,18 +624,19 @@
                 <NCollapseItem>
                   <template #header>
                     <h4 class="mb-0">
-                      During the meeting, a resolution on the position of the organization
-                      was approved in the light of the processes taking place in Ukraine
+                      During the meeting, a resolution on the position of the
+                      organization was approved in the light of the processes
+                      taking place in Ukraine
                     </h4>
                   </template>
 
                   <p>
                     By this resolution, the Parliament of VU SR, expressing the
-                    organization's support for the Republic of Ukraine in the face of the
-                    war and condemning the military actions of the Russian Federation and
-                    the outbreak of violence on the territory of the Republic of Ukraine,
-                    formed the position of the organization in relation to the war in
-                    Ukraine.
+                    organization's support for the Republic of Ukraine in the
+                    face of the war and condemning the military actions of the
+                    Russian Federation and the outbreak of violence on the
+                    territory of the Republic of Ukraine, formed the position of
+                    the organization in relation to the war in Ukraine.
                   </p>
                 </NCollapseItem>
               </NCollapse>
@@ -613,71 +647,81 @@
 
             <ul>
               <li>
-                Elected representatives of students in the VU Senate (Ugnė Bičkauskaitė,
-                Kornelija Buivydaitė, Julija Jarutytė, Andželika Jankauskytė, Justas
-                Kvedaravičius, Vanesa Ražinskytė, Arnoldas Solovjovas, Daniel Šematovič)
-                and VU Council external student representative Justinas Kandrotas;
+                Elected representatives of students in the VU Senate (Ugnė
+                Bičkauskaitė, Kornelija Buivydaitė, Julija Jarutytė, Andželika
+                Jankauskytė, Justas Kvedaravičius, Vanesa Ražinskytė, Arnoldas
+                Solovjovas, Daniel Šematovič) and VU Council external student
+                representative Justinas Kandrotas;
               </li>
               <li>
-                The regulations of VU SR MF have been approved by establishing the Council
-                of International Students of the Vilnius University Students’
-                Representation at the Faculty of Medicine and approving the rules of
-                procedure of the latter;
+                The regulations of VU SR MF have been approved by establishing
+                the Council of International Students of the Vilnius University
+                Students’ Representation at the Faculty of Medicine and
+                approving the rules of procedure of the latter;
               </li>
               <li>
-                VU SR Strategic Year's Operational Guidelines (September 2021) have been
-                approved and the annual activity plan has been updated after the
-                restructurings (February 2022);
+                VU SR Strategic Year's Operational Guidelines (September 2021)
+                have been approved and the annual activity plan has been updated
+                after the restructurings (February 2022);
               </li>
               <li>
                 The approved procedure regarding the election of an external
-                representative of students in the Council of Vilnius University (VU SR did
-                not have such a representative(s) before);
-              </li>
-              <li>The process of updating the Rules of Procedure has been initiated;</li>
-              <li>
-                The process of establishing permanent working groups (committees) of the
-                VU SA Parliament was initiated and work on legal regulation was started;
+                representative of students in the Council of Vilnius University
+                (VU SR did not have such a representative(s) before);
               </li>
               <li>
-                In March, during the meeting, the study of the 2021 process of integration
-                of freshmen at the University was presented;
+                The process of updating the Rules of Procedure has been
+                initiated;
+              </li>
+              <li>
+                The process of establishing permanent working groups
+                (committees) of the VU SA Parliament was initiated and work on
+                legal regulation was started;
+              </li>
+              <li>
+                In March, during the meeting, the study of the 2021 process of
+                integration of freshmen at the University was presented;
               </li>
               <li>
                 During each meeting, the practice of information relevant to the
-                Parliament of VU SR, which was presented by the President of VU SR, was
-                applied;
+                Parliament of VU SR, which was presented by the President of VU
+                SR, was applied;
               </li>
               <li>
-                A working group on communication of the Parliament of VU SR was set up,
-                which during the meetings discussed and generated proposals for the
-                resumption of Parliament's communication on social networks;
+                A working group on communication of the Parliament of VU SR was
+                set up, which during the meetings discussed and generated
+                proposals for the resumption of Parliament's communication on
+                social networks;
               </li>
               <li>
-                A guide for the MP of VU SR has been compiled, which contains all the most
-                important information about the Parliament and its functioning, for new
-                people who are preparing to participate in the Parliament;
-              </li>
-              <li>All remote meetings were broadcasted on VU SR's Facebook page;</li>
-              <li>
-                After each remote and contact session of the VU SR Parliament, articles
-                were published on the VU SR page informing about what was discussed and
-                approved during the meetings;
+                A guide for the MP of VU SR has been compiled, which contains
+                all the most important information about the Parliament and its
+                functioning, for new people who are preparing to participate in
+                the Parliament;
               </li>
               <li>
-                In the summer, training of VU SR Parliament was organized to strengthen
-                the skills of parliamentarians in the fields of advocacy, writing,
-                perception of Parliament and the organization, as well as the development
-                of general competences;
+                All remote meetings were broadcasted on VU SR's Facebook page;
               </li>
               <li>
-                Individual interviews were conducted twice between the chairperson of the
-                Parliament of VU SR and the parliamentarians of VU SR units, aimed at
-                collecting problems and opinions of the academic core units;
+                After each remote and contact session of the VU SR Parliament,
+                articles were published on the VU SR page informing about what
+                was discussed and approved during the meetings;
               </li>
               <li>
-                The estimate of financial expenditure and revenue for 2022 has been
-                approved;
+                In the summer, training of VU SR Parliament was organized to
+                strengthen the skills of parliamentarians in the fields of
+                advocacy, writing, perception of Parliament and the
+                organization, as well as the development of general competences;
+              </li>
+              <li>
+                Individual interviews were conducted twice between the
+                chairperson of the Parliament of VU SR and the parliamentarians
+                of VU SR units, aimed at collecting problems and opinions of the
+                academic core units;
+              </li>
+              <li>
+                The estimate of financial expenditure and revenue for 2022 has
+                been approved;
               </li>
               <li>
                 During the meetings, studies took place on:
@@ -686,17 +730,17 @@
                   <li>scientific activities of students(s);</li>
                   <li>integration of foreign students;</li>
                   <li>
-                    execution and quality assurance of student(s) practices at the
-                    University and beyond.
+                    execution and quality assurance of student(s) practices at
+                    the University and beyond.
                   </li>
                 </ul>
               </li>
               <li>
-                The sittings of the VU SR Parliament were attended and talked about by
-                invited guests – Andrius Uždanavičius, head of the Department of Quality
-                and Development of Studies at Vilnius University, and Vigita Vėbraitė,
-                Chairwoman of the Central Commission for Academic Ethics at Vilnius
-                University.
+                The sittings of the VU SR Parliament were attended and talked
+                about by invited guests – Andrius Uždanavičius, head of the
+                Department of Quality and Development of Studies at Vilnius
+                University, and Vigita Vėbraitė, Chairwoman of the Central
+                Commission for Academic Ethics at Vilnius University.
               </li>
             </ul>
           </div>
@@ -721,7 +765,9 @@
               VU SA Board
             </p>
           </div>
-          <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+          <div
+            class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4"
+          >
             <p>In 2021-2022, the VU SR (lt. VU SA) Board consisted of:</p>
             <ul>
               <li><strong>VU SR President:</strong> Neda Žutautaitė</li>
@@ -740,81 +786,97 @@
               <li><strong>VU SA TF:</strong> Airina Mikulėnaitė</li>
               <li><strong>VU SA TSPMI:</strong> Ugnė Bičkauskaitė</li>
               <li>
-                <strong>VU SA VM:</strong> Justinas Brazaitis (iki 2021 m. gruodžio mėn.),
-                Edgaras Kodis (nuo 2021 m. gruodžio mėn.)
+                <strong>VU SA VM:</strong> Justinas Brazaitis (iki 2021 m.
+                gruodžio mėn.), Edgaras Kodis (nuo 2021 m. gruodžio mėn.)
               </li>
             </ul>
 
             <p>
               The VU SR Board is the management body of VU SR, which deals with
-              cooperation and internal issues of the organization. During the reference
-              period, 9 meetings of the Council of VU SR took place. VU SR Board discussed
-              and adopted decisions on institutional strengthening, internal affairs and
-              the budget.
+              cooperation and internal issues of the organization. During the
+              reference period, 9 meetings of the Council of VU SR took place.
+              VU SR Board discussed and adopted decisions on institutional
+              strengthening, internal affairs and the budget.
             </p>
 
             <h3>Internal issues</h3>
 
             <p>
-              During the reporting period, the VU SR Board approved the composition of the
-              VU Institutional Strengthening Fund, the position of vice-president of VU
-              SR, and actively participated in the process of updating the Strategic
-              Action Plan of VU SR for 2022-2025.
+              During the reporting period, the VU SR Board approved the
+              composition of the VU Institutional Strengthening Fund, the
+              position of vice-president of VU SR, and actively participated in
+              the process of updating the Strategic Action Plan of VU SR for
+              2022-2025.
             </p>
             <strong>The VU SR Board accepted decisions:</strong>
             <ul>
               <li>
-                To approve the updated VU SR training organization application template;
+                To approve the updated VU SR training organization application
+                template;
               </li>
               <li>
-                In each VU SR U, have a person responsible for monitoring exams, thus
-                ensuring high-quality activities of the VU SR program "Sąžiningai";
+                In each VU SR U, have a person responsible for monitoring exams,
+                thus ensuring high-quality activities of the VU SR program
+                "Sąžiningai";
               </li>
               <li>
-                Setting up a working group to update the "Chairperson's Guide" in order to
-                facilitate the transfer of experience to new heads of departments;
+                Setting up a working group to update the "Chairperson's Guide"
+                in order to facilitate the transfer of experience to new heads
+                of departments;
               </li>
               <li>
-                Implement the renewal of the VU SR DPG (Data Protection Group) process;
-              </li>
-              <li>To organize the 2022 reporting-election conferences by contact;</li>
-              <li>
-                To direct the centralized marketing process of VU SR, in which VU SA U
-                marketing coordinators (if any) and volunteers collected by VU SR
-                marketing coordinator operate from 1st of July 2022;
+                Implement the renewal of the VU SR DPG (Data Protection Group)
+                process;
               </li>
               <li>
-                To validate the concept of membership of the organization, which is based
-                on more effective employee engagement, the equal involvement of curators,
-                student representatives, programs, clubs, projects and long-term members
-                in the ongoing processes on the basis of a culture of self-reflection;
+                To organize the 2022 reporting-election conferences by contact;
               </li>
               <li>
-                To update the membership system, expand the member's test with knowledge
-                about the VU structures, the services provided by the University, the VU
-                SA strategy, the organisation's structure and image. It was decided to
-                develop an e-learning course alongside the test, which will help to ensure
-                deeper development of competences in each topic.
+                To direct the centralized marketing process of VU SR, in which
+                VU SA U marketing coordinators (if any) and volunteers collected
+                by VU SR marketing coordinator operate from 1st of July 2022;
+              </li>
+              <li>
+                To validate the concept of membership of the organization, which
+                is based on more effective employee engagement, the equal
+                involvement of curators, student representatives, programs,
+                clubs, projects and long-term members in the ongoing processes
+                on the basis of a culture of self-reflection;
+              </li>
+              <li>
+                To update the membership system, expand the member's test with
+                knowledge about the VU structures, the services provided by the
+                University, the VU SA strategy, the organisation's structure and
+                image. It was decided to develop an e-learning course alongside
+                the test, which will help to ensure deeper development of
+                competences in each topic.
               </li>
             </ul>
           </div>
         </NCollapseItem>
         <NCollapseItem>
-          <template #header><h2 id="taryba">VU SA Revision Commission</h2></template>
-          <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+          <template #header
+            ><h2 id="taryba">VU SA Revision Commission</h2></template
+          >
+          <div
+            class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4"
+          >
             <p>
-              The Revision Commission is a controlling institution performing financial
-              and operational inspection of VU SR self-government institutions, VU SR
-              subdivisions and other structural units of VU SR, as well as legal entities
-              established by VU SR. The commission consists of five members elected at the
-              VU SR annual convention.
+              The Revision Commission is a controlling institution performing
+              financial and operational inspection of VU SR self-government
+              institutions, VU SR subdivisions and other structural units of VU
+              SR, as well as legal entities established by VU SR. The commission
+              consists of five members elected at the VU SR annual convention.
             </p>
 
             <strong
-              >During the reference period, the Revision Commission consisted of:</strong
+              >During the reference period, the Revision Commission consisted
+              of:</strong
             >
             <ul>
-              <li>Evaldas Matijošaitis (<em>Chairman of the Commission</em>)</li>
+              <li>
+                Evaldas Matijošaitis (<em>Chairman of the Commission</em>)
+              </li>
               <li>Tomas Bedulskij</li>
               <li>Aušrinė Gedminaitė</li>
               <li>Kamilė Gineikaitė</li>
@@ -822,35 +884,39 @@
             </ul>
 
             <p>
-              2021-2022 The Revision Commission has updated the former methodology of
-              evaluation of the activities of VU SR according to the strategy of the
-              organization and the descriptions of the processes taking place in the
-              organization. Over the course of the year, The Commission carried out
-              interim and final evaluations of activities according to this methodology.
-              During the evaluation, the Revision Commission regularly kept in touch with
-              the units being reviewed, checked the compliance of VU SR, VU SR U, VU SA
-              PCP, VU SA DPG members, VU SA ISF and VU SR Parliament with quantitative and
-              qualitative evaluation criteria, assessed activities in conducting surveys
-              and meetings with the units being revised.
+              2021-2022 The Revision Commission has updated the former
+              methodology of evaluation of the activities of VU SR according to
+              the strategy of the organization and the descriptions of the
+              processes taking place in the organization. Over the course of the
+              year, The Commission carried out interim and final evaluations of
+              activities according to this methodology. During the evaluation,
+              the Revision Commission regularly kept in touch with the units
+              being reviewed, checked the compliance of VU SR, VU SR U, VU SA
+              PCP, VU SA DPG members, VU SA ISF and VU SR Parliament with
+              quantitative and qualitative evaluation criteria, assessed
+              activities in conducting surveys and meetings with the units being
+              revised.
             </p>
 
             <p>
-              During the reporting period, 2 open meetings of the Revision Commission and
-              25 closed working meetings took place. The Revision Commission participated
-              in VU SR Parliament and Council meetings, trainings carried out by the
-              organization, planning strategic goals and strategic plan development
-              sessions. The evaluation of the organization's activities was carried out by
-              collecting information in different ways: by participating in the joint
-              activities of the organization, organizing individual meetings with the
-              sitting members of VU SR and conducting written surveys. The Revision
-              Commission also advised the members of VU SR and provided answers to their
-              questions related to the activities and legal acts of VU SR.
+              During the reporting period, 2 open meetings of the Revision
+              Commission and 25 closed working meetings took place. The Revision
+              Commission participated in VU SR Parliament and Council meetings,
+              trainings carried out by the organization, planning strategic
+              goals and strategic plan development sessions. The evaluation of
+              the organization's activities was carried out by collecting
+              information in different ways: by participating in the joint
+              activities of the organization, organizing individual meetings
+              with the sitting members of VU SR and conducting written surveys.
+              The Revision Commission also advised the members of VU SR and
+              provided answers to their questions related to the activities and
+              legal acts of VU SR.
             </p>
 
             <p>
-              The Audit Commission shall submit the report on the evaluation of the
-              activities of the organization during the report-election conference of VU
-              SR (the evaluation report can be accessed
+              The Audit Commission shall submit the report on the evaluation of
+              the activities of the organization during the report-election
+              conference of VU SR (the evaluation report can be accessed
               vusa.lt/lt/veiklos-ir-tyrimu-ataskaitos).
             </p>
           </div>
@@ -870,18 +936,18 @@
 </template>
 
 <script setup>
-import VUSA from "../2-VU-SA.vue";
 import { Link } from "@inertiajs/inertia-vue3";
 import {
+  NAnchor,
+  NAnchorLink,
+  NButton,
   NCollapse,
   NCollapseItem,
   NDivider,
-  NAnchor,
-  NAnchorLink,
   NModal,
-  NButton,
 } from "naive-ui";
 import { ref } from "vue";
+import VUSA from "../2-VU-SA.vue";
 
 const showTaryba = ref(false);
 </script>

@@ -16,8 +16,8 @@
           :options="options_padaliniai"
           placement="top-start"
           size="small"
-          @select="handleSelectPadalinys"
           style="overflow: auto; max-height: 600px"
+          @select="handleSelectPadalinys"
         >
           <NButton
             :disabled="route().current('*page')"
@@ -25,7 +25,7 @@
             style="border-radius: 0.5rem"
           >
             <!-- <NGradientText type="warning"> -->
-            {{ __(padalinys) }}
+            {{ $t(padalinys) }}
             <!-- </NGradientText> -->
             <NIcon class="ml-1" size="18">
               <ChevronDown20Filled />
@@ -50,7 +50,7 @@
       <div>Saviraiška</div> -->
       <template v-for="item in navigation" :key="item.key">
         <div>
-          <NDropdown @select="handleSelectNavigation" :options="item.children">
+          <NDropdown :options="item.children" @select="handleSelectNavigation">
             <NButton
               text
               icon-placement="right"
@@ -78,12 +78,18 @@
           <template v-else>Kontaktai</template>
         </NButton>
       </Link> -->
-      <NButton text @click="windowOpen('https://www.facebook.com/VUstudentuatstovybe')">
+      <NButton
+        text
+        @click="windowOpen('https://www.facebook.com/VUstudentuatstovybe')"
+      >
         <NIcon size="18">
           <FacebookF />
         </NIcon>
       </NButton>
-      <NButton text @click="windowOpen('https://www.instagram.com/vustudentuatstovybe/')">
+      <NButton
+        text
+        @click="windowOpen('https://www.instagram.com/vustudentuatstovybe/')"
+      >
         <NIcon size="18">
           <Instagram />
         </NIcon>
@@ -96,30 +102,39 @@
       </NButton>
       <!-- </NBadge> -->
       <NDropdown
+        v-if="locale == 'lt'"
         placement="top-end"
         :options="options_language_en"
-        v-if="locale == 'lt'"
         @select="handleSelectLanguage"
       >
         <NButton text
-          ><img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" width="16"
+          ><img
+            src="https://hatscripts.github.io/circle-flags/flags/gb.svg"
+            width="16"
         /></NButton>
       </NDropdown>
       <NDropdown
+        v-if="locale == 'en'"
         placement="top-end"
         :options="options_language_lt"
-        v-if="locale == 'en'"
         @select="handleSelectLanguage"
       >
         <NButton text
-          ><img src="https://hatscripts.github.io/circle-flags/flags/lt.svg" width="16"
+          ><img
+            src="https://hatscripts.github.io/circle-flags/flags/lt.svg"
+            width="16"
         /></NButton>
       </NDropdown>
     </div>
-    <NDrawer v-model:show="activeDrawer" :width="325" placement="left" :trap-focus="true">
+    <NDrawer
+      v-model:show="activeDrawer"
+      :width="325"
+      placement="left"
+      :trap-focus="true"
+    >
       <NDrawerContent
         closable
-        :title="padalinys == 'Padaliniai' ? 'VU SA' : __(padalinys)"
+        :title="padalinys == 'Padaliniai' ? 'VU SA' : $t(padalinys)"
       >
         <template v-if="!route().current('*page')">
           <NCollapse>
@@ -183,9 +198,9 @@
           </NButton>
           <!-- </NBadge> -->
           <NDropdown
+            v-if="locale == 'lt'"
             placement="top-end"
             :options="options_language_en"
-            v-if="locale == 'lt'"
             @select="handleSelectLanguage"
           >
             <NButton text
@@ -195,9 +210,9 @@
             /></NButton>
           </NDropdown>
           <NDropdown
+            v-if="locale == 'en'"
             placement="top-end"
             :options="options_language_lt"
-            v-if="locale == 'en'"
             @select="handleSelectLanguage"
           >
             <NButton text
@@ -212,17 +227,17 @@
   </nav>
   <NModal v-model:show="showSearch">
     <div
-      class="w-3/4 md:w-1/2 md:h-1/2 overflow-auto p-4 bg-white/95 rounded-md border-2 border-gray-100 shadow-lg md:fixed md:inset-x-0 md:top-40"
+      class="w-3/4 md:w-1/2 md:h-1/2 overflow-auto p-4 bg-white/95 rounded-md border-2 border-gray-100 shadow-lg"
     >
       <!-- <h3 class="mb-2">Paieška</h3> -->
       <NInput
-        @input="handleSearchInput"
         :loading="searchInputLoading"
         round
         type="text"
         size="large"
-        :placeholder="__('Ieškoti...')"
+        :placeholder="$t('Ieškoti...')"
         class="mb-4"
+        @input="handleSearchInput"
       />
       <div v-if="$page.props.search.pages.length !== 0">
         <h3>Puslapiai</h3>
@@ -230,7 +245,9 @@
           v-for="page in $page.props.search.pages"
           :href="route('page', { lang: page.lang, permalink: page.permalink })"
         >
-          <div class="bg-white/95 py-2 px-4 border border-gray-200 rounded-lg mb-2">
+          <div
+            class="bg-white/95 py-2 px-4 border border-gray-200 rounded-lg mb-2"
+          >
             <p>{{ page.title }}</p>
           </div>
         </Link>
@@ -268,31 +285,32 @@
 </template>
 
 <script setup>
-import { FacebookF, Instagram } from "@vicons/fa";
 import {
-  Search20Filled,
   ChevronDown12Regular,
   ChevronDown20Filled,
   Navigation24Filled,
+  Search20Filled,
 } from "@vicons/fluent";
+import { FacebookF, Instagram } from "@vicons/fa";
+import { Inertia } from "@inertiajs/inertia";
+import { Link, usePage } from "@inertiajs/inertia-vue3";
 import {
-  NIcon,
-  NDropdown,
   NButton,
-  NGradientText,
-  // NBadge,
-  NModal,
-  NInput,
-  NDrawer,
-  NDrawerContent,
-  NTree,
-  NDivider,
   NCollapse,
   NCollapseItem,
+  NDivider,
+  // NBadge,
+  NDrawer,
+  NDrawerContent,
+  NDropdown,
+  // NGradientText,
+  NIcon,
+  NInput,
+  NModal,
+  NTree,
   // useMessage,
 } from "naive-ui";
-import { usePage, Link } from "@inertiajs/inertia-vue3";
-import { Inertia } from "@inertiajs/inertia";
+import { getActiveLanguage, loadLanguageAsync, wTrans } from "laravel-vue-i18n";
 import { ref } from "vue";
 
 // map padaliniai to options_padaliniai
@@ -423,6 +441,7 @@ const getPadalinys = (alias = usePage().props.value.alias) => {
 
 const padalinys = ref("");
 padalinys.value = getPadalinys();
+// const padalinysLabel = wTrans(padalinys.value);
 
 // const mainHost = "http://" + getMainHost();
 
@@ -460,7 +479,9 @@ const handleSelectNavigation = (id) => {
         // if url is #, add id to checked keys
         // if id is in expandedKeys, remove it
         if (expandedKeys.value.includes(item[1].id)) {
-          expandedKeys.value = expandedKeys.value.filter((key) => key !== item[1].id);
+          expandedKeys.value = expandedKeys.value.filter(
+            (key) => key !== item[1].id
+          );
         } else {
           expandedKeys.value.push(item[1].id);
         }
@@ -481,13 +502,20 @@ const handleSelectNavigation = (id) => {
 };
 
 const handleSelectLanguage = (key) => {
+  let lang = locales.filter((l) => {
+    return l !== locale.value;
+  });
+
   if (key === "home") {
     Inertia.visit(
       route("main.home", {
-        lang: locales.filter((l) => {
-          return l !== locale.value;
-        }),
-      })
+        lang: lang,
+      }),
+      {
+        onSuccess: () => {
+          loadLanguageAsync(lang[0]);
+        },
+      }
     );
     // Inertia.visit(route("main.page", { lang: "lt" }));
     // message.info("Navigating to " + key);
