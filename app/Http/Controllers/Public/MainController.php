@@ -94,7 +94,8 @@ class MainController extends Controller
 					'title' => $news->title,
 					'lang' => $news->lang,
 					'alias' => $news->padalinys->alias,
-					'publish_time' => $news->publish_time,
+					// publish time to date format YYYY-MM-DD HH:MM
+					'publish_time' => date('Y-m-d H:i', strtotime($news->publish_time)),
 					"permalink" => $news->permalink,
 					'image' => function () use ($news) {
 						if (substr($news->image, 0, 4) == 'http') {
