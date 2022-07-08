@@ -23,14 +23,19 @@ const showSpin = ref(false);
 const message = useMessage();
 
 const upsertModel = () => {
-  showSpin.value = !showSpin.value;
-  Inertia.patch(route(props.modelRoute, props.model.id), props.model, {
+  // check for substring method in props.modelRoute
+  let modelMethod = props.modelRoute.includes("update") ? "PATCH" : "POST";
+
+  showSpin.value = true;
+  Inertia.visit(route(props.modelRoute, props.model.id), {
+    method: modelMethod,
+    data: props.model,
     onSuccess: () => {
-      showSpin.value = !showSpin.value;
+      showSpin.value = false;
       message.success("Sėkmingai atnaujinta!");
     },
     onError: () => {
-      showSpin.value = !showSpin.value;
+      showSpin.value = false;
     },
     preserveScroll: true,
   });

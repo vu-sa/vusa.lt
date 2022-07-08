@@ -111,9 +111,9 @@ import {
   NButton,
   NIcon,
   NInput,
+  NMessageProvider,
   NPopconfirm,
   NSelect,
-  useMessage,
 } from "naive-ui";
 import { onMounted, reactive, ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
@@ -121,7 +121,7 @@ import DeleteModelButton from "@/Components/Admin/DeleteModelButton.vue";
 import TipTap from "@/Components/TipTap.vue";
 import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
 
-const message = useMessage();
+// const message = useMessage();
 
 const props = defineProps({
   duty: Object,
@@ -144,7 +144,7 @@ const duty = reactive(props.duty);
 const getInstitutionOptions = _.debounce((input) => {
   // get other lang
   if (input.length > 2) {
-    message.loading("Ieškoma...");
+    // message.loading("Ieškoma...");
     Inertia.post(
       route("dutyInstitutions.search"),
       {

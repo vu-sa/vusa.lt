@@ -100,7 +100,7 @@
 import { Inertia } from "@inertiajs/inertia";
 import { NInput, NMessageProvider, NSelect } from "naive-ui";
 import { reactive, ref } from "vue";
-import { usePage } from "@inertiajs/inertia-vue3";
+import { usePage, useRemember } from "@inertiajs/inertia-vue3";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import UploadImage from "@/Components/Admin/UploadImage.vue";
 import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
@@ -110,7 +110,7 @@ const props = defineProps({
   roles: Array,
 });
 
-const contact = reactive({});
+const contact = useRemember(reactive({}));
 
 contact.role = {
   id: contact.role?.id,
