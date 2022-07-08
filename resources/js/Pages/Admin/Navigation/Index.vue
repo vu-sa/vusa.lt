@@ -32,16 +32,16 @@
 </template>
 
 <script setup>
-import { Edit16Regular } from "@vicons/fluent";
+// import { Edit16Regular } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
 import {
   NButton,
-  NIcon,
+  // NIcon,
   NPopconfirm,
   NSpin,
   NTree,
-  useMessage,
+  // useMessage,
 } from "naive-ui";
 import { h, ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
@@ -92,7 +92,7 @@ const renderSuffix = ({ option }) => {
   );
 };
 
-const message = useMessage();
+// const message = useMessage();
 
 const dataRef = ref(parseNavigation(props.navigation, 0));
 const showSpin = ref(false);
@@ -157,7 +157,7 @@ const updateModel = () => {
   Inertia.post(route("navigation.store"), data, {
     onSuccess: () => {
       showSpin.value = !showSpin.value;
-      message.success("Sėkmingai atnaujinta!");
+      // message.success("Sėkmingai atnaujinta!");
     },
     onError: () => {
       showSpin.value = !showSpin.value;
