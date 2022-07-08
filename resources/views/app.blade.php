@@ -15,18 +15,22 @@
     <meta name="image" content="{{ $image ?? '' }}">
     <meta name="og:image" content="{{ $image ?? '' }}">
 
-    <!-- Fonts -->
+    {{-- Atom Feed --}}
+    @include('feed::links')
+
+    {{-- Fonts --}}
     @googlefonts
 
     <!-- Styles -->
     @vite(['resources/css/app.css'])
+
     {{-- Naive UI must be after, because Tailwind has preflight styles which, otherwise, reset Naive UI --}}
     <meta name="naive-ui-style" />
 
+    {{-- Ziggy Routes --}}
     @routes
 
     @vite(['resources/js/app.js'])
-
     @inertiaHead
 </head>
 

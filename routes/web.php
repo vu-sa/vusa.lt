@@ -19,6 +19,8 @@ use Laravel\Socialite\Facades\Socialite;
 $this->host = config('app.url');
 $this->host = explode('://', $this->host)[1];
 
+Route::feeds();
+
 Route::prefix('admin')->group(function () {
     Route::middleware(['auth', 'verified'])->group(function () {
 
