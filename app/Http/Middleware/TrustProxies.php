@@ -14,6 +14,11 @@ class TrustProxies extends Middleware
      */
     protected $proxies;
 
+    public function __construct()
+    {
+        $this->proxies = config('app.proxy');
+    }
+
     /**
      * The headers that should be used to detect proxies.
      *
