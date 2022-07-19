@@ -24,7 +24,7 @@
   </NConfigProvider>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import Footer from "@/Layouts/Partials/Public/Footer.vue";
 import MainNavigation from "@/Layouts/Partials/Public/MainNavigation.vue";
 // import PageContent from "@/Layouts/Partials/Public/PageContent.vue";
@@ -63,7 +63,7 @@ onMounted(() => {
 // Userway script
 
 (function (d) {
-  var s = d.createElement("script");
+  const s = d.createElement("script");
   s.setAttribute("data-account", "5OC3pQZI6r");
   s.setAttribute("src", "https://cdn.userway.org/widget.js");
   (d.body || d.head).appendChild(s);
@@ -76,7 +76,7 @@ onMounted(() => {
 var Tawk_API = Tawk_API || {},
   Tawk_LoadStart = new Date();
 (function () {
-  var s1 = document.createElement("script"),
+  const s1 = document.createElement("script"),
     s0 = document.getElementsByTagName("script")[0];
   s1.async = true;
   s1.src = "https://embed.tawk.to/5f71b135f0e7167d00145612/default";

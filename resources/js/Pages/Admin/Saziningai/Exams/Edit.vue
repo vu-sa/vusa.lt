@@ -150,7 +150,7 @@
   </AdminLayout>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { AddCircle20Regular } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import {

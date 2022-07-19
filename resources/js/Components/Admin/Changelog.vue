@@ -60,6 +60,6 @@
   </NCard>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { NCard, NTooltip } from "naive-ui";
 </script>

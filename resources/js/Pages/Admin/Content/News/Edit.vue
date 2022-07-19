@@ -93,7 +93,7 @@
   </AdminLayout>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
 import { NCheckbox, NDatePicker, NInput, NSelect } from "naive-ui";
 import { reactive, ref } from "vue";

@@ -70,7 +70,7 @@
   </AdminLayout>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {
   ArrowCircleLeft28Regular,
   Folder48Regular,
@@ -83,6 +83,8 @@ import AdminLayout from "@/Layouts/AdminLayout.vue";
 import FileButton from "@/Components/Admin/FileButton.vue";
 import FolderButton from "@/Components/Admin/FolderButton.vue";
 
+import { slice, split } from "lodash";
+
 // Declare props
 const props = defineProps({
   directories: Object,
@@ -94,9 +96,9 @@ const props = defineProps({
 
 // Compute showed directories
 const showedDirectories = computed(() => {
-  let ar = [];
+  const ar = [];
   props.directories.forEach((element, index) => {
-    let folderName = _.slice(_.split(element, "/"), -1)[0];
+    const folderName = slice(split(element, "/"), -1)[0];
     ar.push({ id: index, folderName: folderName, folderPath: element });
   });
   return ar;
@@ -104,9 +106,9 @@ const showedDirectories = computed(() => {
 
 // Compute showed files
 const showedFiles = computed(() => {
-  let ar = [];
+  const ar = [];
   props.files.forEach((element, index) => {
-    let fileName = _.slice(_.split(element, "/"), -1)[0];
+    const fileName = slice(split(element, "/"), -1)[0];
     ar.push({ id: index, fileName: fileName, filePath: element });
   });
   return ar;
@@ -115,7 +117,7 @@ const showedFiles = computed(() => {
 // Generate next path from button click
 const getNextPath = (selectedDirectory) => {
   if (selectedDirectory === "../") {
-    let arrayPath = _.split(props.currentPath, "/");
+    const arrayPath = split(props.currentPath, "/");
     let selectedDirectory = "";
     arrayPath.pop();
 
@@ -137,13 +139,13 @@ const getAllFilesAndDirectories = async (selectedDirectory) => {
 const openFile = (filePath) => {
   console.log(filePath);
   // truncate 'public'
-  let fileName = filePath.substring(filePath.indexOf("/") + 1);
+  const fileName = filePath.substring(filePath.indexOf("/") + 1);
   // console.log(fileName);
   window.open("/uploads/" + fileName, "_blank");
 };
 
 const uploadFile = (e) => {
-  let file = e.file;
+  const file = e.file;
   Inertia.post(
     route("files.store"),
     { file, path: props.currentPath },

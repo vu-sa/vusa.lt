@@ -589,7 +589,7 @@
   </Sveikinimai>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { Link } from "@inertiajs/inertia-vue3";
 import { NButton, NCarousel, NCarouselItem } from "naive-ui";
 import { ref } from "vue";

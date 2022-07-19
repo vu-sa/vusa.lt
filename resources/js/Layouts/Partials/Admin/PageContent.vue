@@ -21,7 +21,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { AddCircle32Regular } from "@vicons/fluent";
 import { Link } from "@inertiajs/inertia-vue3";
 import { NIcon } from "naive-ui";

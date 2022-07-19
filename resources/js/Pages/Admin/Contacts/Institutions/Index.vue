@@ -10,22 +10,26 @@
         size="medium"
         round
         placeholder="Ieškoti pagal pavadinimą, trumpąjį pavadinimą arba trumpinį..."
-        @input="handleSearchInput"
         :loading="loading"
+        @input="handleSearchInput"
       ></NInput>
-      <NDataTable :data="props.dutyInstitutions" :columns="columns" :row-props="rowProps">
+      <NDataTable
+        :data="props.dutyInstitutions"
+        :columns="columns"
+        :row-props="rowProps"
+      >
       </NDataTable>
     </div>
   </AdminLayout>
 </template>
 
-<script setup>
-import AdminLayout from "@/Layouts/AdminLayout.vue";
-import AsideHeader from "../AsideHeader.vue";
-import { NDataTable, NInput } from "naive-ui";
-import { ref } from "vue";
+<script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
+import { NDataTable, NInput } from "naive-ui";
+import { ref } from "vue";
+import AdminLayout from "@/Layouts/AdminLayout.vue";
+import AsideHeader from "../AsideHeader.vue";
 
 const props = defineProps({
   dutyInstitutions: Object,

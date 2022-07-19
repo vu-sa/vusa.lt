@@ -31,7 +31,7 @@
   </AdminLayout>
 </template>
 
-<script setup>
+<script setup lang="ts">
 // import { Edit16Regular } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";

@@ -186,7 +186,7 @@
   </NModal>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {
   ArrowRedo20Filled,
   ArrowUndo20Filled,
@@ -258,7 +258,7 @@ const getFiles = _.debounce((query) => {
         preserveScroll: true,
         onSuccess: () => {
           message.success("Pabaigta.");
-          let searchFiles = Object.values(props.searchFiles);
+          const searchFiles = Object.values(props.searchFiles);
           console.log(searchFiles);
           files.value = searchFiles.map((file) => ({
             // get the file name from the url
@@ -286,7 +286,7 @@ const getImages = _.debounce((query) => {
         preserveScroll: true,
         onSuccess: () => {
           message.success("Pabaigta.");
-          let searchFiles = Object.values(props.searchFiles);
+          const searchFiles = Object.values(props.searchFiles);
           console.log(searchFiles);
           files.value = searchFiles.map((file) => ({
             // get the file name from the url

@@ -25,7 +25,7 @@
   </footer>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { Building20Regular, Phone20Regular } from "@vicons/fluent";
 import { NIcon } from "naive-ui";
 </script>

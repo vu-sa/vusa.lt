@@ -3,7 +3,7 @@
     class="flex flex-row fixed justify-between px-6 lg:px-24 border shadow-sm w-full backdrop-blur-sm bg-white/90 text-gray-700 items-center py-2 z-50 top-0"
   >
     <div class="flex flex-row space-x-4 items-center">
-      <Link :href="route('main.home', { lang: locale })">
+      <Link :href="route('main.home', homeParams)">
         <!-- <a :href="locale === 'lt' ? $page.props.app.url : `${$page.props.app.url}/en`"> -->
         <img
           class="object-contain min-w-[15vw] lg:min-w-[10vw]"
@@ -274,6 +274,7 @@
         <h3 v-if="$page.props.search.calendar">Kalendoriaus įrašai</h3>
         <div
           v-for="calendar in $page.props.search.calendar"
+          :key="calendar.id"
           class="bg-white/95 p-4 border border-gray-200 rounded-lg mb-2"
         >
           <p>{{ calendar.title }}</p>
@@ -284,7 +285,7 @@
   </NModal>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {
   ChevronDown12Regular,
   ChevronDown20Filled,
@@ -310,10 +311,16 @@ import {
   NTree,
   // createDiscreteApi,
 } from "naive-ui";
+import { debounce, split } from "lodash";
 import { getActiveLanguage, loadLanguageAsync, wTrans } from "laravel-vue-i18n";
 import { ref } from "vue";
+import route, { RouteParamsWithQueryOverload } from "ziggy-js";
 
 // map padaliniai to options_padaliniai
+
+const homeParams: RouteParamsWithQueryOverload = {
+  lang: "lt",
+};
 
 const padaliniai = usePage().props.value.padaliniai;
 const mainNavigation = usePage().props.value.mainNavigation;
@@ -338,7 +345,7 @@ const changeShowSearch = () => {
 // const { message } = createDiscreteApi(["message"]);
 
 // after half a second input delay, use Inertiapost request to fetch search results
-const handleSearchInput = _.debounce((input) => {
+const handleSearchInput = debounce((input) => {
   if (input.length > 2) {
     searchInputLoading.value = true;
     Inertia.post(
@@ -358,7 +365,7 @@ const handleSearchInput = _.debounce((input) => {
 }, 500);
 
 const options_padaliniai = padaliniai.map((padalinys) => ({
-  label: _.split(padalinys.fullname, "atstovybė ")[1],
+  label: split(padalinys.fullname, "atstovybė ")[1],
   key: padalinys.alias,
 }));
 
@@ -421,7 +428,7 @@ const parseNavigation = (array, id) => {
 const navigation = parseNavigation(Object.entries(mainNavigation), 0);
 
 const getPadalinys = (alias = usePage().props.value.alias) => {
-  for (let padalinys of padaliniai) {
+  for (const padalinys of padaliniai) {
     if (padalinys.alias == alias) {
       return padalinys.shortname.split(" ").pop();
     }
@@ -470,7 +477,7 @@ const handleSelectNavigation = (id) => {
   // message.info("Navigating to " + key);
   // get url from id from mainNavigation array
   let url = "";
-  for (let item of Object.entries(mainNavigation)) {
+  for (const item of Object.entries(mainNavigation)) {
     if (item[1].id == id) {
       // if url has https or http, use it
       if (item[1].url.includes("https://") || item[1].url.includes("http://")) {
@@ -502,7 +509,7 @@ const handleSelectNavigation = (id) => {
 };
 
 const handleSelectLanguage = (key) => {
-  let lang = locales.filter((l) => {
+  const lang = locales.filter((l) => {
     return l !== locale.value;
   });
 

@@ -107,7 +107,7 @@
   <!-- </NConfigProvider> -->
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { Head } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
 import { NButton, NModal } from "naive-ui";

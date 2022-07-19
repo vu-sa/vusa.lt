@@ -22,10 +22,10 @@
   /> -->
     <div class="grid md:grid-cols-2 lg:grid-cols-4 pt-8 px-8 lg:px-32 gap-8">
       <HomeCard
-        :hasMiniContent="false"
-        :hasBelowCard="true"
         v-for="item in props.news.data"
         :key="item.id"
+        :has-mini-content="false"
+        :has-below-card="true"
       >
         <template #mini> </template>
         <template #below-card>
@@ -65,15 +65,15 @@
   </PublicLayout>
 </template>
 
-<script setup>
-import PublicLayout from "@/Layouts/PublicLayout.vue";
-import { NPagination, NIcon } from "naive-ui";
-import { reactive, ref } from "vue";
+<script setup lang="ts">
+import { Clock20Regular } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
-import { usePage, Link } from "@inertiajs/inertia-vue3";
+import { Link, usePage } from "@inertiajs/inertia-vue3";
+import { NIcon, NPagination } from "naive-ui";
+import { reactive, ref } from "vue";
 import ContactWithPhoto from "@/Components/Public/ContactWithPhoto.vue";
 import HomeCard from "@/Components/Public/HomeCard.vue";
-import { Clock20Regular } from "@vicons/fluent";
+import PublicLayout from "@/Layouts/PublicLayout.vue";
 
 const props = defineProps({
   news: Object,

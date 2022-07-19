@@ -74,7 +74,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { Head, useForm } from "@inertiajs/inertia-vue3";
 import { NButton, NInput, NPopover } from "naive-ui";
 import { reactive } from "vue";

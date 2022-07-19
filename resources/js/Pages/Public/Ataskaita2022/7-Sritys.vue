@@ -1,15 +1,15 @@
 <template>
   <AtaskaitaLayout
-    :backgroundImage="'/images/ataskaita2022/kitos-nuotraukos/VU SA.jpg'"
+    :background-image="'/images/ataskaita2022/kitos-nuotraukos/VU SA.jpg'"
     :title="'Bendruomenė | Ataskaita 2022'"
   >
     <div class="grid md:grid-cols-9 mx-8">
       <div class="hidden lg:block">
         <NButton
-          @click="inertiaVisitOnClick('bendruomene')"
           class="hidden md:block top-[50vh] h-fit"
           text
           style="font-size: 60px; align-self: flex-start; position: sticky"
+          @click="inertiaVisitOnClick('bendruomene')"
         >
           <NIcon><ArrowCircleLeft28Regular /></NIcon
         ></NButton>
@@ -21,10 +21,10 @@
       </article>
       <div class="hidden lg:block">
         <NButton
-          @click="inertiaVisitOnClick('padeka')"
           class="hidden md:block top-[50vh] h-fit"
           text
           style="font-size: 60px; align-self: flex-start; position: sticky"
+          @click="inertiaVisitOnClick('padeka')"
         >
           <NIcon><ArrowCircleRight28Regular /></NIcon
         ></NButton>
@@ -33,12 +33,15 @@
   </AtaskaitaLayout>
 </template>
 
-<script setup>
-import AtaskaitaLayout from "@/Layouts/AtaskaitaLayout.vue";
-import { NButton, NIcon } from "naive-ui";
-import { ArrowCircleLeft28Regular, ArrowCircleRight28Regular } from "@vicons/fluent";
+<script setup lang="ts">
+import {
+  ArrowCircleLeft28Regular,
+  ArrowCircleRight28Regular,
+} from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
+import { NButton, NIcon } from "naive-ui";
 import { usePage } from "@inertiajs/inertia-vue3";
+import AtaskaitaLayout from "@/Layouts/AtaskaitaLayout.vue";
 
 const inertiaVisitOnClick = (permalink) => {
   Inertia.visit(

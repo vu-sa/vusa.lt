@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout title="Pareigos" :createURL="route('duties.create')">
+  <AdminLayout title="Pareigos" :create-u-r-l="route('duties.create')">
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
@@ -10,8 +10,8 @@
         size="medium"
         round
         placeholder="Ieškoti pagal pavadinimą, el. paštą..."
-        @input="handleSearchInput"
         :loading="loading"
+        @input="handleSearchInput"
       ></NInput>
       <NDataTable
         remote
@@ -26,11 +26,11 @@
   </AdminLayout>
 </template>
 
-<script setup>
-import AdminLayout from "@/Layouts/AdminLayout.vue";
-import { NDataTable, NInput } from "naive-ui";
-import { ref, reactive } from "vue";
+<script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
+import { NDataTable, NInput } from "naive-ui";
+import { reactive, ref } from "vue";
+import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AsideHeader from "../AsideHeader.vue";
 
 const props = defineProps({

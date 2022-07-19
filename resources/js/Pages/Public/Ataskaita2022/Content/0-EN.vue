@@ -139,7 +139,7 @@
   </Pradzia>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import Pradzia from "../0-Pradzia.vue";
 
 import { Link } from "@inertiajs/inertia-vue3";

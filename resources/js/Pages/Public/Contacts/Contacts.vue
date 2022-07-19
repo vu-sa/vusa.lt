@@ -62,7 +62,7 @@
   </PublicLayout>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { Mail20Regular, Phone20Regular } from "@vicons/fluent";
 import { NIcon, NPopover } from "naive-ui";
 import { ref } from "vue";

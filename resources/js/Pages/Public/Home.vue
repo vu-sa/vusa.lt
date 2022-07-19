@@ -153,7 +153,7 @@
   </PublicLayout>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import HomeCard from "@/Components/Public/HomeCard.vue";
 import PublicLayout from "@/Layouts/PublicLayout.vue";
 // import SkeletonElement from "@/Layouts/Partials/Public/SkeletonElement.vue";
@@ -169,6 +169,7 @@ import { NButton, NCarousel, NCarouselItem, NDivider, NIcon } from "naive-ui";
 import { onBeforeUnmount, ref } from "vue";
 import NewsElement from "@/Layouts/Partials/Public/NewsElement.vue";
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
+import route from "ziggy-js";
 
 const props = defineProps({
   news: Object,
@@ -176,7 +177,7 @@ const props = defineProps({
   main_page: Object,
 });
 
-const calculateBannerCount = (width) => {
+const calculateBannerCount = (width: number) => {
   if (width < 768) {
     return 1;
   } else if (width < 992) {
@@ -195,10 +196,12 @@ window.addEventListener("resize", () => {
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener("resize", () => {});
+  window.removeEventListener("resize", () => {
+    return;
+  });
 });
 
-const goToLink = (link) => {
+const goToLink = (link: string) => {
   // check if link is external
   console.log(link);
   if (link.includes("http")) {

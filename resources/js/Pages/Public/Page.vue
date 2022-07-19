@@ -4,7 +4,10 @@
       v-if="props.navigation_item_id != null"
       class="ml-[5vw] pt-4 px-8 lg:px-32"
     >
-      <NBreadcrumbItem v-for="breadcrumb in breadcrumbTree" :key="breadcrumb.parent_id">
+      <NBreadcrumbItem
+        v-for="breadcrumb in breadcrumbTree"
+        :key="breadcrumb.parent_id"
+      >
         <NIcon><HatGraduation20Filled /></NIcon> {{ breadcrumb.name }}
       </NBreadcrumbItem>
     </NBreadcrumb>
@@ -12,8 +15,9 @@
     <PageArticle>
       <template #title>{{ page.title }} </template>
       <div class="col-span-full mb-4">
-        <NButton text v-if="$page.props.user" @click="editPage"
-          ><NIcon size="40"><DocumentEdit24Regular></DocumentEdit24Regular></NIcon
+        <NButton v-if="$page.props.user" text @click="editPage"
+          ><NIcon size="40"
+            ><DocumentEdit24Regular></DocumentEdit24Regular></NIcon
         ></NButton>
       </div>
       <div class="prose" v-html="page.text"></div>
@@ -31,14 +35,14 @@
   </PublicLayout>
 </template>
 
-<script setup>
-import PublicLayout from "../../Layouts/PublicLayout.vue";
-import PageArticle from "../../Components/Public/PageArticle.vue";
-import { Link, usePage } from "@inertiajs/inertia-vue3";
-import { ref } from "vue";
-import { NBreadcrumb, NBreadcrumbItem, NIcon, NButton } from "naive-ui";
-import { HatGraduation20Filled, DocumentEdit24Regular } from "@vicons/fluent";
+<script setup lang="ts">
+import { DocumentEdit24Regular, HatGraduation20Filled } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
+import { Link, usePage } from "@inertiajs/inertia-vue3";
+import { NBreadcrumb, NBreadcrumbItem, NButton, NIcon } from "naive-ui";
+import { ref } from "vue";
+import PageArticle from "../../Components/Public/PageArticle.vue";
+import PublicLayout from "../../Layouts/PublicLayout.vue";
 
 const props = defineProps({
   navigation_item_id: Number,
@@ -50,10 +54,12 @@ const locale = ref(usePage().props.value.locale);
 const mainNavigation = usePage().props.value.mainNavigation;
 
 const getBreadcrumbTree = (navigationItemId) => {
-  let breadcrumbTree = [];
+  const breadcrumbTree = [];
   while (navigationItemId) {
     // find array MainNavigation item by navigationItemId and add it to breadcrumbTree
-    const navigationItem = mainNavigation.find((item) => item.id === navigationItemId);
+    const navigationItem = mainNavigation.find(
+      (item) => item.id === navigationItemId
+    );
     breadcrumbTree.unshift(navigationItem);
     navigationItemId = navigationItem.parent_id;
   }

@@ -1,8 +1,12 @@
 <template>
-  <AsideHeaderLink asideHeaderRoute="saziningaiExams.index">Egzaminai</AsideHeaderLink>
-  <AsideHeaderLink asideHeaderRoute="saziningaiExamObservers.index">Stebėtojai</AsideHeaderLink>
+  <AsideHeaderLink aside-header-route="saziningaiExams.index"
+    >Egzaminai</AsideHeaderLink
+  >
+  <AsideHeaderLink aside-header-route="saziningaiExamObservers.index"
+    >Stebėtojai</AsideHeaderLink
+  >
 </template>
 
-<script setup>
+<script setup lang="ts">
 import AsideHeaderLink from "@/Components/Admin/AsideHeaderLink.vue";
 </script>

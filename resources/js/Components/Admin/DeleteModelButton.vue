@@ -17,7 +17,7 @@
   </NPopconfirm>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { Delete20Filled } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import { NButton, NIcon, NPopconfirm, createDiscreteApi } from "naive-ui";

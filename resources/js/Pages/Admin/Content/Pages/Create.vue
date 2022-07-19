@@ -62,7 +62,7 @@
   </AdminLayout>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
 import { NInput, NSelect, createDiscreteApi } from "naive-ui";
 import { computed, reactive, ref } from "vue";

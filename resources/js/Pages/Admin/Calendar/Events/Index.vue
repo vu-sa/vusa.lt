@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout title="Renginiai" :createURL="route('calendar.create')">
+  <AdminLayout title="Renginiai" :create-u-r-l="route('calendar.create')">
     <NDataTable
       class="main-card"
       remote
@@ -13,11 +13,11 @@
   </AdminLayout>
 </template>
 
-<script setup>
-import AdminLayout from "@/Layouts/AdminLayout.vue";
-import { NDataTable } from "naive-ui";
-import { ref, reactive } from "vue";
+<script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
+import { NDataTable } from "naive-ui";
+import { reactive, ref } from "vue";
+import AdminLayout from "@/Layouts/AdminLayout.vue";
 
 const props = defineProps({
   calendar: Object,

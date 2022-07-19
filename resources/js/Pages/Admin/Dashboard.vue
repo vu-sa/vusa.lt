@@ -4,14 +4,17 @@
       <p>{{ salutation }}</p>
       <p><strong>Rolė:</strong> {{ props.role.name }}</p>
       <p class="my-4">{{ props.role.description }}</p>
-      <p>Jeigu kiltų klausimų, rašykite <a href="mailto:it@vusa.lt">it@vusa.lt</a></p>
+      <p>
+        Jeigu kiltų klausimų, rašykite
+        <a href="mailto:it@vusa.lt">it@vusa.lt</a>
+      </p>
     </div>
   </AppLayout>
 </template>
 
-<script setup>
-import AppLayout from "@/Layouts/AdminLayout.vue";
+<script setup lang="ts">
 import { usePage } from "@inertiajs/inertia-vue3";
+import AppLayout from "@/Layouts/AdminLayout.vue";
 
 import { computed } from "vue";
 

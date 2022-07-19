@@ -144,14 +144,14 @@
             <a href="mailto:dap@vusa.lt">dap@vusa.lt</a>.
           </p>
           <NFormItem>
-              <FormSubmitButton
-                submit-route="saziningaiExamRegistration.store"
-                :form-ref="formRef"
-                :form-value="formValue"
-                @reset-form="resetForm"
-              >
-                Pateikti
-              </FormSubmitButton>
+            <FormSubmitButton
+              submit-route="saziningaiExamRegistration.store"
+              :form-ref="formRef"
+              :form-value="formValue"
+              @reset-form="resetForm"
+            >
+              Pateikti
+            </FormSubmitButton>
           </NFormItem>
         </NForm>
       </div>
@@ -159,7 +159,7 @@
   </PublicLayout>
 </template>
 
-<script setup>
+<script setup lang="ts">
 // import { Inertia } from "@inertiajs/inertia";
 import {
   NCheckbox,

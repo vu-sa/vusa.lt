@@ -16,30 +16,35 @@
     <NCollapse class="max-w-[92ch] mx-auto" arrow-placement="right">
       <NCollapseItem>
         <template #header><h2>VU SA projektai</h2></template>
-        <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
+        <div
+          class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4"
+        >
           <h3>
             Projektas „Studentų įsitraukimo į akademinės etikos puoselėjimą
             universitetinėje bendruomenėje didinimas“
           </h3>
           <p>
-            Akademinė etika – viena pamatinių aukštojo mokslo vertybių – yra įtvirtinama
-            tiek Lietuvos Respublikos Mokslo ir studijų įstatyme, tiek aukštųjų mokyklų
-            statutuose, tad ji tampa svarbia aukštojo mokslo institucijos pareiga. Vienas
-            iš akademinės etikos principų – akademinis sąžiningumas – yra itin opi
-            problema aukštajame moksle, kurios ugdymui turi būti skiriamas dėmesys tiek
-            instituciniu, tiek nacionaliniu lygmeniu. Siekiant užtikrinti akademinės
-            etikos puoselėjimą aukštojoje mokykloje, į procesus turi įsitraukti skirtingos
-            bendruomenės grupės, todėl labai svarbus studentų, dėstytojų bei Universiteto
-            darbuotojų kompetencijų kėlimas su akademine etika susijusiais klausimais.
-            Siekiant didesnio studentų įsitraukimo puoselėjant akademinę etiką Vilniaus
-            universitete, projekto metu įgyvendinami mokymai ir planavimai, kurie turėtų
-            padėti pagrindus studentų iniciatyvų kūrimui ateityje. Projekte numatoma
-            ugdyti kompetencijas ir kurti ilgalaikes priemones – studentai bus
-            supažindinami su pagrindiniais akademinės etikos principais, bus ugdomi
-            gebėjimai atpažinti pažeidimus, skatinama jų vengti. Taip pat bus tobulinamos
-            problemų sprendimo, advokacijos, komunikacinės, organizacinės,
-            bendradarbiavimo ir kitos kompetencijos, reikalingos skatinti akademinės
-            etikos kultūrą universitetinėje aplinkoje.
+            Akademinė etika – viena pamatinių aukštojo mokslo vertybių – yra
+            įtvirtinama tiek Lietuvos Respublikos Mokslo ir studijų įstatyme,
+            tiek aukštųjų mokyklų statutuose, tad ji tampa svarbia aukštojo
+            mokslo institucijos pareiga. Vienas iš akademinės etikos principų –
+            akademinis sąžiningumas – yra itin opi problema aukštajame moksle,
+            kurios ugdymui turi būti skiriamas dėmesys tiek instituciniu, tiek
+            nacionaliniu lygmeniu. Siekiant užtikrinti akademinės etikos
+            puoselėjimą aukštojoje mokykloje, į procesus turi įsitraukti
+            skirtingos bendruomenės grupės, todėl labai svarbus studentų,
+            dėstytojų bei Universiteto darbuotojų kompetencijų kėlimas su
+            akademine etika susijusiais klausimais. Siekiant didesnio studentų
+            įsitraukimo puoselėjant akademinę etiką Vilniaus universitete,
+            projekto metu įgyvendinami mokymai ir planavimai, kurie turėtų
+            padėti pagrindus studentų iniciatyvų kūrimui ateityje. Projekte
+            numatoma ugdyti kompetencijas ir kurti ilgalaikes priemones –
+            studentai bus supažindinami su pagrindiniais akademinės etikos
+            principais, bus ugdomi gebėjimai atpažinti pažeidimus, skatinama jų
+            vengti. Taip pat bus tobulinamos problemų sprendimo, advokacijos,
+            komunikacinės, organizacinės, bendradarbiavimo ir kitos
+            kompetencijos, reikalingos skatinti akademinės etikos kultūrą
+            universitetinėje aplinkoje.
           </p>
 
           <h3>
@@ -47,14 +52,15 @@
             implementation and Recognition of Activities“
           </h3>
           <p>
-            Vienas iš pagrindinių gebėjimų, reikalingų dirbti ir gyventi XXI amžiuje, yra
-            iniciatyvumas ir verslumas, t. y. asmens gebėjimas idėjas paversti veiksmais.
-            Tikime, jog aukštojo mokslo įstaigos turi padėti studentams (-ėms) įgyti šiuos
-            įgūdžius, todėl VU SA įgyvendina projektą, kurio tikslas – padėti studentams
-            (-ėms) įgyti būtinųjų kompetencijų (verslumo, bendradarbiavimo, problemų
-            sprendimo, tvarumo ir socialinių inovacijų kūrimo) per savanorišką veiklą,
-            kurios metu būtų sprendžiamos realaus gyvenimo problemos, pasitelkiant
-            socialines inovacijas.
+            Vienas iš pagrindinių gebėjimų, reikalingų dirbti ir gyventi XXI
+            amžiuje, yra iniciatyvumas ir verslumas, t. y. asmens gebėjimas
+            idėjas paversti veiksmais. Tikime, jog aukštojo mokslo įstaigos turi
+            padėti studentams (-ėms) įgyti šiuos įgūdžius, todėl VU SA
+            įgyvendina projektą, kurio tikslas – padėti studentams (-ėms) įgyti
+            būtinųjų kompetencijų (verslumo, bendradarbiavimo, problemų
+            sprendimo, tvarumo ir socialinių inovacijų kūrimo) per savanorišką
+            veiklą, kurios metu būtų sprendžiamos realaus gyvenimo problemos,
+            pasitelkiant socialines inovacijas.
           </p>
 
           <h3>
@@ -62,48 +68,55 @@
             nevyriausybines organizacijas“
           </h3>
           <p>
-            Šiais metais VU SA baigė įgyvendinti 3 metus trukusį projektą viešojo valdymo
-            gerinimui. Projekto esmė – stiprinti projekte dalyvaujančių organizacijų
-            atstovavimo aktyvumą bei kokybę, gerinant viešojąjį valdymą švietimo srityje.
-            Jau pasibaigus projektui, matoma, jog projekto įgyvendinimas leido
-            organizacijoms strateginiu laikotarpiu užtikrinti kokybišką ir pastovų
-            tikslinės grupės atstovavimą įvairiuose lygmenyse. Projekto kontekste pateikta
-            20 pasiūlymų atsakingoms institucijoms dėl švietimo sistemos tobulinimo
-            Lietuvoje, atlikta 12 tyrimų bei apklausų bei padarytos jų analizės, sudarytas
-            1 pozicijų rinkinys; organizuoti įvairūs mokymai bei konferencijos tiek
-            organizacijų narių kompetencijų kėlimui, tiek ir didesniam studentų(-čių)
-            įtraukimui. Šio projekto dėka, VU SA jau iki tol platus temų ir studentus(-es)
-            liečiančių klausimų spektras dar labiau išsiplėtė – savo veikloje galime
-            remtis konkrečiais ir tyrimais pagrįstais duomenimis (kurių išorės šaltiniuose
-            neretai rasti sunku arba išvis nėra), o iš jų formuojami studentams(-ėms)
-            reikšmingi pasiūlymai ir pakeitimai tiek Universiteto, tiek nacionaliniu
-            lygmenimis. Projekto partneriai: Žinių ekonomikos forumas, Lietuvos jaunųjų
-            mokslininkų sąjunga, Šiaulių universiteto studentų atstovybė bei Kauno
-            technologijos universiteto studentų atstovybė.
+            Šiais metais VU SA baigė įgyvendinti 3 metus trukusį projektą
+            viešojo valdymo gerinimui. Projekto esmė – stiprinti projekte
+            dalyvaujančių organizacijų atstovavimo aktyvumą bei kokybę, gerinant
+            viešojąjį valdymą švietimo srityje. Jau pasibaigus projektui,
+            matoma, jog projekto įgyvendinimas leido organizacijoms strateginiu
+            laikotarpiu užtikrinti kokybišką ir pastovų tikslinės grupės
+            atstovavimą įvairiuose lygmenyse. Projekto kontekste pateikta 20
+            pasiūlymų atsakingoms institucijoms dėl švietimo sistemos tobulinimo
+            Lietuvoje, atlikta 12 tyrimų bei apklausų bei padarytos jų analizės,
+            sudarytas 1 pozicijų rinkinys; organizuoti įvairūs mokymai bei
+            konferencijos tiek organizacijų narių kompetencijų kėlimui, tiek ir
+            didesniam studentų(-čių) įtraukimui. Šio projekto dėka, VU SA jau
+            iki tol platus temų ir studentus(-es) liečiančių klausimų spektras
+            dar labiau išsiplėtė – savo veikloje galime remtis konkrečiais ir
+            tyrimais pagrįstais duomenimis (kurių išorės šaltiniuose neretai
+            rasti sunku arba išvis nėra), o iš jų formuojami studentams(-ėms)
+            reikšmingi pasiūlymai ir pakeitimai tiek Universiteto, tiek
+            nacionaliniu lygmenimis. Projekto partneriai: Žinių ekonomikos
+            forumas, Lietuvos jaunųjų mokslininkų sąjunga, Šiaulių universiteto
+            studentų atstovybė bei Kauno technologijos universiteto studentų
+            atstovybė.
           </p>
         </div>
       </NCollapseItem>
       <NCollapseItem>
         <template #header><h2>VU SA procesų atnaujinimas</h2></template>
-        <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
+        <div
+          class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4"
+        >
           <h3>Konsultavimo procesas</h3>
 
           <p>
-            VU SA konsultavimas – centralizuota VU SA konsultavimo sistema, skirta
-            Vilniaus universiteto studentų konsultacijoms akademiniais, socialiniais,
-            saviraiškos galimybių Universitete, LSP ir kitais klausimais. Programa veikia
-            vedina VU SA konsultavimo vadovo (-ės) ir konsultavimo grupės, sudarytos iš
-            savanorių studentų (-čių), studijuojančių Vilniaus universitete, išlaikiusių
-            VU SA pagrindinių socialinių-akademinių žinių testą bei išreiškusių motyvaciją
-            veikti konsultavimo grupėje.
+            VU SA konsultavimas – centralizuota VU SA konsultavimo sistema,
+            skirta Vilniaus universiteto studentų konsultacijoms akademiniais,
+            socialiniais, saviraiškos galimybių Universitete, LSP ir kitais
+            klausimais. Programa veikia vedina VU SA konsultavimo vadovo (-ės)
+            ir konsultavimo grupės, sudarytos iš savanorių studentų (-čių),
+            studijuojančių Vilniaus universitete, išlaikiusių VU SA pagrindinių
+            socialinių-akademinių žinių testą bei išreiškusių motyvaciją veikti
+            konsultavimo grupėje.
           </p>
 
           <p>
-            VU SA konsultavimo grupė, savo aktyvią veiklą pradėjusi 2022 m. sausio mėn. 1
-            d., šiuo metu yra atsakiusi į daugiau nei 750 studentų užklausų elektroniniu
-            paštu, komunikacijos platforma tawk.to ir mobiliuoju telefonu. Šiuo metu
-            pasitenkinimas VU SA konsultavimu yra įvertintas bene 500 kartų, 97 proc.
-            bendruomenės narių konsultaciją įvertinus aukščiausiu įverčiu.
+            VU SA konsultavimo grupė, savo aktyvią veiklą pradėjusi 2022 m.
+            sausio mėn. 1 d., šiuo metu yra atsakiusi į daugiau nei 750 studentų
+            užklausų elektroniniu paštu, komunikacijos platforma tawk.to ir
+            mobiliuoju telefonu. Šiuo metu pasitenkinimas VU SA konsultavimu yra
+            įvertintas bene 500 kartų, 97 proc. bendruomenės narių konsultaciją
+            įvertinus aukščiausiu įverčiu.
           </p>
 
           <p>VU SA konsultavimo grupę sudaro:</p>
@@ -118,45 +131,49 @@
           </ul>
         </div>
 
-        <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
+        <div
+          class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4"
+        >
           <h3>VU SA Strateginio plano 2022–2025 m. kūrimas</h3>
 
           <p>
-            Šiais metais baigiasi VU SA Strateginis veiklos planas, skirtas 2019-2022 m.
-            laikotarpiui. Dėl šios priežasties organizacijoje peržiūrėjome ir rengėme
-            atnaujintą 2022-2025 m. strateginio veiklos plano projektą. Į procesą
-            įsitraukė skirtingi organizacijos dariniai bei jų nariai, projektuojant
-            galimas ateities vizijas sukurtas naujo strateginio veiklos plano projektas
-            pateiktas VU SA Parlamentui.
+            Šiais metais baigiasi VU SA Strateginis veiklos planas, skirtas
+            2019-2022 m. laikotarpiui. Dėl šios priežasties organizacijoje
+            peržiūrėjome ir rengėme atnaujintą 2022-2025 m. strateginio veiklos
+            plano projektą. Į procesą įsitraukė skirtingi organizacijos dariniai
+            bei jų nariai, projektuojant galimas ateities vizijas sukurtas naujo
+            strateginio veiklos plano projektas pateiktas VU SA Parlamentui.
           </p>
 
           <h3>Savirefleksijų kultūra</h3>
 
           <p>
-            Šiais metais organizacijoje sukurta naujų procesų, o vienas iš jų – pradėta
-            diegti savirefleksijų kultūra. Norint tobulėti savo srityje ir pažvelgti, ar
-            išsikelti tikslai jau pasiekti (o galbūt jų vis dar siekiama), būtina
-            reflektuoti. Būtent savirefleksijų metu suteikiama galimybė ne tik įsivertinti
-            save bei savo tobulėjimo procesą, tačiau ir padėti sau judėti tolyn. Šiais
-            metais organizacijoje buvo sukurtas savirefleksijos įrankis – gairinis
-            klausimynas, šalia kurio pateiktas maketas, kuriame būtų galima užsirašyti
-            atsakymus. Minėtas įrankis išskirtas į dvi dalis: klausimai skirti kas kelis
-            mėnesius įsivertinti save organizacijoje ir kasdieniai klausimai leidžiantys
-            savireflektuoti apie dienos veiklas bei suteikiantys galimybę tobulėti
-            kasdien.
+            Šiais metais organizacijoje sukurta naujų procesų, o vienas iš jų –
+            pradėta diegti savirefleksijų kultūra. Norint tobulėti savo srityje
+            ir pažvelgti, ar išsikelti tikslai jau pasiekti (o galbūt jų vis dar
+            siekiama), būtina reflektuoti. Būtent savirefleksijų metu suteikiama
+            galimybė ne tik įsivertinti save bei savo tobulėjimo procesą, tačiau
+            ir padėti sau judėti tolyn. Šiais metais organizacijoje buvo
+            sukurtas savirefleksijos įrankis – gairinis klausimynas, šalia kurio
+            pateiktas maketas, kuriame būtų galima užsirašyti atsakymus. Minėtas
+            įrankis išskirtas į dvi dalis: klausimai skirti kas kelis mėnesius
+            įsivertinti save organizacijoje ir kasdieniai klausimai leidžiantys
+            savireflektuoti apie dienos veiklas bei suteikiantys galimybę
+            tobulėti kasdien.
           </p>
 
           <h3>Nario kelias</h3>
           <p>
-            Pastaraisiais metais buvo peržiūrimas narystės kelias organizacijoje, o šiemet
-            priimta koncepcija, paremta efektyvesniu narių iveiklinimu, kuratorių,
-            studentų atstovų, programų, klubų, projektų ir ilgamečių narių lygiaverčiu
-            įtraukimu į vykstančius procesus narystės kelią grindžiant savirefleksijų
-            kultūra. Šios koncepcijos tikslas – daugiau dėmesio skirti kiekvieno nario
-            individualiam įgalinimui ir įtraukimui į organizuojamas veiklas. Kiekvienai
-            narių grupei (pirmamečiai nariai, kuratoriai, atstovai SPK, ilgamečiai nariai)
-            sukurta konkreti narystės kelio koncepcija atsižvelgiant į jų darbo specifiką,
-            patirties ir kompetencijų lygį.
+            Pastaraisiais metais buvo peržiūrimas narystės kelias
+            organizacijoje, o šiemet priimta koncepcija, paremta efektyvesniu
+            narių iveiklinimu, kuratorių, studentų atstovų, programų, klubų,
+            projektų ir ilgamečių narių lygiaverčiu įtraukimu į vykstančius
+            procesus narystės kelią grindžiant savirefleksijų kultūra. Šios
+            koncepcijos tikslas – daugiau dėmesio skirti kiekvieno nario
+            individualiam įgalinimui ir įtraukimui į organizuojamas veiklas.
+            Kiekvienai narių grupei (pirmamečiai nariai, kuratoriai, atstovai
+            SPK, ilgamečiai nariai) sukurta konkreti narystės kelio koncepcija
+            atsižvelgiant į jų darbo specifiką, patirties ir kompetencijų lygį.
           </p>
         </div>
       </NCollapseItem>
@@ -174,57 +191,64 @@
             Institucinio stiprinimo fondas
           </p>
         </div>
-        <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+        <div
+          class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4"
+        >
           <p>
             Institucinio stiprinimo fondas yra atsakingas už organizacijos narių
-            kompetencijų kėlimą, žmogiškųjų išteklių valdymą. Fondas siekia užtikrinti
-            sąlygas instituciniam stiprinimui ir nuosekliam kompetencijų kėlimui
-            organizacijoje.
+            kompetencijų kėlimą, žmogiškųjų išteklių valdymą. Fondas siekia
+            užtikrinti sąlygas instituciniam stiprinimui ir nuosekliam
+            kompetencijų kėlimui organizacijoje.
           </p>
 
           <p>
-            Institucinis stiprinimas – tai procesai, orientuoti į poreikiu grįstą
-            organizacijos bei atskirų jos vienetų ar veiklų tobulinimą, jos narių bendrųjų
-            ir specifinių kompetencijų ugdymą, institucinės atminties stiprinimą, veikloms
-            reikalingų įrankių, priemonių bei metodų kūrimo inicijavimą.
+            Institucinis stiprinimas – tai procesai, orientuoti į poreikiu
+            grįstą organizacijos bei atskirų jos vienetų ar veiklų tobulinimą,
+            jos narių bendrųjų ir specifinių kompetencijų ugdymą, institucinės
+            atminties stiprinimą, veikloms reikalingų įrankių, priemonių bei
+            metodų kūrimo inicijavimą.
           </p>
 
           <p>
-            Šiais metais Institucinio stiprinimo fondas ne tik rūpinosi organizacijos
-            narių kompetencijų kėlimu, tačiau ir vykdė šiuos projektus:
+            Šiais metais Institucinio stiprinimo fondas ne tik rūpinosi
+            organizacijos narių kompetencijų kėlimu, tačiau ir vykdė šiuos
+            projektus:
           </p>
           <ul>
             <li>Atnaujinta mokymų paraiška;</li>
             <li>
-              Atnaujintas žmogiškųjų išteklių koordinatoriaus pareigybinis dokumentas,
-              kuris taip pat pritaikytas VU SA projektų, klubų ir programų
-              koordinatoriams;
+              Atnaujintas žmogiškųjų išteklių koordinatoriaus pareigybinis
+              dokumentas, kuris taip pat pritaikytas VU SA projektų, klubų ir
+              programų koordinatoriams;
             </li>
             <li>Paruošta išvažiuojamųjų mokymų atmintinė;</li>
             <li>
-              Paruoštas „Vadovavimo ABC“ ir suorganizuotos dvejos dirbtuvės vadovavimo
-              tematika (vienos rugsėjo mėn., kitos vasario mėn.);
+              Paruoštas „Vadovavimo ABC“ ir suorganizuotos dvejos dirbtuvės
+              vadovavimo tematika (vienos rugsėjo mėn., kitos vasario mėn.);
             </li>
             <li>Pradėta naujinti lektorių duomenų bazė;</li>
             <li>
-              Peržiūrima mentorių programa – mentoriai, programos struktūra ir veikimas
-              (šiais metais mentorius turėjo 16 žmonių);
+              Peržiūrima mentorių programa – mentoriai, programos struktūra ir
+              veikimas (šiais metais mentorius turėjo 16 žmonių);
             </li>
             <li>Ruošiama patirties perdavimo atmintinė;</li>
           </ul>
 
           <p>
-            Šiais metais ir toliau tęstas sistemingas darbas žmogiškųjų išteklių srityje:
+            Šiais metais ir toliau tęstas sistemingas darbas žmogiškųjų išteklių
+            srityje:
           </p>
           <ul>
             <li>
-              Vasaros laikotarpiu įvyko bendri sričių planavimai pagal vasarą vykusio
-              Biuro-Tarybos išvažiavimo metu išskirtas svarbiausias problemas;
+              Vasaros laikotarpiu įvyko bendri sričių planavimai pagal vasarą
+              vykusio Biuro-Tarybos išvažiavimo metu išskirtas svarbiausias
+              problemas;
             </li>
             <li>
-              Ir toliau vykdyti reguliarūs Institucinio stiprinimo fondo ir žmogiškųjų
-              išteklių koordinatorių susitikimai (iš viso 6), kurių metu buvo nagrinėjamos
-              organizacijai ir jos nariams aktualios temos:
+              Ir toliau vykdyti reguliarūs Institucinio stiprinimo fondo ir
+              žmogiškųjų išteklių koordinatorių susitikimai (iš viso 6), kurių
+              metu buvo nagrinėjamos organizacijai ir jos nariams aktualios
+              temos:
               <ul>
                 <li>Narių pritraukimas ir išlaikymas;</li>
                 <li>Laiko planavimas;</li>
@@ -236,8 +260,8 @@
               </ul>
             </li>
             <li>
-              Kompetencijų kėlimo procesai vyko ne tik mokymų, bet ir reguliarių,
-              visuotinių susirinkimų, simuliacijų metu;
+              Kompetencijų kėlimo procesai vyko ne tik mokymų, bet ir
+              reguliarių, visuotinių susirinkimų, simuliacijų metu;
             </li>
             <li>VU SA ŠA suorganizuoti ISF mokymai apie komandinį darbą;</li>
             <li>
@@ -279,9 +303,9 @@
   </Organizacija>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { NCollapse, NCollapseItem, NDataTable, NDivider } from "naive-ui";
 import Organizacija from "../5-Organizacija.vue";
-import { NDivider, NCollapse, NCollapseItem, NDataTable } from "naive-ui";
 
 const columns = [
   {
@@ -377,7 +401,8 @@ const data = [
     key: 10,
     date: "2021 10 21 - 2021 11 11",
     padalinys: "VU SA CB",
-    mokymai: "Paskaitų ir mokymų ciklas apie indivudualius poreikius (NE)Matoma ",
+    mokymai:
+      "Paskaitų ir mokymų ciklas apie indivudualius poreikius (NE)Matoma ",
     dalyviai: 20,
   },
   {

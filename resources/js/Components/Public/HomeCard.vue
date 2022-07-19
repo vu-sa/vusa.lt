@@ -7,16 +7,19 @@
       <slot name="mini"></slot>
     </div>
     <slot name="image"></slot>
-    <div v-if="hasBelowCard" class="flex items-center mt-1 text-gray-600 text-sm">
+    <div
+      v-if="hasBelowCard"
+      class="flex items-center mt-1 text-gray-600 text-sm"
+    >
       <slot name="below-card"></slot>
     </div>
     <h3 class="text-gray-800 mt-1 line-clamp-2 leading-tight"><slot></slot></h3>
   </article>
 </template>
 
-<script setup>
-import { NIcon } from "naive-ui";
+<script setup lang="ts">
 import { CalendarLtr20Regular } from "@vicons/fluent";
+import { NIcon } from "naive-ui";
 import { ref } from "vue";
 
 const props = defineProps({

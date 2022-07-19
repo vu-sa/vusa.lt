@@ -205,7 +205,7 @@
   </nav>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ChevronDown20Filled, Navigation24Filled } from "@vicons/fluent";
 import { FacebookF, Instagram } from "@vicons/fa";
 import { Inertia } from "@inertiajs/inertia";
@@ -407,7 +407,7 @@ const goToAtaskaitaHome = () => {
 };
 
 const handleSelectLanguage = (key) => {
-  let otherLocale = locales.filter((l) => {
+  const otherLocale = locales.filter((l) => {
     return l !== locale.value;
   });
 

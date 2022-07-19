@@ -20,15 +20,17 @@
   </Link>
 </template>
 
-<script setup>
+<script setup lang=ts></script>
 import { Link, usePage } from "@inertiajs/inertia-vue3";
 import { NIcon } from "naive-ui";
 import { computed, ref } from "vue";
+import { replace } from "lodash";
+import route from "ziggy-js";
 
 const props = defineProps(["menuContent"]);
 
 const menuButtonIndex = computed(() => {
-  return _.replace(props.menuContent[0], "*", "index");
+  return replace(props.menuContent[0], "*", "index");
 });
 
 const isCurrentRoute = computed(() => {

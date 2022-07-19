@@ -2,9 +2,9 @@
   <div v-for="n in 4" id="#skeleton"><CardSkeleton></CardSkeleton></div>
 </template>
 
-<script setup>
-import CardSkeleton from "@/Components/Public/CardSkeleton.vue";
+<script setup lang="ts">
 import { onMounted } from "vue";
+import CardSkeleton from "@/Components/Public/CardSkeleton.vue";
 
 // let options = {
 //   root: "app"

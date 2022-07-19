@@ -81,7 +81,7 @@
   </NModal>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
 import {
   NButton,

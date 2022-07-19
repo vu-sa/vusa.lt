@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout title="Naujienos" :createURL="route('news.create')">
+  <AdminLayout title="Naujienos" :create-u-r-l="route('news.create')">
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
@@ -10,8 +10,8 @@
         size="medium"
         round
         placeholder="Ieškoti pagal pavadinimą..."
-        @input="handleSearchInput"
         :loading="loading"
+        @input="handleSearchInput"
       ></NInput>
       <NDataTable
         remote
@@ -28,13 +28,13 @@
   </AdminLayout>
 </template>
 
-<script setup>
-import AdminLayout from "@/Layouts/AdminLayout.vue";
-import AsideHeader from "../AsideHeader.vue";
-import { NDataTable, NButton, NInput } from "naive-ui";
-import { ref, h, reactive } from "vue";
+<script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
 import { Link, usePage } from "@inertiajs/inertia-vue3";
+import { NButton, NDataTable, NInput } from "naive-ui";
+import { h, reactive, ref } from "vue";
+import AdminLayout from "@/Layouts/AdminLayout.vue";
+import AsideHeader from "../AsideHeader.vue";
 
 const props = defineProps({
   news: Object,

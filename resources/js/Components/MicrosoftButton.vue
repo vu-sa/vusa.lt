@@ -9,7 +9,7 @@
   </NButton>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { Microsoft } from "@vicons/fa";
 import { NButton, NIcon } from "naive-ui";
 import { ref } from "vue";

@@ -13,13 +13,13 @@
   </AdminLayout>
 </template>
 
-<script setup>
-import AdminLayout from "@/Layouts/AdminLayout.vue";
-import AsideHeader from "../AsideHeader.vue";
-import { NDataTable } from "naive-ui";
-import { ref } from "vue";
+<script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
+import { NDataTable } from "naive-ui";
+import { ref } from "vue";
+import AdminLayout from "@/Layouts/AdminLayout.vue";
+import AsideHeader from "../AsideHeader.vue";
 
 const props = defineProps({
   mainPage: Object,

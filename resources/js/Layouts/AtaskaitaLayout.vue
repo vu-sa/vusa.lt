@@ -21,7 +21,7 @@
   </NConfigProvider>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import AtaskaitaNavigation from "@/Layouts/Partials/Public/AtaskaitaNavigation.vue";
 import PageContent from "@/Layouts/Partials/Public/PageContent.vue";
 // import NewsElement from "@/Layouts/Partials/Public/NewsElement.vue";
@@ -64,7 +64,7 @@ onMounted(() => {
 });
 
 (function (d) {
-  var s = d.createElement("script");
+  const s = d.createElement("script");
   s.setAttribute("data-account", "5OC3pQZI6r");
   s.setAttribute("src", "https://cdn.userway.org/widget.js");
   (d.body || d.head).appendChild(s);

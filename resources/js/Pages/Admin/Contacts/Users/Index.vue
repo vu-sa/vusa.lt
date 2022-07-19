@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout title="Kontaktai" :createURL="route('users.create')">
+  <AdminLayout title="Kontaktai" :create-u-r-l="route('users.create')">
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
@@ -10,8 +10,8 @@
         size="medium"
         round
         placeholder="Ieškoti pagal vardą, el. paštą..."
-        @input="handleSearchInput"
         :loading="loading"
+        @input="handleSearchInput"
       ></NInput>
       <NDataTable
         remote
@@ -26,11 +26,11 @@
   </AdminLayout>
 </template>
 
-<script setup>
-import AdminLayout from "@/Layouts/AdminLayout.vue";
-import { NDataTable, NInput } from "naive-ui";
-import { ref, reactive } from "vue";
+<script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
+import { NDataTable, NInput } from "naive-ui";
+import { reactive, ref } from "vue";
+import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AsideHeader from "../AsideHeader.vue";
 
 const props = defineProps({
@@ -80,7 +80,7 @@ const rowProps = (row) => {
 
 const handlePageChange = (page) => {
   loading.value = true;
-  pagination.page = page;
+  pagination.value.page = page;
   Inertia.get(
     route("users.index"),
     { page: page },

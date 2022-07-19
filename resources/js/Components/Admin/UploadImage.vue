@@ -13,7 +13,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
 import { NButton, NUpload, createDiscreteApi } from "naive-ui";
 import { ref } from "vue";
@@ -38,7 +38,7 @@ const beforeUpload = async (data) => {
 };
 
 const uploadFile = (e) => {
-  let file = e.file;
+  const file = e.file;
 
   Inertia.post(
     route("files.uploadImage"),

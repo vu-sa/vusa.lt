@@ -1,10 +1,12 @@
 <template>
-  <AsideHeaderLink asideHeaderRoute="pages.index">Puslapiai</AsideHeaderLink>
-  <AsideHeaderLink asideHeaderRoute="news.index">Naujienos</AsideHeaderLink>
-  <AsideHeaderLink asideHeaderRoute="mainPage.index">Pradinis puslapis</AsideHeaderLink>
-  <AsideHeaderLink asideHeaderRoute="banners.index">Baneriai</AsideHeaderLink>
+  <AsideHeaderLink aside-header-route="pages.index">Puslapiai</AsideHeaderLink>
+  <AsideHeaderLink aside-header-route="news.index">Naujienos</AsideHeaderLink>
+  <AsideHeaderLink aside-header-route="mainPage.index"
+    >Pradinis puslapis</AsideHeaderLink
+  >
+  <AsideHeaderLink aside-header-route="banners.index">Baneriai</AsideHeaderLink>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import AsideHeaderLink from "@/Components/Admin/AsideHeaderLink.vue";
 </script>

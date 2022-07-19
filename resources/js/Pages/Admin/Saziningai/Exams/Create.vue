@@ -115,7 +115,7 @@
   </AdminLayout>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { NInput, NInputNumber, NSelect } from "naive-ui";
 import { computed, reactive } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";

@@ -1,8 +1,9 @@
-// import "../css/app.css";
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import "./bootstrap";
-// import * as base from "./Composables/translation";
 
 import { InertiaProgress } from "@inertiajs/progress";
+import { ZiggyVue } from "ziggy";
+
 import { createApp, h } from "vue";
 import { createInertiaApp } from "@inertiajs/inertia-vue3";
 import { i18nVue } from "laravel-vue-i18n";
@@ -11,28 +12,27 @@ import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
 const appName =
   window.document.getElementsByTagName("title")[0]?.innerText || "Laravel";
 
-// const meta = document.createElement("meta");
-// meta.name = "naive-ui-style";
-// document.head.appendChild(meta);
-
 createInertiaApp({
   title: (title) => `${title} - ${appName}`,
-  resolve: (name) =>
-    resolvePageComponent(
+  // @ts-ignore
+  resolve: (name) => {
+    return resolvePageComponent(
       `./Pages/${name}.vue`,
       import.meta.glob("./Pages/**/*.vue")
-    ),
+    );
+  },
+  // @ts-ignore
   setup({ el, app, props, plugin }) {
     return createApp({ render: () => h(app, props) })
       .use(plugin)
       .use(i18nVue, {
         fallbackLang: "lt",
-        resolve: async (lang) => {
+        resolve: async (lang: string) => {
           const langs = import.meta.glob("../../lang/*.json");
           return await langs[`../../lang/${lang}.json`]();
         },
       })
-      .mixin({ methods: { route: window.route } })
+      .use(ZiggyVue)
       .mount(el);
   },
 });

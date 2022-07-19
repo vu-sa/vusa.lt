@@ -3,7 +3,7 @@
     <NBackTop :right="100" />
     <NewsArticle>
       <template #tags>
-        <template v-for="tag in article.tags" v-bind:key="tag.id">
+        <template v-for="tag in article.tags" :key="tag.id">
           <NButton size="tiny" round>{{ tag.name }}</NButton>
         </template>
       </template>
@@ -22,8 +22,9 @@
           :src="article.image"
       /></template>
       <div class="col-span-full">
-        <NButton text v-if="$page.props.user" @click="editNews"
-          ><NIcon size="40"><DocumentEdit24Regular></DocumentEdit24Regular></NIcon
+        <NButton v-if="$page.props.user" text @click="editNews"
+          ><NIcon size="40"
+            ><DocumentEdit24Regular></DocumentEdit24Regular></NIcon
         ></NButton>
       </div>
       <div
@@ -34,12 +35,12 @@
   </PublicLayout>
 </template>
 
-<script setup>
-import PublicLayout from "../../Layouts/PublicLayout.vue";
-import NewsArticle from "../../Components/Public/NewsArticle.vue";
-import { NButton, NIcon, NBackTop } from "naive-ui";
+<script setup lang="ts">
 import { Clock20Regular, DocumentEdit24Regular } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
+import { NBackTop, NButton, NIcon } from "naive-ui";
+import NewsArticle from "../../Components/Public/NewsArticle.vue";
+import PublicLayout from "../../Layouts/PublicLayout.vue";
 
 const props = defineProps({
   article: Object,

@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout title="Sažiningai" :createURL="create_url">
+  <AdminLayout title="Sažiningai" :create-u-r-l="create_url">
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
@@ -15,13 +15,13 @@
   </AdminLayout>
 </template>
 
-<script setup>
-import AdminLayout from "@/Layouts/AdminLayout.vue";
-import AsideHeader from "../AsideHeader.vue";
-import { NDataTable, NEllipsis, NAlert } from "naive-ui";
-import { ref, h, computed } from "vue";
+<script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
+import { NAlert, NDataTable, NEllipsis } from "naive-ui";
+import { computed, h, ref } from "vue";
+import AdminLayout from "@/Layouts/AdminLayout.vue";
+import AsideHeader from "../AsideHeader.vue";
 
 const props = defineProps({
   exams: Object,

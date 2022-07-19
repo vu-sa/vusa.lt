@@ -9,7 +9,7 @@
   </NPopconfirm>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
 import { NButton, NPopconfirm, NSpin, createDiscreteApi } from "naive-ui";
 import { ref } from "vue";
@@ -24,7 +24,7 @@ const { message } = createDiscreteApi(["message"]);
 
 const upsertModel = () => {
   // check for substring method in props.modelRoute
-  let modelMethod = props.modelRoute.includes("update") ? "PATCH" : "POST";
+  const modelMethod = props.modelRoute.includes("update") ? "PATCH" : "POST";
 
   showSpin.value = true;
   Inertia.visit(route(props.modelRoute, props.model.id), {
