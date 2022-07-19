@@ -25,6 +25,7 @@
         "tightenco/ziggy": "^1.0"
     },
     "require-dev": {
+        "barryvdh/laravel-debugbar": "^3.7",
         "fakerphp/faker": "^1.9.1",
         "kitloong/laravel-migrations-generator": "^6.2",
         "laravel/sail": "^1.12",
