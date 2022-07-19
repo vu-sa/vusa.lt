@@ -69,6 +69,7 @@ import { computed, reactive, ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import TipTap from "@/Components/TipTap.vue";
+import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
 // import { map } from "lodash";
 
 const props = defineProps({
