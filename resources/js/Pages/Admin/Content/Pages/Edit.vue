@@ -44,18 +44,15 @@
       <div class="main-card">
         <h2 class="font-bold text-xl mb-2 inline-block">Turinys</h2>
         <div class="py-4">
-          <NMessageProvider
-            ><TipTap
-              v-model="page.text"
-              :search-files="$page.props.search.other"
-          /></NMessageProvider>
+          <TipTap
+            v-model="page.text"
+            :search-files="$page.props.search.other"
+          />
         </div>
         <div
           class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center"
         >
-          <NMessageProvider
-            ><UpsertModelButton :model="page" model-route="pages.update"
-          /></NMessageProvider>
+          <UpsertModelButton :model="page" model-route="pages.update" />
         </div>
       </div>
     </form>
@@ -67,11 +64,10 @@ import { Inertia } from "@inertiajs/inertia";
 import {
   // NButton,
   NInput,
-  NMessageProvider,
   // NPopconfirm,
   NSelect,
   // NSpin,
-  // useMessage,
+  // createDiscreteApi,
 } from "naive-ui";
 import { reactive, ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
@@ -86,7 +82,7 @@ const props = defineProps({
 
 const page = reactive(props.page);
 const otherLangPageOptions = ref([]);
-// const message = useMessage();
+// const { message } = createDiscreteApi(["message"]);
 
 const getOtherLangPages = _.debounce((input) => {
   // get other lang

@@ -20,14 +20,14 @@
 <script setup>
 import { Delete20Filled } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
-import { NButton, NIcon, NPopconfirm, useMessage } from "naive-ui";
+import { NButton, NIcon, NPopconfirm, createDiscreteApi } from "naive-ui";
 
 const props = defineProps({
   model: { type: Object, default: null },
   modelRoute: { type: String, default: null },
 });
 
-const message = useMessage();
+const { message } = createDiscreteApi(["message"]);
 
 const destroyModel = () => {
   Inertia.delete(route(props.modelRoute, props.model.id), {

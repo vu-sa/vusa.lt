@@ -52,9 +52,8 @@
         <div class="flex items-center justify-end mt-4 gap-4">
           <NPopover
             ><template #trigger>
-              <NMessageProvider
-                ><MicrosoftButton></MicrosoftButton
-              ></NMessageProvider> </template
+              <MicrosoftButton></MicrosoftButton>
+            </template>
             ><span>Tik su VU SA paskyromis.</span></NPopover
           >
 
@@ -77,7 +76,7 @@
 
 <script setup>
 import { Head, useForm } from "@inertiajs/inertia-vue3";
-import { NButton, NInput, NMessageProvider, NPopover } from "naive-ui";
+import { NButton, NInput, NPopover } from "naive-ui";
 import { reactive } from "vue";
 import AppLogo from "@/Components/AppLogo.vue";
 import MicrosoftButton from "@/Components/MicrosoftButton.vue";

@@ -39,11 +39,7 @@
         <div
           class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center"
         >
-          <NMessageProvider
-            ><UpsertModelButton
-              :model="mainPage"
-              model-route="mainPages.update"
-          /></NMessageProvider>
+          <UpsertModelButton :model="mainPage" model-route="mainPages.update" />
         </div>
       </form>
     </div>
@@ -51,7 +47,7 @@
 </template>
 
 <script setup>
-import { NInput, NMessageProvider } from "naive-ui";
+import { NInput } from "naive-ui";
 import { reactive } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";

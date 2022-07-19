@@ -46,25 +46,20 @@
         </div>
 
         <div class="py-4 lg:col-span-4">
-          <NMessageProvider>
-            <TipTap
-              v-model="calendar.description"
-              :search-files="$page.props.search.other"
-            />
-          </NMessageProvider>
+          <TipTap
+            v-model="calendar.description"
+            :search-files="$page.props.search.other"
+          />
         </div>
 
         <div
           class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center"
         >
-          <NMessageProvider
-            ><DeleteModelButton
-              :model="calendar"
-              model-route="calendar.destroy"
-          /></NMessageProvider>
-          <NMessageProvider
-            ><UpsertModelButton :model="calendar" model-route="calendar.update"
-          /></NMessageProvider>
+          <DeleteModelButton :model="calendar" model-route="calendar.destroy" />
+          <UpsertModelButton
+            :model="calendar"
+            model-route="calendar.update"
+          ></UpsertModelButton>
         </div>
       </form>
     </div>
@@ -72,8 +67,7 @@
 </template>
 
 <script setup>
-import { Inertia } from "@inertiajs/inertia";
-import { NDatePicker, NInput, NMessageProvider, NSelect } from "naive-ui";
+import { NDatePicker, NInput, NSelect } from "naive-ui";
 import { reactive } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import DeleteModelButton from "@/Components/Admin/DeleteModelButton.vue";

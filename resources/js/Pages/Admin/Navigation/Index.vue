@@ -41,7 +41,7 @@ import {
   NPopconfirm,
   NSpin,
   NTree,
-  // useMessage,
+  // createDiscreteApi,
 } from "naive-ui";
 import { h, ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
@@ -92,7 +92,7 @@ const renderSuffix = ({ option }) => {
   );
 };
 
-// const message = useMessage();
+// const { message } = createDiscreteApi(["message"]);
 
 const dataRef = ref(parseNavigation(props.navigation, 0));
 const showSpin = ref(false);

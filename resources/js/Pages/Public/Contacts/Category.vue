@@ -5,6 +5,7 @@
     >
       <button
         v-for="institution in institutions"
+        :key="institution.id"
         class="min-h-[8em] relative"
         style="white-space: normal"
         @click="inertiaVisitOnClick(institution.alias)"
@@ -33,25 +34,25 @@
 </template>
 
 <script setup>
-import PublicLayout from "@/Layouts/PublicLayout.vue";
-import ContactWithPhoto from "@/Components/Public/ContactWithPhoto.vue";
-import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
-import {
-  NSelect,
-  NCascader,
-  NInput,
-  NInputGroup,
-  useMessage,
-  NIcon,
-  NTabs,
-  NTabPane,
-  NButton,
-} from "naive-ui";
-import { Mail20Regular, Phone20Regular } from "@vicons/fluent";
-import { ref } from "vue";
 import { Inertia } from "@inertiajs/inertia";
+// import { Mail20Regular, Phone20Regular } from "@vicons/fluent";
+// import {
+//   NButton,
+//   NCascader,
+//   NIcon,
+//   NInput,
+//   NInputGroup,
+//   NSelect,
+//   NTabPane,
+//   NTabs,
+//   createDiscreteApi,
+// } from "naive-ui";
+// import { ref } from "vue";
+// import ContactWithPhoto from "@/Components/Public/ContactWithPhoto.vue";
+import PublicLayout from "@/Layouts/PublicLayout.vue";
+// import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 
-const props = defineProps({
+defineProps({
   institutions: Array,
 });
 

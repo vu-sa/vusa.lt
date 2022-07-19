@@ -210,14 +210,12 @@ import {
   NSelect,
   NTabPane,
   NTabs,
-  useMessage,
+  createDiscreteApi,
 } from "naive-ui";
+import { onBeforeUnmount, ref } from "vue";
 import Image from "@tiptap/extension-image";
 import StarterKit from "@tiptap/starter-kit";
 import TipTapLink from "@tiptap/extension-link";
-// import { usePage } from "@inertiajs/inertia-vue3";
-import { Link } from "@inertiajs/inertia-vue3";
-import { onBeforeUnmount, ref } from "vue";
 
 const props = defineProps({
   modelValue: String,
@@ -230,7 +228,7 @@ const showFileModal = ref(false);
 const previousUrl = ref("");
 const files = ref([]);
 const modelValue = props.modelValue;
-const message = useMessage();
+const { message } = createDiscreteApi(["message"]);
 // const searchFiles = ref(props.searchFiles);
 
 const addImage = () => {

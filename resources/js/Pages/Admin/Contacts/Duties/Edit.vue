@@ -66,12 +66,8 @@
         </div>
 
         <div class="col-span-full flex justify-end items-center">
-          <NMessageProvider
-            ><DeleteModelButton :model="duty" model-route="duties.destroy"
-          /></NMessageProvider>
-          <NMessageProvider
-            ><UpsertModelButton :model="duty" model-route="duties.update"
-          /></NMessageProvider>
+          <DeleteModelButton :model="duty" model-route="duties.destroy" />
+          <UpsertModelButton :model="duty" model-route="duties.update" />
         </div>
       </form>
     </div>
@@ -79,7 +75,7 @@
       <div v-if="users">
         <strong>Šiuo metu šias pareigas užima:</strong>
         <ul class="list-inside">
-          <li v-for="user in users">
+          <li v-for="user in users" :key="user.id">
             <Link :href="route('users.edit', { id: user.id })">{{
               user.name
             }}</Link>
@@ -107,21 +103,12 @@
 import { Inertia } from "@inertiajs/inertia";
 import { Link, usePage } from "@inertiajs/inertia-vue3";
 import { LinkDismiss20Filled } from "@vicons/fluent";
-import {
-  NButton,
-  NIcon,
-  NInput,
-  NMessageProvider,
-  NPopconfirm,
-  NSelect,
-} from "naive-ui";
+import { NButton, NIcon, NInput, NPopconfirm, NSelect } from "naive-ui";
 import { onMounted, reactive, ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import DeleteModelButton from "@/Components/Admin/DeleteModelButton.vue";
 import TipTap from "@/Components/TipTap.vue";
 import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
-
-// const message = useMessage();
 
 const props = defineProps({
   duty: Object,

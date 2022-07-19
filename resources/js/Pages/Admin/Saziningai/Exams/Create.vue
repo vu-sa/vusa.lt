@@ -87,11 +87,10 @@
         </div>
 
         <div class="col-start-3 col-span-2 flex justify-end items-center">
-          <NMessageProvider
-            ><UpsertModelButton
-              :model="exam"
-              model-route="saziningaiExams.store"
-          /></NMessageProvider>
+          <UpsertModelButton
+            :model="exam"
+            model-route="saziningaiExams.store"
+          />
         </div>
       </form>
     </div>
@@ -117,7 +116,7 @@
 </template>
 
 <script setup>
-import { NInput, NInputNumber, NMessageProvider, NSelect } from "naive-ui";
+import { NInput, NInputNumber, NSelect } from "naive-ui";
 import { computed, reactive } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";

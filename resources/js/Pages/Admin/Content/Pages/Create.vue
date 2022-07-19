@@ -55,9 +55,7 @@
         <div
           class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center"
         >
-          <NMessageProvider
-            ><UpsertModelButton :model="page" model-route="pages.store"
-          /></NMessageProvider>
+          <UpsertModelButton :model="page" model-route="pages.store" />
         </div>
       </div>
     </form>
@@ -66,7 +64,7 @@
 
 <script setup>
 import { Inertia } from "@inertiajs/inertia";
-import { NInput, NMessageProvider, NSelect, useMessage } from "naive-ui";
+import { NInput, NSelect, createDiscreteApi } from "naive-ui";
 import { computed, reactive, ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
@@ -79,7 +77,7 @@ const props = defineProps({
 
 const page = reactive({});
 const otherLangPageOptions = ref([]);
-const message = useMessage();
+const { message } = createDiscreteApi(["message"]);
 
 // compute news.permalink with snake case of title, also limit length to 25 and add random hexanumeric hash
 page.permalink = computed(() => {

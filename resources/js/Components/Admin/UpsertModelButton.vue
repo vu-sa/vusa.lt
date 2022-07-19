@@ -11,7 +11,7 @@
 
 <script setup>
 import { Inertia } from "@inertiajs/inertia";
-import { NButton, NPopconfirm, NSpin, useMessage } from "naive-ui";
+import { NButton, NPopconfirm, NSpin, createDiscreteApi } from "naive-ui";
 import { ref } from "vue";
 
 const props = defineProps({
@@ -20,7 +20,7 @@ const props = defineProps({
 });
 
 const showSpin = ref(false);
-const message = useMessage();
+const { message } = createDiscreteApi(["message"]);
 
 const upsertModel = () => {
   // check for substring method in props.modelRoute

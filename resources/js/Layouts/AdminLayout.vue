@@ -93,7 +93,7 @@
       <div class="col-span-2 ml-12 mt-4 mb-5"></div>
       <transition name="fade">
         <main v-if="animated" class="md:col-span-4 col-span-full">
-          <NMessageProvider><slot /></NMessageProvider>
+          <slot />
         </main>
       </transition>
       <!-- Aside Navigation -->
@@ -110,7 +110,7 @@
 <script setup>
 import { Head } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
-import { NButton, NMessageProvider, NModal } from "naive-ui";
+import { NButton, NModal } from "naive-ui";
 import { onMounted, ref } from "vue";
 import AppLogo from "@/Components/AppLogo.vue";
 import AsideNavigation from "@/Layouts/Partials/Admin/AsideNavigation.vue";

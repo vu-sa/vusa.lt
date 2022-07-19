@@ -219,7 +219,7 @@ import {
   NIcon,
   NPopover,
   NTree,
-  // useMessage,
+  // createDiscreteApi,
 } from "naive-ui";
 import { ref } from "vue";
 
@@ -234,7 +234,7 @@ const toggleMenu = () => {
   activeDrawer.value = !activeDrawer.value;
 };
 
-// const message = useMessage();
+// const { message } = createDiscreteApi(["message"]);
 
 // get permalink from url, last part after /
 const getPermalink = () => {

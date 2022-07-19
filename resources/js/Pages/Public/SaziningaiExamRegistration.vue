@@ -70,7 +70,11 @@
             label="Atsiskaitymą laikančių studentų skaičius"
             path="holders"
           >
-            <NInputNumber v-model:value="formValue.holders" placeholder="" />
+            <NInputNumber
+              v-model:value="formValue.holders"
+              :min="1"
+              placeholder="30"
+            />
           </NFormItem>
           <NFormItem
             label="Reikalingas stebėtojų skaičius"
@@ -78,7 +82,8 @@
           >
             <NInputNumber
               v-model:value="formValue.students_need"
-              placeholder=""
+              :min="1"
+              placeholder="3"
             />
           </NFormItem>
           <NFormItem label="Atsiskaitymo srautai" path="flows">
@@ -139,7 +144,6 @@
             <a href="mailto:dap@vusa.lt">dap@vusa.lt</a>.
           </p>
           <NFormItem>
-            <NMessageProvider>
               <FormSubmitButton
                 submit-route="saziningaiExamRegistration.store"
                 :form-ref="formRef"
@@ -148,7 +152,6 @@
               >
                 Pateikti
               </FormSubmitButton>
-            </NMessageProvider>
           </NFormItem>
         </NForm>
       </div>
@@ -166,7 +169,6 @@ import {
   NFormItem,
   NInput,
   NInputNumber,
-  NMessageProvider,
   NSelect,
 } from "naive-ui";
 import { h, ref } from "vue";
@@ -179,7 +181,7 @@ const props = defineProps({
   padaliniaiOptions: Array,
 });
 
-// const message = useMessage();
+// const { message } = createDiscreteApi(["message"]);
 const formRef = ref(null);
 
 const labelGDPR = h("label", {}, [
@@ -189,6 +191,9 @@ const labelGDPR = h("label", {}, [
     {
       target: "_blank",
       href: "https://vusa.lt/uploads/Dokumentų šablonai/Asmens_duomenu_tvarkymo_VUSA_tvarkos_aprasas.pdf",
+      onClick: (e) => {
+        e.stopPropagation();
+      },
     },
     "Asmens duomenų tvarkymo Vilniaus universiteto Studentų atstovybėje tvarkos aprašu"
   ),

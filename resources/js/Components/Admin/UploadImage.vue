@@ -15,7 +15,7 @@
 
 <script setup>
 import { Inertia } from "@inertiajs/inertia";
-import { NButton, NUpload, useMessage } from "naive-ui";
+import { NButton, NUpload, createDiscreteApi } from "naive-ui";
 import { ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
 
@@ -25,7 +25,7 @@ const props = defineProps({
 });
 
 const modelValue = ref(props.modelValue);
-const message = useMessage();
+const { message } = createDiscreteApi(["message"]);
 
 const emit = defineEmits(["update:modelValue"]);
 

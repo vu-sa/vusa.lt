@@ -8,8 +8,8 @@
         size="large"
         round
         placeholder="Ieškoti pagal vardą..."
-        @input="handleNameInput"
         :loading="loadingNameInput"
+        @input="handleNameInput"
       />
       <!-- <NInputGroup class="md:col-span-3 mb-4">
 		            <NCascader
@@ -33,15 +33,17 @@
 		          </NInputGroup> -->
       <transition-group name="list">
         <ContactWithPhoto
-          :class="{ 'md:col-span-2': contact.image }"
           v-for="contact in search_contacts"
           :key="contact.id"
-          :imageSrc="contact.image"
+          :class="{ 'md:col-span-2': contact.image }"
+          :image-src="contact.image"
         >
           <template #name> {{ contact.name }} </template>
           <template #duty>
             <ul class="list-inside">
-              <li v-for="duty in contact.duties" :key="duty.id">{{ duty.name }}</li>
+              <li v-for="duty in contact.duties" :key="duty.id">
+                {{ duty.name }}
+              </li>
             </ul>
           </template>
           <!-- <template #description> Aprašymas </template> -->
@@ -64,22 +66,22 @@
 </template>
 
 <script setup>
-import PublicLayout from "@/Layouts/PublicLayout.vue";
-import ContactWithPhoto from "@/Components/Public/ContactWithPhoto.vue";
-import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
+import { Inertia } from "@inertiajs/inertia";
+import { Mail20Regular, Phone20Regular } from "@vicons/fluent";
 import {
-  NSelect,
   NCascader,
+  NIcon,
   NInput,
   NInputGroup,
-  useMessage,
-  NIcon,
-  NTabs,
+  NSelect,
   NTabPane,
+  NTabs,
+  createDiscreteApi,
 } from "naive-ui";
-import { Mail20Regular, Phone20Regular } from "@vicons/fluent";
 import { ref } from "vue";
-import { Inertia } from "@inertiajs/inertia";
+import ContactWithPhoto from "@/Components/Public/ContactWithPhoto.vue";
+import PublicLayout from "@/Layouts/PublicLayout.vue";
+import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 
 const props = defineProps({
   search_contacts: Array,
@@ -89,7 +91,7 @@ const search_contacts = ref([]);
 search_contacts.value = props.search_contacts;
 
 const loadingNameInput = ref(false);
-const message = useMessage();
+const { message } = createDiscreteApi(["message"]);
 
 // handleNameInput with half second delay and then update contacts with inertia request
 const handleNameInput = _.debounce((input) => {

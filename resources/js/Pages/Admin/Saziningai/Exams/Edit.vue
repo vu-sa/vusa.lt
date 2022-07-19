@@ -91,16 +91,14 @@
         <div
           class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center"
         >
-          <NMessageProvider
-            ><DeleteModelButton
-              :model="exam"
-              model-route="saziningaiExams.destroy"
-          /></NMessageProvider>
-          <NMessageProvider
-            ><UpsertModelButton
-              :model="exam"
-              model-route="saziningaiExams.update"
-          /></NMessageProvider>
+          <DeleteModelButton
+            :model="exam"
+            model-route="saziningaiExams.destroy"
+          />
+          <UpsertModelButton
+            :model="exam"
+            model-route="saziningaiExams.update"
+          />
         </div>
       </form>
     </div>
@@ -161,7 +159,6 @@ import {
   NIcon,
   NInput,
   NInputNumber,
-  NMessageProvider,
   NModal,
   NPopover,
   NSelect,

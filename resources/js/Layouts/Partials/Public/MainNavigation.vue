@@ -308,7 +308,7 @@ import {
   NInput,
   NModal,
   NTree,
-  // useMessage,
+  // createDiscreteApi,
 } from "naive-ui";
 import { getActiveLanguage, loadLanguageAsync, wTrans } from "laravel-vue-i18n";
 import { ref } from "vue";
@@ -335,7 +335,7 @@ const changeShowSearch = () => {
   showSearch.value = !showSearch.value;
 };
 
-// const message = useMessage();
+// const { message } = createDiscreteApi(["message"]);
 
 // after half a second input delay, use Inertiapost request to fetch search results
 const handleSearchInput = _.debounce((input) => {

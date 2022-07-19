@@ -71,30 +71,24 @@
       <div class="main-card">
         <h2 class="font-bold text-xl mb-2 inline-block">Įvadas</h2>
         <div class="py-4">
-          <NMessageProvider>
-            <TipTap
-              v-model="news.short"
-              :search-files="$page.props.search.other"
-            />
-          </NMessageProvider>
+          <TipTap
+            v-model="news.short"
+            :search-files="$page.props.search.other"
+          />
         </div>
       </div>
       <div class="main-card">
         <h2 class="font-bold text-xl mb-2 inline-block">Turinys</h2>
         <div class="py-4">
-          <NMessageProvider>
-            <TipTap
-              v-model="news.text"
-              :search-files="$page.props.search.other"
-            />
-          </NMessageProvider>
+          <TipTap
+            v-model="news.text"
+            :search-files="$page.props.search.other"
+          />
         </div>
         <div
           class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center"
         >
-          <NMessageProvider
-            ><UpsertModelButton :model="news" model-route="news.store"
-          /></NMessageProvider>
+          <UpsertModelButton :model="news" model-route="news.store" />
         </div>
       </div>
     </form>
@@ -103,14 +97,7 @@
 
 <script setup>
 import { Inertia } from "@inertiajs/inertia";
-import {
-  NCheckbox,
-  NDatePicker,
-  NInput,
-  NMessageProvider,
-  NPopconfirm,
-  NSelect,
-} from "naive-ui";
+import { NCheckbox, NDatePicker, NInput, NPopconfirm, NSelect } from "naive-ui";
 import { computed, reactive, ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
 import AdminLayout from "@/Layouts/AdminLayout.vue";

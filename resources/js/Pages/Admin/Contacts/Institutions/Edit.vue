@@ -70,11 +70,10 @@
             </template>
             Ištrinto elemento nebus galima atkurti!
           </n-popconfirm> -->
-          <NMessageProvider
-            ><UpsertModelButton
-              :model="dutyInstitution"
-              model-route="dutyInstitutions.update"
-          /></NMessageProvider>
+          <UpsertModelButton
+            :model="dutyInstitution"
+            model-route="dutyInstitutions.update"
+          />
         </div>
       </form>
     </div>
@@ -96,7 +95,7 @@
 
 <script setup>
 import { Link } from "@inertiajs/inertia-vue3";
-import { NInput, NMessageProvider, NSelect } from "naive-ui";
+import { NInput, NSelect } from "naive-ui";
 import { reactive } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import TipTap from "@/Components/TipTap.vue";

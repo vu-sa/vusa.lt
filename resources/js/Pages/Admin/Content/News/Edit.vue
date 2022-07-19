@@ -59,9 +59,7 @@
       </div>
       <div class="main-card">
         <h2 class="font-bold text-xl mb-2 inline-block">Nuotrauka</h2>
-        <NMessageProvider
-          ><UploadImage v-model="news.image" :path="'news'"></UploadImage
-        ></NMessageProvider>
+        <UploadImage v-model="news.image" :path="'news'"></UploadImage>
         <div class="mb-4">
           <label class="font-bold">Nuotraukos autorius</label>
           <NInput v-model:value="news.image_author" />
@@ -70,33 +68,25 @@
       <div class="main-card">
         <h2 class="font-bold text-xl mb-2 inline-block">Įvadas</h2>
         <div class="py-4">
-          <NMessageProvider>
-            <TipTap
-              v-model="news.short"
-              :search-files="$page.props.search.other"
-            />
-          </NMessageProvider>
+          <TipTap
+            v-model="news.short"
+            :search-files="$page.props.search.other"
+          />
         </div>
       </div>
       <div class="main-card">
         <h2 class="font-bold text-xl mb-2 inline-block">Turinys</h2>
         <div class="py-4">
-          <NMessageProvider>
-            <TipTap
-              v-model="news.text"
-              :search-files="$page.props.search.other"
-            />
-          </NMessageProvider>
+          <TipTap
+            v-model="news.text"
+            :search-files="$page.props.search.other"
+          />
         </div>
         <div
           class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center"
         >
-          <NMessageProvider
-            ><DeleteModelButton :model="news" model-route="news.destroy"
-          /></NMessageProvider>
-          <NMessageProvider
-            ><UpsertModelButton :model="news" model-route="news.update"
-          /></NMessageProvider>
+          <DeleteModelButton :model="news" model-route="news.destroy" />
+          <UpsertModelButton :model="news" model-route="news.update" />
         </div>
       </div>
     </form>
@@ -105,13 +95,7 @@
 
 <script setup>
 import { Inertia } from "@inertiajs/inertia";
-import {
-  NCheckbox,
-  NDatePicker,
-  NInput,
-  NMessageProvider,
-  NSelect,
-} from "naive-ui";
+import { NCheckbox, NDatePicker, NInput, NSelect } from "naive-ui";
 import { reactive, ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
@@ -126,7 +110,6 @@ const props = defineProps({
   // uploaded_image_path: String,
 });
 
-// const message = useMessage();
 const news = reactive(props.news);
 const otherLangnewsOptions = ref([]);
 

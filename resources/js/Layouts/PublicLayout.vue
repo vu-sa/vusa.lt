@@ -6,15 +6,14 @@
       <MainNavigation></MainNavigation>
       <transition name="fade">
         <main v-if="animated">
-          <PageContent class="pt-16 sm:pt-24 2xl:pt-36">
+          <div class="pt-16 sm:pt-24 2xl:pt-36">
             <!-- <NThemeEditor v-if="$page.props.app.env == 'local'"> -->
 
-            <!-- <NMessageProvider> -->
             <slot></slot>
-            <!-- </NMessageProvider> -->
+
             <!-- </NConfigProvider> -->
             <!-- </NThemeEditor> -->
-          </PageContent>
+          </div>
         </main>
       </transition>
     </div>
@@ -28,13 +27,12 @@
 <script setup>
 import Footer from "@/Layouts/Partials/Public/Footer.vue";
 import MainNavigation from "@/Layouts/Partials/Public/MainNavigation.vue";
-import PageContent from "@/Layouts/Partials/Public/PageContent.vue";
+// import PageContent from "@/Layouts/Partials/Public/PageContent.vue";
 // import NewsElement from "@/Layouts/Partials/Public/NewsElement.vue";
 import { Head } from "@inertiajs/inertia-vue3";
 import {
   NConfigProvider,
   // NDialogProvider,
-  // NMessageProvider,
   // NNotificationProvider,
   // NThemeEditor,
   // darkTheme,

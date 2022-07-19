@@ -48,9 +48,7 @@
         <div
           class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center"
         >
-          <NMessageProvider
-            ><UpsertModelButton :model="banner" model-route="banners.update"
-          /></NMessageProvider>
+          <UpsertModelButton :model="banner" model-route="banners.update" />
         </div>
       </form>
     </div>
@@ -58,7 +56,7 @@
 </template>
 
 <script setup>
-import { NInput, NMessageProvider, NSwitch } from "naive-ui";
+import { NInput, NSwitch } from "naive-ui";
 import { reactive } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import UploadImage from "@/Components/Admin/UploadImage.vue";

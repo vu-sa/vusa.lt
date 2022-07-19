@@ -87,9 +87,7 @@
             </template>
             Ištrinto elemento nebus galima atkurti!
           </n-popconfirm> -->
-          <NMessageProvider
-            ><UpsertModelButton :model="contact" model-route="users.store"
-          /></NMessageProvider>
+          <UpsertModelButton :model="contact" model-route="users.store" />
         </div>
       </form>
     </div>
@@ -98,7 +96,7 @@
 
 <script setup>
 import { Inertia } from "@inertiajs/inertia";
-import { NInput, NMessageProvider, NSelect } from "naive-ui";
+import { NInput, NSelect } from "naive-ui";
 import { reactive, ref } from "vue";
 import { usePage, useRemember } from "@inertiajs/inertia-vue3";
 import AdminLayout from "@/Layouts/AdminLayout.vue";

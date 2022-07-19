@@ -6,10 +6,10 @@
 
 <script setup>
 import { Inertia } from "@inertiajs/inertia";
-import { NButton, useMessage } from "naive-ui";
+import { NButton, createDiscreteApi } from "naive-ui";
 
 const emit = defineEmits(["resetForm"]);
-const message = useMessage();
+const { message } = createDiscreteApi(["message"]);
 
 const props = defineProps({
   submitRoute: { type: String, required: true },

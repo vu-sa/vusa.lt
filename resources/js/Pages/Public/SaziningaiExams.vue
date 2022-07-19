@@ -67,16 +67,14 @@
           ></NCheckbox>
         </NFormItem>
         <NFormItem>
-          <NMessageProvider>
-            <FormSubmitButton
-              submit-route="saziningaiExamObserver.store"
-              :form-ref="formRef"
-              :form-value="formValue"
-              @reset-form="resetForm"
-            >
-              Pateikti
-            </FormSubmitButton>
-          </NMessageProvider>
+          <FormSubmitButton
+            submit-route="saziningaiExamObserver.store"
+            :form-ref="formRef"
+            :form-value="formValue"
+            @reset-form="resetForm"
+          >
+            Pateikti
+          </FormSubmitButton>
         </NFormItem>
       </NForm>
     </NCard>
@@ -96,7 +94,6 @@ import {
   NFormItem,
   NInput,
   NInputNumber,
-  NMessageProvider,
   NModal,
   NSelect,
 } from "naive-ui";
@@ -110,7 +107,7 @@ const props = defineProps({
   saziningaiExamFlows: Array,
 });
 
-// const message = useMessage();
+// const { message } = createDiscreteApi(["message"]);
 const showModal = ref(false);
 const formRef = ref(null);
 const formValue = ref({
