@@ -227,8 +227,7 @@ const emit = defineEmits(["update:modelValue"]);
 const showFileModal = ref(false);
 const previousUrl = ref("");
 const files = ref([]);
-const modelValue = props.modelValue;
-const { message } = createDiscreteApi(["message"]);
+const modelValue = ref(props.modelValue);
 // const searchFiles = ref(props.searchFiles);
 
 const addImage = () => {
@@ -343,6 +342,9 @@ const editor = useEditor({
 onBeforeUnmount(() => {
   editor.value.destroy();
 });
+
+// must be called after everything
+const { message } = createDiscreteApi(["message"]);
 </script>
 
 <style lang="scss" scoped>
