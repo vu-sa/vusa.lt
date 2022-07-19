@@ -3,12 +3,21 @@
     "outDir": "dist",
     "target": "ES6",
     "module": "ES2020",
-    "types": ["naive-ui/volar", "@types/ziggy-js"],
+    "strict": true,
+    "moduleResolution": "Node",
+    "checkJs": true,
+    "jsx": "preserve",
     "paths": {
       "@/*": ["./resources/js/*"],
       "ziggy": ["./vendor/tightenco/ziggy/dist/vue"]
     },
-    "checkJs": true
+    "types": ["naive-ui/volar", "@types/ziggy-js", "vite/client"],
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "isolatedModules": true
   },
-  "exclude": ["./node_modules/**/*", "./public/**/*"]
+  "exclude": ["./node_modules/**/*", "./public/**/*", "**/*.stories.ts"]
 }
