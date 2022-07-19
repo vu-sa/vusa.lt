@@ -1,23 +1,14 @@
 {
-	"compilerOptions": {
-		"outDir": "dist",
-		"types": [
-			"naive-ui/volar",
-			"@types/ziggy-js"
-		],
-		"paths": {
-			"@/*": [
-				"./resources/js/*"
-			],
-			"ziggy": [
-				"./vendor/tightenco/ziggy/dist/vue"
-			]
-		},
-		"allowJs": true,
-		// "checkJs": true
-	},
-	"exclude": [
-		"./node_modules/**/*",
-		"./public/**/*"
-	]
+  "compilerOptions": {
+    "outDir": "dist",
+    "target": "ES6",
+    "module": "ES2020",
+    "types": ["naive-ui/volar", "@types/ziggy-js"],
+    "paths": {
+      "@/*": ["./resources/js/*"],
+      "ziggy": ["./vendor/tightenco/ziggy/dist/vue"]
+    },
+    "checkJs": true
+  },
+  "exclude": ["./node_modules/**/*", "./public/**/*"]
 }
