@@ -2,8 +2,8 @@
   <AppLayout title="Pradinis">
     <div class="main-card">
       <p>{{ salutation }}</p>
-      <p><strong>Rolė:</strong> {{ props.role.name }}</p>
-      <p class="my-4">{{ props.role.description }}</p>
+      <p><strong>Rolė:</strong> {{ role.name }}</p>
+      <p class="my-4">{{ role.description }}</p>
       <p>
         Jeigu kiltų klausimų, rašykite
         <a href="mailto:it@vusa.lt">it@vusa.lt</a>
@@ -18,9 +18,9 @@ import AppLayout from "@/Layouts/AdminLayout.vue";
 
 import { computed } from "vue";
 
-const props = defineProps({
-  role: Object,
-});
+defineProps<{
+  role: RoleData;
+}>();
 
 const salutation = computed(() => {
   // change name word ending to salutation
