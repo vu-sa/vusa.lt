@@ -11,16 +11,16 @@ import { NButton, createDiscreteApi } from "naive-ui";
 const emit = defineEmits(["resetForm"]);
 const { message } = createDiscreteApi(["message"]);
 
-const props = defineProps({
-  submitRoute: { type: String, required: true },
-  formRef: { type: Object, required: true },
-  formValue: { type: Object, required: true },
-});
+const props = defineProps<{
+  submitRoute: string;
+  formRef: Object | null;
+  formValue: Object;
+}>();
 
-const handleValidateClick = (e) => {
+const handleValidateClick = (e: MouseEvent) => {
   e.preventDefault();
   //   console.log(props.formRef, props.formRef.value, props.formValue);
-  props.formRef?.validate((errors) => {
+  props.formRef.validate((errors) => {
     if (!errors) {
       Inertia.post(route(props.submitRoute), props.formValue, {
         onSuccess: () => {

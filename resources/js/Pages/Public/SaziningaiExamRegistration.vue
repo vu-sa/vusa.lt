@@ -118,16 +118,24 @@
             />
           </NFormItem>
           <NFormItem path="acceptGDPR"
-            ><NCheckbox
-              v-model:checked="formValue.acceptGDPR"
-              :label="labelGDPR"
-            ></NCheckbox
-          ></NFormItem>
+            ><NCheckbox v-model:checked="formValue.acceptGDPR">
+              Susipažinau su
+              <a
+                target="_blank"
+                href="https://vusa.lt/uploads/Dokumentų šablonai/Asmens_duomenu_tvarkymo_VUSA_tvarkos_aprasas.pdf"
+                @click.stop
+                >Asmens duomenų tvarkymo Vilniaus universiteto Studentų
+                atstovybėje tvarkos aprašu</a
+              >
+              ir sutinku</NCheckbox
+            ></NFormItem
+          >
           <NFormItem path="acceptDataManagement">
-            <NCheckbox
-              v-model:checked="formValue.acceptDataManagement"
-              :label="labelAcceptDataManagement"
-            ></NCheckbox>
+            <NCheckbox v-model:checked="formValue.acceptDataManagement"
+              >Sutinku, kad mano pateikti asmens duomenys būtų tvarkomi vidaus
+              administravimo tikslu pagal Asmens duomenų tvarkymo Vilniaus
+              universiteto Studentų atstovybėje tvarkos aprašą</NCheckbox
+            >
           </NFormItem>
           <p>
             Duomenų valdytojas yra Vilniaus universiteto Studentų atstovybė
@@ -162,6 +170,7 @@
 <script setup lang="ts">
 // import { Inertia } from "@inertiajs/inertia";
 import {
+  FormInst,
   NCheckbox,
   NDatePicker,
   NDynamicInput,
@@ -182,29 +191,7 @@ const props = defineProps({
 });
 
 // const { message } = createDiscreteApi(["message"]);
-const formRef = ref(null);
-
-const labelGDPR = h("label", {}, [
-  "Susipažinau su ",
-  h(
-    "a",
-    {
-      target: "_blank",
-      href: "https://vusa.lt/uploads/Dokumentų šablonai/Asmens_duomenu_tvarkymo_VUSA_tvarkos_aprasas.pdf",
-      onClick: (e) => {
-        e.stopPropagation();
-      },
-    },
-    "Asmens duomenų tvarkymo Vilniaus universiteto Studentų atstovybėje tvarkos aprašu"
-  ),
-  " ir sutinku.",
-]);
-
-const labelAcceptDataManagement = h(
-  "label",
-  {},
-  "Sutinku, kad mano pateikti asmens duomenys būtų tvarkomi vidaus administravimo tikslu pagal Asmens duomenų tvarkymo Vilniaus universiteto Studentų atstovybėje tvarkos aprašą."
-);
+const formRef = ref<FormInst | null>(null);
 
 const resetForm = () => {
   Object.keys(formValue.value).forEach((i) => (formValue.value[i] = null));
