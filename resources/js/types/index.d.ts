@@ -7,13 +7,4 @@ declare global {
   interface Window {
     axios: AxiosStatic;
   }
-
-  interface vusaPage {
-    app: {
-      env: string;
-      url: string;
-    };
-    can: Array | null;
-    padaliniai: Object;
-  }
 }
