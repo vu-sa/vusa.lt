@@ -32,7 +32,7 @@ const { message } = createDiscreteApi(["message"]);
 const destroyModel = () => {
   Inertia.delete(route(props.modelRoute, props.model.id), {
     onSuccess: () => {
-      message.success("Kalendoriaus įrašas ištrintas!");
+      message.success("Įrašas ištrintas!");
     },
     preserveScroll: true,
   });

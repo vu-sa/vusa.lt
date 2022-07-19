@@ -165,7 +165,9 @@ class PagesController extends Controller
      */
     public function destroy(Page $page)
     {
-        //
+        $page->delete();
+
+        return redirect()->route('pages.index');
     }
 
     public function searchForPage(Request $request)

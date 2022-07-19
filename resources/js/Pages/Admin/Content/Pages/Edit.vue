@@ -53,6 +53,7 @@
           class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center"
         >
           <UpsertModelButton :model="page" model-route="pages.update" />
+          <DeleteModelButton :model="page" model-route="pages.destroy" />
         </div>
       </div>
     </form>
@@ -73,6 +74,7 @@ import { reactive, ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AsideHeader from "../AsideHeader.vue";
+import DeleteModelButton from "@/Components/Admin/DeleteModelButton.vue";
 import TipTap from "@/Components/TipTap.vue";
 import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
 
