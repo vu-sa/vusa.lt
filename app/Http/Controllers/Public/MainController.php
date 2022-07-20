@@ -471,20 +471,18 @@ class MainController extends Controller
 
 	public function storeSaziningaiExamRegistration()
 	{
-		// dd(request()->all());
-
 		$request = request();
 
 		$saziningaiExam = SaziningaiExam::create([
 			'uuid' => bin2hex(random_bytes(15)),
 			'subject_name' => $request->subject_name,
 			'name' => $request->name,
-			'padalinys_id' => $request->unit,
+			'padalinys_id' => $request->padalinys_id,
 			'place' => $request->place,
 			'email' => $request->email,
 			'duration' => $request->duration,
-			'exam_holders' => $request->holders,
-			'exam_type' => $request->type,
+			'exam_holders' => $request->exam_holders,
+			'exam_type' => $request->exam_type,
 			'phone' => $request->phone,
 			'students_need' => $request->students_need,
 		]);
@@ -496,7 +494,7 @@ class MainController extends Controller
 			// dd($flow['time'], date('Y-m-d H:i:s', strtotime($flow['time'])));
 			$saziningaiExamFlow = new SaziningaiExamFlow();
 			$saziningaiExamFlow->exam_uuid = $saziningaiExam->uuid;
-			$saziningaiExamFlow->start_time = date('Y-m-d H:i:s', strtotime($flow['time']));
+			$saziningaiExamFlow->start_time = date('Y-m-d H:i:s', strtotime($flow['start_time']));
 			$saziningaiExamFlow->save();
 		}
 
