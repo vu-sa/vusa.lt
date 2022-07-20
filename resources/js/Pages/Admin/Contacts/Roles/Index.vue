@@ -5,7 +5,7 @@
     </template>
     <NDataTable
       class="main-card"
-      :data="props.roles"
+      :data="roles"
       :columns="columns"
       :row-props="rowProps"
     >
@@ -15,17 +15,15 @@
 
 <script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
-import { Link } from "@inertiajs/inertia-vue3";
 import { NDataTable } from "naive-ui";
 import { ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AsideHeader from "../AsideHeader.vue";
+import route from "ziggy-js";
 
-const props = defineProps({
-  roles: Object,
-});
-
-const a = "a";
+defineProps<{
+  roles: App.Models.Role[];
+}>();
 
 const createColumns = () => {
   return [
@@ -42,7 +40,7 @@ const createColumns = () => {
 
 const columns = ref(createColumns());
 
-const rowProps = (row) => {
+const rowProps = (row: App.Models.Role) => {
   return {
     style: "cursor: pointer;",
     onClick: () => {

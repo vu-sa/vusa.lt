@@ -6,8 +6,6 @@ use App\Models\Duty;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller as Controller;
 use Inertia\Inertia;
-use stdClass;
-use Illuminate\Pagination\LengthAwarePaginator;
 
 class DutyController extends Controller
 {

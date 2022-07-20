@@ -312,7 +312,7 @@ import {
   // createDiscreteApi,
 } from "naive-ui";
 import { debounce, split } from "lodash";
-import { getActiveLanguage, loadLanguageAsync, wTrans } from "laravel-vue-i18n";
+import { loadLanguageAsync } from "laravel-vue-i18n";
 import { ref } from "vue";
 import route, { RouteParamsWithQueryOverload } from "ziggy-js";
 
@@ -335,8 +335,6 @@ const toggleMenu = () => {
 
 const expandedKeys = ref([]);
 const selectedKeys = ref([]);
-
-const searchResults = ref(false);
 
 const changeShowSearch = () => {
   showSearch.value = !showSearch.value;

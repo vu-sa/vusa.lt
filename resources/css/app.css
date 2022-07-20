@@ -4,7 +4,7 @@
 
 @layer base {
   
-  body {
+  body span, body input {
     letter-spacing: -0.015em;
   }
   h1 {

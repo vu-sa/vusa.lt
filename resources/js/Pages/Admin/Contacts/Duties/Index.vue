@@ -5,33 +5,24 @@
     </template>
     <div class="main-card">
       <IndexSearchInput payload-name="title" />
-      <NDataTable
-        remote
-        :data="duties.data"
-        :columns="columns"
-        :row-props="rowProps"
-        :pagination="pagination"
-        @update:page="handlePageChange"
-      >
-      </NDataTable>
+      <IndexDataTable :model="duties" :columns="columns" />
     </div>
   </AdminLayout>
 </template>
 
 <script setup lang="ts">
-import { Inertia } from "@inertiajs/inertia";
-import { NDataTable, NInput } from "naive-ui";
-import { reactive, ref } from "vue";
-import AdminLayout from "@/Layouts/AdminLayout.vue";
-import AsideHeader from "../AsideHeader.vue";
+import { Link } from "@inertiajs/inertia-vue3";
+import { h, ref } from "vue";
 import route from "ziggy-js";
 
-interface PaginatedDuties extends PaginatedObject {
-  data: Array<Page>;
-}
+import AdminLayout from "@/Layouts/AdminLayout.vue";
+import AsideHeader from "../AsideHeader.vue";
 
-const props = defineProps<{
-  duties: PaginatedDuties;
+import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
+import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
+
+defineProps<{
+  duties: PaginatedModels<App.Models.Duty[]>;
 }>();
 
 const createColumns = () => {
@@ -42,6 +33,16 @@ const createColumns = () => {
       width: 300,
       ellipsis: {
         tooltip: true,
+      },
+      render(row: App.Models.Duty) {
+        return h(
+          Link,
+          {
+            href: route("duties.edit", { id: row.id }),
+            class: "hover:text-vusa-red transition",
+          },
+          { default: () => row.name }
+        );
       },
     },
     {
@@ -55,7 +56,7 @@ const createColumns = () => {
     {
       title: "Institucija",
       key: "institution.id",
-      render(row) {
+      render(row: App.Models.Duty) {
         return row.institution.short_name ?? row.institution.name;
       },
     },
@@ -63,38 +64,4 @@ const createColumns = () => {
 };
 
 const columns = ref(createColumns());
-const loading = ref(false);
-
-const pagination = reactive({
-  itemCount: props.duties.total,
-  page: props.duties.current_page,
-  pageCount: props.duties.last_page,
-  pageSize: 20,
-  showQuickJumper: true,
-});
-
-const rowProps = (row) => {
-  return {
-    style: "cursor: pointer;",
-    onClick: () => {
-      Inertia.visit(route("duties.edit", { id: row.id }));
-    },
-  };
-};
-
-const handlePageChange = (page) => {
-  loading.value = true;
-  pagination.page = page;
-  Inertia.get(
-    route("duties.index"),
-    { page: page },
-    {
-      preserveState: true,
-      preserveScroll: true,
-      onSuccess: () => {
-        loading.value = false;
-      },
-    }
-  );
-};
 </script>

@@ -4,53 +4,33 @@
       <AsideHeader></AsideHeader>
     </template>
     <div class="main-card">
-      <IndexSearchInput
-        payload-name="title"
-        @reset-paginate="pagination.page = 1"
-      />
-      <NDataTable
-        remote
-        size="small"
-        :data="props.pages.data"
+      <IndexSearchInput payload-name="title" />
+      <IndexDataTable
+        :model="pages"
         :columns="columns"
-        :pagination="pagination"
-        @update:page="handlePageChange"
-        @update:filters="handleFiltersChange"
-      >
-      </NDataTable>
+        @update-filters-value="padaliniaiFilterOptionValues = $event"
+      />
     </div>
   </AdminLayout>
 </template>
 
 <script setup lang="ts">
-import { DataTableColumns, NButton, NDataTable } from "naive-ui";
-import { Inertia } from "@inertiajs/inertia";
+import { DataTableColumns, NButton } from "naive-ui";
 import { Link, usePage } from "@inertiajs/inertia-vue3";
-import { h, reactive, ref } from "vue";
+import { h, ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AsideHeader from "../AsideHeader.vue";
+import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
 import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
 import route from "ziggy-js";
 
-interface PaginatedPages extends PaginatedObject {
-  data: Array<Page>;
-}
-
-const props = defineProps<{
-  pages: PaginatedPages;
+defineProps<{
+  pages: PaginatedModels<App.Models.Page[]>;
 }>();
-
-const pagination = reactive({
-  itemCount: props.pages.total,
-  page: props.pages.current_page,
-  pageCount: props.pages.last_page,
-  pageSize: 20,
-  showQuickJumper: true,
-});
 
 // console.log(usePage().props.value.padaliniai);
 
-const createColumns = (): DataTableColumns<Page> => {
+const createColumns = (): DataTableColumns<App.Models.Page> => {
   return [
     {
       title: "Pavadinimas",
@@ -62,6 +42,7 @@ const createColumns = (): DataTableColumns<Page> => {
           Link,
           {
             href: route("pages.edit", { id: row.id }),
+            class: "hover:text-vusa-red transition",
           },
           { default: () => row.title }
         );
@@ -71,8 +52,8 @@ const createColumns = (): DataTableColumns<Page> => {
       title: "Padalinys",
       key: "padalinys.id",
       filterMultiple: true,
-      filterOptionValues: padaliniaiFilterOptionValues,
-      filterOptions: padaliniaiFilterOptions,
+      filterOptionValues: padaliniaiFilterOptionValues.value,
+      filterOptions: padaliniaiFilterOptions.value,
       filter: true,
       render(row) {
         return row.padalinys.shortname;
@@ -81,8 +62,8 @@ const createColumns = (): DataTableColumns<Page> => {
     {
       title: "Sukurta",
       key: "created_at",
-      sorter: "default",
-      defaultSortOrder: "descend",
+      // check timestamps which is later than the other
+      // sorter: (a, b) => Date.parse(b.created_at) - Date.parse(a.created_at),
     },
     {
       title: "Nuoroda",
@@ -131,7 +112,8 @@ const padaliniaiFilterOptions = ref(
   })
 );
 
-const padaliniaiFilterOptionValues = ref([]);
+// TODO: fix event and setting filter option values
+const padaliniaiFilterOptionValues = ref<number[] | null>([]);
 
 padaliniaiFilterOptions.value.unshift({
   label: "VU SA",
@@ -139,41 +121,4 @@ padaliniaiFilterOptions.value.unshift({
 });
 
 const columns = createColumns();
-const loading = ref(false);
-
-const handlePageChange = (page) => {
-  loading.value = true;
-  pagination.page = page;
-  Inertia.get(
-    route("pages.index"),
-    { page: page },
-    {
-      preserveState: true,
-      preserveScroll: true,
-      onSuccess: () => {
-        loading.value = false;
-      },
-    }
-  );
-};
-
-const handleFiltersChange = (filters) => {
-  console.log(filters);
-  loading.value = true;
-  Inertia.get(
-    route("pages.index"),
-    {
-      page: pagination.page,
-      padaliniai: filters["padalinys.id"],
-    },
-    {
-      preserveState: true,
-      preserveScroll: true,
-      onSuccess: () => {
-        padaliniaiFilterOptionValues.value = filters["padalinys.id"];
-        loading.value = false;
-      },
-    }
-  );
-};
 </script>

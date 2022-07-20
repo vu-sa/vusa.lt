@@ -4,7 +4,7 @@
       <div class="main-card">
         <h2 class="mb-4">Parinktys</h2>
         <ul v-if="errors" class="mb-4 text-red-700">
-          <li v-for="error in errors">{{ error }}</li>
+          <li v-for="(error, index) in errors" :key="index">{{ error }}</li>
         </ul>
         <div class="mb-4">
           <label class="font-bold">Pavadinimas</label>
@@ -18,7 +18,7 @@
           <NInput
             v-model:value="page.permalink"
             disabled
-            placeholder="Įrašyti pavadinimą..."
+            placeholder="'Įrašyti pavadinimą...'"
           />
         </div>
 
@@ -66,11 +66,11 @@
 import { Inertia } from "@inertiajs/inertia";
 import { NInput, NSelect, createDiscreteApi } from "naive-ui";
 import { computed, reactive, ref } from "vue";
+import { debounce } from "lodash";
 import { usePage } from "@inertiajs/inertia-vue3";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import TipTap from "@/Components/TipTap.vue";
 import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
-// import { map } from "lodash";
 
 const props = defineProps({
   errors: Object,

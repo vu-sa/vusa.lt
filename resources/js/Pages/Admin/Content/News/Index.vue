@@ -4,50 +4,48 @@
       <AsideHeader></AsideHeader>
     </template>
     <div class="main-card">
-      <IndexSearchInput
-        payload-name="title"
-        @reset-paginate="pagination.page = 1"
-      />
-      <NDataTable
-        remote
-        size="small"
-        :data="props.news.data"
+      <IndexSearchInput payload-name="title" />
+      <IndexDataTable
+        :model="news"
         :columns="columns"
-        :row-props="rowProps"
-        :pagination="pagination"
-        @update:page="handlePageChange"
-        @update:filters="handleFiltersChange"
-      >
-      </NDataTable>
+        @update-filters-value="padaliniaiFilterOptionValues = $event"
+      />
     </div>
   </AdminLayout>
 </template>
 
 <script setup lang="ts">
-import { Inertia } from "@inertiajs/inertia";
+import { DataTableColumns, NButton } from "naive-ui";
 import { Link, usePage } from "@inertiajs/inertia-vue3";
-import { NButton, NDataTable, NInput } from "naive-ui";
-import { h, reactive, ref } from "vue";
+import { h, ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AsideHeader from "../AsideHeader.vue";
+import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
+import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
+import route from "ziggy-js";
 
-interface PaginatedNews extends PaginatedObject {
-  data: Array<News>;
-}
-
-const props = defineProps<{
-  users: PaginatedNews;
+defineProps<{
+  news: PaginatedModels<App.Models.News[]>;
 }>();
 
-const loading = ref(false);
-
-const createColumns = () => {
+const createColumns = (): DataTableColumns<App.Models.News> => {
   return [
     {
       title: "Pavadinimas",
       key: "title",
       ellipsis: true,
       width: 300,
+
+      render(row) {
+        return h(
+          Link,
+          {
+            href: route("news.edit", { id: row.id }),
+            class: "hover:text-vusa-red transition",
+          },
+          { default: () => row.title }
+        );
+      },
     },
     {
       title: "Padalinys",
@@ -63,8 +61,6 @@ const createColumns = () => {
     {
       title: "Sukurta",
       key: "created_at",
-      sorter: "default",
-      defaultSortOrder: "descend",
     },
     {
       title: "Nuoroda",
@@ -115,7 +111,7 @@ const padaliniaiFilterOptions = ref(
   })
 );
 
-const padaliniaiFilterOptionValues = ref([]);
+const padaliniaiFilterOptionValues = ref<number[] | null>([]);
 
 padaliniaiFilterOptions.value.unshift({
   label: "VU SA",
@@ -123,57 +119,4 @@ padaliniaiFilterOptions.value.unshift({
 });
 
 const columns = ref(createColumns());
-
-const rowProps = (row) => {
-  return {
-    style: "cursor: pointer;",
-    onClick: () => {
-      Inertia.visit(route("news.edit", { id: row.id }));
-    },
-  };
-};
-
-const pagination = reactive({
-  itemCount: props.news.total,
-  page: props.news.current_page,
-  pageCount: props.news.last_page,
-  pageSize: 10,
-  showQuickJumper: true,
-});
-
-const handlePageChange = (page) => {
-  loading.value = true;
-  pagination.page = page;
-  Inertia.get(
-    route("news.index"),
-    { page: page },
-    {
-      preserveState: true,
-      preserveScroll: true,
-      onSuccess: () => {
-        loading.value = false;
-      },
-    }
-  );
-};
-
-const handleFiltersChange = (filters) => {
-  console.log(filters);
-  loading.value = true;
-  Inertia.get(
-    route("news.index"),
-    {
-      page: pagination.page,
-      padaliniai: filters["padalinys.id"],
-    },
-    {
-      preserveState: true,
-      preserveScroll: true,
-      onSuccess: () => {
-        padaliniaiFilterOptionValues.value = filters["padalinys.id"];
-        loading.value = false;
-      },
-    }
-  );
-};
 </script>

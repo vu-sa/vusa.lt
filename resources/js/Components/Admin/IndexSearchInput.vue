@@ -3,6 +3,7 @@
     class="md:col-span-4 mb-2"
     type="text"
     size="medium"
+    clearable
     round
     placeholder="Ieškoti pagal pavadinimą..."
     :loading="loading"
@@ -17,10 +18,11 @@ import { debounce } from "lodash";
 import { ref } from "vue";
 
 const props = defineProps<{
-  // data: PaginatedObject;
+  // data: PaginatedModels;
   payloadName: string;
 }>();
 
+// TODO: fix this event
 const emit = defineEmits<{
   (event: "resetPaginate"): void;
 }>();
@@ -30,7 +32,7 @@ const loading = ref(false);
 const handleSearchInput = debounce((input) => {
   loading.value = true;
   Inertia.reload({
-    data: { [props.payloadName]: input },
+    data: { page: 1, [props.payloadName]: input },
     onSuccess: () => {
       emit("resetPaginate");
       loading.value = false;

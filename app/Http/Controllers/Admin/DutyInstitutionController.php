@@ -28,7 +28,7 @@ class DutyInstitutionController extends Controller
             $query->where('padalinys_id', '=', request()->user()->padalinys()->id);
         })->when(!is_null($search), function ($query) use ($search) {
             $query->where('name', 'like', "%{$search}%")->orWhere('short_name', 'like', "%{$search}%")->orWhere('alias', 'like', "%{$search}%");
-        })->get();
+        })->paginate(20);
 
 
         return Inertia::render('Admin/Contacts/Institutions/Index', [

@@ -30,7 +30,7 @@ import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AsideHeader from "../AsideHeader.vue";
 import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
 
-interface PaginatedUsers extends PaginatedObject {
+interface PaginatedUsers extends PaginatedModels {
   data: Array<User>;
 }
 

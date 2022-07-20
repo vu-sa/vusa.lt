@@ -9,12 +9,12 @@ use App\Http\Controllers\Controller as Controller;
 
 class BannerController extends Controller
 {
-    
+
     public function __construct()
     {
         $this->authorizeResource(Banner::class, 'banner');
     }
-    
+
     /**
      * Display a listing of the resource.
      *
@@ -22,17 +22,24 @@ class BannerController extends Controller
      */
     public function index(Request $request)
     {
-        $banners = Banner::all();
+        $title = request()->input('title');
+        $padaliniai = request()->input('padaliniai');
+
+        $banners = Banner::
+            // check if admin, if not return only pages from current user padalinys
+            when(!$request->user()->isAdmin(), function ($query) use ($request) {
+                $query->where('padalinys_id', '=', $request->user()->padalinys()->id);
+                // check request for padaliniai, if not empty return only pages from request padaliniai
+            })->when(!empty($padaliniai), function ($query) use ($padaliniai) {
+                $query->whereIn('padalinys_id', $padaliniai);
+            })->when(!is_null($title), function ($query) use ($title) {
+                $query->where('text', 'like', "%{$title}%");
+            })->with(['padalinys' => function ($query) {
+                $query->select('id', 'shortname', 'alias');
+            }])->orderByDesc('created_at')->paginate(20);
 
         return Inertia::render('Admin/Content/Banners/Index', [
-            'banners' => $banners->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'title' => $item->title,
-                    'padalinys' => $item->padalinys,
-                    'is_active' => $item->is_active,
-                ];
-            }),
+            'banners' => $banners
         ]);
     }
 

@@ -8,10 +8,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Calendar extends Model
 {
     use HasFactory;
-    
+
     protected $table = 'calendar';
 
     protected $guarded = ['id', 'created_at', 'updated_at'];
+
+    protected $casts = [
+        'updated_at' => 'datetime:Y-m-d H:i:s',
+        'created_at' => 'datetime:Y-m-d H:i:s',
+    ];
 
     public function user()
     {

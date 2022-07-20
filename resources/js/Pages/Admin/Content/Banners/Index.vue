@@ -3,38 +3,37 @@
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
-    <NDataTable
-      class="main-card"
-      :data="props.banners"
-      :columns="columns"
-      :row-props="rowProps"
-    >
-    </NDataTable>
+    <div class="main-card">
+      <IndexSearchInput payload-name="title" />
+      <IndexDataTable :model="banners" :columns="columns" />
+    </div>
   </AdminLayout>
 </template>
 
 <script setup lang="ts">
-import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
-import { NDataTable } from "naive-ui";
 import { h, ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AsideHeader from "../AsideHeader.vue";
+import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
+import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
+import route from "ziggy-js";
 
-const props = defineProps({
-  banners: Object,
-});
+defineProps<{
+  banners: PaginatedModels<App.Models.Banner[]>;
+}>();
 
 const createColumns = () => {
   return [
     {
       title: "Pavadinimas",
       key: "title",
-      render(row) {
+      render(row: App.Models.Banner) {
         return h(
-          "span",
+          Link,
           {
             class: row.is_active ? "text-green-700 font-bold" : "text-red-700",
+            href: route("banners.edit", { id: row.id }),
           },
           row.title
         );
@@ -48,13 +47,4 @@ const createColumns = () => {
 };
 
 const columns = ref(createColumns());
-
-const rowProps = (row) => {
-  return {
-    style: "cursor: pointer;",
-    onClick: () => {
-      Inertia.visit(route("banners.edit", { id: row.id }));
-    },
-  };
-};
 </script>

@@ -3,33 +3,49 @@
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
-    <NDataTable
-      class="main-card"
-      :data="props.mainPage"
-      :columns="columns"
-      :row-props="rowProps"
-    >
-    </NDataTable>
+    <div class="main-card">
+      <IndexSearchInput payload-name="text" />
+      <IndexDataTable
+        :model="mainPage"
+        :columns="columns"
+        @update-filters-value="padaliniaiFilterOptionValues = $event"
+      />
+    </div>
   </AdminLayout>
 </template>
 
 <script setup lang="ts">
-import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
-import { NDataTable } from "naive-ui";
-import { ref } from "vue";
+import { h, ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-import AsideHeader from "../AsideHeader.vue";
+import route from "ziggy-js";
 
-const props = defineProps({
-  mainPage: Object,
-});
+import AsideHeader from "../AsideHeader.vue";
+import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
+import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
+
+defineProps<{
+  mainPage: PaginatedModels<App.Models.MainPage[]>;
+}>();
 
 const createColumns = () => {
   return [
     {
       title: "Pavadinimas",
       key: "text",
+      ellipsis: true,
+      width: 300,
+
+      render(row: App.Models.MainPage) {
+        return h(
+          Link,
+          {
+            href: route("mainPage.edit", { id: row.id }),
+            class: "hover:text-vusa-red transition",
+          },
+          { default: () => row.text }
+        );
+      },
     },
     {
       title: "Padalinys",
@@ -48,13 +64,4 @@ const createColumns = () => {
 };
 
 const columns = ref(createColumns());
-
-const rowProps = (row) => {
-  return {
-    style: "cursor: pointer;",
-    onClick: () => {
-      Inertia.visit(route("mainPage.edit", { id: row.id }));
-    },
-  };
-};
 </script>

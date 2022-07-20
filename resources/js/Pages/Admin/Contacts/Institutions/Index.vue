@@ -5,26 +5,25 @@
     </template>
     <div class="main-card">
       <IndexSearchInput payload-name="search" />
-      <NDataTable
-        :data="props.dutyInstitutions"
-        :columns="columns"
-        :row-props="rowProps"
-      >
-      </NDataTable>
+      <IndexDataTable :model="dutyInstitutions" :columns="columns">
+      </IndexDataTable>
     </div>
   </AdminLayout>
 </template>
 
 <script setup lang="ts">
-import { Inertia } from "@inertiajs/inertia";
-import { NDataTable } from "naive-ui";
-import { ref } from "vue";
+import { Link } from "@inertiajs/inertia-vue3";
+import { h, ref } from "vue";
+import route from "ziggy-js";
+
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AsideHeader from "../AsideHeader.vue";
+
+import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
 import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
 
-const props = defineProps<{
-  dutyInstitutions: DutyInstitution[];
+defineProps<{
+  dutyInstitutions: PaginatedModels<App.Models.DutyInstitution[]>;
 }>();
 
 const createColumns = () => {
@@ -34,9 +33,19 @@ const createColumns = () => {
       key: "name",
       ellipsis: true,
       width: 300,
+      render(row: App.Models.DutyInstitution) {
+        return h(
+          Link,
+          {
+            href: route("dutyInstitutions.edit", { id: row.id }),
+            class: "hover:text-vusa-red transition",
+          },
+          { default: () => row.name }
+        );
+      },
     },
     {
-      title: "Trumpas",
+      title: "Trumpas pavadinimas",
       key: "short_name",
     },
     {
@@ -52,13 +61,4 @@ const createColumns = () => {
 };
 
 const columns = ref(createColumns());
-
-const rowProps = (row) => {
-  return {
-    style: "cursor: pointer;",
-    onClick: () => {
-      Inertia.visit(route("dutyInstitutions.edit", { id: row.id }));
-    },
-  };
-};
 </script>

@@ -6,7 +6,9 @@
 
   <div class="min-h-screen grid grid-cols-9 bg-gray-200 px-4 pb-4">
     <!-- Main Navigation -->
-    <MainNavigation>
+    <nav
+      class="md:mr-4 shadow-lg md:rounded-xl col-span-1 md:sticky top-0 left-0 md:left-auto md:top-4 w-screen md:w-auto mb-auto bg-gray-50 transition fixed flex md:flex-col items-center text-center text-gray-800 z-20 overflow-x-scroll md:overflow-auto justify-evenly"
+    >
       <a class="w-full md:bg-white md:rounded-t-lg" href="/">
         <AppLogo class="mx-auto my-2" />
       </a>
@@ -15,7 +17,7 @@
         Pradžia
       </MenuButton>
       <MenuButton
-        v-if="$page.props.can.content"
+        v-if="can.content"
         :menu-content="['pages.*', 'news.*', 'mainPage.*', 'banners.*']"
       >
         <template #icon>
@@ -24,25 +26,22 @@
         Turinys
       </MenuButton>
       <MenuButton
-        v-if="$page.props.can.users"
-        :menu-content="['users.*', 'duties.*', 'dutyInstitutions.*', 'roles.*']"
+        v-if="can.users"
+        :menu-content="['dutyInstitutions.*', 'duties.*', 'users.*', 'roles.*']"
       >
         <template #icon>
           <Person48Regular />
         </template>
         Kontaktai
       </MenuButton>
-      <MenuButton
-        v-if="$page.props.can.navigation"
-        :menu-content="['navigation.*']"
-      >
+      <MenuButton v-if="can.navigation" :menu-content="['navigation.*']">
         <template #icon>
           <Navigation24Regular />
         </template>
         Navigacija
       </MenuButton>
       <MenuButton
-        v-if="$page.props.can.calendar"
+        v-if="can.calendar"
         :menu-content="['calendar.*', 'agenda.*']"
       >
         <template #icon>
@@ -50,14 +49,14 @@
         </template>
         Kalendorius
       </MenuButton>
-      <MenuButton v-if="$page.props.can.files" :menu-content="['files.*']">
+      <MenuButton v-if="can.files" :menu-content="['files.*']">
         <template #icon>
           <Folder48Regular />
         </template>
         Failų tvarkyklė
       </MenuButton>
       <MenuButton
-        v-if="$page.props.can.saziningai"
+        v-if="can.saziningai"
         :menu-content="['saziningaiExams.*', 'saziningaiExamObservers.*']"
       >
         <template #icon>
@@ -78,10 +77,10 @@
       <NModal v-model:show="showModal">
         <Changelog></Changelog>
       </NModal>
-    </MainNavigation>
+    </nav>
     <!-- Main Navigation End -->
     <!-- Page Content -->
-    <PageContent :create-u-r-l="createURL">
+    <PageContent>
       <template #header>
         <slot name="header">{{ title }}</slot>
       </template>
@@ -91,11 +90,11 @@
       </template>
 
       <div class="col-span-2 ml-12 mt-4 mb-5"></div>
-      <transition name="fade">
-        <main v-if="animated" class="md:col-span-4 col-span-full">
+      <Transition name="fade" appear>
+        <main class="md:col-span-4 col-span-full">
           <slot />
         </main>
-      </transition>
+      </Transition>
       <!-- Aside Navigation -->
       <AsideNavigation>
         <slot name="aside-navigation-options"></slot>
@@ -108,18 +107,6 @@
 </template>
 
 <script setup lang="ts">
-import { Head } from "@inertiajs/inertia-vue3";
-import { Inertia } from "@inertiajs/inertia";
-import { NButton, NModal } from "naive-ui";
-import { onMounted, ref } from "vue";
-import AppLogo from "@/Components/AppLogo.vue";
-import AsideNavigation from "@/Layouts/Partials/Admin/AsideNavigation.vue";
-import Changelog from "@/Components/Admin/Changelog.vue";
-import MainNavigation from "@/Layouts/Partials/Admin/MainNavigation.vue";
-import MenuButton from "@/Components/Admin/MenuButton.vue";
-import MetaIcons from "@/Components/MetaIcons.vue";
-import PageContent from "@/Layouts/Partials/Admin/PageContent.vue";
-// import { NConfigProvider } from "naive-ui";
 import {
   BookOpen48Regular,
   CalendarLtr48Regular,
@@ -129,28 +116,23 @@ import {
   Person48Regular,
   SlideText48Regular,
 } from "@vicons/fluent";
+import { Head, usePage } from "@inertiajs/inertia-vue3";
+import { NButton, NModal } from "naive-ui";
+import { ref } from "vue";
+import AppLogo from "@/Components/AppLogo.vue";
+import AsideNavigation from "@/Layouts/Partials/Admin/AsideNavigation.vue";
+import Changelog from "@/Components/Admin/Changelog.vue";
+import MenuButton from "@/Components/Admin/MenuButton.vue";
+import MetaIcons from "@/Components/MetaIcons.vue";
+import PageContent from "@/Layouts/Partials/Admin/PageContent.vue";
 
-defineProps({
-  title: String,
-  createURL: String,
-});
+defineProps<{
+  title: string;
+}>();
 
-const animated = ref(false);
+const { can } = usePage<InertiaProps>().props.value;
+
 const showModal = ref(false);
-
-// const themeOverrides = {
-//   common: {
-//     baseColor: "#fafafa",
-//     },
-// };
-
-onMounted(() => {
-  animated.value = true;
-});
-
-const logout = () => {
-  Inertia.post(route("logout"));
-};
 </script>
 
 <style>

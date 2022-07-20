@@ -21,9 +21,9 @@
 </template>
 
 <script setup lang="ts">
-import { Link, usePage } from "@inertiajs/inertia-vue3";
+import { Link } from "@inertiajs/inertia-vue3";
 import { NIcon } from "naive-ui";
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { replace } from "lodash";
 import route from "ziggy-js";
 

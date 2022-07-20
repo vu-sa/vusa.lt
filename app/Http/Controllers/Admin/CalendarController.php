@@ -13,15 +13,29 @@ class CalendarController extends Controller
     {
         $this->authorizeResource(Calendar::class, 'calendar');
     }
-    
+
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $calendar = Calendar::orderByDesc('date')->paginate(20);
+        $padaliniai = $request->padaliniai;
+        $title = $request->title;
+
+        $calendar = Calendar::
+            // check if admin, if not return only pages from current user padalinys
+            when(!$request->user()->isAdmin(), function ($query) use ($request) {
+                $query->where('padalinys_id', '=', $request->user()->padalinys()->id);
+                // check request for padaliniai, if not empty return only pages from request padaliniai
+            })->when(!empty($padaliniai), function ($query) use ($padaliniai) {
+                $query->whereIn('padalinys_id', $padaliniai);
+            })->when(!is_null($title), function ($query) use ($title) {
+                $query->where('title', 'like', "%{$title}%");
+            })->with(['padalinys' => function ($query) {
+                $query->select('id', 'shortname', 'alias');
+            }])->orderByDesc('date')->paginate(20);
 
         return Inertia::render('Admin/Calendar/Events/Index', [
             'calendar' => $calendar,

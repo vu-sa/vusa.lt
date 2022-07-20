@@ -1,34 +1,39 @@
 <template>
   <AdminLayout title="Renginiai" :create-u-r-l="route('calendar.create')">
-    <NDataTable
-      class="main-card"
-      remote
-      :data="props.calendar.data"
-      :columns="columns"
-      :row-props="rowProps"
-      :pagination="pagination"
-      @update:page="handlePageChange"
-    >
-    </NDataTable>
+    <div class="main-card">
+      <IndexSearchInput payload-name="title" />
+      <IndexDataTable :model="calendar" :columns="columns" />
+    </div>
   </AdminLayout>
 </template>
 
 <script setup lang="ts">
-import { Inertia } from "@inertiajs/inertia";
-import { NDataTable } from "naive-ui";
-import { reactive, ref } from "vue";
+import { Link } from "@inertiajs/inertia-vue3";
+import { h, ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
+import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
+import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
+import route from "ziggy-js";
 
-const props = defineProps({
-  calendar: Object,
-  create_url: String,
-});
+defineProps<{
+  calendar: PaginatedModels<App.Models.Calendar[]>;
+}>();
 
 const createColumns = () => {
   return [
     {
       title: "Pavadinimas",
       key: "title",
+      render(row: App.Models.Calendar) {
+        return h(
+          Link,
+          {
+            href: route("calendar.edit", { id: row.id }),
+            class: "hover:text-vusa-red transition",
+          },
+          { default: () => row.title }
+        );
+      },
     },
     {
       title: "Data",
@@ -38,38 +43,4 @@ const createColumns = () => {
 };
 
 const columns = ref(createColumns());
-const loading = ref(false);
-
-const pagination = reactive({
-  itemCount: props.calendar.total,
-  page: props.calendar.current_page,
-  pageCount: props.calendar.last_page,
-  pageSize: 20,
-  showQuickJumper: true,
-});
-
-const rowProps = (row) => {
-  return {
-    style: "cursor: pointer;",
-    onClick: () => {
-      Inertia.visit(route("calendar.edit", { id: row.id }));
-    },
-  };
-};
-
-const handlePageChange = (page) => {
-  loading.value = true;
-  pagination.page = page;
-  Inertia.get(
-    route("calendar.index"),
-    { page: page },
-    {
-      preserveState: true,
-      preserveScroll: true,
-      onSuccess: () => {
-        loading.value = false;
-      },
-    }
-  );
-};
 </script>

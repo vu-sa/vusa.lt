@@ -11,11 +11,15 @@
         />
         <span class="ml-2"
           >{{ $page.props.user.name }} ({{
-            $page.props.user_padalinys ?? "Be padalinio"
+            $page.props.user.padalinys ?? "Be padalinio"
           }})</span
         >
       </div>
-      <Link as="button" method="post" class="ml-auto mr-2" :href="route('logout')"
+      <Link
+        as="button"
+        method="post"
+        class="ml-auto mr-2"
+        :href="route('logout')"
         >Atsijungti</Link
       >
     </div>

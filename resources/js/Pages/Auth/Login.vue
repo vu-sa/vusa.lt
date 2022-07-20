@@ -54,7 +54,7 @@
             ><template #trigger>
               <MicrosoftButton></MicrosoftButton>
             </template>
-            ><span>Tik su VU SA paskyromis.</span></NPopover
+            <span>Tik su VU SA paskyromis.</span></NPopover
           >
 
           <!-- <Link
