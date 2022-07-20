@@ -221,6 +221,7 @@ import {
   NTree,
   // createDiscreteApi,
 } from "naive-ui";
+import { debounce, split } from "lodash";
 import { ref } from "vue";
 
 // map padaliniai to options_padaliniai
@@ -248,7 +249,7 @@ const getPermalink = () => {
 const permalink = getPermalink();
 
 // after half a second input delay, use Inertiapost request to fetch search results
-const handleSearchInput = _.debounce((input) => {
+const handleSearchInput = debounce((input) => {
   if (input.length > 2) {
     searchInputLoading.value = true;
     Inertia.post(
@@ -268,7 +269,7 @@ const handleSearchInput = _.debounce((input) => {
 }, 500);
 
 const options_padaliniai = padaliniai.map((padalinys) => ({
-  label: _.split(padalinys.fullname, "atstovybė ")[1],
+  label: split(padalinys.fullname, "atstovybė ")[1],
   key: padalinys.alias,
 }));
 

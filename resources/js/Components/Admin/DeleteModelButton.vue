@@ -21,6 +21,7 @@
 import { Delete20Filled } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import { NButton, NIcon, NPopconfirm, createDiscreteApi } from "naive-ui";
+import route from "ziggy-js";
 
 const props = defineProps({
   model: { type: Object, default: null },

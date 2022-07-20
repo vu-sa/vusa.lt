@@ -96,7 +96,7 @@ page.permalink = computed(() => {
   }
 });
 
-const getOtherLangPages = _.debounce((input) => {
+const getOtherLangPages = debounce((input) => {
   // get other lang
   if (input.length > 2) {
     message.loading("Ieškoma...");

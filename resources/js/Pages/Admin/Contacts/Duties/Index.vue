@@ -4,18 +4,10 @@
       <AsideHeader></AsideHeader>
     </template>
     <div class="main-card">
-      <NInput
-        class="md:col-span-4 mb-2"
-        type="text"
-        size="medium"
-        round
-        placeholder="Ieškoti pagal pavadinimą, el. paštą..."
-        :loading="loading"
-        @input="handleSearchInput"
-      ></NInput>
+      <IndexSearchInput payload-name="title" />
       <NDataTable
         remote
-        :data="props.duties.data"
+        :data="duties.data"
         :columns="columns"
         :row-props="rowProps"
         :pagination="pagination"
@@ -32,11 +24,15 @@ import { NDataTable, NInput } from "naive-ui";
 import { reactive, ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AsideHeader from "../AsideHeader.vue";
+import route from "ziggy-js";
 
-const props = defineProps({
-  duties: Object,
-  create_url: String,
-});
+interface PaginatedDuties extends PaginatedObject {
+  data: Array<Page>;
+}
+
+const props = defineProps<{
+  duties: PaginatedDuties;
+}>();
 
 const createColumns = () => {
   return [
@@ -101,25 +97,4 @@ const handlePageChange = (page) => {
     }
   );
 };
-
-const handleSearchInput = _.debounce((input) => {
-  const title = input;
-  // if (name.length > 2) {
-  loading.value = true;
-  Inertia.reload({
-    data: { title: title },
-    onSuccess: () => {
-      console.log(props.duties);
-      pagination.value = {
-        itemCount: props.duties.total,
-        page: 1,
-        pageCount: props.duties.last_page,
-        pageSize: 20,
-        showQuickJumper: true,
-      };
-      loading.value = false;
-      // },
-    },
-  });
-}, 500);
 </script>

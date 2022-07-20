@@ -4,15 +4,7 @@
       <AsideHeader></AsideHeader>
     </template>
     <div class="main-card">
-      <NInput
-        class="md:col-span-4 mb-2"
-        type="text"
-        size="medium"
-        round
-        placeholder="Ieškoti pagal pavadinimą, trumpąjį pavadinimą arba trumpinį..."
-        :loading="loading"
-        @input="handleSearchInput"
-      ></NInput>
+      <IndexSearchInput payload-name="search" />
       <NDataTable
         :data="props.dutyInstitutions"
         :columns="columns"
@@ -25,17 +17,15 @@
 
 <script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
-import { Link } from "@inertiajs/inertia-vue3";
-import { NDataTable, NInput } from "naive-ui";
+import { NDataTable } from "naive-ui";
 import { ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AsideHeader from "../AsideHeader.vue";
+import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
 
-const props = defineProps({
-  dutyInstitutions: Object,
-});
-
-const loading = ref(false);
+const props = defineProps<{
+  dutyInstitutions: DutyInstitution[];
+}>();
 
 const createColumns = () => {
   return [
@@ -71,18 +61,4 @@ const rowProps = (row) => {
     },
   };
 };
-
-const handleSearchInput = _.debounce((input) => {
-  const search = input;
-  // if (name.length > 2) {
-  loading.value = true;
-  Inertia.reload({
-    data: { search: search },
-    onSuccess: () => {
-      console.log(props.duties);
-      loading.value = false;
-      // },
-    },
-  });
-}, 500);
 </script>

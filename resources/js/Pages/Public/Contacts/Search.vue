@@ -94,7 +94,7 @@ const loadingNameInput = ref(false);
 const { message } = createDiscreteApi(["message"]);
 
 // handleNameInput with half second delay and then update contacts with inertia request
-const handleNameInput = _.debounce((input) => {
+const handleNameInput = debounce((input) => {
   const name = input;
   if (name.length > 2) {
     loadingNameInput.value = true;

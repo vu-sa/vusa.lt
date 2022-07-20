@@ -13,6 +13,7 @@
 import { Inertia } from "@inertiajs/inertia";
 import { NButton, NPopconfirm, NSpin, createDiscreteApi } from "naive-ui";
 import { ref } from "vue";
+import route from "ziggy-js";
 
 const props = defineProps({
   model: { type: Object, default: null },

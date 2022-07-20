@@ -124,7 +124,7 @@ const rolesOptions = props.roles.map((role) => ({
   value: role.id,
 }));
 
-const getDutyOptions = _.debounce((input) => {
+const getDutyOptions = debounce((input) => {
   // get other lang
   if (input.length > 2) {
     // message.loading("Ieškoma...");

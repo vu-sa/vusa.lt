@@ -4,15 +4,10 @@
       <AsideHeader></AsideHeader>
     </template>
     <div class="main-card">
-      <NInput
-        class="md:col-span-4 mb-2"
-        type="text"
-        size="medium"
-        round
-        placeholder="Ieškoti pagal pavadinimą..."
-        :loading="loading"
-        @input="handleSearchInput"
-      ></NInput>
+      <IndexSearchInput
+        payload-name="title"
+        @reset-paginate="pagination.page = 1"
+      />
       <NDataTable
         remote
         size="small"
@@ -36,9 +31,13 @@ import { h, reactive, ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AsideHeader from "../AsideHeader.vue";
 
-const props = defineProps({
-  news: Object,
-});
+interface PaginatedNews extends PaginatedObject {
+  data: Array<News>;
+}
+
+const props = defineProps<{
+  users: PaginatedNews;
+}>();
 
 const loading = ref(false);
 
@@ -177,25 +176,4 @@ const handleFiltersChange = (filters) => {
     }
   );
 };
-
-const handleSearchInput = _.debounce((input) => {
-  const title = input;
-  // if (name.length > 2) {
-  loading.value = true;
-  Inertia.reload({
-    data: { title: title },
-    onSuccess: () => {
-      // console.log(props.pages);
-      pagination.value = {
-        itemCount: props.news.total,
-        page: 1,
-        pageCount: props.news.last_page,
-        pageSize: 20,
-        showQuickJumper: true,
-      };
-      loading.value = false;
-      // },
-    },
-  });
-}, 500);
 </script>

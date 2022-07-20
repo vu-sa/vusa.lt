@@ -84,7 +84,7 @@ const page = reactive(props.page);
 const otherLangPageOptions = ref([]);
 // const { message } = createDiscreteApi(["message"]);
 
-const getOtherLangPages = _.debounce((input) => {
+const getOtherLangPages = debounce((input) => {
   // get other lang
   if (input.length > 2) {
     // message.loading("Ieškoma...");

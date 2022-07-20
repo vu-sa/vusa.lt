@@ -128,7 +128,7 @@ const duty = reactive(props.duty);
 // };
 // const attributes = ref(duty.attributes);
 
-const getInstitutionOptions = _.debounce((input) => {
+const getInstitutionOptions = debounce((input) => {
   // get other lang
   if (input.length > 2) {
     // message.loading("Ieškoma...");

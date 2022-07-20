@@ -130,7 +130,7 @@ news.permalink = computed(() => {
 
 const otherLangnewsOptions = ref([]);
 
-const getOtherLangNews = _.debounce((input) => {
+const getOtherLangNews = debounce((input) => {
   // get other lang
   if (input.length > 2) {
     // message.loading("Ieškoma...");

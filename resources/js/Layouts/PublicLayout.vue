@@ -4,18 +4,13 @@
     <MetaIcons />
     <div class="min-h-screen antialiased bg-neutral-50 pb-8">
       <MainNavigation></MainNavigation>
-      <transition name="fade">
-        <main v-if="animated">
+      <Transition name="fade" appear>
+        <main>
           <div class="pt-16 sm:pt-24 2xl:pt-36">
-            <!-- <NThemeEditor v-if="$page.props.app.env == 'local'"> -->
-
             <slot></slot>
-
-            <!-- </NConfigProvider> -->
-            <!-- </NThemeEditor> -->
           </div>
         </main>
-      </transition>
+      </Transition>
     </div>
     <Footer />
 
@@ -25,19 +20,11 @@
 </template>
 
 <script setup lang="ts">
+import { Head } from "@inertiajs/inertia-vue3";
+import { NConfigProvider } from "naive-ui";
+import { onMounted, ref } from "vue";
 import Footer from "@/Layouts/Partials/Public/Footer.vue";
 import MainNavigation from "@/Layouts/Partials/Public/MainNavigation.vue";
-// import PageContent from "@/Layouts/Partials/Public/PageContent.vue";
-// import NewsElement from "@/Layouts/Partials/Public/NewsElement.vue";
-import { Head } from "@inertiajs/inertia-vue3";
-import {
-  NConfigProvider,
-  // NDialogProvider,
-  // NNotificationProvider,
-  // NThemeEditor,
-  // darkTheme,
-} from "naive-ui";
-import { onMounted, ref } from "vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
 
 const themeOverrides = {
@@ -49,12 +36,11 @@ const themeOverrides = {
   },
 };
 
-defineProps({
-  title: { type: String, default: "" },
-});
+defineProps<{
+  title: string;
+}>();
 
 const animated = ref(false);
-// const locale = ref(usePage().props.value.locale);
 
 onMounted(() => {
   animated.value = true;
@@ -75,6 +61,7 @@ onMounted(() => {
 
 var Tawk_API = Tawk_API || {},
   Tawk_LoadStart = new Date();
+
 (function () {
   const s1 = document.createElement("script"),
     s0 = document.getElementsByTagName("script")[0];
@@ -86,8 +73,6 @@ var Tawk_API = Tawk_API || {},
 })();
 
 onMounted(() => {
-  animated.value = true;
-
   (function (c, l, a, r, i, t, y) {
     c[a] =
       c[a] ||

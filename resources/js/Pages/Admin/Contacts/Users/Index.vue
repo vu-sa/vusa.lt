@@ -4,15 +4,10 @@
       <AsideHeader></AsideHeader>
     </template>
     <div class="main-card">
-      <NInput
-        class="md:col-span-4 mb-2"
-        type="text"
-        size="medium"
-        round
-        placeholder="Ieškoti pagal vardą, el. paštą..."
-        :loading="loading"
-        @input="handleSearchInput"
-      ></NInput>
+      <IndexSearchInput
+        payload-name="name"
+        @reset-paginate="pagination.page = 1"
+      />
       <NDataTable
         remote
         :data="props.users.data"
@@ -29,13 +24,19 @@
 <script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
 import { NDataTable, NInput } from "naive-ui";
+import { debounce } from "lodash";
 import { reactive, ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AsideHeader from "../AsideHeader.vue";
+import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
 
-const props = defineProps({
-  users: Object,
-});
+interface PaginatedUsers extends PaginatedObject {
+  data: Array<User>;
+}
+
+const props = defineProps<{
+  users: PaginatedUsers;
+}>();
 
 // Parse paginated user data into columns
 
@@ -56,15 +57,13 @@ const createColumns = () => {
   ];
 };
 
-const pagination = ref({});
-
-pagination.value = {
+const pagination = ref({
   itemCount: props.users.total,
   page: props.users.current_page,
   pageCount: props.users.last_page,
   pageSize: 20,
   showQuickJumper: true,
-};
+});
 
 const columns = ref(createColumns());
 const loading = ref(false);
@@ -101,25 +100,4 @@ const handlePageChange = (page) => {
     }
   );
 };
-
-const handleSearchInput = _.debounce((input) => {
-  const name = input;
-  // if (name.length > 2) {
-  loading.value = true;
-  Inertia.reload({
-    data: { name: name },
-    onSuccess: () => {
-      console.log(props.users);
-      pagination.value = {
-        itemCount: props.users.total,
-        page: 1,
-        pageCount: props.users.last_page,
-        pageSize: 20,
-        showQuickJumper: true,
-      };
-      loading.value = false;
-      // },
-    },
-  });
-}, 500);
 </script>

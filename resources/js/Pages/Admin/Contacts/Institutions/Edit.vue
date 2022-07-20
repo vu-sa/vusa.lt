@@ -120,7 +120,7 @@ const padaliniai_options = props.padaliniai.map((padalinys) => ({
   label: padalinys.shortname,
 }));
 
-// const getDutyOptions = _.debounce((input) => {
+// const getDutyOptions = debounce((input) => {
 //   // get other lang
 //   if (input.length > 2) {
 //     message.loading("Ieškoma...");

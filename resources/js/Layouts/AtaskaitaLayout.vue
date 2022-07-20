@@ -11,19 +11,18 @@
     <div class="min-h-screen antialiased bg-neutral-50/95 pb-8 relative">
       <AtaskaitaNavigation></AtaskaitaNavigation>
 
-      <transition name="fade">
-        <main v-if="animated">
-          <PageContent class="pt-16 sm:pt-24 md:pt-28 xl:pt-32 2xl:pt-40">
+      <Transition name="fade" appear>
+        <main>
+          <div class="pt-16 sm:pt-24 md:pt-28 xl:pt-32 2xl:pt-40">
             <slot />
-          </PageContent></main
-      ></transition>
+          </div></main
+      ></Transition>
     </div>
   </NConfigProvider>
 </template>
 
 <script setup lang="ts">
 import AtaskaitaNavigation from "@/Layouts/Partials/Public/AtaskaitaNavigation.vue";
-import PageContent from "@/Layouts/Partials/Public/PageContent.vue";
 // import NewsElement from "@/Layouts/Partials/Public/NewsElement.vue";
 import { Head } from "@inertiajs/inertia-vue3";
 import { onMounted, ref } from "vue";

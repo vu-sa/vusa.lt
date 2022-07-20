@@ -4,15 +4,10 @@
       <AsideHeader></AsideHeader>
     </template>
     <div class="main-card">
-      <NInput
-        class="md:col-span-4 mb-2"
-        type="text"
-        size="medium"
-        round
-        placeholder="Ieškoti pagal pavadinimą..."
-        :loading="loading"
-        @input="handleSearchInput"
-      ></NInput>
+      <IndexSearchInput
+        payload-name="title"
+        @reset-paginate="pagination.page = 1"
+      />
       <NDataTable
         remote
         size="small"
@@ -28,16 +23,22 @@
 </template>
 
 <script setup lang="ts">
+import { DataTableColumns, NButton, NDataTable } from "naive-ui";
 import { Inertia } from "@inertiajs/inertia";
 import { Link, usePage } from "@inertiajs/inertia-vue3";
-import { NButton, NDataTable, NInput } from "naive-ui";
 import { h, reactive, ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AsideHeader from "../AsideHeader.vue";
+import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
+import route from "ziggy-js";
 
-const props = defineProps({
-  pages: Object,
-});
+interface PaginatedPages extends PaginatedObject {
+  data: Array<Page>;
+}
+
+const props = defineProps<{
+  pages: PaginatedPages;
+}>();
 
 const pagination = reactive({
   itemCount: props.pages.total,
@@ -49,7 +50,7 @@ const pagination = reactive({
 
 // console.log(usePage().props.value.padaliniai);
 
-const createColumns = () => {
+const createColumns = (): DataTableColumns<Page> => {
   return [
     {
       title: "Pavadinimas",
@@ -137,7 +138,7 @@ padaliniaiFilterOptions.value.unshift({
   value: 16,
 });
 
-const columns = ref(createColumns());
+const columns = createColumns();
 const loading = ref(false);
 
 const handlePageChange = (page) => {
@@ -175,25 +176,4 @@ const handleFiltersChange = (filters) => {
     }
   );
 };
-
-const handleSearchInput = _.debounce((input) => {
-  const title = input;
-  // if (name.length > 2) {
-  loading.value = true;
-  Inertia.reload({
-    data: { title: title },
-    onSuccess: () => {
-      console.log(props.pages);
-      pagination.value = {
-        itemCount: props.pages.total,
-        page: 1,
-        pageCount: props.pages.last_page,
-        pageSize: 20,
-        showQuickJumper: true,
-      };
-      loading.value = false;
-      // },
-    },
-  });
-}, 500);
 </script>

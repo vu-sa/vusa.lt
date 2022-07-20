@@ -18,6 +18,15 @@
     // "sourceType": "module"
   },
   "plugins": ["vue", "sort-imports-es6-autofix"],
+  "overrides": [
+    {
+      "files": ["*.ts", "*.vue"],
+      "rules": {
+        "no-undef": "off"
+      }
+    }
+  ],
+
   "rules": {
     "sort-imports-es6-autofix/sort-imports-es6": [
       2,
