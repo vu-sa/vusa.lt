@@ -1,11 +1,11 @@
 <template>
   <div class="flex flex-col bg-white lg:flex-row h-auto min-h-fit rounded-lg">
     <div
-      v-if="props.imageSrc"
+      v-if="imageSrc"
       class="flex-none h-60 lg:h-auto w-auto lg:w-40 relative"
     >
       <img
-        :src="props.imageSrc"
+        :src="imageSrc"
         class="absolute inset-0 w-full h-full object-cover rounded-t-lg lg:rounded-t-none lg:rounded-l-lg"
         style="object-position: 50% 25%"
       />
@@ -27,10 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { NIcon, NPopover } from "naive-ui";
-import { QuestionCircle24Regular } from "@vicons/fluent";
-
-const props = defineProps({
-  imageSrc: String,
-});
+defineProps<{
+  imageSrc: string;
+}>();
 </script>

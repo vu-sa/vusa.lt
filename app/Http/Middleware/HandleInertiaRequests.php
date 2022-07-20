@@ -44,8 +44,10 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request)
     {
-        $user = Auth::user();
-        $user->padalinys = Auth::user()?->padalinys()?->shortname;
+        $user = User::find(Auth::id());
+        if ($user) {
+            $user->padalinys = User::find(Auth::id())?->padalinys()?->shortname;
+        }
 
         return array_merge(parent::share($request), [
             'app' => [
@@ -81,13 +83,6 @@ class HandleInertiaRequests extends Middleware
             ],
             // current user
             'user' => $user,
-
-            // 'flash' => fn () => [
-            //     'success' => $request->session()->get('success'),
-            //     'info' => $request->session()->get('info'),
-            //     'warning' => $request->session()->get('warning'),
-            //     'error' => $request->session()->get('error'),
-            // ]
         ]);
     }
 }

@@ -10,7 +10,7 @@
         <button
           type="button"
           :class="{ 'is-active': editor.isActive('bold') }"
-          @click="editor.chain().focus().toggleBold().run()"
+          @click="editor?.chain().focus().toggleBold().run()"
         >
           <NIcon><TextBold20Regular></TextBold20Regular></NIcon>
         </button>
@@ -18,7 +18,7 @@
         <button
           type="button"
           :class="{ 'is-active': editor.isActive('italic') }"
-          @click="editor.chain().focus().toggleItalic().run()"
+          @click="editor?.chain().focus().toggleItalic().run()"
         >
           <NIcon><TextItalic20Regular></TextItalic20Regular></NIcon>
         </button>
@@ -33,76 +33,76 @@
         <button
           type="button"
           :disabled="!editor.isActive('link')"
-          @click="editor.chain().focus().unsetLink().run()"
+          @click="editor?.chain().focus().unsetLink().run()"
         >
           <NIcon><LinkDismiss20Filled></LinkDismiss20Filled></NIcon>
         </button>
         <button
           type="button"
           :class="{ 'is-active': editor.isActive('paragraph') }"
-          @click="editor.chain().focus().setParagraph().run()"
+          @click="editor?.chain().focus().setParagraph().run()"
         >
           P
         </button>
         <button
           type="button"
           :class="{ 'is-active': editor.isActive('heading', { level: 1 }) }"
-          @click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
+          @click="editor?.chain().focus().toggleHeading({ level: 1 }).run()"
         >
           H1
         </button>
         <button
           type="button"
           :class="{ 'is-active': editor.isActive('heading', { level: 2 }) }"
-          @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
+          @click="editor?.chain().focus().toggleHeading({ level: 2 }).run()"
         >
           H2
         </button>
         <button
           type="button"
           :class="{ 'is-active': editor.isActive('heading', { level: 3 }) }"
-          @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
+          @click="editor?.chain().focus().toggleHeading({ level: 3 }).run()"
         >
           H3
         </button>
         <button
           type="button"
           :class="{ 'is-active': editor.isActive('bulletList') }"
-          @click="editor.chain().focus().toggleBulletList().run()"
+          @click="editor?.chain().focus().toggleBulletList().run()"
         >
           <NIcon><TextBulletListLtr24Filled></TextBulletListLtr24Filled></NIcon>
         </button>
         <button
           type="button"
           :class="{ 'is-active': editor.isActive('orderedList') }"
-          @click="editor.chain().focus().toggleOrderedList().run()"
+          @click="editor?.chain().focus().toggleOrderedList().run()"
         >
           <NIcon><TextNumberListLtr20Filled></TextNumberListLtr20Filled></NIcon>
         </button>
         <button
           type="button"
           :class="{ 'is-active': editor.isActive('blockquote') }"
-          @click="editor.chain().focus().toggleBlockquote().run()"
+          @click="editor?.chain().focus().toggleBlockquote().run()"
         >
           <NIcon><TextQuote20Filled></TextQuote20Filled></NIcon>
         </button>
         <button
           type="button"
-          @click="editor.chain().focus().setHorizontalRule().run()"
+          @click="editor?.chain().focus().setHorizontalRule().run()"
         >
           <NIcon><LineHorizontal120Regular></LineHorizontal120Regular></NIcon>
         </button>
       </div>
       <div>
-        <button type="button" @click="editor.chain().focus().undo().run()">
+        <button type="button" @click="editor?.chain().focus().undo().run()">
           <NIcon><ArrowUndo20Filled></ArrowUndo20Filled></NIcon>
         </button>
-        <button type="button" @click="editor.chain().focus().redo().run()">
+        <button type="button" @click="editor?.chain().focus().redo().run()">
           <NIcon><ArrowRedo20Filled></ArrowRedo20Filled></NIcon>
         </button>
         <button
           type="button"
-          @click="editor.chain().focus().unsetAllMarks().run()"
+          @click="editor?.chain().focus().unsetAllMarks().run()"
         >
           <NIcon><ClearFormatting20Filled></ClearFormatting20Filled></NIcon>
         </button>
@@ -217,11 +217,17 @@ import { onBeforeUnmount, ref } from "vue";
 import Image from "@tiptap/extension-image";
 import StarterKit from "@tiptap/starter-kit";
 import TipTapLink from "@tiptap/extension-link";
+import route from "ziggy-js";
 
-const props = defineProps({
-  modelValue: String,
-  searchFiles: Object,
-});
+// const props = defineProps({
+//   modelValue: String,
+//   searchFiles: Object,
+// });
+
+const props = defineProps<{
+  modelValue: string;
+  searchFiles: Record<string, unknown>;
+}>();
 
 const emit = defineEmits(["update:modelValue"]);
 
@@ -231,16 +237,16 @@ const files = ref([]);
 const modelValue = ref(props.modelValue);
 // const searchFiles = ref(props.searchFiles);
 
-const addImage = () => {
-  const url = window.prompt("URL");
+// const addImage = () => {
+//   const url = window.prompt("URL");
 
-  if (url) {
-    editor.chain().focus().setImage({ src: url }).run();
-  }
-};
+//   if (url) {
+//     editor.value?.chain().focus().setImage({ src: url }).run();
+//   }
+// };
 
 const getLinkAndModal = () => {
-  previousUrl.value = editor.value.getAttributes("link").href;
+  previousUrl.value = editor.value?.getAttributes("link").href;
   showFileModal.value = true;
 };
 
@@ -305,7 +311,7 @@ const getImages = debounce((query) => {
 const updateLink = () => {
   const url = previousUrl.value;
   editor.value
-    .chain()
+    ?.chain()
     .focus()
     .extendMarkRange("link")
     .setLink({ href: url })
@@ -315,7 +321,7 @@ const updateLink = () => {
 
 const placeImage = () => {
   const url = previousUrl.value;
-  editor.value.chain().focus().setImage({ src: url }).run();
+  editor.value?.chain().focus().setImage({ src: url }).run();
   showFileModal.value = false;
 };
 
@@ -336,12 +342,12 @@ const editor = useEditor({
   onUpdate: () => {
     // HTML
     // console.log(editor);
-    emit("update:modelValue", editor.value.getHTML());
+    emit("update:modelValue", editor.value?.getHTML());
   },
 });
 
 onBeforeUnmount(() => {
-  editor.value.destroy();
+  editor.value?.destroy();
 });
 
 // must be called after everything
