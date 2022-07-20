@@ -12,7 +12,7 @@ declare global {
       | "observers"
       | "observers_count"
     > {
-    flows: Array<Pick<App.Models.SaziningaiExamFlow>, "start_time">;
+    flows: Array<Pick<App.Models.SaziningaiExamFlow, "start_time">>;
     acceptGDPR: boolean;
     acceptDataManagement: boolean;
   }
