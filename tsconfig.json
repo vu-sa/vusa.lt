@@ -5,7 +5,7 @@
     "module": "ES2022",
     "strict": true,
     "moduleResolution": "Node",
-    "checkJs": true,
+    "allowJs": false,
     "jsx": "preserve",
     "paths": {
       "@/*": ["./resources/js/*"],
