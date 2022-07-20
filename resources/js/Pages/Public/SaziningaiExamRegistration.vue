@@ -208,8 +208,8 @@ import {
   NInputNumber,
   NSelect,
 } from "naive-ui";
-import { computed, reactive, ref } from "vue";
-import { useForm, useRemember } from "@inertiajs/inertia-vue3";
+import { computed, ref } from "vue";
+import { useForm } from "@inertiajs/inertia-vue3";
 import FormSubmitButton from "@/Components/Public/FormSubmitButton.vue";
 import PageArticle from "../../Components/Public/PageArticle.vue";
 import PublicLayout from "@/Layouts/PublicLayout.vue";
@@ -218,10 +218,12 @@ const props = defineProps<{
   padaliniaiOptions: Array<App.Models.Padalinys>;
 }>();
 
+// formRefs are needed by Naive UI
 const formRef = ref<FormInst | null>(null);
 
+// resetForm is called when the form is submitted.
 const resetForm = () => {
-  Object.keys(formValue.value).forEach((i) => (formValue.value[i] = null));
+  Object.keys(formValue).forEach((i) => (formValue[i] = null));
 };
 
 const formBlueprint: SaziningaiExamForm = {
@@ -235,16 +237,13 @@ const formBlueprint: SaziningaiExamForm = {
   place: null,
   exam_holders: null,
   students_need: null,
-  flows: [
-    {
-      start_time: null,
-    },
-  ],
+  flows: [],
   acceptGDPR: false,
   acceptDataManagement: false,
 };
 
-const formValue = useForm(formBlueprint);
+// useForm saves the form value to a remembered state.
+const formValue = useForm("SaziningaiExam", formBlueprint);
 
 const rules: FormRules = {
   name: {
@@ -325,12 +324,15 @@ const rules: FormRules = {
     required: true,
     trigger: "blur",
     // check if any item in array is empty
-    validator(rule: unknown, value: Array<any>) {
+    validator(
+      rule: unknown,
+      value: Array<Pick<App.Models.SaziningaiExamFlow, "start_time">>
+    ) {
       if (!value) {
-        return new Error("Įveskite laiką ir laiką");
+        return new Error("Įveskite bent vieno atsiskaitymo atsiskaitymo laiką");
       }
       if (value.some((item) => !item.start_time)) {
-        return new Error("Įveskite laiką arba pašalinkite srautą");
+        return new Error("Pasirinkite laiką arba pašalinkite srautą");
       }
       return true;
     },
