@@ -37,7 +37,7 @@ class CalendarController extends Controller
                 $query->select('id', 'shortname', 'alias');
             }])->orderByDesc('date')->paginate(20);
 
-        return Inertia::render('Admin/Calendar/Events/Index', [
+        return Inertia::render('Admin/Calendar/IndexCalendarEvents', [
             'calendar' => $calendar,
         ]);
     }
@@ -49,7 +49,7 @@ class CalendarController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Admin/Calendar/Events/Create');
+        return Inertia::render('Admin/Calendar/CreateCalendarEvent');
     }
 
     /**
@@ -96,7 +96,7 @@ class CalendarController extends Controller
      */
     public function edit(Calendar $calendar)
     {
-        return Inertia::render('Admin/Calendar/Events/Edit', [
+        return Inertia::render('Admin/Calendar/EditCalendarEvent', [
             'calendar' => $calendar->toArray(),
         ]);
     }

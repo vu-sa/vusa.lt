@@ -24,7 +24,7 @@ import { NButton, NIcon, NPopconfirm, createDiscreteApi } from "naive-ui";
 import route from "ziggy-js";
 
 const props = defineProps<{
-  model: App.Models.ModelTemplate;
+  form: App.Models.ModelTemplate;
   modelRoute: string;
 }>();
 
@@ -33,7 +33,7 @@ const { message } = createDiscreteApi(["message"]);
 const destroyModel = () => {
   Inertia.delete(route(props.modelRoute, props.model.id), {
     onSuccess: () => {
-      message.success("Kalendoriaus įrašas ištrintas!");
+      message.success("Įrašas ištrintas!");
     },
     preserveScroll: true,
   });

@@ -6,7 +6,7 @@
       <h1 class="text-gray-800 leading-tight inline-block mr-2 mb-0">
         <slot name="header"></slot>
       </h1>
-      <Link v-if="isIndex" class="mr-auto" :href="createUrl">
+      <Link v-if="isIndex && createUrl" class="mr-auto" :href="createUrl">
         <div class="flex">
           <NIcon size="28"
             ><AddCircle32Regular
@@ -29,7 +29,7 @@ import { computed } from "vue";
 import route from "ziggy-js";
 
 defineProps<{
-  createUrl: string;
+  createUrl?: string;
 }>();
 
 const isIndex = computed(() => {

@@ -10,14 +10,20 @@
 </template>
 
 <script setup lang="ts">
-import { Inertia, Method } from "@inertiajs/inertia";
+import { InertiaForm } from "@inertiajs/inertia-vue3";
+import { Method } from "@inertiajs/inertia";
 import { NButton, NPopconfirm, NSpin, createDiscreteApi } from "naive-ui";
 import { capitalize } from "lodash";
 import { computed, ref } from "vue";
 import route from "ziggy-js";
 
 const props = defineProps<{
-  model: App.Models.ModelTemplate;
+  form: InertiaForm<
+    Pick<
+      App.Models.Calendar,
+      "id" | "title" | "date" | "description" | "category" | "url"
+    >
+  >;
   modelRoute: string;
 }>();
 
@@ -37,17 +43,14 @@ const upsertModel = () => {
   // check for substring method in props.modelRoute
 
   showSpin.value = true;
-  Inertia.visit(route(props.modelRoute, props.model.id), {
-    method: modelMethod.value,
-    data: props.model,
+  props.form.submit(modelMethod.value, route(props.modelRoute, props.form.id), {
     onSuccess: () => {
       showSpin.value = false;
-      message.success("Sėkmingai atnaujinta!");
+      message.success("Sėkmingai sukurta arba atnaujinta!");
     },
     onError: () => {
       showSpin.value = false;
     },
-    preserveScroll: true,
   });
 };
 </script>
