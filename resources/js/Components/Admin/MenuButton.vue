@@ -1,7 +1,7 @@
 <template>
   <Link
     :href="route(menuButtonIndex)"
-    class="block p-2 md:p-3 hover:bg-gray-100 last:hover:rounded-b-xl duration-200 w-full"
+    class="block p-2 md:p-3 hover:bg-stone-100 last:hover:rounded-b-xl duration-200 w-full"
     :class="
       isCurrentRoute
         ? ['stroke-red-800', 'text-red-800', 'hover:text-red-900']
@@ -41,11 +41,9 @@ const menuButtonIndex = computed(() => {
  */
 
 const isCurrentRoute = computed(() => {
-  props.menuContent.forEach((routeValue) => {
-    if (route().current(routeValue)) {
-      return true;
-    }
+  // check props menucontent for current route
+  return props.menuContent.some((routeValue) => {
+    return route().current(routeValue);
   });
-  return false;
 });
 </script>

@@ -31,7 +31,7 @@ class DutyInstitutionController extends Controller
         })->paginate(20);
 
 
-        return Inertia::render('Admin/Contacts/Institutions/Index', [
+        return Inertia::render('Admin/Contacts/IndexDutyInstitutions', [
             'dutyInstitutions' => $dutyInstitutions,
         ]);
     }
@@ -43,7 +43,14 @@ class DutyInstitutionController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('Admin/Contacts/CreateDutyInstitution', [
+            'padaliniai' => Padalinys::orderBy('shortname_vu')->get()->map(function ($padalinys) {
+                return [
+                    'id' => $padalinys->id,
+                    'shortname' => $padalinys->shortname,
+                ];
+            }),
+        ]);
     }
 
     /**
@@ -54,7 +61,23 @@ class DutyInstitutionController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // validate
+        $request->validate([
+            'name' => 'required',
+            'short_name' => 'required',
+            'alias' => 'required',
+            'padalinys_id' => 'required',
+        ]);
+
+        // create
+        $dutyInstitution = new DutyInstitution();
+        $dutyInstitution->name = $request->name;
+        $dutyInstitution->short_name = $request->short_name;
+        $dutyInstitution->alias = $request->alias;
+        $dutyInstitution->padalinys_id = $request->padalinys_id;
+        $dutyInstitution->save();
+
+        return redirect()->route('dutyInstitutions.index');
     }
 
     /**
@@ -78,7 +101,7 @@ class DutyInstitutionController extends Controller
     {
         // dd($dutyInstitution);
 
-        return Inertia::render('Admin/Contacts/Institutions/Edit', [
+        return Inertia::render('Admin/Contacts/EditDutyInstitution', [
             'dutyInstitution' => $dutyInstitution,
             'duties' => $dutyInstitution->duties,
             'padaliniai' => Padalinys::orderBy('shortname_vu')->get()->map(function ($padalinys) {

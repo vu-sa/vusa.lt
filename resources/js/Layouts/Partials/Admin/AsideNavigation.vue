@@ -1,6 +1,6 @@
 <template>
   <aside
-    class="bg-gray-50 rounded-xl ml-12 shadow-lg duration-200 sticky top-4 mb-auto col-span-2 md:grid grid-flow-row gap-5 hidden text-sm text-gray-700 p-6"
+    class="bg-stone-50 rounded-xl ml-12 shadow-lg duration-200 sticky top-4 mb-auto col-span-2 md:grid grid-flow-row gap-5 hidden text-sm text-gray-700 p-6"
   >
     <div class="flex items-center hover:text-gray-900 transition col-span-3">
       <div class="flex items-center">

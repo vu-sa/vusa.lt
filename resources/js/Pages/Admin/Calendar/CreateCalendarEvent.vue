@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout :title="calendar.title ? calendar.title : 'Naujas įvykis'">
+  <AdminLayout title="Naujas įvykis">
     <UpsertModelLayout :errors="$attrs.errors" :model="calendar">
       <CalendarForm model-route="calendar.store" :calendar="calendar" />
     </UpsertModelLayout>

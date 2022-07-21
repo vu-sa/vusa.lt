@@ -1,5 +1,8 @@
 <template>
-  <AdminLayout title="Institucijos">
+  <AdminLayout
+    title="Institucijos"
+    :create-url="route('dutyInstitutions.create')"
+  >
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
@@ -17,7 +20,7 @@ import { h, ref } from "vue";
 import route from "ziggy-js";
 
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-import AsideHeader from "../AsideHeader.vue";
+import AsideHeader from "../../../components/Admin/Headers/AsideHeaderContacts.vue";
 
 import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
 import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";

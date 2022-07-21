@@ -1,6 +1,22 @@
 export {};
 
 declare global {
+  interface CalendarEventForm
+    extends Pick<
+      App.Models.Calendar,
+      "title" | "date" | "description" | "category" | "url"
+    > {
+    id?: number;
+  }
+
+  interface DutyInstitutionForm
+    extends Pick<
+      App.Models.DutyInstitution,
+      "name" | "short_name" | "alias" | "description" | "padalinys_id"
+    > {
+    id?: number;
+  }
+
   interface SaziningaiExamForm
     extends Omit<
       App.Models.SaziningaiExam,

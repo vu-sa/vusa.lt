@@ -18,7 +18,7 @@ import { Inertia } from "@inertiajs/inertia";
 import { NDataTable } from "naive-ui";
 import { ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-import AsideHeader from "../AsideHeader.vue";
+import AsideHeader from "../../../../components/Admin/Headers/AsideHeaderContacts.vue";
 import route from "ziggy-js";
 
 defineProps<{

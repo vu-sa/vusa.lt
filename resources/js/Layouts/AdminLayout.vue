@@ -4,10 +4,12 @@
   <Head :title="title" />
   <MetaIcons />
 
-  <div class="min-h-screen grid grid-cols-9 bg-gray-200 px-4 pb-4">
+  <div
+    class="min-h-screen grid grid-cols-9 bg-gradient-to-tr from-vusa-red/20 to-vusa-yellow/20 px-4 pb-4"
+  >
     <!-- Main Navigation -->
     <nav
-      class="md:mr-4 shadow-lg md:rounded-xl col-span-1 md:sticky top-0 left-0 md:left-auto md:top-4 w-screen md:w-auto mb-auto bg-gray-50 transition fixed flex md:flex-col items-center text-center text-gray-800 z-20 overflow-x-scroll md:overflow-auto justify-evenly"
+      class="md:mr-4 shadow-lg md:rounded-xl col-span-1 md:sticky top-0 left-0 md:left-auto md:top-4 w-screen md:w-auto mb-auto bg-stone-50 transition fixed flex md:flex-col items-center text-center text-gray-800 z-20 overflow-x-scroll md:overflow-auto justify-evenly"
     >
       <a class="w-full md:bg-white md:rounded-t-lg" href="/">
         <AppLogo class="mx-auto my-2" />
@@ -127,7 +129,7 @@ import MetaIcons from "@/Components/MetaIcons.vue";
 import PageContent from "@/Layouts/Partials/Admin/PageContent.vue";
 
 defineProps<{
-  title: string;
+  title: string | null;
   createUrl?: string | null;
 }>();
 

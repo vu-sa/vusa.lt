@@ -1,9 +1,8 @@
 <template>
-  <div class="relative rounded-xl border-4 border-black">
-    <div
-      v-if="editor"
-      class="absolute top-0 p-4 w-full border-b-4 border-black bg-white rounded-t-xl z-10"
-    >
+  <div
+    class="mt-2 w-full border-vusa-red border-opacity-20 rounded-lg shadow-xl"
+  >
+    <div v-if="editor" class="p-2">
       <!-- <strong class="mb-4">Funkcijos</strong> -->
       <!-- <br /> -->
       <div>
@@ -120,8 +119,8 @@
     </div>
 
     <EditorContent
-      class="mt-2 shadow-xl px-2 py-8 rounded-lg overflow-y-auto h-fit max-h-[40rem]"
       :editor="editor"
+      class="rounded-b-lg bg-slate-100/80 border-vusa-yellow/50"
     />
   </div>
   <NModal v-model:show="showFileModal">
@@ -314,7 +313,7 @@ const placeImage = () => {
 const editor = useEditor({
   editorProps: {
     attributes: {
-      class: "prose prose-sm sm:prose m-5 focus:outline-none mt-24",
+      class: "prose prose-sm sm:prose focus:outline-none p-4",
     },
   },
   extensions: [
@@ -324,7 +323,7 @@ const editor = useEditor({
       openOnClick: false,
     }),
   ],
-  content: modelValue,
+  content: modelValue.value,
   onUpdate: () => {
     // HTML
     // console.log(editor);
@@ -412,6 +411,11 @@ button {
   cursor: pointer;
   font-size: 1rem;
   transition: all 0.2s ease-in-out;
+  width: 2rem;
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 button:hover {
@@ -428,26 +432,4 @@ img {
   max-width: 100%;
   height: auto;
 }
-
-/* .bubble-menu {
-  display: flex;
-  background-color: #0D0D0D;
-  padding: 0.2rem;
-  border-radius: 0.5rem;
-
-  button {
-    border: none;
-    background: none;
-    color: #FFF;
-    font-size: 0.85rem;
-    font-weight: 500;
-    padding: 0 0.2rem;
-    opacity: 0.6;
-
-    &:hover,
-    &.is-active {
-      opacity: 1;
-    }
-  }
-} */
 </style>

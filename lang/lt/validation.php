@@ -112,6 +112,9 @@ return [
         'last_name' => 'Pavardė',
         'name' => 'Pavadinimas',
         'password' => 'Slaptažodis',
+        'short_name' => 'Trumpas pavadinimas',
+        'padalinys_id' => 'Padalinys',
+        'alias' => 'Alias',
     ],
 
 ];

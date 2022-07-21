@@ -1,6 +1,8 @@
 <template>
   <article class="grid grid-cols-4 justify-items-center px-8 lg:px-32 gap-y-4">
-    <div class="text-gray-700 col-span-4 flex gap-2 w-full flex-wrap justify-center">
+    <div
+      class="text-gray-700 col-span-4 flex gap-2 w-full flex-wrap justify-center"
+    >
       <slot name="tags"></slot>
     </div>
     <div class="flex flex-row col-span-4 text-gray-700 items-center">

@@ -9,7 +9,7 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Data ir laikas" :span="12" path="date">
+      <NFormItemGi label="Data ir laikas" :span="12">
         <NDatePicker
           v-model:formatted-value="form.date"
           placeholder="Įrašyti laiką..."
@@ -18,7 +18,7 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Aprašymas (HTML)" :span="12" path="description">
+      <NFormItemGi label="Aprašymas (HTML)" :span="12">
         <NInput
           v-model:value="form.description"
           type="textarea"
@@ -26,7 +26,7 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Kategorija" :span="12" path="category">
+      <NFormItemGi label="Kategorija" :span="12">
         <NSelect
           v-model:value="form.category"
           :options="options"
@@ -35,7 +35,7 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Nuoroda" :span="12" path="url">
+      <NFormItemGi label="Nuoroda" :span="12">
         <NInput
           v-model:value="form.url"
           type="text"
@@ -65,22 +65,13 @@ import {
   NInput,
   NSelect,
 } from "naive-ui";
-import { reactive } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 
 import DeleteModelButton from "@/Components/Admin/Buttons/DeleteModelButton.vue";
 import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue";
 
-interface CalendarFormInteraface
-  extends Pick<
-    App.Models.Calendar,
-    "title" | "date" | "description" | "category" | "url"
-  > {
-  id?: number;
-}
-
 const props = defineProps<{
-  calendar: CalendarFormInteraface;
+  calendar: CalendarEventForm;
   modelRoute: string;
   deleteModelRoute?: string;
 }>();

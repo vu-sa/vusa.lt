@@ -27,7 +27,7 @@ import { NDataTable, NInput } from "naive-ui";
 import { debounce } from "lodash";
 import { reactive, ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-import AsideHeader from "../AsideHeader.vue";
+import AsideHeader from "../../../../components/Admin/Headers/AsideHeaderContacts.vue";
 import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
 
 interface PaginatedUsers extends PaginatedModels {

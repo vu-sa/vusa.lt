@@ -18,12 +18,7 @@ import { computed, ref } from "vue";
 import route from "ziggy-js";
 
 const props = defineProps<{
-  form: InertiaForm<
-    Pick<
-      App.Models.Calendar,
-      "id" | "title" | "date" | "description" | "category" | "url"
-    >
-  >;
+  form: InertiaForm<App.Models.ModelTemplate>;
   modelRoute: string;
 }>();
 

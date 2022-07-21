@@ -6,7 +6,7 @@
   >
     <template #trigger>
       <div class="mx-4 flex">
-        <NButton text type="error">
+        <NButton type="error">
           <NIcon size="18">
             <Delete20Filled />
           </NIcon>
@@ -31,7 +31,7 @@ const props = defineProps<{
 const { message } = createDiscreteApi(["message"]);
 
 const destroyModel = () => {
-  Inertia.delete(route(props.modelRoute, props.model.id), {
+  Inertia.delete(route(props.modelRoute, props.form.id), {
     onSuccess: () => {
       message.success("Įrašas ištrintas!");
     },
