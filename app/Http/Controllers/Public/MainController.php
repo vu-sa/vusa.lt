@@ -192,29 +192,17 @@ class MainController extends Controller
 	{
 		$padalinys = Padalinys::where('alias', '=', $this->alias)->first();
 
-		// ddd($this->alias, Route::currentRouteName() == 'padalinys.home', request()->padalinys);
-
 		$page = Page::where([['permalink', '=', request()->permalink], ['padalinys_id', '=', $padalinys->id]])->first();
 
 		if ($page == null) {
-			// return 404
 			abort(404);
 		}
 
-		// dd($page);
-
 		$navigation_item = Navigation::where([['padalinys_id', '=', $padalinys->id], ['name', '=', $page->title]])->get()->first();
-
-		// dd(request()->route('permalink'), request()->permalink, $page, $padalinys);
-
-
-
-		// get four random pages
-		// $random_pages = Page::where([['padalinys_id', '=', $padalinys->id], ['lang', app()->getLocale()]])->get()->random(4);
 
 		Inertia::share('alias', $page->padalinys->alias);
 		return Inertia::render('Public/Page', [
-			'navigation_item_id' => $navigation_item?->id,
+			'navigationItemId' => $navigation_item?->id,
 			'page' => [
 				'id' => $page->id,
 				'title' => $page->title,
@@ -226,15 +214,6 @@ class MainController extends Controller
 				'category' => $page->category,
 				'padalinys' => $page->padalinys->shortname,
 			],
-			// 'random_pages' => $random_pages->map(function ($page) {
-			// 	return [
-			// 		'id' => $page->id,
-			// 		'title' => $page->title,
-			// 		'lang' => $page->lang,
-			// 		'alias' => $page->padalinys->alias,
-			// 		'permalink' => $page->permalink,
-			// 	];
-			// }),
 		])->withViewData([
 			'title' => $page->title,
 			// truncate text to first sentence
