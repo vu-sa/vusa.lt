@@ -10,12 +10,12 @@ use Inertia\Inertia;
 
 class SaziningaiExamsController extends Controller
 {
-    
+
     public function __construct()
     {
         $this->authorizeResource(SaziningaiExam::class, 'saziningaiExam');
     }
-    
+
     /**
      * Display a listing of the resource.
      *
@@ -23,30 +23,15 @@ class SaziningaiExamsController extends Controller
      */
     public function index()
     {
+        $exams = SaziningaiExam::with(['flows' => function ($query) {
+            $query->select('id', 'exam_uuid', 'start_time')->orderBy('start_time', 'asc');
+        }])->with(['padalinys'])->get();
 
-        $exams = SaziningaiExam::all();
-
-        // dd($exams->unique('padalinys_id')->toArray());
-
-        return Inertia::render('Admin/Saziningai/Exams/Index', [
-            'exams' => $exams->map(function ($exam) {
-
-                return [
-                    'id' => $exam->id,
-                    'name' => $exam->name,
-                    'subject_name' => $exam->subject_name,
-                    'exam_holders' => $exam->exam_holders,
-                    'padalinys' => $exam?->padalinys?->shortname_vu,
-                    'created_at' => $exam->created_at->format('Y-m-d H:i'),
-                    'flow_date' => date_create($exam?->flows?->first()?->start_time)->format('Y-m-d H:i'),
-                    'flow_count' => $exam->flows->count(),
-                    'observer_count' => $exam->observers->count(),
-                ];
-            }),
+        return Inertia::render('Admin/Saziningai/IndexSaziningaiExams', [
+            'exams' => $exams->paginate(20),
             'padaliniai' => $exams->unique('padalinys_id')->map(function ($exam) {
                 return $exam->padalinys?->shortname_vu;
             }),
-            'create_url' => route('saziningaiExams.create'),
         ]);
     }
 
@@ -57,14 +42,7 @@ class SaziningaiExamsController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Admin/Saziningai/Exams/Create', [
-            'padaliniai' => Padalinys::orderBy('shortname_vu')->get()->map(function ($padalinys) {
-                return [
-                    'id' => $padalinys->id,
-                    'shortname_vu' => $padalinys->shortname_vu,
-                ];
-            }),
-        ]);
+        return redirect()->route('saziningaiExamRegistration');
     }
 
     /**
@@ -74,7 +52,7 @@ class SaziningaiExamsController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {        
+    {
         $request->validate([
             'email' => ['required', 'email'],
             'subject_name' => ['required'],
@@ -168,7 +146,7 @@ class SaziningaiExamsController extends Controller
             'subject_name' => ['required'],
             'padalinys_id' => ['required'],
         ]);
-        
+
         $saziningaiExam->update($request->only('name', 'phone', 'email', 'exam_type', 'padalinys_id', 'place', 'duration', 'subject_name', 'exam_holders', 'students_need'));
         return redirect()->back();
     }

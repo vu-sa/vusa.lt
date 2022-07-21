@@ -15,4 +15,5 @@
 
 <script setup lang="ts">
 import { Link } from "@inertiajs/inertia-vue3";
+import route from "ziggy-js";
 </script>

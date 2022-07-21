@@ -19,7 +19,7 @@ import AppLayout from "@/Layouts/AdminLayout.vue";
 import { computed } from "vue";
 
 defineProps<{
-  role: RoleData;
+  role: App.Models.Role;
 }>();
 
 const salutation = computed(() => {

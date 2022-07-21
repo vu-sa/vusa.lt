@@ -178,16 +178,14 @@
             galite kreiptis į
             <a href="mailto:dap@vusa.lt">dap@vusa.lt</a>.
           </p>
-          <NFormItem>
-            <FormSubmitButton
-              submit-route="saziningaiExamRegistration.store"
-              :form-ref="formRef"
-              :form-value="formValue"
-              @reset-form="resetForm"
-            >
-              Pateikti
-            </FormSubmitButton>
-          </NFormItem>
+          <FormSubmitButton
+            submit-route="saziningaiExamRegistration.store"
+            :form-ref="formRef"
+            :form-value="formValue"
+            @reset-form="resetForm"
+          >
+            Pateikti
+          </FormSubmitButton>
         </NForm>
       </div>
     </PageArticle>
@@ -210,7 +208,8 @@ import {
 } from "naive-ui";
 import { computed, ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
-import FormSubmitButton from "@/Components/Public/FormSubmitButton.vue";
+
+import FormSubmitButton from "@/components/Public/FormSubmitButton.vue";
 import PageArticle from "../../Components/Public/PageArticle.vue";
 import PublicLayout from "@/Layouts/PublicLayout.vue";
 
@@ -409,7 +408,6 @@ const padalinysPlaceholder = computed(() => {
 const date3DaysToFuture = computed(() => {
   const date = new Date();
   const day = date.getDay();
-  console.log(day);
   let daysToAdd = 0;
   switch (day) {
     case 3:

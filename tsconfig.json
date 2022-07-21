@@ -9,9 +9,9 @@
     "jsx": "preserve",
     "paths": {
       "@/*": ["./resources/js/*"],
-      "ziggy": ["./vendor/tightenco/ziggy/dist/vue"]
+      "ziggy": ["./vendor/tightenco/ziggy/dist"]
     },
-    "types": ["naive-ui/volar", "@types/ziggy-js", "vite/client"],
+    "types": ["naive-ui/volar", "vite/client"],
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,

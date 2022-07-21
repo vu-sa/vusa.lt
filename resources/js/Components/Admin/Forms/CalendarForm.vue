@@ -18,14 +18,6 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Aprašymas (HTML)" :span="12">
-        <NInput
-          v-model:value="form.description"
-          type="textarea"
-          placeholder="Įrašyti aprašymą..."
-        />
-      </NFormItemGi>
-
       <NFormItemGi label="Kategorija" :span="12">
         <NSelect
           v-model:value="form.category"
@@ -40,6 +32,13 @@
           v-model:value="form.url"
           type="text"
           placeholder="Įrašyti nuorodą..."
+        />
+      </NFormItemGi>
+
+      <NFormItemGi label="Aprašymas" :span="24">
+        <TipTap
+          v-model="form.description"
+          :search-files="$page.props.search.other"
         />
       </NFormItemGi>
     </NGrid>
@@ -68,6 +67,7 @@ import {
 import { useForm } from "@inertiajs/inertia-vue3";
 
 import DeleteModelButton from "@/Components/Admin/Buttons/DeleteModelButton.vue";
+import TipTap from "@/components/TipTap.vue";
 import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{

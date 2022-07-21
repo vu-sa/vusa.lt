@@ -131,7 +131,7 @@ Route::get('naujienos', [Public\MainController::class, 'newsArchive'])->name('ne
 Route::get('naujiena/archyvas', [Public\MainController::class, 'newsArchive']);
 
 // render login form
-Route::inertia('login', 'Auth/LoginForm')->middleware('guest')->name('login');
+Route::inertia('login', 'LoginForm')->middleware('guest')->name('login');
 
 Route::get('saziningai-registracija', [Public\MainController::class, 'saziningaiExamRegistration'])->name('saziningaiExamRegistration');
 Route::post('saziningai-registracija', [Public\MainController::class, 'storeSaziningaiExamRegistration'])->name('saziningaiExamRegistration.store');

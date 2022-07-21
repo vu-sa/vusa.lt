@@ -9,12 +9,12 @@ use Inertia\Inertia;
 
 class RolesController extends Controller
 {
-    
+
     public function __construct()
     {
         $this->authorizeResource(Role::class, 'role');
     }
-    
+
     /**
      * Display a listing of the resource.
      *
@@ -22,11 +22,11 @@ class RolesController extends Controller
      */
     public function index()
     {
-        $roles = Role::all();
+        // $roles = Role::all();
 
-        return Inertia::render('Admin/Contacts/Roles/Index', [
-            'roles' => $roles,
-        ]);
+        // return Inertia::render('Admin/Contacts/Roles/Index', [
+        //     'roles' => $roles,
+        // ]);
     }
 
     /**
@@ -69,9 +69,9 @@ class RolesController extends Controller
      */
     public function edit(Role $role)
     {
-        return Inertia::render('Admin/Contacts/Roles/Edit', [
-            'role' => $role,
-        ]);
+        // return Inertia::render('Admin/Contacts/Roles/Edit', [
+        //     'role' => $role,
+        // ]);
     }
 
     /**
@@ -83,9 +83,9 @@ class RolesController extends Controller
      */
     public function update(Request $request, Role $role)
     {
-        $role->update($request->only('name', 'description'));
+        // $role->update($request->only('name', 'description'));
 
-        return back();
+        // return back();
     }
 
     /**

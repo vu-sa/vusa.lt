@@ -14,11 +14,7 @@
       </NFormItemGi>
 
       <NFormItemGi label="Techninė žymė" :span="12">
-        <NInput
-          v-model:value="form.alias"
-          type="textarea"
-          placeholder="vu-sa"
-        />
+        <NInput v-model:value="form.alias" type="text" placeholder="vu-sa" />
       </NFormItemGi>
 
       <NFormItemGi label="Padalinys" :span="12">

@@ -21,6 +21,7 @@
         "laravel/tinker": "^2.7",
         "laravel/ui": "^3.0",
         "socialiteproviders/microsoft": "^4.1",
+        "spatie/laravel-collection-macros": "^7.11",
         "spatie/laravel-feed": "^4.1",
         "spatie/laravel-google-fonts": "^1.2",
         "tightenco/ziggy": "^1.0"
