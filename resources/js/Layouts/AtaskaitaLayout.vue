@@ -2,12 +2,12 @@
   <NConfigProvider :theme-overrides="themeOverrides">
     <Head :title="title" />
     <MetaIcons />
-    <transition name="fade"
+    <Transition name="fade"
       ><img
         v-if="animated"
         class="object-cover h-full w-full fixed opacity-50"
         :src="backgroundImage"
-    /></transition>
+    /></Transition>
     <div class="min-h-screen antialiased bg-neutral-50/95 pb-8 relative">
       <AtaskaitaNavigation></AtaskaitaNavigation>
 
@@ -29,10 +29,10 @@ import { onMounted, ref } from "vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
 // import Footer from "./Partials/Public/Footer.vue";
 
-defineProps({
-  title: String,
-  backgroundImage: String,
-});
+defineProps<{
+  title: string;
+  backgroundImage: string;
+}>();
 
 const themeOverrides = {
   common: {

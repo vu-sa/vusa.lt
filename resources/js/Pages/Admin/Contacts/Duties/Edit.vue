@@ -107,9 +107,9 @@ import { NButton, NIcon, NInput, NPopconfirm, NSelect } from "naive-ui";
 import { debounce } from "lodash";
 import { onMounted, reactive, ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-import DeleteModelButton from "@/Components/Admin/DeleteModelButton.vue";
+import DeleteModelButton from "@/Components/Admin/Buttons/DeleteModelButton.vue";
 import TipTap from "@/Components/TipTap.vue";
-import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
+import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue";
 
 const props = defineProps({
   duty: Object,

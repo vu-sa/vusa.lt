@@ -409,9 +409,12 @@ const padalinysPlaceholder = computed(() => {
 const date3DaysToFuture = computed(() => {
   const date = new Date();
   const day = date.getDay();
+  console.log(day);
   let daysToAdd = 0;
   switch (day) {
-    case 3 || 4 || 5:
+    case 3:
+    case 4:
+    case 5:
       daysToAdd = 4;
       break;
     case 6:
@@ -422,7 +425,7 @@ const date3DaysToFuture = computed(() => {
       break;
   }
 
-  date.setDate(date.getDate() + daysToAdd);
+  date.setDate(date.getDate() + daysToAdd + 1);
   // date set language to Lithuanian and format in MM dd
   return date;
 });
@@ -435,7 +438,7 @@ const date3DaysToFutureLT = computed(() => {
 });
 
 const disableUnallowedDate = (ts: number) => {
-  // date3daystofuture to timestamp
-  return ts < date3DaysToFuture.value.getTime();
+  // date3daystofuture to timestamp minus one day
+  return ts < date3DaysToFuture.value.getTime() - 24 * 60 * 60 * 1000;
 };
 </script>

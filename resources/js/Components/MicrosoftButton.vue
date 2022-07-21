@@ -2,7 +2,7 @@
   <NButton :loading="loadingRef" type="warning" @click="microsoftRedirect">
     <template #icon>
       <NIcon>
-        <Microsoft />
+        <MicrosoftIcon />
       </NIcon>
     </template>
     Tęsti su Microsoft
@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import { Microsoft } from "@vicons/fa";
+import { Microsoft as MicrosoftIcon } from "@vicons/fa";
 import { NButton, NIcon } from "naive-ui";
 import { ref } from "vue";
 import route from "ziggy-js";

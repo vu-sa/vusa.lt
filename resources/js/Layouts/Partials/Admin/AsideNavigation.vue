@@ -6,12 +6,12 @@
       <div class="flex items-center">
         <img
           class="h-8 w-8 rounded-full object-cover"
-          :src="profilePhotoPath($page.props.user)"
-          :alt="$page.props.user.name"
+          :src="profilePhotoPath(inertiaProps.user)"
+          :alt="inertiaProps.user.name"
         />
         <span class="ml-2"
-          >{{ $page.props.user.name }} ({{
-            $page.props.user.padalinys ?? "Be padalinio"
+          >{{ inertiaProps.user.name }} ({{
+            inertiaProps.user.padalinys ?? "Be padalinio"
           }})</span
         >
       </div>
@@ -28,10 +28,13 @@
 </template>
 
 <script setup lang="ts">
-import { Link } from "@inertiajs/inertia-vue3";
+import { Link, usePage } from "@inertiajs/inertia-vue3";
+import route from "ziggy-js";
+
+const inertiaProps = usePage<InertiaProps>().props.value;
 
 // compute a profile photo path
-const profilePhotoPath = (user) => {
+const profilePhotoPath = (user: App.Models.User) => {
   // user type is object with photo_path property
 
   if (user.profile_photo_path) {

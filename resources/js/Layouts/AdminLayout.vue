@@ -80,7 +80,7 @@
     </nav>
     <!-- Main Navigation End -->
     <!-- Page Content -->
-    <PageContent>
+    <PageContent :create-url="createUrl">
       <template #header>
         <slot name="header">{{ title }}</slot>
       </template>
@@ -121,13 +121,14 @@ import { NButton, NModal } from "naive-ui";
 import { ref } from "vue";
 import AppLogo from "@/Components/AppLogo.vue";
 import AsideNavigation from "@/Layouts/Partials/Admin/AsideNavigation.vue";
-import Changelog from "@/Components/Admin/Changelog.vue";
+import Changelog from "@/Components/Admin/Misc/ChangelogCard.vue";
 import MenuButton from "@/Components/Admin/MenuButton.vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
 import PageContent from "@/Layouts/Partials/Admin/PageContent.vue";
 
 defineProps<{
   title: string;
+  createUrl?: string | null;
 }>();
 
 const { can } = usePage<InertiaProps>().props.value;

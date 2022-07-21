@@ -219,11 +219,6 @@ import StarterKit from "@tiptap/starter-kit";
 import TipTapLink from "@tiptap/extension-link";
 import route from "ziggy-js";
 
-// const props = defineProps({
-//   modelValue: String,
-//   searchFiles: Object,
-// });
-
 const props = defineProps<{
   modelValue: string;
   searchFiles: Record<string, unknown>;
@@ -235,15 +230,6 @@ const showFileModal = ref(false);
 const previousUrl = ref("");
 const files = ref([]);
 const modelValue = ref(props.modelValue);
-// const searchFiles = ref(props.searchFiles);
-
-// const addImage = () => {
-//   const url = window.prompt("URL");
-
-//   if (url) {
-//     editor.value?.chain().focus().setImage({ src: url }).run();
-//   }
-// };
 
 const getLinkAndModal = () => {
   previousUrl.value = editor.value?.getAttributes("link").href;

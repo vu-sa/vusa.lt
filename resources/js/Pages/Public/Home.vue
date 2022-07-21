@@ -157,12 +157,7 @@
 import HomeCard from "@/Components/Public/HomeCard.vue";
 import PublicLayout from "@/Layouts/PublicLayout.vue";
 // import SkeletonElement from "@/Layouts/Partials/Public/SkeletonElement.vue";
-import {
-  ArrowCircleRight20Regular,
-  ArrowRight48Regular,
-  CalendarLtr20Regular,
-  Clock20Regular,
-} from "@vicons/fluent";
+import { ArrowCircleRight20Regular, Clock20Regular } from "@vicons/fluent";
 import { Head, Link, usePage } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
 import { NButton, NCarousel, NCarouselItem, NDivider, NIcon } from "naive-ui";

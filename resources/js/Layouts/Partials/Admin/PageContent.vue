@@ -6,7 +6,7 @@
       <h1 class="text-gray-800 leading-tight inline-block mr-2 mb-0">
         <slot name="header"></slot>
       </h1>
-      <Link v-if="isIndex" class="mr-auto" :href="createURL">
+      <Link v-if="isIndex" class="mr-auto" :href="createUrl">
         <div class="flex">
           <NIcon size="28"
             ><AddCircle32Regular
@@ -26,10 +26,11 @@ import { AddCircle32Regular } from "@vicons/fluent";
 import { Link } from "@inertiajs/inertia-vue3";
 import { NIcon } from "naive-ui";
 import { computed } from "vue";
+import route from "ziggy-js";
 
-const props = defineProps({
-  createURL: String,
-});
+defineProps<{
+  createUrl: string;
+}>();
 
 const isIndex = computed(() => {
   return route().current("*.index");

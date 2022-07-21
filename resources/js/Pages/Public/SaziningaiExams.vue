@@ -55,16 +55,24 @@
           />
         </NFormItem>
         <NFormItem path="acceptGDPR"
-          ><NCheckbox
-            v-model:checked="formValue.acceptGDPR"
-            :label="labelGDPR"
-          ></NCheckbox
-        ></NFormItem>
+          ><NCheckbox v-model:checked="formValue.acceptGDPR"
+            >Susipažinau su
+            <a
+              target="_blank"
+              href="https://vusa.lt/uploads/Dokumentų šablonai/Asmens_duomenu_tvarkymo_VUSA_tvarkos_aprasas.pdf"
+              @click.stop
+              >Asmens duomenų tvarkymo Vilniaus universiteto Studentų
+              atstovybėje tvarkos aprašu</a
+            >
+            ir sutinku</NCheckbox
+          ></NFormItem
+        >
         <NFormItem path="acceptDataManagement">
-          <NCheckbox
-            v-model:checked="formValue.acceptDataManagement"
-            :label="labelAcceptDataManagement"
-          ></NCheckbox>
+          <NCheckbox v-model:checked="formValue.acceptDataManagement"
+            >Sutinku, kad mano pateikti asmens duomenys būtų tvarkomi vidaus
+            administravimo tikslu pagal Asmens duomenų tvarkymo Vilniaus
+            universiteto Studentų atstovybėje tvarkos aprašą</NCheckbox
+          >
         </NFormItem>
         <NFormItem>
           <FormSubmitButton
@@ -88,18 +96,14 @@ import {
   NCard,
   NCheckbox,
   NDataTable,
-  NDatePicker,
-  NDynamicInput,
   NForm,
   NFormItem,
   NInput,
-  NInputNumber,
   NModal,
   NSelect,
 } from "naive-ui";
 import { h, ref } from "vue";
 import FormSubmitButton from "@/Components/Public/FormSubmitButton.vue";
-import PageArticle from "../../Components/Public/PageArticle.vue";
 import PublicLayout from "@/Layouts/PublicLayout.vue";
 
 const props = defineProps({
@@ -121,25 +125,6 @@ const formValue = ref({
   acceptGDPR: false,
   acceptDataManagement: false,
 });
-
-const labelGDPR = h("label", {}, [
-  "Susipažinau su ",
-  h(
-    "a",
-    {
-      target: "_blank",
-      href: "https://vusa.lt/uploads/Dokumentų šablonai/Asmens_duomenu_tvarkymo_VUSA_tvarkos_aprasas.pdf",
-    },
-    "Asmens duomenų tvarkymo Vilniaus universiteto Studentų atstovybėje tvarkos aprašu"
-  ),
-  " ir sutinku.",
-]);
-
-const labelAcceptDataManagement = h(
-  "label",
-  {},
-  "Sutinku, kad mano pateikti asmens duomenys būtų tvarkomi vidaus administravimo tikslu pagal Asmens duomenų tvarkymo Vilniaus universiteto Studentų atstovybėje tvarkos aprašą."
-);
 
 const rules = {
   name: {
@@ -288,28 +273,6 @@ const padaliniaiOptions = props.padaliniaiOptions.map((padalinys) => ({
   value: padalinys.id,
   label: padalinys.shortname_vu,
 }));
-
-const handleValidateClick = (e) => {
-  e.preventDefault();
-  formRef.value?.validate((errors) => {
-    if (!errors) {
-      Inertia.post(route("saziningaiExamObserver.store"), formValue.value, {
-        onSuccess: () => {
-          showModal.value = false;
-          message.success(
-            `Ačiū už užsiregistravimą stebėti „${formValue.value.exam_name}“!`
-          );
-          Object.keys(formValue.value).forEach(
-            (i) => (formValue.value[i] = null)
-          );
-        },
-      });
-    } else {
-      // console.log(errors);
-      message.error("Užpildykite visus laukelius.");
-    }
-  });
-};
 
 const resetForm = () => {
   Object.keys(formValue.value).forEach((i) => (formValue.value[i] = null));

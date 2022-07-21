@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout title="Sažiningai" :create-u-r-l="create_url">
+  <AdminLayout title="Sažiningai" :create-url="create_url">
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>

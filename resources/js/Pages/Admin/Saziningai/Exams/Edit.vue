@@ -166,8 +166,8 @@ import {
 import { reactive, ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 
-import DeleteModelButton from "@/Components/Admin/DeleteModelButton.vue";
-import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
+import DeleteModelButton from "@/Components/Admin/Buttons/DeleteModelButton.vue";
+import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue";
 
 const props = defineProps({
   exam: Object,

@@ -1,25 +1,29 @@
 <template>
   <div v-if="hasErrors">
-    <div class="font-medium text-red-600">Kažkas ne taip...</div>
+    <div class="font-medium text-vusa-red">Kažkas ne taip...</div>
 
-    <ul class="mt-3 list-disc list-inside text-sm text-red-600">
+    <ul class="mt-3 list-disc list-inside text-sm text-vusa-red">
       <li v-for="(error, key) in errors" :key="key">{{ error }}</li>
     </ul>
   </div>
 </template>
 
-<script>
-import { defineComponent } from "vue";
+<script setup lang="ts">
+import { computed } from "vue";
+import { usePage } from "@inertiajs/inertia-vue3";
 
-export default defineComponent({
-  computed: {
-    errors() {
-      return this.$page.props.errors;
-    },
+const inertiaProps = usePage<InertiaProps>().props.value;
 
-    hasErrors() {
-      return Object.keys(this.errors).length > 0;
-    },
-  },
+const errors = computed(() => {
+  console.log(inertiaProps, inertiaProps.errors);
+  return inertiaProps.errors;
+});
+
+console.log(inertiaProps, inertiaProps.errors);
+
+const hasErrors = computed(() => {
+  console.log(inertiaProps, inertiaProps.errors);
+
+  return Object.keys(errors.value).length > 0;
 });
 </script>

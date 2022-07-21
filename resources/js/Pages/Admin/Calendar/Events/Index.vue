@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout title="Renginiai" :create-u-r-l="route('calendar.create')">
+  <AdminLayout title="Renginiai" :create-url="route('calendar.create')">
     <div class="main-card">
       <IndexSearchInput payload-name="title" />
       <IndexDataTable :model="calendar" :columns="columns" />

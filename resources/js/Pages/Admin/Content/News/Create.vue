@@ -103,8 +103,8 @@ import { usePage } from "@inertiajs/inertia-vue3";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import TipTap from "@/Components/TipTap.vue";
 // import { map } from "lodash";
-import UploadImage from "@/Components/Admin/UploadImage.vue";
-import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
+import UploadImage from "@/Components/Admin/Buttons/UploadImageButtons.vue";
+import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue";
 
 const props = defineProps({
   errors: Object,

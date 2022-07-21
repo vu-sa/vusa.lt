@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout title="Kontaktai" :create-u-r-l="route('users.create')">
+  <AdminLayout title="Kontaktai" :create-url="route('users.create')">
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>

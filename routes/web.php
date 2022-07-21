@@ -27,16 +27,6 @@ Route::prefix('admin')->group(function () {
         // Main
         Route::get('/', [Admin\DashboardController::class, 'dashboard'])->name('dashboard');
 
-        // User & Profile...
-        // Route::get('/user/profile', [UserProfileController::class, 'show'])
-        //     ->name('profile.show');
-
-        // Route::delete('/user/other-browser-sessions', [OtherBrowserSessionsController::class, 'destroy'])
-        //     ->name('other-browser-sessions.destroy');
-
-        // Route::delete('/user/profile-photo', [ProfilePhotoController::class, 'destroy'])
-        //     ->name('current-user-photo.destroy');
-
         // Resources
         Route::resource('pages', Admin\PagesController::class);
         Route::post('pages/search', [Admin\PagesController::class, 'searchForPage'])->name('pages.search');
@@ -136,12 +126,12 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => '(lt|en)']], function
 
 Route::get('/', [Public\MainController::class, 'home'])->name('home');
 Route::get('naujienos', [Public\MainController::class, 'newsArchive'])->name('newsArchive');
+
 // redirect /naujiena/archyvas to newsArchive
 Route::get('naujiena/archyvas', [Public\MainController::class, 'newsArchive']);
 
 // render login form
-Route::inertia('login', 'Auth/Login')->middleware('guest')->name('login');
-// Route::post('logout', [Auth\LoginController::class, 'logout'])->name('logout');
+Route::inertia('login', 'Auth/LoginForm')->middleware('guest')->name('login');
 
 Route::get('saziningai-registracija', [Public\MainController::class, 'saziningaiExamRegistration'])->name('saziningaiExamRegistration');
 Route::post('saziningai-registracija', [Public\MainController::class, 'storeSaziningaiExamRegistration'])->name('saziningaiExamRegistration.store');
@@ -161,55 +151,3 @@ Route::post('search', [Public\MainController::class, 'search'])->name('search');
 
 Route::get('mainNews', [Public\MainController::class, 'getMainNews']);
 Route::get('{permalink}', [Public\MainController::class, 'page'])->where('permalink', '.*')->name('page');
-
-/**
- * Statiniai seni tinklapio routai
- */
-
-// if (in_array($http_host, $padaliniaiDomains)) {
-//     Route::get('{locale}', [UserController::class, 'getPadalinysPage'])->where('locale', '(lt|en)');
-//     Route::get('lt/naujienos', [UserController::class, 'getNewsArchive']);
-//     Route::get('lt/naujiena/archyvas', [UserController::class, 'getNewsArchive']);
-
-//     Route::get('{locale}/{contactsLocale}/{name}', [UserController::class, 'getContacts'])->where(['locale' => '(lt|en)', 'contactsLocale' => '(kontaktai|contacts)']);
-//     Route::get('{locale}/{permalink}', [UserController::class, 'getInfoPage'])->where('locale', '(lt|en)');
-//     Route::get('/{permalink}', [UserController::class, 'index'])->middleware('main');
-// }
-
-// if (in_array($http_host, $vusaDomains)) {
-//     Route::get('/', [UserController::class, 'index'])->middleware('main');
-//     Route::get('{locale}', [UserController::class, 'index'])->where('locale', '(lt|en)');
-
-//     // Grąžina JSON pavidalu 4 svarbiausias naujienas. Turbūt naudojamas ekranai.vusa.lt puslapiui
-//     Route::get('lt/mainNews', [UserController::class, 'getMainNews']);
-//     Route::post('lt/paieska', [UserController::class, 'getMainPageSearch']);
-//     Route::get('lt/naujiena/archyvas', [UserController::class, 'getNewsArchive']);
-//     Route::post('lt/naujiena/archyvas', [UserController::class, 'postNewsArchive']);
-//     Route::get('lt/renginiai', [UserController::class, 'getEvents']);
-//     Route::get('lt/darbotvarke', [UserController::class, 'getAgenda']);
-//     Route::get('lt/darbotvarke-ajax', [UserController::class, 'getAgendaAjax']);
-
-//     Route::get('lt/saziningai-registracija', [UserController::class, 'getExamRegistration']);
-//     Route::post('lt/saziningai-registracija', [UserController::class, 'postExamRegistration']);
-//     Route::get('lt/registracija-stebejimui', [UserController::class, 'getPersonRegistration']);
-//     Route::post('lt/registracija-stebejimui', [UserController::class, 'postPersonRegistration']);
-//     Route::get('lt/saziningai-uzregistruoti-egzaminai', [UserController::class, 'getExamRegistrationList']);
-
-// Route::get('{locale}/{contactsLocale}/{name}', [UserController::class, 'getContacts'])->where(['locale' => '(lt|en)', 'contactsLocale' => '(kontaktai|contacts)']);
-
-// Route::get('en/news/tag/{tag}', [UserController::class, 'getSearchByTag']);
-// // Route::get('en/news/{title}', [UserController::class, 'getNew']);
-
-// /**
-//  * Dinaminiai tinklapio routai
-//  */
-
-// // Route::get('lt/kontaktai/{name}', [UserController::class, 'getContacts']);
-// Route::get('lt/naujiena/zyme/{tag}', [UserController::class, 'getSearchByTag']);
-// Route::get('{locale}/{newsLocale}/{permalink}', [UserController::class, 'getNew'])->where(['locale' => '(lt|en)', 'newsLocale' => '(naujiena|news)']);
-
-// // Catch all
-
-// Route::get('{locale}/{permalink}', [UserController::class, 'getInfoPage'])->where('locale', '(lt|en)');
-
-// Route::get('/{permalink}', [UserController::class, 'getInfoPage'])->where('permalink', '.*')->middleware('main');

@@ -75,7 +75,7 @@ import { usePage } from "@inertiajs/inertia-vue3";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AsideHeader from "../AsideHeader.vue";
 import TipTap from "@/Components/TipTap.vue";
-import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
+import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue";
 
 const props = defineProps({
   page: Object,

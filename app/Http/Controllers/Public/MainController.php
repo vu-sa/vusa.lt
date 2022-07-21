@@ -361,7 +361,7 @@ class MainController extends Controller
 
 		// $alias_contacts = collect($alias_contacts)->unique();
 
-		return Inertia::render('Public/Contacts/Contacts', [
+		return Inertia::render('Public/Contacts/ContactsShow', [
 			'institution' => $duty_institution,
 			'contacts' => $alias_contact_collection->map(function ($contact) use ($duty_institution) {
 				return [
@@ -396,13 +396,12 @@ class MainController extends Controller
 		if (request()->name) {
 			$inputName = request()->name;
 			$search_contacts = User::has('duties')->where('name', 'like', "%{$inputName}%")->get();
-			// dd($contacts, request()->name);
 		}
 
 		Inertia::share('alias', $padalinys->alias);
-		return Inertia::render('Public/Contacts/Search', [
+		return Inertia::render('Public/Contacts/ContactsSearch', [
 
-			'search_contacts' => is_null($search_contacts) ? [] : $search_contacts->map(function ($contact) {
+			'searchContacts' => is_null($search_contacts) ? [] : $search_contacts->map(function ($contact) {
 
 				return [
 					'id' => $contact->id,
@@ -419,7 +418,7 @@ class MainController extends Controller
 							'email' => $duty->email,
 						];
 					}),
-					'image' => function () use ($contact) {
+					'profile_photo_path' => function () use ($contact) {
 						if (substr($contact->profile_photo_path, 0, 4) == 'http') {
 							return $contact->profile_photo_path;
 						} else if (is_null($contact->profile_photo_path)) {
@@ -524,7 +523,7 @@ class MainController extends Controller
 					// get observers count 
 					'observers_registered' => $saziningaiExamFlow->observers->count(),
 					'exam' => $saziningaiExamFlow->exam->only(['subject_name', 'place', 'duration', 'exam_holders', 'exam_type', 'students_need']),
-					'unit' => $saziningaiExamFlow->exam->padalinys->shortname_vu,
+					'unit' => $saziningaiExamFlow->exam->padalinys?->shortname_vu,
 				];
 			}),
 		])->withViewData([

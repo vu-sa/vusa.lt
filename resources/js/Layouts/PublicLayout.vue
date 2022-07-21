@@ -22,10 +22,14 @@
 <script setup lang="ts">
 import { Head } from "@inertiajs/inertia-vue3";
 import { NConfigProvider } from "naive-ui";
-import { onMounted, ref } from "vue";
+import { onMounted } from "vue";
 import Footer from "@/Layouts/Partials/Public/Footer.vue";
 import MainNavigation from "@/Layouts/Partials/Public/MainNavigation.vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
+
+defineProps<{
+  title: string;
+}>();
 
 const themeOverrides = {
   common: {
@@ -35,16 +39,6 @@ const themeOverrides = {
     primaryColorSuppl: "#B93945FF",
   },
 };
-
-defineProps<{
-  title: string;
-}>();
-
-const animated = ref(false);
-
-onMounted(() => {
-  animated.value = true;
-});
 
 // Userway script
 

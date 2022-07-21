@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout title="Naujienos" :create-u-r-l="route('news.create')">
+  <AdminLayout title="Naujienos" :create-url="route('news.create')">
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>

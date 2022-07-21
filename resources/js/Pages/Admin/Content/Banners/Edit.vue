@@ -59,8 +59,8 @@
 import { NInput, NSwitch } from "naive-ui";
 import { reactive } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-import UploadImage from "@/Components/Admin/UploadImage.vue";
-import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
+import UploadImage from "@/Components/Admin/Buttons/UploadImageButtons.vue";
+import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue";
 
 const props = defineProps({
   banner: Object,

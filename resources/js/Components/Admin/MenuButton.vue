@@ -27,23 +27,25 @@ import { computed } from "vue";
 import { replace } from "lodash";
 import route from "ziggy-js";
 
-const props = defineProps(["menuContent"]);
+const props = defineProps<{ menuContent: string[] }>();
+
+// This chooses the first element in the array as the default route for the button
 
 const menuButtonIndex = computed(() => {
   return replace(props.menuContent[0], "*", "index");
 });
 
-const isCurrentRoute = computed(() => {
-  let value = false;
+/**
+ * This checks for the route in a array of routes, given in the AdminLayout.vue
+ * If an route in the array is current route, then the button is active and stylized
+ */
 
-  while (!value) {
-    props.menuContent.forEach((routeValue) => {
-      value = route().current(routeValue) || value;
-      if (value) {
-        return;
-      }
-    });
-    return value;
-  }
+const isCurrentRoute = computed(() => {
+  props.menuContent.forEach((routeValue) => {
+    if (route().current(routeValue)) {
+      return true;
+    }
+  });
+  return false;
 });
 </script>

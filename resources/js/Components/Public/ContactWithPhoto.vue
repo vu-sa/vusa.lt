@@ -28,6 +28,6 @@
 
 <script setup lang="ts">
 defineProps<{
-  imageSrc: string;
+  imageSrc: string | null;
 }>();
 </script>

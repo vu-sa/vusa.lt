@@ -100,8 +100,8 @@ import { NInput, NSelect } from "naive-ui";
 import { onMounted, reactive, ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-import UploadImage from "@/Components/Admin/UploadImage.vue";
-import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
+import UploadImage from "@/Components/Admin/Buttons/UploadImageButtons.vue";
+import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue";
 
 const props = defineProps({
   contact: Object,

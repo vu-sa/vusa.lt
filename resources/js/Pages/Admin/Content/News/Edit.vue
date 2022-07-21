@@ -100,10 +100,10 @@ import { reactive, ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import TipTap from "@/Components/TipTap.vue";
-import UploadImage from "@/Components/Admin/UploadImage.vue";
+import UploadImage from "@/Components/Admin/Buttons/UploadImageButtons.vue";
 
-import DeleteModelButton from "@/Components/Admin/DeleteModelButton.vue";
-import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
+import DeleteModelButton from "@/Components/Admin/Buttons/DeleteModelButton.vue";
+import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue";
 
 const props = defineProps({
   news: Object,

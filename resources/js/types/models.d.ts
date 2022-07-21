@@ -5,7 +5,10 @@
  */
 
 declare namespace App.Models {
-  export interface Banner extends Record<string, any> {
+  export interface ModelTemplate extends Record<string, any> {
+    id: number;
+  }
+  export interface Banner extends ModelTemplate {
     id: number;
     title: string;
     image_url: string;
@@ -21,7 +24,7 @@ declare namespace App.Models {
     padalinys?: App.Models.Padalinys | null;
   }
 
-  export interface Calendar extends Record<string, any> {
+  export interface Calendar extends ModelTemplate {
     id: number;
     date: string;
     title: string;
@@ -37,7 +40,7 @@ declare namespace App.Models {
     category?: App.Models.Category | null;
   }
 
-  export interface Category extends Record<string, any> {
+  export interface Category extends ModelTemplate {
     id: number;
     alias: string | null;
     name: string;
@@ -47,7 +50,7 @@ declare namespace App.Models {
     banners?: App.Models.Banner | null;
   }
 
-  export interface Duty extends Record<string, any> {
+  export interface Duty extends ModelTemplate {
     id: number;
     name: string;
     description: string | null;
@@ -64,7 +67,7 @@ declare namespace App.Models {
     users_count?: number | null;
   }
 
-  export interface DutyInstitution extends Record<string, any> {
+  export interface DutyInstitution extends ModelTemplate {
     id: number;
     pid: number | null;
     name: string | null;
@@ -83,7 +86,7 @@ declare namespace App.Models {
     duties_count?: number | null;
   }
 
-  export interface DutyInstitutionType extends Record<string, any> {
+  export interface DutyInstitutionType extends ModelTemplate {
     id: number;
     name: string;
     alias: string;
@@ -95,7 +98,7 @@ declare namespace App.Models {
     duty_institution_count?: number | null;
   }
 
-  export interface DutyType extends Record<string, any> {
+  export interface DutyType extends ModelTemplate {
     id: number;
     pid: number | null;
     name: string;
@@ -107,7 +110,7 @@ declare namespace App.Models {
     duties_count?: number | null;
   }
 
-  export interface MainPage extends Record<string, any> {
+  export interface MainPage extends ModelTemplate {
     id: number;
     user_id: number | null;
     link: string | null;
@@ -126,7 +129,7 @@ declare namespace App.Models {
     users_count?: number | null;
   }
 
-  export interface Navigation extends Record<string, any> {
+  export interface Navigation extends ModelTemplate {
     id: number;
     parent_id: number;
     user_id: number | null;
@@ -142,7 +145,7 @@ declare namespace App.Models {
     padalinys?: App.Models.Padalinys | null;
   }
 
-  export interface News extends Record<string, any> {
+  export interface News extends ModelTemplate {
     id: number;
     user_id: number | null;
     title: string;
@@ -168,7 +171,7 @@ declare namespace App.Models {
     tags_count?: number | null;
   }
 
-  export interface Padalinys extends Record<string, any> {
+  export interface Padalinys extends ModelTemplate {
     id: number;
     type: string | null;
     fullname: string;
@@ -195,7 +198,7 @@ declare namespace App.Models {
     users_count?: number | null;
   }
 
-  export interface Page extends Record<string, any> {
+  export interface Page extends ModelTemplate {
     id: number;
     user_id: number | null;
     title: string;
@@ -213,7 +216,7 @@ declare namespace App.Models {
     category?: App.Models.Category | null;
   }
 
-  export interface PageView extends Record<string, any> {
+  export interface PageView extends ModelTemplate {
     id: number;
     host: string;
     url: string;
@@ -225,7 +228,7 @@ declare namespace App.Models {
     updated_at: any | null;
   }
 
-  export interface Role extends Record<string, any> {
+  export interface Role extends ModelTemplate {
     id: number;
     description: string | null;
     alias: string | null;
@@ -234,7 +237,7 @@ declare namespace App.Models {
     updated_at: any;
   }
 
-  export interface SaziningaiExam extends Record<string, any> {
+  export interface SaziningaiExam extends ModelTemplate {
     id: number;
     uuid: string;
     name: string | null;
@@ -256,7 +259,7 @@ declare namespace App.Models {
     observers_count?: number | null;
   }
 
-  export interface SaziningaiExamFlow extends Record<string, any> {
+  export interface SaziningaiExamFlow extends ModelTemplate {
     id: number;
     exam_uuid: string;
     start_time: string;
@@ -267,7 +270,7 @@ declare namespace App.Models {
     observers_count?: number | null;
   }
 
-  export interface SaziningaiExamObserver extends Record<string, any> {
+  export interface SaziningaiExamObserver extends ModelTemplate {
     id: number;
     exam_uuid: string;
     name: string;
@@ -284,7 +287,7 @@ declare namespace App.Models {
     padalinys?: App.Models.Padalinys | null;
   }
 
-  export interface Tag extends Record<string, any> {
+  export interface Tag extends ModelTemplate {
     id: number;
     alias: string | null;
     name: string;
@@ -293,7 +296,7 @@ declare namespace App.Models {
     updated_at: any;
   }
 
-  export interface User extends Record<string, any> {
+  export interface User extends ModelTemplate {
     id: number;
     email: string;
     phone: string | null;

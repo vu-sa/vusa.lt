@@ -18,18 +18,8 @@
 </template>
 
 <script setup lang="ts">
-import { CalendarLtr20Regular } from "@vicons/fluent";
-import { NIcon } from "naive-ui";
-import { ref } from "vue";
-
-const props = defineProps({
-  hasMiniContent: {
-    type: Boolean,
-    default: false,
-  },
-  hasBelowCard: {
-    type: Boolean,
-    default: false,
-  },
-});
+defineProps<{
+  hasMiniContent: boolean;
+  hasBelowCard: boolean;
+}>();
 </script>

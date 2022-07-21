@@ -119,7 +119,7 @@
 import { NInput, NInputNumber, NSelect } from "naive-ui";
 import { computed, reactive } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
+import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue";
 
 const props = defineProps({
   padaliniai: Object,

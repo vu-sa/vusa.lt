@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
 import { Link } from "@inertiajs/inertia-vue3";
-import { computed } from "vue";
+import route from "ziggy-js";
 
-const props = defineProps(["asideHeaderRoute"]);
+defineProps<{ asideHeaderRoute: string }>();
 </script>

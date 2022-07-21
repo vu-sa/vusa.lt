@@ -107,7 +107,7 @@ import { NInput, NPopconfirm, NSelect } from "naive-ui";
 import { reactive, ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import TipTap from "@/Components/TipTap.vue";
-import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
+import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue";
 
 const props = defineProps({
   errors: Object,

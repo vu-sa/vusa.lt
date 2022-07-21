@@ -14,11 +14,11 @@
 <script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
 import { NInput } from "naive-ui";
-import { debounce } from "lodash";
 import { ref } from "vue";
 
+import { debounce } from "lodash";
+
 const props = defineProps<{
-  // data: PaginatedModels;
   payloadName: string;
 }>();
 
