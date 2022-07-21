@@ -29,7 +29,7 @@
       </MenuButton>
       <MenuButton
         v-if="can.users"
-        :menu-content="['dutyInstitutions.*', 'duties.*', 'users.*', 'roles.*']"
+        :menu-content="['dutyInstitutions.*', 'duties.*', 'users.*']"
       >
         <template #icon>
           <Person48Regular />
