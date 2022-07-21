@@ -137,6 +137,7 @@ import Pradzia from "../0-Pradzia.vue";
 
 import { Link } from "@inertiajs/inertia-vue3";
 import { NButton } from "naive-ui";
+import route from "ziggy-js";
 </script>
 
 f

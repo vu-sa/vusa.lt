@@ -28,6 +28,8 @@ import { ArrowCircleLeft28Regular } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import { NButton, NIcon } from "naive-ui";
 import { usePage } from "@inertiajs/inertia-vue3";
+import route from "ziggy-js";
+
 import AtaskaitaLayout from "@/Layouts/AtaskaitaLayout.vue";
 
 const inertiaVisitOnClick = (permalink) => {

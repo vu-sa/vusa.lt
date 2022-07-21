@@ -1152,7 +1152,9 @@
 
 <script setup lang="ts">
 // import VUSA from "../2-VU-SA.vue";
-import { NCollapse, NCollapseItem, NDivider } from "naive-ui";
+import { NCollapse, NCollapseItem } from "naive-ui";
+import route from "ziggy-js";
+
 import Bendruomene from "../6-Bendruomene.vue";
 </script>
 

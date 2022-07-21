@@ -223,11 +223,11 @@ import {
 } from "naive-ui";
 import { debounce, split } from "lodash";
 import { ref } from "vue";
+import route from "ziggy-js";
 
 // map padaliniai to options_padaliniai
 
 const padaliniai = usePage().props.value.padaliniai;
-const mainNavigation = usePage().props.value.mainNavigation;
 const locale = ref(usePage().props.value.locale);
 const locales = ["lt", "en"];
 const activeDrawer = ref(false);
@@ -247,31 +247,6 @@ const getPermalink = () => {
 };
 
 const permalink = getPermalink();
-
-// after half a second input delay, use Inertiapost request to fetch search results
-const handleSearchInput = debounce((input) => {
-  if (input.length > 2) {
-    searchInputLoading.value = true;
-    Inertia.post(
-      route("search"),
-      {
-        data: { input: input },
-      },
-      {
-        preserveState: true,
-        preserveScroll: true,
-        onSuccess: () => {
-          searchInputLoading.value = false;
-        },
-      }
-    );
-  }
-}, 500);
-
-const options_padaliniai = padaliniai.map((padalinys) => ({
-  label: split(padalinys.fullname, "atstovybė ")[1],
-  key: padalinys.alias,
-}));
 
 const options_language_en = [
   {

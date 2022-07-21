@@ -22,12 +22,12 @@
 </template>
 
 <script setup lang="ts">
-import AtaskaitaNavigation from "@/Layouts/Partials/Public/AtaskaitaNavigation.vue";
-// import NewsElement from "@/Layouts/Partials/Public/NewsElement.vue";
 import { Head } from "@inertiajs/inertia-vue3";
+import { NConfigProvider } from "naive-ui";
 import { onMounted, ref } from "vue";
+
+import AtaskaitaNavigation from "@/Layouts/Partials/Public/AtaskaitaNavigation.vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
-// import Footer from "./Partials/Public/Footer.vue";
 
 defineProps<{
   title: string;
