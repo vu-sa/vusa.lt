@@ -75,14 +75,9 @@
           >
         </NFormItem>
         <NFormItem>
-          <FormSubmitButton
-            submit-route="saziningaiExamObserver.store"
-            :form-ref="formRef"
-            :form-value="formValue"
-            @reset-form="resetForm"
-          >
+          <NButton type="primary" @click="handleValidateClick">
             Pateikti
-          </FormSubmitButton>
+          </NButton>
         </NFormItem>
       </NForm>
     </NCard>
@@ -90,8 +85,9 @@
 </template>
 
 <script setup lang="ts">
-import { Inertia } from "@inertiajs/inertia";
 import {
+  FormInst,
+  FormValidationError,
   NButton,
   NCard,
   NCheckbox,
@@ -101,20 +97,25 @@ import {
   NInput,
   NModal,
   NSelect,
+  createDiscreteApi,
 } from "naive-ui";
+import { Inertia } from "@inertiajs/inertia";
 import { h, ref } from "vue";
-import FormSubmitButton from "@/Components/Public/FormSubmitButton.vue";
+import { useForm } from "@inertiajs/inertia-vue3";
+import route from "ziggy-js";
+
 import PublicLayout from "@/Layouts/PublicLayout.vue";
 
-const props = defineProps({
-  padaliniaiOptions: Array,
-  saziningaiExamFlows: Array,
-});
+const props = defineProps<{
+  padaliniaiOptions: App.Models.Padalinys[];
+  saziningaiExamFlows: App.Models.SaziningaiExamFlow[];
+}>();
 
 // const { message } = createDiscreteApi(["message"]);
 const showModal = ref(false);
-const formRef = ref(null);
-const formValue = ref({
+const formRef = ref<FormInst | null>(null);
+
+const formBlueprint = {
   name: null,
   email: null,
   phone: null,
@@ -124,7 +125,8 @@ const formValue = ref({
   padalinys_id: null,
   acceptGDPR: false,
   acceptDataManagement: false,
-});
+};
+const formValue = useForm("SaziningaiFlowObserver", formBlueprint);
 
 const rules = {
   name: {
@@ -195,9 +197,9 @@ const createColumns = () => {
           NButton,
           {
             onClick: () => {
-              formValue.value.flow = row.key;
-              formValue.value.exam_name = row.exam.subject_name;
-              formValue.value.start_time = row.start_time;
+              formValue.flow = row.key;
+              formValue.exam_name = row.exam.subject_name;
+              formValue.start_time = row.start_time;
               showModal.value = true;
             },
             size: "small",
@@ -267,6 +269,7 @@ const createColumns = () => {
 };
 
 const columns = ref(createColumns());
+const { message } = createDiscreteApi(["message"]);
 
 // map padaliniaiOptions to options for NSelect
 const padaliniaiOptions = props.padaliniaiOptions.map((padalinys) => ({
@@ -274,7 +277,22 @@ const padaliniaiOptions = props.padaliniaiOptions.map((padalinys) => ({
   label: padalinys.shortname_vu,
 }));
 
-const resetForm = () => {
-  Object.keys(formValue.value).forEach((i) => (formValue.value[i] = null));
+const handleValidateClick = (e: MouseEvent) => {
+  e.preventDefault();
+  formRef.value?.validate((errors: Array<FormValidationError> | undefined) => {
+    if (!errors) {
+      Inertia.post(route("saziningaiExamObserver.store"), formValue, {
+        onSuccess: () => {
+          message.success(
+            `Ačiū už užregistravimą stebėtį „${formValue.exam_name}“ atsiskaitymą!`
+          );
+          showModal.value = false;
+          formValue.reset();
+        },
+      });
+    } else {
+      message.error("Užpildykite visus laukelius.");
+    }
+  });
 };
 </script>

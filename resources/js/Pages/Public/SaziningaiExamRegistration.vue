@@ -25,7 +25,16 @@
           size="medium"
         >
           <NFormItem label="Vardas ir pavardė" path="name">
-            <NInput v-model:value="formValue.name" placeholder="" type="text" />
+            <NInput
+              v-model:value="formValue.name"
+              placeholder=""
+              type="text"
+              :input-props="{
+                autocomplete: 'name',
+              }"
+            />
+
+            />
           </NFormItem>
           <NFormItem label="El. paštas" path="email">
             <NInput
@@ -178,14 +187,9 @@
             galite kreiptis į
             <a href="mailto:dap@vusa.lt">dap@vusa.lt</a>.
           </p>
-          <FormSubmitButton
-            submit-route="saziningaiExamRegistration.store"
-            :form-ref="formRef"
-            :form-value="formValue"
-            @reset-form="resetForm"
-          >
+          <NButton type="primary" @click="handleValidateClick">
             Pateikti
-          </FormSubmitButton>
+          </NButton>
         </NForm>
       </div>
     </PageArticle>
@@ -197,6 +201,8 @@ import {
   FormInst,
   FormItemRule,
   FormRules,
+  FormValidationError,
+  NButton,
   NCheckbox,
   NDatePicker,
   NDynamicInput,
@@ -205,13 +211,16 @@ import {
   NInput,
   NInputNumber,
   NSelect,
+  createDiscreteApi,
 } from "naive-ui";
 import { computed, ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 
-import FormSubmitButton from "@/components/Public/FormSubmitButton.vue";
 import PageArticle from "../../Components/Public/PageArticle.vue";
 import PublicLayout from "@/Layouts/PublicLayout.vue";
+
+import { Inertia } from "@inertiajs/inertia";
+import route from "ziggy-js";
 
 const props = defineProps<{
   padaliniaiOptions: Array<App.Models.Padalinys>;
@@ -219,11 +228,7 @@ const props = defineProps<{
 
 // formRefs are needed by Naive UI
 const formRef = ref<FormInst | null>(null);
-
-// resetForm is called when the form is submitted.
-const resetForm = () => {
-  Object.keys(formValue).forEach((i) => (formValue[i] = null));
-};
+const { message } = createDiscreteApi(["message"]);
 
 const formBlueprint: SaziningaiExamForm = {
   name: null,
@@ -379,6 +384,25 @@ const padaliniaiOptions = props.padaliniaiOptions.map((padalinys) => ({
   value: padalinys.id,
   label: padalinys.shortname_vu,
 }));
+
+const handleValidateClick = (e: MouseEvent) => {
+  e.preventDefault();
+  formRef.value?.validate((errors: Array<FormValidationError> | undefined) => {
+    if (!errors) {
+      Inertia.post(route("saziningaiExamRegistration.store"), formValue, {
+        onSuccess: () => {
+          message.success(
+            `Ačiū už atsiskaitymo „${formValue.subject_name}“ užregistravimą!`
+          );
+          formValue.reset();
+          Inertia.visit(route("saziningaiExams.registered"));
+        },
+      });
+    } else {
+      message.error("Užpildykite visus laukelius.");
+    }
+  });
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 /// fun with placeholders
