@@ -121,6 +121,7 @@ import {
 import { Head, usePage } from "@inertiajs/inertia-vue3";
 import { NButton, NModal } from "naive-ui";
 import { ref } from "vue";
+
 import AppLogo from "@/Components/AppLogo.vue";
 import AsideNavigation from "@/Layouts/Partials/Admin/AsideNavigation.vue";
 import Changelog from "@/Components/Admin/Misc/ChangelogCard.vue";
@@ -129,7 +130,7 @@ import MetaIcons from "@/Components/MetaIcons.vue";
 import PageContent from "@/Layouts/Partials/Admin/PageContent.vue";
 
 defineProps<{
-  title: string | null;
+  title?: string;
   createUrl?: string | null;
 }>();
 

@@ -40,7 +40,7 @@ createInertiaApp({
 InertiaProgress.init({
   // The delay after which the progress bar will
   // appear during navigation, in milliseconds.
-  delay: 50,
+  delay: 150,
 
   // The color of the progress bar.
   color: "#fbb01b",

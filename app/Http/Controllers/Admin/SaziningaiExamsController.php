@@ -93,7 +93,7 @@ class SaziningaiExamsController extends Controller
     public function edit(SaziningaiExam $saziningaiExam)
     {
 
-        return Inertia::render('Admin/Saziningai/Exams/Edit', [
+        return Inertia::render('Admin/Saziningai/EditSaziningaiExam', [
             'exam' => [
                 'id' => $saziningaiExam->id,
                 'uuid' => $saziningaiExam->uuid,

@@ -7,5 +7,5 @@
 </template>
 
 <script setup lang="ts">
-import AsideHeaderLink from "@/Components/Admin/AsideHeaderLink.vue";
+import AsideHeaderLink from "@/components/Admin/Nav/AsideHeaderLink.vue";
 </script>

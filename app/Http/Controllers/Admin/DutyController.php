@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Duty;
+use App\Models\DutyInstitution;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller as Controller;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
 
 class DutyController extends Controller
 {
@@ -29,7 +31,7 @@ class DutyController extends Controller
             $query->where('name', 'like', "%{$title}%")->orWhere('email', 'like', "%{$title}%");
         })->with('type:id,name')->with('institution:id,name,short_name')->paginate(20);
 
-        return Inertia::render('Admin/Contacts/Duties/Index', [
+        return Inertia::render('Admin/Contacts/IndexDuties', [
             'duties' => $duties,
         ]);
     }
@@ -127,7 +129,15 @@ class DutyController extends Controller
      */
     public function update(Request $request, Duty $duty)
     {
-        $duty->update($request->only('name', 'description', 'email')); // attributes
+        // dd(DutyInstitution::find($request->institution['id']));
+
+        DB::transaction(function () use ($request, $duty) {
+            $duty->update($request->only('name', 'description', 'email'));
+
+            $duty->institution()->disassociate();
+            $duty->institution()->associate(DutyInstitution::find($request->institution['id']));
+            $duty->save();
+        });
 
         return back();
     }

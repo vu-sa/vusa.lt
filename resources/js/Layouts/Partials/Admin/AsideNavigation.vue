@@ -15,23 +15,37 @@
           }})</span
         >
       </div>
-      <Link
-        as="button"
-        method="post"
-        class="ml-auto mr-2"
-        :href="route('logout')"
-        >Atsijungti</Link
-      >
+      <div class="ml-auto mr-2">
+        <NButton
+          icon-placement="right"
+          :loading="loading"
+          secondary
+          size="small"
+          @click="handleClick"
+        >
+          <template #icon>
+            <NIcon>
+              <DoorArrowRight28Regular />
+            </NIcon>
+          </template>
+          Atsijungti
+        </NButton>
+      </div>
     </div>
     <slot></slot>
   </aside>
 </template>
 
 <script setup lang="ts">
-import { Link, usePage } from "@inertiajs/inertia-vue3";
+import { DoorArrowRight28Regular } from "@vicons/fluent";
+import { Inertia } from "@inertiajs/inertia";
+import { NButton, NIcon } from "naive-ui";
+import { ref } from "vue";
+import { usePage } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 
 const inertiaProps = usePage<InertiaProps>().props.value;
+const loading = ref(false);
 
 // compute a profile photo path
 const profilePhotoPath = (user: App.Models.User) => {
@@ -46,5 +60,10 @@ const profilePhotoPath = (user: App.Models.User) => {
     /\s/g,
     "+"
   )}?background=random`;
+};
+
+const handleClick = () => {
+  loading.value = true;
+  Inertia.post(route("logout"));
 };
 </script>

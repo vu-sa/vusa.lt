@@ -30,7 +30,6 @@ const modelMethod = computed(() => {
 });
 
 const buttonText = computed(() => {
-  //captizalize
   return modelMethod.value === Method.POST ? "sukurti" : "atnaujinti";
 });
 
