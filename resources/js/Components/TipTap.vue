@@ -1,114 +1,114 @@
 <template>
   <div
-    class="border-vusa-red/22 mt-2 w-full border-separate rounded-lg shadow-xl"
+    class="border-vusa-red/22 mt-2 w-full border-separate rounded-lg shadow-lg"
   >
     <div
       v-if="editor"
-      class="rounded-t-lg bg-gradient-to-tr from-stone-100 to-stone-50 p-2 shadow-lg"
+      class="flex items-center rounded-t-lg bg-gradient-to-tr from-stone-100 to-stone-50 p-2 shadow-sm"
     >
       <!-- <strong class="mb-4">Funkcijos</strong> -->
       <!-- <br /> -->
-      <div>
-        <button
-          type="button"
-          :class="{ 'is-active': editor.isActive('bold') }"
-          @click="editor?.chain().focus().toggleBold().run()"
-        >
-          <NIcon><TextBold20Regular></TextBold20Regular></NIcon>
-        </button>
+      <!-- <div class="flex items-center"> -->
+      <button
+        type="button"
+        :class="{ 'is-active': editor.isActive('bold') }"
+        @click="editor?.chain().focus().toggleBold().run()"
+      >
+        <NIcon><TextBold20Regular></TextBold20Regular></NIcon>
+      </button>
 
-        <button
-          type="button"
-          :class="{ 'is-active': editor.isActive('italic') }"
-          @click="editor?.chain().focus().toggleItalic().run()"
-        >
-          <NIcon><TextItalic20Regular></TextItalic20Regular></NIcon>
-        </button>
-        <!-- <button @click="editor.chain().focus().clearNodes().run()">clear nodes</button> -->
-        <button
-          type="button"
-          :class="{ 'is-active': editor.isActive('link') }"
-          @click="getLinkAndModal"
-        >
-          <NIcon><Link20Regular></Link20Regular></NIcon>
-        </button>
-        <button
-          type="button"
-          :disabled="!editor.isActive('link')"
-          @click="editor?.chain().focus().unsetLink().run()"
-        >
-          <NIcon><LinkDismiss20Filled></LinkDismiss20Filled></NIcon>
-        </button>
-        <button
-          type="button"
-          :class="{ 'is-active': editor.isActive('paragraph') }"
-          @click="editor?.chain().focus().setParagraph().run()"
-        >
-          P
-        </button>
-        <button
-          type="button"
-          :class="{ 'is-active': editor.isActive('heading', { level: 1 }) }"
-          @click="editor?.chain().focus().toggleHeading({ level: 1 }).run()"
-        >
-          H1
-        </button>
-        <button
-          type="button"
-          :class="{ 'is-active': editor.isActive('heading', { level: 2 }) }"
-          @click="editor?.chain().focus().toggleHeading({ level: 2 }).run()"
-        >
-          H2
-        </button>
-        <button
-          type="button"
-          :class="{ 'is-active': editor.isActive('heading', { level: 3 }) }"
-          @click="editor?.chain().focus().toggleHeading({ level: 3 }).run()"
-        >
-          H3
-        </button>
-        <button
-          type="button"
-          :class="{ 'is-active': editor.isActive('bulletList') }"
-          @click="editor?.chain().focus().toggleBulletList().run()"
-        >
-          <NIcon><TextBulletListLtr24Filled></TextBulletListLtr24Filled></NIcon>
-        </button>
-        <button
-          type="button"
-          :class="{ 'is-active': editor.isActive('orderedList') }"
-          @click="editor?.chain().focus().toggleOrderedList().run()"
-        >
-          <NIcon><TextNumberListLtr20Filled></TextNumberListLtr20Filled></NIcon>
-        </button>
-        <button
-          type="button"
-          :class="{ 'is-active': editor.isActive('blockquote') }"
-          @click="editor?.chain().focus().toggleBlockquote().run()"
-        >
-          <NIcon><TextQuote20Filled></TextQuote20Filled></NIcon>
-        </button>
-        <button
-          type="button"
-          @click="editor?.chain().focus().setHorizontalRule().run()"
-        >
-          <NIcon><LineHorizontal120Regular></LineHorizontal120Regular></NIcon>
-        </button>
-      </div>
-      <div>
-        <button type="button" @click="editor?.chain().focus().undo().run()">
-          <NIcon><ArrowUndo20Filled></ArrowUndo20Filled></NIcon>
-        </button>
-        <button type="button" @click="editor?.chain().focus().redo().run()">
-          <NIcon><ArrowRedo20Filled></ArrowRedo20Filled></NIcon>
-        </button>
-        <button
-          type="button"
-          @click="editor?.chain().focus().unsetAllMarks().run()"
-        >
-          <NIcon><ClearFormatting20Filled></ClearFormatting20Filled></NIcon>
-        </button>
-      </div>
+      <button
+        type="button"
+        :class="{ 'is-active': editor.isActive('italic') }"
+        @click="editor?.chain().focus().toggleItalic().run()"
+      >
+        <NIcon><TextItalic20Regular></TextItalic20Regular></NIcon>
+      </button>
+      <!-- <button @click="editor.chain().focus().clearNodes().run()">clear nodes</button> -->
+      <button
+        type="button"
+        :class="{ 'is-active': editor.isActive('link') }"
+        @click="getLinkAndModal"
+      >
+        <NIcon><Link20Regular></Link20Regular></NIcon>
+      </button>
+      <button
+        type="button"
+        :disabled="!editor.isActive('link')"
+        @click="editor?.chain().focus().unsetLink().run()"
+      >
+        <NIcon><LinkDismiss20Filled></LinkDismiss20Filled></NIcon>
+      </button>
+      <button
+        type="button"
+        :class="{ 'is-active': editor.isActive('paragraph') }"
+        @click="editor?.chain().focus().setParagraph().run()"
+      >
+        P
+      </button>
+      <button
+        type="button"
+        :class="{ 'is-active': editor.isActive('heading', { level: 1 }) }"
+        @click="editor?.chain().focus().toggleHeading({ level: 1 }).run()"
+      >
+        H1
+      </button>
+      <button
+        type="button"
+        :class="{ 'is-active': editor.isActive('heading', { level: 2 }) }"
+        @click="editor?.chain().focus().toggleHeading({ level: 2 }).run()"
+      >
+        H2
+      </button>
+      <button
+        type="button"
+        :class="{ 'is-active': editor.isActive('heading', { level: 3 }) }"
+        @click="editor?.chain().focus().toggleHeading({ level: 3 }).run()"
+      >
+        H3
+      </button>
+      <button
+        type="button"
+        :class="{ 'is-active': editor.isActive('bulletList') }"
+        @click="editor?.chain().focus().toggleBulletList().run()"
+      >
+        <NIcon><TextBulletListLtr24Filled></TextBulletListLtr24Filled></NIcon>
+      </button>
+      <button
+        type="button"
+        :class="{ 'is-active': editor.isActive('orderedList') }"
+        @click="editor?.chain().focus().toggleOrderedList().run()"
+      >
+        <NIcon><TextNumberListLtr20Filled></TextNumberListLtr20Filled></NIcon>
+      </button>
+      <!-- <button
+        type="button"
+        :class="{ 'is-active': editor.isActive('blockquote') }"
+        @click="editor?.chain().focus().toggleBlockquote().run()"
+      >
+        <NIcon><TextQuote20Filled></TextQuote20Filled></NIcon>
+      </button> -->
+      <button
+        type="button"
+        @click="editor?.chain().focus().setHorizontalRule().run()"
+      >
+        <NIcon><LineHorizontal120Regular></LineHorizontal120Regular></NIcon>
+      </button>
+      <!-- </div> -->
+      <!-- <div> -->
+      <button type="button" @click="editor?.chain().focus().undo().run()">
+        <NIcon><ArrowUndo20Filled></ArrowUndo20Filled></NIcon>
+      </button>
+      <button type="button" @click="editor?.chain().focus().redo().run()">
+        <NIcon><ArrowRedo20Filled></ArrowRedo20Filled></NIcon>
+      </button>
+      <button
+        type="button"
+        @click="editor?.chain().focus().unsetAllMarks().run()"
+      >
+        <NIcon><ClearFormatting20Filled></ClearFormatting20Filled></NIcon>
+      </button>
+      <!-- </div> -->
       <!-- <button
         @click="editor.chain().focus().toggleCodeBlock().run()"
         :class="{ 'is-active': editor.isActive('codeBlock') }"
@@ -316,7 +316,7 @@ const placeImage = () => {
 const editor = useEditor({
   editorProps: {
     attributes: {
-      class: "prose prose-sm sm:prose focus:outline-none p-4 h-full",
+      class: "prose-sm sm:prose focus:outline-none p-4 h-full",
     },
   },
   extensions: [

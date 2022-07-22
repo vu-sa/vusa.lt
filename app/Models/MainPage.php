@@ -11,6 +11,8 @@ class MainPage extends Model
     
     protected $table = 'main_page';
 
+    protected $guarded = [];
+
     public function padalinys()
     {
         return $this->belongsTo(Padalinys::class, 'padalinys_id');

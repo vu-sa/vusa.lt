@@ -44,10 +44,30 @@ const columns = [
   {
     title: "El. paštas",
     key: "email",
+    render(row: App.Models.User) {
+      return h(
+        "a",
+        {
+          href: `mailto:${row.email}`,
+          class: "hover:text-vusa-red transition",
+        },
+        { default: () => row.email }
+      );
+    },
   },
   {
     title: "Telefonas",
     key: "phone",
+    render(row: App.Models.User) {
+      return h(
+        "a",
+        {
+          href: `tel:${row.phone}`,
+          class: "hover:text-vusa-red transition",
+        },
+        { default: () => row.phone }
+      );
+    },
   },
 ];
 </script>

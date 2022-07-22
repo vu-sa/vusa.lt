@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout title="Pradinis puslapis">
+  <AdminLayout title="Pradinis puslapis" :create-url="route('mainPage.create')">
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>

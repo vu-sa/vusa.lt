@@ -59,7 +59,9 @@
         </NSwitch>
       </NFormItemGi>
 
-      <NDivider>Nuotrauka</NDivider>
+      <NFormItemGi :span="24"
+        ><NDivider> Naujienos nuotrauka</NDivider>
+      </NFormItemGi>
 
       <NFormItemGi label="Nuotrauka" :span="24">
         <UploadImageButtons
@@ -75,13 +77,21 @@
           placeholder="Žmogus arba organizacija.."
         />
       </NFormItemGi>
-      <NDivider>Turinys</NDivider>
-      <NFormItemGi label="Įvadas" :span="24">
+      <NFormItemGi :span="24"
+        ><NDivider> Straipsnio turinys</NDivider>
+      </NFormItemGi>
+      <NFormItemGi :span="24">
         <TipTap v-model="form.short" :search-files="$page.props.search.other" />
+        <template #label>
+          <span class="text-lg font-bold">Įvadas</span>
+        </template>
       </NFormItemGi>
 
-      <NFormItemGi label="Pagrindinis tekstas" :span="24">
+      <NFormItemGi :span="24" class="mt-2">
         <TipTap v-model="form.text" :search-files="$page.props.search.other" />
+        <template #label>
+          <span class="text-lg font-bold">Pagrindinis tekstas</span>
+        </template>
       </NFormItemGi>
     </NGrid>
     <div class="flex justify-end">

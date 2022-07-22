@@ -46,10 +46,11 @@ import {
 import { h, ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AsideHeader from "./AsideHeader.vue";
+import route from "ziggy-js";
 
-const props = defineProps({
-  navigation: Array,
-});
+const props = defineProps<{
+  navigation: App.Models.Navigation;
+}>();
 
 const parseNavigation = (array, id) => {
   const result = [];
@@ -99,6 +100,7 @@ const showSpin = ref(false);
 
 //////////////////////
 // Drag and drop START
+// I don't understand how this works
 function findSiblingsAndIndex(node, nodes) {
   if (!nodes) return [null, null];
   for (let i = 0; i < nodes.length; ++i) {

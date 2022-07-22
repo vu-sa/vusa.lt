@@ -16,14 +16,6 @@
           placeholder="https://vu.lt"
         />
       </NFormItemGi>
-
-      <NFormItemGi label="Trumpinys" :span="12">
-        <NInput
-          v-model:value="form.alias"
-          type="text"
-          placeholder="https://vu.lt"
-        />
-      </NFormItemGi>
     </NGrid>
     <div class="flex justify-end">
       <DeleteModelButton

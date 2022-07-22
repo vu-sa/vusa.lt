@@ -14,28 +14,6 @@ class NavigationController extends Controller
     {
         $this->authorizeResource(Navigation::class, 'navigation');
     }
-    
-
-    public function getNavigation($id, $lang)
-    {
-        $childrenNav = Navigation::where('parent_id', $id)->where('lang', '=', $lang)->orderBy('order')->get();
-        // if ($childrenNav->first() == null) {
-        //     return;
-        // }
-
-        // $navigation = [];
-
-        // foreach ($childrenNav as $child) {
-        //     $navigation[] = [
-        //         'key' => $child->id,
-        //         'label' => $child->name,
-        //         'url' => $child->url,
-        //         'children' => $this->getNavigation($child->id, $lang),
-        //     ];
-        // }
-
-        // return $navigation;
-    }
 
     public function postNavigation($array, $id = 0)
     {

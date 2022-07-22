@@ -29,39 +29,45 @@ defineProps<{
   dutyInstitutions: PaginatedModels<App.Models.DutyInstitution[]>;
 }>();
 
-const createColumns = () => {
-  return [
-    {
-      title: "Pavadinimas",
-      key: "name",
-      ellipsis: true,
-      width: 300,
-      render(row: App.Models.DutyInstitution) {
-        return h(
-          Link,
-          {
-            href: route("dutyInstitutions.edit", { id: row.id }),
-            class: "hover:text-vusa-red transition",
-          },
-          { default: () => row.name }
-        );
-      },
+const columns = [
+  {
+    title: "Pavadinimas",
+    key: "name",
+    ellipsis: true,
+    width: 300,
+    render(row: App.Models.DutyInstitution) {
+      return h(
+        Link,
+        {
+          href: route("dutyInstitutions.edit", { id: row.id }),
+          class: "hover:text-vusa-red transition",
+        },
+        { default: () => row.name }
+      );
     },
-    {
-      title: "Trumpas pavadinimas",
-      key: "short_name",
+  },
+  {
+    title: "Trumpas pavadinimas",
+    key: "short_name",
+  },
+  {
+    title: "Alias",
+    key: "alias",
+    render(row: App.Models.DutyInstitution) {
+      return h(
+        "a",
+        {
+          href: route("contacts.alias", { alias: row.alias }),
+          target: "_blank",
+          class: "hover:text-vusa-red transition",
+        },
+        { default: () => row.alias }
+      );
     },
-    {
-      title: "Alias",
-      key: "alias",
-    },
-
-    {
-      title: "Padalinys",
-      key: "padalinys.shortname",
-    },
-  ];
-};
-
-const columns = ref(createColumns());
+  },
+  {
+    title: "Padalinys",
+    key: "padalinys.shortname",
+  },
+];
 </script>

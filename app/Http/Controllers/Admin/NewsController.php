@@ -153,7 +153,9 @@ class NewsController extends Controller
      */
     public function destroy(News $news)
     {
-        //
+        $news->delete();
+
+        return redirect()->route('news.index');
     }
 
     public function searchForNews(Request $request)

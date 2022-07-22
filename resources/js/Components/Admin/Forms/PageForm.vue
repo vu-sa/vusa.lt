@@ -40,6 +40,9 @@
 
       <NFormItemGi label="Turinys" :span="24">
         <TipTap v-model="form.text" :search-files="$page.props.search.other" />
+        <template #label>
+          <span class="text-lg font-bold">Pagrindinis tekstas</span>
+        </template>
       </NFormItemGi>
     </NGrid>
     <div class="flex justify-end">

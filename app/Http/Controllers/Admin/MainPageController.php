@@ -6,6 +6,7 @@ use App\Models\MainPage;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
+use Illuminate\Support\Facades\DB;
 
 class MainPageController extends Controller
 {
@@ -50,7 +51,7 @@ class MainPageController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('Admin/Content/CreateMainPage');
     }
 
     /**
@@ -61,7 +62,16 @@ class MainPageController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        DB::transaction(function () use ($request) {
+            
+            $mainPage = new MainPage;
+            
+            $mainPage->text = $request->text;
+            $mainPage->link = $request->link;
+            $mainPage->position = '';
+            $mainPage->padalinys()->associate($request->user()->padalinys());
+            $mainPage->save();
+        });
     }
 
     /**
@@ -97,7 +107,14 @@ class MainPageController extends Controller
      */
     public function update(Request $request, MainPage $mainPage)
     {
-        //
+        $request->validate([
+            'text' => 'required',
+            'link' => 'required',
+        ]);
+        
+        DB::transaction(function () use ($request, $mainPage) {
+            $mainPage->update($request->only('text', 'link'));
+        });
     }
 
     /**
