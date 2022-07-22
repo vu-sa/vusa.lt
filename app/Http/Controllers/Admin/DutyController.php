@@ -43,7 +43,7 @@ class DutyController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Admin/Contacts/Duties/Create');
+        return Inertia::render('Admin/Contacts/CreateDuty');
     }
 
     /**
@@ -105,7 +105,7 @@ class DutyController extends Controller
 
         // dd($attributes);
 
-        return Inertia::render('Admin/Contacts/Duties/Edit', [
+        return Inertia::render('Admin/Contacts/EditDuty', [
             'duty' => [
                 'id' => $duty->id,
                 'name' => $duty->name,
@@ -150,7 +150,9 @@ class DutyController extends Controller
      */
     public function destroy(Duty $duty)
     {
-        //
+        $duty->delete();
+
+        return redirect()->route('duties.index');
     }
 
     public function searchForDuties(Request $request)

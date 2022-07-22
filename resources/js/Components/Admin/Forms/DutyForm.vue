@@ -9,7 +9,7 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="El. paštas" :span="12">
+      <NFormItemGi label="Pareigybinis el. paštas" :span="12">
         <NInput v-model:value="form.email" placeholder="vusa@vusa.lt" />
       </NFormItemGi>
 
@@ -17,7 +17,7 @@
         <NSelect
           v-model:value="form.institution.id"
           filterable
-          placeholder="Pasirinkti instituciją..."
+          placeholder="Ieškok institucijos pagal pavadinimą..."
           :options="institutionsFromDatabase"
           clearable
           remote
@@ -36,6 +36,7 @@
     <div class="flex justify-end">
       <DeleteModelButton
         v-if="deleteModelRoute"
+        :disabled="hasUsers"
         :form="form"
         :model-route="deleteModelRoute"
       ></DeleteModelButton>
@@ -69,6 +70,7 @@ import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue"
 
 const props = defineProps<{
   duty: App.Models.Duty;
+  hasUsers: boolean;
   modelRoute: string;
   deleteModelRoute?: string;
 }>();
@@ -78,15 +80,16 @@ const form = useForm("dutyInstitution", props.duty);
 const institutionsFromDatabase = ref([]);
 
 // TODO: label doesn't update after updateModel and refresh page...
-institutionsFromDatabase.value = [
-  {
-    value: form.institution?.id,
-    label: `${form.institution?.name} (${form.institution?.alias})`,
-  },
-];
+if (props.modelRoute !== "duties.store") {
+  institutionsFromDatabase.value = [
+    {
+      value: form.institution?.id,
+      label: `${form.institution?.name} (${form.institution?.alias})`,
+    },
+  ];
+}
 
 const getInstitutionOptions = debounce((input) => {
-  // get other lang
   if (input.length > 2) {
     message.loading("Ieškoma...");
     Inertia.post(

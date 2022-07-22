@@ -11,7 +11,7 @@ use Intervention\Image\Facades\Image;
 
 class FilesController extends Controller
 {
-    
+
     /**
      * Display a listing of the resource.
      *
@@ -19,12 +19,12 @@ class FilesController extends Controller
      */
     public function index(Request $request)
     {
-        if (! Gate::allows('manage-files')) {
+        if (!Gate::allows('manage-files')) {
             abort(403);
         }
-        
+
         $currentDirectory = $request->currentPath ?? 'public/files';
-        
+
         $directories = Storage::directories($currentDirectory);
         $files = Storage::files($currentDirectory);
 
@@ -73,7 +73,6 @@ class FilesController extends Controller
 
         // return redirect to files index
         return back();
-
     }
 
     /**
@@ -123,9 +122,9 @@ class FilesController extends Controller
 
     public function searchForFiles(Request $request)
     {
-        
+
         $data = $request->collect()['data'];
-        
+
         $currentDirectory = $request->currentPath ?? 'public';
 
         $allfiles = Storage::allfiles($currentDirectory);
@@ -141,7 +140,8 @@ class FilesController extends Controller
         return back()->with('search_other', $files);
     }
 
-    public function searchForImages(Request $request) {
+    public function searchForImages(Request $request)
+    {
         $data = $request->collect()['data'];
 
         $currentDirectory = $request->currentPath ?? 'public';
@@ -157,15 +157,15 @@ class FilesController extends Controller
         // dd($images);
 
         return back()->with('search_other', $images);
-
     }
 
-    public function uploadImage(Request $request) {
-        
+    public function uploadImage(Request $request)
+    {
+
         // dd($request->file('file'));
-        
+
         $image = Image::make($request->file('file')['file']);
-        
+
         $image->resize(1200, null, function ($constraint) {
             $constraint->aspectRatio();
             $constraint->upsize();
@@ -192,5 +192,4 @@ class FilesController extends Controller
         // Inertia::share('misc', $path . '/' . $originalName);
         return back()->with('misc', '/uploads/' . $path . '/' . $originalName);
     }
-
 }

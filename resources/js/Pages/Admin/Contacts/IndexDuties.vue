@@ -22,7 +22,7 @@ import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
 import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
 
 defineProps<{
-  duties: PaginatedModels<App.Models.Duty[]>;
+  duties: PaginatedModels<App.Models.Duty>;
 }>();
 
 const createColumns = () => {

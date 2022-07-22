@@ -1,29 +1,40 @@
 <template>
-  <NPopconfirm
+  <component
+    :is="disabled ? NPopover : NPopconfirm"
     positive-text="Ištrinti!"
     negative-text="Palikti"
     @positive-click="destroyModel()"
   >
     <template #trigger>
       <div class="mx-4 flex">
-        <NButton type="error">
+        <NButton type="error" :disabled="disabled">
           <NIcon size="18">
             <Delete20Filled />
           </NIcon>
         </NButton>
       </div>
     </template>
-    Ištrinto elemento nebus galima atkurti!
-  </NPopconfirm>
+    <template v-if="disabled"
+      >Pirmiausia išimkite visus kontaktus iš pareigybės.</template
+    >
+    <template v-else>Ištrinto elemento nebus galima atkurti!</template>
+  </component>
 </template>
 
 <script setup lang="ts">
 import { Delete20Filled } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
-import { NButton, NIcon, NPopconfirm, createDiscreteApi } from "naive-ui";
+import {
+  NButton,
+  NIcon,
+  NPopconfirm,
+  NPopover,
+  createDiscreteApi,
+} from "naive-ui";
 import route from "ziggy-js";
 
 const props = defineProps<{
+  disabled?: boolean;
   form: App.Models.ModelTemplate;
   modelRoute: string;
 }>();

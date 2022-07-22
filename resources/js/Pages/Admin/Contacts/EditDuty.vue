@@ -3,6 +3,7 @@
     <UpsertModelLayout :errors="$attrs.errors" :model="duty">
       <DutyForm
         :duty="duty"
+        :has-users="hasUsers"
         model-route="duties.update"
         delete-model-route="duties.destroy"
       />

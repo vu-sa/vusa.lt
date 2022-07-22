@@ -1,7 +1,11 @@
 <template>
   <div>
     <div class="mb-4">
-      <NUpload @change="uploadFile" @before-upload="beforeUpload">
+      <NUpload
+        accept="image/jpg,image/png"
+        @change="uploadFile"
+        @before-upload="beforeUpload"
+      >
         <NButton>Įkelti paveiksliuką</NButton>
       </NUpload>
       <NButton v-if="modelValue" type="error" @click="removeLink"
@@ -24,8 +28,6 @@ const props = defineProps<{
   modelValue: string | null;
   path: string;
 }>();
-
-const inertiaProps = usePage<InertiaProps>().props.value;
 
 const modelValue = ref(props.modelValue);
 const { message } = createDiscreteApi(["message"]);
@@ -63,9 +65,7 @@ const uploadFile = (options: {
       preserveScroll: true,
       preserveState: true,
       onSuccess: () => {
-        // console.log(usePage().props.value.misc, usePage().props.value);
-        // console.log(imageSource.value, usePage().props.value.misc, imageSource);
-        modelValue.value = inertiaProps.misc;
+        modelValue.value = usePage<InertiaProps>().props.value.misc;
         emit("update:modelValue", modelValue);
         message.success("Failas įkeltas");
       },
