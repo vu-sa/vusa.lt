@@ -11,7 +11,7 @@
       "@/*": ["./resources/js/*"],
       "ziggy": ["./vendor/tightenco/ziggy/dist"]
     },
-    "types": ["naive-ui/volar", "vite/client"],
+    "types": ["vite/client"],
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,

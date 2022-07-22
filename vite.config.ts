@@ -18,13 +18,16 @@ export default defineConfig({
     }),
     i18n(),
   ],
+
   resolve: {
     alias: {
       "@": "/resources/js",
       ziggy: "/vendor/tightenco/ziggy/dist/vue",
     },
   },
-  optimizeDeps: {
-    include: ["ziggy"],
+  server: {
+    watch: {
+      usePolling: true,
+    },
   },
 });
