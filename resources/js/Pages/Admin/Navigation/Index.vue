@@ -3,7 +3,7 @@
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
-    <div class="main-card under">
+    <div class="main-card">
       <NTree
         block-line
         :data="data"
@@ -16,7 +16,7 @@
         @update:expanded-keys="handleExpandedKeysChange"
       />
       <div
-        class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center mt-4"
+        class="mt-4 flex items-center justify-end md:col-start-2 lg:col-span-2 lg:col-start-3"
       >
         <n-popconfirm @positive-click="updateModel()">
           <template #trigger>

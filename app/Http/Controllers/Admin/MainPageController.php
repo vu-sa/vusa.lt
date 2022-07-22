@@ -25,7 +25,7 @@ class MainPageController extends Controller
         $padaliniai = request()->input('padaliniai');
         $text = request()->input('text');
 
-        $mainPage = MainPage::
+        $mainPages = MainPage::
             // check if admin, if not return only pages from current user padalinys
             when(!$request->user()->isAdmin(), function ($query) use ($request) {
                 $query->where('padalinys_id', '=', $request->user()->padalinys()->id);
@@ -38,8 +38,8 @@ class MainPageController extends Controller
                 $query->select('id', 'shortname', 'alias');
             }])->orderByDesc('created_at')->paginate(20);
 
-        return Inertia::render('Admin/Content/MainPage/Index', [
-            'mainPage' => $mainPage,
+        return Inertia::render('Admin/Content/IndexMainPages', [
+            'mainPages' => $mainPages,
         ]);
     }
 
@@ -83,7 +83,7 @@ class MainPageController extends Controller
      */
     public function edit(MainPage $mainPage)
     {
-        return Inertia::render('Admin/Content/MainPage/Edit', [
+        return Inertia::render('Admin/Content/EditMainPage', [
             'mainPage' => $mainPage
         ]);
     }
@@ -108,6 +108,8 @@ class MainPageController extends Controller
      */
     public function destroy(MainPage $mainPage)
     {
-        //
+        $mainPage->delete();
+
+        return redirect()->route('mainPage.index');
     }
 }

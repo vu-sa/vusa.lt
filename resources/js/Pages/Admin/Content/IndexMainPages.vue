@@ -1,11 +1,11 @@
 <template>
-  <AdminLayout title="Baneriai">
+  <AdminLayout title="Pradinis puslapis">
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
     <div class="main-card">
-      <IndexSearchInput payload-name="title" />
-      <IndexDataTable :model="banners" :columns="columns" />
+      <IndexSearchInput payload-name="text" />
+      <IndexDataTable :model="mainPages" :columns="columns" />
     </div>
   </AdminLayout>
 </template>
@@ -14,34 +14,47 @@
 import { Link } from "@inertiajs/inertia-vue3";
 import { h, ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-import AsideHeader from "../AsideHeader.vue";
-import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
-import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
 import route from "ziggy-js";
 
+import AsideHeader from "../../../components/Admin/Headers/AsideHeaderContent.vue";
+import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
+import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
+
 defineProps<{
-  banners: PaginatedModels<App.Models.Banner[]>;
+  mainPages: PaginatedModels<App.Models.MainPage[]>;
 }>();
 
 const createColumns = () => {
   return [
     {
       title: "Pavadinimas",
-      key: "title",
-      render(row: App.Models.Banner) {
+      key: "text",
+      ellipsis: true,
+      width: 300,
+
+      render(row: App.Models.MainPage) {
         return h(
           Link,
           {
-            class: row.is_active ? "text-green-700 font-bold" : "text-red-700",
-            href: route("banners.edit", { id: row.id }),
+            href: route("mainPage.edit", { id: row.id }),
+            class: "hover:text-vusa-red transition",
           },
-          row.title
+          { default: () => row.text }
         );
       },
     },
     {
       title: "Padalinys",
       key: "padalinys.shortname",
+    },
+    {
+      title: "Nuoroda",
+      key: "link",
+    },
+
+    {
+      title: "Kalba",
+      key: "lang",
     },
   ];
 };

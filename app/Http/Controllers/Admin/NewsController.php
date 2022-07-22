@@ -39,7 +39,7 @@ class NewsController extends Controller
                 $query->select('id', 'shortname', 'alias');
             }])->orderByDesc('created_at')->paginate(20);
 
-        return Inertia::render('Admin/Content/News/Index', [
+        return Inertia::render('Admin/Content/IndexNews', [
             'news' => $news
         ]);
     }
@@ -51,7 +51,7 @@ class NewsController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Admin/Content/News/Create');
+        return Inertia::render('Admin/Content/CreateNews');
     }
 
     /**
@@ -111,7 +111,7 @@ class NewsController extends Controller
      */
     public function edit(News $news)
     {
-        return Inertia::render('Admin/Content/News/Edit', [
+        return Inertia::render('Admin/Content/EditNews', [
             'news' => [
                 'id' => $news->id,
                 'title' => $news->title,

@@ -7,17 +7,15 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from "vue";
-
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import CalendarForm from "@/components/Admin/Forms/CalendarForm.vue";
 import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
 
-const calendar = reactive({
+const calendar = {
   title: "",
   date: null,
   description: "",
   category: null,
   url: "",
-});
+};
 </script>

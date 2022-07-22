@@ -1,8 +1,11 @@
 <template>
   <div
-    class="mt-2 w-full border-vusa-red border-opacity-20 rounded-lg shadow-xl"
+    class="border-vusa-red/22 mt-2 w-full border-separate rounded-lg shadow-xl"
   >
-    <div v-if="editor" class="p-2">
+    <div
+      v-if="editor"
+      class="rounded-t-lg bg-gradient-to-tr from-stone-100 to-stone-50 p-2 shadow-lg"
+    >
       <!-- <strong class="mb-4">Funkcijos</strong> -->
       <!-- <br /> -->
       <div>
@@ -120,11 +123,11 @@
 
     <EditorContent
       :editor="editor"
-      class="rounded-b-lg bg-slate-100/80 border-vusa-yellow/50"
+      class="min-h-[12em] rounded-b-lg border-vusa-yellow/50 bg-slate-100/40 shadow-inner"
     />
   </div>
   <NModal v-model:show="showFileModal">
-    <div class="bg-white p-4 rounded-sm w-1/2">
+    <div class="w-1/2 rounded-sm bg-white p-4">
       <NTabs class="" type="line" animated>
         <NTabPane name="link" tab="Pridėti nuorodą">
           <NInput v-model:value="previousUrl"></NInput>
@@ -313,7 +316,7 @@ const placeImage = () => {
 const editor = useEditor({
   editorProps: {
     attributes: {
-      class: "prose prose-sm sm:prose focus:outline-none p-4",
+      class: "prose prose-sm sm:prose focus:outline-none p-4 h-full",
     },
   },
   extensions: [

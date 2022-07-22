@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout :title="contact.name">
+  <AdminLayout :title="contact.name" :back-url="route('users.index')">
     <UpsertModelLayout :errors="$attrs.errors" :model="contact">
       <UserForm
         :user="contact"
@@ -12,16 +12,13 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from "vue";
-
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
 import UserForm from "@/components/Admin/Forms/UserForm.vue";
+import route from "ziggy-js";
 
-const props = defineProps<{
+defineProps<{
   contact: App.Models.User;
   roles: App.Models.Role[];
 }>();
-
-const contact = reactive(props.contact);
 </script>

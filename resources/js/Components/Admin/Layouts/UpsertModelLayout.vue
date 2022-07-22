@@ -1,6 +1,8 @@
 <template>
   <div class="main-card">
-    <p class="font-extrabold text-2xl mb-4">Informacija</p>
+    <p class="mb-4 text-2xl font-extrabold">
+      <slot name="card-header">Informacija</slot>
+    </p>
     <NAlert
       v-if="hasErrors"
       class="mb-4"

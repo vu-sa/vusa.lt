@@ -1,5 +1,8 @@
 <template>
-  <AdminLayout :title="dutyInstitution.name">
+  <AdminLayout
+    :title="dutyInstitution.name"
+    :back-url="route('dutyInstitution.index')"
+  >
     <UpsertModelLayout :errors="$attrs.errors" :model="dutyInstitution">
       <DutyInstitutionForm
         :padaliniai="padaliniai"
@@ -27,18 +30,15 @@
 
 <script setup lang="ts">
 import { Link } from "@inertiajs/inertia-vue3";
-import { reactive } from "vue";
 import route from "ziggy-js";
 
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import DutyInstitutionForm from "@/Components/Admin/Forms/DutyInstitutionForm.vue";
 import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
 
-const props = defineProps<{
+defineProps<{
   dutyInstitution: App.Models.DutyInstitution;
   duties: Array<App.Models.Duty>;
   padaliniai: Array<App.Models.Padalinys>;
 }>();
-
-const dutyInstitution = reactive(props.dutyInstitution);
 </script>

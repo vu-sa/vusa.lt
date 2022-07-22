@@ -1,6 +1,6 @@
 <template>
   <NInput
-    class="md:col-span-4 mb-2"
+    class="mb-4 md:col-span-4"
     type="text"
     size="medium"
     clearable

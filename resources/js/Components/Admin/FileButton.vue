@@ -1,11 +1,11 @@
 <template>
-  <Link
-    class="border-2 h-40 rounded-xl flex items-center relative hover:bg-stone-100 duration-200 justify-center p-2"
+  <button
+    class="relative flex h-40 items-center justify-center rounded-xl border-2 p-2 duration-200 hover:bg-stone-100"
   >
     <button class="flex flex-col items-center">
-      <slot></slot>
+      <slot />
     </button>
-  </Link>
+  </button>
 </template>
 
 <script setup lang="ts">

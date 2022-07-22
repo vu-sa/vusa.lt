@@ -1,12 +1,12 @@
 <template>
   <nav
-    class="flex flex-row fixed justify-between px-6 lg:px-24 border shadow-sm w-full backdrop-blur-sm bg-white/90 text-gray-700 items-center py-2 z-50 top-0"
+    class="fixed top-0 z-50 flex w-full flex-row items-center justify-between border bg-white/90 px-6 py-2 text-gray-700 shadow-sm backdrop-blur-sm lg:px-24"
   >
-    <div class="flex flex-row space-x-4 items-center">
+    <div class="flex flex-row items-center space-x-4">
       <Link :href="route('main.home', homeParams)">
         <!-- <a :href="locale === 'lt' ? $page.props.app.url : `${$page.props.app.url}/en`"> -->
         <img
-          class="object-contain min-w-[15vw] lg:min-w-[10vw]"
+          class="min-w-[15vw] object-contain lg:min-w-[10vw]"
           src="/logos/vusa.lin.hor.svg"
         />
         <!-- </a> -->
@@ -42,7 +42,7 @@
         </NIcon>
       </NButton>
     </div>
-    <div class="hidden md:flex flex-row space-x-4 items-center">
+    <div class="hidden flex-row items-center space-x-4 md:flex">
       <!-- <n-gradient-text type="error"> -->
       <!-- <Link :href="route('page', { permalink: 'apie' })">VU SA</Link> -->
       <!-- </n-gradient-text> -->
@@ -78,18 +78,12 @@
           <template v-else>Kontaktai</template>
         </NButton>
       </Link> -->
-      <NButton
-        text
-        @click="windowOpen('https://www.facebook.com/VUstudentuatstovybe')"
-      >
+      <NButton text @click="windowOpen('https://www.facebook.com/VUstudentuatstovybe')">
         <NIcon size="18">
           <FacebookF />
         </NIcon>
       </NButton>
-      <NButton
-        text
-        @click="windowOpen('https://www.instagram.com/vustudentuatstovybe/')"
-      >
+      <NButton text @click="windowOpen('https://www.instagram.com/vustudentuatstovybe/')">
         <NIcon size="18">
           <Instagram />
         </NIcon>
@@ -108,9 +102,7 @@
         @select="handleSelectLanguage"
       >
         <NButton text
-          ><img
-            src="https://hatscripts.github.io/circle-flags/flags/gb.svg"
-            width="16"
+          ><img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" width="16"
         /></NButton>
       </NDropdown>
       <NDropdown
@@ -120,18 +112,11 @@
         @select="handleSelectLanguage"
       >
         <NButton text
-          ><img
-            src="https://hatscripts.github.io/circle-flags/flags/lt.svg"
-            width="16"
+          ><img src="https://hatscripts.github.io/circle-flags/flags/lt.svg" width="16"
         /></NButton>
       </NDropdown>
     </div>
-    <NDrawer
-      v-model:show="activeDrawer"
-      :width="325"
-      placement="left"
-      :trap-focus="true"
-    >
+    <NDrawer v-model:show="activeDrawer" :width="325" placement="left" :trap-focus="true">
       <NDrawerContent
         closable
         :title="padalinys == 'Padaliniai' ? 'VU SA' : $t(padalinys)"
@@ -169,7 +154,7 @@
             <template v-else>Kontaktai</template>
           </NButton>
         </Link> -->
-        <div class="flex flex-row space-x-4 items-center mt-4">
+        <div class="mt-4 flex flex-row items-center space-x-4">
           <NButton
             text
             target="_blank"
@@ -227,7 +212,7 @@
   </nav>
   <NModal v-model:show="showSearch">
     <div
-      class="w-3/4 md:w-1/2 md:h-1/2 overflow-auto p-4 bg-white/95 rounded-md border-2 border-gray-100 shadow-lg"
+      class="w-3/4 overflow-auto rounded-md border-2 border-gray-100 bg-white/95 p-4 shadow-lg md:h-1/2 md:w-1/2"
     >
       <!-- <h3 class="mb-2">Paieška</h3> -->
       <NInput
@@ -245,9 +230,7 @@
           v-for="page in $page.props.search.pages"
           :href="route('page', { lang: page.lang, permalink: page.permalink })"
         >
-          <div
-            class="bg-white/95 py-2 px-4 border border-gray-200 rounded-lg mb-2"
-          >
+          <div class="mb-2 rounded-lg border border-gray-200 bg-white/95 py-2 px-4">
             <p>{{ page.title }}</p>
           </div>
         </Link>
@@ -264,7 +247,7 @@
             })
           "
         >
-          <div class="bg-white/95 p-4 border border-gray-200 rounded-lg mb-2">
+          <div class="mb-2 rounded-lg border border-gray-200 bg-white/95 p-4">
             <p>{{ news.title }}</p>
             <p class="text-sm text-gray-500">{{ news.publish_time }}</p>
           </div>
@@ -275,7 +258,7 @@
         <div
           v-for="calendar in $page.props.search.calendar"
           :key="calendar.id"
-          class="bg-white/95 p-4 border border-gray-200 rounded-lg mb-2"
+          class="mb-2 rounded-lg border border-gray-200 bg-white/95 p-4"
         >
           <p>{{ calendar.title }}</p>
           <p class="text-sm text-gray-500">{{ calendar.date }}</p>
@@ -484,9 +467,7 @@ const handleSelectNavigation = (id) => {
         // if url is #, add id to checked keys
         // if id is in expandedKeys, remove it
         if (expandedKeys.value.includes(item[1].id)) {
-          expandedKeys.value = expandedKeys.value.filter(
-            (key) => key !== item[1].id
-          );
+          expandedKeys.value = expandedKeys.value.filter((key) => key !== item[1].id);
         } else {
           expandedKeys.value.push(item[1].id);
         }

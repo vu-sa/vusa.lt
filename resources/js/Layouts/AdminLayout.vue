@@ -5,18 +5,20 @@
   <MetaIcons />
 
   <div
-    class="min-h-screen grid grid-cols-9 bg-gradient-to-tr from-vusa-red/20 to-vusa-yellow/20 px-4 pb-4"
+    class="grid min-h-screen grid-cols-9 bg-gradient-to-tr from-vusa-red/20 to-vusa-yellow/20 px-4 pb-4"
   >
     <!-- Main Navigation -->
     <nav
-      class="md:mr-4 shadow-lg md:rounded-xl col-span-1 md:sticky top-0 left-0 md:left-auto md:top-4 w-screen md:w-auto mb-auto bg-stone-50 transition fixed flex md:flex-col items-center text-center text-gray-800 z-20 overflow-x-scroll md:overflow-auto justify-evenly"
+      class="fixed top-0 left-0 z-20 col-span-1 mb-auto flex w-screen items-center justify-evenly overflow-x-scroll bg-stone-50 text-center text-gray-800 shadow-lg transition md:sticky md:left-auto md:top-4 md:mr-4 md:w-auto md:flex-col md:overflow-auto md:rounded-xl"
     >
-      <a class="w-full md:bg-white md:rounded-t-lg" href="/">
+      <a class="w-full md:rounded-t-lg md:bg-white" href="/">
         <AppLogo class="mx-auto my-2" />
       </a>
       <MenuButton :menu-content="['dashboard']">
-        <template #icon> <Home48Regular /> </template>
-        Pradžia
+        <template #icon>
+          <Home48Regular />
+        </template>
+        Pradinis
       </MenuButton>
       <MenuButton
         v-if="can.content"
@@ -69,7 +71,7 @@
       <div class="py-2">
         <NButton
           style="font-size: 8pt"
-          class="hover:text-vusa-red text-gray-600"
+          class="text-gray-600 hover:text-vusa-red"
           text
           @click="showModal = true"
         >
@@ -77,29 +79,31 @@
         </NButton>
       </div>
       <NModal v-model:show="showModal">
-        <Changelog></Changelog>
+        <Changelog />
       </NModal>
     </nav>
     <!-- Main Navigation End -->
     <!-- Page Content -->
-    <PageContent :create-url="createUrl">
+    <PageContent :create-url="createUrl" :back-url="backUrl">
       <template #header>
-        <slot name="header">{{ title }}</slot>
+        <slot name="header">
+          {{ title }}
+        </slot>
       </template>
 
       <template #aside-header>
-        <slot name="aside-header"></slot>
+        <slot name="aside-header" />
       </template>
 
-      <div class="col-span-2 ml-12 mt-4 mb-5"></div>
+      <div class="col-span-2 ml-12 mt-4 mb-5" />
       <Transition name="fade" appear>
-        <main class="md:col-span-4 col-span-full">
+        <main class="col-span-full md:col-span-4">
           <slot />
         </main>
       </Transition>
       <!-- Aside Navigation -->
       <AsideNavigation>
-        <slot name="aside-navigation-options"></slot>
+        <slot name="aside-navigation-options" />
       </AsideNavigation>
       <!-- Aside Navigation End -->
     </PageContent>
@@ -122,16 +126,17 @@ import { Head, usePage } from "@inertiajs/inertia-vue3";
 import { NButton, NModal } from "naive-ui";
 import { ref } from "vue";
 
-import AppLogo from "@/Components/AppLogo.vue";
-import AsideNavigation from "@/Layouts/Partials/Admin/AsideNavigation.vue";
-import Changelog from "@/Components/Admin/Misc/ChangelogCard.vue";
-import MenuButton from "@/Components/Admin/MenuButton.vue";
-import MetaIcons from "@/Components/MetaIcons.vue";
-import PageContent from "@/Layouts/Partials/Admin/PageContent.vue";
+import AppLogo from "@/components/AppLogo.vue";
+import AsideNavigation from "@/layouts/Partials/Admin/AsideNavigation.vue";
+import Changelog from "@/components/Admin/Misc/ChangelogCard.vue";
+import MenuButton from "@/components/Admin/MenuButton.vue";
+import MetaIcons from "@/components/MetaIcons.vue";
+import PageContent from "@/layouts/Partials/Admin/PageContent.vue";
 
 defineProps<{
   title?: string;
   createUrl?: string | null;
+  backUrl?: string | null;
 }>();
 
 const { can } = usePage<InertiaProps>().props.value;

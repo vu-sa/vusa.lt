@@ -9,7 +9,6 @@
     "license": "MIT",
     "require": {
         "php": "^8.1",
-        "based/laravel-typescript": "^0.0.3",
         "doctrine/dbal": "^3.2",
         "guzzlehttp/guzzle": "^7.2",
         "inertiajs/inertia-laravel": "^0.6.3",
@@ -28,6 +27,7 @@
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.7",
+        "based/laravel-typescript": "^0.0.3",
         "fakerphp/faker": "^1.9.1",
         "kitloong/laravel-migrations-generator": "^6.2",
         "laravel/sail": "^1.12",

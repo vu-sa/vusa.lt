@@ -7,16 +7,14 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from "vue";
-
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import DutyForm from "@/components/Admin/Forms/DutyForm.vue";
 import UpsertModelLayout from "@/components/Admin/Layouts/UpsertModelLayout.vue";
 
-const duty = reactive({
+const duty = {
   name: "",
   description: "",
   email: null,
   institution: {},
-});
+};
 </script>

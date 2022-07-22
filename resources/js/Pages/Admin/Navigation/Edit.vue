@@ -6,7 +6,7 @@
         <li v-for="error in errors">{{ error }}</li>
       </ul>
       <form
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-4 grid-flow-row-dense"
+        class="mb-4 grid grid-flow-row-dense grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4"
       >
         <div class="lg:col-span-2">
           <label class="font-bold">Pavadinimas</label>
@@ -37,7 +37,7 @@
         </div>
 
         <div
-          class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center"
+          class="flex items-center justify-end md:col-start-2 lg:col-span-2 lg:col-start-3"
         >
           <UpsertModelButton
             :model="navigation"

@@ -19,7 +19,7 @@ import { DataTableColumns, NButton } from "naive-ui";
 import { Link, usePage } from "@inertiajs/inertia-vue3";
 import { h, ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-import AsideHeader from "../AsideHeader.vue";
+import AsideHeader from "@/components/Admin/Headers/AsideHeaderContent.vue";
 import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
 import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
 import route from "ziggy-js";

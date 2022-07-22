@@ -11,15 +11,11 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from "vue";
-
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import CalendarForm from "@/components/Admin/Forms/CalendarForm.vue";
 import UpsertModelLayout from "@/components/Admin/Layouts/UpsertModelLayout.vue";
 
-const props = defineProps<{
+defineProps<{
   calendar: App.Models.Calendar;
 }>();
-
-const calendar = reactive(props.calendar);
 </script>

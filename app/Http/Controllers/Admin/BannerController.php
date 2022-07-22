@@ -38,7 +38,7 @@ class BannerController extends Controller
                 $query->select('id', 'shortname', 'alias');
             }])->orderByDesc('created_at')->paginate(20);
 
-        return Inertia::render('Admin/Content/Banners/Index', [
+        return Inertia::render('Admin/Content/IndexBanners', [
             'banners' => $banners
         ]);
     }
@@ -83,7 +83,7 @@ class BannerController extends Controller
      */
     public function edit(Banner $banner)
     {
-        return Inertia::render('Admin/Content/Banners/Edit', [
+        return Inertia::render('Admin/Content/EditBanner', [
             'banner' => $banner,
         ]);
     }

@@ -1,8 +1,10 @@
 <template>
   <aside
-    class="bg-stone-50 rounded-xl ml-12 shadow-lg duration-200 sticky top-4 mb-auto col-span-2 md:grid grid-flow-row gap-5 hidden text-sm text-gray-700 p-6"
+    class="main-card sticky top-4 col-span-2 ml-12 mb-auto hidden grid-flow-row gap-5 md:grid"
   >
-    <div class="flex items-center hover:text-gray-900 transition col-span-3">
+    <div
+      class="col-span-3 flex items-center gap-2 transition hover:text-gray-900"
+    >
       <div class="flex items-center">
         <img
           class="h-8 w-8 rounded-full object-cover"
@@ -15,7 +17,7 @@
           }})</span
         >
       </div>
-      <div class="ml-auto mr-2">
+      <div class="ml-auto">
         <NButton
           icon-placement="right"
           :loading="loading"

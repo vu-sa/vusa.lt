@@ -16,6 +16,7 @@
     "@vueuse/core": "^8.9.4",
     "axios": "^0.27",
     "laravel-vue-i18n": "^2.0.0",
+    "latinize": "^0.5.0",
     "lodash": "^4.17.21",
     "vue-lodash": "^2.1.2",
     "ziggy-js": "^1.4.6"
@@ -27,6 +28,7 @@
     "@inertiajs/progress": "^0.2.6",
     "@tailwindcss/line-clamp": "^0.4.0",
     "@tailwindcss/typography": "^0.5.0",
+    "@types/latinize": "^0.2.15",
     "@typescript-eslint/eslint-plugin": "^5.30.7",
     "@typescript-eslint/parser": "^5.30.7",
     "@vicons/fa": "^0.12.0",

@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout :title="duty.name">
+  <AdminLayout :title="duty.name" :back-url="route('duties.index')">
     <UpsertModelLayout :errors="$attrs.errors" :model="duty">
       <DutyForm
         :duty="duty"
@@ -41,7 +41,7 @@ import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
 import { LinkDismiss20Filled } from "@vicons/fluent";
 import { NButton, NIcon, NPopconfirm, createDiscreteApi } from "naive-ui";
-import { computed, reactive } from "vue";
+import { computed } from "vue";
 import route from "ziggy-js";
 
 import AdminLayout from "@/Layouts/AdminLayout.vue";
@@ -53,9 +53,7 @@ const props = defineProps<{
   users: App.Models.User[];
 }>();
 
-// const duty = reactive(props.duty);
 const { message } = createDiscreteApi(["message"]);
-const duty = reactive(props.duty);
 
 const hasUsers = computed(() => props.users.length > 0);
 
@@ -65,7 +63,7 @@ const detachUserFromDuty = (user: App.Models.User) => {
   Inertia.post(
     route("users.detach", {
       user: user.id,
-      duty: duty.id,
+      duty: props.duty.id,
     }),
     {},
     {

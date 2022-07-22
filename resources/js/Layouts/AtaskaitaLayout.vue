@@ -5,10 +5,10 @@
     <Transition name="fade"
       ><img
         v-if="animated"
-        class="object-cover h-full w-full fixed opacity-50"
+        class="fixed h-full w-full object-cover opacity-50"
         :src="backgroundImage"
     /></Transition>
-    <div class="min-h-screen antialiased bg-neutral-50/95 pb-8 relative">
+    <div class="relative min-h-screen bg-neutral-50/95 pb-8 antialiased">
       <AtaskaitaNavigation></AtaskaitaNavigation>
 
       <Transition name="fade" appear>
