@@ -3,24 +3,24 @@
     :title="`${institution.short_name ?? institution.name} kontaktai`"
   >
     <div class="px-16 lg:px-32">
-      <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-8">
-        <div v-if="institution.image_url" class="relative group sm:col-span-2">
+      <div class="grid gap-8 sm:grid-cols-2 xl:grid-cols-3">
+        <div v-if="institution.image_url" class="group relative sm:col-span-2">
           <ShapeDivider1 class="absolute -top-1 z-10"></ShapeDivider1>
           <ShapeDivider1
-            class="absolute rotate-180 -bottom-1 z-10"
+            class="absolute -bottom-1 z-10 rotate-180"
           ></ShapeDivider1>
           <img
             :src="institution.image_url"
-            class="h-64 lg:h-96 w-full object-cover my-4 hover:opacity-90 duration-200"
+            class="my-4 h-64 w-full object-cover duration-200 hover:opacity-90 lg:h-96"
             style="object-position: 0% 35%"
           />
         </div>
         <div
           :class="{ 'sm:row-span-2': !institution.image_url }"
-          class="my-auto prose prose-sm"
+          class="prose-sm prose my-auto"
         >
           <h1>{{ institution.name ?? institution.short_name }}</h1>
-          <div class="" v-html="institution.description"></div>
+          <div v-html="institution.description"></div>
         </div>
         <ContactWithPhoto
           v-for="contact in contacts"
@@ -29,13 +29,13 @@
         >
           <template #name> {{ contact.name }} </template>
           <template #duty>
-            <template v-for="duty in contact.duties">
+            <template v-for="duty in contact.duties" :key="duty.id">
               <NPopover
                 v-if="duty.description"
                 trigger="hover"
                 :style="{ maxWidth: '250px' }"
                 ><template #trigger>
-                  <p class="cursor-pointer my-1">{{ duty.name }}</p>
+                  <p class="my-1 cursor-pointer">{{ duty.name }}</p>
                 </template>
                 <span v-html="duty.description"></span>
               </NPopover>
@@ -49,7 +49,7 @@
               </NIcon>
               <a :href="`tel:${contact.phone}`">{{ contact.phone }}</a>
             </div>
-            <template v-for="duty in contact.duties">
+            <template v-for="duty in contact.duties" :key="duty.id">
               <div v-if="duty.email" class="flex flex-row items-center">
                 <NIcon class="mr-2"> <Mail20Regular /> </NIcon
                 ><a :href="`mailto:${duty.email}`">{{ duty.email }}</a>
@@ -65,17 +65,15 @@
 <script setup lang="ts">
 import { Mail20Regular, Phone20Regular } from "@vicons/fluent";
 import { NIcon, NPopover } from "naive-ui";
-import { ref } from "vue";
+
 import ContactWithPhoto from "@/Components/Public/ContactWithPhoto.vue";
 import PublicLayout from "@/Layouts/PublicLayout.vue";
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 
-const props = defineProps({
-  contacts: Array,
-  institution: Object,
-});
-
-const loadingNameInput = ref(false);
+defineProps<{
+  contacts: Array<App.Models.User>;
+  institution: App.Models.DutyInstitution;
+}>();
 </script>
 
 <style>

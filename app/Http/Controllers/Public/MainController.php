@@ -107,7 +107,7 @@ class MainController extends Controller
 					"important" => $news->important,
 				];
 			}),
-			'main_page' => MainPage::where('padalinys_id', '=', $padalinys->id)->get(),
+			'mainPage' => MainPage::where('padalinys_id', '=', $padalinys->id)->get(),
 		])->withViewData([
 			'description' => 'Vilniaus universiteto Studentų atstovybė (VU SA) – seniausia ir didžiausia Lietuvoje visuomeninė, ne pelno siekianti, nepolitinė, ekspertinė švietimo organizacija'
 		]);

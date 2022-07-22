@@ -2,9 +2,7 @@
   <AdminLayout :title="navigation.name">
     <div class="main-card">
       <h3 class="mb-4">Bendra informacija</h3>
-      <ul v-if="errors" class="mb-4 text-red-700">
-        <li v-for="error in errors">{{ error }}</li>
-      </ul>
+
       <form
         class="mb-4 grid grid-flow-row-dense grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4"
       >
@@ -55,10 +53,9 @@ import { reactive } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue";
 
-const props = defineProps({
-  navigation: Object,
-  errors: Object,
-});
+const props = defineProps<{
+  navigation: App.Models.Navigation;
+}>();
 
 const navigation = reactive(props.navigation);
 </script>

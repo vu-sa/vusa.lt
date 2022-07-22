@@ -1,8 +1,8 @@
 <template>
   <AdminLayout title="Navigacija">
-    <template #aside-header>
+    <!-- <template #aside-header>
       <AsideHeader></AsideHeader>
-    </template>
+    </template> -->
     <div class="main-card">
       <NTree
         block-line
@@ -45,7 +45,7 @@ import {
 } from "naive-ui";
 import { h, ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-import AsideHeader from "./AsideHeader.vue";
+// import AsideHeader from "./AsideHeader.vue";
 import route from "ziggy-js";
 
 const props = defineProps<{

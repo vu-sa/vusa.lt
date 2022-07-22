@@ -8,9 +8,9 @@
   </Head>
 
   <PublicLayout title="Pagrindinis">
-    <div class="relative group">
+    <div class="group relative">
       <ShapeDivider1 class="absolute -top-1 z-10"></ShapeDivider1>
-      <ShapeDivider1 class="absolute rotate-180 -bottom-1 z-10"></ShapeDivider1>
+      <ShapeDivider1 class="absolute -bottom-1 z-10 rotate-180"></ShapeDivider1>
       <Link
         :href="
           route('main.ataskaita2022', {
@@ -21,17 +21,17 @@
       >
         <img
           src="/images/ataskaita2022/kitos-nuotraukos/VU SA.jpg"
-          class="h-64 lg:h-96 w-full object-cover my-4 hover:opacity-90 duration-200"
+          class="my-4 h-64 w-full object-cover duration-200 hover:opacity-90 lg:h-96"
           style="object-position: 0% 35%"
         />
       </Link>
     </div>
-    <div class="lg:px-16 lg:mx-16 mx-8">
+    <div class="mx-8 lg:mx-16 lg:px-16">
       <h2
-        class="text-2xl lg:text-4xl mb-4 text-gray-900 hover:text-vusa-red hover:text- duration-200"
+        class="hover:text- mb-4 text-2xl text-gray-900 duration-200 hover:text-vusa-red lg:text-4xl"
       >
         <Link
-          class="flex flex-row w-fit gap-2 items-center"
+          class="flex w-fit flex-row items-center gap-2"
           :href="
             route('main.ataskaita2022', {
               lang: $page.props.locale,
@@ -47,8 +47,8 @@
           </NIcon>
         </Link>
       </h2>
-      <div class="flex space-between flex-row">
-        <p class="lg:max-w-[80ch] text-gray-700 mb-4 text-sm lg:text-base">
+      <div class="space-between flex flex-row">
+        <p class="mb-4 text-sm text-gray-700 lg:max-w-[80ch] lg:text-base">
           <template v-if="$page.props.locale === 'lt'">
             Ataskaitos knygutė – kiekvienais metais skelbiama VU SA nuveiktų
             darbų, atliktų projektų, įgyvendintų iniciatyvų ataskaita. Artėjant
@@ -71,12 +71,12 @@
 
     <div
       v-if="$page.props.locale === 'lt' && $page.props.alias"
-      class="lg:px-16 lg:mx-16 mx-8 mb-8"
+      class="mx-8 mb-8 lg:mx-16 lg:px-16"
     >
       <h2 class="mb-4">Pagrindinės nuorodos:</h2>
       <div class="flex flex-wrap gap-2">
         <NButton
-          v-for="item in props.main_page"
+          v-for="item in props.mainPage"
           :key="item.id"
           secondary
           round
@@ -113,7 +113,7 @@
             "
             ><img
               :src="item.image"
-              class="rounded-sm shadow-md hover:shadow-lg duration-200 h-40 w-full mb-1 object-cover"
+              class="mb-1 h-40 w-full rounded-sm object-cover shadow-md duration-200 hover:shadow-lg"
           /></Link>
         </template>
         <Link
@@ -131,7 +131,7 @@
     </NewsElement>
     <div
       v-if="$page.props.locale === 'lt'"
-      class="py-4 px-4 lg:px-8 lg:mx-16 mx-8 lg:mb-8 mb-4 rounded-lg text-gray-800 bg-white shadow-lg"
+      class="mx-8 mb-4 rounded-lg bg-white p-4 text-gray-800 shadow-lg lg:mx-16 lg:mb-8 lg:px-8"
     >
       <h1 class="mb-2">Mūsų programos ir partneriai</h1>
       <NCarousel
@@ -145,7 +145,7 @@
       >
         <NCarouselItem v-for="banner in props.banners" :key="banner.id">
           <a target="_blank" :href="banner.link_url">
-            <img class="shadow-md rounded-sm" :src="banner.image_url" />
+            <img class="rounded-sm shadow-md" :src="banner.image_url" />
           </a>
         </NCarouselItem>
       </NCarousel>
@@ -154,23 +154,23 @@
 </template>
 
 <script setup lang="ts">
-import HomeCard from "@/Components/Public/HomeCard.vue";
-import PublicLayout from "@/Layouts/PublicLayout.vue";
-// import SkeletonElement from "@/Layouts/Partials/Public/SkeletonElement.vue";
 import { ArrowCircleRight20Regular, Clock20Regular } from "@vicons/fluent";
 import { Head, Link, usePage } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
 import { NButton, NCarousel, NCarouselItem, NDivider, NIcon } from "naive-ui";
 import { onBeforeUnmount, ref } from "vue";
-import NewsElement from "@/Layouts/Partials/Public/NewsElement.vue";
-import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 import route from "ziggy-js";
 
-const props = defineProps({
-  news: Object,
-  banners: Object,
-  main_page: Object,
-});
+import HomeCard from "@/Components/Public/HomeCard.vue";
+import NewsElement from "@/Layouts/Partials/Public/NewsElement.vue";
+import PublicLayout from "@/Layouts/PublicLayout.vue";
+import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
+
+const props = defineProps<{
+  news: Array<App.Models.News>;
+  banners: Array<App.Models.Banner>;
+  mainPage: Array<App.Models.MainPage>;
+}>();
 
 const calculateBannerCount = (width: number) => {
   if (width < 768) {

@@ -18,7 +18,7 @@
       <template #title>{{ article.title }}</template>
       <template #image
         ><img
-          class="my-4 col-span-4 rounded-sm shadow-md hover:shadow-lg duration-200 h-auto w-[65ch] object-cover"
+          class="col-span-4 my-4 h-auto w-[65ch] rounded-sm object-cover shadow-md duration-200 hover:shadow-lg"
           :src="article.image"
       /></template>
       <div class="col-span-full">
@@ -28,7 +28,7 @@
         ></NButton>
       </div>
       <div
-        class="prose first-letter:text-7xl first-letter:font-bold first-letter:mr-3 first-letter:float-left col-span-4"
+        class="prose col-span-4 first-letter:float-left first-letter:mr-3 first-letter:text-7xl first-letter:font-bold"
         v-html="article.text"
       ></div>
     </NewsArticle>
@@ -36,15 +36,17 @@
 </template>
 
 <script setup lang="ts">
-import { Clock20Regular, DocumentEdit24Regular } from "@vicons/fluent";
+import { DocumentEdit24Regular } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import { NBackTop, NButton, NIcon } from "naive-ui";
+import route from "ziggy-js";
+
 import NewsArticle from "../../Components/Public/NewsArticle.vue";
 import PublicLayout from "../../Layouts/PublicLayout.vue";
 
-const props = defineProps({
-  article: Object,
-});
+const props = defineProps<{
+  article: App.Models.News;
+}>();
 
 const editNews = () => {
   Inertia.visit(route("news.edit", { id: props.article.id }));

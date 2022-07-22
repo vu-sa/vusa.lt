@@ -4,7 +4,7 @@
       <h2 class="text-2xl font-bold">
         Aplankai ({{ showedDirectories.length }})
       </h2>
-      <div class="grid grid-cols-3 gap-3 2xl:grid-cols-6 lg:grid-cols-4">
+      <div class="grid grid-cols-3 gap-3 lg:grid-cols-4 2xl:grid-cols-6">
         <FolderButton
           v-if="currentPath !== 'public/files'"
           @click="getAllFilesAndDirectories('../')"
@@ -12,7 +12,7 @@
           <div class="mb-2">
             <NIcon size="32"><ArrowCircleLeft28Regular /></NIcon>
           </div>
-          <div class="text-sm break-all text-center">Atgal</div>
+          <div class="break-all text-center text-sm">Atgal</div>
         </FolderButton>
         <FolderButton
           v-for="directory in showedDirectories"
@@ -22,7 +22,7 @@
           <div class="mb-2">
             <NIcon size="32"><Folder48Regular /></NIcon>
           </div>
-          <div class="text-sm break-all text-center">
+          <div class="break-all text-center text-sm">
             {{ directory.folderName }}
           </div>
         </FolderButton>
@@ -31,16 +31,16 @@
     <div
       v-if="showedFiles.length > 0"
       id="files"
-      class="main-card transition-all max-h-full"
+      class="main-card max-h-full transition-all"
     >
       <h2 class="text-2xl font-bold">Failai ({{ showedFiles.length }})</h2>
       <transition-group
         tag="div"
         name="list"
-        class="grid grid-cols-3 gap-3 2xl:grid-cols-6 lg:grid-cols-4"
+        class="grid grid-cols-3 gap-3 lg:grid-cols-4 2xl:grid-cols-6"
       >
         <div class="h-40">
-          <NUpload class="rounded-xl h-40" @change="uploadFile">
+          <NUpload class="h-40 rounded-xl" @change="uploadFile">
             <NUploadDragger style="height: 100%">
               <div style="margin-bottom: 12px">
                 <!-- <n-icon size="48" :depth="3">
@@ -60,7 +60,7 @@
             <NIcon size="32"><Image48Regular /></NIcon>
           </div>
           <div
-            class="text-sm text-center text-ellipsis overflow-hidden whitespace-pre-line break-all"
+            class="overflow-hidden text-ellipsis whitespace-pre-line break-all text-center text-sm"
           >
             {{ file.fileName }}
           </div>
@@ -79,18 +79,19 @@ import {
 import { Inertia } from "@inertiajs/inertia";
 import { NIcon, NUpload, NUploadDragger } from "naive-ui";
 import { computed } from "vue";
+import { slice, split } from "lodash";
+
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import FileButton from "@/Components/Admin/FileButton.vue";
 import FolderButton from "@/Components/Admin/FolderButton.vue";
-
-import { slice, split } from "lodash";
+import route from "ziggy-js";
 
 // Declare props
-const props = defineProps({
-  directories: Object,
-  files: Object,
-  currentPath: String,
-});
+const props = defineProps<{
+  directories: string[];
+  files: string[];
+  currentPath: string;
+}>();
 
 // const { message } = createDiscreteApi(["message"]);
 
