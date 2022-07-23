@@ -42,7 +42,7 @@ class PagesController extends Controller
                 $query->select('id', 'shortname', 'alias');
             }])->orderByDesc('created_at')->paginate(20);
 
-        return Inertia::render('Admin/Content/Pages/Index', [
+        return Inertia::render('Admin/Content/IndexPages', [
             'pages' => $pages
         ]);
     }
@@ -54,7 +54,7 @@ class PagesController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Admin/Content/Pages/Create');
+        return Inertia::render('Admin/Content/CreatePage');
     }
 
     /**
@@ -111,7 +111,7 @@ class PagesController extends Controller
         //     // $other_page = (object) ['id' => null, 'title' => null];
         // }
 
-        return Inertia::render('Admin/Content/Pages/Edit', [
+        return Inertia::render('Admin/Content/EditPage', [
             'page' => [
                 'id' => $page->id,
                 'title' => $page->title,

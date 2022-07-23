@@ -1,112 +1,114 @@
 <template>
-  <div class="relative rounded-xl border-4 border-black">
+  <div
+    class="border-vusa-red/22 mt-2 w-full border-separate rounded-lg shadow-lg"
+  >
     <div
       v-if="editor"
-      class="absolute top-0 p-4 w-full border-b-4 border-black bg-white rounded-t-xl z-10"
+      class="flex items-center rounded-t-lg bg-gradient-to-tr from-stone-100 to-stone-50 p-2 shadow-sm"
     >
       <!-- <strong class="mb-4">Funkcijos</strong> -->
       <!-- <br /> -->
-      <div>
-        <button
-          type="button"
-          :class="{ 'is-active': editor.isActive('bold') }"
-          @click="editor.chain().focus().toggleBold().run()"
-        >
-          <NIcon><TextBold20Regular></TextBold20Regular></NIcon>
-        </button>
+      <!-- <div class="flex items-center"> -->
+      <button
+        type="button"
+        :class="{ 'is-active': editor.isActive('bold') }"
+        @click="editor?.chain().focus().toggleBold().run()"
+      >
+        <NIcon><TextBold20Regular></TextBold20Regular></NIcon>
+      </button>
 
-        <button
-          type="button"
-          :class="{ 'is-active': editor.isActive('italic') }"
-          @click="editor.chain().focus().toggleItalic().run()"
-        >
-          <NIcon><TextItalic20Regular></TextItalic20Regular></NIcon>
-        </button>
-        <!-- <button @click="editor.chain().focus().clearNodes().run()">clear nodes</button> -->
-        <button
-          type="button"
-          :class="{ 'is-active': editor.isActive('link') }"
-          @click="getLinkAndModal"
-        >
-          <NIcon><Link20Regular></Link20Regular></NIcon>
-        </button>
-        <button
-          type="button"
-          :disabled="!editor.isActive('link')"
-          @click="editor.chain().focus().unsetLink().run()"
-        >
-          <NIcon><LinkDismiss20Filled></LinkDismiss20Filled></NIcon>
-        </button>
-        <button
-          type="button"
-          :class="{ 'is-active': editor.isActive('paragraph') }"
-          @click="editor.chain().focus().setParagraph().run()"
-        >
-          P
-        </button>
-        <button
-          type="button"
-          :class="{ 'is-active': editor.isActive('heading', { level: 1 }) }"
-          @click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
-        >
-          H1
-        </button>
-        <button
-          type="button"
-          :class="{ 'is-active': editor.isActive('heading', { level: 2 }) }"
-          @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
-        >
-          H2
-        </button>
-        <button
-          type="button"
-          :class="{ 'is-active': editor.isActive('heading', { level: 3 }) }"
-          @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
-        >
-          H3
-        </button>
-        <button
-          type="button"
-          :class="{ 'is-active': editor.isActive('bulletList') }"
-          @click="editor.chain().focus().toggleBulletList().run()"
-        >
-          <NIcon><TextBulletListLtr24Filled></TextBulletListLtr24Filled></NIcon>
-        </button>
-        <button
-          type="button"
-          :class="{ 'is-active': editor.isActive('orderedList') }"
-          @click="editor.chain().focus().toggleOrderedList().run()"
-        >
-          <NIcon><TextNumberListLtr20Filled></TextNumberListLtr20Filled></NIcon>
-        </button>
-        <button
-          type="button"
-          :class="{ 'is-active': editor.isActive('blockquote') }"
-          @click="editor.chain().focus().toggleBlockquote().run()"
-        >
-          <NIcon><TextQuote20Filled></TextQuote20Filled></NIcon>
-        </button>
-        <button
-          type="button"
-          @click="editor.chain().focus().setHorizontalRule().run()"
-        >
-          <NIcon><LineHorizontal120Regular></LineHorizontal120Regular></NIcon>
-        </button>
-      </div>
-      <div>
-        <button type="button" @click="editor.chain().focus().undo().run()">
-          <NIcon><ArrowUndo20Filled></ArrowUndo20Filled></NIcon>
-        </button>
-        <button type="button" @click="editor.chain().focus().redo().run()">
-          <NIcon><ArrowRedo20Filled></ArrowRedo20Filled></NIcon>
-        </button>
-        <button
-          type="button"
-          @click="editor.chain().focus().unsetAllMarks().run()"
-        >
-          <NIcon><ClearFormatting20Filled></ClearFormatting20Filled></NIcon>
-        </button>
-      </div>
+      <button
+        type="button"
+        :class="{ 'is-active': editor.isActive('italic') }"
+        @click="editor?.chain().focus().toggleItalic().run()"
+      >
+        <NIcon><TextItalic20Regular></TextItalic20Regular></NIcon>
+      </button>
+      <!-- <button @click="editor.chain().focus().clearNodes().run()">clear nodes</button> -->
+      <button
+        type="button"
+        :class="{ 'is-active': editor.isActive('link') }"
+        @click="getLinkAndModal"
+      >
+        <NIcon><Link20Regular></Link20Regular></NIcon>
+      </button>
+      <button
+        type="button"
+        :disabled="!editor.isActive('link')"
+        @click="editor?.chain().focus().unsetLink().run()"
+      >
+        <NIcon><LinkDismiss20Filled></LinkDismiss20Filled></NIcon>
+      </button>
+      <button
+        type="button"
+        :class="{ 'is-active': editor.isActive('paragraph') }"
+        @click="editor?.chain().focus().setParagraph().run()"
+      >
+        P
+      </button>
+      <button
+        type="button"
+        :class="{ 'is-active': editor.isActive('heading', { level: 1 }) }"
+        @click="editor?.chain().focus().toggleHeading({ level: 1 }).run()"
+      >
+        H1
+      </button>
+      <button
+        type="button"
+        :class="{ 'is-active': editor.isActive('heading', { level: 2 }) }"
+        @click="editor?.chain().focus().toggleHeading({ level: 2 }).run()"
+      >
+        H2
+      </button>
+      <button
+        type="button"
+        :class="{ 'is-active': editor.isActive('heading', { level: 3 }) }"
+        @click="editor?.chain().focus().toggleHeading({ level: 3 }).run()"
+      >
+        H3
+      </button>
+      <button
+        type="button"
+        :class="{ 'is-active': editor.isActive('bulletList') }"
+        @click="editor?.chain().focus().toggleBulletList().run()"
+      >
+        <NIcon><TextBulletListLtr24Filled></TextBulletListLtr24Filled></NIcon>
+      </button>
+      <button
+        type="button"
+        :class="{ 'is-active': editor.isActive('orderedList') }"
+        @click="editor?.chain().focus().toggleOrderedList().run()"
+      >
+        <NIcon><TextNumberListLtr20Filled></TextNumberListLtr20Filled></NIcon>
+      </button>
+      <!-- <button
+        type="button"
+        :class="{ 'is-active': editor.isActive('blockquote') }"
+        @click="editor?.chain().focus().toggleBlockquote().run()"
+      >
+        <NIcon><TextQuote20Filled></TextQuote20Filled></NIcon>
+      </button> -->
+      <button
+        type="button"
+        @click="editor?.chain().focus().setHorizontalRule().run()"
+      >
+        <NIcon><LineHorizontal120Regular></LineHorizontal120Regular></NIcon>
+      </button>
+      <!-- </div> -->
+      <!-- <div> -->
+      <button type="button" @click="editor?.chain().focus().undo().run()">
+        <NIcon><ArrowUndo20Filled></ArrowUndo20Filled></NIcon>
+      </button>
+      <button type="button" @click="editor?.chain().focus().redo().run()">
+        <NIcon><ArrowRedo20Filled></ArrowRedo20Filled></NIcon>
+      </button>
+      <button
+        type="button"
+        @click="editor?.chain().focus().unsetAllMarks().run()"
+      >
+        <NIcon><ClearFormatting20Filled></ClearFormatting20Filled></NIcon>
+      </button>
+      <!-- </div> -->
       <!-- <button
         @click="editor.chain().focus().toggleCodeBlock().run()"
         :class="{ 'is-active': editor.isActive('codeBlock') }"
@@ -120,12 +122,12 @@
     </div>
 
     <EditorContent
-      class="mt-2 shadow-xl px-2 py-8 rounded-lg overflow-y-auto h-fit max-h-[40rem]"
       :editor="editor"
+      class="min-h-[12em] rounded-b-lg border-vusa-yellow/50 bg-stone-50/40 shadow-inner"
     />
   </div>
   <NModal v-model:show="showFileModal">
-    <div class="bg-white p-4 rounded-sm w-1/2">
+    <div class="w-1/2 rounded-sm bg-white p-4">
       <NTabs class="" type="line" animated>
         <NTabPane name="link" tab="Pridėti nuorodą">
           <NInput v-model:value="previousUrl"></NInput>
@@ -186,7 +188,7 @@
   </NModal>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {
   ArrowRedo20Filled,
   ArrowUndo20Filled,
@@ -198,7 +200,7 @@ import {
   TextBulletListLtr24Filled,
   TextItalic20Regular,
   TextNumberListLtr20Filled,
-  TextQuote20Filled,
+  // TextQuote20Filled,
 } from "@vicons/fluent";
 import { EditorContent, useEditor } from "@tiptap/vue-3";
 import { Inertia } from "@inertiajs/inertia";
@@ -212,15 +214,17 @@ import {
   NTabs,
   createDiscreteApi,
 } from "naive-ui";
+import { debounce } from "lodash";
 import { onBeforeUnmount, ref } from "vue";
 import Image from "@tiptap/extension-image";
 import StarterKit from "@tiptap/starter-kit";
 import TipTapLink from "@tiptap/extension-link";
+import route from "ziggy-js";
 
-const props = defineProps({
-  modelValue: String,
-  searchFiles: Object,
-});
+const props = defineProps<{
+  modelValue: string;
+  searchFiles: Record<string, unknown>;
+}>();
 
 const emit = defineEmits(["update:modelValue"]);
 
@@ -228,22 +232,13 @@ const showFileModal = ref(false);
 const previousUrl = ref("");
 const files = ref([]);
 const modelValue = ref(props.modelValue);
-// const searchFiles = ref(props.searchFiles);
-
-const addImage = () => {
-  const url = window.prompt("URL");
-
-  if (url) {
-    editor.chain().focus().setImage({ src: url }).run();
-  }
-};
 
 const getLinkAndModal = () => {
-  previousUrl.value = editor.value.getAttributes("link").href;
+  previousUrl.value = editor.value?.getAttributes("link").href;
   showFileModal.value = true;
 };
 
-const getFiles = _.debounce((query) => {
+const getFiles = debounce((query) => {
   if (query.length > 2) {
     message.loading("Ieškoma...");
     Inertia.post(
@@ -258,7 +253,7 @@ const getFiles = _.debounce((query) => {
         preserveScroll: true,
         onSuccess: () => {
           message.success("Pabaigta.");
-          let searchFiles = Object.values(props.searchFiles);
+          const searchFiles = Object.values(props.searchFiles);
           console.log(searchFiles);
           files.value = searchFiles.map((file) => ({
             // get the file name from the url
@@ -271,7 +266,7 @@ const getFiles = _.debounce((query) => {
   }
 }, 500);
 
-const getImages = _.debounce((query) => {
+const getImages = debounce((query) => {
   if (query.length > 2) {
     message.loading("Ieškoma...");
     Inertia.post(
@@ -286,7 +281,7 @@ const getImages = _.debounce((query) => {
         preserveScroll: true,
         onSuccess: () => {
           message.success("Pabaigta.");
-          let searchFiles = Object.values(props.searchFiles);
+          const searchFiles = Object.values(props.searchFiles);
           console.log(searchFiles);
           files.value = searchFiles.map((file) => ({
             // get the file name from the url
@@ -304,7 +299,7 @@ const getImages = _.debounce((query) => {
 const updateLink = () => {
   const url = previousUrl.value;
   editor.value
-    .chain()
+    ?.chain()
     .focus()
     .extendMarkRange("link")
     .setLink({ href: url })
@@ -314,14 +309,14 @@ const updateLink = () => {
 
 const placeImage = () => {
   const url = previousUrl.value;
-  editor.value.chain().focus().setImage({ src: url }).run();
+  editor.value?.chain().focus().setImage({ src: url }).run();
   showFileModal.value = false;
 };
 
 const editor = useEditor({
   editorProps: {
     attributes: {
-      class: "prose prose-sm sm:prose m-5 focus:outline-none mt-24",
+      class: "prose-sm sm:prose focus:outline-none p-4 h-full",
     },
   },
   extensions: [
@@ -331,16 +326,16 @@ const editor = useEditor({
       openOnClick: false,
     }),
   ],
-  content: modelValue,
+  content: modelValue.value,
   onUpdate: () => {
     // HTML
     // console.log(editor);
-    emit("update:modelValue", editor.value.getHTML());
+    emit("update:modelValue", editor.value?.getHTML());
   },
 });
 
 onBeforeUnmount(() => {
-  editor.value.destroy();
+  editor.value?.destroy();
 });
 
 // must be called after everything
@@ -419,6 +414,11 @@ button {
   cursor: pointer;
   font-size: 1rem;
   transition: all 0.2s ease-in-out;
+  width: 2rem;
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 button:hover {
@@ -435,26 +435,4 @@ img {
   max-width: 100%;
   height: auto;
 }
-
-/* .bubble-menu {
-  display: flex;
-  background-color: #0D0D0D;
-  padding: 0.2rem;
-  border-radius: 0.5rem;
-
-  button {
-    border: none;
-    background: none;
-    color: #FFF;
-    font-size: 0.85rem;
-    font-weight: 500;
-    padding: 0 0.2rem;
-    opacity: 0.6;
-
-    &:hover,
-    &.is-active {
-      opacity: 1;
-    }
-  }
-} */
 </style>

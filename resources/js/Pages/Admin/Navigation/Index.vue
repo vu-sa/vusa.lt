@@ -1,9 +1,9 @@
 <template>
   <AdminLayout title="Navigacija">
-    <template #aside-header>
+    <!-- <template #aside-header>
       <AsideHeader></AsideHeader>
-    </template>
-    <div class="main-card under">
+    </template> -->
+    <div class="main-card">
       <NTree
         block-line
         :data="data"
@@ -16,7 +16,7 @@
         @update:expanded-keys="handleExpandedKeysChange"
       />
       <div
-        class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center mt-4"
+        class="mt-4 flex items-center justify-end md:col-start-2 lg:col-span-2 lg:col-start-3"
       >
         <n-popconfirm @positive-click="updateModel()">
           <template #trigger>
@@ -31,7 +31,7 @@
   </AdminLayout>
 </template>
 
-<script setup>
+<script setup lang="ts">
 // import { Edit16Regular } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
@@ -44,12 +44,13 @@ import {
   // createDiscreteApi,
 } from "naive-ui";
 import { h, ref } from "vue";
-import AdminLayout from "@/Layouts/AdminLayout.vue";
-import AsideHeader from "./AsideHeader.vue";
+import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+// import AsideHeader from "./AsideHeader.vue";
+import route from "ziggy-js";
 
-const props = defineProps({
-  navigation: Array,
-});
+const props = defineProps<{
+  navigation: App.Models.Navigation;
+}>();
 
 const parseNavigation = (array, id) => {
   const result = [];
@@ -99,6 +100,7 @@ const showSpin = ref(false);
 
 //////////////////////
 // Drag and drop START
+// I don't understand how this works
 function findSiblingsAndIndex(node, nodes) {
   if (!nodes) return [null, null];
   for (let i = 0; i < nodes.length; ++i) {

@@ -1,7 +1,7 @@
 <template>
   <Link
     :href="route(menuButtonIndex)"
-    class="block p-2 md:p-3 hover:bg-gray-100 last:hover:rounded-b-xl duration-200 w-full"
+    class="block w-full p-2 duration-200 hover:bg-stone-100 last:hover:rounded-b-xl md:p-3"
     :class="
       isCurrentRoute
         ? ['stroke-red-800', 'text-red-800', 'hover:text-red-900']
@@ -20,28 +20,30 @@
   </Link>
 </template>
 
-<script setup>
-import { Link, usePage } from "@inertiajs/inertia-vue3";
+<script setup lang="ts">
+import { Link } from "@inertiajs/inertia-vue3";
 import { NIcon } from "naive-ui";
-import { computed, ref } from "vue";
+import { computed } from "vue";
+import { replace } from "lodash";
+import route from "ziggy-js";
 
-const props = defineProps(["menuContent"]);
+const props = defineProps<{ menuContent: string[] }>();
+
+// This chooses the first element in the array as the default route for the button
 
 const menuButtonIndex = computed(() => {
-  return _.replace(props.menuContent[0], "*", "index");
+  return replace(props.menuContent[0], "*", "index");
 });
 
-const isCurrentRoute = computed(() => {
-  let value = false;
+/**
+ * This checks for the route in a array of routes, given in the AdminLayout.vue
+ * If an route in the array is current route, then the button is active and stylized
+ */
 
-  while (!value) {
-    props.menuContent.forEach((routeValue) => {
-      value = route().current(routeValue) || value;
-      if (value) {
-        return;
-      }
-    });
-    return value;
-  }
+const isCurrentRoute = computed(() => {
+  // check props menucontent for current route
+  return props.menuContent.some((routeValue) => {
+    return route().current(routeValue);
+  });
 });
 </script>

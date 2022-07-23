@@ -75,7 +75,7 @@ return [
     ],
     'string'               => 'The :attribute must be a string.',
     'timezone'             => 'The :attribute must be a valid zone.',
-    'unique'               => 'The :attribute has already been taken.',
+    'unique'               => ':attribute jau naudojama. Pasirinkite / įrašykite kitą reikšmę.',
     'url'                  => 'The :attribute format is invalid.',
 
     /*
@@ -110,8 +110,17 @@ return [
         'email' => 'El. paštas',
         'first_name' => 'Vardas',
         'last_name' => 'Pavardė',
-        'name' => 'Pavadinimas',
+        'name' => 'Vardas ir pavardė (arba pavadinimas)',
         'password' => 'Slaptažodis',
+        'short_name' => 'Trumpas pavadinimas',
+        'padalinys_id' => 'Padalinys',
+        'alias' => 'Techninė žymė',
+        'link' => 'Nuoroda',
+        'link_url' => 'Nuoroda',
+        'title' => 'Pavadinimas',
+        'text' => 'Tekstas',
+        'image' => 'Paveikslėlis',
+        'image_url' => 'Paveikslėlio nuoroda',
+        'duties' => 'Pareigybės laukelis'
     ],
-
 ];

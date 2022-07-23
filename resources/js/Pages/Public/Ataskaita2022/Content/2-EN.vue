@@ -935,18 +935,12 @@
   </VUSA>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { Link } from "@inertiajs/inertia-vue3";
-import {
-  NAnchor,
-  NAnchorLink,
-  NButton,
-  NCollapse,
-  NCollapseItem,
-  NDivider,
-  NModal,
-} from "naive-ui";
+import { NButton, NCollapse, NCollapseItem, NDivider, NModal } from "naive-ui";
 import { ref } from "vue";
+import route from "ziggy-js";
+
 import VUSA from "../2-VU-SA.vue";
 
 const showTaryba = ref(false);

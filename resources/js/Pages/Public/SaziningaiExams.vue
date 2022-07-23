@@ -1,7 +1,7 @@
 <template>
   <PublicLayout title="Programos „Sąžiningai“ užregistruoti egzaminai">
     <!-- <PageArticle> -->
-    <div class="pt-8 px-8 lg:px-16 last:pb-2">
+    <div class="px-8 pt-8 last:pb-2 lg:px-16">
       <h1>Programos „Sąžiningai“ užregistruoti egzaminai</h1>
       <p class="my-4">Registruotis reikia į kiekvieną srautą atskirai.</p>
       <div class="main-card">
@@ -25,7 +25,7 @@
       aria-modal="true"
       class="prose"
     >
-      <p class="font-bold mb-4">
+      <p class="mb-4 font-bold">
         Atsiskaitymų stebėjimui savo padalinyje studentai negali registruotis.
       </p>
       <NForm
@@ -55,62 +55,67 @@
           />
         </NFormItem>
         <NFormItem path="acceptGDPR"
-          ><NCheckbox
-            v-model:checked="formValue.acceptGDPR"
-            :label="labelGDPR"
-          ></NCheckbox
-        ></NFormItem>
+          ><NCheckbox v-model:checked="formValue.acceptGDPR"
+            >Susipažinau su
+            <a
+              target="_blank"
+              href="https://vusa.lt/uploads/Dokumentų šablonai/Asmens_duomenu_tvarkymo_VUSA_tvarkos_aprasas.pdf"
+              @click.stop
+              >Asmens duomenų tvarkymo Vilniaus universiteto Studentų
+              atstovybėje tvarkos aprašu</a
+            >
+            ir sutinku</NCheckbox
+          ></NFormItem
+        >
         <NFormItem path="acceptDataManagement">
-          <NCheckbox
-            v-model:checked="formValue.acceptDataManagement"
-            :label="labelAcceptDataManagement"
-          ></NCheckbox>
+          <NCheckbox v-model:checked="formValue.acceptDataManagement"
+            >Sutinku, kad mano pateikti asmens duomenys būtų tvarkomi vidaus
+            administravimo tikslu pagal Asmens duomenų tvarkymo Vilniaus
+            universiteto Studentų atstovybėje tvarkos aprašą</NCheckbox
+          >
         </NFormItem>
         <NFormItem>
-          <FormSubmitButton
-            submit-route="saziningaiExamObserver.store"
-            :form-ref="formRef"
-            :form-value="formValue"
-            @reset-form="resetForm"
-          >
+          <NButton type="primary" @click="handleValidateClick">
             Pateikti
-          </FormSubmitButton>
+          </NButton>
         </NFormItem>
       </NForm>
     </NCard>
   </NModal>
 </template>
 
-<script setup>
-import { Inertia } from "@inertiajs/inertia";
+<script setup lang="ts">
 import {
+  FormInst,
+  FormValidationError,
   NButton,
   NCard,
   NCheckbox,
   NDataTable,
-  NDatePicker,
-  NDynamicInput,
   NForm,
   NFormItem,
   NInput,
-  NInputNumber,
   NModal,
   NSelect,
+  createDiscreteApi,
 } from "naive-ui";
+import { Inertia } from "@inertiajs/inertia";
 import { h, ref } from "vue";
-import FormSubmitButton from "@/Components/Public/FormSubmitButton.vue";
-import PageArticle from "../../Components/Public/PageArticle.vue";
-import PublicLayout from "@/Layouts/PublicLayout.vue";
+import { useForm } from "@inertiajs/inertia-vue3";
+import route from "ziggy-js";
 
-const props = defineProps({
-  padaliniaiOptions: Array,
-  saziningaiExamFlows: Array,
-});
+import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
+
+const props = defineProps<{
+  padaliniaiOptions: App.Models.Padalinys[];
+  saziningaiExamFlows: App.Models.SaziningaiExamFlow[];
+}>();
 
 // const { message } = createDiscreteApi(["message"]);
 const showModal = ref(false);
-const formRef = ref(null);
-const formValue = ref({
+const formRef = ref<FormInst | null>(null);
+
+const formBlueprint = {
   name: null,
   email: null,
   phone: null,
@@ -120,26 +125,8 @@ const formValue = ref({
   padalinys_id: null,
   acceptGDPR: false,
   acceptDataManagement: false,
-});
-
-const labelGDPR = h("label", {}, [
-  "Susipažinau su ",
-  h(
-    "a",
-    {
-      target: "_blank",
-      href: "https://vusa.lt/uploads/Dokumentų šablonai/Asmens_duomenu_tvarkymo_VUSA_tvarkos_aprasas.pdf",
-    },
-    "Asmens duomenų tvarkymo Vilniaus universiteto Studentų atstovybėje tvarkos aprašu"
-  ),
-  " ir sutinku.",
-]);
-
-const labelAcceptDataManagement = h(
-  "label",
-  {},
-  "Sutinku, kad mano pateikti asmens duomenys būtų tvarkomi vidaus administravimo tikslu pagal Asmens duomenų tvarkymo Vilniaus universiteto Studentų atstovybėje tvarkos aprašą."
-);
+};
+const formValue = useForm("SaziningaiFlowObserver", formBlueprint);
 
 const rules = {
   name: {
@@ -210,9 +197,9 @@ const createColumns = () => {
           NButton,
           {
             onClick: () => {
-              formValue.value.flow = row.key;
-              formValue.value.exam_name = row.exam.subject_name;
-              formValue.value.start_time = row.start_time;
+              formValue.flow = row.key;
+              formValue.exam_name = row.exam.subject_name;
+              formValue.start_time = row.start_time;
               showModal.value = true;
             },
             size: "small",
@@ -282,6 +269,7 @@ const createColumns = () => {
 };
 
 const columns = ref(createColumns());
+const { message } = createDiscreteApi(["message"]);
 
 // map padaliniaiOptions to options for NSelect
 const padaliniaiOptions = props.padaliniaiOptions.map((padalinys) => ({
@@ -289,29 +277,22 @@ const padaliniaiOptions = props.padaliniaiOptions.map((padalinys) => ({
   label: padalinys.shortname_vu,
 }));
 
-const handleValidateClick = (e) => {
+const handleValidateClick = (e: MouseEvent) => {
   e.preventDefault();
-  formRef.value?.validate((errors) => {
+  formRef.value?.validate((errors: Array<FormValidationError> | undefined) => {
     if (!errors) {
-      Inertia.post(route("saziningaiExamObserver.store"), formValue.value, {
+      Inertia.post(route("saziningaiExamObserver.store"), formValue, {
         onSuccess: () => {
-          showModal.value = false;
           message.success(
-            `Ačiū už užsiregistravimą stebėti „${formValue.value.exam_name}“!`
+            `Ačiū už užregistravimą stebėtį „${formValue.exam_name}“ atsiskaitymą!`
           );
-          Object.keys(formValue.value).forEach(
-            (i) => (formValue.value[i] = null)
-          );
+          showModal.value = false;
+          formValue.reset();
         },
       });
     } else {
-      // console.log(errors);
       message.error("Užpildykite visus laukelius.");
     }
   });
-};
-
-const resetForm = () => {
-  Object.keys(formValue.value).forEach((i) => (formValue.value[i] = null));
 };
 </script>

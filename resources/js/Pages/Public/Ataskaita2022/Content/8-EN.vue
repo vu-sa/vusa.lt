@@ -71,11 +71,14 @@
       <strong>The text was translated by:</strong>
       <p>Justė Vardauskaitė</p>
 
-      <strong>The report uses photos by Andranik Karagezian and Gabija Raubaitė.</strong>
+      <strong
+        >The report uses photos by Andranik Karagezian and Gabija
+        Raubaitė.</strong
+      >
     </div>
   </Padeka>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import Padeka from "../8-Padeka.vue";
 </script>

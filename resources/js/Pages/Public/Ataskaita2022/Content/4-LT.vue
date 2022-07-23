@@ -1611,7 +1611,7 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
   </Studijos>
 </template>
 
-<script setup>
+<script setup lang=ts>
 import Studijos from "../4-Studijos.vue";
 import { NDivider, NCollapse, NCollapseItem } from "naive-ui";
 </script>

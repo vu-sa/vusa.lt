@@ -1,23 +1,23 @@
 {
-	"compilerOptions": {
-		"outDir": "dist",
-		"types": [
-			"naive-ui/volar",
-			"@types/ziggy-js"
-		],
-		"paths": {
-			"@/*": [
-				"./resources/js/*"
-			],
-			"ziggy": [
-				"./vendor/tightenco/ziggy/dist/vue"
-			]
-		},
-		"allowJs": true,
-		// "checkJs": true
-	},
-	"exclude": [
-		"./node_modules/**/*",
-		"./public/**/*"
-	]
+  "compilerOptions": {
+    "outDir": "dist",
+    "target": "ES2017",
+    "module": "ES2022",
+    "strict": true,
+    "moduleResolution": "Node",
+    "allowJs": false,
+    "jsx": "preserve",
+    "paths": {
+      "@/*": ["./resources/js/*"],
+      "ziggy": ["./vendor/tightenco/ziggy/dist"]
+    },
+    "types": ["vite/client"],
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "isolatedModules": true
+  },
+  "exclude": ["./node_modules/**/*", "./public/**/*", "**/*.stories.ts"]
 }

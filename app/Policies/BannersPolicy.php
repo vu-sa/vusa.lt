@@ -25,7 +25,7 @@ class BannersPolicy
      */
     public function viewAny(User $user)
     {
-        //
+        return $user->isAdminOrSuperAdmin();
     }
 
     /**
@@ -48,7 +48,7 @@ class BannersPolicy
      */
     public function create(User $user)
     {
-        //
+        return $user->isAdminOrSuperAdmin();
     }
 
     /**
@@ -60,7 +60,7 @@ class BannersPolicy
      */
     public function update(User $user, Banner $banner)
     {
-        //
+        return $user->padalinys()->id == $banner->padalinys->id;
     }
 
     /**
@@ -72,7 +72,7 @@ class BannersPolicy
      */
     public function delete(User $user, Banner $banner)
     {
-        //
+        return $user->padalinys()->id == $banner->padalinys->id;
     }
 
     /**

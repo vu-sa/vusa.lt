@@ -11,6 +11,7 @@ use App\Models\Duty;
 use App\Http\Controllers\Controller as Controller;
 use App\Models\Role;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
@@ -52,7 +53,7 @@ class UserController extends Controller
 
         // dd($users, $usersGet);
 
-        return Inertia::render('Admin/Contacts/Users/Index', [
+        return Inertia::render('Admin/Contacts/IndexUsers', [
             'users' => $users,
         ]);
     }
@@ -65,7 +66,7 @@ class UserController extends Controller
     public function create()
     {
         //
-        return Inertia::render('Admin/Contacts/Users/Create', [
+        return Inertia::render('Admin/Contacts/CreateUser', [
             'roles' => Role::all(),
         ]);
     }
@@ -80,29 +81,30 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => 'required',
-            'email' => 'email|unique:users|unique:duties',
+            'duties' => 'required',
+            'email' => 'required|unique:users|unique:duties',
         ]);
 
-        // dd($request->all());
+        DB::transaction(function () use ($request) {
+            $user = new User();
 
-        $user = new User();
+            $user->name = $request->name;
+            $user->email = $request->email;
+            $user->phone = $request->phone;
+            $user->role_id = $request->role_id;
+            $user->profile_photo_path = $request->profile_photo_path;
 
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->phone = $request->phone;
-        $user->role_id = $request->role_id;
-        $user->profile_photo_path = $request->profile_photo_path;
-
-        $user->save();
-
-        if (User::find(Auth::user()->id)->isAdmin()) {
-            $user->role_id = $request->role['id'];
             $user->save();
-        }
 
-        foreach ($request->duties as $duty) {
-            $user->duties()->attach($duty);
-        }
+            if (User::find(Auth::user()->id)->isAdmin()) {
+                $user->role_id = $request->role['id'];
+                $user->save();
+            }
+
+            foreach ($request->duties as $duty) {
+                $user->duties()->attach($duty);
+            }
+        });
 
         return redirect()->route('users.index');
     }
@@ -126,7 +128,7 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        return Inertia::render('Admin/Contacts/Users/Edit', [
+        return Inertia::render('Admin/Contacts/EditUser', [
             'contact' => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -136,6 +138,7 @@ class UserController extends Controller
                 'duties' => $user->duties->map(function ($duty) {
                     return [
                         'id' => $duty->id,
+                        'email' => $duty->email,
                         'name' => $duty->name,
                         'institution' => $duty->institution,
                     ];
@@ -155,29 +158,37 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        $request->validate([
+            'name' => 'required',
+            'email' => 'required|unique:users',
+        ]);
+        
+        DB::transaction(function () use ($request, $user) {
+            // dd($request->all());
 
-        $user->update($request->only('name', 'email', 'phone', 'profile_photo_path'));
+            $user->update($request->only('name', 'email', 'phone', 'profile_photo_path'));
 
-        if (User::find(Auth::user()->id)->isAdmin()) {
+            if (User::find(Auth::user()->id)->isAdmin()) {
 
-            // if admin, they can edit role. but not everyone has a role assigned and sometimes it lead to a bug, 
-            // this automatically assigned a least permissive role
-            $role = $request->role !== [] ? $request->role : ['id' => Role::where('alias', 'naudotojai')->first()->id];
+                // if admin, they can edit role. but not everyone has a role assigned and sometimes it lead to a bug, 
+                // this automatically assigned a least permissive role
+                $role = $request->role !== [] ? $request->role : ['id' => Role::where('alias', 'naudotojai')->first()->id];
 
-            $user->role_id = $role['id'];
-            $user->save();
-            // TODO: role revamp with Spatie permissions or smth
-        }
+                $user->role_id = $role['id'];
+                $user->save();
+                // TODO: role revamp with Spatie permissions or smth
+            }
 
-        // get all user duties and delete all of them
-        $user->duties()->detach();
+            // get all user duties and delete all of them
+            $user->duties()->detach();
 
-        // dd($user->duties);
+            // dd($user->duties);
 
-        // add new roles
-        foreach ($request->duties as $duty) {
-            $user->duties()->attach($duty);
-        }
+            // add new roles
+            foreach ($request->duties as $duty) {
+                $user->duties()->attach($duty);
+            }
+        });
 
         return redirect()->back();
     }
@@ -190,7 +201,11 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        //
+        //cuser 
+        $user->duties()->detach();
+        $user->delete();
+
+        return redirect()->route('users.index');
     }
 
     public function detachFromDuty(User $user, Duty $duty)

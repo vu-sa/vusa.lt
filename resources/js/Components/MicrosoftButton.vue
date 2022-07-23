@@ -2,17 +2,18 @@
   <NButton :loading="loadingRef" type="warning" @click="microsoftRedirect">
     <template #icon>
       <NIcon>
-        <Microsoft />
+        <MicrosoftIcon />
       </NIcon>
     </template>
     Tęsti su Microsoft
   </NButton>
 </template>
 
-<script setup>
-import { Microsoft } from "@vicons/fa";
+<script setup lang="ts">
+import { Microsoft as MicrosoftIcon } from "@vicons/fa";
 import { NButton, NIcon } from "naive-ui";
 import { ref } from "vue";
+import route from "ziggy-js";
 
 const loadingRef = ref(false);
 

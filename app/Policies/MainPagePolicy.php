@@ -25,7 +25,7 @@ class MainPagePolicy
      */
     public function viewAny(User $user)
     {
-        //
+        return $user->isAdminOrSuperAdmin();
     }
 
     /**
@@ -48,7 +48,7 @@ class MainPagePolicy
      */
     public function create(User $user)
     {
-        //
+        return $user->isAdminOrSuperAdmin();
     }
 
     /**
@@ -60,7 +60,7 @@ class MainPagePolicy
      */
     public function update(User $user, MainPage $mainPage)
     {
-        //
+        return $user->padalinys()->id == $mainPage->padalinys->id;
     }
 
     /**
@@ -72,7 +72,7 @@ class MainPagePolicy
      */
     public function delete(User $user, MainPage $mainPage)
     {
-        //
+        return $user->padalinys()->id == $mainPage->padalinys->id;
     }
 
     /**

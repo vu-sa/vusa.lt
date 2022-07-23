@@ -1957,7 +1957,7 @@
   </Sritys>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { NButton, NModal } from "naive-ui";
 import { ref } from "vue";
 import Sritys from "../7-Sritys.vue";

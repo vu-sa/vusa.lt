@@ -20,11 +20,14 @@
         "laravel/tinker": "^2.7",
         "laravel/ui": "^3.0",
         "socialiteproviders/microsoft": "^4.1",
+        "spatie/laravel-collection-macros": "^7.11",
         "spatie/laravel-feed": "^4.1",
         "spatie/laravel-google-fonts": "^1.2",
         "tightenco/ziggy": "^1.0"
     },
     "require-dev": {
+        "barryvdh/laravel-debugbar": "^3.7",
+        "based/laravel-typescript": "^0.0.3",
         "fakerphp/faker": "^1.9.1",
         "kitloong/laravel-migrations-generator": "^6.2",
         "laravel/sail": "^1.12",

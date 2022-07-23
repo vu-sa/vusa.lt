@@ -72,7 +72,7 @@ class NewsPolicy
      */
     public function delete(User $user, News $news)
     {
-        //
+        return $user->padalinys()->id == $news->padalinys->id;
     }
 
     /**

@@ -28,10 +28,10 @@ class DutyInstitutionController extends Controller
             $query->where('padalinys_id', '=', request()->user()->padalinys()->id);
         })->when(!is_null($search), function ($query) use ($search) {
             $query->where('name', 'like', "%{$search}%")->orWhere('short_name', 'like', "%{$search}%")->orWhere('alias', 'like', "%{$search}%");
-        })->get();
+        })->paginate(20);
 
 
-        return Inertia::render('Admin/Contacts/Institutions/Index', [
+        return Inertia::render('Admin/Contacts/IndexDutyInstitutions', [
             'dutyInstitutions' => $dutyInstitutions,
         ]);
     }
@@ -43,7 +43,14 @@ class DutyInstitutionController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('Admin/Contacts/CreateDutyInstitution', [
+            'padaliniai' => Padalinys::orderBy('shortname_vu')->get()->map(function ($padalinys) {
+                return [
+                    'id' => $padalinys->id,
+                    'shortname' => $padalinys->shortname,
+                ];
+            }),
+        ]);
     }
 
     /**
@@ -54,7 +61,23 @@ class DutyInstitutionController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // validate
+        $request->validate([
+            'name' => 'required',
+            'short_name' => 'required',
+            'alias' => 'required',
+            'padalinys_id' => 'required',
+        ]);
+
+        // create
+        $dutyInstitution = new DutyInstitution();
+        $dutyInstitution->name = $request->name;
+        $dutyInstitution->short_name = $request->short_name;
+        $dutyInstitution->alias = $request->alias;
+        $dutyInstitution->padalinys_id = $request->padalinys_id;
+        $dutyInstitution->save();
+
+        return redirect()->route('dutyInstitutions.index');
     }
 
     /**
@@ -78,7 +101,7 @@ class DutyInstitutionController extends Controller
     {
         // dd($dutyInstitution);
 
-        return Inertia::render('Admin/Contacts/Institutions/Edit', [
+        return Inertia::render('Admin/Contacts/EditDutyInstitution', [
             'dutyInstitution' => $dutyInstitution,
             'duties' => $dutyInstitution->duties,
             'padaliniai' => Padalinys::orderBy('shortname_vu')->get()->map(function ($padalinys) {
@@ -99,6 +122,14 @@ class DutyInstitutionController extends Controller
      */
     public function update(Request $request, DutyInstitution $dutyInstitution)
     {
+        // validate
+        $request->validate([
+            'name' => 'required',
+            'short_name' => 'required',
+            'alias' => 'required|unique:duties_institutions,alias',
+            'padalinys_id' => 'required',
+        ]);
+        
         // TODO: short_name and shortname are used as columns in some tables. Need to make the same name.
         $dutyInstitution->update($request->only('name', 'short_name', 'description', 'padalinys_id'));
 

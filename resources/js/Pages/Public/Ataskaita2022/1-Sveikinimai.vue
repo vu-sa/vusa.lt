@@ -1,16 +1,18 @@
 <template>
   <AtaskaitaLayout
-    :backgroundImage="'/images/photos/observatorijos_kiemelis.jpg'"
+    :background-image="'/images/photos/observatorijos_kiemelis.jpg'"
     :title="'Sveikinimo žodžiai | Ataskaita 2022'"
   >
-    <article class="grid grid-cols-5 justify-items-center px-8 lg:px-32 gap-y-4">
+    <article
+      class="grid grid-cols-5 justify-items-center gap-y-4 px-8 lg:px-32"
+    >
       <slot></slot>
       <div class="hidden md:block">
         <NButton
-          @click="inertiaVisitOnClick('vu-sa')"
-          class="hidden md:block top-[50vh] h-fit"
+          class="top-[50vh] hidden h-fit md:block"
           text
           style="font-size: 60px; align-self: flex-start; position: sticky"
+          @click="inertiaVisitOnClick('vu-sa')"
           ><NIcon><ArrowCircleRight28Regular /></NIcon
         ></NButton>
       </div>
@@ -18,12 +20,15 @@
   </AtaskaitaLayout>
 </template>
 
-<script setup>
-import AtaskaitaLayout from "@/Layouts/AtaskaitaLayout.vue";
-import { NButton, NIcon } from "naive-ui";
-import { ArrowCircleLeft28Regular, ArrowCircleRight28Regular } from "@vicons/fluent";
+<script setup lang="ts">
+import {
+  ArrowCircleLeft28Regular,
+  ArrowCircleRight28Regular,
+} from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
+import { NButton, NIcon } from "naive-ui";
 import { usePage } from "@inertiajs/inertia-vue3";
+import AtaskaitaLayout from "@/Components/Public/Layouts/AtaskaitaLayout.vue";
 
 const inertiaVisitOnClick = (permalink) => {
   Inertia.visit(

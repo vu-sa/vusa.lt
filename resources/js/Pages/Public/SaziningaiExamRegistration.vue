@@ -12,9 +12,10 @@
           registracijos.
         </strong> -->
         <p>
-          Prašome atsiskaitymą registruoti likus bent 3 d.d. iki jo pradžios,
-          kad būtų laiku surasti stebėtojai. Kitu atveju, kreipkitės į
-          <a href="mailto:saziningai@vusa.lt">saziningai@vusa.lt</a>
+          Prašome registruoti atsiskaitymus, kurie vyks nuo
+          <strong>{{ date3DaysToFutureLT }}</strong> (bent 3 darbo dienos iki jo
+          pradžios), kad būtų laiku surasti stebėtojai. Kitu atveju, kreipkitės
+          į <a href="mailto:saziningai@vusa.lt">saziningai@vusa.lt</a> 🎓
         </p>
         <NForm
           ref="formRef"
@@ -24,37 +25,54 @@
           size="medium"
         >
           <NFormItem label="Vardas ir pavardė" path="name">
-            <NInput v-model:value="formValue.name" placeholder="" type="text" />
+            <NInput
+              v-model:value="formValue.name"
+              placeholder=""
+              type="text"
+              :input-props="{
+                autocomplete: 'name',
+              }"
+            />
           </NFormItem>
           <NFormItem label="El. paštas" path="email">
             <NInput
               v-model:value="formValue.email"
               placeholder=""
-              type="email"
+              :input-props="{ type: 'email' }"
             />
           </NFormItem>
           <NFormItem label="Telefono numeris" path="phone">
-            <NInput v-model:value="formValue.phone" placeholder="" type="tel" />
-          </NFormItem>
-          <NFormItem label="Atsiskaitymo pobūdis" path="type">
-            <NSelect
-              v-model:value="formValue.type"
-              :options="examTypes"
+            <NInput
+              v-model:value="formValue.phone"
               placeholder=""
+              :input-props="{ type: 'tel' }"
             />
           </NFormItem>
-          <NFormItem label="Atsiskaitymą laikančiųjų padalinys" path="unit">
+          <NFormItem label="Atsiskaitymo pobūdis" path="exam_type">
             <NSelect
-              v-model:value="formValue.unit"
+              v-model:value="formValue.exam_type"
+              :options="examTypes"
+              placeholder="Koliokviumas arba egzaminas"
+            />
+          </NFormItem>
+          <NFormItem
+            label="Atsiskaitymą laikančiųjų padalinys"
+            path="padalinys_id"
+          >
+            <NSelect
+              v-model:value="formValue.padalinys_id"
               :options="padaliniaiOptions"
-              placeholder=""
+              :placeholder="padalinysPlaceholder"
             />
           </NFormItem>
           <NFormItem
             label="Atsiskaitomo dalyko pavadinimas"
             path="subject_name"
           >
-            <NInput v-model:value="formValue.subject_name" placeholder="" />
+            <NInput
+              v-model:value="formValue.subject_name"
+              :placeholder="subjectNamePlaceholder"
+            />
           </NFormItem>
           <NFormItem
             label="Atsiskaitymo vieta: padalinys ir auditorija"
@@ -68,10 +86,10 @@
           </NFormItem>
           <NFormItem
             label="Atsiskaitymą laikančių studentų skaičius"
-            path="holders"
+            path="exam_holders"
           >
             <NInputNumber
-              v-model:value="formValue.holders"
+              v-model:value="formValue.exam_holders"
               :min="1"
               placeholder="30"
             />
@@ -86,21 +104,28 @@
               placeholder="3"
             />
           </NFormItem>
-          <NFormItem label="Atsiskaitymo srautai" path="flows">
+          <NFormItem
+            label="Atsiskaitymo srautai (pasirinkite iki 4)"
+            path="flows"
+          >
             <NDynamicInput
               v-model:value="formValue.flows"
               :min="1"
               :max="4"
-              :on-create="onCreate"
+              @create="onCreate"
             >
               <template #create-button-default> Pridėti srautą</template>
               <template #default="{ value }">
                 <NDatePicker
-                  v-model:formatted-value="value.time"
+                  v-model:formatted-value="value.start_time"
                   value-format="yyyy-MM-dd HH:mm"
+                  :first-day-of-week="0"
+                  :is-date-disabled="disableUnallowedDate"
+                  :format="'yyyy-MM-dd HH:mm'"
                   type="datetime"
                   placeholder="Pasirinkti srauto laiką..."
                   clearable
+                  :actions="['confirm']"
                 >
                 </NDatePicker>
               </template>
@@ -118,23 +143,40 @@
             />
           </NFormItem>
           <NFormItem path="acceptGDPR"
-            ><NCheckbox
-              v-model:checked="formValue.acceptGDPR"
-              :label="labelGDPR"
-            ></NCheckbox
-          ></NFormItem>
+            ><NCheckbox v-model:checked="formValue.acceptGDPR">
+              Susipažinau su
+              <a
+                target="_blank"
+                href="https://vusa.lt/uploads/Dokumentų šablonai/Asmens_duomenu_tvarkymo_VUSA_tvarkos_aprasas.pdf"
+                @click.stop
+                >Asmens duomenų tvarkymo Vilniaus universiteto Studentų
+                atstovybėje tvarkos aprašu</a
+              >
+              ir sutinku</NCheckbox
+            ></NFormItem
+          >
           <NFormItem path="acceptDataManagement">
-            <NCheckbox
-              v-model:checked="formValue.acceptDataManagement"
-              :label="labelAcceptDataManagement"
-            ></NCheckbox>
+            <NCheckbox v-model:checked="formValue.acceptDataManagement"
+              >Sutinku, kad mano pateikti asmens duomenys būtų tvarkomi vidaus
+              administravimo tikslu pagal Asmens duomenų tvarkymo Vilniaus
+              universiteto Studentų atstovybėje tvarkos aprašą</NCheckbox
+            >
           </NFormItem>
           <p>
-            Duomenų valdytojas yra Vilniaus universiteto Studentų atstovybė
-            (adresas: Universiteto g. 3, Observatorijos kiemelis, Vilnius,
-            tel.:, el. paštas: info@vusa.lt). Jūsų pateikti duomenys bus
-            naudojami susisiekti su jumis.
+            Duomenų valdytojas yra Vilniaus universiteto Studentų atstovybė.
           </p>
+          <ul>
+            <li>
+              Adresas: Universiteto g. 3, Observatorijos kiemelis, Vilnius,
+            </li>
+            <li>Telefono numeris: <a href="tel:852687144">+37052687144</a>,</li>
+            <li>
+              El. paštas:
+              <a href="mailto:info@vusa.lt">info@vusa.lt</a>
+            </li>
+          </ul>
+          <p>Jūsų pateikti duomenys bus naudojami susisiekti su jumis.</p>
+
           <p>
             Duomenų subjektas turi teisę susipažinti su savo asmens duomenimis,
             teisę reikalauti ištaisyti neteisingus, neišsamius, netikslius savo
@@ -143,25 +185,22 @@
             galite kreiptis į
             <a href="mailto:dap@vusa.lt">dap@vusa.lt</a>.
           </p>
-          <NFormItem>
-              <FormSubmitButton
-                submit-route="saziningaiExamRegistration.store"
-                :form-ref="formRef"
-                :form-value="formValue"
-                @reset-form="resetForm"
-              >
-                Pateikti
-              </FormSubmitButton>
-          </NFormItem>
+          <NButton type="primary" @click="handleValidateClick">
+            Pateikti
+          </NButton>
         </NForm>
       </div>
     </PageArticle>
   </PublicLayout>
 </template>
 
-<script setup>
-// import { Inertia } from "@inertiajs/inertia";
+<script setup lang="ts">
 import {
+  FormInst,
+  FormItemRule,
+  FormRules,
+  FormValidationError,
+  NButton,
   NCheckbox,
   NDatePicker,
   NDynamicInput,
@@ -170,69 +209,45 @@ import {
   NInput,
   NInputNumber,
   NSelect,
+  createDiscreteApi,
 } from "naive-ui";
-import { h, ref } from "vue";
-import { useRemember } from "@inertiajs/inertia-vue3";
-import FormSubmitButton from "@/Components/Public/FormSubmitButton.vue";
-import PageArticle from "../../Components/Public/PageArticle.vue";
-import PublicLayout from "@/Layouts/PublicLayout.vue";
+import { computed, ref } from "vue";
+import { useForm } from "@inertiajs/inertia-vue3";
 
-const props = defineProps({
-  padaliniaiOptions: Array,
-});
+import PageArticle from "@/Components/Public/PageArticle.vue";
+import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
 
-// const { message } = createDiscreteApi(["message"]);
-const formRef = ref(null);
+import { Inertia } from "@inertiajs/inertia";
+import route from "ziggy-js";
 
-const labelGDPR = h("label", {}, [
-  "Susipažinau su ",
-  h(
-    "a",
-    {
-      target: "_blank",
-      href: "https://vusa.lt/uploads/Dokumentų šablonai/Asmens_duomenu_tvarkymo_VUSA_tvarkos_aprasas.pdf",
-      onClick: (e) => {
-        e.stopPropagation();
-      },
-    },
-    "Asmens duomenų tvarkymo Vilniaus universiteto Studentų atstovybėje tvarkos aprašu"
-  ),
-  " ir sutinku.",
-]);
+const props = defineProps<{
+  padaliniaiOptions: Array<App.Models.Padalinys>;
+}>();
 
-const labelAcceptDataManagement = h(
-  "label",
-  {},
-  "Sutinku, kad mano pateikti asmens duomenys būtų tvarkomi vidaus administravimo tikslu pagal Asmens duomenų tvarkymo Vilniaus universiteto Studentų atstovybėje tvarkos aprašą."
-);
+// formRefs are needed by Naive UI
+const formRef = ref<FormInst | null>(null);
+const { message } = createDiscreteApi(["message"]);
 
-const resetForm = () => {
-  Object.keys(formValue.value).forEach((i) => (formValue.value[i] = null));
+const formBlueprint: SaziningaiExamForm = {
+  name: null,
+  email: null,
+  phone: null,
+  exam_type: null,
+  padalinys_id: null,
+  subject_name: null,
+  duration: null,
+  place: null,
+  exam_holders: null,
+  students_need: null,
+  flows: [],
+  acceptGDPR: false,
+  acceptDataManagement: false,
 };
 
-const formValue = useRemember(
-  ref({
-    name: null,
-    email: null,
-    phone: null,
-    type: null,
-    unit: null,
-    subject_name: null,
-    duration: null,
-    place: null,
-    holders: null,
-    students_need: null,
-    flows: [
-      {
-        time: null,
-      },
-    ],
-    acceptGDPR: false,
-    acceptDataManagement: false,
-  })
-);
+// useForm saves the form value to a remembered state.
+const formValue = useForm("SaziningaiExam", formBlueprint);
 
-const rules = {
+const rules: FormRules = {
   name: {
     required: true,
     message: "Įrašykite savo vardą ir pavardę",
@@ -241,7 +256,7 @@ const rules = {
   email: {
     required: true,
     trigger: "blur",
-    validator(rule, value) {
+    validator(rule: FormItemRule, value: string) {
       if (!value) {
         return new Error("Įrašykite savo el. paštą");
       }
@@ -256,8 +271,9 @@ const rules = {
     required: true,
     // message: "Įrašykite savo telefono numerį",
     trigger: "blur",
+    type: "number",
     // validate phone number with + sign and spaces
-    validator(rule, value) {
+    validator(rule: FormItemRule, value: string) {
       if (!value) {
         return new Error("Įrašykite savo telefono numerį");
       }
@@ -273,7 +289,7 @@ const rules = {
     message: "Pasirinkite atsiskaitymo pobūdį.",
     trigger: "blur",
   },
-  unit: {
+  padalinys_id: {
     required: true,
     message: "Pasirinkite atsiskaitymą laikančiųjų padalinį",
     trigger: ["blur", "change"],
@@ -281,28 +297,28 @@ const rules = {
   },
   subject_name: {
     required: true,
-    message: "Atsiskaitomo dalyko pavadinimas",
+    message: "Užpildykite laukelį",
     trigger: "blur",
   },
   duration: {
     required: true,
-    message: "Atsiskaitymo data ir laikas",
+    message: "Užpildykite laukelį",
     trigger: "blur",
   },
   place: {
     required: true,
-    message: "Atsiskaitymo vieta: padalinys ir auditorija",
+    message: "Užpildykite laukelį",
     trigger: "blur",
   },
-  holders: {
+  exam_holders: {
     required: true,
-    message: "Atsiskaitymą laikančių studentų skaičius",
+    message: "Užpildykite laukelį",
     trigger: "blur",
     type: "number",
   },
   students_need: {
     required: true,
-    message: "Reikalingas stebėtojų skaičius",
+    message: "Užpildykite laukelį",
     trigger: "blur",
     type: "number",
   },
@@ -310,12 +326,15 @@ const rules = {
     required: true,
     trigger: "blur",
     // check if any item in array is empty
-    validator(rule, value) {
+    validator(
+      rule: unknown,
+      value: Array<Pick<App.Models.SaziningaiExamFlow, "start_time">>
+    ) {
       if (!value) {
-        return new Error("Įveskite laiką ir laiką");
+        return new Error("Įveskite bent vieno atsiskaitymo atsiskaitymo laiką");
       }
-      if (value.some((item) => !item.time)) {
-        return new Error("Įveskite laiką arba pašalinkite srautą");
+      if (value.some((item) => !item.start_time)) {
+        return new Error("Pasirinkite laiką arba pašalinkite srautą");
       }
       return true;
     },
@@ -333,23 +352,17 @@ const rules = {
     required: true,
     message: "Turite sutikti su duomenų tvarkymu",
     trigger: "blur",
-    // validate if false, then error
+    // * Error if not defined
     validator(rule, value) {
       return value;
     },
   },
-
-  // flows: {
-  //   required: true,
-  //   message: "Atsiskaitymą laikančių studentų skaičius",
-  //   trigger: "blur",
-  // },
 };
 
 const onCreate = () => {
   return {
     // return time now in format yyyy-MM-dd HH:mm
-    time: null,
+    start_time: null,
   };
 };
 
@@ -369,4 +382,83 @@ const padaliniaiOptions = props.padaliniaiOptions.map((padalinys) => ({
   value: padalinys.id,
   label: padalinys.shortname_vu,
 }));
+
+const handleValidateClick = (e: MouseEvent) => {
+  e.preventDefault();
+  formRef.value?.validate((errors: Array<FormValidationError> | undefined) => {
+    if (!errors) {
+      Inertia.post(route("saziningaiExamRegistration.store"), formValue, {
+        onSuccess: () => {
+          message.success(
+            `Ačiū už atsiskaitymo „${formValue.subject_name}“ užregistravimą!`
+          );
+          formValue.reset();
+          Inertia.visit(route("saziningaiExams.registered"));
+        },
+      });
+    } else {
+      message.error("Užpildykite visus laukelius.");
+    }
+  });
+};
+
+////////////////////////////////////////////////////////////////////////////////
+/// fun with placeholders
+const subjectNamePlaceholder = computed(() => {
+  // generate 5 subject titles
+  const subjectTitles = [
+    "Matematikos teorija",
+    "Fizika",
+    "Organinė chemija",
+    "Molekulinė biologija",
+    "Algoritmų istorija",
+  ];
+  // return random
+  return subjectTitles[Math.floor(Math.random() * subjectTitles.length)];
+});
+
+const padalinysPlaceholder = computed(() => {
+  // return random label from padaliniaiOptions
+  return padaliniaiOptions[Math.floor(Math.random() * padaliniaiOptions.length)]
+    .label;
+});
+
+///////
+// Various time options
+
+// generate date three working days from now, weekends excluded
+const date3DaysToFuture = computed(() => {
+  const date = new Date();
+  const day = date.getDay();
+  let daysToAdd = 0;
+  switch (day) {
+    case 3:
+    case 4:
+    case 5:
+      daysToAdd = 4;
+      break;
+    case 6:
+      daysToAdd = 3;
+      break;
+    default:
+      daysToAdd = 2;
+      break;
+  }
+
+  date.setDate(date.getDate() + daysToAdd + 1);
+  // date set language to Lithuanian and format in MM dd
+  return date;
+});
+
+const date3DaysToFutureLT = computed(() => {
+  return date3DaysToFuture.value.toLocaleDateString("lt-LT", {
+    day: "numeric",
+    month: "long",
+  });
+});
+
+const disableUnallowedDate = (ts: number) => {
+  // date3daystofuture to timestamp minus one day
+  return ts < date3DaysToFuture.value.getTime() - 24 * 60 * 60 * 1000;
+};
 </script>

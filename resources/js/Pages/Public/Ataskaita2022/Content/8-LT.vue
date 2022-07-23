@@ -73,13 +73,13 @@
       <p>Justė Vardauskaitė</p>
 
       <strong
-        >Ataskaitoje naudotos VU Fotoklubo vadovų Andranik Karagezian ir Gabijos Raubaitės
-        nuotraukos.</strong
+        >Ataskaitoje naudotos VU Fotoklubo vadovų Andranik Karagezian ir Gabijos
+        Raubaitės nuotraukos.</strong
       >
     </div>
   </Padeka>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import Padeka from "../8-Padeka.vue";
 </script>

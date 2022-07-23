@@ -163,7 +163,9 @@
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/CB/Arnoldas Solovjovas_Akademinio proceso reikalų koordinatorius_Viceprezidentas.jpg"
           />
-          <p class="mt-1 text-sm">Viceprezidentas ir akademinės srities koordinatorius</p>
+          <p class="mt-1 text-sm">
+            Viceprezidentas ir akademinės srities koordinatorius
+          </p>
           <strong>Arnoldas Solovjovas</strong>
         </div>
         <div>
@@ -180,7 +182,8 @@
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/CB/Margarita Aleksynaitė_Atstovų studijų programoms koordinatorė_Atstovų koordinatorė (nuo 2022-11).jpg"
           />
           <p class="mt-1 text-sm">
-            Atstovų studijų programoms koordinatorė, atstovų koordinatorė (nuo 2021-11)
+            Atstovų studijų programoms koordinatorė, atstovų koordinatorė (nuo
+            2021-11)
           </p>
           <strong>Margarita Aleksynaitė</strong>
         </div>
@@ -241,7 +244,9 @@
             class="md:h-40 w-full object-cover rounded-md shadow-sm"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/CB/Andželika Jankauskytė_Administratorė_Atstovų koordinatorė (iki 2021-11).jpg"
           />
-          <p class="mt-1 text-sm">Administratorė, atstovų koordinatorė (iki 2021-11)</p>
+          <p class="mt-1 text-sm">
+            Administratorė, atstovų koordinatorė (iki 2021-11)
+          </p>
           <strong>Andželika Jankauskytė</strong>
         </div>
         <div>
@@ -281,7 +286,9 @@
   >
   <NModal v-model:show="showSocAkad">
     <div class="w-2/3 md:w-1/2 bg-white/95 shadow-lg rounded-lg p-6">
-      <h2 class="text-center mb-4">Socialinės-akademinės srities koordinatoriai</h2>
+      <h2 class="text-center mb-4">
+        Socialinės-akademinės srities koordinatoriai
+      </h2>
       <div
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 overflow-auto gap-4 duration-200"
       >
@@ -1483,7 +1490,9 @@
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/pkp/Urtė Marija Kasnikauskaitė (nuo 2021 m. gruodžio mėn.).jpg"
           />
           <p class="mt-1 text-sm">SMMS</p>
-          <strong>Urtė Marija Kasnikauskaitė (nuo 2021 m. gruodžio mėn.)</strong>
+          <strong
+            >Urtė Marija Kasnikauskaitė (nuo 2021 m. gruodžio mėn.)</strong
+          >
         </div>
         <div>
           <img
@@ -1538,7 +1547,9 @@
   >
   <NModal v-model:show="showUzsienieciu">
     <div class="w-2/3 md:w-1/2 bg-white/95 shadow-lg rounded-lg p-6">
-      <h2 class="text-center mb-4">Užsieniečių studentų reikalų koordinatoriai</h2>
+      <h2 class="text-center mb-4">
+        Užsieniečių studentų reikalų koordinatoriai
+      </h2>
       <div
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 overflow-auto gap-4 duration-200"
       >
@@ -1702,8 +1713,15 @@
     </div></NModal
   >
   <Sritys>
-    <h2 class="col-span-1 md:col-span-2 my-4 text-3xl">Ačiū, kad esate kartu!</h2>
-    <NButton text class="relative" style="white-space: normal" @click="showCB = true">
+    <h2 class="col-span-1 md:col-span-2 my-4 text-3xl">
+      Ačiū, kad esate kartu!
+    </h2>
+    <NButton
+      text
+      class="relative"
+      style="white-space: normal"
+      @click="showCB = true"
+    >
       <img
         class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 shadow-sm hover:shadow-lg"
         src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/Centrinis biuras-2.jpg"
@@ -1751,7 +1769,10 @@
       />
       <p
         class="absolute text-white font-bold text-2xl sm:text-3xl md:text-4xl w-full text-center bottom-8"
-        style="text-shadow: 0 4px 8px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08)"
+        style="
+          text-shadow: 0 4px 8px rgba(0, 0, 0, 0.12),
+            0 2px 4px rgba(0, 0, 0, 0.08);
+        "
       >
         Institucinio stiprinimo fondas
       </p>
@@ -1789,7 +1810,12 @@
         Atstovų koordinatoriai
       </p>
     </NButton>
-    <NButton text class="relative" style="white-space: normal" @click="showKom = true">
+    <NButton
+      text
+      class="relative"
+      style="white-space: normal"
+      @click="showKom = true"
+    >
       <img
         class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 shadow-sm hover:shadow-lg"
         src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/Komunikacijos koordinatoriai-2.jpg"
@@ -1800,7 +1826,12 @@
         Komunikacijos koordinatoriai
       </p>
     </NButton>
-    <NButton text class="relative" style="white-space: normal" @click="showMark = true">
+    <NButton
+      text
+      class="relative"
+      style="white-space: normal"
+      @click="showMark = true"
+    >
       <img
         class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 shadow-sm hover:shadow-lg"
         src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/Marketingo srities koordinatoriai-2.jpg"
@@ -1811,7 +1842,12 @@
         Marketingo koordinatoriai
       </p>
     </NButton>
-    <NButton text class="relative" style="white-space: normal" @click="showOrg = true">
+    <NButton
+      text
+      class="relative"
+      style="white-space: normal"
+      @click="showOrg = true"
+    >
       <img
         class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 shadow-sm hover:shadow-lg"
         src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/organizacines.jpg"
@@ -1822,7 +1858,12 @@
         Organizacinės srities koordinatoriai
       </p>
     </NButton>
-    <NButton text class="relative" style="white-space: normal" @click="showHR = true">
+    <NButton
+      text
+      class="relative"
+      style="white-space: normal"
+      @click="showHR = true"
+    >
       <img
         class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 shadow-sm hover:shadow-lg"
         src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/HR-2.jpg"
@@ -1833,7 +1874,12 @@
         Žmogiškųjų išteklių koordinatoriai
       </p>
     </NButton>
-    <NButton text class="relative" style="white-space: normal" @click="showInt = true">
+    <NButton
+      text
+      class="relative"
+      style="white-space: normal"
+      @click="showInt = true"
+    >
       <img
         class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 shadow-sm hover:shadow-lg"
         src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/Integracijos proceso koordinatoriai-2.jpg"
@@ -1860,7 +1906,12 @@
         Administratoriai
       </p>
     </NButton>
-    <NButton text class="relative" style="white-space: normal" @click="showLSP = true">
+    <NButton
+      text
+      class="relative"
+      style="white-space: normal"
+      @click="showLSP = true"
+    >
       <img
         class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 shadow-sm hover:shadow-lg"
         src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/LSP koordinatoriai-2.jpg"
@@ -1871,7 +1922,12 @@
         LSP koordinatoriai
       </p>
     </NButton>
-    <NButton text class="relative" style="white-space: normal" @click="showPKP = true">
+    <NButton
+      text
+      class="relative"
+      style="white-space: normal"
+      @click="showPKP = true"
+    >
       <img
         class="rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 shadow-sm hover:shadow-lg"
         src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/PKP-2.jpg"
@@ -1898,7 +1954,12 @@
         Užsieniečių studentų koordinatoriai
       </p>
     </NButton>
-    <NButton text class="w-full" style="white-space: normal" @click="showOther = true">
+    <NButton
+      text
+      class="w-full"
+      style="white-space: normal"
+      @click="showOther = true"
+    >
       <p class="font-bold text-2xl sm:text-3xl md:text-4xl w-full text-center">
         ir taip pat..!
       </p>
@@ -1906,10 +1967,10 @@
   </Sritys>
 </template>
 
-<script setup>
-import Sritys from "../7-Sritys.vue";
+<script setup lang="ts">
+import { NButton, NModal } from "naive-ui";
 import { ref } from "vue";
-import { NModal, NButton } from "naive-ui";
+import Sritys from "../7-Sritys.vue";
 
 const showCB = ref(false);
 const showSocAkad = ref(false);

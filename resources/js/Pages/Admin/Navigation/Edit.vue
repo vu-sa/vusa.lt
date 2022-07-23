@@ -2,11 +2,9 @@
   <AdminLayout :title="navigation.name">
     <div class="main-card">
       <h3 class="mb-4">Bendra informacija</h3>
-      <ul v-if="errors" class="mb-4 text-red-700">
-        <li v-for="error in errors">{{ error }}</li>
-      </ul>
+
       <form
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-4 grid-flow-row-dense"
+        class="mb-4 grid grid-flow-row-dense grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4"
       >
         <div class="lg:col-span-2">
           <label class="font-bold">Pavadinimas</label>
@@ -37,7 +35,7 @@
         </div>
 
         <div
-          class="md:col-start-2 lg:col-start-3 lg:col-span-2 flex justify-end items-center"
+          class="flex items-center justify-end md:col-start-2 lg:col-span-2 lg:col-start-3"
         >
           <UpsertModelButton
             :model="navigation"
@@ -49,16 +47,15 @@
   </AdminLayout>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { NInput } from "naive-ui";
 import { reactive } from "vue";
-import AdminLayout from "@/Layouts/AdminLayout.vue";
-import UpsertModelButton from "@/Components/Admin/UpsertModelButton.vue";
+import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue";
 
-const props = defineProps({
-  navigation: Object,
-  errors: Object,
-});
+const props = defineProps<{
+  navigation: App.Models.Navigation;
+}>();
 
 const navigation = reactive(props.navigation);
 </script>

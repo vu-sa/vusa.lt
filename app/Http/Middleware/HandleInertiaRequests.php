@@ -44,6 +44,11 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request)
     {
+        $user = User::find(Auth::id());
+        if ($user) {
+            $user->padalinys = User::find(Auth::id())?->padalinys()?->shortname;
+        }
+
         return array_merge(parent::share($request), [
             'app' => [
                 'env' => config('app.env'),
@@ -58,6 +63,10 @@ class HandleInertiaRequests extends Middleware
                 'files' => true,
                 'saziningai' => $request->user()->can('viewAny', SaziningaiExam::class),
             ],
+            'locale' => function () {
+                return app()->getLocale();
+            },
+            'misc' => $request->session()->get('misc') ?? "",
             'padaliniai' => Padalinys::where('type', '=', 'padalinys')->orderBy('shortname_vu')->get()->map(function ($padalinys) {
                 return [
                     'id' => $padalinys->id,
@@ -66,33 +75,14 @@ class HandleInertiaRequests extends Middleware
                     'fullname' => $padalinys->fullname,
                 ];
             }),
-
-            'locale' => function () {
-                return app()->getLocale();
-            },
-            'language' => function () {
-                if (!file_exists(resource_path('lang/' . app()->getLocale() . '.json'))) {
-                    return [];
-                }
-                return json_decode(file_get_contents(resource_path('lang/' . app()->getLocale() . '.json')), true);
-            },
-            'search' => fn () => [
+            'search' => [
                 'calendar' => $request->session()->get('search_calendar') ?? [],
                 'news' => $request->session()->get('search_news') ?? [],
                 'pages' => $request->session()->get('search_pages') ?? [],
                 'other' => $request->session()->get('search_other') ?? [],
             ],
-            'misc' => $request->session()->get('misc') ?? "",
             // current user
-            'user' => Auth::user(),
-            'user_padalinys' => Auth::user()?->padalinys()?->shortname
-
-            // 'flash' => fn () => [
-            //     'success' => $request->session()->get('success'),
-            //     'info' => $request->session()->get('info'),
-            //     'warning' => $request->session()->get('warning'),
-            //     'error' => $request->session()->get('error'),
-            // ]
+            'user' => $user,
         ]);
     }
 }

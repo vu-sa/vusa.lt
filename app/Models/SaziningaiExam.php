@@ -9,7 +9,7 @@ class SaziningaiExam extends Model
 {
 
     use HasFactory;
-    
+
     /**
      * The table associated with the model.
      *
@@ -21,6 +21,7 @@ class SaziningaiExam extends Model
 
     protected $casts = [
         'created_at' => 'datetime:Y-m-d',
+        'updated_at' => 'datetime:Y-m-d',
     ];
 
     public function padalinys()

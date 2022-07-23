@@ -1,9 +1,9 @@
 <template>
   <PublicLayout>
-    <h2 class="pt-8 px-8 lg:px-32">Naujienų archyvas</h2>
+    <h2 class="px-8 pt-8 lg:px-32">Naujienų archyvas</h2>
     <NPagination
       style="overflow-x: auto"
-      class="pt-8 px-8 lg:px-32"
+      class="px-8 pt-8 lg:px-32"
       :item-count="props.news.total"
       :page="props.news.current_page"
       :page-size="15"
@@ -20,12 +20,12 @@
     remote
     @search="handleSearch"
   /> -->
-    <div class="grid md:grid-cols-2 lg:grid-cols-4 pt-8 px-8 lg:px-32 gap-8">
+    <div class="grid gap-8 px-8 pt-8 md:grid-cols-2 lg:grid-cols-4 lg:px-32">
       <HomeCard
-        :hasMiniContent="false"
-        :hasBelowCard="true"
         v-for="item in props.news.data"
         :key="item.id"
+        :has-mini-content="false"
+        :has-below-card="true"
       >
         <template #mini> </template>
         <template #below-card>
@@ -46,7 +46,7 @@
             "
             ><img
               :src="item.image"
-              class="rounded-sm shadow-md hover:shadow-lg duration-200 h-40 w-full mb-1 object-cover"
+              class="mb-1 h-40 w-full rounded-sm object-cover shadow-md duration-200 hover:shadow-lg"
           /></Link>
         </template>
         <Link
@@ -65,19 +65,20 @@
   </PublicLayout>
 </template>
 
-<script setup>
-import PublicLayout from "@/Layouts/PublicLayout.vue";
-import { NPagination, NIcon } from "naive-ui";
-import { reactive, ref } from "vue";
-import { Inertia } from "@inertiajs/inertia";
-import { usePage, Link } from "@inertiajs/inertia-vue3";
-import ContactWithPhoto from "@/Components/Public/ContactWithPhoto.vue";
-import HomeCard from "@/Components/Public/HomeCard.vue";
+<script setup lang="ts">
 import { Clock20Regular } from "@vicons/fluent";
+import { Inertia } from "@inertiajs/inertia";
+import { Link, usePage } from "@inertiajs/inertia-vue3";
+import { NIcon, NPagination } from "naive-ui";
+import { ref } from "vue";
+import route from "ziggy-js";
 
-const props = defineProps({
-  news: Object,
-});
+import HomeCard from "@/Components/Public/HomeCard.vue";
+import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
+
+const props = defineProps<{
+  news: PaginatedModels<App.Models.News>;
+}>();
 
 const locale = ref(usePage().props.value.locale);
 

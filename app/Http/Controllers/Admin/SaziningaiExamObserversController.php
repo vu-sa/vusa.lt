@@ -9,12 +9,12 @@ use App\Http\Controllers\Controller as Controller;
 
 class SaziningaiExamObserversController extends Controller
 {
-    
+
     public function __construct()
     {
         $this->authorizeResource(SaziningaiExamObserver::class, 'saziningaiExamObserver');
     }
-    
+
     /**
      * Display a listing of the resource.
      *
@@ -22,11 +22,11 @@ class SaziningaiExamObserversController extends Controller
      */
     public function index()
     {
-        $observers = SaziningaiExamObserver::all();
+        // $observers = SaziningaiExamObserver::all();
 
-        return Inertia::render('Admin/Saziningai/Observers/Index', [
-            'observers' => $observers,
-        ]);
+        // return Inertia::render('Admin/Saziningai/Observers/Index', [
+        //     'observers' => $observers,
+        // ]);
     }
 
     /**

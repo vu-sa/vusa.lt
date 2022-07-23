@@ -87,7 +87,7 @@ class MainController extends Controller
 		$news = News::where([['padalinys_id', '=', $padalinys->id], ['draft', '=', 0]])->where('publish_time', '<=', date('Y-m-d H:i:s'))->orderBy('publish_time', 'desc')->take(4)->get();
 
 		Inertia::share('alias', $this->alias);
-		return Inertia::render('Public/Home', [
+		return Inertia::render('Public/HomePage', [
 			'news' => $news->map(function ($news) {
 				return [
 					'id' => $news->id,
@@ -107,7 +107,7 @@ class MainController extends Controller
 					"important" => $news->important,
 				];
 			}),
-			'main_page' => MainPage::where('padalinys_id', '=', $padalinys->id)->get(),
+			'mainPage' => MainPage::where('padalinys_id', '=', $padalinys->id)->get(),
 		])->withViewData([
 			'description' => 'Vilniaus universiteto Studentų atstovybė (VU SA) – seniausia ir didžiausia Lietuvoje visuomeninė, ne pelno siekianti, nepolitinė, ekspertinė švietimo organizacija'
 		]);
@@ -131,7 +131,7 @@ class MainController extends Controller
 		// Storage::get($news->image) == null ? '/images/icons/naujienu_foto.png' : Storage::url($news->image);
 
 		Inertia::share('alias', $news->padalinys->alias);
-		return Inertia::render('Public/News', [
+		return Inertia::render('Public/NewsPage', [
 			'article' => [
 				'id' => $news->id,
 				'title' => $news->title,
@@ -192,29 +192,17 @@ class MainController extends Controller
 	{
 		$padalinys = Padalinys::where('alias', '=', $this->alias)->first();
 
-		// ddd($this->alias, Route::currentRouteName() == 'padalinys.home', request()->padalinys);
-
 		$page = Page::where([['permalink', '=', request()->permalink], ['padalinys_id', '=', $padalinys->id]])->first();
 
 		if ($page == null) {
-			// return 404
 			abort(404);
 		}
 
-		// dd($page);
-
 		$navigation_item = Navigation::where([['padalinys_id', '=', $padalinys->id], ['name', '=', $page->title]])->get()->first();
 
-		// dd(request()->route('permalink'), request()->permalink, $page, $padalinys);
-
-
-
-		// get four random pages
-		// $random_pages = Page::where([['padalinys_id', '=', $padalinys->id], ['lang', app()->getLocale()]])->get()->random(4);
-
 		Inertia::share('alias', $page->padalinys->alias);
-		return Inertia::render('Public/Page', [
-			'navigation_item_id' => $navigation_item?->id,
+		return Inertia::render('Public/ContentPage', [
+			'navigationItemId' => $navigation_item?->id,
 			'page' => [
 				'id' => $page->id,
 				'title' => $page->title,
@@ -226,15 +214,6 @@ class MainController extends Controller
 				'category' => $page->category,
 				'padalinys' => $page->padalinys->shortname,
 			],
-			// 'random_pages' => $random_pages->map(function ($page) {
-			// 	return [
-			// 		'id' => $page->id,
-			// 		'title' => $page->title,
-			// 		'lang' => $page->lang,
-			// 		'alias' => $page->padalinys->alias,
-			// 		'permalink' => $page->permalink,
-			// 	];
-			// }),
 		])->withViewData([
 			'title' => $page->title,
 			// truncate text to first sentence
@@ -361,7 +340,7 @@ class MainController extends Controller
 
 		// $alias_contacts = collect($alias_contacts)->unique();
 
-		return Inertia::render('Public/Contacts/Contacts', [
+		return Inertia::render('Public/Contacts/ContactsShow', [
 			'institution' => $duty_institution,
 			'contacts' => $alias_contact_collection->map(function ($contact) use ($duty_institution) {
 				return [
@@ -396,13 +375,12 @@ class MainController extends Controller
 		if (request()->name) {
 			$inputName = request()->name;
 			$search_contacts = User::has('duties')->where('name', 'like', "%{$inputName}%")->get();
-			// dd($contacts, request()->name);
 		}
 
 		Inertia::share('alias', $padalinys->alias);
-		return Inertia::render('Public/Contacts/Search', [
+		return Inertia::render('Public/Contacts/ContactsSearch', [
 
-			'search_contacts' => is_null($search_contacts) ? [] : $search_contacts->map(function ($contact) {
+			'searchContacts' => is_null($search_contacts) ? [] : $search_contacts->map(function ($contact) {
 
 				return [
 					'id' => $contact->id,
@@ -419,7 +397,7 @@ class MainController extends Controller
 							'email' => $duty->email,
 						];
 					}),
-					'image' => function () use ($contact) {
+					'profile_photo_path' => function () use ($contact) {
 						if (substr($contact->profile_photo_path, 0, 4) == 'http') {
 							return $contact->profile_photo_path;
 						} else if (is_null($contact->profile_photo_path)) {
@@ -471,20 +449,18 @@ class MainController extends Controller
 
 	public function storeSaziningaiExamRegistration()
 	{
-		// dd(request()->all());
-
 		$request = request();
 
 		$saziningaiExam = SaziningaiExam::create([
 			'uuid' => bin2hex(random_bytes(15)),
 			'subject_name' => $request->subject_name,
 			'name' => $request->name,
-			'padalinys_id' => $request->unit,
+			'padalinys_id' => $request->padalinys_id,
 			'place' => $request->place,
 			'email' => $request->email,
 			'duration' => $request->duration,
-			'exam_holders' => $request->holders,
-			'exam_type' => $request->type,
+			'exam_holders' => $request->exam_holders,
+			'exam_type' => $request->exam_type,
 			'phone' => $request->phone,
 			'students_need' => $request->students_need,
 		]);
@@ -496,7 +472,7 @@ class MainController extends Controller
 			// dd($flow['time'], date('Y-m-d H:i:s', strtotime($flow['time'])));
 			$saziningaiExamFlow = new SaziningaiExamFlow();
 			$saziningaiExamFlow->exam_uuid = $saziningaiExam->uuid;
-			$saziningaiExamFlow->start_time = date('Y-m-d H:i:s', strtotime($flow['time']));
+			$saziningaiExamFlow->start_time = date('Y-m-d H:i:s', strtotime($flow['start_time']));
 			$saziningaiExamFlow->save();
 		}
 
@@ -526,7 +502,7 @@ class MainController extends Controller
 					// get observers count 
 					'observers_registered' => $saziningaiExamFlow->observers->count(),
 					'exam' => $saziningaiExamFlow->exam->only(['subject_name', 'place', 'duration', 'exam_holders', 'exam_type', 'students_need']),
-					'unit' => $saziningaiExamFlow->exam->padalinys->shortname_vu,
+					'unit' => $saziningaiExamFlow->exam->padalinys?->shortname_vu,
 				];
 			}),
 		])->withViewData([

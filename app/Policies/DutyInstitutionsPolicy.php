@@ -48,7 +48,7 @@ class DutyInstitutionsPolicy
      */
     public function create(User $user)
     {
-        //
+        return $user->isAdminOrSuperAdmin();
     }
 
     /**
@@ -72,7 +72,7 @@ class DutyInstitutionsPolicy
      */
     public function delete(User $user, DutyInstitution $dutyInstitution)
     {
-        //
+        
     }
 
     /**

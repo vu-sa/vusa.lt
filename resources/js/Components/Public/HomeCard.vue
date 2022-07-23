@@ -2,31 +2,24 @@
   <article class="relative">
     <div
       v-if="hasMiniContent"
-      class="absolute -top-2 -right-1 bg-white rounded-xl border border-gray-100 px-2 shadow-sm hover:shadow-md duration-200 text-gray-500 line-clamp-1"
+      class="absolute -top-2 -right-1 rounded-xl border border-gray-100 bg-white px-2 text-gray-500 shadow-sm duration-200 line-clamp-1 hover:shadow-md"
     >
       <slot name="mini"></slot>
     </div>
     <slot name="image"></slot>
-    <div v-if="hasBelowCard" class="flex items-center mt-1 text-gray-600 text-sm">
+    <div
+      v-if="hasBelowCard"
+      class="mt-1 flex items-center text-sm text-gray-600"
+    >
       <slot name="below-card"></slot>
     </div>
-    <h3 class="text-gray-800 mt-1 line-clamp-2 leading-tight"><slot></slot></h3>
+    <h3 class="mt-1 leading-tight text-gray-800 line-clamp-2"><slot></slot></h3>
   </article>
 </template>
 
-<script setup>
-import { NIcon } from "naive-ui";
-import { CalendarLtr20Regular } from "@vicons/fluent";
-import { ref } from "vue";
-
-const props = defineProps({
-  hasMiniContent: {
-    type: Boolean,
-    default: false,
-  },
-  hasBelowCard: {
-    type: Boolean,
-    default: false,
-  },
-});
+<script setup lang="ts">
+defineProps<{
+  hasMiniContent: boolean;
+  hasBelowCard: boolean;
+}>();
 </script>

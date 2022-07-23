@@ -7,13 +7,14 @@
     <h3 class="text-center mb-4">VU SA strateginiai tikslai</h3>
     <NDivider></NDivider>
     <h4 class="text-center font-bold text-2xl">
-      1. Vilniaus universiteto bendruomenės nariai palaiko 60 kreditų atlaisvinimo idėją.
+      1. Vilniaus universiteto bendruomenės nariai palaiko 60 kreditų
+      atlaisvinimo idėją.
     </h4>
     <p><strong>Terminas:</strong> 2022 m. liepos 1 d.</p>
     <p>
-      <strong>Matavimo rodiklis:</strong> 75 % I pakopos ir vientisųjų studijų programų
-      komitetų pirmininkų kiekviename VU KAP (kamieniniame akademiniame padalinyje)
-      palaiko 60 kreditų atlaisvinimo idėją.
+      <strong>Matavimo rodiklis:</strong> 75 % I pakopos ir vientisųjų studijų
+      programų komitetų pirmininkų kiekviename VU KAP (kamieniniame akademiniame
+      padalinyje) palaiko 60 kreditų atlaisvinimo idėją.
     </p>
     <NTimeline class="mt-4">
       <NTimelineItem
@@ -43,26 +44,28 @@
       ><NCollapseItem title="Kiek pavyko įgyvendinti:"
         ><ul>
           <li>
-            Suburta darbo grupė VU studijų programų ir užsienio patirčių dėl studijų
-            lankstumo ir akademinės paramos studentams suteikimo analizei atlikti.
+            Suburta darbo grupė VU studijų programų ir užsienio patirčių dėl
+            studijų lankstumo ir akademinės paramos studentams suteikimo
+            analizei atlikti.
           </li>
           <li>
-            Deleguota studentų atstovė į VU vidinio mobilumo darbo grupę, kurioje derintos
-            60 kreditų atlaisvinimo modelio nuostatos.
+            Deleguota studentų atstovė į VU vidinio mobilumo darbo grupę,
+            kurioje derintos 60 kreditų atlaisvinimo modelio nuostatos.
           </li>
           <li>
-            Siekiant užtikrinti akademinę pagalbą studentams organizuotas susitikimas su
-            VU SPKS (Studentų paslaugų ir karjeros skyriumi) šio klausimo suderinimui.
+            Siekiant užtikrinti akademinę pagalbą studentams organizuotas
+            susitikimas su VU SPKS (Studentų paslaugų ir karjeros skyriumi) šio
+            klausimo suderinimui.
           </li>
           <li>
-            Norėdami supažindinti bendruomenę su lankstesnėmis studijų galimybėmis
-            sukūrėme tinklalaidę šia tema.
+            Norėdami supažindinti bendruomenę su lankstesnėmis studijų
+            galimybėmis sukūrėme tinklalaidę šia tema.
           </li>
           <li>
-            Šiuo metu supažindiname studentų atstovus SPK (studijų programų komitetuose)
-            su 60 kreditų atlaisvinimo modeliu, bendradarbiaudami su SPKS, KRS
-            (Komunikacijos ir rinkodaros skyriumi) kuriame vaizdo įrašą apie studijų
-            lankstumą.
+            Šiuo metu supažindiname studentų atstovus SPK (studijų programų
+            komitetuose) su 60 kreditų atlaisvinimo modeliu, bendradarbiaudami
+            su SPKS, KRS (Komunikacijos ir rinkodaros skyriumi) kuriame vaizdo
+            įrašą apie studijų lankstumą.
           </li>
         </ul></NCollapseItem
       ></NCollapse
@@ -71,14 +74,14 @@
     <!-- 2 -->
     <section>
       <h4 class="text-center font-bold text-2xl">
-        2. Vilniaus universiteto bendruomenė žino apie individualių poreikių turinčių
-        asmenų patirtis ir poreikius bei geba juos atliepti.
+        2. Vilniaus universiteto bendruomenė žino apie individualių poreikių
+        turinčių asmenų patirtis ir poreikius bei geba juos atliepti.
       </h4>
       <p><strong>Terminas:</strong> 2022 m. liepos 1 d.</p>
       <p>
         <strong>Matavimo rodiklis:</strong> bent 300 studentų, dalyvavusių VU SA
-        įgyvendintose iniciatyvose ir įgijusių naujų žinių apie individualių poreikių
-        turinčių asmenų patirtis bei poreikius.
+        įgyvendintose iniciatyvose ir įgijusių naujų žinių apie individualių
+        poreikių turinčių asmenų patirtis bei poreikius.
       </p>
       <NTimeline class="mt-4">
         <NTimelineItem
@@ -111,20 +114,21 @@
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
           ><ul>
             <li>
-              Universiteto bendruomenei suteiktos žinios studentų su negalia istorijomis
-              bei profesionalų įžvalgomis dalinantis socialinėse medijose, gyvuose
-              renginiuose.
+              Universiteto bendruomenei suteiktos žinios studentų su negalia
+              istorijomis bei profesionalų įžvalgomis dalinantis socialinėse
+              medijose, gyvuose renginiuose.
             </li>
             <li>Parengtas komunikacijos gidas.</li>
             <li>
-              Bendradarbiaujant su BVS (Bendruomenės vystymo skyriumi) bei VšĮ „Vilties
-              žiedas“, siekiama plėsti pagalbos teikimo galimybes studentams su
-              individualiais poreikiais.
+              Bendradarbiaujant su BVS (Bendruomenės vystymo skyriumi) bei VšĮ
+              „Vilties žiedas“, siekiama plėsti pagalbos teikimo galimybes
+              studentams su individualiais poreikiais.
             </li>
             <li>
-              Suorganizuota paroda, filmo peržiūra bei šiuo metu organizuojama socialinė
-              iniciatyva, skirtos atkreipti dėmesį į matomus ir nematomus sunkumus bei
-              bendravimo ydas, su kuriomis susiduria negalią turintys bendruomenės nariai.
+              Suorganizuota paroda, filmo peržiūra bei šiuo metu organizuojama
+              socialinė iniciatyva, skirtos atkreipti dėmesį į matomus ir
+              nematomus sunkumus bei bendravimo ydas, su kuriomis susiduria
+              negalią turintys bendruomenės nariai.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -135,8 +139,8 @@
     <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
-        3. 2022 m. balandžio 1 d. yra atlikta I studijų pakopos dviejų (geografijos ir
-        chemijos) studijų programų privalomųjų dalykų analizė.
+        3. 2022 m. balandžio 1 d. yra atlikta I studijų pakopos dviejų
+        (geografijos ir chemijos) studijų programų privalomųjų dalykų analizė.
       </h4>
 
       <NTimeline class="mt-4">
@@ -159,14 +163,14 @@
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
           ><ul>
             <li>
-              Buvo gautas studijų programų vadovas, kuris būtų naudojamas analizei su
-              komentarais ir patarimais, kaip jį pritaikyti.
+              Buvo gautas studijų programų vadovas, kuris būtų naudojamas
+              analizei su komentarais ir patarimais, kaip jį pritaikyti.
             </li>
             <li>
-              Taip pat buvo paruošti klausimai, kurie bus pristatyti studentų atstovams
-              bei kontaktiniams asmenims, siekiant išsiaiškinti, kuriems studijų dalykams
-              reikėtų pritaikyti studijų programų vadovą, apskaičiuojant tikrąjį kreditų
-              krūvį.
+              Taip pat buvo paruošti klausimai, kurie bus pristatyti studentų
+              atstovams bei kontaktiniams asmenims, siekiant išsiaiškinti,
+              kuriems studijų dalykams reikėtų pritaikyti studijų programų
+              vadovą, apskaičiuojant tikrąjį kreditų krūvį.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -175,9 +179,10 @@
     <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
-        4. Iki 2022 m. birželio 30 d. VU EVAF dėstytojai žino ir naudoja patogius ir
-        studentus įtraukiančius metodus, todėl bent 70 proc. apklausas užpildžiusių
-        studentų yra patenkinti dėstytojų naudojamais interaktyviais dėstymo metodais.
+        4. Iki 2022 m. birželio 30 d. VU EVAF dėstytojai žino ir naudoja
+        patogius ir studentus įtraukiančius metodus, todėl bent 70 proc.
+        apklausas užpildžiusių studentų yra patenkinti dėstytojų naudojamais
+        interaktyviais dėstymo metodais.
       </h4>
 
       <NTimeline class="mt-4">
@@ -197,23 +202,23 @@ naudojimo, nuotolinių atsiskaitymų organizavimo būdai. "
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
           ><ul>
             <li>
-              Sudarius darbo grupę buvo renkama naudinga informacija iš studentų bei
-              dėstytojų apie nuotolinį mokymąsi (kokie yra pagrindiniai trūkumai ir kaip
-              juos būtų galima pakeisti, kokie jau naudojami metodai, funkcijos
-              pasitvirtino nuotolinio mokymosi praktikoje).
+              Sudarius darbo grupę buvo renkama naudinga informacija iš studentų
+              bei dėstytojų apie nuotolinį mokymąsi (kokie yra pagrindiniai
+              trūkumai ir kaip juos būtų galima pakeisti, kokie jau naudojami
+              metodai, funkcijos pasitvirtino nuotolinio mokymosi praktikoje).
             </li>
             <li>
-              Atsižvelgiant į tai sukurta atmintinė dėstytojams su įvairiais patarimais,
-              supažindinimu su <em>online</em> platformomis.
+              Atsižvelgiant į tai sukurta atmintinė dėstytojams su įvairiais
+              patarimais, supažindinimu su <em>online</em> platformomis.
             </li>
             <li>
-              Atmintinė, patvirtinta VU EVAF prodekanės, netrukus bus išsiųsta visiems
-              dėstytojams.
+              Atmintinė, patvirtinta VU EVAF prodekanės, netrukus bus išsiųsta
+              visiems dėstytojams.
             </li>
             <li>
-              Artėjant semestro pabaigai aktyviai skatinsime studentus pildyti studijų
-              apklausas bei rinksime grįžtamąjį ryšį, kuriuo vėliau bus pasidalinta ir
-              socialiniuose tinkluose.
+              Artėjant semestro pabaigai aktyviai skatinsime studentus pildyti
+              studijų apklausas bei rinksime grįžtamąjį ryšį, kuriuo vėliau bus
+              pasidalinta ir socialiniuose tinkluose.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -224,8 +229,8 @@ naudojimo, nuotolinių atsiskaitymų organizavimo būdai. "
       <h4 class="text-center font-bold text-xl">
         5. 2022 m. birželio 30 d. VU EVAF akademinė bendruomenė žino ir laikosi
         <em
-          >VU EVAF Studentų rašto darbų rengimo, gynimo, vertinimo ir saugojimo tvarkos
-          aprašo</em
+          >VU EVAF Studentų rašto darbų rengimo, gynimo, vertinimo ir saugojimo
+          tvarkos aprašo</em
         >.
       </h4>
 
@@ -253,22 +258,25 @@ saugojimo tvarkos aprašo. "
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
           ><ul>
             <li>
-              Su studentais pasidalinta aprašo bei kitų naudingų dokumentų nuorodomis,
-              parengta, paviešinta ir grupės atstovų su studentais pasidalinta atmintinė
-              su dažniausiai užduodamais klausimais iš aprašo.
+              Su studentais pasidalinta aprašo bei kitų naudingų dokumentų
+              nuorodomis, parengta, paviešinta ir grupės atstovų su studentais
+              pasidalinta atmintinė su dažniausiai užduodamais klausimais iš
+              aprašo.
             </li>
             <li>
-              Visi baigiamųjų kursų studentai turėjo seminarą apie kursinio darbo rengimą.
+              Visi baigiamųjų kursų studentai turėjo seminarą apie kursinio
+              darbo rengimą.
             </li>
             <li>
-              Išanalizavus rudens semestro VU IS apklausų duomenis, identifikuotos ir
-              studijų prodekanei R. Adomaitienei pristatytos problemos, su kuriomis
-              susiduria studentai, rengdami kursinius darbus, bakalauro baigiamiuosius
-              darbus ir magistro baigiamuosius darbus.
+              Išanalizavus rudens semestro VU IS apklausų duomenis,
+              identifikuotos ir studijų prodekanei R. Adomaitienei pristatytos
+              problemos, su kuriomis susiduria studentai, rengdami kursinius
+              darbus, bakalauro baigiamiuosius darbus ir magistro baigiamuosius
+              darbus.
             </li>
             <li>
-              Planuojama diskusiją apie šias problemas pratęsti per kandidatų į VU EVAF
-              dekanus debatus.
+              Planuojama diskusiją apie šias problemas pratęsti per kandidatų į
+              VU EVAF dekanus debatus.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -277,8 +285,8 @@ saugojimo tvarkos aprašo. "
     <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
-        6. Iki 2022 m. gegužės 1 d. yra paruoštas laboratorinių darbų atnaujinimo planas
-        VU Fizikos fakultete.
+        6. Iki 2022 m. gegužės 1 d. yra paruoštas laboratorinių darbų
+        atnaujinimo planas VU Fizikos fakultete.
       </h4>
 
       <NTimeline class="mt-4">
@@ -302,12 +310,13 @@ saugojimo tvarkos aprašo. "
           ><ul>
             <li>
               Atlikta kitų VU padalinių, universitetų (Lietuvos bei užsienio)
-              laboratorinių darbų įgyvendinimo gerųjų patirčių analizė, atrinktos
-              metodikos, taikytinos VU Fizikos fakultete.
+              laboratorinių darbų įgyvendinimo gerųjų patirčių analizė,
+              atrinktos metodikos, taikytinos VU Fizikos fakultete.
             </li>
             <li>
-              Šiuo metu yra kuriamas laboratorinių darbų konceptas bendradarbiaujant tiek
-              su vyresniais VU SA nariais, tiek su VU FF administracija.
+              Šiuo metu yra kuriamas laboratorinių darbų konceptas
+              bendradarbiaujant tiek su vyresniais VU SA nariais, tiek su VU FF
+              administracija.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -316,9 +325,9 @@ saugojimo tvarkos aprašo. "
     <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
-        7. 2022 m. rugsėjo 1 d. yra pasiruošta VU FF antros pakopos pirmo kurso studentų,
-        baigusių bakalauro studijas kituose VU padaliniuose / universitetuose, akademinės
-        integracijos plano vykdymui.
+        7. 2022 m. rugsėjo 1 d. yra pasiruošta VU FF antros pakopos pirmo kurso
+        studentų, baigusių bakalauro studijas kituose VU padaliniuose /
+        universitetuose, akademinės integracijos plano vykdymui.
       </h4>
 
       <NTimeline class="mt-4">
@@ -356,12 +365,13 @@ planu."
           ><ul>
             <li>
               Atlikta kitų VU padalinių, universitetų (Lietuvos bei užsienio)
-              laboratorinių darbų įgyvendinimo gerųjų patirčių analizė, išsigryninti du
-              pasiūlymai: išlyginamieji kursai bei ekskursijos po laboratorijas.
+              laboratorinių darbų įgyvendinimo gerųjų patirčių analizė,
+              išsigryninti du pasiūlymai: išlyginamieji kursai bei ekskursijos
+              po laboratorijas.
             </li>
             <li>
-              Pasiūlymai pristatyti VU FF Studijų prodekanei, kuri juos palaikė. Šiuo metu
-              ruošiamasi tolimesnėms tikslo įgyvendinimo diskusijoms.
+              Pasiūlymai pristatyti VU FF Studijų prodekanei, kuri juos palaikė.
+              Šiuo metu ruošiamasi tolimesnėms tikslo įgyvendinimo diskusijoms.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -370,10 +380,10 @@ planu."
     <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
-        8. Per 2021–2022 mokslo metus VU FLF yra informuota apie atviros ir saugios
-        emocinės aplinkos svarbą, kurioje studentų ir dėstytojų santykiai yra paremti
-        abipuse pagarba bei bendruomenės nariai žino, kur gali kreiptis dėl psichoemocinės
-        sveikatos problemų.
+        8. Per 2021–2022 mokslo metus VU FLF yra informuota apie atviros ir
+        saugios emocinės aplinkos svarbą, kurioje studentų ir dėstytojų
+        santykiai yra paremti abipuse pagarba bei bendruomenės nariai žino, kur
+        gali kreiptis dėl psichoemocinės sveikatos problemų.
       </h4>
 
       <NTimeline class="mt-4">
@@ -391,14 +401,17 @@ bendruomenei. "
       <NCollapse class="mt-4"
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
           ><ul>
-            <li>Atlikta studentų apklausa apie psichoemocinę sveikatą padalinyje.</li>
             <li>
-              Gautais apklausos rezultatais pasidalinta su Fakulteto dekane ir nuspręsta,
-              kad bendruomenę reikia informuoti apie psichoemocinės svarbą Fakultete.
+              Atlikta studentų apklausa apie psichoemocinę sveikatą padalinyje.
             </li>
             <li>
-              Planuojama vykdyti bendruomenei skirtą renginį psichoemocinės svarbos
-              tematika.
+              Gautais apklausos rezultatais pasidalinta su Fakulteto dekane ir
+              nuspręsta, kad bendruomenę reikia informuoti apie psichoemocinės
+              svarbą Fakultete.
+            </li>
+            <li>
+              Planuojama vykdyti bendruomenei skirtą renginį psichoemocinės
+              svarbos tematika.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -407,9 +420,9 @@ bendruomenei. "
     <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
-        9. 2022 m. birželio 15 d. remiantis VU FLF priimtų tvarkaraščių sudarymo principus
-        apibrėžiančiu dokumentu, yra parengti bent 20 proc. I ir II pakopos programų
-        grupių tvarkaraščiai.
+        9. 2022 m. birželio 15 d. remiantis VU FLF priimtų tvarkaraščių sudarymo
+        principus apibrėžiančiu dokumentu, yra parengti bent 20 proc. I ir II
+        pakopos programų grupių tvarkaraščiai.
       </h4>
 
       <NTimeline class="mt-4">
@@ -429,9 +442,9 @@ formavimo principus. "
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
           ><ul>
             <li>
-              Sužinota studentų nuomonė apie šių mokslo metų tvarkaraščius, remiantis
-              gautais rezultatais planuojama ruošti rekomendacines gaires tvarkaraščių
-              ruošimui.
+              Sužinota studentų nuomonė apie šių mokslo metų tvarkaraščius,
+              remiantis gautais rezultatais planuojama ruošti rekomendacines
+              gaires tvarkaraščių ruošimui.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -440,8 +453,8 @@ formavimo principus. "
     <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
-        10. Iki 2022 m. liepos 1 d. yra išsiaiškintos ir aprašytos VU FsF dėstytojų
-        prastos komunikacijos su studentais priežastys.
+        10. Iki 2022 m. liepos 1 d. yra išsiaiškintos ir aprašytos VU FsF
+        dėstytojų prastos komunikacijos su studentais priežastys.
       </h4>
 
       <NTimeline class="mt-4">
@@ -465,17 +478,19 @@ komunikacijos su dėstytojais priežastis."
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
           ><ul>
             <li>
-              Sudarytas VU FsF dėstytojams skirtas klausimynas, kuris padės išsiaiškinti
-              jų komunikacijos su studentais ypatumus: gaunamų laiškų apkrovą, dažniausiai
-              naudojamas ir siektinas naudoti komunikacijos platformas. Klausimynas bus
-              išsiųstas visiems fakulteto dėstytojams.
+              Sudarytas VU FsF dėstytojams skirtas klausimynas, kuris padės
+              išsiaiškinti jų komunikacijos su studentais ypatumus: gaunamų
+              laiškų apkrovą, dažniausiai naudojamas ir siektinas naudoti
+              komunikacijos platformas. Klausimynas bus išsiųstas visiems
+              fakulteto dėstytojams.
             </li>
             <li>
-              Tuo pat metu planuojami susitikimai su padalinio kontaktiniais asmenimis,
-              kad pavyktų situaciją apžvelgti ir iš jų perspektyvos. Surinkta informacija
-              bus apdorota ir aprašyta viename dokumente, kuriame bus pateikti ir
-              remiantis analize sudaryti pasiūlymai (bei parinktas jų pateikimo formatas),
-              kaip gerinti komunikaciją tarp dėstytojų ir studentų.
+              Tuo pat metu planuojami susitikimai su padalinio kontaktiniais
+              asmenimis, kad pavyktų situaciją apžvelgti ir iš jų perspektyvos.
+              Surinkta informacija bus apdorota ir aprašyta viename dokumente,
+              kuriame bus pateikti ir remiantis analize sudaryti pasiūlymai (bei
+              parinktas jų pateikimo formatas), kaip gerinti komunikaciją tarp
+              dėstytojų ir studentų.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -484,9 +499,9 @@ komunikacijos su dėstytojais priežastis."
     <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
-        11. Iki 2022 m. rugsėjo 1 d. VU GMC bent dviejų I (bakalauro) pakopos programų
-        studentų pasirenkamųjų dalykų (nesutampančių su ankstesniais semestrais) sąrašai
-        padidėja bent 1 nauju arba jau dėstomu dalyku.
+        11. Iki 2022 m. rugsėjo 1 d. VU GMC bent dviejų I (bakalauro) pakopos
+        programų studentų pasirenkamųjų dalykų (nesutampančių su ankstesniais
+        semestrais) sąrašai padidėja bent 1 nauju arba jau dėstomu dalyku.
       </h4>
 
       <NTimeline class="mt-4">
@@ -513,21 +528,22 @@ bakalauro pakopos studijų programų."
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
           ><ul>
             <li>
-              Studentams susiduriant su ribotu PD (pasirenkamųjų dalykų) kiekiu ir
-              didėjančiomis studentų grupėmis, pirmiausia išsikelto tikslo buvo siekiama
-              diskutuojant Studijų kolegijoje.
+              Studentams susiduriant su ribotu PD (pasirenkamųjų dalykų) kiekiu
+              ir didėjančiomis studentų grupėmis, pirmiausia išsikelto tikslo
+              buvo siekiama diskutuojant Studijų kolegijoje.
             </li>
             <li>
-              Bendradarbiaujant su GMC direktoriaus pavaduotoja studijoms bei doktorantų
-              atstove, rasta išeitis – didinti PD kiekį doktorantams sukuriant naujus PD.
-              Norinčiųjų pradėti dėstyti savo dalyką atsirado iškart, tačiau, susidūrus su
-              techninėmis kliūtimis, sprendimui rasti prireiks Senato pritarimo.
+              Bendradarbiaujant su GMC direktoriaus pavaduotoja studijoms bei
+              doktorantų atstove, rasta išeitis – didinti PD kiekį doktorantams
+              sukuriant naujus PD. Norinčiųjų pradėti dėstyti savo dalyką
+              atsirado iškart, tačiau, susidūrus su techninėmis kliūtimis,
+              sprendimui rasti prireiks Senato pritarimo.
             </li>
             <li>
-              Be to, buvo surinkti visų PD dėstančių dėstytojų bei studentų komentarai,
-              pagal kuriuos bus baigtas rengti centro PD neformalusis aprašas, leisiantis
-              studentams rinktis PD susidarant ISP (individualų studijų planą) ir iš kitų
-              programų.
+              Be to, buvo surinkti visų PD dėstančių dėstytojų bei studentų
+              komentarai, pagal kuriuos bus baigtas rengti centro PD
+              neformalusis aprašas, leisiantis studentams rinktis PD susidarant
+              ISP (individualų studijų planą) ir iš kitų programų.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -536,9 +552,10 @@ bakalauro pakopos studijų programų."
     <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
-        12. Iki 2022 m. liepos 1 d. atnaujintame Studijų įvado (Kultūros istorijos ir
-        antropologijos bei Istorijos studijų programų) modulio (dalyko) apraše nurodytos
-        temos yra detalizuotos, atitinka studijų siekinius ir tolygų mokymosi krūvį.
+        12. Iki 2022 m. liepos 1 d. atnaujintame Studijų įvado (Kultūros
+        istorijos ir antropologijos bei Istorijos studijų programų) modulio
+        (dalyko) apraše nurodytos temos yra detalizuotos, atitinka studijų
+        siekinius ir tolygų mokymosi krūvį.
       </h4>
 
       <NTimeline class="mt-4">
@@ -556,10 +573,11 @@ bakalauro pakopos studijų programų."
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
           ><ul>
             <li>
-              Buvo atlikta Istorijos, Archeologijos Kultūros istorijos ir antropologijos
-              Studijų įvado modulių analizė. Analizė padėjo suprasti, kaip būtų galima
-              atnaujinti modulio aprašą, bei leis argumentuotai ir su pasiūlymais kreiptis
-              į Fakulteto administraciją norint gerinti Studijų įvado modulio kokybę.
+              Buvo atlikta Istorijos, Archeologijos Kultūros istorijos ir
+              antropologijos Studijų įvado modulių analizė. Analizė padėjo
+              suprasti, kaip būtų galima atnaujinti modulio aprašą, bei leis
+              argumentuotai ir su pasiūlymais kreiptis į Fakulteto
+              administraciją norint gerinti Studijų įvado modulio kokybę.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -568,9 +586,9 @@ bakalauro pakopos studijų programų."
     <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
-        13. Iki 2022 m. liepos 1 d. specialybės užsienio dalykų mokymo(si) procesas
-        studentui suteikia gebėjimus bendrauti raštu ir žodžiu akademinėje, socialinėje ir
-        profesinėje veikloje.
+        13. Iki 2022 m. liepos 1 d. specialybės užsienio dalykų mokymo(si)
+        procesas studentui suteikia gebėjimus bendrauti raštu ir žodžiu
+        akademinėje, socialinėje ir profesinėje veikloje.
       </h4>
 
       <NTimeline class="mt-4">
@@ -590,15 +608,17 @@ nagrinėjimo tęstinumas naujos VU SA IF kadencijos metu."
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
           ><ul>
             <li>
-              Sukurtas užsienio kalbų stebėsenos planas, kuris bus pradėtas vykdyti šio
-              pavasario semestro pabaigoje. Planas padės stebėti specialybės kalbų
-              mokymo(si) kokybę bei leis anksčiau sureaguoti pablogėjus situacijai.
+              Sukurtas užsienio kalbų stebėsenos planas, kuris bus pradėtas
+              vykdyti šio pavasario semestro pabaigoje. Planas padės stebėti
+              specialybės kalbų mokymo(si) kokybę bei leis anksčiau sureaguoti
+              pablogėjus situacijai.
             </li>
             <li>
-              Taip pat buvo planuojamas susitikimas su Rusų filologijos ir Rusistikos SPK
-              nariais, tačiau buvo pranešta, jog norint atnaujinti modulio aprašą
-              pirmiausia reikia kreiptis į savo fakulteto SPK. Todėl būsimame Istorijos
-              SPK posėdyje bus pristatyti specialybės užsienio kalbų analizės rezultatai.
+              Taip pat buvo planuojamas susitikimas su Rusų filologijos ir
+              Rusistikos SPK nariais, tačiau buvo pranešta, jog norint
+              atnaujinti modulio aprašą pirmiausia reikia kreiptis į savo
+              fakulteto SPK. Todėl būsimame Istorijos SPK posėdyje bus
+              pristatyti specialybės užsienio kalbų analizės rezultatai.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -607,9 +627,9 @@ nagrinėjimo tęstinumas naujos VU SA IF kadencijos metu."
     <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
-        14. Iki 2022 m. liepos 1 d. pagal VU SA KF ir VU KF studentų atstovų sukurtą
-        sistemą ne mažiau 6-iose I ir II pakopų studijų programose yra parengtas ir bent
-        75 proc. įgyvendintas metų veiklos planas.
+        14. Iki 2022 m. liepos 1 d. pagal VU SA KF ir VU KF studentų atstovų
+        sukurtą sistemą ne mažiau 6-iose I ir II pakopų studijų programose yra
+        parengtas ir bent 75 proc. įgyvendintas metų veiklos planas.
       </h4>
 
       <NTimeline class="mt-4">
@@ -645,19 +665,19 @@ planai."
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
           ><ul>
             <li>
-              Ne jungtiniuose bakalauro studijų programų komitetuose, studentų atstovų
-              skaičius pakilo iki 2.
+              Ne jungtiniuose bakalauro studijų programų komitetuose, studentų
+              atstovų skaičius pakilo iki 2.
             </li>
 
             <li>
-              Išrinkti nauji, trūkstami studentų atstovai į bakalauro ir magistro studijų
-              programų komitetus.
+              Išrinkti nauji, trūkstami studentų atstovai į bakalauro ir
+              magistro studijų programų komitetus.
             </li>
 
             <li>
-              Bendradarbiaujant VU SA KF ir VU KF studentų atstovams SPK, sukurta studentų
-              atstovų veiklos sistema, padėsianti efektyvinti studentų atstovavimą ir
-              bendradarbiavimą.
+              Bendradarbiaujant VU SA KF ir VU KF studentų atstovams SPK,
+              sukurta studentų atstovų veiklos sistema, padėsianti efektyvinti
+              studentų atstovavimą ir bendradarbiavimą.
             </li>
 
             <li>
@@ -666,13 +686,13 @@ planai."
             </li>
 
             <li>
-              Pirmakursių integracijos metu bei VU SA KF Facebook paskyroje pristatyti SPK
-              studentų atstovai ir jų veikla.
+              Pirmakursių integracijos metu bei VU SA KF Facebook paskyroje
+              pristatyti SPK studentų atstovai ir jų veikla.
             </li>
 
             <li>
-              Parengtas studentų atstovų metų veiklos plano šablonas, kuris pradėtas
-              pildyti.
+              Parengtas studentų atstovų metų veiklos plano šablonas, kuris
+              pradėtas pildyti.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -681,8 +701,8 @@ planai."
     <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
-        15. 2022 m. balandžio 30 d. daugiau nei 85 proc. VU KnF studentų rekomenduotų
-        studijas VU.
+        15. 2022 m. balandžio 30 d. daugiau nei 85 proc. VU KnF studentų
+        rekomenduotų studijas VU.
       </h4>
 
       <NTimeline class="mt-4">
@@ -721,30 +741,31 @@ planai."
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
           ><ul>
             <li>
-              Įgyvendinta VMA (virtualios mokymosi aplinkos) kursų apžvalga ir SP (studijų
-              programos) tobulinimo planai – atitinkamose SP įtrauktos specializacijos,
-              nauji BUS (bendrieji universitetiniai studijų) dalykai, keisti studijų
-              tinkleliai ir PD.
+              Įgyvendinta VMA (virtualios mokymosi aplinkos) kursų apžvalga ir
+              SP (studijų programos) tobulinimo planai – atitinkamose SP
+              įtrauktos specializacijos, nauji BUS (bendrieji universitetiniai
+              studijų) dalykai, keisti studijų tinkleliai ir PD.
             </li>
 
             <li>
-              Sukurti pagrindai Debatų klubo įsteigimui, parengta ir administracijai
-              pristatyta pirmo kurso studentų iniciatyva verslumu ir investavimu
-              besidomintiems studentams.
+              Sukurti pagrindai Debatų klubo įsteigimui, parengta ir
+              administracijai pristatyta pirmo kurso studentų iniciatyva
+              verslumu ir investavimu besidomintiems studentams.
             </li>
 
             <li>
-              Sukurti pagrindai užsienio studentų integracijai į VU SA KnF veiklą – BA
-              (bakalauro studijų) ir MA (magistrantūros studijų) užsienio studentai
-              supažindinti su VU SA KnF veikla, VU SA KnF socialinių tinklų įrašai versti
-              į anglų kalbą, Visuotiniai susirinkimai pradėti vesti anglų kalba, juose
-              dalyvavo užsienio studentai. Užsienio studentams paskirti mentoriai.
+              Sukurti pagrindai užsienio studentų integracijai į VU SA KnF
+              veiklą – BA (bakalauro studijų) ir MA (magistrantūros studijų)
+              užsienio studentai supažindinti su VU SA KnF veikla, VU SA KnF
+              socialinių tinklų įrašai versti į anglų kalbą, Visuotiniai
+              susirinkimai pradėti vesti anglų kalba, juose dalyvavo užsienio
+              studentai. Užsienio studentams paskirti mentoriai.
             </li>
 
             <li>
-              Pasiektas susitarimas su VU ir VU KnF dėl VU KnF bendrabučio tyrimų projekto
-              darbų pradžios datos ir eigos. Parengtas naujos studentų mokslo erdvės
-              įrengimo projektas Fakulteto patalpose.
+              Pasiektas susitarimas su VU ir VU KnF dėl VU KnF bendrabučio
+              tyrimų projekto darbų pradžios datos ir eigos. Parengtas naujos
+              studentų mokslo erdvės įrengimo projektas Fakulteto patalpose.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -753,7 +774,8 @@ planai."
     <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
-        16. 2022 m. liepos 1 d. VU SA KnF yra įgyvendinusi iniciatyvas, atliepiančias
+        16. 2022 m. liepos 1 d. VU SA KnF yra įgyvendinusi iniciatyvas,
+        atliepiančias
         <em>žaliojo</em> Universiteto viziją.
       </h4>
 
@@ -773,25 +795,27 @@ planai."
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
           ><ul>
             <li>
-              Bendradarbiaujant su VU akademine bendruomene, Lietuvos bei užsienio
-              iniciatyvomis, skatinančiomis ir atliepiančiomis švarų bei tvarų gyvenimo
-              būdą, parengtas komunikacijos kampanijos informacinis ciklas „Žalia žinia“.
+              Bendradarbiaujant su VU akademine bendruomene, Lietuvos bei
+              užsienio iniciatyvomis, skatinančiomis ir atliepiančiomis švarų
+              bei tvarų gyvenimo būdą, parengtas komunikacijos kampanijos
+              informacinis ciklas „Žalia žinia“.
             </li>
 
             <li>
-              Šios ekologijos komunikacijos kampanijos metu studentai informuoti apie
-              tvarumo svarbą, skatinti susipažinti su švaistymo pasekmėmis bei kviesti
-              tapti ekologijos iniciatyvų dalimi.
+              Šios ekologijos komunikacijos kampanijos metu studentai informuoti
+              apie tvarumo svarbą, skatinti susipažinti su švaistymo pasekmėmis
+              bei kviesti tapti ekologijos iniciatyvų dalimi.
             </li>
 
             <li>
-              VU SA KnF renginyje „Sielų upė 2021“ atsisakyta aplinką teršiančių ir
-              neperdirbamų parafino žvakių, jos pakeistos šviesos diodų žvakėmis, kurios
-              yra ilgaamžės ir lengvai rūšiuojamos.
+              VU SA KnF renginyje „Sielų upė 2021“ atsisakyta aplinką teršiančių
+              ir neperdirbamų parafino žvakių, jos pakeistos šviesos diodų
+              žvakėmis, kurios yra ilgaamžės ir lengvai rūšiuojamos.
             </li>
 
             <li>
-              VU SA KnF renginiuose neperdirbamų išteklių vartojimas sumažintas 80 proc.
+              VU SA KnF renginiuose neperdirbamų išteklių vartojimas sumažintas
+              80 proc.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -835,14 +859,16 @@ kontaktine informacija."
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
           ><ul>
             <li>
-              MF administracija išsikėlė tikslą atnaujinti Medicinos fakulteto internetinį
-              puslapį, tuo pačiu atnaujindama ir anglų kalba esančią informaciją.
+              MF administracija išsikėlė tikslą atnaujinti Medicinos fakulteto
+              internetinį puslapį, tuo pačiu atnaujindama ir anglų kalba esančią
+              informaciją.
             </li>
 
             <li>
-              Tarptautiniai studentai, kartu su VU SA MF komanda, sukūrė išskirtinę „Medi“
-              savaitę, kurioje visos veiklos vykdytos anglų kalba. Toliau bus tęsiami
-              darbai ties BUS (bendrųjų universitetinių studijų) dalykų atnaujinimu.
+              Tarptautiniai studentai, kartu su VU SA MF komanda, sukūrė
+              išskirtinę „Medi“ savaitę, kurioje visos veiklos vykdytos anglų
+              kalba. Toliau bus tęsiami darbai ties BUS (bendrųjų
+              universitetinių studijų) dalykų atnaujinimu.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -851,8 +877,9 @@ kontaktine informacija."
     <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
-        18. 2022 m. birželio 30 d. yra sukurta elektronizuota internatūros registracijos
-        ir internatūros metu įgytų praktinių įgūdžių vertinimo sistema.
+        18. 2022 m. birželio 30 d. yra sukurta elektronizuota internatūros
+        registracijos ir internatūros metu įgytų praktinių įgūdžių vertinimo
+        sistema.
       </h4>
 
       <NTimeline class="mt-4">
@@ -894,8 +921,8 @@ atlikimą internatūros bazėse."
     <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
-        19. 2022 m. balandžio 30 d. įgyvendintos bent 3 naujos VU MIF bendruomenę
-        jungiančios iniciatyvos.
+        19. 2022 m. balandžio 30 d. įgyvendintos bent 3 naujos VU MIF
+        bendruomenę jungiančios iniciatyvos.
       </h4>
 
       <NTimeline class="mt-4">
@@ -929,25 +956,27 @@ atlikimą internatūros bazėse."
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
           ><ul>
             <li>
-              Suorganizuotas renginių ciklas, įtraukiantis VU MIF bendruomenę. Jį sudaro
-              trys renginiai – du iš jų jau įvykę, o trečiasis, kurį įgyvendinti
-              planuojama gegužės mėn., jau pradėtas organizuoti.
+              Suorganizuotas renginių ciklas, įtraukiantis VU MIF bendruomenę.
+              Jį sudaro trys renginiai – du iš jų jau įvykę, o trečiasis, kurį
+              įgyvendinti planuojama gegužės mėn., jau pradėtas organizuoti.
             </li>
             <li>
-              Taip pat įgyvendintos veiklos, skirtos antrakursių reintegracijai: rugsėjo
-              pirmosios eisena, mini-MIDI mokymai, bendruomenės vakarai ir kita.
+              Taip pat įgyvendintos veiklos, skirtos antrakursių reintegracijai:
+              rugsėjo pirmosios eisena, mini-MIDI mokymai, bendruomenės vakarai
+              ir kita.
             </li>
             <li>
-              VU MIF erdvėse pastebimas gyvybingumas, COVID-19 padarinių socialinei
-              įtraukčiai įtakos silpnėjimas. Užtikrintas pagalbą skatinančios veiklos
-              „Studentas-Studentui“ tęstinumas: rastas vadovas ir komanda, išsiaiškinti
-              studentams neaiškūs dalykų moduliai, kuriems „Studentas-Studentui“ komanda
-              galėtų vesti paskaitas.
+              VU MIF erdvėse pastebimas gyvybingumas, COVID-19 padarinių
+              socialinei įtraukčiai įtakos silpnėjimas. Užtikrintas pagalbą
+              skatinančios veiklos „Studentas-Studentui“ tęstinumas: rastas
+              vadovas ir komanda, išsiaiškinti studentams neaiškūs dalykų
+              moduliai, kuriems „Studentas-Studentui“ komanda galėtų vesti
+              paskaitas.
             </li>
             <li>
-              Pasirinkti rodikliai šių iniciatyvų veiksmingumui vertinti: dalyvių
-              skaičiaus pokytis renginiuose, rudens ir pavasario semestrų apklausų
-              rezultatai apie savijautą bendruomenėje.
+              Pasirinkti rodikliai šių iniciatyvų veiksmingumui vertinti:
+              dalyvių skaičiaus pokytis renginiuose, rudens ir pavasario
+              semestrų apklausų rezultatai apie savijautą bendruomenėje.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -956,8 +985,9 @@ atlikimą internatūros bazėse."
     <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
-        20. 2022 m. liepos 1 d. kiekviename VU MIF SPK studentų atstovai yra iškėlę
-        problemas, aktualias jų SP tobulinimui, iš kurių SPK yra išsprendę bent 1.
+        20. 2022 m. liepos 1 d. kiekviename VU MIF SPK studentų atstovai yra
+        iškėlę problemas, aktualias jų SP tobulinimui, iš kurių SPK yra
+        išsprendę bent 1.
       </h4>
 
       <NTimeline class="mt-4">
@@ -985,10 +1015,12 @@ atlikimą internatūros bazėse."
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
           ><ul>
             <li>
-              Parengtas studentams aktualių su SP susijusių problemų sąrašas, pasitelkiant
+              Parengtas studentams aktualių su SP susijusių problemų sąrašas,
+              pasitelkiant
               <em>focus</em> grupių susitikimus su kiekvienos studijų programos
-              studentais, parinktais pagal įvairovės kriterijų (t. y. skirtingi kursai ir
-              grupės). Rengiama studentų atstovų SPK metų veiklos programa.
+              studentais, parinktais pagal įvairovės kriterijų (t. y. skirtingi
+              kursai ir grupės). Rengiama studentų atstovų SPK metų veiklos
+              programa.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -997,9 +1029,9 @@ atlikimą internatūros bazėse."
     <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
-        21. 2022 m. liepos 1 d. bent 1 VU ŠA I pakopos studijų programų profesinių
-        praktikų ataskaitų apimtis yra pakoreguota, sumažinant kiekvienos užduoties
-        apimtį.
+        21. 2022 m. liepos 1 d. bent 1 VU ŠA I pakopos studijų programų
+        profesinių praktikų ataskaitų apimtis yra pakoreguota, sumažinant
+        kiekvienos užduoties apimtį.
       </h4>
 
       <NTimeline class="mt-4">
@@ -1036,8 +1068,8 @@ klausimą dėl praktikų organizavimo tvarkos."
           ><ul>
             <li>
               VU SA ŠA atstovų koordinatorei pavyko tiesiogiai susisiekti su SPK
-              pirmininkais ir susitarti dėl praktikų ataskaitų apimčių sumažinimo. SPK
-              posėdyje buvo patvirtinti pasiūlymai.
+              pirmininkais ir susitarti dėl praktikų ataskaitų apimčių
+              sumažinimo. SPK posėdyje buvo patvirtinti pasiūlymai.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -1046,7 +1078,8 @@ klausimą dėl praktikų organizavimo tvarkos."
     <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
-        22. 2022 m. kovo 29 d. VU SA ŠA narių sąraše yra ne mažiau nei 27 nariai.
+        22. 2022 m. kovo 29 d. VU SA ŠA narių sąraše yra ne mažiau nei 27
+        nariai.
       </h4>
 
       <NTimeline class="mt-4">
@@ -1080,8 +1113,8 @@ klausimą dėl praktikų organizavimo tvarkos."
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
           ><ul>
             <li>
-              VU SA ŠA narių saraše 26 nariai. Įvyko integracijos savaitė ir VU SA ŠA
-              pirmakursių stovykla.
+              VU SA ŠA narių saraše 26 nariai. Įvyko integracijos savaitė ir VU
+              SA ŠA pirmakursių stovykla.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -1090,8 +1123,8 @@ klausimą dėl praktikų organizavimo tvarkos."
     <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
-        23. 2022 m. gegužės 2 d. VU TF yra suorganizuotos bent 5 akademinio raštingumo
-        kultūrą ugdančios iniciatyvos.
+        23. 2022 m. gegužės 2 d. VU TF yra suorganizuotos bent 5 akademinio
+        raštingumo kultūrą ugdančios iniciatyvos.
       </h4>
 
       <NTimeline class="mt-4">
@@ -1122,23 +1155,23 @@ raštingumo problemas."
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
           ><ul>
             <li>
-              Per 2021 m. rudens mėnesius buvo atlikta studentų bei dėstytojų apklausa,
-              išsiaiškinant studentų akademinio raštingumo problemas. Jų pagrindu
-              įgyvendinta paskaita apie kursinio darbo rašymo ypatumus, išliekamosios
-              informacinės medžiagos sklaida su studentais („Kursinio darbo rašymas: nuo A
-              iki Z“).
+              Per 2021 m. rudens mėnesius buvo atlikta studentų bei dėstytojų
+              apklausa, išsiaiškinant studentų akademinio raštingumo problemas.
+              Jų pagrindu įgyvendinta paskaita apie kursinio darbo rašymo
+              ypatumus, išliekamosios informacinės medžiagos sklaida su
+              studentais („Kursinio darbo rašymas: nuo A iki Z“).
             </li>
 
             <li>
-              Skirtas didesnis dėmesys bei sklaida VU TF SMD projektui: išliekamoji video
-              medžiaga apie mokslinio straipsnio rašymą bei pristatymą patalpinta „VU SA
-              TF“ Facebook puslapyje.
+              Skirtas didesnis dėmesys bei sklaida VU TF SMD projektui:
+              išliekamoji video medžiaga apie mokslinio straipsnio rašymą bei
+              pristatymą patalpinta „VU SA TF“ Facebook puslapyje.
             </li>
 
             <li>
-              Vykdytas informacijos viešinimas apie akademinį raštingumą VU SA TF
-              socialiniuose tinkluose. Planuojama paskaita / seminaras apie teisinių
-              dokumentų rengimą.
+              Vykdytas informacijos viešinimas apie akademinį raštingumą VU SA
+              TF socialiniuose tinkluose. Planuojama paskaita / seminaras apie
+              teisinių dokumentų rengimą.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -1147,8 +1180,9 @@ raštingumo problemas."
     <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
-        24. 2022 m. balandžio 11 d. VU TF bent 10 dieninių teisės studijų I–VII semestrų
-        dalykų aprašų vertinimo skiltys yra detalizuotos ir patvirtintos SPK.
+        24. 2022 m. balandžio 11 d. VU TF bent 10 dieninių teisės studijų I–VII
+        semestrų dalykų aprašų vertinimo skiltys yra detalizuotos ir
+        patvirtintos SPK.
       </h4>
 
       <NTimeline class="mt-4">
@@ -1186,13 +1220,15 @@ išsakytas pastabas pakoreguoti rekomendacijas."
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
           ><ul>
             <li>
-              Buvo išanalizuoti ir pakomentuoti 2020–2021 m. VU TF teisės studijų I-VII
-              semestrų dalykų aprašai, pridėtos rekomendacijos tobulinimui.
+              Buvo išanalizuoti ir pakomentuoti 2020–2021 m. VU TF teisės
+              studijų I-VII semestrų dalykų aprašai, pridėtos rekomendacijos
+              tobulinimui.
             </li>
 
             <li>
-              Taip pat išanalizuoti detalūs dalykų aprašai, lyginant juos su kitais,
-              pateikti komentarai, kaip galima tobulinti nedetalius dalykų aprašus.
+              Taip pat išanalizuoti detalūs dalykų aprašai, lyginant juos su
+              kitais, pateikti komentarai, kaip galima tobulinti nedetalius
+              dalykų aprašus.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -1201,10 +1237,10 @@ išsakytas pastabas pakoreguoti rekomendacijas."
     <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
-        25. 2022 m. liepos 1 d. VU TSPMI magistro studentams yra suteikta galimybė
-        pasirinkti papildomą užsienio kalbą NSPD (ne studijų programos dalyko) forma bei
-        70 proc. jų yra informuoti apie kitas esamas galimybes mokytis papildomų užsienio
-        kalbų Vilniaus universitete.
+        25. 2022 m. liepos 1 d. VU TSPMI magistro studentams yra suteikta
+        galimybė pasirinkti papildomą užsienio kalbą NSPD (ne studijų programos
+        dalyko) forma bei 70 proc. jų yra informuoti apie kitas esamas galimybes
+        mokytis papildomų užsienio kalbų Vilniaus universitete.
       </h4>
 
       <NTimeline class="mt-4">
@@ -1224,12 +1260,13 @@ užsienio kalbų Vilniaus universitete."
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
           ><ul>
             <li>
-              Buvo išsiaiškintos sistemos atvėrimo galimybės, informacija perduota VU SA
-              prezidentei. Surinktas poreikis ir iš kitų VU KAP, informacija pristatyta
-              centrinei administracijai. Šis klausimas turėtų būti išspręstas 30 / 60
-              kreditų atlaisvinimo metu. Taip pat buvo ir vis dar bus viešinamos kitos
-              galimybės mokytis užsienio kalbų Universitete (pvz., Kalbų mokykla,
-              individualus studijų planas).
+              Buvo išsiaiškintos sistemos atvėrimo galimybės, informacija
+              perduota VU SA prezidentei. Surinktas poreikis ir iš kitų VU KAP,
+              informacija pristatyta centrinei administracijai. Šis klausimas
+              turėtų būti išspręstas 30 / 60 kreditų atlaisvinimo metu. Taip pat
+              buvo ir vis dar bus viešinamos kitos galimybės mokytis užsienio
+              kalbų Universitete (pvz., Kalbų mokykla, individualus studijų
+              planas).
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -1238,9 +1275,9 @@ užsienio kalbų Vilniaus universitete."
     <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
-        26. 2022 m. liepos 1 d. veikia bent 2 proaktyvios priemonės, skirtos gerinti
-        psichosocialinę aplinką VU TSPMI, ir jomis pasinaudojo bent 15 proc. VU TSPMI
-        bendruomenės narių.
+        26. 2022 m. liepos 1 d. veikia bent 2 proaktyvios priemonės, skirtos
+        gerinti psichosocialinę aplinką VU TSPMI, ir jomis pasinaudojo bent 15
+        proc. VU TSPMI bendruomenės narių.
       </h4>
 
       <NTimeline class="mt-4">
@@ -1260,25 +1297,26 @@ nariams."
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
           ><ul>
             <li>
-              Bendradarbiaujant su VU PKMC, perduota programėlės, skirtos įsivertinti savo
-              psichologinę būklę, idėja. Šiuo metu VU PKMC su VU SA parengė projektą,
-              skirtą šios programėlės sukūrimui.
+              Bendradarbiaujant su VU PKMC, perduota programėlės, skirtos
+              įsivertinti savo psichologinę būklę, idėja. Šiuo metu VU PKMC su
+              VU SA parengė projektą, skirtą šios programėlės sukūrimui.
             </li>
 
             <li>
-              Bendradarbiaujant su VU TSPMI administracija, VU PKMC, VU SPKS, buvo
-              paleista komunikacinė kampanija, taip pat sukurta tinklalaidė, kuriame
-              diskutuojama apie tai, kaip studentai gali atpažinti savo psichologinę būklę
-              bei ja rūpintis.
+              Bendradarbiaujant su VU TSPMI administracija, VU PKMC, VU SPKS,
+              buvo paleista komunikacinė kampanija, taip pat sukurta
+              tinklalaidė, kuriame diskutuojama apie tai, kaip studentai gali
+              atpažinti savo psichologinę būklę bei ja rūpintis.
             </li>
 
             <li>
-              Psichosocialinės aplinkos gerinimo ir konsultacijų prieinamumo klausimas
-              buvo keliamas VU Rektorato bei VU Senato posėdžių metu.
+              Psichosocialinės aplinkos gerinimo ir konsultacijų prieinamumo
+              klausimas buvo keliamas VU Rektorato bei VU Senato posėdžių metu.
             </li>
             <li>
-              Šiuo metu VU TSPMI ieškomas psichologas bendruomenei, o nuo rugsėjo mėnesio
-              institute planuojama, jog atsiras antras akademinis konsultantas.
+              Šiuo metu VU TSPMI ieškomas psichologas bendruomenei, o nuo
+              rugsėjo mėnesio institute planuojama, jog atsiras antras
+              akademinis konsultantas.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -1287,8 +1325,8 @@ nariams."
     <NDivider></NDivider>
     <section>
       <h4 class="text-center font-bold text-xl">
-        27. 2022 m. rugsėjo 30 d. žiniasklaidoje bus paviešinti bent 3 VU VM studentų
-        moksliniai straipsniai.
+        27. 2022 m. rugsėjo 30 d. žiniasklaidoje bus paviešinti bent 3 VU VM
+        studentų moksliniai straipsniai.
       </h4>
 
       <NTimeline class="mt-4">
@@ -1319,21 +1357,21 @@ nariams."
         ><NCollapseItem title="Kiek pavyko įgyvendinti:"
           ><ul>
             <li>
-              Mokslo metų pradžioje buvo surastas VU SA VM SMD koordinatorius bei sukurtas
-              pareigybinis aprašas šiai pareigybei.
+              Mokslo metų pradžioje buvo surastas VU SA VM SMD koordinatorius
+              bei sukurtas pareigybinis aprašas šiai pareigybei.
             </li>
 
             <li>
-              Organizuoti susitikimai su VU VM administracijos darbuotojais, kuriuose
-              dalyvavo VU SA VM pirmininkas ir VU SA VM SMD koordinatorius, bei būtent šių
-              susitikimų metu buvo tobulinamos VU SA VM SMD veiklos ir įgyvendinimo
-              idėjos.
+              Organizuoti susitikimai su VU VM administracijos darbuotojais,
+              kuriuose dalyvavo VU SA VM pirmininkas ir VU SA VM SMD
+              koordinatorius, bei būtent šių susitikimų metu buvo tobulinamos VU
+              SA VM SMD veiklos ir įgyvendinimo idėjos.
             </li>
 
             <li>
-              Su administracijos pagalba yra ieškomi mentoriai, padėsiantys studentams
-              vykdyti mokslinę veiklą." keisti į "yra ieškoma mentorių, padėsiančių
-              studentams (-ėms) vykdyti mokslinę veiklą.
+              Su administracijos pagalba yra ieškomi mentoriai, padėsiantys
+              studentams vykdyti mokslinę veiklą." keisti į "yra ieškoma
+              mentorių, padėsiančių studentams (-ėms) vykdyti mokslinę veiklą.
             </li>
           </ul></NCollapseItem
         ></NCollapse
@@ -1351,9 +1389,15 @@ nariams."
   </Planas>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import {
+  NCollapse,
+  NCollapseItem,
+  NDivider,
+  NTimeline,
+  NTimelineItem,
+} from "naive-ui";
 import Planas from "@/Pages/Public/Ataskaita2022/3-Planas.vue";
-import { NTimeline, NTimelineItem, NDivider, NCollapse, NCollapseItem } from "naive-ui";
 </script>
 
 <style scoped>

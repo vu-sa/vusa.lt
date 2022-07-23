@@ -76,7 +76,8 @@ class PagesPolicy
      */
     public function delete(User $user, Page $page)
     {
-        //
+        // allow delete of pages belonging to the user's institution
+        return $user->padalinys()->id == $page->padalinys->id;
     }
 
     /**

@@ -6,15 +6,16 @@ use App\Models\MainPage;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
+use Illuminate\Support\Facades\DB;
 
 class MainPageController extends Controller
 {
-    
+
     public function __construct()
     {
         $this->authorizeResource(MainPage::class, 'mainPage');
     }
-    
+
     /**
      * Display a listing of the resource.
      *
@@ -22,19 +23,24 @@ class MainPageController extends Controller
      */
     public function index(Request $request)
     {
-        $mainPage = MainPage::all();
+        $padaliniai = request()->input('padaliniai');
+        $text = request()->input('text');
 
-        return Inertia::render('Admin/Content/MainPage/Index', [
-            'mainPage' => $mainPage->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'text' => $item->text,
-                    'link' => $item->link,
-                    'padalinys' => $item->padalinys,
-                    'lang' => $item->lang,
-                    'created_at' => $item->created_at,
-                ];
-            }),
+        $mainPages = MainPage::
+            // check if admin, if not return only pages from current user padalinys
+            when(!$request->user()->isAdmin(), function ($query) use ($request) {
+                $query->where('padalinys_id', '=', $request->user()->padalinys()->id);
+                // check request for padaliniai, if not empty return only pages from request padaliniai
+            })->when(!empty($padaliniai), function ($query) use ($padaliniai) {
+                $query->whereIn('padalinys_id', $padaliniai);
+            })->when(!is_null($text), function ($query) use ($text) {
+                $query->where('text', 'like', "%{$text}%");
+            })->with(['padalinys' => function ($query) {
+                $query->select('id', 'shortname', 'alias');
+            }])->orderByDesc('created_at')->paginate(20);
+
+        return Inertia::render('Admin/Content/IndexMainPages', [
+            'mainPages' => $mainPages,
         ]);
     }
 
@@ -45,7 +51,7 @@ class MainPageController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('Admin/Content/CreateMainPage');
     }
 
     /**
@@ -56,7 +62,21 @@ class MainPageController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'text' => 'required',
+            'link' => 'required',
+        ]);
+        
+        DB::transaction(function () use ($request) {
+            
+            $mainPage = new MainPage;
+            
+            $mainPage->text = $request->text;
+            $mainPage->link = $request->link;
+            $mainPage->position = '';
+            $mainPage->padalinys()->associate($request->user()->padalinys());
+            $mainPage->save();
+        });
     }
 
     /**
@@ -78,7 +98,7 @@ class MainPageController extends Controller
      */
     public function edit(MainPage $mainPage)
     {
-        return Inertia::render('Admin/Content/MainPage/Edit', [
+        return Inertia::render('Admin/Content/EditMainPage', [
             'mainPage' => $mainPage
         ]);
     }
@@ -92,7 +112,14 @@ class MainPageController extends Controller
      */
     public function update(Request $request, MainPage $mainPage)
     {
-        //
+        $request->validate([
+            'text' => 'required',
+            'link' => 'required',
+        ]);
+        
+        DB::transaction(function () use ($request, $mainPage) {
+            $mainPage->update($request->only('text', 'link'));
+        });
     }
 
     /**
@@ -103,6 +130,8 @@ class MainPageController extends Controller
      */
     public function destroy(MainPage $mainPage)
     {
-        //
+        $mainPage->delete();
+
+        return redirect()->route('mainPage.index');
     }
 }
