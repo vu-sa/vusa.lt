@@ -43,7 +43,7 @@ const themeOverrides = {
 // Userway script
 
 (function (d) {
-  const s = d.createElement("script");
+  let s = d.createElement("script");
   s.setAttribute("data-account", "5OC3pQZI6r");
   s.setAttribute("src", "https://cdn.userway.org/widget.js");
   (d.body || d.head).appendChild(s);
@@ -57,7 +57,7 @@ var Tawk_API = Tawk_API || {},
   Tawk_LoadStart = new Date();
 
 (function () {
-  const s1 = document.createElement("script"),
+  let s1 = document.createElement("script"),
     s0 = document.getElementsByTagName("script")[0];
   s1.async = true;
   s1.src = "https://embed.tawk.to/5f71b135f0e7167d00145612/default";
