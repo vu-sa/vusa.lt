@@ -3,7 +3,7 @@
     :title="`${institution.short_name ?? institution.name} kontaktai`"
   >
     <div class="px-16 lg:px-32">
-      <div class="grid gap-8 sm:grid-cols-2 xl:grid-cols-3">
+      <div class="grid gap-8 pt-4 sm:grid-cols-2 xl:grid-cols-3">
         <div v-if="institution.image_url" class="group relative sm:col-span-2">
           <ShapeDivider1 class="absolute -top-1 z-10"></ShapeDivider1>
           <ShapeDivider1
@@ -17,7 +17,7 @@
         </div>
         <div
           :class="{ 'sm:row-span-2': !institution.image_url }"
-          class="prose-sm prose my-auto"
+          class="prose-sm my-auto sm:prose"
         >
           <h1>{{ institution.name ?? institution.short_name }}</h1>
           <div v-html="institution.description"></div>
