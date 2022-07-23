@@ -1,11 +1,11 @@
 <template>
   <NForm :model="form" label-placement="top">
     <NGrid :span="24" :x-gap="24">
-      <NFormItemGi label="Pavadinimas" :span="12">
+      <NFormItemGi label="Mygtuko tekstas" :span="12">
         <NInput
           v-model:value="form.text"
           type="text"
-          placeholder="Įrašyti pavadinimą"
+          placeholder="Įrašyti tekstą..."
         />
       </NFormItemGi>
 

@@ -32,63 +32,6 @@ defineProps<{
   news: PaginatedModels<App.Models.News[]>;
 }>();
 
-const createColumns = (): DataTableColumns<App.Models.News> => {
-  return [
-    {
-      title: "Pavadinimas",
-      key: "title",
-      minWidth: 250,
-    },
-    {
-      // title: "Nuoroda",
-      key: "permalink",
-      // ellipsis: true,
-      width: 55,
-      render(row) {
-        return h(PreviewModelButton, {
-          mainRoute: "main.news",
-          padalinysRoute: "padalinys.news",
-          mainProps: {
-            newsString: "naujiena",
-            lang: row.lang,
-            permalink: row.permalink,
-          },
-          padalinysProps: {
-            newsString: "naujiena",
-            lang: row.lang,
-            permalink: row.permalink,
-            padalinys: row.padalinys?.alias,
-          },
-          padalinysShortname: row.padalinys?.shortname,
-        });
-      },
-    },
-    {
-      title: "Padalinys",
-      key: "padalinys.id",
-      width: 150,
-      ellipsis: {
-        tooltip: true,
-      },
-      filter: true,
-      filterMultiple: true,
-      filterOptionValues: padaliniaiFilterOptionValues,
-      filterOptions: padaliniaiFilterOptions,
-      render(row) {
-        return row.padalinys.shortname;
-      },
-    },
-    {
-      title: "Paskelbimo data",
-      key: "publish_time",
-      width: 150,
-      ellipsis: {
-        tooltip: true,
-      },
-    },
-  ];
-};
-
 const padaliniaiFilterOptions = ref(
   usePage().props.value.padaliniai.map((padalinys) => {
     return {
@@ -105,5 +48,58 @@ padaliniaiFilterOptions.value.unshift({
   value: 16,
 });
 
-const columns = ref(createColumns());
+const columns: DataTableColumns<App.Models.News> = [
+  {
+    title: "Pavadinimas",
+    key: "title",
+    minWidth: 250,
+  },
+  {
+    // title: "Nuoroda",
+    key: "permalink",
+    // ellipsis: true,
+    width: 55,
+    render(row) {
+      return h(PreviewModelButton, {
+        mainRoute: "main.news",
+        padalinysRoute: "padalinys.news",
+        mainProps: {
+          newsString: "naujiena",
+          lang: row.lang,
+          permalink: row.permalink,
+        },
+        padalinysProps: {
+          newsString: "naujiena",
+          lang: row.lang,
+          permalink: row.permalink,
+          padalinys: row.padalinys?.alias,
+        },
+        padalinysShortname: row.padalinys?.shortname,
+      });
+    },
+  },
+  {
+    title: "Padalinys",
+    key: "padalinys.id",
+    width: 150,
+    ellipsis: {
+      tooltip: true,
+    },
+    filter: true,
+    filterMultiple: true,
+    filterOptionValues: padaliniaiFilterOptionValues,
+    filterOptions: padaliniaiFilterOptions,
+    render(row) {
+      return row.padalinys.shortname;
+    },
+  },
+  {
+    title: "Paskelbimo data",
+    key: "publish_time",
+    width: 150,
+    ellipsis: {
+      tooltip: true,
+    },
+  },
+];
 </script>

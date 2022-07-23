@@ -2,11 +2,7 @@
   <AdminLayout title="Nauja naujiena" :back-url="route('pages.index')">
     <UpsertModelLayout :errors="$attrs.errors" :model="page">
       <template #card-header> Puslapio informacija </template>
-      <PageForm
-        :page="page"
-        model-route="duties.update"
-        delete-model-route="duties.destroy"
-      />
+      <PageForm :page="page" model-route="pages.store" />
     </UpsertModelLayout>
   </AdminLayout>
 </template>

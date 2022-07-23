@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout title="Baneriai">
+  <AdminLayout title="Baneriai" :create-url="route('banners.create')">
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
@@ -15,8 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import { Link } from "@inertiajs/inertia-vue3";
-import { h, ref } from "vue";
+import { h } from "vue";
 import AdminLayout from "@/components/Admin/Layouts/AdminLayout.vue";
 import AsideHeader from "../../../components/Admin/Headers/AsideHeaderContent.vue";
 import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
@@ -27,28 +26,24 @@ defineProps<{
   banners: PaginatedModels<App.Models.Banner[]>;
 }>();
 
-const createColumns = () => {
-  return [
-    {
-      title: "Pavadinimas",
-      key: "title",
-      render(row: App.Models.Banner) {
-        return h(
-          "span",
-          {
-            class: row.is_active ? "text-green-700 font-bold" : "text-red-700",
-            href: route("banners.edit", { id: row.id }),
-          },
-          { default: () => row.title }
-        );
-      },
+const columns = [
+  {
+    title: "Pavadinimas",
+    key: "title",
+    render(row: App.Models.Banner) {
+      return h(
+        "span",
+        {
+          class: row.is_active ? "text-green-700 font-bold" : "text-red-700",
+          href: route("banners.edit", { id: row.id }),
+        },
+        { default: () => row.title }
+      );
     },
-    {
-      title: "Padalinys",
-      key: "padalinys.shortname",
-    },
-  ];
-};
-
-const columns = ref(createColumns());
+  },
+  {
+    title: "Padalinys",
+    key: "padalinys.shortname",
+  },
+];
 </script>

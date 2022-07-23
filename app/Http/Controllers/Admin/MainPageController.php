@@ -62,6 +62,11 @@ class MainPageController extends Controller
      */
     public function store(Request $request)
     {
+        $request->validate([
+            'text' => 'required',
+            'link' => 'required',
+        ]);
+        
         DB::transaction(function () use ($request) {
             
             $mainPage = new MainPage;

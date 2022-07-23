@@ -11,9 +11,12 @@
 
       <NFormItemGi label="Nuoroda" :span="12">
         <NInput
-          v-model:value="form.permalink"
+          :value="
+            modelRoute == 'pages.create' ? createdPermalink : form.permalink
+          "
+          disabled
           type="text"
-          placeholder="Įrašyti nuorodą..."
+          placeholder="Sugeneruojama nuoroda..."
         />
       </NFormItemGi>
 
@@ -61,9 +64,10 @@
 <script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
 import { NForm, NFormItemGi, NGrid, NInput, NSelect } from "naive-ui";
+import { computed, ref } from "vue";
 import { debounce } from "lodash";
-import { ref } from "vue";
 import { useForm, usePage } from "@inertiajs/inertia-vue3";
+import latinize from "latinize";
 import route from "ziggy-js";
 
 import DeleteModelButton from "@/Components/Admin/Buttons/DeleteModelButton.vue";
@@ -90,6 +94,18 @@ const languageOptions = [
 ];
 
 const otherLangPageOptions = ref([]);
+
+const createdPermalink = computed(() => {
+  let latinizedTitle = latinize(form.title);
+
+  return latinizedTitle
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+/, "")
+    .replace(/-+$/, "")
+    .substring(0, 30);
+});
 // const { message } = createDiscreteApi(["message"]);
 
 const getOtherLangPages = debounce((input) => {

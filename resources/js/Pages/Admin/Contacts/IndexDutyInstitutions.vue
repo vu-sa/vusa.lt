@@ -10,7 +10,6 @@
       <IndexSearchInput payload-name="search" />
       <IndexDataTable
         edit-route="dutyInstitutions.edit"
-        destroy-route="dutyInstitutions.destroy"
         :model="dutyInstitutions"
         :columns="columns"
       >
@@ -20,8 +19,6 @@
 </template>
 
 <script setup lang="ts">
-import { NButton, NIcon } from "naive-ui";
-import { PreviewLink20Filled } from "@vicons/fluent";
 import { h } from "vue";
 import route from "ziggy-js";
 

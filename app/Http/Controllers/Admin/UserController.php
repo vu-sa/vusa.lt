@@ -81,7 +81,8 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => 'required',
-            'email' => 'email|unique:users|unique:duties',
+            'duties' => 'required',
+            'email' => 'required|unique:users|unique:duties',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -156,6 +157,11 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        $request->validate([
+            'name' => 'required',
+            'email' => 'required|unique:users',
+        ]);
+        
         DB::transaction(function () use ($request, $user) {
             // dd($request->all());
 

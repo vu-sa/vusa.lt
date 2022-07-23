@@ -122,6 +122,14 @@ class DutyInstitutionController extends Controller
      */
     public function update(Request $request, DutyInstitution $dutyInstitution)
     {
+        // validate
+        $request->validate([
+            'name' => 'required',
+            'short_name' => 'required',
+            'alias' => 'required|unique:duties_institutions,alias',
+            'padalinys_id' => 'required',
+        ]);
+        
         // TODO: short_name and shortname are used as columns in some tables. Need to make the same name.
         $dutyInstitution->update($request->only('name', 'short_name', 'description', 'padalinys_id'));
 

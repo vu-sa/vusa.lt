@@ -20,8 +20,8 @@
       </template>
       <PageForm
         :page="page"
-        model-route="duties.update"
-        delete-model-route="duties.destroy"
+        model-route="pages.update"
+        delete-model-route="pages.destroy"
       />
     </UpsertModelLayout>
   </AdminLayout>

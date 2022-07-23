@@ -33,8 +33,6 @@
                 autocomplete: 'name',
               }"
             />
-
-            />
           </NFormItem>
           <NFormItem label="El. paštas" path="email">
             <NInput

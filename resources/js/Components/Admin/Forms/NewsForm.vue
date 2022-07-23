@@ -161,7 +161,6 @@ const createdPermalink = computed(() => {
     .replace(/^-+/, "")
     .replace(/-+$/, "")
     .substring(0, 30);
-  // .concat("-", Math.random().toString(36).substring(2, 5));
 });
 
 const getOtherLangNews = debounce((input) => {
