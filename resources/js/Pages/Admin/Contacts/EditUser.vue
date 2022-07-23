@@ -14,9 +14,9 @@
         <strong>Šiuo metu {{ contact.name }} užima šias pareigas:</strong>
         <ul class="list-inside">
           <li v-for="duty in contact.duties" :key="duty.id">
-            <Link :href="route('duties.edit', { id: duty.id })">{{
-              duty.name
-            }}</Link>
+            <Link :href="route('duties.edit', { id: duty.id })"
+              >{{ duty.name }}{{ duty.email ? ` (${duty.email})` : "" }}</Link
+            >
           </li>
         </ul>
       </div>

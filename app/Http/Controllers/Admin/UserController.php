@@ -138,6 +138,7 @@ class UserController extends Controller
                 'duties' => $user->duties->map(function ($duty) {
                     return [
                         'id' => $duty->id,
+                        'email' => $duty->email,
                         'name' => $duty->name,
                         'institution' => $duty->institution,
                     ];
