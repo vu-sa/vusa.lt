@@ -75,7 +75,7 @@
           text
           @click="showModal = true"
         >
-          v0.1.2 (2022-07-08)
+          v0.2.0 (2022-07-23)
         </NButton>
       </div>
       <NModal v-model:show="showModal">
