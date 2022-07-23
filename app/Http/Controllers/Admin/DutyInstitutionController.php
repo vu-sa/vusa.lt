@@ -65,7 +65,7 @@ class DutyInstitutionController extends Controller
         $request->validate([
             'name' => 'required',
             'short_name' => 'required',
-            'alias' => 'required',
+            'alias' => 'required|unique:duties_institutions,alias',
             'padalinys_id' => 'required',
         ]);
 
@@ -126,7 +126,6 @@ class DutyInstitutionController extends Controller
         $request->validate([
             'name' => 'required',
             'short_name' => 'required',
-            'alias' => 'required|unique:duties_institutions,alias',
             'padalinys_id' => 'required',
         ]);
         
