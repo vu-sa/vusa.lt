@@ -9,25 +9,35 @@
       />
     </UpsertModelLayout>
     <template #aside-navigation-options>
-      <div v-if="hasUsers">
+      <div v-if="hasUsers" class="col-span-3">
+        <NDivider></NDivider>
+
         <strong>Šiuo metu šias pareigas užima:</strong>
-        <ul class="list-inside">
+        <ul class="mt-2 list-none">
           <li v-for="user in users" :key="user.id">
-            <Link :href="route('users.edit', { id: user.id })">{{
-              user.name
-            }}</Link>
-            <NPopconfirm @positive-click="detachUserFromDuty(user)">
-              <template #trigger>
-                <span class="ml-2">
-                  <NButton text>
+            <Link
+              class="flex flex-row items-center gap-2"
+              :href="route('users.edit', { id: user.id })"
+              ><NAvatar round size="small" :src="user.profile_photo_path" />{{
+                user.name
+              }}
+              <NPopconfirm @positive-click="detachUserFromDuty(user)">
+                <template #trigger>
+                  <NButton
+                    type="error"
+                    tertiary
+                    size="tiny"
+                    circle
+                    @click.prevent
+                  >
                     <NIcon>
                       <LinkDismiss20Filled />
                     </NIcon>
                   </NButton>
-                </span>
-              </template>
-              Elementas bus atsietas, tačiau nebus ištrintas. Tęsti?
-            </NPopconfirm>
+                </template>
+                Elementas bus atsietas, tačiau nebus ištrintas. Tęsti?
+              </NPopconfirm>
+            </Link>
           </li>
         </ul>
       </div>
@@ -40,7 +50,14 @@
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
 import { LinkDismiss20Filled } from "@vicons/fluent";
-import { NButton, NIcon, NPopconfirm, createDiscreteApi } from "naive-ui";
+import {
+  NAvatar,
+  NButton,
+  NDivider,
+  NIcon,
+  NPopconfirm,
+  createDiscreteApi,
+} from "naive-ui";
 import { computed } from "vue";
 import route from "ziggy-js";
 

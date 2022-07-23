@@ -5,7 +5,11 @@
     </template>
     <div class="main-card">
       <IndexSearchInput payload-name="title" />
-      <IndexDataTable :model="duties" :columns="columns" />
+      <IndexDataTable
+        edit-route="duties.edit"
+        :model="duties"
+        :columns="columns"
+      />
     </div>
   </AdminLayout>
 </template>
@@ -30,34 +34,46 @@ const createColumns = () => {
     {
       title: "Pavadinimas",
       key: "name",
-      width: 300,
-      ellipsis: {
-        tooltip: true,
-      },
-      render(row: App.Models.Duty) {
-        return h(
-          Link,
-          {
-            href: route("duties.edit", { id: row.id }),
-            class: "hover:text-vusa-red transition",
-          },
-          { default: () => row.name }
-        );
-      },
+      minWidth: 150,
     },
     {
       title: "Tipas",
       key: "type.name",
+      width: 150,
     },
     {
       title: "El. paštas",
       key: "email",
+      minWidth: 150,
+      render(row) {
+        return h(
+          "a",
+          {
+            href: `mailto:${row.email}`,
+            class: "hover:text-vusa-red transition",
+          },
+          { default: () => row.email }
+        );
+      },
     },
     {
       title: "Institucija",
       key: "institution.id",
+      minWidth: 100,
       render(row: App.Models.Duty) {
-        return row.institution.short_name ?? row.institution.name;
+        return h(
+          "a",
+          {
+            href: route("dutyInstitutions.edit", {
+              id: row.institution.id,
+            }),
+            target: "_blank",
+            class: "hover:text-vusa-red transition",
+          },
+          {
+            default: () => row.institution.short_name ?? row.institution.name,
+          }
+        );
       },
     },
   ];

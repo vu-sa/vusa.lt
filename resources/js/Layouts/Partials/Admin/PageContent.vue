@@ -10,7 +10,7 @@
               class="h-6 w-6 duration-200 hover:text-red-800"
           /></NIcon></div
       ></Link>
-      <h1 class="mb-0 text-gray-800">
+      <h1 class="mb-0 flex items-center gap-4 text-gray-800">
         <slot name="header"></slot>
       </h1>
       <Link v-if="isIndex && createUrl" class="" :href="createUrl">

@@ -3,7 +3,7 @@
     remote
     size="small"
     :data="model.data"
-    :columns="columns"
+    :columns="columnsWithActions"
     :loading="loading"
     :pagination="pagination"
     pagination-behavior-on-filter="first"
@@ -14,14 +14,71 @@
 </template>
 
 <script setup lang="ts">
-import { DataTableColumns, NDataTable } from "naive-ui";
+import { DataTableColumns, NButton, NDataTable, NIcon, NSpin } from "naive-ui";
+import { Edit20Filled } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
-import { reactive, ref } from "vue";
+import { computed, h, reactive, ref } from "vue";
+import route from "ziggy-js";
+
+import DeleteModelButton from "@/Components/Admin/Buttons/DeleteModelButton.vue";
 
 const props = defineProps<{
   columns: DataTableColumns<any>;
   model: PaginatedModels<any[]>;
+  showRoute?: string;
+  editRoute: string;
+  destroyRoute?: string;
 }>();
+
+// Append the column array with an actions columns
+const columnsWithActions = computed(() => {
+  return [
+    ...props.columns,
+    {
+      title: "Veiksmai",
+      key: "actions",
+      width: 100,
+      render(row) {
+        return h(
+          "div",
+          {
+            class: "flex gap-1",
+          },
+          {
+            default: () => [
+              h(
+                NButton,
+                {
+                  size: "small",
+                  onClick: () => {
+                    Inertia.get(route(props.editRoute, row.id));
+                  },
+                },
+                {
+                  icon: () =>
+                    h(NIcon, {
+                      component: Edit20Filled,
+                    }),
+                }
+              ),
+
+              // conditionally render the destroy button
+              [
+                props.destroyRoute
+                  ? h(DeleteModelButton, {
+                      size: "small",
+                      form: row,
+                      modelRoute: props.destroyRoute,
+                    })
+                  : null,
+              ],
+            ],
+          }
+        );
+      },
+    },
+  ];
+});
 
 const emit = defineEmits<{
   (e: "updatePaginationPage", id: number): void;

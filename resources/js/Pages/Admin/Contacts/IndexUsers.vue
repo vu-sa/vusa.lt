@@ -5,7 +5,11 @@
     </template>
     <div class="main-card">
       <IndexSearchInput payload-name="name" />
-      <IndexDataTable :model="users" :columns="columns" />
+      <IndexDataTable
+        edit-route="users.edit"
+        :model="users"
+        :columns="columns"
+      />
     </div>
   </AdminLayout>
 </template>
@@ -30,16 +34,6 @@ const columns = [
   {
     title: "Vardas",
     key: "name",
-    render(row: App.Models.User) {
-      return h(
-        Link,
-        {
-          href: route("users.edit", { id: row.id }),
-          class: "hover:text-vusa-red transition",
-        },
-        { default: () => row.name }
-      );
-    },
   },
   {
     title: "El. paštas",

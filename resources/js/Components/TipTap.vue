@@ -123,7 +123,7 @@
 
     <EditorContent
       :editor="editor"
-      class="min-h-[12em] rounded-b-lg border-vusa-yellow/50 bg-slate-100/40 shadow-inner"
+      class="min-h-[12em] rounded-b-lg border-vusa-yellow/50 bg-stone-50/40 shadow-inner"
     />
   </div>
   <NModal v-model:show="showFileModal">

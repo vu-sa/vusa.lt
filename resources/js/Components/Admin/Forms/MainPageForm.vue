@@ -17,7 +17,7 @@
         />
       </NFormItemGi>
     </NGrid>
-    <div class="flex justify-end">
+    <div class="flex justify-end gap-2">
       <DeleteModelButton
         v-if="deleteModelRoute"
         :form="form"

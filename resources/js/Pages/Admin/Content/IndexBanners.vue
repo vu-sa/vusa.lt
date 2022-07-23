@@ -5,7 +5,11 @@
     </template>
     <div class="main-card">
       <IndexSearchInput payload-name="title" />
-      <IndexDataTable :model="banners" :columns="columns" />
+      <IndexDataTable
+        edit-route="banners.edit"
+        :model="banners"
+        :columns="columns"
+      />
     </div>
   </AdminLayout>
 </template>
@@ -30,7 +34,7 @@ const createColumns = () => {
       key: "title",
       render(row: App.Models.Banner) {
         return h(
-          Link,
+          "span",
           {
             class: row.is_active ? "text-green-700 font-bold" : "text-red-700",
             href: route("banners.edit", { id: row.id }),

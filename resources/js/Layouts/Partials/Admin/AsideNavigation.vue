@@ -3,7 +3,7 @@
     class="main-card sticky top-4 col-span-2 ml-12 mb-auto hidden grid-flow-row gap-5 md:grid"
   >
     <div
-      class="col-span-3 flex items-center gap-2 transition hover:text-gray-900"
+      class="col-span-3 flex flex-col items-center justify-center gap-3 transition hover:text-gray-900 xl:flex-row"
     >
       <div class="flex items-center">
         <img
@@ -17,7 +17,7 @@
           }})</span
         >
       </div>
-      <div class="ml-auto">
+      <div class="xl:ml-auto">
         <NButton
           icon-placement="right"
           :loading="loading"

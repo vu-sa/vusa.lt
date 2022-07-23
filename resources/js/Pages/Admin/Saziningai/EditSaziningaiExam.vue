@@ -4,8 +4,8 @@
       <SaziningaiExamForm
         :exam="exam"
         :padaliniai="padaliniai"
-        model-route="saziningaiExam.update"
-        delete-model-route="saziningaiExam.destroy"
+        model-route="saziningaiExams.update"
+        delete-model-route="saziningaiExams.destroy"
       ></SaziningaiExamForm>
 
       <div class="main-card mt-4">

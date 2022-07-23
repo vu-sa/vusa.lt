@@ -1,8 +1,18 @@
 <template>
   <AdminLayout
-    :title="dutyInstitution.name"
-    :back-url="route('dutyInstitution.index')"
+    :title="dutyInstitution.name ?? dutyInstitution.short_name"
+    :back-url="route('dutyInstitutions.index')"
   >
+    <template #header>
+      {{ dutyInstitution.name ?? dutyInstitution.short_name }}
+      <PreviewModelButton
+        main-route="contacts.category"
+        padalinys-route="contacts.category"
+        :main-props="{ alias: dutyInstitution.alias }"
+        :padalinys-props="{ alias: dutyInstitution.alias }"
+        :padalinys-shortname="dutyInstitution.padalinys?.shortname"
+      ></PreviewModelButton>
+    </template>
     <UpsertModelLayout :errors="$attrs.errors" :model="dutyInstitution">
       <DutyInstitutionForm
         :padaliniai="padaliniai"
@@ -13,7 +23,8 @@
     </UpsertModelLayout>
 
     <template #aside-navigation-options>
-      <div v-if="duties">
+      <div v-if="duties" class="col-span-3">
+        <NDivider></NDivider>
         <strong>Šiuo metu institucijai priklauso šios pareigos:</strong>
         <ul class="list-inside">
           <li v-for="duty in duties" :key="duty.id">
@@ -30,10 +41,13 @@
 
 <script setup lang="ts">
 import { Link } from "@inertiajs/inertia-vue3";
+import { NDivider } from "naive-ui";
 import route from "ziggy-js";
 
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import DutyInstitutionForm from "@/Components/Admin/Forms/DutyInstitutionForm.vue";
+import PreviewModelButton from "@/components/Admin/Buttons/PreviewModelButton.vue";
+
 import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
 
 defineProps<{

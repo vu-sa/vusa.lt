@@ -5,7 +5,12 @@
   >
     <div class="main-card">
       <!-- <IndexSearchInput payload-name=""></IndexSearchInput> -->
-      <IndexDataTable :model="exams" :columns="columns"></IndexDataTable>
+      <IndexDataTable
+        destroy-route="saziningaiExams.destroy"
+        edit-route="saziningaiExams.edit"
+        :model="exams"
+        :columns="columns"
+      ></IndexDataTable>
     </div>
   </AdminLayout>
 </template>
@@ -28,52 +33,44 @@ const columns: DataTableColumns<App.Models.SaziningaiExam> = [
   {
     title: "Dalyko pavadinimas",
     key: "subject_name",
-    ellipsis: {
-      tooltip: true,
-    },
-    render(row: App.Models.SaziningaiExam) {
-      return h(
-        Link,
-        {
-          href: route("saziningaiExams.edit", { id: row.id }),
-          class: "hover:text-vusa-red transition",
-        },
-        { default: () => row.subject_name }
-      );
-    },
+    minWidth: 150,
   },
   {
     title: "Laikančiųjų padalinys",
     key: "padalinys.shortname_vu",
+    width: 100,
     render(row) {
       return row.padalinys?.shortname_vu;
     },
   },
-  {
-    title: "Registravo",
-    key: "name",
-  },
+  // {
+  //   title: "Registravo",
+  //   key: "name",
+  // },
   {
     title: "Laikančiųjų skaičius",
     key: "exam_holders",
+    width: 100,
   },
   {
     title: "Užregistravimo data",
     key: "created_at",
+    width: 120,
   },
   {
     title: "Egzamino pradžia",
     key: "flow_date",
     render(row) {
-      return row.flows?.[0].start_time;
+      return row.flows?.[0]?.start_time;
     },
+    width: 100,
   },
-  {
-    title: "Srautai",
-    key: "flow_count",
-    render(row) {
-      return row.flows?.length;
-    },
-  },
+  // {
+  //   title: "Srautai",
+  //   key: "flow_count",
+  //   render(row) {
+  //     return row.flows?.length;
+  //   },
+  // },
 ];
 </script>

@@ -5,14 +5,17 @@
     </template>
     <div class="main-card">
       <IndexSearchInput payload-name="text" />
-      <IndexDataTable :model="mainPages" :columns="columns" />
+      <IndexDataTable
+        :model="mainPages"
+        :columns="columns"
+        edit-route="mainPage.edit"
+        destroy-route="mainPage.destroy"
+      />
     </div>
   </AdminLayout>
 </template>
 
 <script setup lang="ts">
-import { Link } from "@inertiajs/inertia-vue3";
-import { h, ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import route from "ziggy-js";
 
@@ -24,40 +27,27 @@ defineProps<{
   mainPages: PaginatedModels<App.Models.MainPage[]>;
 }>();
 
-const createColumns = () => {
-  return [
-    {
-      title: "Pavadinimas",
-      key: "text",
-      ellipsis: true,
-      width: 300,
+const columns = [
+  {
+    title: "Pavadinimas",
+    key: "text",
+    ellipsis: {
+      tooltip: true,
+    },
+    width: 300,
+  },
+  {
+    title: "Padalinys",
+    key: "padalinys.shortname",
+  },
+  {
+    title: "Nuoroda",
+    key: "link",
+  },
 
-      render(row: App.Models.MainPage) {
-        return h(
-          Link,
-          {
-            href: route("mainPage.edit", { id: row.id }),
-            class: "hover:text-vusa-red transition",
-          },
-          { default: () => row.text }
-        );
-      },
-    },
-    {
-      title: "Padalinys",
-      key: "padalinys.shortname",
-    },
-    {
-      title: "Nuoroda",
-      key: "link",
-    },
-
-    {
-      title: "Kalba",
-      key: "lang",
-    },
-  ];
-};
-
-const columns = ref(createColumns());
+  {
+    title: "Kalba",
+    key: "lang",
+  },
+];
 </script>
