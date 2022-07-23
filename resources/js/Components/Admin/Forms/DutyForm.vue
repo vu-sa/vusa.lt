@@ -60,7 +60,7 @@ import {
   createDiscreteApi,
 } from "naive-ui";
 import { debounce } from "lodash";
-import { onMounted, ref } from "vue";
+import { ref } from "vue";
 import { useForm, usePage } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 

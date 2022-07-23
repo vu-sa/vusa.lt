@@ -50,7 +50,7 @@
 <script setup lang="ts">
 import { NInput } from "naive-ui";
 import { reactive } from "vue";
-import AdminLayout from "@/Layouts/AdminLayout.vue";
+import AdminLayout from "@/components/Admin/Layouts/AdminLayout.vue";
 import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{

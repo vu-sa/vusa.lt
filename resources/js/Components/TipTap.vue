@@ -200,7 +200,7 @@ import {
   TextBulletListLtr24Filled,
   TextItalic20Regular,
   TextNumberListLtr20Filled,
-  TextQuote20Filled,
+  // TextQuote20Filled,
 } from "@vicons/fluent";
 import { EditorContent, useEditor } from "@tiptap/vue-3";
 import { Inertia } from "@inertiajs/inertia";

@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import AdminLayout from "@/Layouts/AdminLayout.vue";
+import AdminLayout from "@/components/Admin/Layouts/AdminLayout.vue";
 import route from "ziggy-js";
 
 import AsideHeader from "../../../components/Admin/Headers/AsideHeaderContent.vue";

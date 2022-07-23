@@ -2,22 +2,22 @@
   <Organizacija>
     <div class="relative mb-4 w-full max-w-[110ch]">
       <img
-        class="rounded-lg w-full h-80 object-cover mx-auto brightness-50"
+        class="mx-auto h-80 w-full rounded-lg object-cover brightness-50"
         style="object-position: 45% 20%"
         src="/images/ataskaita2022/kitos-nuotraukos/IMG_8835.jpg"
       />
       <h1
-        class="absolute text-white font-bold text-3xl sm:text-4xl md:text-5xl w-full text-center bottom-8"
+        class="absolute bottom-8 w-full text-center text-3xl font-bold text-white sm:text-4xl md:text-5xl"
       >
         Stipri organizacija
       </h1>
     </div>
 
-    <NCollapse class="max-w-[92ch] mx-auto" arrow-placement="right">
+    <NCollapse class="mx-auto max-w-[92ch]" arrow-placement="right">
       <NCollapseItem>
         <template #header><h2>VU SA projektai</h2></template>
         <div
-          class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4"
+          class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12"
         >
           <h3>
             Projektas „Studentų įsitraukimo į akademinės etikos puoselėjimą
@@ -95,7 +95,7 @@
       <NCollapseItem>
         <template #header><h2>VU SA procesų atnaujinimas</h2></template>
         <div
-          class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4"
+          class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12"
         >
           <h3>Konsultavimo procesas</h3>
 
@@ -132,7 +132,7 @@
         </div>
 
         <div
-          class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4"
+          class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12"
         >
           <h3>VU SA Strateginio plano 2022–2025 m. kūrimas</h3>
 
@@ -182,17 +182,17 @@
         <template #header><h2>Institucinio stiprinimo fondas</h2></template>
         <div class="relative">
           <img
-            class="rounded-lg max-w-[80ch] w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 mx-auto"
+            class="mx-auto h-full w-full max-w-[80ch] rounded-lg object-cover grayscale duration-500 ease-in-out hover:grayscale-0"
             src="/images/ataskaita2022/kitos-nuotraukos/ISF.jpg"
           />
           <p
-            class="absolute text-white font-bold text-2xl sm:text-3xl md:text-4xl w-full text-center bottom-8"
+            class="absolute bottom-8 w-full text-center text-2xl font-bold text-white sm:text-3xl md:text-4xl"
           >
             Institucinio stiprinimo fondas
           </p>
         </div>
         <div
-          class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4"
+          class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12"
         >
           <p>
             Institucinio stiprinimo fondas yra atsakingas už organizacijos narių
@@ -277,11 +277,10 @@
           </ul>
         </div>
         <h3>Mokymų lentelė</h3>
-        <div class="p-2 bg-white">
+        <div class="bg-white p-2">
           <NDataTable
             :columns="columns"
             :data="data"
-            :pagination="pagination"
             :bordered="true"
             size="small"
           />
@@ -304,7 +303,7 @@
 </template>
 
 <script setup lang="ts">
-import { NCollapse, NCollapseItem, NDataTable, NDivider } from "naive-ui";
+import { NCollapse, NCollapseItem, NDataTable } from "naive-ui";
 import Organizacija from "../5-Organizacija.vue";
 
 const columns = [

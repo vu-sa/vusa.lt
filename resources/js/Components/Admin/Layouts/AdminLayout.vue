@@ -127,11 +127,11 @@ import { NButton, NModal } from "naive-ui";
 import { ref } from "vue";
 
 import AppLogo from "@/components/AppLogo.vue";
-import AsideNavigation from "@/layouts/Partials/Admin/AsideNavigation.vue";
+import AsideNavigation from "@/components/Admin/Layouts/AsideNavigation.vue";
 import Changelog from "@/components/Admin/Misc/ChangelogCard.vue";
 import MenuButton from "@/components/Admin/MenuButton.vue";
 import MetaIcons from "@/components/MetaIcons.vue";
-import PageContent from "@/layouts/Partials/Admin/PageContent.vue";
+import PageContent from "@/components/Admin/Layouts/PageContent.vue";
 
 defineProps<{
   title?: string;

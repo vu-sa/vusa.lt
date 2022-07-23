@@ -21,7 +21,7 @@ import { Link } from "@inertiajs/inertia-vue3";
 import { h } from "vue";
 import route from "ziggy-js";
 
-import AdminLayout from "@/Layouts/AdminLayout.vue";
+import AdminLayout from "@/components/Admin/Layouts/AdminLayout.vue";
 import IndexDataTable from "@/components/Admin/IndexDataTable.vue";
 // import IndexSearchInput from "@/components/Admin/IndexSearchInput.vue";
 

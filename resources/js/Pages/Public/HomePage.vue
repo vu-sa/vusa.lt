@@ -162,8 +162,8 @@ import { onBeforeUnmount, ref } from "vue";
 import route from "ziggy-js";
 
 import HomeCard from "@/Components/Public/HomeCard.vue";
-import NewsElement from "@/Layouts/Partials/Public/NewsElement.vue";
-import PublicLayout from "@/Layouts/PublicLayout.vue";
+import NewsElement from "@/components/Public/NewsElement.vue";
+import PublicLayout from "@/components/Public/Layouts/PublicLayout.vue";
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 
 const props = defineProps<{
@@ -198,20 +198,27 @@ onBeforeUnmount(() => {
 
 const goToLink = (link: string) => {
   // check if link is external
-  console.log(link);
+  let padalinysAlias = usePage().props.value.alias;
   if (link.includes("http")) {
     window.open(link, "_blank");
-  } else {
-    // if has /lt/, truncate it
-    if (link.includes("/lt/")) {
-      link = link.replace("/lt/", "");
-    }
+  }
+  // if has /lt/, truncate it
+  if (link.includes("/lt/")) {
+    link = link.replace("/lt/", "");
+  }
 
+  if (padalinysAlias === "vusa") {
+    // if first char is /, remove it
+    if (link.charAt(0) === "/") {
+      link = link.substring(1);
+    }
+    Inertia.visit(route("main.page", { lang: "lt", permalink: link }));
+  } else {
     Inertia.visit(
       route("padalinys.page", {
         lang: "lt",
         permalink: link,
-        padalinys: usePage().props.value.alias,
+        padalinys: padalinysAlias,
       })
     );
   }

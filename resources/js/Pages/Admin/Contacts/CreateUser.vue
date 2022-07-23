@@ -7,18 +7,16 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from "vue";
-
-import AdminLayout from "@/Layouts/AdminLayout.vue";
+import AdminLayout from "@/components/Admin/Layouts/AdminLayout.vue";
 import UpsertModelLayout from "@/components/Admin/Layouts/UpsertModelLayout.vue";
 import UserForm from "@/components/Admin/Forms/UserForm.vue";
 
-const props = defineProps<{
+defineProps<{
   contact: App.Models.User;
   roles: App.Models.Role[];
 }>();
 
-const contact = reactive({
+const contact = {
   name: "",
   email: "",
   phone: null,
@@ -27,5 +25,5 @@ const contact = reactive({
   },
   duties: [],
   profile_photo_path: null,
-});
+};
 </script>

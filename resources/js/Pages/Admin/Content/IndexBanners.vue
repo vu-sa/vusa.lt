@@ -17,7 +17,7 @@
 <script setup lang="ts">
 import { Link } from "@inertiajs/inertia-vue3";
 import { h, ref } from "vue";
-import AdminLayout from "@/Layouts/AdminLayout.vue";
+import AdminLayout from "@/components/Admin/Layouts/AdminLayout.vue";
 import AsideHeader from "../../../components/Admin/Headers/AsideHeaderContent.vue";
 import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
 import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";

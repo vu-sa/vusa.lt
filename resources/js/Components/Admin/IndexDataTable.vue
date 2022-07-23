@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import { DataTableColumns, NButton, NDataTable, NIcon, NSpin } from "naive-ui";
+import { DataTableColumns, NButton, NDataTable, NIcon } from "naive-ui";
 import { Edit20Filled } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import { computed, h, reactive, ref } from "vue";

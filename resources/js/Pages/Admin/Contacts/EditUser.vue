@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import AdminLayout from "@/Layouts/AdminLayout.vue";
+import AdminLayout from "@/components/Admin/Layouts/AdminLayout.vue";
 import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
 import UserForm from "@/components/Admin/Forms/UserForm.vue";
 import route from "ziggy-js";

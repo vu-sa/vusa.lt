@@ -8,6 +8,4 @@
   </button>
 </template>
 
-<script setup lang="ts">
-import { Link } from "@inertiajs/inertia-vue3";
-</script>
+<script setup lang="ts"></script>

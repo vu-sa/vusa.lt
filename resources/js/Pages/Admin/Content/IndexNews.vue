@@ -21,7 +21,7 @@ import { DataTableColumns } from "naive-ui";
 import { h, ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
 
-import AdminLayout from "@/Layouts/AdminLayout.vue";
+import AdminLayout from "@/components/Admin/Layouts/AdminLayout.vue";
 import AsideHeader from "@/components/Admin/Headers/AsideHeaderContent.vue";
 import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
 import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";

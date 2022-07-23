@@ -1,13 +1,13 @@
 <template>
   <nav
-    class="flex flex-row fixed justify-between px-6 lg:px-24 border shadow-sm w-full backdrop-blur-sm bg-white/90 text-gray-700 items-center py-2 z-50 top-0"
+    class="fixed top-0 z-50 flex w-full flex-row items-center justify-between border bg-white/90 px-6 py-2 text-gray-700 shadow-sm backdrop-blur-sm lg:px-24"
   >
-    <div class="flex flex-row space-x-4 items-center">
+    <div class="flex flex-row items-center space-x-4">
       <NPopover>
         <template #trigger>
           <Link :href="route('main.home', { lang: locale })" preserve-state>
             <img
-              class="object-contain min-w-[15vw] lg:min-w-[10vw]"
+              class="min-w-[15vw] object-contain lg:min-w-[10vw]"
               src="/logos/vusa.lin.hor.svg"
             />
           </Link>
@@ -42,7 +42,7 @@
         <NIcon><Navigation24Filled /></NIcon>
       </NButton>
     </div>
-    <div class="hidden lg:flex flex-row space-x-4 items-center">
+    <div class="hidden flex-row items-center space-x-4 lg:flex">
       <!-- <n-gradient-text type="error"> -->
       <!-- <Link :href="route('page', { permalink: 'apie' })">VU SA</Link> -->
       <!-- </n-gradient-text> -->
@@ -64,7 +64,7 @@
 
       <Link
         v-else
-        class="hover:text-vusa-red duration-200"
+        class="duration-200 hover:text-vusa-red"
         :href="
           route('main.ataskaita2022', {
             lang: locale,
@@ -75,7 +75,7 @@
       >
 
       <Link
-        class="hover:text-vusa-red duration-200"
+        class="duration-200 hover:text-vusa-red"
         :href="
           route('main.ataskaita2022', { lang: locale, permalink: 'vu-sa' })
         "
@@ -86,7 +86,7 @@
         ><template v-else>{{ $t("VU SA") }}</template></Link
       >
       <Link
-        class="hover:text-vusa-red duration-200"
+        class="duration-200 hover:text-vusa-red"
         :href="route('main.ataskaita2022', { lang: locale, permalink: 'mvp' })"
         ><NGradientText v-if="permalink === 'mvp'" type="error">{{
           $t("Metų veiklos planas")
@@ -97,14 +97,14 @@
         :options="locale === 'lt' ? navigation : navigationEN"
         @select="handleSelectKryptis"
         ><div
-          class="flex flex-row items-center hover:text-vusa-red duration-200"
+          class="flex flex-row items-center duration-200 hover:text-vusa-red"
           role="button"
         >
           {{ $t("Strateginės kryptys") }}
           <NIcon class="ml-1" size="16"><ChevronDown20Filled /></NIcon></div
       ></NDropdown>
       <Link
-        class="hover:text-vusa-red duration-200"
+        class="duration-200 hover:text-vusa-red"
         :href="
           route('main.ataskaita2022', { lang: locale, permalink: 'sritys' })
         "
@@ -114,7 +114,7 @@
         ><template v-else>{{ $t("Bendruomenė") }}</template></Link
       >
       <Link
-        class="hover:text-vusa-red duration-200"
+        class="duration-200 hover:text-vusa-red"
         :href="
           route('main.ataskaita2022', { lang: locale, permalink: 'padeka' })
         "
@@ -162,7 +162,7 @@
           @update:selected-keys="handleSelectKryptis"
         />
 
-        <div class="flex flex-row space-x-4 items-center mt-4">
+        <div class="mt-4 flex flex-row items-center space-x-4">
           <NButton
             text
             target="_blank"
@@ -221,13 +221,12 @@ import {
   NTree,
   // createDiscreteApi,
 } from "naive-ui";
-import { debounce, split } from "lodash";
 import { ref } from "vue";
 import route from "ziggy-js";
 
 // map padaliniai to options_padaliniai
 
-const padaliniai = usePage().props.value.padaliniai;
+// const padaliniai = usePage().props.value.padaliniai;
 const locale = ref(usePage().props.value.locale);
 const locales = ["lt", "en"];
 const activeDrawer = ref(false);

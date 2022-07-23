@@ -4,7 +4,7 @@
     :title="'Pradžia | Ataskaita 2022'"
   >
     <article
-      class="grid grid-cols-4 justify-items-center px-8 lg:px-32 gap-y-4"
+      class="grid grid-cols-4 justify-items-center gap-y-4 px-8 lg:px-32"
     >
       <slot></slot>
     </article>
@@ -12,5 +12,5 @@
 </template>
 
 <script setup lang="ts">
-import AtaskaitaLayout from "@/Layouts/AtaskaitaLayout.vue";
+import AtaskaitaLayout from "@/components/Public/Layouts/AtaskaitaLayout.vue";
 </script>

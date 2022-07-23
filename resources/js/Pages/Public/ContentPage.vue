@@ -4,7 +4,7 @@
       <template #breadcrumb>
         <NBreadcrumb
           v-if="props.navigationItemId != null"
-          class="h-fit w-fit mb-4"
+          class="mb-4 h-fit w-fit"
         >
           <NBreadcrumbItem
             v-for="breadcrumb in breadcrumbTree"
@@ -38,8 +38,8 @@ import { NBreadcrumb, NBreadcrumbItem, NButton, NIcon } from "naive-ui";
 import { usePage } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 
-import PageArticle from "../../Components/Public/PageArticle.vue";
-import PublicLayout from "../../Layouts/PublicLayout.vue";
+import PageArticle from "../../components/Public/PageArticle.vue";
+import PublicLayout from "../../components/Public/Layouts/PublicLayout.vue";
 
 const props = defineProps<{
   navigationItemId: number;

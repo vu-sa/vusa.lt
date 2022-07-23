@@ -3,10 +3,10 @@
     :background-image="'/images/photos/observatorijos_kiemelis.jpg'"
     :title="'Apie VU SA | Ataskaita 2022'"
   >
-    <div class="grid grid-cols-8 justify-items-center justify-center">
+    <div class="grid grid-cols-8 justify-center justify-items-center">
       <div class="hidden md:block">
         <NButton
-          class="hidden md:block top-[50vh] h-fit"
+          class="top-[50vh] hidden h-fit md:block"
           text
           style="font-size: 60px; align-self: flex-start; position: sticky"
           @click="inertiaVisitOnClick('sveikinimai')"
@@ -15,13 +15,13 @@
         ></NButton>
       </div>
       <article
-        class="flex flex-col justify-items-center px-8 lg:px-32 gap-y-4 mx-auto items-center col-span-6 w-full"
+        class="col-span-6 mx-auto flex w-full flex-col items-center justify-items-center gap-y-4 px-8 lg:px-32"
       >
         <slot></slot>
       </article>
       <div class="hidden md:block">
         <NButton
-          class="hidden md:block top-[50vh] h-fit"
+          class="top-[50vh] hidden h-fit md:block"
           text
           style="font-size: 60px; align-self: flex-start; position: sticky"
           @click="inertiaVisitOnClick('mvp')"
@@ -40,7 +40,7 @@ import {
 import { Inertia } from "@inertiajs/inertia";
 import { NButton, NIcon } from "naive-ui";
 import { usePage } from "@inertiajs/inertia-vue3";
-import AtaskaitaLayout from "@/Layouts/AtaskaitaLayout.vue";
+import AtaskaitaLayout from "@/components/Public/Layouts/AtaskaitaLayout.vue";
 
 const inertiaVisitOnClick = (permalink) => {
   Inertia.visit(

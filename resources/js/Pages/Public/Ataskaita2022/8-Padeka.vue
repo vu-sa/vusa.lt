@@ -3,10 +3,10 @@
     :background-image="'/images/photos/observatorijos_kiemelis.jpg'"
     :title="'Padėka | Ataskaita 2022'"
   >
-    <div class="grid grid-cols-6 mx-8">
+    <div class="mx-8 grid grid-cols-6">
       <div class="hidden lg:block">
         <NButton
-          class="hidden md:block top-[50vh] h-fit"
+          class="top-[50vh] hidden h-fit md:block"
           text
           style="font-size: 60px; align-self: flex-start; position: sticky"
           @click="inertiaVisitOnClick('sritys')"
@@ -15,7 +15,7 @@
         ></NButton>
       </div>
       <article
-        class="grid grid-cols-4 justify-items-center pr-8 lg:pr-32 gap-y-4 col-span-6 md:col-span-5"
+        class="col-span-6 grid grid-cols-4 justify-items-center gap-y-4 pr-8 md:col-span-5 lg:pr-32"
       >
         <slot></slot>
       </article>
@@ -30,7 +30,7 @@ import { NButton, NIcon } from "naive-ui";
 import { usePage } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 
-import AtaskaitaLayout from "@/Layouts/AtaskaitaLayout.vue";
+import AtaskaitaLayout from "@/components/Public/Layouts/AtaskaitaLayout.vue";
 
 const inertiaVisitOnClick = (permalink) => {
   Inertia.visit(

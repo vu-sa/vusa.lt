@@ -74,7 +74,7 @@ import { ref } from "vue";
 import route from "ziggy-js";
 
 import HomeCard from "@/Components/Public/HomeCard.vue";
-import PublicLayout from "@/Layouts/PublicLayout.vue";
+import PublicLayout from "@/components/Public/Layouts/PublicLayout.vue";
 
 const props = defineProps<{
   news: PaginatedModels<App.Models.News>;

@@ -61,7 +61,7 @@ import {
 import { computed } from "vue";
 import route from "ziggy-js";
 
-import AdminLayout from "@/Layouts/AdminLayout.vue";
+import AdminLayout from "@/components/Admin/Layouts/AdminLayout.vue";
 import DutyForm from "@/Components/Admin/Forms/DutyForm.vue";
 import UpsertModelLayout from "@/components/Admin/Layouts/UpsertModelLayout.vue";
 

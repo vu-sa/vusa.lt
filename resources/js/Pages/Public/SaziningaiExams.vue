@@ -1,7 +1,7 @@
 <template>
   <PublicLayout title="Programos „Sąžiningai“ užregistruoti egzaminai">
     <!-- <PageArticle> -->
-    <div class="pt-8 px-8 lg:px-16 last:pb-2">
+    <div class="px-8 pt-8 last:pb-2 lg:px-16">
       <h1>Programos „Sąžiningai“ užregistruoti egzaminai</h1>
       <p class="my-4">Registruotis reikia į kiekvieną srautą atskirai.</p>
       <div class="main-card">
@@ -25,7 +25,7 @@
       aria-modal="true"
       class="prose"
     >
-      <p class="font-bold mb-4">
+      <p class="mb-4 font-bold">
         Atsiskaitymų stebėjimui savo padalinyje studentai negali registruotis.
       </p>
       <NForm
@@ -104,7 +104,7 @@ import { h, ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 
-import PublicLayout from "@/Layouts/PublicLayout.vue";
+import PublicLayout from "@/components/Public/Layouts/PublicLayout.vue";
 
 const props = defineProps<{
   padaliniaiOptions: App.Models.Padalinys[];

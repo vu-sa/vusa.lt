@@ -2,17 +2,17 @@
   <Bendruomene>
     <div class="relative mb-4 h-1/2 w-full max-w-[110ch]">
       <img
-        class="rounded-lg w-full h-80 object-cover mx-auto brightness-50"
+        class="mx-auto h-80 w-full rounded-lg object-cover brightness-50"
         style="object-position: 50% 20%"
         src="/images/ataskaita2022/kitos-nuotraukos/IMG_8837.jpg"
       />
       <h1
-        class="absolute text-white font-bold text-3xl sm:text-4xl md:text-5xl w-full text-center bottom-8"
+        class="absolute bottom-8 w-full text-center text-3xl font-bold text-white sm:text-4xl md:text-5xl"
       >
         Darni universitetinė bendruomenė
       </h1>
     </div>
-    <p class="max-w-[92ch] mx-auto">
+    <p class="mx-auto max-w-[92ch]">
       Bendruomeniškumo puoselėjimas bei studentų (-čių) integracija išlieka
       svarbiu Vilniaus universiteto Studentų atstovybės veiklos prioritetu. Jau
       kelerius metus iš eilės VU SA aktyviai rūpinasi socialinių-akademinių ir
@@ -21,11 +21,11 @@
       Atstovybė skatina darnią, atvirą ir universitetines tradicijas
       puoselėjančią bendruomenę.
     </p>
-    <NCollapse class="max-w-[92ch] mx-auto" arrow-placement="right">
+    <NCollapse class="mx-auto max-w-[92ch]" arrow-placement="right">
       <NCollapseItem>
         <template #header><h2>Bendruomenę buriantys renginiai</h2></template>
         <div
-          class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4"
+          class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12"
         >
           <h3>Tarptautinė studentų diena ir VU SA 32 gimtadienis</h3>
           <p>
@@ -231,7 +231,7 @@
       </NCollapseItem>
       <NCollapseItem>
         <template #header><h2>Studentų (-čių) integracija</h2></template>
-        <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] mx-auto my-4">
+        <div class="mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
           <NCollapse>
             <NCollapseItem>
               <template #header><h3>VU pirmakursių stovyklos</h3></template>
@@ -353,10 +353,10 @@
       <NCollapseItem>
         <template #header><h2>Programos, klubai ir projektai</h2></template>
         <div
-          class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4"
+          class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12"
         >
           <img
-            class="w-48 h-auto mx-auto"
+            class="mx-auto h-auto w-48"
             src="/images/ataskaita2022/pkp-logo/START FM logotipas.png"
           />
           <h4>Start FM</h4>
@@ -393,7 +393,7 @@
             aktualiomis temomis bei interviu.
           </p>
           <img
-            class="w-48 h-auto mx-auto mt-4"
+            class="mx-auto mt-4 h-auto w-48"
             src="/images/ataskaita2022/pkp-logo/Debatų klubų logotipas.jpg"
           />
           <h4>VU Debatų draugija</h4>
@@ -423,7 +423,7 @@
             viešame renginyje, vykusiame 2022 m. balandžio 21 d.
           </p>
           <img
-            class="w-48 h-auto mx-auto mt-4"
+            class="mx-auto mt-4 h-auto w-48"
             src="/images/ataskaita2022/pkp-logo/SMMS logotipas.jpg"
           />
           <h4>SMMS</h4>
@@ -451,7 +451,7 @@
             ir saviraiškos galimybėmis – programomis, klubais bei projektais.
           </p>
           <img
-            class="w-48 h-auto mx-auto mt-4"
+            class="mx-auto mt-4 h-auto w-48"
             src="/images/ataskaita2022/pkp-logo/Teisės klinikos logotipas.png"
           />
           <h4>VU Teisės klinika</h4>
@@ -520,7 +520,7 @@
             dingusių žmonių artimiesiems.
           </p>
           <img
-            class="w-48 h-auto mx-auto mt-4"
+            class="mx-auto mt-4 h-auto w-48"
             src="/images/ataskaita2022/pkp-logo/SIF logotipas.png"
           />
           <h4>Vilniaus universiteto Studentų investicinis fondas (VU SIF)</h4>
@@ -579,7 +579,7 @@
             universiteto Verslo mokykla bei Vilniaus universitetas.
           </p>
           <img
-            class="w-48 h-auto mx-auto mt-4"
+            class="mx-auto mt-4 h-auto w-48"
             src="/images/ataskaita2022/pkp-logo/KD logotipas.png"
           />
           <h4>Karjeros dienos'22</h4>
@@ -614,7 +614,7 @@
           </p>
 
           <img
-            class="w-48 h-auto mx-auto mt-4"
+            class="mx-auto mt-4 h-auto w-48"
             src="/images/ataskaita2022/pkp-logo/Be etikečių logotipas.jpg"
           />
           <h4>Be etikečių</h4>
@@ -663,7 +663,7 @@
             kultūros terminais ir istorija.
           </p>
           <img
-            class="w-48 h-auto mx-auto mt-4"
+            class="mx-auto mt-4 h-auto w-48"
             src="/images/ataskaita2022/pkp-logo/JEK logotipas.png"
           />
           <h4>VU JEK</h4>
@@ -695,7 +695,7 @@
             galimybę aplankyti Antalieptės muziejų ir jį atnaujinti mokymų metu.
           </p>
           <img
-            class="w-48 h-auto mx-auto mt-4"
+            class="mx-auto mt-4 h-auto w-48"
             src="/images/ataskaita2022/pkp-logo/ESN logotipas.png"
           />
           <h4>ESN VU</h4>
@@ -728,7 +728,7 @@
           </p>
 
           <img
-            class="w-48 h-auto mx-auto mt-4"
+            class="mx-auto mt-4 h-auto w-48"
             src="/images/ataskaita2022/pkp-logo/Kendo klubo logotipas.jpg"
           />
           <h4>Kendo klubas</h4>
@@ -756,7 +756,7 @@
             sportuoti.
           </p>
           <img
-            class="w-48 h-auto mx-auto mt-4"
+            class="mx-auto mt-4 h-auto w-48"
             src="/images/ataskaita2022/pkp-logo/SGV logotipas.png"
           />
           <h4>SGV</h4>
@@ -783,7 +783,7 @@
           </p>
 
           <img
-            class="w-48 h-auto mx-auto mt-4"
+            class="mx-auto mt-4 h-auto w-48"
             src="/images/ataskaita2022/pkp-logo/Rašytojų klubo logotipas.png"
           />
           <h4>Rašytojų klubas</h4>
@@ -827,7 +827,7 @@
           </p>
 
           <img
-            class="w-48 h-auto mx-auto mt-4"
+            class="mx-auto mt-4 h-auto w-48"
             src="/images/ataskaita2022/pkp-logo/HEMA logotipas.jpg"
           />
 
@@ -856,7 +856,7 @@
           </p>
 
           <img
-            class="w-48 h-auto mx-auto mt-4"
+            class="mx-auto mt-4 h-auto w-48"
             src="/images/ataskaita2022/pkp-logo/Fotoklubo logotipas.jpg"
           />
           <h4>Foto klubas</h4>
@@ -918,7 +918,7 @@
             veikti ir klestėti.
           </p>
           <img
-            class="w-48 h-auto mx-auto mt-4"
+            class="mx-auto mt-4 h-auto w-48"
             src="/images/ataskaita2022/pkp-logo/Antropologų klubo logotipas.png"
           />
           <h4>Antropologų klubas</h4>
@@ -942,7 +942,7 @@
           </p>
 
           <img
-            class="w-48 h-auto mx-auto mt-4"
+            class="mx-auto mt-4 h-auto w-48"
             src="/images/ataskaita2022/pkp-logo/The COINS logotipas.jpg"
           />
           <h4>Gyvybės mokslų konferencija The COINS 2022</h4>
@@ -988,7 +988,7 @@
             mokyklų.
           </p>
           <img
-            class="w-48 h-auto mx-auto mt-4"
+            class="mx-auto mt-4 h-auto w-48"
             src="/images/ataskaita2022/pkp-logo/JŽD logotipas.jpg"
           />
           <h4>Jaunųjų žurmalistų draugija</h4>
@@ -1135,7 +1135,7 @@
     </NCollapse>
     <div class="col-span-4 mb-12">
       <Link
-        class="text-lg duration-200 hover:text-red-600 font-bold"
+        class="text-lg font-bold duration-200 hover:text-red-600"
         :href="
           route('main.ataskaita2022', {
             lang: $page.props.locale,
@@ -1150,6 +1150,7 @@
 
 <script setup lang="ts">
 // import VUSA from "../2-VU-SA.vue";
+import { Link } from "@inertiajs/inertia-vue3";
 import { NCollapse, NCollapseItem } from "naive-ui";
 import route from "ziggy-js";
 

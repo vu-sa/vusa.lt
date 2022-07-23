@@ -3,7 +3,7 @@
     :background-image="'/images/photos/observatorijos_kiemelis.jpg'"
     :title="'Stipri organizacija | Ataskaita 2022'"
   >
-    <div class="grid grid-cols-8 justify-items-center justify-center">
+    <div class="grid grid-cols-8 justify-center justify-items-center">
       <div class="hidden md:block">
         <NButton
           class="top-[50vh] h-fit"
@@ -15,7 +15,7 @@
         ></NButton>
       </div>
       <article
-        class="flex flex-col justify-items-center px-8 lg:px-32 gap-y-4 mx-auto items-center col-span-8 md:col-span-6 w-full"
+        class="col-span-8 mx-auto flex w-full flex-col items-center justify-items-center gap-y-4 px-8 md:col-span-6 lg:px-32"
       >
         <slot></slot>
       </article>
@@ -40,7 +40,7 @@ import {
 import { Inertia } from "@inertiajs/inertia";
 import { NButton, NIcon } from "naive-ui";
 import { usePage } from "@inertiajs/inertia-vue3";
-import AtaskaitaLayout from "@/Layouts/AtaskaitaLayout.vue";
+import AtaskaitaLayout from "@/components/Public/Layouts/AtaskaitaLayout.vue";
 
 const inertiaVisitOnClick = (permalink) => {
   Inertia.visit(

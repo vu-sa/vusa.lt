@@ -9,7 +9,7 @@
   >
     <section>
       <h4>v0.1.2 (2022-07-08)</h4>
-      <ul class="list-inside mb-2">
+      <ul class="mb-2 list-inside">
         <li>
           🔧 Šis atnaujinimas labiausiai skirtas puslapio vidui ir kūrimo
           procesui atnaujinti.
@@ -21,7 +21,7 @@
         </li>
       </ul>
       <h4>v0.1.1 (2022-06-12)</h4>
-      <ul class="list-inside mb-2">
+      <ul class="mb-2 list-inside">
         <li>
           🛡 Adminstratoriams, dėl aiškumo, nerodomi veiksmai, kurie negalimi.
         </li>

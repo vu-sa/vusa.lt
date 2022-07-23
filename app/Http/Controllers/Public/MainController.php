@@ -87,7 +87,7 @@ class MainController extends Controller
 		$news = News::where([['padalinys_id', '=', $padalinys->id], ['draft', '=', 0]])->where('publish_time', '<=', date('Y-m-d H:i:s'))->orderBy('publish_time', 'desc')->take(4)->get();
 
 		Inertia::share('alias', $this->alias);
-		return Inertia::render('Public/Home', [
+		return Inertia::render('Public/HomePage', [
 			'news' => $news->map(function ($news) {
 				return [
 					'id' => $news->id,
@@ -131,7 +131,7 @@ class MainController extends Controller
 		// Storage::get($news->image) == null ? '/images/icons/naujienu_foto.png' : Storage::url($news->image);
 
 		Inertia::share('alias', $news->padalinys->alias);
-		return Inertia::render('Public/News', [
+		return Inertia::render('Public/NewsPage', [
 			'article' => [
 				'id' => $news->id,
 				'title' => $news->title,
@@ -201,7 +201,7 @@ class MainController extends Controller
 		$navigation_item = Navigation::where([['padalinys_id', '=', $padalinys->id], ['name', '=', $page->title]])->get()->first();
 
 		Inertia::share('alias', $page->padalinys->alias);
-		return Inertia::render('Public/Page', [
+		return Inertia::render('Public/ContentPage', [
 			'navigationItemId' => $navigation_item?->id,
 			'page' => [
 				'id' => $page->id,

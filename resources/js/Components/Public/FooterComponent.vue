@@ -1,6 +1,6 @@
 <template>
   <footer
-    class="bg-stone-50 border-t border-gray-100 text-gray-500 text-sm shadow-md px-8 lg:px-32 py-8 grid gap-2 md:grid-cols-2 justify-items-center items-center"
+    class="grid items-center justify-items-center gap-2 border-t border-gray-100 bg-stone-50 p-8 text-sm text-gray-500 shadow-md md:grid-cols-2 lg:px-32"
   >
     <div>
       <p>{{ $t("Vilniaus universiteto Studentų atstovybė") }}</p>
@@ -9,17 +9,15 @@
     </div>
     <div>
       <div
-        class="flex flex-row items-center gap-2 mb-2 hover:text-gray-700 duration-200"
+        class="mb-2 flex flex-row items-center gap-2 duration-200 hover:text-gray-700"
       >
         <NIcon><Phone20Regular /></NIcon>
         <a href="tel:+37052687144">+370 5 268 7144</a>
       </div>
-      <div class="flex flex-row items-center gap-2">
-        <NIcon><Building20Regular /></NIcon>
-        <div>
-          <p>{{ $t("Universiteto g. 3, Observatorijos kiemelis") }}</p>
-          <p>{{ $t("01513, Vilnius, Lietuva") }}</p>
-        </div>
+      <NIcon><Building20Regular /></NIcon>
+      <div>
+        <p>{{ $t("Universiteto g. 3, Observatorijos kiemelis") }}</p>
+        <p>{{ $t("01513, Vilnius, Lietuva") }}</p>
       </div>
     </div>
   </footer>

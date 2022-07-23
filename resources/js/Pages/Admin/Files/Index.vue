@@ -81,7 +81,7 @@ import { NIcon, NUpload, NUploadDragger } from "naive-ui";
 import { computed } from "vue";
 import { slice, split } from "lodash";
 
-import AdminLayout from "@/Layouts/AdminLayout.vue";
+import AdminLayout from "@/components/Admin/Layouts/AdminLayout.vue";
 import FileButton from "@/Components/Admin/FileButton.vue";
 import FolderButton from "@/Components/Admin/FolderButton.vue";
 import route from "ziggy-js";

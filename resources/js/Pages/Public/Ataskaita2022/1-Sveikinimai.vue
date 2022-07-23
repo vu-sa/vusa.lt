@@ -4,12 +4,12 @@
     :title="'Sveikinimo žodžiai | Ataskaita 2022'"
   >
     <article
-      class="grid grid-cols-5 justify-items-center px-8 lg:px-32 gap-y-4"
+      class="grid grid-cols-5 justify-items-center gap-y-4 px-8 lg:px-32"
     >
       <slot></slot>
       <div class="hidden md:block">
         <NButton
-          class="hidden md:block top-[50vh] h-fit"
+          class="top-[50vh] hidden h-fit md:block"
           text
           style="font-size: 60px; align-self: flex-start; position: sticky"
           @click="inertiaVisitOnClick('vu-sa')"
@@ -28,7 +28,7 @@ import {
 import { Inertia } from "@inertiajs/inertia";
 import { NButton, NIcon } from "naive-ui";
 import { usePage } from "@inertiajs/inertia-vue3";
-import AtaskaitaLayout from "@/Layouts/AtaskaitaLayout.vue";
+import AtaskaitaLayout from "@/components/Public/Layouts/AtaskaitaLayout.vue";
 
 const inertiaVisitOnClick = (permalink) => {
   Inertia.visit(

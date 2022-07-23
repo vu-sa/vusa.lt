@@ -44,7 +44,7 @@ import { Link } from "@inertiajs/inertia-vue3";
 import { NDivider } from "naive-ui";
 import route from "ziggy-js";
 
-import AdminLayout from "@/Layouts/AdminLayout.vue";
+import AdminLayout from "@/components/Admin/Layouts/AdminLayout.vue";
 import DutyInstitutionForm from "@/Components/Admin/Forms/DutyInstitutionForm.vue";
 import PreviewModelButton from "@/components/Admin/Buttons/PreviewModelButton.vue";
 

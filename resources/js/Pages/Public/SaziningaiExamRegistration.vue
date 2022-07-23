@@ -217,7 +217,7 @@ import { computed, ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 
 import PageArticle from "../../Components/Public/PageArticle.vue";
-import PublicLayout from "@/Layouts/PublicLayout.vue";
+import PublicLayout from "@/components/Public/Layouts/PublicLayout.vue";
 
 import { Inertia } from "@inertiajs/inertia";
 import route from "ziggy-js";

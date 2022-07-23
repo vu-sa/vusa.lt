@@ -4,11 +4,11 @@
     :title="'Metų veiklos planas | Ataskaita 2022'"
   >
     <article
-      class="grid grid-cols-8 justify-items-center px-8 lg:px-32 gap-y-4"
+      class="grid grid-cols-8 justify-items-center gap-y-4 px-8 lg:px-32"
     >
       <div class="hidden md:block">
         <NButton
-          class="hidden md:block top-[50vh] h-fit"
+          class="top-[50vh] hidden h-fit md:block"
           text
           style="font-size: 60px; align-self: flex-start; position: sticky"
           @click="inertiaVisitOnClick('vu-sa')"
@@ -16,14 +16,14 @@
           <NIcon><ArrowCircleLeft28Regular /></NIcon
         ></NButton>
       </div>
-      <div class="max-w-[80ch] prose col-span-8 md:col-span-6">
-        <div class="bg-white py-6 px-12 rounded-lg">
+      <div class="prose col-span-8 max-w-[80ch] md:col-span-6">
+        <div class="rounded-lg bg-white py-6 px-12">
           <slot></slot>
         </div>
       </div>
       <div class="hidden md:block">
         <NButton
-          class="hidden md:block top-[50vh] h-fit"
+          class="top-[50vh] hidden h-fit md:block"
           text
           style="font-size: 60px; align-self: flex-start; position: sticky"
           @click="inertiaVisitOnClick('studijos')"
@@ -42,7 +42,7 @@ import {
 import { Inertia } from "@inertiajs/inertia";
 import { NButton, NIcon } from "naive-ui";
 import { usePage } from "@inertiajs/inertia-vue3";
-import AtaskaitaLayout from "@/Layouts/AtaskaitaLayout.vue";
+import AtaskaitaLayout from "@/components/Public/Layouts/AtaskaitaLayout.vue";
 
 const inertiaVisitOnClick = (permalink) => {
   Inertia.visit(

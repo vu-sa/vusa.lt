@@ -1,9 +1,9 @@
 <template>
   <h2>Ieškoti kontakto:</h2>
   <PublicLayout title="Kontaktų paieška">
-    <div class="grid md:grid-cols-4 gap-8 px-16 lg:px-32">
+    <div class="grid gap-8 px-16 md:grid-cols-4 lg:px-32">
       <NInput
-        class="md:col-span-4 mt-2"
+        class="mt-2 md:col-span-4"
         type="text"
         size="large"
         round
@@ -53,7 +53,7 @@ import { NIcon, NInput, createDiscreteApi } from "naive-ui";
 import { debounce } from "lodash";
 import { ref } from "vue";
 import ContactWithPhoto from "@/Components/Public/ContactWithPhoto.vue";
-import PublicLayout from "@/Layouts/PublicLayout.vue";
+import PublicLayout from "@/components/Public/Layouts/PublicLayout.vue";
 
 interface contactUserInterface
   extends Array<

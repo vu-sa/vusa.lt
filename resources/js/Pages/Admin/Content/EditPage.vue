@@ -30,7 +30,7 @@
 <script setup lang="ts">
 import route from "ziggy-js";
 
-import AdminLayout from "@/Layouts/AdminLayout.vue";
+import AdminLayout from "@/components/Admin/Layouts/AdminLayout.vue";
 import PageForm from "@/components/Admin/Forms/PageForm.vue";
 import PreviewModelButton from "@/components/Admin/Buttons/PreviewModelButton.vue";
 import UpsertModelLayout from "@/components/Admin/Layouts/UpsertModelLayout.vue";

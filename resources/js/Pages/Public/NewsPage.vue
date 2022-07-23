@@ -41,8 +41,8 @@ import { Inertia } from "@inertiajs/inertia";
 import { NBackTop, NButton, NIcon } from "naive-ui";
 import route from "ziggy-js";
 
-import NewsArticle from "../../Components/Public/NewsArticle.vue";
-import PublicLayout from "../../Layouts/PublicLayout.vue";
+import NewsArticle from "../../components/Public/NewsArticle.vue";
+import PublicLayout from "../../components/Public/Layouts/PublicLayout.vue";
 
 const props = defineProps<{
   article: App.Models.News;

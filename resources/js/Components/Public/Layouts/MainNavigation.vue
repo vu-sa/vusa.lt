@@ -78,12 +78,18 @@
           <template v-else>Kontaktai</template>
         </NButton>
       </Link> -->
-      <NButton text @click="windowOpen('https://www.facebook.com/VUstudentuatstovybe')">
+      <NButton
+        text
+        @click="windowOpen('https://www.facebook.com/VUstudentuatstovybe')"
+      >
         <NIcon size="18">
           <FacebookF />
         </NIcon>
       </NButton>
-      <NButton text @click="windowOpen('https://www.instagram.com/vustudentuatstovybe/')">
+      <NButton
+        text
+        @click="windowOpen('https://www.instagram.com/vustudentuatstovybe/')"
+      >
         <NIcon size="18">
           <Instagram />
         </NIcon>
@@ -102,7 +108,9 @@
         @select="handleSelectLanguage"
       >
         <NButton text
-          ><img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" width="16"
+          ><img
+            src="https://hatscripts.github.io/circle-flags/flags/gb.svg"
+            width="16"
         /></NButton>
       </NDropdown>
       <NDropdown
@@ -112,11 +120,18 @@
         @select="handleSelectLanguage"
       >
         <NButton text
-          ><img src="https://hatscripts.github.io/circle-flags/flags/lt.svg" width="16"
+          ><img
+            src="https://hatscripts.github.io/circle-flags/flags/lt.svg"
+            width="16"
         /></NButton>
       </NDropdown>
     </div>
-    <NDrawer v-model:show="activeDrawer" :width="325" placement="left" :trap-focus="true">
+    <NDrawer
+      v-model:show="activeDrawer"
+      :width="325"
+      placement="left"
+      :trap-focus="true"
+    >
       <NDrawerContent
         closable
         :title="padalinys == 'Padaliniai' ? 'VU SA' : $t(padalinys)"
@@ -230,7 +245,9 @@
           v-for="page in $page.props.search.pages"
           :href="route('page', { lang: page.lang, permalink: page.permalink })"
         >
-          <div class="mb-2 rounded-lg border border-gray-200 bg-white/95 py-2 px-4">
+          <div
+            class="mb-2 rounded-lg border border-gray-200 bg-white/95 py-2 px-4"
+          >
             <p>{{ page.title }}</p>
           </div>
         </Link>
@@ -467,7 +484,9 @@ const handleSelectNavigation = (id) => {
         // if url is #, add id to checked keys
         // if id is in expandedKeys, remove it
         if (expandedKeys.value.includes(item[1].id)) {
-          expandedKeys.value = expandedKeys.value.filter((key) => key !== item[1].id);
+          expandedKeys.value = expandedKeys.value.filter(
+            (key) => key !== item[1].id
+          );
         } else {
           expandedKeys.value.push(item[1].id);
         }
