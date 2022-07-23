@@ -214,7 +214,7 @@ import {
 import { computed, ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 
-import PageArticle from "../../Components/Public/PageArticle.vue";
+import PageArticle from "@/components/Public/PageArticle.vue";
 import PublicLayout from "@/components/Public/Layouts/PublicLayout.vue";
 
 import { Inertia } from "@inertiajs/inertia";

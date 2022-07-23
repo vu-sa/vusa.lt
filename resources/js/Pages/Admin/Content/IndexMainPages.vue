@@ -19,7 +19,7 @@
 import AdminLayout from "@/components/Admin/Layouts/AdminLayout.vue";
 import route from "ziggy-js";
 
-import AsideHeader from "../../../components/Admin/Headers/AsideHeaderContent.vue";
+import AsideHeader from "@/components/Admin/Headers/AsideHeaderContent.vue";
 import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
 import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
 
