@@ -9,13 +9,40 @@
     class="prose"
   >
     <section>
-      <h4>v0.2.0 (2022-07-23)</h4>
+      <h4>
+        <a
+          class="transition hover:text-vusa-red"
+          target="_blank"
+          href="https://github.com/vu-sa/vusa.lt/pull/90"
+          >v0.2.0 (2022-07-23)</a
+        >
+      </h4>
       <p>
         Didžiausias atnaujinimas po vusa.lt atnaujinimo. Daugiausiai dėmesio
         skirta platformos techniniam atnaujinimui ir administravimo funkcijoms.
       </p>
       <ul>
-        <li></li>
+        <li>
+          🌟 Sutvarkyta Sąžiningai registracija, pridėtas dienų suskaičiavimas
+          iki galimos registracijos datos
+        </li>
+        <li>🌟 Šiek tiek pakeistas breadcrumbs stilius</li>
+        <li>
+          🛡 Visi masiniai modeliai dabar yra puslapiuoti (nerodomi viename
+          puslapyje)
+        </li>
+        <li>
+          🛡 Generuojant nuorodą, lietuviškos raidės konvertuojamos į lotyniškas
+        </li>
+        <li>
+          🛡 Sukurti <em>preview</em>, <em>update</em> ir
+          <em>destroy</em> veiksmai beveik visiems duomenų modeliams. Jie
+          pasiekiami ir iš lentelės puslapio.
+        </li>
+        <li>🛡 Kai kur pridėtos papildomos modelių tikrinimo taisyklės</li>
+        <li>🛡 Atnaujintas dizainas (kortelės, spalvos)</li>
+        <li>🛡 Institucijos padarytos pagrindiniu kontaktų puslapiu</li>
+        <li>🛡 Atnaujintas teksto redaktoriaus stilius</li>
       </ul>
     </section>
     <NDivider></NDivider>
