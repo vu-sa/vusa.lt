@@ -126,7 +126,7 @@ import latinize from "latinize";
 import route from "ziggy-js";
 
 import DeleteModelButton from "@/Components/Admin/Buttons/DeleteModelButton.vue";
-import TipTap from "@/components/TipTap.vue";
+import TipTap from "@/Components/TipTap.vue";
 import UploadImageButtons from "@/Components/Admin/Buttons/UploadImageButtons.vue";
 import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue";
 

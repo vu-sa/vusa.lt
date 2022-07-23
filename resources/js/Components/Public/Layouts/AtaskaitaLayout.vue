@@ -26,7 +26,7 @@ import { Head } from "@inertiajs/inertia-vue3";
 import { NConfigProvider } from "naive-ui";
 import { onMounted, ref } from "vue";
 
-import AtaskaitaNavigation from "@/components/Public/Layouts/AtaskaitaNavigation.vue";
+import AtaskaitaNavigation from "@/Components/Public/Layouts/AtaskaitaNavigation.vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
 
 defineProps<{

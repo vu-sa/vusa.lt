@@ -83,7 +83,7 @@ import { useForm, usePage } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 
 import DeleteModelButton from "@/Components/Admin/Buttons/DeleteModelButton.vue";
-import UploadImageButtons from "@/components/Admin/Buttons/UploadImageButtons.vue";
+import UploadImageButtons from "@/Components/Admin/Buttons/UploadImageButtons.vue";
 import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{

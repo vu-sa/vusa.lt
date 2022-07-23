@@ -12,5 +12,5 @@
 </template>
 
 <script setup lang="ts">
-import AtaskaitaLayout from "@/components/Public/Layouts/AtaskaitaLayout.vue";
+import AtaskaitaLayout from "@/Components/Public/Layouts/AtaskaitaLayout.vue";
 </script>

@@ -162,8 +162,8 @@ import { onBeforeUnmount, ref } from "vue";
 import route from "ziggy-js";
 
 import HomeCard from "@/Components/Public/HomeCard.vue";
-import NewsElement from "@/components/Public/NewsElement.vue";
-import PublicLayout from "@/components/Public/Layouts/PublicLayout.vue";
+import NewsElement from "@/Components/Public/NewsElement.vue";
+import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 
 const props = defineProps<{

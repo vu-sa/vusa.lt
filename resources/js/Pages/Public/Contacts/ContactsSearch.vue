@@ -53,7 +53,7 @@ import { NIcon, NInput, createDiscreteApi } from "naive-ui";
 import { debounce } from "lodash";
 import { ref } from "vue";
 import ContactWithPhoto from "@/Components/Public/ContactWithPhoto.vue";
-import PublicLayout from "@/components/Public/Layouts/PublicLayout.vue";
+import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
 
 interface contactUserInterface
   extends Array<

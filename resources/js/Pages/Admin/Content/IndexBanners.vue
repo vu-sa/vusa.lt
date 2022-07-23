@@ -16,8 +16,8 @@
 
 <script setup lang="ts">
 import { h } from "vue";
-import AdminLayout from "@/components/Admin/Layouts/AdminLayout.vue";
-import AsideHeader from "@/components/Admin/Headers/AsideHeaderContent.vue";
+import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+import AsideHeader from "@/Components/Admin/Headers/AsideHeaderContent.vue";
 import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
 import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
 import route from "ziggy-js";

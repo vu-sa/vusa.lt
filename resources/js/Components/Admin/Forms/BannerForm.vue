@@ -45,7 +45,7 @@ import { NForm, NFormItemGi, NGrid, NInput, NSwitch } from "naive-ui";
 import { useForm } from "@inertiajs/inertia-vue3";
 
 import DeleteModelButton from "@/Components/Admin/Buttons/DeleteModelButton.vue";
-import UploadImageButtons from "@/components/Admin/Buttons/UploadImageButtons.vue";
+import UploadImageButtons from "@/Components/Admin/Buttons/UploadImageButtons.vue";
 import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{

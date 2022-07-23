@@ -37,7 +37,7 @@
 import { Inertia } from "@inertiajs/inertia";
 import route from "ziggy-js";
 
-import PublicLayout from "@/components/Public/Layouts/PublicLayout.vue";
+import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
 
 defineProps<{
   institutions: App.Models.DutyInstitution[];

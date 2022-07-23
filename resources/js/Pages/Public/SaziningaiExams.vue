@@ -104,7 +104,7 @@ import { h, ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 
-import PublicLayout from "@/components/Public/Layouts/PublicLayout.vue";
+import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
 
 const props = defineProps<{
   padaliniaiOptions: App.Models.Padalinys[];

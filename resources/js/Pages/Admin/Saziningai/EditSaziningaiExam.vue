@@ -67,9 +67,9 @@ import { NButton, NDatePicker, NIcon, NModal, NPopover } from "naive-ui";
 import { reactive, ref } from "vue";
 import route from "ziggy-js";
 
-import AdminLayout from "@/components/Admin/Layouts/AdminLayout.vue";
-import SaziningaiExamForm from "@/components/Admin/Forms/SaziningaiExamForm.vue";
-import UpsertModelLayout from "@/components/Admin/Layouts/UpsertModelLayout.vue";
+import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+import SaziningaiExamForm from "@/Components/Admin/Forms/SaziningaiExamForm.vue";
+import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
 
 const props = defineProps<{
   exam: App.Models.SaziningaiExam;

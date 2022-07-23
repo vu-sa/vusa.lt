@@ -23,8 +23,8 @@
 import { Head } from "@inertiajs/inertia-vue3";
 import { NConfigProvider } from "naive-ui";
 import { onMounted } from "vue";
-import Footer from "@/components/Public/FooterComponent.vue";
-import MainNavigation from "@/components/Public/Layouts/MainNavigation.vue";
+import Footer from "@/Components/Public/FooterComponent.vue";
+import MainNavigation from "@/Components/Public/Layouts/MainNavigation.vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
 
 defineProps<{

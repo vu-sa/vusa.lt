@@ -22,11 +22,11 @@
 import { h } from "vue";
 import route from "ziggy-js";
 
-import AdminLayout from "@/components/Admin/Layouts/AdminLayout.vue";
-import AsideHeader from "@/components/Admin/Headers/AsideHeaderContacts.vue";
+import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+import AsideHeader from "@/Components/Admin/Headers/AsideHeaderContacts.vue";
 import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
 import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
-import PreviewModelButton from "@/components/Admin/Buttons/PreviewModelButton.vue";
+import PreviewModelButton from "@/Components/Admin/Buttons/PreviewModelButton.vue";
 
 defineProps<{
   dutyInstitutions: PaginatedModels<App.Models.DutyInstitution[]>;

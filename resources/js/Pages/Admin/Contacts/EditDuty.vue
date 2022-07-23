@@ -66,9 +66,9 @@ import {
 import { computed } from "vue";
 import route from "ziggy-js";
 
-import AdminLayout from "@/components/Admin/Layouts/AdminLayout.vue";
+import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
 import DutyForm from "@/Components/Admin/Forms/DutyForm.vue";
-import UpsertModelLayout from "@/components/Admin/Layouts/UpsertModelLayout.vue";
+import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
 
 const props = defineProps<{
   duty: App.Models.Duty;

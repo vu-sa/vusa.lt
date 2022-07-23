@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
 import { usePage } from "@inertiajs/inertia-vue3";
-import AppLayout from "@/components/Admin/Layouts/AdminLayout.vue";
+import AppLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
 
 import { computed } from "vue";
 

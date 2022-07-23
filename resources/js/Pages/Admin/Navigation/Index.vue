@@ -44,7 +44,7 @@ import {
   // createDiscreteApi,
 } from "naive-ui";
 import { h, ref } from "vue";
-import AdminLayout from "@/components/Admin/Layouts/AdminLayout.vue";
+import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
 // import AsideHeader from "./AsideHeader.vue";
 import route from "ziggy-js";
 

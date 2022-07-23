@@ -21,11 +21,11 @@ import { DataTableColumns } from "naive-ui";
 import { h, ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
 
-import AdminLayout from "@/components/Admin/Layouts/AdminLayout.vue";
-import AsideHeader from "@/components/Admin/Headers/AsideHeaderContent.vue";
+import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+import AsideHeader from "@/Components/Admin/Headers/AsideHeaderContent.vue";
 import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
 import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
-import PreviewModelButton from "@/components/Admin/Buttons/PreviewModelButton.vue";
+import PreviewModelButton from "@/Components/Admin/Buttons/PreviewModelButton.vue";
 import route from "ziggy-js";
 
 defineProps<{

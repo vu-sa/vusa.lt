@@ -67,7 +67,7 @@ import { Mail20Regular, Phone20Regular } from "@vicons/fluent";
 import { NIcon, NPopover } from "naive-ui";
 
 import ContactWithPhoto from "@/Components/Public/ContactWithPhoto.vue";
-import PublicLayout from "@/components/Public/Layouts/PublicLayout.vue";
+import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 
 defineProps<{

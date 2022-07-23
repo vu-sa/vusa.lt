@@ -21,9 +21,9 @@ import { Link } from "@inertiajs/inertia-vue3";
 import { h } from "vue";
 import route from "ziggy-js";
 
-import AdminLayout from "@/components/Admin/Layouts/AdminLayout.vue";
-import IndexDataTable from "@/components/Admin/IndexDataTable.vue";
-// import IndexSearchInput from "@/components/Admin/IndexSearchInput.vue";
+import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
+// import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
 
 defineProps<{
   exams: PaginatedModels<App.Models.SaziningaiExam[]>;

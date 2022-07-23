@@ -42,7 +42,7 @@ import {
 import { Inertia } from "@inertiajs/inertia";
 import { NButton, NIcon } from "naive-ui";
 import { usePage } from "@inertiajs/inertia-vue3";
-import AtaskaitaLayout from "@/components/Public/Layouts/AtaskaitaLayout.vue";
+import AtaskaitaLayout from "@/Components/Public/Layouts/AtaskaitaLayout.vue";
 
 const inertiaVisitOnClick = (permalink) => {
   Inertia.visit(

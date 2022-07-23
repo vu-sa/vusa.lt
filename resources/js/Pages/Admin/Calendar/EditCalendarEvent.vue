@@ -11,9 +11,9 @@
 </template>
 
 <script setup lang="ts">
-import AdminLayout from "@/components/Admin/Layouts/AdminLayout.vue";
-import CalendarForm from "@/components/Admin/Forms/CalendarForm.vue";
-import UpsertModelLayout from "@/components/Admin/Layouts/UpsertModelLayout.vue";
+import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+import CalendarForm from "@/Components/Admin/Forms/CalendarForm.vue";
+import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
 
 defineProps<{
   calendar: App.Models.Calendar;

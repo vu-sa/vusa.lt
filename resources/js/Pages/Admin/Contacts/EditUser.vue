@@ -30,9 +30,9 @@ import { Link } from "@inertiajs/inertia-vue3";
 import { NDivider } from "naive-ui";
 import route from "ziggy-js";
 
-import AdminLayout from "@/components/Admin/Layouts/AdminLayout.vue";
+import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
 import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
-import UserForm from "@/components/Admin/Forms/UserForm.vue";
+import UserForm from "@/Components/Admin/Forms/UserForm.vue";
 
 defineProps<{
   contact: App.Models.User;

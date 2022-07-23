@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import AdminLayout from "@/components/Admin/Layouts/AdminLayout.vue";
+import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
 import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
 import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
 import route from "ziggy-js";
