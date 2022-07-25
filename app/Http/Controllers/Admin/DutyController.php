@@ -56,7 +56,7 @@ class DutyController extends Controller
     {
         $request->validate([
             'name' => 'required',
-            'email' => 'email|unique:users|unique:duties',
+            'email' => 'email',
         ]);
 
         // dd($request->all());

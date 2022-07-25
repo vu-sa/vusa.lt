@@ -10,6 +10,7 @@ use Inertia\Inertia;
 use App\Models\Duty;
 use App\Http\Controllers\Controller as Controller;
 use App\Models\Role;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
@@ -141,6 +142,7 @@ class UserController extends Controller
                         'email' => $duty->email,
                         'name' => $duty->name,
                         'institution' => $duty->institution,
+                        'pivot' => $duty->pivot,
                     ];
                 }),
                 'role' => $user->role,
@@ -160,7 +162,7 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => 'required',
-            'email' => 'required|unique:users',
+            'email' => 'required',
         ]);
         
         DB::transaction(function () use ($request, $user) {
@@ -178,6 +180,14 @@ class UserController extends Controller
                 $user->save();
                 // TODO: role revamp with Spatie permissions or smth
             }
+
+            // $dutyCollection = new Collection();
+
+            // foreach ($request->duties as $duty) {
+            //     $dutyCollection->push(Duty::find($duty['id']));
+            // }
+
+            // dd($dutyCollection);
 
             // get all user duties and delete all of them
             $user->duties()->detach();
