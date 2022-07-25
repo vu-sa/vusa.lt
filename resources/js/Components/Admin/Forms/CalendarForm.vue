@@ -1,6 +1,15 @@
 <template>
   <NForm :model="form" label-placement="top">
     <NGrid :span="24" :x-gap="24">
+      <NFormItemGi label="Kategorija" :span="24">
+        <NSelect
+          v-model:value="form.category"
+          :options="categoryOptions"
+          placeholder="Pasirinkti kategoriją..."
+          clearable
+        />
+      </NFormItemGi>
+
       <NFormItemGi label="Pavadinimas" :span="12">
         <NInput
           v-model:value="form.title"
@@ -26,15 +35,6 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Kategorija" :span="12">
-        <NSelect
-          v-model:value="form.category"
-          :options="categoryOptions"
-          placeholder="Pasirinkti kategoriją..."
-          clearable
-        />
-      </NFormItemGi>
-
       <NFormItemGi label="Pagrindinė nuoroda" :span="12">
         <NInput
           v-model:value="form.url"
@@ -57,6 +57,14 @@
             v-model:value="form.attributes.date_range"
             type="daterange"
             clearable
+          />
+        </NFormItemGi>
+
+        <NFormItemGi label="Video (Youtube) nuoroda" :span="12">
+          <NInput
+            v-model:value="form.attributes.video_url"
+            type="text"
+            placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
           />
         </NFormItemGi>
       </template>

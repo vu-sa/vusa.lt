@@ -18,6 +18,12 @@
         }"
         :padalinys-shortname="news.padalinys?.shortname"
       ></PreviewModelButton>
+      <DeleteModelButton
+        class="flex-end"
+        :form="news"
+        size="small"
+        :model-route="news.destroy"
+      ></DeleteModelButton>
     </template>
     <UpsertModelLayout :errors="$attrs.errors" :model="news">
       <template #card-header> Puslapio informacija </template>
@@ -34,6 +40,7 @@
 import route from "ziggy-js";
 
 import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+import DeleteModelButton from "@/Components/Admin/Buttons/DeleteModelButton.vue";
 import NewsForm from "@/Components/Admin/Forms/NewsForm.vue";
 import PreviewModelButton from "@/Components/Admin/Buttons/PreviewModelButton.vue";
 import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
