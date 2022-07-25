@@ -26,7 +26,7 @@
           v-for="contact in contacts"
           :key="contact.id"
           :contact="contact"
-          :image-src="contact.image"
+          :image-src="getImageUrl(contact)"
         >
           <template #name> {{ contact.name }} </template>
           <template #duty>
@@ -70,6 +70,7 @@
 <script setup lang="ts">
 import { Mail20Regular, Phone20Regular } from "@vicons/fluent";
 import { NIcon, NPopover } from "naive-ui";
+import { usePage } from "@inertiajs/inertia-vue3";
 
 import ContactWithPhoto from "@/Components/Public/ContactWithPhoto.vue";
 import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
@@ -80,6 +81,7 @@ defineProps<{
   institution: App.Models.DutyInstitution;
 }>();
 
+// ! TIK KURATORIAMS: nusprendžia, ar rodyti studijų programą
 const showStudyProgram = (duty: App.Models.Duty) => {
   if (!duty.pivot?.attributes?.study_program) {
     return null;
@@ -91,6 +93,29 @@ const showStudyProgram = (duty: App.Models.Duty) => {
   }
 
   return null;
+};
+
+// ! TIK KURATORIAMS: nusprendžia, kurią nuotrauką imti, pagal tai, ar url turi "kuratoriai"
+const getImageUrl = (contact: App.Models.User) => {
+  const url = new URL(window.location.href);
+  url.search = "";
+  if (url.pathname.includes("kuratoriai")) {
+    // check if contact.duties is NOT an object, if yes, turn to array
+
+    // console.log(contact);
+    // if (typeof contact.duties !== "object") {
+    //   contact.duties = [contact.duties];
+    // }
+
+    // check all duties for duties name which includes kuratorius
+
+    for (const duty of contact.duties) {
+      if (duty.name.toLowerCase().includes("kuratorius")) {
+        return duty.pivot.attributes?.additional_photo ?? contact.image;
+      }
+    }
+  }
+  return contact.image ?? "";
 };
 </script>
 
