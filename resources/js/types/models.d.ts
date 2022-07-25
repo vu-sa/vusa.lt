@@ -59,7 +59,7 @@ declare namespace App.Models {
     type_id: number;
     institution_id: number;
     email: string | null;
-    attributes: string | null;
+    attributes: Record<string, any> | null;
     places_to_occupy: number | null;
     created_at: any;
     updated_at: any;

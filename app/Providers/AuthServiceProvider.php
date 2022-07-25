@@ -6,6 +6,7 @@ use App\Models\Banner;
 use App\Models\Calendar;
 use App\Models\Duty;
 use App\Models\DutyInstitution;
+use App\Models\DutyUser;
 use App\Models\File;
 use App\Models\MainPage;
 use App\Models\Navigation;
@@ -20,6 +21,7 @@ use App\Models\Team;
 use App\Models\User;
 use App\Policies\CalendarPolicy;
 use App\Policies\DutiesPolicy;
+use App\Policies\DutyUserPolicy;
 use App\Policies\DutyInstitutionsPolicy;
 use App\Policies\FilesPolicy;
 use App\Policies\TeamPolicy;
@@ -46,6 +48,7 @@ class AuthServiceProvider extends ServiceProvider
         Banner::class => BannersPolicy::class,
         Calendar::class => CalendarPolicy::class,
         Duty::class => DutiesPolicy::class,
+        DutyUser::class => DutyUserPolicy::class,
         DutyInstitution::class => DutyInstitutionsPolicy::class,
         // File::class => FilesPolicy::class,
         MainPage::class => MainPagePolicy::class,

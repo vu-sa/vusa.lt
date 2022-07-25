@@ -82,7 +82,7 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required',
             'duties' => 'required',
-            'email' => 'required|unique:users|unique:duties',
+            'email' => 'required',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -141,6 +141,7 @@ class UserController extends Controller
                         'email' => $duty->email,
                         'name' => $duty->name,
                         'institution' => $duty->institution,
+                        'pivot' => $duty->pivot,
                     ];
                 }),
                 'role' => $user->role,
@@ -160,7 +161,7 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => 'required',
-            'email' => 'required|unique:users',
+            'email' => 'required',
         ]);
         
         DB::transaction(function () use ($request, $user) {

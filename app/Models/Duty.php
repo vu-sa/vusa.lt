@@ -8,6 +8,8 @@ class Duty extends Model
 {
     protected $table = 'duties';
 
+    protected $with = ['type'];
+
     protected $guarded = [];
 
     public function users()

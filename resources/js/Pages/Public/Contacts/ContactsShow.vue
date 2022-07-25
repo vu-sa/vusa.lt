@@ -35,7 +35,9 @@
                 trigger="hover"
                 :style="{ maxWidth: '250px' }"
                 ><template #trigger>
-                  <p class="my-1 cursor-pointer">{{ duty.name }}</p>
+                  <p class="my-1 cursor-pointer">
+                    {{ duty.name }} {{ showStudyProgram(duty) }}
+                  </p>
                 </template>
                 <span v-html="duty.description"></span>
               </NPopover>
@@ -74,6 +76,19 @@ defineProps<{
   contacts: Array<App.Models.User>;
   institution: App.Models.DutyInstitution;
 }>();
+
+const showStudyProgram = (duty: App.Models.Duty) => {
+  if (!duty.pivot?.attributes?.study_program) {
+    return null;
+  }
+
+  // check if name includes kuratorius
+  if (duty.name.toLowerCase().includes("kuratorius")) {
+    return `(${duty.pivot.attributes.study_program})`;
+  }
+
+  return null;
+};
 </script>
 
 <style>

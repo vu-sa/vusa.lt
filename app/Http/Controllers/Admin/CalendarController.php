@@ -6,6 +6,7 @@ use App\Models\Calendar;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
+use App\Models\Category;
 
 class CalendarController extends Controller
 {
@@ -48,8 +49,10 @@ class CalendarController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function create()
-    {
-        return Inertia::render('Admin/Calendar/CreateCalendarEvent');
+    {        
+        return Inertia::render('Admin/Calendar/CreateCalendarEvent', 
+            ['categories' => Category::all()]
+        );
     }
 
     /**
@@ -70,8 +73,10 @@ class CalendarController extends Controller
             'date' => $request->date,
             'title' => $request->title,
             'description' => $request->description,
+            'location' => $request->location,
             'url' => $request->url,
             'category' => $request->category,
+            'attributes' => $request->attributes,
         ]);
 
         return redirect()->route('calendar.index');
@@ -97,7 +102,8 @@ class CalendarController extends Controller
     public function edit(Calendar $calendar)
     {
         return Inertia::render('Admin/Calendar/EditCalendarEvent', [
-            'calendar' => $calendar->toArray(),
+            'calendar' => $calendar,
+            'categories' => Category::all(),
         ]);
     }
 
@@ -110,7 +116,7 @@ class CalendarController extends Controller
      */
     public function update(Request $request, Calendar $calendar)
     {
-        $calendar->update($request->only('title', 'date', 'description', 'category', 'url'));
+        $calendar->update($request->only('title', 'date', 'description', 'location', 'category', 'url', 'attributes'));
 
         return redirect()->back();
     }
