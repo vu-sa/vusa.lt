@@ -15,7 +15,9 @@ const calendar = {
   title: "",
   date: null,
   description: "",
+  location: "",
   category: null,
   url: "",
+  attributes: {},
 };
 </script>

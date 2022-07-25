@@ -9,10 +9,18 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Data ir laikas" :span="12">
+      <NFormItemGi label="Renginio vieta" :span="12">
+        <NInput
+          v-model:value="form.location"
+          type="text"
+          placeholder="Įrašyti renginio vietą..."
+        />
+      </NFormItemGi>
+
+      <NFormItemGi label="Pradžios data ir laikas" :span="12">
         <NDatePicker
           v-model:formatted-value="form.date"
-          placeholder="Įrašyti laiką..."
+          placeholder="Pasirinkti laiką..."
           value-format="yyyy-MM-dd HH:mm:ss"
           type="datetime"
         />
@@ -21,7 +29,7 @@
       <NFormItemGi label="Kategorija" :span="12">
         <NSelect
           v-model:value="form.category"
-          :options="options"
+          :options="categoryOptions"
           placeholder="Pasirinkti kategoriją..."
           clearable
         />
@@ -34,6 +42,32 @@
           placeholder="Įrašyti nuorodą..."
         />
       </NFormItemGi>
+
+      <template v-if="form.category === 'freshmen-camps'">
+        <NFormItemGi label="Facebook nuoroda" :span="12">
+          <NInput
+            v-model:value="form.attributes.facebook_url"
+            type="text"
+            placeholder="Įrašyti Facebook URL..."
+          />
+        </NFormItemGi>
+
+        <NFormItemGi label="Vieta" :span="12">
+          <NInput
+            v-model:value="form.attributes.facebook_url"
+            type="text"
+            placeholder="Įrašyti Facebook URL..."
+          />
+        </NFormItemGi>
+
+        <NFormItemGi label="Trukmė" :span="12">
+          <NDatePicker
+            v-model:value="form.attributes.date_range"
+            type="daterange"
+            clearable
+          />
+        </NFormItemGi>
+      </template>
 
       <NFormItemGi label="Aprašymas" :span="24">
         <TipTap
@@ -72,24 +106,21 @@ import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue"
 
 const props = defineProps<{
   calendar: CalendarEventForm;
+  categories: App.Models.Category[];
   modelRoute: string;
   deleteModelRoute?: string;
 }>();
 
 const form = useForm("calendar", props.calendar);
 
-const options = [
-  {
-    value: "red",
-    label: "Akademinė informacija",
-  },
-  {
-    value: "yellow",
-    label: "Socialinė informacija",
-  },
-  {
-    value: "grey",
-    label: "Kita informacija",
-  },
-];
+// if no attributes are provided, create an empty object
+if (!form.attributes) {
+  form.attributes = {};
+}
+
+// map category options to array
+const categoryOptions = props.categories.map((category) => ({
+  label: category.name,
+  value: category.alias,
+}));
 </script>
