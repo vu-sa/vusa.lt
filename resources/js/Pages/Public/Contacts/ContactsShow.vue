@@ -37,7 +37,8 @@
                 :style="{ maxWidth: '250px' }"
                 ><template #trigger>
                   <p class="my-1 cursor-pointer">
-                    {{ duty.name }} {{ showStudyProgram(duty) }}
+                    {{ checkIfContactNameEndsWithEDot(contact, duty) }}
+                    {{ showStudyProgram(duty) }}
                   </p>
                 </template>
                 <span
@@ -70,7 +71,6 @@
 <script setup lang="ts">
 import { Mail20Regular, Phone20Regular } from "@vicons/fluent";
 import { NIcon, NPopover } from "naive-ui";
-import { usePage } from "@inertiajs/inertia-vue3";
 
 import ContactWithPhoto from "@/Components/Public/ContactWithPhoto.vue";
 import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
@@ -116,6 +116,19 @@ const getImageUrl = (contact: App.Models.User) => {
     }
   }
   return contact.image ?? "";
+};
+
+// ! TIK KURATORIAMS: pakeisti galūnes
+// check
+const checkIfContactNameEndsWithEDot = (
+  contact: App.Models.User,
+  duty: App.Models.Duty
+) => {
+  if (contact.name.endsWith("ė") || contact.name.endsWith("a")) {
+    return duty.name.replace("kuratorius", "kuratorė");
+  }
+
+  return duty.name;
 };
 </script>
 
