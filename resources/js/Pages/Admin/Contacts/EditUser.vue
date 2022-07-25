@@ -9,7 +9,7 @@
       />
     </UpsertModelLayout>
     <template #aside-navigation-options>
-      <div v-if="contact.duties" class="col-span-3">
+      <div v-if="contact.duties.length > 0" class="col-span-3">
         <NDivider></NDivider>
         <strong>Šiuo metu {{ contact.name }} užima šias pareigas:</strong>
         <ul class="list-inside">
@@ -45,7 +45,7 @@
           </li>
         </ul>
       </div>
-      <p v-else>Ši institucija <strong>neturi</strong> pareigų.</p>
+      <p v-else>Šis žmogus neturi pareigų.</p>
     </template>
   </AdminLayout>
 </template>

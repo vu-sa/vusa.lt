@@ -37,7 +37,7 @@ class Calendar extends Model implements HasMedia
 
     public function category()
     {
-        return $this->hasOne(Category::class, 'category', 'alias');
+        return $this->belongsTo(Category::class, 'category', 'alias');
     }
 
     public function registerMediaConversions(Media $media = null): void

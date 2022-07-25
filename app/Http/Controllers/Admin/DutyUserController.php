@@ -78,7 +78,7 @@ class DutyUserController extends Controller
      */
     public function update(Request $request, DutyUser $dutyUser)
     {
-        $dutyUser->attributes = $request->attributes;
+        $dutyUser->attributes = $request->input('attributes');
         $dutyUser->save();
 
         return redirect()->back();

@@ -36,7 +36,7 @@ class CalendarController extends Controller
                 $query->where('title', 'like', "%{$title}%");
             })->with(['padalinys' => function ($query) {
                 $query->select('id', 'shortname', 'alias');
-            }])->orderByDesc('date')->paginate(20);
+            }])->with('category')->orderByDesc('date')->paginate(20);
 
         return Inertia::render('Admin/Calendar/IndexCalendarEvents', [
             'calendar' => $calendar,
@@ -50,9 +50,9 @@ class CalendarController extends Controller
      */
     public function create()
     {        
-        return Inertia::render('Admin/Calendar/CreateCalendarEvent', 
-            ['categories' => Category::all()]
-        );
+        return Inertia::render('Admin/Calendar/CreateCalendarEvent', [
+            'categories' => Category::all()
+        ]);
     }
 
     /**
@@ -116,6 +116,12 @@ class CalendarController extends Controller
      */
     public function update(Request $request, Calendar $calendar)
     {
+        $request->validate([
+            'date' => 'required|date',
+            'title' => 'required',
+            'description' => 'required',
+        ]);
+        
         $calendar->update($request->only('title', 'date', 'description', 'location', 'category', 'url', 'attributes'));
 
         return redirect()->back();

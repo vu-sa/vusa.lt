@@ -60,7 +60,7 @@ class DutyUserPolicy
      */
     public function update(User $user, DutyUser $dutyUser)
     {
-        //
+        return true;
     }
 
     /**

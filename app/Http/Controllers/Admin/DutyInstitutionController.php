@@ -75,6 +75,7 @@ class DutyInstitutionController extends Controller
         $dutyInstitution->short_name = $request->short_name;
         $dutyInstitution->alias = $request->alias;
         $dutyInstitution->padalinys_id = $request->padalinys_id;
+        $dutyInstitution->image_url = $request->image_url;
         $dutyInstitution->save();
 
         return redirect()->route('dutyInstitutions.index');
@@ -130,7 +131,7 @@ class DutyInstitutionController extends Controller
         ]);
         
         // TODO: short_name and shortname are used as columns in some tables. Need to make the same name.
-        $dutyInstitution->update($request->only('name', 'short_name', 'description', 'padalinys_id'));
+        $dutyInstitution->update($request->only('name', 'short_name', 'description', 'padalinys_id', 'image_url'));
 
         return redirect()->back();
     }

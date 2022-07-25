@@ -13,7 +13,7 @@
         <NInput
           v-model:value="form.location"
           type="text"
-          placeholder="Įrašyti renginio vietą..."
+          placeholder="AB Imeda poilsiavietė, Kiškiai, Ignalinos raj."
         />
       </NFormItemGi>
 
@@ -35,11 +35,11 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Nuoroda" :span="12">
+      <NFormItemGi label="Pagrindinė nuoroda" :span="12">
         <NInput
           v-model:value="form.url"
           type="text"
-          placeholder="Įrašyti nuorodą..."
+          placeholder="https://vusa.lt/..."
         />
       </NFormItemGi>
 
@@ -48,15 +48,7 @@
           <NInput
             v-model:value="form.attributes.facebook_url"
             type="text"
-            placeholder="Įrašyti Facebook URL..."
-          />
-        </NFormItemGi>
-
-        <NFormItemGi label="Vieta" :span="12">
-          <NInput
-            v-model:value="form.attributes.facebook_url"
-            type="text"
-            placeholder="Įrašyti Facebook URL..."
+            placeholder="https://www.facebook.com/events/584152539934772"
           />
         </NFormItemGi>
 

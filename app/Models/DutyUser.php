@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 
 class DutyUser extends Pivot
 {
@@ -11,7 +12,7 @@ class DutyUser extends Pivot
     protected $with = ['user', 'duty'];
     
     protected $casts = [
-        'attributes' => 'object',
+        'attributes' => AsArrayObject::class,
     ];
 
     public function duty()

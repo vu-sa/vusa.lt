@@ -25,6 +25,7 @@
         <ContactWithPhoto
           v-for="contact in contacts"
           :key="contact.id"
+          :contact="contact"
           :image-src="contact.image"
         >
           <template #name> {{ contact.name }} </template>
@@ -39,7 +40,9 @@
                     {{ duty.name }} {{ showStudyProgram(duty) }}
                   </p>
                 </template>
-                <span v-html="duty.description"></span>
+                <span
+                  v-html="duty.pivot?.attributes?.info_text ?? duty.description"
+                ></span>
               </NPopover>
               <p v-else class="my-1">{{ duty.name }}</p>
             </template>
