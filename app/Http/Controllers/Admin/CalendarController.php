@@ -73,6 +73,7 @@ class CalendarController extends Controller
             'date' => $request->date,
             'title' => $request->title,
             'description' => $request->description,
+            'padalinys_id' => auth()->user()->padalinys()->id,
             'location' => $request->location,
             'url' => $request->url,
             'category' => $request->category,

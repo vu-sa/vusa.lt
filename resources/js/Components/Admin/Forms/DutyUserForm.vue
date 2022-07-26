@@ -52,7 +52,7 @@ const props = defineProps<{
 
 const form = useForm("dutyUser", props.dutyUser);
 
-if (!form.attributes) {
+if (!form.attributes || form.attributes.length === 0) {
   form.attributes = {};
 }
 
