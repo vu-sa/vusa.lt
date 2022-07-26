@@ -10,7 +10,7 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Pavadinimas" :span="12">
+      <NFormItemGi label="Pavadinimas" :span="12" required>
         <NInput
           v-model:value="form.title"
           type="text"
@@ -26,7 +26,7 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Pradžios data ir laikas" :span="12">
+      <NFormItemGi label="Pradžios data ir laikas" :span="12" required>
         <NDatePicker
           v-model:formatted-value="form.date"
           placeholder="Pasirinkti laiką..."
@@ -69,7 +69,7 @@
         </NFormItemGi>
       </template>
 
-      <NFormItemGi label="Aprašymas" :span="24">
+      <NFormItemGi label="Aprašymas" :span="24" required>
         <TipTap
           v-model="form.description"
           :search-files="$page.props.search.other"
