@@ -100,13 +100,6 @@ const getImageUrl = (contact: App.Models.User) => {
   const url = new URL(window.location.href);
   url.search = "";
   if (url.pathname.includes("kuratoriai")) {
-    // check if contact.duties is NOT an object, if yes, turn to array
-
-    // console.log(contact);
-    // if (typeof contact.duties !== "object") {
-    //   contact.duties = [contact.duties];
-    // }
-
     // check all duties for duties name which includes kuratorius
 
     for (const duty of contact.duties) {

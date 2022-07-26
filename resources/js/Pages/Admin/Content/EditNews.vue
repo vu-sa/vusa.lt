@@ -22,7 +22,7 @@
         class="flex-end"
         :form="news"
         size="small"
-        :model-route="news.destroy"
+        model-route="news.destroy"
       ></DeleteModelButton>
     </template>
     <UpsertModelLayout :errors="$attrs.errors" :model="news">
