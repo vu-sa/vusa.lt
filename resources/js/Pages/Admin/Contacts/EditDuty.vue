@@ -9,6 +9,7 @@
       <DutyForm
         :duty="duty"
         :has-users="hasUsers"
+        :duty-types="dutyTypes"
         model-route="duties.update"
         delete-model-route="duties.destroy"
       />
@@ -73,6 +74,7 @@ import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue"
 const props = defineProps<{
   duty: App.Models.Duty;
   users: App.Models.User[];
+  dutyTypes: App.Models.DutyType[];
 }>();
 
 const { message } = createDiscreteApi(["message"]);

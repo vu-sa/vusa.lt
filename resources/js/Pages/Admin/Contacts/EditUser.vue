@@ -68,6 +68,6 @@ defineProps<{
 
 const hasFillableAttributes = (duty: App.Models.Duty) => {
   // return true if duty.name includes "kurator"
-  return duty.name.toLowerCase().includes("kurator");
+  return duty.type?.alias === "kuratoriai";
 };
 </script>

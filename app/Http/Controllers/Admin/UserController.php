@@ -142,6 +142,7 @@ class UserController extends Controller
                         'name' => $duty->name,
                         'institution' => $duty->institution,
                         'pivot' => $duty->pivot,
+                        'type' => $duty->type,
                     ];
                 }),
                 'role' => $user->role,

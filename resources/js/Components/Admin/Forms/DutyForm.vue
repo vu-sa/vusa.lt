@@ -13,7 +13,7 @@
         <NInput v-model:value="form.email" placeholder="vusa@vusa.lt" />
       </NFormItemGi>
 
-      <NFormItemGi label="Institucija" :span="24">
+      <NFormItemGi label="Institucija" :span="12">
         <NSelect
           v-model:value="form.institution.id"
           filterable
@@ -23,6 +23,17 @@
           remote
           :clear-filter-after-select="false"
           @search="getInstitutionOptions"
+        />
+      </NFormItemGi>
+
+      <NFormItemGi label="Pareigybės tipas" :span="12">
+        <NSelect
+          v-model:value="form.type.id"
+          :options="dutyTypes"
+          label-field="name"
+          value-field="id"
+          placeholder="Pasirinkti kategoriją..."
+          clearable
         />
       </NFormItemGi>
 
@@ -70,6 +81,7 @@ import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue"
 
 const props = defineProps<{
   duty: App.Models.Duty;
+  dutyTypes: App.Models.DutyType[];
   hasUsers: boolean;
   modelRoute: string;
   deleteModelRoute?: string;
