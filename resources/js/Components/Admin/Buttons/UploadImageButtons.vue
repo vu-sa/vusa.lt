@@ -2,7 +2,7 @@
   <div>
     <div class="mb-4">
       <NUpload
-        accept="image/jpg,image/png"
+        accept="image/jpg,image/jpeg,image/png"
         @change="uploadFile"
         @before-upload="beforeUpload"
       >

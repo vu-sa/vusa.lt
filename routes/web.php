@@ -46,6 +46,7 @@ Route::prefix('admin')->group(function () {
         Route::resource('saziningaiExamObservers', Admin\SaziningaiExamObserversController::class);
         Route::resource('files', Admin\FilesController::class);
         Route::resource('duties', Admin\DutyController::class);
+        Route::resource('dutyUsers', Admin\DutyUserController::class);
         Route::resource('dutyInstitutions', Admin\DutyInstitutionController::class);
         Route::post('dutyInstitutions/search', [Admin\DutyInstitutionController::class, 'searchForInstitutions'])->name('dutyInstitutions.search');
 

@@ -25,7 +25,8 @@
         <ContactWithPhoto
           v-for="contact in contacts"
           :key="contact.id"
-          :image-src="contact.image"
+          :contact="contact"
+          :image-src="getImageUrl(contact)"
         >
           <template #name> {{ contact.name }} </template>
           <template #duty>
@@ -35,9 +36,14 @@
                 trigger="hover"
                 :style="{ maxWidth: '250px' }"
                 ><template #trigger>
-                  <p class="my-1 cursor-pointer">{{ duty.name }}</p>
+                  <p class="my-1 cursor-pointer">
+                    {{ checkIfContactNameEndsWithEDot(contact, duty) }}
+                    {{ showStudyProgram(duty) }}
+                  </p>
                 </template>
-                <span v-html="duty.description"></span>
+                <span
+                  v-html="duty.pivot?.attributes?.info_text ?? duty.description"
+                ></span>
               </NPopover>
               <p v-else class="my-1">{{ duty.name }}</p>
             </template>
@@ -74,6 +80,54 @@ defineProps<{
   contacts: Array<App.Models.User>;
   institution: App.Models.DutyInstitution;
 }>();
+
+// ! TIK KURATORIAMS: nusprendžia, ar rodyti studijų programą
+const showStudyProgram = (duty: App.Models.Duty) => {
+  if (!duty.pivot?.attributes?.study_program) {
+    return null;
+  }
+
+  // check if name includes kuratorius
+  if (duty.name.toLowerCase().includes("kuratorius")) {
+    return `(${duty.pivot.attributes.study_program})`;
+  }
+
+  return null;
+};
+
+// ! TIK KURATORIAMS: nusprendžia, kurią nuotrauką imti, pagal tai, ar url turi "kuratoriai"
+const getImageUrl = (contact: App.Models.User) => {
+  const url = new URL(window.location.href);
+  url.search = "";
+  if (url.pathname.includes("kuratoriai")) {
+    // check all duties for duties name which includes kuratorius
+
+    for (const duty of contact.duties) {
+      if (duty.name.toLowerCase().includes("kuratorius")) {
+        return duty.pivot.attributes?.additional_photo ?? contact.image;
+      }
+    }
+  }
+  return contact.image ?? "";
+};
+
+// ! TIK KURATORIAMS: pakeisti galūnes
+// check
+const checkIfContactNameEndsWithEDot = (
+  contact: App.Models.User,
+  duty: App.Models.Duty
+) => {
+  if (contact.name.endsWith("ė")) {
+    return duty.name.replace("kuratorius", "kuratorė");
+  }
+
+  let firstName = contact.name.split(" ")[0];
+  if (contact.name.endsWith("a") && !firstName.endsWith("s")) {
+    return duty.name.replace("kuratorius", "kuratorė");
+  }
+
+  return duty.name;
+};
 </script>
 
 <style>

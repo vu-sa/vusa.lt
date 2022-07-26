@@ -95,11 +95,6 @@
       </NFormItemGi>
     </NGrid>
     <div class="flex justify-end gap-2">
-      <DeleteModelButton
-        v-if="deleteModelRoute"
-        :form="form"
-        :model-route="deleteModelRoute"
-      ></DeleteModelButton>
       <UpsertModelButton :form="form" :model-route="modelRoute"
         >Sukurti</UpsertModelButton
       >

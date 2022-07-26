@@ -1,6 +1,15 @@
 <template>
   <NForm :model="form" label-placement="top">
     <NGrid :span="24" :x-gap="24">
+      <NFormItemGi label="Kategorija" :span="24">
+        <NSelect
+          v-model:value="form.category"
+          :options="categoryOptions"
+          placeholder="Pasirinkti kategoriją..."
+          clearable
+        />
+      </NFormItemGi>
+
       <NFormItemGi label="Pavadinimas" :span="12">
         <NInput
           v-model:value="form.title"
@@ -9,31 +18,56 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Data ir laikas" :span="12">
+      <NFormItemGi label="Renginio vieta" :span="12">
+        <NInput
+          v-model:value="form.location"
+          type="text"
+          placeholder="AB Imeda poilsiavietė, Kiškiai, Ignalinos raj."
+        />
+      </NFormItemGi>
+
+      <NFormItemGi label="Pradžios data ir laikas" :span="12">
         <NDatePicker
           v-model:formatted-value="form.date"
-          placeholder="Įrašyti laiką..."
+          placeholder="Pasirinkti laiką..."
           value-format="yyyy-MM-dd HH:mm:ss"
           type="datetime"
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Kategorija" :span="12">
-        <NSelect
-          v-model:value="form.category"
-          :options="options"
-          placeholder="Pasirinkti kategoriją..."
-          clearable
-        />
-      </NFormItemGi>
-
-      <NFormItemGi label="Nuoroda" :span="12">
+      <NFormItemGi label="Pagrindinė nuoroda" :span="12">
         <NInput
           v-model:value="form.url"
           type="text"
-          placeholder="Įrašyti nuorodą..."
+          placeholder="https://vusa.lt/..."
         />
       </NFormItemGi>
+
+      <template v-if="form.category === 'freshmen-camps'">
+        <NFormItemGi label="Facebook nuoroda" :span="12">
+          <NInput
+            v-model:value="form.attributes.facebook_url"
+            type="text"
+            placeholder="https://www.facebook.com/events/584152539934772"
+          />
+        </NFormItemGi>
+
+        <NFormItemGi label="Trukmė" :span="12">
+          <NDatePicker
+            v-model:value="form.attributes.date_range"
+            type="daterange"
+            clearable
+          />
+        </NFormItemGi>
+
+        <NFormItemGi label="Video (Youtube) nuoroda" :span="12">
+          <NInput
+            v-model:value="form.attributes.video_url"
+            type="text"
+            placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+          />
+        </NFormItemGi>
+      </template>
 
       <NFormItemGi label="Aprašymas" :span="24">
         <TipTap
@@ -72,24 +106,21 @@ import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue"
 
 const props = defineProps<{
   calendar: CalendarEventForm;
+  categories: App.Models.Category[];
   modelRoute: string;
   deleteModelRoute?: string;
 }>();
 
 const form = useForm("calendar", props.calendar);
 
-const options = [
-  {
-    value: "red",
-    label: "Akademinė informacija",
-  },
-  {
-    value: "yellow",
-    label: "Socialinė informacija",
-  },
-  {
-    value: "grey",
-    label: "Kita informacija",
-  },
-];
+// if no attributes are provided, create an empty object
+if (!form.attributes) {
+  form.attributes = {};
+}
+
+// map category options to array
+const categoryOptions = props.categories.map((category) => ({
+  label: category.name,
+  value: category.alias,
+}));
 </script>

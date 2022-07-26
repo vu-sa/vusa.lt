@@ -121,6 +121,8 @@ return [
         'text' => 'Tekstas',
         'image' => 'Paveikslėlis',
         'image_url' => 'Paveikslėlio nuoroda',
-        'duties' => 'Pareigybės laukelis'
+        'duties' => 'Pareigybės laukelis',
+        'date' => 'Data ir laikas',
+        'description' => 'Aprašymas',
     ],
 ];

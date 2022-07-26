@@ -32,6 +32,14 @@ const createColumns = () => {
       title: "Data",
       key: "date",
     },
+    {
+      title: "Padalinys",
+      key: "padalinys.shortname",
+    },
+    {
+      title: "Kategorija",
+      key: "category.name",
+    },
   ];
 };
 

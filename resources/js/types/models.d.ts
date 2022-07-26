@@ -29,10 +29,12 @@ declare namespace App.Models {
     date: string;
     title: string;
     description: string | null;
+    location: string | null;
     category: string | null;
     url: string | null;
     user_id: number | null;
     padalinys_id: number;
+    attributes: object | null;
     created_at: any;
     updated_at: any;
     user?: App.Models.User | null;
@@ -57,7 +59,7 @@ declare namespace App.Models {
     type_id: number;
     institution_id: number;
     email: string | null;
-    attributes: string | null;
+    attributes: Record<string, any> | null;
     places_to_occupy: number | null;
     created_at: any;
     updated_at: any;

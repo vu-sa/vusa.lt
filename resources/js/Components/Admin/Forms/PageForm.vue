@@ -11,9 +11,7 @@
 
       <NFormItemGi label="Nuoroda" :span="12">
         <NInput
-          :value="
-            modelRoute == 'pages.create' ? createdPermalink : form.permalink
-          "
+          :value="form.permalink"
           disabled
           type="text"
           placeholder="Sugeneruojama nuoroda..."
@@ -64,8 +62,8 @@
 <script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
 import { NForm, NFormItemGi, NGrid, NInput, NSelect } from "naive-ui";
-import { computed, ref } from "vue";
 import { debounce } from "lodash";
+import { ref, watch } from "vue";
 import { useForm, usePage } from "@inertiajs/inertia-vue3";
 import latinize from "latinize";
 import route from "ziggy-js";
@@ -95,17 +93,38 @@ const languageOptions = [
 
 const otherLangPageOptions = ref([]);
 
-const createdPermalink = computed(() => {
-  let latinizedTitle = latinize(form.title);
+// watch form.title and update form.permalink
 
-  return latinizedTitle
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-+/, "")
-    .replace(/-+$/, "")
-    .substring(0, 30);
-});
+if (props.modelRoute == "pages.store") {
+  watch(
+    () => form.title,
+    (title) => {
+      let latinizedTitle = latinize(title);
+      form.permalink = latinizedTitle
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-+/, "")
+        .replace(/-+$/, "")
+        .substring(0, 30);
+    }
+  );
+}
+
+// const createdPermalink = () => {
+//   let latinizedTitle = latinize(form.title);
+
+//   latinizedTitle = latinizedTitle
+//     .toLowerCase()
+//     .replace(/[^a-z0-9]+/g, "-")
+//     .replace(/-+/g, "-")
+//     .replace(/^-+/, "")
+//     .replace(/-+$/, "")
+//     .substring(0, 30);
+
+//   form.permalink = latinizedTitle;
+//   return latinizedTitle;
+// };
 // const { message } = createDiscreteApi(["message"]);
 
 const getOtherLangPages = debounce((input) => {

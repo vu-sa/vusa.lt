@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout title="Nauja naujiena" :back-url="route('pages.index')">
+  <AdminLayout title="Naujas puslapis" :back-url="route('pages.index')">
     <UpsertModelLayout :errors="$attrs.errors" :model="page">
       <template #card-header> Puslapio informacija </template>
       <PageForm :page="page" model-route="pages.store" />
