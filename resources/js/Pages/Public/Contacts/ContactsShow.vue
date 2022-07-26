@@ -106,7 +106,7 @@ const showStudyProgram = (duty: App.Models.Duty) => {
 const getImageUrl = (contact: App.Models.User) => {
   const url = new URL(window.location.href);
   url.search = "";
-  if (url.pathname.includes("kuratoriai")) {
+  if (url.pathname.includes("kuratoriai") && contact.duties) {
     // check all duties for duties name which includes kuratorius
 
     for (const duty of contact.duties) {
