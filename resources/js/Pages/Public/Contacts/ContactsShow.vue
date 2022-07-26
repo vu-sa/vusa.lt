@@ -45,7 +45,10 @@
                   v-html="duty.pivot?.attributes?.info_text ?? duty.description"
                 ></span>
               </NPopover>
-              <p v-else class="my-1">{{ duty.name }}</p>
+              <p v-else class="my-1">
+                {{ checkIfContactNameEndsWithEDot(contact, duty) }}
+                {{ showStudyProgram(duty) }}
+              </p>
             </template>
           </template>
           <template #contactInfo>
@@ -92,7 +95,7 @@ const showStudyProgram = (duty: App.Models.Duty) => {
   }
 
   // check if name includes kuratorius
-  if (duty.name.toLowerCase().includes("kuratorius")) {
+  if (duty.type?.alias === "kuratoriai") {
     return `(${duty.pivot.attributes.study_program})`;
   }
 
