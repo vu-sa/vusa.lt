@@ -3,7 +3,7 @@
     :title="`${institution.short_name ?? institution.name} kontaktai`"
   >
     <div class="px-16 lg:px-32">
-      <div class="grid gap-8 pt-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div class="grid gap-8 pt-4 sm:grid-cols-2 2xl:grid-cols-3">
         <div v-if="institution.image_url" class="group relative sm:col-span-2">
           <ShapeDivider1 class="absolute -top-1 z-10"></ShapeDivider1>
           <ShapeDivider1
@@ -105,13 +105,15 @@ const showStudyProgram = (duty: App.Models.Duty) => {
 // ! TIK KURATORIAMS: nusprendžia, kurią nuotrauką imti, pagal tai, ar url turi "kuratoriai"
 const getImageUrl = (contact: App.Models.User) => {
   const url = new URL(window.location.href);
-  url.search = "";
   if (url.pathname.includes("kuratoriai") && contact.duties) {
     // check all duties for duties name which includes kuratorius
-
-    for (const duty of contact.duties) {
-      if (duty.name.toLowerCase().includes("kuratorius")) {
-        return duty.pivot.attributes?.additional_photo ?? contact.image;
+    // iterate object simply because it may not be iterable
+    for (const duty of Object.keys(contact.duties)) {
+      if (contact.duties[duty].name.toLowerCase().includes("kuratorius")) {
+        return (
+          contact.duties[duty].pivot.attributes?.additional_photo ??
+          contact.image
+        );
       }
     }
   }
