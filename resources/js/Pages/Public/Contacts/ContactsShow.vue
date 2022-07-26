@@ -131,6 +131,11 @@ const checkIfContactNameEndsWithEDot = (
     return duty.name.replace(/ius$/, "ė");
   }
 
+  let namesToWomanize = ["Katrin"];
+  if (namesToWomanize.includes(firstName)) {
+    return duty.name.replace(/ius$/, "ė");
+  }
+
   return duty.name;
 };
 </script>
