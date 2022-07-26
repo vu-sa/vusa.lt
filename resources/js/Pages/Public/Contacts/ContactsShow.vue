@@ -117,7 +117,12 @@ const checkIfContactNameEndsWithEDot = (
   contact: App.Models.User,
   duty: App.Models.Duty
 ) => {
-  if (contact.name.endsWith("ė") || contact.name.endsWith("a")) {
+  if (contact.name.endsWith("ė")) {
+    return duty.name.replace("kuratorius", "kuratorė");
+  }
+
+  let firstName = contact.name.split(" ")[0];
+  if (contact.name.endsWith("a") && !firstName.endsWith("s")) {
     return duty.name.replace("kuratorius", "kuratorė");
   }
 
