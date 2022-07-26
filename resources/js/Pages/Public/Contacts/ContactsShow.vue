@@ -60,6 +60,10 @@
                 <NIcon class="mr-2"> <Mail20Regular /> </NIcon
                 ><a :href="`mailto:${duty.email}`">{{ duty.email }}</a>
               </div>
+              <div v-else>
+                <NIcon class="mr-2"> <Mail20Regular /> </NIcon
+                ><a :href="`mailto:${contact.email}`">{{ contact.email }}</a>
+              </div>
             </template>
           </template>
         </ContactWithPhoto>
