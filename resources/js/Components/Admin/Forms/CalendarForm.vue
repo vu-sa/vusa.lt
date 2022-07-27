@@ -114,7 +114,7 @@ const props = defineProps<{
 const form = useForm("calendar", props.calendar);
 
 // if no attributes are provided, create an empty object
-if (!form.attributes) {
+if (!form.attributes || form.attributes.length === 0) {
   form.attributes = {};
 }
 
