@@ -181,15 +181,7 @@ class UserController extends Controller
                 // TODO: role revamp with Spatie permissions or smth
             }
 
-            // get all user duties and delete all of them
-            $user->duties()->detach();
-
-            // dd($user->duties);
-
-            // add new roles
-            foreach ($request->duties as $duty) {
-                $user->duties()->attach($duty);
-            }
+            $user->duties()->sync($request->duties);
         });
 
         return redirect()->back();
