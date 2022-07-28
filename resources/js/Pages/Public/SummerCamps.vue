@@ -8,7 +8,7 @@
       <div class="relative">
         <img
           src="/images/ataskaita2022/kitos-nuotraukos/VU SA.jpg"
-          class="my-4 h-36 w-full object-cover duration-200"
+          class="my-4 h-40 w-full object-cover brightness-50"
           style="object-position: 0% 35%"
         />
         <h1 class="relative bottom-24 text-center text-white">
@@ -119,7 +119,7 @@ const getFacultyName = (event: App.Models.Calendar) => {
   }
   // also apply this to "tre" to "tas"
   if (facultyName.endsWith("tre")) {
-    facultyName = facultyName.replace("tre", "tas");
+    facultyName = facultyName.replace("tre", "tras");
   }
 
   return facultyName;

@@ -98,11 +98,8 @@
               <NButton
                 v-if="event.attributes.facebook_url"
                 text
-                target="_blank"
-                tag="a"
-                :href="event.attributes.facebook_url"
-                ><template #icon
-                  ><NIcon :component="FacebookF"></NIcon></template
+                @click="windowOpen(event.attributes.facebook_url)"
+                ><NIcon :component="FacebookF"></NIcon
               ></NButton>
             </p>
 
@@ -185,6 +182,10 @@ const props = defineProps<{
   curatorDuties: Array<App.Models.Duty>;
 }>();
 
+const windowOpen = (url: string) => {
+  window.open(url, "_blank");
+};
+
 const headerImageStyle = computed(() => {
   return {
     "background-image": `linear-gradient(0deg, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.3)), url(${
@@ -205,8 +206,6 @@ const computedEventDateRange = computed(() => {
     props.event?.attributes?.date_range === null
   )
     return "";
-
-  console.log(props.event.attributes.date_range / 1000);
 
   let date1 = new Date(props.event.attributes?.date_range[0]);
   let day1 = new Intl.DateTimeFormat("lt-LT", {
@@ -233,8 +232,9 @@ const computedEventDateRange = computed(() => {
 });
 
 const timeTillEvent = computed(() => {
-  const date = new Date(props.event.date);
+  const date = new Date(props.event.date.replace(/-/g, "/"));
   const now = new Date();
+  console.log(date, now);
   // get full days till event
   const daysTillEvent = Math.floor(
     (date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
