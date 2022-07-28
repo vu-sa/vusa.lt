@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col rounded-lg bg-white lg:flex-row">
-    <div v-if="getImageUrl(contact)" class="relative h-60 flex-none lg:w-40">
+    <div v-if="getImageUrl(contact)" class="relative h-72 flex-none lg:w-40">
       <img
         :src="getImageUrl(contact)"
         class="absolute inset-0 h-full w-full rounded-t-lg object-cover lg:rounded-t-none lg:rounded-l-lg"
@@ -31,7 +31,7 @@
             ><template #trigger>
               <p class="my-1 cursor-pointer">
                 {{ checkIfContactNameEndsWithEDot(contact, duty) }}
-                {{ showStudyProgram(duty) }}
+                {{ showStudyProgram(contact, duty) }}
               </p>
             </template>
             <!-- <span
@@ -40,7 +40,7 @@
           </NPopover>
           <p v-else class="my-1">
             {{ checkIfContactNameEndsWithEDot(contact, duty) }}
-            {{ showStudyProgram(duty) }}
+            {{ showStudyProgram(contact, duty) }}
           </p>
         </div>
       </div>
@@ -120,14 +120,16 @@ const checkIfContactNameEndsWithEDot = (
 };
 
 // ! TIK KURATORIAMS: nusprendžia, ar rodyti studijų programą
-const showStudyProgram = (duty: App.Models.Duty) => {
-  if (!duty.pivot?.attributes?.study_program) {
+const showStudyProgram = (contact: App.Models.User, duty) => {
+  console.log(contact.type?.alias);
+
+  if (!contact.pivot?.attributes?.study_program) {
     return null;
   }
 
   // check if name includes kuratorius
-  if (duty.type?.alias === "kuratoriai") {
-    return `(${duty.pivot.attributes.study_program})`;
+  if (duty.type_id === 5) {
+    return `(${contact.pivot.attributes.study_program})`;
   }
 
   return null;

@@ -96,9 +96,9 @@
             <p class="col-span-2 mb-4 flex font-bold">
               <span class="w-fit">{{ event.title }}</span>
               <NButton
-                v-if="event.attributes.facebook_url"
+                v-if="event.attributes?.facebook_url"
                 text
-                @click="windowOpen(event.attributes.facebook_url)"
+                @click="windowOpen(event.attributes?.facebook_url)"
                 ><NIcon :component="FacebookF"></NIcon
               ></NButton>
             </p>
