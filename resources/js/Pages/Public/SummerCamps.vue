@@ -4,28 +4,30 @@
 
     <div class="group relative">
       <ShapeDivider1 class="absolute -top-1 z-10"></ShapeDivider1>
-      <ShapeDivider1 class="absolute -bottom-1 z-10 rotate-180"></ShapeDivider1>
+      <ShapeDivider1
+        class="absolute bottom-5 z-10 rotate-180 lg:-bottom-1"
+      ></ShapeDivider1>
       <div class="relative">
         <img
-          src="/images/ataskaita2022/kitos-nuotraukos/VU SA.jpg"
-          class="my-4 h-40 w-full object-cover brightness-50"
-          style="object-position: 0% 35%"
+          src="/images/photos/stovykla.jpg"
+          class="mt-2 h-32 w-full object-cover brightness-50 lg:my-1 lg:h-48"
+          style="object-position: 0% 45%"
         />
-        <h1 class="relative bottom-24 text-center text-white">
+        <h1 class="relative bottom-16 text-center text-white lg:bottom-24">
           Pirmakursių stovyklos
         </h1>
       </div>
     </div>
     <div
-      class="mx-auto grid max-w-7xl grid-cols-5 gap-4 px-4 pt-8 last:pb-2 lg:px-16"
+      class="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-4 pt-2 last:pb-2 lg:grid-cols-5 lg:px-16"
     >
-      <div class="prose-sm col-span-3 sm:prose">
-        <p>Labas! 👋</p>
+      <div class="prose-sm col-span-3 px-12 sm:prose">
+        <h2>Labas! 👋</h2>
 
         <p>
           Egzaminai išlaikyti, pakvietimai studijuoti jau išsiųsti, studijų
           sutartys pasirašytos – tad dabar prasideda pats įdomiausias gyvenimo
-          etapas! Džiaugiamės, jog pasirinkai Universitetą, kur
+          etapas! Džiaugiamės, jog pasirinkai <strong>Universitetą</strong>, kur
           <em> Hinc itur ad astra </em> – iš čia kylama į žvaigždes.
         </p>
 
@@ -56,9 +58,10 @@
         <p>
           Tai puiki galimybė ne tik praplėsti pažinčių ratą, bet ir gauti
           atsakymus į visus rūpimus klausimus, susijusius su studijomis ar
-          studentišku gyvenimu. Ne iš nuogirdų, interneto ar reklaminių
-          lankstinukų, o iš pirmų lūpų – lygiai tą pačią studijų programą
-          pasirinkusių vyresnių kursų studentų (-čių).
+          studentišku gyvenimu. Ne iš
+          <em> nuogirdų, interneto ar reklaminių lankstinukų, </em>
+          o iš pirmų lūpų – lygiai tą pačią studijų programą pasirinkusių
+          vyresnių kursų studentų (-čių).
         </p>
 
         <p>
@@ -68,12 +71,15 @@
           studijoms!
         </p>
 
-        <p>Daugiau informacijos rasi savo padalinio polapyje!</p>
-
-        <p>Susimatome jau greitai!</p>
+        <p>
+          Daugiau informacijos rasi savo padalinio polapyje. Susimatome jau
+          greitai!
+        </p>
       </div>
 
-      <div class="col-span-2 flex flex-wrap gap-6">
+      <div
+        class="-order-1 col-span-2 flex flex-wrap justify-center gap-6 px-12 lg:order-1 lg:px-0"
+      >
         <section
           v-for="event in events"
           :key="event.id"
