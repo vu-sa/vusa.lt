@@ -21,7 +21,7 @@
     <div
       class="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-4 pt-2 last:pb-2 lg:grid-cols-5 lg:px-16"
     >
-      <div class="prose-sm col-span-3 px-12 sm:prose">
+      <div class="prose-sm col-span-3 px-12 lg:prose">
         <h2>Labas! 👋</h2>
 
         <p>
@@ -78,7 +78,7 @@
       </div>
 
       <div
-        class="-order-1 col-span-2 flex flex-wrap justify-center gap-6 px-12 lg:order-1 lg:px-0"
+        class="-order-1 col-span-2 flex flex-wrap justify-center gap-6 px-12 lg:order-1 lg:content-start lg:px-0"
       >
         <section
           v-for="event in events"
@@ -126,6 +126,16 @@ const getFacultyName = (event: App.Models.Calendar) => {
   // also apply this to "tre" to "tas"
   if (facultyName.endsWith("tre")) {
     facultyName = facultyName.replace("tre", "tras");
+  }
+
+  // also if ends with "ykloje", change to "ykla"
+  if (facultyName.endsWith("ykloje")) {
+    facultyName = facultyName.replace("ykloje", "ykla");
+  }
+
+  // change "ute" to "utas"
+  if (facultyName.endsWith("ute")) {
+    facultyName = facultyName.replace("ute", "utas");
   }
 
   return facultyName;

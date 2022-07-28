@@ -540,9 +540,9 @@ class MainController extends Controller
 		// get events with category of freshmen camps
 		$events = Calendar::whereHas('category', function (Builder $query) {
 			$query->where('name', '=', 'Pirmakursių stovykla');
-		})->with('padalinys:id,alias,fullname')->with('media')->get();
-
-		return Inertia::render('Public/SummerCamps', ['events' => $events])->withViewData([
+		})->with('padalinys:id,alias,fullname')->with('media')->get()->sortBy('padalinys.alias');
+		
+		return Inertia::render('Public/SummerCamps', ['events' => $events->values()->all()])->withViewData([
 			'title' => 'Pirmakursių stovyklos',
 			'description' => 'Universiteto tvarka niekada su ja nesusidūrusiam žmogui gali pasirodyti labai sudėtinga ir būtent dėl to jau prieš septyniolika metų Vilniaus universiteto Studentų atstovybė (VU SA) surengė pirmąją pirmakursių stovyklą.',
 		]);

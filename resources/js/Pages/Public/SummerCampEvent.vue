@@ -234,7 +234,6 @@ const computedEventDateRange = computed(() => {
 const timeTillEvent = computed(() => {
   const date = new Date(props.event.date.replace(/-/g, "/"));
   const now = new Date();
-  console.log(date, now);
   // get full days till event
   const daysTillEvent = Math.floor(
     (date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)

@@ -121,8 +121,6 @@ const checkIfContactNameEndsWithEDot = (
 
 // ! TIK KURATORIAMS: nusprendžia, ar rodyti studijų programą
 const showStudyProgram = (contact: App.Models.User, duty) => {
-  console.log(contact.type?.alias);
-
   if (!contact.pivot?.attributes?.study_program) {
     return null;
   }
