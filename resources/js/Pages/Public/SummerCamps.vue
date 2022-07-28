@@ -38,12 +38,13 @@
 
         <p>
           Tačiau dar prieš tai,
-          <a target="_blank" href="/apie"
+          <a class="font-bold underline" target="_blank" href="/apie"
             >Vilniaus universiteto Studentų atstovybė (VU SA)</a
           >
           kviečia Tave susipažinti su tais, kurie per visus mokslo metus lydės
           daugiausiai – tai Tavo padalinio, kurso, grupės draugai bei, žinoma,
           <a
+            class="font-bold underline"
             target="_blank"
             :href="
               route('contacts.category', {

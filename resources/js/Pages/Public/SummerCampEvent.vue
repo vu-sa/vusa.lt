@@ -207,7 +207,7 @@ const computedEventDateRange = computed(() => {
   )
     return "";
 
-  let date1 = new Date(props.event.attributes?.date_range[0]);
+  let date1 = new Date(parseInt(props.event.attributes?.date_range[0]));
   let day1 = new Intl.DateTimeFormat("lt-LT", {
     month: "long",
     day: "numeric",
@@ -217,7 +217,7 @@ const computedEventDateRange = computed(() => {
   // capitalize day1 string
   day1 = day1.charAt(0).toUpperCase() + day1.slice(1);
 
-  let date2 = new Date(props.event.attributes?.date_range[1]);
+  let date2 = new Date(parseInt(props.event.attributes?.date_range[1]));
 
   // if (!dateIsValid(date2)) return "";
 
