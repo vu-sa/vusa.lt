@@ -34,7 +34,7 @@
 	@apply border-t-4 border-gray-200 mt-2;
   }
   a {
-    @apply hover:text-vusa-red duration-200;
+    @apply hover:text-vusa-red duration-200 font-bold underline;
   }
 }
 
