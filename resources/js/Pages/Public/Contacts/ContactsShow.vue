@@ -19,67 +19,26 @@
           :class="{ 'sm:row-span-2': !institution.image_url }"
           class="prose-sm my-auto sm:prose"
         >
-          <h1>{{ institution.name ?? institution.short_name }}</h1>
+          <h1>
+            {{ institution.name ?? institution.short_name }}
+          </h1>
           <div v-html="institution.description"></div>
         </div>
-        <ContactWithPhoto
+        <!-- <template v-for="duty in institution"> -->
+        <ContactWithPhotoForDuties
           v-for="contact in contacts"
           :key="contact.id"
           :contact="contact"
-          :image-src="getImageUrl(contact)"
         >
-          <template #name> {{ contact.name }} </template>
-          <template #duty>
-            <template v-for="duty in contact.duties" :key="duty.id">
-              <NPopover
-                v-if="duty.description"
-                trigger="hover"
-                :style="{ maxWidth: '250px' }"
-                ><template #trigger>
-                  <p class="my-1 cursor-pointer">
-                    {{ checkIfContactNameEndsWithEDot(contact, duty) }}
-                    {{ showStudyProgram(duty) }}
-                  </p>
-                </template>
-                <span
-                  v-html="duty.pivot?.attributes?.info_text ?? duty.description"
-                ></span>
-              </NPopover>
-              <p v-else class="my-1">
-                {{ checkIfContactNameEndsWithEDot(contact, duty) }}
-                {{ showStudyProgram(duty) }}
-              </p>
-            </template>
-          </template>
-          <template #contactInfo>
-            <div v-if="contact.phone" class="flex flex-row items-center">
-              <NIcon class="mr-2">
-                <Phone20Regular />
-              </NIcon>
-              <a :href="`tel:${contact.phone}`">{{ contact.phone }}</a>
-            </div>
-            <template v-for="duty in contact.duties" :key="duty.id">
-              <div v-if="duty.email" class="flex flex-row items-center">
-                <NIcon class="mr-2"> <Mail20Regular /> </NIcon
-                ><a :href="`mailto:${duty.email}`">{{ duty.email }}</a>
-              </div>
-              <div v-else>
-                <NIcon class="mr-2"> <Mail20Regular /> </NIcon
-                ><a :href="`mailto:${contact.email}`">{{ contact.email }}</a>
-              </div>
-            </template>
-          </template>
-        </ContactWithPhoto>
+        </ContactWithPhotoForDuties>
+        <!-- </template> -->
       </div>
     </div>
   </PublicLayout>
 </template>
 
 <script setup lang="ts">
-import { Mail20Regular, Phone20Regular } from "@vicons/fluent";
-import { NIcon, NPopover } from "naive-ui";
-
-import ContactWithPhoto from "@/Components/Public/ContactWithPhoto.vue";
+import ContactWithPhotoForDuties from "@/Components/Public/ContactWithPhotoForDuties.vue";
 import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 
@@ -87,62 +46,6 @@ defineProps<{
   contacts: Array<App.Models.User>;
   institution: App.Models.DutyInstitution;
 }>();
-
-// ! TIK KURATORIAMS: nusprendžia, ar rodyti studijų programą
-const showStudyProgram = (duty: App.Models.Duty) => {
-  if (!duty.pivot?.attributes?.study_program) {
-    return null;
-  }
-
-  // check if name includes kuratorius
-  if (duty.type?.alias === "kuratoriai") {
-    return `(${duty.pivot.attributes.study_program})`;
-  }
-
-  return null;
-};
-
-// ! TIK KURATORIAMS: nusprendžia, kurią nuotrauką imti, pagal tai, ar url turi "kuratoriai"
-const getImageUrl = (contact: App.Models.User) => {
-  const url = new URL(window.location.href);
-  if (url.pathname.includes("kuratoriai") && contact.duties) {
-    // check all duties for duties name which includes kuratorius
-    // iterate object simply because it may not be iterable
-    for (const duty of Object.keys(contact.duties)) {
-      if (contact.duties[duty].name.toLowerCase().includes("kuratorius")) {
-        return (
-          contact.duties[duty].pivot.attributes?.additional_photo ??
-          contact.image
-        );
-      }
-    }
-  }
-  return contact.image ?? "";
-};
-
-// ! TIK KURATORIAMS: pakeisti galūnes
-// check
-const checkIfContactNameEndsWithEDot = (
-  contact: App.Models.User,
-  duty: App.Models.Duty
-) => {
-  if (contact.name.endsWith("ė")) {
-    // replace duty.name ending 'ius' with 'ė', but only on end
-    return duty.name.replace(/ius$/, "ė");
-  }
-
-  let firstName = contact.name.split(" ")[0];
-  if (contact.name.endsWith("a") && !firstName.endsWith("s")) {
-    return duty.name.replace(/ius$/, "ė");
-  }
-
-  let namesToWomanize = ["Katrin"];
-  if (namesToWomanize.includes(firstName)) {
-    return duty.name.replace(/ius$/, "ė");
-  }
-
-  return duty.name;
-};
 </script>
 
 <style>

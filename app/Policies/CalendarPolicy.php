@@ -98,4 +98,9 @@ class CalendarPolicy
     {
         //
     }
+
+    public function destroyMedia(User $user, Calendar $calendar)
+    {
+        return $user->padalinys()->id == $calendar->padalinys->id;
+    }
 }

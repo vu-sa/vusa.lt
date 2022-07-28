@@ -6,7 +6,7 @@
       <MainNavigation></MainNavigation>
       <Transition name="fade" appear>
         <main>
-          <div class="pt-16 sm:pt-24 2xl:pt-36">
+          <div class="pt-12 sm:pt-20 2xl:pt-32">
             <slot></slot>
           </div>
         </main>

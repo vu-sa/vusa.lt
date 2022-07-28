@@ -41,6 +41,8 @@ Route::prefix('admin')->group(function () {
         Route::post('users/{user}/detach/{duty}', [Admin\UserController::class, 'detachFromDuty'])->name('users.detach');
 
         Route::resource('calendar', Admin\CalendarController::class);
+        Route::post('calendar/{calendar}/media/{media}', [Admin\CalendarController::class, 'destroyMedia'])->name('calendar.destroyMedia');
+
         Route::resource('saziningaiExams', Admin\SaziningaiExamsController::class);
         Route::resource('saziningaiExamFlows', Admin\SaziningaiExamFlowsController::class);
         Route::resource('saziningaiExamObservers', Admin\SaziningaiExamObserversController::class);
@@ -117,6 +119,9 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => '(lt|en)']], function
 
             Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('news_string', '(naujiena|news)')->name('news');
 
+            Route::get('pirmakursiu-stovyklos', [Public\MainController::class, 'summerCamps'])->name('pirmakursiuStovyklos');
+            Route::get('kalendorius/renginys/{calendar}', [Public\MainController::class, 'summerCampEvent'])->name('calendar.event');
+
             Route::post('search', [Public\MainController::class, 'search'])->name('search');
 
             Route::get('mainNews', [Public\MainController::class, 'getMainNews']);
@@ -147,6 +152,9 @@ Route::get('kontaktai', [Public\MainController::class, 'contactsCategory'])->nam
 Route::get('kontaktai/paieska', [Public\MainController::class, 'searchContacts'])->name('contacts.search');
 Route::get('kontaktai/kategorija/{alias}', [Public\MainController::class, 'contactsCategory'])->name('contacts.category');
 Route::get('kontaktai/{alias}', [Public\MainController::class, 'contacts'])->name('contacts.alias');
+
+Route::get('pirmakursiu-stovyklos', [Public\MainController::class, 'summerCamps'])->name('pirmakursiuStovyklos');
+Route::get('kalendorius/renginys/{calendar}', [Public\MainController::class, 'summerCampEvent'])->name('calendar.event');
 
 Route::post('search', [Public\MainController::class, 'search'])->name('search');
 
