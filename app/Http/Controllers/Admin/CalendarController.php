@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
 use App\Models\Category;
+use Illuminate\Support\Facades\DB;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class CalendarController extends Controller
 {
@@ -105,6 +107,7 @@ class CalendarController extends Controller
         return Inertia::render('Admin/Calendar/EditCalendarEvent', [
             'calendar' => $calendar,
             'categories' => Category::all(),
+            'images' => $calendar->getMedia('images')
         ]);
     }
 
@@ -117,13 +120,30 @@ class CalendarController extends Controller
      */
     public function update(Request $request, Calendar $calendar)
     {
+        $request->all();
+
         $request->validate([
             'date' => 'required|date',
             'title' => 'required',
             'description' => 'required',
         ]);
+
+        DB::transaction(function () use ($request, $calendar) {
+            $calendar->update($request->only(['date', 'title', 'description', 'location', 'url', 'category', 'attributes']));
+
+            // if request has files
+            
+            $images = $request->file('images');
+
+            if ($images) {
+                foreach ($images as $image) {
+                    $calendar->addMedia($image['file'])->toMediaCollection('images');
+                }
+            }
+
+            $calendar->save();
+        });
         
-        $calendar->update($request->only('title', 'date', 'description', 'location', 'category', 'url', 'attributes'));
 
         return redirect()->back();
     }
@@ -139,5 +159,11 @@ class CalendarController extends Controller
         $calendar->delete();
 
         return redirect()->route('calendar.index');
+    }
+
+    public function destroyMedia(Calendar $calendar, Media $media) {
+        $this->authorize('destroyMedia', $calendar);
+        
+        $calendar->getMedia('images')->where('id', '=', $media->id)->first()->delete();
     }
 }

@@ -20,6 +20,7 @@
               ghost
               :color="institution.image_url ? 'white' : 'black'"
               round
+              size="large"
               type="primary"
               @click.stop="
                 Inertia.visit(
@@ -34,6 +35,7 @@
             >
             <NButton
               ghost
+              size="large"
               :color="institution.image_url ? 'white' : 'black'"
               round
               type="primary"

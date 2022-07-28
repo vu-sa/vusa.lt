@@ -8,6 +8,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Image\Manipulations;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Spatie\MediaLibrary\MediaCollections\File;
 
 class Calendar extends Model implements HasMedia
 {
@@ -40,12 +41,13 @@ class Calendar extends Model implements HasMedia
         return $this->belongsTo(Category::class, 'category', 'alias');
     }
 
-    public function registerMediaConversions(Media $media = null): void
+    public function registerMediaCollections(): void
     {
-    $this
-        ->addMediaConversion('preview')
-        ->fit(Manipulations::FIT_CROP, 300, 300)
-        ->nonQueued();
+        $this
+        ->addMediaCollection('images')
+        ->acceptsMimeTypes(['image/jpeg', 'image/jpg', 'image/png'])
+        ->useDisk('spatieMediaLibrary')
+        ->withResponsiveImages();
     }
     
 }

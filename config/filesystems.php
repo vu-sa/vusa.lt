@@ -42,6 +42,13 @@ return [
             'visibility' => 'public',
         ],
 
+        'spatieMediaLibrary' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/media'),
+            'url' => env('APP_URL').'/uploads/media',
+            'visibility' => 'public',
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),
