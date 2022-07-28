@@ -70,7 +70,7 @@
 
         <NFormItemGi
           v-if="modelRoute === 'calendar.update'"
-          label="Įkelti paveikslėlius (pirmas bus panaudotas, kaip pagrindinis)"
+          label="Įkelti paveikslėlius (pirmas bus panaudotas, kaip pagrindinis. Jeigu metama klaida, prieš tai sumažinkite paveikslėlius)"
           :span="24"
         >
           <NUpload
