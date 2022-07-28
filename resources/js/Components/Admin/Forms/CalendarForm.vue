@@ -142,6 +142,18 @@ const props = defineProps<{
 }>();
 
 const form = useForm("calendar", props.calendar);
+
+// convert date_range array of string to number
+
+if (form.attributes !== null && form.attributes.date_range.length > 0) {
+  form.attributes.date_range = form.attributes.date_range.map(
+    (string: string) => {
+      return parseInt(string);
+    }
+  );
+  console.log(form.attributes.date_range);
+}
+
 const images = ref<UploadFileInfo[]>([]);
 
 // add images from props to images ref

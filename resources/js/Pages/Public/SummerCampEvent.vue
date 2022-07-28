@@ -22,7 +22,12 @@
             class="prose-sm sm:prose sm:max-w-[70ch]"
             v-html="event.description"
           ></div>
-          <h2 class="mt-8 mb-4">Kaip tai vyko anksčiau:</h2>
+          <h2
+            v-if="event.attributes?.video_url || images.length > 0"
+            class="mt-8 mb-4"
+          >
+            Kaip tai vyko anksčiau:
+          </h2>
           <iframe
             v-if="event.attributes?.video_url"
             class="mb-8 aspect-video h-auto w-full rounded-2xl"
@@ -43,7 +48,8 @@
                 width="150"
                 :src="image.original_url"
                 class="rounded-lg transition hover:shadow-md"
-                alt="Event image"
+                alt="Pirmakursių stovyklos paveikslėlis"
+                lazy
               />
             </NSpace>
           </NImageGroup>

@@ -31,7 +31,7 @@ import { Mail20Regular, Phone20Regular } from "@vicons/fluent";
 import { NIcon, NInput, createDiscreteApi } from "naive-ui";
 import { debounce } from "lodash";
 import { ref } from "vue";
-import ContactWithPhoto from "@/Components/Public/ContactWithPhotoForUsers.vue";
+import ContactWithPhotoForUsers from "@/Components/Public/ContactWithPhotoForUsers.vue";
 import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
 
 interface contactUserInterface
