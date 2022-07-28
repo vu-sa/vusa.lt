@@ -96,17 +96,21 @@
         </div>
         <div class="-order-1 mx-8 flex justify-center lg:order-1">
           <div
-            style="grid-template-columns: min-content"
-            class="sticky top-40 grid h-fit w-full grid-cols-2 flex-col items-center gap-2 rounded-2xl border-2 border-vusa-red p-6 shadow-md lg:w-80"
+            style="grid-template-columns: 16px auto"
+            class="sticky top-40 grid h-fit w-full max-w-lg grid-cols-2 flex-col items-center gap-2 rounded-2xl border-2 border-vusa-red p-6 shadow-md lg:w-80"
           >
-            <p class="col-span-2 mb-4 flex font-bold">
-              <span class="w-fit">{{ event.title }}</span>
+            <div class="absolute top-6 right-6">
               <NButton
                 v-if="event.attributes?.facebook_url"
-                text
+                secondary
+                size="small"
+                circle
                 @click="windowOpen(event.attributes?.facebook_url)"
                 ><NIcon :component="FacebookF"></NIcon
               ></NButton>
+            </div>
+            <p class="col-span-2 mb-4 flex w-4/5 font-bold">
+              {{ event.title }}
             </p>
 
             <NIcon :component="PeopleTeam28Regular"></NIcon>
@@ -136,18 +140,26 @@
               </NGradientText>
 
               <NButton
-                :disabled="!event.url"
+                :disabled="!event.url && unixTimeTillRegistrationOpen > 0"
                 strong
                 round
                 type="primary"
                 size="large"
                 @click="openEventUrl"
                 ><template v-if="event.url" #icon>
-                  <NIcon :component="HatGraduation20Regular"></NIcon> </template
-                >{{
-                  event.url ? "Dalyvauk!" : "Registracija tuoj atsidarys..."
-                }}</NButton
-              >
+                  <NIcon :component="HatGraduation20Regular"></NIcon>
+                </template>
+                <template v-if="unixTimeTillRegistrationOpen > 0">
+                  Registruokis už
+                  <NCountdown
+                    :active="true"
+                    :duration="unixTimeTillRegistrationOpen"
+                  ></NCountdown>
+                </template>
+                <template v-else>{{
+                  !event.url ? "Registracija tuoj atsidarys..." : "Dalyvauk!"
+                }}</template>
+              </NButton>
             </div>
           </div>
         </div>
@@ -201,6 +213,14 @@ const headerImageStyle = computed(() => {
 });
 
 // compute event datetime from yyyy-MM-dd HH:mm:ss to yyyy-MM-dd HH
+
+const unixTimeTillRegistrationOpen = computed(() => {
+  const now = new Date();
+  // registration opens on 30th of July, 12:00:00
+  const registrationOpen = new Date(now.getFullYear(), 6, 30, 12, 0, 0);
+
+  return registrationOpen.getTime() - now.getTime();
+});
 
 const dateIsValid = (date) => {
   return !Number.isNaN(new Date(date).getTime());
