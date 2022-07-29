@@ -61,20 +61,20 @@ class MainController extends Controller
 		/// pakeisti visur alias į vusa kad būtų aiškiau nes čia dabar nesąmonė
 
 
-		if ($this->alias !== '') {
-			$banners = Padalinys::where('alias', $this->alias)->first()->banners()->inRandomOrder()->where('is_active', 1)->get();
-		} else {
-			$banners = collect([]);
-		}
+		// if ($this->alias !== '') {
+		// 	$banners = Padalinys::where('alias', $this->alias)->first()->banners()->inRandomOrder()->where('is_active', 1)->get();
+		// } else {
+		// 	$banners = collect([]);
+		// }
 
-		$banners = $banners->merge(Padalinys::where('type', 'pagrindinis')->first()->banners()->inRandomOrder()->where('is_active', 1)->get());
-		Inertia::share('banners', $banners);
+		// $banners = $banners->merge(Padalinys::where('type', 'pagrindinis')->first()->banners()->inRandomOrder()->where('is_active', 1)->get());
+		// Inertia::share('banners', $banners);
 		Inertia::share('mainNavigation', $mainNavigation);
 
 		// if table exists in database
-		if (Schema::hasTable('page_views')) {
-			PageView::createViewLog();
-		}
+		// if (Schema::hasTable('page_views')) {
+		// 	PageView::createViewLog();
+		// }
 	}
 
 	public function home()
@@ -540,9 +540,9 @@ class MainController extends Controller
 		// get events with category of freshmen camps
 		$events = Calendar::whereHas('category', function (Builder $query) {
 			$query->where('name', '=', 'Pirmakursių stovykla');
-		})->with('padalinys:id,alias,fullname')->with('media')->get()->sortBy('padalinys.alias');
+		})->with('padalinys:id,alias,fullname')->with(['media'])->get()->sortBy('padalinys.alias');
 		
-		return Inertia::render('Public/SummerCamps', ['events' => $events->values()->all()])->withViewData([
+		return Inertia::render('Public/SummerCamps', ['events' => $events->makeHidden(['description', 'location', 'category', 'url', 'user_id', 'attributes'])->values()->all()])->withViewData([
 			'title' => 'Pirmakursių stovyklos',
 			'description' => 'Universiteto tvarka niekada su ja nesusidūrusiam žmogui gali pasirodyti labai sudėtinga ir būtent dėl to jau prieš septyniolika metų Vilniaus universiteto Studentų atstovybė (VU SA) surengė pirmąją pirmakursių stovyklą.',
 		]);

@@ -195,7 +195,7 @@
       </div>
       <NDivider />
     </div>
-    <div
+    <!-- <div
       v-if="$page.props.locale === 'lt'"
       class="mx-8 mb-4 rounded-lg bg-white p-4 text-gray-800 shadow-lg lg:mx-16 lg:mb-8 lg:px-8"
     >
@@ -215,7 +215,7 @@
           </a>
         </NCarouselItem>
       </NCarousel>
-    </div>
+    </div> -->
   </PublicLayout>
 </template>
 
@@ -239,7 +239,7 @@ import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 
 const props = defineProps<{
   news: Array<App.Models.News>;
-  banners: Array<App.Models.Banner>;
+  // banners: Array<App.Models.Banner>;
   mainPage: Array<App.Models.MainPage>;
 }>();
 
