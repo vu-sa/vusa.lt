@@ -140,7 +140,7 @@
               </NGradientText>
 
               <NButton
-                :disabled="!event.url && unixTimeTillRegistrationOpen > 0"
+                :disabled="unixTimeTillRegistrationOpen > 0"
                 strong
                 round
                 type="primary"
