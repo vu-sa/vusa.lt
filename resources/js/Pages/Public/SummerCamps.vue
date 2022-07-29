@@ -161,7 +161,7 @@ const get5thResponsiveImage = (event: App.Models.Calendar) => {
   let responsiveUrl =
     mainUrlParts[0] +
     "responsive-images/" +
-    event.media[0].responsive_images.media_library_original.urls[5];
+    event.media[0].responsive_images.media_library_original.urls[8];
   return responsiveUrl;
 };
 </script>
