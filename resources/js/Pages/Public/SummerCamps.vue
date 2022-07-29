@@ -33,7 +33,10 @@
 
         <p>
           Prieš prasidedant mokslo metams Tavęs laukia ilgas, bet labai įdomus
-          susipažinimo su Vilniaus universitetu etapas.
+          <a class="font-bold underline" target="_blank" href="/pirmakursiams"
+            >susipažinimo</a
+          >
+          su Vilniaus universitetu etapas.
         </p>
 
         <p>
