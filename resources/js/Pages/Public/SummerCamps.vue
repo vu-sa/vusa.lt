@@ -76,6 +76,10 @@
           Daugiau informacijos rasi savo padalinio polapyje. Susimatome jau
           greitai!
         </p>
+
+        <a target="_blank" href="https://vu.lt/parduotuve/"
+          ><img src="/images/photos/atributika_banner2.jpg"
+        /></a>
       </div>
 
       <div
