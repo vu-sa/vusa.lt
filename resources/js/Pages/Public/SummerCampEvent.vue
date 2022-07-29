@@ -58,7 +58,7 @@
             class="my-6 flex flex-col justify-between gap-2 lg:flex-row lg:items-center"
           >
             <span>Turi klausimų? Paklausk savo kuratoriaus!</span
-            ><a
+            ><Link
               class="inline-flex items-center gap-2 text-sm font-normal"
               target="_blank"
               :href="
@@ -72,7 +72,7 @@
                 >Visi {{ event.padalinys.shortname }} kuratoriai</span
               >
               <NIcon :size="16" :component="ArrowCircleRight24Regular"></NIcon
-            ></a>
+            ></Link>
           </h2>
           <NCarousel
             class="hidden xl:block"
@@ -171,7 +171,6 @@
 import {
   ArrowCircleRight24Regular,
   CalendarLtr24Regular,
-  GroupReturn24Filled,
   HatGraduation20Regular,
   Home32Regular,
   PeopleTeam28Regular,
@@ -189,8 +188,8 @@ import {
   NSpace,
 } from "naive-ui";
 import { FacebookF } from "@vicons/fa";
+import { Link } from "@inertiajs/inertia-vue3";
 import { computed, h, ref } from "vue";
-import { truncate } from "fs";
 import ContactWithPhotoForUsers from "@/Components/Public/ContactWithPhotoForUsers.vue";
 import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
 import route from "ziggy-js";

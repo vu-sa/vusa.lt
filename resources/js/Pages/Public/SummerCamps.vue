@@ -46,7 +46,7 @@
           >
           kviečia Tave susipažinti su tais, kurie per visus mokslo metus lydės
           daugiausiai – tai Tavo padalinio, kurso, grupės draugai bei, žinoma,
-          <a
+          <Link
             class="font-bold underline"
             target="_blank"
             :href="
@@ -55,7 +55,7 @@
                 lang: 'lt',
               })
             "
-            >kuratoriai</a
+            >kuratoriai</Link
           >.
         </p>
 

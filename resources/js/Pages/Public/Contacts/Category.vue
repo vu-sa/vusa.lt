@@ -1,12 +1,12 @@
 <template>
   <PublicLayout title="Kontaktų kategorijos">
     <div
-      class="grid grid-cols-1 gap-0 gap-y-4 px-16 lg:gap-8 lg:px-32 xl:grid-cols-2 2xl:grid-cols-3"
+      class="mt-4 grid grid-cols-1 gap-y-4 px-8 md:grid-cols-2 md:gap-8 lg:px-32 2xl:grid-cols-3"
     >
       <button
         v-for="institution in institutions"
         :key="institution.id"
-        class="h-64 min-w-[24em] max-w-2xl rounded-2xl"
+        class="h-48 min-w-[14em] max-w-xl rounded-2xl lg:h-64"
         :class="{ 'shadow-md': institution.image_url }"
         style="white-space: normal"
         @click="inertiaVisitOnClick(institution.alias)"
