@@ -140,7 +140,7 @@
               </NGradientText>
 
               <NButton
-                :disabled="unixTimeTillRegistrationOpen > 0"
+                :disabled="isRegistrationDisabled"
                 strong
                 round
                 type="primary"
@@ -154,11 +154,10 @@
                   <NCountdown
                     :active="true"
                     :duration="unixTimeTillRegistrationOpen"
+                    @finish="onCountdownFinish"
                   ></NCountdown>
                 </template>
-                <template v-else>{{
-                  !event.url ? "Registracija tuoj atsidarys..." : "Dalyvauk!"
-                }}</template>
+                <template v-else>{{ registrationText }}</template>
               </NButton>
             </div>
           </div>
@@ -172,6 +171,7 @@
 import {
   ArrowCircleRight24Regular,
   CalendarLtr24Regular,
+  GroupReturn24Filled,
   HatGraduation20Regular,
   Home32Regular,
   PeopleTeam28Regular,
@@ -189,7 +189,8 @@ import {
   NSpace,
 } from "naive-ui";
 import { FacebookF } from "@vicons/fa";
-import { computed, h } from "vue";
+import { computed, h, ref } from "vue";
+import { truncate } from "fs";
 import ContactWithPhotoForUsers from "@/Components/Public/ContactWithPhotoForUsers.vue";
 import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
 import route from "ziggy-js";
@@ -199,6 +200,8 @@ const props = defineProps<{
   images?: Record<string, any> | null;
   curatorDuties: Array<App.Models.Duty>;
 }>();
+
+const registrationOpenedOnFinish = ref(false);
 
 const windowOpen = (url: string) => {
   window.open(url, "_blank");
@@ -218,8 +221,25 @@ const unixTimeTillRegistrationOpen = computed(() => {
   const now = new Date();
   // registration opens on 30th of July, 12:00:00
   const registrationOpen = new Date(now.getFullYear(), 6, 30, 12, 0, 0);
-
+  // is needed for recomputation
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  let refresh = registrationOpenedOnFinish.value;
   return registrationOpen.getTime() - now.getTime();
+});
+
+const onCountdownFinish = () => {
+  registrationOpenedOnFinish.value = true;
+};
+
+const isRegistrationDisabled = computed(() => {
+  const check = props.event.url ? unixTimeTillRegistrationOpen.value > 0 : true;
+  return check;
+});
+
+const registrationText = computed(() => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  let refresh = registrationOpenedOnFinish.value;
+  return props.event.url ? "Dalyvauk!" : "Registracija tuoj atsidarys...";
 });
 
 const dateIsValid = (date) => {
