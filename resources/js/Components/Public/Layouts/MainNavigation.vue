@@ -35,14 +35,14 @@
       </div>
     </div>
     <!-- Hamburger -->
-    <div class="block md:hidden">
+    <div class="block lg:hidden">
       <NButton style="border-radius: 0.5rem" @click="toggleMenu">
         <NIcon>
           <Navigation24Filled />
         </NIcon>
       </NButton>
     </div>
-    <div class="hidden flex-row items-center space-x-4 md:flex">
+    <div class="hidden flex-row flex-wrap items-center space-x-4 lg:flex">
       <!-- <n-gradient-text type="error"> -->
       <!-- <Link :href="route('page', { permalink: 'apie' })">VU SA</Link> -->
       <!-- </n-gradient-text> -->

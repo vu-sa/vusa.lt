@@ -25,7 +25,7 @@
       </div>
     </div>
     <div
-      class="mx-8 mt-4 flex flex-col gap-4 lg:mx-16 lg:flex-row lg:items-center lg:px-16"
+      class="mx-8 mt-4 flex flex-col justify-center gap-4 lg:mx-16 lg:flex-row lg:items-center lg:px-16"
     >
       <div class="prose-sm sm:prose">
         <p class="text-2xl font-bold lg:w-4/5">
@@ -40,7 +40,7 @@
           polapyje (arba paklausk kuratoriaus 🤚)!
         </p>
       </div>
-      <div class="flex flex-wrap gap-2">
+      <div class="flex flex-wrap gap-2 lg:justify-center">
         <NButton
           round
           size="large"
