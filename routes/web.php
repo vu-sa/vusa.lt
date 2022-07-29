@@ -119,8 +119,10 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => '(lt|en)']], function
 
             Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('news_string', '(naujiena|news)')->name('news');
 
-            Route::get('pirmakursiu-stovyklos', [Public\MainController::class, 'summerCamps'])->name('pirmakursiuStovyklos');
-            Route::get('kalendorius/renginys/{calendar}', [Public\MainController::class, 'summerCampEvent'])->name('calendar.event');
+            Route::middleware(['throttle:summerCamps'])->group(function () {
+                Route::get('pirmakursiu-stovyklos', [Public\MainController::class, 'summerCamps'])->name('pirmakursiuStovyklos');
+                Route::get('kalendorius/renginys/{calendar}', [Public\MainController::class, 'summerCampEvent'])->name('calendar.event');
+            });
 
             Route::post('search', [Public\MainController::class, 'search'])->name('search');
 
@@ -153,8 +155,10 @@ Route::get('kontaktai/paieska', [Public\MainController::class, 'searchContacts']
 Route::get('kontaktai/kategorija/{alias}', [Public\MainController::class, 'contactsCategory'])->name('contacts.category');
 Route::get('kontaktai/{alias}', [Public\MainController::class, 'contacts'])->name('contacts.alias');
 
-Route::get('pirmakursiu-stovyklos', [Public\MainController::class, 'summerCamps'])->name('pirmakursiuStovyklos');
-Route::get('kalendorius/renginys/{calendar}', [Public\MainController::class, 'summerCampEvent'])->name('calendar.event');
+Route::middleware(['throttle:summerCamps'])->group(function () {
+    Route::get('pirmakursiu-stovyklos', [Public\MainController::class, 'summerCamps'])->name('pirmakursiuStovyklos');
+    Route::get('kalendorius/renginys/{calendar}', [Public\MainController::class, 'summerCampEvent'])->name('calendar.event');
+});
 
 Route::post('search', [Public\MainController::class, 'search'])->name('search');
 
