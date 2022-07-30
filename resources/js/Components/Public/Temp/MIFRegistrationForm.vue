@@ -7,6 +7,15 @@
     :rules="rules"
     size="medium"
   >
+    <NFormItem>
+      <p class="text-sm">
+        Registracija aktyvi iki
+        <strong>rugpjūčio 7 d. (sekmadienis) 12 val. 00 min.</strong>
+        Organizatoriai, atsižvelgdami į norinčių dalyvauti studentų kiekį ir
+        ribotą vietų skaičių, pasilieka teisę vykdyti atranką ir susisiekti su į
+        atranką patekusiais dalyviais
+      </p>
+    </NFormItem>
     <NFormItem class="w-1/2" label="Vardas ir pavardė" path="name">
       <NInput
         v-model:value="formValue.name"
@@ -412,7 +421,8 @@ const handleValidateClick = (e: MouseEvent) => {
           onSuccess: () => {
             formValue.reset();
             message.success(
-              `Sėkmingai užsiregistravote į VU MIF pirmakursių stovyklą! Laukite laiško iš VU SA MIF komandos!`
+              `Sėkmingai užsiregistravote į VU MIF pirmakursių stovyklą! Laukite laiško iš VU SA MIF komandos (pasistengsime greitu metu 😊)!`,
+              { duration: 15000 }
             );
             // showModal.value = false;
             // formValue.reset();
