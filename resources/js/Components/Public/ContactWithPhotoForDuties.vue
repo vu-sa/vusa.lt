@@ -2,10 +2,17 @@
   <div class="flex h-auto min-h-fit flex-col rounded-lg bg-white lg:flex-row">
     <div
       v-if="getImageUrl(contact)"
+      :id="`contact-photo-${contact.id}`"
       class="relative h-60 w-auto flex-none lg:h-auto lg:w-40"
     >
-      <img
+      <NImage
         :src="getImageUrl(contact)"
+        lazy
+        :intersection-observer-options="{
+          root: `#contact-photo-${contact.id}`,
+        }"
+        object-fit="cover"
+        :show-toolbar="false"
         class="absolute inset-0 h-full w-full rounded-t-lg object-cover lg:rounded-t-none lg:rounded-l-lg"
         style="object-position: 50% 25%"
       />
@@ -73,7 +80,7 @@
 
 <script setup lang="ts">
 import { Mail20Regular, Phone20Regular } from "@vicons/fluent";
-import { NButton, NIcon, NPopover } from "naive-ui";
+import { NButton, NIcon, NImage, NPopover } from "naive-ui";
 
 import { PersonEdit24Regular } from "@vicons/fluent";
 import route from "ziggy-js";

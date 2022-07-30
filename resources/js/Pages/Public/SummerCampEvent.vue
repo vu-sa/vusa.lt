@@ -145,7 +145,7 @@
                 round
                 type="primary"
                 size="large"
-                @click="openEventUrl"
+                @click="openEventUrlorElse"
                 ><template v-if="event.url" #icon>
                   <NIcon :component="HatGraduation20Regular"></NIcon>
                 </template>
@@ -164,6 +164,19 @@
         </div>
       </section>
     </article>
+
+    <NModal
+      v-if="event.padalinys.alias === 'mif'"
+      v-model:show="showModal"
+      class="max-w-xl"
+      preset="card"
+      title="VU MIF pirmakursių stovyklos registracija"
+      :bordered="false"
+    >
+      <NScrollbar style="max-height: 600px"
+        ><MIFRegistrationForm></MIFRegistrationForm
+      ></NScrollbar>
+    </NModal>
   </PublicLayout>
 </template>
 
@@ -185,12 +198,16 @@ import {
   NIcon,
   NImage,
   NImageGroup,
+  NModal,
+  NScrollbar,
   NSpace,
 } from "naive-ui";
 import { FacebookF } from "@vicons/fa";
 import { Link } from "@inertiajs/inertia-vue3";
 import { computed, h, ref } from "vue";
+
 import ContactWithPhotoForUsers from "@/Components/Public/ContactWithPhotoForUsers.vue";
+import MIFRegistrationForm from "@/Components/Public/Temp/MIFRegistrationForm.vue";
 import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
 import route from "ziggy-js";
 
@@ -199,6 +216,8 @@ const props = defineProps<{
   images?: Record<string, any> | null;
   curatorDuties: Array<App.Models.Duty>;
 }>();
+
+const showModal = ref(false);
 
 const registrationOpenedOnFinish = ref(false);
 
@@ -307,8 +326,12 @@ const renderCountdown: CountdownProps["render"] = ({
   ]);
 };
 
-const openEventUrl = () => {
-  window.open(props.event?.url, "_blank");
+const openEventUrlorElse = () => {
+  if (props.event.padalinys?.alias === "mif") {
+    showModal.value = true;
+  } else {
+    window.open(props.event?.url, "_blank");
+  }
 };
 </script>
 

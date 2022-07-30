@@ -42,6 +42,8 @@ Route::prefix('admin')->group(function () {
 
         Route::resource('calendar', Admin\CalendarController::class);
         Route::post('calendar/{calendar}/media/{media}', [Admin\CalendarController::class, 'destroyMedia'])->name('calendar.destroyMedia');
+        Route::resource('registrationForms', Admin\RegistrationFormController::class);
+        Route::resource('registrations', Admin\RegistrationController::class);
 
         Route::resource('saziningaiExams', Admin\SaziningaiExamsController::class);
         Route::resource('saziningaiExamFlows', Admin\SaziningaiExamFlowsController::class);
@@ -158,6 +160,10 @@ Route::get('kontaktai/{alias}', [Public\MainController::class, 'contacts'])->nam
 Route::middleware(['throttle:summerCamps'])->group(function () {
     Route::get('pirmakursiu-stovyklos', [Public\MainController::class, 'summerCamps'])->name('pirmakursiuStovyklos');
     Route::get('kalendorius/renginys/{calendar}', [Public\MainController::class, 'summerCampEvent'])->name('calendar.event');
+});
+
+Route::middleware(['throttle:formRegistrations'])->group(function () {
+    Route::post('registration/{registrationForm}', [Public\MainController::class, 'storeRegistration'])->name('registration.store');
 });
 
 Route::post('search', [Public\MainController::class, 'search'])->name('search');

@@ -1,9 +1,12 @@
 <template>
   <div class="flex flex-col rounded-lg bg-white lg:flex-row">
     <div v-if="getImageUrl(contact)" class="relative h-72 flex-none lg:w-40">
-      <img
+      <NImage
         :src="getImageUrl(contact)"
-        class="absolute inset-0 h-full w-full rounded-t-lg object-cover lg:rounded-t-none lg:rounded-l-lg"
+        lazy
+        class="absolute inset-0 h-full w-full rounded-t-lg lg:rounded-t-none lg:rounded-l-lg"
+        object-fit="cover"
+        :show-toolbar="false"
         style="object-position: 50% 25%"
       />
     </div>
@@ -68,7 +71,7 @@
 
 <script setup lang="ts">
 import { Mail20Regular, Phone20Regular } from "@vicons/fluent";
-import { NButton, NIcon, NPopover } from "naive-ui";
+import { NButton, NIcon, NImage, NPopover } from "naive-ui";
 
 import { PersonEdit24Regular } from "@vicons/fluent";
 import route from "ziggy-js";

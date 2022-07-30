@@ -63,7 +63,13 @@ class RouteServiceProvider extends ServiceProvider
         RateLimiter::for('summerCamps', function (Request $request) {
             return $request->user()
                 ? Limit::perMinute(100)->by($request->user()->id)
-                : Limit::perMinute(10)->by($request->ip());
+                : Limit::perMinute(5)->by($request->ip());
+        });
+
+        RateLimiter::for('formRegistrations', function (Request $request) {
+            return $request->user()
+                ? Limit::perMinute(100)->by($request->user()->id)
+                : Limit::perHour(5)->by($request->ip());
         });
     }
 }
