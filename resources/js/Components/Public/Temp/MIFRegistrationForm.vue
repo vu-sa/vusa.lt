@@ -18,8 +18,7 @@
       />
     </NFormItem>
     <NFormItem
-      class="w-1/2"
-      label="Naudojami įvardžiai (pronouns)"
+      label="Naudojami įvardžiai (pronouns) ji/jos, jis/jo, jie/jų ar kiti (prašome tiksliai įvardyti)"
       path="pronouns"
     >
       <NInput v-model:value="formValue.pronouns" placeholder="" type="text" />
@@ -183,11 +182,28 @@
     >
     <NFormItem path="acceptDataManagement">
       <NCheckbox v-model:checked="formValue.acceptDataManagement"
-        >Sutinku, kad mano pateikti asmens duomenys būtų tvarkomi renginių
-        organizavimo tikslu pagal Asmens duomenų tvarkymo Vilniaus universiteto
-        Studentų atstovybėje tvarkos aprašą</NCheckbox
+        >Sutinku, kad organizatoriai naudotų mano pateiktus duomenis renginio
+        organizavimo tikslais, bet ne ilgiau nei mėnesį po jo.</NCheckbox
       >
     </NFormItem>
+    <p>Duomenų valdytojas yra Vilniaus universiteto Studentų atstovybė.</p>
+    <ul>
+      <li>Adresas: Universiteto g. 3, Observatorijos kiemelis, Vilnius,</li>
+      <li>Telefono numeris: <a href="tel:852687144">+37052687144</a>,</li>
+      <li>
+        El. paštas:
+        <a href="mailto:dag@vusa.lt">dag@vusa.lt</a>
+      </li>
+    </ul>
+    <p>Jūsų pateikti duomenys bus naudojami renginio organizavimo tikslu.</p>
+
+    <p>
+      Duomenų subjektas turi teisę susipažinti su savo asmens duomenimis, teisę
+      reikalauti ištaisyti neteisingus, neišsamius, netikslius savo asmens
+      duomenis ir kitas teisės aktais numatytas teises. Kilus klausimams ir
+      norint realizuoti savo, kaip duomenų subjekto, teises, galite kreiptis į
+      <a href="mailto:dap@vusa.lt">dap@vusa.lt</a>.
+    </p>
 
     <NButton type="primary" @click="handleValidateClick"> Pateikti </NButton>
   </NForm>
@@ -234,7 +250,7 @@ const formBlueprint = {
   email: null,
   birthDate: null,
   studyProgram: null,
-  reminderForPrice: null,
+  reminderForPrice: false,
   all4Days: null,
   transport: null,
   vegetarian: null,
@@ -305,7 +321,7 @@ const rules: FormRules = {
   },
   reminderForPrice: {
     required: true,
-    message: "Turite sutikti su GDPR taisyklėmis",
+    message: "Patvirtinkite, kad esate susipažinę",
     trigger: "blur",
     validator(rule, value) {
       return value;
@@ -319,12 +335,12 @@ const rules: FormRules = {
   transport: {
     required: true,
     message: "Pasirinkite transportą",
-    trigger: "blur",
+    trigger: "change",
   },
   vegetarian: {
     required: true,
     message: "Pasirinkite",
-    trigger: "blur",
+    trigger: "change",
   },
   allergies: {
     required: true,
@@ -333,37 +349,37 @@ const rules: FormRules = {
   },
   specialNeeds: {
     required: true,
-    message: "Pasirinkite",
+    message: "Įrašykite",
     trigger: "blur",
   },
   moreInfo: {
-    required: true,
-    message: "Pasirinkite",
+    required: false,
+    message: "Įrašykite",
     trigger: "blur",
   },
   special1: {
     required: true,
-    message: "Pasirinkite",
+    message: "Įrašykite",
     trigger: "blur",
   },
   special2: {
     required: true,
-    message: "Pasirinkite",
+    message: "Įrašykite",
     trigger: "blur",
   },
   special3: {
     required: true,
-    message: "Pasirinkite",
+    message: "Įrašykite",
     trigger: "blur",
   },
   special4: {
     required: true,
-    message: "Pasirinkite",
+    message: "Įrašykite",
     trigger: "blur",
   },
   special5: {
     required: true,
-    message: "Pasirinkite",
+    message: "Įrašykite",
     trigger: "blur",
   },
   acceptGDPR: {
@@ -391,9 +407,10 @@ const handleValidateClick = (e: MouseEvent) => {
     if (!errors) {
       formValue.submit(
         Method.POST,
-        route("registration.store", { registration: 1 }),
+        route("registration.store", { registrationForm: 1 }),
         {
           onSuccess: () => {
+            formValue.reset();
             message.success(
               `Sėkmingai užsiregistravote į VU MIF pirmakursių stovyklą! Laukite laiško iš VU SA MIF komandos!`
             );
