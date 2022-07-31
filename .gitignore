@@ -16,6 +16,7 @@ public/uploads
 
 .DS_Store
 .vscode/settings.json
+Session.vim
 webpack.mix.js
 
 public/js/app/*.js
