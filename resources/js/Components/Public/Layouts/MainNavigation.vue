@@ -129,6 +129,7 @@
     </div>
     <NDrawer
       v-model:show="activeDrawer"
+      display-directive="show"
       :width="325"
       placement="left"
       :trap-focus="true"
@@ -159,17 +160,17 @@
           @update:selected-keys="handleSelectNavigation"
         />
         <!-- <Link
-          v-if="locale === 'lt'"
-          class="ml-7 mt-1"
-          :data="{ padalinys: usePage().props.value.alias }"
-          :href="route('contacts')"
-          ><NButton text>
-            <NGradientText type="error" v-if="route().current('*contacts')"
-              >Kontaktai</NGradientText
-            >
-            <template v-else>Kontaktai</template>
-          </NButton>
-        </Link> -->
+            v-if="locale === 'lt'"
+            class="ml-7 mt-1"
+            :data="{ padalinys: usePage().props.value.alias }"
+            :href="route('contacts')"
+            ><NButton text>
+              <NGradientText type="error" v-if="route().current('*contacts')"
+                >Kontaktai</NGradientText
+              >
+              <template v-else>Kontaktai</template>
+            </NButton>
+          </Link> -->
         <div class="mt-4 flex flex-row items-center space-x-4">
           <NButton
             text

@@ -1,10 +1,10 @@
 <template>
-  <audio ref="startFM">
+  <audio ref="startFM" @canplay="changeLoading">
     <source src="https://eteris.startfm.lt/startfm.mp3" />
   </audio>
   <NPopover>
     <template #trigger>
-      <NButton text @click="toggleAudio">
+      <NButton text :loading="loading" @click="toggleAudio">
         <template v-if="!audioPlaying" #icon
           ><NIcon :component="MusicNote2Play20Filled"></NIcon
         ></template>
@@ -31,11 +31,22 @@ import { ref } from "vue";
 
 const startFM = ref<HTMLAudioElement>();
 const audioPlaying = ref(false);
+const loading = ref(false);
+
+const changeLoading = () => {
+  loading.value = false;
+  audioPlaying.value = true;
+};
 
 const toggleAudio = () => {
   if (startFM.value?.paused) {
     startFM.value?.play();
-    audioPlaying.value = true;
+
+    if (startFM.value.readyState !== 4) {
+      loading.value = true;
+    } else {
+      changeLoading();
+    }
   } else {
     startFM.value?.pause();
     audioPlaying.value = false;
