@@ -5,7 +5,7 @@
       <MainNavigation></MainNavigation>
       <Transition name="fade" appear>
         <main>
-          <div class="pt-16 sm:pt-24 2xl:pt-36">
+          <div class="pt-12 sm:pt-20 2xl:pt-32">
             <slot></slot>
           </div>
         </main>
@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-// import { Head } from "@inertiajs/inertia-vue3";
+import { usePage } from "@inertiajs/inertia-vue3";
 import { NConfigProvider } from "naive-ui";
 import { onMounted } from "vue";
 import Footer from "@/Components/Public/FooterComponent.vue";
@@ -66,18 +66,21 @@ var Tawk_API = Tawk_API || {},
 })();
 
 onMounted(() => {
-  (function (c, l, a, r, i, t, y) {
-    c[a] =
-      c[a] ||
-      function () {
-        (c[a].q = c[a].q || []).push(arguments);
-      };
-    t = l.createElement(r);
-    t.async = 1;
-    t.src = "https://www.clarity.ms/tag/" + i;
-    y = l.getElementsByTagName(r)[0];
-    y.parentNode.insertBefore(t, y);
-  })(window, document, "clarity", "script", "bs7culn3gp");
+  // if page props app.env is local, then don't run Clarity
+  if (usePage().props.value.app.env !== "local") {
+    (function (c, l, a, r, i, t, y) {
+      c[a] =
+        c[a] ||
+        function () {
+          (c[a].q = c[a].q || []).push(arguments);
+        };
+      t = l.createElement(r);
+      t.async = 1;
+      t.src = "https://www.clarity.ms/tag/" + i;
+      y = l.getElementsByTagName(r)[0];
+      y.parentNode.insertBefore(t, y);
+    })(window, document, "clarity", "script", "bs7culn3gp");
+  }
 });
 </script>
 

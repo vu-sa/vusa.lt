@@ -83,7 +83,7 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required',
             'duties' => 'required',
-            'email' => 'required|unique:users|unique:duties',
+            'email' => 'required',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -143,6 +143,7 @@ class UserController extends Controller
                         'name' => $duty->name,
                         'institution' => $duty->institution,
                         'pivot' => $duty->pivot,
+                        'type' => $duty->type,
                     ];
                 }),
                 'role' => $user->role,
@@ -181,23 +182,7 @@ class UserController extends Controller
                 // TODO: role revamp with Spatie permissions or smth
             }
 
-            // $dutyCollection = new Collection();
-
-            // foreach ($request->duties as $duty) {
-            //     $dutyCollection->push(Duty::find($duty['id']));
-            // }
-
-            // dd($dutyCollection);
-
-            // get all user duties and delete all of them
-            $user->duties()->detach();
-
-            // dd($user->duties);
-
-            // add new roles
-            foreach ($request->duties as $duty) {
-                $user->duties()->attach($duty);
-            }
+            $user->duties()->sync($request->duties);
         });
 
         return redirect()->back();

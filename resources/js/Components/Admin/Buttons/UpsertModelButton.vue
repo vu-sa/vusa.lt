@@ -10,15 +10,22 @@
 </template>
 
 <script setup lang="ts">
+import { Inertia, Method } from "@inertiajs/inertia";
 import { InertiaForm } from "@inertiajs/inertia-vue3";
-import { Method } from "@inertiajs/inertia";
-import { NButton, NPopconfirm, NSpin, createDiscreteApi } from "naive-ui";
+import {
+  NButton,
+  NPopconfirm,
+  NSpin,
+  UploadFileInfo,
+  createDiscreteApi,
+} from "naive-ui";
 import { capitalize } from "lodash";
 import { computed, ref } from "vue";
 import route from "ziggy-js";
 
 const props = defineProps<{
   form: InertiaForm<App.Models.ModelTemplate>;
+  images?: UploadFileInfo[];
   modelRoute: string;
 }>();
 
@@ -35,16 +42,44 @@ const buttonText = computed(() => {
 
 const upsertModel = () => {
   // check for substring method in props.modelRoute
+  console.log(props.images);
 
-  showSpin.value = true;
-  props.form.submit(modelMethod.value, route(props.modelRoute, props.form.id), {
-    onSuccess: () => {
-      showSpin.value = false;
-      message.success("Sėkmingai sukurta arba atnaujinta!");
-    },
-    onError: () => {
-      showSpin.value = false;
-    },
-  });
+  if (props.images === undefined) {
+    console.log("props.form path");
+    showSpin.value = true;
+    props.form.submit(
+      modelMethod.value,
+      route(props.modelRoute, props.form.id),
+      {
+        onSuccess: () => {
+          showSpin.value = false;
+          message.success("Sėkmingai sukurta arba atnaujinta!");
+        },
+        onError: () => {
+          showSpin.value = false;
+        },
+      }
+    );
+  } else {
+    console.log("inertia path");
+    showSpin.value = true;
+    Inertia.post(
+      route(props.modelRoute, props.form.id),
+      {
+        ...props.form,
+        images: props.images,
+        _method: modelMethod.value,
+      },
+      {
+        onSuccess: () => {
+          showSpin.value = false;
+          message.success("Sėkmingai sukurta arba atnaujinta!");
+        },
+        onError: () => {
+          showSpin.value = false;
+        },
+      }
+    );
+  }
 };
 </script>

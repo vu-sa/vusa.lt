@@ -12,39 +12,16 @@
       :loading="loadingNameInput"
       @input="handleNameInput"
     />
-
-    <TransitionGroup name="list">
-      <ContactWithPhoto
-        v-for="contact in searchContacts"
-        :key="contact.id"
-        :class="{ 'md:col-span-2': contact.profile_photo_path }"
-        :image-src="contact.profile_photo_path"
-      >
-        <template #name> {{ contact.name }} </template>
-        <template #duty>
-          <ul class="list-inside">
-            <li v-for="duty in contact.duties" :key="duty.id">
-              {{ duty.name }}
-            </li>
-          </ul>
-        </template>
-        <!-- <template #description> Aprašymas </template> -->
-        <template v-if="contact.phone" #phone>
-          <div class="flex flex-row items-center">
-            <NIcon class="mr-2"><Phone20Regular /></NIcon>
-            <a :href="`tel:${contact.phone}`">{{ contact.phone }}</a>
-          </div>
-        </template>
-        <template v-if="contact.email" #email>
-          <div class="flex flex-row items-center">
-            <NIcon class="mr-2"><Mail20Regular /> </NIcon
-            ><a :href="`mailto:${contact.email}`">{{ contact.email }}</a>
-          </div>
-        </template>
-      </ContactWithPhoto>
-    </TransitionGroup>
-  </div>
-  <!-- </PublicLayout> -->
+      <TransitionGroup name="list">
+        <ContactWithPhotoForUsers
+          v-for="contact in searchContacts"
+          :key="contact.id"
+          :contact="contact"
+          :class="{ 'md:col-span-2': contact.profile_photo_path }"
+        >
+        </ContactWithPhotoForUsers>
+      </TransitionGroup>
+    </div>
 </template>
 
 <script lang="ts">
@@ -62,8 +39,8 @@ import { Mail20Regular, Phone20Regular } from "@vicons/fluent";
 import { NIcon, NInput, createDiscreteApi } from "naive-ui";
 import { debounce } from "lodash";
 import { ref } from "vue";
-import ContactWithPhoto from "@/Components/Public/ContactWithPhoto.vue";
-// import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
+
+import ContactWithPhotoForUsers from "@/Components/Public/ContactWithPhotoForUsers.vue";
 
 interface contactUserInterface
   extends Array<

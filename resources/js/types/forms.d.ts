@@ -4,7 +4,13 @@ declare global {
   interface CalendarEventForm
     extends Pick<
       App.Models.Calendar,
-      "title" | "date" | "description" | "category" | "url"
+      | "title"
+      | "date"
+      | "description"
+      | "category"
+      | "url"
+      | "attributes"
+      | "location"
     > {
     id?: number;
   }

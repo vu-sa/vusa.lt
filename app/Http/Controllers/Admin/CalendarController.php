@@ -6,6 +6,9 @@ use App\Models\Calendar;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
+use App\Models\Category;
+use Illuminate\Support\Facades\DB;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class CalendarController extends Controller
 {
@@ -35,7 +38,7 @@ class CalendarController extends Controller
                 $query->where('title', 'like', "%{$title}%");
             })->with(['padalinys' => function ($query) {
                 $query->select('id', 'shortname', 'alias');
-            }])->orderByDesc('date')->paginate(20);
+            }])->with('category')->orderByDesc('date')->paginate(20);
 
         return Inertia::render('Admin/Calendar/IndexCalendarEvents', [
             'calendar' => $calendar,
@@ -48,8 +51,10 @@ class CalendarController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function create()
-    {
-        return Inertia::render('Admin/Calendar/CreateCalendarEvent');
+    {        
+        return Inertia::render('Admin/Calendar/CreateCalendarEvent', [
+            'categories' => Category::all()
+        ]);
     }
 
     /**
@@ -70,8 +75,11 @@ class CalendarController extends Controller
             'date' => $request->date,
             'title' => $request->title,
             'description' => $request->description,
+            'padalinys_id' => auth()->user()->padalinys()->id,
+            'location' => $request->location,
             'url' => $request->url,
             'category' => $request->category,
+            'attributes' => $request->attributes,
         ]);
 
         return redirect()->route('calendar.index');
@@ -97,7 +105,9 @@ class CalendarController extends Controller
     public function edit(Calendar $calendar)
     {
         return Inertia::render('Admin/Calendar/EditCalendarEvent', [
-            'calendar' => $calendar->toArray(),
+            'calendar' => $calendar,
+            'categories' => Category::all(),
+            'images' => $calendar->getMedia('images')
         ]);
     }
 
@@ -110,7 +120,30 @@ class CalendarController extends Controller
      */
     public function update(Request $request, Calendar $calendar)
     {
-        $calendar->update($request->only('title', 'date', 'description', 'category', 'url'));
+        $request->all();
+
+        $request->validate([
+            'date' => 'required|date',
+            'title' => 'required',
+            'description' => 'required',
+        ]);
+
+        DB::transaction(function () use ($request, $calendar) {
+            $calendar->update($request->only(['date', 'title', 'description', 'location', 'url', 'category', 'attributes']));
+
+            // if request has files
+            
+            $images = $request->file('images');
+
+            if ($images) {
+                foreach ($images as $image) {
+                    $calendar->addMedia($image['file'])->toMediaCollection('images');
+                }
+            }
+
+            $calendar->save();
+        });
+        
 
         return redirect()->back();
     }
@@ -126,5 +159,11 @@ class CalendarController extends Controller
         $calendar->delete();
 
         return redirect()->route('calendar.index');
+    }
+
+    public function destroyMedia(Calendar $calendar, Media $media) {
+        $this->authorize('destroyMedia', $calendar);
+        
+        $calendar->getMedia('images')->where('id', '=', $media->id)->first()->delete();
     }
 }

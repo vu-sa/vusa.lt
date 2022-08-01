@@ -6,6 +6,7 @@ use App\Models\Duty;
 use App\Models\DutyInstitution;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller as Controller;
+use App\Models\DutyType;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 
@@ -43,7 +44,9 @@ class DutyController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Admin/Contacts/CreateDuty');
+        return Inertia::render('Admin/Contacts/CreateDuty', [
+            'dutyTypes' => DutyType::all(),
+        ]);
     }
 
     /**
@@ -56,10 +59,9 @@ class DutyController extends Controller
     {
         $request->validate([
             'name' => 'required',
-            'email' => 'email',
+            'institution' => 'required',
+            'type' => 'required',
         ]);
-
-        // dd($request->all());
 
         $duty = new Duty();
 
@@ -68,7 +70,7 @@ class DutyController extends Controller
         $duty->description = $request->description;
         $duty->institution()->associate($request->institution['id']);
         // TODO: sutvarkyti
-        $duty->type_id = 3;
+        $duty->type_id = $request->type['id'];
         $duty->save();
 
         return redirect()->route('duties.index');
@@ -117,6 +119,7 @@ class DutyController extends Controller
                 'places_to_occupy' => $duty->places_to_occupy,
             ],
             'users' => $duty->users,
+            'dutyTypes' => DutyType::all(),
         ]);
     }
 
@@ -129,11 +132,16 @@ class DutyController extends Controller
      */
     public function update(Request $request, Duty $duty)
     {
-        // dd(DutyInstitution::find($request->institution['id']));
+        $request->validate([
+            'name' => 'required',
+            'institution' => 'required',
+            'type' => 'required',
+        ]);
 
         DB::transaction(function () use ($request, $duty) {
             $duty->update($request->only('name', 'description', 'email'));
 
+            $duty->type_id = $request->type['id'];
             $duty->institution()->disassociate();
             $duty->institution()->associate(DutyInstitution::find($request->institution['id']));
             $duty->save();
