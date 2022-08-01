@@ -197,6 +197,7 @@
               <Search20Filled />
             </NIcon>
           </NButton>
+          <StartFM />
           <!-- </NBadge> -->
           <NDropdown
             v-if="locale == 'lt'"

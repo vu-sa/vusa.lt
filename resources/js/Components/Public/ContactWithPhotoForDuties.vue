@@ -117,18 +117,24 @@ const checkIfContactNameEndsWithEDot = (
   contact: App.Models.User,
   duty: App.Models.Duty
 ) => {
+  let firstName = contact.name.split(" ")[0];
+
+  let namesToWomanize = ["Katrin"];
+  if (namesToWomanize.includes(firstName)) {
+    return duty.name.replace(/ius$/, "ė");
+  }
+
+  let namesNotToWomanize = ["German"];
+  if (namesNotToWomanize.includes(firstName)) {
+    return duty.name;
+  }
+
   if (contact.name.endsWith("ė")) {
     // replace duty.name ending 'ius' with 'ė', but only on end
     return duty.name.replace(/ius$/, "ė");
   }
 
-  let firstName = contact.name.split(" ")[0];
   if (contact.name.endsWith("a") && !firstName.endsWith("s")) {
-    return duty.name.replace(/ius$/, "ė");
-  }
-
-  let namesToWomanize = ["Katrin"];
-  if (namesToWomanize.includes(firstName)) {
     return duty.name.replace(/ius$/, "ė");
   }
 
