@@ -1,6 +1,7 @@
 <template>
-  <PublicLayout title="Programos „Sąžiningai“ užregistruoti egzaminai">
-    <!-- <PageArticle> -->
+  <!-- <PublicLayout title="Programos „Sąžiningai“ užregistruoti egzaminai"> -->
+  <Head title="Programos „Sąžiningai“ užregistruoti egzaminai"></Head>
+  <PageArticle>
     <div class="px-8 pt-8 last:pb-2 lg:px-16">
       <h1>Programos „Sąžiningai“ užregistruoti egzaminai</h1>
       <p class="my-4">Registruotis reikia į kiekvieną srautą atskirai.</p>
@@ -13,8 +14,8 @@
         </NDataTable>
       </div>
     </div>
-    <!-- </PageArticle> -->
-  </PublicLayout>
+  </PageArticle>
+  <!-- </PublicLayout> -->
   <NModal v-model:show="showModal">
     <NCard
       style="width: 600px"
@@ -84,6 +85,14 @@
   </NModal>
 </template>
 
+<script lang="ts">
+import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
+
+export default {
+  layout: PublicLayout,
+};
+</script>
+
 <script setup lang="ts">
 import {
   FormInst,
@@ -99,12 +108,13 @@ import {
   NSelect,
   createDiscreteApi,
 } from "naive-ui";
+import { Head } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
 import { h, ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 
-import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
+// import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
 
 const props = defineProps<{
   padaliniaiOptions: App.Models.Padalinys[];

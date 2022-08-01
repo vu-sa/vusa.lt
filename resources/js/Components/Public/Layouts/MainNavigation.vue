@@ -100,6 +100,7 @@
           <Search20Filled />
         </NIcon>
       </NButton>
+      <StartFM />
       <!-- </NBadge> -->
       <NDropdown
         v-if="locale == 'lt'"
@@ -314,6 +315,7 @@ import {
 import { debounce, split } from "lodash";
 import { loadLanguageAsync } from "laravel-vue-i18n";
 import { ref } from "vue";
+import StartFM from "@/Components/StartFM.vue";
 import route, { RouteParamsWithQueryOverload } from "ziggy-js";
 
 // map padaliniai to options_padaliniai

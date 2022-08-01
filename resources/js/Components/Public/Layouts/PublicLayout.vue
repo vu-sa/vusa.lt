@@ -1,6 +1,5 @@
 <template>
   <NConfigProvider :theme-overrides="themeOverrides">
-    <Head :title="title" />
     <MetaIcons />
     <div class="min-h-screen bg-neutral-50 pb-8 antialiased">
       <MainNavigation></MainNavigation>
@@ -20,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { Head, usePage } from "@inertiajs/inertia-vue3";
+import { usePage } from "@inertiajs/inertia-vue3";
 import { NConfigProvider } from "naive-ui";
 import { onMounted } from "vue";
 import Footer from "@/Components/Public/FooterComponent.vue";

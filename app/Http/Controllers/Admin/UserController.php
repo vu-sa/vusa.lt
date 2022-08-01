@@ -10,6 +10,7 @@ use Inertia\Inertia;
 use App\Models\Duty;
 use App\Http\Controllers\Controller as Controller;
 use App\Models\Role;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 

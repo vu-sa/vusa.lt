@@ -1,17 +1,17 @@
 <template>
+  <Head title="Kontaktų paieška"></Head>
   <h2>Ieškoti kontakto:</h2>
-  <PublicLayout title="Kontaktų paieška">
-    <div class="grid gap-8 px-16 md:grid-cols-4 lg:px-32">
-      <NInput
-        class="mt-2 md:col-span-4"
-        type="text"
-        size="large"
-        round
-        placeholder="Ieškoti pagal vardą..."
-        :loading="loadingNameInput"
-        @input="handleNameInput"
-      />
-
+  <!-- <PublicLayout title="Kontaktų paieška"> -->
+  <div class="grid gap-8 px-16 md:grid-cols-4 lg:px-32">
+    <NInput
+      class="mt-2 md:col-span-4"
+      type="text"
+      size="large"
+      round
+      placeholder="Ieškoti pagal vardą..."
+      :loading="loadingNameInput"
+      @input="handleNameInput"
+    />
       <TransitionGroup name="list">
         <ContactWithPhotoForUsers
           v-for="contact in searchContacts"
@@ -22,17 +22,25 @@
         </ContactWithPhotoForUsers>
       </TransitionGroup>
     </div>
-  </PublicLayout>
 </template>
 
+<script lang="ts">
+import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
+
+export default {
+  layout: PublicLayout,
+};
+</script>
+
 <script setup lang="ts">
+import { Head } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
 import { Mail20Regular, Phone20Regular } from "@vicons/fluent";
 import { NIcon, NInput, createDiscreteApi } from "naive-ui";
 import { debounce } from "lodash";
 import { ref } from "vue";
+
 import ContactWithPhotoForUsers from "@/Components/Public/ContactWithPhotoForUsers.vue";
-import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
 
 interface contactUserInterface
   extends Array<

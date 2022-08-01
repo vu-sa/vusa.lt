@@ -1,5 +1,7 @@
 <template>
-  <PublicLayout title="Kontaktų kategorijos">
+
+  <Head title="Kontaktų kategorija"></Head>
+  
     <div
       class="mt-4 grid grid-cols-1 gap-y-4 px-8 md:grid-cols-2 md:gap-8 lg:px-32 2xl:grid-cols-3"
     >
@@ -54,16 +56,23 @@
         </CategoryCard>
       </button>
     </div>
-  </PublicLayout>
 </template>
 
+<script lang="ts">
+import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
+
+export default {
+  layout: PublicLayout,
+};
+</script>
+
 <script setup lang="ts">
+import { Head } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
 import { NButton } from "naive-ui";
 import route from "ziggy-js";
 
 import CategoryCard from "@/Components/Public/CategoryCard.vue";
-import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
 
 defineProps<{
   institutions: App.Models.DutyInstitution[];

@@ -1,7 +1,5 @@
 <template>
-  <PublicLayout
-    :title="`${institution.short_name ?? institution.name} kontaktai`"
-  >
+      <Head :title="`${institution.short_name ?? institution.name}`"></Head>
     <div class="px-16 lg:px-32">
       <div class="grid gap-8 pt-4 sm:grid-cols-2 2xl:grid-cols-3">
         <div v-if="institution.image_url" class="group relative sm:col-span-2">
@@ -34,12 +32,22 @@
         <!-- </template> -->
       </div>
     </div>
-  </PublicLayout>
+  </div>
 </template>
 
-<script setup lang="ts">
-import ContactWithPhotoForDuties from "@/Components/Public/ContactWithPhotoForDuties.vue";
+<script lang="ts">
 import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
+
+export default {
+  layout: PublicLayout,
+};
+</script>
+
+<script setup lang="ts">
+import { Head } from "@inertiajs/inertia-vue3";
+
+import ContactWithPhotoForDuties from "@/Components/Public/ContactWithPhotoForDuties.vue";
+
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 
 defineProps<{

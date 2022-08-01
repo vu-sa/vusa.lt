@@ -1,5 +1,6 @@
 <template>
   <Head>
+    <title>Pagrindinis</title>
     <link
       rel="preload"
       href="/images/ataskaita2022/kitos-nuotraukos/VU SA.jpg"
@@ -7,7 +8,7 @@
     />
   </Head>
 
-  <PublicLayout title="Pagrindinis">
+
     <div v-if="$page.props.locale === 'lt'">
       <div class="group relative">
         <ShapeDivider1 class="absolute -top-1 z-10"></ShapeDivider1>
@@ -86,40 +87,44 @@
           round
           @click="goToLink(item.link)"
         >
-          {{ item.text }}
-        </NButton>
-      </div>
+      </p>
     </div>
+    <NDivider />
+  </div>
 
-    <NewsElement v-if="$page.props.locale === 'lt'">
-      <HomeCard
-        v-for="item in news"
+  <div
+    v-if="$page.props.locale === 'lt' && $page.props.alias"
+    class="mx-8 mb-8 lg:mx-16 lg:px-16"
+  >
+    <h2 class="mb-4">Pagrindinės nuorodos:</h2>
+    <div class="flex flex-wrap gap-2">
+      <NButton
+        v-for="item in props.mainPage"
         :key="item.id"
-        :has-mini-content="false"
-        :has-below-card="true"
+        secondary
+        round
+        @click="goToLink(item.link)"
       >
-        <template #mini> </template>
-        <template #below-card>
-          <!-- <NIcon class="mr-2" size="20"> <CalendarLtr20Regular /> </NIcon>VU SA
+        {{ item.text }}
+      </NButton>
+    </div>
+  </div>
+
+  <NewsElement v-if="$page.props.locale === 'lt'">
+    <HomeCard
+      v-for="item in news"
+      :key="item.id"
+      :has-mini-content="false"
+      :has-below-card="true"
+    >
+      <template #mini> </template>
+      <template #below-card>
+        <!-- <NIcon class="mr-2" size="20"> <CalendarLtr20Regular /> </NIcon>VU SA
           ataskaitinė-rinkiminė konferencija -->
-          <NIcon class="mr-2" size="20"> <Clock20Regular /> </NIcon
-          >{{ item.publish_time }}
-        </template>
-        <template #image>
-          <Link
-            :href="
-              route('news', {
-                lang: item.lang,
-                newsString: 'naujiena',
-                padalinys: item.alias,
-                permalink: item.permalink,
-              })
-            "
-            ><img
-              :src="item.image"
-              class="mb-1 h-40 w-full rounded-sm object-cover shadow-md duration-200 hover:shadow-lg"
-          /></Link>
-        </template>
+        <NIcon class="mr-2" size="20"> <Clock20Regular /> </NIcon
+        >{{ item.publish_time }}
+      </template>
+      <template #image>
         <Link
           :href="
             route('news', {
@@ -129,6 +134,7 @@
               permalink: item.permalink,
             })
           "
+
           >{{ item.title }}</Link
         >
       </HomeCard>
@@ -216,8 +222,15 @@
         </NCarouselItem>
       </NCarousel>
     </div> -->
-  </PublicLayout>
 </template>
+
+<script lang="ts">
+import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
+
+export default {
+  layout: PublicLayout,
+};
+</script>
 
 <script setup lang="ts">
 import {
@@ -234,7 +247,6 @@ import route from "ziggy-js";
 
 import HomeCard from "@/Components/Public/HomeCard.vue";
 import NewsElement from "@/Components/Public/NewsElement.vue";
-import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 
 const props = defineProps<{
