@@ -31,6 +31,10 @@
         />
       </NFormItemGi>
 
+      <NFormItemGi label="Nuotrauka" :span="24">
+        <UploadImageButtons v-model="form.image_url" :path="'institutions'" />
+      </NFormItemGi>
+
       <NFormItemGi label="Aprašymas" :span="24">
         <TipTap
           v-model="form.description"
@@ -55,6 +59,7 @@ import { useForm } from "@inertiajs/inertia-vue3";
 
 import DeleteModelButton from "@/Components/Admin/Buttons/DeleteModelButton.vue";
 import TipTap from "@/Components/TipTap.vue";
+import UploadImageButtons from "@/Components/Admin/Buttons/UploadImageButtons.vue";
 import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{

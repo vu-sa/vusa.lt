@@ -1,16 +1,18 @@
 <template>
-  <PublicLayout title="Sąžiningai atsiskaitymo registravimo forma">
+  <!-- <PublicLayout title="Sąžiningai atsiskaitymo registravimo forma"> -->
+  <Head title="Sąžiningai atsiskaitymo registravimo forma"></Head>
+  <FadeTransition appear>
     <PageArticle>
       <template #title
         >Egzamino ar kolokviumo stebėjimo registracijos forma</template
       >
       <div class="prose">
         <!-- <strong class="text-red-600">
-          Registracijos forma šiuo metu yra uždaryta, greitu metu ją vėl atidarysime.
-          Prašome kreiptis į
-          <a href="mailto:saziningai@vusa.lt">saziningai@vusa.lt</a> dėl stebėjimo
-          registracijos.
-        </strong> -->
+            Registracijos forma šiuo metu yra uždaryta, greitu metu ją vėl atidarysime.
+            Prašome kreiptis į
+            <a href="mailto:saziningai@vusa.lt">saziningai@vusa.lt</a> dėl stebėjimo
+            registracijos.
+          </strong> -->
         <p>
           Prašome registruoti atsiskaitymus, kurie vyks nuo
           <strong>{{ date3DaysToFutureLT }}</strong> (bent 3 darbo dienos iki jo
@@ -191,8 +193,17 @@
         </NForm>
       </div>
     </PageArticle>
-  </PublicLayout>
+  </FadeTransition>
+  <!-- </PublicLayout> -->
 </template>
+
+<script lang="ts">
+import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
+
+export default {
+  layout: PublicLayout,
+};
+</script>
 
 <script setup lang="ts">
 import {
@@ -211,14 +222,14 @@ import {
   NSelect,
   createDiscreteApi,
 } from "naive-ui";
+import { Head } from "@inertiajs/inertia-vue3";
+import { Inertia } from "@inertiajs/inertia";
 import { computed, ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
-
-import PageArticle from "@/Components/Public/PageArticle.vue";
-import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
-
-import { Inertia } from "@inertiajs/inertia";
 import route from "ziggy-js";
+
+import FadeTransition from "@/Components/Public/FadeTransition.vue";
+import PageArticle from "@/Components/Public/PageArticle.vue";
 
 const props = defineProps<{
   padaliniaiOptions: Array<App.Models.Padalinys>;

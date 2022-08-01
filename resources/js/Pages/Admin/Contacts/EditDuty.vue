@@ -9,6 +9,7 @@
       <DutyForm
         :duty="duty"
         :has-users="hasUsers"
+        :duty-types="dutyTypes"
         model-route="duties.update"
         delete-model-route="duties.destroy"
       />
@@ -19,7 +20,7 @@
 
         <strong>Šiuo metu šias pareigas užima:</strong>
         <ul class="mt-2 list-none">
-          <li v-for="user in users" :key="user.id" class="mb-2">
+          <li v-for="user in users" :key="user.id" class="mb-1">
             <Link
               class="flex flex-row items-center gap-2"
               :href="route('users.edit', { id: user.id })"
@@ -73,6 +74,7 @@ import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue"
 const props = defineProps<{
   duty: App.Models.Duty;
   users: App.Models.User[];
+  dutyTypes: App.Models.DutyType[];
 }>();
 
 const { message } = createDiscreteApi(["message"]);

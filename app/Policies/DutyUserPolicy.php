@@ -2,13 +2,20 @@
 
 namespace App\Policies;
 
-use App\Models\File;
+use App\Models\DutyUser;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class FilesPolicy
+class DutyUserPolicy
 {
     use HandlesAuthorization;
+
+    public function before(User $user, $ability)
+    {
+        if ($user->isAdmin()) {
+            return true;
+        }
+    }
 
     /**
      * Determine whether the user can view any models.
@@ -18,17 +25,17 @@ class FilesPolicy
      */
     public function viewAny(User $user)
     {
-        return true;
+        //
     }
 
     /**
      * Determine whether the user can view the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\File  $file
+     * @param  \App\Models\DutyUser  $dutyUser
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, File $file)
+    public function view(User $user, DutyUser $dutyUser)
     {
         //
     }
@@ -48,22 +55,22 @@ class FilesPolicy
      * Determine whether the user can update the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\File  $file
+     * @param  \App\Models\DutyUser  $dutyUser
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, File $file)
+    public function update(User $user, DutyUser $dutyUser)
     {
-        //
+        return true;
     }
 
     /**
      * Determine whether the user can delete the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\File  $file
+     * @param  \App\Models\DutyUser  $dutyUser
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, File $file)
+    public function delete(User $user, DutyUser $dutyUser)
     {
         //
     }
@@ -72,10 +79,10 @@ class FilesPolicy
      * Determine whether the user can restore the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\File  $file
+     * @param  \App\Models\DutyUser  $dutyUser
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function restore(User $user, File $file)
+    public function restore(User $user, DutyUser $dutyUser)
     {
         //
     }
@@ -84,10 +91,10 @@ class FilesPolicy
      * Determine whether the user can permanently delete the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\File  $file
+     * @param  \App\Models\DutyUser  $dutyUser
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function forceDelete(User $user, File $file)
+    public function forceDelete(User $user, DutyUser $dutyUser)
     {
         //
     }

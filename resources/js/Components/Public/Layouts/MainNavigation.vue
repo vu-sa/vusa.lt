@@ -35,14 +35,14 @@
       </div>
     </div>
     <!-- Hamburger -->
-    <div class="block md:hidden">
+    <div class="block lg:hidden">
       <NButton style="border-radius: 0.5rem" @click="toggleMenu">
         <NIcon>
           <Navigation24Filled />
         </NIcon>
       </NButton>
     </div>
-    <div class="hidden flex-row items-center space-x-4 md:flex">
+    <div class="hidden flex-row flex-wrap items-center space-x-4 lg:flex">
       <!-- <n-gradient-text type="error"> -->
       <!-- <Link :href="route('page', { permalink: 'apie' })">VU SA</Link> -->
       <!-- </n-gradient-text> -->
@@ -100,6 +100,7 @@
           <Search20Filled />
         </NIcon>
       </NButton>
+      <StartFM />
       <!-- </NBadge> -->
       <NDropdown
         v-if="locale == 'lt'"
@@ -196,6 +197,7 @@
               <Search20Filled />
             </NIcon>
           </NButton>
+          <StartFM />
           <!-- </NBadge> -->
           <NDropdown
             v-if="locale == 'lt'"
@@ -314,6 +316,7 @@ import {
 import { debounce, split } from "lodash";
 import { loadLanguageAsync } from "laravel-vue-i18n";
 import { ref } from "vue";
+import StartFM from "@/Components/StartFM.vue";
 import route, { RouteParamsWithQueryOverload } from "ziggy-js";
 
 // map padaliniai to options_padaliniai

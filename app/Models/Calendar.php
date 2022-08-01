@@ -3,11 +3,18 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Image\Manipulations;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Spatie\MediaLibrary\MediaCollections\File;
 
-class Calendar extends Model
+class Calendar extends Model implements HasMedia
 {
+    
     use HasFactory;
+    use InteractsWithMedia;
 
     protected $table = 'calendar';
 
@@ -16,6 +23,7 @@ class Calendar extends Model
     protected $casts = [
         'updated_at' => 'datetime:Y-m-d H:i:s',
         'created_at' => 'datetime:Y-m-d H:i:s',
+        'attributes' => 'array',
     ];
 
     public function user()
@@ -30,6 +38,21 @@ class Calendar extends Model
 
     public function category()
     {
-        return $this->hasOne(Category::class, 'category', 'alias');
+        return $this->belongsTo(Category::class, 'category', 'alias');
     }
+
+    public function registrationForm()
+    {
+        return $this->belongsTo(RegistrationForm::class, 'registration_form_id', 'id');
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this
+        ->addMediaCollection('images')
+        ->acceptsMimeTypes(['image/jpeg', 'image/jpg', 'image/png'])
+        ->useDisk('spatieMediaLibrary')
+        ->withResponsiveImages();
+    }
+    
 }

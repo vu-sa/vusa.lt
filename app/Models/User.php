@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Illuminate\Support\Facades\Auth;
+use App\Models\DutyUser;
 use Illuminate\Database\Eloquent\Collection;
 
 class User extends Authenticatable
@@ -35,6 +36,10 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'google_token',
+        'email_verified_at',
+        'last_login',
+        'microsoft_token',
         'two_factor_recovery_codes',
         'two_factor_secret',
     ];
@@ -62,7 +67,7 @@ class User extends Authenticatable
 
     public function duties()
     {
-        return $this->belongsToMany(Duty::class, 'duties_users', 'user_id', 'duty_id');
+        return $this->belongsToMany(Duty::class, 'duties_users', 'user_id', 'duty_id')->using(DutyUser::class)->withPivot(['id', 'attributes'])->withTimestamps();
     }
 
     public function institutions()

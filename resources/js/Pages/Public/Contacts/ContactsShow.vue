@@ -1,9 +1,8 @@
 <template>
-  <PublicLayout
-    :title="`${institution.short_name ?? institution.name} kontaktai`"
-  >
+  <Head :title="`${institution.short_name ?? institution.name}`"></Head>
+  <FadeTransition appear>
     <div class="px-16 lg:px-32">
-      <div class="grid gap-8 pt-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div class="grid gap-8 pt-4 sm:grid-cols-2 2xl:grid-cols-3">
         <div v-if="institution.image_url" class="group relative sm:col-span-2">
           <ShapeDivider1 class="absolute -top-1 z-10"></ShapeDivider1>
           <ShapeDivider1
@@ -19,55 +18,37 @@
           :class="{ 'sm:row-span-2': !institution.image_url }"
           class="prose-sm my-auto sm:prose"
         >
-          <h1>{{ institution.name ?? institution.short_name }}</h1>
+          <h1>
+            {{ institution.name ?? institution.short_name }}
+          </h1>
           <div v-html="institution.description"></div>
         </div>
-        <ContactWithPhoto
+        <!-- <template v-for="duty in institution"> -->
+        <ContactWithPhotoForDuties
           v-for="contact in contacts"
           :key="contact.id"
-          :image-src="contact.image"
+          :contact="contact"
         >
-          <template #name> {{ contact.name }} </template>
-          <template #duty>
-            <template v-for="duty in contact.duties" :key="duty.id">
-              <NPopover
-                v-if="duty.description"
-                trigger="hover"
-                :style="{ maxWidth: '250px' }"
-                ><template #trigger>
-                  <p class="my-1 cursor-pointer">{{ duty.name }}</p>
-                </template>
-                <span v-html="duty.description"></span>
-              </NPopover>
-              <p v-else class="my-1">{{ duty.name }}</p>
-            </template>
-          </template>
-          <template #contactInfo>
-            <div v-if="contact.phone" class="flex flex-row items-center">
-              <NIcon class="mr-2">
-                <Phone20Regular />
-              </NIcon>
-              <a :href="`tel:${contact.phone}`">{{ contact.phone }}</a>
-            </div>
-            <template v-for="duty in contact.duties" :key="duty.id">
-              <div v-if="duty.email" class="flex flex-row items-center">
-                <NIcon class="mr-2"> <Mail20Regular /> </NIcon
-                ><a :href="`mailto:${duty.email}`">{{ duty.email }}</a>
-              </div>
-            </template>
-          </template>
-        </ContactWithPhoto>
+        </ContactWithPhotoForDuties>
+        <!-- </template> -->
       </div>
     </div>
-  </PublicLayout>
+  </FadeTransition>
 </template>
 
-<script setup lang="ts">
-import { Mail20Regular, Phone20Regular } from "@vicons/fluent";
-import { NIcon, NPopover } from "naive-ui";
-
-import ContactWithPhoto from "@/Components/Public/ContactWithPhoto.vue";
+<script lang="ts">
 import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
+
+export default {
+  layout: PublicLayout,
+};
+</script>
+
+<script setup lang="ts">
+import { Head } from "@inertiajs/inertia-vue3";
+
+import ContactWithPhotoForDuties from "@/Components/Public/ContactWithPhotoForDuties.vue";
+import FadeTransition from "@/Components/Public/FadeTransition.vue";
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 
 defineProps<{

@@ -1,7 +1,7 @@
 <template>
   <NForm :model="form" label-placement="top">
     <NGrid :span="24" :x-gap="24">
-      <NFormItemGi label="Vardas ir Pavardė" :span="12">
+      <NFormItemGi label="Vardas ir Pavardė" :span="12" required>
         <NInput
           v-model:value="form.name"
           type="text"
@@ -9,7 +9,7 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Studentinis el. paštas" :span="12">
+      <NFormItemGi label="Studentinis el. paštas" :span="12" required>
         <NInput
           v-model:value="form.email"
           placeholder="vardas.pavarde@padalinys.stud.vu.lt"

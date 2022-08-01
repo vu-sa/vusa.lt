@@ -1,16 +1,11 @@
 <template>
   <NConfigProvider :theme-overrides="themeOverrides">
-    <Head :title="title" />
     <MetaIcons />
     <div class="min-h-screen bg-neutral-50 pb-8 antialiased">
-      <MainNavigation></MainNavigation>
-      <Transition name="fade" appear>
-        <main>
-          <div class="pt-16 sm:pt-24 2xl:pt-36">
-            <slot></slot>
-          </div>
-        </main>
-      </Transition>
+      <MainNavigation />
+      <main class="pt-12 sm:pt-20 2xl:pt-32">
+        <slot></slot>
+      </main>
     </div>
     <Footer />
 
@@ -20,16 +15,13 @@
 </template>
 
 <script setup lang="ts">
-import { Head } from "@inertiajs/inertia-vue3";
 import { NConfigProvider } from "naive-ui";
 import { onMounted } from "vue";
+import { usePage } from "@inertiajs/inertia-vue3";
+
 import Footer from "@/Components/Public/FooterComponent.vue";
 import MainNavigation from "@/Components/Public/Layouts/MainNavigation.vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
-
-defineProps<{
-  title: string;
-}>();
 
 const themeOverrides = {
   common: {
@@ -67,29 +59,20 @@ var Tawk_API = Tawk_API || {},
 })();
 
 onMounted(() => {
-  (function (c, l, a, r, i, t, y) {
-    c[a] =
-      c[a] ||
-      function () {
-        (c[a].q = c[a].q || []).push(arguments);
-      };
-    t = l.createElement(r);
-    t.async = 1;
-    t.src = "https://www.clarity.ms/tag/" + i;
-    y = l.getElementsByTagName(r)[0];
-    y.parentNode.insertBefore(t, y);
-  })(window, document, "clarity", "script", "bs7culn3gp");
+  // if page props app.env is local, then don't run Clarity
+  if (usePage().props.value.app.env !== "local") {
+    (function (c, l, a, r, i, t, y) {
+      c[a] =
+        c[a] ||
+        function () {
+          (c[a].q = c[a].q || []).push(arguments);
+        };
+      t = l.createElement(r);
+      t.async = 1;
+      t.src = "https://www.clarity.ms/tag/" + i;
+      y = l.getElementsByTagName(r)[0];
+      y.parentNode.insertBefore(t, y);
+    })(window, document, "clarity", "script", "bs7culn3gp");
+  }
 });
 </script>
-
-<style>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-</style>

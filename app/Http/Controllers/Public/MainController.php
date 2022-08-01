@@ -19,10 +19,13 @@ use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\App;
 use App\Models\PageView;
+use App\Models\Registration;
+use App\Models\RegistrationForm;
 use Illuminate\Support\Facades\Schema;
 use App\Models\SaziningaiExam;
 use App\Models\SaziningaiExamFlow;
 use App\Models\SaziningaiExamObserver;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
@@ -60,20 +63,20 @@ class MainController extends Controller
 		/// pakeisti visur alias į vusa kad būtų aiškiau nes čia dabar nesąmonė
 
 
-		if ($this->alias !== '') {
-			$banners = Padalinys::where('alias', $this->alias)->first()->banners()->inRandomOrder()->where('is_active', 1)->get();
-		} else {
-			$banners = collect([]);
-		}
+		// if ($this->alias !== '') {
+		// 	$banners = Padalinys::where('alias', $this->alias)->first()->banners()->inRandomOrder()->where('is_active', 1)->get();
+		// } else {
+		// 	$banners = collect([]);
+		// }
 
-		$banners = $banners->merge(Padalinys::where('type', 'pagrindinis')->first()->banners()->inRandomOrder()->where('is_active', 1)->get());
-		Inertia::share('banners', $banners);
+		// $banners = $banners->merge(Padalinys::where('type', 'pagrindinis')->first()->banners()->inRandomOrder()->where('is_active', 1)->get());
+		// Inertia::share('banners', $banners);
 		Inertia::share('mainNavigation', $mainNavigation);
 
 		// if table exists in database
-		if (Schema::hasTable('page_views')) {
-			PageView::createViewLog();
-		}
+		// if (Schema::hasTable('page_views')) {
+		// 	PageView::createViewLog();
+		// }
 	}
 
 	public function home()
@@ -263,6 +266,9 @@ class MainController extends Controller
 
 		return Inertia::render('Public/Contacts/Category', [
 			'institutions' => $duties_institutions
+		])->withViewData([
+			'title' => 'Kontaktai',
+			'description' => 'VU SA kontaktai',
 		]);
 	}
 
@@ -528,6 +534,51 @@ class MainController extends Controller
 		]);
 
 		return redirect()->back();
+	}
+
+	// TODO: pakeisti seno puslapio nuorodą
+	public function summerCamps() {
+		
+		// get events with category of freshmen camps
+		$events = Calendar::whereHas('category', function (Builder $query) {
+			$query->where('name', '=', 'Pirmakursių stovykla');
+		})->with('padalinys:id,alias,fullname')->with(['media'])->get()->sortBy('padalinys.alias');
+		
+		return Inertia::render('Public/SummerCamps', ['events' => $events->makeHidden(['description', 'location', 'category', 'url', 'user_id', 'attributes'])->values()->all()])->withViewData([
+			'title' => 'Pirmakursių stovyklos',
+			'description' => 'Universiteto tvarka niekada su ja nesusidūrusiam žmogui gali pasirodyti labai sudėtinga ir būtent dėl to jau prieš septyniolika metų Vilniaus universiteto Studentų atstovybė (VU SA) surengė pirmąją pirmakursių stovyklą.',
+		]);
+	}
+
+	public function summerCampEvent(Calendar $calendar) {
+		
+		// if calendar doesnt have category Pirmakursių stovykla, redirect to 404
+		if ($calendar->category()->first()->name !== 'Pirmakursių stovykla') {
+			abort(404);
+		}
+
+		$calendar->load('padalinys:id,alias,fullname,shortname');
+
+		$curatorInstitution = DutyInstitution::where('alias', '=', $calendar->padalinys->alias)
+			->with(['duties' => function ($query) {
+			$query->where('type_id', '=', 5);
+			}])->first();
+
+		$curatorDuties = $curatorInstitution->duties->load('users');
+
+		return Inertia::render('Public/SummerCampEvent', 
+		['event' => $calendar, 'images' => $calendar->getMedia('images'), 'curatorDuties' => $curatorDuties,])->withViewData([
+			'title' => $calendar->title,
+			'description' => $calendar->description,
+			
+		]);
+	}
+
+	public function storeRegistration(RegistrationForm $registrationForm) {
+		$registration = new Registration;
+		$registration->data = request()->all();
+		$registration->registration_form_id = $registrationForm->id;
+		$registration->save();
 	}
 
 	public function ataskaita2022()
