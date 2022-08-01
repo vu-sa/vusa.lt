@@ -97,7 +97,7 @@
           >
             <Link :href="route('calendar.event', event.id)">
               <img
-                class="rounded-xl object-cover shadow-md transition group-hover:shadow-xl"
+                class="h-full w-full rounded-xl object-cover shadow-md transition group-hover:shadow-xl"
                 :src="get5thResponsiveImage(event)"
               />
               <h3 class="p-2 text-center text-lg font-extrabold leading-tight">
@@ -174,7 +174,7 @@ const get5thResponsiveImage = (event: App.Models.Calendar) => {
     mainUrlParts[0] +
     "responsive-images/" +
     event.media[0].responsive_images.media_library_original.urls[
-      event.media[0].responsive_images.media_library_original.urls.length - 1
+      event.media[0].responsive_images.media_library_original.urls.length - 3
     ];
   return responsiveUrl;
 };
