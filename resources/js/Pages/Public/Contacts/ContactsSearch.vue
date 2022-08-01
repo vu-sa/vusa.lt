@@ -1,28 +1,30 @@
 <template>
   <Head title="Kontaktų paieška"></Head>
   <!-- <PublicLayout title="Kontaktų paieška"> -->
-  <div class="mt-16 grid gap-8 px-16 md:grid-cols-4 lg:px-32">
-    <h2>Ieškoti kontakto:</h2>
+  <FadeTransition appear>
+    <div class="mt-16 grid gap-8 px-16 md:grid-cols-4 lg:px-32">
+      <h2>Ieškoti kontakto:</h2>
 
-    <NInput
-      class="mt-2 md:col-span-4"
-      type="text"
-      size="large"
-      round
-      placeholder="Ieškoti pagal vardą..."
-      :loading="loadingNameInput"
-      @input="handleNameInput"
-    />
-    <TransitionGroup name="list">
-      <ContactWithPhotoForUsers
-        v-for="contact in searchContacts"
-        :key="contact.id"
-        :contact="contact"
-        :class="{ 'md:col-span-2': contact.profile_photo_path }"
-      >
-      </ContactWithPhotoForUsers>
-    </TransitionGroup>
-  </div>
+      <NInput
+        class="mt-2 md:col-span-4"
+        type="text"
+        size="large"
+        round
+        placeholder="Ieškoti pagal vardą..."
+        :loading="loadingNameInput"
+        @input="handleNameInput"
+      />
+      <TransitionGroup name="list">
+        <ContactWithPhotoForUsers
+          v-for="contact in searchContacts"
+          :key="contact.id"
+          :contact="contact"
+          :class="{ 'md:col-span-2': contact.profile_photo_path }"
+        >
+        </ContactWithPhotoForUsers>
+      </TransitionGroup>
+    </div>
+  </FadeTransition>
 </template>
 
 <script lang="ts">
@@ -36,12 +38,12 @@ export default {
 <script setup lang="ts">
 import { Head } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
-import { Mail20Regular, Phone20Regular } from "@vicons/fluent";
-import { NIcon, NInput, createDiscreteApi } from "naive-ui";
+import { NInput, createDiscreteApi } from "naive-ui";
 import { debounce } from "lodash";
 import { ref } from "vue";
 
 import ContactWithPhotoForUsers from "@/Components/Public/ContactWithPhotoForUsers.vue";
+import FadeTransition from "@/Components/Public/FadeTransition.vue";
 
 interface contactUserInterface
   extends Array<

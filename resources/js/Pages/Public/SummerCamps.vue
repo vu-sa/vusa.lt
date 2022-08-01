@@ -2,109 +2,113 @@
   <Head title="Pirmakursių stovyklos" />
   <!-- Create a modern card with picture and title with Tailwind -->
 
-  <div class="group relative">
-    <ShapeDivider1 class="absolute -top-1 z-10"></ShapeDivider1>
-    <ShapeDivider1
-      class="absolute bottom-5 z-10 rotate-180 lg:-bottom-1"
-    ></ShapeDivider1>
-    <div class="relative">
-      <img
-        src="/images/photos/stovykla.jpg"
-        class="mt-2 h-32 w-full object-cover brightness-50 lg:my-1 lg:h-48"
-        style="object-position: 0% 45%"
-      />
-      <h1 class="relative bottom-16 text-center text-white lg:bottom-24">
-        Pirmakursių stovyklos
-      </h1>
-    </div>
-  </div>
-  <div
-    class="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-4 pt-2 last:pb-2 lg:grid-cols-5 lg:px-16"
-  >
-    <div class="prose-sm col-span-3 px-12 lg:prose">
-      <h2>Labas! 👋</h2>
-
-      <p>
-        Egzaminai išlaikyti, pakvietimai studijuoti jau išsiųsti, studijų
-        sutartys pasirašytos – tad dabar prasideda pats įdomiausias gyvenimo
-        etapas! Džiaugiamės, jog pasirinkai <strong>Universitetą</strong>, kur
-        <em> Hinc itur ad astra </em> – iš čia kylama į žvaigždes.
-      </p>
-
-      <p>
-        Prieš prasidedant mokslo metams Tavęs laukia ilgas, bet labai įdomus
-        <a class="font-bold underline" target="_blank" href="/pirmakursiams"
-          >susipažinimo</a
-        >
-        su Vilniaus universitetu etapas.
-      </p>
-
-      <p>
-        Tačiau dar prieš tai,
-        <a class="font-bold underline" target="_blank" href="/apie"
-          >Vilniaus universiteto Studentų atstovybė (VU SA)</a
-        >
-        kviečia Tave susipažinti su tais, kurie per visus mokslo metus lydės
-        daugiausiai – tai Tavo padalinio, kurso, grupės draugai bei, žinoma,
-        <Link
-          class="font-bold underline"
-          target="_blank"
-          :href="
-            route('contacts.category', {
-              alias: 'padaliniai',
-              lang: 'lt',
-            })
-          "
-          >kuratoriai</Link
-        >.
-      </p>
-
-      <p>
-        Tai puiki galimybė ne tik praplėsti pažinčių ratą, bet ir gauti
-        atsakymus į visus rūpimus klausimus, susijusius su studijomis ar
-        studentišku gyvenimu. Ne iš
-        <em> nuogirdų, interneto ar reklaminių lankstinukų, </em>
-        o iš pirmų lūpų – lygiai tą pačią studijų programą pasirinkusių vyresnių
-        kursų studentų (-čių).
-      </p>
-
-      <p>
-        Net kelias dienas truksiančioje pirmakursių stovykloje susirasi
-        bendraminčių bei draugų visam likusiam gyvenimui – tad nevalia
-        pražiopsoti kvietimo įsilieti į VU bendruomenę dar net neprasidėjus
-        studijoms!
-      </p>
-
-      <p>
-        Daugiau informacijos rasi savo padalinio polapyje. Susimatome jau
-        greitai!
-      </p>
-
-      <a target="_blank" href="https://vu.lt/parduotuve/"
-        ><img src="/images/photos/atributika_banner2.jpg"
-      /></a>
-    </div>
-
-    <div
-      class="-order-1 col-span-2 flex flex-wrap justify-center gap-6 px-12 lg:order-1 lg:content-start lg:px-0"
-    >
-      <section
-        v-for="event in events"
-        :key="event.id"
-        class="group h-fit w-48 rounded-b-md bg-white/0"
-      >
-        <Link :href="route('calendar.event', event.id)">
+  <FadeTransition appear>
+    <div>
+      <div class="group relative">
+        <ShapeDivider1 class="absolute -top-1 z-10"></ShapeDivider1>
+        <ShapeDivider1
+          class="absolute bottom-5 z-10 rotate-180 lg:-bottom-1"
+        ></ShapeDivider1>
+        <div class="relative">
           <img
-            class="rounded-xl object-cover shadow-md transition group-hover:shadow-xl"
-            :src="get5thResponsiveImage(event)"
+            src="/images/photos/stovykla.jpg"
+            class="mt-2 h-32 w-full object-cover brightness-50 lg:my-1 lg:h-48"
+            style="object-position: 0% 45%"
           />
-          <h3 class="p-2 text-center text-lg font-extrabold leading-tight">
-            {{ "VU" + getFacultyName(event) }}
-          </h3>
-        </Link>
-      </section>
+          <h1 class="relative bottom-16 text-center text-white lg:bottom-24">
+            Pirmakursių stovyklos
+          </h1>
+        </div>
+      </div>
+      <div
+        class="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-4 pt-2 last:pb-2 lg:grid-cols-5 lg:px-16"
+      >
+        <div class="prose-sm col-span-3 px-12 lg:prose">
+          <h2>Labas! 👋</h2>
+
+          <p>
+            Egzaminai išlaikyti, pakvietimai studijuoti jau išsiųsti, studijų
+            sutartys pasirašytos – tad dabar prasideda pats įdomiausias gyvenimo
+            etapas! Džiaugiamės, jog pasirinkai <strong>Universitetą</strong>,
+            kur <em> Hinc itur ad astra </em> – iš čia kylama į žvaigždes.
+          </p>
+
+          <p>
+            Prieš prasidedant mokslo metams Tavęs laukia ilgas, bet labai įdomus
+            <a class="font-bold underline" target="_blank" href="/pirmakursiams"
+              >susipažinimo</a
+            >
+            su Vilniaus universitetu etapas.
+          </p>
+
+          <p>
+            Tačiau dar prieš tai,
+            <a class="font-bold underline" target="_blank" href="/apie"
+              >Vilniaus universiteto Studentų atstovybė (VU SA)</a
+            >
+            kviečia Tave susipažinti su tais, kurie per visus mokslo metus lydės
+            daugiausiai – tai Tavo padalinio, kurso, grupės draugai bei, žinoma,
+            <Link
+              class="font-bold underline"
+              target="_blank"
+              :href="
+                route('contacts.category', {
+                  alias: 'padaliniai',
+                  lang: 'lt',
+                })
+              "
+              >kuratoriai</Link
+            >.
+          </p>
+
+          <p>
+            Tai puiki galimybė ne tik praplėsti pažinčių ratą, bet ir gauti
+            atsakymus į visus rūpimus klausimus, susijusius su studijomis ar
+            studentišku gyvenimu. Ne iš
+            <em> nuogirdų, interneto ar reklaminių lankstinukų, </em>
+            o iš pirmų lūpų – lygiai tą pačią studijų programą pasirinkusių
+            vyresnių kursų studentų (-čių).
+          </p>
+
+          <p>
+            Net kelias dienas truksiančioje pirmakursių stovykloje susirasi
+            bendraminčių bei draugų visam likusiam gyvenimui – tad nevalia
+            pražiopsoti kvietimo įsilieti į VU bendruomenę dar net neprasidėjus
+            studijoms!
+          </p>
+
+          <p>
+            Daugiau informacijos rasi savo padalinio polapyje. Susimatome jau
+            greitai!
+          </p>
+
+          <a target="_blank" href="https://vu.lt/parduotuve/"
+            ><img src="/images/photos/atributika_banner2.jpg"
+          /></a>
+        </div>
+
+        <div
+          class="-order-1 col-span-2 flex flex-wrap justify-center gap-6 px-12 lg:order-1 lg:content-start lg:px-0"
+        >
+          <section
+            v-for="event in events"
+            :key="event.id"
+            class="group h-fit w-48 rounded-b-md bg-white/0"
+          >
+            <Link :href="route('calendar.event', event.id)">
+              <img
+                class="rounded-xl object-cover shadow-md transition group-hover:shadow-xl"
+                :src="get5thResponsiveImage(event)"
+              />
+              <h3 class="p-2 text-center text-lg font-extrabold leading-tight">
+                {{ "VU" + getFacultyName(event) }}
+              </h3>
+            </Link>
+          </section>
+        </div>
+      </div>
     </div>
-  </div>
+  </FadeTransition>
 </template>
 
 <script lang="ts">
@@ -120,6 +124,7 @@ import { Head } from "@inertiajs/inertia-vue3";
 import { Link } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 
+import FadeTransition from "@/Components/Public/FadeTransition.vue";
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 
 const props = defineProps<{

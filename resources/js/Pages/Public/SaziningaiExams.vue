@@ -1,20 +1,22 @@
 <template>
   <!-- <PublicLayout title="Programos „Sąžiningai“ užregistruoti egzaminai"> -->
   <Head title="Programos „Sąžiningai“ užregistruoti egzaminai"></Head>
-  <PageArticle>
-    <div class="px-8 pt-8 last:pb-2 lg:px-16">
-      <h1>Programos „Sąžiningai“ užregistruoti egzaminai</h1>
-      <p class="my-4">Registruotis reikia į kiekvieną srautą atskirai.</p>
-      <div class="main-card">
-        <NDataTable
-          size="small"
-          :data="props.saziningaiExamFlows"
-          :columns="columns"
-        >
-        </NDataTable>
+  <FadeTransition appear>
+    <PageArticle>
+      <div class="px-8 pt-8 last:pb-2 lg:px-16">
+        <h1>Programos „Sąžiningai“ užregistruoti egzaminai</h1>
+        <p class="my-4">Registruotis reikia į kiekvieną srautą atskirai.</p>
+        <div class="main-card">
+          <NDataTable
+            size="small"
+            :data="props.saziningaiExamFlows"
+            :columns="columns"
+          >
+          </NDataTable>
+        </div>
       </div>
-    </div>
-  </PageArticle>
+    </PageArticle>
+  </FadeTransition>
   <!-- </PublicLayout> -->
   <NModal v-model:show="showModal">
     <NCard
@@ -114,7 +116,7 @@ import { h, ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 
-// import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
+import FadeTransition from "@/Components/Public/FadeTransition.vue";
 
 const props = defineProps<{
   padaliniaiOptions: App.Models.Padalinys[];

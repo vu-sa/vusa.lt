@@ -1,7 +1,7 @@
 <template>
-
   <Head title="Kontaktų kategorija"></Head>
-  
+
+  <FadeTransition appear>
     <div
       class="mt-4 grid grid-cols-1 gap-y-4 px-8 md:grid-cols-2 md:gap-8 lg:px-32 2xl:grid-cols-3"
     >
@@ -56,6 +56,7 @@
         </CategoryCard>
       </button>
     </div>
+  </FadeTransition>
 </template>
 
 <script lang="ts">
@@ -73,6 +74,7 @@ import { NButton } from "naive-ui";
 import route from "ziggy-js";
 
 import CategoryCard from "@/Components/Public/CategoryCard.vue";
+import FadeTransition from "@/Components/Public/FadeTransition.vue";
 
 defineProps<{
   institutions: App.Models.DutyInstitution[];

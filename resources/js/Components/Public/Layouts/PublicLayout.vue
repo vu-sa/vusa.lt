@@ -2,14 +2,10 @@
   <NConfigProvider :theme-overrides="themeOverrides">
     <MetaIcons />
     <div class="min-h-screen bg-neutral-50 pb-8 antialiased">
-      <MainNavigation></MainNavigation>
-      <Transition name="fade" appear>
-        <main>
-          <div class="pt-12 sm:pt-20 2xl:pt-32">
-            <slot></slot>
-          </div>
-        </main>
-      </Transition>
+      <MainNavigation />
+      <main class="pt-12 sm:pt-20 2xl:pt-32">
+        <slot></slot>
+      </main>
     </div>
     <Footer />
 
@@ -22,6 +18,7 @@
 import { NConfigProvider } from "naive-ui";
 import { onMounted } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
+
 import Footer from "@/Components/Public/FooterComponent.vue";
 import MainNavigation from "@/Components/Public/Layouts/MainNavigation.vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
@@ -79,15 +76,3 @@ onMounted(() => {
   }
 });
 </script>
-
-<style>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-</style>
