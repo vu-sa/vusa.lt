@@ -130,9 +130,15 @@
 
             <NDivider class="col-span-2"></NDivider>
             <div class="col-span-2 flex flex-col justify-center">
-              <p class="text-center">Iki stovyklos liko:</p>
+              <p v-if="timeTillEvent.days >= 0" class="text-center">
+                Iki stovyklos liko:
+              </p>
 
-              <NGradientText type="error" class="mb-2 w-full text-center">
+              <NGradientText
+                v-if="timeTillEvent.days >= 0"
+                type="error"
+                class="mb-2 w-full text-center"
+              >
                 {{ timeTillEvent.days }} d.
                 <NCountdown
                   :render="renderCountdown"
@@ -268,7 +274,7 @@ const isRegistrationDisabled = computed(() => {
 const registrationText = computed(() => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let refresh = registrationOpenedOnFinish.value;
-  return props.event.url ? "Dalyvauk!" : "Registracija tuoj atsidarys...";
+  return props.event.url ? "Dalyvauk!" : "Registracija uždaryta...";
 });
 
 const dateIsValid = (date) => {
