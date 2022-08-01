@@ -8,86 +8,66 @@
     />
   </Head>
 
-
-    <div v-if="$page.props.locale === 'lt'">
-      <div class="group relative">
-        <ShapeDivider1 class="absolute -top-1 z-10"></ShapeDivider1>
-        <ShapeDivider1
-          class="absolute -bottom-2 z-10 rotate-180 lg:-bottom-1"
-        ></ShapeDivider1>
-        <div class="relative">
-          <img
-            src="/images/photos/stovykla.jpg"
-            class="mt-2 h-32 w-full object-cover brightness-50 lg:my-1 lg:h-64"
-            style="object-position: 0% 45%"
-          />
-          <!-- <h1 class="relative bottom-16 text-center text-white lg:bottom-24">
+  <div v-if="$page.props.locale === 'lt'">
+    <div class="group relative">
+      <ShapeDivider1 class="absolute -top-1 z-10"></ShapeDivider1>
+      <ShapeDivider1
+        class="absolute -bottom-2 z-10 rotate-180 lg:-bottom-1"
+      ></ShapeDivider1>
+      <div class="relative">
+        <img
+          src="/images/photos/stovykla.jpg"
+          class="mt-2 h-32 w-full object-cover brightness-50 lg:my-1 lg:h-64"
+          style="object-position: 0% 45%"
+        />
+        <!-- <h1 class="relative bottom-16 text-center text-white lg:bottom-24">
             Pirmakursių stovyklos
           </h1> -->
-        </div>
       </div>
-      <div
-        class="mx-8 mt-4 flex flex-col justify-center gap-4 lg:mx-16 lg:flex-row lg:items-center lg:px-16"
-      >
-        <div class="prose-sm sm:prose">
-          <p class="text-2xl font-bold lg:w-4/5">
-            VU SA organizuojamos
-            <span class="font-extrabold text-vusa-red"
-              >pirmakursių stovyklos</span
-            >
-            jau ne už kalnų!
-          </p>
-          <p class="w-4/5">
-            Daugiau informacijos ieškok savo padalinio pirmakursių stovyklų
-            polapyje (arba paklausk kuratoriaus 🤚)!
-          </p>
-        </div>
-        <div class="flex flex-wrap gap-2 lg:justify-center">
-          <NButton
-            round
-            size="large"
-            strong
-            type="primary"
-            @click="Inertia.visit(route('pirmakursiuStovyklos'))"
-            >Į stovyklas!<template #icon
-              ><NIcon :component="HatGraduation20Regular"></NIcon></template
-          ></NButton>
-          <NButton
-            round
-            size="large"
-            strong
-            secondary
-            @click="
-              Inertia.visit(
-                route('main.contacts.category', {
-                  alias: 'padaliniai',
-                  lang: 'lt',
-                })
-              )
-            "
-            >Surask savo kuratorių!<template #icon
-              ><NIcon :component="Person20Filled"></NIcon></template
-          ></NButton>
-        </div>
-      </div>
-      <NDivider />
     </div>
-
     <div
-      v-if="$page.props.locale === 'lt' && $page.props.alias"
-      class="mx-8 mb-8 lg:mx-16 lg:px-16"
+      class="mx-8 mt-4 flex flex-col justify-center gap-4 lg:mx-16 lg:flex-row lg:items-center lg:px-16"
     >
-      <h2 class="mb-4">Pagrindinės nuorodos:</h2>
-      <div class="flex flex-wrap gap-2">
+      <div class="prose-sm sm:prose">
+        <p class="text-2xl font-bold lg:w-4/5">
+          VU SA organizuojamos
+          <span class="font-extrabold text-vusa-red"
+            >pirmakursių stovyklos</span
+          >
+          jau ne už kalnų!
+        </p>
+        <p class="w-4/5">
+          Daugiau informacijos ieškok savo padalinio pirmakursių stovyklų
+          polapyje (arba paklausk kuratoriaus 🤚)!
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-2 lg:justify-center">
         <NButton
-          v-for="item in props.mainPage"
-          :key="item.id"
-          secondary
-          size="small"
           round
-          @click="goToLink(item.link)"
-        >
-      </p>
+          size="large"
+          strong
+          type="primary"
+          @click="Inertia.visit(route('pirmakursiuStovyklos'))"
+          >Į stovyklas!<template #icon
+            ><NIcon :component="HatGraduation20Regular"></NIcon></template
+        ></NButton>
+        <NButton
+          round
+          size="large"
+          strong
+          secondary
+          @click="
+            Inertia.visit(
+              route('main.contacts.category', {
+                alias: 'padaliniai',
+                lang: 'lt',
+              })
+            )
+          "
+          >Surask savo kuratorių!<template #icon
+            ><NIcon :component="Person20Filled"></NIcon></template
+        ></NButton>
+      </div>
     </div>
     <NDivider />
   </div>
@@ -134,74 +114,86 @@
               permalink: item.permalink,
             })
           "
-
-          >{{ item.title }}</Link
-        >
-      </HomeCard>
-    </NewsElement>
-    <div class="group relative">
-      <ShapeDivider1 class="absolute -top-1 z-10"></ShapeDivider1>
-      <ShapeDivider1 class="absolute -bottom-1 z-10 rotate-180"></ShapeDivider1>
+          ><img
+            :src="item.image"
+            class="mb-1 h-40 w-full rounded-sm object-cover shadow-md duration-200 hover:shadow-lg"
+        /></Link>
+      </template>
       <Link
+        :href="
+          route('news', {
+            lang: item.lang,
+            newsString: 'naujiena',
+            padalinys: item.alias,
+            permalink: item.permalink,
+          })
+        "
+        >{{ item.title }}</Link
+      >
+    </HomeCard>
+  </NewsElement>
+  <div class="group relative">
+    <ShapeDivider1 class="absolute -top-1 z-10"></ShapeDivider1>
+    <ShapeDivider1 class="absolute -bottom-1 z-10 rotate-180"></ShapeDivider1>
+    <Link
+      :href="
+        route('main.ataskaita2022', {
+          lang: $page.props.locale,
+          permalink: 'pradzia',
+        })
+      "
+    >
+      <img
+        src="/images/ataskaita2022/kitos-nuotraukos/VU SA.jpg"
+        class="my-4 h-48 w-full object-cover duration-200 hover:opacity-90 lg:h-80"
+        style="object-position: 0% 35%"
+      />
+    </Link>
+  </div>
+  <div class="mx-8 max-w-[100ch] lg:mx-16 lg:px-16">
+    <h2
+      class="mb-4 text-lg font-bold text-gray-900 no-underline duration-200 hover:text-vusa-red lg:text-3xl"
+    >
+      <Link
+        class="flex w-fit flex-row items-center gap-2"
         :href="
           route('main.ataskaita2022', {
             lang: $page.props.locale,
             permalink: 'pradzia',
           })
         "
-      >
-        <img
-          src="/images/ataskaita2022/kitos-nuotraukos/VU SA.jpg"
-          class="my-4 h-48 w-full object-cover duration-200 hover:opacity-90 lg:h-80"
-          style="object-position: 0% 35%"
-        />
-      </Link>
-    </div>
-    <div class="mx-8 max-w-[100ch] lg:mx-16 lg:px-16">
-      <h2
-        class="mb-4 text-lg font-bold text-gray-900 no-underline duration-200 hover:text-vusa-red lg:text-3xl"
-      >
-        <Link
-          class="flex w-fit flex-row items-center gap-2"
-          :href="
-            route('main.ataskaita2022', {
-              lang: $page.props.locale,
-              permalink: 'pradzia',
-            })
-          "
-          ><template v-if="$page.props.locale === 'lt'"
-            >Ką veikė VU SA 2021–2022 metais?</template
-          ><template v-else>What did VU SR do in 2021–2022?</template>
+        ><template v-if="$page.props.locale === 'lt'"
+          >Ką veikė VU SA 2021–2022 metais?</template
+        ><template v-else>What did VU SR do in 2021–2022?</template>
 
-          <NIcon class="" style="font-size: 24pt">
-            <ArrowCircleRight20Regular />
-          </NIcon>
-        </Link>
-      </h2>
-      <div class="space-between flex flex-row">
-        <p
-          class="prose-sm mb-4 text-sm text-gray-700 sm:prose lg:max-w-[80ch] lg:text-base"
+        <NIcon class="" style="font-size: 24pt">
+          <ArrowCircleRight20Regular />
+        </NIcon>
+      </Link>
+    </h2>
+    <div class="space-between flex flex-row">
+      <p
+        class="prose-sm mb-4 text-sm text-gray-700 sm:prose lg:max-w-[80ch] lg:text-base"
+      >
+        <template v-if="$page.props.locale === 'lt'">
+          Ataskaitos knygutė – kiekvienais metais skelbiama VU SA nuveiktų
+          darbų, atliktų projektų, įgyvendintų iniciatyvų ataskaita. Artėjant VU
+          SA ataskaitinei-rinkiminei konferencijai dalinamės ir šių, 2021–2022
+          metų nuveiktų darbų pilna knygute. Ji papildyta ir VU SA bendruomenės
+          narių veidais bei smagiomis akimirkomis. Kviečiame skaityti!
+        </template>
+        <template v-else
+          >Report booklet – every year, a report on the work done, projects
+          completed, and initiatives implemented at VU SR is published. As the
+          VU SR Annual Convention approaches, we share a book full of these
+          works done in 2021–2022. It is also filled with faces and fun moments
+          of the VU SR community members. Feel free to read!</template
         >
-          <template v-if="$page.props.locale === 'lt'">
-            Ataskaitos knygutė – kiekvienais metais skelbiama VU SA nuveiktų
-            darbų, atliktų projektų, įgyvendintų iniciatyvų ataskaita. Artėjant
-            VU SA ataskaitinei-rinkiminei konferencijai dalinamės ir šių,
-            2021–2022 metų nuveiktų darbų pilna knygute. Ji papildyta ir VU SA
-            bendruomenės narių veidais bei smagiomis akimirkomis. Kviečiame
-            skaityti!
-          </template>
-          <template v-else
-            >Report booklet – every year, a report on the work done, projects
-            completed, and initiatives implemented at VU SR is published. As the
-            VU SR Annual Convention approaches, we share a book full of these
-            works done in 2021–2022. It is also filled with faces and fun
-            moments of the VU SR community members. Feel free to read!</template
-          >
-        </p>
-      </div>
-      <NDivider />
+      </p>
     </div>
-    <!-- <div
+    <NDivider />
+  </div>
+  <!-- <div
       v-if="$page.props.locale === 'lt'"
       class="mx-8 mb-4 rounded-lg bg-white p-4 text-gray-800 shadow-lg lg:mx-16 lg:mb-8 lg:px-8"
     >

@@ -1,8 +1,9 @@
 <template>
   <Head title="Kontaktų paieška"></Head>
-  <h2>Ieškoti kontakto:</h2>
   <!-- <PublicLayout title="Kontaktų paieška"> -->
-  <div class="grid gap-8 px-16 md:grid-cols-4 lg:px-32">
+  <div class="mt-16 grid gap-8 px-16 md:grid-cols-4 lg:px-32">
+    <h2>Ieškoti kontakto:</h2>
+
     <NInput
       class="mt-2 md:col-span-4"
       type="text"
@@ -12,16 +13,16 @@
       :loading="loadingNameInput"
       @input="handleNameInput"
     />
-      <TransitionGroup name="list">
-        <ContactWithPhotoForUsers
-          v-for="contact in searchContacts"
-          :key="contact.id"
-          :contact="contact"
-          :class="{ 'md:col-span-2': contact.profile_photo_path }"
-        >
-        </ContactWithPhotoForUsers>
-      </TransitionGroup>
-    </div>
+    <TransitionGroup name="list">
+      <ContactWithPhotoForUsers
+        v-for="contact in searchContacts"
+        :key="contact.id"
+        :contact="contact"
+        :class="{ 'md:col-span-2': contact.profile_photo_path }"
+      >
+      </ContactWithPhotoForUsers>
+    </TransitionGroup>
+  </div>
 </template>
 
 <script lang="ts">
