@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Feed\Feedable;
 use Spatie\Feed\FeedItem;
+use Illuminate\Support\Carbon;
 
 class News extends Model implements Feedable
 {
@@ -47,7 +48,7 @@ class News extends Model implements Feedable
             ->id($this->id)
             ->title($this->title)
             ->summary($this->short)
-            ->updated($this->publish_time)
+            ->updated(Carbon::parse($this->publish_time))
             ->image($this->image) // TODO: fix, as this doesn't show an image
             ->link('naujiena/' . $this->permalink)
             ->authorName($this->padalinys->shortname);

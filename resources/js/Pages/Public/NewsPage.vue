@@ -1,6 +1,7 @@
 <template>
-  <PublicLayout :title="article.title">
-    <NBackTop :right="100" />
+  <Head :title="article.title"></Head>
+  <NBackTop :right="100" />
+  <FadeTransition appear>
     <NewsArticle>
       <template #tags>
         <template v-for="tag in article.tags" :key="tag.id">
@@ -32,17 +33,26 @@
         v-html="article.text"
       ></div>
     </NewsArticle>
-  </PublicLayout>
+  </FadeTransition>
 </template>
+
+<script lang="ts">
+import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
+
+export default {
+  layout: PublicLayout,
+};
+</script>
 
 <script setup lang="ts">
 import { DocumentEdit24Regular } from "@vicons/fluent";
+import { Head } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
 import { NBackTop, NButton, NIcon } from "naive-ui";
 import route from "ziggy-js";
 
+import FadeTransition from "@/Components/Public/FadeTransition.vue";
 import NewsArticle from "@/Components/Public/NewsArticle.vue";
-import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
 
 const props = defineProps<{
   article: App.Models.News;

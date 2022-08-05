@@ -60,8 +60,8 @@ class UserPolicy
 
     // TODO:: fix this policy to use for each
     public function update(User $user, User $model)
-    {
-        return $model->padaliniai()->contains($user->padaliniai()->first()->id);
+    {       
+        return $model->padaliniai()->contains($user->padaliniai()->first()->id) || (is_null($model->padaliniai()->first()) && $user->isAdminOrSuperAdmin());
     }
 
     /**

@@ -25,7 +25,7 @@ class CalendarPolicy
      */
     public function viewAny(User $user)
     {
-        //
+        return $user->isAdminOrSuperAdmin();
     }
 
     /**
@@ -48,7 +48,7 @@ class CalendarPolicy
      */
     public function create(User $user)
     {
-
+        return $user->isAdminOrSuperAdmin();
     }
 
     /**
@@ -60,7 +60,7 @@ class CalendarPolicy
      */
     public function update(User $user, Calendar $calendar)
     {
-        //
+        return $user->padalinys()->id == $calendar->padalinys->id;
     }
 
     /**
@@ -72,7 +72,7 @@ class CalendarPolicy
      */
     public function delete(User $user, Calendar $calendar)
     {
-        //
+        return $user->padalinys()->id == $calendar->padalinys->id;
     }
 
     /**
@@ -97,5 +97,10 @@ class CalendarPolicy
     public function forceDelete(User $user, Calendar $calendar)
     {
         //
+    }
+
+    public function destroyMedia(User $user, Calendar $calendar)
+    {
+        return $user->padalinys()->id == $calendar->padalinys->id;
     }
 }

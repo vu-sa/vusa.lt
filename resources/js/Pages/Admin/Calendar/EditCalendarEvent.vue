@@ -5,6 +5,8 @@
         model-route="calendar.update"
         delete-model-route="calendar.destroy"
         :calendar="calendar"
+        :categories="categories"
+        :images="images"
       />
     </UpsertModelLayout>
   </AdminLayout>
@@ -17,5 +19,7 @@ import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue"
 
 defineProps<{
   calendar: App.Models.Calendar;
+  images: any;
+  categories: App.Models.Category[];
 }>();
 </script>

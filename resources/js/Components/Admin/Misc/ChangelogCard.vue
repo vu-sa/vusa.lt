@@ -8,43 +8,101 @@
     aria-modal="true"
     class="prose"
   >
-    <section>
-      <h4>
-        <a
-          class="transition hover:text-vusa-red"
-          target="_blank"
-          href="https://github.com/vu-sa/vusa.lt/pull/90"
-          >v0.2.0 (2022-07-23)</a
-        >
-      </h4>
-      <p>
-        Didžiausias atnaujinimas po vusa.lt atnaujinimo. Daugiausiai dėmesio
-        skirta platformos techniniam atnaujinimui ir administravimo funkcijoms.
-      </p>
-      <ul>
-        <li>
-          🌟 Sutvarkyta Sąžiningai registracija, pridėtas dienų suskaičiavimas
-          iki galimos registracijos datos
-        </li>
-        <li>🌟 Šiek tiek pakeistas breadcrumbs stilius</li>
-        <li>
-          🛡 Visi masiniai modeliai dabar yra puslapiuoti (nerodomi viename
-          puslapyje)
-        </li>
-        <li>
-          🛡 Generuojant nuorodą, lietuviškos raidės konvertuojamos į lotyniškas
-        </li>
-        <li>
-          🛡 Sukurti <em>preview</em>, <em>update</em> ir
-          <em>destroy</em> veiksmai beveik visiems duomenų modeliams. Jie
-          pasiekiami ir iš lentelės puslapio.
-        </li>
-        <li>🛡 Kai kur pridėtos papildomos modelių tikrinimo taisyklės</li>
-        <li>🛡 Atnaujintas dizainas (kortelės, spalvos)</li>
-        <li>🛡 Institucijos padarytos pagrindiniu kontaktų puslapiu</li>
-        <li>🛡 Atnaujintas teksto redaktoriaus stilius</li>
-      </ul>
-    </section>
+    <NCollapse>
+      <NCollapseItem title="v0.2">
+        <section>
+          <h4>v0.2.4</h4>
+          <ul>
+            <li>🌟 Pridėtas START FM radijo mygtukas</li>
+            <li>
+              🌟 Sukurtas papildomas registracijų mechanizmas (sutvarkyti
+              vėliau)
+            </li>
+          </ul>
+        </section>
+        <section>
+          <h4>v0.2.3</h4>
+          <ul>
+            <li>🪄 Atnaujintas kategorijų stiliaus puslapis</li>
+            <li>🛡 Galima pridėti pareigybes tipus pareigybei</li>
+            <li>🐛 Klaidų ir stiliaus pataisymai</li>
+          </ul>
+        </section>
+        <section>
+          <h4>v0.2.2</h4>
+          <ul>
+            <li>🌟 Sukurtas pirmakursių stovyklų bendras puslapis</li>
+            <li>🌟 Sukurtas stovyklų individualių puslapių šablonas</li>
+            <li>🛡 Sukurtas nuotraukų įkėlimo mechanizmas renginiams</li>
+            <li>🌟 Atnaujintas pagrindinis puslapis</li>
+          </ul>
+        </section>
+        <section>
+          <h4>v0.2.1</h4>
+          <ul>
+            <li>
+              🌟 Turinio administratoriai gali kurti renginius. Vieninteliai
+              renginiai kolkas, kurie bus matomi - tai pirmakursių stovyklos.
+            </li>
+            <li>🛡 Galimybė pakeisti pagrindinę institucijos nuotrauką.</li>
+            <li>
+              🛡 Galimybė pridėti kuratoriaus:
+              <ul>
+                <li>Studijų programą</li>
+                <li>
+                  Papildomą nuotrauką (nesikirs su koordinatoriaus nuotrauka)
+                </li>
+                <li>Papildomą aprašymą</li>
+              </ul>
+            </li>
+            <li>
+              🪄 Dynamiškas kuratoriaus pareigybės pavadinimas pagal lytį
+              (kolkas žiūrima pagal pavardės galutinę raidę, gali reikėti
+              taisyti)
+            </li>
+          </ul>
+        </section>
+        <section>
+          <h4>
+            <a
+              class="transition hover:text-vusa-red"
+              target="_blank"
+              href="https://github.com/vu-sa/vusa.lt/pull/90"
+              >v0.2.0 (2022-07-23)</a
+            >
+          </h4>
+          <p>
+            Didžiausias atnaujinimas po vusa.lt atnaujinimo. Daugiausiai dėmesio
+            skirta platformos techniniam atnaujinimui ir administravimo
+            funkcijoms.
+          </p>
+          <ul>
+            <li>
+              🌟 Sutvarkyta Sąžiningai registracija, pridėtas dienų
+              suskaičiavimas iki galimos registracijos datos
+            </li>
+            <li>🌟 Šiek tiek pakeistas breadcrumbs stilius</li>
+            <li>
+              🛡 Visi masiniai modeliai dabar yra puslapiuoti (nerodomi viename
+              puslapyje)
+            </li>
+            <li>
+              🛡 Generuojant nuorodą, lietuviškos raidės konvertuojamos į
+              lotyniškas
+            </li>
+            <li>
+              🛡 Sukurti <em>preview</em>, <em>update</em> ir
+              <em>destroy</em> veiksmai beveik visiems duomenų modeliams. Jie
+              pasiekiami ir iš lentelės puslapio.
+            </li>
+            <li>🛡 Kai kur pridėtos papildomos modelių tikrinimo taisyklės</li>
+            <li>🛡 Atnaujintas dizainas (kortelės, spalvos)</li>
+            <li>🛡 Institucijos padarytos pagrindiniu kontaktų puslapiu</li>
+            <li>🛡 Atnaujintas teksto redaktoriaus stilius</li>
+          </ul>
+        </section>
+      </NCollapseItem>
+    </NCollapse>
     <NDivider></NDivider>
     <NCollapse>
       <NCollapseItem title="v0.1">
