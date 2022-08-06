@@ -1,5 +1,16 @@
 # Setup
 
+## Prerequisites
+
+- PHP 8.1 install. [Installation guide](https://linuxize.com/post/how-to-install-php-8-on-ubuntu-20-04/)
+- Install PHP submodules: `php-curl php-zip php-mbstring php-dom php-gd php-sqlite3`
+- Install Composer v2. [Installation guide](https://getcomposer.org/download/).
+- Install Node.js. On some computers, simple `sudo apt install nodejs` could work (check version, if below v14 and
+  on Ubuntu, use this [guide](https://joshtronic.com/2021/05/09/how-to-install-nodejs-16-on-ubuntu-2004-lts/)
+
+> For Windows computers, WSL is a good and quite a simple solution to use in this case. 
+  [Installation guide](https://pureinfotech.com/install-windows-subsystem-linux-2-windows-10/)
+
 ## Development
 
 > NOTE: Laravel Sail, i.e. Docker (Recommended!)
@@ -29,17 +40,6 @@ More instructions on [Laravel Sail](https://laravel.com/docs/9.x/sail)
 ### Linux
 
 There still should be some prerequisites missing, so I'll update this in time.
-
-**UPDATE:** The repo is on PHP 8.1, so some steps may not work. If you don't want to run docker, then I'll advise to substitute `php8.0` with `php8.1`.
-
-For Windows computers, WSL is a good and quite a simple solution to use in this case. [Installation guide](https://pureinfotech.com/install-windows-subsystem-linux-2-windows-10/)
-
-Prerequisites:
-
-* PHP 8.0 install. [Installation guide](https://linuxize.com/post/how-to-install-php-8-on-ubuntu-20-04/)
-* After PHP install, install PHP modules: `sudo apt install php8.0-curl php8.0-zip php8.0-mbstring php8.0-dom php8.0-sqlite3 php8.0-gd`
-* Install Composer v2. [Installation guide](https://getcomposer.org/download/).
-* Install Node.js. On some computers, simple `sudo apt install nodejs` could work (check version, if below v14 and on Ubuntu, use this [guide](https://joshtronic.com/2021/05/09/how-to-install-nodejs-16-on-ubuntu-2004-lts/)
 
 Laravel and vusa.lt installation:
 
