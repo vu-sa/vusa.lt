@@ -2,7 +2,7 @@
   <AdminLayout title="Nauja naujiena" :back-url="route('news.index')">
     <UpsertModelLayout :errors="$attrs.errors" :model="news">
       <template #card-header> Puslapio informacija </template>
-      <NewsForm :news="news" model-route="news.create" />
+      <NewsForm :news="news" model-route="news.store" />
     </UpsertModelLayout>
   </AdminLayout>
 </template>
