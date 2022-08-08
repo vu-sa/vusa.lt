@@ -11,9 +11,7 @@
 
       <NFormItemGi label="Nuoroda" :span="12">
         <NInput
-          :value="
-            modelRoute == 'news.create' ? createdPermalink : form.permalink
-          "
+          :value="form.permalink"
           disabled
           type="text"
           placeholder="Sugeneruojama nuoroda"
@@ -114,7 +112,7 @@ import {
   NSelect,
   NSwitch,
 } from "naive-ui";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { debounce } from "lodash";
 import { useForm, usePage } from "@inertiajs/inertia-vue3";
 import latinize from "latinize";
@@ -146,17 +144,21 @@ const languageOptions = [
 
 const otherLangNewsOptions = ref([]);
 
-const createdPermalink = computed(() => {
-  let latinizedTitle = latinize(form.title);
-
-  return latinizedTitle
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-+/, "")
-    .replace(/-+$/, "")
-    .substring(0, 30);
-});
+if (props.modelRoute == "news.store") {
+  watch(
+    () => form.title,
+    (title) => {
+      let latinizedTitle = latinize(title);
+      form.permalink = latinizedTitle
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-+/, "")
+        .replace(/-+$/, "")
+        .substring(0, 30);
+    }
+  );
+}
 
 const getOtherLangNews = debounce((input) => {
   // get other lang
