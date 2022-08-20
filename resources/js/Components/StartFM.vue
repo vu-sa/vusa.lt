@@ -1,5 +1,5 @@
 <template>
-  <audio ref="startFM" @canplay="changeLoading">
+  <audio ref="startFM" preload="none" @canplay="changeLoading">
     <source src="https://eteris.startfm.lt/startfm.mp3" />
   </audio>
   <NPopover>
@@ -27,9 +27,10 @@
 <script setup lang="ts">
 import { MusicNote2Play20Filled, Pause24Regular } from "@vicons/fluent";
 import { NButton, NIcon, NPopover } from "naive-ui";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 
 const startFM = ref<HTMLAudioElement>();
+
 const audioPlaying = ref(false);
 const loading = ref(false);
 
