@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout title="Failų tvarkyklė">
+  <PageContent title="Failų tvarkyklė">
     <div id="folders" class="main-card">
       <h2 class="text-2xl font-bold">
         Aplankai ({{ showedDirectories.length }})
@@ -67,8 +67,16 @@
         </FileButton>
       </transition-group>
     </div>
-  </AdminLayout>
+  </PageContent>
 </template>
+
+<script lang="ts">
+import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+
+export default {
+  layout: AdminLayout,
+};
+</script>
 
 <script setup lang="ts">
 import {
@@ -81,9 +89,9 @@ import { NIcon, NUpload, NUploadDragger } from "naive-ui";
 import { computed } from "vue";
 import { slice, split } from "lodash";
 
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
 import FileButton from "@/Components/Admin/FileButton.vue";
 import FolderButton from "@/Components/Admin/FolderButton.vue";
+import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import route from "ziggy-js";
 
 // Declare props

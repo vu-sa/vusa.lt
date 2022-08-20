@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout :title="navigation.name">
+  <PageContent :title="navigation.name">
     <div class="main-card">
       <h3 class="mb-4">Bendra informacija</h3>
 
@@ -44,13 +44,22 @@
         </div>
       </form>
     </div>
-  </AdminLayout>
+  </PageContent>
 </template>
+
+<script lang="ts">
+import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+
+export default {
+  layout: AdminLayout,
+};
+</script>
 
 <script setup lang="ts">
 import { NInput } from "naive-ui";
 import { reactive } from "vue";
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+
+import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{

@@ -1,137 +1,79 @@
 <template>
-  <!-- <NConfigProvider :theme-overrides="themeOverrides"> -->
+  <NThemeEditor>
+    <NConfigProvider :theme-overrides="themeOverrides">
+      <Head :title="title" />
+      <MetaIcons />
 
-  <Head :title="title" />
-  <MetaIcons />
-
-  <div
-    class="grid min-h-screen grid-cols-9 bg-gradient-to-tr from-vusa-red/20 to-vusa-yellow/20 px-4 pb-4"
-  >
-    <!-- Main Navigation -->
-    <nav
-      class="fixed top-0 left-0 z-20 col-span-1 mb-auto flex w-screen items-center justify-evenly overflow-x-scroll bg-stone-50 text-center text-gray-800 shadow-lg transition md:sticky md:left-auto md:top-4 md:mr-4 md:w-auto md:flex-col md:overflow-auto md:rounded-xl"
-    >
-      <a class="w-full md:rounded-t-lg md:bg-white" href="/">
-        <AppLogo class="mx-auto my-2" />
-      </a>
-      <MenuButton :menu-content="['dashboard']">
-        <template #icon>
-          <Home48Regular />
-        </template>
-        Pradinis
-      </MenuButton>
-      <MenuButton
-        v-if="can.content"
-        :menu-content="['pages.*', 'news.*', 'mainPage.*', 'banners.*']"
+      <NLayout
+        class="min-h-screen bg-gradient-to-tr from-vusa-red/20 to-vusa-yellow/20"
       >
-        <template #icon>
-          <SlideText48Regular />
-        </template>
-        Turinys
-      </MenuButton>
-      <MenuButton
-        v-if="can.users"
-        :menu-content="['dutyInstitutions.*', 'duties.*', 'users.*']"
-      >
-        <template #icon>
-          <Person48Regular />
-        </template>
-        Kontaktai
-      </MenuButton>
-      <MenuButton v-if="can.navigation" :menu-content="['navigation.*']">
-        <template #icon>
-          <Navigation24Regular />
-        </template>
-        Navigacija
-      </MenuButton>
-      <MenuButton
-        v-if="can.calendar"
-        :menu-content="['calendar.*', 'agenda.*']"
-      >
-        <template #icon>
-          <CalendarLtr48Regular />
-        </template>
-        Kalendorius
-      </MenuButton>
-      <MenuButton v-if="can.files" :menu-content="['files.*']">
-        <template #icon>
-          <Folder48Regular />
-        </template>
-        Failų tvarkyklė
-      </MenuButton>
-      <MenuButton
-        v-if="can.saziningai"
-        :menu-content="['saziningaiExams.*', 'saziningaiExamObservers.*']"
-      >
-        <template #icon>
-          <BookOpen48Regular />
-        </template>
-        Sažiningai
-      </MenuButton>
-      <div class="py-2">
-        <NButton
-          style="font-size: 8pt"
-          class="text-gray-600 hover:text-vusa-red"
-          text
-          @click="showModal = true"
-        >
-          v0.2.4 (2022-08-01)
-        </NButton>
-      </div>
-      <NModal v-model:show="showModal">
-        <Changelog />
-      </NModal>
-    </nav>
-    <!-- Main Navigation End -->
-    <!-- Page Content -->
-    <PageContent :create-url="createUrl" :back-url="backUrl">
-      <template #header>
-        <slot name="header">
-          {{ title }}
-        </slot>
-      </template>
-
-      <template #aside-header>
-        <slot name="aside-header" />
-      </template>
-
-      <div class="col-span-2 ml-12 mt-4 mb-5" />
-      <Transition name="fade" appear>
-        <main class="col-span-full md:col-span-4">
-          <slot />
-        </main>
-      </Transition>
-      <!-- Aside Navigation -->
-      <AsideNavigation>
-        <slot name="aside-navigation-options" />
-      </AsideNavigation>
-      <!-- Aside Navigation End -->
-    </PageContent>
-    <!-- Page Content End -->
-  </div>
-  <!-- </NConfigProvider> -->
+        <NLayoutHeader class="flex flex-row justify-between py-4 pr-8">
+          <div class="invisible">
+            <NButton secondary round @click="collapsed = !collapsed"
+              >Menu</NButton
+            >
+          </div>
+          <UserAvatar />
+        </NLayoutHeader>
+        <NLayout class="min-h-full" has-sider>
+          <NLayoutSider
+            class="ml-4 h-fit rounded-md shadow-sm"
+            collapse-mode="width"
+            :collapsed-width="64"
+            :width="200"
+            :collapsed="collapsed"
+            show-trigger="bar"
+            @collapse="collapsed = true"
+            @expand="collapsed = false"
+          >
+            <a class="h-fit w-fit" href="/">
+              <AppLogo class="mx-auto p-2" />
+            </a>
+            <AdminMenu :collapsed="collapsed" />
+          </NLayoutSider>
+          <NLayoutContent
+            class="min-h-full"
+            content-style="padding: 0rem 2rem 2rem 3rem"
+          >
+            <slot />
+          </NLayoutContent>
+        </NLayout>
+        <NLayoutFooter class="absolute bottom-0 w-full"
+          ><div class="mx-auto mb-2 w-fit">
+            <NButton size="tiny" quaternary @click="showModal = true">
+              v0.2.4 (2022-08-01)
+            </NButton>
+          </div>
+          <NModal v-model:show="showModal">
+            <Changelog />
+          </NModal>
+        </NLayoutFooter>
+      </NLayout>
+    </NConfigProvider>
+  </NThemeEditor>
 </template>
 
 <script setup lang="ts">
-import {
-  BookOpen48Regular,
-  CalendarLtr48Regular,
-  Folder48Regular,
-  Home48Regular,
-  Navigation24Regular,
-  Person48Regular,
-  SlideText48Regular,
-} from "@vicons/fluent";
 import { Head, usePage } from "@inertiajs/inertia-vue3";
-import { NButton, NModal } from "naive-ui";
+import {
+  NButton,
+  NConfigProvider,
+  NLayout,
+  NLayoutContent,
+  NLayoutFooter,
+  NLayoutHeader,
+  NLayoutSider,
+  NModal,
+  NThemeEditor,
+} from "naive-ui";
 import { ref } from "vue";
 
+import AdminMenu from "@/Components/Admin/Nav/AdminMenu.vue";
 import AppLogo from "@/Components/AppLogo.vue";
 import AsideNavigation from "@/Components/Admin/Layouts/AsideNavigation.vue";
 import Changelog from "@/Components/Admin/Misc/ChangelogCard.vue";
-import MenuButton from "@/Components/Admin/MenuButton.vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
+import UserAvatar from "../Nav/UserAvatar.vue";
 
 defineProps<{
   title?: string;
@@ -139,19 +81,14 @@ defineProps<{
   backUrl?: string | null;
 }>();
 
-const { can } = usePage<InertiaProps>().props.value;
-
+const collapsed = ref(true);
 const showModal = ref(false);
+
+const themeOverrides = {
+  Layout: {
+    color: "#FFFFFF00",
+    headerColor: "#FFFFFF00",
+    footerColor: "#FFFFFF00",
+  },
+};
 </script>
-
-<style>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-</style>

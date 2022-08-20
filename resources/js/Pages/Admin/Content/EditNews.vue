@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout :title="news.title" :back-url="route('news.index')">
+  <PageContent :title="news.title" :back-url="route('news.index')">
     <template #header>
       {{ news.title }}
       <PreviewModelButton
@@ -33,15 +33,23 @@
         delete-model-route="news.destroy"
       />
     </UpsertModelLayout>
-  </AdminLayout>
+  </PageContent>
 </template>
+
+<script lang="ts">
+import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+
+export default {
+  layout: AdminLayout,
+};
+</script>
 
 <script setup lang="ts">
 import route from "ziggy-js";
 
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
 import DeleteModelButton from "@/Components/Admin/Buttons/DeleteModelButton.vue";
 import NewsForm from "@/Components/Admin/Forms/NewsForm.vue";
+import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import PreviewModelButton from "@/Components/Admin/Buttons/PreviewModelButton.vue";
 import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
 

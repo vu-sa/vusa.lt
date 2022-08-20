@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout title="Pareigos" :create-url="route('duties.create')">
+  <PageContent title="Pareigos" :create-url="route('duties.create')">
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
@@ -11,16 +11,24 @@
         :columns="columns"
       />
     </div>
-  </AdminLayout>
+  </PageContent>
 </template>
+
+<script lang="ts">
+import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+
+export default {
+  layout: AdminLayout,
+};
+</script>
 
 <script setup lang="ts">
 import { Link } from "@inertiajs/inertia-vue3";
 import { h, ref } from "vue";
 import route from "ziggy-js";
 
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
 import AsideHeader from "@/Components/Admin/Headers/AsideHeaderContacts.vue";
+import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 
 import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
 import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";

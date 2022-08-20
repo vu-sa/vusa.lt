@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout :title="contact.name" :back-url="route('users.index')">
+  <PageContent :title="contact.name" :back-url="route('users.index')">
     <UpsertModelLayout :errors="$attrs.errors" :model="contact">
       <UserForm
         :user="contact"
@@ -8,9 +8,8 @@
         :roles="roles"
       />
     </UpsertModelLayout>
-    <template #aside-navigation-options>
-      <div v-if="contact.duties.length > 0" class="col-span-3">
-        <NDivider></NDivider>
+    <template #aside-card>
+      <div v-if="contact.duties.length > 0" class="main-card h-fit">
         <strong>Šiuo metu {{ contact.name }} užima šias pareigas:</strong>
         <ul class="list-inside">
           <li
@@ -47,8 +46,16 @@
       </div>
       <p v-else>Šis žmogus neturi pareigų.</p>
     </template>
-  </AdminLayout>
+  </PageContent>
 </template>
+
+<script lang="ts">
+import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+
+export default {
+  layout: AdminLayout,
+};
+</script>
 
 <script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
@@ -57,7 +64,7 @@ import { NButton, NDivider, NIcon } from "naive-ui";
 import { PersonEdit24Regular } from "@vicons/fluent";
 import route from "ziggy-js";
 
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
 import UserForm from "@/Components/Admin/Forms/UserForm.vue";
 
