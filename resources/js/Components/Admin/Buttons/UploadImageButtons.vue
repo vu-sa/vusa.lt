@@ -13,7 +13,7 @@
       >
     </div>
 
-    <img v-if="modelValue" :src="modelValue" />
+    <img v-if="modelValue" class="w-72" :src="modelValue" />
   </div>
 </template>
 

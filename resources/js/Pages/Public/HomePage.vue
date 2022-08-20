@@ -230,7 +230,6 @@
 </template>
 
 <script lang="ts">
-import FadeTransitionVue from "@/Components/Public/FadeTransition.vue.js";
 import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
 
 export default {

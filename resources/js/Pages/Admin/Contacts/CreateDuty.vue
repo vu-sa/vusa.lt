@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout title="Nauja pareiga">
+  <PageContent title="Nauja pareiga">
     <UpsertModelLayout :errors="$attrs.errors" :model="duty">
       <DutyForm
         :duty="duty"
@@ -7,12 +7,20 @@
         :duty-types="dutyTypes"
       />
     </UpsertModelLayout>
-  </AdminLayout>
+  </PageContent>
 </template>
 
-<script setup lang="ts">
+<script lang="ts">
 import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+
+export default {
+  layout: AdminLayout,
+};
+</script>
+
+<script setup lang="ts">
 import DutyForm from "@/Components/Admin/Forms/DutyForm.vue";
+import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
 
 defineProps<{

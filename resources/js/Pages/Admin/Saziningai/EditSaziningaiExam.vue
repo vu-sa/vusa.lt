@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout :title="exam.subject_name + ' - ' + exam.created_at">
+  <PageContent :title="exam.subject_name + ' - ' + exam.created_at">
     <UpsertModelLayout :errors="$attrs.errors" :model="exam">
       <SaziningaiExamForm
         :exam="exam"
@@ -57,8 +57,16 @@
         <NDatePicker v-model:value="timestamp" type="datetime" />
       </NModal>
     </UpsertModelLayout>
-  </AdminLayout>
+  </PageContent>
 </template>
+
+<script lang="ts">
+import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+
+export default {
+  layout: AdminLayout,
+};
+</script>
 
 <script setup lang="ts">
 import { AddCircle20Regular } from "@vicons/fluent";
@@ -67,7 +75,7 @@ import { NButton, NDatePicker, NIcon, NModal, NPopover } from "naive-ui";
 import { reactive, ref } from "vue";
 import route from "ziggy-js";
 
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import SaziningaiExamForm from "@/Components/Admin/Forms/SaziningaiExamForm.vue";
 import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
 

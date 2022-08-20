@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout title="Pradinis puslapis" :create-url="route('mainPage.create')">
+  <PageContent title="Pradinis puslapis" :create-url="route('mainPage.create')">
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
@@ -12,16 +12,24 @@
         destroy-route="mainPage.destroy"
       />
     </div>
-  </AdminLayout>
+  </PageContent>
 </template>
 
-<script setup lang="ts">
+<script lang="ts">
 import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+
+export default {
+  layout: AdminLayout,
+};
+</script>
+
+<script setup lang="ts">
 import route from "ziggy-js";
 
 import AsideHeader from "@/Components/Admin/Headers/AsideHeaderContent.vue";
 import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
 import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
+import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 
 defineProps<{
   mainPages: PaginatedModels<App.Models.MainPage[]>;

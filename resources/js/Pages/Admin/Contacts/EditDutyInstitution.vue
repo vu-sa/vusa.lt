@@ -1,10 +1,9 @@
 <template>
-  <AdminLayout
+  <PageContent
     :title="dutyInstitution.name ?? dutyInstitution.short_name"
     :back-url="route('dutyInstitutions.index')"
   >
-    <template #header>
-      {{ dutyInstitution.name ?? dutyInstitution.short_name }}
+    <template #aside-header>
       <PreviewModelButton
         main-route="contacts.category"
         padalinys-route="contacts.category"
@@ -22,9 +21,8 @@
       />
     </UpsertModelLayout>
 
-    <template #aside-navigation-options>
-      <div v-if="duties" class="col-span-3">
-        <NDivider></NDivider>
+    <template #aside-card>
+      <div v-if="duties" class="main-card h-fit">
         <strong>Šiuo metu institucijai priklauso šios pareigos:</strong>
         <ul class="list-inside">
           <li v-for="duty in duties" :key="duty.id">
@@ -34,20 +32,28 @@
           </li>
         </ul>
       </div>
-      <p v-else>Ši institucija <strong>neturi</strong> pareigų.</p>
+      <p v-else class="main-card col-span-3 h-fit">
+        Ši institucija <strong>neturi</strong> pareigų.
+      </p>
     </template>
-  </AdminLayout>
+  </PageContent>
 </template>
+
+<script lang="ts">
+import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+
+export default {
+  layout: AdminLayout,
+};
+</script>
 
 <script setup lang="ts">
 import { Link } from "@inertiajs/inertia-vue3";
-import { NDivider } from "naive-ui";
 import route from "ziggy-js";
 
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
 import DutyInstitutionForm from "@/Components/Admin/Forms/DutyInstitutionForm.vue";
+import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import PreviewModelButton from "@/Components/Admin/Buttons/PreviewModelButton.vue";
-
 import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
 
 defineProps<{

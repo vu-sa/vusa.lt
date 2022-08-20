@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout
+  <PageContent
     title="Sažiningai"
     :create-url="route('saziningaiExamRegistration')"
   >
@@ -12,17 +12,24 @@
         :columns="columns"
       ></IndexDataTable>
     </div>
-  </AdminLayout>
+  </PageContent>
 </template>
+
+<script lang="ts">
+import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+
+export default {
+  layout: AdminLayout,
+};
+</script>
 
 <script setup lang="ts">
 import { DataTableColumns } from "naive-ui";
-import { Link } from "@inertiajs/inertia-vue3";
-import { h } from "vue";
+
 import route from "ziggy-js";
 
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
 import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
+import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 // import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
 
 defineProps<{

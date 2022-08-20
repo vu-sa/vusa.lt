@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout :title="page.title" :back-url="route('pages.index')">
+  <PageContent :title="page.title" :back-url="route('pages.index')">
     <template #header>
       {{ page.title }}
       <PreviewModelButton
@@ -24,13 +24,21 @@
         delete-model-route="pages.destroy"
       />
     </UpsertModelLayout>
-  </AdminLayout>
+  </PageContent>
 </template>
+
+<script lang="ts">
+import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+
+export default {
+  layout: AdminLayout,
+};
+</script>
 
 <script setup lang="ts">
 import route from "ziggy-js";
 
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import PageForm from "@/Components/Admin/Forms/PageForm.vue";
 import PreviewModelButton from "@/Components/Admin/Buttons/PreviewModelButton.vue";
 import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
