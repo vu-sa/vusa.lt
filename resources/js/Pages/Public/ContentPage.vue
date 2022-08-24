@@ -5,7 +5,7 @@
     <article class="grid grid-cols-3 gap-y-4 px-8 pt-8 last:pb-2 lg:px-40">
       <NBreadcrumb
         v-if="navigationItemId != null"
-        class="col-span-3 mb-4 flex w-full overflow-scroll"
+        class="col-span-3 mb-4 flex w-full"
       >
         <NBreadcrumbItem
           v-for="breadcrumb in breadcrumbTree"
@@ -19,7 +19,12 @@
         </NBreadcrumbItem>
       </NBreadcrumb>
 
-      <h1 class="col-span-3 col-start-1">{{ page.title }}</h1>
+      <h1 class="col-span-3 col-start-1 inline-flex gap-4">
+        <span>{{ page.title }}</span>
+        <NButton v-if="$page.props.user" text @click="editPage"
+          ><NIcon :size="32" :component="DocumentEdit20Regular"
+        /></NButton>
+      </h1>
       <!-- eslint-disable-next-line vue/no-v-html -->
       <div class="prose col-span-3 col-start-1" v-html="page.text"></div>
     </article>
@@ -35,10 +40,10 @@ export default {
 </script>
 
 <script setup lang="ts">
-import { Edit16Filled, HatGraduation20Filled } from "@vicons/fluent";
+import { DocumentEdit20Regular, HatGraduation20Filled } from "@vicons/fluent";
 import { Head } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
-import { NBreadcrumb, NBreadcrumbItem, NIcon } from "naive-ui";
+import { NBreadcrumb, NBreadcrumbItem, NButton, NIcon } from "naive-ui";
 import { usePage } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 
