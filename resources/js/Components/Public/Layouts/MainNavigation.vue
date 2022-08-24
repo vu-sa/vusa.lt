@@ -26,6 +26,14 @@
           </NButton>
         </NDropdown>
       </NScrollbar>
+      <NButton
+        v-if="$page.props.user"
+        quaternary
+        circle
+        size="small"
+        @click="Inertia.visit(route('dashboard'))"
+        ><NIcon :size="16" :component="AnimalTurtle24Filled"></NIcon
+      ></NButton>
     </div>
     <!-- Hamburger -->
     <div class="block lg:hidden">
@@ -90,7 +98,11 @@
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import { ChevronDown20Filled, Navigation24Filled } from "@vicons/fluent";
+import {
+  AnimalTurtle24Filled,
+  ChevronDown20Filled,
+  Navigation24Filled,
+} from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import { Link, usePage } from "@inertiajs/inertia-vue3";
 import {
@@ -106,7 +118,7 @@ import {
   NScrollbar,
   NTree,
 } from "naive-ui";
-import { computed, h, reactive, ref } from "vue";
+import { computed, reactive, ref } from "vue";
 import { split } from "lodash";
 import route, { RouteParamsWithQueryOverload } from "ziggy-js";
 
