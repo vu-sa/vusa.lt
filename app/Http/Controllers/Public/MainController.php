@@ -41,42 +41,39 @@ class MainController extends Controller
 		$host = Request::server('HTTP_HOST');
 
 		if ($host !== 'localhost') {
-			$subdomain = explode('.', $host)[0];
-			$this->alias = $subdomain == 'www' ? 'vusa' : $subdomain;
-			$this->alias = $subdomain == 'vusa' ? 'vusa' : $this->alias;
-			$this->alias = $subdomain == 'naujas' ? 'vusa' : $this->alias;
-			$this->alias = $subdomain == 'static' ? 'vusa' : $this->alias;
-			$this->alias = Route::currentRouteName() == 'home' ? 'vusa' : $this->alias;
-			$this->alias = Route::currentRouteName() == 'padalinys.home' ? 'vusa' : $this->alias;
+			// get subdomain, for example 'gmc' or other element
+			$firstElement = explode('.', $host)[0];
+
+			switch ($firstElement) {
+				case 'naujas':
+					$this->alias = 'vusa';
+					break;
+
+				case 'www':
+					$this->alias = 'vusa';
+					break;
+
+				case 'static':
+					$this->alias = 'vusa';
+					break;
+				
+				default:
+					$this->alias = $firstElement;
+					break;
+			}
 		} else {
 			$this->alias = 'vusa';
 		}
-
 
 		if (request()->padalinys != null) {
 			$this->alias = in_array(request()->padalinys, ["Padaliniai", "naujas"]) ? '' : request()->padalinys;
 		}
 
+		// get main navigation
 		$vusa = Padalinys::where('shortname', 'VU SA')->first();
 		$mainNavigation = Navigation::where([['padalinys_id', $vusa->id], ['lang', app()->getLocale()]])->orderBy('order')->get();
-		// dd($this->alias);
-		/// pakeisti visur alias į vusa kad būtų aiškiau nes čia dabar nesąmonė
 
-
-		// if ($this->alias !== '') {
-		// 	$banners = Padalinys::where('alias', $this->alias)->first()->banners()->inRandomOrder()->where('is_active', 1)->get();
-		// } else {
-		// 	$banners = collect([]);
-		// }
-
-		// $banners = $banners->merge(Padalinys::where('type', 'pagrindinis')->first()->banners()->inRandomOrder()->where('is_active', 1)->get());
-		// Inertia::share('banners', $banners);
 		Inertia::share('mainNavigation', $mainNavigation);
-
-		// if table exists in database
-		// if (Schema::hasTable('page_views')) {
-		// 	PageView::createViewLog();
-		// }
 	}
 
 	public function home()

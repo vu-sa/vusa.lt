@@ -35,7 +35,7 @@ import { NIcon } from "naive-ui";
 import { computed } from "vue";
 import route from "ziggy-js";
 
-import FadeTransition from "@/Components/Public/FadeTransition.vue";
+import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
 
 defineProps<{
   createUrl?: string;

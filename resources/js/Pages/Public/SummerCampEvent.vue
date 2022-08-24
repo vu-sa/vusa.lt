@@ -224,7 +224,7 @@ import { Link } from "@inertiajs/inertia-vue3";
 import { computed, h, ref } from "vue";
 
 import ContactWithPhotoForUsers from "@/Components/Public/ContactWithPhotoForUsers.vue";
-import FadeTransition from "@/Components/Public/FadeTransition.vue";
+import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
 import MIFRegistrationForm from "@/Components/Public/Temp/MIFRegistrationForm.vue";
 import route from "ziggy-js";
 

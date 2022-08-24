@@ -228,7 +228,7 @@ import { computed, ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 
-import FadeTransition from "@/Components/Public/FadeTransition.vue";
+import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
 import PageArticle from "@/Components/Public/PageArticle.vue";
 
 const props = defineProps<{

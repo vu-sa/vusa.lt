@@ -13,21 +13,22 @@
         ></template>
       </NButton>
     </template>
-    Klausykis studentiško
+    {{ $t("Klausykis studentiško") }}
     <a
       class="font-bold transition hover:text-vusa-red"
       href="https://startfm.lt"
       target="_blank"
       >START FM</a
     >
-    radijo!
+    {{ $t("radijo") }}!
   </NPopover>
 </template>
 
 <script setup lang="ts">
+import { trans as $t } from "laravel-vue-i18n";
 import { MusicNote2Play20Filled, Pause24Regular } from "@vicons/fluent";
 import { NButton, NIcon, NPopover } from "naive-ui";
-import { onMounted, ref } from "vue";
+import { ref } from "vue";
 
 const startFM = ref<HTMLAudioElement>();
 

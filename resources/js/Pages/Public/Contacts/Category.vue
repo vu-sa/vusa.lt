@@ -74,7 +74,7 @@ import { NButton } from "naive-ui";
 import route from "ziggy-js";
 
 import CategoryCard from "@/Components/Public/CategoryCard.vue";
-import FadeTransition from "@/Components/Public/FadeTransition.vue";
+import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
 
 defineProps<{
   institutions: App.Models.DutyInstitution[];

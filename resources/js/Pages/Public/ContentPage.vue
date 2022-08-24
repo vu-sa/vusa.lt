@@ -48,7 +48,7 @@ import route from "ziggy-js";
 
 import PageArticle from "@/Components/Public/PageArticle.vue";
 // import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
-import FadeTransition from "@/Components/Public/FadeTransition.vue";
+import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
 
 const props = defineProps<{
   navigationItemId: number;
