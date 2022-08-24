@@ -2,8 +2,8 @@
   <!-- <PublicLayout title="Programos „Sąžiningai“ užregistruoti egzaminai"> -->
   <Head title="Programos „Sąžiningai“ užregistruoti egzaminai"></Head>
   <FadeTransition appear>
-    <PageArticle>
-      <div class="px-8 pt-8 last:pb-2 lg:px-16">
+    <article class="ml-[5vw] grid grid-cols-3 gap-y-4 pt-8 last:pb-2">
+      <div class="col-span-3 col-start-1">
         <h1>Programos „Sąžiningai“ užregistruoti egzaminai</h1>
         <p class="my-4">Registruotis reikia į kiekvieną srautą atskirai.</p>
         <div class="main-card">
@@ -15,7 +15,7 @@
           </NDataTable>
         </div>
       </div>
-    </PageArticle>
+    </article>
   </FadeTransition>
   <!-- </PublicLayout> -->
   <NModal v-model:show="showModal">

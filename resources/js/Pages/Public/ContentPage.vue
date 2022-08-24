@@ -2,31 +2,27 @@
   <Head :title="page.title" />
 
   <FadeTransition appear>
-    <PageArticle>
-      <template #breadcrumb>
-        <NBreadcrumb v-if="navigationItemId != null" class="mb-4 h-fit w-fit">
-          <NBreadcrumbItem
-            v-for="breadcrumb in breadcrumbTree"
-            :key="breadcrumb.parent_id"
-            :clickable="false"
-          >
-            {{ breadcrumb.name }}
-            <template #separator>
-              <NIcon><HatGraduation20Filled /></NIcon>
-            </template>
-          </NBreadcrumbItem>
-        </NBreadcrumb>
-      </template>
-      <template #title>{{ page.title }} </template>
-      <div class="col-span-full mb-4">
-        <NButton v-if="$page.props.user" text @click="editPage"
-          ><NIcon size="40"
-            ><DocumentEdit24Regular></DocumentEdit24Regular></NIcon
-        ></NButton>
-      </div>
+    <article class="grid grid-cols-3 gap-y-4 px-8 pt-8 last:pb-2 lg:px-40">
+      <NBreadcrumb
+        v-if="navigationItemId != null"
+        class="col-span-3 mb-4 flex w-full overflow-scroll"
+      >
+        <NBreadcrumbItem
+          v-for="breadcrumb in breadcrumbTree"
+          :key="breadcrumb.parent_id"
+          :clickable="false"
+        >
+          {{ breadcrumb.name }}
+          <template #separator>
+            <NIcon><HatGraduation20Filled /></NIcon>
+          </template>
+        </NBreadcrumbItem>
+      </NBreadcrumb>
+
+      <h1 class="col-span-3 col-start-1">{{ page.title }}</h1>
       <!-- eslint-disable-next-line vue/no-v-html -->
-      <div class="prose" v-html="page.text"></div>
-    </PageArticle>
+      <div class="prose col-span-3 col-start-1" v-html="page.text"></div>
+    </article>
   </FadeTransition>
 </template>
 
@@ -39,15 +35,13 @@ export default {
 </script>
 
 <script setup lang="ts">
-import { DocumentEdit24Regular, HatGraduation20Filled } from "@vicons/fluent";
+import { Edit16Filled, HatGraduation20Filled } from "@vicons/fluent";
 import { Head } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
-import { NBreadcrumb, NBreadcrumbItem, NButton, NIcon } from "naive-ui";
+import { NBreadcrumb, NBreadcrumbItem, NIcon } from "naive-ui";
 import { usePage } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 
-import PageArticle from "@/Components/Public/PageArticle.vue";
-// import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
 import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
 
 const props = defineProps<{
@@ -76,3 +70,10 @@ const editPage = () => {
   Inertia.visit(route("pages.edit", { id: props.page.id }));
 };
 </script>
+
+<style>
+.n-breadcrumb ul {
+  display: flex;
+  flex-wrap: wrap;
+}
+</style>

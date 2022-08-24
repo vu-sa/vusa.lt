@@ -234,20 +234,16 @@ import {
   NForm,
   NFormItem,
   NInput,
-  NInputNumber,
   NRadio,
   NRadioGroup,
   NSelect,
   NSpace,
   createDiscreteApi,
 } from "naive-ui";
-import { computed, ref } from "vue";
+import { ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 
-import PageArticle from "@/Components/Public/PageArticle.vue";
-import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
-
-import { Inertia, Method } from "@inertiajs/inertia";
+import { Method } from "@inertiajs/inertia";
 import route from "ziggy-js";
 
 const formRef = ref<FormInst | null>(null);
