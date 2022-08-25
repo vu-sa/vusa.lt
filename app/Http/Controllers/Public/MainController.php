@@ -84,7 +84,7 @@ class MainController extends Controller
 
 		// dd($this->alias, $padalinys);
 
-		$news = News::where([['padalinys_id', '=', $padalinys->id], ['draft', '=', 0]])->where('publish_time', '<=', date('Y-m-d H:i:s'))->orderBy('publish_time', 'desc')->take(4)->get();
+		$news = News::where([['padalinys_id', '=', $padalinys->id],['lang', app()->getLocale()], ['draft', '=', 0]])->where('publish_time', '<=', date('Y-m-d H:i:s'))->orderBy('publish_time', 'desc')->take(4)->get();
 
 		Inertia::share('alias', $this->alias);
 		return Inertia::render('Public/HomePage', [
@@ -107,7 +107,7 @@ class MainController extends Controller
 					"important" => $news->important,
 				];
 			}),
-			'mainPage' => MainPage::where('padalinys_id', '=', $padalinys->id)->get(),
+			'mainPage' => MainPage::where([['padalinys_id', $padalinys->id], ['lang', app()->getLocale()]])->get(),
 		])->withViewData([
 			'description' => 'Vilniaus universiteto Studentų atstovybė (VU SA) – seniausia ir didžiausia Lietuvoje visuomeninė, ne pelno siekianti, nepolitinė, ekspertinė švietimo organizacija'
 		]);
@@ -130,7 +130,10 @@ class MainController extends Controller
 
 		// Storage::get($news->image) == null ? '/images/icons/naujienu_foto.png' : Storage::url($news->image);
 
+		$other_lang_news = $news->other_lang_id == null ? null : News::where('id', '=', $news->other_lang_id)->select('id', 'lang', 'permalink')->first();
+
 		Inertia::share('alias', $news->padalinys->alias);
+		Inertia::share('sharedOtherLangPage', $other_lang_news);
 		return Inertia::render('Public/NewsPage', [
 			'article' => [
 				'id' => $news->id,
@@ -156,6 +159,7 @@ class MainController extends Controller
 				'main_points' => $news->main_points,
 				'read_more' => $news->read_more,
 			],
+			'otherLangNews' => $other_lang_news,
 		])->withViewData([
 			'title' => $news->title,
 			'description' => strip_tags($news->short),
@@ -199,8 +203,10 @@ class MainController extends Controller
 		}
 
 		$navigation_item = Navigation::where([['padalinys_id', '=', $padalinys->id], ['name', '=', $page->title]])->get()->first();
+		$other_lang_page = $page->other_lang_id == null ? null : Page::where('id', '=', $page->other_lang_id)->select('id', 'lang', 'permalink')->first();
 
 		Inertia::share('alias', $page->padalinys->alias);
+		Inertia::share('sharedOtherLangPage', $other_lang_page);
 		return Inertia::render('Public/ContentPage', [
 			'navigationItemId' => $navigation_item?->id,
 			'page' => [
@@ -214,6 +220,7 @@ class MainController extends Controller
 				'category' => $page->category,
 				'padalinys' => $page->padalinys->shortname,
 			],
+			'otherLangPage' => $other_lang_page,
 		])->withViewData([
 			'title' => $page->title,
 			// truncate text to first sentence

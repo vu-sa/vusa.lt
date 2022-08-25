@@ -1,6 +1,6 @@
 <template>
   <div class="mx-8 mb-8 lg:mx-16 lg:px-16">
-    <h2 class="mb-4">Pagrindinės nuorodos:</h2>
+    <h2 class="mb-4">{{ $t("Pagrindinės nuorodos") }}:</h2>
     <div class="flex flex-wrap gap-2">
       <NButton
         v-for="item in mainPage"
@@ -16,6 +16,7 @@
 </template>
 
 <script setup lang="ts">
+import { trans as $t } from "laravel-vue-i18n";
 import { Inertia } from "@inertiajs/inertia";
 import { NButton } from "naive-ui";
 import { usePage } from "@inertiajs/inertia-vue3";
@@ -45,11 +46,16 @@ const goToLink = (link: string | null) => {
     if (link.charAt(0) === "/") {
       link = link.substring(1);
     }
-    Inertia.visit(route("main.page", { lang: "lt", permalink: link }));
+    Inertia.visit(
+      route("main.page", {
+        lang: usePage().props.value.locale,
+        permalink: link,
+      })
+    );
   } else {
     Inertia.visit(
       route("padalinys.page", {
-        lang: "lt",
+        lang: usePage().props.value.locale,
         permalink: link,
         padalinys: padalinysAlias,
       })

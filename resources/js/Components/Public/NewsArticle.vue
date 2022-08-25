@@ -10,7 +10,9 @@
       <div class="mx-2">@</div>
       <slot name="time"></slot>
     </div>
-    <h1 class="col-span-4 text-center"><slot name="title"></slot></h1>
+    <h1 class="col-span-4 text-center">
+      <slot name="title"></slot>
+    </h1>
     <slot name="image"></slot>
     <slot></slot>
   </article>

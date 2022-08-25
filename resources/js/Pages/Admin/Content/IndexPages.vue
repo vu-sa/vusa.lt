@@ -58,6 +58,11 @@ padaliniaiFilterOptions.value.unshift({
 
 const columns: DataTableColumns<App.Models.News> = [
   {
+    title: "ID",
+    key: "id",
+    width: 50,
+  },
+  {
     title: "Pavadinimas",
     key: "title",
     minWidth: 200,
@@ -82,6 +87,29 @@ const columns: DataTableColumns<App.Models.News> = [
         },
         padalinysShortname: row.padalinys?.shortname,
       });
+    },
+  },
+  {
+    key: "lang",
+    title: "Kalba",
+    render(row) {
+      return row.lang === "lt" ? "🇱🇹" : "🇬🇧";
+    },
+  },
+  {
+    key: "other_lang_id",
+    title: "Kitos kalbos puslapis",
+    render(row) {
+      return row.other_lang_id
+        ? h(
+            "a",
+            {
+              href: route("pages.edit", { id: row.other_lang_id }),
+              target: "_blank",
+            },
+            row.other_lang_id
+          )
+        : "";
     },
   },
   {

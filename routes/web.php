@@ -119,6 +119,7 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => '(lt|en)']], function
             Route::get('kontaktai/kategorija/{alias}', [Public\MainController::class, 'contactsCategory'])->name('contacts.category');
             Route::get('kontaktai/{alias}', [Public\MainController::class, 'contacts'])->name('contacts.alias');
 
+            // because of this, can't get current route for main.page, it shows main.news
             Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('news_string', '(naujiena|news)')->name('news');
 
             Route::middleware(['throttle:summerCamps'])->group(function () {

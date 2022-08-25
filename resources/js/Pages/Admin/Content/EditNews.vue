@@ -29,6 +29,7 @@
       <template #card-header> Puslapio informacija </template>
       <NewsForm
         :news="news"
+        :other-lang-news="otherLangNews"
         model-route="news.update"
         delete-model-route="news.destroy"
       />
@@ -55,5 +56,6 @@ import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue"
 
 defineProps<{
   news: App.Models.News;
+  otherLangNews: App.Models.News[] | null;
 }>();
 </script>

@@ -66,6 +66,8 @@ class MainPageController extends Controller
             'text' => 'required',
             'link' => 'required',
         ]);
+
+        dd($request->all());
         
         DB::transaction(function () use ($request) {
             
@@ -73,6 +75,7 @@ class MainPageController extends Controller
             
             $mainPage->text = $request->text;
             $mainPage->link = $request->link;
+            $mainPage->lang = $request->lang;
             $mainPage->position = '';
             $mainPage->padalinys()->associate($request->user()->padalinys());
             $mainPage->save();
@@ -97,7 +100,7 @@ class MainPageController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function edit(MainPage $mainPage)
-    {
+    {        
         return Inertia::render('Admin/Content/EditMainPage', [
             'mainPage' => $mainPage
         ]);
@@ -118,7 +121,7 @@ class MainPageController extends Controller
         ]);
         
         DB::transaction(function () use ($request, $mainPage) {
-            $mainPage->update($request->only('text', 'link'));
+            $mainPage->update($request->only('text', 'link', 'lang'));
         });
     }
 

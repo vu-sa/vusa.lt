@@ -27,7 +27,6 @@ class Page extends Model
     // Get another language page
     public function getOtherLanguage()
     {
-
         return Page::find($this->other_lang_id);
     }
 

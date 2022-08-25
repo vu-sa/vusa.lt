@@ -118,7 +118,7 @@ import {
   NScrollbar,
   NTree,
 } from "naive-ui";
-import { computed, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { split } from "lodash";
 import route, { RouteParamsWithQueryOverload } from "ziggy-js";
 
@@ -148,10 +148,12 @@ const activeMenuKey = ref("");
 const expandedKeys = ref([]);
 const selectedKeys = ref([]);
 
-const options_padaliniai = padaliniai.map((padalinys) => ({
-  label: $t(split(padalinys.fullname, "atstovybė ")[1]),
-  key: padalinys.alias,
-}));
+const options_padaliniai = reactive(
+  padaliniai.map((padalinys) => ({
+    label: $t(split(padalinys.fullname, "atstovybė ")[1]),
+    key: padalinys.alias,
+  }))
+);
 
 const parseNavigation = (array, id) => {
   // console.log(array);
@@ -259,5 +261,7 @@ const localeSelect = (lang: string) => {
   mainNavigation.value = usePage().props.value.mainNavigation;
   // update app logo button
   homeParams.lang = locale.value;
+  // reset padalinys value if home
+  padalinys.value = getPadalinys();
 };
 </script>

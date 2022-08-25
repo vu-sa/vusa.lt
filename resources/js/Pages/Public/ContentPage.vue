@@ -18,7 +18,6 @@
           </template>
         </NBreadcrumbItem>
       </NBreadcrumb>
-
       <h1 class="col-span-3 col-start-1 inline-flex gap-4">
         <span>{{ page.title }}</span>
         <NButton v-if="$page.props.user" text @click="editPage"

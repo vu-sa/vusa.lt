@@ -23,16 +23,19 @@
         width="16"
     /></NButton>
   </NDropdown> -->
-  <NDropdown :options="options" @select="handleSelectLanguage">
-    <NButton text><img :src="icon" width="16" /></NButton>
-  </NDropdown>
+  <NBadge dot processing :show="!!otherLanguagePage">
+    <NDropdown :options="options" @select="handleSelectLanguage">
+      <NButton text><img :src="icon" width="16" /></NButton>
+    </NDropdown>
+  </NBadge>
 </template>
 
 <script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
-import { NButton, NDropdown } from "naive-ui";
-import { computed } from "vue";
+import { NBadge, NButton, NDropdown } from "naive-ui";
+import { computed, onMounted } from "vue";
 import { loadLanguageAsync } from "laravel-vue-i18n";
+import { usePage } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 
 const props = defineProps<{
@@ -45,11 +48,25 @@ const emit = defineEmits<{
 
 const locales = ["lt", "en"];
 
+const otherLanguagePage = computed(() => {
+  if (usePage().props.value.otherLangPage) {
+    return {
+      lang: usePage().props.value.otherLangPage.lang,
+      newsString:
+        usePage().props.value.otherLangPage.lang === "lt" ? "naujiena" : "news",
+      padalinys: usePage().props.value.alias,
+      permalink: usePage().props.value.otherLangPage.permalink,
+    };
+  }
+
+  return false;
+});
+
 const en_options = [
   {
     label: "Change page language",
     key: "page",
-    disabled: true,
+    disabled: !otherLanguagePage.value,
   },
   {
     label: "Go to main page",
@@ -61,7 +78,7 @@ const lt_options = [
   {
     label: "Pakeisti puslapio kalbą",
     key: "page",
-    disabled: true,
+    disabled: !otherLanguagePage.value,
   },
   {
     label: "Eiti į pagrindinį",
@@ -70,7 +87,7 @@ const lt_options = [
 ];
 
 const options = computed(() => {
-  if (props.locale == "lt") {
+  if (props.locale !== "lt") {
     return lt_options;
   } else {
     return en_options;
@@ -86,27 +103,38 @@ const icon = computed(() => {
 });
 
 const handleSelectLanguage = (key) => {
-  const lang = locales.filter((l) => {
+  const newLang = locales.filter((l) => {
     return l !== props.locale;
   });
 
   if (key === "home") {
     Inertia.visit(
       route("main.home", {
-        lang: lang,
+        lang: newLang,
       }),
       {
         onSuccess: () => {
-          console.log("success");
-          emit("changeLocale", lang[0]);
-          loadLanguageAsync(lang[0]);
+          emit("changeLocale", newLang[0]);
+          loadLanguageAsync(newLang[0]);
         },
       }
     );
     // Inertia.visit(route("main.page", { lang: "lt" }));
     // message.info("Navigating to " + key);
   } else if (key === "page") {
-    // message.info("Navigating to " + key);
+    Inertia.visit(
+      route("main.page", {
+        lang: newLang,
+        padalinys: usePage().props.value.alias,
+        permalink: usePage().props.value.otherLangPage.permalink,
+      }),
+      {
+        onSuccess: () => {
+          emit("changeLocale", newLang[0]);
+          loadLanguageAsync(newLang[0]);
+        },
+      }
+    );
   }
 };
 </script>

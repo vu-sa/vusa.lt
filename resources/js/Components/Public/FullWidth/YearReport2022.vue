@@ -2,7 +2,9 @@
   <div>
     <div class="group relative">
       <ShapeDivider1 class="absolute -top-1 z-10"></ShapeDivider1>
-      <ShapeDivider1 class="absolute -bottom-1 z-10 rotate-180"></ShapeDivider1>
+      <ShapeDivider1
+        class="absolute -bottom-2 z-10 rotate-180 lg:-bottom-1"
+      ></ShapeDivider1>
       <Link
         :href="
           route('main.ataskaita2022', {
@@ -13,8 +15,8 @@
       >
         <img
           src="/images/ataskaita2022/kitos-nuotraukos/VU SA.jpg"
-          class="my-4 h-48 w-full object-cover duration-200 hover:opacity-90 lg:h-80"
-          style="object-position: 0% 35%"
+          class="mt-2 h-32 w-full object-cover lg:my-1 lg:h-64"
+          style="object-position: 0% 50%"
         />
       </Link>
     </div>

@@ -20,6 +20,7 @@
       </template>
       <PageForm
         :page="page"
+        :other-lang-pages="otherLangPages"
         model-route="pages.update"
         delete-model-route="pages.destroy"
       />
@@ -45,5 +46,6 @@ import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue"
 
 defineProps<{
   page: App.Models.Page;
+  otherLangPages: App.Models.Page[];
 }>();
 </script>

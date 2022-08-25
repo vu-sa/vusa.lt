@@ -1,9 +1,11 @@
 <template>
   <NDropdown :options="options">
     <NButton text size="tiny">
-      <NAvatar round size="small" src="user.profile_photo_path">{{
-        userInitials(inertiaProps.user.name)
-      }}</NAvatar>
+      <NAvatar round size="small" :src="inertiaProps.user.profile_photo_path">
+        <span v-if="!inertiaProps.user.profile_photo_path">
+          {{ userInitials(inertiaProps.user.name) }}
+        </span>
+      </NAvatar>
       <span class="ml-2"
         >{{ inertiaProps.user.name }} ({{
           inertiaProps.user.padalinys ?? "Be padalinio"

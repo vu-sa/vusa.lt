@@ -50,7 +50,7 @@ class NewsController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function create()
-    {
+    {    
         return Inertia::render('Admin/Content/CreateNews');
     }
 
@@ -73,15 +73,13 @@ class NewsController extends Controller
             'publish_time' => 'required',
         ]);
 
-        // dd()
-
-        News::create([
+        $news = News::create([
             'title' => $request->title,
             'permalink' => $request->permalink,
             'text' => $request->text,
             'short' => $request->short,
             'lang' => $request->lang,
-            'other_lang_id' => $request->other_lang_news,
+            'other_lang_id' => $request->other_lang_id,
             'image' => $request->image,
             'image_author' => $request->image_author,
             'publish_time' => $request->publish_time,
@@ -111,6 +109,10 @@ class NewsController extends Controller
      */
     public function edit(News $news)
     {
+        $other_lang_pages = News::with('padalinys:id,shortname')->when(!request()->user()->isAdmin(), function ($query) {
+            $query->where('padalinys_id', request()->user()->padalinys()->id);  
+        })->where('lang', '!=', $news->lang)->select('id', 'title', 'padalinys_id')->get();
+        
         return Inertia::render('Admin/Content/EditNews', [
             'news' => [
                 'id' => $news->id,
@@ -118,7 +120,7 @@ class NewsController extends Controller
                 'permalink' => $news->permalink,
                 'text' => $news->text,
                 'lang' => $news->lang,
-                'other_lang_page' => $news->getOtherLanguage()?->id,
+                'other_lang_id' => $news->getOtherLanguage()?->id,
                 'category' => $news->category,
                 'padalinys' => $news->padalinys,
                 'draft' => $news->draft,
@@ -128,6 +130,7 @@ class NewsController extends Controller
                 'image_author' => $news->image_author,
                 'publish_time' => $news->publish_time,
             ],
+            'otherLangNews' => $other_lang_pages,
         ]);
     }
 
@@ -140,7 +143,20 @@ class NewsController extends Controller
      */
     public function update(Request $request, News $news)
     {
-        $news->update($request->only('title', 'text', 'lang', 'draft', 'short', 'image', 'image_author', 'publish_time'));
+        $other_lang_page = News::find($news->other_lang_id);
+        
+        $news->update($request->only('title', 'text', 'lang', 'other_lang_id', 'draft', 'short', 'image', 'image_author', 'publish_time'));
+
+        // update other lang id page
+        if ($request->other_lang_id) {
+            // overwrite other lang id page
+            $other_lang_page = News::find($request->other_lang_id);
+            $other_lang_page->other_lang_id = $news->id;
+            $other_lang_page->save();
+        } else if (is_null($request->other_lang_id) && !is_null($other_lang_page)) {
+            $other_lang_page->other_lang_id = null;
+            $other_lang_page->save();
+        }
 
         return back();
     }
