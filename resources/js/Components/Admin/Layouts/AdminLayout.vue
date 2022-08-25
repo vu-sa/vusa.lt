@@ -27,7 +27,7 @@
             @expand="collapsed = false"
           >
             <a class="h-fit w-fit" href="/">
-              <AppLogo class="mx-auto p-2" />
+              <AppLogo class="mx-auto w-full p-2" />
             </a>
             <AdminMenu :collapsed="collapsed" />
           </NLayoutSider>
