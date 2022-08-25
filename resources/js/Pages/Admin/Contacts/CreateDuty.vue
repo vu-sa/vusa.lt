@@ -33,5 +33,11 @@ const duty = {
   email: null,
   institution: {},
   type: {},
+  attributes: {
+    en: {
+      name: "",
+      description: "",
+    },
+  },
 };
 </script>

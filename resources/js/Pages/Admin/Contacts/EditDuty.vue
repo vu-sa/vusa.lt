@@ -45,7 +45,9 @@
           </li>
         </ul>
       </div>
-      <p v-else>Šių pareigų kolkas niekas neužima.</p>
+      <p v-else class="main-card h-fit w-fit">
+        Šių pareigų kolkas niekas neužima.
+      </p>
     </template>
   </PageContent>
 </template>
@@ -70,7 +72,7 @@ import {
   NPopconfirm,
   createDiscreteApi,
 } from "naive-ui";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import route from "ziggy-js";
 
 import DutyForm from "@/Components/Admin/Forms/DutyForm.vue";
@@ -86,6 +88,18 @@ const props = defineProps<{
 const { message } = createDiscreteApi(["message"]);
 
 const hasUsers = computed(() => props.users.length > 0);
+
+const duty = ref(props.duty);
+
+if (!props.duty.attributes) {
+  console.log("No attributes");
+  duty.value.attributes = {};
+}
+
+if (!props.duty.attributes.en) {
+  console.log("No attributes EN");
+  duty.value.attributes.en = {};
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -49,6 +49,7 @@ export default {
 
 <script setup lang="ts">
 import { Link } from "@inertiajs/inertia-vue3";
+import { ref } from "vue";
 import route from "ziggy-js";
 
 import DutyInstitutionForm from "@/Components/Admin/Forms/DutyInstitutionForm.vue";
@@ -56,9 +57,21 @@ import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import PreviewModelButton from "@/Components/Admin/Buttons/PreviewModelButton.vue";
 import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
 
-defineProps<{
+const props = defineProps<{
   dutyInstitution: App.Models.DutyInstitution;
   duties: Array<App.Models.Duty>;
   padaliniai: Array<App.Models.Padalinys>;
 }>();
+
+const dutyInstitution = ref(props.dutyInstitution);
+
+// check if dutyInstitution.en is null, then create it
+
+if (!props.dutyInstitution.attributes) {
+  dutyInstitution.value.attributes = {};
+}
+
+if (!props.dutyInstitution.attributes.en) {
+  dutyInstitution.value.attributes.en = {};
+}
 </script>

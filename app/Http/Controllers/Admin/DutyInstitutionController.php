@@ -131,7 +131,7 @@ class DutyInstitutionController extends Controller
         ]);
         
         // TODO: short_name and shortname are used as columns in some tables. Need to make the same name.
-        $dutyInstitution->update($request->only('name', 'short_name', 'description', 'padalinys_id', 'image_url'));
+        $dutyInstitution->update($request->only('name', 'short_name', 'description', 'padalinys_id', 'image_url', 'attributes'));
 
         return redirect()->back();
     }

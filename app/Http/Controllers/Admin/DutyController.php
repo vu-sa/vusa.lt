@@ -68,6 +68,7 @@ class DutyController extends Controller
         $duty->name = $request->name;
         $duty->email = $request->email;
         $duty->description = $request->description;
+        $duty->attributes = $request->attributes;
         $duty->institution()->associate($request->institution['id']);
         // TODO: sutvarkyti
         $duty->type_id = $request->type['id'];
@@ -95,17 +96,6 @@ class DutyController extends Controller
      */
     public function edit(Duty $duty)
     {
-        // $attributes = new stdClass;
-        // $attributes->en = new stdClass;
-        // $attributes->en->name = '';
-        // $attributes->en->description = '';
-        // $attributes = json_encode($attributes);
-
-        // if (!empty($duty->attributes)) {
-        //     $attributes = $duty->attributes;
-        // }
-
-        // dd($attributes);
 
         return Inertia::render('Admin/Contacts/EditDuty', [
             'duty' => [
@@ -115,7 +105,7 @@ class DutyController extends Controller
                 'type' => $duty->type,
                 'institution' => $duty->institution,
                 'email' => $duty->email,
-                // 'attributes' => json_decode($attributes),
+                'attributes' => $duty->attributes,
                 'places_to_occupy' => $duty->places_to_occupy,
             ],
             'users' => $duty->users,
@@ -139,7 +129,7 @@ class DutyController extends Controller
         ]);
 
         DB::transaction(function () use ($request, $duty) {
-            $duty->update($request->only('name', 'description', 'email'));
+            $duty->update($request->only('name', 'description', 'email', 'attributes'));
 
             $duty->type_id = $request->type['id'];
             $duty->institution()->disassociate();

@@ -58,9 +58,17 @@ padaliniaiFilterOptions.value.unshift({
 
 const columns: DataTableColumns<App.Models.News> = [
   {
+    title: "ID",
+    key: "id",
+    width: 60,
+  },
+  {
     title: "Pavadinimas",
     key: "title",
-    minWidth: 250,
+    minWidth: 200,
+    ellipsis: {
+      tooltip: true,
+    },
   },
   {
     // title: "Nuoroda",
