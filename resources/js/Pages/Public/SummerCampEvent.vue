@@ -173,19 +173,6 @@
       </section>
     </article>
   </FadeTransition>
-
-  <NModal
-    v-if="event.padalinys.alias === 'mif'"
-    v-model:show="showModal"
-    class="max-w-xl"
-    preset="card"
-    title="VU MIF pirmakursių stovyklos registracija"
-    :bordered="false"
-  >
-    <NScrollbar style="max-height: 600px"
-      ><MIFRegistrationForm></MIFRegistrationForm
-    ></NScrollbar>
-  </NModal>
 </template>
 
 <script lang="ts">
@@ -214,8 +201,6 @@ import {
   NIcon,
   NImage,
   NImageGroup,
-  NModal,
-  NScrollbar,
   NSpace,
 } from "naive-ui";
 import { FacebookF } from "@vicons/fa";
@@ -225,7 +210,6 @@ import { computed, h, ref } from "vue";
 
 import ContactWithPhotoForUsers from "@/Components/Public/ContactWithPhotoForUsers.vue";
 import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
-import MIFRegistrationForm from "@/Components/Public/Temp/MIFRegistrationForm.vue";
 import route from "ziggy-js";
 
 const props = defineProps<{
@@ -276,10 +260,6 @@ const registrationText = computed(() => {
   let refresh = registrationOpenedOnFinish.value;
   return props.event.url ? "Dalyvauk!" : "Registracija uždaryta...";
 });
-
-const dateIsValid = (date) => {
-  return !Number.isNaN(new Date(date).getTime());
-};
 
 const computedEventDateRange = computed(() => {
   if (

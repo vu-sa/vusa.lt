@@ -120,9 +120,6 @@ const props = defineProps<{
 
 const form = useForm("dutyInstitution", props.dutyInstitution);
 
-console.log(props.dutyInstitution);
-console.log(form);
-
 const options = props.padaliniai.map((padalinys) => ({
   value: padalinys.id,
   label: padalinys.shortname,

@@ -1,6 +1,5 @@
 <template>
   <Head title="Pirmakursių stovyklos" />
-  <!-- Create a modern card with picture and title with Tailwind -->
 
   <FadeTransition appear>
     <div>
@@ -25,6 +24,8 @@
       >
         <div class="prose-sm col-span-3 px-12 lg:prose">
           <h2>Labas! 👋</h2>
+
+          <p class="font-bold">2022 m. pirmakursių stovyklos jau pasibaigė!</p>
 
           <p>
             Egzaminai išlaikyti, pakvietimai studijuoti jau išsiųsti, studijų
