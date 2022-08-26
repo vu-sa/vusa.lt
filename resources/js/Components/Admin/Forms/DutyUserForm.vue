@@ -92,4 +92,9 @@ if (!form.attributes.additional_photo) {
 if (!form.attributes.en) {
   form.attributes.en = {};
 }
+
+// if form.attributes.en is empty array then create empty object
+if (form.attributes.en.length === 0) {
+  form.attributes.en = {};
+}
 </script>

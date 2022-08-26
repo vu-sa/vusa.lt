@@ -2,6 +2,7 @@
   <audio ref="startFM" preload="none" @canplay="changeLoading">
     <source src="https://eteris.startfm.lt/startfm.mp3" />
   </audio>
+  <!-- No animation on Safari, if NButton has 'text' attribute -->
   <NPopover>
     <template #trigger>
       <NButton text :loading="loading" @click="toggleAudio">

@@ -1,41 +1,135 @@
 <template>
-  <div
-    v-if="image"
-    class="h-full w-full rounded-2xl bg-cover object-cover grayscale transition hover:shadow-lg hover:grayscale-0"
-    :style="backgroundImageStyle"
-  >
-    <div
-      class="flex h-full w-full flex-col justify-center rounded-2xl transition hover:backdrop-brightness-125"
+  <div v-if="institution.image_url" class="flex flex-col">
+    <img
+      class="center mx-auto max-h-40 w-5/6 cursor-pointer rounded-sm bg-cover object-cover transition hover:shadow-lg"
+      :src="institution.image_url"
+      @click="inertiaVisitOnClick(institution.alias)"
+    />
+    <h2
+      class="mx-auto mt-4 w-fit cursor-pointer text-center font-bold transition hover:text-vusa-red"
+      @click="inertiaVisitOnClick(institution.alias)"
     >
-      <p
-        class="text-center text-2xl font-bold text-white sm:text-3xl md:text-4xl"
-        style="text-shadow: 3px 3px 3px #111111bb"
+      {{ dutyInstitutionName }}
+    </h2>
+    <div v-if="isPadalinys(institution)" class="flex justify-center gap-2">
+      <NButton
+        round
+        tertiary
+        size="small"
+        @click.stop="
+          Inertia.visit(
+            route('padalinys.contacts.alias', {
+              alias: 'koordinatoriai',
+              padalinys: institution.alias,
+              lang: $page.props.locale,
+            })
+          )
+        "
+        >{{ $t("Koordinatoriai") }}</NButton
       >
-        {{ title }}
-      </p>
-      <slot></slot>
+      <NButton
+        round
+        tertiary
+        size="small"
+        @click.stop="
+          Inertia.visit(
+            route('padalinys.contacts.alias', {
+              alias: 'kuratoriai',
+              padalinys: institution.alias,
+              lang: $page.props.locale,
+            })
+          )
+        "
+        >{{ $t("Kuratoriai") }}</NButton
+      >
     </div>
   </div>
-  <div v-else>
-    <p
-      class="w-full text-center text-2xl font-bold duration-500 hover:text-vusa-red sm:text-3xl md:text-4xl"
-    >
-      {{ title }}
-    </p>
-    <slot></slot>
+  <div v-else class="flex flex-col justify-center">
+    <div>
+      <h2
+        class="w-full cursor-pointer text-center font-bold duration-500 hover:text-vusa-red"
+        @click="inertiaVisitOnClick(institution.alias)"
+      >
+        {{ dutyInstitutionName }}
+      </h2>
+      <div
+        v-if="isPadalinys(institution)"
+        class="mt-4 flex justify-center gap-2"
+      >
+        <NButton
+          round
+          tertiary
+          size="small"
+          @click.stop="
+            Inertia.visit(
+              route('padalinys.contacts.alias', {
+                alias: 'koordinatoriai',
+                padalinys: institution.alias,
+                lang: $page.props.locale,
+              })
+            )
+          "
+          >{{ $t("Koordinatoriai") }}</NButton
+        >
+        <NButton
+          round
+          tertiary
+          size="small"
+          @click.stop="
+            Inertia.visit(
+              route('padalinys.contacts.alias', {
+                alias: 'kuratoriai',
+                padalinys: institution.alias,
+                lang: $page.props.locale,
+              })
+            )
+          "
+          >{{ $t("Kuratoriai") }}</NButton
+        >
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { trans as $t } from "laravel-vue-i18n";
+import { Inertia } from "@inertiajs/inertia";
+import { NButton } from "naive-ui";
 import { computed } from "vue";
+import { usePage } from "@inertiajs/inertia-vue3";
+import route from "ziggy-js";
+
 const props = defineProps<{
-  title: string | null;
-  image: string;
+  institution: App.Models.DutyInstitution;
 }>();
 
-const backgroundImageStyle = computed(() => {
-  return {
-    "background-image": `linear-gradient(0deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.3)), url(${props.image})`,
-  };
+const isPadalinys = (institution: App.Models.DutyInstitution) => {
+  // check if institution type is null
+  if (institution.type === null) return false;
+  return institution.type.alias === "vu-sa-padaliniai";
+};
+
+const inertiaVisitOnClick = (alias: string) => {
+  Inertia.visit(
+    route("main.contacts.alias", {
+      alias: alias,
+      lang: usePage().props.value.locale,
+    })
+  );
+};
+
+const dutyInstitutionName = computed(() => {
+  const locale = usePage().props.value.locale;
+
+  if (locale === "en") {
+    return (
+      props.institution.attributes?.en?.short_name ??
+      props.institution.attributes?.en?.name ??
+      props.institution.short_name ??
+      props.institution.name
+    );
+  }
+
+  return props.institution.short_name ?? "";
 });
 </script>

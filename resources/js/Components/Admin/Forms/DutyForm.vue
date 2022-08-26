@@ -113,6 +113,11 @@ const props = defineProps<{
 
 const form = useForm("dutyInstitution", props.duty);
 
+// if form.attributes.en is empty array then create empty object
+if (form.attributes.en.length === 0) {
+  form.attributes.en = {};
+}
+
 const institutionsFromDatabase = ref([]);
 
 // TODO: label doesn't update after updateModel and refresh page...
