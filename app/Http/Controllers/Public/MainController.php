@@ -283,7 +283,21 @@ class MainController extends Controller
 
 		$alias = request()->alias;
 
-		if (in_array($alias, [null, 'koordinatoriai', 'kuratoriai', 'studentu-atstovai'])) {
+		if ($alias == 'studentu-atstovai') {
+			// get all student duty institutions that have type 'studentu-atstovu-organas' and is of the same padalinys as the current one
+			$duty_institutions = DutyInstitution::with(['duties.users'])->where([['padalinys_id', '=', $padalinys->id]])->whereHas('type', function (Builder $query) {
+				$query->where('alias', 'studentu-atstovu-organas');
+			})->get()->sortBy('name')->values();
+
+			return Inertia::render('Public/Contacts/StudentRepresentatives', [
+				'institutions' => $duty_institutions
+			])->withViewData([
+				'title' => 'Studentų atstovai',
+				'description' => 'VU SA studentų atstovai',
+			]);
+		}
+
+		if (in_array($alias, [null, 'koordinatoriai', 'kuratoriai'])) {
 			$duty_type = DutyType::where('alias', '=', $alias ?? "koordinatoriai")->first();
 			$child_duty_types = DutyType::where('pid', '=', $duty_type->id)->get();
 
@@ -334,7 +348,7 @@ class MainController extends Controller
 					'email' => $contact->email,
 					'phone' => $contact->phone,
 					'duties' => $contact->duties->where('institution_id', '=', $duty_institution->id),
-					'image' => function () use ($contact) {
+					'profile_photo_path' => function () use ($contact) {
 						if (substr($contact->profile_photo_path, 0, 4) == 'http') {
 							return $contact->profile_photo_path;
 						} else if (is_null($contact->profile_photo_path)) {

@@ -1,20 +1,23 @@
 <template>
-  <div class="flex h-auto min-h-fit flex-col rounded-lg bg-white lg:flex-row">
+  <div
+    class="flex h-auto min-h-fit max-w-xl flex-col rounded-lg bg-white lg:flex-row"
+  >
     <div
       v-if="getImageUrl(contact)"
-      :id="`contact-photo-${contact.id}`"
+      :id="`contact-photo-${index}`"
       class="relative h-60 w-auto flex-none lg:h-auto lg:w-40"
     >
       <NImage
         :src="getImageUrl(contact)"
         lazy
         :intersection-observer-options="{
-          root: `#contact-photo-${contact.id}`,
+          root: `#contact-photo-${index}`,
         }"
         object-fit="cover"
         :show-toolbar="false"
-        class="absolute inset-0 h-full w-full rounded-t-lg object-cover lg:rounded-t-none lg:rounded-l-lg"
+        class="absolute inset-0 rounded-t-lg lg:rounded-t-none lg:rounded-l-lg"
         style="object-position: 50% 25%"
+        :alt="contact.name"
       />
     </div>
     <div class="flex flex-auto flex-col justify-between gap-4 p-4">
@@ -33,7 +36,10 @@
             </NIcon>
           </NButton>
         </h2>
-        <div class="w-fit p-2 text-sm font-medium text-gray-500">
+        <div
+          v-if="contact.duties"
+          class="w-fit p-2 text-sm font-medium text-gray-500"
+        >
           <template v-for="duty in contact.duties" :key="duty.id">
             <NPopover
               v-if="duty.description"
@@ -92,6 +98,7 @@ import route from "ziggy-js";
 
 defineProps<{
   contact: App.Models.User;
+  index: string;
 }>();
 
 const openEdit = (contact: App.Models.User) => {
@@ -149,12 +156,12 @@ const getImageUrl = (contact: App.Models.User) => {
       if (contact.duties[duty].name.toLowerCase().includes("kuratorius")) {
         return (
           contact.duties[duty].pivot.attributes?.additional_photo ??
-          contact.image
+          contact.profile_photo_path
         );
       }
     }
   }
-  return contact.image ?? "";
+  return contact.profile_photo_path ?? "";
 };
 
 // ! TIK KURATORIAMS: pakeisti galūnes

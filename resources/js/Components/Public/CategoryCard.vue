@@ -11,7 +11,10 @@
     >
       {{ dutyInstitutionName }}
     </h2>
-    <div v-if="isPadalinys(institution)" class="flex justify-center gap-2">
+    <div
+      v-if="isPadalinys(institution)"
+      class="flex flex-wrap justify-center gap-2"
+    >
       <NButton
         round
         tertiary
@@ -41,6 +44,21 @@
           )
         "
         >{{ $t("Kuratoriai") }}</NButton
+      >
+      <NButton
+        round
+        tertiary
+        size="small"
+        @click.stop="
+          Inertia.visit(
+            route('padalinys.contacts.alias', {
+              alias: 'studentu-atstovai',
+              padalinys: institution.alias,
+              lang: $page.props.locale,
+            })
+          )
+        "
+        >{{ $t("Studentų atstovai") }}</NButton
       >
     </div>
   </div>
@@ -85,6 +103,21 @@
             )
           "
           >{{ $t("Kuratoriai") }}</NButton
+        >
+        <NButton
+          round
+          tertiary
+          size="small"
+          @click.stop="
+            Inertia.visit(
+              route('padalinys.contacts.alias', {
+                alias: 'studentu-atstovai',
+                padalinys: institution.alias,
+                lang: $page.props.locale,
+              })
+            )
+          "
+          >{{ $t("Studentų atstovai") }}</NButton
         >
       </div>
     </div>
