@@ -5,7 +5,7 @@
     :style="backgroundImageStyle"
   >
     <div
-      class="flex h-full w-full flex-col justify-center transition hover:backdrop-brightness-125"
+      class="flex h-full w-full flex-col justify-center rounded-2xl transition hover:backdrop-brightness-125"
     >
       <p
         class="text-center text-2xl font-bold text-white sm:text-3xl md:text-4xl"

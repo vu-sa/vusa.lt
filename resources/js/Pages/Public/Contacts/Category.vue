@@ -17,7 +17,10 @@
           :title="institution.name ?? institution.short_name"
           :image="institution.image_url"
         >
-          <div class="mt-4 flex justify-center gap-2">
+          <div
+            v-if="isPadalinys(institution)"
+            class="mt-4 flex justify-center gap-2"
+          >
             <NButton
               ghost
               :color="institution.image_url ? 'white' : 'black'"
@@ -79,6 +82,12 @@ import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
 defineProps<{
   institutions: App.Models.DutyInstitution[];
 }>();
+
+const isPadalinys = (institution: App.Models.DutyInstitution) => {
+  // check if institution type is null
+  if (institution.type === null) return false;
+  return institution.type.alias === "vu-sa-padaliniai";
+};
 
 const inertiaVisitOnClick = (alias: string) => {
   Inertia.visit(
