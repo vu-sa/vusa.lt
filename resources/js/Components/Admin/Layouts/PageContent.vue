@@ -15,6 +15,7 @@
       <div class="flex">
         <NIcon size="28" :component="AddCircle32Regular" /></div
     ></Link>
+    <slot name="after-heading"></slot>
     <aside class="ml-auto font-bold transition-colors md:text-xs">
       <slot name="aside-header"></slot>
     </aside>

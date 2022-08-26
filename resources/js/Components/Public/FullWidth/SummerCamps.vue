@@ -18,9 +18,6 @@
         class="mt-2 h-32 w-full object-cover brightness-50 lg:my-1 lg:h-64"
         style="object-position: 0% 45%"
       />
-      <!-- <h1 class="relative bottom-16 text-center text-white lg:bottom-24">
-                Pirmakursių stovyklos
-              </h1> -->
     </div>
   </div>
   <div
@@ -30,26 +27,26 @@
       <p class="text-2xl font-bold lg:w-4/5">
         VU SA organizuojamos
         <span class="font-extrabold text-vusa-red">pirmakursių stovyklos</span>
-        jau ne už kalnų!
+        jau pasibaigė!
       </p>
       <p class="w-4/5">
-        Daugiau informacijos ieškok savo padalinio pirmakursių stovyklų polapyje
-        (arba paklausk kuratoriaus 🤚)!
+        Tačiau integracijos renginiai dar tik prasideda! Sek naujienas mūsų
+        <a href="https://www.facebook.com/VUstudentuatstovybe">Facebook</a>
+        puslapyje 🔍
       </p>
     </div>
-    <div class="flex flex-wrap gap-2 lg:justify-center">
+    <div class="flex flex-wrap items-center gap-4 lg:justify-center">
       <NButton
         round
         size="large"
         strong
         type="primary"
         @click="Inertia.visit(route('pirmakursiuStovyklos'))"
-        >Į stovyklas!<template #icon
+        >Kas vyko?<template #icon
           ><NIcon :component="HatGraduation20Regular"></NIcon></template
       ></NButton>
       <NButton
         round
-        size="large"
         strong
         secondary
         @click="
@@ -60,7 +57,7 @@
             })
           )
         "
-        >Surask savo kuratorių!<template #icon
+        >Tavo kuratorius tavęs dar laukia...<template #icon
           ><NIcon :component="Person20Filled"></NIcon></template
       ></NButton>
     </div>

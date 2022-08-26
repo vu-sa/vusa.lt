@@ -74,6 +74,7 @@ import {
 import { computed, ref } from "vue";
 import route from "ziggy-js";
 
+import { checkForEmptyArray } from "@/Composables/checkAttributes";
 import DutyForm from "@/Components/Admin/Forms/DutyForm.vue";
 import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
@@ -90,16 +91,10 @@ const hasUsers = computed(() => props.users.length > 0);
 
 const duty = ref(props.duty);
 
-if (!props.duty.attributes) {
-  console.log("No attributes");
-  duty.value.attributes = {};
-}
+duty.value.attributes = checkForEmptyArray(duty.value.attributes);
+duty.value.attributes.en = checkForEmptyArray(duty.value.attributes.en);
 
-if (!props.duty.attributes.en) {
-  console.log("No attributes EN");
-  duty.value.attributes.en = {};
-}
-
+console.log(duty.value.attributes);
 ////////////////////////////////////////////////////////////////////////////////
 
 const detachUserFromDuty = (user: App.Models.User) => {

@@ -135,11 +135,6 @@ const props = defineProps<{
 
 const form = useForm("dutyInstitution", props.dutyInstitution);
 
-// if form.attributes.en is empty array then create empty object
-if (form.attributes.en.length === 0) {
-  form.attributes.en = {};
-}
-
 const options = props.padaliniai.map((padalinys) => ({
   value: padalinys.id,
   label: padalinys.shortname,

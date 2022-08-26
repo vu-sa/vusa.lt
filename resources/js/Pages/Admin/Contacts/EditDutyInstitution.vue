@@ -3,7 +3,7 @@
     :title="dutyInstitution.name ?? dutyInstitution.short_name"
     :back-url="route('dutyInstitutions.index')"
   >
-    <template #aside-header>
+    <template #after-heading>
       <PreviewModelButton
         main-route="contacts.category"
         padalinys-route="contacts.category"
@@ -72,6 +72,7 @@ import { NButton, NIcon, createDiscreteApi } from "naive-ui";
 import { ref } from "vue";
 import route from "ziggy-js";
 
+import { checkForEmptyArray } from "@/Composables/checkAttributes";
 import DutyInstitutionForm from "@/Components/Admin/Forms/DutyInstitutionForm.vue";
 import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
 import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
@@ -88,15 +89,21 @@ const props = defineProps<{
 const dutyInstitution = ref(props.dutyInstitution);
 const { message } = createDiscreteApi(["message"]);
 
-// check if dutyInstitution.en is null, then create it
-
 if (!props.dutyInstitution.attributes) {
   dutyInstitution.value.attributes = {};
 }
 
+dutyInstitution.value.attributes = checkForEmptyArray(
+  dutyInstitution.value.attributes
+);
+
 if (!props.dutyInstitution.attributes.en) {
   dutyInstitution.value.attributes.en = {};
 }
+
+dutyInstitution.value.attributes.en = checkForEmptyArray(
+  dutyInstitution.value.attributes.en
+);
 
 ////////////////////////////////////////////////////////////////////////////////
 // function to order duties on button press

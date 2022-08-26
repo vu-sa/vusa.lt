@@ -64,7 +64,6 @@ class DutyInstitutionController extends Controller
      */
     public function store(Request $request)
     {
-        // validate
         $request->validate([
             'name' => 'required',
             'short_name' => 'required',
@@ -72,13 +71,14 @@ class DutyInstitutionController extends Controller
             'padalinys_id' => 'required',
         ]);
 
-        // create
         $dutyInstitution = new DutyInstitution();
         $dutyInstitution->name = $request->name;
         $dutyInstitution->short_name = $request->short_name;
         $dutyInstitution->alias = $request->alias;
         $dutyInstitution->padalinys_id = $request->padalinys_id;
         $dutyInstitution->image_url = $request->image_url;
+        $dutyInstitution->attributes = $request->all()['attributes'];
+        $dutyInstitution->type_id = $request->type_id;
         $dutyInstitution->save();
 
         return redirect()->route('dutyInstitutions.index');
@@ -125,6 +125,8 @@ class DutyInstitutionController extends Controller
      */
     public function update(Request $request, DutyInstitution $dutyInstitution)
     {
+        // dd($request->all());
+        
         // validate
         $request->validate([
             'name' => 'required',

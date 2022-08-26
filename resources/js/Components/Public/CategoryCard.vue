@@ -17,7 +17,6 @@
     >
       <NButton
         round
-        tertiary
         size="small"
         @click.stop="
           Inertia.visit(
@@ -32,7 +31,6 @@
       >
       <NButton
         round
-        tertiary
         size="small"
         @click.stop="
           Inertia.visit(
@@ -47,7 +45,6 @@
       >
       <NButton
         round
-        tertiary
         size="small"
         @click.stop="
           Inertia.visit(
@@ -76,7 +73,6 @@
       >
         <NButton
           round
-          tertiary
           size="small"
           @click.stop="
             Inertia.visit(
@@ -91,7 +87,6 @@
         >
         <NButton
           round
-          tertiary
           size="small"
           @click.stop="
             Inertia.visit(
@@ -106,7 +101,6 @@
         >
         <NButton
           round
-          tertiary
           size="small"
           @click.stop="
             Inertia.visit(

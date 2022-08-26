@@ -68,7 +68,7 @@ class DutyController extends Controller
         $duty->name = $request->name;
         $duty->email = $request->email;
         $duty->description = $request->description;
-        $duty->attributes = $request->attributes;
+        $duty->attributes = $request->all()['attributes'];
         $duty->institution()->associate($request->institution['id']);
         // TODO: sutvarkyti
         $duty->type_id = $request->type['id'];
