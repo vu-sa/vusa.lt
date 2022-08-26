@@ -118,7 +118,7 @@ import {
   NScrollbar,
   NTree,
 } from "naive-ui";
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, reactive, ref } from "vue";
 import { split } from "lodash";
 import route, { RouteParamsWithQueryOverload } from "ziggy-js";
 
@@ -143,7 +143,7 @@ const homeParams: RouteParamsWithQueryOverload = reactive({
   lang: locale.value,
 });
 
-const activeMenuKey = ref("");
+const activeMenuKey = ref(usePage().props.value.navigationItemId);
 
 const expandedKeys = ref([]);
 const selectedKeys = ref([]);
@@ -242,7 +242,6 @@ const handleSelectNavigation = (id) => {
         // message.info("Navigating to " + url);
         Inertia.visit(
           route("main.page", { lang: locale.value, permalink: url }),
-          {},
           {
             preserveScroll: false,
           }
