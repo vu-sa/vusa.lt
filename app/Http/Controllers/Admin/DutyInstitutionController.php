@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\DutyInstitution;
+use App\Models\Duty;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller as Controller;
 use Inertia\Inertia;
@@ -100,11 +101,9 @@ class DutyInstitutionController extends Controller
      */
     public function edit(DutyInstitution $dutyInstitution)
     {
-        // dd($dutyInstitution);
-
         return Inertia::render('Admin/Contacts/EditDutyInstitution', [
             'dutyInstitution' => $dutyInstitution,
-            'duties' => $dutyInstitution->duties,
+            'duties' => $dutyInstitution->duties->sortBy('order')->values(),
             'padaliniai' => Padalinys::orderBy('shortname_vu')->get()->map(function ($padalinys) {
                 return [
                     'id' => $padalinys->id,
@@ -167,5 +166,14 @@ class DutyInstitutionController extends Controller
         });
 
         return back()->with('search_other', $institutions);
+    }
+
+    public function reorderDuties(Request $request)
+    {
+        foreach ($request->duties as $duty) {
+            $dutyModel = Duty::find($duty['id']);
+            $dutyModel->order = $duty['order'];
+            $dutyModel->save();
+        }
     }
 }

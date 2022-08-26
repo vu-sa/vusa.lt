@@ -296,10 +296,11 @@ class MainController extends Controller
 			$alias_duties = collect([]);
 
 			foreach ($child_duty_types as $child_duty_type) {
-				$alias_duties = $alias_duties->merge($duty_institution->duties->where('type_id', '=', $child_duty_type->id));
+
+				$alias_duties = $alias_duties->merge($duty_institution->duties->where('type_id', '=', $child_duty_type->id)->sortBy('order')->values());
 			}
 
-			$alias_duties = $alias_duties->merge($duty_institution->duties->where('type_id', '=', $duty_type->id));
+			$alias_duties = $alias_duties->merge($duty_institution->duties->where('type_id', '=', $duty_type->id)->sortBy('order')->values());
 		} else {
 			$duty_institution = DutyInstitution::where('alias', '=', $alias)->first();
 
@@ -307,10 +308,8 @@ class MainController extends Controller
 				abort(404);
 			}
 
-			$alias_duties = $duty_institution->duties;
+			$alias_duties = $duty_institution->duties->sortBy('order')->values();
 		}
-
-		// dd($duty_institution, $alias_duties);
 
 		$alias_contacts = [];
 
@@ -325,30 +324,6 @@ class MainController extends Controller
 		$alias_contact_collection = new EloquentCollection($alias_contacts);
 
 		$alias_contact_collection = $alias_contact_collection->unique();
-
-		// dd($alias_contact_collection);
-
-		// if ($padalinys->id === 16) {
-		// 	$duty_institution = DutyInstitution::where('alias', '=', 'centrinis-biuras')->first();
-		// } else {
-		// 	$duty_institution = DutyInstitution::where('padalinys_id', '=', $padalinys->id)->first();
-		// }
-
-		// else {
-
-		// 	$duty_institutions = DutyInstitution::where('padalinys_id', '=', $padalinys->id)->get();
-
-		// 	foreach ($duty_institutions as $key1 => $institution) {
-		// foreach ($duty_institution->duties as $key2 => $duty) {
-		// 	foreach ($duty->users as $key3 => $user) {
-		// 		if ($user->has('duties')) {
-		// 			array_push($alias_contacts, $user);
-		// 		}
-		// 	}
-		// }
-		// 	}
-
-		// $alias_contacts = collect($alias_contacts)->unique();
 
 		return Inertia::render('Public/Contacts/ContactsShow', [
 			'institution' => $duty_institution,
@@ -587,7 +562,6 @@ class MainController extends Controller
 
 	public function ataskaita2022()
 	{
-
 		$permalink = request()->route('permalink');
 
 		// get current locale

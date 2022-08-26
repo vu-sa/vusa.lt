@@ -22,15 +22,28 @@
     </UpsertModelLayout>
 
     <template #aside-card>
-      <div v-if="duties" class="main-card h-fit">
+      <div v-if="duties" class="main-card h-fit transition-transform">
         <strong>Šiuo metu institucijai priklauso šios pareigos:</strong>
-        <ul class="list-inside">
-          <li v-for="duty in duties" :key="duty.id">
+        <TransitionGroup name="list" tag="ul" class="list-inside">
+          <li v-for="duty in duties" :key="duty.id" class="gap-4">
             <Link :href="route('duties.edit', { id: duty.id })">{{
               duty.name
             }}</Link>
+            <div class="ml-2 inline-flex gap-1">
+              <NButton text @click="reorderDuties('up', duty)"
+                ><NIcon :component="ArrowCircleUp24Regular"
+              /></NButton>
+              <NButton text @click="reorderDuties('down', duty)"
+                ><NIcon :component="ArrowCircleDown24Regular"
+              /></NButton>
+            </div>
           </li>
-        </ul>
+        </TransitionGroup>
+        <FadeTransition>
+          <div v-if="dutiesWereReordered" class="mt-4">
+            <NButton @click="saveReorderedDuties">Atnaujinti</NButton>
+          </div>
+        </FadeTransition>
       </div>
       <p v-else class="main-card col-span-3 h-fit">
         Ši institucija <strong>neturi</strong> pareigų.
@@ -40,6 +53,7 @@
 </template>
 
 <script lang="ts">
+import { Inertia } from "@inertiajs/inertia";
 import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
 
 export default {
@@ -48,11 +62,17 @@ export default {
 </script>
 
 <script setup lang="ts">
+import {
+  ArrowCircleDown24Regular,
+  ArrowCircleUp24Regular,
+} from "@vicons/fluent";
 import { Link } from "@inertiajs/inertia-vue3";
+import { NButton, NIcon } from "naive-ui";
 import { ref } from "vue";
 import route from "ziggy-js";
 
 import DutyInstitutionForm from "@/Components/Admin/Forms/DutyInstitutionForm.vue";
+import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
 import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import PreviewModelButton from "@/Components/Admin/Buttons/PreviewModelButton.vue";
 import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
@@ -74,4 +94,55 @@ if (!props.dutyInstitution.attributes) {
 if (!props.dutyInstitution.attributes.en) {
   dutyInstitution.value.attributes.en = {};
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// function to order duties on button press
+const duties = ref(props.duties);
+const dutiesWereReordered = ref(false);
+
+// this function only reorders the array, but does not change the order value of the duties
+// the order value is assigned in the backend, using the indexes of the array, which is the one manipulated here
+const reorderDuties = (direction: "up" | "down", duty: App.Models.Duty) => {
+  const index = duties.value.indexOf(duty);
+  if (index === -1) {
+    return;
+  }
+  const newIndex = direction === "up" ? index - 1 : index + 1;
+  if (newIndex < 0 || newIndex >= duties.value.length) {
+    return;
+  }
+
+  const newDuties = [...duties.value];
+  const temp = newDuties[index];
+  newDuties[index] = newDuties[newIndex];
+  newDuties[newIndex] = temp;
+  duties.value = newDuties;
+
+  dutiesWereReordered.value = true;
+};
+
+const saveReorderedDuties = () => {
+  const newDuties = duties.value.map((duty, index) => {
+    duty.order = index;
+    return duty;
+  });
+  Inertia.post(
+    route("dutyInstitutions.reorderDuties"),
+    {
+      duties: newDuties,
+    },
+    {
+      preserveState: true,
+      onSuccess: () => {
+        dutiesWereReordered.value = false;
+      },
+    }
+  );
+};
 </script>
+
+<style>
+.list-move {
+  transition: all 0.5s ease;
+}
+</style>
