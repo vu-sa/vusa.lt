@@ -84,7 +84,7 @@ class NewsController extends Controller
             'image_author' => $request->image_author,
             'publish_time' => $request->publish_time,
             'draft' => $request->draft ?? 0,
-            'padalinys_id' => User::find(Auth::user()->id)->padalinys()->id,
+            'padalinys_id' => User::find(Auth::user()->id)->padalinys()?->id ?? Auth::user()->isAdmin() ? 16 : null,
         ]);
 
         return redirect()->route('news.index');

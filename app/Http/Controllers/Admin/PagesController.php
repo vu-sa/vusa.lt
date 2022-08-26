@@ -78,7 +78,7 @@ class PagesController extends Controller
             'lang' => $request->lang,
             'text' => $request->text,
             'other_lang_id' => $request->other_lang_id,
-            'padalinys_id' => User::find(Auth::user()->id)->padalinys()->id,
+            'padalinys_id' => User::find(Auth::user()->id)->padalinys()?->id ?? Auth::user()->isAdmin() ? 16 : null,
         ]);
 
         return redirect()->route('pages.index');
