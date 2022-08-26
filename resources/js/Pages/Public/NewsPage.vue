@@ -72,14 +72,14 @@ const editNews = () => {
 };
 
 const openAnotherLangNews = () => {
-  Inertia.visit(
+  window.open(
     route("news", {
       lang: props.otherLangNews.lang,
       newsString: props.otherLangNews.lang === "lt" ? "naujiena" : "news",
       padalinys: usePage().props.value.alias,
       permalink: props.otherLangNews.permalink,
     }),
-    { onFinish: () => loadLanguageAsync(props.otherLangNews.lang) }
+    "_blank"
   );
 };
 </script>
