@@ -67,8 +67,6 @@ class MainPageController extends Controller
             'link' => 'required',
         ]);
 
-        dd($request->all());
-        
         DB::transaction(function () use ($request) {
             
             $mainPage = new MainPage;
