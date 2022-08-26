@@ -1,29 +1,50 @@
 <template>
   <NForm :model="form" label-placement="top">
-    <NGrid :span="24" :x-gap="24">
-      <NFormItemGi label="Studijų programa" :span="12">
-        <NInput
-          v-model:value="form.attributes.study_program"
-          type="text"
-          placeholder="Įrašyti tekstą..."
-        />
-      </NFormItemGi>
-      <NFormItemGi label="Aprašymas" :span="24">
-        <TipTap
-          v-model="form.attributes.info_text"
-          :search-files="$page.props.search.other"
-        />
-      </NFormItemGi>
-      <NFormItemGi
-        label="Papildoma kuratoriaus nuotrauka (naudoti tuo atveju, kai asmuo turi daugiau nei vieną nuotrauką, pvz.: nes turi koordinatoriaus pareigybės nuotrauką)"
-        :span="24"
-      >
-        <UploadImageButtons
-          v-model="form.attributes.additional_photo"
-          :path="'contacts'"
-        />
-      </NFormItemGi>
-    </NGrid>
+    <NTabs animated type="card">
+      <NTabPane display-directive="show" name="lt" tab="🇱🇹">
+        <NGrid :span="24" :x-gap="24">
+          <NFormItemGi label="Studijų programa" :span="12">
+            <NInput
+              v-model:value="form.attributes.study_program"
+              type="text"
+              placeholder="Įrašyti tekstą..."
+            />
+          </NFormItemGi>
+          <NFormItemGi label="Aprašymas" :span="24">
+            <TipTap
+              v-model="form.attributes.info_text"
+              :search-files="$page.props.search.other"
+            />
+          </NFormItemGi>
+          <NFormItemGi
+            label="Papildoma kuratoriaus nuotrauka (naudoti tuo atveju, kai asmuo turi daugiau nei vieną nuotrauką, pvz.: nes turi koordinatoriaus pareigybės nuotrauką)"
+            :span="24"
+          >
+            <UploadImageButtons
+              v-model="form.attributes.additional_photo"
+              :path="'contacts'"
+            />
+          </NFormItemGi>
+        </NGrid>
+      </NTabPane>
+      <NTabPane display-directive="show" name="en" tab="🇬🇧">
+        <NGrid :span="24" :x-gap="24">
+          <NFormItemGi label="Studijų programa" :span="12">
+            <NInput
+              v-model:value="form.attributes.en.study_program"
+              type="text"
+              placeholder="Įrašyti tekstą..."
+            />
+          </NFormItemGi>
+          <NFormItemGi label="Aprašymas" :span="24">
+            <TipTap
+              v-model="form.attributes.en.info_text"
+              :search-files="$page.props.search.other"
+            />
+          </NFormItemGi>
+        </NGrid>
+      </NTabPane>
+    </NTabs>
     <div class="flex justify-end gap-2">
       <DeleteModelButton
         v-if="deleteModelRoute"
@@ -36,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import { NForm, NFormItemGi, NGrid, NInput } from "naive-ui";
+import { NForm, NFormItemGi, NGrid, NInput, NTabPane, NTabs } from "naive-ui";
 import { useForm } from "@inertiajs/inertia-vue3";
 import TipTap from "@/Components/TipTap.vue";
 
@@ -66,5 +87,14 @@ if (!form.attributes.info_text) {
 
 if (!form.attributes.additional_photo) {
   form.attributes.additional_photo = "";
+}
+
+if (!form.attributes.en) {
+  form.attributes.en = {};
+}
+
+// if form.attributes.en is empty array then create empty object
+if (form.attributes.en.length === 0) {
+  form.attributes.en = {};
 }
 </script>

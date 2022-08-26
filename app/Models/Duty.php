@@ -11,6 +11,10 @@ class Duty extends Model
 
     protected $with = ['type'];
 
+    protected $casts = [
+        'attributes' => 'array',
+    ];
+
     protected $guarded = [];
 
     public function users()

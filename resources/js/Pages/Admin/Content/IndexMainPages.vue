@@ -49,13 +49,16 @@ const columns = [
     key: "padalinys.shortname",
   },
   {
+    key: "lang",
+    title: "Kalba",
+    width: 100,
+    render(row) {
+      return row.lang === "lt" ? "🇱🇹" : "🇬🇧";
+    },
+  },
+  {
     title: "Nuoroda",
     key: "link",
-  },
-
-  {
-    title: "Kalba",
-    key: "lang",
   },
 ];
 </script>

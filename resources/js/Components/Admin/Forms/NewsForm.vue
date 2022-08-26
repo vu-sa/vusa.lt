@@ -28,14 +28,12 @@
 
       <NFormItemGi label="Kitos kalbos puslapis" :span="12">
         <NSelect
-          v-model:value="form.other_lang_news"
-          disabled
+          v-model:value="form.other_lang_id"
           filterable
-          placeholder="Ieškoti puslapio..."
+          :disabled="modelRoute === 'news.store'"
+          placeholder="Pasirinkti kitos kalbos puslapį... (tik tada, kai jau sukūrėte puslapį)"
           :options="otherLangNewsOptions"
           clearable
-          remote
-          @search="getOtherLangNews"
         />
       </NFormItemGi>
 
@@ -125,11 +123,25 @@ import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue"
 
 const props = defineProps<{
   news: App.Models.News;
+  otherLangNews: App.Models.News[];
   modelRoute: string;
   deleteModelRoute?: string;
 }>();
 
 const form = useForm("news", props.news);
+
+const otherLangNewsOptions = computed(() => {
+  if (props.modelRoute === "news.store") {
+    return [];
+  }
+
+  return props.otherLangNews
+    .map((news) => ({
+      value: news.id,
+      label: `${news.title} (${news.padalinys?.shortname})`,
+    }))
+    .reverse();
+});
 
 const languageOptions = [
   {
@@ -141,8 +153,6 @@ const languageOptions = [
     label: "English",
   },
 ];
-
-const otherLangNewsOptions = ref([]);
 
 if (props.modelRoute == "news.store") {
   watch(
@@ -159,35 +169,4 @@ if (props.modelRoute == "news.store") {
     }
   );
 }
-
-const getOtherLangNews = debounce((input) => {
-  // get other lang
-  if (input.length > 2) {
-    // message.loading("Ieškoma...");
-    const other_lang = news.lang === "lt" ? "en" : "lt";
-    Inertia.post(
-      route("news.search"),
-      {
-        data: {
-          title: input,
-          lang: other_lang,
-        },
-      },
-      {
-        preserveState: true,
-        preserveScroll: true,
-        onSuccess: () => {
-          otherLangnewsOptions.value = usePage().props.value.search.news.map(
-            (news) => {
-              return {
-                value: news.id,
-                label: `${news.title} (${news.padalinys.shortname})`,
-              };
-            }
-          );
-        },
-      }
-    );
-  }
-}, 500);
 </script>

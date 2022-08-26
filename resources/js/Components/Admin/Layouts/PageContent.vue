@@ -15,6 +15,7 @@
       <div class="flex">
         <NIcon size="28" :component="AddCircle32Regular" /></div
     ></Link>
+    <slot name="after-heading"></slot>
     <aside class="ml-auto font-bold transition-colors md:text-xs">
       <slot name="aside-header"></slot>
     </aside>
@@ -35,7 +36,7 @@ import { NIcon } from "naive-ui";
 import { computed } from "vue";
 import route from "ziggy-js";
 
-import FadeTransition from "@/Components/Public/FadeTransition.vue";
+import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
 
 defineProps<{
   createUrl?: string;

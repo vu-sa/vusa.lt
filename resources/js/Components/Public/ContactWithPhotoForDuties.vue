@@ -1,20 +1,23 @@
 <template>
-  <div class="flex h-auto min-h-fit flex-col rounded-lg bg-white lg:flex-row">
+  <div
+    class="flex h-auto min-h-fit max-w-xl flex-col rounded-lg bg-white lg:flex-row"
+  >
     <div
       v-if="getImageUrl(contact)"
-      :id="`contact-photo-${contact.id}`"
+      :id="`contact-photo-${index}`"
       class="relative h-60 w-auto flex-none lg:h-auto lg:w-40"
     >
       <NImage
         :src="getImageUrl(contact)"
         lazy
         :intersection-observer-options="{
-          root: `#contact-photo-${contact.id}`,
+          root: `#contact-photo-${index}`,
         }"
         object-fit="cover"
         :show-toolbar="false"
-        class="absolute inset-0 h-full w-full rounded-t-lg object-cover lg:rounded-t-none lg:rounded-l-lg"
+        class="absolute inset-0 rounded-t-lg lg:rounded-t-none lg:rounded-l-lg"
         style="object-position: 50% 25%"
+        :alt="contact.name"
       />
     </div>
     <div class="flex flex-auto flex-col justify-between gap-4 p-4">
@@ -33,7 +36,10 @@
             </NIcon>
           </NButton>
         </h2>
-        <div class="w-fit p-2 text-sm font-medium text-gray-500">
+        <div
+          v-if="contact.duties"
+          class="w-fit p-2 text-sm font-medium text-gray-500"
+        >
           <template v-for="duty in contact.duties" :key="duty.id">
             <NPopover
               v-if="duty.description"
@@ -41,17 +47,22 @@
               :style="{ maxWidth: '250px' }"
               ><template #trigger>
                 <p class="my-1 cursor-pointer">
-                  {{ checkIfContactNameEndsWithEDot(contact, duty) }}
-                  {{ showStudyProgram(duty) }}
+                  {{
+                    dutyName(
+                      checkIfContactNameEndsWithEDot(contact, duty),
+                      duty
+                    )
+                  }}
+                  {{ studyProgram(showStudyProgram(duty), duty) }}
                 </p>
               </template>
-              <span
-                v-html="duty.pivot?.attributes?.info_text ?? duty.description"
-              ></span>
+              <span v-html="dutyDescription(duty)"></span>
             </NPopover>
             <p v-else class="my-1">
-              {{ checkIfContactNameEndsWithEDot(contact, duty) }}
-              {{ showStudyProgram(duty) }}
+              {{
+                dutyName(checkIfContactNameEndsWithEDot(contact, duty), duty)
+              }}
+              {{ studyProgram(showStudyProgram(duty), duty) }}
             </p>
           </template>
         </div>
@@ -81,16 +92,58 @@
 <script setup lang="ts">
 import { Mail20Regular, Phone20Regular } from "@vicons/fluent";
 import { NButton, NIcon, NImage, NPopover } from "naive-ui";
-
 import { PersonEdit24Regular } from "@vicons/fluent";
+import { usePage } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 
-const props = defineProps<{
+defineProps<{
   contact: App.Models.User;
+  index: string;
 }>();
 
 const openEdit = (contact: App.Models.User) => {
   window.open(route("users.edit", { user: contact.id }), "_blank");
+};
+
+// firstDutyName is only used, because there are some rushed functions that are still need to be used :)
+// in this case, the duty name is mutated and then passed to this function
+// TODO: cleanup this piece of tragedy...
+const dutyName = (firstDutyName, duty) => {
+  const locale = usePage().props.value.locale;
+
+  if (locale === "en") {
+    return duty.attributes?.en?.name ?? firstDutyName;
+  }
+
+  return firstDutyName ?? "";
+};
+
+const dutyDescription = (duty) => {
+  const locale = usePage().props.value.locale;
+
+  if (locale === "en") {
+    return (
+      duty.attributes?.en?.description ??
+      duty.pivot?.attributes?.info_text ??
+      duty.description
+    );
+  }
+
+  return duty.pivot?.attributes?.info_text ?? duty.description;
+};
+
+const studyProgram = (firstStudyProgramTitle, duty) => {
+  const locale = usePage().props.value.locale;
+
+  console.log(duty.pivot.attributes?.en);
+
+  if (locale === "en") {
+    return duty.pivot.attributes?.en?.study_program == null
+      ? firstStudyProgramTitle
+      : `(${duty.pivot.attributes?.en?.study_program})`;
+  }
+
+  return firstStudyProgramTitle ?? "";
 };
 
 // ! TIK KURATORIAMS: nusprendžia, kurią nuotrauką imti, pagal tai, ar url turi "kuratoriai"
@@ -103,12 +156,12 @@ const getImageUrl = (contact: App.Models.User) => {
       if (contact.duties[duty].name.toLowerCase().includes("kuratorius")) {
         return (
           contact.duties[duty].pivot.attributes?.additional_photo ??
-          contact.image
+          contact.profile_photo_path
         );
       }
     }
   }
-  return contact.image ?? "";
+  return contact.profile_photo_path ?? "";
 };
 
 // ! TIK KURATORIAMS: pakeisti galūnes

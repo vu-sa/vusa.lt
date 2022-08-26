@@ -26,7 +26,7 @@ const news = {
   title: "",
   permalink: "",
   lang: "lt",
-  other_lang_news: null,
+  other_lang_id: null,
   text: "",
   short: "",
   publish_time: null,

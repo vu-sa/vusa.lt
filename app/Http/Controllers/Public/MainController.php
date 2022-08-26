@@ -41,42 +41,39 @@ class MainController extends Controller
 		$host = Request::server('HTTP_HOST');
 
 		if ($host !== 'localhost') {
-			$subdomain = explode('.', $host)[0];
-			$this->alias = $subdomain == 'www' ? 'vusa' : $subdomain;
-			$this->alias = $subdomain == 'vusa' ? 'vusa' : $this->alias;
-			$this->alias = $subdomain == 'naujas' ? 'vusa' : $this->alias;
-			$this->alias = $subdomain == 'static' ? 'vusa' : $this->alias;
-			$this->alias = Route::currentRouteName() == 'home' ? 'vusa' : $this->alias;
-			$this->alias = Route::currentRouteName() == 'padalinys.home' ? 'vusa' : $this->alias;
+			// get subdomain, for example 'gmc' or other element
+			$firstElement = explode('.', $host)[0];
+
+			switch ($firstElement) {
+				case 'naujas':
+					$this->alias = 'vusa';
+					break;
+
+				case 'www':
+					$this->alias = 'vusa';
+					break;
+
+				case 'static':
+					$this->alias = 'vusa';
+					break;
+				
+				default:
+					$this->alias = $firstElement;
+					break;
+			}
 		} else {
 			$this->alias = 'vusa';
 		}
-
 
 		if (request()->padalinys != null) {
 			$this->alias = in_array(request()->padalinys, ["Padaliniai", "naujas"]) ? '' : request()->padalinys;
 		}
 
+		// get main navigation
 		$vusa = Padalinys::where('shortname', 'VU SA')->first();
 		$mainNavigation = Navigation::where([['padalinys_id', $vusa->id], ['lang', app()->getLocale()]])->orderBy('order')->get();
-		// dd($this->alias);
-		/// pakeisti visur alias į vusa kad būtų aiškiau nes čia dabar nesąmonė
 
-
-		// if ($this->alias !== '') {
-		// 	$banners = Padalinys::where('alias', $this->alias)->first()->banners()->inRandomOrder()->where('is_active', 1)->get();
-		// } else {
-		// 	$banners = collect([]);
-		// }
-
-		// $banners = $banners->merge(Padalinys::where('type', 'pagrindinis')->first()->banners()->inRandomOrder()->where('is_active', 1)->get());
-		// Inertia::share('banners', $banners);
 		Inertia::share('mainNavigation', $mainNavigation);
-
-		// if table exists in database
-		// if (Schema::hasTable('page_views')) {
-		// 	PageView::createViewLog();
-		// }
 	}
 
 	public function home()
@@ -87,7 +84,7 @@ class MainController extends Controller
 
 		// dd($this->alias, $padalinys);
 
-		$news = News::where([['padalinys_id', '=', $padalinys->id], ['draft', '=', 0]])->where('publish_time', '<=', date('Y-m-d H:i:s'))->orderBy('publish_time', 'desc')->take(4)->get();
+		$news = News::where([['padalinys_id', '=', $padalinys->id],['lang', app()->getLocale()], ['draft', '=', 0]])->where('publish_time', '<=', date('Y-m-d H:i:s'))->orderBy('publish_time', 'desc')->take(4)->get();
 
 		Inertia::share('alias', $this->alias);
 		return Inertia::render('Public/HomePage', [
@@ -110,7 +107,7 @@ class MainController extends Controller
 					"important" => $news->important,
 				];
 			}),
-			'mainPage' => MainPage::where('padalinys_id', '=', $padalinys->id)->get(),
+			'mainPage' => MainPage::where([['padalinys_id', $padalinys->id], ['lang', app()->getLocale()]])->get(),
 		])->withViewData([
 			'description' => 'Vilniaus universiteto Studentų atstovybė (VU SA) – seniausia ir didžiausia Lietuvoje visuomeninė, ne pelno siekianti, nepolitinė, ekspertinė švietimo organizacija'
 		]);
@@ -133,7 +130,10 @@ class MainController extends Controller
 
 		// Storage::get($news->image) == null ? '/images/icons/naujienu_foto.png' : Storage::url($news->image);
 
+		$other_lang_news = $news->other_lang_id == null ? null : News::where('id', '=', $news->other_lang_id)->select('id', 'lang', 'permalink')->first();
+
 		Inertia::share('alias', $news->padalinys->alias);
+		Inertia::share('sharedOtherLangPage', $other_lang_news);
 		return Inertia::render('Public/NewsPage', [
 			'article' => [
 				'id' => $news->id,
@@ -159,6 +159,7 @@ class MainController extends Controller
 				'main_points' => $news->main_points,
 				'read_more' => $news->read_more,
 			],
+			'otherLangNews' => $other_lang_news,
 		])->withViewData([
 			'title' => $news->title,
 			'description' => strip_tags($news->short),
@@ -202,8 +203,10 @@ class MainController extends Controller
 		}
 
 		$navigation_item = Navigation::where([['padalinys_id', '=', $padalinys->id], ['name', '=', $page->title]])->get()->first();
+		$other_lang_page = $page->other_lang_id == null ? null : Page::where('id', '=', $page->other_lang_id)->select('id', 'lang', 'permalink')->first();
 
 		Inertia::share('alias', $page->padalinys->alias);
+		Inertia::share('sharedOtherLangPage', $other_lang_page);
 		return Inertia::render('Public/ContentPage', [
 			'navigationItemId' => $navigation_item?->id,
 			'page' => [
@@ -217,6 +220,7 @@ class MainController extends Controller
 				'category' => $page->category,
 				'padalinys' => $page->padalinys->shortname,
 			],
+			'otherLangPage' => $other_lang_page,
 		])->withViewData([
 			'title' => $page->title,
 			// truncate text to first sentence
@@ -279,7 +283,21 @@ class MainController extends Controller
 
 		$alias = request()->alias;
 
-		if (in_array($alias, [null, 'koordinatoriai', 'kuratoriai', 'studentu-atstovai'])) {
+		if ($alias == 'studentu-atstovai') {
+			// get all student duty institutions that have type 'studentu-atstovu-organas' and is of the same padalinys as the current one
+			$duty_institutions = DutyInstitution::with(['duties.users'])->where([['padalinys_id', '=', $padalinys->id]])->whereHas('type', function (Builder $query) {
+				$query->where('alias', 'studentu-atstovu-organas');
+			})->get()->sortBy('name')->values();
+
+			return Inertia::render('Public/Contacts/StudentRepresentatives', [
+				'institutions' => $duty_institutions
+			])->withViewData([
+				'title' => 'Studentų atstovai',
+				'description' => 'VU SA studentų atstovai',
+			]);
+		}
+
+		if (in_array($alias, [null, 'koordinatoriai', 'kuratoriai'])) {
 			$duty_type = DutyType::where('alias', '=', $alias ?? "koordinatoriai")->first();
 			$child_duty_types = DutyType::where('pid', '=', $duty_type->id)->get();
 
@@ -292,10 +310,11 @@ class MainController extends Controller
 			$alias_duties = collect([]);
 
 			foreach ($child_duty_types as $child_duty_type) {
-				$alias_duties = $alias_duties->merge($duty_institution->duties->where('type_id', '=', $child_duty_type->id));
+
+				$alias_duties = $alias_duties->merge($duty_institution->duties->where('type_id', '=', $child_duty_type->id)->sortBy('order')->values());
 			}
 
-			$alias_duties = $alias_duties->merge($duty_institution->duties->where('type_id', '=', $duty_type->id));
+			$alias_duties = $alias_duties->merge($duty_institution->duties->where('type_id', '=', $duty_type->id)->sortBy('order')->values());
 		} else {
 			$duty_institution = DutyInstitution::where('alias', '=', $alias)->first();
 
@@ -303,10 +322,8 @@ class MainController extends Controller
 				abort(404);
 			}
 
-			$alias_duties = $duty_institution->duties;
+			$alias_duties = $duty_institution->duties->sortBy('order')->values();
 		}
-
-		// dd($duty_institution, $alias_duties);
 
 		$alias_contacts = [];
 
@@ -322,30 +339,6 @@ class MainController extends Controller
 
 		$alias_contact_collection = $alias_contact_collection->unique();
 
-		// dd($alias_contact_collection);
-
-		// if ($padalinys->id === 16) {
-		// 	$duty_institution = DutyInstitution::where('alias', '=', 'centrinis-biuras')->first();
-		// } else {
-		// 	$duty_institution = DutyInstitution::where('padalinys_id', '=', $padalinys->id)->first();
-		// }
-
-		// else {
-
-		// 	$duty_institutions = DutyInstitution::where('padalinys_id', '=', $padalinys->id)->get();
-
-		// 	foreach ($duty_institutions as $key1 => $institution) {
-		// foreach ($duty_institution->duties as $key2 => $duty) {
-		// 	foreach ($duty->users as $key3 => $user) {
-		// 		if ($user->has('duties')) {
-		// 			array_push($alias_contacts, $user);
-		// 		}
-		// 	}
-		// }
-		// 	}
-
-		// $alias_contacts = collect($alias_contacts)->unique();
-
 		return Inertia::render('Public/Contacts/ContactsShow', [
 			'institution' => $duty_institution,
 			'contacts' => $alias_contact_collection->map(function ($contact) use ($duty_institution) {
@@ -355,7 +348,7 @@ class MainController extends Controller
 					'email' => $contact->email,
 					'phone' => $contact->phone,
 					'duties' => $contact->duties->where('institution_id', '=', $duty_institution->id),
-					'image' => function () use ($contact) {
+					'profile_photo_path' => function () use ($contact) {
 						if (substr($contact->profile_photo_path, 0, 4) == 'http') {
 							return $contact->profile_photo_path;
 						} else if (is_null($contact->profile_photo_path)) {
@@ -583,7 +576,6 @@ class MainController extends Controller
 
 	public function ataskaita2022()
 	{
-
 		$permalink = request()->route('permalink');
 
 		// get current locale

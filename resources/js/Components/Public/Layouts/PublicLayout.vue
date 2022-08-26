@@ -3,7 +3,7 @@
     <MetaIcons />
     <div class="min-h-screen bg-neutral-50 pb-8 antialiased">
       <MainNavigation />
-      <main class="pt-12 sm:pt-20 2xl:pt-32">
+      <main class="pt-24">
         <slot></slot>
       </main>
     </div>
@@ -19,7 +19,7 @@ import { NConfigProvider } from "naive-ui";
 import { onMounted } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
 
-import Footer from "@/Components/Public/FooterComponent.vue";
+import Footer from "@/Components/Public/FullWidth/SiteFooter.vue";
 import MainNavigation from "@/Components/Public/Layouts/MainNavigation.vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
 

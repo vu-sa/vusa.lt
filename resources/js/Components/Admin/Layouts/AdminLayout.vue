@@ -27,7 +27,7 @@
             @expand="collapsed = false"
           >
             <a class="h-fit w-fit" href="/">
-              <AppLogo class="mx-auto p-2" />
+              <AppLogo class="mx-auto w-full p-2" />
             </a>
             <AdminMenu :collapsed="collapsed" />
           </NLayoutSider>
@@ -41,7 +41,7 @@
         <NLayoutFooter class="absolute bottom-0 w-full"
           ><div class="mx-auto mb-2 w-fit">
             <NButton size="tiny" quaternary @click="showModal = true">
-              v0.2.4 (2022-08-01)
+              v0.3 (2022-08-26)
             </NButton>
           </div>
           <NModal v-model:show="showModal">
@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import { Head, usePage } from "@inertiajs/inertia-vue3";
+import { Head } from "@inertiajs/inertia-vue3";
 import {
   NButton,
   NConfigProvider,
@@ -70,7 +70,6 @@ import { ref } from "vue";
 
 import AdminMenu from "@/Components/Admin/Nav/AdminMenu.vue";
 import AppLogo from "@/Components/AppLogo.vue";
-import AsideNavigation from "@/Components/Admin/Layouts/AsideNavigation.vue";
 import Changelog from "@/Components/Admin/Misc/ChangelogCard.vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
 import UserAvatar from "../Nav/UserAvatar.vue";

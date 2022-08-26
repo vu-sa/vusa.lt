@@ -43,7 +43,7 @@ import { debounce } from "lodash";
 import { ref } from "vue";
 
 import ContactWithPhotoForUsers from "@/Components/Public/ContactWithPhotoForUsers.vue";
-import FadeTransition from "@/Components/Public/FadeTransition.vue";
+import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
 
 interface contactUserInterface
   extends Array<

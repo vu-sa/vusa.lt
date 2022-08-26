@@ -45,7 +45,9 @@
           </li>
         </ul>
       </div>
-      <p v-else>Šių pareigų kolkas niekas neužima.</p>
+      <p v-else class="main-card h-fit w-fit">
+        Šių pareigų kolkas niekas neužima.
+      </p>
     </template>
   </PageContent>
 </template>
@@ -65,14 +67,14 @@ import { LinkDismiss20Filled } from "@vicons/fluent";
 import {
   NAvatar,
   NButton,
-  NDivider,
   NIcon,
   NPopconfirm,
   createDiscreteApi,
 } from "naive-ui";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import route from "ziggy-js";
 
+import { checkForEmptyArray } from "@/Composables/checkAttributes";
 import DutyForm from "@/Components/Admin/Forms/DutyForm.vue";
 import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
@@ -87,6 +89,12 @@ const { message } = createDiscreteApi(["message"]);
 
 const hasUsers = computed(() => props.users.length > 0);
 
+const duty = ref(props.duty);
+
+duty.value.attributes = checkForEmptyArray(duty.value.attributes);
+duty.value.attributes.en = checkForEmptyArray(duty.value.attributes.en);
+
+console.log(duty.value.attributes);
 ////////////////////////////////////////////////////////////////////////////////
 
 const detachUserFromDuty = (user: App.Models.User) => {

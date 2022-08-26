@@ -53,6 +53,7 @@ Route::prefix('admin')->group(function () {
         Route::resource('dutyUsers', Admin\DutyUserController::class);
         Route::resource('dutyInstitutions', Admin\DutyInstitutionController::class);
         Route::post('dutyInstitutions/search', [Admin\DutyInstitutionController::class, 'searchForInstitutions'])->name('dutyInstitutions.search');
+        Route::post('dutyInstitutions/reorderDuties', [Admin\DutyInstitutionController::class, 'reorderDuties'])->name('dutyInstitutions.reorderDuties');
 
         Route::resource('roles', Admin\RolesController::class);
         Route::post('files/search', [Admin\FilesController::class, 'searchForFiles'])->name('files.search');
@@ -119,6 +120,7 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => '(lt|en)']], function
             Route::get('kontaktai/kategorija/{alias}', [Public\MainController::class, 'contactsCategory'])->name('contacts.category');
             Route::get('kontaktai/{alias}', [Public\MainController::class, 'contacts'])->name('contacts.alias');
 
+            // because of this, can't get current route for main.page, it shows main.news
             Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('news_string', '(naujiena|news)')->name('news');
 
             Route::middleware(['throttle:summerCamps'])->group(function () {

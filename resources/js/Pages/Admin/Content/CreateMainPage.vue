@@ -27,6 +27,6 @@ import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue"
 const mainPage = {
   text: "",
   link: "",
-  alias: "",
+  lang: "lt",
 };
 </script>

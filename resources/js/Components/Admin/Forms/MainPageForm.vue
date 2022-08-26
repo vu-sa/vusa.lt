@@ -13,7 +13,14 @@
         <NInput
           v-model:value="form.link"
           type="text"
-          placeholder="https://vu.lt"
+          placeholder="/stipendijos | https://vu.lt"
+        />
+      </NFormItemGi>
+      <NFormItemGi label="Kalba" :span="12">
+        <NSelect
+          v-model:value="form.lang"
+          :options="languageOptions"
+          placeholder="Pasirinkti kalbą..."
         />
       </NFormItemGi>
     </NGrid>
@@ -29,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { NForm, NFormItemGi, NGrid, NInput } from "naive-ui";
+import { NForm, NFormItemGi, NGrid, NInput, NSelect } from "naive-ui";
 import { useForm } from "@inertiajs/inertia-vue3";
 
 import DeleteModelButton from "@/Components/Admin/Buttons/DeleteModelButton.vue";
@@ -42,4 +49,15 @@ const props = defineProps<{
 }>();
 
 const form = useForm("mainPage", props.mainPage);
+
+const languageOptions = [
+  {
+    value: "lt",
+    label: "Lietuvių",
+  },
+  {
+    value: "en",
+    label: "English",
+  },
+];
 </script>

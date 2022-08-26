@@ -5,6 +5,7 @@
         :padaliniai="padaliniai"
         model-route="dutyInstitutions.store"
         :duty-institution="dutyInstitution"
+        :duty-institution-types="dutyInstitutionTypes"
       />
     </UpsertModelLayout>
   </PageContent>
@@ -27,6 +28,7 @@ import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue"
 
 defineProps<{
   padaliniai: Array<App.Models.Padalinys>;
+  dutyInstitutionTypes: App.Models.DutyInstitutionType[];
 }>();
 
 const dutyInstitution = reactive({
@@ -35,5 +37,13 @@ const dutyInstitution = reactive({
   alias: "",
   description: "",
   padalinys_id: null,
+  attributes: {
+    en: {
+      name: "",
+      short_name: "",
+      alias: "",
+      description: "",
+    },
+  },
 });
 </script>
