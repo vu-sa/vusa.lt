@@ -18,6 +18,7 @@
         model-route="dutyInstitutions.update"
         delete-model-route="dutyInstitutions.destroy"
         :duty-institution="dutyInstitution"
+        :duty-institution-types="dutyInstitutionTypes"
       />
     </UpsertModelLayout>
 
@@ -79,6 +80,7 @@ import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue"
 
 const props = defineProps<{
   dutyInstitution: App.Models.DutyInstitution;
+  dutyInstitutionTypes: Array<App.Models.DutyInstitutionType>;
   duties: Array<App.Models.Duty>;
   padaliniai: Array<App.Models.Padalinys>;
 }>();

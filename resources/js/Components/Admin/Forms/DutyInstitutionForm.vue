@@ -24,11 +24,25 @@
             />
           </NFormItemGi>
 
-          <NFormItemGi label="Padalinys" :span="12">
+          <NFormItemGi
+            label="Padalinys, kuriam priklauso institucija"
+            :span="12"
+          >
             <NSelect
               v-model:value="form.padalinys_id"
               :options="options"
               placeholder="VU SA X"
+              clearable
+            />
+          </NFormItemGi>
+
+          <NFormItemGi label="Institucijos tipas" :span="12">
+            <NSelect
+              v-model:value="form.type_id"
+              :options="dutyInstitutionTypes"
+              label-field="name"
+              value-field="id"
+              placeholder="Studentų atstovų organas"
               clearable
             />
           </NFormItemGi>
@@ -113,6 +127,7 @@ import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue"
 
 const props = defineProps<{
   dutyInstitution: App.Models.DutyInstitution;
+  dutyInstitutionTypes: App.Models.DutyInstitutionType[];
   padaliniai: Array<App.Models.Padalinys>;
   modelRoute: string;
   deleteModelRoute?: string;

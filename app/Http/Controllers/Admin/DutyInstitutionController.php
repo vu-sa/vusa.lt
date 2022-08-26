@@ -6,6 +6,7 @@ use App\Models\DutyInstitution;
 use App\Models\Duty;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller as Controller;
+use App\Models\DutyInstitutionType;
 use Inertia\Inertia;
 use App\Models\Padalinys;
 
@@ -51,6 +52,7 @@ class DutyInstitutionController extends Controller
                     'shortname' => $padalinys->shortname,
                 ];
             }),
+            'dutyInstitutionTypes' => DutyInstitutionType::all(),
         ]);
     }
 
@@ -104,6 +106,7 @@ class DutyInstitutionController extends Controller
         return Inertia::render('Admin/Contacts/EditDutyInstitution', [
             'dutyInstitution' => $dutyInstitution,
             'duties' => $dutyInstitution->duties->sortBy('order')->values(),
+            'dutyInstitutionTypes' => DutyInstitutionType::all(),
             'padaliniai' => Padalinys::orderBy('shortname_vu')->get()->map(function ($padalinys) {
                 return [
                     'id' => $padalinys->id,
@@ -130,7 +133,7 @@ class DutyInstitutionController extends Controller
         ]);
         
         // TODO: short_name and shortname are used as columns in some tables. Need to make the same name.
-        $dutyInstitution->update($request->only('name', 'short_name', 'description', 'padalinys_id', 'image_url', 'attributes'));
+        $dutyInstitution->update($request->only('name', 'short_name', 'description', 'padalinys_id', 'image_url', 'attributes', 'type_id'));
 
         return redirect()->back();
     }
