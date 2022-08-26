@@ -65,7 +65,7 @@
             />
           </NFormItemGi>
 
-          <NFormItemGi label="Techininė žymė" :span="12">
+          <NFormItemGi label="Techninė žymė" :span="12">
             <NInput
               v-model:value="form.attributes.en.alias"
               :disabled="modelRoute === 'dutyInstitutions.update'"

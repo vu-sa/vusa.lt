@@ -22,7 +22,7 @@
     </UpsertModelLayout>
 
     <template #aside-card>
-      <div v-if="duties" class="main-card h-fit transition-transform">
+      <div v-if="duties" class="main-card h-fit max-w-md">
         <strong>Šiuo metu institucijai priklauso šios pareigos:</strong>
         <TransitionGroup name="list" tag="ul" class="list-inside">
           <li v-for="duty in duties" :key="duty.id" class="gap-4">
@@ -67,7 +67,7 @@ import {
   ArrowCircleUp24Regular,
 } from "@vicons/fluent";
 import { Link } from "@inertiajs/inertia-vue3";
-import { NButton, NIcon } from "naive-ui";
+import { NButton, NIcon, createDiscreteApi } from "naive-ui";
 import { ref } from "vue";
 import route from "ziggy-js";
 
@@ -84,6 +84,7 @@ const props = defineProps<{
 }>();
 
 const dutyInstitution = ref(props.dutyInstitution);
+const { message } = createDiscreteApi(["message"]);
 
 // check if dutyInstitution.en is null, then create it
 
@@ -133,8 +134,10 @@ const saveReorderedDuties = () => {
     },
     {
       preserveState: true,
+      preserveScroll: true,
       onSuccess: () => {
         dutiesWereReordered.value = false;
+        message.success("Pareigų tvarka sėkmingai atnaujinta!");
       },
     }
   );
