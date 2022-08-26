@@ -3,7 +3,7 @@
     class="fixed top-0 z-50 flex max-h-24 w-full flex-row items-center justify-between border bg-white/80 px-6 py-2 text-gray-700 shadow-sm backdrop-blur-sm lg:px-24"
   >
     <div class="flex flex-row items-center space-x-4">
-      <Link :href="route('main.home', homeParams)">
+      <Link :href="route('main.home', homeParams)" @click="resetPadalinys()">
         <AppLogo class="w-36" />
       </Link>
       <NScrollbar>
@@ -212,6 +212,10 @@ const handleSelectPadalinys = (key) => {
       activeDrawer.value = false;
     },
   });
+};
+
+const resetPadalinys = () => {
+  padalinys.value = "Padaliniai";
 };
 
 const handleSelectNavigation = (id) => {
