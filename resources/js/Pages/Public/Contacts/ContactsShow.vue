@@ -25,9 +25,10 @@
         </div>
         <!-- <template v-for="duty in institution"> -->
         <ContactWithPhotoForDuties
-          v-for="contact in contacts"
+          v-for="(contact, index) in contacts"
           :key="contact.id"
           :contact="contact"
+          :index="index"
         >
         </ContactWithPhotoForDuties>
         <!-- </template> -->
