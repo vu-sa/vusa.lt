@@ -70,20 +70,19 @@
                     :href="route('calendar.event', attr.key)"
                     >{{ attr.popover.label }}</a
                   >
-                  <div class="my-auto flex items-center justify-center">
-                    <NPopover>
-                      <template #trigger>
-                        <NButton
-                          text
-                          size="small"
-                          color="white"
-                          @click="windowOpen(attr.customData.googleLink)"
-                          ><NIcon :component="Google"
-                        /></NButton>
-                      </template>
-                      Įsidėk į Google kalendorių!
-                    </NPopover>
-                  </div>
+                  <NConfigProvider
+                    class="flex h-fit items-center justify-center"
+                    :theme="darkTheme"
+                  >
+                    <div class="my-auto flex items-center justify-center">
+                      <NButton
+                        text
+                        size="small"
+                        @click="windowOpen(attr.customData.googleLink)"
+                        ><NIcon :component="Google"
+                      /></NButton>
+                    </div>
+                  </NConfigProvider>
                 </div>
               </PopoverRow>
               <!-- <ul class="list-inside">
@@ -169,13 +168,14 @@ import { Head } from "@inertiajs/inertia-vue3";
 import {
   NButton,
   NCard,
+  NConfigProvider,
   NDivider,
   NIcon,
   NModal,
-  NPopover,
   NTabPane,
   NTabs,
   createDiscreteApi,
+  darkTheme,
 } from "naive-ui";
 import { ref } from "vue";
 import FadeTransition from "../Utils/FadeTransition.vue";
@@ -223,7 +223,7 @@ const calendarAttributes = props.calendar.map((event) => ({
 // add today to the calendar
 calendarAttributes.push({
   dates: new Date(),
-  highlight: "red",
+  highlight: { color: "red", fillMode: "outline" },
 });
 
 const windowOpen = (url: string) => {

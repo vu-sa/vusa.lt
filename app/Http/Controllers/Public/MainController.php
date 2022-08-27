@@ -570,7 +570,7 @@ class MainController extends Controller
 		
 		$calendar->load('padalinys:id,alias,fullname,shortname');
 
-		return Inertia::render('Public/SummerCampEvent', 
+		return Inertia::render('Public/CalendarEvent', 
 		['event' => $calendar, 'images' => $calendar->getMedia('images'), 'googleLink' => $this->getCalendarGoogleLink($calendar)])->withViewData([
 			'title' => $calendar->title,
 			'description' => strip_tags($calendar->description),
