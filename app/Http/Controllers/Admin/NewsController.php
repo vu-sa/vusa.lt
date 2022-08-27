@@ -73,6 +73,12 @@ class NewsController extends Controller
             'publish_time' => 'required',
         ]);
 
+        $padalinys_id = User::find(Auth::user()->id)->padalinys()?->id;
+
+        if (is_null($padalinys_id)) {
+            $padalinys_id = Auth::user()->isAdmin() ? 16 : null;
+        }
+
         $news = News::create([
             'title' => $request->title,
             'permalink' => $request->permalink,
@@ -84,7 +90,7 @@ class NewsController extends Controller
             'image_author' => $request->image_author,
             'publish_time' => $request->publish_time,
             'draft' => $request->draft ?? 0,
-            'padalinys_id' => User::find(Auth::user()->id)->padalinys()?->id ?? Auth::user()->isAdmin() ? 16 : null,
+            'padalinys_id' => $padalinys_id
         ]);
 
         return redirect()->route('news.index');

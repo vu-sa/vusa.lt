@@ -72,13 +72,19 @@ class PagesController extends Controller
             'permalink' => 'required|string|max:255|unique:pages',
         ]);
 
+        $padalinys_id = User::find(Auth::user()->id)->padalinys()?->id;
+
+        if (is_null($padalinys_id)) {
+            $padalinys_id = Auth::user()->isAdmin() ? 16 : null;
+        }
+
         $page = Page::create([
             'title' => $request->title,
             'permalink' => $request->permalink,
             'lang' => $request->lang,
             'text' => $request->text,
             'other_lang_id' => $request->other_lang_id,
-            'padalinys_id' => User::find(Auth::user()->id)->padalinys()?->id ?? Auth::user()->isAdmin() ? 16 : null,
+            'padalinys_id' => $padalinys_id
         ]);
 
         return redirect()->route('pages.index');
@@ -114,7 +120,7 @@ class PagesController extends Controller
                 'permalink' => $page->permalink,
                 'text' => $page->text,
                 'lang' => $page->lang,
-                'other_lang_id' => $page->getOtherLanguage()?->only('id', 'title'),
+                'other_lang_id' => $page->getOtherLanguage()?->only('id')['id'],
                 'category' => $page->category,
                 'padalinys' => $page->padalinys,
                 'is_active' => $page->is_active,
