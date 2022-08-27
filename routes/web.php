@@ -161,7 +161,7 @@ Route::get('kontaktai/{alias}', [Public\MainController::class, 'contacts'])->nam
 
 Route::middleware(['throttle:summerCamps'])->group(function () {
     Route::get('pirmakursiu-stovyklos', [Public\MainController::class, 'summerCamps'])->name('pirmakursiuStovyklos');
-    Route::get('kalendorius/renginys/{calendar}', [Public\MainController::class, 'summerCampEvent'])->name('calendar.event');
+    Route::get('kalendorius/renginys/{calendar}', [Public\MainController::class, 'calendarEvent'])->name('calendar.event');
 });
 
 Route::middleware(['throttle:formRegistrations'])->group(function () {
@@ -171,4 +171,7 @@ Route::middleware(['throttle:formRegistrations'])->group(function () {
 Route::post('search', [Public\MainController::class, 'search'])->name('search');
 
 Route::get('mainNews', [Public\MainController::class, 'getMainNews']);
+
+Route::get('kalendorius/ics', [Public\MainController::class, 'publicAllEventCalendar'])->name('calendar.ics');
+
 Route::get('{permalink}', [Public\MainController::class, 'page'])->where('permalink', '.*')->name('page');

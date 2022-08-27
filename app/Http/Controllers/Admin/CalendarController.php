@@ -73,6 +73,7 @@ class CalendarController extends Controller
 
         Calendar::create([
             'date' => $request->date,
+            'end_date' => $request->end_date,
             'title' => $request->title,
             'description' => $request->description,
             'padalinys_id' => auth()->user()->padalinys()->id,
@@ -129,7 +130,7 @@ class CalendarController extends Controller
         ]);
 
         DB::transaction(function () use ($request, $calendar) {
-            $calendar->update($request->only(['date', 'title', 'description', 'location', 'url', 'category', 'attributes']));
+            $calendar->update($request->only(['date', 'end_date', 'title', 'description', 'location', 'url', 'category', 'attributes']));
 
             // if request has files
             

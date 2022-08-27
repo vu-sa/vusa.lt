@@ -4,7 +4,8 @@
   <FadeTransition appear>
     <article>
       <header
-        class="camp-header h-60 py-6 px-10 text-white lg:py-12 lg:px-20"
+        class="camp-header h-60 py-6 px-10 lg:py-12 lg:px-20"
+        :class="{ 'text-white': !hasNoImage }"
         :style="headerImageStyle"
       >
         <div class="mx-auto flex h-full max-w-7xl">
@@ -19,20 +20,15 @@
       </header>
       <section class="mx-auto mt-8 grid max-w-7xl lg:grid-cols-3">
         <div class="px-12 lg:col-span-2">
-          <h2 class="my-4">Kas čia vyks?</h2>
+          <h2 v-if="event.description !== ''" class="my-4">Aprašymas</h2>
           <div
             class="prose-sm sm:prose sm:max-w-[70ch]"
             v-html="event.description"
           ></div>
-          <h2
-            v-if="event.attributes?.video_url || images.length > 0"
-            class="mt-8 mb-4"
-          >
-            Kaip tai vyko anksčiau:
-          </h2>
+
           <iframe
             v-if="event.attributes?.video_url"
-            class="mb-8 aspect-video h-auto w-full rounded-2xl"
+            class="mb-8 mt-4 aspect-video h-auto w-full rounded-2xl"
             width="560"
             height="315"
             :src="`https://www.youtube-nocookie.com/embed/${event.attributes?.video_url}`"
@@ -55,46 +51,6 @@
               />
             </NSpace>
           </NImageGroup>
-          <NDivider></NDivider>
-          <h2
-            class="my-6 flex flex-col justify-between gap-2 lg:flex-row lg:items-center"
-          >
-            <span>Turi klausimų? Paklausk savo kuratoriaus!</span
-            ><Link
-              class="inline-flex items-center gap-2 text-sm font-normal"
-              target="_blank"
-              :href="
-                route('padalinys.contacts.alias', {
-                  alias: 'kuratoriai',
-                  lang: 'lt',
-                  padalinys: event.padalinys.alias,
-                })
-              "
-              ><span class="whitespace-pre lg:w-fit"
-                >Visi {{ event.padalinys.shortname }} kuratoriai</span
-              >
-              <NIcon :size="16" :component="ArrowCircleRight24Regular"></NIcon
-            ></Link>
-          </h2>
-          <NCarousel
-            class="hidden xl:block"
-            style="height: 280px"
-            :slides-per-view="2"
-            :space-between="15"
-            :loop="true"
-            autoplay
-            :interval="2000"
-            :show-dots="false"
-            draggable
-          >
-            <template v-for="duty in curatorDuties" :key="duty.id">
-              <ContactWithPhotoForUsers
-                v-for="contact in duty.users"
-                :key="contact.id"
-                :contact="contact"
-                :duty="duty"
-              ></ContactWithPhotoForUsers> </template
-          ></NCarousel>
         </div>
         <div class="-order-1 mx-8 flex justify-center lg:order-1">
           <div
@@ -118,20 +74,28 @@
             <NIcon :component="PeopleTeam28Regular"></NIcon>
             <span>
               Organizuoja:
-              <strong>{{ event.padalinys.shortname }}</strong>
+              <strong>{{ eventOrganizer }}</strong>
             </span>
 
             <NIcon :component="CalendarLtr24Regular"></NIcon>
             <span>
-              {{ computedEventDateRange }}
+              {{ event.date }}
             </span>
-            <NIcon :component="Home32Regular"></NIcon>
-            <span>{{ event.location }}</span>
+            <template v-if="event.end_date">
+              <NIcon :component="CalendarLtr24Filled"></NIcon>
+              <span>
+                {{ event.end_date }}
+              </span>
+            </template>
+            <template v-if="event.location">
+              <NIcon :component="Home32Regular"></NIcon>
+              <span>{{ event.location }}</span>
+            </template>
 
-            <NDivider class="col-span-2"></NDivider>
+            <NDivider v-if="event.url" class="col-span-2"></NDivider>
             <div class="col-span-2 flex flex-col justify-center">
               <p v-if="timeTillEvent.days >= 0" class="text-center">
-                Iki stovyklos liko:
+                Iki renginio liko:
               </p>
 
               <NGradientText
@@ -148,25 +112,29 @@
               </NGradientText>
 
               <NButton
-                :disabled="isRegistrationDisabled"
+                v-if="event.url"
                 strong
                 round
                 type="primary"
                 size="large"
-                @click="openEventUrlorElse"
-                ><template v-if="event.url" #icon>
+                @click="windowOpen(event.url)"
+                ><template #icon>
                   <NIcon :component="HatGraduation20Regular"></NIcon>
                 </template>
-                <template v-if="unixTimeTillRegistrationOpen > 0">
-                  Registruokis už
-                  <NCountdown
-                    :active="true"
-                    :duration="unixTimeTillRegistrationOpen"
-                    @finish="onCountdownFinish"
-                  ></NCountdown>
-                </template>
-                <template v-else>{{ registrationText }}</template>
+                Dalyvauk!
               </NButton>
+              <div class="mx-auto mt-4 w-fit">
+                <NButton
+                  size="small"
+                  text
+                  secondary
+                  round
+                  @click="windowOpen(googleLink)"
+                >
+                  <template #icon><NIcon :component="Google" /></template>Įsidėk
+                  į Google kalendorių!</NButton
+                >
+              </div>
             </div>
           </div>
         </div>
@@ -184,8 +152,9 @@ export default {
 </script>
 
 <script setup lang="ts">
+import { trans as $t } from "laravel-vue-i18n";
 import {
-  ArrowCircleRight24Regular,
+  CalendarLtr24Filled,
   CalendarLtr24Regular,
   HatGraduation20Regular,
   Home32Regular,
@@ -194,7 +163,6 @@ import {
 import {
   CountdownProps,
   NButton,
-  NCarousel,
   NCountdown,
   NDivider,
   NGradientText,
@@ -203,93 +171,41 @@ import {
   NImageGroup,
   NSpace,
 } from "naive-ui";
-import { FacebookF } from "@vicons/fa";
+import { FacebookF, Google } from "@vicons/fa";
 import { Head } from "@inertiajs/inertia-vue3";
-import { Link } from "@inertiajs/inertia-vue3";
-import { computed, h, ref } from "vue";
+import { computed, h } from "vue";
 
-import ContactWithPhotoForUsers from "@/Components/Public/ContactWithPhotoForUsers.vue";
 import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
-import route from "ziggy-js";
 
 const props = defineProps<{
   event: App.Models.Calendar;
-  images?: Record<string, any> | null;
-  curatorDuties: Array<App.Models.Duty>;
+  images: Record<string, any> | null;
+  googleLink: string;
 }>();
 
-const showModal = ref(false);
+// check if image array is empty
+const hasNoImage = computed(() => {
+  return props.images === null || props.images.length === 0;
+});
 
-const registrationOpenedOnFinish = ref(false);
+const eventOrganizer = computed((): string => {
+  return props.event.attributes?.organizer ?? props.event.padalinys.shortname;
+});
 
 const windowOpen = (url: string) => {
   window.open(url, "_blank");
 };
 
 const headerImageStyle = computed(() => {
+  if (hasNoImage.value) {
+    return null;
+  }
+
   return {
     "background-image": `linear-gradient(0deg, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.3)), url(${
       props.images?.length > 0 ? props.images[0].original_url : ""
     })`,
   };
-});
-
-// compute event datetime from yyyy-MM-dd HH:mm:ss to yyyy-MM-dd HH
-
-const unixTimeTillRegistrationOpen = computed(() => {
-  const now = new Date();
-  // registration opens on 30th of July, 12:00:00
-  const registrationOpen = new Date(now.getFullYear(), 6, 30, 12, 0, 0);
-  // is needed for recomputation
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  let refresh = registrationOpenedOnFinish.value;
-  return registrationOpen.getTime() - now.getTime();
-});
-
-const onCountdownFinish = () => {
-  registrationOpenedOnFinish.value = true;
-};
-
-const isRegistrationDisabled = computed(() => {
-  const check = props.event.url ? unixTimeTillRegistrationOpen.value > 0 : true;
-  return check;
-});
-
-const registrationText = computed(() => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  let refresh = registrationOpenedOnFinish.value;
-  return props.event.url ? "Dalyvauk!" : "Registracija uždaryta...";
-});
-
-const computedEventDateRange = computed(() => {
-  if (
-    props.event.attributes.date_range === undefined ||
-    props.event?.attributes?.date_range === null
-  )
-    return "";
-
-  let date1 = new Date(parseInt(props.event.attributes?.date_range[0]));
-  let day1 = new Intl.DateTimeFormat("lt-LT", {
-    month: "long",
-    day: "numeric",
-  }).format(date1);
-  // get date string without ending "d."
-  day1 = day1.slice(0, -3);
-  // capitalize day1 string
-  day1 = day1.charAt(0).toUpperCase() + day1.slice(1);
-
-  let date2 = new Date(parseInt(props.event.attributes?.date_range[1]));
-
-  // if (!dateIsValid(date2)) return "";
-
-  let day2 = new Intl.DateTimeFormat("lt-LT", {
-    day: "numeric",
-  }).format(date2);
-  // remove leading 0 from day2 string if it exists
-  if (day2.charAt(0) === "0") day2 = day2.slice(1);
-
-  // return capitalized string of date1 month long and day number
-  return `${day1}–${day2} d.`;
 });
 
 const timeTillEvent = computed(() => {
@@ -321,14 +237,6 @@ const renderCountdown: CountdownProps["render"] = ({
     h("span", seconds),
     " sek.",
   ]);
-};
-
-const openEventUrlorElse = () => {
-  if (props.event.padalinys?.alias === "mif") {
-    showModal.value = true;
-  } else {
-    window.open(props.event?.url, "_blank");
-  }
 };
 </script>
 

@@ -12,22 +12,22 @@ use App\Models\Navigation;
 use App\Models\News;
 use App\Models\Padalinys;
 use App\Models\Page;
-use Illuminate\Support\Facades\Route;
-use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\App;
-use App\Models\PageView;
 use App\Models\Registration;
 use App\Models\RegistrationForm;
-use Illuminate\Support\Facades\Schema;
 use App\Models\SaziningaiExam;
 use App\Models\SaziningaiExamFlow;
 use App\Models\SaziningaiExamObserver;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use App\ICalendars\MainCalendar;
+use Spatie\CalendarLinks\Link;
+use Datetime;
+use Illuminate\Support\Carbon;
 
 class MainController extends Controller
 {
@@ -76,6 +76,17 @@ class MainController extends Controller
 		Inertia::share('mainNavigation', $mainNavigation);
 	}
 
+	private function getCalendarGoogleLink($calendarEvent) {
+
+		$googleLink = Link::create($calendarEvent->title, 
+				DateTime::createFromFormat('Y-m-d H:i:s', $calendarEvent->date), 
+				$calendarEvent->end_date ? DateTime::createFromFormat('Y-m-d H:i:s', $calendarEvent->end_date) : Carbon::parse($calendarEvent->date)->addHour()->toDateTime())
+			->description(strip_tags($calendarEvent->description) ?? "")->address($calendarEvent->location ?? "")
+			->google();
+
+		return $googleLink;
+	}
+
 	public function home()
 	{
 
@@ -86,7 +97,7 @@ class MainController extends Controller
 
 		$news = News::where([['padalinys_id', '=', $padalinys->id],['lang', app()->getLocale()], ['draft', '=', 0]])->where('publish_time', '<=', date('Y-m-d H:i:s'))->orderBy('publish_time', 'desc')->take(4)->get();
 
-		$calendar = Calendar::select('id', 'date', 'title', 'category')->orderBy('date', 'desc')->take(100)->get();
+		$calendar = Calendar::select('id', 'date', 'title', 'category', 'end_date')->orderBy('date', 'desc')->take(400)->get();
 
 		Inertia::share('alias', $this->alias);
 		return Inertia::render('Public/HomePage', [
@@ -109,7 +120,16 @@ class MainController extends Controller
 					"important" => $news->important,
 				];
 			}),
-			'calendar' => $calendar,
+			'calendar' => $calendar->map(function ($calendar) {
+				return [
+					'id' => $calendar->id,
+					'date' => $calendar->date,
+					'end_date' => $calendar->end_date,
+					'title' => $calendar->title,
+					'category' => $calendar->category,
+					'googleLink' => $this->getCalendarGoogleLink($calendar),
+				];
+			}),
 			'mainPage' => MainPage::where([['padalinys_id', $padalinys->id], ['lang', app()->getLocale()]])->get(),
 		])->withViewData([
 			'description' => 'Vilniaus universiteto Studentų atstovybė (VU SA) – seniausia ir didžiausia Lietuvoje visuomeninė, ne pelno siekianti, nepolitinė, ekspertinė švietimo organizacija'
@@ -546,27 +566,14 @@ class MainController extends Controller
 		]);
 	}
 
-	public function summerCampEvent(Calendar $calendar) {
+	public function calendarEvent(Calendar $calendar) {
 		
-		// if calendar doesnt have category Pirmakursių stovykla, redirect to 404
-		if ($calendar->category()->first()->name !== 'Pirmakursių stovykla') {
-			abort(404);
-		}
-
 		$calendar->load('padalinys:id,alias,fullname,shortname');
 
-		$curatorInstitution = DutyInstitution::where('alias', '=', $calendar->padalinys->alias)
-			->with(['duties' => function ($query) {
-			$query->where('type_id', '=', 5);
-			}])->first();
-
-		$curatorDuties = $curatorInstitution->duties->load('users');
-
 		return Inertia::render('Public/SummerCampEvent', 
-		['event' => $calendar, 'images' => $calendar->getMedia('images'), 'curatorDuties' => $curatorDuties,])->withViewData([
+		['event' => $calendar, 'images' => $calendar->getMedia('images'), 'googleLink' => $this->getCalendarGoogleLink($calendar)])->withViewData([
 			'title' => $calendar->title,
-			'description' => $calendar->description,
-			
+			'description' => strip_tags($calendar->description),
 		]);
 	}
 
@@ -575,6 +582,14 @@ class MainController extends Controller
 		$registration->data = request()->all();
 		$registration->registration_form_id = $registrationForm->id;
 		$registration->save();
+	}
+
+	public function publicAllEventCalendar() {
+		
+		$ics = new MainCalendar;
+
+		return response($ics->get())
+    		->header('Content-Type', 'text/calendar; charset=utf-8');
 	}
 
 	public function ataskaita2022()
