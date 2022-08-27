@@ -86,6 +86,8 @@ class MainController extends Controller
 
 		$news = News::where([['padalinys_id', '=', $padalinys->id],['lang', app()->getLocale()], ['draft', '=', 0]])->where('publish_time', '<=', date('Y-m-d H:i:s'))->orderBy('publish_time', 'desc')->take(4)->get();
 
+		$calendar = Calendar::select('id', 'date', 'title', 'category')->orderBy('date', 'desc')->take(100)->get();
+
 		Inertia::share('alias', $this->alias);
 		return Inertia::render('Public/HomePage', [
 			'news' => $news->map(function ($news) {
@@ -107,6 +109,7 @@ class MainController extends Controller
 					"important" => $news->important,
 				];
 			}),
+			'calendar' => $calendar,
 			'mainPage' => MainPage::where([['padalinys_id', $padalinys->id], ['lang', app()->getLocale()]])->get(),
 		])->withViewData([
 			'description' => 'Vilniaus universiteto Studentų atstovybė (VU SA) – seniausia ir didžiausia Lietuvoje visuomeninė, ne pelno siekianti, nepolitinė, ekspertinė švietimo organizacija'
