@@ -1,56 +1,56 @@
 <template>
-  <NThemeEditor>
-    <NConfigProvider :theme-overrides="themeOverrides">
-      <Head :title="title" />
-      <MetaIcons />
+  <!-- <NThemeEditor> -->
+  <NConfigProvider :theme-overrides="themeOverrides">
+    <Head :title="title" />
+    <MetaIcons />
 
-      <NLayout
-        class="min-h-screen bg-gradient-to-tr from-vusa-red/20 to-vusa-yellow/20"
-      >
-        <NLayoutHeader class="flex flex-row justify-between py-4 pr-8">
-          <div class="invisible">
-            <NButton secondary round @click="collapsed = !collapsed"
-              >Menu</NButton
-            >
-          </div>
-          <UserAvatar />
-        </NLayoutHeader>
-        <NLayout class="min-h-full" has-sider>
-          <NLayoutSider
-            class="ml-4 h-fit rounded-md shadow-sm"
-            collapse-mode="width"
-            :collapsed-width="64"
-            :width="200"
-            :collapsed="collapsed"
-            show-trigger="bar"
-            @collapse="collapsed = true"
-            @expand="collapsed = false"
+    <NLayout
+      class="min-h-screen bg-gradient-to-tr from-vusa-red/20 to-vusa-yellow/20"
+    >
+      <NLayoutHeader class="flex flex-row justify-between py-4 pr-8">
+        <div class="invisible">
+          <NButton secondary round @click="collapsed = !collapsed"
+            >Menu</NButton
           >
-            <a class="h-fit w-fit" href="/">
-              <AppLogo class="mx-auto w-full p-2" />
-            </a>
-            <AdminMenu :collapsed="collapsed" />
-          </NLayoutSider>
-          <NLayoutContent
-            class="min-h-full"
-            content-style="padding: 0rem 2rem 2rem 3rem"
-          >
-            <slot />
-          </NLayoutContent>
-        </NLayout>
-        <NLayoutFooter class="absolute bottom-0 w-full"
-          ><div class="mx-auto mb-2 w-fit">
-            <NButton size="tiny" quaternary @click="showModal = true">
-              v0.3.1 (2022-08-29)
-            </NButton>
-          </div>
-          <NModal v-model:show="showModal">
-            <Changelog />
-          </NModal>
-        </NLayoutFooter>
+        </div>
+        <UserAvatar />
+      </NLayoutHeader>
+      <NLayout class="min-h-full" has-sider>
+        <NLayoutSider
+          class="ml-4 h-fit rounded-md shadow-sm"
+          collapse-mode="width"
+          :collapsed-width="64"
+          :width="200"
+          :collapsed="collapsed"
+          show-trigger="bar"
+          @collapse="collapsed = true"
+          @expand="collapsed = false"
+        >
+          <a class="h-fit w-fit" href="/">
+            <AppLogo class="mx-auto w-full p-2" />
+          </a>
+          <AdminMenu :collapsed="collapsed" />
+        </NLayoutSider>
+        <NLayoutContent
+          class="min-h-full"
+          content-style="padding: 0rem 2rem 2rem 3rem"
+        >
+          <slot />
+        </NLayoutContent>
       </NLayout>
-    </NConfigProvider>
-  </NThemeEditor>
+      <NLayoutFooter class="absolute bottom-0 w-full"
+        ><div class="mx-auto mb-2 w-fit">
+          <NButton size="tiny" quaternary @click="showModal = true">
+            v0.3.1 (2022-08-29)
+          </NButton>
+        </div>
+        <NModal v-model:show="showModal">
+          <Changelog />
+        </NModal>
+      </NLayoutFooter>
+    </NLayout>
+  </NConfigProvider>
+  <!-- </NThemeEditor> -->
 </template>
 
 <script setup lang="ts">
@@ -64,7 +64,7 @@ import {
   NLayoutHeader,
   NLayoutSider,
   NModal,
-  NThemeEditor,
+  // NThemeEditor,
 } from "naive-ui";
 import { ref } from "vue";
 
