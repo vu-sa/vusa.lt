@@ -185,7 +185,7 @@
                 target="_blank"
                 href="https://calendar.google.com/calendar/u/0/r/settings/addbyurl"
               >
-                Google kalendorių</a
+                Google kalendorių (per naršyklę kompiuteryje)</a
               >
             </li>
             <li>Įkelk VU SA studentiško kalendoriaus nuorodą</li>
@@ -201,7 +201,7 @@
                 target="_blank"
                 href="https://calendar.google.com/calendar/u/0/r/settings/addbyurl"
               >
-                Google Calendar</a
+                Google Calendar (using a browser on a PC)</a
               >
             </li>
             <li>Paste the VU SR student activity calendar link</li>
