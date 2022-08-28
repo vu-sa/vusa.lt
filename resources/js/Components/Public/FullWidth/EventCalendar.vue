@@ -151,7 +151,7 @@
           <div class="flex items-center rounded-2xl bg-zinc-100/50 px-4">
             <span>{{ route("calendar.ics") }}</span>
           </div>
-          <NButton @click="copyToClipboard(route('main.calendar.ics'))"
+          <NButton @click="copyToClipboard(route('calendar.ics'))"
             ><template #icon><NIcon :component="Copy16Regular" /></template>
             {{ $t("Kopijuoti") }}</NButton
           >
