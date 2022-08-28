@@ -66,10 +66,19 @@
       placement="left"
       :trap-focus="true"
     >
-      <NDrawerContent
-        closable
-        :title="padalinys == 'Padaliniai' ? 'VU SA' : $t(padalinys)"
-      >
+      <NDrawerContent closable>
+        <template #header>
+          <span>{{
+            padalinys == "Padaliniai" ? $t("VU SA") : $t(padalinys)
+          }}</span>
+          <div class="mt-4 flex flex-row gap-4">
+            <FacebookButton />
+            <InstagramButton />
+            <SearchButton />
+            <StartFM />
+            <LocaleButton :locale="locale" @change-locale="localeSelect" />
+          </div>
+        </template>
         <template v-if="!route().current('*page')">
           <NCollapse>
             <NCollapseItem title="Padaliniai">

@@ -13,7 +13,7 @@
     class="mx-auto mt-8 flex max-w-7xl flex-col-reverse gap-4 px-16 lg:mt-32 lg:flex-row lg:px-24 xl:px-40"
   >
     <div
-      class="prose-sm flex w-fit flex-col justify-center sm:prose lg:w-1/2 2xl:w-3/4"
+      class="prose-sm flex w-fit flex-col justify-center sm:prose lg:h-4/5 lg:w-1/2 2xl:w-3/4"
     >
       <p v-if="$page.props.locale === 'lt'" class="text-2xl font-bold lg:w-2/3">
         <span class="font-extrabold">Naujiena!</span> Sek visus VU studentų
@@ -21,7 +21,7 @@
         <span class="text-vusa-red">čia! 🗓</span>
       </p>
       <p v-else class="text-2xl font-bold lg:w-2/3">
-        Follow Vilnius University events for students
+        Follow Vilnius University activities for students
         <span class="text-vusa-red">here! 🗓</span>
       </p>
 
@@ -64,7 +64,7 @@
           src="/images/photos/stovykla.jpg"
         />
         <img
-          class="absolute top-14 left-48 z-10 rounded-lg object-cover shadow-2xl brightness-125 contrast-100 lg:max-w-[16rem]"
+          class="absolute top-14 left-36 z-10 rounded-lg object-cover shadow-2xl brightness-125 contrast-100 lg:left-48 lg:max-w-[16rem]"
           src="/images/photos/pirmakursiu_stovykla_kaune.jpg"
         />
         <!-- <img

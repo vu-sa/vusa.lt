@@ -8,17 +8,17 @@
       <EventCalendar :calendar="calendar" /></div
   ></FadeTransition>
 
-  <FadeTransition appear>
+  <FadeTransition v-if="mainPage.length > 0" appear>
     <div class="mt-8">
-      <MainLinks v-if="mainPage.length > 0" :main-page="mainPage" /></div
+      <MainLinks :main-page="mainPage" /></div
   ></FadeTransition>
 
-  <FadeTransition appear>
+  <FadeTransition v-if="news.length > 0" appear>
     <NewsElement :news="news" />
   </FadeTransition>
 
-  <FadeTransition appear>
-    <div v-if="$page.props.locale === 'lt'"><SummerCamps /></div
+  <FadeTransition v-if="$page.props.locale === 'lt'" appear>
+    <div><SummerCamps /></div
   ></FadeTransition>
 
   <FadeTransition appear>
