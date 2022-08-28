@@ -50,8 +50,6 @@ class MainCalendar {
             $events[] = $eventObject;
         }
 
-        dd($events);
-
         return $events;
     }
     
