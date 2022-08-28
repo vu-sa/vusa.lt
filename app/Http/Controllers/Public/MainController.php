@@ -76,12 +76,19 @@ class MainController extends Controller
 		Inertia::share('mainNavigation', $mainNavigation);
 	}
 
-	private function getCalendarGoogleLink($calendarEvent) {
+	private function getCalendarGoogleLink($calendarEvent, $en = false) {
 
-		$googleLink = Link::create($calendarEvent->title, 
+		$googleLink = Link::create($en ? ($calendarEvent?->attributes['en']['title'] ?? $calendarEvent->title) : $calendarEvent->title, 
 				DateTime::createFromFormat('Y-m-d H:i:s', $calendarEvent->date), 
-				$calendarEvent->end_date ? DateTime::createFromFormat('Y-m-d H:i:s', $calendarEvent->end_date) : Carbon::parse($calendarEvent->date)->addHour()->toDateTime())
-			->description(strip_tags($calendarEvent->description) ?? "")->address($calendarEvent->location ?? "")
+				$calendarEvent->end_date 
+					? DateTime::createFromFormat('Y-m-d H:i:s', $calendarEvent->end_date) 
+					: Carbon::parse($calendarEvent->date)->addHour()->toDateTime())
+			->description($en 
+				? (strip_tags(
+					($calendarEvent?->attributes['en']['description'] ?? $calendarEvent->description)
+					?? $calendarEvent->description))
+				: strip_tags($calendarEvent->description))
+			->address($calendarEvent->location ?? "")
 			->google();
 
 		return $googleLink;
@@ -97,7 +104,13 @@ class MainController extends Controller
 
 		$news = News::where([['padalinys_id', '=', $padalinys->id],['lang', app()->getLocale()], ['draft', '=', 0]])->where('publish_time', '<=', date('Y-m-d H:i:s'))->orderBy('publish_time', 'desc')->take(4)->get();
 
-		$calendar = Calendar::select('id', 'date', 'title', 'category', 'end_date')->orderBy('date', 'desc')->take(400)->get();
+		if (app()->getLocale() === 'en') {
+            $calendar = Calendar::where('attributes->en->shown', 'true')->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'attributes', 'category')->take(400)->get();
+        } else {
+            $calendar = Calendar::orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'category')->take(400)->get();
+        }
+
+		// $calendar = Calendar::select('id', 'date', 'title', 'category', 'end_date')->orderBy('date', 'desc')->take(400)->get();
 
 		Inertia::share('alias', $this->alias);
 		return Inertia::render('Public/HomePage', [
@@ -121,13 +134,14 @@ class MainController extends Controller
 				];
 			}),
 			'calendar' => $calendar->map(function ($calendar) {
+
 				return [
 					'id' => $calendar->id,
 					'date' => $calendar->date,
 					'end_date' => $calendar->end_date,
-					'title' => $calendar->title,
+					'title' => app()->getLocale() === 'en' ? ($calendar->attributes['en']['title'] ?? $calendar->title) : $calendar->title,
 					'category' => $calendar->category,
-					'googleLink' => $this->getCalendarGoogleLink($calendar),
+					'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale() === 'en')
 				];
 			}),
 			'mainPage' => MainPage::where([['padalinys_id', $padalinys->id], ['lang', app()->getLocale()]])->get(),
@@ -571,7 +585,7 @@ class MainController extends Controller
 		$calendar->load('padalinys:id,alias,fullname,shortname');
 
 		return Inertia::render('Public/CalendarEvent', 
-		['event' => $calendar, 'images' => $calendar->getMedia('images'), 'googleLink' => $this->getCalendarGoogleLink($calendar)])->withViewData([
+		['event' => $calendar, 'images' => $calendar->getMedia('images'), 'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale() === 'en')])->withViewData([
 			'title' => $calendar->title,
 			'description' => strip_tags($calendar->description),
 		]);

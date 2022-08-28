@@ -112,7 +112,7 @@
         <NGrid :span="24" :x-gap="24">
           <NFormItemGi
             label="Renginys arba informacija prieinama ne tik LT studentams"
-            :span="12"
+            :span="24"
           >
             <NSwitch v-model:value="form.attributes.en.shown" />
           </NFormItemGi>

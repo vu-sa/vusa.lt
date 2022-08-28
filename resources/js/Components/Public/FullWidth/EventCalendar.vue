@@ -31,17 +31,19 @@
       <p v-else class="w-4/5">The calendar is updated every day!</p>
 
       <p v-if="$page.props.locale === 'lt'" class="w-4/5 text-sm">
-        Arba gali <em>patingėti</em> ir
+        Arba nesuk galvos ir
+        <!-- <em>patingėti</em> ir -->
         <span class="mx-1">
           <NButton size="tiny" round strong secondary @click="showModal = true"
-            >sinchronizuoti</NButton
+            >sinchronizuok</NButton
           >
         </span>
         <strong>studentų kalendorių</strong> į „Google“ arba „Outlook“ ..?
       </p>
 
       <p v-else class="w-4/5 text-sm">
-        Or you can <em>be lazy</em> and
+        Or you can
+        <!-- <em>be lazy</em> and -->
         <span class="mx-1">
           <NButton size="tiny" round strong secondary @click="showModal = true"
             >sync</NButton
@@ -169,7 +171,7 @@
       <NDivider></NDivider>
       <NTabs animated
         ><NTabPane name="Google">
-          <ol>
+          <ol v-if="$page.props.locale === 'lt'">
             <li>
               Nueik į savo
               <a
@@ -184,9 +186,23 @@
               Paspausk <strong>„Pridėti kalendorių“</strong> („Add calendar“)
             </li>
             <li>✅</li>
+          </ol>
+          <ol v-else>
+            <li>
+              Go to your
+              <a
+                target="_blank"
+                href="https://calendar.google.com/calendar/u/0/r/settings/addbyurl"
+              >
+                Google Calendar</a
+              >
+            </li>
+            <li>Paste the VU SR student activity calendar link</li>
+            <li>Press <strong>„Add calendar“</strong></li>
+            <li>✅</li>
           </ol> </NTabPane
         ><NTabPane name="Outlook (Office 365)">
-          <ol>
+          <ol v-if="$page.props.locale === 'lt'">
             <li>
               Nueik į savo
               <a href="https://outlook.office.com/calendar/addcalendar"
@@ -200,6 +216,21 @@
             </li>
             <li>Įkelk VU SA studentiško kalendoriaus nuorodą</li>
             <li>Paspausk <strong>„Importuoti“</strong> („Import“)</li>
+            <li>✅</li>
+          </ol>
+          <ol v-else>
+            <li>
+              Go to your
+              <a href="https://outlook.office.com/calendar/addcalendar"
+                >Outlook calendar</a
+              >
+            </li>
+            <li>
+              Go to
+              <strong>„Subscribe from web“</strong> section
+            </li>
+            <li>Paste the VU SR student activity calendar link</li>
+            <li>Press <strong>„Import“</strong></li>
             <li>✅</li>
           </ol>
         </NTabPane></NTabs
