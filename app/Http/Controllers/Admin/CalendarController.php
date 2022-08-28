@@ -9,6 +9,8 @@ use App\Http\Controllers\Controller as Controller;
 use App\Models\Category;
 use Illuminate\Support\Facades\DB;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class CalendarController extends Controller
 {
@@ -71,12 +73,18 @@ class CalendarController extends Controller
             'description' => 'required',
         ]);
 
+        $padalinys_id = User::find(Auth::user()->id)->padalinys()?->id;
+
+        if (is_null($padalinys_id)) {
+            $padalinys_id = Auth::user()->isAdmin() ? 16 : null;
+        }
+
         Calendar::create([
             'date' => $request->date,
             'end_date' => $request->end_date,
             'title' => $request->title,
             'description' => $request->description,
-            'padalinys_id' => auth()->user()->padalinys()->id,
+            'padalinys_id' => $padalinys_id,
             'location' => $request->location,
             'url' => $request->url,
             'category' => $request->category,
