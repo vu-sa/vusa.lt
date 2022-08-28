@@ -250,7 +250,7 @@
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
 import { Calendar, PopoverRow } from "v-calendar";
-import { Copy16Regular } from "@vicons/fluent";
+import { Copy16Regular, LeafTwo16Filled } from "@vicons/fluent";
 import { Google } from "@vicons/fa";
 import { Head } from "@inertiajs/inertia-vue3";
 import {
@@ -293,22 +293,39 @@ const isSameDay = (date1: string, date2: string) => {
   );
 };
 
-const calendarAttributes = props.calendar.map((event) => ({
-  dates: event.end_date
-    ? {
-        start: new Date(event.date.replace(/-/g, "/")),
-        end: new Date(event.end_date.replace(/-/g, "/")),
-      }
-    : new Date(event.date.replace(/-/g, "/")),
-  [isSameDay(event.date, event.end_date) ? "dot" : "highlight"]:
-    event.category == "freshmen-camps" ? "yellow" : event.category ?? "red",
-  popover: {
-    label: event.title,
-    isInteractive: true,
-  },
-  key: event.id,
-  customData: { googleLink: event.googleLink },
-}));
+const calendarAttributes = props.calendar.map((event) => {
+  let eventColor = event.category;
+
+  switch (event.category) {
+    case "freshmen-camps":
+      eventColor = "orange";
+      break;
+
+    case "grey":
+      eventColor = "gray";
+      break;
+
+    default:
+      break;
+  }
+
+  let calendarAttrObject = {
+    dates: event.end_date
+      ? {
+          start: new Date(event.date.replace(/-/g, "/")),
+          end: new Date(event.end_date.replace(/-/g, "/")),
+        }
+      : new Date(event.date.replace(/-/g, "/")),
+    [isSameDay(event.date, event.end_date) ? "dot" : "highlight"]: eventColor,
+    popover: {
+      label: event.title,
+      isInteractive: true,
+    },
+    key: event.id,
+    customData: { googleLink: event.googleLink },
+  };
+  return calendarAttrObject;
+});
 
 // add today to the calendar
 calendarAttributes.push({
