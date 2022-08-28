@@ -55,18 +55,20 @@
 
     <div class="relative mx-auto">
       <div class="relative flex w-fit items-center justify-center lg:top-4">
-        <img
-          class="absolute top-8 -left-40 max-w-[12rem] rounded-lg object-cover shadow-xl blur brightness-50 lg:-top-24 lg:max-w-[16rem]"
-          src="/images/photos/vu.jpg"
-        />
-        <img
-          class="absolute top-12 -left-24 z-10 max-w-[12rem] rounded-lg object-cover shadow-xl blur-sm brightness-75 lg:-top-12 lg:max-w-[16rem]"
-          src="/images/photos/stovykla.jpg"
-        />
-        <img
-          class="absolute top-14 left-36 z-10 rounded-lg object-cover shadow-2xl brightness-125 contrast-100 lg:left-48 lg:max-w-[16rem]"
-          src="/images/photos/pirmakursiu_stovykla_kaune.jpg"
-        />
+        <template v-if="showPhotos">
+          <img
+            class="absolute top-8 -left-32 max-w-[12rem] rounded-lg object-cover shadow-xl blur brightness-50 lg:-top-24 lg:max-w-[16rem]"
+            src="/images/photos/vu.jpg"
+          />
+          <img
+            class="absolute top-12 -left-16 z-10 max-w-[12rem] rounded-lg object-cover shadow-xl blur-sm brightness-75 lg:-top-12 lg:max-w-[16rem]"
+            src="/images/photos/stovykla.jpg"
+          />
+          <img
+            class="absolute top-14 left-16 z-10 rounded-lg object-cover shadow-2xl brightness-125 contrast-100 md:left-32 lg:left-48 lg:max-w-[16rem]"
+            src="/images/photos/pirmakursiu_stovykla_kaune.jpg"
+          />
+        </template>
         <!-- <img
           class="absolute -top-24 -left-40 rounded-lg object-cover shadow-lg brightness-75"
           src="/images/photos/pirmakursiu_stovykla_kaune.jpg"
@@ -90,10 +92,15 @@
                   :key="attr.key"
                   :attribute="attr"
                 >
-                  <div class="inline-flex gap-2">
+                  <div class="inline-flex items-center gap-2">
                     <a
                       target="_blank"
-                      :href="route('calendar.event', attr.key)"
+                      :href="
+                        route('main.calendar.event', {
+                          calendar: attr.key,
+                          lang: $page.props.locale,
+                        })
+                      "
                       >{{ attr.popover.label }}</a
                     >
                     <NConfigProvider
@@ -126,7 +133,7 @@
   <NModal v-model:show="showModal">
     <NCard
       class="prose-sm prose"
-      style="width: 600px"
+      style="max-width: 600px"
       :title="$t('Kalendoriaus sinchronizavimo instrukcija')"
       :bordered="false"
       size="large"
@@ -267,6 +274,7 @@ const { message } = createDiscreteApi(["message"]);
 
 const props = defineProps<{
   calendar: Array<App.Models.Calendar>;
+  showPhotos: boolean;
 }>();
 
 // check if event date and end date is on the same day

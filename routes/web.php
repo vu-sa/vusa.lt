@@ -125,10 +125,10 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => '(lt|en)']], function
             // because of this, can't get current route for main.page, it shows main.news
             Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('news_string', '(naujiena|news)')->name('news');
 
-            Route::middleware(['throttle:summerCamps'])->group(function () {
+            // Route::middleware(['throttle:summerCamps'])->group(function () {
                 Route::get('pirmakursiu-stovyklos', [Public\MainController::class, 'summerCamps'])->name('pirmakursiuStovyklos');
-                Route::get('kalendorius/renginys/{calendar}', [Public\MainController::class, 'calendarEvent'])->name('calendar.event');
-            });
+                Route::get('kalendorius/renginys/{calendar}', [Public\MainController::class, 'calendarEventMain'])->name('calendar.event');
+            // });
 
             Route::post('search', [Public\MainController::class, 'search'])->name('search');
 
@@ -162,10 +162,10 @@ Route::get('kontaktai/paieska', [Public\MainController::class, 'searchContacts']
 Route::get('kontaktai/kategorija/{alias}', [Public\MainController::class, 'contactsCategory'])->name('contacts.category');
 Route::get('kontaktai/{alias}', [Public\MainController::class, 'contacts'])->name('contacts.alias');
 
-Route::middleware(['throttle:summerCamps'])->group(function () {
+// Route::middleware(['throttle:summerCamps'])->group(function () {
     Route::get('pirmakursiu-stovyklos', [Public\MainController::class, 'summerCamps'])->name('pirmakursiuStovyklos');
     Route::get('kalendorius/renginys/{calendar}', [Public\MainController::class, 'calendarEvent'])->name('calendar.event');
-});
+// });
 
 Route::middleware(['throttle:formRegistrations'])->group(function () {
     Route::post('registration/{registrationForm}', [Public\MainController::class, 'storeRegistration'])->name('registration.store');

@@ -2,28 +2,41 @@
   <Head :title="event.title"></Head>
 
   <FadeTransition appear>
-    <article>
+    <article class="mx-auto mt-4">
       <header
-        class="camp-header h-60 py-6 px-10 lg:py-12 lg:px-20"
-        :class="{ 'text-white': !hasNoImage }"
+        class="camp-header max-h-96"
+        :class="{
+          'py-12 text-white': !hasNoImage,
+          'py-4': hasNoImage,
+        }"
         :style="headerImageStyle"
       >
         <div class="mx-auto flex h-full max-w-7xl">
           <div class="h-fit self-end">
             <h1
-              class="flex items-center text-2xl font-extrabold lg:px-12 lg:text-5xl"
+              class="flex items-center px-12 text-4xl font-extrabold lg:text-5xl"
             >
-              <span>{{ event.title }}</span>
+              <span>{{
+                $page.props.locale === "en"
+                  ? event.attributes?.en?.title ?? event.title
+                  : event.title
+              }}</span>
             </h1>
           </div>
         </div>
       </header>
       <section class="mx-auto mt-8 grid max-w-7xl lg:grid-cols-3">
         <div class="px-12 lg:col-span-2">
-          <h2 v-if="event.description !== ''" class="my-4">Aprašymas</h2>
+          <h2 v-if="event.description !== ''" class="my-4">
+            {{ $t("Aprašymas") }}
+          </h2>
           <div
             class="prose-sm sm:prose sm:max-w-[70ch]"
-            v-html="event.description"
+            v-html="
+              $page.props.locale === 'en'
+                ? event.attributes?.en?.description ?? event.description
+                : event.description
+            "
           ></div>
 
           <iframe
@@ -38,24 +51,25 @@
             allowfullscreen
           ></iframe>
 
-          <NImageGroup :show-toolbar="false">
-            <NSpace>
-              <NImage
-                v-for="image in images"
-                :key="image.id"
-                width="150"
-                :src="image.original_url"
-                class="rounded-lg transition hover:shadow-md"
-                alt="Pirmakursių stovyklos paveikslėlis"
-                lazy
-              />
-            </NSpace>
-          </NImageGroup>
+          <div class="mt-4">
+            <NImageGroup :show-toolbar="false">
+              <NSpace>
+                <NImage
+                  v-for="image in images"
+                  :key="image.id"
+                  width="150"
+                  :src="image.original_url"
+                  class="rounded-lg transition hover:shadow-md"
+                  lazy
+                />
+              </NSpace>
+            </NImageGroup>
+          </div>
         </div>
-        <div class="-order-1 mx-8 flex justify-center lg:order-1">
+        <div class="-order-1 mx-8 flex lg:order-1">
           <div
             style="grid-template-columns: 16px auto"
-            class="sticky top-40 grid h-fit w-full max-w-lg grid-cols-2 flex-col items-center gap-2 rounded-2xl border-2 border-vusa-red p-6 shadow-md lg:w-80"
+            class="sticky top-40 grid h-fit w-full max-w-lg grid-cols-2 flex-col items-center gap-2 rounded-2xl border-vusa-red p-4 lg:w-80 lg:border-2 lg:p-6 lg:shadow-md"
           >
             <div class="absolute top-6 right-6">
               <NButton
@@ -67,13 +81,17 @@
                 ><NIcon :component="FacebookF"></NIcon
               ></NButton>
             </div>
-            <p class="col-span-2 mb-4 flex w-4/5 font-bold">
-              {{ event.title }}
+            <p v-if="false" class="col-span-2 mb-4 flex w-4/5 text-lg">
+              {{
+                $page.props.locale === "en"
+                  ? event.attributes?.en?.title ?? event.title
+                  : event.title
+              }}
             </p>
 
             <NIcon :component="PeopleTeam28Regular"></NIcon>
             <span>
-              Organizuoja:
+              {{ $t("Organizuoja") }}:
               <strong>{{ eventOrganizer }}</strong>
             </span>
 
@@ -89,7 +107,11 @@
             </template>
             <template v-if="event.location">
               <NIcon :component="Home32Regular"></NIcon>
-              <span>{{ event.location }}</span>
+              <span>{{
+                $page.props.locale === "en"
+                  ? event.attributes?.en?.location ?? event.location
+                  : event.location
+              }}</span>
             </template>
 
             <NDivider v-if="event.url" class="col-span-2"></NDivider>
@@ -121,18 +143,17 @@
                 ><template #icon>
                   <NIcon :component="HatGraduation20Regular"></NIcon>
                 </template>
-                Dalyvauk!
+                {{ $t("Dalyvauk") }}!
               </NButton>
-              <div class="mx-auto mt-4 w-fit">
+              <div class="mt-4 w-fit lg:mx-auto">
                 <NButton
                   size="small"
-                  text
                   secondary
                   round
                   @click="windowOpen(googleLink)"
                 >
-                  <template #icon><NIcon :component="Google" /></template>Įsidėk
-                  į Google kalendorių!</NButton
+                  <template #icon><NIcon :component="Google" /></template>
+                  {{ $t("Įsidėk į Google kalendorių") }}</NButton
                 >
               </div>
             </div>

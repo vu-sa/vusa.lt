@@ -581,6 +581,10 @@ class MainController extends Controller
 	}
 
 	public function calendarEvent(Calendar $calendar) {
+		return $this->calendarEventMain('lt', $calendar);
+	}
+
+	public function calendarEventMain($lang = null, Calendar $calendar) {
 		
 		$calendar->load('padalinys:id,alias,fullname,shortname');
 

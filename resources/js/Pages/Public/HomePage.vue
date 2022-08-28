@@ -5,7 +5,7 @@
 
   <FadeTransition appear>
     <div>
-      <EventCalendar :calendar="calendar" /></div
+      <EventCalendar :show-photos="true" :calendar="calendar" /></div
   ></FadeTransition>
 
   <FadeTransition v-if="mainPage.length > 0" appear>
