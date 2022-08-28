@@ -192,7 +192,7 @@
             <li>
               Paspausk <strong>„Pridėti kalendorių“</strong> („Add calendar“)
             </li>
-            <li>✅</li>
+            <li>✅ (Gali užtrukti iki kelių minučių, kol renginiai atsiras)</li>
           </ol>
           <ol v-else>
             <li>
@@ -206,7 +206,9 @@
             </li>
             <li>Paste the VU SR student activity calendar link</li>
             <li>Press <strong>„Add calendar“</strong></li>
-            <li>✅</li>
+            <li>
+              ✅ (You may need to wait a minute or two for the events to pop in)
+            </li>
           </ol> </NTabPane
         ><NTabPane name="Outlook (Office 365)">
           <ol v-if="$page.props.locale === 'lt'">
@@ -250,7 +252,7 @@
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
 import { Calendar, PopoverRow } from "v-calendar";
-import { Copy16Regular, LeafTwo16Filled } from "@vicons/fluent";
+import { Copy16Regular } from "@vicons/fluent";
 import { Google } from "@vicons/fa";
 import { Head } from "@inertiajs/inertia-vue3";
 import {

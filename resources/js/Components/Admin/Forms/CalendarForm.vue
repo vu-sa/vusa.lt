@@ -41,6 +41,10 @@
             />
           </NFormItemGi>
 
+          <NFormItemGi label="Visos dienos renginys" :span="6">
+            <NSwitch v-model:value="form.attributes.all_day" />
+          </NFormItemGi>
+
           <NFormItemGi label="Kategorija" :span="6">
             <NSelect
               v-model:value="form.category"

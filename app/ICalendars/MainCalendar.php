@@ -43,6 +43,10 @@ class MainCalendar {
                 $eventObject->address($event->location);
             }
 
+            if (($event->attributes['all_day'] ?? null) === true) {
+                $eventObject->fullDay();
+            }
+
             if (! is_null($event->url)) {
                 $eventObject->url($event->url);
             }
@@ -61,7 +65,7 @@ class MainCalendar {
         if ($lang === 'en') {
             $calendars = CalendarModel::where('attributes->en->shown', 'true')->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'description', 'attributes')->take(250)->get();
         } else {
-            $calendars = CalendarModel::orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'description')->take(250)->get();
+            $calendars = CalendarModel::orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'description', 'attributes')->take(250)->get();
         }
 
         // get last calendar models
