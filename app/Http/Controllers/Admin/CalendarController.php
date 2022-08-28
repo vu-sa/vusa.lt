@@ -80,7 +80,7 @@ class CalendarController extends Controller
             'location' => $request->location,
             'url' => $request->url,
             'category' => $request->category,
-            'attributes' => $request->attributes,
+            'attributes' => $request->all()['attributes']
         ]);
 
         return redirect()->route('calendar.index');

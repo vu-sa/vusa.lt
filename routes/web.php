@@ -120,6 +120,8 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => '(lt|en)']], function
             Route::get('kontaktai/kategorija/{alias}', [Public\MainController::class, 'contactsCategory'])->name('contacts.category');
             Route::get('kontaktai/{alias}', [Public\MainController::class, 'contacts'])->name('contacts.alias');
 
+            Route::get('kalendorius/ics', [Public\MainController::class, 'publicAllEventCalendar'])->name('calendar.ics');
+
             // because of this, can't get current route for main.page, it shows main.news
             Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('news_string', '(naujiena|news)')->name('news');
 
@@ -131,6 +133,7 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => '(lt|en)']], function
             Route::post('search', [Public\MainController::class, 'search'])->name('search');
 
             Route::get('mainNews', [Public\MainController::class, 'getMainNews']);
+
             Route::get('{permalink}', [Public\MainController::class, 'page'])->where('permalink', '.*')->name('page');
         });
     });

@@ -10,13 +10,17 @@ use DateTime;
 
 class MainCalendar {
 
-    private function parseCalendarEventsForICS($calendars) {
+    private function parseCalendarEventsForICS($calendars, $en = false) {
         // foreach event in calendar
         // create event in ICS
         $events = [];
 
         foreach ($calendars as $event) {
-            $eventObject = Event::create($event->title)->startsAt(DateTime::createFromFormat('Y-m-d H:i:s', $event->date))->description(strip_tags($event->description) ?? '');       
+            $eventObject = Event::create($event->title)->startsAt(DateTime::createFromFormat('Y-m-d H:i:s', $event->date));
+
+            $eventObject->description($en 
+                ? (strip_tags(($event?->attributes['en']['description'] ?? null) ?? $event->description))
+                : strip_tags($event->description));
 
             // there are many old events that have no end date. we need to manage this
             if (! is_null($event->end_date)) {
@@ -46,15 +50,24 @@ class MainCalendar {
             $events[] = $eventObject;
         }
 
+        dd($events);
+
         return $events;
     }
     
     public function get()  {
         
-        // get last 100 calendar models
-        $calendars = CalendarModel::orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'description')->take(250)->get();
+        // get lang from request
+        $lang = request()->lang;
 
-        $calendarArray = $this->parseCalendarEventsForICS($calendars);
+        if ($lang === 'en') {
+            $calendars = CalendarModel::where('attributes->en->shown', 'true')->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'description', 'attributes')->take(250)->get();
+        } else {
+            $calendars = CalendarModel::orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'description')->take(250)->get();
+        }
+
+        // get last calendar models
+        $calendarArray = $this->parseCalendarEventsForICS($calendars, $lang === 'en');
 
         $calendar = Calendar::create('Studentiškas kalendorius (VU SA)')->description('Studentiškų veiklų kalendorius Vilniaus universitete. Kuruojamas VU Studentų atstovybės 🔬')->refreshInterval(5)
         ->event($calendarArray)

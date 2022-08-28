@@ -4,20 +4,17 @@
   </Head>
 
   <FadeTransition appear>
-    <div v-if="$page.props.locale === 'lt'">
+    <div>
       <EventCalendar :calendar="calendar" /></div
   ></FadeTransition>
 
   <FadeTransition appear>
-    <template v-if="$page.props.locale === 'lt'">
-      <MainLinks v-if="mainPage.length > 0" :main-page="mainPage" /></template
+    <div class="mt-8">
+      <MainLinks v-if="mainPage.length > 0" :main-page="mainPage" /></div
   ></FadeTransition>
 
   <FadeTransition appear>
-    <NewsElement
-      v-if="$page.props.locale === 'lt' && news.length > 0"
-      :news="news"
-    />
+    <NewsElement :news="news" />
   </FadeTransition>
 
   <FadeTransition appear>
@@ -26,18 +23,6 @@
 
   <FadeTransition appear>
     <div><YearReport2022 /></div>
-  </FadeTransition>
-
-  <FadeTransition appear>
-    <template v-if="$page.props.locale === 'en'">
-      <MainLinks v-if="mainPage.length > 0" :main-page="mainPage" /></template
-  ></FadeTransition>
-
-  <FadeTransition appear>
-    <NewsElement
-      v-if="$page.props.locale === 'en' && news.length > 0"
-      :news="news"
-    />
   </FadeTransition>
 </template>
 
