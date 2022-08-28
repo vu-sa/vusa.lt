@@ -12,22 +12,22 @@ use App\Models\Navigation;
 use App\Models\News;
 use App\Models\Padalinys;
 use App\Models\Page;
-use Illuminate\Support\Facades\Route;
-use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\App;
-use App\Models\PageView;
 use App\Models\Registration;
 use App\Models\RegistrationForm;
-use Illuminate\Support\Facades\Schema;
 use App\Models\SaziningaiExam;
 use App\Models\SaziningaiExamFlow;
 use App\Models\SaziningaiExamObserver;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use App\ICalendars\MainCalendar;
+use Spatie\CalendarLinks\Link;
+use Datetime;
+use Illuminate\Support\Carbon;
 
 class MainController extends Controller
 {
@@ -76,6 +76,24 @@ class MainController extends Controller
 		Inertia::share('mainNavigation', $mainNavigation);
 	}
 
+	private function getCalendarGoogleLink($calendarEvent, $en = false) {
+
+		$googleLink = Link::create($en ? ($calendarEvent?->attributes['en']['title'] ?? $calendarEvent->title) : $calendarEvent->title, 
+				DateTime::createFromFormat('Y-m-d H:i:s', $calendarEvent->date), 
+				$calendarEvent->end_date 
+					? DateTime::createFromFormat('Y-m-d H:i:s', $calendarEvent->end_date) 
+					: Carbon::parse($calendarEvent->date)->addHour()->toDateTime())
+			->description($en 
+				? (strip_tags(
+					($calendarEvent?->attributes['en']['description'] ?? $calendarEvent->description)
+					?? $calendarEvent->description))
+				: strip_tags($calendarEvent->description))
+			->address($calendarEvent->location ?? "")
+			->google();
+
+		return $googleLink;
+	}
+
 	public function home()
 	{
 
@@ -85,6 +103,14 @@ class MainController extends Controller
 		// dd($this->alias, $padalinys);
 
 		$news = News::where([['padalinys_id', '=', $padalinys->id],['lang', app()->getLocale()], ['draft', '=', 0]])->where('publish_time', '<=', date('Y-m-d H:i:s'))->orderBy('publish_time', 'desc')->take(4)->get();
+
+		if (app()->getLocale() === 'en') {
+            $calendar = Calendar::where('attributes->en->shown', 'true')->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'attributes', 'category')->take(400)->get();
+        } else {
+            $calendar = Calendar::orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'category')->take(400)->get();
+        }
+
+		// $calendar = Calendar::select('id', 'date', 'title', 'category', 'end_date')->orderBy('date', 'desc')->take(400)->get();
 
 		Inertia::share('alias', $this->alias);
 		return Inertia::render('Public/HomePage', [
@@ -105,6 +131,17 @@ class MainController extends Controller
 						}
 					},
 					"important" => $news->important,
+				];
+			}),
+			'calendar' => $calendar->map(function ($calendar) {
+
+				return [
+					'id' => $calendar->id,
+					'date' => $calendar->date,
+					'end_date' => $calendar->end_date,
+					'title' => app()->getLocale() === 'en' ? ($calendar->attributes['en']['title'] ?? $calendar->title) : $calendar->title,
+					'category' => $calendar->category,
+					'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale() === 'en')
 				];
 			}),
 			'mainPage' => MainPage::where([['padalinys_id', $padalinys->id], ['lang', app()->getLocale()]])->get(),
@@ -543,27 +580,18 @@ class MainController extends Controller
 		]);
 	}
 
-	public function summerCampEvent(Calendar $calendar) {
-		
-		// if calendar doesnt have category Pirmakursių stovykla, redirect to 404
-		if ($calendar->category()->first()->name !== 'Pirmakursių stovykla') {
-			abort(404);
-		}
+	public function calendarEvent(Calendar $calendar) {
+		return $this->calendarEventMain('lt', $calendar);
+	}
 
+	public function calendarEventMain($lang = null, Calendar $calendar) {
+		
 		$calendar->load('padalinys:id,alias,fullname,shortname');
 
-		$curatorInstitution = DutyInstitution::where('alias', '=', $calendar->padalinys->alias)
-			->with(['duties' => function ($query) {
-			$query->where('type_id', '=', 5);
-			}])->first();
-
-		$curatorDuties = $curatorInstitution->duties->load('users');
-
-		return Inertia::render('Public/SummerCampEvent', 
-		['event' => $calendar, 'images' => $calendar->getMedia('images'), 'curatorDuties' => $curatorDuties,])->withViewData([
+		return Inertia::render('Public/CalendarEvent', 
+		['event' => $calendar, 'images' => $calendar->getMedia('images'), 'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale() === 'en')])->withViewData([
 			'title' => $calendar->title,
-			'description' => $calendar->description,
-			
+			'description' => strip_tags($calendar->description),
 		]);
 	}
 
@@ -572,6 +600,14 @@ class MainController extends Controller
 		$registration->data = request()->all();
 		$registration->registration_form_id = $registrationForm->id;
 		$registration->save();
+	}
+
+	public function publicAllEventCalendar() {
+		
+		$ics = new MainCalendar;
+
+		return response($ics->get())
+    		->header('Content-Type', 'text/calendar; charset=utf-8');
 	}
 
 	public function ataskaita2022()

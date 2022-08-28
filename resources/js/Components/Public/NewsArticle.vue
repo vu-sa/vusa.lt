@@ -1,5 +1,7 @@
 <template>
-  <article class="grid grid-cols-4 justify-items-center gap-y-4 px-8 lg:px-32">
+  <article
+    class="mt-4 grid grid-cols-4 justify-items-center gap-y-4 px-8 lg:px-32"
+  >
     <div
       class="col-span-4 flex w-full flex-wrap justify-center gap-2 text-gray-700"
     >

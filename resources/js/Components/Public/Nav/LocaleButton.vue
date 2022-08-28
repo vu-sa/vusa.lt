@@ -62,7 +62,7 @@ const otherLanguagePage = computed(() => {
   return false;
 });
 
-const en_options = [
+const en_options = computed(() => [
   {
     label: "Change page language",
     key: "page",
@@ -72,9 +72,9 @@ const en_options = [
     label: "Go to main page",
     key: "home",
   },
-];
+]);
 
-const lt_options = [
+const lt_options = computed(() => [
   {
     label: "Pakeisti puslapio kalbą",
     key: "page",
@@ -84,13 +84,13 @@ const lt_options = [
     label: "Eiti į pagrindinį",
     key: "home",
   },
-];
+]);
 
 const options = computed(() => {
   if (props.locale !== "lt") {
-    return lt_options;
+    return lt_options.value;
   } else {
-    return en_options;
+    return en_options.value;
   }
 });
 

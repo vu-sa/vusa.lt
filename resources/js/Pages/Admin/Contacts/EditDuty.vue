@@ -93,8 +93,6 @@ const duty = ref(props.duty);
 
 duty.value.attributes = checkForEmptyArray(duty.value.attributes);
 duty.value.attributes.en = checkForEmptyArray(duty.value.attributes.en);
-
-console.log(duty.value.attributes);
 ////////////////////////////////////////////////////////////////////////////////
 
 const detachUserFromDuty = (user: App.Models.User) => {

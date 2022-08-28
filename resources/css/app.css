@@ -2,6 +2,8 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+@import 'v-calendar/dist/style.css';
+
 @layer base {
 
   /* These two 'body' element selectors are used, because Naive UI disabled forms 

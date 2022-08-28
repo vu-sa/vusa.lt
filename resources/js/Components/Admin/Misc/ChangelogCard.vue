@@ -11,6 +11,39 @@
     <NCollapse default-expanded-names="0.3">
       <NCollapseItem name="0.3" title="v0.3">
         <section>
+          <h4 class="mt-0">v0.3.1</h4>
+          <ul>
+            <li>
+              🪄 Galimybė kurti renginius, su ta pačia informacija, kaip buvo ji
+              kuriama pirmakursių stovyklų metu
+            </li>
+            <li>🪄 Galimybė pateikti renginius, įvykius anglų kalba</li>
+            <li>
+              🌟 <strong>Studentų kalendorius</strong>
+              <ul>
+                <li>Rodo visus įvykius, patalpintus sistemoje</li>
+                <li>Pasiekiamas tik iš pagrindinio puslapio (kolkas)</li>
+                <li>
+                  Galima išsaugoti kalendoriaus vieną įvykį Google kalendoriuje
+                  (tiek iš kalendoriaus, tiek iš renginio puslapio)
+                </li>
+                <li>
+                  Galima sinchronizuoti renginius naudojant nuorodą.
+                  Sinchronizuoti galima visus įvykius arba tik tuos, kurie
+                  pažymėti, kad yra <em>accessible</em> lietuviškai
+                  nekalbantiems studentams. Instrukcijos - pagrindiniame
+                  puslapyje.
+                </li>
+              </ul>
+            </li>
+            <li>🪄 Pagrindinio puslapio elementų pertvarka</li>
+            <li>
+              🐛 Perėjus iš naujienos į turinio puslapį, anksčiau nebuvo rodoma
+              galimybė pakeisti kalbą
+            </li>
+          </ul>
+        </section>
+        <section>
           <h4 class="mt-0">v0.3</h4>
           <ul>
             <li>

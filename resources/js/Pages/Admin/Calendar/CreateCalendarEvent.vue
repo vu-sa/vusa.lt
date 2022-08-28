@@ -34,6 +34,8 @@ const calendar = {
   location: "",
   category: null,
   url: "",
-  attributes: {},
+  attributes: {
+    en: {},
+  },
 };
 </script>
