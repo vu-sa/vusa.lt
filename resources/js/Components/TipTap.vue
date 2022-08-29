@@ -4,7 +4,7 @@
   >
     <div
       v-if="editor"
-      class="flex items-center rounded-t-lg bg-gradient-to-tr from-stone-100 to-stone-50 p-2 shadow-sm"
+      class="tiptap-navbar flex items-center rounded-t-lg bg-gradient-to-tr from-stone-100 to-stone-50 p-2 shadow-sm"
     >
       <!-- <strong class="mb-4">Funkcijos</strong> -->
       <!-- <br /> -->
@@ -128,12 +128,15 @@
   </div>
   <NModal v-model:show="showFileModal">
     <div class="w-1/2 rounded-sm bg-white p-4">
-      <NTabs class="" type="line" animated>
+      <NTabs type="line" animated>
         <NTabPane name="link" tab="Pridėti nuorodą">
-          <NInput v-model:value="previousUrl"></NInput>
-          <NButton class="mt-2" type="success" @click="updateLink"
-            >Atnaujinti</NButton
-          >
+          <NInput
+            v-model:value="previousUrl"
+            placeholder="https://atstovavimas.vusa.lt"
+          ></NInput>
+          <div class="mt-2">
+            <NButton @click="updateLink">Atnaujinti</NButton>
+          </div>
         </NTabPane>
         <NTabPane name="file" tab="Pridėti failą, kaip nuorodą">
           <p class="my-2">
@@ -149,15 +152,15 @@
           <NSelect
             v-model:value="previousUrl"
             filterable
-            placeholder="Ieškoti puslapio..."
+            placeholder="Ieškoti failo pagal pavadinimą...(pvz.: Darbo reglamentas)"
             clearable
             :options="files"
             remote
             @search="getFiles"
           />
-          <NButton class="mt-2" type="success" @click="updateLink"
-            >Atnaujinti</NButton
-          >
+          <div class="mt-2">
+            <NButton @click="updateLink">Atnaujinti</NButton>
+          </div>
         </NTabPane>
         <NTabPane name="image" tab="Pridėti paveikslėlį">
           <p class="my-2">
@@ -173,15 +176,15 @@
           <NSelect
             v-model:value="previousUrl"
             filterable
-            placeholder="Ieškoti puslapio..."
+            placeholder="Ieškoti paveikslėlio...(jeigu įkėlėte paveikslėlį, rašykite jo pavadinimo bent tris raides)"
             clearable
             :options="files"
             remote
             @search="getImages"
           />
-          <NButton class="mt-4" type="primary" @click="placeImage"
-            >Atnaujinti</NButton
-          >
+          <div class="mt-2">
+            <NButton @click="placeImage">Atnaujinti</NButton>
+          </div>
         </NTabPane>
       </NTabs>
     </div>
@@ -404,35 +407,37 @@ const { message } = createDiscreteApi(["message"]);
   }
 }
 
-button {
-  color: #000;
-  background-color: #fff;
-  /* border: 1px solid #000; */
-  border-radius: 0.25rem;
-  padding: 0.1rem 0.25rem;
-  margin: 0.25rem 0.2rem;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: all 0.2s ease-in-out;
-  width: 2rem;
-  height: 2rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
+.tiptap-navbar {
+  button {
+    color: #000;
+    background-color: #fff;
+    /* border: 1px solid #000; */
+    border-radius: 0.25rem;
+    padding: 0.1rem 0.25rem;
+    margin: 0.25rem 0.2rem;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s ease-in-out;
+    width: 2rem;
+    height: 2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-button:hover {
-  background-color: rgb(215, 215, 215);
-}
+  button:hover {
+    background-color: rgb(215, 215, 215);
+  }
 
-button.is-active {
-  color: #fff;
-  background-color: #000;
-  border: 1px solid #000;
-}
+  button.is-active {
+    color: #fff;
+    background-color: #000;
+    border: 1px solid #000;
+  }
 
-img {
-  max-width: 100%;
-  height: auto;
+  img {
+    max-width: 100%;
+    height: auto;
+  }
 }
 </style>
