@@ -244,6 +244,18 @@
           </ol>
         </NTabPane></NTabs
       >
+      <template #footer>
+        <template v-if="$page.props.locale === 'lt'">
+          „Google“ ir „Outlook“ kartais atnaujina renginių informaciją tik
+          <strong> kartą per dieną </strong>. Dėl naujausios informacijos
+          apsilankyk vusa.lt
+        </template>
+        <template v-else>
+          Google and Outlook sometimes refresh these calendars only
+          <strong>once per day</strong>. For the latest events, always visit
+          vusa.lt
+        </template>
+      </template>
     </NCard>
   </NModal>
   <!-- <NDivider /> -->
