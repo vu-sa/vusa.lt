@@ -1,13 +1,21 @@
 <template>
-  <AdminLayout :title="contact.name">
+  <PageContent :title="contact.name">
     <UpsertModelLayout :errors="$attrs.errors" :model="contact">
       <UserForm :user="contact" model-route="users.store" :roles="roles" />
     </UpsertModelLayout>
-  </AdminLayout>
+  </PageContent>
 </template>
 
-<script setup lang="ts">
+<script lang="ts">
 import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+
+export default {
+  layout: AdminLayout,
+};
+</script>
+
+<script setup lang="ts">
+import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
 import UserForm from "@/Components/Admin/Forms/UserForm.vue";
 

@@ -1,99 +1,181 @@
 <template>
   <NForm :model="form" label-placement="top">
-    <NGrid :span="24" :x-gap="24">
-      <NFormItemGi label="Kategorija" :span="24">
-        <NSelect
-          v-model:value="form.category"
-          :options="categoryOptions"
-          placeholder="Pasirinkti kategoriją..."
-          clearable
-        />
-      </NFormItemGi>
+    <NTabs animated type="card">
+      <NTabPane display-directive="show" name="lt" tab="🇱🇹">
+        <NGrid :span="24" :x-gap="24">
+          <NFormItemGi label="Pavadinimas" :span="12" required>
+            <NInput
+              v-model:value="form.title"
+              type="text"
+              placeholder="Įrašyti pavadinimą..."
+            />
+          </NFormItemGi>
 
-      <NFormItemGi label="Pavadinimas" :span="12" required>
-        <NInput
-          v-model:value="form.title"
-          type="text"
-          placeholder="Įrašyti pavadinimą..."
-        />
-      </NFormItemGi>
+          <NFormItemGi label="Renginio vieta" :span="12">
+            <NInput
+              v-model:value="form.location"
+              type="text"
+              placeholder="AB Imeda poilsiavietė, Kiškiai, Ignalinos raj."
+            />
+          </NFormItemGi>
 
-      <NFormItemGi label="Renginio vieta" :span="12">
-        <NInput
-          v-model:value="form.location"
-          type="text"
-          placeholder="AB Imeda poilsiavietė, Kiškiai, Ignalinos raj."
-        />
-      </NFormItemGi>
+          <NFormItemGi label="Pradžios data ir laikas" :span="6" required>
+            <NDatePicker
+              v-model:formatted-value="form.date"
+              default-time="12:00:00"
+              placeholder="Pasirinkti laiką..."
+              value-format="yyyy-MM-dd HH:mm:ss"
+              type="datetime"
+            />
+          </NFormItemGi>
 
-      <NFormItemGi label="Pradžios data ir laikas" :span="12" required>
-        <NDatePicker
-          v-model:formatted-value="form.date"
-          placeholder="Pasirinkti laiką..."
-          value-format="yyyy-MM-dd HH:mm:ss"
-          type="datetime"
-        />
-      </NFormItemGi>
+          <NFormItemGi label="Pabaigos data ir laikas" :span="6">
+            <NDatePicker
+              v-model:formatted-value="form.end_date"
+              default-time="12:00:00"
+              :disabled="props.modelRoute === 'calendar.store'"
+              :is-date-disabled="disabledEndDate"
+              placeholder="Pasirinkti laiką..."
+              value-format="yyyy-MM-dd HH:mm:ss"
+              type="datetime"
+            />
+          </NFormItemGi>
 
-      <NFormItemGi label="Pagrindinė nuoroda" :span="12">
-        <NInput
-          v-model:value="form.url"
-          type="text"
-          placeholder="https://vusa.lt/..."
-        />
-      </NFormItemGi>
+          <NFormItemGi label="Visos dienos renginys" :span="6">
+            <NSwitch v-model:value="form.attributes.all_day" />
+          </NFormItemGi>
 
-      <template v-if="form.category === 'freshmen-camps'">
-        <NFormItemGi label="Facebook nuoroda" :span="12">
-          <NInput
-            v-model:value="form.attributes.facebook_url"
-            type="text"
-            placeholder="https://www.facebook.com/events/584152539934772"
-          />
-        </NFormItemGi>
+          <NFormItemGi label="Kategorija" :span="6">
+            <NSelect
+              v-model:value="form.category"
+              :options="categoryOptions"
+              placeholder="Pasirinkti kategoriją..."
+              clearable
+            />
+          </NFormItemGi>
 
-        <NFormItemGi label="Trukmė" :span="12">
-          <NDatePicker
-            v-model:value="form.attributes.date_range"
-            type="daterange"
-            clearable
-          />
-        </NFormItemGi>
+          <NFormItemGi label="CTO (Call to action) nuoroda" :span="12">
+            <NInput
+              v-model:value="form.url"
+              type="text"
+              placeholder="https://vusa.lt/..."
+            />
+          </NFormItemGi>
 
-        <NFormItemGi label="Youtube video kodas" :span="12">
-          <NInput
-            v-model:value="form.attributes.video_url"
-            type="text"
-            placeholder="dQw4w9WgXcQ"
-          />
-        </NFormItemGi>
+          <NFormItemGi label="Organizatorius" :span="12">
+            <NInput
+              v-model:value="form.attributes.organizer"
+              :placeholder="`Nieko neįrašius, organizatorius bus ${defaultOrganizer}`"
+              type="text"
+            />
+          </NFormItemGi>
 
-        <NFormItemGi
-          v-if="modelRoute === 'calendar.update'"
-          label="Įkelti paveikslėlius (pirmas bus panaudotas, kaip pagrindinis. Jeigu metama klaida, prieš tai sumažinkite paveikslėlius)"
-          :span="24"
-        >
-          <NUpload
-            ref="upload"
-            accept="image/jpg, image/jpeg, image/png"
-            list-type="image-card"
-            :default-file-list="images"
-            multiple
-            @change="handleUploadChange"
-            @remove="handleUploadRemove"
+          <NFormItemGi label="Facebook nuoroda" :span="12">
+            <NInput
+              v-model:value="form.attributes.facebook_url"
+              type="text"
+              placeholder="https://www.facebook.com/events/584152539934772"
+            />
+          </NFormItemGi>
+
+          <NFormItemGi label="Youtube video kodas" :span="12">
+            <NInput
+              v-model:value="form.attributes.video_url"
+              type="text"
+              placeholder="dQw4w9WgXcQ"
+            />
+          </NFormItemGi>
+
+          <NFormItemGi
+            v-if="modelRoute === 'calendar.update'"
+            label="Įkelti paveikslėlius (pirmas bus panaudotas, kaip pagrindinis. Jeigu metama klaida, prieš tai sumažinkite paveikslėlius)"
+            :span="24"
           >
-            Įkelti paveikslėlius
-          </NUpload>
-        </NFormItemGi>
-      </template>
+            <NUpload
+              ref="upload"
+              accept="image/jpg, image/jpeg, image/png"
+              list-type="image-card"
+              :default-file-list="images"
+              multiple
+              @change="handleUploadChange"
+              @remove="handleUploadRemove"
+            >
+              Įkelti paveikslėlius
+            </NUpload>
+          </NFormItemGi>
 
-      <NFormItemGi label="Aprašymas" :span="24" required>
-        <TipTap
-          v-model="form.description"
-          :search-files="$page.props.search.other"
-        />
-      </NFormItemGi>
-    </NGrid>
+          <NFormItemGi label="Aprašymas" :span="24" required>
+            <TipTap
+              v-model="form.description"
+              :search-files="$page.props.search.other"
+            />
+          </NFormItemGi>
+        </NGrid>
+      </NTabPane>
+      <NTabPane display-directive="show" name="en" tab="🇬🇧">
+        <NGrid :span="24" :x-gap="24">
+          <NFormItemGi
+            label="Renginys arba informacija prieinama ne tik LT studentams"
+            :span="24"
+          >
+            <NSwitch v-model:value="form.attributes.en.shown" />
+          </NFormItemGi>
+
+          <NFormItemGi label="Pavadinimas" :span="12">
+            <NInput
+              v-model:value="form.attributes.en.title"
+              type="text"
+              placeholder="Įrašyti pavadinimą..."
+            />
+          </NFormItemGi>
+          <NFormItemGi label="Renginio vieta" :span="12">
+            <NInput
+              v-model:value="form.attributes.en.location"
+              type="text"
+              placeholder="AB Imeda poilsiavietė, Kiškiai, Ignalinos raj."
+            />
+          </NFormItemGi>
+
+          <NFormItemGi label="CTO (Call to action) nuoroda" :span="12">
+            <NInput
+              v-model:value="form.attributes.en.url"
+              type="text"
+              placeholder="https://vusa.lt/..."
+            />
+          </NFormItemGi>
+
+          <NFormItemGi label="Organizatorius" :span="12">
+            <NInput
+              v-model:value="form.attributes.en.organizer"
+              :placeholder="`Nieko neįrašius, organizatorius bus ${defaultOrganizer}`"
+              type="text"
+            />
+          </NFormItemGi>
+
+          <NFormItemGi label="Facebook nuoroda" :span="12">
+            <NInput
+              v-model:value="form.attributes.en.facebook_url"
+              type="text"
+              placeholder="https://www.facebook.com/events/584152539934772"
+            />
+          </NFormItemGi>
+
+          <NFormItemGi label="Youtube video kodas" :span="12">
+            <NInput
+              v-model:value="form.attributes.en.video_url"
+              type="text"
+              placeholder="dQw4w9WgXcQ"
+            />
+          </NFormItemGi>
+          <NFormItemGi label="Aprašymas" :span="24">
+            <TipTap
+              v-model="form.attributes.en.description"
+              :search-files="$page.props.search.other"
+            />
+          </NFormItemGi>
+        </NGrid>
+      </NTabPane>
+    </NTabs>
     <div class="flex justify-end gap-2">
       <DeleteModelButton
         v-if="deleteModelRoute"
@@ -120,13 +202,16 @@ import {
   NGrid,
   NInput,
   NSelect,
+  NSwitch,
+  NTabPane,
+  NTabs,
   NUpload,
   UploadFileInfo,
   UploadInst,
   createDiscreteApi,
 } from "naive-ui";
-import { ref } from "vue";
-import { useForm } from "@inertiajs/inertia-vue3";
+import { computed, ref } from "vue";
+import { useForm, usePage } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 
 import DeleteModelButton from "@/Components/Admin/Buttons/DeleteModelButton.vue";
@@ -143,6 +228,16 @@ const props = defineProps<{
 
 const form = useForm("calendar", props.calendar);
 
+// create disabled end date if start date is not set
+
+if (props.modelRoute === "calendar.update") {
+  const date = new Date(form.date.replace(/-/g, "/"));
+
+  const disabledEndDate = (ts) => {
+    return !ts || date > ts + 1000 * 60 * 60 * 24;
+  };
+}
+
 // convert date_range array of string to number
 
 const convertDateRange = (form_date_range: Array<string | number>) => {
@@ -156,6 +251,12 @@ const convertDateRange = (form_date_range: Array<string | number>) => {
 if (form.attributes !== null) {
   form.attributes.date_range = convertDateRange(form.attributes.date_range);
 }
+
+const defaultOrganizer = computed(() => {
+  return (
+    props.calendar.padalinys?.shortname ?? usePage().props.value.user.padalinys
+  );
+});
 
 const images = ref<UploadFileInfo[]>([]);
 

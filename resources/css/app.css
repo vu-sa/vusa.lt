@@ -2,6 +2,8 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+@import 'v-calendar/dist/style.css';
+
 @layer base {
 
   /* These two 'body' element selectors are used, because Naive UI disabled forms 
@@ -14,25 +16,27 @@
   h1 {
     @apply text-2xl md:text-3xl font-black mb-2;
   }
+
   h2 {
     @apply text-xl md:text-2xl font-bold mb-2;
   }
+
   h3 {
     @apply text-lg md:text-xl font-bold mb-2;
   }
+
   h4 {
     @apply text-base md:text-lg font-bold mb-2;
   }
+
   ul {
-	@apply list-disc;
-  }
-  ol {
-	@apply list-decimal;
+	  @apply list-disc;
   }
 
-  hr {
-	@apply border-t-4 border-gray-200 mt-2;
+  ol {
+	  @apply list-decimal;
   }
+
   a {
     @apply hover:text-vusa-red duration-200;
   }
@@ -40,10 +44,6 @@
 
 @layer components {
 	.main-card {
-		@apply bg-white p-8 rounded-2xl shadow-xl mb-6
+		@apply bg-white p-6 rounded-md shadow-xl mb-6 max-w-7xl
 	}
-  .admin-navigation-icon {
-    @apply mx-auto w-3 h-3 md:w-7 md:h-7 mb-1;
-  }
-  
 }

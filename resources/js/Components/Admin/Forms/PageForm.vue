@@ -21,6 +21,7 @@
       <NFormItemGi label="Kalba" :span="12">
         <NSelect
           v-model:value="form.lang"
+          filterable
           :options="languageOptions"
           placeholder="Pasirinkti kalbą..."
         />
@@ -28,14 +29,12 @@
 
       <NFormItemGi label="Kitos kalbos puslapis" :span="12">
         <NSelect
-          v-model:value="form.other_lang_page"
-          disabled
+          v-model:value="form.other_lang_id"
           filterable
-          placeholder="Ieškoti puslapio..."
-          :options="otherLangPageOptions"
+          :disabled="modelRoute === 'pages.store'"
+          placeholder="Pasirinkti kitos kalbos puslapį... (tik tada, kai jau sukūrėte puslapį)"
+          :options="otherPageOptions"
           clearable
-          remote
-          @search="getOtherLangPages"
         />
       </NFormItemGi>
 
@@ -62,8 +61,8 @@
 <script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
 import { NForm, NFormItemGi, NGrid, NInput, NSelect } from "naive-ui";
+import { computed, ref, watch } from "vue";
 import { debounce } from "lodash";
-import { ref, watch } from "vue";
 import { useForm, usePage } from "@inertiajs/inertia-vue3";
 import latinize from "latinize";
 import route from "ziggy-js";
@@ -74,11 +73,25 @@ import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue"
 
 const props = defineProps<{
   page: App.Models.Page;
+  otherLangPages?: App.Models.Page[];
   modelRoute: string;
   deleteModelRoute?: string;
 }>();
 
 const form = useForm("page", props.page);
+
+const otherPageOptions = computed(() => {
+  if (props.modelRoute === "pages.store") {
+    return [];
+  }
+
+  return props.otherLangPages
+    .map((page) => ({
+      value: page.id,
+      label: `${page.title} (${page.padalinys?.shortname})`,
+    }))
+    .reverse();
+});
 
 const languageOptions = [
   {
@@ -90,8 +103,6 @@ const languageOptions = [
     label: "English",
   },
 ];
-
-const otherLangPageOptions = ref([]);
 
 // watch form.title and update form.permalink
 
@@ -111,50 +122,34 @@ if (props.modelRoute == "pages.store") {
   );
 }
 
-// const createdPermalink = () => {
-//   let latinizedTitle = latinize(form.title);
-
-//   latinizedTitle = latinizedTitle
-//     .toLowerCase()
-//     .replace(/[^a-z0-9]+/g, "-")
-//     .replace(/-+/g, "-")
-//     .replace(/^-+/, "")
-//     .replace(/-+$/, "")
-//     .substring(0, 30);
-
-//   form.permalink = latinizedTitle;
-//   return latinizedTitle;
-// };
-// const { message } = createDiscreteApi(["message"]);
-
-const getOtherLangPages = debounce((input) => {
-  // get other lang
-  if (input.length > 2) {
-    // message.loading("Ieškoma...");
-    const other_lang = page.lang === "lt" ? "en" : "lt";
-    Inertia.post(
-      route("pages.search"),
-      {
-        data: {
-          title: input,
-          lang: other_lang,
-        },
-      },
-      {
-        preserveState: true,
-        preserveScroll: true,
-        onSuccess: () => {
-          otherLangPageOptions.value = usePage().props.value.search.pages.map(
-            (page) => {
-              return {
-                value: page.id,
-                label: `${page.title} (${page.padalinys.shortname})`,
-              };
-            }
-          );
-        },
-      }
-    );
-  }
-}, 500);
+// const getOtherLangPages = debounce((input) => {
+//   // get other lang
+//   if (input.length > 2) {
+//     // message.loading("Ieškoma...");
+//     const other_lang = page.lang === "lt" ? "en" : "lt";
+//     Inertia.post(
+//       route("pages.search"),
+//       {
+//         data: {
+//           title: input,
+//           lang: other_lang,
+//         },
+//       },
+//       {
+//         preserveState: true,
+//         preserveScroll: true,
+//         onSuccess: () => {
+//           otherLangPageOptions.value = usePage().props.value.search.pages.map(
+//             (page) => {
+//               return {
+//                 value: page.id,
+//                 label: `${page.title} (${page.padalinys.shortname})`,
+//               };
+//             }
+//           );
+//         },
+//       }
+//     );
+//   }
+// }, 500);
 </script>

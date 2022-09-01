@@ -16,18 +16,24 @@
         <!-- <NIcon class="mr-2" size="16"> <Clock20Regular /> </NIcon> -->
         {{ article.publish_time }}</template
       >
-      <template #title>{{ article.title }}</template>
+      <template #title
+        >{{ article.title }}
+        <NButton v-if="$page.props.user" text @click="editNews"
+          ><NIcon size="28" :component="DocumentEdit24Regular" /></NButton
+      ></template>
       <template #image
         ><img
           class="col-span-4 my-4 h-auto w-[65ch] rounded-sm object-cover shadow-md duration-200 hover:shadow-lg"
           :src="article.image"
       /></template>
-      <div class="col-span-full">
-        <NButton v-if="$page.props.user" text @click="editNews"
-          ><NIcon size="40"
-            ><DocumentEdit24Regular></DocumentEdit24Regular></NIcon
-        ></NButton>
-      </div>
+      <em v-if="article.other_lang_id" class="prose col-span-full text-sm"
+        >{{ $t("Puslapis egzistuoja kita kalba") }}!
+        <span class="ml-2">
+          <NButton tertiary round size="small" @click="openAnotherLangNews"
+            >{{ $t("Atidaryti") }}.</NButton
+          >
+        </span>
+      </em>
       <div
         class="prose col-span-4 first-letter:float-left first-letter:mr-3 first-letter:text-7xl first-letter:font-bold"
         v-html="article.text"
@@ -45,20 +51,35 @@ export default {
 </script>
 
 <script setup lang="ts">
+import { trans as $t } from "laravel-vue-i18n";
 import { DocumentEdit24Regular } from "@vicons/fluent";
-import { Head } from "@inertiajs/inertia-vue3";
+import { Head, usePage } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
 import { NBackTop, NButton, NIcon } from "naive-ui";
+import { loadLanguageAsync } from "laravel-vue-i18n";
 import route from "ziggy-js";
 
-import FadeTransition from "@/Components/Public/FadeTransition.vue";
+import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
 import NewsArticle from "@/Components/Public/NewsArticle.vue";
 
 const props = defineProps<{
   article: App.Models.News;
+  otherLangNews: App.Models.News | null;
 }>();
 
 const editNews = () => {
   Inertia.visit(route("news.edit", { id: props.article.id }));
+};
+
+const openAnotherLangNews = () => {
+  window.open(
+    route("news", {
+      lang: props.otherLangNews.lang,
+      newsString: props.otherLangNews.lang === "lt" ? "naujiena" : "news",
+      padalinys: usePage().props.value.alias,
+      permalink: props.otherLangNews.permalink,
+    }),
+    "_blank"
+  );
 };
 </script>

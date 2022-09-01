@@ -13,6 +13,12 @@ class DutyInstitution extends Model
 
     protected $guarded = [];
 
+    protected $with = ['type'];
+
+    protected $casts = [
+        'attributes' => 'array',
+    ];
+
     public function duties()
     {
         return $this->hasMany(Duty::class, 'institution_id');

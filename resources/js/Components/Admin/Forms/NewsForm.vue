@@ -11,9 +11,7 @@
 
       <NFormItemGi label="Nuoroda" :span="12">
         <NInput
-          :value="
-            modelRoute == 'news.create' ? createdPermalink : form.permalink
-          "
+          :value="form.permalink"
           disabled
           type="text"
           placeholder="Sugeneruojama nuoroda"
@@ -30,14 +28,12 @@
 
       <NFormItemGi label="Kitos kalbos puslapis" :span="12">
         <NSelect
-          v-model:value="form.other_lang_news"
-          disabled
+          v-model:value="form.other_lang_id"
           filterable
-          placeholder="Ieškoti puslapio..."
+          :disabled="modelRoute === 'news.store'"
+          placeholder="Pasirinkti kitos kalbos puslapį... (tik tada, kai jau sukūrėte puslapį)"
           :options="otherLangNewsOptions"
           clearable
-          remote
-          @search="getOtherLangNews"
         />
       </NFormItemGi>
 
@@ -114,7 +110,7 @@ import {
   NSelect,
   NSwitch,
 } from "naive-ui";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { debounce } from "lodash";
 import { useForm, usePage } from "@inertiajs/inertia-vue3";
 import latinize from "latinize";
@@ -127,11 +123,25 @@ import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue"
 
 const props = defineProps<{
   news: App.Models.News;
+  otherLangNews: App.Models.News[];
   modelRoute: string;
   deleteModelRoute?: string;
 }>();
 
 const form = useForm("news", props.news);
+
+const otherLangNewsOptions = computed(() => {
+  if (props.modelRoute === "news.store") {
+    return [];
+  }
+
+  return props.otherLangNews
+    .map((news) => ({
+      value: news.id,
+      label: `${news.title} (${news.padalinys?.shortname})`,
+    }))
+    .reverse();
+});
 
 const languageOptions = [
   {
@@ -144,48 +154,19 @@ const languageOptions = [
   },
 ];
 
-const otherLangNewsOptions = ref([]);
-
-const createdPermalink = computed(() => {
-  let latinizedTitle = latinize(form.title);
-
-  return latinizedTitle
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-+/, "")
-    .replace(/-+$/, "")
-    .substring(0, 30);
-});
-
-const getOtherLangNews = debounce((input) => {
-  // get other lang
-  if (input.length > 2) {
-    // message.loading("Ieškoma...");
-    const other_lang = news.lang === "lt" ? "en" : "lt";
-    Inertia.post(
-      route("news.search"),
-      {
-        data: {
-          title: input,
-          lang: other_lang,
-        },
-      },
-      {
-        preserveState: true,
-        preserveScroll: true,
-        onSuccess: () => {
-          otherLangnewsOptions.value = usePage().props.value.search.news.map(
-            (news) => {
-              return {
-                value: news.id,
-                label: `${news.title} (${news.padalinys.shortname})`,
-              };
-            }
-          );
-        },
-      }
-    );
-  }
-}, 500);
+if (props.modelRoute == "news.store") {
+  watch(
+    () => form.title,
+    (title) => {
+      let latinizedTitle = latinize(title);
+      form.permalink = latinizedTitle
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-+/, "")
+        .replace(/-+$/, "")
+        .substring(0, 30);
+    }
+  );
+}
 </script>

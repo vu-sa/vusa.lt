@@ -1,5 +1,6 @@
 <template>
   <NDataTable
+    class="min-w-min"
     remote
     size="small"
     :data="model.data"

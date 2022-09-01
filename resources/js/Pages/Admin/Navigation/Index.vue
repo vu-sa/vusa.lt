@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout title="Navigacija">
+  <PageContent title="Navigacija">
     <!-- <template #aside-header>
       <AsideHeader></AsideHeader>
     </template> -->
@@ -28,8 +28,16 @@
         </n-popconfirm>
       </div>
     </div>
-  </AdminLayout>
+  </PageContent>
 </template>
+
+<script lang="ts">
+import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+
+export default {
+  layout: AdminLayout,
+};
+</script>
 
 <script setup lang="ts">
 // import { Edit16Regular } from "@vicons/fluent";
@@ -44,9 +52,10 @@ import {
   // createDiscreteApi,
 } from "naive-ui";
 import { h, ref } from "vue";
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
-// import AsideHeader from "./AsideHeader.vue";
 import route from "ziggy-js";
+
+// import AsideHeader from "./AsideHeader.vue";
+import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 
 const props = defineProps<{
   navigation: App.Models.Navigation;

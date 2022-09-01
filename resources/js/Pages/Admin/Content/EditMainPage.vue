@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout :title="mainPage.text" :back-url="route('mainPage.index')">
+  <PageContent :title="mainPage.text" :back-url="route('mainPage.index')">
     <UpsertModelLayout :errors="$attrs.errors" :model="mainPage">
       <MainPageForm
         :main-page="mainPage"
@@ -7,14 +7,22 @@
         delete-model-route="mainPage.destroy"
       />
     </UpsertModelLayout>
-  </AdminLayout>
+  </PageContent>
 </template>
+
+<script lang="ts">
+import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+
+export default {
+  layout: AdminLayout,
+};
+</script>
 
 <script setup lang="ts">
 import route from "ziggy-js";
 
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
 import MainPageForm from "@/Components/Admin/Forms/MainPageForm.vue";
+import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
 
 defineProps<{

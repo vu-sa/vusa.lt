@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout
+  <PageContent
     :title="`${duty.name} (${
       duty.institution?.short_name ?? 'Neturi institucijos'
     })`"
@@ -14,10 +14,8 @@
         delete-model-route="duties.destroy"
       />
     </UpsertModelLayout>
-    <template #aside-navigation-options>
-      <div v-if="hasUsers" class="col-span-3">
-        <NDivider></NDivider>
-
+    <template #aside-card>
+      <div v-if="hasUsers" class="main-card h-fit w-fit">
         <strong>Šiuo metu šias pareigas užima:</strong>
         <ul class="mt-2 list-none">
           <li v-for="user in users" :key="user.id" class="mb-1">
@@ -47,10 +45,20 @@
           </li>
         </ul>
       </div>
-      <p v-else>Šių pareigų kolkas niekas neužima.</p>
+      <p v-else class="main-card h-fit w-fit">
+        Šių pareigų kolkas niekas neužima.
+      </p>
     </template>
-  </AdminLayout>
+  </PageContent>
 </template>
+
+<script lang="ts">
+import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+
+export default {
+  layout: AdminLayout,
+};
+</script>
 
 <script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
@@ -59,16 +67,16 @@ import { LinkDismiss20Filled } from "@vicons/fluent";
 import {
   NAvatar,
   NButton,
-  NDivider,
   NIcon,
   NPopconfirm,
   createDiscreteApi,
 } from "naive-ui";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import route from "ziggy-js";
 
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+import { checkForEmptyArray } from "@/Composables/checkAttributes";
 import DutyForm from "@/Components/Admin/Forms/DutyForm.vue";
+import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
 
 const props = defineProps<{
@@ -81,6 +89,10 @@ const { message } = createDiscreteApi(["message"]);
 
 const hasUsers = computed(() => props.users.length > 0);
 
+const duty = ref(props.duty);
+
+duty.value.attributes = checkForEmptyArray(duty.value.attributes);
+duty.value.attributes.en = checkForEmptyArray(duty.value.attributes.en);
 ////////////////////////////////////////////////////////////////////////////////
 
 const detachUserFromDuty = (user: App.Models.User) => {

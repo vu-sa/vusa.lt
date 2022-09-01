@@ -1,49 +1,71 @@
 <template>
   <NForm :model="form" label-placement="top">
-    <NGrid :span="24" :x-gap="24">
-      <NFormItemGi label="Pareigų pavadinimas" :span="12">
-        <NInput
-          v-model:value="form.name"
-          type="text"
-          placeholder="Prezidentė"
-        />
-      </NFormItemGi>
+    <NTabs animated type="card">
+      <NTabPane display-directive="show" name="lt" tab="🇱🇹">
+        <NGrid :span="24" :x-gap="24">
+          <NFormItemGi label="Pareigų pavadinimas" :span="24">
+            <NInput
+              v-model:value="form.name"
+              type="text"
+              placeholder="Prezidentė"
+            />
+          </NFormItemGi>
 
-      <NFormItemGi label="Pareigybinis el. paštas" :span="12">
-        <NInput v-model:value="form.email" placeholder="vusa@vusa.lt" />
-      </NFormItemGi>
+          <NFormItemGi label="Pareigybinis el. paštas" :span="12">
+            <NInput v-model:value="form.email" placeholder="vusa@vusa.lt" />
+          </NFormItemGi>
 
-      <NFormItemGi label="Institucija" :span="12">
-        <NSelect
-          v-model:value="form.institution.id"
-          filterable
-          placeholder="Ieškok institucijos pagal pavadinimą..."
-          :options="institutionsFromDatabase"
-          clearable
-          remote
-          :clear-filter-after-select="false"
-          @search="getInstitutionOptions"
-        />
-      </NFormItemGi>
+          <NFormItemGi label="Institucija" :span="12">
+            <NSelect
+              v-model:value="form.institution.id"
+              filterable
+              placeholder="Ieškok institucijos pagal pavadinimą..."
+              :options="institutionsFromDatabase"
+              clearable
+              remote
+              :clear-filter-after-select="false"
+              @search="getInstitutionOptions"
+            />
+          </NFormItemGi>
 
-      <NFormItemGi label="Pareigybės tipas" :span="12">
-        <NSelect
-          v-model:value="form.type.id"
-          :options="dutyTypes"
-          label-field="name"
-          value-field="id"
-          placeholder="Pasirinkti kategoriją..."
-          clearable
-        />
-      </NFormItemGi>
+          <NFormItemGi label="Pareigybės tipas" :span="12">
+            <NSelect
+              v-model:value="form.type.id"
+              :options="dutyTypes"
+              label-field="name"
+              value-field="id"
+              placeholder="Pasirinkti kategoriją..."
+              clearable
+            />
+          </NFormItemGi>
 
-      <NFormItemGi label="Aprašymas" :span="24">
-        <TipTap
-          v-model="form.description"
-          :search-files="$page.props.search.other"
-        />
-      </NFormItemGi>
-    </NGrid>
+          <NFormItemGi label="Aprašymas" :span="24">
+            <TipTap
+              v-model="form.description"
+              :search-files="$page.props.search.other"
+            />
+          </NFormItemGi>
+        </NGrid>
+      </NTabPane>
+      <NTabPane display-directive="show" name="en" tab="🇬🇧">
+        <NGrid :span="24" :x-gap="24">
+          <NFormItemGi label="Pareigų pavadinimas" :span="24">
+            <NInput
+              v-model:value="form.attributes.en.name"
+              type="text"
+              placeholder="Prezidentė"
+            />
+          </NFormItemGi>
+
+          <NFormItemGi label="Aprašymas" :span="24">
+            <TipTap
+              v-model="form.attributes.en.description"
+              :search-files="$page.props.search.other"
+            />
+          </NFormItemGi>
+        </NGrid>
+      </NTabPane>
+    </NTabs>
     <div class="flex justify-end gap-2">
       <DeleteModelButton
         v-if="deleteModelRoute"
@@ -68,6 +90,8 @@ import {
   NGrid,
   NInput,
   NSelect,
+  NTabPane,
+  NTabs,
   createDiscreteApi,
 } from "naive-ui";
 import { debounce } from "lodash";

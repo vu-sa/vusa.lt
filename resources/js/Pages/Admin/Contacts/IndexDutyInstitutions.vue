@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout
+  <PageContent
     title="Institucijos"
     :create-url="route('dutyInstitutions.create')"
   >
@@ -15,17 +15,25 @@
       >
       </IndexDataTable>
     </div>
-  </AdminLayout>
+  </PageContent>
 </template>
+
+<script lang="ts">
+import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+
+export default {
+  layout: AdminLayout,
+};
+</script>
 
 <script setup lang="ts">
 import { h } from "vue";
 import route from "ziggy-js";
 
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
 import AsideHeader from "@/Components/Admin/Headers/AsideHeaderContacts.vue";
 import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
 import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
+import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import PreviewModelButton from "@/Components/Admin/Buttons/PreviewModelButton.vue";
 
 defineProps<{

@@ -18,6 +18,7 @@
     "laravel-vue-i18n": "^2.0.0",
     "latinize": "^0.5.0",
     "lodash": "^4.17.21",
+    "v-calendar": "^3.0.0-alpha.8",
     "vue-lodash": "^2.1.2",
     "ziggy-js": "^1.4.6"
   },
@@ -43,7 +44,7 @@
     "eslint-plugin-tailwindcss": "^3.6.0",
     "eslint-plugin-vue": "^9.2.0",
     "laravel-vite-plugin": "^0.5.0",
-    "naive-ui": "^2.28",
+    "naive-ui": "^2.32.2",
     "postcss": "^8.4.14",
     "sass": "^1.53.0",
     "tailwindcss": "^3.1.4",

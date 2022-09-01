@@ -8,8 +8,74 @@
     aria-modal="true"
     class="prose"
   >
-    <NCollapse>
-      <NCollapseItem title="v0.2">
+    <NCollapse default-expanded-names="0.3">
+      <NCollapseItem name="0.3" title="v0.3">
+        <section>
+          <h4 class="mt-0">v0.3.1</h4>
+          <ul>
+            <li>
+              🪄 Galimybė kurti renginius, su ta pačia informacija, kaip buvo ji
+              kuriama pirmakursių stovyklų metu
+            </li>
+            <li>🪄 Galimybė pateikti renginius, įvykius anglų kalba</li>
+            <li>
+              🌟 <strong>Studentų kalendorius</strong>
+              <ul>
+                <li>Rodo visus įvykius, patalpintus sistemoje</li>
+                <li>Pasiekiamas tik iš pagrindinio puslapio (kolkas)</li>
+                <li>
+                  Galima išsaugoti kalendoriaus vieną įvykį Google kalendoriuje
+                  (tiek iš kalendoriaus, tiek iš renginio puslapio)
+                </li>
+                <li>
+                  Galima sinchronizuoti renginius naudojant nuorodą.
+                  Sinchronizuoti galima visus įvykius arba tik tuos, kurie
+                  pažymėti, kad yra <em>accessible</em> lietuviškai
+                  nekalbantiems studentams. Instrukcijos - pagrindiniame
+                  puslapyje.
+                </li>
+              </ul>
+            </li>
+            <li>🪄 Pagrindinio puslapio elementų pertvarka</li>
+            <li>
+              🐛 Perėjus iš naujienos į turinio puslapį, anksčiau nebuvo rodoma
+              galimybė pakeisti kalbą
+            </li>
+          </ul>
+        </section>
+        <section>
+          <h4 class="mt-0">v0.3</h4>
+          <ul>
+            <li>
+              🌟 Anglų kalba
+              <ul>
+                <li>
+                  Galimybė sukurti naujienas, puslapius ir pradinio puslapio
+                  mygtukus anglų kalba ir juos susieti su lietuviškais
+                </li>
+                <li>Galimybė išversti pareigybių ir institucijų informaciją</li>
+                <li>
+                  Visų šių vertimų pateikimas puslapyje, atitinkamais būdais
+                </li>
+              </ul>
+            </li>
+            <li>🌟 Galimybė pakeisti koordinatorių tvarką kontaktų skiltyje</li>
+            <li>🌟 Visų studentų atstovų puslapis VU KAP</li>
+            <li>🪄 Panaujintas pagrindinio meniu stilius</li>
+            <li>
+              🛡 Pridėtas mygtukas, leidžiantis nueiti į administravimą, iš viešų
+              puslapių
+            </li>
+          </ul>
+        </section>
+      </NCollapseItem>
+      <NCollapseItem name="0.2" title="v0.2">
+        <section>
+          <h4 class="mt-0">v0.2.5</h4>
+          <ul>
+            <li>🌟 Atnaujintas vusa.lt administravimo stilius</li>
+          </ul>
+        </section>
         <section>
           <h4>v0.2.4</h4>
           <ul>
@@ -102,12 +168,9 @@
           </ul>
         </section>
       </NCollapseItem>
-    </NCollapse>
-    <NDivider></NDivider>
-    <NCollapse>
-      <NCollapseItem title="v0.1">
+      <NCollapseItem name="0.1" title="v0.1">
         <section>
-          <h4>v0.1.2 (2022-07-08)</h4>
+          <h4 class="mt-0">v0.1.2 (2022-07-08)</h4>
           <ul class="mb-2">
             <li>
               🔧 Šis atnaujinimas labiausiai skirtas puslapio vidui ir kūrimo

@@ -43,7 +43,7 @@ class PagesController extends Controller
             }])->orderByDesc('created_at')->paginate(20);
 
         return Inertia::render('Admin/Content/IndexPages', [
-            'pages' => $pages
+            'pages' => $pages,
         ]);
     }
 
@@ -72,13 +72,19 @@ class PagesController extends Controller
             'permalink' => 'required|string|max:255|unique:pages',
         ]);
 
+        $padalinys_id = User::find(Auth::user()->id)->padalinys()?->id;
+
+        if (is_null($padalinys_id)) {
+            $padalinys_id = Auth::user()->isAdmin() ? 16 : null;
+        }
+
         $page = Page::create([
             'title' => $request->title,
             'permalink' => $request->permalink,
             'lang' => $request->lang,
             'text' => $request->text,
-            'other_lang_id' => $request->other_lang_page,
-            'padalinys_id' => User::find(Auth::user()->id)->padalinys()->id,
+            'other_lang_id' => $request->other_lang_id,
+            'padalinys_id' => $padalinys_id
         ]);
 
         return redirect()->route('pages.index');
@@ -103,13 +109,9 @@ class PagesController extends Controller
      */
     public function edit(Page $page)
     {
-
-        // if ($page->other_lang_id) {
-        //     $other_page = $page->getOtherLanguage()->only('id', 'title');
-        // } else {
-        //     // return object with id and title null
-        //     // $other_page = (object) ['id' => null, 'title' => null];
-        // }
+        $other_lang_pages = Page::with('padalinys:id,shortname')->when(!request()->user()->isAdmin(), function ($query) use ($page) {
+            $query->where('padalinys_id', request()->user()->padalinys()->id);  
+        })->where('lang', '!=', $page->lang)->select('id', 'title', 'padalinys_id')->get();
 
         return Inertia::render('Admin/Content/EditPage', [
             'page' => [
@@ -118,12 +120,13 @@ class PagesController extends Controller
                 'permalink' => $page->permalink,
                 'text' => $page->text,
                 'lang' => $page->lang,
-                'other_lang_page' => $page->getOtherLanguage()?->id,
+                'other_lang_id' => $page->getOtherLanguage()?->only('id')['id'],
                 'category' => $page->category,
                 'padalinys' => $page->padalinys,
                 'is_active' => $page->is_active,
                 'aside' => $page->aside,
             ],
+            'otherLangPages' => $other_lang_pages,
         ]);
     }
 
@@ -136,22 +139,19 @@ class PagesController extends Controller
      */
     public function update(Request $request, Page $page)
     {
-        // dd($request->only('title', 'text', 'lang', 'other_lang_id', 'category', 'is_active', 'aside'));
+        $other_lang_page = Page::find($page->other_lang_id);
 
         $page->update($request->only('title', 'text', 'lang', 'other_lang_id'));
 
         // update other lang id page
-        if ($request->has('other_lang_id')) {
+        if ($request->other_lang_id) {
+            // overwrite other lang id page
             $other_lang_page = Page::find($request->other_lang_id);
             $other_lang_page->other_lang_id = $page->id;
             $other_lang_page->save();
-        } else if (!is_null(Page::find($page->other_lang_id))) {
-            $other_lang_page = Page::find($page->other_lang_id);
+        } else if (is_null($request->other_lang_id) && !is_null($other_lang_page)) {
             $other_lang_page->other_lang_id = null;
             $other_lang_page->save();
-
-            $page->other_lang_id = null;
-            $page->save();
         }
 
         return redirect()->back();

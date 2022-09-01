@@ -19,15 +19,16 @@
           class="prose-sm my-auto sm:prose"
         >
           <h1>
-            {{ institution.name ?? institution.short_name }}
+            {{ dutyInstitutionName }}
           </h1>
-          <div v-html="institution.description"></div>
+          <div v-html="dutyInstitutionDescription"></div>
         </div>
         <!-- <template v-for="duty in institution"> -->
         <ContactWithPhotoForDuties
-          v-for="contact in contacts"
+          v-for="(contact, index) in contacts"
           :key="contact.id"
           :contact="contact"
+          :index="index"
         >
         </ContactWithPhotoForDuties>
         <!-- </template> -->
@@ -45,16 +46,40 @@ export default {
 </script>
 
 <script setup lang="ts">
-import { Head } from "@inertiajs/inertia-vue3";
+import { Head, usePage } from "@inertiajs/inertia-vue3";
+import { computed } from "vue";
 
 import ContactWithPhotoForDuties from "@/Components/Public/ContactWithPhotoForDuties.vue";
-import FadeTransition from "@/Components/Public/FadeTransition.vue";
+import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 
-defineProps<{
+const props = defineProps<{
   contacts: Array<App.Models.User>;
   institution: App.Models.DutyInstitution;
 }>();
+
+const dutyInstitutionName = computed(() => {
+  const locale = usePage().props.value.locale;
+
+  if (locale === "en") {
+    return props.institution.attributes?.en?.name ?? props.institution.name;
+  }
+
+  return props.institution.name ?? "";
+});
+
+const dutyInstitutionDescription = computed(() => {
+  const locale = usePage().props.value.locale;
+
+  if (locale === "en") {
+    return (
+      props.institution.attributes?.en?.description ??
+      props.institution.description
+    );
+  }
+
+  return props.institution.description ?? "";
+});
 </script>
 
 <style>

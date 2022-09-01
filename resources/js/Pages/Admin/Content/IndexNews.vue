@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout title="Naujienos" :create-url="route('news.create')">
+  <PageContent title="Naujienos" :create-url="route('news.create')">
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
@@ -13,18 +13,26 @@
         @update-filters-value="padaliniaiFilterOptionValues = $event"
       />
     </div>
-  </AdminLayout>
+  </PageContent>
 </template>
+
+<script lang="ts">
+import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+
+export default {
+  layout: AdminLayout,
+};
+</script>
 
 <script setup lang="ts">
 import { DataTableColumns } from "naive-ui";
 import { h, ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
 
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
 import AsideHeader from "@/Components/Admin/Headers/AsideHeaderContent.vue";
 import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
 import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
+import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import PreviewModelButton from "@/Components/Admin/Buttons/PreviewModelButton.vue";
 import route from "ziggy-js";
 
@@ -50,9 +58,17 @@ padaliniaiFilterOptions.value.unshift({
 
 const columns: DataTableColumns<App.Models.News> = [
   {
+    title: "ID",
+    key: "id",
+    width: 60,
+  },
+  {
     title: "Pavadinimas",
     key: "title",
-    minWidth: 250,
+    minWidth: 200,
+    ellipsis: {
+      tooltip: true,
+    },
   },
   {
     // title: "Nuoroda",
@@ -76,6 +92,31 @@ const columns: DataTableColumns<App.Models.News> = [
         },
         padalinysShortname: row.padalinys?.shortname,
       });
+    },
+  },
+  {
+    key: "lang",
+    title: "Kalba",
+    width: 100,
+    render(row) {
+      return row.lang === "lt" ? "🇱🇹" : "🇬🇧";
+    },
+  },
+  {
+    key: "other_lang_id",
+    title: "Kitos kalbos puslapis",
+    width: 150,
+    render(row) {
+      return row.other_lang_id
+        ? h(
+            "a",
+            {
+              href: route("news.edit", { id: row.other_lang_id }),
+              target: "_blank",
+            },
+            row.other_lang_id
+          )
+        : "";
     },
   },
   {

@@ -2,11 +2,11 @@
   <!-- <PublicLayout title="Sąžiningai atsiskaitymo registravimo forma"> -->
   <Head title="Sąžiningai atsiskaitymo registravimo forma"></Head>
   <FadeTransition appear>
-    <PageArticle>
-      <template #title
-        >Egzamino ar kolokviumo stebėjimo registracijos forma</template
-      >
-      <div class="prose">
+    <article class="grid grid-cols-3 gap-y-4 px-8 pt-8 last:pb-2 lg:px-32">
+      <h1 class="col-span-3 col-start-1">
+        Egzamino ar kolokviumo stebėjimo registracijos forma
+      </h1>
+      <div class="prose col-span-3 col-start-1">
         <!-- <strong class="text-red-600">
             Registracijos forma šiuo metu yra uždaryta, greitu metu ją vėl atidarysime.
             Prašome kreiptis į
@@ -192,7 +192,7 @@
           </NButton>
         </NForm>
       </div>
-    </PageArticle>
+    </article>
   </FadeTransition>
   <!-- </PublicLayout> -->
 </template>
@@ -228,8 +228,7 @@ import { computed, ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 
-import FadeTransition from "@/Components/Public/FadeTransition.vue";
-import PageArticle from "@/Components/Public/PageArticle.vue";
+import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
 
 const props = defineProps<{
   padaliniaiOptions: Array<App.Models.Padalinys>;
