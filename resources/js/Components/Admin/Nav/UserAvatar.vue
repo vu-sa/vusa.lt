@@ -1,7 +1,12 @@
 <template>
   <NDropdown :options="options">
     <NButton text size="tiny">
-      <NAvatar round size="small" :src="inertiaProps.user.profile_photo_path">
+      <NAvatar
+        round
+        size="small"
+        object-fit="cover"
+        :src="inertiaProps.user.profile_photo_path"
+      >
         <span v-if="!inertiaProps.user.profile_photo_path">
           {{ userInitials(inertiaProps.user.name) }}
         </span>
