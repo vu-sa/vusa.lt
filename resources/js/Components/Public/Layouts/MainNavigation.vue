@@ -81,7 +81,7 @@
         </template>
         <template v-if="!route().current('*page')">
           <NCollapse>
-            <NCollapseItem title="Padaliniai">
+            <NCollapseItem :title="$t('Padaliniai')">
               <NTree
                 block-line
                 :data="options_padaliniai"
@@ -90,9 +90,8 @@
               </NTree>
             </NCollapseItem>
           </NCollapse>
-
-          <NDivider></NDivider>
         </template>
+        <NDivider></NDivider>
         <NTree
           block-line
           :data="navigation"
