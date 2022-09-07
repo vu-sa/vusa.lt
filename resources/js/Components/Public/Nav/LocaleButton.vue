@@ -1,39 +1,21 @@
 <template>
-  <!-- <NDropdown
-    v-if="locale == 'lt'"
-    placement="top-end"
-    :options="options"
-    @select="handleSelectLanguage"
-  >
-    <NButton text
-      ><img
-        src="https://hatscripts.github.io/circle-flags/flags/gb.svg"
-        width="16"
-    /></NButton>
-  </NDropdown>
-  <NDropdown
-    v-if="locale == 'en'"
-    placement="top-end"
-    :options="lt_options"
-    @select="handleSelectLanguage"
-  >
-    <NButton text
-      ><img
-        src="https://hatscripts.github.io/circle-flags/flags/lt.svg"
-        width="16"
-    /></NButton>
-  </NDropdown> -->
   <NBadge dot processing :show="!!otherLanguagePage">
     <NDropdown :options="options" @select="handleSelectLanguage">
-      <NButton text><img :src="icon" width="16" /></NButton>
+      <NButton text>
+        <div class="flex gap-1">
+          <img :src="icon" width="16" />
+          <NIcon :component="ChevronDown20Filled" />
+        </div>
+      </NButton>
     </NDropdown>
   </NBadge>
 </template>
 
 <script setup lang="ts">
+import { ChevronDown20Filled } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
-import { NBadge, NButton, NDropdown } from "naive-ui";
-import { computed, onMounted } from "vue";
+import { NBadge, NButton, NDropdown, NIcon } from "naive-ui";
+import { computed } from "vue";
 import { loadLanguageAsync } from "laravel-vue-i18n";
 import { usePage } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
@@ -95,7 +77,7 @@ const options = computed(() => {
 });
 
 const icon = computed(() => {
-  if (props.locale !== "lt") {
+  if (props.locale !== "en") {
     return "https://hatscripts.github.io/circle-flags/flags/lt.svg";
   } else {
     return "https://hatscripts.github.io/circle-flags/flags/gb.svg";
