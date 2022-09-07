@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 
 {{-- TODO: Enable class="scroll-smooth" when Inertia scroll reset is fixed --}}
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html class="scroll-smooth" lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
     <meta charset="utf-8">
