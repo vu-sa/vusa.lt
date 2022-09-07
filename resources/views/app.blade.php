@@ -7,7 +7,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    {{-- <title>VU SA - {{ $title ?? "" }}</title> --}}
     <title inertia>{{ config('app.name', 'VU SA') }}</title>
     <meta name="og:title" content="VU SA | {{ $title ?? '' }}" />
     <meta name="description" content="{{ $description ?? '' }}">
