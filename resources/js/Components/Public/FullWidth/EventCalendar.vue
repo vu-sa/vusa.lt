@@ -345,6 +345,7 @@ const calendarAttributes = props.calendar.map((event) => {
 calendarAttributes.push({
   dates: new Date(),
   highlight: { color: "red", fillMode: "outline" },
+  order: 1,
 });
 
 const windowOpen = (url: string) => {
