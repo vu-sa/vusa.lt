@@ -57,6 +57,7 @@
       <InstagramButton />
       <SearchButton />
       <StartFM />
+      <NDivider vertical></NDivider>
       <LocaleButton :locale="locale" @change-locale="localeSelect" />
     </div>
     <NDrawer
