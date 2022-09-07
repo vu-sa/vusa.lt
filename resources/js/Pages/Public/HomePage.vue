@@ -14,7 +14,7 @@
   ></FadeTransition>
 
   <FadeTransition v-if="news.length > 0" appear>
-    <NewsElement :news="news" />
+    <div class="mt-4"><NewsElement :news="news" /></div>
   </FadeTransition>
 
   <FadeTransition v-if="$page.props.locale === 'lt'" appear>
