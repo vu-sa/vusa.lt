@@ -18,19 +18,14 @@
       <p v-if="$page.props.locale === 'lt'" class="text-2xl font-bold lg:w-2/3">
         <span class="font-extrabold">Naujiena!</span> Sek visus VU studentų
         renginius bei įvykius
-        <span class="text-vusa-red">čia! 🗓</span>
+        <span class="text-vusa-red">čia!</span>
       </p>
       <p v-else class="text-2xl font-bold lg:w-2/3">
         Follow Vilnius University activities for students
-        <span class="text-vusa-red">here! 🗓</span>
+        <span class="text-vusa-red">here!</span>
       </p>
 
       <p v-if="$page.props.locale === 'lt'" class="w-4/5">
-        Kalendorius atnaujinamas kasdien!
-      </p>
-      <p v-else class="w-4/5">The calendar is updated every day!</p>
-
-      <p v-if="$page.props.locale === 'lt'" class="w-4/5 text-sm">
         Arba nesuk galvos ir
         <!-- <em>patingėti</em> ir -->
         <span class="mx-1">
@@ -38,10 +33,10 @@
             >sinchronizuok</NButton
           >
         </span>
-        <strong>studentų kalendorių</strong> į „Google“ arba „Outlook“ ..?
+        <strong>studentų kalendorių</strong> į „Google“ arba „Outlook“ ..? 🗓
       </p>
 
-      <p v-else class="w-4/5 text-sm">
+      <p v-else class="w-4/5">
         Or you can
         <!-- <em>be lazy</em> and -->
         <span class="mx-1">
@@ -49,7 +44,23 @@
             >sync</NButton
           >
         </span>
-        <strong>this student calendar</strong> to „Google“ or „Outlook“ ..?
+        <strong>this student calendar</strong> to „Google“ or „Outlook“ ..? 🗓
+      </p>
+
+      <p v-if="$page.props.locale === 'lt'" class="w-4/5 text-sm">
+        <strong>Ir dar</strong> - artėja VU SA ir VU SA PKP prisistatymai! Jeigu
+        nenori jų laukti, prisijunk naudodamas
+        <Link :href="route('main.memberRegistration', { lang: 'lt' })"
+          >šią registraciją</Link
+        >.
+      </p>
+
+      <p v-else class="w-4/5 text-sm">
+        <strong>And also</strong> - the presentations of VU SA and VU SA PKP are
+        coming! If you don't want to wait, you can join through
+        <Link :href="route('main.memberRegistration', { lang: 'en' })"
+          >here</Link
+        >.
       </p>
     </div>
 
@@ -267,6 +278,7 @@ import { Calendar, PopoverRow } from "v-calendar";
 import { Copy16Regular } from "@vicons/fluent";
 import { Google } from "@vicons/fa";
 import { Head } from "@inertiajs/inertia-vue3";
+import { Link } from "@inertiajs/inertia-vue3";
 import {
   NButton,
   NCard,

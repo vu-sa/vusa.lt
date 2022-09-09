@@ -1,25 +1,34 @@
 <template>
-  <Head title="Prašymas tapti VU SA nariu"></Head>
+  <Head :title="$t('Prašymas tapti VU SA (arba VU SA PKP) nariu')"></Head>
   <FadeTransition appear>
     <article class="grid grid-cols-3 gap-y-4 px-8 pt-8 last:pb-2 lg:px-32">
-      <h1 class="col-span-3 col-start-1">Prašymas tapti VU SA nariu</h1>
+      <h1 class="col-span-3 col-start-1">
+        {{ $t("Prašymas tapti VU SA (arba VU SA PKP) nariu") }}
+      </h1>
       <div class="prose col-span-3 col-start-1">
         <p>
-          <strong>Kiekvienas VU studentas gali tapti VU SA nariu!</strong>
-          Užsiregistruok ir lauk pakvietimo iš padalinio komandos!
-          <Link :href="route('page', { permalink: 'apie' })"
-            >Daugiau apie VU SA</Link
-          >
+          <strong v-if="$page.props.locale === 'lt'"
+            >Kiekvienas VU studentas gali tapti VU SA nariu!
+          </strong>
+          <strong v-else>Every VU student can become a VU SR member! </strong>
+          <span v-if="$page.props.locale === 'lt'"
+            >Užsiregistruok ir lauk pakvietimo iš padalinio komandos!
+          </span>
+          <span v-else>Register and wait for the invite from the team! </span>
+          <Link :href="aboutLink">{{ $t("Daugiau apie VU SA") }}</Link
+          >.
         </p>
 
-        <p>
+        <p v-if="$page.props.locale === 'lt'">
           Taip pat gali registruotis ir į mūsų programas, klubus ir projektus
           (PKP)!
 
-          <Link
-            :href="route('page', { permalink: 'programos-klubai-projektai' })"
-            >Visų mūsų PKP ieškok čia</Link
-          >.
+          <Link :href="pkpLink">Visų mūsų PKP ieškok čia</Link>.
+        </p>
+        <p v-else>
+          You can also register to our programs, clubs and projects (PKP)!
+
+          <Link :href="pkpLink">All of our PKPs can be found here</Link>.
         </p>
 
         <NForm
@@ -29,7 +38,7 @@
           :rules="rules"
           size="medium"
         >
-          <NFormItem label="Vardas ir pavardė" path="name">
+          <NFormItem :label="$t('Vardas ir pavardė')" path="name">
             <NInput
               v-model:value="formValue.name"
               placeholder="Studentas Studentaitis"
@@ -39,28 +48,31 @@
               }"
             />
           </NFormItem>
-          <NFormItem label="El. paštas" path="email">
+          <NFormItem :label="$t('El. paštas')" path="email">
             <NInput
               v-model:value="formValue.email"
               placeholder="studentas.studentaitis@padalinys.stud.vu.lt"
               :input-props="{ type: 'email' }"
             />
           </NFormItem>
-          <NFormItem label="Telefono numeris" path="phone">
+          <NFormItem :label="$t('Tel. nr.')" path="phone">
             <NInput
               v-model:value="formValue.phone"
               placeholder="+370 612 34 567"
               :input-props="{ type: 'tel' }"
             />
           </NFormItem>
-          <NFormItem label="Kur nori užsiregistruoti?" path="whereToRegister">
+          <NFormItem
+            :label="$t('Kur nori užsiregistruoti?')"
+            path="whereToRegister"
+          >
             <NSelect
               v-model:value="formValue.whereToRegister"
               :options="registerOptions"
               placeholder="VU SA"
             />
           </NFormItem>
-          <NFormItem label="Tavo studijų kursas?" path="course">
+          <NFormItem :label="$t('Studijų kursas')" path="course">
             <NSelect
               v-model:value="formValue.course"
               :options="courseOptions"
@@ -69,43 +81,77 @@
           </NFormItem>
           <NFormItem path="acceptGDPR"
             ><NCheckbox v-model:checked="formValue.acceptGDPR">
-              Susipažinau su
-              <a
-                target="_blank"
-                href="https://vusa.lt/uploads/Dokumentų šablonai/Asmens_duomenu_tvarkymo_VUSA_tvarkos_aprasas.pdf"
-                @click.stop
-                >Asmens duomenų tvarkymo Vilniaus universiteto Studentų
-                atstovybėje tvarkos aprašu</a
+              <span v-if="$page.props.locale === 'lt'">
+                Susipažinau su
+                <a
+                  target="_blank"
+                  href="https://vusa.lt/uploads/Dokumentų šablonai/Asmens_duomenu_tvarkymo_VUSA_tvarkos_aprasas.pdf"
+                  @click.stop
+                  >Asmens duomenų tvarkymo Vilniaus universiteto Studentų
+                  atstovybėje tvarkos aprašu</a
+                >
+                ir sutinku
+              </span>
+              <span v-else
+                >I have familiarized myself with the
+                <a
+                  target="_blank"
+                  href="https://vusa.lt/uploads/files/EN/VU%20SR%20data%20protection%20description.pdf"
+                  @click.stop
+                >
+                  description of the procedure for the processing of personal
+                  data in the Vilnius University's Students' Representation
+                </a>
+                and I agree</span
               >
-              ir sutinku</NCheckbox
-            ></NFormItem
+            </NCheckbox></NFormItem
           >
           <NFormItem path="acceptDataManagement">
-            <NCheckbox v-model:checked="formValue.acceptDataManagement"
-              >Sutinku, kad mano pateikti asmens duomenys būtų tvarkomi vidaus
-              administravimo tikslu pagal Asmens duomenų tvarkymo Vilniaus
-              universiteto Studentų atstovybėje tvarkos aprašą</NCheckbox
-            >
+            <NCheckbox v-model:checked="formValue.acceptDataManagement">
+              <template v-if="$page.props.locale === 'lt'">
+                Sutinku, kad mano pateikti asmens duomenys būtų tvarkomi vidaus
+                administravimo tikslu pagal Asmens duomenų tvarkymo Vilniaus
+                universiteto Studentų atstovybėje tvarkos aprašą
+              </template>
+              <template v-else
+                >I agree that the personal data provided by me will be processed
+                internally for the purpose of administration in accordance with
+                Personal data processing description in the Vilnius University's
+                Students' Representation</template
+              >
+            </NCheckbox>
           </NFormItem>
           <div class="text-sm">
-            <p>
+            <p v-if="$page.props.locale === 'lt'">
               Duomenų valdytojas yra Vilniaus universiteto Studentų atstovybė.
+            </p>
+            <p v-else>
+              The data manager is the Vilnius University Students'
+              Representation.
             </p>
             <ul>
               <li>
-                Adresas: Universiteto g. 3, Observatorijos kiemelis, Vilnius
+                {{
+                  `${$t("Adresas")}: ${$t(
+                    "Universiteto g. 3, Observatorijos kiemelis"
+                  )}, Vilnius`
+                }}
               </li>
               <li>
-                Telefono numeris: <a href="tel:852687144">+37052687144</a>
+                {{ $t("Tel. nr.") }}:
+                <a href="tel:+37052687144">+370 (5) 268 7144</a>
               </li>
               <li>
-                El. paštas:
+                {{ $t("El. paštas") }}:
                 <a href="mailto:info@vusa.lt">info@vusa.lt</a>
               </li>
             </ul>
-            <p>Jūsų pateikti duomenys bus naudojami susisiekti su jumis.</p>
+            <p v-if="$page.props.locale === 'lt'">
+              Jūsų pateikti duomenys bus naudojami susisiekti su jumis.
+            </p>
+            <p v-else>The data you provide will be used to contact you.</p>
 
-            <p>
+            <p v-if="$page.props.locale === 'lt'">
               Duomenų subjektas turi teisę susipažinti su savo asmens
               duomenimis, teisę reikalauti ištaisyti neteisingus, neišsamius,
               netikslius savo asmens duomenis ir kitas teisės aktais numatytas
@@ -113,9 +159,16 @@
               subjekto, teises, galite kreiptis į
               <a href="mailto:dap@vusa.lt">dap@vusa.lt</a>.
             </p>
+            <p v-else>
+              The data subject has the right to access his personal data, the
+              right to demand correction of incorrect, incomplete, inaccurate
+              personal data and other legal acts rights. If you have questions
+              and want to realize your own data rights, you can write to
+              <a href="mailto:dap@vusa.lt">dap@vusa.lt</a>.
+            </p>
           </div>
           <NButton type="primary" @click="handleValidateClick">
-            Pateikti
+            {{ $t("Pateikti") }}
           </NButton>
         </NForm>
       </div>
@@ -133,6 +186,7 @@ export default {
 </script>
 
 <script setup lang="ts">
+import { trans as $t, getActiveLanguage } from "laravel-vue-i18n";
 import {
   FormInst,
   FormItemRule,
@@ -140,17 +194,14 @@ import {
   FormValidationError,
   NButton,
   NCheckbox,
-  NDatePicker,
-  NDynamicInput,
   NForm,
   NFormItem,
   NInput,
-  NInputNumber,
   NSelect,
   createDiscreteApi,
 } from "naive-ui";
-import { Head, Link } from "@inertiajs/inertia-vue3";
-import { Inertia, Method } from "@inertiajs/inertia";
+import { Head, Link, usePage } from "@inertiajs/inertia-vue3";
+import { Method } from "@inertiajs/inertia";
 import { computed, ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
@@ -161,11 +212,28 @@ const props = defineProps<{
   padaliniaiOptions: Array<App.Models.Padalinys>;
 }>();
 
+const aboutLink = computed(() =>
+  route("main.page", {
+    lang: usePage().props.value.locale,
+    permalink: usePage().props.value.locale === "lt" ? "apie" : "about",
+  })
+);
+
+const pkpLink = computed(() =>
+  route("main.page", {
+    lang: usePage().props.value.locale,
+    permalink:
+      usePage().props.value.locale === "lt"
+        ? "programos-klubai-projektai"
+        : "programs-clubs-projects",
+  })
+);
+
 // formRefs are needed by Naive UI
 const formRef = ref<FormInst | null>(null);
 const { message } = createDiscreteApi(["message"]);
 
-const formBlueprint: SaziningaiExamForm = {
+const formBlueprint = {
   name: null,
   // if number, it's VU SA padalinys. if string, it's PKP
   whereToRegister: null,
@@ -179,29 +247,35 @@ const formBlueprint: SaziningaiExamForm = {
 // useForm saves the form value to a remembered state.
 const formValue = useForm("SaziningaiExam", formBlueprint);
 
-const padaliniaiOptions = props.padaliniaiOptions.map((padalinys) => ({
-  value: padalinys.id,
-  label: `VU SA ${padalinys.fullname.split("atstovybė ")[1]}`,
-  //   label: padalinys.fullname,
-}));
+const padaliniaiOptions = computed(() =>
+  props.padaliniaiOptions.map((padalinys) => ({
+    value: padalinys.id,
+    label: `${$t("VU SA")} ${getActiveLanguage() === "en" ? "in" : ""} ${$t(
+      padalinys.fullname.split("atstovybė ")[1]
+    )}`,
+  }))
+);
 
-const registerOptions = [
+const registerOptions = computed(() => [
   {
     type: "group",
-    label: "VU SA PKP",
+    label: $t("VU SA PKP"),
     key: "pkp",
     children: [
-      { label: "HEMA", value: "hema" },
-      { label: "Jaunųjų energetikų klubas (VU JEK)", value: "jek" },
+      {
+        label: `HEMA (${$t("Istorinių Europos kovos menų klubas")})`,
+        value: "hema",
+      },
+      { label: `${$t("Jaunųjų energetikų klubas")} (VU JEK)`, value: "jek" },
     ],
   },
   {
     type: "group",
-    label: "VU SA padaliniai",
+    label: $t("VU SA padaliniai"),
     key: "padaliniai",
-    children: padaliniaiOptions,
+    children: padaliniaiOptions.value,
   },
-];
+]);
 
 // create courseOptions from one to six
 const courseOptions = Array.from({ length: 6 }, (_, i) => ({
@@ -212,18 +286,28 @@ const courseOptions = Array.from({ length: 6 }, (_, i) => ({
 const rules: FormRules = {
   name: {
     required: true,
-    message: "Įrašykite savo vardą ir pavardę",
     trigger: "blur",
+    validator(rule: FormItemRule, value: string) {
+      if (!value) {
+        return new Error(
+          $t("validation.required", { attribute: $t("Vardas ir pavardė") })
+        );
+      }
+    },
   },
   email: {
     required: true,
     trigger: "blur",
     validator(rule: FormItemRule, value: string) {
       if (!value) {
-        return new Error("Įrašykite savo el. paštą");
+        return new Error(
+          $t("validation.required", { attribute: $t("El. paštas") })
+        );
       }
       if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(value)) {
-        return new Error("Neteisingas el. pašto formatas");
+        return new Error(
+          $t("validation.email", { attribute: $t("El. paštas") })
+        );
       }
       return true;
     },
@@ -237,51 +321,49 @@ const rules: FormRules = {
     // validate phone number with + sign and spaces
     validator(rule: FormItemRule, value: string) {
       if (!value) {
-        return new Error("Įrašykite savo telefono numerį");
+        return new Error(
+          $t("validation.required", { attribute: $t("Tel. nr.") })
+        );
       }
       if (!/^\+?[0-9\s]*$/i.test(value)) {
-        return new Error("Neteisingas telefono numerio formatas");
+        return new Error($t("Neteisingas telefono numerio formatas"));
       }
       return true;
     },
-  },
-
-  type: {
-    required: true,
-    message: "Pasirinkite atsiskaitymo pobūdį.",
-    trigger: "blur",
   },
   whereToRegister: {
     required: true,
     trigger: ["blur", "change"],
     validator(rule: FormItemRule, value: string | number) {
       if (!value) {
-        return new Error("Pasirinkite, į kur norite registruotis");
+        return new Error($t("Pasirinkite, į kur norite registruotis"));
       }
       return true;
     },
   },
   course: {
-    message: "Pasirinkite savo studijų kursą",
+    message: $t("validation.required", { attribute: "course" }),
     trigger: ["blur", "change"],
     type: "number",
   },
 
   acceptGDPR: {
     required: true,
-    message: "Turite sutikti su GDPR taisyklėmis",
     trigger: ["blur", "change"],
     validator(rule, value) {
-      return value;
+      if (!value) {
+        return new Error($t("Turite sutikti su GDPR taisyklėmis"));
+      }
     },
   },
   acceptDataManagement: {
     required: true,
-    message: "Turite sutikti su duomenų tvarkymu",
     trigger: ["blur", "change"],
     // * Error if not defined
     validator(rule, value) {
-      return value;
+      if (!value) {
+        return new Error($t("Turite sutikti su duomenų tvarkymu"));
+      }
     },
   },
 };
@@ -294,13 +376,15 @@ const handleValidateClick = (e: MouseEvent) => {
         onSuccess: () => {
           formValue.reset();
           message.success(
-            `Sėkmingai užsiregistravai! Greitu metu susisieksime su tavimi.`,
+            $t(
+              "Sėkmingai užsiregistravai! Greitu metu susisieksime su tavimi."
+            ),
             { duration: 15000 }
           );
         },
       });
     } else {
-      message.error("Užpildykite visus laukelius.");
+      message.error($t("Užpildykite visus privalomus laukelius"));
     }
   });
 };
