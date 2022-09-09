@@ -16,7 +16,7 @@ class ConfirmObserverRegistration extends Mailable
     
     /**
      * Create a new message instance.
-     *c
+     *
      * @return void
      */
     public function __construct(SaziningaiExamFlow $saziningaiFlow)
