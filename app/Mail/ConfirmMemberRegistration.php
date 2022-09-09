@@ -20,17 +20,19 @@ class ConfirmMemberRegistration extends Mailable
     public $registration;
     public $registerLocation;
     public $chairPerson;
+    public $chairEmail;
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct($registration, $registerLocation, $chairPerson)
+    public function __construct($registration, $registerLocation, $chairPerson, $chairEmail)
     {
         $this->registration = $registration;
         $this->registerLocation = $registerLocation;
         $this->chairPerson = $chairPerson;
+        $this->chairEmail = $chairEmail;
     }
 
     /**
@@ -40,6 +42,8 @@ class ConfirmMemberRegistration extends Mailable
      */
     public function build()
     {
-        return $this->subject("📝 Sėkmingai užregistravote į " . $this->registerLocation)->replyTo($this->chairPerson->email)->markdown('emails.memberRegistration.confirm');
+        return $this->subject("📝 " . __('mail.confirmRegistrationTitle') . " " . $this->registerLocation)
+            ->replyTo($this->chairEmail)
+            ->markdown('emails.memberRegistration.confirm');
     }
 }

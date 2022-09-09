@@ -153,7 +153,6 @@ Route::get('saziningai-uzregistruoti-egzaminai', [Public\MainController::class, 
 Route::post('saziningai-uzregistruoti-egzaminai', [Public\MainController::class, 'storeSaziningaiExamObserver'])->name('saziningaiExamObserver.store');
 
 Route::get('nariu-registracija', [Public\MainController::class, 'memberRegistration'])->name('memberRegistration');
-Route::post('nariu-registracija', [Public\MainController::class, 'storeMemberRegistration'])->name('memberRegistration.store');
 
 Route::get('ataskaita-2022', [Public\MainController::class, 'ataskaita2022']);
 Route::get('ataskaita-2022/{permalink}', [Public\MainController::class, 'ataskaita2022'])->where('permalink', '.*')->name('ataskaita2022');

@@ -372,17 +372,23 @@ const handleValidateClick = (e: MouseEvent) => {
   e.preventDefault();
   formRef.value?.validate((errors: Array<FormValidationError> | undefined) => {
     if (!errors) {
-      formValue.submit(Method.POST, route("memberRegistration.store"), {
-        onSuccess: () => {
-          formValue.reset();
-          message.success(
-            $t(
-              "Sėkmingai užsiregistravai! Greitu metu susisieksime su tavimi."
-            ),
-            { duration: 15000 }
-          );
-        },
-      });
+      formValue.submit(
+        Method.POST,
+        route("main.memberRegistration.store", {
+          lang: usePage().props.value.locale,
+        }),
+        {
+          onSuccess: () => {
+            formValue.reset();
+            message.success(
+              `${$t(
+                "Sėkmingai užsiregistravai! Greitu metu susisieksime su tavimi"
+              )} 👏`,
+              { duration: 15000 }
+            );
+          },
+        }
+      );
     } else {
       message.error($t("Užpildykite visus privalomus laukelius"));
     }

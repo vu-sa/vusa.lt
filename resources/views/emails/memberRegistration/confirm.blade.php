@@ -1,15 +1,15 @@
 @component('mail::message')
-# Patvirtinimas apie sėkmingą užsiregistravimą ✅
+# {{ __('mail.confirmRegistration1') }} ✅
 
-Sveiki, {{ $registration['name'] }}! 
+{{ __('mail.greeting', ['name' => $registration['name'] ]) }}
 
-## Registracijos informacija
+## {{ __('mail.confirmRegistration2') }}
 
-- Užsiregistravote į: {{ $registerLocation }}
-- Iš ko tikėtis atsakymo: [{{ $chairPerson->name ?? $chairPerson->email }}](mailto:{{ $chairPerson->email }})
+- {{ __('mail.confirmRegistration3') }}: {{ $registerLocation }}
+- {{ __('mail.confirmRegistration4') }}: [{{ $chairPerson->name ?? $chairPerson->email }}](mailto:{{ $chairPerson->email }})
 
-Palaukite tolimesnio atsakymo, o jeigu jo nesulauksite per kelias dienas, galite susisiekti tiesiogiai, atsakant į šį laišką.
+{{ __('mail.confirmRegistration5') }}
 
-Iki susitikimo! 👋
-{{ config('app.name') }}
+{{ __('mail.confirmRegistration6') }} 👋
+{{ __(config('app.name')) }}
 @endcomponent

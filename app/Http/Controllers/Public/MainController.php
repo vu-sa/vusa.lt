@@ -614,6 +614,7 @@ class MainController extends Controller
 	public function storeMemberRegistration() {
 		// store registration
 		// 1 registration is to MIF camp, 2 is for VU SA and PKP members
+
 		$this->storeRegistration(RegistrationForm::find(2));
 
 		$data = request()->all();
@@ -623,18 +624,20 @@ class MainController extends Controller
 		// if whereToRegister is int, then it is a padalinys id
 		if (is_int($data['whereToRegister'])) {
 			$registerPadalinys = Padalinys::find($data['whereToRegister']);
-			$registerLocation = $registerPadalinys->fullname;
-			$chairPerson = $registerPadalinys->duties->where('type_id', '1')->first()->users->first();
+			$registerLocation = __($registerPadalinys->fullname);
+			$chairDuty = $registerPadalinys->duties->where('type_id', '1')->first();
+			$chairPerson = $chairDuty->users->first();
+			$chairEmail = $chairDuty->email;
 		} else {
 			switch ($data['whereToRegister']) {
 				case 'hema':
-					$registerLocation = 'HEMA (Istorinių Europos kovos menų klubas)';
-					$chairPerson->email = 'hema@vusa.lt';
+					$registerLocation = 'HEMA (' . __('Istorinių Europos kovos menų klubas') . ')';
+					$chairEmail = 'hema@vusa.lt';
 					break;
 				
 				case 'jek':
-					$registerLocation = 'VU Jaunųjų energetikų klubas';
-					$chairPerson->email = 'vujek@jek.lt';
+					$registerLocation = 'VU' . __('Jaunųjų energetikų klubas');
+					$chairEmail = 'vujek@jek.lt';
 					break;
 				
 				default:
@@ -644,8 +647,8 @@ class MainController extends Controller
 		}
 
 		// send mail to the registered person
-		Mail::to($data['email'])->send(new ConfirmMemberRegistration($data, $registerLocation, $chairPerson));
-		Mail::to($chairPerson->email)->send(new InformChairAboutMemberRegistration($data, $registerLocation));
+		Mail::to($data['email'])->send(new ConfirmMemberRegistration($data, $registerLocation, $chairPerson, $chairEmail));
+		Mail::to($chairEmail)->send(new InformChairAboutMemberRegistration($data, $registerLocation));
 
 	}
 
