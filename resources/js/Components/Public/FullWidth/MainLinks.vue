@@ -34,6 +34,7 @@ const goToLink = (link: string | null) => {
   let padalinysAlias = usePage().props.value.alias;
   if (link.includes("http")) {
     window.open(link, "_blank");
+    return;
   }
 
   // if has /lt/, truncate it
