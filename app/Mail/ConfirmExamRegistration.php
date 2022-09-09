@@ -40,6 +40,6 @@ class ConfirmExamRegistration extends Mailable
      */
     public function build()
     {
-        return $this->subject("Sėkmingai užregistravote atsiskaitymą VU SA sistemoje 📝")->markdown('emails.saziningai.confirmRegistration');
+        return $this->subject("📝 Sėkmingai užregistravote atsiskaitymą VU SA sistemoje")->replyTo('saziningai@vusa.lt')->markdown('emails.saziningai.confirmRegistration');
     }
 }

@@ -26,6 +26,8 @@ use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use App\ICalendars\MainCalendar;
 use App\Mail\ConfirmExamRegistration;
+use App\Mail\ConfirmObserverRegistration;
+use App\Mail\InformSaziningaiAboutObserverRegistration;
 use App\Mail\InformSaziningaiAboutRegistration;
 use Spatie\CalendarLinks\Link;
 use Datetime;
@@ -566,7 +568,8 @@ class MainController extends Controller
 			'has_arrived' => 'neatvyko'
 		]);
 
-		return redirect()->back();
+		Mail::to('saziningai@vusa.lt')->send(new InformSaziningaiAboutObserverRegistration($saziningaiExamObserver, $saziningaiExamFlow));
+		Mail::to($saziningaiExamObserver->email)->send(new ConfirmObserverRegistration($saziningaiExamFlow));
 	}
 
 	// TODO: pakeisti seno puslapio nuorodą
