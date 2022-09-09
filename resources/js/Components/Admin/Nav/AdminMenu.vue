@@ -14,6 +14,9 @@ import {
   Folder48Regular,
   Home48Regular,
   Navigation24Regular,
+  Notebook24Regular,
+  People24Regular,
+  PeopleSearch24Regular,
   Person48Regular,
   SlideText48Regular,
 } from "@vicons/fluent";
@@ -73,6 +76,34 @@ const menuOptions = computed(() => [
     key: "content",
     icon: renderIcon(SlideText48Regular),
     show: can.content,
+    children: [
+      {
+        label: () => h(Link, { href: route("pages.index") }, () => "Puslapiai"),
+        key: "pages",
+        show: can.pages,
+      },
+      {
+        label: () => h(Link, { href: route("news.index") }, () => "Naujienos"),
+        key: "news",
+        show: can.news,
+      },
+      {
+        label: () =>
+          h(
+            Link,
+            { href: route("mainPage.index") },
+            () => "Pradinio puslapio mygtukai"
+          ),
+        key: "mainPage",
+        show: can.mainPage,
+      },
+      {
+        label: () =>
+          h(Link, { href: route("banners.index") }, () => "Baneriai"),
+        key: "banners",
+        show: can.banners,
+      },
+    ],
   },
   {
     label: () =>
@@ -80,6 +111,28 @@ const menuOptions = computed(() => [
     key: "contacts",
     icon: renderIcon(Person48Regular),
     show: can.users,
+    children: [
+      {
+        label: () =>
+          h(
+            Link,
+            { href: route("dutyInstitutions.index") },
+            () => "Institucijos"
+          ),
+        key: "dutyInstitutions",
+        show: can.dutyInstitutions,
+      },
+      {
+        label: () => h(Link, { href: route("duties.index") }, () => "Pareigos"),
+        key: "duties",
+        show: can.duties,
+      },
+      {
+        label: () => h(Link, { href: route("users.index") }, () => "Kontaktai"),
+        key: "users",
+        show: can.users,
+      },
+    ],
   },
   {
     label: () =>
@@ -96,11 +149,30 @@ const menuOptions = computed(() => [
     show: can.calendar,
   },
   {
-    label: () =>
-      h(Link, { href: route("saziningaiExams.index") }, () => "Sąžiningai"),
-    key: "saziningai",
-    icon: renderIcon(Person48Regular),
-    show: can.saziningai,
+    label: "Registracijos",
+    key: "registrations",
+    icon: renderIcon(Notebook24Regular),
+    show: can.content,
+    children: [
+      {
+        label: () =>
+          h(Link, { href: route("saziningaiExams.index") }, () => "Sąžiningai"),
+        key: "saziningai",
+        icon: renderIcon(PeopleSearch24Regular),
+        show: can.saziningai,
+      },
+      {
+        label: () =>
+          h(
+            Link,
+            { href: route("registrationForms.show", 2) },
+            () => "Narių registracija"
+          ),
+        key: "memberRegister",
+        icon: renderIcon(People24Regular),
+        show: can.content,
+      },
+    ],
   },
   {
     label: () => h(Link, { href: route("files.index") }, () => "Failai"),

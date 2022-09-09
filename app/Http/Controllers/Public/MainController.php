@@ -26,7 +26,9 @@ use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use App\ICalendars\MainCalendar;
 use App\Mail\ConfirmExamRegistration;
+use App\Mail\ConfirmMemberRegistration;
 use App\Mail\ConfirmObserverRegistration;
+use App\Mail\InformChairAboutMemberRegistration;
 use App\Mail\InformSaziningaiAboutObserverRegistration;
 use App\Mail\InformSaziningaiAboutRegistration;
 use Spatie\CalendarLinks\Link;
@@ -105,8 +107,6 @@ class MainController extends Controller
 		// get last 4 news by publishing date
 		$padalinys = Padalinys::where('alias', '=', $this->alias)->first();
 
-		// dd($this->alias, $padalinys);
-
 		$news = News::where([['padalinys_id', '=', $padalinys->id],['lang', app()->getLocale()], ['draft', '=', 0]])->where('publish_time', '<=', date('Y-m-d H:i:s'))->orderBy('publish_time', 'desc')->take(4)->get();
 
 		if (app()->getLocale() === 'en') {
@@ -114,8 +114,6 @@ class MainController extends Controller
         } else {
             $calendar = Calendar::orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'category')->take(400)->get();
         }
-
-		// $calendar = Calendar::select('id', 'date', 'title', 'category', 'end_date')->orderBy('date', 'desc')->take(400)->get();
 
 		Inertia::share('alias', $this->alias);
 		return Inertia::render('Public/HomePage', [
@@ -155,7 +153,7 @@ class MainController extends Controller
 		]);
 	}
 
-	public function news(Request $request)
+	public function news()
 	{
 		$news = News::where('permalink', '=', request()->route('permalink'))->first();
 
@@ -169,8 +167,6 @@ class MainController extends Controller
 		} else {
 			$image = Storage::get(str_replace('uploads', 'public', $news->image)) == null ? '/images/icons/naujienu_foto.png' : $news->image;
 		}
-
-		// Storage::get($news->image) == null ? '/images/icons/naujienu_foto.png' : Storage::url($news->image);
 
 		$other_lang_news = $news->other_lang_id == null ? null : News::where('id', '=', $news->other_lang_id)->select('id', 'lang', 'permalink')->first();
 
@@ -209,10 +205,9 @@ class MainController extends Controller
 		]);
 	}
 
-	public function newsArchive(Request $request)
+	public function newsArchive()
 
 	{
-
 		Inertia::share('alias', $this->alias);
 
 		$news = News::select('id', 'title', 'short', 'image', 'permalink', 'publish_time', 'lang')->orderBy('publish_time', 'desc')->paginate(15);
@@ -469,16 +464,13 @@ class MainController extends Controller
 		// search pages by title and get 5 most recent with only title, id and permalink
 		$pages = Page::where('title', 'like', "%{$search}%")->orderBy('created_at', 'desc')->take(5)->get(['title', 'id', 'permalink', 'lang']);
 
-		// dd($calendar, $news, $pages);
-
 		return back()->with('search_calendar', $calendar)->with('search_news', $news)->with('search_pages', $pages);
 	}
 
 	public function saziningaiExamRegistration()
 	{
-
 		// return all padalinys but only shortname VU and id
-		$padaliniai = Padalinys::select('id', 'shortname_vu')->where('shortname', '!=', 'VU')->orderBy('shortname')->get();
+		$padaliniai = Padalinys::select('id', 'shortname_vu')->where('shortname', '!=', 'VU SA')->orderBy('shortname')->get();
 
 		return Inertia::render('Public/SaziningaiExamRegistration', [
 			'padaliniaiOptions' => $padaliniai,
@@ -514,7 +506,6 @@ class MainController extends Controller
 			$saziningaiExamFlow->save();
 		}
 
-		// first flow
 		$firstFlow = $saziningaiExam->flows->first();
 
 		Mail::to('saziningai@vusa.lt')->send(new InformSaziningaiAboutRegistration($saziningaiExam, $firstFlow));
@@ -527,7 +518,7 @@ class MainController extends Controller
 	{
 
 		// return all padalinys but only shortname VU and id
-		$padaliniai = Padalinys::select('id', 'shortname_vu')->where('shortname', '!=', 'VU')->orderBy('shortname')->get();
+		$padaliniai = Padalinys::select('id', 'shortname_vu')->where('shortname', '!=', 'VU SA')->orderBy('shortname')->get();
 
 		// return all exams that have their flows +1 day
 
@@ -601,19 +592,68 @@ class MainController extends Controller
 		]);
 	}
 
-	public function storeRegistration(RegistrationForm $registrationForm) {
-		$registration = new Registration;
-		$registration->data = request()->all();
-		$registration->registration_form_id = $registrationForm->id;
-		$registration->save();
-	}
-
 	public function publicAllEventCalendar() {
 		
 		$ics = new MainCalendar;
 
 		return response($ics->get())
     		->header('Content-Type', 'text/calendar; charset=utf-8');
+	}
+
+	public function memberRegistration() {
+		$padaliniai = Padalinys::select('id', 'fullname', 'shortname')->where('shortname', '!=', 'VU SA')->orderBy('shortname')->get();
+		
+		return Inertia::render('Public/MemberRegistration', [
+			'padaliniaiOptions' => $padaliniai,
+		])->withViewData([
+			'title' => 'Naujų narių registracija',
+			'description' => 'Naujų narių registracija',
+		]);
+	}
+
+	public function storeMemberRegistration() {
+		// store registration
+		// 1 registration is to MIF camp, 2 is for VU SA and PKP members
+		$this->storeRegistration(RegistrationForm::find(2));
+
+		$data = request()->all();
+		$registerLocation = new Padalinys();
+		$chairPerson = new User();
+
+		// if whereToRegister is int, then it is a padalinys id
+		if (is_int($data['whereToRegister'])) {
+			$registerPadalinys = Padalinys::find($data['whereToRegister']);
+			$registerLocation = $registerPadalinys->fullname;
+			$chairPerson = $registerPadalinys->duties->where('type_id', '1')->first()->users->first();
+		} else {
+			switch ($data['whereToRegister']) {
+				case 'hema':
+					$registerLocation = 'HEMA (Istorinių Europos kovos menų klubas)';
+					$chairPerson->email = 'hema@vusa.lt';
+					break;
+				
+				case 'jek':
+					$registerLocation = 'VU Jaunųjų energetikų klubas';
+					$chairPerson->email = 'vujek@jek.lt';
+					break;
+				
+				default:
+					abort(500);
+					break;
+			}
+		}
+
+		// send mail to the registered person
+		Mail::to($data['email'])->send(new ConfirmMemberRegistration($data, $registerLocation, $chairPerson));
+		Mail::to($chairPerson->email)->send(new InformChairAboutMemberRegistration($data, $registerLocation));
+
+	}
+
+	public function storeRegistration(RegistrationForm $registrationForm) {
+		$registration = new Registration;
+		$registration->data = request()->all();
+		$registration->registration_form_id = $registrationForm->id;
+		$registration->save();
 	}
 
 	public function ataskaita2022()
