@@ -69,9 +69,6 @@ Route::get('/auth/redirect', function () {
 })->name('microsoft.redirect');
 
 Route::get('/auth/microsoft/callback', [Admin\UserController::class, 'storeFromMicrosoft'])->name('microsoft.callback');
-// $microsoftUser = Socialite::driver('microsoft')->user();
-// return redirect('https://graph.microsoft.com/v1.0/me/photo/$value');
-// });
 
 Route::group(['prefix' => '{lang?}', 'where' => ['lang' => '(lt|en)']], function () {
 
@@ -111,6 +108,9 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => '(lt|en)']], function
             Route::post('saziningai-registracija', [Public\MainController::class, 'storeSaziningaiExamRegistration'])->name('saziningaiExamRegistration.store');
             Route::get('saziningai-uzregistruoti-egzaminai', [Public\MainController::class, 'saziningaiExams'])->name('saziningaiExams.registered');
             Route::post('saziningai-uzregistruoti-egzaminai', [Public\MainController::class, 'storeSaziningaiExamObserver'])->name('saziningaiExamObserver.store');
+            
+            Route::get('nariu-registracija', [Public\MainController::class, 'memberRegistration'])->name('memberRegistration');
+            Route::post('nariu-registracija', [Public\MainController::class, 'storeMemberRegistration'])->name('memberRegistration.store');
 
             Route::get('ataskaita-2022', [Public\MainController::class, 'ataskaita2022']);
             Route::get('ataskaita-2022/{permalink}', [Public\MainController::class, 'ataskaita2022'])->where('permalink', '.*')->name('ataskaita2022');
@@ -142,7 +142,6 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => '(lt|en)']], function
 Route::get('/', [Public\MainController::class, 'home'])->name('home');
 Route::get('naujienos', [Public\MainController::class, 'newsArchive'])->name('newsArchive');
 
-// redirect /naujiena/archyvas to newsArchive
 Route::get('naujiena/archyvas', [Public\MainController::class, 'newsArchive']);
 
 // render login form
@@ -153,6 +152,8 @@ Route::post('saziningai-registracija', [Public\MainController::class, 'storeSazi
 Route::get('saziningai-uzregistruoti-egzaminai', [Public\MainController::class, 'saziningaiExams'])->name('saziningaiExams.registered');
 Route::post('saziningai-uzregistruoti-egzaminai', [Public\MainController::class, 'storeSaziningaiExamObserver'])->name('saziningaiExamObserver.store');
 
+Route::get('nariu-registracija', [Public\MainController::class, 'memberRegistration'])->name('memberRegistration');
+
 Route::get('ataskaita-2022', [Public\MainController::class, 'ataskaita2022']);
 Route::get('ataskaita-2022/{permalink}', [Public\MainController::class, 'ataskaita2022'])->where('permalink', '.*')->name('ataskaita2022');
 Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('newsString', '(naujiena|news)')->name('news');
@@ -162,10 +163,8 @@ Route::get('kontaktai/paieska', [Public\MainController::class, 'searchContacts']
 Route::get('kontaktai/kategorija/{alias}', [Public\MainController::class, 'contactsCategory'])->name('contacts.category');
 Route::get('kontaktai/{alias}', [Public\MainController::class, 'contacts'])->name('contacts.alias');
 
-// Route::middleware(['throttle:summerCamps'])->group(function () {
-    Route::get('pirmakursiu-stovyklos', [Public\MainController::class, 'summerCamps'])->name('pirmakursiuStovyklos');
-    Route::get('kalendorius/renginys/{calendar}', [Public\MainController::class, 'calendarEvent'])->name('calendar.event');
-// });
+Route::get('pirmakursiu-stovyklos', [Public\MainController::class, 'summerCamps'])->name('pirmakursiuStovyklos');
+Route::get('kalendorius/renginys/{calendar}', [Public\MainController::class, 'calendarEvent'])->name('calendar.event');
 
 Route::middleware(['throttle:formRegistrations'])->group(function () {
     Route::post('registration/{registrationForm}', [Public\MainController::class, 'storeRegistration'])->name('registration.store');

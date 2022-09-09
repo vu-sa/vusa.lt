@@ -123,7 +123,6 @@ const props = defineProps<{
   saziningaiExamFlows: App.Models.SaziningaiExamFlow[];
 }>();
 
-// const { message } = createDiscreteApi(["message"]);
 const showModal = ref(false);
 const formRef = ref<FormInst | null>(null);
 
@@ -296,11 +295,12 @@ const handleValidateClick = (e: MouseEvent) => {
       Inertia.post(route("saziningaiExamObserver.store"), formValue, {
         onSuccess: () => {
           message.success(
-            `Ačiū už užregistravimą stebėtį „${formValue.exam_name}“ atsiskaitymą!`
+            `Ačiū už užsiregistravimą stebėti „${formValue.exam_name}“ atsiskaitymą!`
           );
           showModal.value = false;
           formValue.reset();
         },
+        preserveState: true,
       });
     } else {
       message.error("Užpildykite visus laukelius.");

@@ -403,7 +403,6 @@ const handleValidateClick = (e: MouseEvent) => {
             `Ačiū už atsiskaitymo „${formValue.subject_name}“ užregistravimą!`
           );
           formValue.reset();
-          Inertia.visit(route("saziningaiExams.registered"));
         },
       });
     } else {

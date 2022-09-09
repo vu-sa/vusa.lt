@@ -1,14 +1,14 @@
 <template>
-  <NBadge dot processing :show="!!otherLanguagePage">
-    <NDropdown :options="options" @select="handleSelectLanguage">
-      <NButton text>
-        <div class="flex gap-1">
-          <img :src="icon" width="16" />
-          <NIcon :component="ChevronDown20Filled" />
-        </div>
-      </NButton>
-    </NDropdown>
-  </NBadge>
+  <NDropdown :options="options" @select="handleSelectLanguage">
+    <NButton text>
+      <div class="flex gap-1">
+        <NBadge dot processing :show="!!otherLanguagePage"
+          ><img :src="icon" width="16"
+        /></NBadge>
+        <NIcon :component="ChevronDown20Filled" />
+      </div>
+    </NButton>
+  </NDropdown>
 </template>
 
 <script setup lang="ts">

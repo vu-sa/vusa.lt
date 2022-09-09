@@ -10,8 +10,6 @@ use Inertia\Inertia;
 use App\Models\Duty;
 use App\Http\Controllers\Controller as Controller;
 use App\Models\Role;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
@@ -34,10 +32,6 @@ class UserController extends Controller
         $users = User::when(!is_null($name), function ($query) use ($name) {
             $query->where('name', 'like', "%{$name}%")->orWhere('email', 'like', "%{$name}%");
         })->when(!User::find(Auth::id())->isAdmin(), function ($query) {
-            // join with institutions table and padali
-            // $query->addSelect(['institution_id' => Duty::select('institution_id')]);
-            // $query->rightJoin('duties_institutions', 'duties_institutions.id', '=', 'duties.institution_id');
-            // })->paginate(20);
         })->paginate(20);
 
         // create lengthawarepaginator manually because need some more filtering
