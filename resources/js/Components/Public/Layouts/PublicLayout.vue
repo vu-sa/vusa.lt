@@ -1,13 +1,16 @@
 <template>
   <NConfigProvider :theme-overrides="themeOverrides">
     <MetaIcons />
-    <div class="min-h-screen bg-neutral-50 pb-8 antialiased">
+    <div
+      class="flex min-h-screen flex-col justify-between bg-neutral-50 antialiased"
+    >
       <MainNavigation />
-      <main class="pt-24">
+      <main class="pt-24 pb-8">
         <slot></slot>
       </main>
+
+      <Footer />
     </div>
-    <Footer />
 
     <!-- preconnect to tawk.to -->
     <link rel="preconnect" href="https://embed.tawk.to" />
