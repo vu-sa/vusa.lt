@@ -25,9 +25,11 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use App\ICalendars\MainCalendar;
+use App\Mail\InformSaziningaiAboutRegistration;
 use Spatie\CalendarLinks\Link;
 use Datetime;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Mail;
 
 class MainController extends Controller
 {
@@ -501,18 +503,18 @@ class MainController extends Controller
 			'students_need' => $request->students_need,
 		]);
 
-		// dd($saziningaiExam);
-
 		// Store new flow
 		foreach ($request->flows as $flow) {
-			// dd($flow['time'], date('Y-m-d H:i:s', strtotime($flow['time'])));
 			$saziningaiExamFlow = new SaziningaiExamFlow();
 			$saziningaiExamFlow->exam_uuid = $saziningaiExam->uuid;
 			$saziningaiExamFlow->start_time = date('Y-m-d H:i:s', strtotime($flow['start_time']));
 			$saziningaiExamFlow->save();
 		}
 
-		// dd($saziningaiExam, $saziningaiExamFlow);
+		// first flow
+		$firstFlow = $saziningaiExam->flows->first();
+
+		Mail::to('saziningai@vusa.lt')->send(new InformSaziningaiAboutRegistration($saziningaiExam, $firstFlow));
 
 		return redirect()->back();
 	}
@@ -525,7 +527,6 @@ class MainController extends Controller
 
 		// return all exams that have their flows +1 day
 
-		// $saziningaiExams = SaziningaiExam::with('flows')->whereRelation('flows', 'start_time', '>=', now()->subDay())->orderBy('created_at', 'desc')->get();
 		$saziningaiExamFlows = SaziningaiExamFlow::where('start_time', '>=', now()->subDay())->orderBy('start_time', 'asc')->get();
 
 		return Inertia::render('Public/SaziningaiExams', [

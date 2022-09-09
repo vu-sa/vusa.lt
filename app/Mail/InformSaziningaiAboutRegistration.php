@@ -6,9 +6,10 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use Saziningai;
+use App\Models\SaziningaiExam;
+use App\Models\SaziningaiExamFlow;
 
-class InformSaziningaiAboutRegistration extends Mailable
+class InformSaziningaiAboutRegistration extends Mailable // implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
@@ -18,15 +19,17 @@ class InformSaziningaiAboutRegistration extends Mailable
      * @var \App\Models\Saziningai
      */
     public $saziningai;
+    public $saziningaiFlow;
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct($saziningai)
+    public function __construct(SaziningaiExam $saziningai, SaziningaiExamFlow $saziningaiFlow)
     {
         $this->saziningai = $saziningai;
+        $this->saziningaiFlow = $saziningaiFlow;
     }
 
     /**

@@ -3,17 +3,13 @@
 
 Buvo užregistruotas egzaminas vusa.lt sistemoje. 
 
-Vardas: {{ $saziningai->name }}
+- Vardas: {{ $saziningai->name }}
+- El. paštas: {{ $saziningai->email }}
+- Atsiskaitymo padalinys: {{ $saziningai->padalinys->shortname }}
+- Atsiskaitymo data: {{ $saziningaiFlow->start_time }}
 
-El. paštas: {{ $saziningai->contact }}
-
-Atsiskaitymo padalinys: {{ $saziningai->padalinys }}
-
-Atsiskaitymo data: {{ $saziningai->time }}
-
-@component('mail::button', ['url' => 'https://vusa.lt/admin/exam'])
+@component('mail::button', ['url' => route('saziningaiExams.edit', $saziningai->id)])
 Eiti į VU SA admin
 @endcomponent
 
-{{ config('app.name') }}
 @endcomponent
