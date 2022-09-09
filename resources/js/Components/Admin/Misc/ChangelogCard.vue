@@ -11,7 +11,68 @@
     <NCollapse default-expanded-names="0.3">
       <NCollapseItem name="0.3" title="v0.3">
         <section>
-          <h4 class="mt-0">v0.3.1</h4>
+          <h4 class="mt-0">v0.3.3 (2022-09-10)</h4>
+          <ul>
+            <li>
+              🪄
+              <strong
+                >Sukurta galimybė registracijai į VU SA ir kelis VU SA PKP,
+                kurie sutiko tokioje registracijoje dalyvauti:</strong
+              >
+              <ul>
+                <li>
+                  Užsiregistravus siunčiami laiškai pirmininkui ir
+                  užsiregistravusiam (-ai);
+                </li>
+                <li>Administratoriams matoma ši informacija sistemoje</li>
+                <li>Informacija, laiškai taip pat išversti į anglų kalbą</li>
+                <li>
+                  Šiek tiek informacijos apie tai pridėta pagrindiniame VU SA
+                  puslapyje
+                </li>
+              </ul>
+            </li>
+            <li>🐛 Sutvarkytas Sąžiningai laiškų siuntimas</li>
+            <li>
+              🐛 Pataisytas viešų puslapių footerio rodymas (nebenuslenkamas
+              žemiau, jeigu puslapio turinio nėra daug)
+            </li>
+            <li>
+              🐛 Neberodomas 404, kai atidaroma pagrindinė nuoroda naujame
+              puslapyje
+            </li>
+            <li>
+              🛡 <strong>Administravimas:</strong>
+              <ul>
+                <li>
+                  Pridėta galimybė pasiekti visus puslapius tiesiai iš meniu
+                </li>
+                <li>Nežymiai perdėlioti elementai</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+        <section>
+          <h4 class="mt-0">v0.3.2 (2022-09-08)</h4>
+          <ul>
+            <li>
+              🇬🇧 <strong>Angliškame puslapyje:</strong>
+              <ul>
+                <li>Padaliniai yra rodomi angliškai</li>
+                <li>Pridėtas VU SA logotipas anglų kalba</li>
+              </ul>
+            </li>
+            <li>🐛 Geriau matoma dabartinė data kalendoriuje</li>
+            <li>
+              🌟 Pakeistas kitos kalbos mygtuko rodymas (pridėta rodyklė,
+              intuityviau rodoma kalba, labiau atskirta nuo kitų elementų)
+            </li>
+            <li>🌟 Kitoks puslapio <em>scroll</em> efektas</li>
+            <li>🐛 Administravime <em>avatar</em> nuotrauka rodoma geriau</li>
+          </ul>
+        </section>
+        <section>
+          <h4 class="mt-0">v0.3.1 (2022-08-28)</h4>
           <ul>
             <li>
               🪄 Galimybė kurti renginius, su ta pačia informacija, kaip buvo ji
@@ -44,7 +105,7 @@
           </ul>
         </section>
         <section>
-          <h4 class="mt-0">v0.3</h4>
+          <h4 class="mt-0">v0.3 (2022-08-26)</h4>
           <ul>
             <li>
               🌟 Anglų kalba

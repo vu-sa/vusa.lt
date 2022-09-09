@@ -41,7 +41,7 @@
       <NLayoutFooter class="absolute bottom-0 w-full"
         ><div class="mx-auto mb-2 w-fit">
           <NButton size="tiny" quaternary @click="showModal = true">
-            v0.3.1 (2022-08-29)
+            v0.3.3 (2022-09-10)
           </NButton>
         </div>
         <NModal v-model:show="showModal">
