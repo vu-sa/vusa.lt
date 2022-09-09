@@ -2,11 +2,12 @@
 
 namespace App\Mail;
 
+use App\Models\SaziningaiExam;
+use App\Models\SaziningaiExamFlow;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use Saziningai;
 
 class ConfirmExamRegistration extends Mailable
 {
@@ -19,15 +20,17 @@ class ConfirmExamRegistration extends Mailable
      */
 
     public $saziningai;
+    public $saziningaiFlow;
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct($saziningai)
+    public function __construct(SaziningaiExam $saziningai, SaziningaiExamFlow $saziningaiFlow)
     {
         $this->saziningai = $saziningai;
+        $this->saziningaiFlow = $saziningaiFlow;
     }
 
     /**

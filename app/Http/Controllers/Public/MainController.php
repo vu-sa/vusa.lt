@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use App\ICalendars\MainCalendar;
+use App\Mail\ConfirmExamRegistration;
 use App\Mail\InformSaziningaiAboutRegistration;
 use Spatie\CalendarLinks\Link;
 use Datetime;
@@ -515,8 +516,9 @@ class MainController extends Controller
 		$firstFlow = $saziningaiExam->flows->first();
 
 		Mail::to('saziningai@vusa.lt')->send(new InformSaziningaiAboutRegistration($saziningaiExam, $firstFlow));
+		Mail::to($saziningaiExam->email)->send(new ConfirmExamRegistration($saziningaiExam, $firstFlow));
 
-		return redirect()->back();
+		return redirect()->route('saziningaiExams.registered');
 	}
 
 	public function saziningaiExams()
