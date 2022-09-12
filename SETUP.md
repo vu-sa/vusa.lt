@@ -4,7 +4,7 @@
 
 - PHP 8.1 install. [Installation guide](https://linuxize.com/post/how-to-install-php-8-on-ubuntu-20-04/)
 - Install PHP submodules: `php-curl php-zip php-mbstring php-dom php-gd php-sqlite3`
-- Install Composer v2. [Installation guide](https://getcomposer.org/download/).
+- Install Composer [Installation guide](https://getcomposer.org/download/).
 - Install Node.js. On some computers, simple `sudo apt install nodejs` could work (check version, if below v14 and
   on Ubuntu, use this [guide](https://joshtronic.com/2021/05/09/how-to-install-nodejs-16-on-ubuntu-2004-lts/)
 
@@ -13,18 +13,35 @@
 
 ## Development
 
-> NOTE: Laravel Sail, i.e. Docker (Recommended!)
+> NOTE: if already have installed run `composer update` and skip to step *.
+
+1. Clone the repository (or download ZIP);
+2. Run `composer install`;
+3. Copy `.env.example` into `.env` and enter values inside to suite your system;
+4. Run `php artisan key:generate`
+5. Setup a database:
+
+> For SQLite you'll need to create file in `database/database.sqlite`
+
+6. Run `npm install && npm run dev`
+7. Run `php artisan migrate:fresh --seed`
+
+> For optimal installation you'll also need the SQL file of database records. Please contact @justinaskav for this.
+  I haven't had the time for any seeders.
+
+8. Run `php artisan storage:link`
+9. Modify your hosts file to direct *vusa.testas* to 127.0.0.1
+10. `php artisan serve`
+11. Open [vusa.testas:8000](http://vusa.testas:8000)
+
+## Laravel Sail
 
 The easiest method to develop. You have to be able to run Docker and PHP (temporarily) on your machine.
 
 **Steps:**
 
-1. Clone the repository
-2. Install PHP8 (used only for comoposer and sail setup)
-3. Download composer, run `composer update`
 4. After updating the repository, run `./vendor/bin/sail up -d`
 5. Other setup steps:
-   1. Copy `.env.example` and rename it to `.env`
    2. `./vendor/bin/sail composer update`
    3. `./vendor/bin/sail artisan key:generate`
    4. `./vendor/bin/sail npm update`
@@ -33,28 +50,7 @@ The easiest method to develop. You have to be able to run Docker and PHP (tempor
    7. Go to <http://localhost:8080> and create database manually, with name `vusa`, collation `utf8mb4_lithuanian_ci`.
    8. `./vendor/bin/sail artisan migrate:fresh`
 
-For optimal installation you'll also need the SQL file of database records. Please contact @justinaskav for this. I haven't had the time for any seeders.
-
 More instructions on [Laravel Sail](https://laravel.com/docs/9.x/sail)
-
-### Linux
-
-There still should be some prerequisites missing, so I'll update this in time.
-
-Laravel and vusa.lt installation:
-
-1. Clone the directory with `git`: `git clone https://github.com/vu-sa/vusa.lt.git` will work.
-2. Create a copy of the file `./.env.example` and name it `.env`
-3. Run `php composer install` or `composer install`, depending if the Composer is global or not
-4. Run `php artisan key:generate`
-5. Setup a database (recommended: `touch database/database.sqlite`)
-6. Run `npm install && npm run dev`
-7. Run `php artisan migrate:fresh --seed`
-8. Run `php artisan storage:link`
-9. Modify your hosts file to direct *vusa.testas* to 127.0.0.1
-10. `php artisan serve`
-11. Open [vusa.testas:8000](http://vusa.testas:8000)
-
 
 ### For unit (padalinių) site development
 
@@ -72,20 +68,20 @@ How to setup:
 
 ```{}
 <VirtualHost *:80>
-        ServerName vusa.testas
-        ServerAlias www.vusa.testas if.vusa.testas
-        ServerAdmin webmaster@localhost
-        DocumentRoot [INSERT YOUR DOCUMENT ROOT, something like .../vusa.lt/public]
-        UseCanonicalName OFF
+  ServerName vusa.testas
+  ServerAlias www.vusa.testas if.vusa.testas
+  ServerAdmin webmaster@localhost
+  DocumentRoot [INSERT YOUR DOCUMENT ROOT, something like .../vusa.lt/public]
+  UseCanonicalName OFF
 
-        <Directory [INSERT YOUR DOCUMENT ROOT DIRECTORY, something like .../vusa.lt/]>
-        Options Indexes FollowSymLinks MultiViews
-        AllowOverride All
-        Require all granted
-        </Directory>
+  <Directory [INSERT YOUR DOCUMENT ROOT DIRECTORY, something like .../vusa.lt/]>
+    Options Indexes FollowSymLinks MultiViews
+    AllowOverride All
+    Require all granted
+  </Directory>
 
-        ErrorLog ${APACHE_LOG_DIR}/error.log
-        CustomLog ${APACHE_LOG_DIR}/access.log combined
+  ErrorLog ${APACHE_LOG_DIR}/error.log
+  CustomLog ${APACHE_LOG_DIR}/access.log combined
 </VirtualHost>
 ```
 
