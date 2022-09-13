@@ -17,73 +17,53 @@ class MenuSeeder extends Seeder
         DB::table('navigation')->insert(
             [
                 [
-                    'pid' => 0,
+                    'parent_id' => 0,
                     'order' => 0,
-                    'text' => 'VU SA nuorodos',
-                    'url' => '/#',
-                    'creator' => 1
+                    'name' => 'VU SA nuorodos',
+                    'url' => '#',
                 ], [
-                    'pid' => 0,
+                    'parent_id' => 0,
                     'order' => 1,
-                    'text' => 'Kontaktai',
-                    'url' => '/#',
-                    'creator' => 1
+                    'name' => 'Kontaktai',
+                    'url' => '#',
                 ], [
-                    'pid' => 0,
+                    'parent_id' => 0,
                     'order' => 2,
-                    'text' => 'Padaliniai',
-                    'url' => '/#',
-                    'creator' => 1
-                ], [
-                    'pid' => 0,
-                    'order' => 3,
-                    'text' => 'Kita',
-                    'url' => '/#',
-                    'creator' => 1
-                ], [
-                    'pid' => 1,
+                    'name' => 'Administravimas',
+                    'url' => route('login'),
+                ],  [
+                    'parent_id' => 1,
                     'order' => 0,
-                    'text' => 'Naujienos',
-                    'url' => '/naujiena/archyvas',
-                    'creator' => 1
+                    'name' => 'Naujienos',
+                    'url' => 'naujiena/archyvas',
                 ], [
-                    'pid' => 1,
+                    'parent_id' => 1,
                     'order' => 1,
-                    'text' => 'Paieška',
-                    'url' => '/paieska',
-                    'creator' => 1
-                ], [
-                    'pid' => 1,
-                    'order' => 2,
-                    'text' => 'Renginiai',
-                    'url' => '/renginiai',
-                    'creator' => 1
-                ], [
-                    'pid' => 1,
-                    'order' => 3,
-                    'text' => 'Darbotvarkė',
-                    'url' => '/darbotvarke',
-                    'creator' => 1
-                ], [
-                    'pid' => 1,
+                    'name' => 'Narių registracija',
+                    'url' => 'nariu-registracija',
+                ],  [
+                    'parent_id' => 1,
                     'order' => 4,
-                    'text' => 'Sąžiningai: registracija',
-                    'url' => '/saziningai-registracija',
-                    'creator' => 1
+                    'name' => 'Sąžiningai: registracija',
+                    'url' => 'saziningai-registracija',
                 ],
                 [
-                    'pid' => 1,
+                    'parent_id' => 1,
                     'order' => 5,
-                    'text' => 'Sąžiningai: stebėjimas',
-                    'url' => '/saziningai-uzregistruoti-egzaminai',
-                    'creator' => 1
+                    'name' => 'Sąžiningai: stebėjimas',
+                    'url' => 'saziningai-uzregistruoti-egzaminai',
                 ],
                 [
-                    'pid' => 2,
+                    'parent_id' => 2,
                     'order' => 0,
-                    'text' => 'Centrinis biuras',
-                    'url' => '/kontaktai/centrinis-biuras',
-                    'creator' => 1
+                    'name' => 'Pagrindiniai kontaktai',
+                    'url' => 'kontaktai',
+                ],
+                [
+                    'parent_id' => 2,
+                    'order' => 1,
+                    'name' => 'Kontaktų paieška',
+                    'url' => 'kontaktai/paieska',
                 ],
             ],
         );

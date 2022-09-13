@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Category;
 use App\Models\News;
+use App\Models\Padalinys;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Arr;
 
@@ -55,6 +56,7 @@ class NewsFactory extends Factory
             'important' => rand(0,1),
             'publish_time' => $this->faker->dateTimeBetween('-10 weeks'),
             'text' => '<p>' . $this->faker->paragraph(3) . '</p><p>' . $this->faker->paragraph(3) . '</p>',
+            'padalinys_id' => Padalinys::inRandomOrder()->select('id')->first()->id,
             'lang' => Arr::random(['lt', 'en']),
         ];
     }

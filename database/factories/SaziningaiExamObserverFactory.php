@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\SaziningaiExamObserver;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class SaziningaiExamObserversFactory extends Factory
+class SaziningaiExamObserverFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
@@ -28,7 +28,7 @@ class SaziningaiExamObserversFactory extends Factory
             'padalinys_id' => DB::table('padaliniai')->inRandomOrder()->select('id')->first()->id,
             'phone' => $this->faker->phoneNumber(),
             'flow' => DB::table('saziningai_exam_flows')->inRandomOrder()->select('id')->first()->id,
-            'status_p' => 'atvyko',
+            'has_arrived' => 'atvyko',
             'email' => $this->faker->unique()->safeEmail(),
         ];
     }

@@ -7,23 +7,14 @@ use App\Models\DutyInstitution;
 use App\Models\DutyType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class DutiesFactory extends Factory
+class DutyFactory extends Factory
 {
-    public $inc = 0;
-
-    private function incrementAndReturn() {
-        global $inc;
-
-        $inc = $inc + 1;
-        return strval($inc);
-    }
-
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = Contact::class;
+    protected $model = Duty::class;
 
     /**
      * Define the model's default state.
@@ -39,7 +30,6 @@ class DutiesFactory extends Factory
             'type_id' => DutyType::inRandomOrder()->select('id')->first()->id,
             'institution_id' => DutyInstitution::inRandomOrder()->select('id')->first()->id,
             'email' => $this->faker->safeEmail(),
-            'contactOrder' => $this->incrementAndReturn(),
         ];
     }
 }

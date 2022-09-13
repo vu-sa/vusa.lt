@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Collection;
 
 class User extends Authenticatable
 {
-    use Notifiable;
+    use Notifiable, HasFactory;
 
     protected $table = 'users';
 

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Faker\Factory;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -15,6 +16,8 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
+        $faker = Factory::create();
+        
         DB::table('users')->insert([
             [
                 'name' => 'Test User',
@@ -22,7 +25,7 @@ class UserSeeder extends Seeder
                 'email_verified_at' => now(),
                 'password' => Hash::make('password'),
                 'role_id' => 1,
-                'profile_photo_path' => $this->faker->imageUrl(640, 480, 'people', true),
+                'profile_photo_path' => $faker->imageUrl(640, 480, 'people', true),
             ]
         ]);
     }
