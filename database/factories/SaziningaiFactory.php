@@ -2,8 +2,10 @@
 
 namespace Database\Factories;
 
+use App\Models\Padalinys;
 use App\Models\Saziningai;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Arr;
 
 class SaziningaiFactory extends Factory
 {
@@ -24,14 +26,15 @@ class SaziningaiFactory extends Factory
         return [
             'uuid' => bin2hex(random_bytes(15)),
             'name' => $this->faker->name(),
-            'contact' => $this->faker->phoneNumber(),
-            'exam' => 'koliokviumas',
-            'padalinys' => 'gmc',
-            'place' => 'ITPC',
-            'time' => $this->faker->dateTimeBetween('+1 week', '+3 weeks')->format('Y-m-d H:i:s') . ' | ' . $this->faker->dateTimeBetween('+1 week', '+3 weeks')->format('Y-m-d H:i:s') . ' | ' . $this->faker->dateTimeBetween('+1 week', '+3 weeks')->format('Y-m-d H:i:s') . ' | ',
-            'duration' => $this->faker->numberBetween(30, 90),
+            'phone' => $this->faker->phoneNumber(),
+            'email' => $this->faker->unique()->safeEmail(),
+            'exam_type' => Arr::random(['egzaminas', 'koliokviumas']),
+            'padalinys' => Padalinys::inRandomOrder()->select('id')->first()->id,
+            'place' => $this->faker->city(),
+            'duration' => $this->faker->numberBetween(30, 90) . 'min',
             'subject_name' => $this->faker->word(),
-            'count' => rand(30, 150),
+            'exam_holders' => rand(30, 150),
+            'students_need' => rand(1, 3),
         ];
     }
 }

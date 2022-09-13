@@ -3,17 +3,17 @@
 namespace Database\Factories;
 
 use Illuminate\Support\Facades\DB;
-use App\Models\Saziningai_people;
+use App\Models\SaziningaiExamObserver;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class Saziningai_peopleFactory extends Factory
+class SaziningaiExamObserversFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = Saziningai_people::class;
+    protected $model = SaziningaiExamObserver::class;
 
     /**
      * Define the model's default state.
@@ -24,11 +24,12 @@ class Saziningai_peopleFactory extends Factory
     {
         return [
             'exam_uuid' => DB::table('saziningai_exams')->inRandomOrder()->select('uuid')->first()->uuid,
-            'name_p' => $this->faker->name(),
-            'padalinys_p' => 'if',
-            'contact_p' => $this->faker->phoneNumber(),
-            'flow' => rand(1,3),
+            'name' => $this->faker->name(),
+            'padalinys_id' => DB::table('padaliniai')->inRandomOrder()->select('id')->first()->id,
+            'phone' => $this->faker->phoneNumber(),
+            'flow' => DB::table('saziningai_exam_flows')->inRandomOrder()->select('id')->first()->id,
             'status_p' => 'atvyko',
+            'email' => $this->faker->unique()->safeEmail(),
         ];
     }
 }

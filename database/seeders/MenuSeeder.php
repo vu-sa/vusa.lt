@@ -85,14 +85,6 @@ class MenuSeeder extends Seeder
                     'url' => '/kontaktai/centrinis-biuras',
                     'creator' => 1
                 ],
-                [
-
-                    'pid' => 3,
-                    'order' => 0,
-                    'text' => 'Istorijos fakultete',
-                    'url' => str_replace('vusa', 'if.vusa', config('app.url')),
-                    'creator' => 1
-                ]
             ],
         );
     }

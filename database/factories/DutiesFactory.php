@@ -2,10 +2,12 @@
 
 namespace Database\Factories;
 
-use App\Models\Contact;
+use App\Models\Duty;
+use App\Models\DutyInstitution;
+use App\Models\DutyType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class ContactFactory extends Factory
+class DutiesFactory extends Factory
 {
     public $inc = 0;
 
@@ -31,16 +33,12 @@ class ContactFactory extends Factory
     public function definition()
     {
         return [
-            'name' => $this->faker->name(),
-            'duties' => $this->faker->jobTitle(),
-            'phone' => $this->faker->phoneNumber(),
+            'name' => $this->faker->jobTitle(),
+            // generate html description
+            'description' => '<p>' . $this->faker->paragraph(1) . '</p><p>' . $this->faker->paragraph(1) . '</p>',
+            'type_id' => DutyType::inRandomOrder()->select('id')->first()->id,
+            'institution_id' => DutyInstitution::inRandomOrder()->select('id')->first()->id,
             'email' => $this->faker->safeEmail(),
-            'image' => '/images/placeholders/foto' . rand(1,5) . '.jpg',
-            'groupname' => 'centrinis-biuras',
-            'grouptitle' => 0,
-            'infoText' => $this->faker->paragraph(2),
-            'name_short' => NULL,
-            'name_full' => NULL,
             'contactOrder' => $this->incrementAndReturn(),
         ];
     }
