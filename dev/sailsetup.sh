@@ -11,11 +11,11 @@ docker run --rm \
 
 cp .env.example .env &&
 
-alias sail='[ -f sail ] && bash sail || bash vendor/bin/sail' &&
-sail up -d &&
-sail composer install &&
-sail artisan key:generate &&
-sail npm install &&
-sail artisan storage:link &&
-sail artisan migrate:fresh --seed && 
-sail npm run dev
+# alias sail='[ -f sail ] && bash sail || bash vendor/bin/sail' &&
+./vendor/bin/sail up -d &&
+./vendor/bin/sail composer install &&
+./vendor/bin/sail artisan key:generate &&
+./vendor/bin/sail npm install &&
+./vendor/bin/sail artisan storage:link &&
+./vendor/bin/sail artisan migrate:fresh --seed && 
+./vendor/bin/sail npm run dev
