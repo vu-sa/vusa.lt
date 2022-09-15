@@ -25,10 +25,10 @@ class CalendarFactory extends Factory
         return [
             'date' => $this->faker->dateTimeBetween('-10 weeks'),
             'title' => $this->faker->paragraph(1),
-            'descr' => $this->faker->paragraph(2),
-            'classname' => Arr::random(['red', 'yellow', 'grey']),
+            'description' => $this->faker->paragraph(2),
+            'category' => Arr::random(['red', 'yellow', 'grey']),
             'url' => NULL,
-            'editor' => 1,
+            'padalinys_id' => 16,
         ];
     }
 }

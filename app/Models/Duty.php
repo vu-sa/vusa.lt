@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\DutyUser;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Duty extends Model
 {
+    use HasFactory;
+    
     protected $table = 'duties';
 
     protected $with = ['type'];

@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Padalinys;
 use App\Models\Page;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -31,27 +32,13 @@ class PageFactory extends Factory
     
     public function definition()
     {
-        $editor = rand(1,4);
-        switch ($editor) {
-            case 1:
-                $editorG = 1;
-                break;
-            case 2:
-                $editorG = 4;
-                break;
-            default:
-                $editorG = 1;
-                break;
-        }
         
         return [
             'title' => $this->faker->sentence(),
             'permalink' => 'page' . $this->incrementAndReturn(),
-            'category' => $this->faker->numberBetween(1,3),
+            'category_id' => $this->faker->numberBetween(1,3),
             'text' => '<p>' . $this->faker->paragraph(3) . '</p><p>' . $this->faker->paragraph(3) . '</p>',
-            'mainInfo' => $this->faker->word(),
-            'editor' => $editor,
-            'editorG' => $editorG,
+            'padalinys_id' => Padalinys::inRandomOrder()->select('id')->first()->id,
         ];
     }
 }
