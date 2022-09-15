@@ -13,7 +13,7 @@
     class="mx-auto mt-8 flex max-w-7xl flex-col-reverse gap-4 px-16 lg:mt-32 lg:flex-row lg:px-24 xl:px-40"
   >
     <div
-      class="prose-sm flex w-fit flex-col justify-center sm:prose lg:h-4/5 lg:w-1/2 2xl:w-3/4"
+      class="prose-sm flex w-fit flex-col justify-center dark:prose-invert sm:prose lg:h-4/5 lg:w-1/2 2xl:w-3/4"
     >
       <p v-if="$page.props.locale === 'lt'" class="text-2xl font-bold lg:w-2/3">
         <span class="font-extrabold">Naujiena!</span> Sek visus VU studentų
@@ -76,7 +76,7 @@
             src="/images/photos/stovykla.jpg"
           />
           <img
-            class="absolute top-14 left-16 z-10 rounded-lg object-cover shadow-2xl brightness-125 contrast-100 md:left-32 lg:left-48 lg:max-w-[16rem]"
+            class="absolute top-14 left-12 z-10 rounded-lg object-cover shadow-2xl brightness-125 contrast-100 md:left-32 lg:left-48 lg:max-w-[16rem]"
             src="/images/photos/pirmakursiu_stovykla_kaune.jpg"
           />
         </template>
@@ -86,6 +86,7 @@
         /> -->
         <FadeTransition>
           <Calendar
+            :is-dark="isThemeDark"
             class="z-20 shadow-xl"
             :attributes="calendarAttributes"
             color="red"
@@ -94,7 +95,7 @@
             <template #day-popover="{ attributes, dayTitle, format, masks }">
               <div class="max-w-md">
                 <div
-                  class="mb-1 text-center text-xs font-semibold text-gray-300"
+                  class="mb-1 text-center text-xs font-semibold text-gray-300 dark:text-zinc-700"
                 >
                   {{ dayTitle }}
                 </div>
@@ -129,11 +130,6 @@
                     </NConfigProvider>
                   </div>
                 </PopoverRow>
-                <!-- <ul class="list-inside">
-                    <li v-for="event in attributes" :key="event.id">
-                      {{ event.popover.label }}
-                    </li>
-                  </ul> -->
               </div>
             </template>
           </Calendar>
@@ -144,7 +140,7 @@
   <NModal v-model:show="showModal">
     <NCard
       class="prose-sm prose"
-      style="max-width: 600px"
+      style="max-width: 500px"
       :title="$t('Kalendoriaus sinchronizavimo instrukcija')"
       :bordered="false"
       size="large"
@@ -272,6 +268,12 @@
   <!-- <NDivider /> -->
 </template>
 
+<script lang="ts">
+import { createDiscreteApi } from "naive-ui";
+
+const { message } = createDiscreteApi(["message"]);
+</script>
+
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
 import { Calendar, PopoverRow } from "v-calendar";
@@ -288,7 +290,6 @@ import {
   NModal,
   NTabPane,
   NTabs,
-  createDiscreteApi,
   darkTheme,
 } from "naive-ui";
 import { ref } from "vue";
@@ -296,10 +297,9 @@ import route from "ziggy-js";
 
 import FadeTransition from "../Utils/FadeTransition.vue";
 
-const { message } = createDiscreteApi(["message"]);
-
 const props = defineProps<{
   calendar: Array<App.Models.Calendar>;
+  isThemeDark: boolean;
   showPhotos: boolean;
 }>();
 
@@ -381,5 +381,9 @@ const copyToClipboard = async (text: string) => {
 .vc-container {
   font-family: "Inter", sans-serif !important;
   border: 0 !important;
+}
+
+.vc-container.vc-is-dark {
+  background-color: rgb(63, 63, 70);
 }
 </style>

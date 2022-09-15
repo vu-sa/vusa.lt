@@ -1,30 +1,41 @@
 <template>
-  <NConfigProvider :theme-overrides="themeOverrides">
-    <MetaIcons />
-    <div
-      class="flex min-h-screen flex-col justify-between bg-neutral-50 antialiased"
+  <FadeTransition>
+    <NConfigProvider
+      v-show="mounted"
+      :theme="isThemeDark ? darkTheme : undefined"
+      :theme-overrides="themeOverrides"
     >
-      <MainNavigation />
-      <main class="pt-24 pb-8">
-        <slot></slot>
-      </main>
+      <MetaIcons />
+      <div
+        class="flex min-h-screen flex-col justify-between bg-neutral-50 antialiased dark:bg-zinc-800"
+      >
+        <MainNavigation />
+        <main class="pt-24 pb-8">
+          <slot></slot>
+        </main>
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
 
-    <!-- preconnect to tawk.to -->
-    <link rel="preconnect" href="https://embed.tawk.to" />
-  </NConfigProvider>
+      <!-- preconnect to tawk.to -->
+      <link rel="preconnect" href="https://embed.tawk.to" />
+    </NConfigProvider>
+  </FadeTransition>
 </template>
 
 <script setup lang="ts">
-import { NConfigProvider } from "naive-ui";
-import { onMounted } from "vue";
+import { NConfigProvider, darkTheme } from "naive-ui";
+import { computed, onMounted, reactive, ref, watch } from "vue";
+import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import { usePage } from "@inertiajs/inertia-vue3";
 
+import FadeTransition from "../Utils/FadeTransition.vue";
 import Footer from "@/Components/Public/FullWidth/SiteFooter.vue";
 import MainNavigation from "@/Components/Public/Layouts/MainNavigation.vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
+
+const isThemeDark = ref(isDarkMode());
+const mounted = ref(false);
 
 const themeOverrides = {
   common: {
@@ -77,5 +88,8 @@ onMounted(() => {
       y.parentNode.insertBefore(t, y);
     })(window, document, "clarity", "script", "bs7culn3gp");
   }
+
+  updateDarkMode(isThemeDark);
+  mounted.value = true;
 });
 </script>

@@ -8,8 +8,12 @@
       />
     </Head>
 
-    <ShapeDivider1 class="absolute -top-1 z-10"></ShapeDivider1>
     <ShapeDivider1
+      :is-theme-dark="isThemeDark"
+      class="absolute -top-1 z-10"
+    ></ShapeDivider1>
+    <ShapeDivider1
+      :is-theme-dark="isThemeDark"
       class="absolute -bottom-2 z-10 rotate-180 lg:-bottom-1"
     ></ShapeDivider1>
     <div class="relative">
@@ -23,7 +27,7 @@
   <div
     class="mx-8 mt-4 flex flex-col justify-center gap-4 lg:mx-16 lg:flex-row lg:items-center lg:px-16"
   >
-    <div class="prose-sm sm:prose">
+    <div class="prose-sm dark:prose-invert sm:prose">
       <p class="text-2xl font-bold lg:w-4/5">
         VU SA organizuojamos
         <span class="font-extrabold text-vusa-red">pirmakursių stovyklos</span>
@@ -73,4 +77,8 @@ import { NButton, NDivider, NIcon } from "naive-ui";
 import route from "ziggy-js";
 
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
+
+defineProps<{
+  isThemeDark: boolean;
+}>();
 </script>
