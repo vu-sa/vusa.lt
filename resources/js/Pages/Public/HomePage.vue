@@ -5,7 +5,11 @@
 
   <FadeTransition appear>
     <div>
-      <EventCalendar :show-photos="true" :calendar="calendar" /></div
+      <EventCalendar
+        :is-theme-dark="isThemeDark"
+        :show-photos="true"
+        :calendar="calendar"
+      /></div
   ></FadeTransition>
 
   <FadeTransition v-if="mainPage.length > 0" appear>
@@ -18,11 +22,11 @@
   </FadeTransition>
 
   <FadeTransition v-if="$page.props.locale === 'lt'" appear>
-    <div><SummerCamps /></div
+    <div><SummerCamps :is-theme-dark="isThemeDark" /></div
   ></FadeTransition>
 
   <FadeTransition appear>
-    <div><YearReport2022 /></div>
+    <div><YearReport2022 :is-theme-dark="isThemeDark" /></div>
   </FadeTransition>
 </template>
 
@@ -36,7 +40,9 @@ export default {
 
 <script setup lang="ts">
 import { Head } from "@inertiajs/inertia-vue3";
+import { onMounted, ref } from "vue";
 
+import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import EventCalendar from "@/Components/Public/FullWidth/EventCalendar.vue";
 import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
 import MainLinks from "@/Components/Public/FullWidth/MainLinks.vue";
@@ -49,4 +55,10 @@ defineProps<{
   mainPage: Array<App.Models.MainPage>;
   calendar: Array<App.Models.Calendar>;
 }>();
+
+const isThemeDark = ref(isDarkMode());
+
+onMounted(() => {
+  updateDarkMode(isThemeDark);
+});
 </script>

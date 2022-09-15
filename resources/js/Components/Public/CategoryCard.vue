@@ -6,7 +6,7 @@
       @click="inertiaVisitOnClick(institution.alias)"
     />
     <h2
-      class="mx-auto mt-4 w-fit cursor-pointer text-center font-bold transition hover:text-vusa-red"
+      class="mx-auto mt-4 w-fit cursor-pointer text-center font-bold text-gray-900 transition hover:text-vusa-red dark:text-zinc-50"
       @click="inertiaVisitOnClick(institution.alias)"
     >
       {{ dutyInstitutionName }}
@@ -62,7 +62,7 @@
   <div v-else class="flex flex-col justify-center">
     <div>
       <h2
-        class="w-full cursor-pointer text-center font-bold duration-500 hover:text-vusa-red"
+        class="w-full cursor-pointer text-center font-bold text-gray-900 duration-500 hover:text-vusa-red dark:text-zinc-50"
         @click="inertiaVisitOnClick(institution.alias)"
       >
         {{ dutyInstitutionName }}

@@ -1,6 +1,6 @@
 <template>
   <nav
-    class="fixed top-0 z-50 flex max-h-24 w-full flex-row items-center justify-between border bg-white/80 px-6 py-2 text-gray-700 shadow-sm backdrop-blur-sm lg:px-24"
+    class="fixed top-0 z-50 flex max-h-24 w-full flex-row items-center justify-between bg-white/80 px-6 py-2 text-gray-800 shadow-sm backdrop-blur-sm dark:bg-zinc-800/60 dark:text-white lg:px-24"
   >
     <div class="flex flex-row items-center space-x-4">
       <Link :href="route('main.home', homeParams)" @click="resetPadalinys()">
@@ -58,6 +58,19 @@
       <SearchButton />
       <StartFM />
       <NDivider vertical></NDivider>
+      <NSwitch
+        v-model:value="isDark"
+        :loading="disabledSwitch"
+        size="small"
+        @update:value="toggleDark()"
+      >
+        <template #checked-icon>
+          <n-icon :component="WeatherMoon28Regular" />
+        </template>
+        <template #unchecked-icon>
+          <n-icon :component="WeatherSunny24Regular" />
+        </template>
+      </NSwitch>
       <LocaleButton :locale="locale" @change-locale="localeSelect" />
     </div>
     <NDrawer
@@ -78,6 +91,21 @@
             <SearchButton />
             <StartFM />
             <LocaleButton :locale="locale" @change-locale="localeSelect" />
+            <div class="flex items-center justify-center">
+              <NSwitch
+                v-model:value="isDark"
+                :loading="disabledSwitch"
+                size="small"
+                @update:value="toggleDark()"
+              >
+                <template #checked-icon>
+                  <n-icon :component="WeatherMoon28Regular" />
+                </template>
+                <template #unchecked-icon>
+                  <n-icon :component="WeatherSunny24Regular" />
+                </template>
+              </NSwitch>
+            </div>
           </div>
         </template>
         <template v-if="!route().current('*page')">
@@ -111,6 +139,8 @@ import {
   AnimalTurtle24Filled,
   ChevronDown20Filled,
   Navigation24Filled,
+  WeatherMoon28Regular,
+  WeatherSunny24Regular,
 } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import { Link, usePage } from "@inertiajs/inertia-vue3";
@@ -125,10 +155,12 @@ import {
   NIcon,
   NMenu,
   NScrollbar,
+  NSwitch,
   NTree,
 } from "naive-ui";
 import { computed, reactive, ref } from "vue";
 import { split } from "lodash";
+import { useDark, useToggle } from "@vueuse/core";
 import route, { RouteParamsWithQueryOverload } from "ziggy-js";
 
 import AppLogo from "@/Components/AppLogo.vue";
@@ -137,6 +169,29 @@ import InstagramButton from "../Nav/InstagramButton.vue";
 import LocaleButton from "../Nav/LocaleButton.vue";
 import SearchButton from "../Nav/SearchButton.vue";
 import StartFM from "@/Components/StartFM.vue";
+
+const emit = defineEmits<{
+  (event: "toggle-dark", ...args: any[]): void;
+}>();
+
+const isDark = useDark({
+  selector: "html",
+  attribute: "color-scheme",
+  valueDark: "dark",
+  valueLight: "light",
+});
+
+const disabledSwitch = ref(false);
+
+const toggleDark = () => {
+  // disableSwitch for 0.5s to prevent double click
+  disabledSwitch.value = true;
+  setTimeout(() => {
+    disabledSwitch.value = false;
+  }, 250);
+  useToggle(isDark);
+  emit("toggle-dark", isDark.value);
+};
 
 // map padaliniai to options_padaliniai
 

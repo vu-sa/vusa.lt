@@ -11,6 +11,29 @@
     <NCollapse default-expanded-names="0.3">
       <NCollapseItem name="0.3" title="v0.3">
         <section>
+          <h4 class="mt-0">v0.3.4 (2022-09-16)</h4>
+          <ul>
+            <li>
+              🪄
+              <strong>Tamsusis režimas</strong>
+            </li>
+            <li>
+              🐛
+              <strong
+                >Išverstos kelios vietos, kur tekstas buvo rodomas tik
+                lietuviškai</strong
+              >
+            </li>
+            <li>
+              🐛
+              <strong
+                >Šiek tiek pataisytas kontaktų rodymas ir teksto
+                ryškumas</strong
+              >
+            </li>
+          </ul>
+        </section>
+        <section>
           <h4 class="mt-0">v0.3.3 (2022-09-10)</h4>
           <ul>
             <li>

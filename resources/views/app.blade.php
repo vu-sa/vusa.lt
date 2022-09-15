@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 
 {{-- TODO: Enable class="scroll-smooth" when Inertia scroll reset is fixed --}}
-<html class="scroll-smooth" lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
     <meta charset="utf-8">
@@ -13,6 +13,9 @@
     <meta name="og:description" content="{{ $description ?? '' }}">
     <meta name="image" content="{{ $image ?? '' }}">
     <meta name="og:image" content="{{ $image ?? '' }}">
+    @if (Request::route()->getPrefix() !== '/admin')
+        <meta name="color-scheme" content="light dark">
+    @endif
 
     {{-- Atom Feed --}}
     @include('feed::links')

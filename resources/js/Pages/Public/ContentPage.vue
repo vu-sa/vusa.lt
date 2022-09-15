@@ -19,13 +19,16 @@
         </NBreadcrumbItem>
       </NBreadcrumb>
       <h1 class="col-span-3 col-start-1 inline-flex gap-4">
-        <span>{{ page.title }}</span>
+        <span class="text-gray-900 dark:text-white">{{ page.title }}</span>
         <NButton v-if="$page.props.user" text @click="editPage"
           ><NIcon :size="32" :component="DocumentEdit20Regular"
         /></NButton>
       </h1>
       <!-- eslint-disable-next-line vue/no-v-html -->
-      <div class="prose col-span-3 col-start-1" v-html="page.text"></div>
+      <div
+        class="prose col-span-3 col-start-1 dark:prose-invert"
+        v-html="page.text"
+      ></div>
     </article>
   </FadeTransition>
 </template>
