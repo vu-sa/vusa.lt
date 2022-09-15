@@ -35,7 +35,7 @@
         </span>
       </em>
       <div
-        class="prose col-span-4 first-letter:float-left first-letter:mr-3 first-letter:text-7xl first-letter:font-bold"
+        class="prose col-span-4 first-letter:float-left first-letter:mr-3 first-letter:text-7xl first-letter:font-bold dark:prose-invert"
         v-html="article.text"
       ></div>
     </NewsArticle>
@@ -56,7 +56,6 @@ import { DocumentEdit24Regular } from "@vicons/fluent";
 import { Head, usePage } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
 import { NBackTop, NButton, NIcon } from "naive-ui";
-import { loadLanguageAsync } from "laravel-vue-i18n";
 import route from "ziggy-js";
 
 import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";

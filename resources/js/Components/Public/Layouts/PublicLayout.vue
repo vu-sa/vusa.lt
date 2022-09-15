@@ -7,7 +7,7 @@
     >
       <MetaIcons />
       <div
-        class="flex min-h-screen flex-col justify-between bg-neutral-50 antialiased dark:bg-zinc-800"
+        class="flex min-h-screen flex-col justify-between bg-neutral-50 antialiased dark:bg-zinc-900"
       >
         <MainNavigation />
         <main class="pt-24 pb-8">
@@ -25,8 +25,8 @@
 
 <script setup lang="ts">
 import { NConfigProvider, darkTheme } from "naive-ui";
-import { computed, onMounted, reactive, ref, watch } from "vue";
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
+import { onMounted, ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
 
 import FadeTransition from "../Utils/FadeTransition.vue";

@@ -14,7 +14,7 @@
         <div class="mx-auto flex h-full max-w-7xl">
           <div class="h-fit self-end">
             <h1
-              class="flex items-center px-12 text-4xl font-extrabold lg:text-5xl"
+              class="flex items-center px-12 text-4xl font-extrabold text-gray-900 dark:text-zinc-50 lg:text-5xl"
             >
               <span>{{
                 $page.props.locale === "en"
@@ -27,11 +27,14 @@
       </header>
       <section class="mx-auto mt-8 grid max-w-7xl lg:grid-cols-3">
         <div class="px-12 lg:col-span-2">
-          <h2 v-if="event.description !== ''" class="my-4">
+          <h2
+            v-if="event.description !== ''"
+            class="my-4 text-gray-900 dark:text-zinc-50"
+          >
             {{ $t("Aprašymas") }}
           </h2>
           <div
-            class="prose-sm sm:prose sm:max-w-[70ch]"
+            class="prose dark:prose-invert sm:max-w-[70ch]"
             v-html="
               $page.props.locale === 'en'
                 ? event.attributes?.en?.description ?? event.description
@@ -69,7 +72,7 @@
         <div class="-order-1 mx-8 flex lg:order-1">
           <div
             style="grid-template-columns: 16px auto"
-            class="sticky top-40 grid h-fit w-full max-w-lg grid-cols-2 flex-col items-center gap-2 rounded-2xl border-vusa-red p-4 lg:w-80 lg:border-2 lg:p-6 lg:shadow-md"
+            class="sticky top-40 grid h-fit w-full max-w-lg grid-cols-2 flex-col items-center gap-2 rounded-2xl border-vusa-red p-4 text-gray-900 dark:text-zinc-100 lg:w-80 lg:border-2 lg:p-6 lg:shadow-md"
           >
             <div class="absolute top-6 right-6">
               <NButton
@@ -117,7 +120,7 @@
             <NDivider v-if="event.url" class="col-span-2"></NDivider>
             <div class="col-span-2 flex flex-col justify-center">
               <p v-if="timeTillEvent.days >= 0" class="text-center">
-                Iki renginio liko:
+                {{ $t("Iki renginio liko") }}:
               </p>
 
               <NGradientText
@@ -125,7 +128,7 @@
                 type="error"
                 class="mb-2 w-full text-center"
               >
-                {{ timeTillEvent.days }} d.
+                {{ `${timeTillEvent.days} ${$t("d.")}` }}
                 <NCountdown
                   :render="renderCountdown"
                   :active="true"
@@ -252,11 +255,11 @@ const renderCountdown: CountdownProps["render"] = ({
 }) => {
   return h("span", {}, [
     h("span", hours),
-    " val. ",
+    ` ${$t("val.")} `,
     h("span", minutes),
-    " min. ",
+    ` ${$t("min.")} `,
     h("span", seconds),
-    " sek.",
+    ` ${$t("sek.")}`,
   ]);
 };
 </script>

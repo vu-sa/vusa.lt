@@ -1,6 +1,6 @@
 <template>
   <div
-    class="mx-8 mb-4 rounded-lg bg-white p-4 text-gray-800 shadow-lg dark:bg-zinc-700 dark:text-white lg:mx-16 lg:mb-8 lg:px-8"
+    class="mx-8 mb-4 rounded-lg bg-white p-4 text-gray-800 shadow-lg dark:bg-zinc-800 dark:text-white lg:mx-16 lg:mb-8 lg:px-8"
   >
     <h1 class="lg:mb-0">{{ $t("Naujienos") }}</h1>
     <div class="mb-4 flex flex-wrap justify-between gap-1">
@@ -31,6 +31,7 @@
         </template>
         <template #image>
           <Link
+            :preserve-scroll="false"
             :href="
               route('news', {
                 lang: item.lang,
@@ -45,6 +46,7 @@
           /></Link>
         </template>
         <Link
+          :preserve-scroll="false"
           :href="
             route('news', {
               lang: item.lang,

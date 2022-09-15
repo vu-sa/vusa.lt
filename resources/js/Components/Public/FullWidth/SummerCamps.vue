@@ -27,7 +27,7 @@
   <div
     class="mx-8 mt-4 flex flex-col justify-center gap-4 lg:mx-16 lg:flex-row lg:items-center lg:px-16"
   >
-    <div class="prose-sm dark:prose-invert sm:prose">
+    <div class="prose-sm prose dark:prose-invert">
       <p class="text-2xl font-bold lg:w-4/5">
         VU SA organizuojamos
         <span class="font-extrabold text-vusa-red">pirmakursių stovyklos</span>

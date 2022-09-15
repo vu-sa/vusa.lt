@@ -114,5 +114,10 @@
     "Pasirinkite, į kur norite registruotis": "Please select where you want to register",
     "Užpildykite visus privalomus laukelius": "Please fill in all required fields",
     "Sėkmingai užsiregistravai! Greitu metu susisieksime su tavimi": "You have successfully registered! We will contact you in the following days",
-    "Neteisingas telefono numerio formatas": "Invalid phone number format"
+    "Neteisingas telefono numerio formatas": "Invalid phone number format",
+    "Iki renginio liko": "Time left until the event",
+    "min.": "min",
+    "d.": "days",
+    "val.": "h",
+    "sek.": "s"
 }

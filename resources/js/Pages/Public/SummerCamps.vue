@@ -4,8 +4,12 @@
   <FadeTransition appear>
     <div>
       <div class="group relative">
-        <ShapeDivider1 class="absolute -top-1 z-10"></ShapeDivider1>
         <ShapeDivider1
+          :is-theme-dark="isThemeDark"
+          class="absolute -top-1 z-10"
+        ></ShapeDivider1>
+        <ShapeDivider1
+          :is-theme-dark="isThemeDark"
           class="absolute bottom-5 z-10 rotate-180 lg:-bottom-1"
         ></ShapeDivider1>
         <div class="relative">
@@ -22,7 +26,7 @@
       <div
         class="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-4 pt-2 last:pb-2 lg:grid-cols-5 lg:px-16"
       >
-        <div class="prose-sm col-span-3 px-12 lg:prose">
+        <div class="prose-sm prose col-span-3 px-12 dark:prose-invert">
           <h2>Labas! 👋</h2>
 
           <p class="font-bold">2022 m. pirmakursių stovyklos jau pasibaigė!</p>
@@ -101,7 +105,9 @@
                 class="h-full w-full rounded-xl object-cover shadow-md transition group-hover:shadow-xl"
                 :src="get5thResponsiveImage(event)"
               />
-              <h3 class="p-2 text-center text-lg font-extrabold leading-tight">
+              <h3
+                class="p-2 text-center text-lg font-extrabold leading-tight dark:text-zinc-100"
+              >
                 {{ "VU" + getFacultyName(event) }}
               </h3>
             </Link>
@@ -123,14 +129,18 @@ export default {
 <script setup lang="ts">
 import { Head } from "@inertiajs/inertia-vue3";
 import { Link } from "@inertiajs/inertia-vue3";
+import { onMounted, ref } from "vue";
 import route from "ziggy-js";
 
+import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 
-const props = defineProps<{
+defineProps<{
   events: App.Models.News;
 }>();
+
+const isThemeDark = ref(isDarkMode());
 
 const getFacultyName = (event: App.Models.Calendar) => {
   if (!event.padalinys) return "";
@@ -179,4 +189,8 @@ const get5thResponsiveImage = (event: App.Models.Calendar) => {
     ];
   return responsiveUrl;
 };
+
+onMounted(() => {
+  updateDarkMode(isThemeDark);
+});
 </script>

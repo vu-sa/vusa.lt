@@ -49,7 +49,7 @@
       </h2>
       <div class="space-between flex flex-row">
         <p
-          class="prose-sm mb-4 text-sm text-gray-700 dark:prose-invert sm:prose lg:max-w-[80ch] lg:text-base"
+          class="prose-sm prose mb-4 text-sm dark:prose-invert lg:max-w-[80ch] lg:text-base"
         >
           <template v-if="$page.props.locale === 'lt'">
             Ataskaitos knygutė – kiekvienais metais skelbiama VU SA nuveiktų

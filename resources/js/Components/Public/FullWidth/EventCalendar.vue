@@ -13,7 +13,7 @@
     class="mx-auto mt-8 flex max-w-7xl flex-col-reverse gap-4 px-16 lg:mt-32 lg:flex-row lg:px-24 xl:px-40"
   >
     <div
-      class="prose-sm flex w-fit flex-col justify-center dark:prose-invert sm:prose lg:h-4/5 lg:w-1/2 2xl:w-3/4"
+      class="prose-sm prose flex w-fit flex-col justify-center dark:prose-invert lg:h-4/5 lg:w-1/2 2xl:w-3/4"
     >
       <p v-if="$page.props.locale === 'lt'" class="text-2xl font-bold lg:w-2/3">
         <span class="font-extrabold">Naujiena!</span> Sek visus VU studentų
@@ -117,13 +117,16 @@
                     >
                     <NConfigProvider
                       class="flex h-fit items-center justify-center"
-                      :theme="darkTheme"
+                      :theme="isThemeDark ? undefined : darkTheme"
                     >
                       <div class="my-auto flex items-center justify-center">
                         <NButton
                           text
-                          size="small"
-                          @click="windowOpen(attr.customData.googleLink)"
+                          tag="a"
+                          target="_blank"
+                          :href="attr.customData.googleLink"
+                          color="rgb(189, 40, 53)"
+                          size="tiny"
                           ><NIcon :component="Google"
                         /></NButton>
                       </div>
@@ -139,7 +142,7 @@
   </div>
   <NModal v-model:show="showModal">
     <NCard
-      class="prose-sm prose"
+      class="prose-sm prose dark:prose-invert"
       style="max-width: 500px"
       :title="$t('Kalendoriaus sinchronizavimo instrukcija')"
       :bordered="false"

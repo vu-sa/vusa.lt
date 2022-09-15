@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col px-8 pt-8 last:pb-2 lg:px-40">
-    <p class="prose-sm prose mb-4 transition-colors">
+    <p class="prose-sm prose mb-4 transition-colors dark:prose-invert">
       Studentų atstovus VU kamieniniuose akademiniuose padaliniuose galima rasti
       <Link href="/kontaktai/kategorija/padaliniai">čia</Link>.
     </p>
@@ -12,8 +12,13 @@
       <div class="flex flex-col">
         <div class="flex flex-col gap-8 lg:flex-row">
           <div class="flex flex-col justify-center lg:w-1/2">
-            <h2>{{ institution.name }}</h2>
-            <div class="prose" v-html="institution.description"></div>
+            <h2 class="text-gray-900 dark:text-zinc-50">
+              {{ institution.name }}
+            </h2>
+            <div
+              class="prose dark:prose-invert"
+              v-html="institution.description"
+            ></div>
           </div>
           <div class="flex gap-4 lg:w-1/2">
             <template v-for="duty in institution.duties">

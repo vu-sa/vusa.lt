@@ -28,5 +28,5 @@ const props = defineProps<{
   isThemeDark?: boolean;
 }>();
 
-const fill = computed(() => (props.isThemeDark ? "#27272a" : "#fafafa"));
+const fill = computed(() => (props.isThemeDark ? "#18181b" : "#fafafa"));
 </script>

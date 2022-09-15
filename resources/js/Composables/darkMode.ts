@@ -6,7 +6,6 @@ export function isDarkMode() {
     .querySelector("html")
     ?.getAttribute("color-scheme");
 
-  console.log(colorScheme);
   return colorScheme === "dark";
 }
 

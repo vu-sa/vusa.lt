@@ -3,16 +3,18 @@
     class="mt-4 grid grid-cols-4 justify-items-center gap-y-4 px-8 lg:px-32"
   >
     <div
-      class="col-span-4 flex w-full flex-wrap justify-center gap-2 text-gray-700"
+      class="col-span-4 flex w-full flex-wrap justify-center gap-2 text-gray-700 dark:text-zinc-100"
     >
       <slot name="tags"></slot>
     </div>
-    <div class="col-span-4 flex flex-row items-center text-gray-700">
+    <div
+      class="col-span-4 flex flex-row items-center text-gray-700 dark:text-zinc-100"
+    >
       <slot name="author"></slot>
       <div class="mx-2">@</div>
       <slot name="time"></slot>
     </div>
-    <h1 class="col-span-4 text-center">
+    <h1 class="col-span-4 text-center text-gray-900 dark:text-white">
       <slot name="title"></slot>
     </h1>
     <slot name="image"></slot>
