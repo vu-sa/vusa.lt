@@ -7,12 +7,6 @@ use Illuminate\Auth\Access\HandlesAuthorization;
 
 class UserPolicy
 {
-    public function before(User $user, $ability)
-    {
-        if ($user->isAdmin()) {
-            return true;
-        }
-    }
 
     use HandlesAuthorization;
 
@@ -24,7 +18,7 @@ class UserPolicy
      */
     public function viewAny(User $user)
     {
-        return $user->isAdminOrSuperAdmin();
+        return $user->can('create unit users');
     }
 
     /**
@@ -36,7 +30,7 @@ class UserPolicy
      */
     public function view(User $user, User $model)
     {
-        return $user->id === $model->id;
+        
     }
 
     /**
@@ -47,7 +41,7 @@ class UserPolicy
      */
     public function create(User $user)
     {
-        return $user->isAdminOrSuperAdmin();
+        return $user->can('create unit users');
     }
 
     /**
@@ -61,7 +55,9 @@ class UserPolicy
     // TODO:: fix this policy to use for each
     public function update(User $user, User $model)
     {       
-        return $model->padaliniai()->contains($user->padaliniai()->first()->id) || (is_null($model->padaliniai()->first()) && $user->isAdminOrSuperAdmin());
+        if ($user->can('edit unit users')) {
+            return $model->padaliniai()->contains($user->padaliniai()->first()->id) || (is_null($model->padaliniai()->first()));
+        }
     }
 
     /**
@@ -73,7 +69,9 @@ class UserPolicy
      */
     public function delete(User $user, User $model)
     {
-        return false;
+        if ($user->can('delete unit users')) {
+            return $model->padaliniai()->contains($user->padaliniai()->first()->id) || (is_null($model->padaliniai()->first()));
+        }
     }
 
     /**
@@ -85,7 +83,7 @@ class UserPolicy
      */
     public function restore(User $user, User $model)
     {
-        return false;
+
     }
 
     /**
@@ -97,7 +95,7 @@ class UserPolicy
      */
     public function forceDelete(User $user, User $model)
     {
-        return false;
+        
     }
 
     public function storeFromMicrosoft(User $user)

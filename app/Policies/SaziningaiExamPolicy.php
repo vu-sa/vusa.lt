@@ -10,15 +10,6 @@ class SaziningaiExamPolicy
 {
     use HandlesAuthorization;
 
-    public function before(User $user, $ability)
-    {
-        // dd($user->isAdmin());
-        
-        if ($user->isAdmin()) {
-            return true;
-        }
-    }
-
     /**
      * Determine whether the user can view any models.
      *
@@ -27,7 +18,7 @@ class SaziningaiExamPolicy
      */
     public function viewAny(User $user)
     {
-        return false;
+        return $user->can('create saziningai content');
     }
 
     /**
@@ -50,7 +41,7 @@ class SaziningaiExamPolicy
      */
     public function create(User $user)
     {
-        return false;
+        return $user->can('create saziningai content');
     }
 
     /**
@@ -62,7 +53,7 @@ class SaziningaiExamPolicy
      */
     public function update(User $user, SaziningaiExam $saziningaiExam)
     {
-        return true;
+        return $user->can('edit saziningai content');
     }
 
     /**
@@ -74,7 +65,7 @@ class SaziningaiExamPolicy
      */
     public function delete(User $user, SaziningaiExam $saziningaiExam)
     {
-        //
+        return $user->can('delete saziningai content');
     }
 
     /**

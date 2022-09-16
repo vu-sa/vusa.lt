@@ -10,13 +10,6 @@ class DutyInstitutionsPolicy
 {
     use HandlesAuthorization;
 
-    public function before(User $user, $ability)
-    {
-        if ($user->isAdmin()) {
-            return true;
-        }
-    }
-
     /**
      * Determine whether the user can view any models.
      *
@@ -25,7 +18,7 @@ class DutyInstitutionsPolicy
      */
     public function viewAny(User $user)
     {
-        return $user->isAdminOrSuperAdmin();
+        return $user->can('create unit duties');
     }
 
     /**
@@ -48,7 +41,7 @@ class DutyInstitutionsPolicy
      */
     public function create(User $user)
     {
-        return $user->isAdminOrSuperAdmin();
+        return $user->can('create unit duties');
     }
 
     /**
@@ -60,7 +53,9 @@ class DutyInstitutionsPolicy
      */
     public function update(User $user, DutyInstitution $dutyInstitution)
     {
-        return $user->padalinys()->id === $dutyInstitution->padalinys->id;
+        if ($user->can('edit unit duties')) {
+            return $user->padalinys()->id == $dutyInstitution->padalinys->id;
+        }
     }
 
     /**
@@ -72,7 +67,9 @@ class DutyInstitutionsPolicy
      */
     public function delete(User $user, DutyInstitution $dutyInstitution)
     {
-        
+        if ($user->can('delete unit duties')) {
+            return $user->padalinys()->id == $dutyInstitution->padalinys->id;
+        }
     }
 
     /**

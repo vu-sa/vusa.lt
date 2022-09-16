@@ -10,13 +10,6 @@ class DutyUserPolicy
 {
     use HandlesAuthorization;
 
-    public function before(User $user, $ability)
-    {
-        if ($user->isAdmin()) {
-            return true;
-        }
-    }
-
     /**
      * Determine whether the user can view any models.
      *
@@ -60,7 +53,9 @@ class DutyUserPolicy
      */
     public function update(User $user, DutyUser $dutyUser)
     {
-        return true;
+        if ($user->can('edit unit users')) {
+            return $user->padalinys()->id == $dutyUser->duty->institution->padalinys->id;
+        }
     }
 
     /**

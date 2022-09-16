@@ -23,7 +23,6 @@ export default {
 </script>
 
 <script setup lang="ts">
-import { Link } from "@inertiajs/inertia-vue3";
 import { h } from "vue";
 
 import AsideHeader from "@/Components/Admin/Headers/AsideHeaderContacts.vue";

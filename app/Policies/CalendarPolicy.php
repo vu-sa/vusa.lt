@@ -10,13 +10,6 @@ class CalendarPolicy
 {
     use HandlesAuthorization;
 
-    public function before(User $user, $ability)
-    {      
-        if ($user->isAdmin()) {
-            return true;
-        }
-    }
-
     /**
      * Determine whether the user can view any models.
      *
@@ -25,7 +18,7 @@ class CalendarPolicy
      */
     public function viewAny(User $user)
     {
-        return $user->isAdminOrSuperAdmin();
+        return $user->can('create unit calendar');
     }
 
     /**
@@ -48,7 +41,7 @@ class CalendarPolicy
      */
     public function create(User $user)
     {
-        return $user->isAdminOrSuperAdmin();
+        return $user->can('create unit calendar');
     }
 
     /**
@@ -60,7 +53,9 @@ class CalendarPolicy
      */
     public function update(User $user, Calendar $calendar)
     {
-        return $user->padalinys()->id == $calendar->padalinys->id;
+        if ($user->can('edit unit calendar')) {
+            return $user->padalinys()->id == $calendar->padalinys->id;
+        }
     }
 
     /**
@@ -72,7 +67,9 @@ class CalendarPolicy
      */
     public function delete(User $user, Calendar $calendar)
     {
-        return $user->padalinys()->id == $calendar->padalinys->id;
+        if ($user->can('delete unit calendar')) {
+            return $user->padalinys()->id == $calendar->padalinys->id;
+        }
     }
 
     /**
@@ -101,6 +98,8 @@ class CalendarPolicy
 
     public function destroyMedia(User $user, Calendar $calendar)
     {
-        return $user->padalinys()->id == $calendar->padalinys->id;
+        if ($user->can('delete unit calendar')) {
+            return $user->padalinys()->id == $calendar->padalinys->id;
+        }
     }
 }

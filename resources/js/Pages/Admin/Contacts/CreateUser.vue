@@ -20,7 +20,6 @@ import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue"
 import UserForm from "@/Components/Admin/Forms/UserForm.vue";
 
 defineProps<{
-  contact: App.Models.User;
   roles: App.Models.Role[];
 }>();
 
@@ -28,10 +27,8 @@ const contact = {
   name: "",
   email: "",
   phone: null,
-  role: {
-    id: null,
-  },
   duties: [],
+  roles: [],
   profile_photo_path: null,
 };
 </script>

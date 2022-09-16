@@ -9,8 +9,8 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Duty;
 use App\Http\Controllers\Controller as Controller;
-use App\Models\Role;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -31,7 +31,7 @@ class UserController extends Controller
 
         $users = User::when(!is_null($name), function ($query) use ($name) {
             $query->where('name', 'like', "%{$name}%")->orWhere('email', 'like', "%{$name}%");
-        })->when(!User::find(Auth::id())->isAdmin(), function ($query) {
+        })->when(!$request->user()->hasRole('Super Admin'), function ($query) {
         })->paginate(20);
 
         // create lengthawarepaginator manually because need some more filtering
@@ -86,18 +86,22 @@ class UserController extends Controller
             $user->name = $request->name;
             $user->email = $request->email;
             $user->phone = $request->phone;
-            $user->role_id = $request->role_id;
             $user->profile_photo_path = $request->profile_photo_path;
 
             $user->save();
 
-            if (User::find(Auth::user()->id)->isAdmin()) {
-                $user->role_id = $request->role['id'];
-                $user->save();
-            }
-
             foreach ($request->duties as $duty) {
                 $user->duties()->attach($duty);
+            }
+
+            // check if user is super admin
+            if (auth()->user()->hasRole('Super Admin')) {
+                // check if user is super admin
+                if ($request->has('roles')) {
+                    $user->syncRoles($request->roles);
+                } else {
+                    $user->syncRoles([]);
+                }
             }
         });
 
@@ -123,6 +127,7 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
+        
         return Inertia::render('Admin/Contacts/EditUser', [
             'contact' => [
                 'id' => $user->id,
@@ -130,6 +135,7 @@ class UserController extends Controller
                 'email' => $user->email,
                 'profile_photo_path' => $user->profile_photo_path,
                 'phone' => $user->phone,
+                'roles' => $user->getRoleNames(),
                 'duties' => $user->duties->map(function ($duty) {
                     return [
                         'id' => $duty->id,
@@ -140,9 +146,9 @@ class UserController extends Controller
                         'type' => $duty->type,
                     ];
                 }),
-                'role' => $user->role,
             ],
-            'roles' => Role::all(),
+            // get all roles
+            'roles' => Role::all()
         ]);
     }
 
@@ -159,24 +165,24 @@ class UserController extends Controller
             'name' => 'required',
             'email' => 'required',
         ]);
+
+        // dd($request->all(), auth()->user()->hasRole('Super Admin'));
         
         DB::transaction(function () use ($request, $user) {
-            // dd($request->all());
 
             $user->update($request->only('name', 'email', 'phone', 'profile_photo_path'));
+            $user->duties()->sync($request->duties);
 
-            if (User::find(Auth::user()->id)->isAdmin()) {
-
-                // if admin, they can edit role. but not everyone has a role assigned and sometimes it lead to a bug, 
-                // this automatically assigned a least permissive role
-                $role = $request->role !== [] ? $request->role : ['id' => Role::where('alias', 'naudotojai')->first()->id];
-
-                $user->role_id = $role['id'];
-                $user->save();
-                // TODO: role revamp with Spatie permissions or smth
+            // check if user is super admin
+            if (auth()->user()->hasRole('Super Admin')) {
+                // check if user is super admin
+                if ($request->has('roles')) {
+                    $user->syncRoles($request->roles);
+                } else {
+                    $user->syncRoles([]);
+                }
             }
 
-            $user->duties()->sync($request->duties);
         });
 
         return redirect()->back();
@@ -216,7 +222,6 @@ class UserController extends Controller
 
             // pirmiausia ieškome per vartotoją, per paštą
             $user = User::where('email', $microsoftUser->mail)->first();
-            $standardRole = Role::where('name', 'vartotojas')->first();
 
             if ($user) {
                 // jei randama per vartotojo paštą, prijungiam
@@ -228,10 +233,6 @@ class UserController extends Controller
                     // 'image' => $microsoftUser->avatar,
                 ]);
 
-                if ($user->role_id == null) {
-                    $user->role()->associate($standardRole);
-                    $user->save();
-                }
             } else {
 
                 // jei nerandama per vartotojo paštą, ieškome per pareigybės paštą
@@ -245,16 +246,9 @@ class UserController extends Controller
                         // 'image' => $microsoftUser->avatar,
                     ]);
 
-                    // if user role is null, add role
-
-                    if ($user->role_id == null) {
-                        $user->role()->associate($standardRole);
-                        $user->save();
-                    }
                 } else {
 
                     $user = new User;
-                    $user->role_id = $standardRole->id;
 
                     $user->microsoft_token = $microsoftUser->token;
                     $user->name = $microsoftUser->displayName;
@@ -263,8 +257,6 @@ class UserController extends Controller
                     $user->save();
                 }
 
-                // } else {
-                //     return redirect()->route('home');
             }
 
             Auth::login($user);
