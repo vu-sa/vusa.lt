@@ -18,7 +18,7 @@
             class="mt-2 h-32 w-full object-cover brightness-50 lg:my-1 lg:h-48"
             style="object-position: 0% 45%"
           />
-          <h1 class="relative bottom-16 text-center text-white lg:bottom-24">
+          <h1 class="relative bottom-16 text-center lg:bottom-24">
             Pirmakursių stovyklos
           </h1>
         </div>

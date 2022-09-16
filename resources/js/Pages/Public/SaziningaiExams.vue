@@ -4,9 +4,7 @@
   <FadeTransition appear>
     <article class="ml-[5vw] grid grid-cols-3 gap-y-4 pt-8 last:pb-2">
       <div class="col-span-3 col-start-1">
-        <h1 class="text-gray-900 dark:text-zinc-50">
-          Programos „Sąžiningai“ užregistruoti egzaminai
-        </h1>
+        <h1>Programos „Sąžiningai“ užregistruoti egzaminai</h1>
         <p class="my-6 text-gray-800 dark:text-zinc-100">
           Registruotis reikia į kiekvieną srautą atskirai.
         </p>
