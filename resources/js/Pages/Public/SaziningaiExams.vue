@@ -10,7 +10,7 @@
         <p class="my-6 text-gray-800 dark:text-zinc-100">
           Registruotis reikia į kiekvieną srautą atskirai.
         </p>
-        <div class="main-card rounded-md p-0 dark:bg-zinc-700">
+        <div class="main-card rounded-md p-0">
           <NDataTable
             size="small"
             :data="props.saziningaiExamFlows"

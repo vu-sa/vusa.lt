@@ -58,19 +58,8 @@
       <SearchButton />
       <StartFM />
       <NDivider vertical></NDivider>
-      <NSwitch
-        v-model:value="isDark"
-        :loading="disabledSwitch"
-        size="small"
-        @update:value="toggleDark()"
-      >
-        <template #checked-icon>
-          <n-icon :component="WeatherMoon28Regular" />
-        </template>
-        <template #unchecked-icon>
-          <n-icon :component="WeatherSunny24Regular" />
-        </template>
-      </NSwitch>
+      <DarkModeSwitch />
+
       <LocaleButton :locale="locale" @change-locale="localeSelect" />
     </div>
     <NDrawer
@@ -92,19 +81,7 @@
             <StartFM />
             <LocaleButton :locale="locale" @change-locale="localeSelect" />
             <div class="flex items-center justify-center">
-              <NSwitch
-                v-model:value="isDark"
-                :loading="disabledSwitch"
-                size="small"
-                @update:value="toggleDark()"
-              >
-                <template #checked-icon>
-                  <n-icon :component="WeatherMoon28Regular" />
-                </template>
-                <template #unchecked-icon>
-                  <n-icon :component="WeatherSunny24Regular" />
-                </template>
-              </NSwitch>
+              <DarkModeSwitch />
             </div>
           </div>
         </template>
@@ -139,8 +116,6 @@ import {
   AnimalTurtle24Filled,
   ChevronDown20Filled,
   Navigation24Filled,
-  WeatherMoon28Regular,
-  WeatherSunny24Regular,
 } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import { Link, usePage } from "@inertiajs/inertia-vue3";
@@ -155,43 +130,19 @@ import {
   NIcon,
   NMenu,
   NScrollbar,
-  NSwitch,
   NTree,
 } from "naive-ui";
 import { computed, reactive, ref } from "vue";
 import { split } from "lodash";
-import { useDark, useToggle } from "@vueuse/core";
 import route, { RouteParamsWithQueryOverload } from "ziggy-js";
 
 import AppLogo from "@/Components/AppLogo.vue";
+import DarkModeSwitch from "@/Components/DarkModeSwitch.vue";
 import FacebookButton from "../Nav/FacebookButton.vue";
 import InstagramButton from "../Nav/InstagramButton.vue";
 import LocaleButton from "../Nav/LocaleButton.vue";
 import SearchButton from "../Nav/SearchButton.vue";
 import StartFM from "@/Components/StartFM.vue";
-
-const emit = defineEmits<{
-  (event: "toggle-dark", ...args: any[]): void;
-}>();
-
-const isDark = useDark({
-  selector: "html",
-  attribute: "color-scheme",
-  valueDark: "dark",
-  valueLight: "light",
-});
-
-const disabledSwitch = ref(false);
-
-const toggleDark = () => {
-  // disableSwitch for 0.5s to prevent double click
-  disabledSwitch.value = true;
-  setTimeout(() => {
-    disabledSwitch.value = false;
-  }, 250);
-  useToggle(isDark);
-  emit("toggle-dark", isDark.value);
-};
 
 // map padaliniai to options_padaliniai
 

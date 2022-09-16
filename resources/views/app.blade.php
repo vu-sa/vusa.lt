@@ -13,9 +13,7 @@
     <meta name="og:description" content="{{ $description ?? '' }}">
     <meta name="image" content="{{ $image ?? '' }}">
     <meta name="og:image" content="{{ $image ?? '' }}">
-    @if (Request::route()->getPrefix() !== '/admin')
-        <meta name="color-scheme" content="light dark">
-    @endif
+    <meta name="color-scheme" content="light dark">
 
     {{-- Atom Feed --}}
     @include('feed::links')

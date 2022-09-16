@@ -4,7 +4,7 @@
   >
     <div
       v-if="editor"
-      class="tiptap-navbar flex items-center rounded-t-lg bg-gradient-to-tr from-stone-100 to-stone-50 p-2 shadow-sm"
+      class="tiptap-navbar flex items-center rounded-t-lg bg-gradient-to-tr from-zinc-200 to-zinc-100 p-2 shadow-sm dark:from-zinc-800/90 dark:to-zinc-700/90"
     >
       <!-- <strong class="mb-4">Funkcijos</strong> -->
       <!-- <br /> -->
