@@ -6,10 +6,23 @@
     size="huge"
     role="dialog"
     aria-modal="true"
-    class="prose"
+    class="prose dark:prose-invert"
   >
     <NCollapse default-expanded-names="0.3">
       <NCollapseItem name="0.3" title="v0.3">
+        <section>
+          <h4 class="mt-0">v0.3.5 (2022-09-17)</h4>
+          <ul>
+            <li>
+              🪄
+              <strong>Tamsusis režimas administravime</strong>
+            </li>
+            <li>Atnaujintas rolių priskyrimas</li>
+            <li>
+              Sutvarkyta teksto spalva, kur ji buvo ne tokia, kokia turi būti
+            </li>
+          </ul>
+        </section>
         <section>
           <h4 class="mt-0">v0.3.4 (2022-09-16)</h4>
           <ul>
@@ -18,19 +31,10 @@
               <strong>Tamsusis režimas</strong>
             </li>
             <li>
-              🐛
-              <strong
-                >Išverstos kelios vietos, kur tekstas buvo rodomas tik
-                lietuviškai</strong
-              >
+              🐛 Išverstos kelios vietos, kur tekstas buvo rodomas tik
+              lietuviškai
             </li>
-            <li>
-              🐛
-              <strong
-                >Šiek tiek pataisytas kontaktų rodymas ir teksto
-                ryškumas</strong
-              >
-            </li>
+            <li>🐛 Šiek tiek pataisytas kontaktų rodymas ir teksto ryškumas</li>
           </ul>
         </section>
         <section>
