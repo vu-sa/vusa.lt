@@ -26,7 +26,7 @@ class DutyInstitutionController extends Controller
     {
         $search = request()->input('search');
 
-        $dutyInstitutions = DutyInstitution::with('padalinys:id,shortname')->when(!request()->user()->isAdmin(), function ($query) {
+        $dutyInstitutions = DutyInstitution::with('padalinys:id,shortname')->when(!request()->user()->hasRole('Super Admin'), function ($query) {
             $query->where('padalinys_id', '=', request()->user()->padalinys()->id);
         })->when(!is_null($search), function ($query) use ($search) {
             $query->where('name', 'like', "%{$search}%")->orWhere('short_name', 'like', "%{$search}%")->orWhere('alias', 'like', "%{$search}%");
@@ -155,7 +155,7 @@ class DutyInstitutionController extends Controller
     {
         $data = $request->collect()['data'];
 
-        $institutions = DutyInstitution::when(!$request->user()->isAdmin(), function ($query) use ($request) {
+        $institutions = DutyInstitution::when(!$request->user()->hasRole('Super Admin'), function ($query) use ($request) {
             $query->where('padalinys_id', '=', $request->user()->padalinys()->id);
             // check request for padaliniai, if not empty return only pages from request padaliniai
         })->where(function ($query) use ($data) {

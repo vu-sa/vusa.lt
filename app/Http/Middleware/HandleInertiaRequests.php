@@ -56,12 +56,12 @@ class HandleInertiaRequests extends Middleware
             ],
             // is used in the admin navigation to show only the allowed pages
             'can' => is_null($request->user()) ? false : [
-                'content' => $request->user()->can('viewAny', Page::class),
-                'users' => $request->user()->can('viewAny', User::class),
-                'navigation' => $request->user()->can('viewAny', Navigation::class),
-                'calendar' => $request->user()->can('viewAny', Calendar::class),
+                'content' => $request->user()->can('edit unit content'),
+                'users' => $request->user()->can('edit unit users'),
+                'navigation' => $request->user()->hasRole('Super Admin'),
+                'calendar' => $request->user()->can('edit unit calendar'),
                 'files' => true,
-                'saziningai' => $request->user()->can('viewAny', SaziningaiExam::class),
+                'saziningai' => $request->user()->can('edit saziningai content'),
             ],
             'locale' => function () {
                 return app()->getLocale();

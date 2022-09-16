@@ -20,7 +20,7 @@
         <NInput v-model:value="form.phone" placeholder="+370 612 345 678" />
       </NFormItemGi>
 
-      <NFormItemGi label="Administracinė vusa.lt rolė" :span="12">
+      <!-- <NFormItemGi label="Administracinė vusa.lt rolė" :span="12">
         <NSelect
           v-model:value="form.role.id"
           :disabled="$page.props.user.role.alias !== 'admin'"
@@ -29,7 +29,7 @@
           type="text"
           placeholder="Be rolės..."
         />
-      </NFormItemGi>
+      </NFormItemGi> -->
 
       <NFormItemGi label="Pareigybės" :span="24">
         <NSelect
@@ -88,24 +88,23 @@ import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue"
 
 const props = defineProps<{
   user: App.Models.User;
-  roles: App.Models.Role[];
   modelRoute: string;
   deleteModelRoute?: string;
 }>();
 
 const form = useForm("dutyInstitution", props.user);
 
-form.role = {
-  id: form.role?.id,
-  name: form.role?.name,
-};
+// form.role = {
+//   id: form.role?.id,
+//   name: form.role?.name,
+// };
 
 const dutyOptions = ref<App.Models.Duty>([]);
 
-const rolesOptions = props.roles.map((role) => ({
-  label: role.name,
-  value: role.id,
-}));
+// const rolesOptions = props.roles.map((role) => ({
+//   label: role.name,
+//   value: role.id,
+// }));
 
 const getDutyOptions = debounce((input) => {
   // get other lang

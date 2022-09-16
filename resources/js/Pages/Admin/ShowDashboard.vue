@@ -3,8 +3,12 @@
     <Transition name="fade" appear>
       <div class="main-card max-w-3xl">
         <p>{{ salutation }}</p>
-        <p><strong>Rolė:</strong> {{ role.name }}</p>
-        <p class="my-4">{{ role.description }}</p>
+        <div class="my-4">
+          <p>Tavo rolės:</p>
+          <ul v-for="(role, index) in roles" :key="index" class="list-inside">
+            <li>{{ $t(role) }}</li>
+          </ul>
+        </div>
         <p>
           Jeigu kiltų klausimų, rašykite
           <a href="mailto:it@vusa.lt">it@vusa.lt</a>
@@ -23,13 +27,14 @@ export default {
 </script>
 
 <script setup lang="ts">
-import { Head, usePage } from "@inertiajs/inertia-vue3";
+import { trans as $t } from "laravel-vue-i18n";
 import { computed } from "vue";
+import { usePage } from "@inertiajs/inertia-vue3";
 
 import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 
 defineProps<{
-  role: App.Models.Role;
+  roles: Record<string, any>[];
 }>();
 
 const salutation = computed(() => {

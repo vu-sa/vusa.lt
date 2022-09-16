@@ -21,16 +21,12 @@ import UserForm from "@/Components/Admin/Forms/UserForm.vue";
 
 defineProps<{
   contact: App.Models.User;
-  roles: App.Models.Role[];
 }>();
 
 const contact = {
   name: "",
   email: "",
   phone: null,
-  role: {
-    id: null,
-  },
   duties: [],
   profile_photo_path: null,
 };

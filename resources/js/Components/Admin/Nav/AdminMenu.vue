@@ -153,7 +153,7 @@ const menuOptions = computed(() => [
     label: "Registracijos",
     key: "registrations",
     icon: renderIcon(Notebook24Regular),
-    show: can.content,
+    show: can.content || can.saziningai,
     children: [
       {
         label: () =>

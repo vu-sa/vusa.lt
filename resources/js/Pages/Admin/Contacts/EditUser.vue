@@ -5,7 +5,6 @@
         :user="contact"
         model-route="users.update"
         delete-model-route="users.destroy"
-        :roles="roles"
       />
     </UpsertModelLayout>
     <template #aside-card>
@@ -60,7 +59,7 @@ export default {
 <script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
-import { NButton, NDivider, NIcon } from "naive-ui";
+import { NButton, NIcon } from "naive-ui";
 import { PersonEdit24Regular } from "@vicons/fluent";
 import route from "ziggy-js";
 
@@ -70,7 +69,6 @@ import UserForm from "@/Components/Admin/Forms/UserForm.vue";
 
 defineProps<{
   contact: App.Models.User;
-  roles: App.Models.Role[];
 }>();
 
 const hasFillableAttributes = (duty: App.Models.Duty) => {

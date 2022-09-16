@@ -52,7 +52,7 @@ class RegistrationFormController extends Controller
     {
         // get registrations for admin or user
 
-        if (request()->user()->isAdmin()) {
+        if (request()->user()->hasRole('Super Admin')) {
             $registrations = $registrationForm->load('registrations')->registrations;
         } else {
             $registrations = $registrationForm->load(['registrations' => function($query) {

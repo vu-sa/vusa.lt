@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller as Controller;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Gate;
 use Intervention\Image\Facades\Image;
 
 class FilesController extends Controller
@@ -19,9 +18,6 @@ class FilesController extends Controller
      */
     public function index(Request $request)
     {
-        if (!Gate::allows('manage-files')) {
-            abort(403);
-        }
 
         $currentDirectory = $request->currentPath ?? 'public/files';
 

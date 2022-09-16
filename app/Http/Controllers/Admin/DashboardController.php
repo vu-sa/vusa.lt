@@ -9,10 +9,10 @@ class DashboardController extends Controller
 {
     public function dashboard()
     {
-        $role = auth()->user()->role;
+        $roles = auth()->user()->getRoleNames();
 
         return Inertia::render('Admin/ShowDashboard', [
-            'role' => $role,
+            'roles' => $roles,
         ]);
     }
 }

@@ -9,15 +9,14 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Illuminate\Support\Facades\Auth;
 use App\Models\DutyUser;
+use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Collection;
 
 class User extends Authenticatable
 {
-    use Notifiable, HasFactory;
+    use Notifiable, HasFactory, HasRoles;
 
     protected $table = 'users';
-
-    protected $with = ['role'];
 
     /**
      * The attributes that are mass assignable.
@@ -25,7 +24,7 @@ class User extends Authenticatable
      * @var string[]
      */
     protected $fillable = [
-        'name', 'email', 'password', 'phone', 'role_id', 'profile_photo_path'
+        'name', 'email', 'password', 'phone', 'profile_photo_path'
     ];
 
     /**
@@ -86,22 +85,6 @@ class User extends Authenticatable
         return $institutions->unique();
     }
 
-    public function role()
-    {
-        return $this->belongsTo(Role::class, 'role_id', 'id');
-    }
-
-    public function isAdmin()
-    {
-        return $this->role?->alias == 'admin';
-    }
-
-    // if user role alias contains admin, return true
-    // TODO: no need for this function, as policy will check before 'admin'
-    public function isAdminOrSuperAdmin()
-    {
-        return $this->role?->alias == 'admin' || $this->role?->alias == 'padaliniai-admin';
-    }
 
     // TODO: more logical return of padalinys
     public function padalinys()

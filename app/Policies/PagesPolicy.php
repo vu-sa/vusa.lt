@@ -10,13 +10,6 @@ class PagesPolicy
 {
     use HandlesAuthorization;
 
-    public function before(User $user, $ability)
-    {
-        if ($user->isAdmin()) {
-            return true;
-        }
-    }
-
     /**
      * Determine whether the user can view any models.
      *
@@ -25,9 +18,7 @@ class PagesPolicy
      */
     public function viewAny(User $user)
     {
-        // dd($user->isAdminOrSuperAdmin());
-
-        return $user->isAdminOrSuperAdmin();
+        return $user->can('create unit content');
     }
 
     /**
@@ -50,7 +41,7 @@ class PagesPolicy
      */
     public function create(User $user)
     {
-        return $user->isAdminOrSuperAdmin();
+        return $user->can('create unit content');
     }
 
     /**
@@ -62,9 +53,9 @@ class PagesPolicy
      */
     public function update(User $user, Page $page)
     {
-        // dd($user->padalinys()->id, $page->padalinys->id);
-
-        return $user->padalinys()->id == $page->padalinys->id;
+        if ($user->can('edit unit content')) {
+            return $user->padalinys()->id == $page->padalinys->id;
+        }
     }
 
     /**
@@ -76,8 +67,9 @@ class PagesPolicy
      */
     public function delete(User $user, Page $page)
     {
-        // allow delete of pages belonging to the user's institution
-        return $user->padalinys()->id == $page->padalinys->id;
+        if ($user->can('delete unit content')) {
+            return $user->padalinys()->id == $page->padalinys->id;
+        }
     }
 
     /**

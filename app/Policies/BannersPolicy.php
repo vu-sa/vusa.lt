@@ -10,13 +10,6 @@ class BannersPolicy
 {
     use HandlesAuthorization;
 
-    public function before(User $user, $ability)
-    {
-        if ($user->isAdmin()) {
-            return true;
-        }
-    }
-
     /**
      * Determine whether the user can view any models.
      *
@@ -25,7 +18,7 @@ class BannersPolicy
      */
     public function viewAny(User $user)
     {
-        return $user->isAdminOrSuperAdmin();
+        return $user->can('create unit content');
     }
 
     /**
@@ -48,7 +41,7 @@ class BannersPolicy
      */
     public function create(User $user)
     {
-        return $user->isAdminOrSuperAdmin();
+        return $user->can('create unit content');
     }
 
     /**
@@ -60,7 +53,11 @@ class BannersPolicy
      */
     public function update(User $user, Banner $banner)
     {
-        return $user->padalinys()->id == $banner->padalinys->id;
+        if ($user->can('edit unit content')) {
+            return $user->padalinys()->id == $banner->padalinys->id;
+        }
+
+        return false;
     }
 
     /**
@@ -72,7 +69,9 @@ class BannersPolicy
      */
     public function delete(User $user, Banner $banner)
     {
-        return $user->padalinys()->id == $banner->padalinys->id;
+        if ($user->can('delete unit content')) {
+            return $user->padalinys()->id == $banner->padalinys->id;
+        }
     }
 
     /**

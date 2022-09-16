@@ -10,13 +10,6 @@ class NewsPolicy
 {
     use HandlesAuthorization;
 
-    public function before(User $user, $ability)
-    {
-        if ($user->isAdmin()) {
-            return true;
-        }
-    }
-
     /**
      * Determine whether the user can view any models.
      *
@@ -25,7 +18,7 @@ class NewsPolicy
      */
     public function viewAny(User $user)
     {
-        return $user->isAdminOrSuperAdmin();
+        return $user->can('create unit content');
     }
 
     /**
@@ -48,7 +41,7 @@ class NewsPolicy
      */
     public function create(User $user)
     {
-        return $user->isAdminOrSuperAdmin();
+        return $user->can('create unit content');
     }
 
     /**
@@ -60,7 +53,9 @@ class NewsPolicy
      */
     public function update(User $user, News $news)
     {
-        return $user->padalinys()->id == $news->padalinys->id;
+        if ($user->can('edit unit content')) {
+            return $user->padalinys()->id == $news->padalinys->id;
+        }
     }
 
     /**
@@ -72,7 +67,9 @@ class NewsPolicy
      */
     public function delete(User $user, News $news)
     {
-        return $user->padalinys()->id == $news->padalinys->id;
+        if ($user->can('delete unit content')) {
+            return $user->padalinys()->id == $news->padalinys->id;
+        }
     }
 
     /**

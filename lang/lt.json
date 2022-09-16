@@ -3,5 +3,10 @@
     "Not Found": "Puslapis nerastas",
     "Server Error": "Serverio klaida",
     "Puslapis egzistuoja kita kalba": "🇬🇧 There's a version of this page in English",
-    "Atidaryti": "Open"
+    "Atidaryti": "Open",
+    "Super Admin": "Super administratorius",
+    "Content Editor": "Turinio redaktorius",
+    "User": "Vartotojas",
+    "Calendar Editor": "Kalendoriaus redaktorius",
+    "Exam Admin": "Sažiningai administratorius"
 }
