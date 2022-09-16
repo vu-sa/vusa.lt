@@ -14,10 +14,11 @@
           <h4 class="mt-0">v0.3.5 (2022-09-17)</h4>
           <ul>
             <li>
-              🪄
+              🪄 🛡
               <strong>Tamsusis režimas administravime</strong>
             </li>
             <li>Atnaujintas rolių priskyrimas</li>
+            <li>Šiek tiek pakeistos spalvos ir mygtukai administravime</li>
             <li>
               Sutvarkyta teksto spalva, kur ji buvo ne tokia, kokia turi būti
             </li>
