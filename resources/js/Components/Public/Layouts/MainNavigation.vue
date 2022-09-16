@@ -1,6 +1,6 @@
 <template>
   <nav
-    class="fixed top-0 z-50 flex max-h-24 w-full flex-row items-center justify-between border bg-white/80 px-6 py-2 text-gray-700 shadow-sm backdrop-blur-sm lg:px-24"
+    class="fixed top-0 z-50 flex max-h-24 w-full flex-row items-center justify-between bg-white/80 px-6 py-2 text-gray-800 shadow-sm backdrop-blur-sm dark:bg-zinc-800/60 dark:text-white lg:px-24"
   >
     <div class="flex flex-row items-center space-x-4">
       <Link :href="route('main.home', homeParams)" @click="resetPadalinys()">
@@ -57,6 +57,9 @@
       <InstagramButton />
       <SearchButton />
       <StartFM />
+      <NDivider vertical></NDivider>
+      <DarkModeSwitch />
+
       <LocaleButton :locale="locale" @change-locale="localeSelect" />
     </div>
     <NDrawer
@@ -77,11 +80,14 @@
             <SearchButton />
             <StartFM />
             <LocaleButton :locale="locale" @change-locale="localeSelect" />
+            <div class="flex items-center justify-center">
+              <DarkModeSwitch />
+            </div>
           </div>
         </template>
         <template v-if="!route().current('*page')">
           <NCollapse>
-            <NCollapseItem title="Padaliniai">
+            <NCollapseItem :title="$t('Padaliniai')">
               <NTree
                 block-line
                 :data="options_padaliniai"
@@ -90,9 +96,8 @@
               </NTree>
             </NCollapseItem>
           </NCollapse>
-
-          <NDivider></NDivider>
         </template>
+        <NDivider></NDivider>
         <NTree
           block-line
           :data="navigation"
@@ -132,6 +137,7 @@ import { split } from "lodash";
 import route, { RouteParamsWithQueryOverload } from "ziggy-js";
 
 import AppLogo from "@/Components/AppLogo.vue";
+import DarkModeSwitch from "@/Components/DarkModeSwitch.vue";
 import FacebookButton from "../Nav/FacebookButton.vue";
 import InstagramButton from "../Nav/InstagramButton.vue";
 import LocaleButton from "../Nav/LocaleButton.vue";
@@ -157,15 +163,14 @@ const activeMenuKey = ref(usePage().props.value.navigationItemId);
 const expandedKeys = ref([]);
 const selectedKeys = ref([]);
 
-const options_padaliniai = reactive(
-  padaliniai.map((padalinys) => ({
+const options_padaliniai = computed(() => {
+  return padaliniai.map((padalinys) => ({
     label: $t(split(padalinys.fullname, "atstovybė ")[1]),
     key: padalinys.alias,
-  }))
-);
+  }));
+});
 
-const parseNavigation = (array, id) => {
-  // console.log(array);
+const parseNavigation = (array, id: number) => {
   const result: Record<string, any>[] = [];
   array.forEach((item) => {
     if (item[1].parent_id === id) {
@@ -173,8 +178,6 @@ const parseNavigation = (array, id) => {
         key: item[1].id,
         label: item[1].name,
         children: parseNavigation(array, item[1].id),
-        // icon: item[1].parent_id === 0 ? renderIcon(ChevronDown12Regular) : null,
-        // trim url of slashes
         url: item[1].url.replace(/^\/|\/$/g, ""),
       });
       if (result[result.length - 1].children.length === 0) {
@@ -204,6 +207,7 @@ padalinys.value = getPadalinys();
 
 const handleSelectPadalinys = (key) => {
   let i = key;
+
   // if padalinys is array, get first element (for mobile)
   if (Array.isArray(i)) {
     i = key[0];
@@ -215,7 +219,6 @@ const handleSelectPadalinys = (key) => {
     },
     preserveScroll: false,
     preserveState: false,
-    // only: ["alias", "news", "banners", "main_page"],
     onSuccess: () => {
       padalinys.value = getPadalinys(i);
       activeDrawer.value = false;
@@ -227,7 +230,7 @@ const resetPadalinys = () => {
   padalinys.value = "Padaliniai";
 };
 
-const handleSelectNavigation = (id) => {
+const handleSelectNavigation = (id: number) => {
   // message.info("Navigating to " + key);
   // get url from id from mainNavigation array
   let url = "";
@@ -262,13 +265,11 @@ const handleSelectNavigation = (id) => {
 };
 
 const localeSelect = (lang: string) => {
-  console.log(locale.value);
   if (lang !== "lt") {
     locale.value = "en";
   } else {
     locale.value = "lt";
   }
-  console.log(locale.value);
   // update navigation
   mainNavigation.value = usePage().props.value.mainNavigation;
   // update app logo button

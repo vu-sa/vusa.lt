@@ -7,7 +7,7 @@ module.exports = {
     "./resources/views/**/*.blade.php",
     "./resources/js/**/*.vue",
   ],
-
+  darkMode: ["class", '[color-scheme="dark"]'],
   theme: {
     extend: {
       colors: {

@@ -14,8 +14,8 @@ class SeedWithRecords extends Migration
      */
     public function up()
     {
-        if (config('app.env') == 'local') {
-            DB::unprepared(file_get_contents('database/vusa_www-2022.sql'));
-        }
+        // if (config('app.env') == 'local') {
+        //     DB::unprepared(file_get_contents('database/vusa_www-2022.sql'));
+        // }
     }
 }

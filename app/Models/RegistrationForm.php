@@ -14,10 +14,5 @@ class RegistrationForm extends Model
     {
         return $this->hasMany(Registration::class);
     }
-
-    public function calendars()
-    {
-        return $this->hasMany(Calendar::class);
-    }
     
 }

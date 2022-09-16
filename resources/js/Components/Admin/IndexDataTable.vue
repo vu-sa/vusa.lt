@@ -27,7 +27,7 @@ const props = defineProps<{
   columns: DataTableColumns<any>;
   model: PaginatedModels<any[]>;
   showRoute?: string;
-  editRoute: string;
+  editRoute?: string;
   destroyRoute?: string;
 }>();
 
@@ -36,7 +36,7 @@ const columnsWithActions = computed(() => {
   return [
     ...props.columns,
     {
-      title: "Veiksmai",
+      title: props.editRoute || props.destroyRoute ? "Veiksmai" : null,
       key: "actions",
       width: 100,
       render(row) {
@@ -47,21 +47,23 @@ const columnsWithActions = computed(() => {
           },
           {
             default: () => [
-              h(
-                NButton,
-                {
-                  size: "small",
-                  onClick: () => {
-                    Inertia.get(route(props.editRoute, row.id));
-                  },
-                },
-                {
-                  icon: () =>
-                    h(NIcon, {
-                      component: Edit20Filled,
-                    }),
-                }
-              ),
+              props.editRoute
+                ? h(
+                    NButton,
+                    {
+                      size: "small",
+                      onClick: () => {
+                        Inertia.get(route(props.editRoute, row.id));
+                      },
+                    },
+                    {
+                      icon: () =>
+                        h(NIcon, {
+                          component: Edit20Filled,
+                        }),
+                    }
+                  )
+                : null,
 
               // conditionally render the destroy button
               [

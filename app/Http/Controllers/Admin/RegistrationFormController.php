@@ -37,8 +37,6 @@ class RegistrationFormController extends Controller
      */
     public function store(Request $request)
     {
-        dd($request->all());
-        
         $registrationForm = new RegistrationForm();
         $registrationForm->data = $request->data;
         $registrationForm->save();
@@ -52,7 +50,20 @@ class RegistrationFormController extends Controller
      */
     public function show(RegistrationForm $registrationForm)
     {
-        //
+        // get registrations for admin or user
+
+        if (request()->user()->isAdmin()) {
+            $registrations = $registrationForm->load('registrations')->registrations;
+        } else {
+            $registrations = $registrationForm->load(['registrations' => function($query) {
+                $query->where('data->whereToRegister', request()->user()->padalinys()->id);
+            }])->registrations;
+        }
+        
+        // for now, is accustomed to show only member registration
+        return Inertia::render('Admin/Registrations/ShowRegistrationForm', [
+            'registrationForm' => $registrations->sortByDesc('created_at')->values()->paginate(20)
+        ]);
     }
 
     /**

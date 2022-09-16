@@ -2,21 +2,24 @@
   <Head :title="`${institution.short_name ?? institution.name}`"></Head>
   <FadeTransition appear>
     <div class="px-16 lg:px-32">
-      <div class="grid gap-8 pt-4 sm:grid-cols-2 2xl:grid-cols-3">
-        <div v-if="institution.image_url" class="group relative sm:col-span-2">
-          <ShapeDivider1 class="absolute -top-1 z-10"></ShapeDivider1>
-          <ShapeDivider1
-            class="absolute -bottom-1 z-10 rotate-180"
-          ></ShapeDivider1>
+      <div class="grid gap-8 pt-4 md:grid-cols-6">
+        <div
+          v-if="institution.image_url"
+          class="group relative my-4 md:col-span-4"
+        >
           <img
             :src="institution.image_url"
-            class="my-4 h-64 w-full object-cover duration-200 hover:opacity-90 lg:h-96"
+            class="h-64 w-full rounded-md object-cover duration-200 hover:opacity-90 lg:h-96"
             style="object-position: 0% 35%"
           />
         </div>
         <div
-          :class="{ 'sm:row-span-2': !institution.image_url }"
-          class="prose-sm my-auto sm:prose"
+          :class="
+            !institution.image_url
+              ? 'md:col-span-3 2xl:col-span-2'
+              : 'md:col-span-2'
+          "
+          class="prose-sm prose my-auto dark:prose-invert"
         >
           <h1>
             {{ dutyInstitutionName }}
@@ -27,6 +30,7 @@
         <ContactWithPhotoForDuties
           v-for="(contact, index) in contacts"
           :key="contact.id"
+          class="md:col-span-3 2xl:col-span-2"
           :contact="contact"
           :index="index"
         >

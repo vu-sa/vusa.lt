@@ -2,8 +2,10 @@
 
 namespace Database\Factories;
 
-use App\Models\mainPage;
+use App\Models\MainPage;
+use App\Models\Padalinys;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Arr;
 
 class MainPageFactory extends Factory
 {
@@ -12,18 +14,7 @@ class MainPageFactory extends Factory
      *
      * @var string
      */
-    protected $model = mainPage::class;
-
-    /**
-     * Get random icon from images/icons/custom directory.
-     */
-    
-    public function random_custom_icon() {
-        $files = glob(realpath('public/images/icons/custom') . '/*.*');
-        $file = array_rand($files);
-        $path = explode('/public', $files[$file]);
-        return $path[1];
-    }
+    protected $model = MainPage::class;
 
     /**
      * Define the model's default state.
@@ -34,12 +25,10 @@ class MainPageFactory extends Factory
     {
         return [
             'link' => $this->faker->url(),
+            'position' => "",
             'text' => $this->faker->word(),
-            'image' => $this->random_custom_icon(),
-            'position' => 'infoPage',
-            'type' => 'infoPage',
-            'moduleName' => 'links',
-            'groupID' => 1
+            'padalinys_id' => Padalinys::inRandomOrder()->select('id')->first()->id,
+            'lang' => Arr::random(['lt', 'en']),
         ];
     }
 }

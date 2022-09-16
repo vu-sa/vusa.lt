@@ -2,7 +2,9 @@
   <Head title="Naujienų archyvas"></Head>
   <FadeTransition appear>
     <div>
-      <h2 class="px-8 pt-8 lg:px-32">Naujienų archyvas</h2>
+      <h2 class="px-8 pt-8 text-gray-900 dark:text-zinc-50 lg:px-32">
+        Naujienų archyvas
+      </h2>
       <NPagination
         style="overflow-x: auto"
         class="px-8 pt-8 lg:px-32"

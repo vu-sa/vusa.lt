@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex h-auto min-h-fit max-w-xl flex-col rounded-lg bg-white lg:flex-row"
+    class="flex h-auto min-h-fit max-w-xl flex-col rounded-lg bg-white dark:bg-zinc-700 lg:flex-row"
   >
     <div
       v-if="getImageUrl(contact)"
@@ -22,7 +22,9 @@
     </div>
     <div class="flex flex-auto flex-col justify-between gap-4 p-4">
       <div class="flex flex-col flex-wrap">
-        <h2 class="flex flex-auto items-center gap-2 px-2 text-slate-900">
+        <h2
+          class="flex flex-auto items-center gap-2 px-2 text-gray-900 dark:text-zinc-50"
+        >
           <span>{{ contact.name }}</span>
           <NButton
             v-if="$page.props.user"
@@ -38,7 +40,7 @@
         </h2>
         <div
           v-if="contact.duties"
-          class="w-fit p-2 text-sm font-medium text-gray-500"
+          class="w-fit p-2 text-sm font-medium text-gray-600 dark:text-zinc-200"
         >
           <template v-for="duty in contact.duties" :key="duty.id">
             <NPopover
@@ -67,7 +69,7 @@
           </template>
         </div>
       </div>
-      <div class="flex flex-col gap-2 text-sm text-neutral-500">
+      <div class="flex flex-col gap-2 text-sm text-gray-500 dark:text-zinc-200">
         <div v-if="contact.phone" class="flex flex-row items-center">
           <NIcon class="mr-2">
             <Phone20Regular />

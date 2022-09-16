@@ -4,7 +4,7 @@
   >
     <div
       v-if="editor"
-      class="tiptap-navbar flex items-center rounded-t-lg bg-gradient-to-tr from-stone-100 to-stone-50 p-2 shadow-sm"
+      class="tiptap-navbar flex items-center rounded-t-lg bg-gradient-to-tr from-zinc-200 to-zinc-100 p-2 shadow-sm dark:from-zinc-800/90 dark:to-zinc-700/90"
     >
       <!-- <strong class="mb-4">Funkcijos</strong> -->
       <!-- <br /> -->
@@ -221,6 +221,10 @@ import { debounce } from "lodash";
 import { onBeforeUnmount, ref } from "vue";
 import Image from "@tiptap/extension-image";
 import StarterKit from "@tiptap/starter-kit";
+import Table from "@tiptap/extension-table";
+import TableCell from "@tiptap/extension-table-cell";
+import TableHeader from "@tiptap/extension-table-header";
+import TableRow from "@tiptap/extension-table-row";
 import TipTapLink from "@tiptap/extension-link";
 import route from "ziggy-js";
 
@@ -325,6 +329,12 @@ const editor = useEditor({
   extensions: [
     StarterKit,
     Image,
+    Table.configure({
+      resizable: true,
+    }),
+    TableCell,
+    TableHeader,
+    TableRow,
     TipTapLink.configure({
       openOnClick: false,
     }),
@@ -405,6 +415,116 @@ const { message } = createDiscreteApi(["message"]);
     border-top: 2px solid rgba(#0d0d0d, 0.1);
     margin: 2rem 0;
   }
+
+  table {
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: 100%;
+    margin: 0;
+    overflow: hidden;
+
+    td,
+    th {
+      min-width: 1em;
+      border: 2px solid #ced4da;
+      padding: 3px 5px;
+      vertical-align: top;
+      box-sizing: border-box;
+      position: relative;
+
+      > * {
+        margin-bottom: 0;
+      }
+    }
+
+    th {
+      font-weight: bold;
+      text-align: left;
+      background-color: #f1f3f5;
+    }
+
+    .selectedCell:after {
+      z-index: 2;
+      position: absolute;
+      content: "";
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      background: rgba(200, 200, 255, 0.4);
+      pointer-events: none;
+    }
+
+    .column-resize-handle {
+      position: absolute;
+      right: -2px;
+      top: 0;
+      bottom: -2px;
+      width: 4px;
+      background-color: #adf;
+      pointer-events: none;
+    }
+
+    p {
+      margin: 0;
+    }
+  }
+}
+
+.ProseMirror {
+  table {
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: 100%;
+    margin: 0;
+    overflow: hidden;
+
+    td,
+    th {
+      min-width: 1em;
+      border: 2px solid #ced4da;
+      padding: 3px 5px;
+      vertical-align: top;
+      box-sizing: border-box;
+      position: relative;
+
+      > * {
+        margin-bottom: 0;
+      }
+    }
+
+    th {
+      font-weight: bold;
+      text-align: left;
+      background-color: #f1f3f5;
+    }
+
+    .selectedCell:after {
+      z-index: 2;
+      position: absolute;
+      content: "";
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      background: rgba(200, 200, 255, 0.4);
+      pointer-events: none;
+    }
+
+    .column-resize-handle {
+      position: absolute;
+      right: -2px;
+      top: 0;
+      bottom: -2px;
+      width: 4px;
+      background-color: #adf;
+      pointer-events: none;
+    }
+
+    p {
+      margin: 0;
+    }
+  }
 }
 
 .tiptap-navbar {
@@ -439,5 +559,14 @@ const { message } = createDiscreteApi(["message"]);
     max-width: 100%;
     height: auto;
   }
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.resize-cursor {
+  cursor: ew-resize;
+  cursor: col-resize;
 }
 </style>

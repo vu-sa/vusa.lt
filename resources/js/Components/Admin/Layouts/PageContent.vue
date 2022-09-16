@@ -3,7 +3,7 @@
     ><title>{{ title }}</title></Head
   >
 
-  <header class="mb-4 flex max-w-7xl flex-row items-center gap-4 text-gray-800">
+  <header class="mb-4 flex max-w-7xl flex-row items-center gap-4">
     <Link v-if="!isIndex && backUrl" :href="backUrl">
       <div class="flex">
         <NIcon size="28" :component="ArrowCircleLeft32Regular" /></div

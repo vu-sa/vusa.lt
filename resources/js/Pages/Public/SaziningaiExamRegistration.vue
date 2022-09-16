@@ -3,10 +3,10 @@
   <Head title="Sąžiningai atsiskaitymo registravimo forma"></Head>
   <FadeTransition appear>
     <article class="grid grid-cols-3 gap-y-4 px-8 pt-8 last:pb-2 lg:px-32">
-      <h1 class="col-span-3 col-start-1">
+      <h1 class="col-span-3 col-start-1 text-gray-900 dark:text-zinc-50">
         Egzamino ar kolokviumo stebėjimo registracijos forma
       </h1>
-      <div class="prose col-span-3 col-start-1">
+      <div class="prose col-span-3 col-start-1 dark:prose-invert">
         <!-- <strong class="text-red-600">
             Registracijos forma šiuo metu yra uždaryta, greitu metu ją vėl atidarysime.
             Prašome kreiptis į
@@ -164,29 +164,33 @@
               universiteto Studentų atstovybėje tvarkos aprašą</NCheckbox
             >
           </NFormItem>
-          <p>
-            Duomenų valdytojas yra Vilniaus universiteto Studentų atstovybė.
-          </p>
-          <ul>
-            <li>
-              Adresas: Universiteto g. 3, Observatorijos kiemelis, Vilnius,
-            </li>
-            <li>Telefono numeris: <a href="tel:852687144">+37052687144</a>,</li>
-            <li>
-              El. paštas:
-              <a href="mailto:info@vusa.lt">info@vusa.lt</a>
-            </li>
-          </ul>
-          <p>Jūsų pateikti duomenys bus naudojami susisiekti su jumis.</p>
+          <div class="prose-sm">
+            <p>
+              Duomenų valdytojas yra Vilniaus universiteto Studentų atstovybė.
+            </p>
+            <ul>
+              <li>
+                Adresas: Universiteto g. 3, Observatorijos kiemelis, Vilnius,
+              </li>
+              <li>
+                Telefono numeris: <a href="tel:852687144">+37052687144</a>,
+              </li>
+              <li>
+                El. paštas:
+                <a href="mailto:info@vusa.lt">info@vusa.lt</a>
+              </li>
+            </ul>
+            <p>Jūsų pateikti duomenys bus naudojami susisiekti su jumis.</p>
 
-          <p>
-            Duomenų subjektas turi teisę susipažinti su savo asmens duomenimis,
-            teisę reikalauti ištaisyti neteisingus, neišsamius, netikslius savo
-            asmens duomenis ir kitas teisės aktais numatytas teises. Kilus
-            klausimams ir norint realizuoti savo, kaip duomenų subjekto, teises,
-            galite kreiptis į
-            <a href="mailto:dap@vusa.lt">dap@vusa.lt</a>.
-          </p>
+            <p>
+              Duomenų subjektas turi teisę susipažinti su savo asmens
+              duomenimis, teisę reikalauti ištaisyti neteisingus, neišsamius,
+              netikslius savo asmens duomenis ir kitas teisės aktais numatytas
+              teises. Kilus klausimams ir norint realizuoti savo, kaip duomenų
+              subjekto, teises, galite kreiptis į
+              <a href="mailto:dap@vusa.lt">dap@vusa.lt</a>.
+            </p>
+          </div>
           <NButton type="primary" @click="handleValidateClick">
             Pateikti
           </NButton>
@@ -403,7 +407,6 @@ const handleValidateClick = (e: MouseEvent) => {
             `Ačiū už atsiskaitymo „${formValue.subject_name}“ užregistravimą!`
           );
           formValue.reset();
-          Inertia.visit(route("saziningaiExams.registered"));
         },
       });
     } else {

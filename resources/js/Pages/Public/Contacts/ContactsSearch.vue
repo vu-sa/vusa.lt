@@ -3,9 +3,11 @@
   <!-- <PublicLayout title="Kontaktų paieška"> -->
   <FadeTransition appear>
     <div class="mt-16 grid gap-8 px-16 md:grid-cols-4 lg:px-32">
-      <h2>Ieškoti kontakto:</h2>
+      <h2 class="text-gray-900 dark:invert">
+        Kontaktų paieška šiuo metu neveikia.
+      </h2>
 
-      <NInput
+      <!-- <NInput
         class="mt-2 md:col-span-4"
         type="text"
         size="large"
@@ -22,7 +24,7 @@
           :class="{ 'md:col-span-2': contact.profile_photo_path }"
         >
         </ContactWithPhotoForUsers>
-      </TransitionGroup>
+      </TransitionGroup> -->
     </div>
   </FadeTransition>
 </template>

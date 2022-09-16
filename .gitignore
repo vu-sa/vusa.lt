@@ -25,6 +25,9 @@ public/js/*.js
 database/vusa_www-2022.sql
 .DS_Store
 
+public/vendor/telescope/app.js
+public/vendor/telescope/mix-manifest.json
+
 # vite builds
 /public/build
 public/hot

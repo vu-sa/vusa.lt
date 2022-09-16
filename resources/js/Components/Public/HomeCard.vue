@@ -9,11 +9,13 @@
     <slot name="image"></slot>
     <div
       v-if="hasBelowCard"
-      class="mt-1 flex items-center text-sm text-gray-600"
+      class="mt-1 flex items-center text-sm text-gray-600 dark:text-zinc-200"
     >
       <slot name="below-card"></slot>
     </div>
-    <h3 class="mt-1 leading-tight text-gray-800 line-clamp-2"><slot></slot></h3>
+    <h3 class="mt-1 leading-tight text-gray-800 line-clamp-2 dark:text-zinc-50">
+      <slot></slot>
+    </h3>
   </article>
 </template>
 
