@@ -10,6 +10,7 @@ use Inertia\Inertia;
 use App\Models\Duty;
 use App\Http\Controllers\Controller as Controller;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -60,7 +61,9 @@ class UserController extends Controller
     public function create()
     {
         //
-        return Inertia::render('Admin/Contacts/CreateUser');
+        return Inertia::render('Admin/Contacts/CreateUser', [
+            'roles' => Role::all(),
+        ]);
     }
 
     /**
@@ -90,6 +93,16 @@ class UserController extends Controller
             foreach ($request->duties as $duty) {
                 $user->duties()->attach($duty);
             }
+
+            // check if user is super admin
+            if (auth()->user()->hasRole('Super Admin')) {
+                // check if user is super admin
+                if ($request->has('roles')) {
+                    $user->syncRoles($request->roles);
+                } else {
+                    $user->syncRoles([]);
+                }
+            }
         });
 
         return redirect()->route('users.index');
@@ -114,6 +127,7 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
+        
         return Inertia::render('Admin/Contacts/EditUser', [
             'contact' => [
                 'id' => $user->id,
@@ -121,6 +135,7 @@ class UserController extends Controller
                 'email' => $user->email,
                 'profile_photo_path' => $user->profile_photo_path,
                 'phone' => $user->phone,
+                'roles' => $user->getRoleNames(),
                 'duties' => $user->duties->map(function ($duty) {
                     return [
                         'id' => $duty->id,
@@ -132,6 +147,8 @@ class UserController extends Controller
                     ];
                 }),
             ],
+            // get all roles
+            'roles' => Role::all()
         ]);
     }
 
@@ -148,11 +165,23 @@ class UserController extends Controller
             'name' => 'required',
             'email' => 'required',
         ]);
+
+        // dd($request->all(), auth()->user()->hasRole('Super Admin'));
         
         DB::transaction(function () use ($request, $user) {
 
             $user->update($request->only('name', 'email', 'phone', 'profile_photo_path'));
             $user->duties()->sync($request->duties);
+
+            // check if user is super admin
+            if (auth()->user()->hasRole('Super Admin')) {
+                // check if user is super admin
+                if ($request->has('roles')) {
+                    $user->syncRoles($request->roles);
+                } else {
+                    $user->syncRoles([]);
+                }
+            }
 
         });
 

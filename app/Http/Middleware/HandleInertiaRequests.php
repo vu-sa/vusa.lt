@@ -45,8 +45,10 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request)
     {
         $user = User::find(Auth::id());
+
         if ($user) {
             $user->padalinys = User::find(Auth::id())?->padalinys()?->shortname;
+            $user->isSuperAdmin = $user->hasRole('Super Admin');
         }
 
         return array_merge(parent::share($request), [

@@ -3,6 +3,7 @@
     <UpsertModelLayout :errors="$attrs.errors" :model="contact">
       <UserForm
         :user="contact"
+        :roles="roles"
         model-route="users.update"
         delete-model-route="users.destroy"
       />
@@ -69,6 +70,7 @@ import UserForm from "@/Components/Admin/Forms/UserForm.vue";
 
 defineProps<{
   contact: App.Models.User;
+  roles: App.Models.Role[];
 }>();
 
 const hasFillableAttributes = (duty: App.Models.Duty) => {
