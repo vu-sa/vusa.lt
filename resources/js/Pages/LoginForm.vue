@@ -2,24 +2,24 @@
   <Head title="Log in" />
 
   <div
-    class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-stone-100"
+    class="flex min-h-screen flex-col items-center bg-stone-100 pt-6 sm:justify-center sm:pt-0"
   >
     <div>
       <AppLogo class="w-48" />
     </div>
 
     <div
-      class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg"
+      class="mt-6 w-full overflow-hidden bg-white px-6 py-4 shadow-md sm:max-w-md sm:rounded-lg"
     >
       <div v-if="hasErrors" class="mb-4">
         <div class="font-medium text-vusa-red">Kažkas ne taip...</div>
 
-        <ul class="mt-3 list-disc list-inside text-sm text-vusa-red">
+        <ul class="mt-3 list-inside list-disc text-sm text-vusa-red">
           <li v-for="(error, key) in errors" :key="key">{{ error }}</li>
         </ul>
       </div>
 
-      <div v-if="status" class="mb-4 font-medium text-sm text-green-600">
+      <div v-if="status" class="mb-4 text-sm font-medium text-green-600">
         {{ status }}
       </div>
 
@@ -57,7 +57,7 @@
         </label>
       </div> -->
 
-        <div class="flex items-center justify-end mt-4 gap-4">
+        <div class="mt-4 flex items-center justify-end gap-4">
           <NPopover
             ><template #trigger>
               <MicrosoftButton></MicrosoftButton>

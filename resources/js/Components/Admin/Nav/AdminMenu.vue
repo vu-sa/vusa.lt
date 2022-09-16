@@ -33,8 +33,10 @@ const { can } = usePage<InertiaProps>().props.value;
 const activeKey = ref("");
 
 // set active key with a switch
-const setActiveKey = (route: string) => {
+const setActiveKey = (route: string | undefined) => {
   // delimit route with .
+  if (route === undefined) return;
+
   const routeParts = route.split(".");
   if (routeParts[0] === "dashboard") {
     activeKey.value = "dashboard";
@@ -72,7 +74,7 @@ const menuOptions = computed(() => [
     icon: renderIcon(Home48Regular),
   },
   {
-    label: () => h(Link, { href: route("pages.index") }, () => "Turinys"),
+    label: "Turinys",
     key: "content",
     icon: renderIcon(SlideText48Regular),
     show: can.content,
@@ -106,8 +108,7 @@ const menuOptions = computed(() => [
     ],
   },
   {
-    label: () =>
-      h(Link, { href: route("dutyInstitutions.index") }, () => "Kontaktai"),
+    label: "Kontaktai",
     key: "contacts",
     icon: renderIcon(Person48Regular),
     show: can.users,
