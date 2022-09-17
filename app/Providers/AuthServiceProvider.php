@@ -11,7 +11,6 @@ use App\Models\MainPage;
 use App\Models\Navigation;
 use App\Models\News;
 use App\Models\Page;
-use App\Models\Role;
 use App\Models\SaziningaiExam;
 use App\Models\SaziningaiExamFlow;
 use App\Models\SaziningaiExamObserver;
@@ -25,7 +24,6 @@ use App\Policies\MainPagePolicy;
 use App\Policies\NavigationPolicy;
 use App\Policies\NewsPolicy;
 use App\Policies\PagesPolicy;
-use App\Policies\RolesPolicy;
 use App\Policies\SaziningaiExamFlowsPolicy;
 use App\Policies\SaziningaiExamObserversPolicy;
 use App\Policies\SaziningaiExamPolicy;
@@ -46,17 +44,14 @@ class AuthServiceProvider extends ServiceProvider
         Duty::class => DutiesPolicy::class,
         DutyUser::class => DutyUserPolicy::class,
         DutyInstitution::class => DutyInstitutionsPolicy::class,
-        // File::class => FilesPolicy::class,
         MainPage::class => MainPagePolicy::class,
         News::class => NewsPolicy::class,
         Navigation::class => NavigationPolicy::class,
         Page::class => PagesPolicy::class,
-        Role::class => RolesPolicy::class,
         SaziningaiExam::class => SaziningaiExamPolicy::class,
         SaziningaiExamFlow::class => SaziningaiExamFlowsPolicy::class,
         SaziningaiExamObserver::class => SaziningaiExamObserversPolicy::class,
         User::class => UserPolicy::class,
-        // Team::class => TeamPolicy::class,
     ];
 
     /**
@@ -68,8 +63,10 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        Gate::define('manage-files', function (User $user) {
-            return $user->isAdminOrSuperAdmin();
+        // Implicitly grant "Super Admin" role all permissions
+        // This works in the app by using gate-related functions like auth()->user->can() and @can()
+        Gate::before(function ($user, $ability) {
+            return $user->hasRole('Super Admin') ? true : null;
         });
     }
 }

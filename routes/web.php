@@ -55,7 +55,7 @@ Route::prefix('admin')->group(function () {
         Route::post('dutyInstitutions/search', [Admin\DutyInstitutionController::class, 'searchForInstitutions'])->name('dutyInstitutions.search');
         Route::post('dutyInstitutions/reorderDuties', [Admin\DutyInstitutionController::class, 'reorderDuties'])->name('dutyInstitutions.reorderDuties');
 
-        Route::resource('roles', Admin\RolesController::class);
+        // Route::resource('roles', Admin\RolesController::class);
         Route::post('files/search', [Admin\FilesController::class, 'searchForFiles'])->name('files.search');
         Route::post('images/search', [Admin\FilesController::class, 'searchForImages'])->name('images.search');
         Route::post('duties/search', [Admin\DutyController::class, 'searchForDuties'])->name('duties.search');

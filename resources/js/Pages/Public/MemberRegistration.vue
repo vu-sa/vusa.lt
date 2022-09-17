@@ -2,7 +2,7 @@
   <Head :title="$t('Prašymas tapti VU SA (arba VU SA PKP) nariu')"></Head>
   <FadeTransition appear>
     <article class="grid grid-cols-3 gap-y-4 px-8 pt-8 last:pb-2 lg:px-32">
-      <h1 class="col-span-3 col-start-1 text-gray-900 dark:invert">
+      <h1 class="col-span-3 col-start-1">
         {{ $t("Prašymas tapti VU SA (arba VU SA PKP) nariu") }}
       </h1>
       <div class="prose col-span-3 col-start-1 dark:prose-invert">

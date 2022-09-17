@@ -28,7 +28,7 @@ class NewsController extends Controller
 
         $news = News::
             // check if admin, if not return only pages from current user padalinys
-            when(!$request->user()->isAdmin(), function ($query) use ($request) {
+            when(!$request->user()->hasRole('Super Admin'), function ($query) use ($request) {
                 $query->where('padalinys_id', '=', $request->user()->padalinys()->id);
                 // check request for padaliniai, if not empty return only pages from request padaliniai
             })->when(!empty($padaliniai), function ($query) use ($padaliniai) {
@@ -76,7 +76,7 @@ class NewsController extends Controller
         $padalinys_id = User::find(Auth::user()->id)->padalinys()?->id;
 
         if (is_null($padalinys_id)) {
-            $padalinys_id = Auth::user()->isAdmin() ? 16 : null;
+            $padalinys_id = request()->user()->hasRole('Super Admin') ? 16 : null;
         }
 
         $news = News::create([
@@ -115,7 +115,7 @@ class NewsController extends Controller
      */
     public function edit(News $news)
     {
-        $other_lang_pages = News::with('padalinys:id,shortname')->when(!request()->user()->isAdmin(), function ($query) {
+        $other_lang_pages = News::with('padalinys:id,shortname')->when(!request()->user()->hasRole('Super Admin'), function ($query) {
             $query->where('padalinys_id', request()->user()->padalinys()->id);  
         })->where('lang', '!=', $news->lang)->select('id', 'title', 'padalinys_id')->get();
         

@@ -10,13 +10,6 @@ class NavigationPolicy
 {
     use HandlesAuthorization;
 
-    public function before(User $user, $ability)
-    {
-        if ($user->isAdmin()) {
-            return true;
-        }
-    }
-
     /**
      * Determine whether the user can view any models.
      *

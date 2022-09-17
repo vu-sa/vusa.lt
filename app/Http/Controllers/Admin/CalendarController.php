@@ -31,7 +31,7 @@ class CalendarController extends Controller
 
         $calendar = Calendar::
             // check if admin, if not return only pages from current user padalinys
-            when(!$request->user()->isAdmin(), function ($query) use ($request) {
+            when(!$request->user()->hasRole('Super Admin'), function ($query) use ($request) {
                 $query->where('padalinys_id', '=', $request->user()->padalinys()->id);
                 // check request for padaliniai, if not empty return only pages from request padaliniai
             })->when(!empty($padaliniai), function ($query) use ($padaliniai) {
@@ -76,7 +76,7 @@ class CalendarController extends Controller
         $padalinys_id = User::find(Auth::user()->id)->padalinys()?->id;
 
         if (is_null($padalinys_id)) {
-            $padalinys_id = Auth::user()->isAdmin() ? 16 : null;
+            $padalinys_id = request()->user()->hasRole('Super Admin') ? 16 : null;
         }
 
         Calendar::create([

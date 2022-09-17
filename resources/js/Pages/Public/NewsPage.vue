@@ -26,7 +26,9 @@
           class="col-span-4 my-4 h-auto w-[65ch] rounded-sm object-cover shadow-md duration-200 hover:shadow-lg"
           :src="article.image"
       /></template>
-      <em v-if="article.other_lang_id" class="prose col-span-full text-sm"
+      <em
+        v-if="article.other_lang_id"
+        class="prose col-span-full text-sm dark:prose-invert"
         >{{ $t("Puslapis egzistuoja kita kalba") }}!
         <span class="ml-2">
           <NButton tertiary round size="small" @click="openAnotherLangNews"

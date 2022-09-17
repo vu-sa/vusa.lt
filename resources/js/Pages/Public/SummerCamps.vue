@@ -18,7 +18,7 @@
             class="mt-2 h-32 w-full object-cover brightness-50 lg:my-1 lg:h-48"
             style="object-position: 0% 45%"
           />
-          <h1 class="relative bottom-16 text-center text-white lg:bottom-24">
+          <h1 class="relative bottom-16 text-center text-zinc-100 lg:bottom-24">
             Pirmakursių stovyklos
           </h1>
         </div>
@@ -105,9 +105,7 @@
                 class="h-full w-full rounded-xl object-cover shadow-md transition group-hover:shadow-xl"
                 :src="get5thResponsiveImage(event)"
               />
-              <h3
-                class="p-2 text-center text-lg font-extrabold leading-tight dark:text-zinc-100"
-              >
+              <h3 class="p-2 text-center text-lg font-extrabold leading-tight">
                 {{ "VU" + getFacultyName(event) }}
               </h3>
             </Link>
