@@ -61,7 +61,6 @@ const upsertModel = () => {
       }
     );
   } else {
-    console.log("inertia path");
     showSpin.value = true;
     Inertia.post(
       route(props.modelRoute, props.form.id),

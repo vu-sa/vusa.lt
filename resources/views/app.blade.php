@@ -15,6 +15,9 @@
     <meta name="og:image" content="{{ $image ?? '' }}">
     <meta name="color-scheme" content="light dark">
 
+    {{-- CSRF --}}
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     {{-- Atom Feed --}}
     @include('feed::links')
 

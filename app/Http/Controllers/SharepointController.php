@@ -1,0 +1,95 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Services\SharepointAppGraph;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Microsoft\Graph\Graph;
+use Microsoft\Graph\Model;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+
+class SharepointController extends Controller
+{
+    public function index() {
+        $graph = new SharepointAppGraph();
+        
+        $drive = $graph->getDriveBySite(config('filesystems.sharepoint.site_id'));
+        $driveChildren = $graph->getDriveChildren($drive->getId());
+
+        // for test get only the first one
+        $driveItem_General = $driveChildren[0];
+        $driveItems = $graph->getDriveItemChildren($drive->getId(), $driveItem_General->getId());
+
+        $sharepointFiles = collect($driveItems)->map(function (Model\DriveItem $item) {
+            return [
+                'id' => $item->getId(),
+                'name' => $item->getName(),
+                'webUrl' => $item->getWebUrl(),
+                'createdDateTime' => $item->getCreatedDateTime(),
+                'lastModifiedDateTime' => $item->getLastModifiedDateTime(),
+                'size' => $item->getSize(),
+                'file' => $item->getFile(),
+                'folder' => $item->getFolder(),
+                'type' => $item->getListItem()->getFields()->getProperties()['Type'] ?? null,
+                'keywords' => $item->getListItem()->getFields()->getProperties()['Keywords'] ?? null,
+                // get date +3 hours and format YYYY-MM-DD
+                'date' => ($item->getListItem()->getFields()->getProperties()['Date'] ?? null) ? date('Y-m-d', strtotime($item->getListItem()->getFields()->getProperties()['Date'] . ' +3 hours')) : null,
+            ];
+        });
+
+        $termStore_Pagrindinis = $graph->getGlobalTermStore()->getProperties();
+        $termStore_Pagrindinis = collect($termStore_Pagrindinis['children'])->map(function ($term) {
+            return [
+                'label' => $term['labels'][0]['name'],
+                'value' => $term['labels'][0]['name'],
+            ];
+        });
+
+        return Inertia::render('Admin/Sharepoint/Index', [
+            'sharepointFiles' => $sharepointFiles,
+            'termStorePagrindinis' => $termStore_Pagrindinis,
+        ]);
+    }
+
+    public function upload(Request $request) {
+        $graph = new SharepointAppGraph();
+
+        $uploadedFiles = $request->files->all()['uploadValue'];
+
+        // upload file to sharepoint
+        $site = $graph->getSiteById(config('filesystems.sharepoint.site_id'));
+        $drive = $graph->getDriveBySite($site->getId());
+
+        $driveChildren = $graph->getDriveChildren($drive->getId());
+
+        // for test get only the first one
+        $driveItem_General = $driveChildren[0];
+
+        $listItemInfo = [
+            'Type' => $request->input('typeValue'),
+            'Keywords' => $request->input('keywordsValue'),
+            'Keywords@odata.type' => "Collection(Edm.String)",
+            'Date' => date('Y-m-d', intval($request->input('datetimeValue') / 1000)),
+        ];
+
+        foreach ($uploadedFiles as $uploadedFile) {
+            $file = $uploadedFile['file'];
+            $this->uploadFile($graph, $site, $drive, $driveItem_General, $file, $listItemInfo);
+        }
+
+        return redirect()->back()->with('success', 'Failas įkeltas');
+    }
+
+    private function uploadFile(SharepointAppGraph $graph, Model\Site $site, Model\Drive $drive, Model\DriveItem $driveItem_General, UploadedFile $file, array $listItemInfo) {
+        
+        $uploadedFile = $graph->uploadDriveItem($drive->getId(), $driveItem_General->getId(), $file->getClientOriginalName(), $file->getContent());
+        
+        $uploadedDriveItem = $graph->getDriveItemByIdWithListItem($drive->getId(), $uploadedFile->getId());
+
+        $listItem = $uploadedDriveItem->getListItem() ?? abort(500);
+        
+        $graph->updateListItem($site->getId(), config('filesystems.sharepoint.list_id'), $listItem->getId(), $listItemInfo);
+
+    }
+}

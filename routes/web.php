@@ -61,6 +61,10 @@ Route::prefix('admin')->group(function () {
         Route::post('duties/search', [Admin\DutyController::class, 'searchForDuties'])->name('duties.search');
 
         Route::post('files/uploadImage', [Admin\FilesController::class, 'uploadImage'])->name('files.uploadImage');
+
+        Route::get('sharepoint', [SharepointController::class, 'index'])->name('sharepoint.index');
+        Route::post('sharepoint/upload', [SharepointController::class, 'upload'])->name('sharepoint.upload');
+
     });
 });
 
