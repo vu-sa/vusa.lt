@@ -97,7 +97,6 @@ const props = defineProps<{
 const locale = ref(usePage().props.value.locale);
 
 const handlePageChange = (page) => {
-  console.log(page);
   Inertia.reload({
     data: {
       page: page,

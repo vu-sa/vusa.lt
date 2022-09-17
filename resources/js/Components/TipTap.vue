@@ -261,11 +261,11 @@ const getFiles = debounce((query) => {
         onSuccess: () => {
           message.success("Pabaigta.");
           const searchFiles = Object.values(props.searchFiles);
-          console.log(searchFiles);
           files.value = searchFiles.map((file) => ({
             // get the file name from the url
             label: `${file.split("/").pop()} (${file})`,
-            value: file,
+            // value: file,
+            value: file.replace("public", "/uploads"),
           }));
         },
       }
@@ -289,7 +289,6 @@ const getImages = debounce((query) => {
         onSuccess: () => {
           message.success("Pabaigta.");
           const searchFiles = Object.values(props.searchFiles);
-          console.log(searchFiles);
           files.value = searchFiles.map((file) => ({
             // get the file name from the url
             label: `${file.split("/").pop()} (${file})`,
@@ -342,7 +341,6 @@ const editor = useEditor({
   content: modelValue.value,
   onUpdate: () => {
     // HTML
-    // console.log(editor);
     emit("update:modelValue", editor.value?.getHTML());
   },
 });

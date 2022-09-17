@@ -49,8 +49,6 @@ const columns: DataTableColumns<any> = [
     key: "data",
     minWidth: 150,
     render(row) {
-      console.log(row.data);
-
       return renderObjects(row.data);
     },
   },

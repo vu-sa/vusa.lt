@@ -32,9 +32,9 @@ const disabledSwitch = ref(false);
 const toggleDark = () => {
   // disableSwitch for 0.5s to prevent double click
   disabledSwitch.value = true;
+  useToggle(isDark);
   setTimeout(() => {
     disabledSwitch.value = false;
   }, 250);
-  useToggle(isDark);
 };
 </script>

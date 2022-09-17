@@ -43,7 +43,6 @@ const props = defineProps<{
 const { message } = createDiscreteApi(["message"]);
 
 const destroyModel = () => {
-  console.log(props.modelRoute, props.form, props.form.id);
   Inertia.delete(route(props.modelRoute, props.form.id), {
     onSuccess: () => {
       message.success("Įrašas ištrintas!");

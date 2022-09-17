@@ -137,8 +137,6 @@ const dutyDescription = (duty) => {
 const studyProgram = (firstStudyProgramTitle, duty) => {
   const locale = usePage().props.value.locale;
 
-  console.log(duty.pivot.attributes?.en);
-
   if (locale === "en") {
     return duty.pivot.attributes?.en?.study_program == null
       ? firstStudyProgramTitle

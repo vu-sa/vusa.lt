@@ -290,7 +290,6 @@ const handleUploadChange = (options: {
   fileList: Array<UploadFileInfo>;
   event?: Event;
 }) => {
-  console.log(options.fileList);
   images.value = options.fileList;
 };
 

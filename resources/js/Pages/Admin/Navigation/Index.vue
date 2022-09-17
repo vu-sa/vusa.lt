@@ -79,7 +79,6 @@ const parseNavigation = (array, id) => {
       if (result[result.length - 1].children.length === 0) {
         delete result[result.length - 1].children;
       }
-      console.log(result[result.length - 1].children);
     }
   });
   return result;

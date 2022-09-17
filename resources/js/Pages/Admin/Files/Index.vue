@@ -148,10 +148,8 @@ const getAllFilesAndDirectories = async (selectedDirectory) => {
 };
 
 const openFile = (filePath) => {
-  console.log(filePath);
   // truncate 'public'
   const fileName = filePath.substring(filePath.indexOf("/") + 1);
-  // console.log(fileName);
   window.open("/uploads/" + fileName, "_blank");
 };
 

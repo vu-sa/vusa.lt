@@ -42,10 +42,8 @@ const buttonText = computed(() => {
 
 const upsertModel = () => {
   // check for substring method in props.modelRoute
-  console.log(props.images);
 
   if (props.images === undefined) {
-    console.log("props.form path");
     showSpin.value = true;
     props.form.submit(
       modelMethod.value,
@@ -61,7 +59,6 @@ const upsertModel = () => {
       }
     );
   } else {
-    console.log("inertia path");
     showSpin.value = true;
     Inertia.post(
       route(props.modelRoute, props.form.id),
