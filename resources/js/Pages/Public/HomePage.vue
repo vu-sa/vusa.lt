@@ -40,14 +40,12 @@ export default {
 
 <script setup lang="ts">
 import { Head } from "@inertiajs/inertia-vue3";
+import { defineAsyncComponent } from "vue";
 import { onMounted, ref } from "vue";
 
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import EventCalendar from "@/Components/Public/FullWidth/EventCalendar.vue";
 import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
-import MainLinks from "@/Components/Public/FullWidth/MainLinks.vue";
-import NewsElement from "@/Components/Public/NewsElement.vue";
-import SummerCamps from "@/Components/Public/FullWidth/SummerCamps.vue";
 import YearReport2022 from "@/Components/Public/FullWidth/YearReport2022.vue";
 
 defineProps<{
@@ -57,6 +55,20 @@ defineProps<{
 }>();
 
 const isThemeDark = ref(isDarkMode());
+
+const MainLinks = defineAsyncComponent(
+  // eslint-disable-next-line no-secrets/no-secrets
+  () => import("@/Components/Public/FullWidth/MainLinks.vue")
+);
+
+const NewsElement = defineAsyncComponent(
+  () => import("@/Components/Public/NewsElement.vue")
+);
+
+const SummerCamps = defineAsyncComponent(
+  // eslint-disable-next-line no-secrets/no-secrets
+  () => import("@/Components/Public/FullWidth/SummerCamps.vue")
+);
 
 onMounted(() => {
   updateDarkMode(isThemeDark);
