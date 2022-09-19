@@ -242,6 +242,8 @@ if (props.modelRoute === "calendar.update") {
 
 const convertDateRange = (form_date_range: Array<string | number>) => {
   if (form_date_range === undefined) return undefined;
+  // if form_date_range is null, return undefined
+  if (form_date_range === null) return undefined;
   form_date_range = form_date_range.map((string: string) => {
     return parseInt(string);
   });
