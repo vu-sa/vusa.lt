@@ -142,7 +142,7 @@ import FacebookButton from "../Nav/FacebookButton.vue";
 import InstagramButton from "../Nav/InstagramButton.vue";
 import LocaleButton from "../Nav/LocaleButton.vue";
 import SearchButton from "../Nav/SearchButton.vue";
-import StartFM from "@/Components/StartFM.vue";
+import StartFM from "@/Components/Public/Nav/StartFM.vue";
 
 // map padaliniai to options_padaliniai
 
