@@ -1,19 +1,18 @@
 <template>
   <div>
-    <div class="mb-4">
+    <img v-if="modelValue" class="w-72" :src="modelValue" />
+    <div class="mt-4">
       <NUpload
         accept="image/jpg,image/jpeg,image/png"
         @change="uploadFile"
         @before-upload="beforeUpload"
       >
-        <NButton>Įkelti paveiksliuką</NButton>
+        <NButton size="small">Įkelti paveiksliuką</NButton>
       </NUpload>
-      <NButton v-if="modelValue" type="error" @click="removeLink"
+      <NButton v-if="modelValue" size="small" type="error" @click="removeLink"
         >Pašalinti</NButton
       >
     </div>
-
-    <img v-if="modelValue" class="w-72" :src="modelValue" />
   </div>
 </template>
 
