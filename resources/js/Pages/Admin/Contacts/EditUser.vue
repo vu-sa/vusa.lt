@@ -22,7 +22,6 @@
               {{ duty.email ? ` (${duty.email})` : "" }}
 
               <NButton
-                v-if="hasFillableAttributes(duty)"
                 secondary
                 circle
                 size="tiny"
@@ -72,9 +71,4 @@ defineProps<{
   contact: App.Models.User;
   roles: App.Models.Role[];
 }>();
-
-const hasFillableAttributes = (duty: App.Models.Duty) => {
-  // return true if duty.name includes "kurator"
-  return duty.type?.alias === "kuratoriai";
-};
 </script>
