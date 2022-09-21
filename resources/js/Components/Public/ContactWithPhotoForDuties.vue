@@ -163,7 +163,10 @@ const changeDutyNameEndings = (
   if (duty.pivot.attributes?.use_original_duty_name) return duty.name;
 
   // replace duty.name ending 'ius' with 'ė', but only on end of string
-  let womanizedTitle = duty.name.replace(/ius$/, "ė").replace(/as$/, "ė");
+  let womanizedTitle = duty.name
+    .replace(/ius$/, "ė")
+    .replace(/as$/, "ė")
+    .replace(/ys$/, "ė");
   let firstName = contact.name.split(" ")[0];
 
   let namesToWomanize = ["Katrin"];
