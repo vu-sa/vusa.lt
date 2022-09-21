@@ -46,7 +46,7 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Nuotrauka" :span="24">
+      <NFormItemGi label="Nuotrauka" :span="12">
         <UploadImageButtons
           v-model="form.profile_photo_path"
           :path="'contacts'"

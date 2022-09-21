@@ -126,8 +126,13 @@
       class="min-h-[12em] rounded-b-lg border-vusa-yellow/50 bg-stone-50/40 shadow-inner"
     />
   </div>
-  <NModal v-model:show="showFileModal">
-    <div class="w-1/2 rounded-sm bg-white p-4">
+  <NModal
+    v-model:show="showFileModal"
+    preset="card"
+    title="Sukurti nuorodą"
+    class="max-w-3xl"
+  >
+    <div class="rounded-sm">
       <NTabs type="line" animated>
         <NTabPane name="link" tab="Pridėti nuorodą">
           <NInput
