@@ -11,6 +11,17 @@
     <NCollapse default-expanded-names="0.3">
       <NCollapseItem name="0.3" title="v0.3">
         <section>
+          <h4 class="mt-0">v0.3.6 (2022-09-21)</h4>
+          <ul>
+            <li>
+              Pridėta galimybė kontakto pareigybei nenaudoti automatinio galūnės
+              pakeitimo
+            </li>
+            <li>Pridėta pagalbinių tekstų prie įrašymo laukelių</li>
+            <li>Sutvarkytas teksto redaktoriaus nuorodos modulinis langas</li>
+          </ul>
+        </section>
+        <section>
           <h4 class="mt-0">v0.3.5 (2022-09-17)</h4>
           <ul>
             <li>
