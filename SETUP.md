@@ -2,6 +2,8 @@
 
 ## Prerequisites
 
+> NOTE: Not required if using Laravel Sail + Docker.
+
 - PHP 8.1 install. [Installation guide](https://linuxize.com/post/how-to-install-php-8-on-ubuntu-20-04/)
 - Install PHP submodules: `php-curl php-zip php-mbstring php-dom php-gd php-sqlite3`
 - Install Composer [Installation guide](https://getcomposer.org/download/).
@@ -11,19 +13,41 @@
 > For Windows computers, WSL is a good and quite a simple solution to use in this case. 
   [Installation guide](https://pureinfotech.com/install-windows-subsystem-linux-2-windows-10/)
 
-## Development
+## Laravel Sail
 
-> NOTE: if already have installed run `composer update` and skip to step *.
+The easiest method to develop. You have to be able to run Docker and PHP (temporarily) on your machine.
+
+**Steps:**
+
+For initial setup run: `./dev/sailsetup.sh`. Note that docker must be started.
+
+After initial setup you can run: `./dev/sailstart.sh` or do it manually below.
+
+After updating the repository, run `./vendor/bin/sail up -d`
+
+Other setup tips:
+
+- Pull backend dependencies:  `./vendor/bin/sail composer update`
+- Generate app key:           `./vendor/bin/sail artisan key:generate`
+- Pull frontend dependencies: `./vendor/bin/sail npm update`
+- Start a dev server:            `./vendor/bin/sail npm run dev`
+- `./vendor/bin/sail artisan storage:link`
+- Go to <http://localhost:8080> and create database manually, with name `vusa`, collation `utf8mb4_lithuanian_ci`.
+- `./vendor/bin/sail artisan migrate:fresh`
+
+More instructions on [Laravel Sail](https://laravel.com/docs/9.x/sail)
+
+## Development
 
 1. Clone the repository (or download ZIP);
 2. Run `composer install`;
-3. Copy `.env.example` into `.env` and enter values inside to suite your system;
-4. Run `php artisan key:generate`
-5. Setup a database:
+3. Run `npm install && npm run dev`
+4. Copy `.env.example` into `.env` and enter values inside to suite your system;
+5. Run `php artisan key:generate`
+6. Setup a database:
 
 > For SQLite you'll need to create file in `database/database.sqlite`
 
-6. Run `npm install && npm run dev`
 7. Run `php artisan migrate:fresh --seed`
 
 > For optimal installation you'll also need the SQL file of database records. Please contact @justinaskav for this.
@@ -33,24 +57,6 @@
 9. Modify your hosts file to direct *vusa.testas* to 127.0.0.1
 10. `php artisan serve`
 11. Open [vusa.testas:8000](http://vusa.testas:8000)
-
-## Laravel Sail
-
-The easiest method to develop. You have to be able to run Docker and PHP (temporarily) on your machine.
-
-**Steps:**
-
-4. After updating the repository, run `./vendor/bin/sail up -d`
-5. Other setup steps:
-   2. `./vendor/bin/sail composer update`
-   3. `./vendor/bin/sail artisan key:generate`
-   4. `./vendor/bin/sail npm update`
-   5. `./vendor/bin/sail npm run dev`
-   6. `./vendor/bin/sail artisan storage:link`
-   7. Go to <http://localhost:8080> and create database manually, with name `vusa`, collation `utf8mb4_lithuanian_ci`.
-   8. `./vendor/bin/sail artisan migrate:fresh`
-
-More instructions on [Laravel Sail](https://laravel.com/docs/9.x/sail)
 
 ### For unit (padalinių) site development
 
