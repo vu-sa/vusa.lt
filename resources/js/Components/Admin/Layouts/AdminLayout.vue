@@ -107,6 +107,8 @@ window.addEventListener("resize", () => {
   isMobile.value = window.innerWidth < 768;
 });
 
+updateDarkMode(isThemeDark);
+
 const themeOverrides = {
   common: {
     primaryColor: "#bd2835FF",
@@ -122,7 +124,6 @@ const themeOverrides = {
 };
 
 onMounted(() => {
-  updateDarkMode(isThemeDark);
   mounted.value = true;
 });
 </script>
