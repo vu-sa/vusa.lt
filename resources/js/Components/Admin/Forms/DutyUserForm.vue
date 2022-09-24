@@ -1,6 +1,6 @@
 <template>
   <NForm :model="form" label-placement="top">
-    <NTabs animated type="card">
+    <NTabs animated type="card" pane-class="overflow-x-auto">
       <NTabPane display-directive="show" name="lt" tab="🇱🇹">
         <NGrid :span="24" :x-gap="24">
           <NFormItemGi :span="12">
