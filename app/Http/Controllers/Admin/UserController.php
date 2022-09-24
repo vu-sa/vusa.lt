@@ -37,7 +37,7 @@ class UserController extends Controller
             when(!$request->user()->hasRole('Super Admin'), function ($query) {
                 $query->whereHas('duties.institution', function ($query) {
                     $query->where('padalinys_id', Auth::user()->padalinys()->id);
-                })->with('duties.institution.padalinys');
+                })->with(['duties:id,institution_id', 'duties.institution:id,padalinys_id','duties.institution.padalinys:id,shortname']);
         })
         ->paginate(20);
 
