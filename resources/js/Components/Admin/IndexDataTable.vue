@@ -126,14 +126,19 @@ const handleFiltersChange = (filters) => {
 };
 
 // calculate and update the max height of datatable
-const dataTableMaxHeight = ref(window.innerHeight - 380);
+
+const dataTableMaxHeight = ref(window.innerHeight);
+
+const calculateDataTableMaxHeight = () => {
+  dataTableMaxHeight.value = window.innerHeight - 350;
+  // check if the height is less than 400px
+  if (dataTableMaxHeight.value < 425) {
+    dataTableMaxHeight.value = 425;
+  }
+};
+
+calculateDataTableMaxHeight();
 
 // update the height on window resize
-window.addEventListener("resize", () => {
-  dataTableMaxHeight.value = window.innerHeight - 380;
-  // check if the height is less than 400px
-  if (dataTableMaxHeight.value < 400) {
-    dataTableMaxHeight.value = 400;
-  }
-});
+window.addEventListener("resize", calculateDataTableMaxHeight);
 </script>
