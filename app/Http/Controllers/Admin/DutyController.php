@@ -25,12 +25,16 @@ class DutyController extends Controller
      */
     public function index(Request $request)
     {
-
+        // For search
         $title = $request->title;
 
         $duties = Duty::when(!is_null($title), function ($query) use ($title) {
             $query->where('name', 'like', "%{$title}%")->orWhere('email', 'like', "%{$title}%");
-        })->with('type:id,name')->with('institution:id,name,short_name')->paginate(20);
+        })->when(!$request->user()->hasRole('Super Admin'), function ($query) {
+            $query->whereHas('institution', function ($query) {
+                $query->where('padalinys_id', auth()->user()->padalinys()->id);
+            })->with(['institution:id,name,short_name,padalinys_id','institution.padalinys:id,shortname', 'type:id,name']);
+        })->paginate(20);
 
         return Inertia::render('Admin/Contacts/IndexDuties', [
             'duties' => $duties,
