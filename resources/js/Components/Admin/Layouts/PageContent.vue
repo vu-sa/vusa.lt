@@ -3,7 +3,7 @@
     ><title>{{ title }}</title></Head
   >
 
-  <header class="mb-4 flex max-w-7xl flex-row items-center gap-4">
+  <header class="flex max-w-7xl flex-row items-center gap-4 overflow-auto pb-4">
     <Link v-if="!isIndex && backUrl" :href="backUrl">
       <div class="flex">
         <NIcon size="28" :component="ArrowCircleLeft32Regular" /></div
@@ -21,8 +21,8 @@
     </aside>
   </header>
 
-  <div class="grid grid-flow-col gap-8">
-    <main>
+  <div class="mt-1 grid grid-flow-col gap-8">
+    <main class="w-full overflow-auto">
       <FadeTransition appear><slot></slot></FadeTransition>
     </main>
     <slot name="aside-card"></slot>

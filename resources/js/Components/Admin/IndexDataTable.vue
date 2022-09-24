@@ -1,9 +1,11 @@
 <template>
   <NDataTable
-    class="min-w-min"
     remote
     size="small"
+    class="overflow-auto"
     :data="model.data"
+    :scroll-x="768"
+    :max-height="dataTableMaxHeight"
     :columns="columnsWithActions"
     :loading="loading"
     :pagination="pagination"
@@ -122,4 +124,16 @@ const handleFiltersChange = (filters) => {
   padaliniaiFilters.value = filters["padalinys.id"];
   handleChange(pagination.page, padaliniaiFilters.value);
 };
+
+// calculate and update the max height of datatable
+const dataTableMaxHeight = ref(window.innerHeight - 380);
+
+// update the height on window resize
+window.addEventListener("resize", () => {
+  dataTableMaxHeight.value = window.innerHeight - 380;
+  // check if the height is less than 400px
+  if (dataTableMaxHeight.value < 400) {
+    dataTableMaxHeight.value = 400;
+  }
+});
 </script>

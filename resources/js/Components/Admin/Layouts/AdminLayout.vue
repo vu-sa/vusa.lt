@@ -27,7 +27,7 @@
           <NLayoutSider
             class="ml-4 h-fit rounded-md shadow-sm"
             collapse-mode="width"
-            :collapsed-width="64"
+            :collapsed-width="isMobile ? 0 : 64"
             :width="200"
             :collapsed="collapsed"
             show-trigger="bar"
@@ -98,6 +98,14 @@ const showModal = ref(false);
 const mounted = ref(false);
 
 const isThemeDark = ref(isDarkMode());
+
+// compute if the width is less than 768px
+const isMobile = ref(window.innerWidth < 768);
+
+// update the isMobile value when the window is resized
+window.addEventListener("resize", () => {
+  isMobile.value = window.innerWidth < 768;
+});
 
 const themeOverrides = {
   common: {
