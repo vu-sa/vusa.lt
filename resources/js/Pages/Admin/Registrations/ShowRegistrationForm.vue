@@ -24,7 +24,7 @@ import { DataTableColumns } from "naive-ui";
 import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
 import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 
-defineProps<{
+const props = defineProps<{
   registrationForm: PaginatedModels<any>;
 }>();
 
@@ -44,14 +44,12 @@ const renderObjects = (object: Record<string, any>) => {
 };
 
 const columns: DataTableColumns<any> = [
-  {
-    title: "Informacija",
-    key: "data",
+  // generate columns from row.data
+  ...Object.keys(props.registrationForm.data[0].data).map((key) => ({
+    title: key,
+    key: `data.${key}`,
     minWidth: 150,
-    render(row) {
-      return renderObjects(row.data);
-    },
-  },
+  })),
   {
     title: "Užregistravimo data",
     key: "created_at",
