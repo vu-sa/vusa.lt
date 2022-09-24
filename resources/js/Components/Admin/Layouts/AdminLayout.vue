@@ -25,7 +25,7 @@
         </NLayoutHeader>
         <NLayout class="min-h-full" has-sider>
           <NLayoutSider
-            class="ml-4 h-fit rounded-md shadow-sm"
+            class="ml-4 mb-12 h-fit rounded-md shadow-sm"
             collapse-mode="width"
             :collapsed-width="isMobile ? 0 : 64"
             :width="200"
