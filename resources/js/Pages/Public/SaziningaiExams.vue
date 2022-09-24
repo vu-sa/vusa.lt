@@ -3,14 +3,15 @@
   <Head title="Programos „Sąžiningai“ užregistruoti egzaminai"></Head>
   <FadeTransition appear>
     <article class="ml-[5vw] grid grid-cols-3 gap-y-4 pt-8 last:pb-2">
-      <div class="col-span-3 col-start-1">
+      <div class="col-span-3 col-start-1 pr-8">
         <h1>Programos „Sąžiningai“ užregistruoti egzaminai</h1>
         <p class="my-6 text-gray-800 dark:text-zinc-100">
           Registruotis reikia į kiekvieną srautą atskirai.
         </p>
-        <div class="main-card rounded-md p-0">
+        <div class="main-card w-full rounded-md p-0">
           <NDataTable
             size="small"
+            :scroll-x="1200"
             :data="props.saziningaiExamFlows"
             :columns="columns"
           >
