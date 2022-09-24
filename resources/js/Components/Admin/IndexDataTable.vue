@@ -20,6 +20,7 @@
 import { DataTableColumns, NButton, NDataTable, NIcon } from "naive-ui";
 import { Edit20Filled } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
+import { Link } from "@inertiajs/inertia-vue3";
 import { computed, h, reactive, ref } from "vue";
 import route from "ziggy-js";
 
@@ -54,9 +55,8 @@ const columnsWithActions = computed(() => {
                     NButton,
                     {
                       size: "small",
-                      onClick: () => {
-                        Inertia.get(route(props.editRoute, row.id));
-                      },
+                      tag: Link,
+                      href: route(props.editRoute, row.id),
                     },
                     {
                       icon: () =>
