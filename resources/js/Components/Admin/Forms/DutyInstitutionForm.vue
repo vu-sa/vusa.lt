@@ -2,8 +2,8 @@
   <NForm :model="form" label-placement="top">
     <NTabs animated type="card" pane-class="overflow-x-auto">
       <NTabPane display-directive="show" name="lt" tab="🇱🇹">
-        <NGrid :span="24" :x-gap="24">
-          <NFormItemGi label="Pavadinimas" :span="12">
+        <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
+          <NFormItemGi label="Pavadinimas" :span="2">
             <NInput
               v-model:value="form.name"
               type="text"
@@ -11,11 +11,11 @@
             />
           </NFormItemGi>
 
-          <NFormItemGi label="Trumpas pavadinimas" :span="12">
+          <NFormItemGi label="Trumpas pavadinimas" :span="2">
             <NInput v-model:value="form.short_name" placeholder="VU SA" />
           </NFormItemGi>
 
-          <NFormItemGi label="Techninė žymė" :span="12">
+          <NFormItemGi label="Techninė žymė" :span="2">
             <NInput
               v-model:value="form.alias"
               :disabled="modelRoute === 'dutyInstitutions.update'"
@@ -26,7 +26,7 @@
 
           <NFormItemGi
             label="Padalinys, kuriam priklauso institucija"
-            :span="12"
+            :span="2"
           >
             <NSelect
               v-model:value="form.padalinys_id"
@@ -36,7 +36,7 @@
             />
           </NFormItemGi>
 
-          <NFormItemGi label="Institucijos tipas" :span="12">
+          <NFormItemGi label="Institucijos tipas" :span="2">
             <NSelect
               v-model:value="form.type_id"
               :options="dutyInstitutionTypes"
@@ -47,14 +47,14 @@
             />
           </NFormItemGi>
 
-          <NFormItemGi label="Nuotrauka" :span="24">
+          <NFormItemGi label="Nuotrauka" :span="6">
             <UploadImageButtons
               v-model="form.image_url"
               :path="'institutions'"
             />
           </NFormItemGi>
 
-          <NFormItemGi label="Aprašymas" :span="24">
+          <NFormItemGi label="Aprašymas" :span="6">
             <TipTap
               v-model="form.description"
               :search-files="$page.props.search.other"
@@ -64,7 +64,7 @@
       </NTabPane>
       <NTabPane display-directive="show" name="en" tab="🇬🇧">
         <NGrid :span="24" :x-gap="24">
-          <NFormItemGi label="Pavadinimas" :span="12">
+          <NFormItemGi label="Pavadinimas" :span="2">
             <NInput
               v-model:value="form.attributes.en.name"
               type="text"
@@ -72,14 +72,14 @@
             />
           </NFormItemGi>
 
-          <NFormItemGi label="Trumpas pavadinimas" :span="12">
+          <NFormItemGi label="Trumpas pavadinimas" :span="2">
             <NInput
               v-model:value="form.attributes.en.short_name"
               placeholder="VU SR"
             />
           </NFormItemGi>
 
-          <NFormItemGi label="Techninė žymė" :span="12">
+          <NFormItemGi label="Techninė žymė" :span="2">
             <NInput
               v-model:value="form.attributes.en.alias"
               :disabled="modelRoute === 'dutyInstitutions.update'"
@@ -88,7 +88,7 @@
             />
           </NFormItemGi>
 
-          <NFormItemGi label="Aprašymas" :span="24">
+          <NFormItemGi label="Aprašymas" :span="6">
             <TipTap
               v-model="form.attributes.en.description"
               :search-files="$page.props.search.other"

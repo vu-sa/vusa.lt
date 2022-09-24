@@ -1,7 +1,7 @@
 <template>
   <NForm :model="form" label-placement="top">
-    <NGrid :span="24" :x-gap="24">
-      <NFormItemGi label="Pavadinimas" :span="8">
+    <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
+      <NFormItemGi label="Pavadinimas" :span="2">
         <NInput
           v-model:value="form.title"
           type="text"
@@ -9,7 +9,7 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Nuoroda, į kurią nukreipia paveikslėlis" :span="8">
+      <NFormItemGi label="Nuoroda, į kurią nukreipia paveikslėlis" :span="2">
         <NInput
           v-model:value="form.link_url"
           type="text"
@@ -17,7 +17,7 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Ar aktyvus?" :span="8">
+      <NFormItemGi label="Ar aktyvus?" :span="2">
         <NSwitch
           v-model:value="form.is_active"
           :checked-value="1"
@@ -25,7 +25,7 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Logotipas" :span="24">
+      <NFormItemGi label="Logotipas" :span="2">
         <UploadImageButtons v-model="form.image_url" :path="'banners'" />
       </NFormItemGi>
     </NGrid>

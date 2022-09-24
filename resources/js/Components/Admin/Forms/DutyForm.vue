@@ -2,8 +2,8 @@
   <NForm :model="form" label-placement="top">
     <NTabs animated type="card" pane-class="overflow-x-auto">
       <NTabPane display-directive="show" name="lt" tab="🇱🇹">
-        <NGrid :span="24" :x-gap="24">
-          <NFormItemGi label="Pareigų pavadinimas" :span="24">
+        <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
+          <NFormItemGi label="Pareigų pavadinimas" :span="2">
             <NInput
               v-model:value="form.name"
               type="text"
@@ -11,11 +11,11 @@
             />
           </NFormItemGi>
 
-          <NFormItemGi label="Pareigybinis el. paštas" :span="12">
+          <NFormItemGi label="Pareigybinis el. paštas" :span="2">
             <NInput v-model:value="form.email" placeholder="vusa@vusa.lt" />
           </NFormItemGi>
 
-          <NFormItemGi label="Institucija" :span="12">
+          <NFormItemGi label="Institucija" :span="2">
             <NSelect
               v-model:value="form.institution.id"
               filterable
@@ -28,7 +28,7 @@
             />
           </NFormItemGi>
 
-          <NFormItemGi label="Pareigybės tipas" :span="12">
+          <NFormItemGi label="Pareigybės tipas" :span="2">
             <NSelect
               v-model:value="form.type.id"
               :options="dutyTypes"
@@ -39,7 +39,7 @@
             />
           </NFormItemGi>
 
-          <NFormItemGi label="Aprašymas" :span="24">
+          <NFormItemGi label="Aprašymas" :span="6">
             <TipTap
               v-model="form.description"
               :search-files="$page.props.search.other"
@@ -49,7 +49,7 @@
       </NTabPane>
       <NTabPane display-directive="show" name="en" tab="🇬🇧">
         <NGrid :span="24" :x-gap="24">
-          <NFormItemGi label="Pareigų pavadinimas" :span="24">
+          <NFormItemGi label="Pareigų pavadinimas" :span="2">
             <NInput
               v-model:value="form.attributes.en.name"
               type="text"
@@ -57,7 +57,7 @@
             />
           </NFormItemGi>
 
-          <NFormItemGi label="Aprašymas" :span="24">
+          <NFormItemGi label="Aprašymas" :span="6">
             <TipTap
               v-model="form.attributes.en.description"
               :search-files="$page.props.search.other"

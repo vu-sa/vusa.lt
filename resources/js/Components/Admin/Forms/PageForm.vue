@@ -1,7 +1,7 @@
 <template>
   <NForm :model="form" label-placement="top">
-    <NGrid :span="24" :x-gap="24">
-      <NFormItemGi label="Pavadinimas" :span="12">
+    <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
+      <NFormItemGi label="Pavadinimas" :span="2">
         <NInput
           v-model:value="form.title"
           type="text"
@@ -9,7 +9,7 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Nuoroda" :span="12">
+      <NFormItemGi label="Nuoroda" :span="2">
         <NInput
           :value="form.permalink"
           disabled
@@ -18,7 +18,7 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Kalba" :span="12">
+      <NFormItemGi label="Kalba" :span="2">
         <NSelect
           v-model:value="form.lang"
           filterable
@@ -27,7 +27,7 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Kitos kalbos puslapis" :span="12">
+      <NFormItemGi label="Kitos kalbos puslapis" :span="2">
         <NSelect
           v-model:value="form.other_lang_id"
           filterable
@@ -38,7 +38,7 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Turinys" :span="24">
+      <NFormItemGi label="Turinys" :span="6">
         <TipTap v-model="form.text" :search-files="$page.props.search.other" />
         <template #label>
           <span class="text-lg font-bold">Pagrindinis tekstas</span>
@@ -59,13 +59,10 @@
 </template>
 
 <script setup lang="ts">
-import { Inertia } from "@inertiajs/inertia";
 import { NForm, NFormItemGi, NGrid, NInput, NSelect } from "naive-ui";
-import { computed, ref, watch } from "vue";
-import { debounce } from "lodash";
-import { useForm, usePage } from "@inertiajs/inertia-vue3";
+import { computed, watch } from "vue";
+import { useForm } from "@inertiajs/inertia-vue3";
 import latinize from "latinize";
-import route from "ziggy-js";
 
 import DeleteModelButton from "@/Components/Admin/Buttons/DeleteModelButton.vue";
 import TipTap from "@/Components/TipTap.vue";
