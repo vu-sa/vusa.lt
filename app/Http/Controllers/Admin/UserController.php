@@ -31,14 +31,14 @@ class UserController extends Controller
         $name = request()->input('name');
 
         $users = User::
-            when(!is_null($name), function ($query) use ($name) {
+        when(!is_null($name), function ($query) use ($name) {
             $query->where('name', 'like', "%{$name}%")->orWhere('email', 'like', "%{$name}%");
         })->
             when(!$request->user()->hasRole('Super Admin'), function ($query) {
                 $query->whereHas('duties.institution', function ($query) {
                     $query->where('padalinys_id', Auth::user()->padalinys()->id);
-                })->with(['duties:id,institution_id', 'duties.institution:id,padalinys_id','duties.institution.padalinys:id,shortname']);
-        })
+                });
+        })->with(['duties:id,institution_id', 'duties.institution:id,padalinys_id','duties.institution.padalinys:id,shortname'])
         ->paginate(20);
 
         return Inertia::render('Admin/Contacts/IndexUsers', [

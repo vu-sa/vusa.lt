@@ -33,8 +33,8 @@ class DutyController extends Controller
         })->when(!$request->user()->hasRole('Super Admin'), function ($query) {
             $query->whereHas('institution', function ($query) {
                 $query->where('padalinys_id', auth()->user()->padalinys()->id);
-            })->with(['institution:id,name,short_name,padalinys_id','institution.padalinys:id,shortname', 'type:id,name']);
-        })->paginate(20);
+            });
+        })->with(['institution:id,name,short_name,padalinys_id','institution.padalinys:id,shortname', 'type:id,name'])->paginate(20);
 
         return Inertia::render('Admin/Contacts/IndexDuties', [
             'duties' => $duties,
