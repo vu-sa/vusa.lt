@@ -148,7 +148,7 @@ class SaziningaiExamsController extends Controller
         ]);
 
         $saziningaiExam->update($request->only('name', 'phone', 'email', 'exam_type', 'padalinys_id', 'place', 'duration', 'subject_name', 'exam_holders', 'students_need'));
-        return redirect()->back();
+        return back();
     }
 
     /**

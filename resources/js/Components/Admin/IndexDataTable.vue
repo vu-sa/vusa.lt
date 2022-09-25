@@ -55,7 +55,7 @@ const columnsWithActions = computed(() => {
                     NButton,
                     {
                       size: "small",
-                      tag: Link,
+                      tag: "a",
                       href: route(props.editRoute, row.id),
                     },
                     {

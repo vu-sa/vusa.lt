@@ -219,22 +219,18 @@ import {
   NIcon,
   NPopover,
   NTree,
-  // createDiscreteApi,
 } from "naive-ui";
 import { ref } from "vue";
 import route from "ziggy-js";
 
 // map padaliniai to options_padaliniai
 
-// const padaliniai = usePage().props.value.padaliniai;
 const locale = ref(usePage().props.value.locale);
 const locales = ["lt", "en"];
 const activeDrawer = ref(false);
 const toggleMenu = () => {
   activeDrawer.value = !activeDrawer.value;
 };
-
-// const { message } = createDiscreteApi(["message"]);
 
 // get permalink from url, last part after /
 const getPermalink = () => {
@@ -351,18 +347,6 @@ const navigationTreeMobileEN = [
   },
 ];
 
-// const handleSelectNavigation = (id) => {
-//   // message.info("Navigating to " + key);
-//   // get url from id from mainNavigation array
-//   let url = "";
-//   for (let item of Object.entries(mainNavigation)) {
-//     if (item[1].id == id) {
-//       url = item[1].url;
-//     }
-//   }
-//   Inertia.visit(route("main.page", { lang: locale.value, permalink: url }));
-// };
-
 const handleSelectKryptis = (url) => {
   Inertia.visit(
     route("main.ataskaita2022", {
@@ -393,8 +377,6 @@ const handleSelectLanguage = (key) => {
         permalink: "pradzia",
       })
     );
-    // Inertia.visit(route("main.page", { lang: "lt" }));
-    // message.info("Navigating to " + key);
   } else if (key === "page") {
     Inertia.visit(
       route("main.ataskaita2022", {

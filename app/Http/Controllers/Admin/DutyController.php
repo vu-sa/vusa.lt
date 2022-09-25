@@ -82,7 +82,7 @@ class DutyController extends Controller
         $duty->type_id = $request->type['id'];
         $duty->save();
 
-        return redirect()->route('duties.index');
+        return redirect()->route('duties.index')->with('success', 'Pareigybė sėkmingai sukurta!');
     }
 
     /**
@@ -147,7 +147,7 @@ class DutyController extends Controller
             $duty->save();
         });
 
-        return back();
+        return back()->with('success', 'Pareigybė sėkmingai atnaujinta!');
     }
 
     /**
@@ -160,7 +160,7 @@ class DutyController extends Controller
     {
         $duty->delete();
 
-        return redirect()->route('duties.index');
+        return redirect()->route('duties.index')->with('info', 'Pareigybė sėkmingai ištrinta!');
     }
 
     private function getDutyInstitutionsForForm(): Collection

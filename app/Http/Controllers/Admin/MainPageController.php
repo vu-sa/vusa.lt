@@ -78,6 +78,8 @@ class MainPageController extends Controller
             $mainPage->padalinys()->associate($request->user()->padalinys());
             $mainPage->save();
         });
+
+        return redirect()->route('mainPages.index')->with('success', 'Sėkmingai pridėtas pradinio puslapio mygtukas!');
     }
 
     /**
@@ -121,6 +123,8 @@ class MainPageController extends Controller
         DB::transaction(function () use ($request, $mainPage) {
             $mainPage->update($request->only('text', 'link', 'lang'));
         });
+
+        return back()->with('success', 'Sėkmingai atnaujintas pradinio puslapio mygtukas!');
     }
 
     /**
@@ -133,6 +137,6 @@ class MainPageController extends Controller
     {
         $mainPage->delete();
 
-        return redirect()->route('mainPage.index');
+        return redirect()->route('mainPage.index')->with('info', 'Sėkmingai ištrintas pradinio puslapio mygtukas!');
     }
 }

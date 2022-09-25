@@ -61,12 +61,7 @@
   </NForm>
 </template>
 
-<script lang="ts">
-const { message } = createDiscreteApi(["message"]);
-</script>
-
 <script setup lang="ts">
-import { Inertia } from "@inertiajs/inertia";
 import {
   NForm,
   NFormItemGi,
@@ -74,12 +69,8 @@ import {
   NInput,
   NSelect,
   NTransfer,
-  createDiscreteApi,
 } from "naive-ui";
-import { debounce } from "lodash";
-import { ref } from "vue";
-import { useForm, usePage } from "@inertiajs/inertia-vue3";
-import route from "ziggy-js";
+import { useForm } from "@inertiajs/inertia-vue3";
 
 import DeleteModelButton from "@/Components/Admin/Buttons/DeleteModelButton.vue";
 import UploadImageButtons from "@/Components/Admin/Buttons/UploadImageButtons.vue";

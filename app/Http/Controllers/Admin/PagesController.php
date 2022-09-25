@@ -87,7 +87,7 @@ class PagesController extends Controller
             'padalinys_id' => $padalinys_id
         ]);
 
-        return redirect()->route('pages.index');
+        return redirect()->route('pages.index')->with('success', 'Puslapis sėkmingai sukurtas!');
     }
 
     /**
@@ -154,7 +154,7 @@ class PagesController extends Controller
             $other_lang_page->save();
         }
 
-        return redirect()->back();
+        return back()->with('success', 'Puslapis atnaujintas!');
     }
 
     /**
@@ -167,7 +167,7 @@ class PagesController extends Controller
     {
         $page->delete();
 
-        return redirect()->route('pages.index');
+        return redirect()->route('pages.index')->with('info', 'Puslapis ištrintas');
     }
 
     public function searchForPage(Request $request)

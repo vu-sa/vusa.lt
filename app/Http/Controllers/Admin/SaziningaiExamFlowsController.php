@@ -48,7 +48,7 @@ class SaziningaiExamFlowsController extends Controller
         $saziningaiExamFlow->start_time =  date('Y-m-d H:i:s', $request->start_time);
         $saziningaiExamFlow->save();
 
-        return redirect()->back();
+        return back();
     }
 
     /**
@@ -87,7 +87,7 @@ class SaziningaiExamFlowsController extends Controller
         $saziningaiExamFlow->save();
 
         // Redirect to the exam
-        return redirect()->back();
+        return back();
     }
 
     /**

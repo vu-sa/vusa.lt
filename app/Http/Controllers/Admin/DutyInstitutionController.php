@@ -81,7 +81,7 @@ class DutyInstitutionController extends Controller
         $dutyInstitution->type_id = $request->type_id;
         $dutyInstitution->save();
 
-        return redirect()->route('dutyInstitutions.index');
+        return redirect()->route('dutyInstitutions.index')->with('success', 'Institucija sėkmingai sukurta!');
     }
 
     /**
@@ -125,8 +125,6 @@ class DutyInstitutionController extends Controller
      */
     public function update(Request $request, DutyInstitution $dutyInstitution)
     {
-        // dd($request->all());
-        
         // validate
         $request->validate([
             'name' => 'required',
@@ -137,7 +135,7 @@ class DutyInstitutionController extends Controller
         // TODO: short_name and shortname are used as columns in some tables. Need to make the same name.
         $dutyInstitution->update($request->only('name', 'short_name', 'description', 'padalinys_id', 'image_url', 'attributes', 'type_id'));
 
-        return redirect()->back();
+        return back()->with('success', 'Institucija sėkmingai atnaujinta!');
     }
 
     /**
@@ -180,5 +178,7 @@ class DutyInstitutionController extends Controller
             $dutyModel->order = $duty['order'];
             $dutyModel->save();
         }
+
+        return back()->with('success', 'Pareigų tvarka sėkmingai atnaujinta!');
     }
 }

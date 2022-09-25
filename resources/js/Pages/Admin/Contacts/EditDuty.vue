@@ -110,9 +110,6 @@ const detachUserFromDuty = (user: App.Models.User) => {
     {
       preserveScroll: true,
       only: ["users"],
-      onSuccess: () => {
-        message.success(`Sėkmingai atsieta nuo pareigos!`);
-      },
       onError: () => {
         message.error("Nepavyko atsieti!");
       },

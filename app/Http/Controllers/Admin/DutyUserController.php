@@ -82,7 +82,7 @@ class DutyUserController extends Controller
         // dd($dutyUser->attributes);
         $dutyUser->save();
 
-        return redirect()->back();
+        return back()->with('success', 'Pareigybė sėkmingai atnaujinta!');
     }
 
     /**

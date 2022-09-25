@@ -1,5 +1,8 @@
 <template>
   <!-- <NThemeEditor> -->
+  <!-- <Head>
+    <meta v-if="isThemeDark" name="theme-color" content="#bd2835" />
+  </Head> -->
   <FadeTransition>
     <NConfigProvider
       v-show="mounted"
@@ -63,8 +66,8 @@
 </template>
 
 <script setup lang="ts">
-import { Head } from "@inertiajs/inertia-vue3";
 import {
+  ConfigProviderProps,
   NButton,
   NConfigProvider,
   NLayout,
@@ -73,10 +76,12 @@ import {
   NLayoutHeader,
   NLayoutSider,
   NModal,
+  createDiscreteApi,
   darkTheme,
   // NThemeEditor,
 } from "naive-ui";
-import { onMounted, ref } from "vue";
+import { Head, usePage } from "@inertiajs/inertia-vue3";
+import { computed, onMounted, ref, watch } from "vue";
 
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import AdminMenu from "@/Components/Admin/Nav/AdminMenu.vue";
@@ -98,6 +103,23 @@ const showModal = ref(false);
 const mounted = ref(false);
 
 const isThemeDark = ref(isDarkMode());
+
+const successMessage = computed(() => usePage().props.value.flash.success);
+const infoMessage = computed(() => usePage().props.value.flash.info);
+
+watch(successMessage, (successMessage) => {
+  if (successMessage) {
+    message.success(successMessage);
+    usePage().props.value.flash.success = null;
+  }
+});
+
+watch(infoMessage, (infoMessage) => {
+  if (infoMessage) {
+    message.info(infoMessage);
+    usePage().props.value.flash.info = null;
+  }
+});
 
 // compute if the width is less than 768px
 const isMobile = ref(window.innerWidth < 768);
@@ -125,5 +147,13 @@ const themeOverrides = {
 
 onMounted(() => {
   mounted.value = true;
+});
+
+const configProviderPropsRef = computed<ConfigProviderProps>(() => ({
+  theme: isThemeDark.value ? darkTheme : undefined,
+}));
+
+const { message } = createDiscreteApi(["message"], {
+  configProviderProps: configProviderPropsRef,
 });
 </script>

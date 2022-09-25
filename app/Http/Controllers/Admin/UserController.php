@@ -98,7 +98,7 @@ class UserController extends Controller
             }
         });
 
-        return redirect()->route('users.index');
+        return redirect()->route('users.index')->with('success', 'Kontaktas sėkmingai sukurtas!');
     }
 
     /**
@@ -178,7 +178,7 @@ class UserController extends Controller
 
         });
 
-        return redirect()->back();
+        return back()->with('success', 'Kontaktas sėkmingai atnaujintas!');
     }
 
     /**
@@ -193,7 +193,7 @@ class UserController extends Controller
         $user->duties()->detach();
         $user->delete();
 
-        return redirect()->route('users.index');
+        return redirect()->route('users.index')->with('info', 'Kontaktas sėkmingai ištrintas!');
     }
 
     private function getDutiesForForm()
@@ -213,7 +213,7 @@ class UserController extends Controller
         $user->duties()->detach($duty);
         $user->save();
 
-        return redirect()->back();
+        return back()->with('info', 'Kontaktas sėkmingai atjungtas nuo pareigos!');
     }
 
     public function storeFromMicrosoft()

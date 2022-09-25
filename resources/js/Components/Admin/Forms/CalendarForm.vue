@@ -199,10 +199,6 @@
   </NForm>
 </template>
 
-<script lang="ts">
-const { message } = createDiscreteApi(["message"]);
-</script>
-
 <script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
 import {
@@ -218,7 +214,6 @@ import {
   NUpload,
   UploadFileInfo,
   UploadInst,
-  createDiscreteApi,
 } from "naive-ui";
 import { computed, ref } from "vue";
 import { useForm, usePage } from "@inertiajs/inertia-vue3";
@@ -319,9 +314,6 @@ const handleUploadRemove = (options: {
     {},
     {
       preserveScroll: true,
-      onSuccess: () => {
-        message.success("Paveikslėlis sėkmingai ištrintas!");
-      },
     }
   );
 };

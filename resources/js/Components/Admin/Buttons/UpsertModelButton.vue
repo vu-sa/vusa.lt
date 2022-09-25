@@ -12,13 +12,7 @@
 <script setup lang="ts">
 import { Inertia, Method } from "@inertiajs/inertia";
 import { InertiaForm } from "@inertiajs/inertia-vue3";
-import {
-  NButton,
-  NPopconfirm,
-  NSpin,
-  UploadFileInfo,
-  createDiscreteApi,
-} from "naive-ui";
+import { NButton, NPopconfirm, NSpin, UploadFileInfo } from "naive-ui";
 import { capitalize } from "lodash";
 import { computed, ref } from "vue";
 import route from "ziggy-js";
@@ -30,7 +24,6 @@ const props = defineProps<{
 }>();
 
 const showSpin = ref(false);
-const { message } = createDiscreteApi(["message"]);
 
 const modelMethod = computed(() => {
   return props.modelRoute.includes("update") ? Method.PATCH : Method.POST;
@@ -51,7 +44,6 @@ const upsertModel = () => {
       {
         onSuccess: () => {
           showSpin.value = false;
-          message.success("Sėkmingai sukurta arba atnaujinta!");
         },
         onError: () => {
           showSpin.value = false;
@@ -70,7 +62,6 @@ const upsertModel = () => {
       {
         onSuccess: () => {
           showSpin.value = false;
-          message.success("Sėkmingai sukurta arba atnaujinta!");
         },
         onError: () => {
           showSpin.value = false;

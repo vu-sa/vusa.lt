@@ -271,7 +271,6 @@
 
 <script lang="ts">
 import { createDiscreteApi } from "naive-ui";
-
 const { message } = createDiscreteApi(["message"]);
 </script>
 
