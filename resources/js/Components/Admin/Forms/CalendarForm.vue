@@ -1,9 +1,9 @@
 <template>
   <NForm :model="form" label-placement="top">
-    <NTabs animated type="card">
+    <NTabs animated type="card" pane-class="overflow-x-auto">
       <NTabPane display-directive="show" name="lt" tab="🇱🇹">
-        <NGrid :span="24" :x-gap="24">
-          <NFormItemGi label="Pavadinimas" :span="12" required>
+        <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
+          <NFormItemGi label="Pavadinimas" :span="2" required>
             <NInput
               v-model:value="form.title"
               type="text"
@@ -11,7 +11,7 @@
             />
           </NFormItemGi>
 
-          <NFormItemGi label="Renginio vieta" :span="12">
+          <NFormItemGi label="Renginio vieta" :span="2">
             <NInput
               v-model:value="form.location"
               type="text"
@@ -19,7 +19,7 @@
             />
           </NFormItemGi>
 
-          <NFormItemGi label="Pradžios data ir laikas" :span="6" required>
+          <NFormItemGi label="Pradžios data ir laikas" :span="1" required>
             <NDatePicker
               v-model:formatted-value="form.date"
               default-time="12:00:00"
@@ -29,7 +29,7 @@
             />
           </NFormItemGi>
 
-          <NFormItemGi label="Pabaigos data ir laikas" :span="6">
+          <NFormItemGi label="Pabaigos data ir laikas" :span="1">
             <NDatePicker
               v-model:formatted-value="form.end_date"
               default-time="12:00:00"
@@ -41,11 +41,11 @@
             />
           </NFormItemGi>
 
-          <NFormItemGi label="Visos dienos renginys" :span="6">
+          <NFormItemGi label="Visos dienos renginys" :span="2">
             <NSwitch v-model:value="form.attributes.all_day" />
           </NFormItemGi>
 
-          <NFormItemGi label="Kategorija" :span="6">
+          <NFormItemGi label="Kategorija" :span="2">
             <NSelect
               v-model:value="form.category"
               :options="categoryOptions"
@@ -54,7 +54,7 @@
             />
           </NFormItemGi>
 
-          <NFormItemGi label="CTO (Call to action) nuoroda" :span="12">
+          <NFormItemGi label="CTO (Call to action) nuoroda" :span="2">
             <NInput
               v-model:value="form.url"
               type="text"
@@ -62,7 +62,7 @@
             />
           </NFormItemGi>
 
-          <NFormItemGi label="Organizatorius" :span="12">
+          <NFormItemGi label="Organizatorius" :span="2">
             <NInput
               v-model:value="form.attributes.organizer"
               :placeholder="`Nieko neįrašius, organizatorius bus ${defaultOrganizer}`"
@@ -70,7 +70,7 @@
             />
           </NFormItemGi>
 
-          <NFormItemGi label="Facebook nuoroda" :span="12">
+          <NFormItemGi label="Facebook nuoroda" :span="2">
             <NInput
               v-model:value="form.attributes.facebook_url"
               type="text"
@@ -78,7 +78,7 @@
             />
           </NFormItemGi>
 
-          <NFormItemGi label="Youtube video kodas" :span="12">
+          <NFormItemGi label="Youtube video kodas" :span="2">
             <NInput
               v-model:value="form.attributes.video_url"
               type="text"
@@ -89,7 +89,7 @@
           <NFormItemGi
             v-if="modelRoute === 'calendar.update'"
             label="Įkelti paveikslėlius (pirmas bus panaudotas, kaip pagrindinis. Jeigu metama klaida, prieš tai sumažinkite paveikslėlius)"
-            :span="24"
+            :span="6"
           >
             <NUpload
               ref="upload"
@@ -104,7 +104,7 @@
             </NUpload>
           </NFormItemGi>
 
-          <NFormItemGi label="Aprašymas" :span="24" required>
+          <NFormItemGi label="Aprašymas" :span="6" required>
             <TipTap
               v-model="form.description"
               :search-files="$page.props.search.other"
@@ -113,61 +113,71 @@
         </NGrid>
       </NTabPane>
       <NTabPane display-directive="show" name="en" tab="🇬🇧">
-        <NGrid :span="24" :x-gap="24">
+        <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
           <NFormItemGi
             label="Renginys arba informacija prieinama ne tik LT studentams"
-            :span="24"
+            :span="2"
           >
             <NSwitch v-model:value="form.attributes.en.shown" />
           </NFormItemGi>
 
-          <NFormItemGi label="Pavadinimas" :span="12">
+          <NFormItemGi label="Pavadinimas" :span="2">
             <NInput
               v-model:value="form.attributes.en.title"
+              :disabled="!form.attributes.en.shown"
               type="text"
               placeholder="Įrašyti pavadinimą..."
             />
           </NFormItemGi>
-          <NFormItemGi label="Renginio vieta" :span="12">
+          <NFormItemGi label="Renginio vieta" :span="2">
             <NInput
               v-model:value="form.attributes.en.location"
+              :disabled="!form.attributes.en.shown"
               type="text"
               placeholder="AB Imeda poilsiavietė, Kiškiai, Ignalinos raj."
             />
           </NFormItemGi>
 
-          <NFormItemGi label="CTO (Call to action) nuoroda" :span="12">
+          <NFormItemGi label="CTO (Call to action) nuoroda" :span="2">
             <NInput
               v-model:value="form.attributes.en.url"
+              :disabled="!form.attributes.en.shown"
               type="text"
               placeholder="https://vusa.lt/..."
             />
           </NFormItemGi>
 
-          <NFormItemGi label="Organizatorius" :span="12">
+          <NFormItemGi label="Organizatorius" :span="2">
             <NInput
               v-model:value="form.attributes.en.organizer"
+              :disabled="!form.attributes.en.shown"
               :placeholder="`Nieko neįrašius, organizatorius bus ${defaultOrganizer}`"
               type="text"
             />
           </NFormItemGi>
 
-          <NFormItemGi label="Facebook nuoroda" :span="12">
+          <NFormItemGi label="Facebook nuoroda" :span="2">
             <NInput
               v-model:value="form.attributes.en.facebook_url"
+              :disabled="!form.attributes.en.shown"
               type="text"
               placeholder="https://www.facebook.com/events/584152539934772"
             />
           </NFormItemGi>
 
-          <NFormItemGi label="Youtube video kodas" :span="12">
+          <NFormItemGi label="Youtube video kodas" :span="2">
             <NInput
               v-model:value="form.attributes.en.video_url"
+              :disabled="!form.attributes.en.shown"
               type="text"
               placeholder="dQw4w9WgXcQ"
             />
           </NFormItemGi>
-          <NFormItemGi label="Aprašymas" :span="24">
+          <NFormItemGi
+            v-show="form.attributes.en.shown"
+            label="Aprašymas"
+            :span="6"
+          >
             <TipTap
               v-model="form.attributes.en.description"
               :search-files="$page.props.search.other"
@@ -189,10 +199,6 @@
   </NForm>
 </template>
 
-<script lang="ts">
-const { message } = createDiscreteApi(["message"]);
-</script>
-
 <script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
 import {
@@ -208,7 +214,6 @@ import {
   NUpload,
   UploadFileInfo,
   UploadInst,
-  createDiscreteApi,
 } from "naive-ui";
 import { computed, ref } from "vue";
 import { useForm, usePage } from "@inertiajs/inertia-vue3";
@@ -309,9 +314,6 @@ const handleUploadRemove = (options: {
     {},
     {
       preserveScroll: true,
-      onSuccess: () => {
-        message.success("Paveikslėlis sėkmingai ištrintas!");
-      },
     }
   );
 };

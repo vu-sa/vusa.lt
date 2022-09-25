@@ -13,7 +13,7 @@
     class="mx-auto mt-8 flex max-w-7xl flex-col-reverse gap-4 px-16 lg:mt-32 lg:flex-row lg:px-24 xl:px-40"
   >
     <div
-      class="prose-sm prose flex w-fit flex-col justify-center dark:prose-invert lg:h-4/5 lg:w-1/2 2xl:w-3/4"
+      class="prose-sm prose flex w-fit flex-col items-center justify-center dark:prose-invert lg:h-4/5 lg:w-1/2 lg:items-start 2xl:w-3/4"
     >
       <p v-if="$page.props.locale === 'lt'" class="text-2xl font-bold lg:w-2/3">
         <span class="font-extrabold">Naujiena!</span> Sek visus VU studentų
@@ -271,7 +271,6 @@
 
 <script lang="ts">
 import { createDiscreteApi } from "naive-ui";
-
 const { message } = createDiscreteApi(["message"]);
 </script>
 

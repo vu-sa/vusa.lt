@@ -103,8 +103,6 @@ const props = defineProps<{
   currentPath: string;
 }>();
 
-// const { message } = createDiscreteApi(["message"]);
-
 // Compute showed directories
 const showedDirectories = computed(() => {
   const ar = [];

@@ -78,7 +78,7 @@ class BannerController extends Controller
         $banner->user_id = $request->user()->id;
         $banner->save();
 
-        return redirect()->route('banners.index');
+        return redirect()->route('banners.index')->with('success', 'Baneris sėkmingai sukurtas!');
     }
 
     /**
@@ -120,7 +120,7 @@ class BannerController extends Controller
         $banner->image_url = $request->image_url;
         $banner->save();
 
-        return redirect()->back();
+        return back()->with('success', 'Baneris atnaujintas!');
     }
 
     /**
@@ -133,6 +133,6 @@ class BannerController extends Controller
     {
         $banner->delete();
 
-        return redirect()->route('banners.index');
+        return redirect()->route('banners.index')->with('info', 'Baneris ištrintas!');
     }
 }

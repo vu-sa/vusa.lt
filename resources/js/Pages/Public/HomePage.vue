@@ -46,7 +46,6 @@ import { onMounted, ref } from "vue";
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import EventCalendar from "@/Components/Public/FullWidth/EventCalendar.vue";
 import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
-import YearReport2022 from "@/Components/Public/FullWidth/YearReport2022.vue";
 
 defineProps<{
   news: Array<App.Models.News>;
@@ -70,7 +69,14 @@ const SummerCamps = defineAsyncComponent(
   () => import("@/Components/Public/FullWidth/SummerCamps.vue")
 );
 
+const YearReport2022 = defineAsyncComponent(
+  // eslint-disable-next-line no-secrets/no-secrets
+  () => import("@/Components/Public/FullWidth/YearReport2022.vue")
+);
+
+updateDarkMode(isThemeDark);
+
 onMounted(() => {
-  updateDarkMode(isThemeDark);
+  // updateDarkMode(isThemeDark);
 });
 </script>

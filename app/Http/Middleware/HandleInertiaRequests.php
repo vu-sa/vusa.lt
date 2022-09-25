@@ -65,6 +65,10 @@ class HandleInertiaRequests extends Middleware
                 'files' => true,
                 'saziningai' => $request->user()->can('edit saziningai content'),
             ],
+            'flash' => [
+                'info' => fn () => $request->session()->get('info'),
+                'success' => fn () => $request->session()->get('success'),
+            ],
             'locale' => function () {
                 return app()->getLocale();
             },

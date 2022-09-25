@@ -4,12 +4,13 @@
       <UserForm
         :user="contact"
         :roles="roles"
+        :duties="duties"
         model-route="users.update"
         delete-model-route="users.destroy"
       />
     </UpsertModelLayout>
     <template #aside-card>
-      <div v-if="contact.duties.length > 0" class="main-card h-fit">
+      <div v-if="contact.duties.length > 0" class="main-card h-fit max-w-sm">
         <strong>Šiuo metu {{ contact.name }} užima šias pareigas:</strong>
         <ul class="list-inside">
           <li
@@ -70,5 +71,6 @@ import UserForm from "@/Components/Admin/Forms/UserForm.vue";
 defineProps<{
   contact: App.Models.User;
   roles: App.Models.Role[];
+  duties: App.Models.Duty[];
 }>();
 </script>

@@ -93,7 +93,7 @@ class NewsController extends Controller
             'padalinys_id' => $padalinys_id
         ]);
 
-        return redirect()->route('news.index');
+        return redirect()->route('news.index')->with('success', 'Naujiena sėkmingai sukurta!');
     }
 
     /**
@@ -164,7 +164,7 @@ class NewsController extends Controller
             $other_lang_page->save();
         }
 
-        return back();
+        return back()->with('success', 'Naujiena sėkmingai atnaujinta!');
     }
 
     /**
@@ -177,7 +177,7 @@ class NewsController extends Controller
     {
         $news->delete();
 
-        return redirect()->route('news.index');
+        return redirect()->route('news.index')->with('info', 'Naujiena sėkmingai ištrinta!');
     }
 
     public function searchForNews(Request $request)

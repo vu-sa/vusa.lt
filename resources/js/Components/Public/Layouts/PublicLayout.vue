@@ -46,6 +46,8 @@ const themeOverrides = {
   },
 };
 
+updateDarkMode(isThemeDark);
+
 // Userway script
 
 (function (d) {
@@ -89,7 +91,6 @@ onMounted(() => {
     })(window, document, "clarity", "script", "bs7culn3gp");
   }
 
-  updateDarkMode(isThemeDark);
   mounted.value = true;
 });
 </script>

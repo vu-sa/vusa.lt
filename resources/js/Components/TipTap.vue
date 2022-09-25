@@ -4,7 +4,7 @@
   >
     <div
       v-if="editor"
-      class="tiptap-navbar flex items-center rounded-t-lg bg-gradient-to-tr from-zinc-200 to-zinc-100 p-2 shadow-sm dark:from-zinc-800/90 dark:to-zinc-700/90"
+      class="tiptap-navbar flex items-center overflow-auto rounded-t-lg bg-gradient-to-tr from-zinc-200 to-zinc-100 p-2 shadow-sm dark:from-zinc-800/90 dark:to-zinc-700/90"
     >
       <!-- <strong class="mb-4">Funkcijos</strong> -->
       <!-- <br /> -->
@@ -123,7 +123,7 @@
 
     <EditorContent
       :editor="editor"
-      class="min-h-[12em] rounded-b-lg border-vusa-yellow/50 bg-stone-50/40 shadow-inner"
+      class="min-h-[12em] rounded-b-lg border-vusa-yellow/50 bg-stone-50/40 shadow-inner dark:bg-zinc-800/70"
     />
   </div>
   <NModal
@@ -327,7 +327,7 @@ const placeImage = () => {
 const editor = useEditor({
   editorProps: {
     attributes: {
-      class: "prose-sm sm:prose focus:outline-none p-4 h-full",
+      class: "prose dark:prose-invert focus:outline-none p-4 h-full",
     },
   },
   extensions: [

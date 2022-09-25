@@ -1,9 +1,11 @@
 <template>
   <NDataTable
-    class="min-w-min"
     remote
     size="small"
+    class="overflow-auto"
     :data="model.data"
+    :scroll-x="768"
+    :max-height="dataTableMaxHeight"
     :columns="columnsWithActions"
     :loading="loading"
     :pagination="pagination"
@@ -18,6 +20,7 @@
 import { DataTableColumns, NButton, NDataTable, NIcon } from "naive-ui";
 import { Edit20Filled } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
+import { Link } from "@inertiajs/inertia-vue3";
 import { computed, h, reactive, ref } from "vue";
 import route from "ziggy-js";
 
@@ -52,9 +55,8 @@ const columnsWithActions = computed(() => {
                     NButton,
                     {
                       size: "small",
-                      onClick: () => {
-                        Inertia.get(route(props.editRoute, row.id));
-                      },
+                      tag: "a",
+                      href: route(props.editRoute, row.id),
                     },
                     {
                       icon: () =>
@@ -122,4 +124,21 @@ const handleFiltersChange = (filters) => {
   padaliniaiFilters.value = filters["padalinys.id"];
   handleChange(pagination.page, padaliniaiFilters.value);
 };
+
+// calculate and update the max height of datatable
+
+const dataTableMaxHeight = ref(window.innerHeight);
+
+const calculateDataTableMaxHeight = () => {
+  dataTableMaxHeight.value = window.innerHeight - 350;
+  // check if the height is less than 400px
+  if (dataTableMaxHeight.value < 425) {
+    dataTableMaxHeight.value = 425;
+  }
+};
+
+calculateDataTableMaxHeight();
+
+// update the height on window resize
+window.addEventListener("resize", calculateDataTableMaxHeight);
 </script>

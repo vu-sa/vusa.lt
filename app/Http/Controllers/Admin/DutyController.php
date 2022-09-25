@@ -7,6 +7,7 @@ use App\Models\DutyInstitution;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller as Controller;
 use App\Models\DutyType;
+use Illuminate\Database\Eloquent\Collection;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 
@@ -25,12 +26,16 @@ class DutyController extends Controller
      */
     public function index(Request $request)
     {
-
+        // For search
         $title = $request->title;
 
         $duties = Duty::when(!is_null($title), function ($query) use ($title) {
             $query->where('name', 'like', "%{$title}%")->orWhere('email', 'like', "%{$title}%");
-        })->with('type:id,name')->with('institution:id,name,short_name')->paginate(20);
+        })->when(!$request->user()->hasRole('Super Admin'), function ($query) {
+            $query->whereHas('institution', function ($query) {
+                $query->where('padalinys_id', auth()->user()->padalinys()->id);
+            });
+        })->with(['institution:id,name,short_name,padalinys_id','institution.padalinys:id,shortname', 'type:id,name'])->paginate(20);
 
         return Inertia::render('Admin/Contacts/IndexDuties', [
             'duties' => $duties,
@@ -44,8 +49,11 @@ class DutyController extends Controller
      */
     public function create()
     {
+        $dutyInstitutions = $this->getDutyInstitutionsForForm();
+        
         return Inertia::render('Admin/Contacts/CreateDuty', [
             'dutyTypes' => DutyType::all(),
+            'dutyInstitutions' => $dutyInstitutions,
         ]);
     }
 
@@ -74,7 +82,7 @@ class DutyController extends Controller
         $duty->type_id = $request->type['id'];
         $duty->save();
 
-        return redirect()->route('duties.index');
+        return redirect()->route('duties.index')->with('success', 'Pareigybė sėkmingai sukurta!');
     }
 
     /**
@@ -96,6 +104,7 @@ class DutyController extends Controller
      */
     public function edit(Duty $duty)
     {
+        $dutyInstitutions = $this->getDutyInstitutionsForForm();
 
         return Inertia::render('Admin/Contacts/EditDuty', [
             'duty' => [
@@ -110,6 +119,7 @@ class DutyController extends Controller
             ],
             'users' => $duty->users,
             'dutyTypes' => DutyType::all(),
+            'dutyInstitutions' => $dutyInstitutions
         ]);
     }
 
@@ -137,7 +147,7 @@ class DutyController extends Controller
             $duty->save();
         });
 
-        return back();
+        return back()->with('success', 'Pareigybė sėkmingai atnaujinta!');
     }
 
     /**
@@ -150,33 +160,13 @@ class DutyController extends Controller
     {
         $duty->delete();
 
-        return redirect()->route('duties.index');
+        return redirect()->route('duties.index')->with('info', 'Pareigybė sėkmingai ištrinta!');
     }
 
-    public function searchForDuties(Request $request)
+    private function getDutyInstitutionsForForm(): Collection
     {
-        $data = $request->collect()['data'];
-
-        $duties = Duty::where('name', 'like', "%{$data['name']}%")->get();
-
-        $duties = $duties->map(function ($duty) {
-            return [
-                'id' => $duty->id,
-                'name' => $duty->name,
-                'institution' => $duty->institution->alias,
-            ];
-        });
-
-        return back()->with('search_other', $duties);
+        return DutyInstitution::select('id', 'name', 'alias', 'padalinys_id')->when(!request()->user()->hasRole('Super Admin'), function ($query) {
+                $query->where('padalinys_id', auth()->user()->padalinys()->id);
+        })->with('padalinys:id,shortname')->get();
     }
-
-    // public function detachFromInstitution(Duty $duty, Request $request)
-    // {
-    //     // dd($duty);
-
-    //     $duty->institution()->dissociate();
-    //     $duty->save();
-
-    //     return back();
-    // }
 }

@@ -3,6 +3,14 @@
     class="fixed top-0 z-50 flex max-h-24 w-full flex-row items-center justify-between bg-white/80 px-6 py-2 text-gray-800 shadow-sm backdrop-blur-sm dark:bg-zinc-800/60 dark:text-white lg:px-24"
   >
     <div class="flex flex-row items-center space-x-4">
+      <!-- Hamburger -->
+      <div class="block pl-8 pr-4 lg:hidden">
+        <NButton style="border-radius: 0.5rem" @click="toggleMenu">
+          <NIcon>
+            <Navigation24Filled />
+          </NIcon>
+        </NButton>
+      </div>
       <Link :href="route('main.home', homeParams)" @click="resetPadalinys()">
         <AppLogo class="w-36" />
       </Link>
@@ -34,14 +42,6 @@
         @click="Inertia.visit(route('dashboard'))"
         ><NIcon :size="16" :component="AnimalTurtle24Filled"></NIcon
       ></NButton>
-    </div>
-    <!-- Hamburger -->
-    <div class="block lg:hidden">
-      <NButton style="border-radius: 0.5rem" @click="toggleMenu">
-        <NIcon>
-          <Navigation24Filled />
-        </NIcon>
-      </NButton>
     </div>
 
     <div class="hidden flex-row flex-wrap items-center space-x-4 lg:flex">

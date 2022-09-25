@@ -64,7 +64,7 @@ class NavigationController extends Controller
         
         $this->postNavigation($request->_value);
 
-        return redirect()->back();
+        return back();
     }
 
     /**
@@ -105,7 +105,7 @@ class NavigationController extends Controller
         // $navigation->order = $request->order;
         $navigation->save();
 
-        return redirect()->back();
+        return back();
     }
 
     /**

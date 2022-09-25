@@ -34,7 +34,7 @@
         "based/laravel-typescript": "^0.0.3",
         "fakerphp/faker": "^1.9.1",
         "kitloong/laravel-migrations-generator": "^6.2",
-        "itsgoingd/clockwork": "^5.1",
+        "laravel/pint": "^1.2",
         "laravel/sail": "^1.12",
         "mockery/mockery": "^1.4.4",
         "phpunit/phpunit": "^9.5.10",
