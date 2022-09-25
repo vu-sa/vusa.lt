@@ -11,6 +11,17 @@
     <NCollapse default-expanded-names="0.3">
       <NCollapseItem name="0.3" title="v0.3">
         <section>
+          <h4 class="mt-0">v0.3.7 (2022-09-25)</h4>
+          <ul>
+            <li>Geriau įjungiamas tamsusis režimas</li>
+            <li>Telefonams pritaikytas administravimo langas</li>
+            <li>Redagavimo mygtukai nuo šiol yra nuorodos</li>
+            <li>Labiau pritaikyti pranešimai prie veiksmo</li>
+            <li>Narių registracijos informacija sudėta į stulpelius</li>
+            <li>Ir daugiau...</li>
+          </ul>
+        </section>
+        <section>
           <h4 class="mt-0">v0.3.6 (2022-09-21)</h4>
           <ul>
             <li>
