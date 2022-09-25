@@ -1,7 +1,12 @@
 <template>
-  <PageContent :title="contact.name">
+  <PageContent title="Naujas kontaktas">
     <UpsertModelLayout :errors="$attrs.errors" :model="contact">
-      <UserForm :user="contact" model-route="users.store" :roles="roles" />
+      <UserForm
+        :user="contact"
+        model-route="users.store"
+        :roles="roles"
+        :duties="duties"
+      />
     </UpsertModelLayout>
   </PageContent>
 </template>
@@ -21,6 +26,7 @@ import UserForm from "@/Components/Admin/Forms/UserForm.vue";
 
 defineProps<{
   roles: App.Models.Role[];
+  duties: App.Models.Duty[];
 }>();
 
 const contact = {

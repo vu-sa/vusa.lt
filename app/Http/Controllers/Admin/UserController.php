@@ -53,9 +53,9 @@ class UserController extends Controller
      */
     public function create()
     {
-        //
         return Inertia::render('Admin/Contacts/CreateUser', [
             'roles' => Role::all(),
+            'duties' => $this->getDutiesForForm()
         ]);
     }
 
@@ -141,7 +141,8 @@ class UserController extends Controller
                 }),
             ],
             // get all roles
-            'roles' => Role::all()
+            'roles' => Role::all(),
+            'duties' => $this->getDutiesForForm()
         ]);
     }
 
@@ -157,6 +158,7 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required',
             'email' => 'required',
+            'duties' => 'required',
         ]);
 
         DB::transaction(function () use ($request, $user) {
@@ -192,6 +194,16 @@ class UserController extends Controller
         $user->delete();
 
         return redirect()->route('users.index');
+    }
+
+    private function getDutiesForForm()
+    {
+        return Duty::with(['institution:id,padalinys_id', 'institution.padalinys:id,shortname'])
+        ->when(!auth()->user()->hasRole('Super Admin'), function ($query) { 
+            $query->whereHas('institution', function ($query) {
+                $query->where('padalinys_id', Auth::user()->padalinys()->id);
+            });
+        })->get();
     }
 
     public function detachFromDuty(User $user, Duty $duty)

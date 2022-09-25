@@ -33,17 +33,14 @@
       </NFormItemGi>
 
       <NFormItemGi label="Pareigybės" :span="6">
-        <NSelect
+        <NTransfer
+          ref="transfer"
           v-model:value="form.duties"
-          multiple
-          filterable
-          placeholder="Pasirinkti pareigybes..."
           :options="dutyOptions"
-          clearable
-          remote
-          :clear-filter-after-select="false"
-          @search="getDutyOptions"
-        />
+          source-filterable
+          source-filter-placeholder="Ieškoti pareigų..."
+          size="small"
+        ></NTransfer>
       </NFormItemGi>
 
       <NFormItemGi label="Nuotrauka" :span="2">
@@ -76,6 +73,7 @@ import {
   NGrid,
   NInput,
   NSelect,
+  NTransfer,
   createDiscreteApi,
 } from "naive-ui";
 import { debounce } from "lodash";
@@ -89,60 +87,23 @@ import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue"
 
 const props = defineProps<{
   user: App.Models.User;
-  modelRoute: string;
   roles: App.Models.Role[];
+  duties: App.Models.Duty[];
+  modelRoute: string;
   deleteModelRoute?: string;
 }>();
 
 const form = useForm("dutyInstitution", props.user);
 
-const dutyOptions = ref<App.Models.Duty>([]);
+const dutyOptions = props.duties.map((duty) => ({
+  label: `${duty.name} (${duty.institution?.padalinys?.shortname})`,
+  value: duty.id,
+}));
 
 const rolesOptions = props.roles.map((role) => ({
   label: role.name,
   value: role.name,
 }));
 
-const getDutyOptions = debounce((input) => {
-  // get other lang
-  if (input.length > 2) {
-    message.loading("Ieškoma...");
-    Inertia.post(
-      route("duties.search"),
-      {
-        data: {
-          name: input,
-        },
-      },
-      {
-        preserveState: true,
-        preserveScroll: true,
-        onSuccess: () => {
-          dutyOptions.value = usePage().props.value.search.other.map((duty) => {
-            return {
-              value: duty.id,
-              label: `${duty.name} (${duty.institution})`,
-            };
-          });
-        },
-      }
-    );
-  }
-}, 500);
-
-////////////////////////////////////////////////////////////////////////////////
-
-if (props.modelRoute !== "users.store") {
-  // set options from existing duties
-  dutyOptions.value = props.user.duties?.map((duty) => {
-    return {
-      value: duty.id,
-      label: `${duty.name} - ${duty.institution?.short_name} (${duty.institution?.alias})`,
-    };
-  });
-  //
-  form.duties = props.user.duties?.map((duty) => {
-    return duty.id;
-  });
-}
+form.duties = props.user.duties?.map((duty) => duty.id);
 </script>
