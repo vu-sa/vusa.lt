@@ -3,10 +3,12 @@
     class="flex max-w-sm items-center gap-2 rounded-sm p-2 text-zinc-700 transition hover:bg-zinc-200/80 dark:text-zinc-50 dark:hover:bg-zinc-800/80"
   >
     <NIcon :component="People24Regular" />
-    <div>
+    <div class="w-full">
       <p class="text-xs text-zinc-700 dark:text-zinc-300">
-        <strong>{{ notification.data.registeredName }}</strong> užsiregistravo
-        per VU SA registraciją.
+        <component
+          :is="getNotificationComponent(notification.data.type)"
+          :data="notification.data"
+        />
       </p>
       <p class="text-xs text-zinc-500 dark:text-zinc-400">
         {{ getRelativeTime(notification.created_at) }}
@@ -14,9 +16,15 @@
     </div>
     <div class="flex flex-col gap-2">
       <NButton
+        v-if="notification.data.route"
         tag="a"
         target="_blank"
-        :href="route('registrationForms.show', 2)"
+        :href="
+          route(
+            notification.data.route['routeName'],
+            notification.data.route['model']
+          )
+        "
         size="tiny"
         tertiary
         circle
@@ -46,26 +54,28 @@ import {
 } from "@vicons/fluent";
 import { Link } from "@inertiajs/inertia-vue3";
 import { NButton, NIcon } from "naive-ui";
+import { defineAsyncComponent } from "vue";
 import route from "ziggy-js";
 
+import getRelativeTime from "@/Composables/getRelativeTime";
+
 defineProps<{
-  notification: any;
+  notification: Record<string, any>;
 }>();
 
 defineEmits<{ (event: "markAsRead", id: number): void }>();
 
-const getRelativeTime = (timestamp: string) => {
-  const DAY_MILLISECONDS = 1000 * 60 * 60 * 24;
+const InformAboutMemberRegistration = defineAsyncComponent(
+  () =>
+    import("@/Components/Admin/Notifications/InformAboutMemberRegistration.vue")
+);
 
-  const notificationDateTime = new Date(timestamp);
-
-  const rtf = new Intl.RelativeTimeFormat("lt", {
-    numeric: "auto",
-  });
-  const daysDifference = Math.round(
-    (notificationDateTime.getTime() - new Date().getTime()) / DAY_MILLISECONDS
-  );
-
-  return rtf.format(daysDifference, "day");
+const getNotificationComponent = (type: string) => {
+  switch (type) {
+    case "App\\Notifications\\InformAboutMemberRegistration":
+      return InformAboutMemberRegistration;
+    default:
+      return InformAboutMemberRegistration;
+  }
 };
 </script>

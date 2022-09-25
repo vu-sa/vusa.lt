@@ -57,6 +57,7 @@ class NotifyAboutMemberRegistration extends Notification
     {
         return [
             'registeredName' => $this->data['name'],
+            'route' => ["routeName" => 'registrationForms.show', "model" => 2]
         ];
     }
 }
