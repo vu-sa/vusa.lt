@@ -22,8 +22,9 @@
             >
           </div>
           <div class="flex items-center gap-4">
-            <DarkModeSwitch />
             <UserAvatar />
+            <DarkModeSwitch />
+            <NotificationBell />
           </div>
         </NLayoutHeader>
         <NLayout class="min-h-full" has-sider>
@@ -90,6 +91,7 @@ import Changelog from "@/Components/Admin/Misc/ChangelogCard.vue";
 import DarkModeSwitch from "@/Components/DarkModeSwitch.vue";
 import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
+import NotificationBell from "@/Components/Admin/NotificationBell.vue";
 import UserAvatar from "../Nav/UserAvatar.vue";
 
 defineProps<{

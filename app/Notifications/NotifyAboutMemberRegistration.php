@@ -56,8 +56,7 @@ class NotifyAboutMemberRegistration extends Notification
     public function toArray($notifiable)
     {
         return [
-            'data' => $this->data,
-            'registerLocation' => $this->registerLocation,
+            'registeredName' => $this->data['name'],
         ];
     }
 }

@@ -1,6 +1,6 @@
 <template>
   <Head :title="article.title"></Head>
-  <NBackTop :right="100" />
+  <NBackTop :right="100" :bottom="28" />
   <FadeTransition appear>
     <NewsArticle>
       <template #tags>
