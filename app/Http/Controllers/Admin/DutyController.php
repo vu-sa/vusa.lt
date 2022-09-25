@@ -7,6 +7,7 @@ use App\Models\DutyInstitution;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller as Controller;
 use App\Models\DutyType;
+use Illuminate\Database\Eloquent\Collection;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 
@@ -48,8 +49,11 @@ class DutyController extends Controller
      */
     public function create()
     {
+        $dutyInstitutions = $this->getDutyInstitutionsForForm();
+        
         return Inertia::render('Admin/Contacts/CreateDuty', [
             'dutyTypes' => DutyType::all(),
+            'dutyInstitutions' => $dutyInstitutions,
         ]);
     }
 
@@ -100,6 +104,7 @@ class DutyController extends Controller
      */
     public function edit(Duty $duty)
     {
+        $dutyInstitutions = $this->getDutyInstitutionsForForm();
 
         return Inertia::render('Admin/Contacts/EditDuty', [
             'duty' => [
@@ -114,6 +119,7 @@ class DutyController extends Controller
             ],
             'users' => $duty->users,
             'dutyTypes' => DutyType::all(),
+            'dutyInstitutions' => $dutyInstitutions
         ]);
     }
 
@@ -157,30 +163,10 @@ class DutyController extends Controller
         return redirect()->route('duties.index');
     }
 
-    public function searchForDuties(Request $request)
+    private function getDutyInstitutionsForForm(): Collection
     {
-        $data = $request->collect()['data'];
-
-        $duties = Duty::where('name', 'like', "%{$data['name']}%")->get();
-
-        $duties = $duties->map(function ($duty) {
-            return [
-                'id' => $duty->id,
-                'name' => $duty->name,
-                'institution' => $duty->institution->alias,
-            ];
-        });
-
-        return back()->with('search_other', $duties);
+        return DutyInstitution::select('id', 'name', 'alias', 'padalinys_id')->when(!request()->user()->hasRole('Super Admin'), function ($query) {
+                $query->where('padalinys_id', auth()->user()->padalinys()->id);
+        })->with('padalinys:id,shortname')->get();
     }
-
-    // public function detachFromInstitution(Duty $duty, Request $request)
-    // {
-    //     // dd($duty);
-
-    //     $duty->institution()->dissociate();
-    //     $duty->save();
-
-    //     return back();
-    // }
 }

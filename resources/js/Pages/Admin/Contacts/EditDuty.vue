@@ -10,21 +10,25 @@
         :duty="duty"
         :has-users="hasUsers"
         :duty-types="dutyTypes"
+        :duty-institutions="dutyInstitutions"
         model-route="duties.update"
         delete-model-route="duties.destroy"
       />
     </UpsertModelLayout>
     <template #aside-card>
-      <div v-if="hasUsers" class="main-card h-fit w-fit">
+      <div v-if="hasUsers" class="main-card h-fit w-fit max-w-lg">
         <strong>Šiuo metu šias pareigas užima:</strong>
         <ul class="mt-2 list-none">
           <li v-for="user in users" :key="user.id" class="mb-1">
             <Link
               class="flex flex-row items-center gap-2"
               :href="route('users.edit', { id: user.id })"
-              ><NAvatar round size="small" :src="user.profile_photo_path" />{{
-                user.name
-              }}
+              ><NAvatar
+                object-fit="cover"
+                round
+                size="small"
+                :src="user.profile_photo_path"
+              />{{ user.name }}
               <NPopconfirm @positive-click="detachUserFromDuty(user)">
                 <template #trigger>
                   <NButton
@@ -83,6 +87,7 @@ const props = defineProps<{
   duty: App.Models.Duty;
   users: App.Models.User[];
   dutyTypes: App.Models.DutyType[];
+  dutyInstitutions: App.Models.DutyInstitution[];
 }>();
 
 const { message } = createDiscreteApi(["message"]);

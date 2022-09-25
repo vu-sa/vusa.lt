@@ -196,6 +196,8 @@ class UserController extends Controller
 
     public function detachFromDuty(User $user, Duty $duty)
     {
+        $this->authorize('detachFromDuty', [auth()->user(), $user]);
+
         $user->duties()->detach($duty);
         $user->save();
 

@@ -44,7 +44,7 @@ class DutyInstitutionController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function create()
-    {
+    {       
         return Inertia::render('Admin/Contacts/CreateDutyInstitution', [
             'padaliniai' => Padalinys::orderBy('shortname_vu')->get()->map(function ($padalinys) {
                 return [
