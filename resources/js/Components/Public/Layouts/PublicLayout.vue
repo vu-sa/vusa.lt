@@ -32,12 +32,11 @@
 
 <script setup lang="ts">
 import { NConfigProvider, darkTheme } from "naive-ui";
+import { defineAsyncComponent, onMounted, ref } from "vue";
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
-import { onMounted, ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
 import { useStorage } from "@vueuse/core";
 
-import ConsentCard from "@/Components/Public/ConsentCard.vue";
 import FadeTransition from "../Utils/FadeTransition.vue";
 import Footer from "@/Components/Public/FullWidth/SiteFooter.vue";
 import MainNavigation from "@/Components/Public/Layouts/MainNavigation.vue";
@@ -54,6 +53,10 @@ const themeOverrides = {
     primaryColorSuppl: "#B93945FF",
   },
 };
+
+const ConsentCard = defineAsyncComponent(
+  () => import("@/Components/Public/ConsentCard.vue")
+);
 
 const cookieConsent = useStorage("cookie-consent", false);
 
