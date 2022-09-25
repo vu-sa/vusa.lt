@@ -1,7 +1,7 @@
 <template>
   <NForm :model="form" label-placement="top">
-    <NGrid :span="24" :x-gap="24">
-      <NFormItemGi label="Vardas ir Pavardė" :span="12" required>
+    <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
+      <NFormItemGi label="Vardas ir Pavardė" :span="2" required>
         <NInput
           v-model:value="form.name"
           type="text"
@@ -9,18 +9,18 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Studentinis el. paštas" :span="12" required>
+      <NFormItemGi label="Studentinis el. paštas" :span="2" required>
         <NInput
           v-model:value="form.email"
           placeholder="vardas.pavarde@padalinys.stud.vu.lt"
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Tel. numeris" :span="12">
+      <NFormItemGi label="Tel. numeris" :span="2">
         <NInput v-model:value="form.phone" placeholder="+370 612 34 567" />
       </NFormItemGi>
 
-      <NFormItemGi label="Administracinė vusa.lt rolė" :span="12">
+      <NFormItemGi label="Administracinė vusa.lt rolė" :span="2">
         <NSelect
           v-model:value="form.roles"
           :disabled="!$page.props.user.isSuperAdmin"
@@ -32,7 +32,7 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Pareigybės" :span="24">
+      <NFormItemGi label="Pareigybės" :span="6">
         <NSelect
           v-model:value="form.duties"
           multiple
@@ -46,7 +46,7 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Nuotrauka" :span="12">
+      <NFormItemGi label="Nuotrauka" :span="2">
         <UploadImageButtons
           v-model="form.profile_photo_path"
           :path="'contacts'"

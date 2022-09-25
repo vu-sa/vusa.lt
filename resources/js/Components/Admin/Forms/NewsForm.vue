@@ -55,7 +55,7 @@
         </NSwitch>
       </NFormItemGi>
 
-      <NFormItemGi :span="24"
+      <NFormItemGi :span="6"
         ><NDivider> Naujienos nuotrauka</NDivider>
       </NFormItemGi>
 

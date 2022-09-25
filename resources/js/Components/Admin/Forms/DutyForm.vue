@@ -45,7 +45,7 @@
         </NGrid>
       </NTabPane>
       <NTabPane display-directive="show" name="en" tab="🇬🇧">
-        <NGrid :span="24" :x-gap="24">
+        <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
           <NFormItemGi label="Pareigų pavadinimas" :span="2">
             <NInput
               v-model:value="form.attributes.en.name"
