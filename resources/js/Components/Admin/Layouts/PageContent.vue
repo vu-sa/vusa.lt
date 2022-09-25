@@ -21,7 +21,7 @@
     </aside>
   </header>
 
-  <div class="mt-1 grid grid-flow-row-dense gap-x-8 lg:grid-flow-col">
+  <div class="mt-1 grid max-w-7xl grid-flow-row-dense gap-x-8 lg:grid-flow-col">
     <main class="order-1 w-full overflow-auto lg:-order-1">
       <FadeTransition appear><slot></slot></FadeTransition>
     </main>
