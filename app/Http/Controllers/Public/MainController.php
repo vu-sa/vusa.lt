@@ -28,13 +28,14 @@ use App\ICalendars\MainCalendar;
 use App\Mail\ConfirmExamRegistration;
 use App\Mail\ConfirmMemberRegistration;
 use App\Mail\ConfirmObserverRegistration;
-use App\Mail\InformChairAboutMemberRegistration;
 use App\Mail\InformSaziningaiAboutObserverRegistration;
 use App\Mail\InformSaziningaiAboutRegistration;
+use App\Notifications\NotifyAboutMemberRegistration;
 use Spatie\CalendarLinks\Link;
 use Datetime;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 
 class MainController extends Controller
 {
@@ -648,8 +649,7 @@ class MainController extends Controller
 
 		// send mail to the registered person
 		Mail::to($data['email'])->send(new ConfirmMemberRegistration($data, $registerLocation, $chairPerson, $chairEmail));
-		Mail::to($chairEmail)->send(new InformChairAboutMemberRegistration($data, $registerLocation));
-
+		Notification::send($chairPerson, new NotifyAboutMemberRegistration($data, $registerLocation, $chairEmail));
 	}
 
 	public function storeRegistration(RegistrationForm $registrationForm) {

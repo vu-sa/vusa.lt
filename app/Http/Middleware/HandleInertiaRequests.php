@@ -49,6 +49,7 @@ class HandleInertiaRequests extends Middleware
         if ($user) {
             $user->padalinys = User::find(Auth::id())?->padalinys()?->shortname;
             $user->isSuperAdmin = $user->hasRole('Super Admin');
+            $user->notifications = $user->unreadNotifications;
         }
 
         return array_merge(parent::share($request), [

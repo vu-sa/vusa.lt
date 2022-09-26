@@ -11,6 +11,28 @@
     <NCollapse default-expanded-names="0.3">
       <NCollapseItem name="0.3" title="v0.3">
         <section>
+          <h4 class="mt-0">v0.3.9 (2022-09-25)</h4>
+          <ul>
+            <li>
+              🌟 🛡 Pridėta sistemos pranešimų viduje vartotojams (database
+              notifications)
+              <ul>
+                <li>Kolkas matoma tik <strong>narių registracija</strong></li>
+                <li>Pranešimus galima žymėti kaip perskaitytus</li>
+                <li>Kai kurie pranešimai gali vesti į kitą puslapį</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+        <section>
+          <h4 class="mt-0">v0.3.8 (2022-09-25)</h4>
+          <ul>
+            <li>
+              🌟 Pridėta privatumo informacijos kortelė viešuose puslapiuose
+            </li>
+          </ul>
+        </section>
+        <section>
           <h4 class="mt-0">v0.3.7 (2022-09-25)</h4>
           <ul>
             <li>Geriau įjungiamas tamsusis režimas</li>

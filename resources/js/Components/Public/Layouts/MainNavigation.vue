@@ -293,4 +293,5 @@ const handleResize = () => {
 };
 
 window.addEventListener("resize", handleResize);
+handleResize();
 </script>

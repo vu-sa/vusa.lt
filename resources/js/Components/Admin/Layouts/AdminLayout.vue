@@ -22,8 +22,9 @@
             >
           </div>
           <div class="flex items-center gap-4">
-            <DarkModeSwitch />
             <UserAvatar />
+            <DarkModeSwitch />
+            <NotificationBell />
           </div>
         </NLayoutHeader>
         <NLayout class="min-h-full" has-sider>
@@ -52,7 +53,7 @@
         <NLayoutFooter class="absolute bottom-0 w-full"
           ><div class="mx-auto mb-2 w-fit">
             <NButton size="tiny" quaternary @click="showModal = true">
-              v0.3.7 (2022-09-25)
+              v0.3.9 (2022-09-26)
             </NButton>
           </div>
           <NModal v-model:show="showModal">
@@ -90,6 +91,7 @@ import Changelog from "@/Components/Admin/Misc/ChangelogCard.vue";
 import DarkModeSwitch from "@/Components/DarkModeSwitch.vue";
 import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
+import NotificationBell from "@/Components/Admin/NotificationBell.vue";
 import UserAvatar from "../Nav/UserAvatar.vue";
 
 defineProps<{
