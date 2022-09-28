@@ -92,7 +92,14 @@ class DutyInstitutionController extends Controller
      */
     public function show(DutyInstitution $dutyInstitution)
     {
-        //
+        $dutyInstitution->load('type', 'padalinys', 'questions');
+
+        $users = $dutyInstitution->duties->pluck('users')->flatten()->unique();
+        
+        return Inertia::render('Admin/Contacts/ShowDutyInstitution', [
+            'dutyInstitution' => $dutyInstitution,
+            'users' => $users,
+        ]);
     }
 
     /**
@@ -147,28 +154,6 @@ class DutyInstitutionController extends Controller
     public function destroy(DutyInstitution $dutyInstitution)
     {
         //
-    }
-
-    public function searchForInstitutions(Request $request)
-    {
-        $data = $request->collect()['data'];
-
-        $institutions = DutyInstitution::when(!$request->user()->hasRole('Super Admin'), function ($query) use ($request) {
-            $query->where('padalinys_id', '=', $request->user()->padalinys()->id);
-            // check request for padaliniai, if not empty return only pages from request padaliniai
-        })->where(function ($query) use ($data) {
-            $query->where('name', 'like', "%{$data['name']}%")->orWhere('short_name', 'like', "%{$data['name']}%")->orWhere('alias', 'like', "%{$data['name']}%");
-        })->get();
-
-        $institutions = $institutions->map(function ($institution) {
-            return [
-                'id' => $institution->id,
-                'name' => $institution->name,
-                'alias' => $institution->alias,
-            ];
-        });
-
-        return back()->with('search_other', $institutions);
     }
 
     public function reorderDuties(Request $request)

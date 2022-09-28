@@ -32,4 +32,9 @@ class DutyInstitution extends Model
     public function padalinys() {
         return $this->belongsTo(Padalinys::class, 'padalinys_id');
     }
+
+    public function questions()
+    {
+        return $this->hasMany(Question::class, 'institution_id');
+    }
 }

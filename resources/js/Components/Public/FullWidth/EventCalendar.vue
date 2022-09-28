@@ -283,7 +283,6 @@ import { Head } from "@inertiajs/inertia-vue3";
 import { Link } from "@inertiajs/inertia-vue3";
 import {
   NButton,
-  NCard,
   NConfigProvider,
   NDivider,
   NIcon,

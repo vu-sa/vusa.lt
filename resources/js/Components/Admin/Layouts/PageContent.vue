@@ -22,9 +22,10 @@
   </header>
 
   <div class="mt-1 grid max-w-7xl grid-flow-row-dense gap-x-8 lg:grid-flow-col">
-    <main class="order-1 w-full overflow-auto lg:-order-1">
-      <FadeTransition appear><slot></slot></FadeTransition>
-    </main>
+    <FadeTransition appear
+      ><main class="w-full overflow-auto">
+        <slot></slot></main
+    ></FadeTransition>
     <div class="order-0"><slot name="aside-card"></slot></div>
   </div>
 </template>

@@ -46,6 +46,9 @@ Route::prefix('admin')->group(function () {
         Route::resource('registrationForms', Admin\RegistrationFormController::class);
         Route::resource('registrations', Admin\RegistrationController::class);
 
+        Route::resource('questions', Admin\QuestionController::class);
+        Route::resource('doings', Admin\DoingController::class);
+
         Route::resource('saziningaiExams', Admin\SaziningaiExamsController::class);
         Route::resource('saziningaiExamFlows', Admin\SaziningaiExamFlowsController::class);
         Route::resource('saziningaiExamObservers', Admin\SaziningaiExamObserversController::class);
@@ -53,10 +56,8 @@ Route::prefix('admin')->group(function () {
         Route::resource('duties', Admin\DutyController::class);
         Route::resource('dutyUsers', Admin\DutyUserController::class);
         Route::resource('dutyInstitutions', Admin\DutyInstitutionController::class);
-        Route::post('dutyInstitutions/search', [Admin\DutyInstitutionController::class, 'searchForInstitutions'])->name('dutyInstitutions.search');
         Route::post('dutyInstitutions/reorderDuties', [Admin\DutyInstitutionController::class, 'reorderDuties'])->name('dutyInstitutions.reorderDuties');
 
-        // Route::resource('roles', Admin\RolesController::class);
         Route::post('files/search', [Admin\FilesController::class, 'searchForFiles'])->name('files.search');
         Route::post('images/search', [Admin\FilesController::class, 'searchForImages'])->name('images.search');
         Route::post('duties/search', [Admin\DutyController::class, 'searchForDuties'])->name('duties.search');
