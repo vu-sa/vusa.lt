@@ -92,4 +92,15 @@ class SharepointController extends Controller
         $graph->updateListItem($site->getId(), config('filesystems.sharepoint.list_id'), $listItem->getId(), $listItemInfo);
 
     }
+
+    public function destroy($id) {
+        $graph = new SharepointAppGraph();
+
+        $site = $graph->getSiteById(config('filesystems.sharepoint.site_id'));
+        $drive = $graph->getDriveBySite($site->getId());
+
+        $graph->deleteDriveItem($drive->getId(), $id);
+
+        return redirect()->back()->with('success', 'Failas ištrintas');
+    }
 }

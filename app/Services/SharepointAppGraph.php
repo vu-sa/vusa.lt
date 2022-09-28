@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Http;
 use Microsoft\Graph\Graph;
 use Microsoft\Graph\Model;
 use Beta\Microsoft\Graph\Model as BetaModel;
-use Laravel\Socialite\Facades\Socialite;
 
 class SharepointAppGraph {
     
@@ -150,12 +149,21 @@ class SharepointAppGraph {
 
     public function uploadDriveItem(string $driveId, string $driveItemId, string $fileName, $content) : Model\DriveItem 
     {
-        $uploadedDriveItem = $this->graph->createRequest("PUT", "/drives/{$driveId}/items/{$driveItemId}:/{$fileName}:/content?\$expand=listItem")
+        $uploadedDriveItem = $this->graph->createRequest("PUT", "/drives/{$driveId}/items/{$driveItemId}:/{$fileName}:/content")
             ->addHeaders(['Content-Type' => 'text/plain'])
             ->attachBody($content)
             ->setReturnType(Model\DriveItem::class)
             ->execute();
 
         return $uploadedDriveItem;
+    }
+
+    public function deleteDriveItem(string $driveId, string $driveItemId) : void
+    {
+        $this->graph->createRequest("DELETE", "/drives/{$driveId}/items/{$driveItemId}")
+            ->execute();
+
+        Cache::forget('ms_drive_children_' . $driveItemId);
+
     }
 }

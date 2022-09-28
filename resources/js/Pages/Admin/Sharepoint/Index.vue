@@ -140,6 +140,27 @@ const columns = [
     title: "Data",
     key: "date",
   },
+  {
+    title: "Veiksmai",
+    key: "actions",
+    render(row) {
+      return h(
+        NSpace,
+        {},
+        {
+          default: () =>
+            h(
+              NButton,
+              {
+                type: "error",
+                onClick: () => handleDeleteClick(row.id),
+              },
+              { default: () => "Ištrinti" }
+            ),
+        }
+      );
+    },
+  },
 ];
 
 // date now to timestamp
@@ -176,5 +197,9 @@ const handleValidateClick = (e) => {
       });
     }
   });
+};
+
+const handleDeleteClick = (id) => {
+  Inertia.delete(route("sharepoint.destroy", id));
 };
 </script>

@@ -66,6 +66,7 @@ Route::prefix('admin')->group(function () {
 
         Route::get('sharepoint', [SharepointController::class, 'index'])->name('sharepoint.index');
         Route::post('sharepoint/upload', [SharepointController::class, 'upload'])->name('sharepoint.upload');
+        Route::delete('sharepoint/{id}', [SharepointController::class, 'destroy'])->name('sharepoint.destroy');
 
     });
 });
