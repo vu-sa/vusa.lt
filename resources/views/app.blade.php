@@ -16,6 +16,9 @@
     <meta name="color-scheme" content="light dark">
     {{-- <meta name="theme-color" content="#bd2835" /> --}}
 
+    {{-- CSRF --}}
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     {{-- Atom Feed --}}
     @include('feed::links')
 
