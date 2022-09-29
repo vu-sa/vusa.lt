@@ -46,8 +46,8 @@ Route::prefix('admin')->group(function () {
         Route::resource('registrationForms', Admin\RegistrationFormController::class);
         Route::resource('registrations', Admin\RegistrationController::class);
 
-        Route::resource('questions', Admin\QuestionController::class);
-        Route::resource('doings', Admin\DoingController::class);
+        Route::resource('dutyInstitutions.questions', Admin\DutyInstitutionQuestionsController::class);
+        Route::resource('questions.doings', Admin\QuestionDoingsController::class);
 
         Route::resource('saziningaiExams', Admin\SaziningaiExamsController::class);
         Route::resource('saziningaiExamFlows', Admin\SaziningaiExamFlowsController::class);

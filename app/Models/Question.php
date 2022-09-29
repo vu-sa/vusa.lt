@@ -11,6 +11,8 @@ class Question extends Model
 
     protected $with = ['question_group'];
 
+    protected $guarded = [];
+
     public function institution()
     {
         return $this->belongsTo(DutyInstitution::class);

@@ -9,14 +9,16 @@ class Doing extends Model
 {
     use HasFactory;
 
-    protected $with = ['type'];
+    protected $with = ['doing_type'];
+
+    protected $guarded = [];
 
     public function question()
     {
         return $this->belongsTo(DutyInstitution::class);
     }
 
-    public function type()
+    public function doing_type()
     {
         return $this->belongsTo(DoingType::class);
     }

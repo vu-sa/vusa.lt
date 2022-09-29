@@ -28,7 +28,11 @@
             :key="user.id"
             class="flex w-fit items-center gap-2"
           >
-            <NAvatar round :src="user.profile_photo_path"></NAvatar
+            <NAvatar
+              object-fit="cover"
+              round
+              :src="user.profile_photo_path"
+            ></NAvatar
             >{{ user.name }}
           </div>
         </div>
@@ -70,7 +74,9 @@
           ></NInput>
         </NFormItemGi>
         <NFormItemGi :show-label="false"
-          ><NButton type="primary">Sukurti</NButton></NFormItemGi
+          ><NButton type="primary" @click="createQuestion"
+            >Sukurti</NButton
+          ></NFormItemGi
         >
       </NGrid>
     </NForm>
@@ -115,7 +121,7 @@ import HelpTextModal from "@/Components/HelpTextModal.vue";
 import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import route from "ziggy-js";
 
-defineProps<{
+const props = defineProps<{
   dutyInstitution: App.Models.DutyInstitution;
   users: App.Models.User[];
 }>();
@@ -159,7 +165,10 @@ const columns = [
                     {
                       size: "small",
                       tag: Link,
-                      href: route("questions.show", row.id),
+                      href: route("dutyInstitutions.questions.show", {
+                        dutyInstitution: props.dutyInstitution.id,
+                        question: row.id,
+                      }),
                     },
                     h(NIcon, { component: ArrowTurnRight20Filled })
                   ),
@@ -217,4 +226,19 @@ const questionForm = useForm({
   title: "",
   description: "",
 });
+
+const createQuestion = () => {
+  questionForm.post(
+    route("dutyInstitutions.questions.store", {
+      dutyInstitution: props.dutyInstitution.id,
+    }),
+    {
+      preserveScroll: true,
+      onSuccess: () => {
+        showModal.value = false;
+        questionForm.reset();
+      },
+    }
+  );
+};
 </script>
