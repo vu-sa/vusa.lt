@@ -67,7 +67,7 @@ class QuestionDoingsController extends Controller
     public function show(Question $question, Doing $doing)
     {
         return Inertia::render('Admin/Questions/ShowDoing', [
-            'question' => $question,
+            'question' => $question->load('institution'),
             'doing' => $doing,
         ]);
     }

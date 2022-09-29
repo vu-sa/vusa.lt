@@ -1,29 +1,30 @@
 <template>
   <PageContent :title="doing.title">
-    <template #aside-header
-      ><span class="prose dark:prose-invert">{{
-        doing.question_group.title
-      }}</span></template
-    >
-    <template #aside-card> <div class="main-card">Žymos</div> </template>
-
-    <div class="main-card">
-      <div class="mb-2 flex items-center gap-4">
-        <h2 class="mb-0">Veiklos</h2>
-        <NButton round size="tiny" secondary @click="showModal = true"
-          ><template #icon><NIcon :component="AddCircle32Regular" /></template
-          >Sukurti veiklą</NButton
+    <template #below-header>
+      <NBreadcrumb class="w-full">
+        <NBreadcrumbItem
+          @click="
+            Inertia.get(route('dutyInstitutions.show', question.institution.id))
+          "
+          >{{ question.institution.name }}</NBreadcrumbItem
         >
-        <HelpTextModal class="ml-auto" title="Kas yra veikla?"
-          ><p>
-            Veikla – tai bet koks nutikęs veiksmas, susijęs su šiuo klausimu.
-          </p></HelpTextModal
+        <NBreadcrumbItem
+          @click="
+            Inertia.visit(
+              route('dutyInstitutions.questions.show', {
+                question: question.id,
+                dutyInstitution: question.institution.id,
+              })
+            )
+          "
+          ><NPopover class="max-w-xl" placement="right"
+            ><template #trigger>{{ question.title }}</template
+            >{{ question.description }}</NPopover
+          ></NBreadcrumbItem
         >
-      </div>
-    </div>
-    <div class="main-card">
-      <h2 class="mb-0">Komentarai</h2>
-    </div>
+        <NBreadcrumbItem>{{ doing.title }}</NBreadcrumbItem>
+      </NBreadcrumb>
+    </template>
   </PageContent>
 </template>
 
@@ -67,6 +68,7 @@ import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 
 const props = defineProps<{
   doing: Record<string, any>;
+  question: Record<string, any>;
 }>();
 
 const showModal = ref(false);

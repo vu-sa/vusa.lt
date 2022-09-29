@@ -34,24 +34,37 @@
           </p></HelpTextModal
         >
       </div>
-      <NTimeline horizontal class="overflow-auto py-4">
+      <NTimeline horizontal class="overflow-auto py-8">
         <NTimelineItem
           v-for="doing in question.doings"
           :key="doing.id"
           :title="doing.doing_type.title"
           :content="doing.title"
           :time="doing.date"
-        ></NTimelineItem>
+          ><template #header
+            ><Link
+              :href="
+                route('questions.doings.show', {
+                  question: question.id,
+                  doing: doing.id,
+                })
+              "
+              >{{ doing.doing_type.title }}</Link
+            ></template
+          ></NTimelineItem
+        >
       </NTimeline>
     </div>
-    <div class="main-card">
-      <h2 class="mb-0">Komentarai</h2>
-    </div>
+    <template #aside-card>
+      <div class="main-card w-80">
+        <h2 class="mb-0">Komentarai</h2>
+      </div></template
+    >
   </PageContent>
   <NModal
     v-model:show="showModal"
     class="prose-sm prose max-w-xl dark:prose-invert"
-    :title="`${$t('Sukurti įvykį')} (${question.title})`"
+    :title="`${$t('Sukurti veiklą')} (${question.title})`"
     :bordered="false"
     size="large"
     role="card"
@@ -86,14 +99,8 @@
             placeholder="Pasirinkti tipą"
             filterable
             :options="doingTypes"
-            ><template #action>
-              <span
-                class="prose-sm prose-gray text-xs text-zinc-400 dark:prose-invert"
-                >Gali įrašyti ir savo veiklą...</span
-              >
-            </template></NSelect
-          ></NFormItemGi
-        >
+          ></NSelect
+        ></NFormItemGi>
 
         <NFormItemGi :span="2" :show-label="false"
           ><NButton type="primary" @click="createDoing"
@@ -124,6 +131,7 @@ import {
   Edit20Filled,
 } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
+import { Link } from "@inertiajs/inertia-vue3";
 import {
   NBreadcrumb,
   NBreadcrumbItem,
