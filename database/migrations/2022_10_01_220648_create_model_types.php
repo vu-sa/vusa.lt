@@ -16,7 +16,7 @@ return new class extends Migration
     {        
         Schema::create('content_types', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('parent_id')->nullable()->constrained('types')->nullOnDelete();
+            $table->foreignId('parent_id')->nullable()->constrained('content_types')->nullOnDelete();
             $table->string('title')->nullable();
             $table->string('description')->nullable();
             $table->string('slug')->nullable();

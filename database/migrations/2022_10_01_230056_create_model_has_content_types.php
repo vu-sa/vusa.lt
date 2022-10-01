@@ -16,8 +16,8 @@ return new class extends Migration
         Schema::create('model_has_content_types', function (Blueprint $table) {
             $table->foreignId('content_type_id')->constrained('content_types')->cascadeOnDelete();
             $table->morphs('model');
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+            // unique index
+            $table->unique(['content_type_id', 'model_id', 'model_type'], 'model_has_content_types_unique');
         });
     }
 
