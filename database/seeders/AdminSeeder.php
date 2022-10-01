@@ -19,7 +19,7 @@ class AdminSeeder extends Seeder
     {
         $faker = Factory::create();
         
-        $user = User::create([
+        User::create([
             [
                 'name' => 'Test User',
                 'email' => 'test@test.com',
@@ -29,6 +29,6 @@ class AdminSeeder extends Seeder
             ]
         ]);
 
-        $user->assignRole('Super Admin');
+        User::where('email', 'test@test.com')->first()->assignRole('Super Admin');
     }
 }
