@@ -19,7 +19,7 @@ class AdminSeeder extends Seeder
     {
         $faker = Factory::create();
         
-        $user = User::insert([
+        $user = User::create([
             [
                 'name' => 'Test User',
                 'email' => 'test@test.com',
