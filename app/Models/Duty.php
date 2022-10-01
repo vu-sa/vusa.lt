@@ -12,7 +12,7 @@ class Duty extends Model
     
     protected $table = 'duties';
 
-    protected $with = ['type'];
+    protected $with = ['types'];
 
     protected $casts = [
         'attributes' => 'array',
@@ -25,9 +25,9 @@ class Duty extends Model
         return $this->belongsToMany(User::class, 'duties_users', 'duty_id', 'user_id')->using(DutyUser::class)->withPivot(['id', 'attributes'])->withTimestamps();
     }
 
-    public function type()
+    public function types()
     {
-        return $this->belongsTo(DutyType::class, 'type_id');
+        return $this->morphToMany(Type::class, 'typeable');
     }
 
     public function institution()

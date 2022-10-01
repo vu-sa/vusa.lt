@@ -14,10 +14,11 @@ return new class extends Migration
      */
     public function up()
     {        
-        Schema::create('content_types', function (Blueprint $table) {
+        Schema::create('types', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('parent_id')->nullable()->constrained('content_types')->nullOnDelete();
+            $table->foreignId('parent_id')->nullable()->constrained('types')->nullOnDelete();
             $table->string('title')->nullable();
+            $table->string('model_type')->nullable();
             $table->string('description')->nullable();
             $table->string('slug')->nullable();
             $table->json('extra_attributes')->nullable();
@@ -33,6 +34,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('content_types');
+        Schema::dropIfExists('types');
     }
 };

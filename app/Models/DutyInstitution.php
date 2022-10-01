@@ -13,7 +13,7 @@ class DutyInstitution extends Model
 
     protected $guarded = [];
 
-    protected $with = ['type'];
+    protected $with = ['types'];
 
     protected $casts = [
         'attributes' => 'array',
@@ -24,9 +24,9 @@ class DutyInstitution extends Model
         return $this->hasMany(Duty::class, 'institution_id');
     }
 
-    public function type()
+    public function types()
     {
-        return $this->belongsTo(DutyInstitutionType::class, 'type_id');
+        return $this->morphToMany(Type::class, 'typeable');
     }
 
     public function padalinys() {

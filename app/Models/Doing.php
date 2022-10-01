@@ -11,7 +11,7 @@ class Doing extends Model
 {
     use HasFactory, LogsActivity;
 
-    protected $with = ['doing_type'];
+    protected $with = ['types'];
 
     protected $guarded = [];
 
@@ -20,9 +20,9 @@ class Doing extends Model
         return $this->belongsTo(DutyInstitution::class);
     }
 
-    public function doing_type()
+    public function types()
     {
-        return $this->belongsTo(DoingType::class);
+        return $this->morphToMany(Type::class, 'typeable');
     }
 
     public function getActivitylogOptions(): LogOptions
