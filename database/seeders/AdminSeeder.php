@@ -2,12 +2,13 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Faker\Factory;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
-class UserSeeder extends Seeder
+class AdminSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -18,15 +19,16 @@ class UserSeeder extends Seeder
     {
         $faker = Factory::create();
         
-        DB::table('users')->insert([
+        $user = User::insert([
             [
                 'name' => 'Test User',
                 'email' => 'test@test.com',
                 'email_verified_at' => now(),
                 'password' => Hash::make('password'),
-                'role_id' => 1,
                 'profile_photo_path' => $faker->imageUrl(640, 480, 'people', true),
             ]
         ]);
+
+        $user->assignRole('Super Admin');
     }
 }

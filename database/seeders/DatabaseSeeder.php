@@ -27,7 +27,7 @@ class DatabaseSeeder extends Seeder
         $this->call(DutyInstitutionTypesSeeder::class);
         $this->call(DutyTypesSeeder::class);
         $this->call(RegistrationFormsSeeder::class);
-        $this->call(UserSeeder::class);
+        $this->call(AdminSeeder::class);
         $this->call(PadaliniaiSeeder::class);
 
         DutyInstitution::factory(10)->create();
