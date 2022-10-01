@@ -17,9 +17,9 @@ return new class extends Migration
         Schema::dropIfExists('old_roles');
 
         // remove foreign key from navigation table
-        Schema::table('navigation', function (Blueprint $table) {
-            $table->dropForeign('navigation_user_id_foreign');
-        });
+        // Schema::table('navigation', function (Blueprint $table) {
+        //     $table->dropForeign('navigation_user_id_foreign');
+        // });
 
         // remove user_id column from navigation
         Schema::table('navigation', function (Blueprint $table) {
