@@ -20,15 +20,14 @@ class AdminSeeder extends Seeder
         $faker = Factory::create();
         
         User::create([
-            [
                 'name' => 'Test User',
                 'email' => 'test@test.com',
                 'email_verified_at' => now(),
                 'password' => Hash::make('password'),
                 'profile_photo_path' => $faker->imageUrl(640, 480, 'people', true),
-            ]
         ]);
 
         User::where('email', 'test@test.com')->first()->assignRole('Super Admin');
+
     }
 }
