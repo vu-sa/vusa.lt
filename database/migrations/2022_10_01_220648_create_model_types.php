@@ -18,6 +18,8 @@ return new class extends Migration
             $table->id();
             // parent id 
             $table->foreignId('parent_id')->nullable()->constrained('types')->nullOnDelete();
+            // title
+            $table->string('title')->nullable();
             $table->morphs('typeable');
             // description column
             $table->string('description')->nullable();
@@ -37,6 +39,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('model_types');
+        Schema::dropIfExists('types');
     }
 };
