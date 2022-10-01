@@ -1,10 +1,8 @@
 <template>
   <PageContent :title="question.title">
-    <template #aside-header
-      ><span class="prose dark:prose-invert">{{
-        question.question_group.title
-      }}</span></template
-    >
+    <template #aside-header>
+      <ShowActivityLog :activities="question.activities" />
+    </template>
     <template #below-header>
       <NBreadcrumb class="w-full">
         <NBreadcrumbItem
@@ -34,7 +32,11 @@
           </p></HelpTextModal
         >
       </div>
-      <NTimeline horizontal class="overflow-auto py-8">
+      <NTimeline
+        v-if="question.doings.length > 0"
+        horizontal
+        class="overflow-auto py-8"
+      >
         <NTimelineItem
           v-for="doing in question.doings"
           :key="doing.id"
@@ -54,6 +56,7 @@
           ></NTimelineItem
         >
       </NTimeline>
+      <p v-else>Jokių veiklų nerasta.</p>
     </div>
     <template #aside-card>
       <div class="main-card w-80">
@@ -152,8 +155,8 @@ import { ref } from "vue";
 import route from "ziggy-js";
 
 import HelpTextModal from "@/Components/HelpTextModal.vue";
-
 import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
+import ShowActivityLog from "@/Components/Admin/Buttons/ShowActivityLog.vue";
 
 const props = defineProps<{
   question: Record<string, any>;

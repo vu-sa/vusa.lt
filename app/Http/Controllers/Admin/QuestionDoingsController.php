@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Doing;
 use App\Http\Controllers\Controller as Controller;
 use App\Models\Question;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -68,7 +69,16 @@ class QuestionDoingsController extends Controller
     {
         return Inertia::render('Admin/Questions/ShowDoing', [
             'question' => $question->load('institution'),
-            'doing' => $doing,
+            'doing' => [
+                    ...$doing->toArray(),
+                    'activities' => $doing->activities->map(function ($activity) {
+                        return [
+                            ...$activity->toArray(),
+                            // 'date' => $activity->date->format('Y-m-d'),
+                            'causer' => $activity->causer
+                        ];
+                    }),
+                ],
         ]);
     }
 

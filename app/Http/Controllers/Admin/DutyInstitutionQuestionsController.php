@@ -67,10 +67,20 @@ class DutyInstitutionQuestionsController extends Controller
      */
     public function show(DutyInstitution $dutyInstitution, Question $question)
     {
+        $question = $question->load(['doings' => function ($query) {
+            $query->orderBy('date');
+        }])->load('institution', 'activities');
+        
         return Inertia::render('Admin/Questions/ShowQuestion', [
-            'question' => $question->load(['doings' => function ($query) {
-                $query->orderBy('date');
-            }])->load('institution'),
+            'question' => [
+                ...$question->toArray(),
+                'activities' => $question->activities->map(function ($activity) {
+                    return [
+                        ...$activity->toArray(),
+                        'causer' => $activity->causer,
+                    ];
+                }),
+            ],
             'doingTypes' => DoingType::all()->map(function ($doingType) {
                 return [
                     'value' => $doingType->id,

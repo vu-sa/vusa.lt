@@ -1,5 +1,8 @@
 <template>
   <PageContent :title="doing.title">
+    <template #aside-header>
+      <ShowActivityLog :activities="doing.activities" />
+    </template>
     <template #below-header>
       <NBreadcrumb class="w-full">
         <NBreadcrumbItem
@@ -37,39 +40,16 @@ export default {
 </script>
 
 <script setup lang="ts">
-import { trans as $t } from "laravel-vue-i18n";
-import {
-  AddCircle32Regular,
-  ArrowTurnRight20Filled,
-  DocumentAdd24Regular,
-  Edit20Filled,
-} from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
-import {
-  NBreadcrumb,
-  NBreadcrumbItem,
-  NButton,
-  NDataTable,
-  NForm,
-  NFormItemGi,
-  NGrid,
-  NIcon,
-  NInput,
-  NModal,
-  NPopover,
-  NSelect,
-} from "naive-ui";
-import { ref } from "vue";
+import { NBreadcrumb, NBreadcrumbItem, NPopover } from "naive-ui";
+// import { ref } from "vue";
 import route from "ziggy-js";
 
-import HelpTextModal from "@/Components/HelpTextModal.vue";
-
 import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
+import ShowActivityLog from "@/Components/Admin/Buttons/ShowActivityLog.vue";
 
-const props = defineProps<{
+defineProps<{
   doing: Record<string, any>;
   question: Record<string, any>;
 }>();
-
-const showModal = ref(false);
 </script>

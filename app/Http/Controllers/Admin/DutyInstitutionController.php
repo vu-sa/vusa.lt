@@ -94,8 +94,8 @@ class DutyInstitutionController extends Controller
     {
         $dutyInstitution->load('type', 'padalinys', 'questions');
 
-        $users = $dutyInstitution->duties->pluck('users')->flatten()->unique();
-        
+        $users = $dutyInstitution->duties->pluck('users')->flatten()->unique('id')->values();
+
         return Inertia::render('Admin/Contacts/ShowDutyInstitution', [
             'dutyInstitution' => $dutyInstitution,
             'users' => $users,
