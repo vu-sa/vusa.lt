@@ -109,7 +109,7 @@ class DutyController extends Controller
         return Inertia::render('Admin/Contacts/EditDuty', [
             'duty' => [
                 ...$duty->load('institution')->toArray(),
-                'types' => $duty->types->first()?->id,
+                'type' => $duty->types->first()?->id,
             ],
             'users' => $duty->users,
             'dutyTypes' => Type::where('model_type', Duty::class)->get(),

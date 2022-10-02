@@ -22,7 +22,15 @@ return new class extends Migration
         });
 
         Schema::table('duties', function (Blueprint $table) {
+            $table->dropForeign(['type_id']);
+        });
+
+        Schema::table('duties', function (Blueprint $table) {
             $table->dropColumn('type_id');
+        });
+
+        Schema::table('duties_institutions', function (Blueprint $table) {
+            $table->dropForeign(['type_id']);
         });
         
         Schema::table('duties_institutions', function (Blueprint $table) {
