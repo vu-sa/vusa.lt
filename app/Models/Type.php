@@ -11,6 +11,11 @@ class Type extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
     public function duty_institutions()
     {
         return $this->morphedByMany(DutyInstitution::class, 'typeable');

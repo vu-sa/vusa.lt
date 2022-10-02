@@ -39,7 +39,6 @@ return new class extends Migration
             $new_type = Type::create([
                 'title' => $type->name,
                 'model_type' => Duty::class,
-                'parent_id' => $type->pid,
                 'description' => $type->description,
             ]);
 

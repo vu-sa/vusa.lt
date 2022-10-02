@@ -10,15 +10,16 @@
 
 <script setup lang="ts">
 import {
-  CalendarLtr48Regular,
-  Folder48Regular,
-  Home48Regular,
+  CalendarLtr24Regular,
+  Folder24Regular,
+  Home24Regular,
   Navigation24Regular,
   Notebook24Regular,
   People24Regular,
   PeopleSearch24Regular,
-  Person48Regular,
-  SlideText48Regular,
+  Person24Regular,
+  Settings24Regular,
+  SlideText24Regular,
 } from "@vicons/fluent";
 import { Component, computed, h, ref } from "vue";
 import { Link, usePage } from "@inertiajs/inertia-vue3";
@@ -71,12 +72,12 @@ const menuOptions = computed(() => [
   {
     label: () => h(Link, { href: route("dashboard") }, () => "Pradinis"),
     key: "dashboard",
-    icon: renderIcon(Home48Regular),
+    icon: renderIcon(Home24Regular),
   },
   {
     label: "Turinys",
     key: "content",
-    icon: renderIcon(SlideText48Regular),
+    icon: renderIcon(SlideText24Regular),
     show: can.content,
     children: [
       {
@@ -110,7 +111,7 @@ const menuOptions = computed(() => [
   {
     label: "Kontaktai",
     key: "contacts",
-    icon: renderIcon(Person48Regular),
+    icon: renderIcon(Person24Regular),
     show: can.users,
     children: [
       {
@@ -146,7 +147,7 @@ const menuOptions = computed(() => [
     label: () =>
       h(Link, { href: route("calendar.index") }, () => "Kalendorius"),
     key: "calendar",
-    icon: renderIcon(CalendarLtr48Regular),
+    icon: renderIcon(CalendarLtr24Regular),
     show: can.calendar,
   },
   {
@@ -178,8 +179,19 @@ const menuOptions = computed(() => [
   {
     label: () => h(Link, { href: route("files.index") }, () => "Failai"),
     key: "files",
-    icon: renderIcon(Folder48Regular),
+    icon: renderIcon(Folder24Regular),
     show: can.files,
+  },
+  {
+    label: "Nustatymai",
+    key: "settings",
+    icon: renderIcon(Settings24Regular),
+    children: [
+      {
+        label: () => h(Link, { href: route("types.index") }, () => "Tipai"),
+        key: "types",
+      },
+    ],
   },
 ]);
 </script>
