@@ -15,6 +15,11 @@ class Doing extends Model
 
     protected $guarded = [];
 
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()->logOnly(['*']);
+    }
+
     public function question()
     {
         return $this->belongsTo(DutyInstitution::class);
@@ -25,8 +30,8 @@ class Doing extends Model
         return $this->morphToMany(Type::class, 'typeable');
     }
 
-    public function getActivitylogOptions(): LogOptions
+    public function documents()
     {
-        return LogOptions::defaults()->logOnly(['*']);
+        return $this->morphMany(SharepointDocument::class, 'documentable');
     }
 }

@@ -6,7 +6,9 @@ use App\Models\Doing;
 use App\Http\Controllers\Controller as Controller;
 use App\Models\Question;
 use App\Models\User;
+use App\Services\SharepointAppGraph;
 use Illuminate\Http\Request;
+use Microsoft\Graph\Model;
 use Inertia\Inertia;
 
 class QuestionDoingsController extends Controller
@@ -64,6 +66,34 @@ class QuestionDoingsController extends Controller
      */
     public function show(Question $question, Doing $doing)
     {
+        $sharepointFiles = [];
+        
+        if ($doing->documents->count() > 0) {
+            $graph = new SharepointAppGraph();
+        
+            $drive = $graph->getDriveBySite(config('filesystems.sharepoint.site_id'));
+            // $driveChildren = $graph->getDriveChildren($drive->getId());
+
+            // for test get only the first one
+            $driveItems = $graph->getDriveItemsByID(($doing->documents), $drive->getId());
+
+            $sharepointFiles = collect($driveItems)->map(function (Model\DriveItem $item) {
+                return [
+                    'id' => $item->getId(),
+                    'name' => $item->getName(),
+                    'webUrl' => $item->getWebUrl(),
+                    'createdDateTime' => $item->getCreatedDateTime(),
+                    'lastModifiedDateTime' => $item->getLastModifiedDateTime(),
+                    'size' => $item->getSize(),
+                    'file' => $item->getFile(),
+                    'type' => $item->getListItem()->getFields()->getProperties()['Type'] ?? null,
+                    'keywords' => $item->getListItem()->getFields()->getProperties()['Keywords'] ?? null,
+                    // get date +3 hours and format YYYY-MM-DD
+                    'date' => ($item->getListItem()->getFields()->getProperties()['Date'] ?? null) ? date('Y-m-d', strtotime($item->getListItem()->getFields()->getProperties()['Date'] . ' +3 hours')) : null,
+                ];
+            });
+        }
+
         return Inertia::render('Admin/Questions/ShowDoing', [
             'question' => $question->load('institution'),
             'doing' => [
@@ -76,6 +106,7 @@ class QuestionDoingsController extends Controller
                         ];
                     }),
                 ],
+            'documents' => $sharepointFiles,
         ]);
     }
 

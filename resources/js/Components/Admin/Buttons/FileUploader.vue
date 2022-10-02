@@ -1,17 +1,7 @@
 <template>
-  <PageContent title="Sharepoint">
-    <Transition name="fade" appear>
-      <div class="main-card">
-        <h3>Sharepoint failai</h3>
-        <NDataTable :data="sharepointFiles" :columns="columns"></NDataTable>
-
-        <div class="mt-4">
-          <NButton @click="showModal = true">Įkelti naują failą</NButton>
-        </div>
-      </div>
-    </Transition>
-  </PageContent>
-  <!-- create NModal with form for file upload -->
+  <NButton round secondary size="small" @click="showModal = true"
+    >Įkelti naują failą</NButton
+  >
   <NModal
     v-model:show="showModal"
     class="prose-sm prose dark:prose-invert"
@@ -23,7 +13,11 @@
     aria-modal="true"
     preset="card"
   >
-    <NForm ref="formRef" :model="model">
+    <p v-if="!contentTypeOptions">
+      Negalite įkelti failo, nes nėra numatyta turinio tipų šiai formai.
+      Susisiekite su administratoriumi.
+    </p>
+    <NForm ref="formRef" :disabled="!contentTypeOptions" :model="model">
       <NFormItem label="Tipas" path="typeValue"
         ><NSelect
           v-model:value="model.typeValue"
@@ -45,7 +39,7 @@
         ></NDatePicker
       ></NFormItem>
       <NFormItem label="Įkelti failą" path="uploadValue">
-        <NUpload :default-upload="false" @change="handleUploadChange">
+        <NUpload :max="1" :default-upload="false" @change="handleUploadChange">
           <NUploadDragger>
             <div style="margin-bottom: 12px">
               <NIcon :component="Archive24Regular" size="48" :depth="3" />
@@ -60,19 +54,21 @@
         </NUpload>
       </NFormItem>
 
-      <NButton :loading="loading" @click="handleValidateClick"
+      <NButton
+        :disabled="!contentTypeOptions"
+        :loading="loading"
+        @click="handleValidateClick"
         >Įkelti naują failą</NButton
       ></NForm
     ></NModal
   >
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { Archive24Regular } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import {
   NButton,
-  NDataTable,
   NDatePicker,
   NForm,
   NFormItem,
@@ -90,91 +86,22 @@ import { h, ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
-
-export default {
-  layout: AdminLayout,
-};
-</script>
-
-<script setup lang="ts">
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
-
-defineProps<{
-  sharepointFiles: Record<string, any>[];
+const props = defineProps<{
+  contentTypeOptions: Record<string, any>[];
+  keywords: Record<string, any>[];
+  contentModel: Record<string, any>[];
 }>();
 
 const showModal = ref(false);
 const loading = ref(false);
 
-const contentTypeOptions = [
-  { label: "Ataskaitos", value: "Ataskaitos" },
-  { label: "Instrukcijos", value: "Instrukcijos" },
-  { label: "Protokolai", value: "Protokolai" },
-];
-
-const columns = [
-  {
-    title: "Pavadinimas",
-    key: "name",
-    render(row) {
-      return h("a", { href: row.webUrl, target: "_blank" }, row.name);
-    },
-  },
-  {
-    title: "Tipas",
-    key: "type",
-  },
-  {
-    title: "Raktažodžiai",
-    key: "keywords",
-    render(row) {
-      return h(
-        NSpace,
-        {},
-        {
-          default: () =>
-            row.keywords?.map((keyword) =>
-              h(NTag, {}, { default: () => keyword })
-            ),
-        }
-      );
-    },
-  },
-  {
-    title: "Data",
-    key: "date",
-  },
-  {
-    title: "Veiksmai",
-    key: "actions",
-    render(row) {
-      return h(
-        NSpace,
-        {},
-        {
-          default: () =>
-            h(
-              NButton,
-              {
-                type: "error",
-                onClick: () => handleDeleteClick(row.id),
-              },
-              { default: () => "Ištrinti" }
-            ),
-        }
-      );
-    },
-  },
-];
-
-// date now to timestamp
 const formRef = ref(null);
-const model = useForm("dutyInstitution", {
+const model = useForm({
   typeValue: null,
   keywordsValue: [],
   datetimeValue: new Date().getTime(),
   uploadValue: null,
+  contentModel: props.contentModel,
 });
 
 const handleUploadChange = (files) => {
@@ -186,7 +113,7 @@ const handleValidateClick = (e) => {
   loading.value = true;
   formRef.value?.validate((errors) => {
     if (!errors) {
-      Inertia.post(route("sharepoint.upload"), model, {
+      Inertia.post(route("sharepoint.addFile"), model, {
         onSuccess: () => {
           console.log("success");
           showModal.value = false;
@@ -204,7 +131,5 @@ const handleValidateClick = (e) => {
   });
 };
 
-const handleDeleteClick = (id) => {
-  Inertia.delete(route("sharepoint.destroy", id));
-};
+// generate name for this file...
 </script>

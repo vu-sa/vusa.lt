@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Http;
 use Microsoft\Graph\Graph;
 use Microsoft\Graph\Model;
 use Beta\Microsoft\Graph\Model as BetaModel;
+use Illuminate\Database\Eloquent\Collection;
 
 class SharepointAppGraph {
     
@@ -118,34 +119,64 @@ class SharepointAppGraph {
         return $driveItems;
     }
 
-    public function getGlobalTermStore() 
+    public function getDriveItemsByID(Collection $documentCollection, string $driveId) 
     {
+        $id = 0;
         
-        if (Cache::has('ms_global_term_store')) {
-            return Cache::get('ms_global_term_store');
-        }
+        $batch_request_body = ["requests" => $documentCollection->map(function($document) use ($driveId, $id) {
+                $id++;
+            
+                return [
+                    'id' => $id,
+                    'method' => 'GET',
+                    'url' => "/drives/{$driveId}/items/{$document->sharepoint_id}?\$expand=listItem"
+                ];
+            })->values()->toArray()
+        ];
 
-        // this needs delegated permissions
-        if (is_null($token = auth()->user()->microsoft_token)) {
-            return abort(500, 'No token');
-        }
+        $batch_response = $this->graph->createRequest("POST", "/\$batch")
+            ->attachBody($batch_request_body)
+            ->execute()->getBody();
 
-        $this->graph->setAccessToken($token);
+        $driveItems = [];
+
+        foreach ($batch_response['responses'] as $response) {
+            // create DriveItem for each response
+            $driveItem = new Model\DriveItem($response['body']);
+            $driveItems[] = $driveItem;
+        }
         
-        try {
-            $termStore = $this->graph->setApiVersion("beta")
-                ->createRequest("GET", "/termStore/sets/" . config('filesystems.sharepoint.main_term_set_id') .  "?\$expand=children")
-                ->setReturnType(BetaModel\Entity::class)
-                ->execute();
-        } catch (\Exception $e) {
-           return redirect()->route('microsoft.redirect');
-        }
-
-        // somehow fix
-        Cache::put('ms_global_term_store', $termStore, 3600);
-
-        return $termStore;
+        return $driveItems;
     }
+
+    // public function getGlobalTermStore() 
+    // {
+        
+    //     if (Cache::has('ms_global_term_store')) {
+    //         return Cache::get('ms_global_term_store');
+    //     }
+
+    //     // this needs delegated permissions
+    //     if (is_null($token = auth()->user()->microsoft_token)) {
+    //         return abort(500, 'No token');
+    //     }
+
+    //     $this->graph->setAccessToken($token);
+        
+    //     try {
+    //         $termStore = $this->graph->setApiVersion("beta")
+    //             ->createRequest("GET", "/termStore/sets/" . config('filesystems.sharepoint.main_term_set_id') .  "?\$expand=children")
+    //             ->setReturnType(BetaModel\Entity::class)
+    //             ->execute();
+    //     } catch (\Exception $e) {
+    //        return redirect()->route('microsoft.redirect');
+    //     }
+
+    //     // somehow fix
+    //     Cache::put('ms_global_term_store', $termStore, 3600);
+
+    //     return $termStore;
+    // }
 
     public function uploadDriveItem(string $driveId, string $driveItemId, string $fileName, $content) : Model\DriveItem 
     {

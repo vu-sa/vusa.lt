@@ -16,7 +16,7 @@ class TypesController extends Controller
      */
     public function index()
     {
-        return Inertia::render('Admin/ContentTypes/IndexTypes', [
+        return Inertia::render('Admin/ModelTypes/IndexTypes', [
             'contentTypes' => Type::all(),
         ]);
     }
