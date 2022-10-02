@@ -35,6 +35,10 @@ class SharepointAppGraph {
         $this->graph->setAccessToken($token);
     }
 
+    public function getGraphClient() : Graph {
+        return $this->graph;
+    }
+
     public function getSiteById(string $site_id) : Model\Site
     {
         if (Cache::has('ms_site_' . $site_id)) {
@@ -180,18 +184,46 @@ class SharepointAppGraph {
 
     public function uploadDriveItem(string $driveId, string $driveItemId, string $fileName, $content) : Model\DriveItem 
     {
-        $uploadedDriveItem = $this->graph->createRequest("PUT", "/drives/{$driveId}/items/{$driveItemId}:/{$fileName}:/content")
-            ->addHeaders(['Content-Type' => 'text/plain'])
-            ->attachBody($content)
-            ->setReturnType(Model\DriveItem::class)
-            ->execute();
+        // check if file is more than 4MB
+        if (strlen($content) > 4000000) {
+            $uploadSession = $this->graph->createRequest("POST", "/drives/{$driveId}/items/{$driveItemId}:/{$fileName}:/createUploadSession")
+                ->attachBody([
+                    'item' => [
+                        '@microsoft.graph.conflictBehavior' => 'rename'
+                    ]
+                ])
+                ->setReturnType(Model\UploadSession::class)
+                ->execute();
+
+            $uploadUrl = $uploadSession->getUploadUrl($content);
+            
+            $uploadedDriveItem = $this->getGraphClient()->createRequest("PUT", $uploadUrl)
+                ->addHeaders(
+                    ['Content-Length' => strlen($content), 
+                    'Content-Range' => 'bytes 0-' . (strlen($content) - 1) . '/' . strlen($content)
+                    ])
+                ->attachBody($content)
+                ->setReturnType(Model\DriveItem::class)
+                ->execute();
+        } else {
+            $uploadedDriveItem = $this->graph->createRequest("PUT", "/drives/{$driveId}/items/{$driveItemId}:/{$fileName}:/content")
+                ->attachBody($content)
+                ->setReturnType(Model\DriveItem::class)
+                ->execute();
+        }
+        
+        // $uploadedDriveItem = $this->graph->createRequest("PUT", "/drives/{$driveId}/items/{$driveItemId}:/{$fileName}:/content")
+        //     ->addHeaders(['Content-Type' => 'text/plain'])
+        //     ->attachBody($content)
+        //     ->setReturnType(Model\DriveItem::class)
+        //     ->execute();
 
         return $uploadedDriveItem;
     }
 
     public function deleteDriveItem(string $driveId, string $driveItemId) : void
     {
-        $this->graph->createRequest("DELETE", "/drives/{$driveId}/items/{$driveItemId}")
+        $this->getGraphClient()->createRequest("DELETE", "/drives/{$driveId}/items/{$driveItemId}")
             ->execute();
 
         Cache::forget('ms_drive_children_' . $driveItemId);
