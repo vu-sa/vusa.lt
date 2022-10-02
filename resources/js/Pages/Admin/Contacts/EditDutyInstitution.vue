@@ -27,9 +27,7 @@
         <strong>Šiuo metu institucijai priklauso šios pareigos:</strong>
         <TransitionGroup name="list" tag="ul" class="list-inside">
           <li v-for="duty in duties" :key="duty.id" class="gap-4">
-            <Link :href="route('duties.edit', { id: duty.id })">{{
-              duty.name
-            }}</Link>
+            <Link :href="route('duties.edit', { id: duty.id })">{{ duty.name }}</Link>
             <div class="ml-2 inline-flex gap-1">
               <NButton text @click="reorderDuties('up', duty)"
                 ><NIcon :component="ArrowCircleUp24Regular"
@@ -63,12 +61,9 @@ export default {
 </script>
 
 <script setup lang="ts">
-import {
-  ArrowCircleDown24Regular,
-  ArrowCircleUp24Regular,
-} from "@vicons/fluent";
+import { ArrowCircleDown24Regular, ArrowCircleUp24Regular } from "@vicons/fluent";
 import { Link } from "@inertiajs/inertia-vue3";
-import { NButton, NIcon, createDiscreteApi } from "naive-ui";
+import { NButton, NIcon } from "naive-ui";
 import { ref } from "vue";
 import route from "ziggy-js";
 
@@ -87,15 +82,12 @@ const props = defineProps<{
 }>();
 
 const dutyInstitution = ref(props.dutyInstitution);
-const { message } = createDiscreteApi(["message"]);
 
 if (!props.dutyInstitution.attributes) {
   dutyInstitution.value.attributes = {};
 }
 
-dutyInstitution.value.attributes = checkForEmptyArray(
-  dutyInstitution.value.attributes
-);
+dutyInstitution.value.attributes = checkForEmptyArray(dutyInstitution.value.attributes);
 
 if (!props.dutyInstitution.attributes.en) {
   dutyInstitution.value.attributes.en = {};

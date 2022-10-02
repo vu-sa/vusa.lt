@@ -6,7 +6,6 @@ use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
 use App\Models\Calendar;
 use App\Models\DutyInstitution;
-use App\Models\DutyType;
 use App\Models\MainPage;
 use App\Models\Navigation;
 use App\Models\News;
@@ -30,6 +29,7 @@ use App\Mail\ConfirmMemberRegistration;
 use App\Mail\ConfirmObserverRegistration;
 use App\Mail\InformSaziningaiAboutObserverRegistration;
 use App\Mail\InformSaziningaiAboutRegistration;
+use App\Models\Type;
 use App\Notifications\NotifyAboutMemberRegistration;
 use Spatie\CalendarLinks\Link;
 use Datetime;
@@ -336,8 +336,8 @@ class MainController extends Controller
 		}
 
 		if (in_array($alias, [null, 'koordinatoriai', 'kuratoriai'])) {
-			$duty_type = DutyType::where('alias', '=', $alias ?? "koordinatoriai")->first();
-			$child_duty_types = DutyType::where('pid', '=', $duty_type->id)->get();
+			$duty_type = Type::where('slug', '=', $alias ?? "koordinatoriai")->first();
+			$child_duty_types = Type::where('parent_id', '=', $duty_type->id)->get();
 
 			if ($padalinys->id === 16) {
 				$duty_institution = DutyInstitution::where('alias', '=', 'centrinis-biuras')->first();

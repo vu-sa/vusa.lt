@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -14,6 +15,21 @@ return new class extends Migration
      */
     public function up()
     {        
+        // check if duties_institutions_types table is empty
+        if (DB::table('duties_institutions_types')->count() === 0) {
+            Artisan::call('db:seed', [
+                '--class' => 'DutyInstitutionTypesSeeder',
+            ]);
+    
+        }
+
+        // check if duties_types table is empty
+        if (DB::table('duties_types')->count() === 0) {
+            Artisan::call('db:seed', [
+                '--class' => 'DutyTypesSeeder',
+            ]);
+        }
+        
         Schema::create('types', function (Blueprint $table) {
             $table->id();
             $table->foreignId('parent_id')->nullable()->constrained('types')->nullOnDelete();

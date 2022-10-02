@@ -6,7 +6,7 @@ use App\Models\Duty;
 use App\Models\DutyInstitution;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller as Controller;
-use App\Models\DutyType;
+use App\Models\Type;
 use Illuminate\Database\Eloquent\Collection;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
@@ -35,7 +35,7 @@ class DutyController extends Controller
             $query->whereHas('institution', function ($query) {
                 $query->where('padalinys_id', auth()->user()->padalinys()->id);
             });
-        })->with(['institution:id,name,short_name,padalinys_id','institution.padalinys:id,shortname', 'type:id,name'])->paginate(20);
+        })->with(['institution:id,name,short_name,padalinys_id','institution.padalinys:id,shortname'])->paginate(20);
 
         return Inertia::render('Admin/Contacts/IndexDuties', [
             'duties' => $duties,
@@ -52,7 +52,7 @@ class DutyController extends Controller
         $dutyInstitutions = $this->getDutyInstitutionsForForm();
         
         return Inertia::render('Admin/Contacts/CreateDuty', [
-            'dutyTypes' => DutyType::all(),
+            'dutyTypes' => Type::where('model_type', Duty::class)->get(),
             'dutyInstitutions' => $dutyInstitutions,
         ]);
     }
@@ -68,19 +68,19 @@ class DutyController extends Controller
         $request->validate([
             'name' => 'required',
             'institution' => 'required',
-            'type' => 'required',
         ]);
 
-        $duty = new Duty();
+        $duty = Duty::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'description' => $request->description,
+            'institution_id' => $request->institution['id'],
+        ]);
 
-        $duty->name = $request->name;
-        $duty->email = $request->email;
-        $duty->description = $request->description;
         $duty->attributes = $request->all()['attributes'];
-        $duty->institution()->associate($request->institution['id']);
-        // TODO: sutvarkyti
-        $duty->type_id = $request->type['id'];
         $duty->save();
+
+        $duty->types()->sync($request->type);
 
         return redirect()->route('duties.index')->with('success', 'Pareigybė sėkmingai sukurta!');
     }
@@ -108,17 +108,11 @@ class DutyController extends Controller
 
         return Inertia::render('Admin/Contacts/EditDuty', [
             'duty' => [
-                'id' => $duty->id,
-                'name' => $duty->name,
-                'description' => $duty->description,
-                'type' => $duty->type,
-                'institution' => $duty->institution,
-                'email' => $duty->email,
-                'attributes' => $duty->attributes,
-                'places_to_occupy' => $duty->places_to_occupy,
+                ...$duty->load('institution')->toArray(),
+                'types' => $duty->types->first()?->id,
             ],
             'users' => $duty->users,
-            'dutyTypes' => DutyType::all(),
+            'dutyTypes' => Type::where('model_type', Duty::class)->get(),
             'dutyInstitutions' => $dutyInstitutions
         ]);
     }
@@ -135,16 +129,16 @@ class DutyController extends Controller
         $request->validate([
             'name' => 'required',
             'institution' => 'required',
-            'type' => 'required',
         ]);
 
         DB::transaction(function () use ($request, $duty) {
             $duty->update($request->only('name', 'description', 'email', 'attributes'));
 
-            $duty->type_id = $request->type['id'];
             $duty->institution()->disassociate();
             $duty->institution()->associate(DutyInstitution::find($request->institution['id']));
             $duty->save();
+
+            $duty->types()->sync($request->types);
         });
 
         return back()->with('success', 'Pareigybė sėkmingai atnaujinta!');

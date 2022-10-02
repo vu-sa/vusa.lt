@@ -1,8 +1,6 @@
 <template>
   <PageContent
-    :title="`${duty.name} (${
-      duty.institution?.short_name ?? 'Neturi institucijos'
-    })`"
+    :title="`${duty.name} (${duty.institution?.short_name ?? 'Neturi institucijos'})`"
     :back-url="route('duties.index')"
   >
     <UpsertModelLayout :errors="$attrs.errors" :model="duty">
@@ -31,13 +29,7 @@
               />{{ user.name }}
               <NPopconfirm @positive-click="detachUserFromDuty(user)">
                 <template #trigger>
-                  <NButton
-                    type="error"
-                    tertiary
-                    size="tiny"
-                    circle
-                    @click.prevent
-                  >
+                  <NButton type="error" tertiary size="tiny" circle @click.prevent>
                     <NIcon>
                       <LinkDismiss20Filled />
                     </NIcon>
@@ -49,9 +41,7 @@
           </li>
         </ul>
       </div>
-      <p v-else class="main-card h-fit w-fit">
-        Šių pareigų kolkas niekas neužima.
-      </p>
+      <p v-else class="main-card h-fit w-fit">Šių pareigų kolkas niekas neužima.</p>
     </template>
   </PageContent>
 </template>
@@ -68,13 +58,7 @@ export default {
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
 import { LinkDismiss20Filled } from "@vicons/fluent";
-import {
-  NAvatar,
-  NButton,
-  NIcon,
-  NPopconfirm,
-  createDiscreteApi,
-} from "naive-ui";
+import { NAvatar, NButton, NIcon, NPopconfirm, createDiscreteApi } from "naive-ui";
 import { computed, ref } from "vue";
 import route from "ziggy-js";
 
@@ -98,6 +82,7 @@ const duty = ref(props.duty);
 
 duty.value.attributes = checkForEmptyArray(duty.value.attributes);
 duty.value.attributes.en = checkForEmptyArray(duty.value.attributes.en);
+
 ////////////////////////////////////////////////////////////////////////////////
 
 const detachUserFromDuty = (user: App.Models.User) => {

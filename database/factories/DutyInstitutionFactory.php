@@ -24,7 +24,6 @@ class DutyInstitutionFactory extends Factory
             // html descriptioj
             'description' => '<p>' . $this->faker->paragraph(1) . '</p><p>' . $this->faker->paragraph(1) . '</p>',
             'image_url' => $this->faker->imageUrl(640, 480, 'business', true),
-            'type_id' => 1,
             'padalinys_id' => Padalinys::inRandomOrder()->select('id')->first()->id,
         ];
     }

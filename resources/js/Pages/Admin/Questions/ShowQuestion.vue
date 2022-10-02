@@ -6,9 +6,7 @@
     <template #below-header>
       <NBreadcrumb class="w-full">
         <NBreadcrumbItem
-          @click="
-            Inertia.get(route('dutyInstitutions.show', question.institution.id))
-          "
+          @click="Inertia.get(route('dutyInstitutions.show', question.institution.id))"
           >{{ question.institution.name }}</NBreadcrumbItem
         >
         <NBreadcrumbItem
@@ -23,8 +21,8 @@
       <div class="mb-2 flex items-center gap-4">
         <h2 class="mb-0">Veiklos</h2>
         <NButton round size="tiny" secondary @click="showModal = true"
-          ><template #icon><NIcon :component="AddCircle32Regular" /></template
-          >Sukurti veiklą</NButton
+          ><template #icon><NIcon :component="AddCircle32Regular" /></template>Sukurti
+          veiklą</NButton
         >
         <HelpTextModal class="ml-auto" title="Kas yra veikla?"
           ><p>
@@ -32,15 +30,10 @@
           </p></HelpTextModal
         >
       </div>
-      <NTimeline
-        v-if="question.doings.length > 0"
-        horizontal
-        class="overflow-auto py-8"
-      >
+      <NTimeline v-if="question.doings.length > 0" horizontal class="overflow-auto py-8">
         <NTimelineItem
           v-for="doing in question.doings"
           :key="doing.id"
-          :title="doing.doing_type.title"
           :content="doing.title"
           :time="doing.date"
           ><template #header
@@ -51,7 +44,7 @@
                   doing: doing.id,
                 })
               "
-              >{{ doing.doing_type.title }}</Link
+              >{{ doing.title }}</Link
             ></template
           ></NTimelineItem
         >
@@ -76,12 +69,7 @@
   >
     <NForm :model="doingForm">
       <NGrid cols="2">
-        <NFormItemGi
-          label="Veiklos pavadinimas"
-          path="title"
-          required
-          :span="2"
-        >
+        <NFormItemGi label="Veiklos pavadinimas" path="title" required :span="2">
           <NSelect
             v-model:value="doingForm.title"
             placeholder="Susitikimas su studentais"
@@ -89,8 +77,7 @@
             tag
             :options="doingOptions"
             ><template #action>
-              <span
-                class="prose-sm prose-gray text-xs text-zinc-400 dark:prose-invert"
+              <span class="prose-sm prose-gray text-xs text-zinc-400 dark:prose-invert"
                 >Gali įrašyti ir savo veiklą...</span
               >
             </template></NSelect
@@ -98,7 +85,7 @@
         </NFormItemGi>
         <NFormItemGi label="Tipas" path="doing_type_id" required
           ><NSelect
-            v-model:value="doingForm.doing_type_id"
+            v-model:value="doingForm.type_id"
             placeholder="Pasirinkti tipą"
             filterable
             :options="doingTypes"
@@ -106,9 +93,7 @@
         ></NFormItemGi>
 
         <NFormItemGi :span="2" :show-label="false"
-          ><NButton type="primary" @click="createDoing"
-            >Sukurti</NButton
-          ></NFormItemGi
+          ><NButton type="primary" @click="createDoing">Sukurti</NButton></NFormItemGi
         >
       </NGrid>
     </NForm>
@@ -239,17 +224,14 @@ const doingOptions = [
 
 const doingForm = useForm({
   title: "",
-  doing_type_id: "",
+  type_id: "",
 });
 
 const createDoing = () => {
-  doingForm.post(
-    route("questions.doings.store", { question: props.question.id }),
-    {
-      onSuccess: () => {
-        showModal.value = false;
-      },
-    }
-  );
+  doingForm.post(route("questions.doings.store", { question: props.question.id }), {
+    onSuccess: () => {
+      showModal.value = false;
+    },
+  });
 };
 </script>

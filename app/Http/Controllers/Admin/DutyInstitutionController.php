@@ -6,9 +6,9 @@ use App\Models\DutyInstitution;
 use App\Models\Duty;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller as Controller;
-use App\Models\DutyInstitutionType;
 use Inertia\Inertia;
 use App\Models\Padalinys;
+use App\Models\Type;
 
 class DutyInstitutionController extends Controller
 {
@@ -52,7 +52,7 @@ class DutyInstitutionController extends Controller
                     'shortname' => $padalinys->shortname,
                 ];
             }),
-            'dutyInstitutionTypes' => DutyInstitutionType::all(),
+            'dutyInstitutionTypes' => Type::where('model_type', DutyInstitution::class)->get(),
         ]);
     }
 
@@ -71,15 +71,12 @@ class DutyInstitutionController extends Controller
             'padalinys_id' => 'required',
         ]);
 
-        $dutyInstitution = new DutyInstitution();
-        $dutyInstitution->name = $request->name;
-        $dutyInstitution->short_name = $request->short_name;
-        $dutyInstitution->alias = $request->alias;
-        $dutyInstitution->padalinys_id = $request->padalinys_id;
-        $dutyInstitution->image_url = $request->image_url;
+        $dutyInstitution = DutyInstitution::create($request->only('name', 'short_name', 'alias', 'padalinys_id', 'image_url'));
+
         $dutyInstitution->attributes = $request->all()['attributes'];
-        $dutyInstitution->type_id = $request->type_id;
         $dutyInstitution->save();
+
+        $dutyInstitution->types()->sync($request->types);
 
         return redirect()->route('dutyInstitutions.index')->with('success', 'Institucija sėkmingai sukurta!');
     }
@@ -92,7 +89,7 @@ class DutyInstitutionController extends Controller
      */
     public function show(DutyInstitution $dutyInstitution)
     {
-        $dutyInstitution->load('type', 'padalinys', 'questions');
+        $dutyInstitution->load('types', 'padalinys', 'questions');
 
         $users = $dutyInstitution->duties->pluck('users')->flatten()->unique('id')->values();
 
@@ -111,9 +108,12 @@ class DutyInstitutionController extends Controller
     public function edit(DutyInstitution $dutyInstitution)
     {
         return Inertia::render('Admin/Contacts/EditDutyInstitution', [
-            'dutyInstitution' => $dutyInstitution,
+            'dutyInstitution' => [
+                ...$dutyInstitution->toArray(),
+                'types' => $dutyInstitution->types->first()?->id,
+            ],
             'duties' => $dutyInstitution->duties->sortBy('order')->values(),
-            'dutyInstitutionTypes' => DutyInstitutionType::all(),
+            'dutyInstitutionTypes' => Type::where('model_type', DutyInstitution::class)->get(),
             'padaliniai' => Padalinys::orderBy('shortname_vu')->get()->map(function ($padalinys) {
                 return [
                     'id' => $padalinys->id,
@@ -140,7 +140,9 @@ class DutyInstitutionController extends Controller
         ]);
         
         // TODO: short_name and shortname are used as columns in some tables. Need to make the same name.
-        $dutyInstitution->update($request->only('name', 'short_name', 'description', 'padalinys_id', 'image_url', 'attributes', 'type_id'));
+        $dutyInstitution->update($request->only('name', 'short_name', 'description', 'padalinys_id', 'image_url', 'attributes'));
+
+        $dutyInstitution->types()->sync($request->types);
 
         return back()->with('success', 'Institucija sėkmingai atnaujinta!');
     }

@@ -3,11 +3,9 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use App\Models\ContentType;
 use App\Models\Doing;
 use App\Models\Duty;
 use App\Models\DutyInstitution;
-use App\Models\DutyType;
 use App\Models\Type;
 use Illuminate\Support\Facades\DB;
 

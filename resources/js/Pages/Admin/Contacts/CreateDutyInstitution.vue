@@ -37,6 +37,7 @@ const dutyInstitution = reactive({
   alias: "",
   description: "",
   padalinys_id: null,
+  types: null,
   attributes: {
     en: {
       name: "",

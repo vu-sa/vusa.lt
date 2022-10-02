@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller as Controller;
-use App\Models\DoingType;
+use App\Models\Doing;
 use App\Models\DutyInstitution;
 use App\Models\Question;
+use App\Models\QuestionGroup;
+use App\Models\Type;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -50,8 +52,15 @@ class DutyInstitutionQuestionsController extends Controller
         // add status "Sukurtas" to validated
         $validated['status'] = 'Sukurtas';
         $validated['institution_id'] = $dutyInstitution->id;
-        // TODO: need to set question group logically
-        $validated['question_group_id'] = 1;
+        // if no question group, create one
+        if (is_null($dutyInstitution->question_group_id)) {
+            $questionGroup = QuestionGroup::create([
+                'title' => 'Klausimo \"' . $validated['title'] . '\" grupė',
+            ]);
+            $validated['question_group_id'] = $questionGroup->id;
+        } else {
+            $validated['question_group_id'] = $dutyInstitution->question_group_id;
+        }
 
         $question = Question::create($validated);
 
@@ -81,7 +90,7 @@ class DutyInstitutionQuestionsController extends Controller
                     ];
                 }),
             ],
-            'doingTypes' => DoingType::all()->map(function ($doingType) {
+            'doingTypes' => Type::where('model_type', Doing::class)->get()->map(function ($doingType) {
                 return [
                     'value' => $doingType->id,
                     'label' => $doingType->title,

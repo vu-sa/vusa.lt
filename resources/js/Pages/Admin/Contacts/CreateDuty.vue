@@ -34,7 +34,7 @@ const duty = {
   description: "",
   email: null,
   institution: {},
-  type: {},
+  type: null,
   attributes: {
     en: {
       name: "",

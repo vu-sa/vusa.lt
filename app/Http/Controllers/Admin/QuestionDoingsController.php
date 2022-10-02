@@ -42,18 +42,15 @@ class QuestionDoingsController extends Controller
      */
     public function store(Request $request, Question $question)
     {
-        $validated = $request->validate([
+        $request->validate([
             'title' => 'required',
-            'doing_type_id' => 'required',
+            'type_id' => 'required',
         ]);
 
-        // add status "Sukurtas" to validated
-        $validated['status'] = 'Sukurtas';
-        $validated['question_id'] = $question->id;
-        $validated['date'] = now();
-
-
-        $doing = Doing::create($validated);
+        $doing = Doing::create
+            ($request->only('title') + ['question_id' => $question->id, 'status' => $request->type_id, 'date' => now()]);
+        
+        $doing->types()->sync($request->type_id);
 
         return redirect()->route('questions.doings.show', [$question, $doing])->with('success', 'Veiksmas sukurtas!');
     }

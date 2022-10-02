@@ -4,11 +4,7 @@
       <NTabPane display-directive="show" name="lt" tab="🇱🇹">
         <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
           <NFormItemGi label="Pareigų pavadinimas" :span="2">
-            <NInput
-              v-model:value="form.name"
-              type="text"
-              placeholder="Prezidentė"
-            />
+            <NInput v-model:value="form.name" type="text" placeholder="Prezidentė" />
           </NFormItemGi>
 
           <NFormItemGi label="Pareigybinis el. paštas" :span="2">
@@ -27,9 +23,9 @@
 
           <NFormItemGi label="Pareigybės tipas" :span="2">
             <NSelect
-              v-model:value="form.type.id"
+              v-model:value="form.type"
               :options="dutyTypes"
-              label-field="name"
+              label-field="title"
               value-field="id"
               placeholder="Pasirinkti kategoriją..."
               clearable
@@ -37,10 +33,7 @@
           </NFormItemGi>
 
           <NFormItemGi label="Aprašymas" :span="6">
-            <TipTap
-              v-model="form.description"
-              :search-files="$page.props.search.other"
-            />
+            <TipTap v-model="form.description" :search-files="$page.props.search.other" />
           </NFormItemGi>
         </NGrid>
       </NTabPane>
@@ -76,15 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  NForm,
-  NFormItemGi,
-  NGrid,
-  NInput,
-  NSelect,
-  NTabPane,
-  NTabs,
-} from "naive-ui";
+import { NForm, NFormItemGi, NGrid, NInput, NSelect, NTabPane, NTabs } from "naive-ui";
 import { useForm } from "@inertiajs/inertia-vue3";
 
 import DeleteModelButton from "@/Components/Admin/Buttons/DeleteModelButton.vue";
@@ -102,10 +87,8 @@ const props = defineProps<{
 
 const form = useForm("dutyInstitution", props.duty);
 
-const institutionsFromDatabase = props.dutyInstitutions.map(
-  (dutyInstitution) => ({
-    label: `${dutyInstitution.name} (${dutyInstitution.padalinys?.shortname})`,
-    value: dutyInstitution.id,
-  })
-);
+const institutionsFromDatabase = props.dutyInstitutions.map((dutyInstitution) => ({
+  label: `${dutyInstitution.name} (${dutyInstitution.padalinys?.shortname})`,
+  value: dutyInstitution.id,
+}));
 </script>
