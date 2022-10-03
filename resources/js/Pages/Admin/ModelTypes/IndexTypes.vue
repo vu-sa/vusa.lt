@@ -1,7 +1,12 @@
 <template>
-  <PageContent title="Turinio tipai">
+  <PageContent title="Turinio tipai" :create-url="route('types.create')">
     <div class="main-card">
-      <NDataTable :data="contentTypes" :columns="columns"></NDataTable>
+      <IndexSearchInput payload-name="text" />
+      <IndexDataTable
+        :model="contentTypes"
+        :columns="columns"
+        edit-route="types.edit"
+      />
     </div>
   </PageContent>
 </template>
@@ -15,28 +20,38 @@ export default {
 </script>
 
 <script setup lang="ts">
-import { NDataTable } from "naive-ui";
 import { computed } from "vue";
+import route from "ziggy-js";
 
+import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
+import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
 import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 
 const props = defineProps<{
-  contentTypes: Record<string, any>[];
+  contentTypes: PaginatedModels<any>;
 }>();
 
 // move data with parent_id to children of item
-const contentTypes = computed(() => {
-  const contentTypes = props.contentTypes;
-  const contentTypesWithChildren = contentTypes.map((contentType) => {
-    contentType.children = contentTypes.filter(
-      (child) => child.parent_id === contentType.id
-    );
-    return contentType;
-  });
-  return contentTypesWithChildren.filter(
-    (contentType) => contentType.parent_id === null
-  );
-});
+
+// this function crashes the page
+
+// const computedContentTypes = computed(() => {
+//   const contentTypes = props.contentTypes;
+//   let contentTypesWithChildren = {
+//     ...contentTypes,
+//     data: contentTypes.data.map((contentType) => {
+//       contentType.children = contentTypes.data.filter(
+//         (child) => child.parent_id === contentType.id
+//       );
+//       return contentType;
+//     }),
+//   };
+//   // filter content types without parent_id
+//   contentTypesWithChildren.data = contentTypesWithChildren.data.filter(
+//     (contentType) => contentType.parent_id === null
+//   );
+//   return contentTypesWithChildren;
+// });
 
 // add columns
 const columns = [
@@ -57,7 +72,7 @@ const columns = [
     key: "model_type",
   },
   {
-    title: "Kurtas",
+    title: "Sukurtas",
     key: "created_at",
     render(row) {
       return new Date(row.created_at).toLocaleString("lt-LT");

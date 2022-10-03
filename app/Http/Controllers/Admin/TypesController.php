@@ -17,7 +17,7 @@ class TypesController extends Controller
     public function index()
     {
         return Inertia::render('Admin/ModelTypes/IndexTypes', [
-            'contentTypes' => Type::all(),
+            'contentTypes' => Type::paginate(20),
         ]);
     }
 
@@ -28,7 +28,9 @@ class TypesController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('Admin/ModelTypes/CreateType', [
+            'contentTypes' => Type::select('id', 'title', 'model_type')->get(),
+        ]);
     }
 
     /**
@@ -39,7 +41,16 @@ class TypesController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'title' => 'required',
+            'model_type' => 'required',
+            'parent_id' => 'nullable|exists:types,id|different:id',
+        ]);
+
+        Type::create($request->only('title', 'model_type', 'description', 'parent_id'));
+
+        return redirect()->route('types.index')
+            ->with('success', 'Turinio tipas sukurtas sėkmingai.');
     }
 
     /**
@@ -61,7 +72,10 @@ class TypesController extends Controller
      */
     public function edit(Type $type)
     {
-        //
+        return Inertia::render('Admin/ModelTypes/EditType', [
+            'contentType' => $type,
+            'contentTypes' => Type::select('id', 'title', 'model_type')->get(),
+        ]);
     }
 
     /**
@@ -73,7 +87,17 @@ class TypesController extends Controller
      */
     public function update(Request $request, Type $type)
     {
-        //
+        $request->validate([
+            'title' => 'required',
+            'model_type' => 'required',
+            'parent_id' => 'nullable|exists:types,id|different:id',
+        ]);
+
+        // if 
+
+        $type->update($request->only('title', 'model_type', 'description', 'parent_id'));
+
+        return redirect()->route('types.index')->with('success', 'Turinio tipas sėkmingai atnaujintas!');
     }
 
     /**

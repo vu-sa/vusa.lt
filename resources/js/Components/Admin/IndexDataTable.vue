@@ -33,6 +33,8 @@ const props = defineProps<{
   destroyRoute?: string;
 }>();
 
+console.log(props.model);
+
 // Append the column array with an actions columns
 const columnsWithActions = computed(() => {
   return [
