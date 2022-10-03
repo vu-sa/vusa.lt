@@ -1,0 +1,41 @@
+<?php
+
+namespace App\Providers;
+
+use App\Models\Doing;
+use App\Notifications\CommentSubmitted;
+use App\Providers\UserComments;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Facades\Notification;
+
+class SendCommentNotification
+{
+    /**
+     * Create the event listener.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        //
+    }
+
+    /**
+     * Handle the event.
+     *
+     * @param  \App\Providers\UserComments  $event
+     * @return void
+     */
+    public function handle(UserComments $event)
+    {
+        // check if model is App\Models\Doing
+        if ($event->modelCommentedOn instanceof Doing) {
+            // get all doing's institution users
+            $users = $event->modelCommentedOn->question->institution->duties->pluck('users')->flatten()->unique('id');
+
+            // send notification to user
+            Notification::send($users, new CommentSubmitted($event->commenter, $event->modelCommentedOn, $event->route));
+        }
+    }
+}

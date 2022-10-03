@@ -39,7 +39,7 @@
           ><template #header
             ><Link
               :href="
-                route('questions.doings.show', {
+                route('doings.show', {
                   question: question.id,
                   doing: doing.id,
                 })
@@ -228,7 +228,7 @@ const doingForm = useForm({
 });
 
 const createDoing = () => {
-  doingForm.post(route("questions.doings.store", { question: props.question.id }), {
+  doingForm.post(route("doings.store", { question: props.question.id }), {
     onSuccess: () => {
       showModal.value = false;
     },

@@ -7,7 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class NotifyAboutMemberRegistration extends Notification
+class MemberRegistered extends Notification
 {
     use Queueable;
 

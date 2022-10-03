@@ -88,8 +88,8 @@ import route from "ziggy-js";
 
 const props = defineProps<{
   contentTypeOptions: Record<string, any>[];
-  keywords: Record<string, any>[];
-  contentModel: Record<string, any>[];
+  // keywords: Record<string, any>[];
+  contentModel: Record<string, any>;
 }>();
 
 const showModal = ref(false);

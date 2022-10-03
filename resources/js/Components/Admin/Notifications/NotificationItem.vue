@@ -6,7 +6,7 @@
     <div class="w-full">
       <p class="text-xs text-zinc-700 dark:text-zinc-300">
         <component
-          :is="getNotificationComponent(notification.data.type)"
+          :is="getNotificationComponent(notification.type)"
           :data="notification.data"
         />
       </p>
@@ -65,17 +65,24 @@ defineProps<{
 
 defineEmits<{ (event: "markAsRead", id: number): void }>();
 
-const InformAboutMemberRegistration = defineAsyncComponent(
-  () =>
-    import("@/Components/Admin/Notifications/InformAboutMemberRegistration.vue")
+const MemberRegistered = defineAsyncComponent(
+  () => import("@/Components/Admin/Notifications/MemberRegistered.vue")
+);
+
+const CommentSubmitted = defineAsyncComponent(
+  () => import("@/Components/Admin/Notifications/CommentSubmitted.vue")
 );
 
 const getNotificationComponent = (type: string) => {
+  console.log(type);
+
   switch (type) {
-    case "App\\Notifications\\InformAboutMemberRegistration":
-      return InformAboutMemberRegistration;
+    case "App\\Notifications\\MemberRegistered":
+      return MemberRegistered;
+    case "App\\Notifications\\CommentSubmitted":
+      return CommentSubmitted;
     default:
-      return InformAboutMemberRegistration;
+      return MemberRegistered;
   }
 };
 </script>

@@ -4,23 +4,20 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Doing;
 use App\Http\Controllers\Controller as Controller;
-use App\Models\Question;
-use App\Models\User;
 use App\Services\SharepointAppGraph;
 use App\Services\TaskCreator;
 use Illuminate\Http\Request;
 use Microsoft\Graph\Model;
 use Inertia\Inertia;
 
-class QuestionDoingsController extends Controller
+class DoingsController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
-     * @param  \App\Models\Question  $question
      * @return \Illuminate\Http\Response
      */
-    public function index(Question $question)
+    public function index()
     {
         //
     }
@@ -28,10 +25,9 @@ class QuestionDoingsController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @param  \App\Models\Question  $question
      * @return \Illuminate\Http\Response
      */
-    public function create(Question $question)
+    public function create()
     {
         //
     }
@@ -40,10 +36,9 @@ class QuestionDoingsController extends Controller
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Question  $question
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request, Question $question)
+    public function store(Request $request)
     {
         $request->validate([
             'title' => 'required',
@@ -51,24 +46,23 @@ class QuestionDoingsController extends Controller
         ]);
 
         $doing = Doing::create
-            ($request->only('title') + ['question_id' => $question->id, 'status' => $request->type_id, 'date' => now()]);
+            ($request->only('title') + ['status' => $request->type_id, 'date' => now()]);
         
         $doing->types()->sync($request->type_id);
 
         $taskCreator = new TaskCreator();
         $taskCreator->createAutomaticTasks($doing);
 
-        return redirect()->route('questions.doings.show', [$question, $doing])->with('success', 'Veiksmas sukurtas!');
+        return redirect()->route('doings.show', $doing)->with('success', 'Veiksmas sukurtas!');
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Question  $question
      * @param  \App\Models\Doing  $doing
      * @return \Illuminate\Http\Response
      */
-    public function show(Question $question, Doing $doing)
+    public function show(Doing $doing)
     {
         $sharepointFiles = [];
         
@@ -99,7 +93,7 @@ class QuestionDoingsController extends Controller
         }
 
         return Inertia::render('Admin/Questions/ShowDoing', [
-            'question' => $question->load('institution'),
+            'question' => $doing->question->load('institution'),
             'doing' => [
                     ...$doing->toArray(),
                     'activities' => $doing->activities->map(function ($activity) {
@@ -109,7 +103,8 @@ class QuestionDoingsController extends Controller
                             'causer' => $activity->causer
                         ];
                     }),
-                    'tasks' => $doing->tasks
+                    'tasks' => $doing->tasks,
+                    'comments' => $doing->comments,
                 ],
             'documents' => $sharepointFiles,
         ]);
@@ -118,11 +113,10 @@ class QuestionDoingsController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Question  $question
      * @param  \App\Models\Doing  $doing
      * @return \Illuminate\Http\Response
      */
-    public function edit(Question $question, Doing $doing)
+    public function edit(Doing $doing)
     {
         //
     }
@@ -131,11 +125,10 @@ class QuestionDoingsController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Question  $question
      * @param  \App\Models\Doing  $doing
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Question $question, Doing $doing)
+    public function update(Request $request, Doing $doing)
     {
         //
     }
@@ -143,11 +136,10 @@ class QuestionDoingsController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Question  $question
      * @param  \App\Models\Doing  $doing
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Question $question, Doing $doing)
+    public function destroy(Doing $doing)
     {
         //
     }

@@ -30,7 +30,7 @@ use App\Mail\ConfirmObserverRegistration;
 use App\Mail\InformSaziningaiAboutObserverRegistration;
 use App\Mail\InformSaziningaiAboutRegistration;
 use App\Models\Type;
-use App\Notifications\NotifyAboutMemberRegistration;
+use App\Notifications\MemberRegistered;
 use Spatie\CalendarLinks\Link;
 use Datetime;
 use Illuminate\Support\Carbon;
@@ -649,7 +649,7 @@ class MainController extends Controller
 
 		// send mail to the registered person
 		Mail::to($data['email'])->send(new ConfirmMemberRegistration($data, $registerLocation, $chairPerson, $chairEmail));
-		Notification::send($chairPerson, new NotifyAboutMemberRegistration($data, $registerLocation, $chairEmail));
+		Notification::send($chairPerson, new MemberRegistered($data, $registerLocation, $chairEmail));
 	}
 
 	public function storeRegistration(RegistrationForm $registrationForm) {

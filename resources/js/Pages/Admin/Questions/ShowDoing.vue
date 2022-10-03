@@ -32,22 +32,29 @@
       </NBreadcrumb>
     </template>
     <template #aside-card>
-      <div>
-        <h2>Užduotys</h2>
-        <div class="main-card w-80">
+      <div class="w-96">
+        <div v-if="doing.tasks.length > 0" class="main-card h-fit">
+          <h2>Užduotys</h2>
           <TaskViewer :tasks="doing.tasks" />
+        </div>
+        <div class="main-card">
+          <h2>Komentarai</h2>
+          <CommentViewer :comments="doing.comments" />
+          <CommentTipTap v-model:text="comment" :content-model="contentModel" />
         </div>
       </div>
     </template>
-    <div class="main-card">
-      <div class="mb-4 flex items-center gap-4">
-        <h2 class="mb-0">Dokumentai</h2>
-        <FileUploader
-          :content-type-options="contentTypeOptions"
-          :content-model="{ id: doing.id, type: 'App\\Models\\Doing' }"
-        ></FileUploader>
+    <div class="grid grid-cols-2">
+      <div class="main-card col-span-full">
+        <div class="mb-4 flex items-center gap-4">
+          <h2 class="mb-0">Dokumentai</h2>
+          <FileUploader
+            :content-type-options="contentTypeOptions"
+            :content-model="contentModel"
+          ></FileUploader>
+        </div>
+        <NDataTable :columns="columns" :data="documents"></NDataTable>
       </div>
-      <NDataTable :columns="columns" :data="documents"></NDataTable>
     </div>
   </PageContent>
 </template>
@@ -65,24 +72,35 @@ import { Inertia } from "@inertiajs/inertia";
 import {
   NBreadcrumb,
   NBreadcrumbItem,
+  NButton,
   NDataTable,
+  NIcon,
   NPopover,
   NSpace,
   NTag,
 } from "naive-ui";
-import { h } from "vue";
+import { computed, h, ref } from "vue";
 import route from "ziggy-js";
 
+import CommentTipTap from "@/Components/CommentTipTap.vue";
+import CommentViewer from "@/Components/Admin/Comments/CommentViewer.vue";
 import FileUploader from "@/Components/Admin/Buttons/FileUploader.vue";
 import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import ShowActivityLog from "@/Components/Admin/Buttons/ShowActivityLog.vue";
 import TaskViewer from "@/Components/Admin/Tasks/TaskViewer.vue";
 
-defineProps<{
+const props = defineProps<{
   doing: Record<string, any>;
   question: Record<string, any>;
   documents: Record<string, any>[];
 }>();
+
+const comment = ref("");
+
+const contentModel = computed(() => ({
+  id: props.doing.id,
+  type: "App\\Models\\Doing",
+}));
 
 const columns = [
   {

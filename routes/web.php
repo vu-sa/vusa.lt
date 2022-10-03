@@ -38,6 +38,7 @@ Route::prefix('admin')->group(function () {
         Route::resource('banners', Admin\BannerController::class);
         Route::resource('navigation', Admin\NavigationController::class);
         Route::resource('users', Admin\UserController::class);
+        Route::resource('users.comments', Admin\CommentController::class);
         Route::post('users/{user}/detach/{duty}', [Admin\UserController::class, 'detachFromDuty'])->name('users.detach');
         Route::post('notification/{id}/markAsRead', [Admin\UserNotificationsController::class, 'markAsRead'])->name('notifications.markAsRead');
 
@@ -47,7 +48,7 @@ Route::prefix('admin')->group(function () {
         Route::resource('registrations', Admin\RegistrationController::class);
 
         Route::resource('dutyInstitutions.questions', Admin\DutyInstitutionQuestionsController::class);
-        Route::resource('questions.doings', Admin\QuestionDoingsController::class);
+        Route::resource('doings', Admin\DoingsController::class);
 
         Route::resource('saziningaiExams', Admin\SaziningaiExamsController::class);
         Route::resource('saziningaiExamFlows', Admin\SaziningaiExamFlowsController::class);

@@ -22,7 +22,7 @@
             >
           </div>
           <div class="flex items-center gap-4">
-            <UserAvatar />
+            <UserAdminOptionsMenu />
             <DarkModeSwitch />
             <NotificationBell />
           </div>
@@ -92,7 +92,7 @@ import DarkModeSwitch from "@/Components/DarkModeSwitch.vue";
 import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
 import NotificationBell from "@/Components/Admin/NotificationBell.vue";
-import UserAvatar from "../Nav/UserAvatar.vue";
+import UserAdminOptionsMenu from "../Nav/UserAdminOptionsMenu.vue";
 
 defineProps<{
   title?: string;
