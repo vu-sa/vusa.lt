@@ -31,6 +31,14 @@
         <NBreadcrumbItem>{{ doing.title }}</NBreadcrumbItem>
       </NBreadcrumb>
     </template>
+    <template #aside-card>
+      <div>
+        <h2>Užduotys</h2>
+        <div class="main-card w-80">
+          <TaskViewer :tasks="doing.tasks" />
+        </div>
+      </div>
+    </template>
     <div class="main-card">
       <div class="mb-4 flex items-center gap-4">
         <h2 class="mb-0">Dokumentai</h2>
@@ -68,6 +76,7 @@ import route from "ziggy-js";
 import FileUploader from "@/Components/Admin/Buttons/FileUploader.vue";
 import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import ShowActivityLog from "@/Components/Admin/Buttons/ShowActivityLog.vue";
+import TaskViewer from "@/Components/Admin/Tasks/TaskViewer.vue";
 
 defineProps<{
   doing: Record<string, any>;

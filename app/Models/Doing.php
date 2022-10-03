@@ -22,7 +22,7 @@ class Doing extends Model
 
     public function question()
     {
-        return $this->belongsTo(DutyInstitution::class);
+        return $this->belongsTo(Question::class);
     }
 
     public function types()
@@ -34,4 +34,10 @@ class Doing extends Model
     {
         return $this->morphMany(SharepointDocument::class, 'documentable');
     }
+
+    public function tasks()
+    {
+        return $this->morphMany(Task::class, 'taskable');
+    }
+
 }

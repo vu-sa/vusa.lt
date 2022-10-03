@@ -59,6 +59,8 @@ Route::prefix('admin')->group(function () {
         Route::post('dutyInstitutions/reorderDuties', [Admin\DutyInstitutionController::class, 'reorderDuties'])->name('dutyInstitutions.reorderDuties');
 
         Route::resource('types', Admin\TypesController::class);
+        Route::resource('tasks', Admin\TasksController::class);
+        Route::post('tasks/{task}/updateCompletionStatus', [Admin\TasksController::class, 'updateCompletionStatus'])->name('tasks.updateCompletionStatus');
 
         Route::post('files/search', [Admin\FilesController::class, 'searchForFiles'])->name('files.search');
         Route::post('images/search', [Admin\FilesController::class, 'searchForImages'])->name('images.search');

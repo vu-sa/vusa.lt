@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller as Controller;
 use App\Models\Question;
 use App\Models\User;
 use App\Services\SharepointAppGraph;
+use App\Services\TaskCreator;
 use Illuminate\Http\Request;
 use Microsoft\Graph\Model;
 use Inertia\Inertia;
@@ -53,6 +54,9 @@ class QuestionDoingsController extends Controller
             ($request->only('title') + ['question_id' => $question->id, 'status' => $request->type_id, 'date' => now()]);
         
         $doing->types()->sync($request->type_id);
+
+        $taskCreator = new TaskCreator();
+        $taskCreator->createAutomaticTasks($doing);
 
         return redirect()->route('questions.doings.show', [$question, $doing])->with('success', 'Veiksmas sukurtas!');
     }
@@ -105,6 +109,7 @@ class QuestionDoingsController extends Controller
                             'causer' => $activity->causer
                         ];
                     }),
+                    'tasks' => $doing->tasks
                 ],
             'documents' => $sharepointFiles,
         ]);
