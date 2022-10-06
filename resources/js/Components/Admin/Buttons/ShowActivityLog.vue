@@ -5,7 +5,7 @@
   ></NButton>
   <NModal
     v-model:show="showModal"
-    class="prose-sm prose max-w-xl dark:prose-invert"
+    class="max-w-xl dark:prose-invert"
     title="Įrašo pokyčiai"
     :bordered="false"
     size="large"
@@ -13,19 +13,22 @@
     aria-modal="true"
     preset="card"
   >
-    <template v-if="activities.length > 0">
+    <div v-if="activities.length > 0" class="flex flex-col gap-4">
       <div v-for="activity in activities" :key="activity.id">
-        <div v-if="activity.description === 'created'">
-          <p class="my-0">
-            <span class="font-bold">{{ activity.causer.name }}</span> sukūrė
-            įvykį.
-          </p>
-          <p class="mt-0 text-sm text-gray-500">
-            {{ activity.created_at }}
-          </p>
-        </div>
+        <p class="my-1 flex flex-row items-center gap-1">
+          <UserAvatar show-name :user="activity.causer" />
+          <template v-if="activity.description === 'created'"
+            ><span> sukūrė įvykį.</span>
+          </template>
+          <template v-else-if="activity.description === 'updated'"
+            ><span>atnaujino įvykį.</span></template
+          >
+        </p>
+        <p :title="activity.created_at" class="mt-0 text-sm text-gray-500">
+          {{ getRelativeTime(activity.created_at) }}
+        </p>
       </div>
-    </template>
+    </div>
     <p v-else>Jokių pokyčių nerasta.</p>
   </NModal>
 </template>
@@ -34,6 +37,9 @@
 import { DocumentOnePage24Regular } from "@vicons/fluent";
 import { NButton, NIcon, NModal } from "naive-ui";
 import { ref } from "vue";
+
+import UserAvatar from "../UserAvatar.vue";
+import getRelativeTime from "@/Composables/getRelativeTime";
 
 defineProps<{
   activities: Record<string, any>;

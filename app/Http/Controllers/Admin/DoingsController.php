@@ -49,6 +49,7 @@ class DoingsController extends Controller
             ($request->only('title') + ['status' => $request->type_id, 'date' => now()]);
         
         $doing->types()->sync($request->type_id);
+        $doing->questions()->sync($request->question_id);
 
         $taskCreator = new TaskCreator();
         $taskCreator->createAutomaticTasks($doing);
@@ -130,7 +131,13 @@ class DoingsController extends Controller
      */
     public function update(Request $request, Doing $doing)
     {
-        //
+        $request->validate([
+            'title' => 'required',
+        ]);
+
+        $doing->update($request->only('title'));
+
+        return redirect()->route('doings.show', $doing)->with('success', 'Veikla atnaujinta!');
     }
 
     /**

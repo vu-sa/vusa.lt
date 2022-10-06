@@ -2,8 +2,29 @@
   <PageContent :title="doing.title">
     <template #aside-header>
       <div class="flex items-center gap-4">
+        <NButton secondary circle @click="showModal = true"
+          ><template #icon
+            ><NIcon :component="DocumentEdit24Regular"></NIcon></template
+        ></NButton>
         <NTag :bordered="false" round type="success">Sukurtas</NTag>
         <ShowActivityLog :activities="doing.activities" />
+        <NModal
+          v-model:show="showModal"
+          class="prose-sm prose max-w-xl dark:prose-invert"
+          :title="`${$t('Sukurti veiklą')} (${question.title})`"
+          :bordered="false"
+          size="large"
+          role="card"
+          aria-modal="true"
+          preset="card"
+        >
+          <DoingForm
+            :doing="doing"
+            :question="question"
+            :model-route="'doings.update'"
+            @success="showModal = false"
+          ></DoingForm>
+        </NModal>
       </div>
     </template>
     <template #below-header>
@@ -72,6 +93,8 @@ export default {
 </script>
 
 <script setup lang="ts">
+import { trans as $t } from "laravel-vue-i18n";
+import { DocumentEdit24Regular } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import {
   NBreadcrumb,
@@ -79,6 +102,7 @@ import {
   NButton,
   NDataTable,
   NIcon,
+  NModal,
   NPopover,
   NSpace,
   NTag,
@@ -88,6 +112,7 @@ import route from "ziggy-js";
 
 import CommentTipTap from "@/Components/CommentTipTap.vue";
 import CommentViewer from "@/Components/Admin/Comments/CommentViewer.vue";
+import DoingForm from "@/Components/Admin/Forms/DoingForm.vue";
 import FileUploader from "@/Components/Admin/Buttons/FileUploader.vue";
 import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import ShowActivityLog from "@/Components/Admin/Buttons/ShowActivityLog.vue";
@@ -100,6 +125,8 @@ const props = defineProps<{
 }>();
 
 const comment = ref("");
+
+const showModal = ref(false);
 
 const contentModel = computed(() => ({
   id: props.doing.id,

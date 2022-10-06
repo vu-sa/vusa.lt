@@ -6,7 +6,9 @@
     <template #below-header>
       <NBreadcrumb class="w-full">
         <NBreadcrumbItem
-          @click="Inertia.get(route('dutyInstitutions.show', question.institution.id))"
+          @click="
+            Inertia.get(route('dutyInstitutions.show', question.institution.id))
+          "
           >{{ question.institution.name }}</NBreadcrumbItem
         >
         <NBreadcrumbItem
@@ -21,8 +23,8 @@
       <div class="mb-2 flex items-center gap-4">
         <h2 class="mb-0">Veiklos</h2>
         <NButton round size="tiny" secondary @click="showModal = true"
-          ><template #icon><NIcon :component="AddCircle32Regular" /></template>Sukurti
-          veiklą</NButton
+          ><template #icon><NIcon :component="AddCircle32Regular" /></template
+          >Sukurti veiklą</NButton
         >
         <HelpTextModal class="ml-auto" title="Kas yra veikla?"
           ><p>
@@ -30,7 +32,7 @@
           </p></HelpTextModal
         >
       </div>
-      <NTimeline v-if="question.doings.length > 0" horizontal class="overflow-auto py-8">
+      <NTimeline v-if="question.doings.length > 0" class="overflow-auto py-8">
         <NTimelineItem
           v-for="doing in question.doings"
           :key="doing.id"
@@ -67,42 +69,18 @@
     aria-modal="true"
     preset="card"
   >
-    <NForm :model="doingForm">
-      <NGrid cols="2">
-        <NFormItemGi label="Veiklos pavadinimas" path="title" required :span="2">
-          <NSelect
-            v-model:value="doingForm.title"
-            placeholder="Susitikimas su studentais"
-            filterable
-            tag
-            :options="doingOptions"
-            ><template #action>
-              <span class="prose-sm prose-gray text-xs text-zinc-400 dark:prose-invert"
-                >Gali įrašyti ir savo veiklą...</span
-              >
-            </template></NSelect
-          >
-        </NFormItemGi>
-        <NFormItemGi label="Tipas" path="doing_type_id" required
-          ><NSelect
-            v-model:value="doingForm.type_id"
-            placeholder="Pasirinkti tipą"
-            filterable
-            :options="doingTypes"
-          ></NSelect
-        ></NFormItemGi>
-
-        <NFormItemGi :span="2" :show-label="false"
-          ><NButton type="primary" @click="createDoing">Sukurti</NButton></NFormItemGi
-        >
-      </NGrid>
-    </NForm>
+    <DoingForm
+      :doing="doingTemplate"
+      :question="question"
+      :doing-types="doingTypes"
+      model-route="doings.store"
+      @success="showModal = false"
+    ></DoingForm>
   </NModal>
 </template>
 
 <script lang="ts">
 import { h } from "vue";
-import { useForm } from "@inertiajs/inertia-vue3";
 import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
 
 export default {
@@ -124,31 +102,31 @@ import {
   NBreadcrumb,
   NBreadcrumbItem,
   NButton,
-  NDataTable,
-  NForm,
-  NFormItemGi,
-  NGrid,
   NIcon,
-  NInput,
   NModal,
   NPopover,
-  NSelect,
   NTimeline,
   NTimelineItem,
 } from "naive-ui";
 import { ref } from "vue";
 import route from "ziggy-js";
 
+import DoingForm from "@/Components/Admin/Forms/DoingForm.vue";
 import HelpTextModal from "@/Components/HelpTextModal.vue";
 import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import ShowActivityLog from "@/Components/Admin/Buttons/ShowActivityLog.vue";
 
-const props = defineProps<{
+defineProps<{
   question: Record<string, any>;
   doingTypes: Record<string, any>;
 }>();
 
 const showModal = ref(false);
+
+const doingTemplate = {
+  title: "",
+  type_id: "",
+};
 
 const columns = [
   {
@@ -197,41 +175,8 @@ const columns = [
           { size: "small", secondary: true },
           h(NIcon, { component: Edit20Filled })
         ),
-        // h(
-        //   NButton,
-        //   { round: true, size: "small", type: "error" },
-        //   { default: () => "Ištrinti" }
-        // ),
       ]);
     },
   },
 ];
-
-const doingOptions = [
-  {
-    label: "Susitikimas su studentais",
-    value: "Susitikimas su studentais",
-  },
-  {
-    label: "Planuotas posėdis",
-    value: "Planuotas posėdis",
-  },
-  {
-    label: "Susitikimas su koordinatoriumi",
-    value: "Susitikimas su koordinatoriumi",
-  },
-];
-
-const doingForm = useForm({
-  title: "",
-  type_id: "",
-});
-
-const createDoing = () => {
-  doingForm.post(route("doings.store", { question: props.question.id }), {
-    onSuccess: () => {
-      showModal.value = false;
-    },
-  });
-};
 </script>

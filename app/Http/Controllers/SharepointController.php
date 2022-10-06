@@ -120,8 +120,6 @@ class SharepointController extends Controller
         
         $uploadedFile = $graph->uploadDriveItem($drive->getId(), $driveItem_General->getId(), $file->getClientOriginalName(), $file->getContent());
         
-        dd($uploadedFile);
-
         $uploadedDriveItem = $graph->getDriveItemByIdWithListItem($drive->getId(), $uploadedFile->getId());
 
         $listItem = $uploadedDriveItem->getListItem() ?? abort(500);
