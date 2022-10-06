@@ -22,7 +22,7 @@ class Question extends Model
 
     public function doings()
     {
-        return $this->hasMany(Doing::class);
+        return $this->belongsToMany(Doing::class);
     }
 
     public function question_group()

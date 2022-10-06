@@ -6,7 +6,10 @@
           ><template #icon><NIcon :component="Alert24Regular"></NIcon></template
         ></NButton>
       </template>
-      <div v-if="notifications.length > 0" class="max-w-xs sm:max-w-lg">
+      <div
+        v-if="notifications.length > 0"
+        class="max-h-96 max-w-xs overflow-auto pr-4 sm:max-w-lg"
+      >
         <header class="flex">
           <span class="text-lg font-bold text-zinc-900 dark:text-zinc-50"
             >Pranešimai</span

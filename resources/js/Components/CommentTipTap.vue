@@ -33,6 +33,8 @@
         <UserAvatar :user="$page.props.user" />
         <NButton
           secondary
+          :disabled="editor?.getHTML() == '<p></p>'"
+          :loading="loading"
           round
           class="w-full"
           @click="submitComment($page.props.user)"
@@ -69,6 +71,7 @@ const props = defineProps<{
 const emit = defineEmits(["update:text"]);
 
 const text = ref(props.text);
+const loading = ref(false);
 
 const editor = useEditor({
   editorProps: {
@@ -89,11 +92,14 @@ const editor = useEditor({
   },
 });
 
+console.log(!!editor.value?.getHTML());
+
 onBeforeUnmount(() => {
   editor.value?.destroy();
 });
 
 const submitComment = (user: unknown) => {
+  loading.value = true;
   Inertia.post(
     route("users.comments.store", user.id),
     {
@@ -106,6 +112,7 @@ const submitComment = (user: unknown) => {
       preserveScroll: true,
       onSuccess: () => {
         editor.value?.chain().focus().setContent("").run();
+        loading.value = false;
       },
     }
   );

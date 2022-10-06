@@ -40,8 +40,12 @@
         <div class="main-card">
           <h2>Komentarai</h2>
           <CommentViewer :comments="doing.comments" />
-          <CommentTipTap v-model:text="comment" :content-model="contentModel" />
         </div>
+        <CommentTipTap
+          v-model:text="comment"
+          class="main-card"
+          :content-model="contentModel"
+        />
       </div>
     </template>
     <div class="grid grid-cols-2">

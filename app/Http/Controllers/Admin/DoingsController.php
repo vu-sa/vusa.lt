@@ -93,7 +93,7 @@ class DoingsController extends Controller
         }
 
         return Inertia::render('Admin/Questions/ShowDoing', [
-            'question' => $doing->question->load('institution'),
+            'question' => $doing->questions->first()->load('institution'),
             'doing' => [
                     ...$doing->toArray(),
                     'activities' => $doing->activities->map(function ($activity) {

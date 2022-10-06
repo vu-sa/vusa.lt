@@ -53,13 +53,13 @@ class DutyInstitutionQuestionsController extends Controller
         $validated['status'] = 'Sukurtas';
         $validated['institution_id'] = $dutyInstitution->id;
         // if no question group, create one
-        if (is_null($dutyInstitution->question_group_id)) {
+        if (is_null($request->question_group_id)) {
             $questionGroup = QuestionGroup::create([
                 'title' => 'Klausimo \"' . $validated['title'] . '\" grupė',
             ]);
             $validated['question_group_id'] = $questionGroup->id;
         } else {
-            $validated['question_group_id'] = $dutyInstitution->question_group_id;
+            $validated['question_group_id'] = $request->question_group_id;
         }
 
         $question = Question::create($validated);

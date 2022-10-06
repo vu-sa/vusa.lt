@@ -28,7 +28,9 @@ class TaskCreator
         // if ($doing->start_date->isToday() || $doing->start_date->isFuture()) {
         // }
 
-        $institution = $doing->question->institution;
+        // TODO: fix for multiple questions
+
+        $institution = $doing->questions->first()->institution;
 
         $users = $institution->duties->pluck('users')->flatten()->unique('id');
 

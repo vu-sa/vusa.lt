@@ -21,9 +21,9 @@ class Doing extends Model
         return LogOptions::defaults()->logOnly(['*']);
     }
 
-    public function question()
+    public function questions()
     {
-        return $this->belongsTo(Question::class);
+        return $this->belongsToMany(Question::class);
     }
 
     public function types()
