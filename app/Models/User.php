@@ -74,6 +74,8 @@ class User extends Authenticatable
 
     public function padaliniai()
     {
+        $padaliniai = [];
+        
         $this->load('duties.institution.padalinys');
         foreach ($this->duties as $duty) {
             if ($duty->institution->padalinys) {
