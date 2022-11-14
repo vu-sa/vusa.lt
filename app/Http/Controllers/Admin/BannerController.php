@@ -6,6 +6,7 @@ use App\Models\Banner;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
+use App\Models\Padalinys;
 
 class BannerController extends Controller
 {
@@ -69,12 +70,12 @@ class BannerController extends Controller
         $banner = new Banner();
         // $banner->text = $request->text;
         $banner->title = $request->title;
-        $banner->is_active = $request->is_active;
+        $banner->is_active = $request->is_active ?? 0;
         $banner->link_url = $request->link_url ?? "";
         // add random banner order for now
         $banner->order = rand(1, 10);
         $banner->image_url = $request->image_url;
-        $banner->padalinys_id = $request->user()->padalinys()->id;
+        $banner->padalinys_id = $request->user()->padalinys()?->id ?? Padalinys::where('alias', 'vusa')->first()->id;
         $banner->user_id = $request->user()->id;
         $banner->save();
 
