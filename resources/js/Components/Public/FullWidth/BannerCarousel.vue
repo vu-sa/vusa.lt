@@ -19,7 +19,7 @@
       <NCarouselItem class="my-auto" v-for="banner in banners" :key="banner.id">
         <a target="_blank" :href="banner.link_url">
           <img
-            class="rounded-sm shadow-md w-3/4 lg:max-h-32 object-contain"
+            class="rounded-sm w-3/4 lg:max-h-32 object-contain"
             :src="banner.image_url"
           />
         </a>
