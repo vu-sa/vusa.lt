@@ -231,6 +231,7 @@ import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
 import TableRow from "@tiptap/extension-table-row";
 import TipTapLink from "@tiptap/extension-link";
+import Youtube from "@tiptap/extension-youtube";
 import route from "ziggy-js";
 
 const props = defineProps<{
@@ -341,6 +342,11 @@ const editor = useEditor({
     TableRow,
     TipTapLink.configure({
       openOnClick: false,
+    }),
+    Youtube.configure({
+      HTMLAttributes: {
+        class: "w-full overflow-y-auto",
+      },
     }),
   ],
   content: modelValue.value,
