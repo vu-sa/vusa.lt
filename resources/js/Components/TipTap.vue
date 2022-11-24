@@ -123,7 +123,7 @@
 
     <EditorContent
       :editor="editor"
-      class="min-h-[12em] rounded-b-lg border-vusa-yellow/50 bg-stone-50/40 shadow-inner dark:bg-zinc-800/70"
+      class="max-h-72 min-h-[12em] overflow-y-scroll rounded-b-lg border-vusa-yellow/50 bg-stone-50/40 shadow-inner dark:bg-zinc-800/70"
     />
   </div>
   <NModal
