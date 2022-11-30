@@ -12,7 +12,7 @@
         <NModal
           v-model:show="showModal"
           class="prose prose-sm max-w-xl dark:prose-invert"
-          :title="`${$t('Sukurti veiklą')} (${question.title})`"
+          :title="`${$t('Redaguoti veiklą')} (${question.title})`"
           :bordered="false"
           size="large"
           role="card"
@@ -95,10 +95,13 @@
       <div class="main-card col-span-full">
         <div class="mb-4 flex items-center gap-4">
           <h2 class="mb-0">Dokumentai</h2>
-          <FileUploader
-            :content-type-options="contentTypeOptions"
-            :content-model="contentModel"
-          ></FileUploader>
+          <NMessageProvider>
+            <FileUploader
+              :content-type-options="contentTypeOptions"
+              :content-model="contentModel"
+              :institution="question.institution"
+            ></FileUploader>
+          </NMessageProvider>
         </div>
         <NDataTable :columns="columns" :data="documents"></NDataTable>
       </div>
@@ -129,6 +132,7 @@ import {
   NButton,
   NDataTable,
   NIcon,
+  NMessageProvider,
   NModal,
   NPopover,
   NSpace,
@@ -159,6 +163,7 @@ const showModal = ref(false);
 const contentModel = computed(() => ({
   id: props.doing.id,
   type: "App\\Models\\Doing",
+  contentTypes: props.doing.types,
 }));
 
 const columns = [
@@ -205,19 +210,4 @@ const contentTypeOptions = [
     value: "Pristatymai",
   },
 ];
-
-const computedStatusType = computed(() => {
-  switch (props.doing.status) {
-    case "Sukurtas":
-      return "info";
-    case "Atnaujintas":
-      return "warning";
-    case "Pabaigtas":
-      return "success";
-    case "Atmestas":
-      return "error";
-    default:
-      return "info";
-  }
-});
 </script>

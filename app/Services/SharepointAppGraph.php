@@ -127,7 +127,7 @@ class SharepointAppGraph {
     {
         $id = 0;
         
-        $batch_request_body = ["requests" => $documentCollection->map(function($document) use ($driveId, $id) {
+        $batch_request_body = ["requests" => $documentCollection->map(function($document) use ($driveId, &$id) {          
                 $id++;
             
                 return [

@@ -18,11 +18,17 @@
       Negalite įkelti failo, nes nėra numatyta turinio tipų šiai formai.
       Susisiekite su administratoriumi.
     </p>
-    <NForm ref="formRef" :disabled="!contentTypeOptions" :model="model">
+    <NForm
+      ref="formRef"
+      :disabled="!contentTypeOptions"
+      :model="model"
+      :rules="rules"
+    >
       <NFormItem label="Tipas" path="typeValue"
         ><NSelect
           v-model:value="model.typeValue"
           :options="contentTypeOptions"
+          @update:value="onTypeChange"
         ></NSelect
       ></NFormItem>
       <NFormItem label="Raktažodžiai" path="keywordsValue"
@@ -37,10 +43,16 @@
         ><NDatePicker
           v-model:value="model.datetimeValue"
           type="date"
+          @update:value="onDateChange"
         ></NDatePicker
       ></NFormItem>
       <NFormItem label="Įkelti failą" path="uploadValue">
-        <NUpload :max="1" :default-upload="false" @change="handleUploadChange">
+        <NUpload
+          :max="1"
+          :default-upload="false"
+          @before-upload="beforeUpload"
+          @change="handleUploadChange"
+        >
           <NUploadDragger>
             <div style="margin-bottom: 12px">
               <NIcon :component="Archive24Regular" size="48" :depth="3" />
@@ -54,6 +66,13 @@
           </NUploadDragger>
         </NUpload>
       </NFormItem>
+      <NFormItem label="Sugeneruotas failo pavadinimas"
+        ><NInput
+          v-model:value="model.nameValue"
+          placeholder=""
+          :disabled="isNameEditDisabled"
+        ></NInput
+      ></NFormItem>
 
       <NButton
         :disabled="!contentTypeOptions"
@@ -75,6 +94,7 @@ import {
   NForm,
   NFormItem,
   NIcon,
+  NInput,
   NModal,
   NP,
   NSelect,
@@ -82,8 +102,9 @@ import {
   NText,
   NUpload,
   NUploadDragger,
+  useMessage,
 } from "naive-ui";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 
@@ -91,10 +112,14 @@ const props = defineProps<{
   contentTypeOptions: Record<string, any>[];
   // keywords: Record<string, any>[];
   contentModel: Record<string, any>;
+  institution?: Record<string, any>;
 }>();
 
 const showModal = ref(false);
 const loading = ref(false);
+const message = useMessage();
+
+const originalFileName = ref("");
 
 const formRef = ref(null);
 const model = useForm({
@@ -103,17 +128,48 @@ const model = useForm({
   datetimeValue: new Date().getTime(),
   uploadValue: null,
   contentModel: props.contentModel,
+  nameValue: null,
 });
+
+const rules = {
+  typeValue: [
+    {
+      required: true,
+      message: "Pasirinkite tipą",
+    },
+  ],
+  // keywordsValue: [
+  //   {
+  //     required: true,
+  //     message: "Pasirinkite bent vieną raktažodį",
+  //   },
+  // ],
+  datetimeValue: [
+    {
+      required: true,
+      message: "Pasirinkite dokumento datą",
+    },
+  ],
+  uploadValue: [
+    {
+      required: true,
+      message: "Įkelkite failą",
+    },
+  ],
+};
 
 const handleUploadChange = (files) => {
   model.uploadValue = files.fileList;
+  originalFileName.value = files.fileList[0].name;
+  generateName();
 };
 
 const handleValidateClick = (e) => {
   e.preventDefault();
-  loading.value = true;
   formRef.value?.validate((errors) => {
     if (!errors) {
+      loading.value = true;
+
       Inertia.post(route("sharepoint.addFile"), model, {
         onSuccess: () => {
           console.log("success");
@@ -132,5 +188,68 @@ const handleValidateClick = (e) => {
   });
 };
 
+const isNameEditDisabled = computed(() => {
+  // check if model.nameValue is empty
+  if (model.nameValue === null) {
+    return true;
+  }
+
+  // check if model.typeValue is protokolas
+  if (model.typeValue === "Protokolai") {
+    return true;
+  }
+
+  return false;
+});
+
 // generate name for this file...
+const generateName = () => {
+  if (originalFileName.value === "" || model.typeValue === null) {
+    return;
+  }
+
+  // get file extension from original file name
+  const fileExtension = originalFileName.value.split(".").pop();
+
+  const datetimeValue = model.datetimeValue;
+  // add +1 day to datetimeValue
+  const datetimeValuePlusOneDay = new Date(datetimeValue);
+  datetimeValuePlusOneDay.setDate(datetimeValuePlusOneDay.getDate() + 1);
+
+  // make date format like 2021-01-01
+  const dateFormatted = new Date(datetimeValuePlusOneDay)
+    .toISOString()
+    .split("T")[0];
+
+  // if posėdis
+  if (props.contentModel.contentTypes.some((x) => x.title === "Posėdis")) {
+    model.nameValue = `${dateFormatted} ${props.institution.name} posėdžio ${model.typeValue}.${fileExtension}`;
+  }
+
+  // if other, keep same name
+  else model.nameValue = originalFileName.value;
+};
+
+const onTypeChange = (value) => {
+  if (value === "Protokolai") {
+    generateName();
+  } else model.nameValue = originalFileName.value;
+};
+
+const onDateChange = () => {
+  generateName();
+};
+
+const beforeUpload = async (data) => {
+  // check if file is pdf or docx
+  if (
+    data.file.type !== "application/pdf" &&
+    data.file.type !==
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  ) {
+    message.error("Failas turi būti PDF arba DOCX formatu.");
+    return false;
+  }
+  return true;
+};
 </script>

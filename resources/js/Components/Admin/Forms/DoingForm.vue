@@ -24,6 +24,16 @@
           :options="doingTypes"
         ></NSelect
       ></NFormItemGi>
+      <NFormItemGi label="Statusas" path="status" required :span="2">
+        <NRadioGroup v-model:value="doingForm.status">
+          <NRadio
+            v-for="status in doingStatuses"
+            :key="status.value"
+            :value="status.value"
+            >{{ status.label }}</NRadio
+          >
+        </NRadioGroup>
+      </NFormItemGi>
 
       <NFormItemGi :span="2" :show-label="false"
         ><NButton type="primary" @click="upsertDoing"
@@ -35,7 +45,15 @@
 </template>
 
 <script setup lang="ts">
-import { NButton, NForm, NFormItemGi, NGrid, NSelect } from "naive-ui";
+import {
+  NButton,
+  NForm,
+  NFormItemGi,
+  NGrid,
+  NRadio,
+  NRadioGroup,
+  NSelect,
+} from "naive-ui";
 import { ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
@@ -64,6 +82,17 @@ const doingOptions = [
   {
     label: "Susitikimas su koordinatoriumi",
     value: "Susitikimas su koordinatoriumi",
+  },
+];
+
+const doingStatuses = [
+  {
+    label: "Sukurtas",
+    value: "Sukurtas",
+  },
+  {
+    label: "Pabaigtas",
+    value: "Pabaigtas",
   },
 ];
 

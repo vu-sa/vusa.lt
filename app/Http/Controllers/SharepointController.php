@@ -72,7 +72,7 @@ class SharepointController extends Controller
         ];
 
         $file = $fileToUpload['file'];
-        $uploadedFile = $this->uploadFile($graph, $site, $drive, $driveItem_General, $file, $listItemInfo);
+        $uploadedFile = $this->uploadFile($graph, $site, $drive, $driveItem_General, $file, $request->input('nameValue') ?? $file->getClientOriginalName(), $listItemInfo);
 
         $uploadedFileId = $uploadedFile->getId();
 
@@ -110,15 +110,15 @@ class SharepointController extends Controller
 
         foreach ($uploadedFiles as $uploadedFile) {
             $file = $uploadedFile['file'];
-            $this->uploadFile($graph, $site, $drive, $driveItem_General, $file, $listItemInfo);
+            $this->uploadFile($graph, $site, $drive, $driveItem_General, $file, $file->getClientOriginalName(), $listItemInfo);
         }
 
         return redirect()->back()->with('success', 'Failas įkeltas');
     }
 
-    private function uploadFile(SharepointAppGraph $graph, Model\Site $site, Model\Drive $drive, Model\DriveItem $driveItem_General, UploadedFile $file, array $listItemInfo) : Model\DriveItem {
+    private function uploadFile(SharepointAppGraph $graph, Model\Site $site, Model\Drive $drive, Model\DriveItem $driveItem_General, UploadedFile $file, string $filename, array $listItemInfo) : Model\DriveItem {
         
-        $uploadedFile = $graph->uploadDriveItem($drive->getId(), $driveItem_General->getId(), $file->getClientOriginalName(), $file->getContent());
+        $uploadedFile = $graph->uploadDriveItem($drive->getId(), $driveItem_General->getId(), $filename, $file->getContent());
         
         $uploadedDriveItem = $graph->getDriveItemByIdWithListItem($drive->getId(), $uploadedFile->getId());
 

@@ -120,6 +120,7 @@ const showModal = ref(false);
 const doingTemplate = {
   title: "",
   type_id: "",
+  status: "Sukurtas",
 };
 
 const columns = [

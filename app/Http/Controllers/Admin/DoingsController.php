@@ -46,7 +46,7 @@ class DoingsController extends Controller
         ]);
 
         $doing = Doing::create
-            ($request->only('title') + ['status' => $request->type_id, 'date' => now()]);
+            ($request->only('title') + ['status' => $request->status, 'date' => now()]);
         
         $doing->types()->sync($request->type_id);
         $doing->questions()->sync($request->question_id);
@@ -135,7 +135,7 @@ class DoingsController extends Controller
             'title' => 'required',
         ]);
 
-        $doing->update($request->only('title'));
+        $doing->update($request->only('title', 'status'));
 
         return redirect()->route('doings.show', $doing)->with('success', 'Veikla atnaujinta!');
     }
