@@ -4,7 +4,8 @@
       <div class="mb-2 flex items-center gap-4">
         <h2 class="mb-0">Klausimai</h2>
         <NButton round size="tiny" secondary @click="showModal = true"
-          ><template #icon><NIcon :component="AddCircle32Regular" /></template
+          ><template #icon
+            ><NIcon :component="BookQuestionMark20Filled" /></template
           >Sukurti klausimą</NButton
         >
         <HelpTextModal class="ml-auto" title="Kas yra klausimas?"
@@ -41,7 +42,7 @@
   </PageContent>
   <NModal
     v-model:show="showModal"
-    class="prose-sm prose max-w-xl dark:prose-invert"
+    class="prose prose-sm max-w-xl dark:prose-invert"
     :title="`${$t('Sukurti klausimą')} (${dutyInstitution.name})`"
     :bordered="false"
     size="large"
@@ -98,8 +99,10 @@ import { trans as $t } from "laravel-vue-i18n";
 import {
   AddCircle32Regular,
   ArrowTurnRight20Filled,
+  BookQuestionMark20Filled,
   DocumentAdd24Regular,
   Edit20Filled,
+  PeopleTeam32Filled,
   PersonQuestionMark20Filled,
 } from "@vicons/fluent";
 import { Link, useForm } from "@inertiajs/inertia-vue3";
@@ -132,6 +135,7 @@ const columns = [
   {
     title: "ID",
     key: "id",
+    width: 50,
   },
   {
     title: "Pavadinimas",
@@ -140,6 +144,11 @@ const columns = [
   {
     title: "Status",
     key: "status",
+    width: 100,
+  },
+  {
+    title: "Veiklų skaičius",
+    key: "doings_count",
   },
   {
     title: "Paskutinis atnaujinimas",

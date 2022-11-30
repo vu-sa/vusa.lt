@@ -9,11 +9,25 @@
           @click="
             Inertia.get(route('dutyInstitutions.show', question.institution.id))
           "
-          >{{ question.institution.name }}</NBreadcrumbItem
+          ><div>
+            <NIcon
+              class="mr-2"
+              size="16"
+              :component="PeopleTeam32Filled"
+            ></NIcon
+            >{{ question.institution.name }}
+          </div></NBreadcrumbItem
         >
         <NBreadcrumbItem
           ><NPopover class="max-w-xl" placement="right"
-            ><template #trigger>{{ question.title }}</template
+            ><template #trigger>
+              <div>
+                <NIcon
+                  class="mr-2"
+                  size="16"
+                  :component="BookQuestionMark20Filled"
+                />{{ question.title }}
+              </div> </template
             >{{ question.description }}</NPopover
           ></NBreadcrumbItem
         >
@@ -23,7 +37,7 @@
       <div class="mb-2 flex items-center gap-4">
         <h2 class="mb-0">Veiklos</h2>
         <NButton round size="tiny" secondary @click="showModal = true"
-          ><template #icon><NIcon :component="AddCircle32Regular" /></template
+          ><template #icon><NIcon :component="Sparkle20Filled" /></template
           >Sukurti veiklą</NButton
         >
         <HelpTextModal class="ml-auto" title="Kas yra veikla?"
@@ -32,36 +46,13 @@
           </p></HelpTextModal
         >
       </div>
-      <NTimeline v-if="question.doings.length > 0" class="overflow-auto py-8">
-        <NTimelineItem
-          v-for="doing in question.doings"
-          :key="doing.id"
-          :content="doing.title"
-          :time="doing.date"
-          ><template #header
-            ><Link
-              :href="
-                route('doings.show', {
-                  question: question.id,
-                  doing: doing.id,
-                })
-              "
-              >{{ doing.title }}</Link
-            ></template
-          ></NTimelineItem
-        >
-      </NTimeline>
-      <p v-else>Jokių veiklų nerasta.</p>
+
+      <NDataTable :data="question.doings" :columns="columns"></NDataTable>
     </div>
-    <template #aside-card>
-      <div class="main-card w-80">
-        <h2 class="mb-0">Komentarai</h2>
-      </div></template
-    >
   </PageContent>
   <NModal
     v-model:show="showModal"
-    class="prose-sm prose max-w-xl dark:prose-invert"
+    class="prose prose-sm max-w-xl dark:prose-invert"
     :title="`${$t('Sukurti veiklą')} (${question.title})`"
     :bordered="false"
     size="large"
@@ -80,7 +71,6 @@
 </template>
 
 <script lang="ts">
-import { h } from "vue";
 import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
 
 export default {
@@ -93,8 +83,11 @@ import { trans as $t } from "laravel-vue-i18n";
 import {
   AddCircle32Regular,
   ArrowTurnRight20Filled,
+  BookQuestionMark20Filled,
   DocumentAdd24Regular,
   Edit20Filled,
+  PeopleTeam32Filled,
+  Sparkle20Filled,
 } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
@@ -102,21 +95,22 @@ import {
   NBreadcrumb,
   NBreadcrumbItem,
   NButton,
+  NDataTable,
   NIcon,
   NModal,
   NPopover,
-  NTimeline,
-  NTimelineItem,
+  NTag,
 } from "naive-ui";
-import { ref } from "vue";
+import { h, ref } from "vue";
 import route from "ziggy-js";
 
 import DoingForm from "@/Components/Admin/Forms/DoingForm.vue";
 import HelpTextModal from "@/Components/HelpTextModal.vue";
 import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import ShowActivityLog from "@/Components/Admin/Buttons/ShowActivityLog.vue";
+import StatusTag from "@/Components/Admin/StatusTag.vue";
 
-defineProps<{
+const props = defineProps<{
   question: Record<string, any>;
   doingTypes: Record<string, any>;
 }>();
@@ -130,12 +124,21 @@ const doingTemplate = {
 
 const columns = [
   {
+    title: "ID",
+    key: "id",
+  },
+  {
     title: "Pavadinimas",
     key: "title",
   },
   {
     title: "Status",
     key: "status",
+    render(row) {
+      return h(StatusTag, {
+        status: row.status,
+      });
+    },
   },
   {
     title: "Paskutinis atnaujinimas",
@@ -151,11 +154,22 @@ const columns = [
           {},
           {
             default: () => "Peržiūrėti įvykį",
-            trigger: h(
-              NButton,
-              { size: "small" },
-              h(NIcon, { component: ArrowTurnRight20Filled })
-            ),
+            trigger: () =>
+              h(
+                NButton,
+                {
+                  size: "small",
+                  tag: Link,
+                  href: route("doings.show", {
+                    question: props.question.id,
+                    doing: row.id,
+                  }),
+                },
+                {
+                  default: () =>
+                    h(NIcon, { component: ArrowTurnRight20Filled }),
+                }
+              ),
           }
         ),
         h(
@@ -163,17 +177,18 @@ const columns = [
           {},
           {
             default: () => "Pridėti failą prie įvykio",
-            trigger: h(
-              NButton,
-              { size: "small", secondary: true },
-              h(NIcon, { component: DocumentAdd24Regular })
-            ),
+            trigger: () =>
+              h(
+                NButton,
+                { size: "small", secondary: true },
+                { default: () => h(NIcon, { component: DocumentAdd24Regular }) }
+              ),
           }
         ),
         h(
           NButton,
           { size: "small", secondary: true },
-          h(NIcon, { component: Edit20Filled })
+          { default: () => h(NIcon, { component: Edit20Filled }) }
         ),
       ]);
     },

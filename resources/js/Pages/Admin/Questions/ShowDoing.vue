@@ -1,16 +1,17 @@
 <template>
   <PageContent :title="doing.title">
+    <template #after-heading><StatusTag :status="doing.status" /> </template>
     <template #aside-header>
       <div class="flex items-center gap-4">
         <NButton secondary circle @click="showModal = true"
           ><template #icon
             ><NIcon :component="DocumentEdit24Regular"></NIcon></template
         ></NButton>
-        <NTag :bordered="false" round type="success">Sukurtas</NTag>
+
         <ShowActivityLog :activities="doing.activities" />
         <NModal
           v-model:show="showModal"
-          class="prose-sm prose max-w-xl dark:prose-invert"
+          class="prose prose-sm max-w-xl dark:prose-invert"
           :title="`${$t('Sukurti veiklą')} (${question.title})`"
           :bordered="false"
           size="large"
@@ -33,8 +34,16 @@
           @click="
             Inertia.get(route('dutyInstitutions.show', question.institution.id))
           "
-          >{{ question.institution.name }}</NBreadcrumbItem
         >
+          <div>
+            <NIcon
+              class="mr-2"
+              size="16"
+              :component="PeopleTeam32Filled"
+            ></NIcon
+            >{{ question.institution.name }}
+          </div>
+        </NBreadcrumbItem>
         <NBreadcrumbItem
           @click="
             Inertia.visit(
@@ -45,11 +54,24 @@
             )
           "
           ><NPopover class="max-w-xl" placement="right"
-            ><template #trigger>{{ question.title }}</template
+            ><template #trigger
+              ><div>
+                <NIcon
+                  class="mr-2"
+                  size="16"
+                  :component="BookQuestionMark20Filled"
+                />{{ question.title }}
+              </div></template
             >{{ question.description }}</NPopover
           ></NBreadcrumbItem
         >
-        <NBreadcrumbItem>{{ doing.title }}</NBreadcrumbItem>
+        <NBreadcrumbItem
+          ><div>
+            <NIcon class="mr-2" size="16" :component="Sparkle20Filled" />{{
+              doing.title
+            }}
+          </div></NBreadcrumbItem
+        >
       </NBreadcrumb>
     </template>
     <template #aside-card>
@@ -94,7 +116,12 @@ export default {
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import { DocumentEdit24Regular } from "@vicons/fluent";
+import {
+  BookQuestionMark20Filled,
+  DocumentEdit24Regular,
+  PeopleTeam32Filled,
+  Sparkle20Filled,
+} from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import {
   NBreadcrumb,
@@ -116,6 +143,7 @@ import DoingForm from "@/Components/Admin/Forms/DoingForm.vue";
 import FileUploader from "@/Components/Admin/Buttons/FileUploader.vue";
 import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import ShowActivityLog from "@/Components/Admin/Buttons/ShowActivityLog.vue";
+import StatusTag from "@/Components/Admin/StatusTag.vue";
 import TaskViewer from "@/Components/Admin/Tasks/TaskViewer.vue";
 
 const props = defineProps<{
@@ -165,27 +193,6 @@ const columns = [
     title: "Data",
     key: "date",
   },
-  // {
-  //   title: "Veiksmai",
-  //   key: "actions",
-  //   render(row) {
-  //     return h(
-  //       NSpace,
-  //       {},
-  //       {
-  //         default: () =>
-  //           h(
-  //             NButton,
-  //             {
-  //               type: "error",
-  //               onClick: () => handleDeleteClick(row.id),
-  //             },
-  //             { default: () => "Ištrinti" }
-  //           ),
-  //       }
-  //     );
-  //   },
-  // },
 ];
 
 const contentTypeOptions = [
@@ -198,4 +205,19 @@ const contentTypeOptions = [
     value: "Pristatymai",
   },
 ];
+
+const computedStatusType = computed(() => {
+  switch (props.doing.status) {
+    case "Sukurtas":
+      return "info";
+    case "Atnaujintas":
+      return "warning";
+    case "Pabaigtas":
+      return "success";
+    case "Atmestas":
+      return "error";
+    default:
+      return "info";
+  }
+});
 </script>

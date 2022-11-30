@@ -1,10 +1,11 @@
 <template>
-  <NButton round secondary size="small" @click="showModal = true"
-    >Įkelti naują failą</NButton
+  <NButton round secondary size="tiny" @click="showModal = true"
+    ><NIcon class="mr-1" :component="DocumentAdd24Regular" />Įkelti naują
+    failą</NButton
   >
   <NModal
     v-model:show="showModal"
-    class="prose-sm prose dark:prose-invert"
+    class="prose prose-sm dark:prose-invert"
     style="max-width: 600px"
     :title="`Įkelti naują failą`"
     :bordered="false"
@@ -66,6 +67,7 @@
 
 <script setup lang="ts">
 import { Archive24Regular } from "@vicons/fluent";
+import { DocumentAdd24Regular } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import {
   NButton,
@@ -76,13 +78,12 @@ import {
   NModal,
   NP,
   NSelect,
-  NSpace,
   NTag,
   NText,
   NUpload,
   NUploadDragger,
 } from "naive-ui";
-import { h, ref } from "vue";
+import { ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 

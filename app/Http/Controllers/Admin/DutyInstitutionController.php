@@ -95,6 +95,10 @@ class DutyInstitutionController extends Controller
 
         return Inertia::render('Admin/Contacts/ShowDutyInstitution', [
             'dutyInstitution' => $dutyInstitution,
+            'questions' => $dutyInstitution->questions->map(function ($question) {
+                $question->loadCount('doings');
+                return $question;
+            }),
             'users' => $users,
         ]);
     }
