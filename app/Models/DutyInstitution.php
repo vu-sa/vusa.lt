@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
+
 
 class DutyInstitution extends Model
 {
-    use HasFactory;
+    use HasFactory, HasRelationships;
 
     protected $table = 'duties_institutions';
 
@@ -36,5 +38,10 @@ class DutyInstitution extends Model
     public function questions()
     {
         return $this->hasMany(Question::class, 'institution_id');
+    }
+
+    public function users() 
+    {
+        return $this->hasManyDeepFromRelations($this->duties(), (new Duty)->users());
     }
 }

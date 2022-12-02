@@ -12,6 +12,12 @@ use Inertia\Inertia;
 
 class DoingsController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->authorizeResource(Doing::class, 'doing');
+    }
+    
     /**
      * Display a listing of the resource.
      *

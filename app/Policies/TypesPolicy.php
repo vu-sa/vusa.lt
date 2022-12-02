@@ -2,11 +2,11 @@
 
 namespace App\Policies;
 
-use App\Models\DutyInstitution;
+use App\Models\Type;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class DutyInstitutionsPolicy
+class TypesPolicy
 {
     use HandlesAuthorization;
 
@@ -18,19 +18,19 @@ class DutyInstitutionsPolicy
      */
     public function viewAny(User $user)
     {
-        return $user->can('create unit duties');
+        //
     }
 
     /**
      * Determine whether the user can view the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\DutyInstitution  $dutyInstitution
+     * @param  \App\Models\Type  $type
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, DutyInstitution $dutyInstitution)
+    public function view(User $user, Type $type)
     {
-        return $dutyInstitution->users->contains($user);
+        //
     }
 
     /**
@@ -41,45 +41,41 @@ class DutyInstitutionsPolicy
      */
     public function create(User $user)
     {
-        return $user->can('create unit duties');
+        //
     }
 
     /**
      * Determine whether the user can update the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\DutyInstitution  $dutyInstitution
+     * @param  \App\Models\Type  $type
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, DutyInstitution $dutyInstitution)
+    public function update(User $user, Type $type)
     {
-        if ($user->can('edit unit duties')) {
-            return $user->padalinys()->id == $dutyInstitution->padalinys->id;
-        }
+        //
     }
 
     /**
      * Determine whether the user can delete the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\DutyInstitution  $dutyInstitution
+     * @param  \App\Models\Type  $type
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, DutyInstitution $dutyInstitution)
+    public function delete(User $user, Type $type)
     {
-        if ($user->can('delete unit duties')) {
-            return $user->padalinys()->id == $dutyInstitution->padalinys->id;
-        }
+        //
     }
 
     /**
      * Determine whether the user can restore the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\DutyInstitution  $dutyInstitution
+     * @param  \App\Models\Type  $type
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function restore(User $user, DutyInstitution $dutyInstitution)
+    public function restore(User $user, Type $type)
     {
         //
     }
@@ -88,10 +84,10 @@ class DutyInstitutionsPolicy
      * Determine whether the user can permanently delete the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\DutyInstitution  $dutyInstitution
+     * @param  \App\Models\Type  $type
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function forceDelete(User $user, DutyInstitution $dutyInstitution)
+    public function forceDelete(User $user, Type $type)
     {
         //
     }

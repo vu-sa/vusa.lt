@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Question extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, HasRelationships;
 
     protected $with = ['question_group'];
 
@@ -28,6 +29,11 @@ class Question extends Model
     public function question_group()
     {
         return $this->belongsTo(QuestionGroup::class);
+    }
+
+    public function users()
+    {
+        return $this->hasManyDeepFromRelations($this->institution(), (new DutyInstitution)->duties(), (new Duty())->users());
     }
 
     public function getActivitylogOptions(): LogOptions

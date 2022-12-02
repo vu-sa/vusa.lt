@@ -9,6 +9,11 @@ use Inertia\Inertia;
 
 class TypesController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(Doing::class, 'doing');
+    }
+    
     /**
      * Display a listing of the resource.
      *

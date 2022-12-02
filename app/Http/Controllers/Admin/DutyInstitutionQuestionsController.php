@@ -13,6 +13,12 @@ use Inertia\Inertia;
 
 class DutyInstitutionQuestionsController extends Controller
 {
+    
+    public function __construct()
+    {
+        $this->authorizeResource(Question::class, 'question');
+    }
+    
     /**
      * Display a listing of the resource.
      *

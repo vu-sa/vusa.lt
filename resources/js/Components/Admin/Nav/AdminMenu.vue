@@ -192,6 +192,7 @@ const menuOptions = computed(() => [
         key: "types",
       },
     ],
+    show: can.settings,
   },
 ]);
 </script>

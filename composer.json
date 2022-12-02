@@ -29,6 +29,7 @@
         "spatie/laravel-google-fonts": "^1.2",
         "spatie/laravel-medialibrary": "^10.0.0",
         "spatie/laravel-permission": "^5.5",
+        "staudenmeir/eloquent-has-many-deep": "^1.7",
         "tightenco/ziggy": "^1.0"
     },
     "require-dev": {

@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Traits\HasComments;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Doing extends Model
 {
-    use HasFactory, LogsActivity, HasComments;
+    use HasFactory, LogsActivity, HasComments, HasRelationships;
 
     protected $with = ['types'];
 
@@ -41,4 +42,8 @@ class Doing extends Model
         return $this->morphMany(Task::class, 'taskable');
     }
 
+    public function users()
+    {
+        return $this->hasManyDeepFromRelations($this->questions(), (new Question)->institution(), (new DutyInstitution)->duties(), (new Duty())->users());
+    }
 }
