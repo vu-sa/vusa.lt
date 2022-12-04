@@ -99,7 +99,6 @@ import {
   NIcon,
   NModal,
   NPopover,
-  NTag,
 } from "naive-ui";
 import { h, ref } from "vue";
 import route from "ziggy-js";
@@ -109,6 +108,7 @@ import HelpTextModal from "@/Components/HelpTextModal.vue";
 import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import ShowActivityLog from "@/Components/Admin/Buttons/ShowActivityLog.vue";
 import StatusTag from "@/Components/Admin/StatusTag.vue";
+import getRelativeTime from "@/Composables/getRelativeTime";
 
 const props = defineProps<{
   question: Record<string, any>;
@@ -121,6 +121,8 @@ const doingTemplate = {
   title: "",
   type_id: "",
   status: "Sukurtas",
+  // datetime now YYYY-MM-DD HH:MM:SS and delimit T
+  date: new Date().toISOString().split("T").join(" ").slice(0, 16) + ":00",
 };
 
 const columns = [
@@ -133,6 +135,10 @@ const columns = [
     key: "title",
   },
   {
+    title: "Data",
+    key: "date",
+  },
+  {
     title: "Status",
     key: "status",
     render(row) {
@@ -143,7 +149,10 @@ const columns = [
   },
   {
     title: "Paskutinis atnaujinimas",
-    key: "last_activity",
+    key: "updated_at",
+    render(row) {
+      return h("span", getRelativeTime(row.updated_at));
+    },
   },
   {
     title: "Veiksmai",
@@ -173,24 +182,24 @@ const columns = [
               ),
           }
         ),
-        h(
-          NPopover,
-          {},
-          {
-            default: () => "Pridėti failą prie įvykio",
-            trigger: () =>
-              h(
-                NButton,
-                { size: "small", secondary: true },
-                { default: () => h(NIcon, { component: DocumentAdd24Regular }) }
-              ),
-          }
-        ),
-        h(
-          NButton,
-          { size: "small", secondary: true },
-          { default: () => h(NIcon, { component: Edit20Filled }) }
-        ),
+        // h(
+        //   NPopover,
+        //   {},
+        //   {
+        //     default: () => "Pridėti failą prie įvykio",
+        //     trigger: () =>
+        //       h(
+        //         NButton,
+        //         { size: "small", secondary: true },
+        //         { default: () => h(NIcon, { component: DocumentAdd24Regular }) }
+        //       ),
+        //   }
+        // ),
+        // h(
+        //   NButton,
+        //   { size: "small", secondary: true },
+        //   { default: () => h(NIcon, { component: Edit20Filled }) }
+        // ),
       ]);
     },
   },

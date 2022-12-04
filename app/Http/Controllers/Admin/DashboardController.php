@@ -15,8 +15,16 @@ class DashboardController extends Controller
         $dutyInstitutions = $user->duties->pluck('institution')->flatten()->unique();
 
         return Inertia::render('Admin/ShowDashboard', [
-            'roles' => $user->getRoleNames(),
             'dutyInstitutions' => $dutyInstitutions,
+        ]);
+    }
+
+    public function userSettings()
+    {
+        $user = User::find(auth()->user()->id);
+        
+        return Inertia::render('Admin/ShowUserSettings', [
+            'roles' => $user->getRoleNames(),
         ]);
     }
 }

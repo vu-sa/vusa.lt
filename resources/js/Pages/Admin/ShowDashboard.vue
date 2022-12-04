@@ -1,17 +1,20 @@
 <template>
   <PageContent title="Pradinis">
-    <div class="main-card max-w-3xl">
-      <p>{{ salutation }}</p>
-      <div class="my-4">
-        <p>Tavo rolės:</p>
-        <ul v-for="(role, index) in roles" :key="index" class="list-inside">
-          <li>{{ $t(role) }}</li>
-        </ul>
+    <div class="mb-4 max-w-3xl">
+      <h2 class="inline-flex items-center gap-2">
+        <NIcon size="16" :component="ArrowForwardDownLightning20Regular"></NIcon
+        ><span>Greitieji veiksmai</span>
+      </h2>
+      <div class="flex gap-4">
+        <QuickActionButton
+          :icon="PeopleTeamAdd24Filled"
+          text="Pranešti apie artėjantį posėdį"
+        />
+        <QuickActionButton
+          :icon="DocumentAdd24Filled"
+          text="Įkelti posėdžio protokolą"
+        />
       </div>
-      <p>
-        Jeigu kiltų klausimų, rašykite
-        <a href="mailto:it@vusa.lt">it@vusa.lt</a>
-      </p>
     </div>
     <h2>Tavo institucijos</h2>
     <div class="flex gap-2">
@@ -40,22 +43,19 @@ export default {
 </script>
 
 <script setup lang="ts">
-import { trans as $t } from "laravel-vue-i18n";
-import { Link, usePage } from "@inertiajs/inertia-vue3";
-import { NButton } from "naive-ui";
-import { computed } from "vue";
+import {
+  ArrowForwardDownLightning20Regular,
+  DocumentAdd24Filled,
+  PeopleTeamAdd24Filled,
+} from "@vicons/fluent";
+import { Link } from "@inertiajs/inertia-vue3";
+import { NButton, NIcon } from "naive-ui";
 import route from "ziggy-js";
 
 import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
+import QuickActionButton from "@/Components/Admin/Buttons/QuickActionButton.vue";
 
 defineProps<{
-  roles: Record<string, any>[];
   dutyInstitutions: Record<string, any>[];
 }>();
-
-const salutation = computed(() => {
-  // change name word ending to salutation
-  const name = usePage().props.value.user.name;
-  return `Sveiki prisijungę, ${name}`;
-});
 </script>

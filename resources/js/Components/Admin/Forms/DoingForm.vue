@@ -16,6 +16,18 @@
           </template></NSelect
         >
       </NFormItemGi>
+      <NFormItemGi label="Data" :span="2" path="date" required>
+        <NDatePicker
+          v-model:formatted-value="doingForm.date"
+          value-format="yyyy-MM-dd HH:mm:ss"
+          :first-day-of-week="0"
+          :format="'yyyy-MM-dd HH:mm:ss'"
+          type="datetime"
+          placeholder="Kada vyksta veikla?"
+          clearable
+          :actions="['confirm']"
+        />
+      </NFormItemGi>
       <NFormItemGi v-if="doingTypes" label="Tipas" path="doing_type_id" required
         ><NSelect
           v-model:value="doingForm.type_id"
@@ -47,6 +59,7 @@
 <script setup lang="ts">
 import {
   NButton,
+  NDatePicker,
   NForm,
   NFormItemGi,
   NGrid,
@@ -97,6 +110,11 @@ const doingStatuses = [
 ];
 
 const upsertDoing = () => {
+  console.log(doingForm);
+  doingForm.transform((data) => ({
+    ...data,
+    question_id: props.question.id,
+  }));
   if (props.modelRoute == "doings.update") {
     doingForm.patch(
       route(props.modelRoute, {

@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Models\Doing;
+use App\Models\Question;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
@@ -41,7 +42,11 @@ class DoingPolicy
      */
     public function create(User $user)
     {
-        //
+        if (!request()->has('question_id')) {
+            return false;
+        }
+
+        return Question::find(request()->question_id)->users->contains($user);
     }
 
     /**

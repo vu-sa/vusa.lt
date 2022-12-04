@@ -24,8 +24,6 @@ const getRelativeTime = (timestamp: string) => {
     (notificationDateTime.getTime() - new Date().getTime()) / 1000
   );
 
-  console.log(daysDifference, hoursDifference, minutesDifference);
-
   if (daysDifference != 0) {
     return rtf.format(daysDifference, "day");
   } else if (hoursDifference != 0) {

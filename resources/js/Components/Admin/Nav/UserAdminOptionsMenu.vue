@@ -7,7 +7,10 @@
 </template>
 
 <script setup lang="ts">
-import { DoorArrowRight28Regular } from "@vicons/fluent";
+import {
+  DoorArrowRight28Regular,
+  PersonSettings16Regular,
+} from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import { NButton, NDropdown, NIcon } from "naive-ui";
 import { h, ref } from "vue";
@@ -28,6 +31,16 @@ const renderIcon = (icon: Component) => {
 };
 
 const options = [
+  {
+    label: "Nustatymai",
+    key: "user-settings",
+    icon: renderIcon(PersonSettings16Regular),
+    props: {
+      onClick: () => {
+        Inertia.visit(route("profile"));
+      },
+    },
+  },
   {
     label: "Atsijungti",
     key: "logout",

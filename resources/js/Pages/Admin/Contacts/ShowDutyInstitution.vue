@@ -183,22 +183,22 @@ const columns = [
                   ),
               }
             ),
-            h(
-              NPopover,
-              {},
-              {
-                default: () => "Pridėk failą prie įvykio",
-                trigger: () =>
-                  h(
-                    NButton,
-                    { size: "small", secondary: true },
-                    {
-                      default: () =>
-                        h(NIcon, { component: DocumentAdd24Regular }),
-                    }
-                  ),
-              }
-            ),
+            // h(
+            //   NPopover,
+            //   {},
+            //   {
+            //     default: () => "Pridėk failą prie įvykio",
+            //     trigger: () =>
+            //       h(
+            //         NButton,
+            //         { size: "small", secondary: true },
+            //         {
+            //           default: () =>
+            //             h(NIcon, { component: DocumentAdd24Regular }),
+            //         }
+            //       ),
+            //   }
+            // ),
             // h(
             //   NButton,
             //   { size: "small", secondary: true },

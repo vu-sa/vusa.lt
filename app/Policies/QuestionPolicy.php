@@ -41,7 +41,11 @@ class QuestionPolicy
      */
     public function create(User $user)
     {
-        //
+        if (!request()->has('question_id')) {
+            return false;
+        }
+
+        return Question::find(request()->question_id)->users->contains($user);
     }
 
     /**
