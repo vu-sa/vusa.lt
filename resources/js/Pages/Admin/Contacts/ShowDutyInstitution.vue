@@ -29,7 +29,17 @@
       ></NDataTable>
     </div>
     <template #after-heading>
-      <InstitutionAvatarGroup :users="dutyInstitution.users" />
+      <InstitutionAvatarGroup :users="users" />
+    </template>
+    <template #aside-header>
+      <NButton
+        secondary
+        circle
+        @click="
+          Inertia.visit(route('dutyInstitutions.edit', dutyInstitution.id))
+        "
+        ><template #icon><NIcon :component="Edit20Filled"></NIcon></template
+      ></NButton>
     </template>
     <template #below-header>
       <div class="mb-4">
@@ -109,6 +119,7 @@ import {
   PeopleTeamAdd24Filled,
   PersonQuestionMark20Filled,
 } from "@vicons/fluent";
+import { Inertia } from "@inertiajs/inertia";
 import { Link, useForm } from "@inertiajs/inertia-vue3";
 import {
   NAvatar,
@@ -132,6 +143,7 @@ import HelpTextModal from "@/Components/HelpTextModal.vue";
 import InstitutionAvatarGroup from "@/Components/Admin/Misc/InstitutionAvatarGroup.vue";
 import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import QuickActionButton from "@/Components/Admin/Buttons/QuickActionButton.vue";
+import StatusTag from "@/Components/Admin/StatusTag.vue";
 
 const props = defineProps<{
   dutyInstitution: App.Models.DutyInstitution;
@@ -153,15 +165,19 @@ const columns = [
   {
     title: "Status",
     key: "status",
-    width: 100,
+    render(row) {
+      return h(StatusTag, {
+        status: row.status,
+      });
+    },
   },
   {
     title: "Veiklų skaičius",
     key: "doings_count",
   },
   {
-    title: "Paskutinis atnaujinimas",
-    key: "last_activity",
+    title: "Klausimo sukūrimo data",
+    key: "created_at",
   },
   {
     title: "Veiksmai",
