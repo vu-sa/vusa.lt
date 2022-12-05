@@ -1,7 +1,7 @@
 <template>
   <NDropdown :options="options">
     <NButton text size="tiny">
-      <UserAvatar show-name show-padalinys :user="$page.props.user" />
+      <UserAvatar show-padalinys :user="$page.props.user" />
     </NButton>
   </NDropdown>
 </template>

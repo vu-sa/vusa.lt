@@ -43,7 +43,11 @@
 }
 
 @layer components {
-	.main-card {
-		@apply from-zinc-50 to-zinc-100 bg-gradient-to-b p-4 rounded-md shadow-lg mb-6 max-w-7xl dark:from-zinc-900/90 dark:to-zinc-800/90 overflow-auto sm:max-h-[48rem]
+	.main-card-gradient {
+    @apply from-zinc-100 to-white dark:from-zinc-900/90 dark:to-zinc-800/90 bg-gradient-to-b
+  }
+  
+  .main-card {
+		@apply p-4 ml-0.5 rounded-md shadow-md dark:shadow-lg mb-6 max-w-7xl overflow-auto sm:max-h-[48rem] main-card-gradient;
 	}
 }

@@ -1,5 +1,13 @@
 <template>
   <PageContent :title="dutyInstitution.name">
+    <div class="mb-4 flex gap-4">
+      <QuickActionButton :icon="PeopleTeamAdd24Filled"
+        >Pranešti apie artėjantį posėdį</QuickActionButton
+      >
+      <QuickActionButton :icon="DocumentAdd24Filled"
+        >Įkelti posėdžio protokolą</QuickActionButton
+      >
+    </div>
     <div class="main-card">
       <div class="mb-2 flex items-center gap-4">
         <h2 class="mb-0">Klausimai</h2>
@@ -20,23 +28,19 @@
         :columns="columns"
       ></NDataTable>
     </div>
-    <template #aside-card>
-      <div class="main-card max-w-sm">
-        <h3>Institucijos nariai</h3>
-        <div class="flex flex-row flex-wrap gap-2">
-          <div
-            v-for="user in users"
-            :key="user.id"
-            class="flex w-fit items-center gap-2"
-          >
-            <NAvatar
-              object-fit="cover"
-              round
-              :src="user.profile_photo_path"
-            ></NAvatar
-            >{{ user.name }}
-          </div>
-        </div>
+    <template #after-heading>
+      <InstitutionAvatarGroup :users="dutyInstitution.users" />
+    </template>
+    <template #below-header>
+      <div class="mb-4">
+        <NTag
+          v-for="type in dutyInstitution.types"
+          :key="type.id"
+          size="small"
+          :bordered="false"
+        >
+          {{ type.title }}
+        </NTag>
       </div>
     </template>
   </PageContent>
@@ -85,8 +89,6 @@
 </template>
 
 <script lang="ts">
-import { h } from "vue";
-
 import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
 
 export default {
@@ -100,9 +102,11 @@ import {
   AddCircle32Regular,
   ArrowTurnRight20Filled,
   BookQuestionMark20Filled,
+  DocumentAdd24Filled,
   DocumentAdd24Regular,
   Edit20Filled,
   PeopleTeam32Filled,
+  PeopleTeamAdd24Filled,
   PersonQuestionMark20Filled,
 } from "@vicons/fluent";
 import { Link, useForm } from "@inertiajs/inertia-vue3";
@@ -118,11 +122,16 @@ import {
   NModal,
   NPopover,
   NSelect,
+  NTag,
 } from "naive-ui";
-import { ref } from "vue";
-import HelpTextModal from "@/Components/HelpTextModal.vue";
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
+import { h, ref } from "vue";
 import route from "ziggy-js";
+
+import { questionOptions } from "@/Composables/someTypes";
+import HelpTextModal from "@/Components/HelpTextModal.vue";
+import InstitutionAvatarGroup from "@/Components/Admin/Misc/InstitutionAvatarGroup.vue";
+import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
+import QuickActionButton from "@/Components/Admin/Buttons/QuickActionButton.vue";
 
 const props = defineProps<{
   dutyInstitution: App.Models.DutyInstitution;
@@ -213,21 +222,6 @@ const columns = [
         }
       );
     },
-  },
-];
-
-const questionOptions = [
-  {
-    label: "Studijų tinklelio peržiūra",
-    value: "Studijų tinklelio peržiūra",
-  },
-  {
-    label: "Studentų nuomonės išnagrinėjimas posėdyje",
-    value: "Studentų nuomonės išnagrinėjimas posėdyje",
-  },
-  {
-    label: "Dėstytojo keitimas",
-    value: "Dėstytojo keitimas",
   },
 ];
 

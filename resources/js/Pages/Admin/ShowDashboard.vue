@@ -1,40 +1,49 @@
 <template>
-  <PageContent title="Pradinis">
-    <div class="mb-4 max-w-3xl">
-      <h2 class="inline-flex items-center gap-2">
-        <NIcon size="16" :component="ArrowForwardDownLightning20Regular"></NIcon
-        ><span>Greitieji veiksmai</span>
-      </h2>
-      <div class="flex gap-4">
-        <QuickActionButton
-          :icon="PeopleTeamAdd24Filled"
-          text="Pranešti apie artėjantį posėdį"
-        />
-        <QuickActionButton
-          :icon="DocumentAdd24Filled"
-          text="Įkelti posėdžio protokolą"
-        />
-      </div>
-    </div>
+  <PageContent>
     <h2>Tavo institucijos</h2>
-    <div class="flex gap-2">
-      <NButton
+    <div class="my-4 flex max-w-4xl flex-wrap gap-4">
+      <NCard
         v-for="institution in dutyInstitutions"
         :key="institution.id"
-        :tag="Link"
-        :href="route('dutyInstitutions.show', institution.id)"
-        round
-        size="large"
-        tertiary
-        class="w-56 rounded-lg p-2"
+        hoverable
+        :segmented="{
+          footer: 'soft',
+        }"
+        as="button"
+        style="max-width: 400px"
+        class="cursor-pointer shadow-sm"
+        :title="institution.name"
+        @click="Inertia.visit(route('dutyInstitutions.show', institution.id))"
       >
-        {{ institution.name }}
-      </NButton>
+        <template #footer>
+          <NTag
+            v-for="type in institution.types"
+            :key="type.id"
+            size="small"
+            :bordered="false"
+          >
+            {{ type.title }}
+          </NTag>
+        </template>
+
+        <template #header-extra>
+          <NDropdown trigger="click" :options="options">
+            <NButton size="small" round circle quaternary @click.stop
+              ><NIcon
+                size="16"
+                :component="ArrowForwardDownLightning20Regular"
+              ></NIcon
+            ></NButton>
+          </NDropdown>
+        </template>
+        <InstitutionAvatarGroup :users="institution.users" />
+      </NCard>
     </div>
   </PageContent>
 </template>
 
 <script lang="ts">
+import { h } from "vue";
 import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
 
 export default {
@@ -48,14 +57,38 @@ import {
   DocumentAdd24Filled,
   PeopleTeamAdd24Filled,
 } from "@vicons/fluent";
-import { Link } from "@inertiajs/inertia-vue3";
-import { NButton, NIcon } from "naive-ui";
+import { Inertia } from "@inertiajs/inertia";
+import { NButton, NCard, NDropdown, NIcon, NTag } from "naive-ui";
 import route from "ziggy-js";
 
+import InstitutionAvatarGroup from "@/Components/Admin/Misc/InstitutionAvatarGroup.vue";
 import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import QuickActionButton from "@/Components/Admin/Buttons/QuickActionButton.vue";
 
 defineProps<{
   dutyInstitutions: Record<string, any>[];
 }>();
+
+const options = [
+  {
+    label: "Pranešti apie artėjantį posėdį",
+    key: "notify-about-meeting",
+    icon() {
+      return h(NIcon, {
+        size: "16",
+        component: PeopleTeamAdd24Filled,
+      });
+    },
+  },
+  {
+    label: "Įkelti posėdžio protokolą",
+    key: "upload-meeting-protocol",
+    icon() {
+      return h(NIcon, {
+        size: "16",
+        component: DocumentAdd24Filled,
+      });
+    },
+  },
+];
 </script>

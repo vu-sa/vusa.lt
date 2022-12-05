@@ -13,7 +13,7 @@
       <MetaIcons />
 
       <NLayout
-        class="min-h-screen bg-gradient-to-tr from-vusa-red/90 to-vusa-yellow/90 transition-colors before:absolute before:block before:h-full before:w-full before:bg-white/60 before:content-[''] dark:from-vusa-red dark:to-vusa-yellow/80 dark:before:bg-zinc-800/80"
+        class="min-h-screen before:absolute before:block before:h-full before:w-full before:bg-white before:content-[''] dark:from-vusa-red dark:to-vusa-yellow/80 dark:before:bg-zinc-800/80"
       >
         <NLayoutHeader class="flex flex-row justify-between py-4 pr-8">
           <div class="invisible">
@@ -22,14 +22,13 @@
             >
           </div>
           <div class="flex items-center gap-4">
-            <UserAdminOptionsMenu />
-            <DarkModeSwitch />
             <NotificationBell />
+            <UserAdminOptionsMenu />
           </div>
         </NLayoutHeader>
-        <NLayout class="min-h-full" has-sider>
+        <NLayout class="mb-12 mt-20 min-h-full" has-sider position="absolute">
           <NLayoutSider
-            class="ml-4 mb-12 h-fit rounded-md shadow-sm"
+            class="main-card-gradient ml-4 h-fit rounded-md from-white shadow-md"
             collapse-mode="width"
             :collapsed-width="isMobile ? 0 : 64"
             :width="200"
@@ -42,6 +41,21 @@
               <AppLogo class="mx-auto w-full p-2" />
             </a>
             <AdminMenu :collapsed="collapsed" />
+            <NDivider />
+
+            <div class="mb-4 flex justify-center gap-4 overflow-hidden">
+              <div class="w-fit"><DarkModeSwitch /></div>
+              <div v-if="!collapsed" class="w-fit">
+                <FadeTransition>
+                  <NButton size="tiny" quaternary @click="showModal = true">
+                    v0.3.9
+                  </NButton>
+                </FadeTransition>
+              </div>
+            </div>
+            <NModal v-model:show="showModal">
+              <Changelog />
+            </NModal>
           </NLayoutSider>
           <NLayoutContent
             class="min-h-full"
@@ -50,16 +64,7 @@
             <slot />
           </NLayoutContent>
         </NLayout>
-        <NLayoutFooter class="absolute bottom-0 w-full"
-          ><div class="mx-auto mb-2 w-fit">
-            <NButton size="tiny" quaternary @click="showModal = true">
-              v0.3.9 (2022-09-26)
-            </NButton>
-          </div>
-          <NModal v-model:show="showModal">
-            <Changelog />
-          </NModal>
-        </NLayoutFooter>
+        <NLayoutFooter class="absolute bottom-0 w-full"> </NLayoutFooter>
       </NLayout>
     </NConfigProvider>
   </FadeTransition>
@@ -71,6 +76,7 @@ import {
   ConfigProviderProps,
   NButton,
   NConfigProvider,
+  NDivider,
   NLayout,
   NLayoutContent,
   NLayoutFooter,

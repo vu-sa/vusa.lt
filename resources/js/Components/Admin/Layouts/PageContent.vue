@@ -1,10 +1,11 @@
 <template>
   <Head
-    ><title>{{ title }}</title></Head
+    ><title v-if="title">{{ title }}</title></Head
   >
 
   <header
-    class="flex max-w-7xl flex-row flex-wrap items-center gap-4 overflow-auto pb-4"
+    class="flex max-w-7xl flex-row flex-wrap items-center gap-4 overflow-auto"
+    :class="{ 'pb-4': title }"
   >
     <Link v-if="!isIndex && backUrl" :href="backUrl">
       <div class="flex">
@@ -21,8 +22,9 @@
     <aside class="ml-auto font-bold transition-colors md:text-xs">
       <slot name="aside-header"></slot>
     </aside>
-    <slot name="below-header"></slot>
   </header>
+  <slot name="below-header"></slot>
+  <NDivider v-if="title" style="margin-top: 0px" class="mt-0" />
 
   <div
     class="mt-1 grid max-w-7xl grid-flow-row-dense grid-cols-[1fr_auto] gap-x-8 lg:grid-flow-col"
@@ -38,7 +40,7 @@
 <script setup lang="ts">
 import { AddCircle32Regular, ArrowCircleLeft32Regular } from "@vicons/fluent";
 import { Head, Link } from "@inertiajs/inertia-vue3";
-import { NIcon } from "naive-ui";
+import { NDivider, NIcon } from "naive-ui";
 import { computed } from "vue";
 import route from "ziggy-js";
 
@@ -54,3 +56,5 @@ const isIndex = computed(() => {
   return route().current("*.index");
 });
 </script>
+
+<style></style>

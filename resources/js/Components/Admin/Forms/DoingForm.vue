@@ -71,6 +71,8 @@ import { ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 
+import { doingOptions } from "@/Composables/someTypes";
+
 const emit = defineEmits(["success"]);
 
 const props = defineProps<{
@@ -82,21 +84,6 @@ const props = defineProps<{
 
 const showModal = ref(false);
 const doingForm = useForm(props.doing);
-
-const doingOptions = [
-  {
-    label: "Susitikimas su studentais",
-    value: "Susitikimas su studentais",
-  },
-  {
-    label: "Planuotas posėdis",
-    value: "Planuotas posėdis",
-  },
-  {
-    label: "Susitikimas su koordinatoriumi",
-    value: "Susitikimas su koordinatoriumi",
-  },
-];
 
 const doingStatuses = [
   {

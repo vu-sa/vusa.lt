@@ -4,7 +4,7 @@
       <ShowActivityLog :activities="question.activities" />
     </template>
     <template #below-header>
-      <NBreadcrumb class="w-full">
+      <NBreadcrumb class="mb-4 w-full">
         <NBreadcrumbItem
           @click="
             Inertia.get(route('dutyInstitutions.show', question.institution.id))
