@@ -4,7 +4,7 @@
   >
 
   <header
-    class="flex max-w-7xl flex-row flex-wrap items-center gap-4 overflow-auto"
+    class="flex max-w-7xl flex-row flex-wrap items-center gap-4 overflow-visible"
     :class="{ 'pb-4': title }"
   >
     <Link v-if="!isIndex && backUrl" :href="backUrl">
@@ -27,10 +27,10 @@
   <NDivider v-if="title" style="margin-top: 0px" class="mt-0" />
 
   <div
-    class="mt-1 grid max-w-7xl grid-flow-row-dense grid-cols-[1fr_auto] gap-x-8 lg:grid-flow-col"
+    class="mt-1 mb-12 grid max-w-7xl grid-flow-row-dense grid-cols-[1fr_auto] gap-x-8 lg:grid-flow-col"
   >
     <FadeTransition appear
-      ><main class="col-span w-full overflow-auto">
+      ><main class="col-span w-full overflow-visible">
         <slot></slot></main
     ></FadeTransition>
     <slot name="aside-card"></slot>

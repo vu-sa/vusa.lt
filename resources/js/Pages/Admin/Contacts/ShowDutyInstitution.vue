@@ -1,6 +1,6 @@
 <template>
   <PageContent :title="dutyInstitution.name">
-    <div class="mb-4 flex gap-4">
+    <div class="mb-4 flex gap-4 py-2">
       <QuickActionButton :icon="PeopleTeamAdd24Filled"
         >Pranešti apie artėjantį posėdį</QuickActionButton
       >

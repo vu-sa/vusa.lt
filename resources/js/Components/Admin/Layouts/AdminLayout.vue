@@ -64,7 +64,6 @@
             <slot />
           </NLayoutContent>
         </NLayout>
-        <NLayoutFooter class="absolute bottom-0 w-full"> </NLayoutFooter>
       </NLayout>
     </NConfigProvider>
   </FadeTransition>
@@ -79,7 +78,6 @@ import {
   NDivider,
   NLayout,
   NLayoutContent,
-  NLayoutFooter,
   NLayoutHeader,
   NLayoutSider,
   NModal,

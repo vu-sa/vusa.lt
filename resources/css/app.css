@@ -48,6 +48,6 @@
   }
   
   .main-card {
-		@apply p-4 ml-0.5 rounded-md shadow-md dark:shadow-lg mb-6 max-w-7xl overflow-auto sm:max-h-[48rem] main-card-gradient;
+		@apply main-card-gradient p-4 ml-0.5 rounded-md shadow-md dark:shadow-lg mb-6 max-w-6xl overflow-auto sm:max-h-[48rem];
 	}
 }
