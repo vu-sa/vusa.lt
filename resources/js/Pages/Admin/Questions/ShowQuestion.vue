@@ -135,10 +135,6 @@ const columns = [
     key: "title",
   },
   {
-    title: "Data",
-    key: "date",
-  },
-  {
     title: "Status",
     key: "status",
     render(row) {
@@ -146,6 +142,10 @@ const columns = [
         status: row.status,
       });
     },
+  },
+  {
+    title: "Įvykio data",
+    key: "date",
   },
   {
     title: "Paskutinis atnaujinimas",

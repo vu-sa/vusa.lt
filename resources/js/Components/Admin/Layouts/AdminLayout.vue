@@ -15,7 +15,9 @@
       <NLayout
         class="min-h-screen before:absolute before:block before:h-full before:w-full before:bg-white before:content-[''] dark:from-vusa-red dark:to-vusa-yellow/80 dark:before:bg-zinc-800/80"
       >
-        <NLayoutHeader class="flex flex-row justify-between py-4 pr-8">
+        <NLayoutHeader
+          class="flex flex-row justify-between py-4 pr-8 shadow-lg"
+        >
           <div class="invisible">
             <NButton secondary round @click="collapsed = !collapsed"
               >Menu</NButton
@@ -26,7 +28,7 @@
             <UserAdminOptionsMenu />
           </div>
         </NLayoutHeader>
-        <NLayout class="mb-12 mt-20 min-h-full" has-sider position="absolute">
+        <NLayout class="mb-12 mt-16 min-h-full" has-sider position="absolute">
           <NLayoutSider
             class="main-card-gradient ml-4 h-fit rounded-md from-white shadow-md"
             collapse-mode="width"

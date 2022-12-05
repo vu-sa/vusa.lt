@@ -1,6 +1,9 @@
 <template>
   <div class="h-24 w-36">
-    <NButton style="height: 100%; width: 100%"
+    <NButton
+      :strong="strong"
+      :secondary="secondary"
+      style="height: 100%; width: 100%"
       ><template #icon><NIcon size="20" :component="icon" /></template><slot
     /></NButton>
   </div>
@@ -11,6 +14,8 @@ import { NButton, NIcon } from "naive-ui";
 
 defineProps<{
   icon: any;
+  secondary?: boolean;
+  strong?: boolean;
 }>();
 </script>
 
