@@ -1,10 +1,8 @@
 <template>
-  <div
-    class="my-4 rounded-sm border shadow-lg dark:border-zinc-600/90 lg:max-w-2xl"
-  >
+  <div class="my-4 rounded-sm shadow-lg lg:max-w-2xl">
     <EditorContent
       :editor="editor"
-      class="min-h-[4em] rounded-b-lg border-vusa-yellow/50 bg-stone-50/40 shadow-inner dark:bg-zinc-800/70"
+      class="min-h-[4em] rounded-t-lg border-vusa-yellow/50 bg-stone-50/40 shadow-inner dark:bg-zinc-800/70"
     />
     <div
       v-if="editor"

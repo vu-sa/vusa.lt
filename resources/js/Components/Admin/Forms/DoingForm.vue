@@ -28,6 +28,9 @@
           :actions="['confirm']"
         />
       </NFormItemGi>
+      <!-- <NFormItemGi label="Klausimas" :span="2">
+      
+      </NFormItemGi> -->
       <NFormItemGi v-if="doingTypes" label="Tipas" path="doing_type_id" required
         ><NSelect
           v-model:value="doingForm.type_id"
@@ -39,11 +42,11 @@
       <NFormItemGi label="Statusas" path="status" required :span="2">
         <NRadioGroup v-model:value="doingForm.status">
           <NRadio
-            v-for="status in doingStatuses"
+            v-for="status in doingStatusOptions"
             :key="status.value"
             :value="status.value"
-            >{{ status.label }}</NRadio
-          >
+            ><StatusTag :status="status.label"></StatusTag
+          ></NRadio>
         </NRadioGroup>
       </NFormItemGi>
 
@@ -71,7 +74,8 @@ import { ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 
-import { doingOptions } from "@/Composables/someTypes";
+import { doingOptions, doingStatusOptions } from "@/Composables/someTypes";
+import StatusTag from "../StatusTag.vue";
 
 const emit = defineEmits(["success"]);
 
@@ -79,25 +83,13 @@ const props = defineProps<{
   doing: any;
   doingTypes?: any;
   modelRoute: string;
-  question: any;
+  question?: any;
 }>();
 
 const showModal = ref(false);
 const doingForm = useForm(props.doing);
 
-const doingStatuses = [
-  {
-    label: "Sukurtas",
-    value: "Sukurtas",
-  },
-  {
-    label: "Pabaigtas",
-    value: "Pabaigtas",
-  },
-];
-
 const upsertDoing = () => {
-  console.log(doingForm);
   doingForm.transform((data) => ({
     ...data,
     question_id: props.question.id,

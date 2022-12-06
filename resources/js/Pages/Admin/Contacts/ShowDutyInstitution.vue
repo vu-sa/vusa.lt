@@ -1,33 +1,51 @@
 <template>
   <PageContent :title="dutyInstitution.name">
     <div class="mb-4 flex gap-4 py-2">
-      <QuickActionButton :icon="PeopleTeamAdd24Filled"
-        >Pranešti apie artėjantį posėdį</QuickActionButton
+      <NewMeetingButton
+        :duty-institution="dutyInstitution"
+        :doing-types="doingTypes"
+        >Pranešti apie artėjantį posėdį</NewMeetingButton
       >
       <QuickActionButton :icon="DocumentAdd24Filled"
         >Įkelti posėdžio protokolą</QuickActionButton
       >
     </div>
-    <div class="main-card">
-      <div class="mb-2 flex items-center gap-4">
-        <h2 class="mb-0">Klausimai</h2>
-        <NButton round size="tiny" secondary @click="showModal = true"
-          ><template #icon
-            ><NIcon :component="BookQuestionMark20Filled" /></template
-          >Sukurti klausimą</NButton
-        >
-        <HelpTextModal class="ml-auto" title="Kas yra klausimas?"
-          ><p>
-            Klausimas – tai dalykas, kurį bando išspręsti ši institucija šiuo
-            metu.
-          </p></HelpTextModal
-        >
-      </div>
-      <NDataTable
-        :data="dutyInstitution.questions"
-        :columns="columns"
-      ></NDataTable>
-    </div>
+    <NTabs animated type="card">
+      <NTabPane name="Aprašymas">
+        <div class="m-4">
+          <template v-for="type in dutyInstitution.types" :key="type.id">
+            <NTag size="small" :bordered="false">
+              {{ type.title }}
+            </NTag>
+            <p class="prose-sm mt-2 dark:prose-invert">
+              {{ type.description }}
+            </p>
+          </template>
+        </div>
+      </NTabPane>
+      <NTabPane name="Klausimai">
+        <div class="main-card">
+          <div class="mb-2 flex items-center gap-4">
+            <h2 class="mb-0">Klausimai</h2>
+            <NButton round size="tiny" secondary @click="showModal = true"
+              ><template #icon
+                ><NIcon :component="BookQuestionMark20Filled" /></template
+              >Sukurti klausimą</NButton
+            >
+            <HelpTextModal class="ml-auto" title="Kas yra klausimas?"
+              ><p>
+                Klausimas – tai dalykas, kurį bando išspręsti ši institucija
+                šiuo metu.
+              </p></HelpTextModal
+            >
+          </div>
+          <NDataTable
+            :data="dutyInstitution.questions"
+            :columns="columns"
+          ></NDataTable>
+        </div>
+      </NTabPane>
+    </NTabs>
     <template #after-heading>
       <InstitutionAvatarGroup :users="users" />
     </template>
@@ -40,18 +58,6 @@
         "
         ><template #icon><NIcon :component="Edit20Filled"></NIcon></template
       ></NButton>
-    </template>
-    <template #below-header>
-      <div class="mb-4">
-        <NTag
-          v-for="type in dutyInstitution.types"
-          :key="type.id"
-          size="small"
-          :bordered="false"
-        >
-          {{ type.title }}
-        </NTag>
-      </div>
     </template>
   </PageContent>
   <NModal
@@ -109,20 +115,14 @@ export default {
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
 import {
-  AddCircle32Regular,
   ArrowTurnRight20Filled,
   BookQuestionMark20Filled,
   DocumentAdd24Filled,
-  DocumentAdd24Regular,
   Edit20Filled,
-  PeopleTeam32Filled,
-  PeopleTeamAdd24Filled,
-  PersonQuestionMark20Filled,
 } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import { Link, useForm } from "@inertiajs/inertia-vue3";
 import {
-  NAvatar,
   NButton,
   NDataTable,
   NForm,
@@ -133,6 +133,8 @@ import {
   NModal,
   NPopover,
   NSelect,
+  NTabPane,
+  NTabs,
   NTag,
 } from "naive-ui";
 import { h, ref } from "vue";
@@ -141,11 +143,13 @@ import route from "ziggy-js";
 import { questionOptions } from "@/Composables/someTypes";
 import HelpTextModal from "@/Components/HelpTextModal.vue";
 import InstitutionAvatarGroup from "@/Components/Admin/Misc/InstitutionAvatarGroup.vue";
+import NewMeetingButton from "@/Components/Admin/QActButtons/NewMeetingButton.vue";
 import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import QuickActionButton from "@/Components/Admin/Buttons/QuickActionButton.vue";
 import StatusTag from "@/Components/Admin/StatusTag.vue";
 
 const props = defineProps<{
+  doingTypes: any;
   dutyInstitution: App.Models.DutyInstitution;
   users: App.Models.User[];
 }>();

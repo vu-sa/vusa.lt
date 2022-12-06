@@ -52,7 +52,6 @@ class DutyInstitutionQuestionsController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required',
-            'description' => 'string',
         ]);
 
         // add status "Sukurtas" to validated
@@ -70,7 +69,8 @@ class DutyInstitutionQuestionsController extends Controller
 
         $question = Question::create($validated);
 
-        return redirect()->route('dutyInstitutions.questions.show', [$dutyInstitution, $question])->with('success', 'Klausimas sukurtas!');
+        // reminder to adjust question creation in the frontend
+        return redirect()->back()->with('data', $question)->with('success', 'Klausimas sukurtas!');
     }
 
     /**

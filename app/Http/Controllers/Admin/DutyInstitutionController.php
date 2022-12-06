@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller as Controller;
 use Inertia\Inertia;
 use App\Models\Padalinys;
 use App\Models\Type;
+use App\Models\Doing;
 
 class DutyInstitutionController extends Controller
 {
@@ -95,6 +96,12 @@ class DutyInstitutionController extends Controller
 
         return Inertia::render('Admin/Contacts/ShowDutyInstitution', [
             'dutyInstitution' => $dutyInstitution,
+            'doingTypes' => Type::where('model_type', Doing::class)->get()->map(function ($doingType) {
+                return [
+                    'value' => $doingType->id,
+                    'label' => $doingType->title,
+                ];
+            }),
             'questions' => $dutyInstitution->questions->map(function ($question) {
                 $question->loadCount('doings');
                 return $question;

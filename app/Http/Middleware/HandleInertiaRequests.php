@@ -68,6 +68,7 @@ class HandleInertiaRequests extends Middleware
                 'users' => $request->user()->can('edit unit users'),
             ],
             'flash' => [
+                'data' => fn () => $request->session()->get('data'),
                 'info' => fn () => $request->session()->get('info'),
                 'success' => fn () => $request->session()->get('success'),
             ],

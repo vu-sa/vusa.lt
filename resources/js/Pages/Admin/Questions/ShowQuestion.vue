@@ -18,37 +18,41 @@
             >{{ question.institution.name }}
           </div></NBreadcrumbItem
         >
-        <NBreadcrumbItem
-          ><NPopover class="max-w-xl" placement="right"
-            ><template #trigger>
-              <div>
-                <NIcon
-                  class="mr-2"
-                  size="16"
-                  :component="BookQuestionMark20Filled"
-                />{{ question.title }}
-              </div> </template
-            >{{ question.description }}</NPopover
-          ></NBreadcrumbItem
-        >
+        <NBreadcrumbItem>
+          <div>
+            <NIcon
+              class="mr-2"
+              size="16"
+              :component="BookQuestionMark20Filled"
+            />{{ question.title }}
+          </div>
+        </NBreadcrumbItem>
       </NBreadcrumb>
     </template>
-    <div class="main-card w-full">
-      <div class="mb-2 flex items-center gap-4">
-        <h2 class="mb-0">Veiklos</h2>
-        <NButton round size="tiny" secondary @click="showModal = true"
-          ><template #icon><NIcon :component="Sparkle20Filled" /></template
-          >Sukurti veiklą</NButton
-        >
-        <HelpTextModal class="ml-auto" title="Kas yra veikla?"
-          ><p>
-            Veikla – tai bet koks nutikęs veiksmas, susijęs su šiuo klausimu.
-          </p></HelpTextModal
-        >
-      </div>
+    <NTabs animated type="card">
+      <NTabPane name="Aprašymas">
+        <p>{{ question.description }}</p>
+      </NTabPane>
+      <NTabPane name="Veiklos">
+        <div class="main-card w-full">
+          <div class="mb-2 flex items-center gap-4">
+            <h2 class="mb-0">Veiklos</h2>
+            <NButton round size="tiny" secondary @click="showModal = true"
+              ><template #icon><NIcon :component="Sparkle20Filled" /></template
+              >Sukurti veiklą</NButton
+            >
+            <HelpTextModal class="ml-auto" title="Kas yra veikla?"
+              ><p>
+                Veikla – tai bet koks nutikęs veiksmas, susijęs su šiuo
+                klausimu.
+              </p></HelpTextModal
+            >
+          </div>
 
-      <NDataTable :data="question.doings" :columns="columns"></NDataTable>
-    </div>
+          <NDataTable :data="question.doings" :columns="columns"></NDataTable>
+        </div>
+      </NTabPane>
+    </NTabs>
   </PageContent>
   <NModal
     v-model:show="showModal"
@@ -81,11 +85,8 @@ export default {
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
 import {
-  AddCircle32Regular,
   ArrowTurnRight20Filled,
   BookQuestionMark20Filled,
-  DocumentAdd24Regular,
-  Edit20Filled,
   PeopleTeam32Filled,
   Sparkle20Filled,
 } from "@vicons/fluent";
@@ -99,6 +100,8 @@ import {
   NIcon,
   NModal,
   NPopover,
+  NTabPane,
+  NTabs,
 } from "naive-ui";
 import { h, ref } from "vue";
 import route from "ziggy-js";
@@ -182,24 +185,6 @@ const columns = [
               ),
           }
         ),
-        // h(
-        //   NPopover,
-        //   {},
-        //   {
-        //     default: () => "Pridėti failą prie įvykio",
-        //     trigger: () =>
-        //       h(
-        //         NButton,
-        //         { size: "small", secondary: true },
-        //         { default: () => h(NIcon, { component: DocumentAdd24Regular }) }
-        //       ),
-        //   }
-        // ),
-        // h(
-        //   NButton,
-        //   { size: "small", secondary: true },
-        //   { default: () => h(NIcon, { component: Edit20Filled }) }
-        // ),
       ]);
     },
   },

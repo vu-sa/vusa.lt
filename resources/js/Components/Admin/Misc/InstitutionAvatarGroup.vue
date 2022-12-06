@@ -1,5 +1,5 @@
 <template>
-  <NAvatarGroup :options="options" :max="3" :size="40"></NAvatarGroup>
+  <NAvatarGroup :options="options" :max="4" :size="40"></NAvatarGroup>
 </template>
 
 <script setup lang="ts">

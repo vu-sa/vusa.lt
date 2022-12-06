@@ -27,3 +27,25 @@ export const doingOptions = [
     value: "Susitikimas su koordinatoriumi",
   },
 ];
+
+export const contentTypeOptions = [
+  {
+    label: "Protokolai",
+    value: "Protokolai",
+  },
+  {
+    label: "Pristatymai",
+    value: "Pristatymai",
+  },
+];
+
+export const doingStatusOptions = [
+  {
+    label: "Sukurtas",
+    value: "Sukurtas",
+  },
+  {
+    label: "Pabaigtas",
+    value: "Pabaigtas",
+  },
+];

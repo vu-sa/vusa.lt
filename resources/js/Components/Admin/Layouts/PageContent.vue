@@ -24,7 +24,11 @@
     </aside>
   </header>
   <slot name="below-header"></slot>
-  <NDivider v-if="title" style="margin-top: 0px" class="mt-0" />
+  <NDivider
+    v-if="title && headerDivider"
+    style="margin-top: 0px"
+    class="mt-0"
+  />
 
   <div
     class="mt-1 mb-12 grid max-w-7xl grid-flow-row-dense grid-cols-[1fr_auto] gap-x-8 lg:grid-flow-col"
@@ -49,6 +53,7 @@ import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
 defineProps<{
   createUrl?: string;
   backUrl?: string;
+  headerDivider?: boolean;
   title?: string;
 }>();
 

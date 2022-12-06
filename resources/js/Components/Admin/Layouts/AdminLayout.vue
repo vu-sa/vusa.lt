@@ -106,7 +106,7 @@ defineProps<{
   backUrl?: string | null;
 }>();
 
-const collapsed = ref(true);
+const collapsed = ref(false);
 const showModal = ref(false);
 const mounted = ref(false);
 

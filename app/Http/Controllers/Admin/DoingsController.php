@@ -111,7 +111,7 @@ class DoingsController extends Controller
                         ];
                     }),
                     'tasks' => $doing->tasks,
-                    'comments' => $doing->comments,
+                    'comments' => $doing->comments->reverse()->values(),
                 ],
             'documents' => $sharepointFiles,
         ]);

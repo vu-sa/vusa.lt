@@ -25,8 +25,11 @@
             {{ type.title }}
           </NTag>
         </template>
+        <!-- <template #action>
+          <NButton>Pasižiūrėti</NButton>
+        </template> -->
 
-        <template #header-extra>
+        <!-- <template #header-extra>
           <NDropdown trigger="click" :options="options">
             <NButton size="small" round circle quaternary @click.stop
               ><NIcon
@@ -35,7 +38,7 @@
               ></NIcon
             ></NButton>
           </NDropdown>
-        </template>
+        </template> -->
         <InstitutionAvatarGroup :users="institution.users" />
       </NCard>
     </div>

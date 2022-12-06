@@ -1,6 +1,8 @@
 <template>
   <PageContent :title="doing.title">
-    <template #after-heading><StatusTag :status="doing.status" /> </template>
+    <template #after-heading>
+      <StatusTag :status="doing.status" />
+    </template>
     <template #aside-header>
       <div class="flex items-center gap-4">
         <NButton secondary circle @click="showModal = true"
@@ -53,18 +55,15 @@
               })
             )
           "
-          ><NPopover class="max-w-xl" placement="right"
-            ><template #trigger
-              ><div>
-                <NIcon
-                  class="mr-2"
-                  size="16"
-                  :component="BookQuestionMark20Filled"
-                />{{ question.title }}
-              </div></template
-            >{{ question.description }}</NPopover
-          ></NBreadcrumbItem
         >
+          <div>
+            <NIcon
+              class="mr-2"
+              size="16"
+              :component="BookQuestionMark20Filled"
+            />{{ question.title }}
+          </div>
+        </NBreadcrumbItem>
         <NBreadcrumbItem
           ><div>
             <NIcon class="mr-2" size="16" :component="Sparkle20Filled" />{{
@@ -74,38 +73,41 @@
         >
       </NBreadcrumb>
     </template>
-    <template #aside-card>
-      <div class="w-96">
-        <div v-if="doing.tasks.length > 0" class="main-card h-fit">
+
+    <NTabs animated type="card">
+      <NTabPane name="Aprašymas">
+        <div v-if="doing.tasks.length > 0" class="m-4 h-fit">
           <h2>Užduotys</h2>
           <TaskViewer :tasks="doing.tasks" />
         </div>
-        <div class="main-card">
-          <h2>Komentarai</h2>
-          <CommentViewer :comments="doing.comments" />
-        </div>
-        <CommentTipTap
-          v-model:text="comment"
-          class="main-card"
-          :content-model="contentModel"
-        />
-      </div>
-    </template>
-    <div class="grid grid-cols-2">
-      <div class="main-card col-span-full">
-        <div class="mb-4 flex items-center gap-4">
-          <h2 class="mb-0">Dokumentai</h2>
-          <NMessageProvider>
-            <FileUploader
-              :content-type-options="contentTypeOptions"
+      </NTabPane>
+      <NTabPane name="Dokumentai"
+        ><div class="main-card col-span-full">
+          <div class="mb-4 flex items-center gap-4">
+            <h2 class="mb-0">Dokumentai</h2>
+            <NMessageProvider>
+              <FileUploader
+                :content-type-options="contentTypeOptions"
+                :content-model="contentModel"
+                :institution="question.institution"
+              ></FileUploader>
+            </NMessageProvider>
+          </div>
+          <NDataTable :columns="columns" :data="documents"></NDataTable></div
+      ></NTabPane>
+      <NTabPane name="Komentarai">
+        <div class="max-w-2xl">
+          <div class="main-card">
+            <h2>Komentarai</h2>
+            <CommentTipTap
+              v-model:text="comment"
               :content-model="contentModel"
-              :institution="question.institution"
-            ></FileUploader>
-          </NMessageProvider>
+            />
+            <CommentViewer :comments="doing.comments" />
+          </div>
         </div>
-        <NDataTable :columns="columns" :data="documents"></NDataTable>
-      </div>
-    </div>
+      </NTabPane>
+    </NTabs>
   </PageContent>
 </template>
 
@@ -136,11 +138,14 @@ import {
   NModal,
   NPopover,
   NSpace,
+  NTabPane,
+  NTabs,
   NTag,
 } from "naive-ui";
 import { computed, h, ref } from "vue";
 import route from "ziggy-js";
 
+import { contentTypeOptions } from "@/Composables/someTypes";
 import CommentTipTap from "@/Components/CommentTipTap.vue";
 import CommentViewer from "@/Components/Admin/Comments/CommentViewer.vue";
 import DoingForm from "@/Components/Admin/Forms/DoingForm.vue";
@@ -197,17 +202,6 @@ const columns = [
   {
     title: "Data",
     key: "date",
-  },
-];
-
-const contentTypeOptions = [
-  {
-    label: "Protokolai",
-    value: "Protokolai",
-  },
-  {
-    label: "Pristatymai",
-    value: "Pristatymai",
   },
 ];
 </script>
