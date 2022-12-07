@@ -30,12 +30,20 @@ export const doingOptions = [
 
 export const contentTypeOptions = [
   {
+    label: "Metodinė medžiaga",
+    value: "Metodinė medžiaga",
+  },
+  {
     label: "Protokolai",
     value: "Protokolai",
   },
   {
     label: "Pristatymai",
     value: "Pristatymai",
+  },
+  {
+    label: "Šablonai",
+    value: "Šablonai",
   },
   {
     label: "Veiklą reglamentuojantys dokumentai",

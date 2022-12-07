@@ -1,6 +1,7 @@
 <template>
   <button
-    class="main-card-gradient grid h-48 w-48 grid-rows-[2fr_1fr] items-center rounded-lg border shadow-sm transition hover:shadow-md focus:outline-none focus:ring focus:ring-vusa-yellow dark:border-zinc-900 dark:bg-zinc-900 dark:focus:ring-vusa-red"
+    class="grid h-48 w-48 grid-rows-[2fr_1fr] items-center rounded-lg border shadow-sm transition hover:shadow-md focus:outline-none focus:ring focus:ring-vusa-yellow dark:border-zinc-900 dark:bg-zinc-900 dark:focus:ring-vusa-red"
+    :class="gradient"
   >
     <div class="align-center flex justify-center">
       <NIcon size="64" :component="icon"></NIcon>
@@ -16,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import { File, FilePdf } from "@vicons/fa";
+import { File, FilePdf, FileWord } from "@vicons/fa";
 import { NIcon } from "naive-ui";
 import { computed } from "vue";
 
@@ -24,11 +25,33 @@ const props = defineProps<{
   document: any;
 }>();
 
+const gradient = computed(() => {
+  let fileContentType = props.document.type;
+
+  if (fileContentType === "Veiklą reglamentuojantys dokumentai") {
+    return "from-zinc-200 main-card-gradient bg-gradient-to-b";
+  }
+
+  if (fileContentType === "Metodinė medžiaga") {
+    return "from-vusa-yellow/30 to-white dark:from-vusa-yellow/60 dark:to-zinc-700/80 bg-gradient-to-b";
+  }
+
+  return "main-card-gradient dark:from-zinc-800/90 dark:to-zinc-700/90";
+});
+
 const icon = computed(() => {
+  // if word file
+  if (
+    props.document.file.mimeType ===
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  ) {
+    return FileWord;
+  }
+
   if (props.document.file.mimeType === "application/pdf") {
     return FilePdf;
-  } else {
-    return File;
   }
+
+  return File;
 });
 </script>

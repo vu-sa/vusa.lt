@@ -15,9 +15,9 @@
         <div class="m-4">
           <template v-for="type in dutyInstitution.types" :key="type.id">
             <NTag size="small" strong :bordered="false">
-              {{ type.title }}
+              <span>{{ type.title }}</span>
             </NTag>
-            <div class="mt-4">
+            <div class="mt-2">
               <p class="prose-sm dark:prose-invert">
                 {{ type.description }}
               </p>

@@ -7,6 +7,7 @@
       :object-options="objectOptions"
       :institution="dutyInstitution"
       :button="MeetingButtonTemplate"
+      :type="'Protokolai'"
     ></FileUploader>
   </NMessageProvider>
 </template>
@@ -30,12 +31,15 @@ const objectOptions = computed(() => {
       label: question.title,
       key: question.id,
       disabled: true,
-      children: question.doings.map((doing) => {
-        return {
-          label: doing.title,
-          key: doing.id,
-        };
-      }),
+      // map doings as children where type is Posėdis
+      children: question.doings
+        .filter((doing) => doing.types.some((type) => type.title === "Posėdis"))
+        .map((doing) => {
+          return {
+            label: doing.title,
+            key: doing.id,
+          };
+        }),
     };
   });
 });

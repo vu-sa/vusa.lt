@@ -26,6 +26,7 @@
           :default-value="fileObjectName"
           default-expand-all
           :options="objectOptions"
+          placeholder="Pasirink, į ką įkelsi šį failą"
           @update:value="onObjectChange"
         ></NTreeSelect>
       </NFormItem>
@@ -121,6 +122,7 @@ const props = defineProps<{
   contentModel?: Record<string, any>;
   institution?: Record<string, any>;
   objectOptions?: Record<string, any>[];
+  type?: string;
   showObjectName?: boolean;
 }>();
 
@@ -132,7 +134,7 @@ const originalFileName = ref("");
 
 const formRef = ref(null);
 const model = useForm({
-  typeValue: null,
+  typeValue: props.type ?? null,
   keywordsValue: [],
   datetimeValue: new Date().getTime(),
   uploadValue: null,

@@ -50,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { File, FilePdf } from "@vicons/fa";
+import { File, FilePdf, FileWord } from "@vicons/fa";
 import { Inertia } from "@inertiajs/inertia";
 import { NButton, NDrawer, NDrawerContent, NIcon, NTable } from "naive-ui";
 import { computed, ref, watch } from "vue";
@@ -95,6 +95,13 @@ const fileIcon = computed(() => {
   console.log("activeDocument.value", activeDocument.value);
   if (activeDocument.value === null) {
     return File;
+  }
+
+  if (
+    props.document.file.mimeType ===
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  ) {
+    return FileWord;
   }
 
   if (activeDocument.value.file.mimeType === "application/pdf") {
