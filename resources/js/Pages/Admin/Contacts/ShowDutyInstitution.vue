@@ -129,7 +129,6 @@ import { trans as $t } from "laravel-vue-i18n";
 import {
   ArrowTurnRight20Filled,
   BookQuestionMark20Filled,
-  DocumentAdd24Filled,
   Edit20Filled,
 } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
@@ -142,6 +141,7 @@ import {
   NGrid,
   NIcon,
   NInput,
+  NMessageProvider,
   NModal,
   NPopover,
   NSelect,
@@ -152,8 +152,15 @@ import {
 import { h, ref } from "vue";
 import route from "ziggy-js";
 
-import { documentTemplate, questionOptions } from "@/Composables/someTypes";
+import {
+  contentTypeOptions,
+  documentTemplate,
+  questionOptions,
+} from "@/Composables/someTypes";
+import FileButton from "@/Components/Admin/Buttons/FileButton.vue";
 import FileSelectDrawer from "@/Components/Admin/Nav/FileSelectDrawer.vue";
+import FileUploader from "@/Components/Admin/Buttons/FileUploader.vue";
+import FileUploaderBasicButton from "@/Components/Admin/Buttons/FileUploaderBasicButton.vue";
 import HelpTextModal from "@/Components/HelpTextModal.vue";
 import InstitutionAvatarGroup from "@/Components/Admin/Misc/InstitutionAvatarGroup.vue";
 import MeetingDocumentButton from "@/Components/Admin/QActButtons/MeetingDocumentButton.vue";
@@ -238,6 +245,12 @@ const columns = [
     },
   },
 ];
+
+const contentModel = {
+  id: props.dutyInstitution.id,
+  title: props.dutyInstitution.title,
+  type: "App\\Models\\DutyInstitution",
+};
 
 const questionForm = useForm({
   title: "",

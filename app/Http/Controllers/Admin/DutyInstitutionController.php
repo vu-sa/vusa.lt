@@ -10,6 +10,7 @@ use Inertia\Inertia;
 use App\Models\Padalinys;
 use App\Models\Type;
 use App\Models\Doing;
+use App\Services\SharepointAppGraph;
 
 class DutyInstitutionController extends Controller
 {
@@ -95,6 +96,14 @@ class DutyInstitutionController extends Controller
 
         $users = $dutyInstitution->duties->pluck('users')->flatten()->unique('id')->values();
 
+        $sharepointFiles = [];        
+        
+        if ($dutyInstitution->documents->count() > 0) {
+            $graph = new SharepointAppGraph();
+        
+            $sharepointFiles = $graph->collectModelDocuments($dutyInstitution);
+        }
+
         return Inertia::render('Admin/Contacts/ShowDutyInstitution', [
             'dutyInstitution' => [
                 ...$dutyInstitution->toArray(), 
@@ -104,6 +113,7 @@ class DutyInstitutionController extends Controller
                 }),
                 'users' => $users,
                 'types' => $dutyInstitution->types->load('documents'),
+                'sharepointFiles' => $sharepointFiles,
             ],
             'doingTypes' => Type::where('model_type', Doing::class)->get()->map(function ($doingType) {
                 return [

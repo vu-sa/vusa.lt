@@ -162,7 +162,7 @@ class SharepointController extends Controller
         $graph->deleteDriveItem($drive->getId(), $id);
 
         // delete from database
-        $deletedSharepointDocument = SharepointDocument::where('sharepoint_id', $id);
+        $deletedSharepointDocument = SharepointDocument::where('sharepoint_id', $id)->first();
 
         // remove cache
         Cache::forget('sharepoint_files_' . $deletedSharepointDocument->documentable_type . '_' . $deletedSharepointDocument->documentable_id);

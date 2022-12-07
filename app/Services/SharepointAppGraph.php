@@ -236,7 +236,7 @@ class SharepointAppGraph {
 
         $driveItems = $this->getDriveItemsByID(($model->documents), $drive->getId());
 
-        $sharepointFiles = collect($driveItems)->map(function (Model\DriveItem $item) {
+        $sharepointFiles = collect($driveItems)->map(function (Model\DriveItem $item) use ($driveItems) {
             return [
                 'id' => $item->getId(),
                 'name' => $item->getName(),
@@ -245,7 +245,7 @@ class SharepointAppGraph {
                 'lastModifiedDateTime' => $item->getLastModifiedDateTime(),
                 'size' => $item->getSize(),
                 'file' => $item->getFile(),
-                'type' => $item->getListItem()->getFields()->getProperties()['Type'] ?? null,
+                'type' => $item->getListItem()?->getFields()->getProperties()['Type'] ?? dd($driveItems),
                 'keywords' => $item->getListItem()->getFields()->getProperties()['Keywords'] ?? null,
                 // get date +3 hours and format YYYY-MM-DD
                 'date' => ($item->getListItem()->getFields()->getProperties()['Date'] ?? null) ? date('Y-m-d', strtotime($item->getListItem()->getFields()->getProperties()['Date'] . ' +3 hours')) : null,

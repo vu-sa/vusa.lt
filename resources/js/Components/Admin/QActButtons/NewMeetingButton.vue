@@ -27,14 +27,22 @@
     </NSteps>
     <FadeTransition>
       <NForm v-if="current === 1" :model="questionForm">
-        <NAlert title="Pastebėjimas" closable class="mb-4" type="default">
-          <template #icon>
-            <NIcon><BookExclamationMark20Filled /></NIcon>
-          </template>
-          Pasirink arba įrašyk svarbiausią klausimą, kuris
-          <strong>bus sprendžiamas posėdyje</strong> (ar yra įtrauktas į
-          darbotvarkę).
-        </NAlert>
+        <FadeTransition>
+          <NAlert
+            v-if="showAlert"
+            title="Pastebėjimas"
+            closable
+            class="mb-4"
+            type="default"
+          >
+            <template #icon>
+              <NIcon><BookExclamationMark20Filled /></NIcon>
+            </template>
+            Pasirink arba įrašyk svarbiausią klausimą, kuris
+            <strong>bus sprendžiamas posėdyje</strong> (ar yra įtrauktas į
+            darbotvarkę).
+          </NAlert>
+        </FadeTransition>
         <NGrid cols="1">
           <NFormItemGi label="Klausimo pavadinimas" path="title" required>
             <NSelect
@@ -93,7 +101,17 @@
       ></DoingForm>
     </FadeTransition>
     <div class="absolute bottom-8 right-12">
-      <NIcon size="48" :depth="5" :component="PeopleTeamAdd24Filled" />
+      <FadeTransition>
+        <NButton
+          v-if="!showAlert"
+          type="tertiary"
+          color="#bbbbbb"
+          text
+          @click="showAlert = true"
+          ><template #icon
+            ><NIcon size="48" :component="Question24Regular" /></template
+        ></NButton>
+      </FadeTransition>
     </div>
   </NModal>
 </template>
@@ -104,6 +122,7 @@ import {
   BookExclamationMark20Filled,
   PeopleTeamAdd24Filled,
   PuzzlePiece20Regular,
+  Question24Regular,
 } from "@vicons/fluent";
 import {
   NAlert,
@@ -137,6 +156,7 @@ const props = defineProps<{
 const showDoingForm = ref(false);
 const loading = ref(false);
 const question = ref(null);
+const showAlert = ref(false);
 
 const doingTemplate = {
   title: "Planuotas posėdis",

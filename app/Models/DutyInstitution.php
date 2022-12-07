@@ -44,4 +44,9 @@ class DutyInstitution extends Model
     {
         return $this->hasManyDeepFromRelations($this->duties(), (new Duty)->users());
     }
+
+    public function documents()
+    {
+        return $this->morphMany(SharepointDocument::class, 'documentable');
+    }
 }
