@@ -13,22 +13,36 @@
     <NTabs animated type="card">
       <NTabPane display-directive="show" name="Aprašymas">
         <div class="m-4">
-          <template v-for="type in dutyInstitution.types" :key="type.id">
-            <NTag size="small" strong :bordered="false">
-              <span>{{ type.title }}</span>
-            </NTag>
-            <div class="mt-2">
-              <p class="prose-sm dark:prose-invert">
-                {{ type.description }}
-              </p>
-              <ModelDocumentButtons
-                v-if="type.documents.length > 0"
-                :documents="type.documents"
-                :model="{ id: type.id, model_type: 'App\\Models\\Type' }"
-                @file-button-click="updateSelectedDocument"
-              ></ModelDocumentButtons>
-            </div>
-          </template>
+          <NCollapse
+            arrow-placement="right"
+            :default-expanded-names="['Studijų programos komitetas']"
+          >
+            <template v-for="type in dutyInstitution.types" :key="type.id">
+              <NCollapseItem :name="type.title">
+                <template #header>
+                  <NTag
+                    class="cursor-pointer"
+                    size="small"
+                    strong
+                    :bordered="false"
+                  >
+                    <span>{{ type.title }}</span>
+                  </NTag>
+                </template>
+                <div class="mt-2">
+                  <p class="prose-sm dark:prose-invert">
+                    {{ type.description }}
+                  </p>
+                  <ModelDocumentButtons
+                    v-if="type.documents.length > 0"
+                    :documents="type.documents"
+                    :model="{ id: type.id, model_type: 'App\\Models\\Type' }"
+                    @file-button-click="updateSelectedDocument"
+                  ></ModelDocumentButtons>
+                </div>
+              </NCollapseItem>
+            </template>
+          </NCollapse>
         </div>
       </NTabPane>
       <NTabPane name="Klausimai">
@@ -143,6 +157,8 @@ import { Inertia } from "@inertiajs/inertia";
 import { Link, useForm } from "@inertiajs/inertia-vue3";
 import {
   NButton,
+  NCollapse,
+  NCollapseItem,
   NDataTable,
   NForm,
   NFormItemGi,
