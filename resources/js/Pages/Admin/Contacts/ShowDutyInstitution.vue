@@ -4,22 +4,29 @@
       <NewMeetingButton
         :duty-institution="dutyInstitution"
         :doing-types="doingTypes"
-        >Pranešti apie artėjantį posėdį</NewMeetingButton
-      >
-      <QuickActionButton :icon="DocumentAdd24Filled"
-        >Įkelti posėdžio protokolą</QuickActionButton
-      >
+      />
+      <MeetingDocumentButton
+        :duty-institution="dutyInstitution"
+        :questions="dutyInstitution.questions"
+      />
     </div>
     <NTabs animated type="card">
-      <NTabPane name="Aprašymas">
+      <NTabPane display-directive="show" name="Aprašymas">
         <div class="m-4">
           <template v-for="type in dutyInstitution.types" :key="type.id">
-            <NTag size="small" :bordered="false">
+            <NTag size="small" strong :bordered="false">
               {{ type.title }}
             </NTag>
-            <p class="prose-sm mt-2 dark:prose-invert">
-              {{ type.description }}
-            </p>
+            <div class="mt-4">
+              <p class="prose-sm dark:prose-invert">
+                {{ type.description }}
+              </p>
+              <ModelDocumentButtons
+                v-if="type.documents.length > 0"
+                :model="{ id: type.id, model_type: 'App\\Models\\Type' }"
+                @file-button-click="updateSelectedDocument"
+              ></ModelDocumentButtons>
+            </div>
           </template>
         </div>
       </NTabPane>
@@ -47,7 +54,7 @@
       </NTabPane>
     </NTabs>
     <template #after-heading>
-      <InstitutionAvatarGroup :users="users" />
+      <InstitutionAvatarGroup :users="dutyInstitution.users" />
     </template>
     <template #aside-header>
       <NButton
@@ -102,6 +109,10 @@
       </NGrid>
     </NForm>
   </NModal>
+  <FileSelectDrawer
+    :document="selectedDocument"
+    @close-drawer="selectedDocument = documentTemplate"
+  ></FileSelectDrawer>
 </template>
 
 <script lang="ts">
@@ -140,21 +151,29 @@ import {
 import { h, ref } from "vue";
 import route from "ziggy-js";
 
-import { questionOptions } from "@/Composables/someTypes";
+import { documentTemplate, questionOptions } from "@/Composables/someTypes";
+import FileSelectDrawer from "@/Components/Admin/Nav/FileSelectDrawer.vue";
 import HelpTextModal from "@/Components/HelpTextModal.vue";
 import InstitutionAvatarGroup from "@/Components/Admin/Misc/InstitutionAvatarGroup.vue";
+import MeetingDocumentButton from "@/Components/Admin/QActButtons/MeetingDocumentButton.vue";
+import ModelDocumentButtons from "@/Components/Admin/ModelDocumentButtons.vue";
 import NewMeetingButton from "@/Components/Admin/QActButtons/NewMeetingButton.vue";
 import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
-import QuickActionButton from "@/Components/Admin/Buttons/QuickActionButton.vue";
 import StatusTag from "@/Components/Admin/StatusTag.vue";
 
 const props = defineProps<{
   doingTypes: any;
   dutyInstitution: App.Models.DutyInstitution;
-  users: App.Models.User[];
 }>();
 
 const showModal = ref(false);
+
+const selectedDocument = ref(null);
+
+const updateSelectedDocument = (document) => {
+  console.table(document);
+  selectedDocument.value = document;
+};
 
 const columns = [
   {
@@ -212,32 +231,6 @@ const columns = [
                   ),
               }
             ),
-            // h(
-            //   NPopover,
-            //   {},
-            //   {
-            //     default: () => "Pridėk failą prie įvykio",
-            //     trigger: () =>
-            //       h(
-            //         NButton,
-            //         { size: "small", secondary: true },
-            //         {
-            //           default: () =>
-            //             h(NIcon, { component: DocumentAdd24Regular }),
-            //         }
-            //       ),
-            //   }
-            // ),
-            // h(
-            //   NButton,
-            //   { size: "small", secondary: true },
-            //   { default: () => h(NIcon, { component: Edit20Filled }) }
-            // ),
-            // h(
-            //   NButton,
-            //   { round: true, size: "small", type: "error" },
-            //   { default: () => "Ištrinti" }
-            // ),
           ],
         }
       );

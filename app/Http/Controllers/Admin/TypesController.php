@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Type;
 use App\Http\Controllers\Controller as Controller;
+use App\Services\SharepointAppGraph;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -77,8 +78,16 @@ class TypesController extends Controller
      */
     public function edit(Type $type)
     {
+        $sharepointFiles = [];
+
+        if ($type->documents->count() > 0) {
+            $graph = new SharepointAppGraph();
+        
+            $sharepointFiles = $graph->collectModelDocuments($type);
+        }
+        
         return Inertia::render('Admin/ModelTypes/EditType', [
-            'contentType' => $type,
+            'contentType' => $type->toArray() + ['sharepointFiles' => $sharepointFiles],
             'contentTypes' => Type::select('id', 'title', 'model_type')->get(),
         ]);
     }

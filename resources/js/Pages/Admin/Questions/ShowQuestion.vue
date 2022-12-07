@@ -29,7 +29,7 @@
         </NBreadcrumbItem>
       </NBreadcrumb>
     </template>
-    <NTabs animated type="card">
+    <NTabs animated type="card" default-value="Veiklos">
       <NTabPane name="Aprašymas">
         <p>{{ question.description }}</p>
       </NTabPane>

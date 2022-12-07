@@ -37,6 +37,10 @@ export const contentTypeOptions = [
     label: "Pristatymai",
     value: "Pristatymai",
   },
+  {
+    label: "Veiklą reglamentuojantys dokumentai",
+    value: "Veiklą reglamentuojantys dokumentai",
+  },
 ];
 
 export const doingStatusOptions = [
@@ -49,3 +53,15 @@ export const doingStatusOptions = [
     value: "Pabaigtas",
   },
 ];
+
+export const documentTemplate = {
+  name: "",
+  file: {
+    mimeType: "",
+  },
+  createdDateTime: {
+    date: "",
+  },
+  size: 0,
+  type: "",
+};

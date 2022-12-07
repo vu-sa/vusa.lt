@@ -1,0 +1,134 @@
+<template>
+  <NDrawer
+    v-model:show="active"
+    :mask-closable="false"
+    :auto-focus="false"
+    :show-mask="false"
+    :trap-focus="false"
+    :width="350"
+    placement="right"
+  >
+    <NDrawerContent closable>
+      <FadeTransition>
+        <div
+          class="mt-8 flex flex-col items-center justify-center gap-4 transition"
+        >
+          <NIcon class="mr-2" size="96" :component="fileIcon" />
+          <span class="text-center text-xl tracking-wide">{{
+            activeDocument.name
+          }}</span>
+          <div class="flex gap-2">
+            <NButton class="mt-4" @click="handleOpen">Atidaryti</NButton>
+            <NButton
+              :loading="loadingDelete"
+              type="error"
+              class="mt-4"
+              @click="handleDelete(activeDocument.id)"
+              >Ištrinti</NButton
+            >
+          </div>
+          <NTable class="mt-4">
+            <tbody class="text-xs">
+              <tr>
+                <td class="font-bold">Sukūrimo data</td>
+                <td>{{ activeDocument.createdDateTime.date }}</td>
+              </tr>
+              <tr>
+                <td class="font-bold">Dydis</td>
+                <td>{{ fileSize }}</td>
+              </tr>
+              <tr>
+                <td class="font-bold">Tipas</td>
+                <td>{{ activeDocument.type }}</td>
+              </tr>
+            </tbody>
+          </NTable>
+        </div>
+      </FadeTransition>
+    </NDrawerContent>
+  </NDrawer>
+</template>
+
+<script setup lang="ts">
+import { File, FilePdf } from "@vicons/fa";
+import { Inertia } from "@inertiajs/inertia";
+import { NButton, NDrawer, NDrawerContent, NIcon, NTable } from "naive-ui";
+import { computed, ref, watch } from "vue";
+import route from "ziggy-js";
+
+import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
+
+// define emit for close
+const emit = defineEmits<{ (event: "closeDrawer"): void }>();
+
+const props = defineProps<{
+  document: App.Models.Document;
+}>();
+
+const active = ref(false);
+const activeDocument = ref(null);
+
+const loadingDelete = ref(false);
+
+watch(
+  () => props.document,
+  (newDocument) => {
+    if (newDocument.name === "") {
+      return;
+    }
+    active.value = true;
+    activeDocument.value = newDocument;
+  }
+);
+
+watch(
+  () => active.value,
+  (newActive) => {
+    console.log("newActive", newActive);
+    if (!newActive) {
+      emit("closeDrawer");
+    }
+  }
+);
+
+const fileIcon = computed(() => {
+  console.log("activeDocument.value", activeDocument.value);
+  if (activeDocument.value === null) {
+    return File;
+  }
+
+  if (activeDocument.value.file.mimeType === "application/pdf") {
+    return FilePdf;
+  } else {
+    return File;
+  }
+});
+
+// compute file size in human readable format
+const fileSize = computed(() => {
+  if (activeDocument.value === null) {
+    return "";
+  }
+
+  const bytes = activeDocument.value.size;
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+  if (bytes === 0) return "0 Byte";
+  const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)).toString());
+  return Math.round(bytes / Math.pow(1024, i), 2) + " " + sizes[i];
+});
+
+const handleOpen = () => {
+  window.open(activeDocument.value.webUrl);
+};
+
+const handleDelete = (id) => {
+  loadingDelete.value = true;
+  Inertia.delete(route("sharepoint.destroy", id), {
+    preserveState: true,
+    onSuccess: () => {
+      loadingDelete.value = false;
+      active.value = false;
+    },
+  });
+};
+</script>

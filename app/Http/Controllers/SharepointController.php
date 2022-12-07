@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SharepointDocument;
 use App\Services\SharepointAppGraph;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Microsoft\Graph\Model;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -51,6 +52,26 @@ class SharepointController extends Controller
         ]);
     }
 
+    public function getFilesFromModel(Request $request) {
+        $graph = new SharepointAppGraph();
+
+        $modelId = $request->input('id');
+        $modelType = $request->input('model_type');
+
+        if (Cache::has('sharepoint_files_' . $modelType . '_' . $modelId)) 
+        {
+            return response()->json(Cache::get('sharepoint_files_' . $modelType . '_' . $modelId));
+        }
+
+        $model = $modelType::find($modelId);
+
+        $sharepointFiles = $graph->collectModelDocuments($model);
+
+        Cache::put('sharepoint_files_' . $modelType . '_' . $modelId, $sharepointFiles, 60 * 60);
+
+        return response()->json($sharepointFiles);
+    }
+
     public function addFile(Request $request) {
         $graph = new SharepointAppGraph();
 
@@ -83,6 +104,9 @@ class SharepointController extends Controller
             'documentable_id' => $contentModel['id'],
             'documentable_type' => $contentModel['type'],
         ]);
+
+        // remove cache
+        Cache::forget('sharepoint_files_' . $contentModel['type'] . '_' . $contentModel['id']);
 
         return redirect()->back()->with('success', 'Failas įkeltas');
     }
@@ -129,13 +153,21 @@ class SharepointController extends Controller
         return $uploadedFile;
     }
 
-    public function destroy($id) {
+    public function destroyFile($id) {
         $graph = new SharepointAppGraph();
 
         $site = $graph->getSiteById(config('filesystems.sharepoint.site_id'));
         $drive = $graph->getDriveBySite($site->getId());
 
         $graph->deleteDriveItem($drive->getId(), $id);
+
+        // delete from database
+        $deletedSharepointDocument = SharepointDocument::where('sharepoint_id', $id);
+
+        // remove cache
+        Cache::forget('sharepoint_files_' . $deletedSharepointDocument->documentable_type . '_' . $deletedSharepointDocument->documentable_id);
+
+        $deletedSharepointDocument->delete();
 
         return redirect()->back()->with('success', 'Failas ištrintas');
     }

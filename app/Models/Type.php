@@ -30,4 +30,9 @@ class Type extends Model
     {
         return $this->morphedByMany(Doing::class, 'typeable');
     }
+
+    public function documents()
+    {
+        return $this->morphMany(SharepointDocument::class, 'documentable');
+    }
 }

@@ -1,8 +1,5 @@
 <template>
-  <NButton round secondary size="tiny" @click="showModal = true"
-    ><NIcon class="mr-1" :component="DocumentAdd24Regular" />Įkelti naują
-    failą</NButton
-  >
+  <component :is="button" @click="showModal = true"></component>
   <NModal
     v-model:show="showModal"
     class="prose prose-sm dark:prose-invert"
@@ -24,6 +21,14 @@
       :model="model"
       :rules="rules"
     >
+      <NFormItem v-if="showObjectName" label="Failo objektas">
+        <NTreeSelect
+          :default-value="fileObjectName"
+          default-expand-all
+          :options="objectOptions"
+          @update:value="onObjectChange"
+        ></NTreeSelect>
+      </NFormItem>
       <NFormItem label="Tipas" path="typeValue"
         ><NSelect
           v-model:value="model.typeValue"
@@ -100,6 +105,7 @@ import {
   NSelect,
   NTag,
   NText,
+  NTreeSelect,
   NUpload,
   NUploadDragger,
   useMessage,
@@ -109,10 +115,13 @@ import { useForm } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 
 const props = defineProps<{
+  button: any;
   contentTypeOptions: Record<string, any>[];
   // keywords: Record<string, any>[];
-  contentModel: Record<string, any>;
+  contentModel?: Record<string, any>;
   institution?: Record<string, any>;
+  objectOptions?: Record<string, any>[];
+  showObjectName?: boolean;
 }>();
 
 const showModal = ref(false);
@@ -127,8 +136,12 @@ const model = useForm({
   keywordsValue: [],
   datetimeValue: new Date().getTime(),
   uploadValue: null,
-  contentModel: props.contentModel,
+  contentModel: props.contentModel ?? null,
   nameValue: null,
+});
+
+const fileObjectName = computed(() => {
+  return `${props.contentModel?.title}`;
 });
 
 const rules = {
@@ -222,12 +235,12 @@ const generateName = () => {
     .split("T")[0];
 
   // if posėdis
-  if (props.contentModel.contentTypes.some((x) => x.title === "Posėdis")) {
-    model.nameValue = `${dateFormatted} ${props.institution.name} posėdžio ${model.typeValue}.${fileExtension}`;
-  }
+  // if (props.contentModel.contentTypes.some((x) => x.title === "Posėdis")) {
+  //   model.nameValue = `${dateFormatted} ${props.institution.name} posėdžio ${model.typeValue}.${fileExtension}`;
+  // }
 
   // if other, keep same name
-  else model.nameValue = originalFileName.value;
+  model.nameValue = originalFileName.value;
 };
 
 const onTypeChange = (value) => {
@@ -251,5 +264,9 @@ const beforeUpload = async (data) => {
     return false;
   }
   return true;
+};
+
+const onObjectChange = (value) => {
+  model.contentModel.id = value;
 };
 </script>

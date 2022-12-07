@@ -1,6 +1,11 @@
 <template>
   <NBadge :dot="notifications.length > 0">
-    <NPopover trigger="click" size="small" :show-arrow="true">
+    <NPopover
+      trigger="click"
+      size="small"
+      placement="bottom-end"
+      :show-arrow="true"
+    >
       <template #trigger>
         <NButton circle size="small" text
           ><template #icon><NIcon :component="Alert24Regular"></NIcon></template

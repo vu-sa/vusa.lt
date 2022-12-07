@@ -91,22 +91,26 @@ class DutyInstitutionController extends Controller
     public function show(DutyInstitution $dutyInstitution)
     {
         $dutyInstitution->load('types', 'padalinys', 'questions');
+        $questions = $dutyInstitution->questions;
 
         $users = $dutyInstitution->duties->pluck('users')->flatten()->unique('id')->values();
 
         return Inertia::render('Admin/Contacts/ShowDutyInstitution', [
-            'dutyInstitution' => $dutyInstitution,
+            'dutyInstitution' => [
+                ...$dutyInstitution->toArray(), 
+                'questions' => $questions->load('doings')->map(function ($question) {
+                    $question->loadCount('doings');
+                    return $question;
+                }),
+                'users' => $users,
+                'types' => $dutyInstitution->types->load('documents'),
+            ],
             'doingTypes' => Type::where('model_type', Doing::class)->get()->map(function ($doingType) {
                 return [
                     'value' => $doingType->id,
                     'label' => $doingType->title,
                 ];
             }),
-            'questions' => $dutyInstitution->questions->map(function ($question) {
-                $question->loadCount('doings');
-                return $question;
-            }),
-            'users' => $users,
         ]);
     }
 

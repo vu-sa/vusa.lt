@@ -74,27 +74,35 @@
       </NBreadcrumb>
     </template>
 
-    <NTabs animated type="card">
+    <NTabs default-value="Dokumentai" animated type="card">
       <NTabPane name="Aprašymas">
         <div v-if="doing.tasks.length > 0" class="m-4 h-fit">
           <h2>Užduotys</h2>
           <TaskViewer :tasks="doing.tasks" />
         </div>
       </NTabPane>
-      <NTabPane name="Dokumentai"
-        ><div class="main-card col-span-full">
-          <div class="mb-4 flex items-center gap-4">
-            <h2 class="mb-0">Dokumentai</h2>
-            <NMessageProvider>
-              <FileUploader
-                :content-type-options="contentTypeOptions"
-                :content-model="contentModel"
-                :institution="question.institution"
-              ></FileUploader>
-            </NMessageProvider>
-          </div>
-          <NDataTable :columns="columns" :data="documents"></NDataTable></div
-      ></NTabPane>
+      <NTabPane name="Dokumentai">
+        <div class="m-4 flex items-center gap-4">
+          <h2 class="mb-0">Dokumentai</h2>
+          <NMessageProvider>
+            <FileUploader
+              :button="FileUploaderBasicButton"
+              :show-object-name="false"
+              :content-type-options="contentTypeOptions"
+              :content-model="contentModel"
+              :institution="question.institution"
+            ></FileUploader>
+          </NMessageProvider>
+        </div>
+        <div class="m-4 flex max-w-4xl flex-wrap gap-6">
+          <FileButton
+            v-for="document in documents"
+            :key="document.id"
+            :document="document"
+            @click="selectedDocument = document"
+          ></FileButton>
+        </div>
+      </NTabPane>
       <NTabPane name="Komentarai">
         <div class="max-w-2xl">
           <div class="main-card">
@@ -109,6 +117,10 @@
       </NTabPane>
     </NTabs>
   </PageContent>
+  <FileSelectDrawer
+    :document="selectedDocument"
+    @close-drawer="selectedDocument = documentTemplate"
+  ></FileSelectDrawer>
 </template>
 
 <script lang="ts">
@@ -132,24 +144,23 @@ import {
   NBreadcrumb,
   NBreadcrumbItem,
   NButton,
-  NDataTable,
   NIcon,
   NMessageProvider,
   NModal,
-  NPopover,
-  NSpace,
   NTabPane,
   NTabs,
-  NTag,
 } from "naive-ui";
-import { computed, h, ref } from "vue";
+import { computed, ref } from "vue";
 import route from "ziggy-js";
 
-import { contentTypeOptions } from "@/Composables/someTypes";
+import { contentTypeOptions, documentTemplate } from "@/Composables/someTypes";
 import CommentTipTap from "@/Components/CommentTipTap.vue";
 import CommentViewer from "@/Components/Admin/Comments/CommentViewer.vue";
 import DoingForm from "@/Components/Admin/Forms/DoingForm.vue";
+import FileButton from "@/Components/Admin/Buttons/FileButton.vue";
+import FileSelectDrawer from "@/Components/Admin/Nav/FileSelectDrawer.vue";
 import FileUploader from "@/Components/Admin/Buttons/FileUploader.vue";
+import FileUploaderBasicButton from "@/Components/Admin/Buttons/FileUploaderBasicButton.vue";
 import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import ShowActivityLog from "@/Components/Admin/Buttons/ShowActivityLog.vue";
 import StatusTag from "@/Components/Admin/StatusTag.vue";
@@ -165,43 +176,12 @@ const comment = ref("");
 
 const showModal = ref(false);
 
+const selectedDocument = ref(null);
+
 const contentModel = computed(() => ({
   id: props.doing.id,
+  title: props.doing.title,
   type: "App\\Models\\Doing",
-  contentTypes: props.doing.types,
+  // contentTypes: props.doing.types,
 }));
-
-const columns = [
-  {
-    title: "Pavadinimas",
-    key: "name",
-    render(row) {
-      return h("a", { href: row.webUrl, target: "_blank" }, row.name);
-    },
-  },
-  {
-    title: "Tipas",
-    key: "type",
-  },
-  {
-    title: "Raktažodžiai",
-    key: "keywords",
-    render(row) {
-      return h(
-        NSpace,
-        {},
-        {
-          default: () =>
-            row.keywords?.map((keyword) =>
-              h(NTag, {}, { default: () => keyword })
-            ),
-        }
-      );
-    },
-  },
-  {
-    title: "Data",
-    key: "date",
-  },
-];
 </script>
