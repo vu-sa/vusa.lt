@@ -24,13 +24,14 @@
       <NFormItem v-if="showObjectName" label="Failo objektas">
         <NTreeSelect
           :default-value="fileObjectName"
+          filterable
           default-expand-all
           :options="objectOptions"
           placeholder="Pasirink, į ką įkelsi šį failą"
           @update:value="onObjectChange"
         ></NTreeSelect>
       </NFormItem>
-      <NFormItem label="Tipas" path="typeValue"
+      <NFormItem v-if="!type" label="Tipas" path="typeValue"
         ><NSelect
           v-model:value="model.typeValue"
           :options="contentTypeOptions"

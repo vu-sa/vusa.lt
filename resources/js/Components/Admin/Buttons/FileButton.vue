@@ -33,7 +33,7 @@ const gradient = computed(() => {
   }
 
   if (fileContentType === "Metodinė medžiaga") {
-    return "from-vusa-yellow/30 to-white dark:from-vusa-yellow/60 dark:to-zinc-700/80 bg-gradient-to-b";
+    return "from-vusa-yellow/30 to-white dark:from-vusa-red/60 dark:to-zinc-700/80 bg-gradient-to-b";
   }
 
   return "main-card-gradient dark:from-zinc-800/90 dark:to-zinc-700/90";
