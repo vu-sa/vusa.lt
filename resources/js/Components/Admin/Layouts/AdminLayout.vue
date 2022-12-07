@@ -144,6 +144,11 @@ const themeOverrides = {
     primaryColorPressed: "#CC2130FF",
     primaryColorSuppl: "#B93945FF",
   },
+  Layout: {
+    color: "rgb(250 248 248)",
+    headerColor: "rgb(250 248 248)",
+    footerColor: "rgb(250 248 248)",
+  },
 };
 
 const darkThemeOverrides = {
@@ -154,9 +159,9 @@ const darkThemeOverrides = {
     primaryColorSuppl: "#B93945FF",
   },
   Layout: {
-    color: "#FFFFFF00",
-    headerColor: "#FFFFFF00",
-    footerColor: "#FFFFFF00",
+    color: "rgb(30 30 33)",
+    headerColor: "rgb(30 30 33)",
+    footerColor: "rgb(30 30 33)",
   },
 };
 
