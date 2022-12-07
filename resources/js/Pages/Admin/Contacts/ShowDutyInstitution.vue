@@ -32,6 +32,14 @@
         </div>
       </NTabPane>
       <NTabPane name="Klausimai">
+        <template #tab>
+          <div class="flex gap-2">
+            {{ $t("Klausimai") }}
+            <NTag size="small" round>
+              {{ dutyInstitution.questions.length }}
+            </NTag>
+          </div>
+        </template>
         <div class="main-card">
           <div class="mb-2 flex items-center gap-4">
             <h2 class="mb-0">Klausimai</h2>
