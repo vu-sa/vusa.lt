@@ -6,9 +6,11 @@
       <NIcon size="64" :component="icon"></NIcon>
     </div>
     <div
-      class="flex h-full w-full flex-col justify-center rounded-b-md bg-white dark:bg-zinc-900 dark:text-white"
+      class="flex h-full w-full flex-col justify-center overflow-auto rounded-b-md bg-white dark:bg-zinc-900 dark:text-white"
     >
-      <span class="px-2 text-sm line-clamp-2">{{ document.name }}</span>
+      <span class="break-words px-2 text-sm line-clamp-2">{{
+        document.name
+      }}</span>
     </div>
   </button>
 </template>

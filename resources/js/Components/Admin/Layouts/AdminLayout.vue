@@ -7,16 +7,14 @@
     <NConfigProvider
       v-show="mounted"
       :theme="isThemeDark ? darkTheme : undefined"
-      :theme-overrides="themeOverrides"
+      :theme-overrides="isThemeDark ? darkThemeOverrides : themeOverrides"
     >
       <Head :title="title" />
       <MetaIcons />
 
-      <NLayout
-        class="min-h-screen before:absolute before:block before:h-full before:w-full before:bg-white before:content-[''] dark:from-vusa-red dark:to-vusa-yellow/80 dark:before:bg-zinc-800/80"
-      >
+      <NLayout class="min-h-screen">
         <NLayoutHeader
-          class="flex flex-row justify-between py-4 pr-8 shadow-lg"
+          class="fixed z-50 flex flex-row justify-between py-4 pr-8 backdrop-blur-md"
         >
           <div class="invisible">
             <NButton secondary round @click="collapsed = !collapsed"
@@ -28,9 +26,9 @@
             <UserAdminOptionsMenu />
           </div>
         </NLayoutHeader>
-        <NLayout class="mb-12 mt-16 min-h-full" has-sider position="absolute">
+        <NLayout class="mt-16" has-sider>
           <NLayoutSider
-            class="main-card-gradient ml-4 h-fit rounded-md from-white shadow-md"
+            class="main-card-gradient ml-4 mb-24 h-fit rounded-md from-white shadow-md"
             collapse-mode="width"
             :collapsed-width="isMobile ? 0 : 64"
             :width="200"
@@ -140,6 +138,15 @@ window.addEventListener("resize", () => {
 updateDarkMode(isThemeDark);
 
 const themeOverrides = {
+  common: {
+    primaryColor: "#bd2835FF",
+    primaryColorHover: "#CD3543FF",
+    primaryColorPressed: "#CC2130FF",
+    primaryColorSuppl: "#B93945FF",
+  },
+};
+
+const darkThemeOverrides = {
   common: {
     primaryColor: "#bd2835FF",
     primaryColorHover: "#CD3543FF",

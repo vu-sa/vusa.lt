@@ -23,6 +23,7 @@
               </p>
               <ModelDocumentButtons
                 v-if="type.documents.length > 0"
+                :documents="type.documents"
                 :model="{ id: type.id, model_type: 'App\\Models\\Type' }"
                 @file-button-click="updateSelectedDocument"
               ></ModelDocumentButtons>
