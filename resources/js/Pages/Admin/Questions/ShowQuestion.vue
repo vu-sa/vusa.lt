@@ -106,6 +106,7 @@ import {
 import { h, ref } from "vue";
 import route from "ziggy-js";
 
+import DeleteModelButton from "@/Components/Admin/Buttons/DeleteModelButton.vue";
 import DoingForm from "@/Components/Admin/Forms/DoingForm.vue";
 import HelpTextModal from "@/Components/HelpTextModal.vue";
 import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
@@ -185,6 +186,14 @@ const columns = [
               ),
           }
         ),
+        h(DeleteModelButton, {
+          model: row,
+          size: "small",
+          modelRoute: "doings.destroy",
+          modelRouteParams: {
+            doing: row.id,
+          },
+        }),
       ]);
     },
   },

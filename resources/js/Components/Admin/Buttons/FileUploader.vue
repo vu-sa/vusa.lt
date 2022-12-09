@@ -21,7 +21,7 @@
       :model="model"
       :rules="rules"
     >
-      <NFormItem v-if="showObjectName" label="Failo objektas">
+      <NFormItem v-if="showObjectName" required label="Failo objektas">
         <NTreeSelect
           :default-value="fileObjectName"
           filterable
@@ -38,14 +38,14 @@
           @update:value="onTypeChange"
         ></NSelect
       ></NFormItem>
-      <NFormItem label="Raktažodžiai" path="keywordsValue"
+      <!-- <NFormItem label="Raktažodžiai" path="keywordsValue"
         ><NSelect
           v-model:value="model.keywordsValue"
           multiple
           filterable
           tag
         ></NSelect
-      ></NFormItem>
+      ></NFormItem> -->
       <NFormItem label="Dokumento data" path="datetimeValue"
         ><NDatePicker
           v-model:value="model.datetimeValue"

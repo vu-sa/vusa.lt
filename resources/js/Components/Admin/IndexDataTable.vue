@@ -17,8 +17,8 @@
 </template>
 
 <script setup lang="ts">
+import { ArrowForward20Filled, Edit20Filled } from "@vicons/fluent";
 import { DataTableColumns, NButton, NDataTable, NIcon } from "naive-ui";
-import { Edit20Filled } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import { computed, h, reactive, ref } from "vue";
 import route from "ziggy-js";
@@ -42,7 +42,7 @@ const columnsWithActions = computed(() => {
     {
       title: props.editRoute || props.destroyRoute ? "Veiksmai" : null,
       key: "actions",
-      width: 100,
+      width: 150,
       render(row) {
         return h(
           "div",
@@ -51,6 +51,23 @@ const columnsWithActions = computed(() => {
           },
           {
             default: () => [
+              props.showRoute
+                ? h(
+                    NButton,
+                    {
+                      size: "small",
+                      tag: "a",
+                      href: route(props.showRoute, row.id),
+                    },
+                    {
+                      icon: () =>
+                        h(NIcon, {
+                          component: ArrowForward20Filled,
+                        }),
+                    }
+                  )
+                : null,
+              // conditionally render the edit button
               props.editRoute
                 ? h(
                     NButton,

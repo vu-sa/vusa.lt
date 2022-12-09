@@ -81,7 +81,6 @@ class SharepointAppGraph {
             ->setReturnType(Model\DriveItem::class)
             ->execute();
 
-        
         Cache::put('ms_drive_children_' . $driveId, $driveItems, 3600);
 
         return $driveItems;

@@ -10,6 +10,7 @@
       <IndexSearchInput payload-name="search" />
       <IndexDataTable
         edit-route="dutyInstitutions.edit"
+        show-route="dutyInstitutions.show"
         :model="dutyInstitutions"
         :columns="columns"
       >

@@ -34,7 +34,6 @@ class DutyInstitutionController extends Controller
             $query->where('name', 'like', "%{$search}%")->orWhere('short_name', 'like', "%{$search}%")->orWhere('alias', 'like', "%{$search}%");
         })->paginate(20);
 
-
         return Inertia::render('Admin/Contacts/IndexDutyInstitutions', [
             'dutyInstitutions' => $dutyInstitutions,
         ]);

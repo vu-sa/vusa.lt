@@ -11,6 +11,12 @@ use Illuminate\Http\Request;
 
 class CommentController extends Controller
 {
+    
+    public function __construct()
+    {
+        $this->authorizeResource(Comment::class, 'comment');
+    }
+    
     /**
      * Display a listing of the resource.
      *
@@ -105,6 +111,7 @@ class CommentController extends Controller
      */
     public function destroy(User $user, Comment $comment)
     {
-        //
+        // delete comment
+        $comment->delete();
     }
 }

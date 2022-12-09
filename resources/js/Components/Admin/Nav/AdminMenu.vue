@@ -20,6 +20,9 @@ import {
   Person24Regular,
   Settings24Regular,
   SlideText24Regular,
+  Sparkle20Filled,
+  Sparkle20Regular,
+  TabDesktopNewPage20Regular,
 } from "@vicons/fluent";
 import { Component, computed, h, ref } from "vue";
 import { Link, usePage } from "@inertiajs/inertia-vue3";
@@ -75,9 +78,56 @@ const menuOptions = computed(() => [
     icon: renderIcon(Home24Regular),
   },
   {
-    label: "Turinys",
+    label: "Veikla",
+    key: "doings",
+    icon: renderIcon(Sparkle20Regular),
+    // make children - klausimai and veiklos
+    children: [
+      {
+        label: () =>
+          h(Link, { href: route("questions.index") }, () => "Klausimai"),
+        key: "questions",
+        // show: can.questions,
+      },
+      {
+        label: () => h(Link, { href: route("doings.index") }, () => "Veiklos"),
+        key: "doings",
+        // show: can.doings,
+      },
+    ],
+  },
+  {
+    label: "Žmonės",
+    key: "contacts",
+    icon: renderIcon(Person24Regular),
+    show: can.users || can.dutyInstitutions || can.duties,
+    children: [
+      {
+        label: () =>
+          h(
+            Link,
+            { href: route("dutyInstitutions.index") },
+            () => "Institucijos"
+          ),
+        key: "dutyInstitutions",
+        show: can.dutyInstitutions,
+      },
+      {
+        label: () => h(Link, { href: route("duties.index") }, () => "Pareigos"),
+        key: "duties",
+        show: can.duties,
+      },
+      {
+        label: () => h(Link, { href: route("users.index") }, () => "Kontaktai"),
+        key: "users",
+        show: can.users,
+      },
+    ],
+  },
+  {
+    label: "vusa.lt",
     key: "content",
-    icon: renderIcon(SlideText24Regular),
+    icon: renderIcon(TabDesktopNewPage20Regular),
     show: can.content,
     children: [
       {
@@ -106,49 +156,27 @@ const menuOptions = computed(() => [
         key: "banners",
         show: can.banners,
       },
-    ],
-  },
-  {
-    label: "Kontaktai",
-    key: "contacts",
-    icon: renderIcon(Person24Regular),
-    show: can.users,
-    children: [
       {
         label: () =>
-          h(
-            Link,
-            { href: route("dutyInstitutions.index") },
-            () => "Institucijos"
-          ),
-        key: "dutyInstitutions",
-        show: can.dutyInstitutions,
+          h(Link, { href: route("navigation.index") }, () => "Navigacija"),
+        key: "navigation",
+        // icon: renderIcon(Navigation24Regular),
+        show: can.navigation,
       },
       {
-        label: () => h(Link, { href: route("duties.index") }, () => "Pareigos"),
-        key: "duties",
-        show: can.duties,
+        label: () =>
+          h(Link, { href: route("calendar.index") }, () => "Kalendorius"),
+        key: "calendar",
+        // icon: renderIcon(CalendarLtr24Regular),
+        show: can.calendar,
       },
       {
-        label: () => h(Link, { href: route("users.index") }, () => "Kontaktai"),
-        key: "users",
-        show: can.users,
+        label: () => h(Link, { href: route("files.index") }, () => "Failai"),
+        key: "files",
+        // icon: renderIcon(Folder24Regular),
+        show: can.files,
       },
     ],
-  },
-  {
-    label: () =>
-      h(Link, { href: route("navigation.index") }, () => "Navigacija"),
-    key: "navigation",
-    icon: renderIcon(Navigation24Regular),
-    show: can.navigation,
-  },
-  {
-    label: () =>
-      h(Link, { href: route("calendar.index") }, () => "Kalendorius"),
-    key: "calendar",
-    icon: renderIcon(CalendarLtr24Regular),
-    show: can.calendar,
   },
   {
     label: "Registracijos",
@@ -175,12 +203,6 @@ const menuOptions = computed(() => [
         show: can.content,
       },
     ],
-  },
-  {
-    label: () => h(Link, { href: route("files.index") }, () => "Failai"),
-    key: "files",
-    icon: renderIcon(Folder24Regular),
-    show: can.files,
   },
   {
     label: "Nustatymai",

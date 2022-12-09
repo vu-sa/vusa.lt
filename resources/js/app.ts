@@ -2,7 +2,6 @@
 import "./bootstrap";
 
 import { InertiaProgress } from "@inertiajs/progress";
-// import { ZiggyVue } from "ziggy";
 
 import { createApp, h } from "vue";
 import { createInertiaApp } from "@inertiajs/inertia-vue3";
@@ -21,19 +20,16 @@ createInertiaApp({
     );
   },
   setup({ el, app, props, plugin }) {
-    return (
-      createApp({ render: () => h(app, props) })
-        .use(plugin)
-        .use(i18nVue, {
-          fallbackLang: "lt",
-          resolve: async (lang: string) => {
-            const langs = import.meta.glob("../../lang/*.json");
-            return await langs[`../../lang/${lang}.json`]();
-          },
-        })
-        // .use(ZiggyVue)
-        .mount(el)
-    );
+    return createApp({ render: () => h(app, props) })
+      .use(plugin)
+      .use(i18nVue, {
+        fallbackLang: "lt",
+        resolve: async (lang: string) => {
+          const langs = import.meta.glob("../../lang/*.json");
+          return await langs[`../../lang/${lang}.json`]();
+        },
+      })
+      .mount(el);
   },
 });
 

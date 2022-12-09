@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Microsoft\Graph\Model;
 use Inertia\Inertia;
 
-class DoingsController extends Controller
+class DoingController extends Controller
 {
 
     public function __construct()
@@ -25,7 +25,17 @@ class DoingsController extends Controller
      */
     public function index()
     {
-        //
+        $search = request()->input('search');
+
+        $doings = Doing::when(!request()->user()->hasRole('Super Admin'), function ($query) {
+            $query->where('padalinys_id', '=', request()->user()->padalinys()->id);
+        })->when(!is_null($search), function ($query) use ($search) {
+            $query->where('name', 'like', "%{$search}%")->orWhere('short_name', 'like', "%{$search}%")->orWhere('alias', 'like', "%{$search}%");
+        })->paginate(20);
+
+        return Inertia::render('Admin/Questions/IndexDoings', [
+            'doings' => $doings,
+        ]);
     }
 
     /**
@@ -134,6 +144,21 @@ class DoingsController extends Controller
      */
     public function destroy(Doing $doing)
     {
-        //
+        // detach doings from questions
+        $doing->questions()->detach();
+
+        // detach doings from types
+        $doing->types()->detach();
+
+        // delete tasks
+        $doing->tasks()->delete();
+
+        // delete comments
+        $doing->comments()->delete();
+
+        // delete doing
+        $doing->delete();
+
+        return redirect()->route('doings.index')->with('success', 'Veikla ištrinta!');
     }
 }
