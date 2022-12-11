@@ -22,7 +22,7 @@ class TypesController extends Controller
      */
     public function index()
     {
-        return Inertia::render('Admin/ModelTypes/IndexTypes', [
+        return Inertia::render('Admin/ModelMeta/IndexTypes', [
             'contentTypes' => Type::paginate(20),
         ]);
     }
@@ -34,7 +34,7 @@ class TypesController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Admin/ModelTypes/CreateType', [
+        return Inertia::render('Admin/ModelMeta/CreateType', [
             'contentTypes' => Type::select('id', 'title', 'model_type')->get(),
         ]);
     }
@@ -86,7 +86,7 @@ class TypesController extends Controller
             $sharepointFiles = $graph->collectModelDocuments($type);
         }
         
-        return Inertia::render('Admin/ModelTypes/EditType', [
+        return Inertia::render('Admin/ModelMeta/EditType', [
             'contentType' => $type->toArray() + ['sharepointFiles' => $sharepointFiles],
             'contentTypes' => Type::select('id', 'title', 'model_type')->get(),
         ]);

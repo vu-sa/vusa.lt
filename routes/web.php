@@ -63,6 +63,8 @@ Route::prefix('admin')->group(function () {
         Route::post('dutyInstitutions/reorderDuties', [Admin\DutyInstitutionController::class, 'reorderDuties'])->name('dutyInstitutions.reorderDuties');
 
         Route::resource('types', Admin\TypesController::class);
+        Route::resource('relationships', Admin\RelationshipController::class);
+        Route::post('relationships/{relationship}/storeModelRelationship', [Admin\RelationshipController::class, 'storeModelRelationship'])->name('relationships.storeModelRelationship');
         Route::resource('tasks', Admin\TasksController::class);
         Route::post('tasks/{task}/updateCompletionStatus', [Admin\TasksController::class, 'updateCompletionStatus'])->name('tasks.updateCompletionStatus');
 

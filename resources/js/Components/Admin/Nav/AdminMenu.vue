@@ -224,6 +224,11 @@ const menuOptions = computed(() => [
         label: () => h(Link, { href: route("types.index") }, () => "Tipai"),
         key: "types",
       },
+      {
+        label: () =>
+          h(Link, { href: route("relationships.index") }, () => "Ryšiai"),
+        key: "relationships",
+      },
     ],
     show: can.settings,
   },
