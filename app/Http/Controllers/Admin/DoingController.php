@@ -27,14 +27,22 @@ class DoingController extends Controller
     {
         $search = request()->input('search');
 
-        $doings = Doing::when(!request()->user()->hasRole('Super Admin'), function ($query) {
+        $doings = Doing::with('questions')->when(!request()->user()->hasRole('Super Admin'), function ($query) {
             $query->where('padalinys_id', '=', request()->user()->padalinys()->id);
         })->when(!is_null($search), function ($query) use ($search) {
             $query->where('title', 'like', "%{$search}%");
-        })->paginate(20);
+        });
+
+        $unpaginatedDoings = $doings->get();
+
+        // pluck all questions 
+        $paginatedDoings = $doings->paginate(20);
+
+        $questions = $unpaginatedDoings->pluck('questions')->flatten()->unique('id')->values();
 
         return Inertia::render('Admin/Questions/IndexDoings', [
-            'doings' => $doings,
+            'doings' => $paginatedDoings,
+            'questions' => $questions,
         ]);
     }
 
