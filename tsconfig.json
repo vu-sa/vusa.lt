@@ -11,7 +11,7 @@
       "@/*": ["./resources/js/*"],
       "ziggy": ["./vendor/tightenco/ziggy/dist"]
     },
-    "types": ["vite/client"],
+    "types": ["vite/client", "unplugin-vue-define-options/macros-global"],
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
