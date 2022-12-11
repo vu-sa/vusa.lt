@@ -50,6 +50,7 @@ Route::prefix('admin')->group(function () {
 
         Route::resource('dutyInstitutions.questions', Admin\DutyInstitutionQuestionsController::class);
         Route::resource('questions', Admin\QuestionController::class);
+        Route::resource('questionGroups', Admin\QuestionGroupController::class);
         Route::resource('doings', Admin\DoingController::class);
 
         Route::resource('saziningaiExams', Admin\SaziningaiExamsController::class);

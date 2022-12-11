@@ -23,7 +23,7 @@ class QuestionController extends Controller
         $questions = Question::when(!request()->user()->hasRole('Super Admin'), function ($query) {
             $query->where('padalinys_id', '=', request()->user()->padalinys()->id);
         })->when(!is_null($search), function ($query) use ($search) {
-            $query->where('name', 'like', "%{$search}%")->orWhere('short_name', 'like', "%{$search}%")->orWhere('alias', 'like', "%{$search}%");
+            $query->where('title', 'like', "%{$search}%");
         })->paginate(20);
 
         return Inertia::render('Admin/Questions/IndexQuestions', [

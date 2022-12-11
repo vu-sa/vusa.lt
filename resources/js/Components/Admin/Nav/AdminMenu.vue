@@ -90,6 +90,17 @@ const menuOptions = computed(() => [
         // show: can.questions,
       },
       {
+        // question groups
+        label: () =>
+          h(
+            Link,
+            { href: route("questionGroups.index") },
+            () => "Klausimų grupės"
+          ),
+        key: "questionGroups",
+        // show: can.questionGroups,
+      },
+      {
         label: () => h(Link, { href: route("doings.index") }, () => "Veiklos"),
         key: "doings",
         // show: can.doings,
