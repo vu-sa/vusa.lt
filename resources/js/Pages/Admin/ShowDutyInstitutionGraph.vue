@@ -124,7 +124,10 @@ node
   .attr("x", 8)
   .attr("y", "0.25em")
   .attr("stroke-width", "0")
-  .attr("class", "fill-gray-800 dark:fill-gray-200")
+  .attr(
+    "class",
+    "text-base font-bold fill-gray-800 dark:fill-gray-200 stroke-gray-200 dark:stroke-gray-800"
+  )
   .text((d) => d.label);
 
 simulation.on("tick", () => {
