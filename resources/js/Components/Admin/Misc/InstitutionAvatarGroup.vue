@@ -1,9 +1,13 @@
 <template>
-  <NAvatarGroup :options="options" :max="4" :size="40"></NAvatarGroup>
+  <NAvatarGroup :options="options" :max="4" :size="40">
+    <template #avatar="{ option: { src } }">
+      <NAvatar object-fit="cover" :src="src" />
+    </template>
+  </NAvatarGroup>
 </template>
 
 <script setup lang="ts">
-import { NAvatarGroup } from "naive-ui";
+import { NAvatar, NAvatarGroup } from "naive-ui";
 
 const props = defineProps<{
   users: Record<string, any>;
