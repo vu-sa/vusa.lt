@@ -38,7 +38,9 @@ class DashboardController extends Controller
     }
 
     public function dutyInstitutionGraph() {
-        $dutyInstitutions = DutyInstitution::all();
+       
+        // return dutyInstitutions with user count
+        $dutyInstitutions = DutyInstitution::withCount('users')->get();
 
         // get relationships for duty institutions
         $dutyInstitutionRelationships = DB::table('relationshipables')->where('relationshipable_type', DutyInstitution::class)->get();

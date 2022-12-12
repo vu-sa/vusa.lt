@@ -26,6 +26,7 @@ const nodes = computed(() => {
     return {
       id: dutyInstitution.id,
       label: dutyInstitution.name,
+      userCount: dutyInstitution.users_count,
       // short_name: dutyInstitution.short_name,
       // alias: dutyInstitution.alias,
       // padalinys: dutyInstitution.padalinys,
@@ -111,7 +112,9 @@ const node = svg
 const circles = node
   .append("circle")
   .attr("id", (d) => d.id)
-  .attr("r", 6)
+  .attr("r", (d) => {
+    return 6 + d.userCount * 0.5;
+  })
   .attr("fill", (d) => color(d.group));
 
 // const node = svg
