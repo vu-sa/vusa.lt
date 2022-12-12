@@ -39,10 +39,11 @@
                     :model="{ id: type.id, model_type: 'App\\Models\\Type' }"
                     @file-button-click="updateSelectedDocument"
                   ></ModelDocumentButtons>
+                  <!-- Something is amiss here -->
                   <template v-if="typeRelationships(type).length > 0">
                     <h3 class="my-4">Susijusios institucijos pagal tipą</h3>
                     <DutyInstitutionCard
-                      v-for="institution in typeRelationships(type)"
+                      v-for="institution in typeRelationships(type)[0]"
                       :key="institution.id"
                       :institution="institution"
                     ></DutyInstitutionCard>
@@ -344,6 +345,9 @@ const typeRelationships = (type) => {
     })
   );
 
-  return relationshipModels[0];
+  console.log(relationshipModels, relationshipModels[0]);
+
+  // don't return undefined values, but empty array
+  return relationshipModels;
 };
 </script>

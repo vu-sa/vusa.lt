@@ -62,6 +62,6 @@ class DashboardController extends Controller
             return $relationshipable->getRelatedModelsFromGivenType(DutyInstitution::class);
         });
 
-        return collect($relationships[0]);
+        return collect($relationships)->flatten(1);
     }
 }

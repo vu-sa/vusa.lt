@@ -45,9 +45,7 @@ const edges = computed(() => {
 });
 
 const width = 1920;
-const height = 1440;
-
-const color = d3.scaleOrdinal(d3.schemeCategory10);
+const height = 1600;
 
 // define drag function
 const drag = (simulation) => {
@@ -93,6 +91,7 @@ const link = svg
   .append("g")
   .attr("stroke", "#999")
   .attr("stroke-opacity", 0.6)
+  .attr("stroke-width", 3)
   .selectAll("line")
   .data(edges.value)
   .join("line")
@@ -115,7 +114,7 @@ const circles = node
   .attr("r", (d) => {
     return 6 + d.userCount * 0.5;
   })
-  .attr("fill", (d) => color(d.group));
+  .attr("class", "fill-vusa-red dark:fill-vusa-yellow");
 
 node.append("title").text((d) => d.id);
 
@@ -124,6 +123,8 @@ node
   .append("text")
   .attr("x", 8)
   .attr("y", "0.25em")
+  .attr("stroke-width", "0")
+  .attr("class", "fill-gray-800 dark:fill-gray-200")
   .text((d) => d.label);
 
 simulation.on("tick", () => {
