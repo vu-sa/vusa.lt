@@ -4,7 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller as Controller;
 use App\Models\DutyInstitution;
-use App\Models\Relationship;
+use App\Models\Relationshipable;
+use App\Models\Type;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\DB;
@@ -45,9 +46,22 @@ class DashboardController extends Controller
         // get relationships for duty institutions
         $dutyInstitutionRelationships = DB::table('relationshipables')->where('relationshipable_type', DutyInstitution::class)->get();
 
+        $typeRelationships = $this->getTypeRelationships();
+
+        $dutyInstitutionRelationships = $dutyInstitutionRelationships->merge($typeRelationships);
+
         return Inertia::render('Admin/ShowDutyInstitutionGraph', [
             'dutyInstitutions' => $dutyInstitutions,
             'dutyInstitutionRelationships' => $dutyInstitutionRelationships,
         ]);
+    }
+
+    protected function getTypeRelationships()
+    {
+        $relationships = Relationshipable::where('relationshipable_type', Type::class)->get()->map(function ($relationshipable) {
+            return $relationshipable->getRelatedModelsFromGivenType(DutyInstitution::class);
+        });
+
+        return collect($relationships[0]);
     }
 }

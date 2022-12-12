@@ -10,6 +10,7 @@ use Inertia\Inertia;
 use App\Models\Padalinys;
 use App\Models\Type;
 use App\Models\Doing;
+use App\Models\Relationshipable;
 use App\Services\SharepointAppGraph;
 
 class DutyInstitutionController extends Controller
@@ -114,7 +115,28 @@ class DutyInstitutionController extends Controller
                     return $question;
                 }),
                 'users' => $users,
-                'types' => $dutyInstitution->types->load('documents'),
+                'types' => $dutyInstitution->types->load('documents')->map(function ($type) use ($dutyInstitution) {
+                    return 
+                        [...$type->toArray(), 
+                        'givenRelationships' => Relationshipable::where('relationshipable_type', Type::class)
+                            ->where('relationshipable_id', $type->id)->get()
+                            ->map(function ($relationshipable) use ($dutyInstitution)
+                            {
+                                $relationships = $relationshipable->getRelatedModelsFromGivenType(DutyInstitution::class, $dutyInstitution->id, true);
+                                return [
+                                    'relationshipable' => $relationshipable,
+                                    'relationships' => $relationships,
+                                ];
+                            }),
+                        'receivedRelationships' => Relationshipable::where('relationshipable_type', Type::class)->where('related_model_id', $type->id)->get()->map(function ($relationshipable) use ($dutyInstitution) {
+                            $relationships = $relationshipable->getRelatedModelsFromReceiverType(DutyInstitution::class, $dutyInstitution->id, true);
+                            return [
+                                'relationshipable' => $relationshipable,
+                                'relationships' => $relationships,
+                            ];
+                        }),
+                        ];
+                }),
                 'sharepointFiles' => $sharepointFiles,
                 'receivedRelationships' => $receivedRelationships,
                 'givenRelationships' => $givenRelationships,

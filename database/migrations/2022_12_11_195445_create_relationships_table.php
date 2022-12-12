@@ -25,6 +25,7 @@ return new class extends Migration
         });
 
         Schema::create('relationshipables', function (Blueprint $table) {
+            $table->id();
             $table->foreignId('relationship_id')->constrained();
             $table->morphs('relationshipable', 'relationshipable_id_index');
             // add second relationshipable id

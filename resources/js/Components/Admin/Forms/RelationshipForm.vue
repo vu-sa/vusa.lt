@@ -24,15 +24,6 @@
           placeholder="Trumpas apibūdinimas..."
         />
       </NFormItemGi>
-      <!-- <NFormItemGi label="Tėvinis tipas" :span="2">
-        <NSelect
-          v-model:value="form.parent_id"
-          label-field="title"
-          value-field="id"
-          :options="parentTypeOptions"
-          placeholder="Studentų atstovybė"
-        />
-      </NFormItemGi> -->
     </NGrid>
     <div class="flex justify-end gap-2">
       <DeleteModelButton
@@ -61,25 +52,4 @@ const props = defineProps<{
 }>();
 
 const form = useForm("relationship", props.relationship);
-
-// const modelTypes = [
-//   {
-//     value: "App\\Models\\DutyInstitution",
-//     label: "Institucija",
-//   },
-//   {
-//     value: "App\\Models\\Duty",
-//     label: "Pareigybė",
-//   },
-//   {
-//     value: "App\\Models\\Doing",
-//     label: "Veikla",
-//   },
-// ];
-
-// const parentTypeOptions = computed(() => {
-//   return props.contentTypes.filter(
-//     (type) => form.model_type === type.model_type && form.id !== type.id
-//   );
-// });
 </script>

@@ -39,6 +39,14 @@
                     :model="{ id: type.id, model_type: 'App\\Models\\Type' }"
                     @file-button-click="updateSelectedDocument"
                   ></ModelDocumentButtons>
+                  <template v-if="typeRelationships(type).length > 0">
+                    <h3 class="my-4">Susijusios institucijos pagal tipą</h3>
+                    <DutyInstitutionCard
+                      v-for="institution in typeRelationships(type)"
+                      :key="institution.id"
+                      :institution="institution"
+                    ></DutyInstitutionCard>
+                  </template>
                 </div>
               </NCollapseItem>
             </template>
@@ -205,7 +213,7 @@ import {
   NTabs,
   NTag,
 } from "naive-ui";
-import { h, ref } from "vue";
+import { computed, h, ref } from "vue";
 import route from "ziggy-js";
 
 import { documentTemplate, questionOptions } from "@/Composables/someTypes";
@@ -313,5 +321,29 @@ const createQuestion = () => {
       },
     }
   );
+};
+
+const typeRelationships = (type) => {
+  // create array
+  let relationshipModels = [];
+
+  relationshipModels = relationshipModels.concat(
+    type.givenRelationships.map((relationshipPacket) => {
+      return relationshipPacket.relationships.map((relationship) => {
+        return relationship.receiver_model;
+      });
+    })
+  );
+
+  // append receivedRelationships
+  relationshipModels = relationshipModels.concat(
+    type.receivedRelationships.map((relationshipPacket) => {
+      return relationshipPacket.relationships.map((relationship) => {
+        return relationship.giver_model;
+      });
+    })
+  );
+
+  return relationshipModels[0];
 };
 </script>

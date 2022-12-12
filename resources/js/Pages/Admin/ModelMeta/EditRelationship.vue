@@ -25,8 +25,10 @@
           <NFormItemGi :span="6" label="Modelio tipas">
             <NSelect
               v-model:value="relationForm.model_type"
-              disabled
+              remote
+              :options="modelTypeOptions"
               placeholder="Pasirinkite modelio tipą"
+              @update:value="handleUpdateModelType"
             ></NSelect>
           </NFormItemGi>
           <NFormItemGi :span="6" label="Modelis">
@@ -53,6 +55,7 @@
 </template>
 
 <script setup lang="ts">
+import { Inertia } from "@inertiajs/inertia";
 import {
   NButton,
   NDataTable,
@@ -78,16 +81,14 @@ defineOptions({
 
 const props = defineProps<{
   relationship: Record<string, any>;
-  related_models: Record<string, any>[];
+  relatedModels: Record<string, any>[];
   relationshipables: Record<string, any>[];
 }>();
 
 const showModal = ref(false);
 
-const modelType = ref("App\\Models\\DutyInstitution");
-
 const relationTemplate = {
-  model_type: modelType.value,
+  model_type: null,
   model_id: null,
   related_model_id: null,
   relationship_id: props.relationship.id,
@@ -96,9 +97,9 @@ const relationTemplate = {
 const relationForm = useForm("modelsRelation", relationTemplate);
 
 const options = computed(() => {
-  return props.related_models.map((model) => {
+  return props.relatedModels.map((model) => {
     return {
-      label: model.name,
+      label: model.name ?? model.title,
       value: model.id,
     };
   });
@@ -112,6 +113,8 @@ const submitRelationForm = () => {
     {
       onSuccess: () => {
         showModal.value = false;
+        // reset form
+        relationForm.reset();
       },
     }
   );
@@ -131,4 +134,23 @@ const relationshipableColumns = [
     key: "related_model_id",
   },
 ];
+
+const modelTypeOptions = [
+  {
+    label: "Duty Institution",
+    value: "App\\Models\\DutyInstitution",
+  },
+  {
+    label: "Type",
+    value: "App\\Models\\Type",
+  },
+];
+
+const handleUpdateModelType = (value: string) => {
+  Inertia.reload({
+    data: {
+      modelType: value,
+    },
+  });
+};
 </script>

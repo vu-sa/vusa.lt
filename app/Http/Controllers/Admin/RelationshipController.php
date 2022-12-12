@@ -72,16 +72,28 @@ class RelationshipController extends Controller
      * @param  \App\Models\Relationship  $relationship
      * @return \Illuminate\Http\Response
      */
-    public function edit(Relationship $relationship)
+    public function edit(Relationship $relationship, Request $request)
     {
         // get model type from request
         $model_type = request()->input('model_type');
 
-        $model_type = 'App\Models\DutyInstitution';
+        $model_type = null;
+
+        if ($request->modelType) {
+            $model_type = $request->modelType;
+        } 
+
+        $related_models = [];
+
+        if ($model_type === 'App\Models\DutyInstitution') {
+            $related_models = $model_type::select('id', 'name')->get();
+        } elseif ($model_type === 'App\Models\Type') {
+            $related_models = $model_type::select('id', 'title')->get();
+        }
         
         return Inertia::render('Admin/ModelMeta/EditRelationship', [
             'relationship' => $relationship,
-            'related_models' => $model_type::select('id', 'name')->get(),
+            'relatedModels' => $related_models,
             // retrieve all relationshipables where relationship_id is $relationship->id
             'relationshipables' => DB::table('relationshipables')
                 ->where('relationship_id', $relationship->id)

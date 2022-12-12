@@ -74,6 +74,14 @@ class DutyInstitution extends Model
         return $this->morphToMany(Relationship::class, 'relationshipable', null, 'related_model_id')->withPivot(['related_model_id', 'relationshipable_id']);
     }
 
+    public function receivedTypeRelationships() {
+        $types = $this->types()->get()->map(function ($type) {
+            return $type->receivedRelationshipModels();
+        })->flatten();
+        
+        return $types;
+    }
+
     public function receivedRelationshipModels()
     {
         // load relationships on pivot
