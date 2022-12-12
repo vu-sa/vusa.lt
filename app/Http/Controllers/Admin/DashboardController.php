@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller as Controller;
+use App\Models\DutyInstitution;
+use App\Models\Relationship;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
@@ -31,6 +34,18 @@ class DashboardController extends Controller
         
         return Inertia::render('Admin/ShowUserSettings', [
             'roles' => $user->getRoleNames(),
+        ]);
+    }
+
+    public function dutyInstitutionGraph() {
+        $dutyInstitutions = DutyInstitution::all();
+
+        // get relationships for duty institutions
+        $dutyInstitutionRelationships = DB::table('relationshipables')->where('relationshipable_type', DutyInstitution::class)->get();
+
+        return Inertia::render('Admin/ShowDutyInstitutionGraph', [
+            'dutyInstitutions' => $dutyInstitutions,
+            'dutyInstitutionRelationships' => $dutyInstitutionRelationships,
         ]);
     }
 }
