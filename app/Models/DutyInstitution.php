@@ -49,4 +49,43 @@ class DutyInstitution extends Model
     {
         return $this->morphMany(SharepointDocument::class, 'documentable');
     }
+
+    public function givenRelationships()
+    {
+        return $this->morphToMany(Relationship::class, 'relationshipable')->withPivot(['related_model_id', 'relationshipable_id']);
+    }
+
+    public function givenRelationshipModels()
+    {
+        // load relationships on pivot
+        $relationships = $this->givenRelationships()->get();
+
+        // get related models
+        $relationships->map(function ($relationship) {
+            // add related model to pivot
+            $relationship->pivot->related_model = DutyInstitution::find($relationship->pivot->related_model_id);
+        });
+
+        return $relationships;
+    }
+
+    public function receivedRelationships()
+    {
+        return $this->morphToMany(Relationship::class, 'relationshipable', null, 'related_model_id')->withPivot(['related_model_id', 'relationshipable_id']);
+    }
+
+    public function receivedRelationshipModels()
+    {
+        // load relationships on pivot
+        $relationships = $this->receivedRelationships()->get();
+
+        // get related models
+        $relationships->map(function ($relationship) {
+            // add related model to pivot
+            $relationship->pivot->related_model = DutyInstitution::find($relationship->pivot->relationshipable_id);
+        });
+
+        return $relationships;
+    }
+ 
 }

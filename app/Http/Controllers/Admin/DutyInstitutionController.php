@@ -103,6 +103,9 @@ class DutyInstitutionController extends Controller
             $sharepointFiles = $graph->collectModelDocuments($dutyInstitution);
         }
 
+        $receivedRelationships = $dutyInstitution->receivedRelationshipModels();
+        $givenRelationships = $dutyInstitution->givenRelationshipModels();
+
         return Inertia::render('Admin/Contacts/ShowDutyInstitution', [
             'dutyInstitution' => [
                 ...$dutyInstitution->toArray(), 
@@ -113,6 +116,8 @@ class DutyInstitutionController extends Controller
                 'users' => $users,
                 'types' => $dutyInstitution->types->load('documents'),
                 'sharepointFiles' => $sharepointFiles,
+                'receivedRelationships' => $receivedRelationships,
+                'givenRelationships' => $givenRelationships,
             ],
             'doingTypes' => Type::where('model_type', Doing::class)->get()->map(function ($doingType) {
                 return [

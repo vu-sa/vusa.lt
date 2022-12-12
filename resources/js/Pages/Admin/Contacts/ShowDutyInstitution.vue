@@ -75,6 +75,36 @@
           ></NDataTable>
         </div>
       </NTabPane>
+      <NTabPane name="Susijusios institucijos">
+        <div class="m-4">
+          <template v-if="dutyInstitution.givenRelationships.length > 0">
+            <h3>Suteikti ryšiai</h3>
+            <div class="my-4 flex max-w-4xl flex-wrap gap-4">
+              <template
+                v-for="relationship in dutyInstitution.givenRelationships"
+                :key="relationship.pivot.related_model_id"
+              >
+                <DutyInstitutionCard
+                  :institution="relationship.pivot.related_model"
+                ></DutyInstitutionCard>
+              </template>
+            </div>
+          </template>
+          <template v-if="dutyInstitution.receivedRelationships.length > 0">
+            <h3>Įgyti ryšiai</h3>
+            <div class="my-4 flex max-w-4xl flex-wrap gap-4">
+              <template
+                v-for="relationship in dutyInstitution.receivedRelationships"
+                :key="relationship.pivot.related_model_id"
+              >
+                <DutyInstitutionCard
+                  :institution="relationship.pivot.related_model"
+                ></DutyInstitutionCard>
+              </template>
+            </div>
+          </template>
+        </div>
+      </NTabPane>
     </NTabs>
     <template #after-heading>
       <InstitutionAvatarGroup :users="dutyInstitution.users" />
@@ -140,8 +170,10 @@
 
 <script lang="ts">
 import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+import DutyInstitutionCard from "@/Components/Admin/Cards/DutyInstitutionCard.vue";
 
 export default {
+  components: { DutyInstitutionCard },
   layout: AdminLayout,
 };
 </script>
@@ -176,15 +208,8 @@ import {
 import { h, ref } from "vue";
 import route from "ziggy-js";
 
-import {
-  contentTypeOptions,
-  documentTemplate,
-  questionOptions,
-} from "@/Composables/someTypes";
-import FileButton from "@/Components/Admin/Buttons/FileButton.vue";
+import { documentTemplate, questionOptions } from "@/Composables/someTypes";
 import FileSelectDrawer from "@/Components/Admin/Nav/FileSelectDrawer.vue";
-import FileUploader from "@/Components/Admin/Buttons/FileUploader.vue";
-import FileUploaderBasicButton from "@/Components/Admin/Buttons/FileUploaderBasicButton.vue";
 import HelpTextModal from "@/Components/HelpTextModal.vue";
 import InstitutionAvatarGroup from "@/Components/Admin/Misc/InstitutionAvatarGroup.vue";
 import MeetingDocumentButton from "@/Components/Admin/QActButtons/MeetingDocumentButton.vue";
@@ -269,12 +294,6 @@ const columns = [
     },
   },
 ];
-
-const contentModel = {
-  id: props.dutyInstitution.id,
-  title: props.dutyInstitution.title,
-  type: "App\\Models\\DutyInstitution",
-};
 
 const questionForm = useForm({
   title: "",

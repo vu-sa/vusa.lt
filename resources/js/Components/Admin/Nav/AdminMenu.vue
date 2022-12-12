@@ -124,6 +124,14 @@ const menuOptions = computed(() => [
         show: can.dutyInstitutions,
       },
       {
+        label: () =>
+          h(
+            Link,
+            { href: route("dutyInstitutionGraph") },
+            () => "Institucijų grafikas"
+          ),
+      },
+      {
         label: () => h(Link, { href: route("duties.index") }, () => "Pareigos"),
         key: "duties",
         show: can.duties,

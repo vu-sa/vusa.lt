@@ -1,6 +1,6 @@
 <template>
   <PageContent :title="`Institucijų vizualizacija`">
-    <div ref="graph" class="h-full w-full"></div>
+    <div ref="graph"></div>
   </PageContent>
 </template>
 
@@ -116,21 +116,6 @@ const circles = node
     return 6 + d.userCount * 0.5;
   })
   .attr("fill", (d) => color(d.group));
-
-// const node = svg
-// .selectAll("g")
-// .data(nodes.value)
-// .join("g")
-// .attr("stroke", "#fff")
-// .attr("stroke-width", 1.5)
-// .selectAll("circle")
-// .data(function (d) {
-//   return d;
-// })
-// .join("circle")
-// .attr("r", 6)
-// .attr("fill", )
-// .call(drag(simulation));
 
 node.append("title").text((d) => d.id);
 

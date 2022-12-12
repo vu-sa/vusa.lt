@@ -11,6 +11,8 @@ class Relationship extends Model
 
     protected $guarded = [];
 
+    protected $appends = ['related_model'];
+
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
@@ -24,5 +26,10 @@ class Relationship extends Model
     public function duty_institutions()
     {
         return $this->morphedByMany(DutyInstitution::class, 'relationshipable');
+    }
+
+    public function getRelatedModelAttribute()
+    {
+        // gets related model
     }
 }
