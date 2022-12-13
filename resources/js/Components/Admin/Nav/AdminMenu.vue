@@ -237,6 +237,16 @@ const menuOptions = computed(() => [
           h(Link, { href: route("relationships.index") }, () => "Ryšiai"),
         key: "relationships",
       },
+      // role index
+      {
+        label: () => h(Link, { href: route("roles.index") }, () => "Rolės"),
+        key: "roles",
+      },
+      {
+        label: () =>
+          h(Link, { href: route("permissions.index") }, () => "Leidimai"),
+        key: "permissions",
+      },
     ],
     show: can.settings,
   },

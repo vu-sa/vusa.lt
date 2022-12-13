@@ -65,6 +65,8 @@ Route::prefix('admin')->group(function () {
         Route::resource('types', Admin\TypesController::class);
         Route::resource('relationships', Admin\RelationshipController::class);
         Route::post('relationships/{relationship}/storeModelRelationship', [Admin\RelationshipController::class, 'storeModelRelationship'])->name('relationships.storeModelRelationship');
+        Route::resource('roles', Admin\RoleController::class);
+        Route::resource('permissions', Admin\PermissionController::class);
         Route::resource('tasks', Admin\TasksController::class);
         Route::post('tasks/{task}/updateCompletionStatus', [Admin\TasksController::class, 'updateCompletionStatus'])->name('tasks.updateCompletionStatus');
 

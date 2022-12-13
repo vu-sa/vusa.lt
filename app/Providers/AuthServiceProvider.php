@@ -12,6 +12,8 @@ use App\Models\MainPage;
 use App\Models\Navigation;
 use App\Models\News;
 use App\Models\Page;
+use App\Models\Permission;
+use App\Models\Role;
 use App\Models\Question;
 use App\Models\SaziningaiExam;
 use App\Models\SaziningaiExamFlow;
@@ -28,6 +30,8 @@ use App\Policies\MainPagePolicy;
 use App\Policies\NavigationPolicy;
 use App\Policies\NewsPolicy;
 use App\Policies\QuestionPolicy;
+use App\Policies\PermissionsPolicy;
+use App\Policies\RolesPolicy;
 use App\Policies\PagesPolicy;
 use App\Policies\SaziningaiExamFlowsPolicy;
 use App\Policies\SaziningaiExamObserversPolicy;
@@ -56,6 +60,8 @@ class AuthServiceProvider extends ServiceProvider
         Navigation::class => NavigationPolicy::class,
         Question::class => QuestionPolicy::class,
         Page::class => PagesPolicy::class,
+        Permission::class => PermissionsPolicy::class,
+        Role::class => RolesPolicy::class,
         SaziningaiExam::class => SaziningaiExamPolicy::class,
         SaziningaiExamFlow::class => SaziningaiExamFlowsPolicy::class,
         SaziningaiExamObserver::class => SaziningaiExamObserversPolicy::class,
