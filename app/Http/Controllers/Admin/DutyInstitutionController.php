@@ -140,6 +140,8 @@ class DutyInstitutionController extends Controller
                 'sharepointFiles' => $sharepointFiles,
                 'receivedRelationships' => $receivedRelationships,
                 'givenRelationships' => $givenRelationships,
+                'lastMeetingDoing' => $dutyInstitution->lastMeetingDoing(),
+                'doings' => $dutyInstitution->doings()->withWhereHas('documents')->get(),
             ],
             'doingTypes' => Type::where('model_type', Doing::class)->get()->map(function ($doingType) {
                 return [

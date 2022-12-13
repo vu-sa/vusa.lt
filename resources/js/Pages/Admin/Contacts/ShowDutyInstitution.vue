@@ -1,5 +1,19 @@
 <template>
   <PageContent :title="dutyInstitution.name">
+    <template #below-header>
+      <div
+        v-if="dutyInstitution.lastMeetingDoing"
+        class="flex flex-row items-center"
+      >
+        <span>Paskutinis posėdis vyko prieš:</span>
+        <NIcon class="mx-1" :component="CalendarClock24Filled"></NIcon>
+
+        <span class="font-bold">{{
+          getRelativeTime(dutyInstitution.lastMeetingDoing.date)
+        }}</span
+        >.
+      </div>
+    </template>
     <div class="mb-4 flex gap-4 py-2">
       <NewMeetingButton
         :duty-institution="dutyInstitution"
@@ -29,10 +43,10 @@
                     <span>{{ type.title }}</span>
                   </NTag>
                 </template>
+                <p class="prose-sm dark:prose-invert">
+                  {{ type.description }}
+                </p>
                 <div class="mt-2">
-                  <p class="prose-sm dark:prose-invert">
-                    {{ type.description }}
-                  </p>
                   <ModelDocumentButtons
                     v-if="type.documents.length > 0"
                     :documents="type.documents"
@@ -84,7 +98,13 @@
           ></NDataTable>
         </div>
       </NTabPane>
-      <NTabPane name="Susijusios institucijos">
+      <NTabPane
+        name="Susijusios institucijos"
+        :disabled="
+          dutyInstitution.givenRelationships.length === 0 &&
+          dutyInstitution.receivedRelationships.length === 0
+        "
+      >
         <div class="m-4">
           <template v-if="dutyInstitution.givenRelationships.length > 0">
             <h3>Suteikti ryšiai</h3>
@@ -111,6 +131,21 @@
                 ></DutyInstitutionCard>
               </template>
             </div>
+          </template>
+        </div>
+      </NTabPane>
+      <NTabPane
+        name="Veiklų dokumentai"
+        :disabled="dutyInstitution.doings.length === 0"
+      >
+        <div class="m-4">
+          <template v-for="doing in dutyInstitution.doings" :key="doing.id">
+            <ModelDocumentButtons
+              v-if="doing.documents.length > 0"
+              :documents="doing.documents"
+              :model="{ id: doing.id, model_type: 'App\\Models\\Doing' }"
+              @file-button-click="updateSelectedDocument"
+            ></ModelDocumentButtons>
           </template>
         </div>
       </NTabPane>
@@ -192,6 +227,7 @@ import { trans as $t } from "laravel-vue-i18n";
 import {
   ArrowTurnRight20Filled,
   BookQuestionMark20Filled,
+  CalendarClock24Filled,
   Edit20Filled,
 } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
@@ -226,6 +262,7 @@ import ModelDocumentButtons from "@/Components/Admin/ModelDocumentButtons.vue";
 import NewMeetingButton from "@/Components/Admin/QActButtons/NewMeetingButton.vue";
 import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 import StatusTag from "@/Components/Admin/StatusTag.vue";
+import getRelativeTime from "@/Composables/getRelativeTime";
 
 const props = defineProps<{
   doingTypes: any;

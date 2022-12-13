@@ -40,6 +40,19 @@ class DutyInstitution extends Model
         return $this->hasMany(Question::class, 'institution_id');
     }
 
+    public function doings()
+    {
+        return $this->hasManyDeepFromRelations($this->questions(), (new Question)->doings());
+    }
+
+    // get the last doing for dutyinstitution which is of type 'pristatymas'
+    public function lastMeetingDoing() : ?Doing
+    {
+        return $this->doings()->whereHas('types', function ($query) {
+            $query->where('title', 'Posėdis');
+        })->latest()->first();
+    }
+
     public function users() 
     {
         return $this->hasManyDeepFromRelations($this->duties(), (new Duty)->users());
@@ -95,5 +108,4 @@ class DutyInstitution extends Model
 
         return $relationships;
     }
- 
 }

@@ -1,6 +1,8 @@
 <template>
   <FadeTransition>
-    <div class="mt-4 flex max-w-4xl flex-wrap gap-6">
+    <div
+      class="mt-4 ml-4 inline-flex w-fit max-w-4xl flex-wrap gap-4 first:ml-0"
+    >
       <template v-if="loading">
         <div
           v-for="document in documents"
