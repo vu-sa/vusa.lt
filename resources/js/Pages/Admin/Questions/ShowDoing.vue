@@ -2,6 +2,11 @@
   <PageContent :title="doing.title">
     <template #after-heading>
       <StatusTag :status="doing.status" />
+      <NTag v-if="!question" size="small" round :bordered="false" type="warning"
+        >Veikla be klausimo</NTag
+      >
+
+      <span class="text-gray-500">{{ doing.date }}</span>
     </template>
     <template #aside-header>
       <div class="flex items-center gap-4">
@@ -14,7 +19,7 @@
         <NModal
           v-model:show="showModal"
           class="prose prose-sm max-w-xl dark:prose-invert"
-          :title="`${$t('Redaguoti veiklą')} (${question.title})`"
+          :title="`${$t('Redaguoti veiklą')} (${question?.title})`"
           :bordered="false"
           size="large"
           role="card"
@@ -31,7 +36,7 @@
       </div>
     </template>
     <template #below-header>
-      <NBreadcrumb class="mb-4 w-full">
+      <NBreadcrumb v-if="question" class="mb-4 w-full">
         <NBreadcrumbItem
           @click="
             Inertia.get(route('dutyInstitutions.show', question.institution.id))
@@ -49,9 +54,8 @@
         <NBreadcrumbItem
           @click="
             Inertia.visit(
-              route('dutyInstitutions.questions.show', {
+              route('questions.show', {
                 question: question.id,
-                dutyInstitution: question.institution.id,
               })
             )
           "
@@ -90,7 +94,7 @@
               :show-object-name="false"
               :content-type-options="contentTypeOptions"
               :content-model="contentModel"
-              :institution="question.institution"
+              :institution="question?.institution"
             ></FileUploader>
           </NMessageProvider>
         </div>
@@ -149,6 +153,7 @@ import {
   NModal,
   NTabPane,
   NTabs,
+  NTag,
 } from "naive-ui";
 import { computed, ref } from "vue";
 import route from "ziggy-js";
@@ -168,7 +173,7 @@ import TaskViewer from "@/Components/Admin/Tasks/TaskViewer.vue";
 
 const props = defineProps<{
   doing: Record<string, any>;
-  question: Record<string, any>;
+  question: Record<string, any> | null;
   documents: Record<string, any>[];
 }>();
 

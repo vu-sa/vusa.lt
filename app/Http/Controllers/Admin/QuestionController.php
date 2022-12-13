@@ -49,7 +49,28 @@ class QuestionController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'title' => 'required',
+        ]);
+
+        // add status "Sukurtas" to validated
+        $validated['status'] = 'Sukurtas';
+        $validated['institution_id'] = $request->duty_institution_id;
+        $validated['question_group_id'] = $request->question_group_id;
+        // if no question group, create one
+        // if (is_null($request->question_group_id)) {
+        //     $questionGroup = QuestionGroup::create([
+        //         'title' => 'Klausimo \"' . $validated['title'] . '\" grupė',
+        //     ]);
+        //     $validated['question_group_id'] = $questionGroup->id;
+        // } else {
+        //     // ...
+        // }
+
+        $question = Question::create($validated);
+
+        // reminder to adjust question creation in the frontend
+        return redirect()->back()->with('data', $question)->with('success', 'Klausimas sukurtas!');
     }
 
     /**

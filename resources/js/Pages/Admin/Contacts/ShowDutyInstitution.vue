@@ -5,7 +5,7 @@
         v-if="dutyInstitution.lastMeetingDoing"
         class="flex flex-row items-center"
       >
-        <span>Paskutinis posėdis vyko prieš:</span>
+        <span>Paskutinis posėdis vyko:</span>
         <NIcon class="mx-1" :component="CalendarClock24Filled"></NIcon>
 
         <span class="font-bold">{{
@@ -24,7 +24,7 @@
         :questions="dutyInstitution.questions"
       />
     </div>
-    <NTabs animated type="card">
+    <NTabs animated type="line">
       <NTabPane display-directive="show" name="Aprašymas">
         <div class="m-4">
           <NCollapse
@@ -139,6 +139,9 @@
         :disabled="dutyInstitution.doings.length === 0"
       >
         <div class="m-4">
+          <NFormItem label-placement="left" class="w-96" label="Failo tipas"
+            ><NSelect clearable :options="fileTypeOptions"></NSelect
+          ></NFormItem>
           <template v-for="doing in dutyInstitution.doings" :key="doing.id">
             <ModelDocumentButtons
               v-if="doing.documents.length > 0"
@@ -238,6 +241,7 @@ import {
   NCollapseItem,
   NDataTable,
   NForm,
+  NFormItem,
   NFormItemGi,
   NGrid,
   NIcon,
@@ -325,8 +329,7 @@ const columns = [
                     {
                       size: "small",
                       tag: Link,
-                      href: route("dutyInstitutions.questions.show", {
-                        dutyInstitution: props.dutyInstitution.id,
+                      href: route("questions.show", {
                         question: row.id,
                       }),
                     },
@@ -348,8 +351,8 @@ const questionForm = useForm({
 
 const createQuestion = () => {
   questionForm.post(
-    route("dutyInstitutions.questions.store", {
-      dutyInstitution: props.dutyInstitution.id,
+    route("questions.store", {
+      duty_institution_id: props.dutyInstitution.id,
     }),
     {
       preserveScroll: true,
@@ -387,4 +390,15 @@ const typeRelationships = (type) => {
   // don't return undefined values, but empty array
   return relationshipModels;
 };
+
+const fileTypeOptions = [
+  {
+    label: "Ataskaitos",
+    value: "ataskaitos",
+  },
+  {
+    label: "Protokolai",
+    value: "protokolai",
+  },
+];
 </script>

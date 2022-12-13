@@ -206,8 +206,8 @@ const next = () => {
 const createQuestion = () => {
   loading.value = true;
   questionForm.post(
-    route("dutyInstitutions.questions.store", {
-      dutyInstitution: props.dutyInstitution.id,
+    route("questions.store", {
+      duty_institution_id: props.dutyInstitution.id,
     }),
     {
       preserveScroll: true,
