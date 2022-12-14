@@ -24,7 +24,10 @@
             />
           </NFormItemGi>
 
-          <NFormItemGi label="Padalinys, kuriam priklauso institucija" :span="2">
+          <NFormItemGi
+            label="Padalinys, kuriam priklauso institucija"
+            :span="2"
+          >
             <NSelect
               v-model:value="form.padalinys_id"
               :options="options"
@@ -45,11 +48,17 @@
           </NFormItemGi>
 
           <NFormItemGi label="Nuotrauka" :span="6">
-            <UploadImageButtons v-model="form.image_url" :path="'institutions'" />
+            <UploadImageButtons
+              v-model="form.image_url"
+              :path="'institutions'"
+            />
           </NFormItemGi>
 
           <NFormItemGi label="Aprašymas" :span="6">
-            <TipTap v-model="form.description" :search-files="$page.props.search.other" />
+            <TipTap
+              v-model="form.description"
+              :search-files="$page.props.search.other"
+            />
           </NFormItemGi>
         </NGrid>
       </NTabPane>
@@ -64,7 +73,10 @@
           </NFormItemGi>
 
           <NFormItemGi label="Trumpas pavadinimas" :span="2">
-            <NInput v-model:value="form.attributes.en.short_name" placeholder="VU SR" />
+            <NInput
+              v-model:value="form.attributes.en.short_name"
+              placeholder="VU SR"
+            />
           </NFormItemGi>
 
           <NFormItemGi label="Techninė žymė" :span="2">
@@ -97,11 +109,19 @@
 </template>
 
 <script setup lang="ts">
-import { NForm, NFormItemGi, NGrid, NInput, NSelect, NTabPane, NTabs } from "naive-ui";
+import {
+  NForm,
+  NFormItemGi,
+  NGrid,
+  NInput,
+  NSelect,
+  NTabPane,
+  NTabs,
+} from "naive-ui";
 import { useForm } from "@inertiajs/inertia-vue3";
 
 import DeleteModelButton from "@/Components/Admin/Buttons/DeleteModelButton.vue";
-import TipTap from "@/Components/TipTap.vue";
+import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
 import UploadImageButtons from "@/Components/Admin/Buttons/UploadImageButtons.vue";
 import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue";
 

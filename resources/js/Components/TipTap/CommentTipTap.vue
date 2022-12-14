@@ -59,7 +59,7 @@ import StarterKit from "@tiptap/starter-kit";
 import TipTapLink from "@tiptap/extension-link";
 import route from "ziggy-js";
 
-import UserAvatar from "./Admin/UserAvatar.vue";
+import UserAvatar from "../Admin/UserAvatar.vue";
 
 const props = defineProps<{
   text: string;

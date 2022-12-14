@@ -2,10 +2,10 @@
   <Head title="Log in" />
 
   <div
-    class="flex min-h-screen flex-col items-center bg-stone-100 pt-6 sm:justify-center sm:pt-0"
+    class="flex min-h-screen flex-col items-center bg-zinc-200 pt-6 sm:justify-center sm:pt-0"
   >
     <div>
-      <AppLogo class="w-48" />
+      <AppLogo :is-theme-dark="false" class="w-48" />
     </div>
 
     <div
@@ -50,13 +50,6 @@
           <template #label><strong>Slaptažodis</strong></template>
         </NFormItem>
 
-        <!-- <div class="block mt-4">
-        <label class="flex items-center">
-          <jet-checkbox name="remember" v-model:checked="form.remember" />
-          <span class="ml-2 text-sm text-gray-600">Prisiminti mane</span>
-        </label>
-      </div> -->
-
         <div class="mt-4 flex items-center justify-end gap-4">
           <NPopover
             ><template #trigger>
@@ -64,14 +57,6 @@
             </template>
             <span>Tik su VU SA paskyromis.</span></NPopover
           >
-
-          <!-- <Link
-            v-if="canResetPassword"
-            :href="route('password.request')"
-            class="underline text-sm text-gray-600 hover:text-gray-900"
-          >
-            Forgot your password?
-          </Link> -->
 
           <NButton attr-type="submit" :disabled="form.processing">
             Prisijungti
@@ -89,7 +74,7 @@ import { reactive, ref } from "vue";
 import route from "ziggy-js";
 
 import AppLogo from "@/Components/AppLogo.vue";
-import MicrosoftButton from "@/Components/MicrosoftButton.vue";
+import MicrosoftButton from "@/Components/Buttons/MicrosoftLoginButton.vue";
 
 defineProps<{
   status?: string;

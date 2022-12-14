@@ -15,7 +15,7 @@
         </NButton>
       </div>
       <Link :href="route('main.home', homeParams)" @click="resetPadalinys()">
-        <AppLogo class="w-36" />
+        <AppLogo :is-theme-dark="isThemeDark" class="w-36" />
       </Link>
       <NScrollbar>
         <NDropdown
@@ -141,12 +141,16 @@ import { split } from "lodash";
 import route, { RouteParamsWithQueryOverload } from "ziggy-js";
 
 import AppLogo from "@/Components/AppLogo.vue";
-import DarkModeSwitch from "@/Components/DarkModeSwitch.vue";
+import DarkModeSwitch from "@/Components/Buttons/DarkModeSwitch.vue";
 import FacebookButton from "../Nav/FacebookButton.vue";
 import InstagramButton from "../Nav/InstagramButton.vue";
 import LocaleButton from "../Nav/LocaleButton.vue";
 import SearchButton from "../Nav/SearchButton.vue";
 import StartFM from "@/Components/Public/Nav/StartFM.vue";
+
+defineProps<{
+  isThemeDark: boolean;
+}>();
 
 // map padaliniai to options_padaliniai
 

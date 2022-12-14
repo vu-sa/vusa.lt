@@ -9,7 +9,7 @@
 
     <NModal
       v-model:show="showModal"
-      class="prose-sm prose max-w-xl dark:prose-invert"
+      class="prose prose-sm max-w-xl dark:prose-invert"
       :title="$t(title)"
       :bordered="false"
       size="large"

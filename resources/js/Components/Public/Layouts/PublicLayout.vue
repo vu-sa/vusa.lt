@@ -9,7 +9,7 @@
       <div
         class="flex min-h-screen flex-col justify-between bg-neutral-50 antialiased dark:bg-zinc-900"
       >
-        <MainNavigation />
+        <MainNavigation :is-theme-dark="isThemeDark" />
         <main class="pt-24 pb-8">
           <slot></slot>
         </main>

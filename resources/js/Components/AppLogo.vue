@@ -11,15 +11,9 @@
 </template>
 
 <script setup lang="ts">
-import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
-import { onMounted, ref } from "vue";
-
-const isThemeDark = ref(isDarkMode());
-
-onMounted(() => {
-  // get html target node
-  updateDarkMode(isThemeDark);
-});
+defineProps<{
+  isThemeDark: boolean;
+}>();
 </script>
 
 <style>

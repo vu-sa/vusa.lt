@@ -159,7 +159,7 @@ import { computed, ref } from "vue";
 import route from "ziggy-js";
 
 import { contentTypeOptions, documentTemplate } from "@/Composables/someTypes";
-import CommentTipTap from "@/Components/CommentTipTap.vue";
+import CommentTipTap from "@/Components/TipTap/CommentTipTap.vue";
 import CommentViewer from "@/Components/Admin/Comments/CommentViewer.vue";
 import DoingForm from "@/Components/Admin/Forms/DoingForm.vue";
 import FileButton from "@/Components/Admin/Buttons/FileButton.vue";

@@ -38,7 +38,10 @@
             @expand="collapsed = false"
           >
             <a class="h-fit w-fit" href="/">
-              <AppLogo class="mx-auto w-full p-2" />
+              <AppLogo
+                :is-theme-dark="isThemeDark"
+                class="mx-auto w-full p-2"
+              />
             </a>
             <AdminMenu :collapsed="collapsed" />
             <NDivider />
@@ -92,7 +95,7 @@ import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import AdminMenu from "@/Components/Admin/Nav/AdminMenu.vue";
 import AppLogo from "@/Components/AppLogo.vue";
 import Changelog from "@/Components/Admin/Misc/ChangelogCard.vue";
-import DarkModeSwitch from "@/Components/DarkModeSwitch.vue";
+import DarkModeSwitch from "@/Components/Buttons/DarkModeSwitch.vue";
 import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
 import NotificationBell from "@/Components/Admin/NotificationBell.vue";
