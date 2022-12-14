@@ -19,7 +19,7 @@
               ? 'md:col-span-3 2xl:col-span-2'
               : 'md:col-span-2'
           "
-          class="prose-sm prose my-auto dark:prose-invert"
+          class="prose prose-sm my-auto dark:prose-invert"
         >
           <h1>
             {{ dutyInstitutionName }}
@@ -54,7 +54,7 @@ import { Head, usePage } from "@inertiajs/inertia-vue3";
 import { computed } from "vue";
 
 import ContactWithPhotoForDuties from "@/Components/Public/ContactWithPhotoForDuties.vue";
-import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 
 const props = defineProps<{

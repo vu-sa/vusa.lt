@@ -87,7 +87,7 @@ import { NIcon, NPagination } from "naive-ui";
 import { ref } from "vue";
 import route from "ziggy-js";
 
-import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import HomeCard from "@/Components/Public/HomeCard.vue";
 
 const props = defineProps<{

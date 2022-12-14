@@ -33,27 +33,24 @@
   </PageContent>
 </template>
 
-<script lang="ts">
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
-
-export default {
-  layout: AdminLayout,
-};
-</script>
-
 <script setup lang="ts">
 import { NMessageProvider } from "naive-ui";
 import { ref } from "vue";
 import route from "ziggy-js";
 
 import { contentTypeOptions, documentTemplate } from "@/Composables/someTypes";
-import FileButton from "@/Components/Admin/Buttons/FileButton.vue";
-import FileSelectDrawer from "@/Components/Admin/Nav/FileSelectDrawer.vue";
-import FileUploader from "@/Components/Admin/Buttons/FileUploader.vue";
-import FileUploaderBasicButton from "@/Components/Admin/Buttons/FileUploaderBasicButton.vue";
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
-import TypeForm from "@/Components/Admin/Forms/TypeForm.vue";
-import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+import FileButton from "@/Components/SharepointFileManager/FileButton.vue";
+import FileSelectDrawer from "@/Components/SharepointFileManager/FileDrawer.vue";
+import FileUploader from "@/Components/SharepointFileManager/FileUploader.vue";
+import FileUploaderBasicButton from "@/Components/SharepointFileManager/FileUploaderBasicButton.vue";
+import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import TypeForm from "@/Components/AdminForms/TypeForm.vue";
+import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
+
+defineOptions({
+  layout: AdminLayout,
+});
 
 const props = defineProps<{
   contentType: Record<string, any>;

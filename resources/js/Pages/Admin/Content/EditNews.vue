@@ -38,7 +38,7 @@
 </template>
 
 <script lang="ts">
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 
 export default {
   layout: AdminLayout,
@@ -48,11 +48,11 @@ export default {
 <script setup lang="ts">
 import route from "ziggy-js";
 
-import DeleteModelButton from "@/Components/Admin/Buttons/DeleteModelButton.vue";
-import NewsForm from "@/Components/Admin/Forms/NewsForm.vue";
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
-import PreviewModelButton from "@/Components/Admin/Buttons/PreviewModelButton.vue";
-import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
+import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
+import NewsForm from "@/Components/AdminForms/NewsForm.vue";
+import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
+import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 defineProps<{
   news: App.Models.News;

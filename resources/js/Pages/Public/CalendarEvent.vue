@@ -199,7 +199,7 @@ import { FacebookF, Google } from "@vicons/fa";
 import { Head } from "@inertiajs/inertia-vue3";
 import { computed, h } from "vue";
 
-import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 const props = defineProps<{
   event: App.Models.Calendar;

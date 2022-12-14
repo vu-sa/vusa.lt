@@ -5,6 +5,10 @@
  */
 
 declare namespace App.Models {
+  export interface ModelTemplate {
+    id: number;
+  }
+
   export interface Banner {
     id: number;
     title: string;

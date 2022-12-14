@@ -15,7 +15,7 @@
 </template>
 
 <script lang="ts">
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 
 export default {
   layout: AdminLayout,
@@ -27,11 +27,11 @@ import { Link } from "@inertiajs/inertia-vue3";
 import { h, ref } from "vue";
 import route from "ziggy-js";
 
-import AsideHeader from "@/Components/Admin/Headers/AsideHeaderContacts.vue";
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
+import AsideHeader from "@/Components/AsideHeaders/AsideHeaderContacts.vue";
+import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 
-import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
-import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
+import IndexDataTable from "@/Components/IndexDataTable.vue";
+import IndexSearchInput from "@/Components/IndexSearchInput.vue";
 
 defineProps<{
   duties: PaginatedModels<App.Models.Duty>;

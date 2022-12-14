@@ -51,7 +51,7 @@ import { onMounted, ref } from "vue";
 
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import EventCalendar from "@/Components/Public/FullWidth/EventCalendar.vue";
-import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 defineProps<{
   news: Array<App.Models.News>;

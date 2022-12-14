@@ -60,7 +60,7 @@ import { Inertia } from "@inertiajs/inertia";
 import { NBackTop, NButton, NIcon } from "naive-ui";
 import route from "ziggy-js";
 
-import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import NewsArticle from "@/Components/Public/NewsArticle.vue";
 
 const props = defineProps<{

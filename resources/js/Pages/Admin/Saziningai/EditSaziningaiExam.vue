@@ -61,7 +61,7 @@
 </template>
 
 <script lang="ts">
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 
 export default {
   layout: AdminLayout,
@@ -75,9 +75,9 @@ import { NButton, NDatePicker, NIcon, NModal, NPopover } from "naive-ui";
 import { reactive, ref } from "vue";
 import route from "ziggy-js";
 
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
-import SaziningaiExamForm from "@/Components/Admin/Forms/SaziningaiExamForm.vue";
-import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
+import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import SaziningaiExamForm from "@/Components/AdminForms/SaziningaiExamForm.vue";
+import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 const props = defineProps<{
   exam: App.Models.SaziningaiExam;

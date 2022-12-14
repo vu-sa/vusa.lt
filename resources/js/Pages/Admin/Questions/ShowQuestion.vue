@@ -74,15 +74,7 @@
   </NModal>
 </template>
 
-<script lang="ts">
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
-
-export default {
-  layout: AdminLayout,
-};
-</script>
-
-<script setup lang="ts">
+<script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
 import {
   ArrowTurnRight20Filled,
@@ -106,13 +98,16 @@ import {
 import { h, ref } from "vue";
 import route from "ziggy-js";
 
-import DeleteModelButton from "@/Components/Admin/Buttons/DeleteModelButton.vue";
-import DoingForm from "@/Components/Admin/Forms/DoingForm.vue";
-import HelpTextModal from "@/Components/HelpTextModal.vue";
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
-import ShowActivityLog from "@/Components/Admin/Buttons/ShowActivityLog.vue";
-import StatusTag from "@/Components/Admin/StatusTag.vue";
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
+import DoingForm from "@/Components/AdminForms/DoingForm.vue";
+import HelpTextModal from "@/Components/Buttons/HelperButtons/HelpTextModal.vue";
+import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import ShowActivityLog from "@/Components/Buttons/ShowActivityLog.vue";
+import StatusTag from "@/Components/Tags/StatusTag.vue";
 import getRelativeTime from "@/Composables/getRelativeTime";
+
+defineOptions({ layout: AdminLayout });
 
 const props = defineProps<{
   question: Record<string, any>;
@@ -142,9 +137,7 @@ const columns = [
     title: "Status",
     key: "status",
     render(row) {
-      return h(StatusTag, {
-        status: row.status,
-      });
+      return <StatusTag status={row.status} />;
     },
   },
   {
@@ -155,46 +148,44 @@ const columns = [
     title: "Paskutinis atnaujinimas",
     key: "updated_at",
     render(row) {
-      return h("span", getRelativeTime(row.updated_at));
+      return <span>{getRelativeTime(row.updated_at)}</span>;
     },
   },
   {
     title: "Veiksmai",
     key: "actions",
     render(row) {
-      return h("div", { class: "flex gap-2" }, [
-        h(
-          NPopover,
-          {},
-          {
-            default: () => "Peržiūrėti įvykį",
-            trigger: () =>
-              h(
-                NButton,
-                {
-                  size: "small",
-                  tag: Link,
-                  href: route("doings.show", {
+      return (
+        <div class="flex gap-2">
+          <NPopover>
+            {{
+              default: () => "Peržiūrėti įvykį",
+              trigger: () => (
+                <Link
+                  href={route("doings.show", {
                     question: props.question.id,
                     doing: row.id,
-                  }),
-                },
-                {
-                  default: () =>
-                    h(NIcon, { component: ArrowTurnRight20Filled }),
-                }
+                  })}
+                >
+                  <NButton size="small">
+                    {{
+                      icon: () => <NIcon component={ArrowTurnRight20Filled} />,
+                    }}
+                  </NButton>
+                </Link>
               ),
-          }
-        ),
-        h(DeleteModelButton, {
-          model: row,
-          size: "small",
-          modelRoute: "doings.destroy",
-          modelRouteParams: {
-            doing: row.id,
-          },
-        }),
-      ]);
+            }}
+          </NPopover>
+          <DeleteModelButton
+            model={row}
+            size="small"
+            modelRoute="doings.destroy"
+            modelRouteParams={{
+              doing: row.id,
+            }}
+          />
+        </div>
+      );
     },
   },
 ];

@@ -59,7 +59,7 @@ import StarterKit from "@tiptap/starter-kit";
 import TipTapLink from "@tiptap/extension-link";
 import route from "ziggy-js";
 
-import UserAvatar from "../Admin/UserAvatar.vue";
+import UserAvatar from "../Avatars/UserAvatar.vue";
 
 const props = defineProps<{
   text: string;
@@ -89,8 +89,6 @@ const editor = useEditor({
     emit("update:text", editor.value?.getHTML());
   },
 });
-
-console.log(!!editor.value?.getHTML());
 
 onBeforeUnmount(() => {
   editor.value?.destroy();

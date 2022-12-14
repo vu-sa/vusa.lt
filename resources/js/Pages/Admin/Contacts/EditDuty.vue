@@ -1,6 +1,8 @@
 <template>
   <PageContent
-    :title="`${duty.name} (${duty.institution?.short_name ?? 'Neturi institucijos'})`"
+    :title="`${duty.name} (${
+      duty.institution?.short_name ?? 'Neturi institucijos'
+    })`"
     :back-url="route('duties.index')"
   >
     <UpsertModelLayout :errors="$attrs.errors" :model="duty">
@@ -29,7 +31,13 @@
               />{{ user.name }}
               <NPopconfirm @positive-click="detachUserFromDuty(user)">
                 <template #trigger>
-                  <NButton type="error" tertiary size="tiny" circle @click.prevent>
+                  <NButton
+                    type="error"
+                    tertiary
+                    size="tiny"
+                    circle
+                    @click.prevent
+                  >
                     <NIcon>
                       <LinkDismiss20Filled />
                     </NIcon>
@@ -41,13 +49,15 @@
           </li>
         </ul>
       </div>
-      <p v-else class="main-card h-fit w-fit">Šių pareigų kolkas niekas neužima.</p>
+      <p v-else class="main-card h-fit w-fit">
+        Šių pareigų kolkas niekas neužima.
+      </p>
     </template>
   </PageContent>
 </template>
 
 <script lang="ts">
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 
 export default {
   layout: AdminLayout,
@@ -58,14 +68,20 @@ export default {
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
 import { LinkDismiss20Filled } from "@vicons/fluent";
-import { NAvatar, NButton, NIcon, NPopconfirm, createDiscreteApi } from "naive-ui";
+import {
+  NAvatar,
+  NButton,
+  NIcon,
+  NPopconfirm,
+  createDiscreteApi,
+} from "naive-ui";
 import { computed, ref } from "vue";
 import route from "ziggy-js";
 
 import { checkForEmptyArray } from "@/Composables/checkAttributes";
-import DutyForm from "@/Components/Admin/Forms/DutyForm.vue";
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
-import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
+import DutyForm from "@/Components/AdminForms/DutyForm.vue";
+import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 const props = defineProps<{
   duty: App.Models.Duty;

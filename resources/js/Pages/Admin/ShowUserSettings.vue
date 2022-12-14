@@ -17,7 +17,7 @@
 </template>
 
 <script lang="ts">
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 
 export default {
   layout: AdminLayout,
@@ -26,10 +26,8 @@ export default {
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import { computed } from "vue";
-import { usePage } from "@inertiajs/inertia-vue3";
 
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
+import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 
 defineProps<{
   roles: Record<string, any>[];

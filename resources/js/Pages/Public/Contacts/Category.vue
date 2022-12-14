@@ -24,7 +24,7 @@ export default {
 import { Head } from "@inertiajs/inertia-vue3";
 
 import CategoryCard from "@/Components/Public/CategoryCard.vue";
-import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 defineProps<{
   institutions: App.Models.DutyInstitution[];

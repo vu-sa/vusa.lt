@@ -25,7 +25,7 @@ class DashboardController extends Controller
         $dutyInstitutions->load('users:users.id,profile_photo_path');
 
         return Inertia::render('Admin/ShowDashboard', [
-            'dutyInstitutions' => $dutyInstitutions,
+            'dutyInstitutions' => $dutyInstitutions->values(),
         ]);
     }
 

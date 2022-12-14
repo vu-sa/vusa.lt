@@ -112,7 +112,7 @@
           <div class="main-card">
             <h2>Komentarai</h2>
             <CommentTipTap
-              v-model:text="comment"
+              v-model:text="currentCommentField"
               :content-model="contentModel"
             />
             <CommentViewer :comments="doing.comments" />
@@ -128,7 +128,7 @@
 </template>
 
 <script lang="ts">
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 
 export default {
   layout: AdminLayout,
@@ -160,16 +160,16 @@ import route from "ziggy-js";
 
 import { contentTypeOptions, documentTemplate } from "@/Composables/someTypes";
 import CommentTipTap from "@/Components/TipTap/CommentTipTap.vue";
-import CommentViewer from "@/Components/Admin/Comments/CommentViewer.vue";
-import DoingForm from "@/Components/Admin/Forms/DoingForm.vue";
-import FileButton from "@/Components/Admin/Buttons/FileButton.vue";
-import FileSelectDrawer from "@/Components/Admin/Nav/FileSelectDrawer.vue";
-import FileUploader from "@/Components/Admin/Buttons/FileUploader.vue";
-import FileUploaderBasicButton from "@/Components/Admin/Buttons/FileUploaderBasicButton.vue";
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
-import ShowActivityLog from "@/Components/Admin/Buttons/ShowActivityLog.vue";
-import StatusTag from "@/Components/Admin/StatusTag.vue";
-import TaskViewer from "@/Components/Admin/Tasks/TaskViewer.vue";
+import CommentViewer from "@/Components/Comments/CommentViewer.vue";
+import DoingForm from "@/Components/AdminForms/DoingForm.vue";
+import FileButton from "@/Components/SharepointFileManager/FileButton.vue";
+import FileSelectDrawer from "@/Components/SharepointFileManager/FileDrawer.vue";
+import FileUploader from "@/Components/SharepointFileManager/FileUploader.vue";
+import FileUploaderBasicButton from "@/Components/SharepointFileManager/FileUploaderBasicButton.vue";
+import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import ShowActivityLog from "@/Components/Buttons/ShowActivityLog.vue";
+import StatusTag from "@/Components/Tags/StatusTag.vue";
+import TaskViewer from "@/Components/Tasks/TaskViewer.vue";
 
 const props = defineProps<{
   doing: Record<string, any>;
@@ -177,7 +177,7 @@ const props = defineProps<{
   documents: Record<string, any>[];
 }>();
 
-const comment = ref("");
+const currentCommentField = ref("");
 
 const showModal = ref(false);
 

@@ -9,8 +9,8 @@ import * as d3 from "d3";
 import { computed } from "vue";
 import { onBeforeUnmount, onMounted, ref } from "vue";
 
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 
 defineOptions({
   layout: AdminLayout,

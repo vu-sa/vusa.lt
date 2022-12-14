@@ -48,7 +48,7 @@
 </template>
 
 <script lang="ts">
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 
 export default {
   layout: AdminLayout,
@@ -59,8 +59,8 @@ export default {
 import { NInput } from "naive-ui";
 import { reactive } from "vue";
 
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
-import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue";
+import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{
   navigation: App.Models.Navigation;

@@ -1,5 +1,7 @@
+export {};
+
 declare global {
-  export interface PaginatedModels<T> {
+  interface PaginatedModels<T> {
     current_page: number;
     data: T[];
     first_page_url: string;

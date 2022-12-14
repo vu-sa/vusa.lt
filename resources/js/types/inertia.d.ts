@@ -1,4 +1,6 @@
-export declare interface InertiaUserGlobal extends App.Models.User {
+export {};
+
+declare interface InertiaUserGlobal extends App.Models.User {
   padalinys: "string";
   isSuperAdmin: boolean;
   notifications: Record<string, any>[] | null;
@@ -26,8 +28,7 @@ declare global {
     padaliniai: Pick<
       App.Models.Padalinys,
       "id" | "alias" | "shortname" | "fullname"
-    >;
-    [];
+    >[];
     search: {
       calendar: Array<{
         date: string;
@@ -58,14 +59,14 @@ declare global {
 }
 
 // TODO: somehow make these props seeable in the $page object in templates.
-// export declare interface ProjectPage extends Page {
-//   props: InertiaProps;
-// }
+declare interface ProjectPage extends Page {
+  props: InertiaProps;
+}
 
-// declare module "@vue/runtime-core" {
-//   export interface ComponentCustomProperties {
-//     $page: Record<string, any>;
-//   }
-// }
+declare module "@vue/runtime-core" {
+  export interface ComponentCustomProperties {
+    $page: Record<string, any>;
+  }
+}
 
 import { ErrorBag, Errors, Page, PageProps } from "@inertiajs/inertia";

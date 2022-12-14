@@ -73,7 +73,7 @@
 </template>
 
 <script lang="ts">
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 
 export default {
   layout: AdminLayout,
@@ -91,9 +91,9 @@ import { NIcon, NUpload, NUploadDragger } from "naive-ui";
 import { computed } from "vue";
 import { slice, split } from "lodash";
 
-import FileButton from "@/Components/Admin/FileButton.vue";
-import FolderButton from "@/Components/Admin/FolderButton.vue";
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
+import FileButton from "@/Components/Buttons/FileButton.vue";
+import FolderButton from "@/Components/Buttons/FolderButton.vue";
+import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import route from "ziggy-js";
 
 // Declare props

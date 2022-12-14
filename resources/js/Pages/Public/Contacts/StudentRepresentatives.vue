@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col px-8 pt-8 last:pb-2 lg:px-40">
-    <p class="prose-sm prose mb-4 transition-colors dark:prose-invert">
+    <p class="prose prose-sm mb-4 transition-colors dark:prose-invert">
       Studentų atstovus VU kamieniniuose akademiniuose padaliniuose galima rasti
       <Link href="/kontaktai/kategorija/padaliniai">čia</Link>.
     </p>
@@ -51,7 +51,7 @@ import { Link } from "@inertiajs/inertia-vue3";
 import { NDivider } from "naive-ui";
 
 import ContactWithPhotoForDuties from "@/Components/Public/ContactWithPhotoForDuties.vue";
-import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 defineProps<{
   institutions: App.Models.DutyInstitution[];

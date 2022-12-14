@@ -1,8 +1,12 @@
 <template>
-  <AsideHeaderLink aside-header-route="navigation.index">LT</AsideHeaderLink>
-  <AsideHeaderLink aside-header-route="navigation.index">EN</AsideHeaderLink>
+  <AsideHeaderButton aside-header-route="navigation.index"
+    >LT</AsideHeaderButton
+  >
+  <AsideHeaderButton aside-header-route="navigation.index"
+    >EN</AsideHeaderButton
+  >
 </template>
 
 <script setup lang="ts">
-import AsideHeaderLink from "@/Components/Admin/Nav/AsideHeaderLink.vue";
+import AsideHeaderButton from "@/Components/Buttons/AsideHeaderButton.vue";
 </script>

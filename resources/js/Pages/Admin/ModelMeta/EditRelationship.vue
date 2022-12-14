@@ -70,10 +70,10 @@ import { computed, ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
-import RelationshipForm from "@/Components/Admin/Forms/RelationshipForm.vue";
-import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import RelationshipForm from "@/Components/AdminForms/RelationshipForm.vue";
+import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 defineOptions({
   layout: AdminLayout,

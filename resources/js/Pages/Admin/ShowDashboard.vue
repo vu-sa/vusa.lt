@@ -47,9 +47,9 @@
 import { ExternalLinkSquareAlt } from "@vicons/fa";
 import { NButton, NIcon } from "naive-ui";
 
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
-import DutyInstitutionCard from "@/Components/Admin/Cards/DutyInstitutionCard.vue";
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+import DutyInstitutionCard from "@/Components/Cards/DutyInstitutionCard.vue";
+import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 
 defineOptions({
   layout: AdminLayout,

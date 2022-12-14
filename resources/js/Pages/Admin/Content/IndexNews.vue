@@ -16,32 +16,28 @@
   </PageContent>
 </template>
 
-<script lang="ts">
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
-
-export default {
-  layout: AdminLayout,
-};
-</script>
-
 <script setup lang="ts">
 import { DataTableColumns } from "naive-ui";
 import { h, ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
 
-import AsideHeader from "@/Components/Admin/Headers/AsideHeaderContent.vue";
-import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
-import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
-import PreviewModelButton from "@/Components/Admin/Buttons/PreviewModelButton.vue";
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+import AsideHeader from "@/Components/AsideHeaders/AsideHeaderContent.vue";
+
+import IndexDataTable from "@/Components/IndexDataTable.vue";
+import IndexSearchInput from "@/Components/IndexSearchInput.vue";
+import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
 import route from "ziggy-js";
+
+defineOptions({ layout: AdminLayout });
 
 defineProps<{
   news: PaginatedModels<App.Models.News[]>;
 }>();
 
 const padaliniaiFilterOptions = ref(
-  usePage().props.value.padaliniai.map((padalinys) => {
+  usePage<InertiaProps>().props.value.padaliniai.map((padalinys) => {
     return {
       label: padalinys.shortname,
       value: padalinys.id,

@@ -13,7 +13,7 @@
 </template>
 
 <script lang="ts">
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 
 export default {
   layout: AdminLayout,
@@ -24,9 +24,9 @@ export default {
 import { ref } from "vue";
 
 import { checkForEmptyArray } from "@/Composables/checkAttributes";
-import CalendarForm from "@/Components/Admin/Forms/CalendarForm.vue";
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
-import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
+import CalendarForm from "@/Components/AdminForms/CalendarForm.vue";
+import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 const props = defineProps<{
   calendar: App.Models.Calendar;

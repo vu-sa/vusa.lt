@@ -26,7 +26,7 @@
       <div
         class="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-4 pt-2 last:pb-2 lg:grid-cols-5 lg:px-16"
       >
-        <div class="prose-sm prose col-span-3 px-12 dark:prose-invert">
+        <div class="prose prose-sm col-span-3 px-12 dark:prose-invert">
           <h2>Labas! 👋</h2>
 
           <p class="font-bold">2022 m. pirmakursių stovyklos jau pasibaigė!</p>
@@ -131,7 +131,7 @@ import { onMounted, ref } from "vue";
 import route from "ziggy-js";
 
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
-import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 
 defineProps<{

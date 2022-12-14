@@ -16,7 +16,7 @@
 </template>
 
 <script lang="ts">
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 
 export default {
   layout: AdminLayout,
@@ -28,9 +28,9 @@ import { DataTableColumns } from "naive-ui";
 
 import route from "ziggy-js";
 
-import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
-// import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
+import IndexDataTable from "@/Components/IndexDataTable.vue";
+import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+// import IndexSearchInput from "@/Components/IndexSearchInput.vue";
 
 defineProps<{
   exams: PaginatedModels<App.Models.SaziningaiExam[]>;

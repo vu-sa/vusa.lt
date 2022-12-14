@@ -4,7 +4,7 @@
       class="mx-auto mb-12 flex h-fit w-fit max-w-sm flex-wrap items-center justify-center gap-4 bg-white p-4 shadow-md dark:bg-zinc-700 sm:rounded-md md:max-w-none"
     >
       <p
-        class="prose-sm prose flex h-fit items-center gap-4 px-4 dark:prose-invert"
+        class="prose prose-sm flex h-fit items-center gap-4 px-4 dark:prose-invert"
       >
         <NIcon :size="20" :component="Cookies24Regular"></NIcon>
 
@@ -13,9 +13,9 @@
         </span>
       </p>
       <div class="flex gap-2">
-        <NButton size="small" round secondary :tag="Link" href="/privatumas"
-          >Privatumo politika</NButton
-        >
+        <Link href="/privatumas">
+          <NButton size="small" round secondary>Privatumo politika</NButton>
+        </Link>
 
         <NButton
           size="small"

@@ -26,7 +26,7 @@ class RegistrationFormController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Admin/Registrations/CreateRegistrationForm');
+        //
     }
 
     /**

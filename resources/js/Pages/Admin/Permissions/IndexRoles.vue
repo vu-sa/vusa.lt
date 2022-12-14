@@ -14,10 +14,10 @@
 <script setup lang="tsx">
 import route from "ziggy-js";
 
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
-import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
-import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+import IndexDataTable from "@/Components/IndexDataTable.vue";
+import IndexSearchInput from "@/Components/IndexSearchInput.vue";
+import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 
 defineOptions({
   layout: AdminLayout,

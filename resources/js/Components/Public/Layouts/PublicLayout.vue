@@ -37,7 +37,7 @@ import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import { usePage } from "@inertiajs/inertia-vue3";
 import { useStorage } from "@vueuse/core";
 
-import FadeTransition from "../Utils/FadeTransition.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import Footer from "@/Components/Public/FullWidth/SiteFooter.vue";
 import MainNavigation from "@/Components/Public/Layouts/MainNavigation.vue";
 import MetaIcons from "@/Components/MetaIcons.vue";

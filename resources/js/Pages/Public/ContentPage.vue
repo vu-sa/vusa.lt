@@ -49,7 +49,7 @@ import { NBreadcrumb, NBreadcrumbItem, NButton, NIcon } from "naive-ui";
 import { usePage } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 
-import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 const props = defineProps<{
   navigationItemId: number;

@@ -11,7 +11,7 @@
 </template>
 
 <script lang="ts">
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 
 export default {
   layout: AdminLayout,
@@ -21,9 +21,9 @@ export default {
 <script setup lang="ts">
 import route from "ziggy-js";
 
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
-import TypeForm from "@/Components/Admin/Forms/TypeForm.vue";
-import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
+import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import TypeForm from "@/Components/AdminForms/TypeForm.vue";
+import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 defineProps<{
   contentTypes: Record<string, any>[];

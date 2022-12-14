@@ -50,7 +50,7 @@
 </template>
 
 <script lang="ts">
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 
 export default {
   layout: AdminLayout,
@@ -64,9 +64,9 @@ import { NButton, NIcon } from "naive-ui";
 import { PersonEdit24Regular } from "@vicons/fluent";
 import route from "ziggy-js";
 
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
-import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
-import UserForm from "@/Components/Admin/Forms/UserForm.vue";
+import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
+import UserForm from "@/Components/AdminForms/UserForm.vue";
 
 defineProps<{
   contact: App.Models.User;

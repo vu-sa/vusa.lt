@@ -215,17 +215,7 @@
   ></FileSelectDrawer>
 </template>
 
-<script lang="ts">
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
-import DutyInstitutionCard from "@/Components/Admin/Cards/DutyInstitutionCard.vue";
-
-export default {
-  components: { DutyInstitutionCard },
-  layout: AdminLayout,
-};
-</script>
-
-<script setup lang="ts">
+<script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
 import {
   ArrowTurnRight20Filled,
@@ -258,15 +248,19 @@ import { computed, h, ref } from "vue";
 import route from "ziggy-js";
 
 import { documentTemplate, questionOptions } from "@/Composables/someTypes";
-import FileSelectDrawer from "@/Components/Admin/Nav/FileSelectDrawer.vue";
-import HelpTextModal from "@/Components/HelpTextModal.vue";
-import InstitutionAvatarGroup from "@/Components/Admin/Misc/InstitutionAvatarGroup.vue";
-import MeetingDocumentButton from "@/Components/Admin/QActButtons/MeetingDocumentButton.vue";
-import ModelDocumentButtons from "@/Components/Admin/ModelDocumentButtons.vue";
-import NewMeetingButton from "@/Components/Admin/QActButtons/NewMeetingButton.vue";
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
-import StatusTag from "@/Components/Admin/StatusTag.vue";
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+import DutyInstitutionCard from "@/Components/Cards/DutyInstitutionCard.vue";
+import FileSelectDrawer from "@/Components/SharepointFileManager/FileDrawer.vue";
+import HelpTextModal from "@/Components/Buttons/HelperButtons/HelpTextModal.vue";
+import InstitutionAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
+import MeetingDocumentButton from "@/Components/Buttons/QActButtons/MeetingDocumentButton.vue";
+import ModelDocumentButtons from "@/Components/SharepointFileManager/ModelDocumentButtons.vue";
+import NewMeetingButton from "@/Components/Buttons/QActButtons/NewMeetingButton.vue";
+import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import StatusTag from "@/Components/Tags/StatusTag.vue";
 import getRelativeTime from "@/Composables/getRelativeTime";
+
+defineOptions({ layout: AdminLayout });
 
 const props = defineProps<{
   doingTypes: any;
@@ -313,32 +307,23 @@ const columns = [
     title: "Veiksmai",
     key: "actions",
     render(row) {
-      return h(
-        "div",
-        { class: "flex gap-2" },
-        {
-          default: () => [
-            h(
-              NPopover,
-              {},
-              {
-                default: () => "Eiti į klausimą",
-                trigger: () =>
-                  h(
-                    NButton,
-                    {
-                      size: "small",
-                      tag: Link,
-                      href: route("questions.show", {
-                        question: row.id,
-                      }),
-                    },
-                    h(NIcon, { component: ArrowTurnRight20Filled })
-                  ),
-              }
-            ),
-          ],
-        }
+      return (
+        <div class="flex gap-2">
+          <NPopover>
+            {{
+              default: () => "Eiti į klausimą",
+              trigger: () => (
+                <Link href={route("questions.show", { question: row.id })}>
+                  <NButton size="small">
+                    {{
+                      icon: <NIcon component={ArrowTurnRight20Filled}></NIcon>,
+                    }}
+                  </NButton>
+                </Link>
+              ),
+            }}
+          </NPopover>
+        </div>
       );
     },
   },
@@ -384,8 +369,6 @@ const typeRelationships = (type) => {
       });
     })
   );
-
-  console.log(relationshipModels, relationshipModels[0]);
 
   // don't return undefined values, but empty array
   return relationshipModels;

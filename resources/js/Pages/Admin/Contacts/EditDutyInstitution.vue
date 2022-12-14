@@ -27,7 +27,9 @@
         <strong>Šiuo metu institucijai priklauso šios pareigos:</strong>
         <TransitionGroup name="list" tag="ul" class="list-inside">
           <li v-for="duty in duties" :key="duty.id" class="gap-4">
-            <Link :href="route('duties.edit', { id: duty.id })">{{ duty.name }}</Link>
+            <Link :href="route('duties.edit', { id: duty.id })">{{
+              duty.name
+            }}</Link>
             <div class="ml-2 inline-flex gap-1">
               <NButton text @click="reorderDuties('up', duty)"
                 ><NIcon :component="ArrowCircleUp24Regular"
@@ -53,7 +55,7 @@
 
 <script lang="ts">
 import { Inertia } from "@inertiajs/inertia";
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 
 export default {
   layout: AdminLayout,
@@ -61,18 +63,21 @@ export default {
 </script>
 
 <script setup lang="ts">
-import { ArrowCircleDown24Regular, ArrowCircleUp24Regular } from "@vicons/fluent";
+import {
+  ArrowCircleDown24Regular,
+  ArrowCircleUp24Regular,
+} from "@vicons/fluent";
 import { Link } from "@inertiajs/inertia-vue3";
 import { NButton, NIcon } from "naive-ui";
 import { ref } from "vue";
 import route from "ziggy-js";
 
 import { checkForEmptyArray } from "@/Composables/checkAttributes";
-import DutyInstitutionForm from "@/Components/Admin/Forms/DutyInstitutionForm.vue";
-import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
-import PreviewModelButton from "@/Components/Admin/Buttons/PreviewModelButton.vue";
-import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
+import DutyInstitutionForm from "@/Components/AdminForms/DutyInstitutionForm.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
+import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
+import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 const props = defineProps<{
   dutyInstitution: App.Models.DutyInstitution;
@@ -87,7 +92,9 @@ if (!props.dutyInstitution.attributes) {
   dutyInstitution.value.attributes = {};
 }
 
-dutyInstitution.value.attributes = checkForEmptyArray(dutyInstitution.value.attributes);
+dutyInstitution.value.attributes = checkForEmptyArray(
+  dutyInstitution.value.attributes
+);
 
 if (!props.dutyInstitution.attributes.en) {
   dutyInstitution.value.attributes.en = {};

@@ -11,7 +11,7 @@
 </template>
 
 <script lang="ts">
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 
 export default {
   layout: AdminLayout,
@@ -21,9 +21,9 @@ export default {
 <script setup lang="ts">
 import route from "ziggy-js";
 
-import MainPageForm from "@/Components/Admin/Forms/MainPageForm.vue";
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
-import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
+import MainPageForm from "@/Components/AdminForms/MainPageForm.vue";
+import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 defineProps<{
   mainPage: App.Models.MainPage;

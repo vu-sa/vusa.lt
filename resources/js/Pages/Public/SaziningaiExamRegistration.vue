@@ -16,8 +16,8 @@
         <p>
           Prašome registruoti atsiskaitymus, kurie vyks nuo
           <strong>{{ date3DaysToFutureLT }}</strong> (bent 3 darbo dienos iki jo
-          pradžios), kad būtų laiku surasti stebėtojai. Kitu atveju, kreipkitės į
-          <a href="mailto:saziningai@vusa.lt">saziningai@vusa.lt</a> 🎓
+          pradžios), kad būtų laiku surasti stebėtojai. Kitu atveju, kreipkitės
+          į <a href="mailto:saziningai@vusa.lt">saziningai@vusa.lt</a> 🎓
         </p>
         <NForm
           ref="formRef"
@@ -57,37 +57,59 @@
               placeholder="Koliokviumas arba egzaminas"
             />
           </NFormItem>
-          <NFormItem label="Atsiskaitymą laikančiųjų padalinys" path="padalinys_id">
+          <NFormItem
+            label="Atsiskaitymą laikančiųjų padalinys"
+            path="padalinys_id"
+          >
             <NSelect
               v-model:value="formValue.padalinys_id"
               :options="padaliniaiOptions"
               :placeholder="padalinysPlaceholder"
             />
           </NFormItem>
-          <NFormItem label="Atsiskaitomo dalyko pavadinimas" path="subject_name">
+          <NFormItem
+            label="Atsiskaitomo dalyko pavadinimas"
+            path="subject_name"
+          >
             <NInput
               v-model:value="formValue.subject_name"
               :placeholder="subjectNamePlaceholder"
             />
           </NFormItem>
-          <NFormItem label="Atsiskaitymo vieta: padalinys ir auditorija" path="place">
-            <NInput v-model:value="formValue.place" type="textarea" placeholder="" />
+          <NFormItem
+            label="Atsiskaitymo vieta: padalinys ir auditorija"
+            path="place"
+          >
+            <NInput
+              v-model:value="formValue.place"
+              type="textarea"
+              placeholder=""
+            />
           </NFormItem>
-          <NFormItem label="Atsiskaitymą laikančių studentų skaičius" path="exam_holders">
+          <NFormItem
+            label="Atsiskaitymą laikančių studentų skaičius"
+            path="exam_holders"
+          >
             <NInputNumber
               v-model:value="formValue.exam_holders"
               :min="1"
               placeholder="30"
             />
           </NFormItem>
-          <NFormItem label="Reikalingas stebėtojų skaičius" path="students_need">
+          <NFormItem
+            label="Reikalingas stebėtojų skaičius"
+            path="students_need"
+          >
             <NInputNumber
               v-model:value="formValue.students_need"
               :min="1"
               placeholder="3"
             />
           </NFormItem>
-          <NFormItem label="Atsiskaitymo srautai (pasirinkite iki 4)" path="flows">
+          <NFormItem
+            label="Atsiskaitymo srautai (pasirinkite iki 4)"
+            path="flows"
+          >
             <NDynamicInput
               v-model:value="formValue.flows"
               :min="1"
@@ -116,7 +138,11 @@
             label="Atsiskaitymo trukmė (jei laikoma srautais, parašyti srautų skaičių ir kiek laiko skiriama vienam srautui)"
             path="duration"
           >
-            <NInput v-model:value="formValue.duration" type="textarea" placeholder="" />
+            <NInput
+              v-model:value="formValue.duration"
+              type="textarea"
+              placeholder=""
+            />
           </NFormItem>
           <NFormItem path="acceptGDPR"
             ><NCheckbox v-model:checked="formValue.acceptGDPR">
@@ -125,8 +151,8 @@
                 target="_blank"
                 href="https://vusa.lt/uploads/Dokumentų šablonai/Asmens_duomenu_tvarkymo_VUSA_tvarkos_aprasas.pdf"
                 @click.stop
-                >Asmens duomenų tvarkymo Vilniaus universiteto Studentų atstovybėje
-                tvarkos aprašu</a
+                >Asmens duomenų tvarkymo Vilniaus universiteto Studentų
+                atstovybėje tvarkos aprašu</a
               >
               ir sutinku</NCheckbox
             ></NFormItem
@@ -134,15 +160,21 @@
           <NFormItem path="acceptDataManagement">
             <NCheckbox v-model:checked="formValue.acceptDataManagement"
               >Sutinku, kad mano pateikti asmens duomenys būtų tvarkomi vidaus
-              administravimo tikslu pagal Asmens duomenų tvarkymo Vilniaus universiteto
-              Studentų atstovybėje tvarkos aprašą</NCheckbox
+              administravimo tikslu pagal Asmens duomenų tvarkymo Vilniaus
+              universiteto Studentų atstovybėje tvarkos aprašą</NCheckbox
             >
           </NFormItem>
           <div class="prose-sm">
-            <p>Duomenų valdytojas yra Vilniaus universiteto Studentų atstovybė.</p>
+            <p>
+              Duomenų valdytojas yra Vilniaus universiteto Studentų atstovybė.
+            </p>
             <ul>
-              <li>Adresas: Universiteto g. 3, Observatorijos kiemelis, Vilnius,</li>
-              <li>Telefono numeris: <a href="tel:852687144">+37052687144</a>,</li>
+              <li>
+                Adresas: Universiteto g. 3, Observatorijos kiemelis, Vilnius,
+              </li>
+              <li>
+                Telefono numeris: <a href="tel:852687144">+37052687144</a>,
+              </li>
               <li>
                 El. paštas:
                 <a href="mailto:info@vusa.lt">info@vusa.lt</a>
@@ -151,14 +183,17 @@
             <p>Jūsų pateikti duomenys bus naudojami susisiekti su jumis.</p>
 
             <p>
-              Duomenų subjektas turi teisę susipažinti su savo asmens duomenimis, teisę
-              reikalauti ištaisyti neteisingus, neišsamius, netikslius savo asmens
-              duomenis ir kitas teisės aktais numatytas teises. Kilus klausimams ir norint
-              realizuoti savo, kaip duomenų subjekto, teises, galite kreiptis į
+              Duomenų subjektas turi teisę susipažinti su savo asmens
+              duomenimis, teisę reikalauti ištaisyti neteisingus, neišsamius,
+              netikslius savo asmens duomenis ir kitas teisės aktais numatytas
+              teises. Kilus klausimams ir norint realizuoti savo, kaip duomenų
+              subjekto, teises, galite kreiptis į
               <a href="mailto:dap@vusa.lt">dap@vusa.lt</a>.
             </p>
           </div>
-          <NButton type="primary" @click="handleValidateClick"> Pateikti </NButton>
+          <NButton type="primary" @click="handleValidateClick">
+            Pateikti
+          </NButton>
         </NForm>
       </div>
     </article>
@@ -197,7 +232,7 @@ import { computed, ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 
-import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 const props = defineProps<{
   padaliniaiOptions: Array<App.Models.Padalinys>;
@@ -397,7 +432,8 @@ const subjectNamePlaceholder = computed(() => {
 
 const padalinysPlaceholder = computed(() => {
   // return random label from padaliniaiOptions
-  return padaliniaiOptions[Math.floor(Math.random() * padaliniaiOptions.length)].label;
+  return padaliniaiOptions[Math.floor(Math.random() * padaliniaiOptions.length)]
+    .label;
 });
 
 ///////
