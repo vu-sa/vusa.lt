@@ -201,7 +201,7 @@ class UserController extends Controller
         return Duty::with(['institution:id,padalinys_id', 'institution.padalinys:id,shortname'])
         ->when(!auth()->user()->hasRole('Super Admin'), function ($query) { 
             $query->whereHas('institution', function ($query) {
-                $query->where('padalinys_id', Auth::user()->padalinys()->id);
+                $query->where('padalinys_id', Auth::user()->padalinys()?->id);
             });
         })->get();
     }

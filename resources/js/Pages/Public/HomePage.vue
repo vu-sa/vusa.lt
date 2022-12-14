@@ -17,6 +17,12 @@
       <MainLinks :main-page="mainPage" /></div
   ></FadeTransition>
 
+  <FadeTransition v-if="$page.props.locale === 'lt'">
+    <div class="mt-8">
+      <BannerCarousel :banners="banners" />
+    </div>
+  </FadeTransition>
+
   <FadeTransition v-if="news.length > 0" appear>
     <div class="mt-4"><NewsElement :news="news" /></div>
   </FadeTransition>
@@ -49,6 +55,7 @@ import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
 
 defineProps<{
   news: Array<App.Models.News>;
+  banners: Array<App.Models.Banner>;
   mainPage: Array<App.Models.MainPage>;
   calendar: Array<App.Models.Calendar>;
 }>();
@@ -58,6 +65,11 @@ const isThemeDark = ref(isDarkMode());
 const MainLinks = defineAsyncComponent(
   // eslint-disable-next-line no-secrets/no-secrets
   () => import("@/Components/Public/FullWidth/MainLinks.vue")
+);
+
+const BannerCarousel = defineAsyncComponent(
+  // eslint-disable-next-line no-secrets/no-secrets
+  () => import("@/Components/Public/FullWidth/BannerCarousel.vue")
 );
 
 const NewsElement = defineAsyncComponent(

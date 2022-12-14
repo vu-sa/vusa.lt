@@ -309,7 +309,7 @@ const rules: FormRules = {
       rule: unknown,
       value: Array<Pick<App.Models.SaziningaiExamFlow, "start_time">>
     ) {
-      if (!value) {
+      if (!value || value.length === 0) {
         return new Error("Įveskite bent vieno atsiskaitymo atsiskaitymo laiką");
       }
       if (value.some((item) => !item.start_time)) {

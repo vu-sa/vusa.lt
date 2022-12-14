@@ -108,6 +108,8 @@ class MainController extends Controller
 		// get last 4 news by publishing date
 		$padalinys = Padalinys::where('alias', '=', $this->alias)->first();
 
+		$banners = Padalinys::where('alias', 'vusa')->first()->banners()->inRandomOrder()->where('is_active', 1)->get();
+
 		$news = News::where([['padalinys_id', '=', $padalinys->id],['lang', app()->getLocale()], ['draft', '=', 0]])->where('publish_time', '<=', date('Y-m-d H:i:s'))->orderBy('publish_time', 'desc')->take(4)->get();
 
 		if (app()->getLocale() === 'en') {
@@ -149,6 +151,7 @@ class MainController extends Controller
 				];
 			}),
 			'mainPage' => MainPage::where([['padalinys_id', $padalinys->id], ['lang', app()->getLocale()]])->get(),
+			'banners' => $banners
 		])->withViewData([
 			'description' => 'Vilniaus universiteto Studentų atstovybė (VU SA) – seniausia ir didžiausia Lietuvoje visuomeninė, ne pelno siekianti, nepolitinė, ekspertinė švietimo organizacija'
 		]);
