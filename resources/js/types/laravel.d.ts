@@ -1,55 +1,4 @@
 declare global {
-  export interface InertiaUserGlobal extends App.Models.User {
-    padalinys: "string";
-  }
-
-  export interface InertiaProps {
-    app: {
-      env: string;
-      url: string;
-    };
-    can: {
-      [key: string]: boolean;
-    };
-    errors: {
-      [key: string]: string;
-    };
-    locale: "lt" | "en";
-    misc: any;
-    padaliniai: Array<{
-      id: number;
-      alias: string;
-      shortname: string;
-      fullname: string;
-    }>;
-
-    search: {
-      calendar: Array<{
-        date: string;
-        id: number;
-        title: string;
-      } | null>;
-      news: Array<{
-        id: number;
-        lang: "lt" | "en";
-        permalink: string;
-        publish_time: string;
-        title: string;
-      } | null>;
-      pages: Array<{
-        id: number;
-        lang: "lt" | "en";
-        permalink: string;
-        title: string;
-      } | null>;
-      other: Array<{
-        alias: string;
-        id: number;
-        name: string;
-      } | null>;
-    };
-    user: InertiaUserGlobal;
-  }
   export interface PaginatedModels<T> {
     current_page: number;
     data: T[];
@@ -70,10 +19,4 @@ declare global {
     to: number;
     total: number;
   }
-
-  // export interface InertiaPropsPage = Omit<Page<InertiaProps>, "props"> {
-  //   props: InertiaProps;
-  // }
 }
-
-import { Page, PageProps } from "@inertiajs/inertia";
