@@ -5,10 +5,7 @@
  */
 
 declare namespace App.Models {
-  export interface ModelTemplate extends Record<string, any> {
-    id: number;
-  }
-  export interface Banner extends ModelTemplate {
+  export interface Banner {
     id: number;
     title: string;
     image_url: string;
@@ -24,9 +21,10 @@ declare namespace App.Models {
     padalinys?: App.Models.Padalinys | null;
   }
 
-  export interface Calendar extends ModelTemplate {
+  export interface Calendar {
     id: number;
     date: string;
+    end_date: string | null;
     title: string;
     description: string | null;
     location: string | null;
@@ -34,15 +32,16 @@ declare namespace App.Models {
     url: string | null;
     user_id: number | null;
     padalinys_id: number;
-    attributes: object | null;
+    attributes: string | null;
     created_at: any;
     updated_at: any;
+    registration_form_id: number | null;
     user?: App.Models.User | null;
     padalinys?: App.Models.Padalinys | null;
-    category?: App.Models.Category | null;
+    registration_form?: App.Models.RegistrationForm | null;
   }
 
-  export interface Category extends ModelTemplate {
+  export interface Category {
     id: number;
     alias: string | null;
     name: string;
@@ -52,24 +51,58 @@ declare namespace App.Models {
     banners?: App.Models.Banner | null;
   }
 
-  export interface Duty extends ModelTemplate {
+  export interface Comment {
+    id: number;
+    parent_id: number | null;
+    comment: string;
+    user_id: number;
+    commentable_type: string;
+    commentable_id: number;
+    created_at: any;
+    updated_at: any;
+    commentable?: any | null;
+    comments?: Array<App.Models.Comment> | null;
+    user?: App.Models.User | null;
+    comments_count?: number | null;
+  }
+
+  export interface Doing {
+    id: number;
+    title: string;
+    status: string;
+    date: string;
+    created_at: any;
+    updated_at: any;
+    questions?: Array<App.Models.Question> | null;
+    types?: Array<App.Models.Type> | null;
+    documents?: Array<App.Models.SharepointDocument> | null;
+    tasks?: Array<App.Models.Task> | null;
+    users?: any | null;
+    questions_count?: number | null;
+    types_count?: number | null;
+    documents_count?: number | null;
+    tasks_count?: number | null;
+  }
+
+  export interface Duty {
     id: number;
     name: string;
     description: string | null;
-    type_id: number;
     institution_id: number;
+    order: number;
     email: string | null;
-    attributes: Record<string, any> | null;
+    attributes: string | null;
     places_to_occupy: number | null;
     created_at: any;
     updated_at: any;
     users?: Array<App.Models.User> | null;
-    type?: App.Models.DutyType | null;
+    types?: Array<App.Models.Type> | null;
     institution?: App.Models.DutyInstitution | null;
     users_count?: number | null;
+    types_count?: number | null;
   }
 
-  export interface DutyInstitution extends ModelTemplate {
+  export interface DutyInstitution {
     id: number;
     pid: number | null;
     name: string | null;
@@ -77,42 +110,39 @@ declare namespace App.Models {
     alias: string;
     description: string | null;
     image_url: string | null;
-    type_id: number | null;
     padalinys_id: number | null;
     created_at: any;
     updated_at: any;
     attributes: string | null;
     duties?: Array<App.Models.Duty> | null;
-    type?: App.Models.DutyInstitutionType | null;
+    types?: Array<App.Models.Type> | null;
     padalinys?: App.Models.Padalinys | null;
+    questions?: Array<App.Models.Question> | null;
+    doings?: any | null;
+    users?: any | null;
+    documents?: Array<App.Models.SharepointDocument> | null;
+    given_relationships?: Array<App.Models.Relationship> | null;
+    received_relationships?: Array<App.Models.Relationship> | null;
     duties_count?: number | null;
+    types_count?: number | null;
+    questions_count?: number | null;
+    documents_count?: number | null;
+    given_relationships_count?: number | null;
+    received_relationships_count?: number | null;
   }
 
-  export interface DutyInstitutionType extends ModelTemplate {
+  export interface DutyUser {
     id: number;
-    name: string;
-    alias: string;
-    description: string | null;
+    duty_id: number;
+    user_id: number;
     attributes: string | null;
     created_at: any;
     updated_at: any;
-    duty_institution?: Array<App.Models.DutyInstitution> | null;
-    duty_institution_count?: number | null;
+    duty?: App.Models.Duty | null;
+    user?: App.Models.User | null;
   }
 
-  export interface DutyType extends ModelTemplate {
-    id: number;
-    pid: number | null;
-    name: string;
-    alias: string;
-    description: string | null;
-    created_at: any;
-    updated_at: any;
-    duties?: Array<App.Models.Duty> | null;
-    duties_count?: number | null;
-  }
-
-  export interface MainPage extends ModelTemplate {
+  export interface MainPage {
     id: number;
     user_id: number | null;
     link: string | null;
@@ -131,10 +161,9 @@ declare namespace App.Models {
     users_count?: number | null;
   }
 
-  export interface Navigation extends ModelTemplate {
+  export interface Navigation {
     id: number;
     parent_id: number;
-    user_id: number | null;
     padalinys_id: number;
     name: string;
     lang: string;
@@ -147,7 +176,7 @@ declare namespace App.Models {
     padalinys?: App.Models.Padalinys | null;
   }
 
-  export interface News extends ModelTemplate {
+  export interface News {
     id: number;
     user_id: number | null;
     title: string;
@@ -173,7 +202,7 @@ declare namespace App.Models {
     tags_count?: number | null;
   }
 
-  export interface Padalinys extends ModelTemplate {
+  export interface Padalinys {
     id: number;
     type: string | null;
     fullname: string;
@@ -200,46 +229,117 @@ declare namespace App.Models {
     users_count?: number | null;
   }
 
-  export interface Page extends ModelTemplate {
+  export interface Page {
     id: number;
     user_id: number | null;
     title: string;
     permalink: string | null;
     text: string;
     lang: string;
-    other_lang_id: number | null;
     category_id: number | null;
     is_active: boolean;
     padalinys_id: number;
-    aside: string | null;
     created_at: any;
     updated_at: any;
+    other_lang_id: number | null;
     padalinys?: App.Models.Padalinys | null;
     category?: App.Models.Category | null;
   }
 
-  export interface PageView extends ModelTemplate {
+  export interface Permission {
     id: number;
-    host: string;
-    url: string;
-    session_id: string | null;
-    user_id: number | null;
-    ip: string;
-    agent: string | null;
+    name: string;
+    guard_name: string;
     created_at: any | null;
     updated_at: any | null;
+    roles?: Array<Spatie.Permission.Models.Role> | null;
+    users?: Array<App.Models.User> | null;
+    permissions?: Array<Spatie.Permission.Models.Permission> | null;
+    roles_count?: number | null;
+    users_count?: number | null;
+    permissions_count?: number | null;
   }
 
-  export interface Role extends ModelTemplate {
+  export interface Question {
     id: number;
+    title: string;
     description: string | null;
-    alias: string | null;
+    status: string;
+    question_group_id: number | null;
+    institution_id: number;
+    created_at: any;
+    updated_at: any;
+    institution?: App.Models.DutyInstitution | null;
+    doings?: Array<App.Models.Doing> | null;
+    question_group?: App.Models.QuestionGroup | null;
+    users?: any | null;
+    doings_count?: number | null;
+  }
+
+  export interface QuestionGroup {
+    id: number;
+    title: string;
+    created_at: any;
+    updated_at: any;
+    questions?: Array<App.Models.Question> | null;
+    questions_count?: number | null;
+  }
+
+  export interface Registration {
+    id: number;
+    registration_form_id: number;
+    data: string;
+    created_at: any;
+    updated_at: any;
+    registration_form?: App.Models.RegistrationForm | null;
+  }
+
+  export interface RegistrationForm {
+    id: number;
+    user_id: number | null;
+    data: string;
+    created_at: any;
+    updated_at: any;
+    registrations?: Array<App.Models.Registration> | null;
+    registrations_count?: number | null;
+  }
+
+  export interface Relationship {
+    id: number;
     name: string;
+    slug: string;
+    description: string | null;
+    type: string | null;
+    created_at: any;
+    updated_at: any;
+    duty_institutions?: Array<App.Models.DutyInstitution> | null;
+    duty_institutions_count?: number | null;
+    readonly related_model?: any;
+  }
+
+  export interface Relationshipable {
+    id: number;
+    relationship_id: number;
+    relationshipable_type: string;
+    relationshipable_id: number;
+    related_model_id: number;
     created_at: any;
     updated_at: any;
   }
 
-  export interface SaziningaiExam extends ModelTemplate {
+  export interface Role {
+    id: number;
+    name: string;
+    guard_name: string;
+    created_at: any | null;
+    updated_at: any | null;
+    permissions?: Array<Spatie.Permission.Models.Permission> | null;
+    users?: Array<App.Models.User> | null;
+    permissions_count?: number | null;
+    users_count?: number | null;
+  }
+
+  export interface SaziningaiExam {
     id: number;
     uuid: string;
     name: string | null;
@@ -261,7 +361,7 @@ declare namespace App.Models {
     observers_count?: number | null;
   }
 
-  export interface SaziningaiExamFlow extends ModelTemplate {
+  export interface SaziningaiExamFlow {
     id: number;
     exam_uuid: string;
     start_time: string;
@@ -272,7 +372,7 @@ declare namespace App.Models {
     observers_count?: number | null;
   }
 
-  export interface SaziningaiExamObserver extends ModelTemplate {
+  export interface SaziningaiExamObserver {
     id: number;
     exam_uuid: string;
     name: string;
@@ -289,7 +389,13 @@ declare namespace App.Models {
     padalinys?: App.Models.Padalinys | null;
   }
 
-  export interface Tag extends ModelTemplate {
+  export interface SharepointDocument {
+    sharepoint_id: string;
+    documentable_type: string;
+    documentable_id: number;
+  }
+
+  export interface Tag {
     id: number;
     alias: string | null;
     name: string;
@@ -298,7 +404,42 @@ declare namespace App.Models {
     updated_at: any;
   }
 
-  export interface User extends ModelTemplate {
+  export interface Task {
+    id: number;
+    name: string;
+    description: string | null;
+    due_date: string | null;
+    taskable_type: string;
+    taskable_id: number;
+    completed_at: any | null;
+    created_at: any;
+    updated_at: any;
+    taskable?: any | null;
+    users?: Array<App.Models.User> | null;
+    users_count?: number | null;
+  }
+
+  export interface Type {
+    id: number;
+    parent_id: number | null;
+    title: string | null;
+    model_type: string | null;
+    description: string | null;
+    slug: string | null;
+    extra_attributes: string | null;
+    created_at: any;
+    updated_at: any;
+    duty_institutions?: Array<App.Models.DutyInstitution> | null;
+    duties?: Array<App.Models.Duty> | null;
+    doings?: Array<App.Models.Doing> | null;
+    documents?: Array<App.Models.SharepointDocument> | null;
+    duty_institutions_count?: number | null;
+    duties_count?: number | null;
+    doings_count?: number | null;
+    documents_count?: number | null;
+  }
+
+  export interface User {
     id: number;
     email: string;
     phone: string | null;
@@ -307,7 +448,6 @@ declare namespace App.Models {
     two_factor_secret: string | null;
     two_factor_recovery_codes: string | null;
     is_active: boolean;
-    role_id: number | null;
     email_verified_at: any | null;
     remember_token: string | null;
     last_login: any | null;
@@ -315,12 +455,10 @@ declare namespace App.Models {
     google_token: string | null;
     updated_at: any | null;
     created_at: any;
-    team_id: number | null;
     profile_photo_path: string | null;
     banners?: Array<App.Models.Banner> | null;
     calendar?: Array<App.Models.Calendar> | null;
     duties?: Array<App.Models.Duty> | null;
-    role?: App.Models.Role | null;
     banners_count?: number | null;
     calendar_count?: number | null;
     duties_count?: number | null;
