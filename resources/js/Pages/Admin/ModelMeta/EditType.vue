@@ -61,5 +61,6 @@ const selectedDocument = ref(null);
 const contentModel = {
   id: props.contentType.id,
   type: "App\\Models\\Type",
+  modelTypes: [],
 };
 </script>

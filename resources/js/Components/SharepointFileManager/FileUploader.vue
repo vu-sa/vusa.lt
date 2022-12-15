@@ -241,6 +241,7 @@ const handleValidateClick = (e) => {
             console.log("success");
             showModal.value = false;
             model.reset();
+            originalFileName.value = "";
             loading.value = false;
           },
           onError: () => {

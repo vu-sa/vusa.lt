@@ -101,7 +101,7 @@ class DutyInstitutionController extends Controller
         if ($dutyInstitution->documents->count() > 0) {
             $graph = new SharepointAppGraph();
         
-            $sharepointFiles = $graph->collectModelDocuments($dutyInstitution);
+            $sharepointFiles = $graph->collectSharepointFiles($dutyInstitution->documents);
         }
 
         $receivedRelationships = $dutyInstitution->receivedRelationshipModels();

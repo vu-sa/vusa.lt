@@ -94,7 +94,7 @@ class DoingController extends Controller
         if ($doing->documents->count() > 0) {
             $graph = new SharepointAppGraph();
         
-            $sharepointFiles = $graph->collectModelDocuments($doing);
+            $sharepointFiles = $graph->collectSharepointFiles($doing->documents);
         }
 
         return Inertia::render('Admin/Questions/ShowDoing', [

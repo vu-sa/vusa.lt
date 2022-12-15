@@ -83,7 +83,7 @@ class TypesController extends Controller
         if ($type->documents->count() > 0) {
             $graph = new SharepointAppGraph();
         
-            $sharepointFiles = $graph->collectModelDocuments($type);
+            $sharepointFiles = $graph->collectSharepointFiles($type->documents);
         }
         
         return Inertia::render('Admin/ModelMeta/EditType', [

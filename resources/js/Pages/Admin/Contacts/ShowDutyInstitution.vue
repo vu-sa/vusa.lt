@@ -25,14 +25,14 @@
       />
     </div>
     <NTabs animated type="line">
-      <NTabPane display-directive="show" name="Aprašymas">
+      <NTabPane display-directive="show:lazy" name="Aprašymas">
         <div class="m-4">
           <NCollapse
             arrow-placement="right"
             :default-expanded-names="['Studijų programos komitetas']"
           >
             <template v-for="type in dutyInstitution.types" :key="type.id">
-              <NCollapseItem :name="type.title">
+              <NCollapseItem display-directive="show" :name="type.title">
                 <template #header>
                   <NTag
                     class="cursor-pointer"
@@ -47,12 +47,11 @@
                   {{ type.description }}
                 </p>
                 <div class="mt-2">
-                  <ModelDocumentButtons
+                  <ModelsDocumentViewer
                     v-if="type.documents.length > 0"
-                    :documents="type.documents"
-                    :model="{ id: type.id, model_type: 'App\\Models\\Type' }"
+                    :model-collection-with-documents="[type]"
                     @file-button-click="updateSelectedDocument"
-                  ></ModelDocumentButtons>
+                  ></ModelsDocumentViewer>
                   <!-- Something is amiss here -->
                   <template v-if="typeRelationships(type).length > 0">
                     <h3 class="my-4">Susijusios institucijos pagal tipą</h3>
@@ -137,19 +136,17 @@
       <NTabPane
         name="Veiklų dokumentai"
         :disabled="dutyInstitution.doings.length === 0"
+        display-directive="show:lazy"
       >
         <div class="m-4">
           <NFormItem label-placement="left" class="w-96" label="Failo tipas"
             ><NSelect clearable :options="fileTypeOptions"></NSelect
           ></NFormItem>
-          <template v-for="doing in dutyInstitution.doings" :key="doing.id">
-            <ModelDocumentButtons
-              v-if="doing.documents.length > 0"
-              :documents="doing.documents"
-              :model="{ id: doing.id, model_type: 'App\\Models\\Doing' }"
-              @file-button-click="updateSelectedDocument"
-            ></ModelDocumentButtons>
-          </template>
+          <ModelsDocumentViewer
+            v-if="dutyInstitution.doings.length > 0"
+            :model-collection-with-documents="dutyInstitution.doings"
+            @file-button-click="updateSelectedDocument"
+          ></ModelsDocumentViewer>
         </div>
       </NTabPane>
     </NTabs>
@@ -254,7 +251,7 @@ import FileSelectDrawer from "@/Components/SharepointFileManager/FileDrawer.vue"
 import HelpTextModal from "@/Components/Buttons/HelperButtons/HelpTextModal.vue";
 import InstitutionAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import MeetingDocumentButton from "@/Components/Buttons/QActButtons/MeetingDocumentButton.vue";
-import ModelDocumentButtons from "@/Components/SharepointFileManager/ModelDocumentButtons.vue";
+import ModelsDocumentViewer from "@/Components/SharepointFileManager/ModelsDocumentViewer.vue";
 import NewMeetingButton from "@/Components/Buttons/QActButtons/NewMeetingButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import StatusTag from "@/Components/Tags/StatusTag.vue";

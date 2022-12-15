@@ -229,11 +229,11 @@ class SharepointAppGraph {
         Cache::forget('ms_drive_children_' . $driveItemId);
     }
 
-    public function collectModelDocuments($model) : BaseCollection
+    public function collectSharepointFiles(Collection $documents) : BaseCollection
     {
         $drive = $this->getDriveBySite(config('filesystems.sharepoint.site_id'));
 
-        $driveItems = $this->getDriveItemsByID(($model->documents), $drive->getId());
+        $driveItems = $this->getDriveItemsByID(($documents), $drive->getId());
 
         $sharepointFiles = collect($driveItems)->map(function (Model\DriveItem $item) use ($driveItems) {
             return [

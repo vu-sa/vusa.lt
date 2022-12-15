@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\SharepointDocument;
 use App\Services\SharepointAppGraph;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Microsoft\Graph\Model;
@@ -52,11 +55,22 @@ class SharepointController extends Controller
         ]);
     }
 
-    public function getFilesFromModel(Request $request) {
+    public function getFilesFromDocumentIds(Request $request) {
+        // TODO: should consider a function instead, to get files from sharepoint ids
+        $graph = new SharepointAppGraph();
+        
+        $documents = SharepointDocument::find($request->documentIds);
+
+        $sharepointFiles = $graph->collectSharepointFiles($documents);
+
+        return response()->json($sharepointFiles);
+    }
+
+    protected function getFilesFromModel(array $dataArray): Collection {
         $graph = new SharepointAppGraph();
 
-        $modelId = $request->input('id');
-        $modelType = $request->input('model_type');
+        $modelId = $dataArray['documentable_id'];
+        $modelType = $dataArray['documentable_type'];
 
         if (Cache::has('sharepoint_files_' . $modelType . '_' . $modelId)) 
         {
@@ -65,11 +79,11 @@ class SharepointController extends Controller
 
         $model = $modelType::find($modelId);
 
-        $sharepointFiles = $graph->collectModelDocuments($model);
+        $sharepointFiles = $graph->collectSharepointFiles($model->documents);
 
         Cache::put('sharepoint_files_' . $modelType . '_' . $modelId, $sharepointFiles, 60 * 60);
 
-        return response()->json($sharepointFiles);
+        return $sharepointFiles;
     }
 
     public function addFile(Request $request) {
