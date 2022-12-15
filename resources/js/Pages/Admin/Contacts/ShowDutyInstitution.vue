@@ -139,9 +139,6 @@
         display-directive="show:lazy"
       >
         <div class="m-4">
-          <NFormItem label-placement="left" class="w-96" label="Failo tipas"
-            ><NSelect clearable :options="fileTypeOptions"></NSelect
-          ></NFormItem>
           <ModelsDocumentViewer
             v-if="dutyInstitution.doings.length > 0"
             :model-collection-with-documents="dutyInstitution.doings"
@@ -267,9 +264,12 @@ const props = defineProps<{
 const showModal = ref(false);
 
 const selectedDocument = ref(null);
+const questionForm = useForm({
+  title: "",
+  description: "",
+});
 
 const updateSelectedDocument = (document) => {
-  console.table(document);
   selectedDocument.value = document;
 };
 
@@ -326,11 +326,6 @@ const columns = [
   },
 ];
 
-const questionForm = useForm({
-  title: "",
-  description: "",
-});
-
 const createQuestion = () => {
   questionForm.post(
     route("questions.store", {
@@ -370,15 +365,4 @@ const typeRelationships = (type) => {
   // don't return undefined values, but empty array
   return relationshipModels;
 };
-
-const fileTypeOptions = [
-  {
-    label: "Ataskaitos",
-    value: "ataskaitos",
-  },
-  {
-    label: "Protokolai",
-    value: "protokolai",
-  },
-];
 </script>

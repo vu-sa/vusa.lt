@@ -5,7 +5,11 @@
         <NSkeleton :height="148" :width="192"></NSkeleton>
         <NSkeleton :repeat="2" :height="8" :width="168"></NSkeleton>
       </div>
-      <FileButton v-else :document="document"></FileButton>
+      <FileButton
+        v-else
+        :document="document"
+        @file-button-click="$emit('fileButtonClick')"
+      ></FileButton>
     </div>
   </FadeTransition>
 </template>
@@ -16,7 +20,9 @@ import { NSkeleton } from "naive-ui";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import FileButton from "@/Components/SharepointFileManager/FileButton.vue";
 
-defineProps<{
+defineEmits(["fileButtonClick"]);
+
+const props = defineProps<{
   document: Record<string, unknown>[];
   loading: boolean;
 }>();

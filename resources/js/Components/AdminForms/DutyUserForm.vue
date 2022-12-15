@@ -101,7 +101,7 @@ import { useForm } from "@inertiajs/inertia-vue3";
 import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
 
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
-import HelpTextButton from "@/Components/Buttons/HelpTextButton/HelpTextButton.vue";
+import HelpTextButton from "@/Components/Buttons/HelperButtons/HelpTextButton.vue";
 import UploadImageButtons from "@/Components/Buttons/UploadImageButtons.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
