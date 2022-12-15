@@ -17,25 +17,25 @@
     </p>
     <NForm
       ref="formRef"
-      :disabled="!contentTypeOptions"
+      :disabled="!contentTypeOptions || loading"
       :model="model"
       :rules="rules"
     >
-      <NFormItem v-if="showObjectName" required label="Failo objektas">
+      <NFormItem v-if="contentModelOptions" required label="Failo objektas">
         <NTreeSelect
           :default-value="fileObjectName"
           filterable
           default-expand-all
-          :options="objectOptions"
-          placeholder="Pasirink, į ką įkelsi šį failą"
+          :options="contentModelOptions"
+          placeholder="Pasirink, į ką įkelsi šį failą..."
           @update:value="onObjectChange"
         ></NTreeSelect>
       </NFormItem>
-      <NFormItem v-if="!type" label="Tipas" path="typeValue"
+      <NFormItem v-if="!prespecifiedType" label="Tipas" path="typeValue"
         ><NSelect
           v-model:value="model.typeValue"
+          placeholder="Pasirink failo tipą..."
           :options="contentTypeOptions"
-          @update:value="onTypeChange"
         ></NSelect
       ></NFormItem>
       <!-- <NFormItem label="Raktažodžiai" path="keywordsValue"
@@ -49,8 +49,8 @@
       <NFormItem label="Dokumento data" path="datetimeValue"
         ><NDatePicker
           v-model:value="model.datetimeValue"
+          placeholder="2022-12-01"
           type="date"
-          @update:value="onDateChange"
         ></NDatePicker
       ></NFormItem>
       <NFormItem label="Įkelti failą" path="uploadValue">
@@ -73,13 +73,22 @@
           </NUploadDragger>
         </NUpload>
       </NFormItem>
-      <NFormItem label="Sugeneruotas failo pavadinimas"
-        ><NInput
-          v-model:value="model.nameValue"
-          placeholder=""
-          :disabled="isNameEditDisabled"
-        ></NInput
-      ></NFormItem>
+      <NFormItem label="Sugeneruotas failo pavadinimas">
+        <NInputGroup>
+          <NInput
+            v-model:value="nameValue"
+            :style="{ width: '85%' }"
+            placeholder=""
+            :disabled="fileNameEditDisabled"
+          ></NInput>
+          <NInput
+            placeholder=""
+            disabled
+            :value="fileExtension"
+            :style="{ width: '15%' }"
+          ></NInput>
+        </NInputGroup>
+      </NFormItem>
 
       <NButton
         :disabled="!contentTypeOptions"
@@ -92,9 +101,9 @@
 </template>
 
 <script setup lang="ts">
+import type { FormRules, UploadFileInfo } from "naive-ui";
+
 import { Archive24Regular } from "@vicons/fluent";
-import { DocumentAdd24Regular } from "@vicons/fluent";
-import { Inertia } from "@inertiajs/inertia";
 import {
   NButton,
   NDatePicker,
@@ -102,56 +111,61 @@ import {
   NFormItem,
   NIcon,
   NInput,
+  NInputGroup,
   NModal,
   NP,
   NSelect,
-  NTag,
+  // NTag,
   NText,
   NTreeSelect,
   NUpload,
   NUploadDragger,
   useMessage,
 } from "naive-ui";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 
 const props = defineProps<{
-  button: any;
-  contentTypeOptions: Record<string, any>[];
-  // keywords: Record<string, any>[];
-  contentModel?: Record<string, any>;
-  institution?: Record<string, any>;
-  objectOptions?: Record<string, any>[];
-  type?: string;
-  showObjectName?: boolean;
+  button: any; // yes
+  contentModel?: Record<string, any>; // yes
+  contentModelOptions?: Record<string, any>[];
+  contentTypeOptions: Record<string, any>[]; // yes
+  relatedObjectName?: string;
+  // keywords: Record<string, any>[]; // maybe
+
+  // If some options are prespecified, they are automatically included in the request model
+  prespecifiedType?: string;
 }>();
 
 const showModal = ref(false);
 const loading = ref(false);
+const fileNameEditDisabled = ref(true);
 const message = useMessage();
 
 const originalFileName = ref("");
+const fileExtension = ref("");
+const nameValue = ref(null);
 
 const formRef = ref(null);
 const model = useForm({
-  typeValue: props.type ?? null,
-  keywordsValue: [],
-  datetimeValue: new Date().getTime(),
-  uploadValue: null,
+  datetimeValue: null,
   contentModel: props.contentModel ?? null,
-  nameValue: null,
+  keywordsValue: [],
+  typeValue: props.prespecifiedType ?? null,
+  uploadValue: null,
 });
 
 const fileObjectName = computed(() => {
   return `${props.contentModel?.title}`;
 });
 
-const rules = {
+const rules: FormRules = {
   typeValue: [
     {
       required: true,
       message: "Pasirinkite tipą",
+      trigger: ["blur", "change"],
     },
   ],
   // keywordsValue: [
@@ -164,96 +178,18 @@ const rules = {
     {
       required: true,
       message: "Pasirinkite dokumento datą",
+      trigger: ["blur", "change"],
+      type: "number",
     },
   ],
   uploadValue: [
     {
       required: true,
       message: "Įkelkite failą",
+      trigger: ["blur", "change"],
+      type: "array",
     },
   ],
-};
-
-const handleUploadChange = (files) => {
-  model.uploadValue = files.fileList;
-  originalFileName.value = files.fileList[0].name;
-  generateName();
-};
-
-const handleValidateClick = (e) => {
-  e.preventDefault();
-  formRef.value?.validate((errors) => {
-    if (!errors) {
-      loading.value = true;
-
-      Inertia.post(route("sharepoint.addFile"), model, {
-        onSuccess: () => {
-          console.log("success");
-          showModal.value = false;
-          model.reset();
-          loading.value = false;
-        },
-        onError: () => {
-          console.log("error");
-          loading.value = false;
-        },
-        forceFormData: true,
-        preserveState: true,
-      });
-    }
-  });
-};
-
-const isNameEditDisabled = computed(() => {
-  // check if model.nameValue is empty
-  if (model.nameValue === null) {
-    return true;
-  }
-
-  // check if model.typeValue is protokolas
-  if (model.typeValue === "Protokolai") {
-    return true;
-  }
-
-  return false;
-});
-
-// generate name for this file...
-const generateName = () => {
-  if (originalFileName.value === "" || model.typeValue === null) {
-    return;
-  }
-
-  // get file extension from original file name
-  const fileExtension = originalFileName.value.split(".").pop();
-
-  const datetimeValue = model.datetimeValue;
-  // add +1 day to datetimeValue
-  const datetimeValuePlusOneDay = new Date(datetimeValue);
-  datetimeValuePlusOneDay.setDate(datetimeValuePlusOneDay.getDate() + 1);
-
-  // make date format like 2021-01-01
-  const dateFormatted = new Date(datetimeValuePlusOneDay)
-    .toISOString()
-    .split("T")[0];
-
-  // if posėdis
-  // if (props.contentModel.contentTypes.some((x) => x.title === "Posėdis")) {
-  //   model.nameValue = `${dateFormatted} ${props.institution.name} posėdžio ${model.typeValue}.${fileExtension}`;
-  // }
-
-  // if other, keep same name
-  model.nameValue = originalFileName.value;
-};
-
-const onTypeChange = (value) => {
-  if (value === "Protokolai") {
-    generateName();
-  } else model.nameValue = originalFileName.value;
-};
-
-const onDateChange = () => {
-  generateName();
 };
 
 const beforeUpload = async (data) => {
@@ -269,7 +205,105 @@ const beforeUpload = async (data) => {
   return true;
 };
 
+const handleUploadChange = ({
+  fileList,
+}: {
+  fileList: Array<UploadFileInfo>;
+}) => {
+  model.uploadValue = fileList;
+
+  let fileNameParts = fileList[0].name.split(".");
+
+  // Remove the last element of the array, which is the file extension
+  fileExtension.value = `.${fileNameParts.pop()}`;
+
+  // Use the join() method to join the remaining parts of the file name together
+  let fileFullName = fileNameParts.join(".");
+
+  originalFileName.value = fileFullName;
+};
+
+const handleValidateClick = (e) => {
+  e.preventDefault();
+  console.log(model.uploadValue);
+  formRef.value?.validate((errors) => {
+    if (!errors) {
+      loading.value = true;
+      // remove watcher, to don't change the seen file name
+      unwatch();
+      model
+        .transform((data) => ({
+          ...data,
+          nameValue: nameValue.value + fileExtension.value,
+        }))
+        .post(route("sharepoint.addFile"), {
+          onSuccess: () => {
+            console.log("success");
+            showModal.value = false;
+            model.reset();
+            loading.value = false;
+          },
+          onError: () => {
+            console.log("error");
+            loading.value = false;
+          },
+          forceFormData: true,
+          preserveState: true,
+        });
+    }
+  });
+};
+
+const unwatch = watch(model, (newModel) => {
+  nameValue.value = generateNameForFile();
+});
+
+// generate name for this file...
+const generateNameForFile = () => {
+  fileNameEditDisabled.value = true;
+
+  if (originalFileName.value === "" || model.typeValue === null) {
+    return null;
+  }
+
+  let date =
+    model?.datetimeValue === null ? new Date() : new Date(model.datetimeValue);
+
+  let dateFormatter = new Intl.DateTimeFormat("lt-LT", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+
+  // if posėdis
+  if (
+    props.contentModel.modelTypes.some((x) => x.title === "Posėdis") &&
+    model.typeValue === "Protokolai"
+  ) {
+    let relatedObjectName =
+      props.relatedObjectName === undefined
+        ? ""
+        : genitivize(props.relatedObjectName) + " ";
+
+    return `${dateFormatter.format(
+      date
+    )} ${relatedObjectName}posėdžio protokolas`;
+  }
+
+  // if other, keep same name
+  fileNameEditDisabled.value = false;
+  return originalFileName.value;
+};
+
 const onObjectChange = (value) => {
+  if (model.contentModel === null) {
+    return;
+  }
+
   model.contentModel.id = value;
+};
+
+const genitivize = (name: string) => {
+  return name.replace(/a$/, "os").replace(/as$/, "o").replace(/iai$/, "ių");
 };
 </script>

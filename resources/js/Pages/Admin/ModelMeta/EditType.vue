@@ -12,7 +12,6 @@
       <NMessageProvider>
         <FileUploader
           :button="FileUploaderBasicButton"
-          :show-object-name="false"
           :content-type-options="contentTypeOptions"
           :content-model="contentModel"
         ></FileUploader>

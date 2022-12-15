@@ -91,10 +91,9 @@
           <NMessageProvider>
             <FileUploader
               :button="FileUploaderBasicButton"
-              :show-object-name="false"
               :content-type-options="contentTypeOptions"
               :content-model="contentModel"
-              :institution="question?.institution"
+              :related-object-name="question.institution.name"
             ></FileUploader>
           </NMessageProvider>
         </div>
@@ -187,6 +186,6 @@ const contentModel = computed(() => ({
   id: props.doing.id,
   title: props.doing.title,
   type: "App\\Models\\Doing",
-  // contentTypes: props.doing.types,
+  modelTypes: props.doing.types,
 }));
 </script>

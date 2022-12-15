@@ -1,13 +1,11 @@
 <template>
   <NMessageProvider>
     <FileUploader
-      :show-object-name="true"
-      :content-type-options="contentTypeOptions"
-      :content-model="contentModel"
-      :object-options="objectOptions"
-      :institution="dutyInstitution"
       :button="MeetingButtonTemplate"
-      :type="'Protokolai'"
+      :content-model="contentModel"
+      :content-model-options="objectOptions"
+      :content-type-options="contentTypeOptions"
+      :prespecified-type="'Protokolai'"
     ></FileUploader>
   </NMessageProvider>
 </template>
