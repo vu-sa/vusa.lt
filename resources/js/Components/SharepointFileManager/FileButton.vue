@@ -1,7 +1,7 @@
 <template>
   <div class="w-48">
     <button
-      class="grid h-48 grid-rows-[7fr_4fr] items-center rounded-lg border shadow-sm transition hover:shadow-md focus:outline-none focus:ring focus:ring-vusa-yellow dark:border-zinc-900 dark:bg-zinc-900 dark:focus:ring-vusa-red"
+      class="grid h-48 w-full grid-rows-[7fr_4fr] items-center rounded-lg border shadow-sm transition hover:shadow-md focus:outline-none focus:ring focus:ring-vusa-yellow dark:border-zinc-900 dark:bg-zinc-900 dark:focus:ring-vusa-red"
       :class="gradientClasses"
       @click="$emit('fileButtonClick')"
     >

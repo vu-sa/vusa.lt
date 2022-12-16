@@ -41,7 +41,7 @@
       <ShowActivityLog :activities="question.activities" />
     </template>
 
-    <NTabs animated type="card" default-value="Veiklos">
+    <NTabs animated type="line" default-value="Veiklos">
       <NTabPane name="Aprašymas">
         <p>{{ question.description }}</p>
       </NTabPane>

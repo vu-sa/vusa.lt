@@ -81,7 +81,7 @@
       </div>
     </template>
 
-    <NTabs default-value="Dokumentai" animated type="card">
+    <NTabs default-value="Dokumentai" animated type="line">
       <NTabPane name="Aprašymas">
         <div v-if="doing.tasks.length > 0" class="m-4 h-fit">
           <h2>Užduotys</h2>
