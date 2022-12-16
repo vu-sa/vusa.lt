@@ -38,3 +38,17 @@ const getRelativeTime = (timestamp: string) => {
 };
 
 export default getRelativeTime;
+
+export const getDaysDifference = (timestamp: string) => {
+  const notificationDateTime = new Date(timestamp);
+
+  // const rtf = new Intl.RelativeTimeFormat("lt", {
+  //   numeric: "auto",
+  // });
+
+  const daysDifference = Math.round(
+    (new Date().getTime() - notificationDateTime.getTime()) / DAY_MILISECONDS
+  );
+
+  return daysDifference;
+};

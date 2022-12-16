@@ -1,5 +1,8 @@
 <template>
-  <QuickActionButton :icon="PeopleTeamAdd24Filled" @click="showDoingForm = true"
+  <QuickActionButton
+    :button-type="buttonType"
+    :icon="PeopleTeamAdd24Filled"
+    @click="showDoingForm = true"
     >Pranešti apie artėjantį posėdį</QuickActionButton
   >
   <NModal
@@ -151,6 +154,7 @@ import QuickActionButton from "@/Components/Buttons/QActButtons/QuickActionButto
 const props = defineProps<{
   dutyInstitution: Record<string, any>;
   doingTypes: any;
+  buttonType: any;
 }>();
 
 const showDoingForm = ref(false);

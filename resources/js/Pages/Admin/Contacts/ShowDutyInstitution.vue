@@ -39,6 +39,11 @@
     </template>
     <div class="mb-4 flex min-h-[16em] gap-4 py-2">
       <NewMeetingButton
+        :button-type="
+          getDaysDifference(dutyInstitution.lastMeetingDoing.date) > 30
+            ? 'primary'
+            : 'default'
+        "
         :duty-institution="dutyInstitution"
         :doing-types="doingTypes"
       />
@@ -279,7 +284,9 @@ import ModelsDocumentViewer from "@/Components/SharepointFileManager/ModelsDocum
 import NewMeetingButton from "@/Components/Buttons/QActButtons/NewMeetingButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import StatusTag from "@/Components/Tags/StatusTag.vue";
-import getRelativeTime from "@/Composables/getRelativeTime";
+import getRelativeTime, {
+  getDaysDifference,
+} from "@/Composables/getRelativeTime";
 
 defineOptions({ layout: AdminLayout });
 
