@@ -1,5 +1,50 @@
 <template>
-  <PageContent :title="doing.title">
+  <PageContent :title="doing.title" :breadcrumb="true">
+    <template #above-header>
+      <NBreadcrumb v-if="question" class="mb-4 w-full">
+        <NBreadcrumbItem @click="Inertia.get(route('dashboard'))">
+          <div>Pradinis</div>
+        </NBreadcrumbItem>
+        <NBreadcrumbItem
+          @click="
+            Inertia.get(route('dutyInstitutions.show', question.institution.id))
+          "
+        >
+          <div>
+            <!-- <NIcon
+              class="mr-2"
+              size="16"
+              :component="PeopleTeam32Filled"
+            ></NIcon> -->
+            {{ question.institution.name }}
+          </div>
+        </NBreadcrumbItem>
+        <NBreadcrumbItem
+          @click="
+            Inertia.visit(
+              route('questions.show', {
+                question: question.id,
+              })
+            )
+          "
+        >
+          <div>
+            <!-- <NIcon
+              class="mr-2"
+              size="16"
+              :component="BookQuestionMark20Filled"
+            /> -->
+            {{ question.title }}
+          </div>
+        </NBreadcrumbItem>
+        <NBreadcrumbItem
+          ><div>
+            <!-- <NIcon class="mr-2" size="16" :component="Sparkle20Filled" /> -->
+            {{ doing.title }}
+          </div></NBreadcrumbItem
+        >
+      </NBreadcrumb>
+    </template>
     <template #after-heading>
       <StatusTag :status="doing.status" />
       <NTag v-if="!question" size="small" round :bordered="false" type="warning"
@@ -34,48 +79,6 @@
           ></DoingForm>
         </NModal>
       </div>
-    </template>
-    <template #below-header>
-      <NBreadcrumb v-if="question" class="mb-4 w-full">
-        <NBreadcrumbItem
-          @click="
-            Inertia.get(route('dutyInstitutions.show', question.institution.id))
-          "
-        >
-          <div>
-            <NIcon
-              class="mr-2"
-              size="16"
-              :component="PeopleTeam32Filled"
-            ></NIcon
-            >{{ question.institution.name }}
-          </div>
-        </NBreadcrumbItem>
-        <NBreadcrumbItem
-          @click="
-            Inertia.visit(
-              route('questions.show', {
-                question: question.id,
-              })
-            )
-          "
-        >
-          <div>
-            <NIcon
-              class="mr-2"
-              size="16"
-              :component="BookQuestionMark20Filled"
-            />{{ question.title }}
-          </div>
-        </NBreadcrumbItem>
-        <NBreadcrumbItem
-          ><div>
-            <NIcon class="mr-2" size="16" :component="Sparkle20Filled" />{{
-              doing.title
-            }}
-          </div></NBreadcrumbItem
-        >
-      </NBreadcrumb>
     </template>
 
     <NTabs default-value="Dokumentai" animated type="card">

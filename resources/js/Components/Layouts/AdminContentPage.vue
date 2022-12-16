@@ -2,17 +2,20 @@
   <Head
     ><title v-if="title">{{ title }}</title></Head
   >
+  <!-- Usually maybe for breadcrumb -->
+  <slot name="above-header" />
+  <NDivider v-if="breadcrumb" />
 
   <header
     class="flex max-w-7xl flex-row flex-wrap items-center gap-4 overflow-visible"
-    :class="{ 'pb-4': title }"
+    :class="{ 'pb-2': title }"
   >
     <Link v-if="!isIndex && backUrl" :href="backUrl">
       <div class="flex">
         <NIcon size="28" :component="ArrowCircleLeft32Regular" /></div
     ></Link>
     <h1 class="mb-0">
-      {{ title }}
+      <slot name="title">{{ title }}</slot>
     </h1>
     <Link v-if="isIndex && createUrl" :href="createUrl">
       <div class="flex">
@@ -51,6 +54,7 @@ import route from "ziggy-js";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 defineProps<{
+  breadcrumb?: true;
   createUrl?: string;
   backUrl?: string;
   headerDivider?: boolean;

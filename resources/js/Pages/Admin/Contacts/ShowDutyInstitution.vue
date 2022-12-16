@@ -1,20 +1,43 @@
 <template>
-  <PageContent :title="dutyInstitution.name">
+  <PageContent :title="dutyInstitution.name" breadcrumb>
+    <template #above-header>
+      <NBreadcrumb class="mb-4 w-full">
+        <NBreadcrumbItem @click="Inertia.get(route('dashboard'))">
+          <div>
+            <NIcon class="mr-2" size="16" :component="Home24Regular"> </NIcon>
+
+            Pradinis
+          </div>
+        </NBreadcrumbItem>
+        <NBreadcrumbItem
+          @click="Inertia.get(route('dutyInstitutions.show', institution.id))"
+          ><div>
+            <NIcon class="mr-2" size="16" :component="PeopleTeam32Filled">
+            </NIcon
+            >{{ dutyInstitution.name }}
+          </div>
+        </NBreadcrumbItem>
+      </NBreadcrumb>
+    </template>
     <template #below-header>
       <div
         v-if="dutyInstitution.lastMeetingDoing"
-        class="flex flex-row items-center"
+        class="mb-2 flex flex-row items-center"
       >
         <span>Paskutinis posėdis vyko:</span>
         <NIcon class="mx-1" :component="CalendarClock24Filled"></NIcon>
 
-        <span class="font-bold">{{
-          getRelativeTime(dutyInstitution.lastMeetingDoing.date)
-        }}</span
+        <a
+          target="_blank"
+          :href="route('doings.show', dutyInstitution.lastMeetingDoing.id)"
+        >
+          <span class="font-bold">{{
+            getRelativeTime(dutyInstitution.lastMeetingDoing.date)
+          }}</span> </a
         >.
       </div>
     </template>
-    <div class="mb-4 flex gap-4 py-2">
+    <div class="mb-4 flex min-h-[16em] gap-4 py-2">
       <NewMeetingButton
         :duty-institution="dutyInstitution"
         :doing-types="doingTypes"
@@ -216,10 +239,14 @@ import {
   BookQuestionMark20Filled,
   CalendarClock24Filled,
   Edit20Filled,
+  Home24Regular,
+  PeopleTeam32Filled,
 } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import { Link, useForm } from "@inertiajs/inertia-vue3";
 import {
+  NBreadcrumb,
+  NBreadcrumbItem,
   NButton,
   NCollapse,
   NCollapseItem,

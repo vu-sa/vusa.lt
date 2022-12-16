@@ -1,34 +1,46 @@
 <template>
-  <PageContent :title="question.title">
-    <template #aside-header>
-      <ShowActivityLog :activities="question.activities" />
+  <PageContent :title="question.title" breadcrumb>
+    <template #title>
+      <span class="inline-flex items-center"
+        ><NIcon class="mr-2" :component="BookQuestionMark20Filled" />
+        {{ question.title }}</span
+      >
     </template>
-    <template #below-header>
+    <template #above-header>
       <NBreadcrumb class="mb-4 w-full">
+        <NBreadcrumbItem @click="Inertia.get(route('dashboard'))">
+          <div>
+            <NIcon class="mr-2" size="16" :component="Home24Regular"> </NIcon>
+
+            Pradinis
+          </div>
+        </NBreadcrumbItem>
         <NBreadcrumbItem
           @click="
             Inertia.get(route('dutyInstitutions.show', question.institution.id))
           "
           ><div>
-            <NIcon
-              class="mr-2"
-              size="16"
-              :component="PeopleTeam32Filled"
-            ></NIcon
+            <NIcon class="mr-2" size="16" :component="PeopleTeam32Filled">
+            </NIcon
             >{{ question.institution.name }}
-          </div></NBreadcrumbItem
-        >
+          </div>
+        </NBreadcrumbItem>
         <NBreadcrumbItem>
           <div>
             <NIcon
               class="mr-2"
               size="16"
               :component="BookQuestionMark20Filled"
-            />{{ question.title }}
+            />
+            {{ question.title }}
           </div>
         </NBreadcrumbItem>
       </NBreadcrumb>
     </template>
+    <template #aside-header>
+      <ShowActivityLog :activities="question.activities" />
+    </template>
+
     <NTabs animated type="card" default-value="Veiklos">
       <NTabPane name="Aprašymas">
         <p>{{ question.description }}</p>
@@ -79,6 +91,7 @@ import { trans as $t } from "laravel-vue-i18n";
 import {
   ArrowTurnRight20Filled,
   BookQuestionMark20Filled,
+  Home24Regular,
   PeopleTeam32Filled,
   Sparkle20Filled,
 } from "@vicons/fluent";
