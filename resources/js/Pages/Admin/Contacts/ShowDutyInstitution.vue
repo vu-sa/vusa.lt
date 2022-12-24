@@ -29,10 +29,10 @@
 
         <a
           target="_blank"
-          :href="route('doings.show', dutyInstitution.lastMeetingDoing.id)"
+          :href="route('doings.show', dutyInstitution.lastMeetingDoing?.id)"
         >
           <span class="font-bold">{{
-            getRelativeTime(dutyInstitution.lastMeetingDoing.date)
+            getRelativeTime(dutyInstitution.lastMeetingDoing?.date)
           }}</span> </a
         >.
       </div>
@@ -40,7 +40,7 @@
     <div class="mb-4 flex min-h-[16em] gap-4 py-2">
       <NewMeetingButton
         :button-type="
-          getDaysDifference(dutyInstitution.lastMeetingDoing.date) > 30
+          getDaysDifference(dutyInstitution.lastMeetingDoing?.date) > 30
             ? 'primary'
             : 'default'
         "
@@ -95,10 +95,10 @@
           </NCollapse>
         </div>
       </NTabPane>
-      <NTabPane name="Klausimai">
+      <NTabPane name="Svarstomi klausimai">
         <template #tab>
           <div class="flex gap-2">
-            {{ $t("Klausimai") }}
+            {{ $t("Svarstomi klausimai") }}
             <NTag size="small" round>
               {{ dutyInstitution.questions.length }}
             </NTag>
@@ -106,7 +106,7 @@
         </template>
         <div class="main-card">
           <div class="mb-2 flex items-center gap-4">
-            <h2 class="mb-0">Klausimai</h2>
+            <h2 class="mb-0">Svarstomi klausimai</h2>
             <NButton round size="tiny" secondary @click="showModal = true"
               ><template #icon
                 ><NIcon :component="BookQuestionMark20Filled" /></template

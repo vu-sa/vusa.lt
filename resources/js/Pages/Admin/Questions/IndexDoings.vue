@@ -45,7 +45,7 @@ const columns = [
     key: "status",
   },
   {
-    title: "Klausimai",
+    title: "Svarstomi klausimai",
     key: "questions",
     render(row) {
       return row.questions.map((question) => (
