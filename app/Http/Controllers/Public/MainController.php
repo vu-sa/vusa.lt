@@ -41,10 +41,6 @@ class MainController extends Controller
 {
 	public function __construct()
 	{
-		if (request()->lang) {
-			App::setLocale(request()->lang);
-		}
-
 		// get subdomain if exists
 		$host = Request::server('HTTP_HOST');
 
