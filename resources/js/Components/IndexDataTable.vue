@@ -16,10 +16,11 @@
   </NDataTable>
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
 import { ArrowForward20Filled, Edit20Filled } from "@vicons/fluent";
 import { DataTableColumns, NButton, NDataTable, NIcon } from "naive-ui";
 import { Inertia } from "@inertiajs/inertia";
+import { Link } from "@inertiajs/inertia-vue3";
 import { computed, h, reactive, ref } from "vue";
 import route from "ziggy-js";
 
@@ -44,59 +45,32 @@ const columnsWithActions = computed(() => {
       key: "actions",
       width: 150,
       render(row) {
-        return h(
-          "div",
-          {
-            class: "flex gap-1",
-          },
-          {
-            default: () => [
-              props.showRoute
-                ? h(
-                    NButton,
-                    {
-                      size: "small",
-                      tag: "a",
-                      href: route(props.showRoute, row.id),
-                    },
-                    {
-                      icon: () =>
-                        h(NIcon, {
-                          component: ArrowForward20Filled,
-                        }),
-                    }
-                  )
-                : null,
-              // conditionally render the edit button
-              props.editRoute
-                ? h(
-                    NButton,
-                    {
-                      size: "small",
-                      tag: "a",
-                      href: route(props.editRoute, row.id),
-                    },
-                    {
-                      icon: () =>
-                        h(NIcon, {
-                          component: Edit20Filled,
-                        }),
-                    }
-                  )
-                : null,
-
-              // conditionally render the destroy button
-              [
-                props.destroyRoute
-                  ? h(DeleteModelButton, {
-                      size: "small",
-                      form: row,
-                      modelRoute: props.destroyRoute,
-                    })
-                  : null,
-              ],
-            ],
-          }
+        return (
+          <div class="flex gap-1">
+            {props.showRoute ? (
+              <Link href={route(props.showRoute, row.id)}>
+                <NButton size="small">
+                  {{
+                    icon: () => <NIcon component={ArrowForward20Filled} />,
+                  }}
+                </NButton>
+              </Link>
+            ) : null}
+            {props.editRoute ? (
+              <Link href={route(props.editRoute, row.id)}>
+                <NButton size="small">
+                  {{ icon: () => <NIcon component={Edit20Filled} /> }}
+                </NButton>
+              </Link>
+            ) : null}
+            {props.destroyRoute ? (
+              <DeleteModelButton
+                size="small"
+                form={row}
+                modelRoute={props.destroyRoute}
+              />
+            ) : null}
+          </div>
         );
       },
     },
