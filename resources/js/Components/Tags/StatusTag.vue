@@ -22,7 +22,7 @@ const statusType = (status) => {
     case "Atmestas":
       return "error";
     default:
-      return "info";
+      return "error";
   }
 };
 </script>

@@ -10,13 +10,13 @@ use Illuminate\Database\Eloquent\Collection;
 
 class TaskCreator
 {
-    public function createAutomaticTasks(Doing $doing) {
-        $this->createMeetingDoingTasks($doing);
+    public static function createAutomaticTasks(Doing $doing) {
+        self::createMeetingDoingTasks($doing);
     }
 
     // * Create tasks for users, when creating a doing with meeting type
     
-    private function createMeetingDoingTasks(Doing $doing)
+    private static function createMeetingDoingTasks(Doing $doing)
     { 
         if ($doing->types->doesntContain(function ($type) {
             return $type->title === 'Posėdis';

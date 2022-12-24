@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Doing;
 use App\Http\Controllers\Controller as Controller;
+use App\Services\DoingStatusManager;
 use App\Services\SharepointAppGraph;
 use App\Services\TaskCreator;
 use Illuminate\Http\Request;
@@ -70,13 +71,13 @@ class DoingController extends Controller
         ]);
 
         $doing = Doing::create
-            ($request->only('title') + ['status' => $request->status, 'date' => $request->date ?? now()]);
+            ($request->only('title') + ['status' => 'Sukurtas', 'date' => $request->date ?? now()]);
         
         $doing->types()->sync($request->type_id);
         $doing->questions()->sync($request->question_id);
 
-        $taskCreator = new TaskCreator();
-        $taskCreator->createAutomaticTasks($doing);
+        DoingStatusManager::generateStatusForNewDoing($doing);
+        TaskCreator::createAutomaticTasks($doing);
 
         return redirect()->route('doings.show', $doing)->with('success', 'Veiksmas sukurtas!');
     }
