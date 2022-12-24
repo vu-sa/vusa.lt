@@ -9,12 +9,18 @@
         <NIcon :size="20" :component="Cookies24Regular"></NIcon>
 
         <span>
-          Naudojame seanso slapukus, kurie yra privalomi tinklalapio veikimui.
+          {{
+            $t(
+              "Naudojame seanso slapukus, kurie yra privalomi tinklalapio veikimui."
+            )
+          }}
         </span>
       </p>
       <div class="flex gap-2">
         <Link href="/privatumas">
-          <NButton size="small" round secondary>Privatumo politika</NButton>
+          <NButton size="small" round secondary>{{
+            $t("Privatumo politika")
+          }}</NButton>
         </Link>
 
         <NButton
@@ -23,7 +29,7 @@
           secondary
           type="warning"
           @click="$emit('okayCookieConsent')"
-          >Gerai</NButton
+          >{{ $t("Gerai") }}</NButton
         >
       </div>
     </div>
@@ -31,6 +37,7 @@
 </template>
 
 <script setup lang="ts">
+import { trans as $t } from "laravel-vue-i18n";
 import { Cookies24Regular } from "@vicons/fluent";
 import { Link } from "@inertiajs/inertia-vue3";
 import { NButton, NIcon } from "naive-ui";
