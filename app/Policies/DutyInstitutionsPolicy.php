@@ -18,7 +18,7 @@ class DutyInstitutionsPolicy
      */
     public function viewAny(User $user)
     {
-        return $user->can('create unit duties');
+        return $user->can('create unit duties') || $user->can('create institution content');
     }
 
     /**
@@ -30,7 +30,17 @@ class DutyInstitutionsPolicy
      */
     public function view(User $user, DutyInstitution $dutyInstitution)
     {
-        return $dutyInstitution->users->contains($user);
+        // If an user is part of the institution
+        if ($dutyInstitution->users->contains($user)) {
+            return true;
+        }
+
+        // If the user belongs to same padalinys as the institution
+        if ($user->padaliniai()->contains($dutyInstitution->padalinys)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -41,7 +51,7 @@ class DutyInstitutionsPolicy
      */
     public function create(User $user)
     {
-        return $user->can('create unit duties');
+        return $user->can('create unit duties') || $user->can('create institution content');
     }
 
     /**
