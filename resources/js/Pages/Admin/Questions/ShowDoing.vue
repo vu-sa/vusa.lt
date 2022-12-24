@@ -2,22 +2,14 @@
   <PageContent :title="doing.title" :breadcrumb="true">
     <template #above-header>
       <NBreadcrumb v-if="question" class="mb-4 w-full">
-        <NBreadcrumbItem @click="Inertia.get(route('dashboard'))">
-          <div>Pradinis</div>
-        </NBreadcrumbItem>
-        <NBreadcrumbItem
-          @click="
-            Inertia.get(route('dutyInstitutions.show', question.institution.id))
-          "
-        >
-          <div>
-            <!-- <NIcon
-              class="mr-2"
-              size="16"
-              :component="PeopleTeam32Filled"
-            ></NIcon> -->
-            {{ question.institution.name }}
-          </div>
+        <NBreadcrumbItem>
+          <NDropdown
+            placement="bottom-start"
+            :options="breadcrumbOptions"
+            @select="handleBreadcrumbDropdownSelect"
+          >
+            <span>...</span>
+          </NDropdown>
         </NBreadcrumbItem>
         <NBreadcrumbItem
           @click="
@@ -29,17 +21,17 @@
           "
         >
           <div>
-            <!-- <NIcon
+            <NIcon
               class="mr-2"
               size="16"
               :component="BookQuestionMark20Filled"
-            /> -->
+            />
             {{ question.title }}
           </div>
         </NBreadcrumbItem>
         <NBreadcrumbItem
           ><div>
-            <!-- <NIcon class="mr-2" size="16" :component="Sparkle20Filled" /> -->
+            <NIcon class="mr-1" size="16" :component="Sparkle20Filled" />
             {{ doing.title }}
           </div></NBreadcrumbItem
         >
@@ -142,6 +134,7 @@ import { trans as $t } from "laravel-vue-i18n";
 import {
   BookQuestionMark20Filled,
   DocumentEdit24Regular,
+  Home24Regular,
   PeopleTeam32Filled,
   Sparkle20Filled,
 } from "@vicons/fluent";
@@ -150,6 +143,7 @@ import {
   NBreadcrumb,
   NBreadcrumbItem,
   NButton,
+  NDropdown,
   NIcon,
   NMessageProvider,
   NModal,
@@ -157,7 +151,7 @@ import {
   NTabs,
   NTag,
 } from "naive-ui";
-import { computed, ref } from "vue";
+import { computed, h, ref } from "vue";
 import route from "ziggy-js";
 
 import { contentTypeOptions, documentTemplate } from "@/Composables/someTypes";
@@ -191,4 +185,40 @@ const contentModel = computed(() => ({
   type: "App\\Models\\Doing",
   modelTypes: props.doing.types,
 }));
+
+const renderIcon = (icon) => {
+  return () => {
+    return h(NIcon, null, {
+      default: () => h(icon),
+    });
+  };
+};
+
+const breadcrumbOptions = [
+  {
+    label: "Pradinis",
+    key: "dashboard",
+    icon: renderIcon(Home24Regular),
+  },
+  {
+    label: props.question?.institution.name,
+    key: "institution",
+    icon: renderIcon(PeopleTeam32Filled),
+  },
+];
+
+const handleBreadcrumbDropdownSelect = (key) => {
+  switch (key) {
+    case "dashboard":
+      Inertia.visit(route("dashboard"));
+      break;
+    case "institution":
+      Inertia.visit(
+        route("dutyInstitutions.show", props.question.institution.id)
+      );
+      break;
+    default:
+      break;
+  }
+};
 </script>
