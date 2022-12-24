@@ -20,6 +20,11 @@ class Question extends Model
 
     protected $guarded = [];
 
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()->logOnly(['*'])->logOnlyDirty();
+    }
+
     public function institution()
     {
         return $this->belongsTo(DutyInstitution::class);
@@ -38,10 +43,5 @@ class Question extends Model
     public function users()
     {
         return $this->hasManyDeepFromRelations($this->institution(), (new DutyInstitution)->duties(), (new Duty())->users());
-    }
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()->logOnly(['*']);
     }
 }
