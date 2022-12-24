@@ -2,11 +2,11 @@
 
 namespace App\Policies;
 
-use App\Models\Question;
+use App\Models\Relationship;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class QuestionPolicy
+class RelationshipPolicy
 {
     use HandlesAuthorization;
 
@@ -18,19 +18,19 @@ class QuestionPolicy
      */
     public function viewAny(User $user)
     {
-        return false;
+        //
     }
 
     /**
      * Determine whether the user can view the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\Question  $question
+     * @param  \App\Models\Relationship  $relationship
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Question $question)
+    public function view(User $user, Relationship $relationship)
     {
-        return $question->users->contains($user);
+        //
     }
 
     /**
@@ -41,21 +41,17 @@ class QuestionPolicy
      */
     public function create(User $user)
     {
-        if (!request()->has('question_id')) {
-            return false;
-        }
-
-        return Question::find(request()->question_id)->users->contains($user);
+        //
     }
 
     /**
      * Determine whether the user can update the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\Question  $question
+     * @param  \App\Models\Relationship  $relationship
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Question $question)
+    public function update(User $user, Relationship $relationship)
     {
         //
     }
@@ -64,10 +60,10 @@ class QuestionPolicy
      * Determine whether the user can delete the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\Question  $question
+     * @param  \App\Models\Relationship  $relationship
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Question $question)
+    public function delete(User $user, Relationship $relationship)
     {
         //
     }
@@ -76,10 +72,10 @@ class QuestionPolicy
      * Determine whether the user can restore the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\Question  $question
+     * @param  \App\Models\Relationship  $relationship
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function restore(User $user, Question $question)
+    public function restore(User $user, Relationship $relationship)
     {
         //
     }
@@ -88,10 +84,10 @@ class QuestionPolicy
      * Determine whether the user can permanently delete the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\Question  $question
+     * @param  \App\Models\Relationship  $relationship
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function forceDelete(User $user, Question $question)
+    public function forceDelete(User $user, Relationship $relationship)
     {
         //
     }

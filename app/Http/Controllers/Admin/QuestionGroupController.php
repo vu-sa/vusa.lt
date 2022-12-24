@@ -9,6 +9,11 @@ use Inertia\Inertia;
 
 class QuestionGroupController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(QuestionGroup::class, 'questionGroup');
+    }
+    
     /**
      * Display a listing of the resource.
      *

@@ -15,9 +15,12 @@ use App\Models\Page;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Question;
+use App\Models\QuestionGroup;
+use App\Models\Relationship;
 use App\Models\SaziningaiExam;
 use App\Models\SaziningaiExamFlow;
 use App\Models\SaziningaiExamObserver;
+use App\Models\Task;
 use App\Models\Type;
 use App\Policies\BannersPolicy;
 use App\Models\User;
@@ -30,12 +33,15 @@ use App\Policies\MainPagePolicy;
 use App\Policies\NavigationPolicy;
 use App\Policies\NewsPolicy;
 use App\Policies\QuestionPolicy;
+use App\Policies\QuestionGroupPolicy;
 use App\Policies\PermissionsPolicy;
 use App\Policies\RolesPolicy;
 use App\Policies\PagesPolicy;
+use App\Policies\RelationshipPolicy;
 use App\Policies\SaziningaiExamFlowsPolicy;
 use App\Policies\SaziningaiExamObserversPolicy;
 use App\Policies\SaziningaiExamPolicy;
+use App\Policies\TaskPolicy;
 use App\Policies\TypesPolicy;
 use App\Policies\UserPolicy;
 use Illuminate\Support\Facades\Gate;
@@ -59,12 +65,15 @@ class AuthServiceProvider extends ServiceProvider
         News::class => NewsPolicy::class,
         Navigation::class => NavigationPolicy::class,
         Question::class => QuestionPolicy::class,
+        QuestionGroup::class => QuestionGroupPolicy::class,
         Page::class => PagesPolicy::class,
         Permission::class => PermissionsPolicy::class,
         Role::class => RolesPolicy::class,
+        Relationship::class => RelationshipPolicy::class,
         SaziningaiExam::class => SaziningaiExamPolicy::class,
         SaziningaiExamFlow::class => SaziningaiExamFlowsPolicy::class,
         SaziningaiExamObserver::class => SaziningaiExamObserversPolicy::class,
+        Task::class => TaskPolicy::class,
         Type::class => TypesPolicy::class,
         User::class => UserPolicy::class,
     ];

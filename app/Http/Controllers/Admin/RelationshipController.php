@@ -14,6 +14,12 @@ use Illuminate\Support\Facades\DB;
 
 class RelationshipController extends Controller
 {
+    
+    public function __construct()
+    {
+        $this->authorizeResource(Relationship::class, 'relationship');
+    }
+    
     /**
      * Display a listing of the resource.
      *
