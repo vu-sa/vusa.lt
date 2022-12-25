@@ -30,7 +30,13 @@ class QuestionPolicy
      */
     public function view(User $user, Question $question)
     {
-        return $question->users->contains($user);
+        if ($question->users->contains($user)) {
+            return true;
+        }
+
+        if ($user->padaliniai()->contains($question->institution->padalinys)) {
+            return true;
+        }
     }
 
     /**
@@ -41,11 +47,17 @@ class QuestionPolicy
      */
     public function create(User $user)
     {
+        if ($user->can('create institution content')) {
+            return true;
+        }
+        
         if (!request()->has('question_id')) {
             return false;
         }
 
-        return Question::find(request()->question_id)->users->contains($user);
+        if (Question::find(request()->question_id)->users->contains($user)) {
+            return true;
+        }
     }
 
     /**

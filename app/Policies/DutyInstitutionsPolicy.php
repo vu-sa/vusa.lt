@@ -63,7 +63,7 @@ class DutyInstitutionsPolicy
      */
     public function update(User $user, DutyInstitution $dutyInstitution)
     {
-        if ($user->can('edit unit duties')) {
+        if ($user->can('edit unit duties') || $user->can('edit institution content')) {
             return $user->padalinys()->id == $dutyInstitution->padalinys->id;
         }
     }

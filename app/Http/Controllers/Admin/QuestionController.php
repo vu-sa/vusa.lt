@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller as Controller;
-
 use App\Models\Question;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Type;
+use App\Models\Doing;
 
 class QuestionController extends Controller
 {

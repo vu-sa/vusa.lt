@@ -81,16 +81,14 @@ const menuOptions = computed(() => [
     label: "Veikla",
     key: "doings",
     icon: renderIcon(Sparkle20Regular),
-    // make children - klausimai and veiklos
+    show: can.institutions,
     children: [
       {
         label: () =>
           h(Link, { href: route("questions.index") }, () => "Klausimai"),
         key: "questions",
-        // show: can.questions,
       },
       {
-        // question groups
         label: () =>
           h(
             Link,
@@ -98,12 +96,10 @@ const menuOptions = computed(() => [
             () => "Klausimų grupės"
           ),
         key: "questionGroups",
-        // show: can.questionGroups,
       },
       {
         label: () => h(Link, { href: route("doings.index") }, () => "Veiklos"),
         key: "doings",
-        // show: can.doings,
       },
     ],
   },
@@ -111,7 +107,7 @@ const menuOptions = computed(() => [
     label: "Žmonės",
     key: "contacts",
     icon: renderIcon(Person24Regular),
-    show: can.users || can.dutyInstitutions || can.duties,
+    show: can.users || can.institutions,
     children: [
       {
         label: () =>
@@ -121,7 +117,6 @@ const menuOptions = computed(() => [
             () => "Institucijos"
           ),
         key: "dutyInstitutions",
-        show: can.dutyInstitutions,
       },
       {
         label: () =>
@@ -134,7 +129,6 @@ const menuOptions = computed(() => [
       {
         label: () => h(Link, { href: route("duties.index") }, () => "Pareigos"),
         key: "duties",
-        show: can.duties,
       },
       {
         label: () => h(Link, { href: route("users.index") }, () => "Kontaktai"),

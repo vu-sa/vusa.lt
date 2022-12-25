@@ -62,6 +62,7 @@ class HandleInertiaRequests extends Middleware
                 'calendar' => $request->user()->can('edit unit calendar'),
                 'content' => $request->user()->can('edit unit content'),
                 'files' => $request->user()->can('edit unit content'),
+                'institutions' => $request->user()->can('edit institution content'),
                 'navigation' => $request->user()->hasRole('Super Admin'),
                 'saziningai' => $request->user()->can('edit saziningai content'),
                 'settings' => $request->user()->hasRole('Super Admin'),
