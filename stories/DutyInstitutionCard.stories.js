@@ -19,11 +19,11 @@ export const Default = {
       types: [
         {
           id: 1,
-          name: "Tipas 1",
+          title: "Tipas 1",
         },
         {
           id: 2,
-          name: "Tipas 2",
+          title: "Tipas 2",
         },
       ],
       users: [
