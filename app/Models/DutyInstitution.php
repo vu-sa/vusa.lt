@@ -15,7 +15,7 @@ class DutyInstitution extends Model
 
     protected $guarded = [];
 
-    protected $with = ['types'];
+    protected $with = ['types', 'padalinys:id,alias'];
 
     protected $casts = [
         'attributes' => 'array',

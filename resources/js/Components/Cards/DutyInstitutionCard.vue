@@ -7,18 +7,22 @@
     as="button"
     style="max-width: 400px"
     class="cursor-pointer shadow-sm"
-    :title="institution.name"
     @click="Inertia.visit(route('dutyInstitutions.show', institution.id))"
   >
+    <template #header>
+      <span :class="{ 'font-bold': isPadalinys }">{{ institution.name }}</span>
+    </template>
     <template #footer>
-      <NTag
-        v-for="type in institution.types"
-        :key="type.id"
-        size="small"
-        :bordered="false"
-      >
-        {{ type.title }}
-      </NTag>
+      <div class="flex gap-2">
+        <NTag
+          v-for="type in institution.types"
+          :key="type.id"
+          size="small"
+          :bordered="false"
+        >
+          {{ type.title }}
+        </NTag>
+      </div>
     </template>
     <InstitutionAvatarGroup
       v-if="institution.users"
@@ -36,5 +40,6 @@ import InstitutionAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 
 defineProps<{
   institution: App.Models.DutyInstitution;
+  isPadalinys?: boolean;
 }>();
 </script>

@@ -107,8 +107,9 @@ import {
   NPopover,
   NTabPane,
   NTabs,
+  NTag,
 } from "naive-ui";
-import { h, ref } from "vue";
+import { ref } from "vue";
 import route from "ziggy-js";
 
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
@@ -145,6 +146,19 @@ const columns = [
   {
     title: "Pavadinimas",
     key: "title",
+  },
+  {
+    title: "Tipai",
+    key: "types",
+    render(row) {
+      return (
+        <div>
+          {row.types.map(({ title }) => {
+            return <NTag size="small">{title}</NTag>;
+          })}
+        </div>
+      );
+    },
   },
   {
     title: "Status",

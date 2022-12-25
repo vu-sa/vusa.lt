@@ -39,7 +39,7 @@
           :options="doingTypes"
         ></NSelect
       ></NFormItemGi>
-      <NFormItemGi label="Statusas" path="status" required :span="2">
+      <!-- <NFormItemGi label="Statusas" path="status" required :span="2">
         <NRadioGroup v-model:value="doingForm.status">
           <NRadio
             v-for="status in doingStatusOptions"
@@ -48,7 +48,7 @@
             ><StatusTag :status="status.label"></StatusTag
           ></NRadio>
         </NRadioGroup>
-      </NFormItemGi>
+      </NFormItemGi> -->
 
       <NFormItemGi :span="2" :show-label="false"
         ><NButton type="primary" @click="upsertDoing"

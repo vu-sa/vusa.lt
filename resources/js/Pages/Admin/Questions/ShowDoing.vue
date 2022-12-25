@@ -72,6 +72,13 @@
         </NModal>
       </div>
     </template>
+    <template #below-header>
+      <div class="flex gap-2">
+        <NTag v-for="type in doing.types" :key="type.id" size="small">{{
+          type.title
+        }}</NTag>
+      </div>
+    </template>
 
     <NTabs default-value="Dokumentai" animated type="line">
       <NTabPane name="Aprašymas">
