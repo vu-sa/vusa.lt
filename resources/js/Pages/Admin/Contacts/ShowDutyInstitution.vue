@@ -39,11 +39,6 @@
     </template>
     <div class="mb-4 flex min-h-[16em] gap-4 py-2">
       <NewMeetingButton
-        :button-type="
-          getDaysDifference(dutyInstitution.lastMeetingDoing?.date) > 30
-            ? 'primary'
-            : 'default'
-        "
         :duty-institution="dutyInstitution"
         :doing-types="doingTypes"
       />
@@ -104,25 +99,45 @@
             </NTag>
           </div>
         </template>
-        <div class="main-card">
-          <div class="mb-2 flex items-center gap-4">
-            <h2 class="mb-0">Svarstomi klausimai</h2>
-            <NButton round size="tiny" secondary @click="showModal = true"
-              ><template #icon
-                ><NIcon :component="BookQuestionMark20Filled" /></template
-              >Sukurti klausimą</NButton
-            >
-            <HelpTextModal class="ml-auto" title="Kas yra klausimas?"
-              ><p>
-                Klausimas – tai dalykas, kurį bando išspręsti ši institucija
-                šiuo metu.
-              </p></HelpTextModal
-            >
+        <div class="grid grid-cols-4 gap-x-4">
+          <NCard
+            v-for="question in dutyInstitution.questions"
+            :key="question.id"
+            size="small"
+            segmented
+            class="bg-red my-2 cursor-pointer shadow-sm"
+            style="border-radius: 0.75em"
+            hoverable
+            as="button"
+            @click="Inertia.visit(route('questions.show', question.id))"
+            ><template #header>{{ question.title }}</template>
+            <template #footer>
+              <div class="flex items-center justify-between gap-2">
+                <StatusTag :status="question.status"></StatusTag>
+                <div class="inline-flex items-center gap-1">
+                  <NIcon :component="Sparkle20Filled" /><span>{{
+                    question.doings_count
+                  }}</span>
+                </div>
+              </div>
+            </template>
+            <div class="flex items-center gap-1">
+              <NIcon :component="CalendarClock24Filled" />
+              <time>{{ getYYYYMMMM(question.created_at * 1000) }}</time>
+            </div>
+          </NCard>
+          <div
+            role="button"
+            class="mx-1 my-2 flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-zinc-700 p-2 text-zinc-500 shadow-sm duration-200 hover:shadow-lg dark:bg-zinc-900/60"
+            @click="showModal = true"
+          >
+            <NIcon
+              size="40"
+              :depth="5"
+              :component="BookQuestionMark20Filled"
+            ></NIcon>
+            <span>Sukurti klausimą</span>
           </div>
-          <NDataTable
-            :data="dutyInstitution.questions"
-            :columns="columns"
-          ></NDataTable>
         </div>
       </NTabPane>
       <NTabPane
@@ -199,37 +214,11 @@
     aria-modal="true"
     preset="card"
   >
-    <NForm :model="questionForm">
-      <NGrid cols="1">
-        <NFormItemGi label="Klausimo pavadinimas" path="title" required>
-          <NSelect
-            v-model:value="questionForm.title"
-            placeholder="Studijų tinklelio peržiūra"
-            filterable
-            tag
-            :options="questionOptions"
-            ><template #action>
-              <span
-                class="prose-sm prose-gray text-xs text-zinc-400 dark:prose-invert"
-                >Gali įrašyti ir savo klausimą...</span
-              >
-            </template></NSelect
-          >
-        </NFormItemGi>
-        <NFormItemGi label="Aprašymas" path="description">
-          <NInput
-            v-model:value="questionForm.description"
-            type="textarea"
-            placeholder="Aprašykite klausimo kontekstą, jeigu to reikia..."
-          ></NInput>
-        </NFormItemGi>
-        <NFormItemGi :show-label="false"
-          ><NButton type="primary" @click="createQuestion"
-            >Sukurti</NButton
-          ></NFormItemGi
-        >
-      </NGrid>
-    </NForm>
+    <QuestionForm
+      :form="questionForm"
+      :duty-institution="dutyInstitution"
+      @question-stored="showModal = false"
+    />
   </NModal>
   <FileSelectDrawer
     :document="selectedDocument"
@@ -240,139 +229,65 @@
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
 import {
-  ArrowTurnRight20Filled,
   BookQuestionMark20Filled,
   CalendarClock24Filled,
   Edit20Filled,
   Home24Regular,
   PeopleTeam32Filled,
+  Sparkle20Filled,
 } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
-import { Link, useForm } from "@inertiajs/inertia-vue3";
 import {
   NBreadcrumb,
   NBreadcrumbItem,
   NButton,
+  NCard,
   NCollapse,
   NCollapseItem,
-  NDataTable,
-  NForm,
-  NFormItem,
-  NFormItemGi,
-  NGrid,
   NIcon,
-  NInput,
-  NMessageProvider,
   NModal,
-  NPopover,
-  NSelect,
   NTabPane,
   NTabs,
   NTag,
+  NTime,
 } from "naive-ui";
-import { computed, h, ref } from "vue";
+import { ref } from "vue";
 import route from "ziggy-js";
 
-import { documentTemplate, questionOptions } from "@/Composables/someTypes";
+import { documentTemplate } from "@/Composables/someTypes";
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import DutyInstitutionCard from "@/Components/Cards/DutyInstitutionCard.vue";
 import FileSelectDrawer from "@/Components/SharepointFileManager/FileDrawer.vue";
-import HelpTextModal from "@/Components/Buttons/HelperButtons/HelpTextModal.vue";
 import InstitutionAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import MeetingDocumentButton from "@/Components/Buttons/QActButtons/MeetingDocumentButton.vue";
 import ModelsDocumentViewer from "@/Components/SharepointFileManager/ModelsDocumentViewer.vue";
 import NewMeetingButton from "@/Components/Buttons/QActButtons/NewMeetingButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import QuestionForm from "@/Components/AdminForms/QuestionForm.vue";
 import StatusTag from "@/Components/Tags/StatusTag.vue";
 import getRelativeTime, {
   getDaysDifference,
+  getYYYYMMMM,
 } from "@/Composables/getRelativeTime";
 
 defineOptions({ layout: AdminLayout });
 
-const props = defineProps<{
+defineProps<{
   doingTypes: any;
   dutyInstitution: App.Models.DutyInstitution;
 }>();
 
 const showModal = ref(false);
-
-const selectedDocument = ref(null);
-const questionForm = useForm({
+const questionForm = {
   title: "",
   description: "",
-});
+  status: "",
+};
+
+const selectedDocument = ref(null);
 
 const updateSelectedDocument = (document) => {
   selectedDocument.value = document;
-};
-
-const columns = [
-  {
-    title: "ID",
-    key: "id",
-    width: 50,
-  },
-  {
-    title: "Pavadinimas",
-    key: "title",
-  },
-  {
-    title: "Status",
-    key: "status",
-    render(row) {
-      return h(StatusTag, {
-        status: row.status,
-      });
-    },
-  },
-  {
-    title: "Veiklų skaičius",
-    key: "doings_count",
-  },
-  {
-    title: "Klausimo sukūrimo data",
-    key: "created_at",
-  },
-  {
-    title: "Veiksmai",
-    key: "actions",
-    render(row) {
-      return (
-        <div class="flex gap-2">
-          <NPopover>
-            {{
-              default: () => "Eiti į klausimą",
-              trigger: () => (
-                <Link href={route("questions.show", { question: row.id })}>
-                  <NButton size="small">
-                    {{
-                      icon: <NIcon component={ArrowTurnRight20Filled}></NIcon>,
-                    }}
-                  </NButton>
-                </Link>
-              ),
-            }}
-          </NPopover>
-        </div>
-      );
-    },
-  },
-];
-
-const createQuestion = () => {
-  questionForm.post(
-    route("questions.store", {
-      duty_institution_id: props.dutyInstitution.id,
-    }),
-    {
-      preserveScroll: true,
-      onSuccess: () => {
-        showModal.value = false;
-        questionForm.reset();
-      },
-    }
-  );
 };
 
 const typeRelationships = (type) => {

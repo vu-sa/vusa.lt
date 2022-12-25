@@ -84,7 +84,7 @@
       <NTabPane name="Aprašymas">
         <div v-if="doing.tasks.length > 0" class="m-4 h-fit">
           <h2>Užduotys</h2>
-          <TaskViewer :tasks="doing.tasks" />
+          <SingleTask v-for="task in doing.tasks" :key="task.id" :task="task" />
         </div>
       </NTabPane>
       <NTabPane name="Dokumentai">
@@ -171,8 +171,8 @@ import FileUploader from "@/Components/SharepointFileManager/FileUploader.vue";
 import FileUploaderBasicButton from "@/Components/SharepointFileManager/FileUploaderBasicButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import ShowActivityLog from "@/Components/Buttons/ShowActivityLog.vue";
+import SingleTask from "@/Components/Tasks/SingleTask.vue";
 import StatusTag from "@/Components/Tags/StatusTag.vue";
-import TaskViewer from "@/Components/Tasks/TaskViewer.vue";
 
 const props = defineProps<{
   doing: Record<string, any>;

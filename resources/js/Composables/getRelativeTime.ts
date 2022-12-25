@@ -52,3 +52,12 @@ export const getDaysDifference = (timestamp: string) => {
 
   return daysDifference;
 };
+
+export const getYYYYMMMM = (timestamp: string) => {
+  const time = new Intl.DateTimeFormat("lt", {
+    year: "numeric",
+    month: "long",
+  }).format(timestamp);
+
+  return time;
+};

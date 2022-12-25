@@ -1,11 +1,5 @@
 <template>
   <PageContent :title="question.title" breadcrumb>
-    <template #title>
-      <span class="inline-flex items-center"
-        ><NIcon class="mr-2" :component="BookQuestionMark20Filled" />
-        {{ question.title }}</span
-      >
-    </template>
     <template #above-header>
       <NBreadcrumb class="mb-4 w-full">
         <NBreadcrumbItem @click="Inertia.get(route('dashboard'))">
@@ -37,8 +31,23 @@
         </NBreadcrumbItem>
       </NBreadcrumb>
     </template>
+    <template #title>
+      <span class="inline-flex items-center"
+        ><NIcon class="mr-2" :component="BookQuestionMark20Filled" />
+        {{ question.title }}</span
+      >
+    </template>
+    <template #after-heading>
+      <StatusTag :status="question.status" />
+    </template>
     <template #aside-header>
-      <ShowActivityLog :activities="question.activities" />
+      <div class="inline-flex gap-2">
+        <ShowActivityLog :activities="question.activities" />
+        <NButton secondary circle @click="showQuestionModal = true"
+          ><template #icon
+            ><NIcon :component="DocumentEdit24Regular"></NIcon></template
+        ></NButton>
+      </div>
     </template>
 
     <NTabs animated type="line" default-value="Veiklos">
@@ -49,7 +58,7 @@
         <div class="main-card w-full">
           <div class="mb-2 flex items-center gap-4">
             <h2 class="mb-0">Veiklos</h2>
-            <NButton round size="tiny" secondary @click="showModal = true"
+            <NButton round size="tiny" secondary @click="showDoingModal = true"
               ><template #icon><NIcon :component="Sparkle20Filled" /></template
               >Sukurti veiklą</NButton
             >
@@ -67,7 +76,7 @@
     </NTabs>
   </PageContent>
   <NModal
-    v-model:show="showModal"
+    v-model:show="showDoingModal"
     class="prose prose-sm max-w-xl dark:prose-invert"
     :title="`${$t('Sukurti veiklą')} (${question.title})`"
     :bordered="false"
@@ -81,9 +90,23 @@
       :question="question"
       :doing-types="doingTypes"
       model-route="doings.store"
-      @success="showModal = false"
+      @success="showDoingModal = false"
     ></DoingForm>
   </NModal>
+  <NModal
+    v-model:show="showQuestionModal"
+    class="prose prose-sm max-w-xl dark:prose-invert"
+    :bordered="false"
+    size="large"
+    role="card"
+    aria-modal="true"
+    preset="card"
+    ><QuestionForm
+      :form="question"
+      :duty-institution="question.institution"
+      @question-stored="showQuestionModal = false"
+    ></QuestionForm
+  ></NModal>
 </template>
 
 <script setup lang="tsx">
@@ -91,6 +114,7 @@ import { trans as $t } from "laravel-vue-i18n";
 import {
   ArrowTurnRight20Filled,
   BookQuestionMark20Filled,
+  DocumentEdit24Regular,
   Home24Regular,
   PeopleTeam32Filled,
   Sparkle20Filled,
@@ -117,6 +141,7 @@ import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import DoingForm from "@/Components/AdminForms/DoingForm.vue";
 import HelpTextModal from "@/Components/Buttons/HelperButtons/HelpTextModal.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import QuestionForm from "@/Components/AdminForms/QuestionForm.vue";
 import ShowActivityLog from "@/Components/Buttons/ShowActivityLog.vue";
 import StatusTag from "@/Components/Tags/StatusTag.vue";
 import getRelativeTime from "@/Composables/getRelativeTime";
@@ -128,7 +153,8 @@ const props = defineProps<{
   doingTypes: Record<string, any>;
 }>();
 
-const showModal = ref(false);
+const showDoingModal = ref(false);
+const showQuestionModal = ref(false);
 
 const doingTemplate = {
   title: "",

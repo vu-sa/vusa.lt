@@ -154,7 +154,7 @@ import QuickActionButton from "@/Components/Buttons/QActButtons/QuickActionButto
 const props = defineProps<{
   dutyInstitution: Record<string, any>;
   doingTypes: any;
-  buttonType: any;
+  buttonType?: any;
 }>();
 
 const showDoingForm = ref(false);

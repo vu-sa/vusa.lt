@@ -15,7 +15,7 @@ class Question extends Model
     protected $with = ['question_group'];
 
     protected $casts = [
-        'created_at' => 'datetime:Y-m-d H:i:s',
+        'created_at' => 'timestamp',
     ];
 
     protected $guarded = [];
