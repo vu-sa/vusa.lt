@@ -1,5 +1,5 @@
 <template>
-  <PageContent :title="dutyInstitution.name" breadcrumb>
+  <PageContent breadcrumb>
     <template #above-header>
       <NBreadcrumb class="mb-4 w-full">
         <AdminBreadcrumbItem
@@ -13,22 +13,24 @@
         </AdminBreadcrumbItem>
       </NBreadcrumb>
     </template>
+    <template #title>
+      <span class="text-4xl">{{ dutyInstitution.name }}</span>
+    </template>
     <template #below-header>
       <div
         v-if="dutyInstitution.lastMeetingDoing"
-        class="mb-2 flex flex-row items-center"
+        class="my-2 flex flex-row items-center"
       >
-        <span>Paskutinis posėdis vyko:</span>
-        <NIcon class="mx-1" :component="CalendarClock24Filled"></NIcon>
-
         <a
           target="_blank"
+          class="flex flex-row items-center gap-1"
           :href="route('doings.show', dutyInstitution.lastMeetingDoing?.id)"
         >
-          <span class="font-bold">{{
+          <NIcon :component="CalendarClock24Filled"></NIcon
+          ><span class="font-bold">{{
             getRelativeTime(dutyInstitution.lastMeetingDoing?.date)
-          }}</span> </a
-        >.
+          }}</span>
+        </a>
       </div>
     </template>
     <div class="mb-4 flex min-h-[16em] gap-4 py-2">

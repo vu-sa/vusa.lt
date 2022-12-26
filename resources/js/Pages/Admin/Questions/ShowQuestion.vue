@@ -51,27 +51,26 @@
     </template>
 
     <NTabs animated type="line" default-value="Veiklos">
-      <NTabPane name="Aprašymas">
+      <NTabPane name="Apie">
         <p>{{ question.description }}</p>
       </NTabPane>
       <NTabPane name="Veiklos">
-        <div class="main-card w-full">
-          <div class="mb-2 flex items-center gap-4">
-            <h2 class="mb-0">Veiklos</h2>
-            <NButton round size="tiny" secondary @click="showDoingModal = true"
-              ><template #icon><NIcon :component="Sparkle20Filled" /></template
-              >Sukurti veiklą</NButton
-            >
-            <HelpTextModal class="ml-auto" title="Kas yra veikla?"
-              ><p>
-                Veikla – tai bet koks nutikęs veiksmas, susijęs su šiuo
-                klausimu.
-              </p></HelpTextModal
-            >
+        <template #tab>
+          <div class="flex gap-2">
+            Veiklos
+            <NTag size="small" round>
+              {{ question.doings.length }}
+            </NTag>
           </div>
-
-          <NDataTable :data="question.doings" :columns="columns"></NDataTable>
+        </template>
+        <div class="mb-2 flex items-center gap-4">
+          <NButton round size="tiny" secondary @click="showDoingModal = true"
+            ><template #icon><NIcon :component="Sparkle20Filled" /></template
+            >Sukurti veiklą</NButton
+          >
         </div>
+
+        <DoingsTabPane :doings="question.doings"></DoingsTabPane>
       </NTabPane>
     </NTabs>
   </PageContent>
@@ -139,6 +138,7 @@ import route from "ziggy-js";
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import DoingForm from "@/Components/AdminForms/DoingForm.vue";
+import DoingsTabPane from "@/Components/TabPaneContent/DoingsTabPane.vue";
 import HelpTextModal from "@/Components/Buttons/HelperButtons/HelpTextModal.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import QuestionForm from "@/Components/AdminForms/QuestionForm.vue";

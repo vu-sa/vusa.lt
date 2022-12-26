@@ -17,6 +17,11 @@ class Doing extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        // 'created_at' => 'timestamp'
+        'created_at' => 'datetime:Y-m-d H:i'
+    ];
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()->logOnly(['*'])->logOnlyDirty();
