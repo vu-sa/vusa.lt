@@ -6,6 +6,7 @@
       :content-model-options="objectOptions"
       :content-type-options="contentTypeOptions"
       :prespecified-type="'Protokolai'"
+      :related-object-name="dutyInstitution.name"
     ></FileUploader>
   </NMessageProvider>
 </template>
@@ -44,6 +45,11 @@ const objectOptions = computed(() => {
 
 const contentModel = computed(() => ({
   type: "App\\Models\\Doing",
+  modelTypes: [
+    {
+      title: "Posėdis",
+    },
+  ],
   //   contentTypes: props.doing.types,
 }));
 </script>

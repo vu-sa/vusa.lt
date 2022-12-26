@@ -244,7 +244,8 @@ class SharepointAppGraph {
                 'lastModifiedDateTime' => $item->getLastModifiedDateTime(),
                 'size' => $item->getSize(),
                 'file' => $item->getFile(),
-                'type' => $item->getListItem()?->getFields()->getProperties()['Type'] ?? dd($driveItems),
+                'type' => $item->getListItem()?->getFields()->getProperties()['Type'],
+                'description' => $item->getListItem()?->getFields()->getProperties()['Description0'] ?? null,
                 'keywords' => $item->getListItem()->getFields()->getProperties()['Keywords'] ?? null,
                 // get date +3 hours and format YYYY-MM-DD
                 'date' => ($item->getListItem()->getFields()->getProperties()['Date'] ?? null) ? date('Y-m-d', strtotime($item->getListItem()->getFields()->getProperties()['Date'] . ' +3 hours')) : null,

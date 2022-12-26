@@ -72,4 +72,5 @@ export const documentTemplate = {
   },
   size: 0,
   type: "",
+  description: "",
 };

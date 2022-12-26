@@ -102,6 +102,7 @@ class SharepointController extends Controller
         $listItemInfo = [
             'Type' => $request->input('typeValue'),
             'Keywords' => $request->input('keywordsValue'),
+            'Description0' => $request->input('descriptionValue'),
             'Keywords@odata.type' => "Collection(Edm.String)",
             'Date' => date('Y-m-d', intval($request->input('datetimeValue') / 1000)),
         ];

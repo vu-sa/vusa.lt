@@ -39,7 +39,13 @@
               </tr>
               <tr>
                 <td class="font-bold">Tipas</td>
-                <td>{{ activeDocument.type }}</td>
+                <td>
+                  <NTag size="small">{{ activeDocument.type }}</NTag>
+                </td>
+              </tr>
+              <tr>
+                <td class="font-bold">Aprašymas</td>
+                <td>{{ activeDocument.description }}</td>
               </tr>
             </tbody>
           </NTable>
@@ -52,7 +58,14 @@
 <script setup lang="ts">
 import { File, FilePdf, FileWord } from "@vicons/fa";
 import { Inertia } from "@inertiajs/inertia";
-import { NButton, NDrawer, NDrawerContent, NIcon, NTable } from "naive-ui";
+import {
+  NButton,
+  NDrawer,
+  NDrawerContent,
+  NIcon,
+  NTable,
+  NTag,
+} from "naive-ui";
 import { computed, ref, watch } from "vue";
 import route from "ziggy-js";
 

@@ -53,6 +53,13 @@
           type="date"
         ></NDatePicker
       ></NFormItem>
+      <NFormItem label="Aprašymas" path="descriptionValue"
+        ><NInput
+          v-model:value="model.descriptionValue"
+          type="textarea"
+          placeholder="Šis dokumentas yra skirtas..."
+        ></NInput
+      ></NFormItem>
       <NFormItem label="Įkelti failą" path="uploadValue">
         <NUpload
           :max="1"
@@ -150,6 +157,7 @@ const nameValue = ref(null);
 const formRef = ref(null);
 const model = useForm({
   datetimeValue: null,
+  descriptionValue: "",
   contentModel: props.contentModel ?? null,
   keywordsValue: [],
   typeValue: props.prespecifiedType ?? null,
