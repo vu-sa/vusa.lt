@@ -42,7 +42,7 @@
       />
     </div>
     <NTabs animated type="line">
-      <NTabPane display-directive="show:lazy" name="Aprašymas">
+      <NTabPane display-directive="show:lazy" name="Apie">
         <div class="m-4">
           <NCollapse
             arrow-placement="right"
@@ -105,6 +105,10 @@
           dutyInstitution.receivedRelationships.length === 0
         "
       >
+        <template #tab>
+          <NIcon class="mr-1" :component="PeopleTeam32Filled"></NIcon>
+          Susijusios institucijos
+        </template>
         <div class="m-4">
           <template v-if="dutyInstitution.givenRelationships.length > 0">
             <h3>Suteikti ryšiai</h3>
@@ -139,6 +143,9 @@
         :disabled="dutyInstitution.doings.length === 0"
         display-directive="show:lazy"
       >
+        <template #tab>
+          <NIcon class="mr-1" :component="Sparkle20Filled" /> Veiklų dokumentai
+        </template>
         <div class="m-4">
           <ModelsDocumentViewer
             v-if="dutyInstitution.doings.length > 0"
@@ -174,6 +181,7 @@ import {
   Edit20Filled,
   Home24Regular,
   PeopleTeam32Filled,
+  Sparkle20Filled,
 } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import {

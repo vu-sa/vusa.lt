@@ -8,7 +8,7 @@
     <div
       v-if="institution"
       role="button"
-      class="mx-1 my-2 flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-zinc-700 p-2 text-zinc-500 shadow-sm duration-200 hover:shadow-lg dark:bg-zinc-900/60"
+      class="mx-1 my-2 flex h-36 flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-zinc-700 p-2 text-zinc-500 duration-200 hover:shadow-inner dark:bg-zinc-900/60"
       @click="showModal = true"
     >
       <NIcon size="40" :depth="5" :component="BookQuestionMark20Filled"></NIcon>
