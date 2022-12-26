@@ -2,21 +2,15 @@
   <PageContent :title="dutyInstitution.name" breadcrumb>
     <template #above-header>
       <NBreadcrumb class="mb-4 w-full">
-        <NBreadcrumbItem @click="Inertia.get(route('dashboard'))">
-          <div>
-            <NIcon class="mr-2" size="16" :component="Home24Regular"> </NIcon>
-
-            Pradinis
-          </div>
-        </NBreadcrumbItem>
-        <NBreadcrumbItem
-          @click="Inertia.get(route('dutyInstitutions.show', institution.id))"
-          ><div>
-            <NIcon class="mr-2" size="16" :component="PeopleTeam32Filled">
-            </NIcon
-            >{{ dutyInstitution.name }}
-          </div>
-        </NBreadcrumbItem>
+        <AdminBreadcrumbItem
+          :visit-route="route('dashboard')"
+          :icon="Home24Regular"
+        >
+          Pradinis
+        </AdminBreadcrumbItem>
+        <AdminBreadcrumbItem :icon="PeopleTeam32Filled">
+          {{ dutyInstitution.name }}
+        </AdminBreadcrumbItem>
       </NBreadcrumb>
     </template>
     <template #below-header>
@@ -93,52 +87,16 @@
       <NTabPane name="Svarstomi klausimai">
         <template #tab>
           <div class="flex gap-2">
-            {{ $t("Svarstomi klausimai") }}
+            Svarstomi klausimai
             <NTag size="small" round>
               {{ dutyInstitution.questions.length }}
             </NTag>
           </div>
         </template>
-        <div class="grid grid-cols-4 gap-x-4">
-          <NCard
-            v-for="question in dutyInstitution.questions"
-            :key="question.id"
-            size="small"
-            segmented
-            class="bg-red my-2 cursor-pointer shadow-sm"
-            style="border-radius: 0.75em"
-            hoverable
-            as="button"
-            @click="Inertia.visit(route('questions.show', question.id))"
-            ><template #header>{{ question.title }}</template>
-            <template #footer>
-              <div class="flex items-center justify-between gap-2">
-                <StatusTag :status="question.status"></StatusTag>
-                <div class="inline-flex items-center gap-1">
-                  <NIcon :component="Sparkle20Filled" /><span>{{
-                    question.doings_count
-                  }}</span>
-                </div>
-              </div>
-            </template>
-            <div class="flex items-center gap-1">
-              <NIcon :component="CalendarClock24Filled" />
-              <time>{{ getYYYYMMMM(question.created_at * 1000) }}</time>
-            </div>
-          </NCard>
-          <div
-            role="button"
-            class="mx-1 my-2 flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-zinc-700 p-2 text-zinc-500 shadow-sm duration-200 hover:shadow-lg dark:bg-zinc-900/60"
-            @click="showModal = true"
-          >
-            <NIcon
-              size="40"
-              :depth="5"
-              :component="BookQuestionMark20Filled"
-            ></NIcon>
-            <span>Sukurti klausimą</span>
-          </div>
-        </div>
+        <QuestionsTabPane
+          :institution="dutyInstitution"
+          :questions="dutyInstitution.questions"
+        ></QuestionsTabPane>
       </NTabPane>
       <NTabPane
         name="Susijusios institucijos"
@@ -204,22 +162,6 @@
       ></NButton>
     </template>
   </PageContent>
-  <NModal
-    v-model:show="showModal"
-    class="prose prose-sm max-w-xl dark:prose-invert"
-    :title="`${$t('Sukurti klausimą')} (${dutyInstitution.name})`"
-    :bordered="false"
-    size="large"
-    role="card"
-    aria-modal="true"
-    preset="card"
-  >
-    <QuestionForm
-      :form="questionForm"
-      :duty-institution="dutyInstitution"
-      @question-stored="showModal = false"
-    />
-  </NModal>
   <FileSelectDrawer
     :document="selectedDocument"
     @close-drawer="selectedDocument = documentTemplate"
@@ -227,34 +169,28 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t } from "laravel-vue-i18n";
 import {
-  BookQuestionMark20Filled,
   CalendarClock24Filled,
   Edit20Filled,
   Home24Regular,
   PeopleTeam32Filled,
-  Sparkle20Filled,
 } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import {
   NBreadcrumb,
-  NBreadcrumbItem,
   NButton,
-  NCard,
   NCollapse,
   NCollapseItem,
   NIcon,
-  NModal,
   NTabPane,
   NTabs,
   NTag,
-  NTime,
 } from "naive-ui";
 import { ref } from "vue";
 import route from "ziggy-js";
 
 import { documentTemplate } from "@/Composables/someTypes";
+import AdminBreadcrumbItem from "@/Components/BreadcrumbItems/AdminBreadcrumbItem.vue";
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import DutyInstitutionCard from "@/Components/Cards/DutyInstitutionCard.vue";
 import FileSelectDrawer from "@/Components/SharepointFileManager/FileDrawer.vue";
@@ -263,12 +199,8 @@ import MeetingDocumentButton from "@/Components/Buttons/QActButtons/MeetingDocum
 import ModelsDocumentViewer from "@/Components/SharepointFileManager/ModelsDocumentViewer.vue";
 import NewMeetingButton from "@/Components/Buttons/QActButtons/NewMeetingButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import QuestionForm from "@/Components/AdminForms/QuestionForm.vue";
-import StatusTag from "@/Components/Tags/StatusTag.vue";
-import getRelativeTime, {
-  getDaysDifference,
-  getYYYYMMMM,
-} from "@/Composables/getRelativeTime";
+import QuestionsTabPane from "@/Components/TabPaneContent/QuestionsTabPane.vue";
+import getRelativeTime from "@/Composables/getRelativeTime";
 
 defineOptions({ layout: AdminLayout });
 
@@ -276,13 +208,6 @@ defineProps<{
   doingTypes: any;
   dutyInstitution: App.Models.DutyInstitution;
 }>();
-
-const showModal = ref(false);
-const questionForm = {
-  title: "",
-  description: "",
-  status: "",
-};
 
 const selectedDocument = ref(null);
 
