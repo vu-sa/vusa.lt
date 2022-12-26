@@ -34,6 +34,7 @@
       <NFormItem v-if="!prespecifiedType" label="Tipas" path="typeValue"
         ><NSelect
           v-model:value="model.typeValue"
+          :disabled="model.uploadValue"
           placeholder="Pasirink failo tipą..."
           :options="contentTypeOptions"
         ></NSelect
@@ -60,7 +61,7 @@
           placeholder="Šis dokumentas yra skirtas..."
         ></NInput
       ></NFormItem>
-      <NFormItem label="Įkelti failą" path="uploadValue">
+      <NFormItem v-if="model.typeValue" label="Įkelti failą" path="uploadValue">
         <NUpload
           :max="1"
           :default-upload="false"
@@ -80,7 +81,7 @@
           </NUploadDragger>
         </NUpload>
       </NFormItem>
-      <NFormItem label="Sugeneruotas failo pavadinimas">
+      <NFormItem v-if="model.typeValue" label="Sugeneruotas failo pavadinimas">
         <NInputGroup>
           <NInput
             v-model:value="nameValue"
@@ -201,11 +202,25 @@ const rules: FormRules = {
 };
 
 const beforeUpload = async (data) => {
-  // check if file is pdf or docx
+  if (model.typeValue === "Pristatymai") {
+    if (
+      ![
+        "application/pdf",
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      ].includes(data.file.type)
+    ) {
+      message.error("Pristatymas turi būti PDF arba PPTX formatu.");
+      return false;
+    }
+    return true;
+  }
+
+  // others, check if file is pdf or docx
   if (
-    data.file.type !== "application/pdf" &&
-    data.file.type !==
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ![
+      "application/pdf",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ].includes(data.file.type)
   ) {
     message.error("Failas turi būti PDF arba DOCX formatu.");
     return false;
@@ -218,6 +233,14 @@ const handleUploadChange = ({
 }: {
   fileList: Array<UploadFileInfo>;
 }) => {
+  // check if file removed
+  if (fileList.length === 0) {
+    model.uploadValue = null;
+    originalFileName.value = "";
+    nameValue.value = null;
+    return;
+  }
+
   model.uploadValue = fileList;
 
   let fileNameParts = fileList[0].name.split(".");
