@@ -1,5 +1,5 @@
 <template>
-  <div class="grid grid-cols-4 gap-x-4">
+  <div class="grid grid-cols-3 gap-x-4">
     <DoingCard
       v-for="doing in doings"
       :key="doing.id"

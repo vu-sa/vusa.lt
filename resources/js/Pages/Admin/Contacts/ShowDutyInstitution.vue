@@ -9,35 +9,25 @@
           Pradinis
         </AdminBreadcrumbItem>
         <AdminBreadcrumbItem :icon="PeopleTeam32Filled">
-          {{ dutyInstitution.name }}
+          <NEllipsis style="max-width: 200px">
+            {{ dutyInstitution.name }}</NEllipsis
+          >
         </AdminBreadcrumbItem>
       </NBreadcrumb>
     </template>
     <template #title>
-      <span class="text-4xl">{{ dutyInstitution.name }}</span>
-    </template>
-    <template #below-header>
-      <div
-        v-if="dutyInstitution.lastMeetingDoing"
-        class="my-2 flex flex-row items-center"
-      >
-        <a
-          target="_blank"
-          class="flex flex-row items-center gap-1"
-          :href="route('doings.show', dutyInstitution.lastMeetingDoing?.id)"
-        >
-          <NIcon :component="CalendarClock24Filled"></NIcon
-          ><span class="font-bold">{{
-            getRelativeTime(dutyInstitution.lastMeetingDoing?.date)
-          }}</span>
-        </a>
-      </div>
+      <span class="text-3xl">{{ dutyInstitution.name }}</span>
     </template>
     <div class="mb-4 flex min-h-[16em] gap-4 py-2">
-      <NewMeetingButton
-        :duty-institution="dutyInstitution"
-        :doing-types="doingTypes"
-      />
+      <QuickContentCard :last-doing="dutyInstitution.lastMeetingDoing">
+        <template #action-button>
+          <NewMeetingButton
+            :duty-institution="dutyInstitution"
+            :doing-types="doingTypes"
+          />
+        </template>
+      </QuickContentCard>
+
       <MeetingDocumentButton
         :duty-institution="dutyInstitution"
         :questions="dutyInstitution.questions"
@@ -191,6 +181,7 @@ import {
   NButton,
   NCollapse,
   NCollapseItem,
+  NEllipsis,
   NIcon,
   NTabPane,
   NTabs,
@@ -207,10 +198,13 @@ import FileSelectDrawer from "@/Components/SharepointFileManager/FileDrawer.vue"
 import InstitutionAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import MeetingDocumentButton from "@/Components/Buttons/QActButtons/MeetingDocumentButton.vue";
 import ModelsDocumentViewer from "@/Components/SharepointFileManager/ModelsDocumentViewer.vue";
-import NewMeetingButton from "@/Components/Buttons/QActButtons/NewMeetingButton.vue";
+import NewMeetingButton from "@/Components/Buttons/NewMeetingButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import QuestionsTabPane from "@/Components/TabPaneContent/QuestionsTabPane.vue";
-import getRelativeTime from "@/Composables/getRelativeTime";
+import QuickContentCard from "@/Components/Cards/QuickContentCard.vue";
+import getRelativeTime, {
+  getDaysDifference,
+} from "@/Composables/getRelativeTime";
 
 defineOptions({ layout: AdminLayout });
 

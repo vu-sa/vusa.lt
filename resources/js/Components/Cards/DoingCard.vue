@@ -24,7 +24,7 @@
       }}</time>
     </div>
     <div class="absolute -bottom-8 right-0 opacity-10">
-      <NIcon size="80" :depth="5">
+      <NIcon size="80" :depth="4">
         <component :is="icon"></component>
       </NIcon>
     </div>

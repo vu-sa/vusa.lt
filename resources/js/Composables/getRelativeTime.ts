@@ -61,3 +61,14 @@ export const getYYYYMMMM = (timestamp: string) => {
 
   return time;
 };
+
+export const getMMMMDD = (timestamp: string) => {
+  const date = new Date(timestamp);
+
+  const time = new Intl.DateTimeFormat("lt", {
+    month: "long",
+    day: "2-digit",
+  }).format(date);
+
+  return time;
+};

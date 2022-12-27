@@ -34,7 +34,7 @@
   />
 
   <div
-    class="mt-1 mb-12 grid max-w-7xl grid-flow-row-dense grid-cols-[1fr_auto] gap-x-8 lg:grid-flow-col"
+    class="mt-4 mb-12 grid max-w-7xl grid-flow-row-dense grid-cols-[1fr_auto] gap-x-8 lg:grid-flow-col"
   >
     <FadeTransition appear
       ><main class="col-span w-full overflow-visible">

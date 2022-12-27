@@ -15,8 +15,10 @@
           "
           ><div>
             <NIcon class="mr-2" size="16" :component="PeopleTeam32Filled">
-            </NIcon
-            >{{ question.institution.name }}
+            </NIcon>
+            <NEllipsis style="max-width: 200px">
+              {{ question.institution.name }}</NEllipsis
+            >
           </div>
         </NBreadcrumbItem>
         <NBreadcrumbItem>
@@ -125,6 +127,7 @@ import {
   NBreadcrumbItem,
   NButton,
   NDataTable,
+  NEllipsis,
   NIcon,
   NModal,
   NPopover,

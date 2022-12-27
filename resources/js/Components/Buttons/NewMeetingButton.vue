@@ -1,9 +1,8 @@
 <template>
-  <QuickActionButton
-    :button-type="buttonType"
-    :icon="PeopleTeamAdd24Filled"
-    @click="showDoingForm = true"
-    >Pranešti apie artėjantį posėdį</QuickActionButton
+  <NButton size="small" @click="showDoingForm = true"
+    ><template #icon
+      ><NIcon :component="PeopleTeamAdd24Filled"></NIcon></template
+    >Pranešti?</NButton
   >
   <NModal
     v-model:show="showDoingForm"
@@ -149,7 +148,6 @@ import route from "ziggy-js";
 import { questionOptions } from "@/Composables/someTypes";
 import DoingForm from "@/Components/AdminForms/DoingForm.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
-import QuickActionButton from "@/Components/Buttons/QActButtons/QuickActionButton.vue";
 
 const props = defineProps<{
   dutyInstitution: Record<string, any>;
