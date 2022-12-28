@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Traits\HasComments;
+use Illuminate\Support\Carbon;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
@@ -25,6 +26,21 @@ class Doing extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()->logOnly(['*'])->logOnlyDirty();
+    }
+
+    public function getNeedsAttentionAttribute() {
+        if ($this->status === 'Pabaigtas') {
+            return false;
+        }
+
+        $now = Carbon::now();
+        $date = Carbon::parse($this->date);
+
+        if ($now->gt($date)) {
+            return true;
+        }
+
+        return true;
     }
 
     public function questions()

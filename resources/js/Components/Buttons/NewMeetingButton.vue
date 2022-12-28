@@ -152,7 +152,6 @@ import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 const props = defineProps<{
   dutyInstitution: Record<string, any>;
   doingTypes: any;
-  buttonType?: any;
 }>();
 
 const showDoingForm = ref(false);

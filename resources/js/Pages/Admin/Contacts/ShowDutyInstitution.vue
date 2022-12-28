@@ -18,20 +18,16 @@
     <template #title>
       <span class="text-3xl">{{ dutyInstitution.name }}</span>
     </template>
-    <div class="mb-4 flex min-h-[16em] gap-4 py-2">
-      <QuickContentCard :last-doing="dutyInstitution.lastMeetingDoing">
-        <template #action-button>
-          <NewMeetingButton
-            :duty-institution="dutyInstitution"
-            :doing-types="doingTypes"
-          />
-        </template>
-      </QuickContentCard>
-
-      <MeetingDocumentButton
+    <div class="mb-16 flex min-h-[16em] gap-4 py-2">
+      <LastMeetingCard
+        :last-meeting-doing="dutyInstitution.lastMeetingDoing"
         :duty-institution="dutyInstitution"
-        :questions="dutyInstitution.questions"
-      />
+        :doing-types="doingTypes"
+      ></LastMeetingCard>
+      <DoingsNeedingAttentionCard
+        :questions-with-doings="dutyInstitution.questions"
+        :duty-institution="dutyInstitution"
+      ></DoingsNeedingAttentionCard>
     </div>
     <NTabs animated type="line">
       <NTabPane display-directive="show:lazy" name="Apie">
@@ -169,7 +165,6 @@
 
 <script setup lang="tsx">
 import {
-  CalendarClock24Filled,
   Edit20Filled,
   Home24Regular,
   PeopleTeam32Filled,
@@ -193,18 +188,14 @@ import route from "ziggy-js";
 import { documentTemplate } from "@/Composables/someTypes";
 import AdminBreadcrumbItem from "@/Components/BreadcrumbItems/AdminBreadcrumbItem.vue";
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+import DoingsNeedingAttentionCard from "@/Components/Cards/QuickContentCards/DoingsNeedingAttentionCard.vue";
 import DutyInstitutionCard from "@/Components/Cards/DutyInstitutionCard.vue";
 import FileSelectDrawer from "@/Components/SharepointFileManager/FileDrawer.vue";
 import InstitutionAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
-import MeetingDocumentButton from "@/Components/Buttons/QActButtons/MeetingDocumentButton.vue";
+import LastMeetingCard from "@/Components/Cards/QuickContentCards/LastMeetingCard.vue";
 import ModelsDocumentViewer from "@/Components/SharepointFileManager/ModelsDocumentViewer.vue";
-import NewMeetingButton from "@/Components/Buttons/NewMeetingButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import QuestionsTabPane from "@/Components/TabPaneContent/QuestionsTabPane.vue";
-import QuickContentCard from "@/Components/Cards/QuickContentCard.vue";
-import getRelativeTime, {
-  getDaysDifference,
-} from "@/Composables/getRelativeTime";
 
 defineOptions({ layout: AdminLayout });
 

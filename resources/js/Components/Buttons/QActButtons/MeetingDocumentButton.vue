@@ -1,7 +1,7 @@
 <template>
   <NMessageProvider>
     <FileUploader
-      :button="MeetingButtonTemplate"
+      :button="meetingButton"
       :content-model="contentModel"
       :content-model-options="objectOptions"
       :content-type-options="contentTypeOptions"
@@ -11,13 +11,13 @@
   </NMessageProvider>
 </template>
 
-<script setup lang="ts">
-import { NMessageProvider } from "naive-ui";
+<script setup lang="tsx">
+import { DocumentAdd24Filled } from "@vicons/fluent";
+import { NButton, NIcon, NMessageProvider } from "naive-ui";
 import { computed } from "vue";
 
 import { contentTypeOptions } from "@/Composables/someTypes";
 import FileUploader from "@/Components/SharepointFileManager/FileUploader.vue";
-import MeetingButtonTemplate from "./MeetingButtonTemplate.vue";
 
 const props = defineProps<{
   dutyInstitution: App.Models.DutyInstitution;
@@ -52,4 +52,13 @@ const contentModel = computed(() => ({
   ],
   //   contentTypes: props.doing.types,
 }));
+
+const meetingButton = (
+  <NButton size="small">
+    {{
+      default: () => "Įkelti protokolą?",
+      icon: <NIcon component={DocumentAdd24Filled}></NIcon>,
+    }}
+  </NButton>
+);
 </script>

@@ -112,7 +112,9 @@ class DutyInstitutionController extends Controller
                 ...$dutyInstitution->toArray(), 
                 'questions' => $questions->load('doings')->map(function ($question) {
                     $question->loadCount('doings');
-                    return $question;
+                    return [...$question->toArray(), 'doings' => $question->doings->map(function ($doing) {
+                        return [...$doing->toArray(), 'needs_attention' => $doing->needs_attention];
+                    })];
                 }),
                 'users' => $users,
                 'types' => $dutyInstitution->types->load('documents')->map(function ($type) use ($dutyInstitution) {
@@ -141,7 +143,9 @@ class DutyInstitutionController extends Controller
                 'receivedRelationships' => $receivedRelationships,
                 'givenRelationships' => $givenRelationships,
                 'lastMeetingDoing' => $dutyInstitution->lastMeetingDoing(),
-                'doings' => $dutyInstitution->doings()->withWhereHas('documents')->get(),
+                'doings' => $dutyInstitution->doings()->withWhereHas('documents')->get()->map(function ($doing) {
+                    return [...$doing->toArray(), 'needs_attention' => $doing->needs_attention];
+                }),
             ],
             'doingTypes' => Type::where('model_type', Doing::class)->get()->map(function ($doingType) {
                 return [
