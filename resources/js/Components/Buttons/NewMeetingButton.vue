@@ -14,8 +14,7 @@
     role="card"
     aria-modal="true"
     preset="card"
-    :closable="current === 1"
-    :mask-closable="current === 1"
+    @update:show="current = 1"
   >
     <!-- <template #header-extra>
       <NButton v-if="current === 1" text
@@ -27,8 +26,13 @@
       <NStep title="Pasirink klausimą"> </NStep>
       <NStep title="Sukurk posėdžio įvykį"> </NStep>
     </NSteps>
-    <FadeTransition>
-      <NForm v-if="current === 1" :model="questionForm">
+    <FadeTransition mode="out-in">
+      <NForm
+        v-if="current === 1"
+        ref="questionFormRef"
+        :rules="questionFormRules"
+        :model="questionForm"
+      >
         <FadeTransition>
           <NAlert
             v-if="showAlert"
@@ -59,11 +63,12 @@
           </NAlert>
         </FadeTransition>
         <NGrid cols="1">
-          <NFormItemGi label="Klausimo pavadinimas" path="title" required>
+          <NFormItemGi label="Klausimo pavadinimas" path="titlesOrIds" required>
             <NSelect
-              v-model:value="questionForm.title"
+              v-model:value="questionForm.titlesOrIds"
               placeholder="Studijų tinklelio peržiūra"
               filterable
+              multiple
               tag
               :options="allQuestionOptions"
               ><template #action>
@@ -74,6 +79,17 @@
                 >
               </template></NSelect
             >
+            <NPopover>
+              <template #trigger>
+                <NCheckbox
+                  v-model:checked="questionForm.andOther"
+                  class="ml-4 w-fit"
+                  ><span class="whitespace-nowrap">ir kiti...</span></NCheckbox
+                >
+              </template>
+              <strong>„ir kiti...“</strong> – leidžia suprasti, kad yra kitų, be
+              jau pažymėtų, svarstomų klausimų.
+            </NPopover>
           </NFormItemGi>
           <NFormItemGi
             v-if="!isExistingQuestionSelected"
@@ -83,34 +99,24 @@
             <NInput
               v-model:value="questionForm.description"
               type="textarea"
-              placeholder="Aprašykite klausimo kontekstą, jeigu to reikia..."
+              placeholder="Aprašykite klausimo (-ų) kontekstą, jeigu to reikia..."
             ></NInput>
           </NFormItemGi>
           <NFormItemGi :show-label="false">
             <NButton
-              v-if="isExistingQuestionSelected"
               :loading="loading"
               type="primary"
-              @click="pickQuestion"
-              >Panaudoti</NButton
+              @click.prevent="pickQuestion"
+              >Toliau...</NButton
             >
-            <NButton
-              v-else
-              :loading="loading"
-              type="primary"
-              @click="createQuestion"
-              >{{ "Sukurti" }}</NButton
-            ></NFormItemGi
-          >
+          </NFormItemGi>
         </NGrid>
       </NForm>
-    </FadeTransition>
-    <FadeTransition>
       <DoingForm
-        v-if="current === 2"
+        v-else-if="current === 2"
         :doing="doingTemplate"
-        :question="question"
         :doing-types="doingTypes"
+        :question-form="questionForm"
         model-route="doings.store"
         @success="showDoingForm = false"
       ></DoingForm>
@@ -118,7 +124,7 @@
     <div class="absolute bottom-8 right-12">
       <FadeTransition>
         <NButton
-          v-if="!showAlert"
+          v-if="!showAlert && current === 1"
           type="tertiary"
           color="#bbbbbb"
           text
@@ -144,12 +150,14 @@ import {
   NAlert,
   NButton,
   NButtonGroup,
+  NCheckbox,
   NForm,
   NFormItemGi,
   NGrid,
   NIcon,
   NInput,
   NModal,
+  NPopover,
   NSelect,
   NStep,
   NSteps,
@@ -157,6 +165,7 @@ import {
 } from "naive-ui";
 import { computed, ref } from "vue";
 import { useForm, usePage } from "@inertiajs/inertia-vue3";
+import { useStorage } from "@vueuse/core";
 import route from "ziggy-js";
 
 import { questionOptions } from "@/Composables/someTypes";
@@ -170,8 +179,7 @@ const props = defineProps<{
 
 const showDoingForm = ref(false);
 const loading = ref(false);
-const question = ref(null);
-const showAlert = ref(true);
+const showAlert = useStorage("new-meeting-button-alert", true);
 
 const doingTemplate = {
   title: "Planuotas posėdis",
@@ -186,9 +194,13 @@ const current = ref(1);
 const currentStatus = ref("process");
 
 const questionForm = useForm({
-  title: "",
+  titlesOrIds: [],
   description: "",
+  andOther: false,
+  institution_id: props.dutyInstitution.id,
 });
+
+const questionFormRef = ref(null);
 
 const isExistingQuestionSelected = computed(() => {
   // check if questionForm title is number
@@ -213,36 +225,22 @@ const allQuestionOptions = [
   },
 ];
 
-const next = () => {
-  if (current.value === null) current.value = 1;
-  else current.value++;
-};
-
-const createQuestion = () => {
+const pickQuestion = (e: MouseEvent) => {
   loading.value = true;
-  questionForm.post(
-    route("questions.store", {
-      duty_institution_id: props.dutyInstitution.id,
-    }),
-    {
-      preserveScroll: true,
-
-      onSuccess: () => {
-        loading.value = false;
-        console.log(usePage().props.value.flash.data);
-        question.value = usePage().props.value.flash.data;
-        current.value = 2;
-      },
+  questionFormRef.value?.validate((errors) => {
+    if (!errors) {
+      current.value = 2;
     }
-  );
+    loading.value = false;
+  });
 };
 
-const pickQuestion = () => {
-  loading.value = true;
-  question.value = props.dutyInstitution.questions.find(
-    (question) => question.id === questionForm.title
-  );
-  current.value = 2;
-  loading.value = false;
+const questionFormRules = {
+  titlesOrIds: {
+    required: true,
+    type: "array",
+    message: "Pasirink (arba įrašyk) bent vieną klausimą",
+    trigger: ["blur"],
+  },
 };
 </script>

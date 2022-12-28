@@ -1,5 +1,5 @@
 <template>
-  <NForm :model="doingForm">
+  <NForm ref="formRef" :rules="rules" :model="doingForm">
     <NGrid cols="2">
       <NFormItemGi label="Veiklos pavadinimas" path="title" required :span="2">
         <NSelect
@@ -28,9 +28,6 @@
           :actions="['confirm']"
         />
       </NFormItemGi>
-      <!-- <NFormItemGi label="Klausimas" :span="2">
-      
-      </NFormItemGi> -->
       <NFormItemGi v-if="doingTypes" label="Tipas" path="doing_type_id" required
         ><NSelect
           v-model:value="doingForm.type_id"
@@ -80,45 +77,65 @@ import StatusTag from "@/Components/Tags/StatusTag.vue";
 const emit = defineEmits(["success"]);
 
 const props = defineProps<{
-  doing: any;
+  doing: App.Models.Doing;
   doingTypes?: any;
   modelRoute: string;
-  question?: any;
+  question?: App.Models.Question;
+  // This question form is from a quick action button, idk if it shouldn't be refactored
+  questionForm?: Record<string, any>;
 }>();
 
 const showModal = ref(false);
 const doingForm = useForm(props.doing);
+const formRef = ref(null);
+
+const rules = {
+  title: {
+    required: true,
+    trigger: ["blur"],
+  },
+  date: {
+    required: true,
+    trigger: ["blur"],
+    message: "Veiklos data yra privaloma",
+  },
+  type_id: {
+    required: true,
+    trigger: ["blur"],
+  },
+};
 
 const upsertDoing = () => {
-  doingForm.transform((data) => ({
-    ...data,
-    question_id: props.question.id,
-  }));
-  if (props.modelRoute == "doings.update") {
-    doingForm.patch(
-      route(props.modelRoute, {
-        question_id: parseInt(props.question.id),
-        doing: props.doing.id,
-      }),
-      {
-        onSuccess: () => {
-          showModal.value = false;
-          emit("success");
-        },
+  formRef.value?.validate((errors) => {
+    if (errors) {
+      /* empty */
+    } else {
+      doingForm.transform((data) => ({
+        ...data,
+        question_id: props.question?.id,
+        questionForm: props.questionForm,
+      }));
+      if (props.modelRoute == "doings.update") {
+        doingForm.patch(
+          route(props.modelRoute, {
+            doing: props.doing.id,
+          }),
+          {
+            onSuccess: () => {
+              showModal.value = false;
+              emit("success");
+            },
+          }
+        );
+      } else {
+        doingForm.post(route(props.modelRoute), {
+          onSuccess: () => {
+            showModal.value = false;
+            emit("success");
+          },
+        });
       }
-    );
-  } else {
-    doingForm.post(
-      route(props.modelRoute, {
-        question_id: parseInt(props.question.id),
-      }),
-      {
-        onSuccess: () => {
-          showModal.value = false;
-          emit("success");
-        },
-      }
-    );
-  }
+    }
+  });
 };
 </script>

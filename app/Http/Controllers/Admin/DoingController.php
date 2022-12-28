@@ -69,12 +69,32 @@ class DoingController extends Controller
             'title' => 'required',
             'type_id' => 'required',
         ]);
-
+    
         $doing = Doing::create
             ($request->only('title') + ['status' => 'Sukurtas', 'date' => $request->date ?? now()]);
         
         $doing->types()->sync($request->type_id);
-        $doing->questions()->sync($request->question_id);
+
+        if (!is_null($request->input('questionForm'))) {
+            // parse 'titlesOrIds' for new questions
+            foreach ($request->input('questionForm')['titlesOrIds'] as $value) {
+                switch (gettype($value)) {
+                    case 'integer':
+                        $doing->questions()->attach($value);
+                        break;
+                    case 'string':
+                        $doing->questions()->create([
+                            'title' => $value,
+                            'description' => $request->input('questionForm')['description'],
+                            'status' => 'Sukurtas',
+                            'institution_id' => $request->input('questionForm')['institution_id']
+                        ]);
+                        break;
+                    }
+                }
+        } else {
+            $doing->questions()->sync($request->question_id);
+        }
 
         DoingStatusManager::generateStatusForNewDoing($doing);
         TaskCreator::createAutomaticTasks($doing);

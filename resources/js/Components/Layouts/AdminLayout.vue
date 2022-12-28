@@ -90,6 +90,7 @@ import {
 } from "naive-ui";
 import { Head, usePage } from "@inertiajs/inertia-vue3";
 import { computed, onMounted, ref, watch } from "vue";
+import { useStorage } from "@vueuse/core";
 
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import AdminMenu from "@/Components/Menus/AdminMenu.vue";
@@ -107,9 +108,9 @@ defineProps<{
   backUrl?: string | null;
 }>();
 
-const collapsed = ref(false);
 const showModal = ref(false);
 const mounted = ref(false);
+const collapsed = useStorage("admin-menu-collapsed", false);
 
 const isThemeDark = ref(isDarkMode());
 

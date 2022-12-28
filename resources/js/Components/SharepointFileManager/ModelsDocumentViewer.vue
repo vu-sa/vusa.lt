@@ -5,7 +5,7 @@
     <!-- <h3 class="mb-4">Dokumentai</h3> -->
     <div class="flex h-8">
       <div class="w-fit">
-        <Transition name="fade" mode="out-in">
+        <FadeTransition mode="out-in">
           <FuzzySearcher
             v-if="!loading"
             key="search"
@@ -21,7 +21,7 @@
             round
             class="w-96"
           /> -->
-        </Transition>
+        </FadeTransition>
       </div>
       <NButtonGroup class="ml-auto">
         <NButton
@@ -201,16 +201,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.25s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
 .list-move,
 .list-enter-active,
 .list-leave-active {
@@ -225,10 +215,6 @@ onMounted(() => {
 .list-leave-active {
   position: v-bind('absolute ? "absolute" : "initial"');
 }
-
-/* table.n-data-table-table thead.n-data-table-thead {
-  display: none;
-} */
 
 div.n-data-table {
   --n-merged-th-color: transparent;
