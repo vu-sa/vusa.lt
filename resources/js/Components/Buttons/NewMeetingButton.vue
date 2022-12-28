@@ -35,7 +35,7 @@
             title="Pastebėjimas"
             closable
             class="mb-4"
-            type="default"
+            type="warning"
           >
             <template #icon>
               <NIcon><BookExclamationMark20Filled /></NIcon>

@@ -6,6 +6,7 @@
         v-for="institution in dutyInstitutions"
         :key="institution.id"
         :institution="institution"
+        :duties="duties"
         :is-padalinys="institution.alias === institution.padalinys.alias"
         show-last-meeting
       />
@@ -59,6 +60,7 @@ defineOptions({
 
 defineProps<{
   dutyInstitutions: Record<string, any>[];
+  duties: App.Models.Duty[];
 }>();
 
 const windowOpen = (url: string, target: string) => {

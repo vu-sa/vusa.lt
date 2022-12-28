@@ -12,13 +12,41 @@
     <template #header>
       <span :class="{ 'font-bold': isPadalinys }">{{ institution.name }}</span>
     </template>
-    <template #header-extra
-      ><NButton circle size="small" quaternary @click.stop
-        ><template #icon
-          ><NIcon
-            :component="MoreHorizontal24Filled"
-          ></NIcon></template></NButton
-    ></template>
+    <template #header-extra>
+      <div class="inline-flex gap-2">
+        <NPopover>
+          <template #trigger>
+            <NButton text size="small" circle @click.stop>
+              <template #icon>
+                <UserAvatar :user="$page.props.user" :size="24" />
+              </template>
+            </NButton>
+          </template>
+          <div class="flex flex-col gap-2">
+            <NButton
+              v-for="duty in institutionDuties"
+              :key="duty.id"
+              size="small"
+              secondary
+            >
+              <template #icon>
+                <UserAvatar :user="$page.props.user" :size="16" />
+              </template>
+              {{ duty.name }}</NButton
+            >
+          </div>
+        </NPopover>
+        <NButton circle size="small" quaternary @click.stop
+          ><template #icon
+            ><NIcon :component="MoreHorizontal24Filled"></NIcon></template
+        ></NButton>
+      </div>
+    </template>
+    <InstitutionAvatarGroup
+      v-if="institution.users"
+      :users="institution.users"
+    />
+
     <template #footer>
       <div class="flex justify-between gap-2">
         <NTag
@@ -43,25 +71,30 @@
         </a>
       </div>
     </template>
-    <InstitutionAvatarGroup
-      v-if="institution.users"
-      :users="institution.users"
-    />
   </NCard>
 </template>
 
 <script setup lang="tsx">
 import { CalendarClock24Filled, MoreHorizontal24Filled } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
-import { NButton, NCard, NIcon, NTag } from "naive-ui";
+import { NAvatar, NButton, NCard, NIcon, NPopover, NTag } from "naive-ui";
+import { computed } from "vue";
 import route from "ziggy-js";
 
 import InstitutionAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
+import UserAvatar from "../Avatars/UserAvatar.vue";
 import getRelativeTime from "@/Composables/getRelativeTime";
 
-defineProps<{
+const props = defineProps<{
   institution: App.Models.DutyInstitution;
   isPadalinys?: boolean;
   showLastMeeting?: boolean;
+  duties: App.Models.Duty[];
 }>();
+
+const institutionDuties = computed(() => {
+  return props.duties.filter((duty) => {
+    return duty.institution_id === props.institution.id;
+  });
+});
 </script>

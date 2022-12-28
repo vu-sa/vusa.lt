@@ -2,7 +2,7 @@
   <div class="inline-flex flex-row items-center">
     <NAvatar
       round
-      size="small"
+      :size="size"
       object-fit="cover"
       :src="user.profile_photo_path"
     >
@@ -22,11 +22,17 @@
 <script setup lang="ts">
 import { NAvatar } from "naive-ui";
 
-defineProps<{
-  showName?: boolean;
-  showPadalinys?: boolean;
-  user: App.Models.User;
-}>();
+withDefaults(
+  defineProps<{
+    showName?: boolean;
+    showPadalinys?: boolean;
+    size: string | number;
+    user: App.Models.User;
+  }>(),
+  {
+    size: "small",
+  }
+);
 
 const userInitials = (name: string) => {
   const words = name.split(" ");

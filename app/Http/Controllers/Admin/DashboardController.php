@@ -17,7 +17,9 @@ class DashboardController extends Controller
     {
         // load user duty institutions
         $user = User::find(auth()->user()->id);
-        $dutyInstitutions = $user->duties->pluck('institution')->flatten()->unique();
+        $duties = $user->duties;
+
+        $dutyInstitutions = $duties->pluck('institution')->flatten()->unique();
 
         // convert to eloquent collection
         $dutyInstitutions = new EloquentCollection($dutyInstitutions);
@@ -27,7 +29,8 @@ class DashboardController extends Controller
         return Inertia::render('Admin/ShowDashboard', [
             'dutyInstitutions' => $dutyInstitutions->map(function ($institution) {
                 return [...$institution->toArray(), 'lastMeetingDoing' => $institution->lastMeetingDoing()];
-            })
+            }),
+            'duties' => $duties->load('institution')
         ]);
     }
 
