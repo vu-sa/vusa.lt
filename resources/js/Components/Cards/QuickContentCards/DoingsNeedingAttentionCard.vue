@@ -1,14 +1,7 @@
 <template>
   <QuickContentCard>
-    <!-- <div class="mt-2 inline-flex items-center gap-2">
-      <NIcon :size="45" :component="CalendarClock20Regular"></NIcon>
-
-      <span class="text-5xl font-bold">
-        <NNumberAnimation :from="0" :to="20"></NNumberAnimation>
-      </span>
-    </div> -->
     <NProgress
-      class="mt-3 mb-4"
+      class="mt-2 mb-4"
       color="#fbb01b"
       type="line"
       :percentage="percentage"
@@ -19,7 +12,7 @@
         {{ doingsNotNeedingAttention }} / {{ doings.length }}</span
       >
     </NProgress>
-    <p class="mt-6 flex items-center gap-2">
+    <p class="mt-4 flex items-center gap-2">
       <NTag size="small" :bordered="false" type="error" round
         >{{ doings.length - doingsNotNeedingAttention }} veiklos
         <template #icon><NIcon :component="Sparkle20Filled" /></template>
@@ -36,11 +29,9 @@
 </template>
 
 <script setup lang="tsx">
-import { CalendarClock20Regular, Sparkle20Filled } from "@vicons/fluent";
-import { Inertia } from "@inertiajs/inertia";
-import { NButton, NIcon, NNumberAnimation, NProgress, NTag } from "naive-ui";
-import { computed, ref } from "vue";
-import route from "ziggy-js";
+import { NIcon, NProgress, NTag } from "naive-ui";
+import { Sparkle20Filled } from "@vicons/fluent";
+import { computed } from "vue";
 
 import MeetingDocumentButton from "@/Components/Buttons/QActButtons/MeetingDocumentButton.vue";
 import QuickContentCard from "@/Components/Cards/QuickContentCards/QuickContentCard.vue";

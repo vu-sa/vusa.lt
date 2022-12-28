@@ -32,17 +32,30 @@
         <FadeTransition>
           <NAlert
             v-if="showAlert"
-            title="Pastebėjimas"
+            style="background-color: rgba(0, 0, 0, 0)"
+            title="Įsidėmėk!"
             closable
             class="mb-4"
-            type="warning"
+            type="default"
+            @close="showAlert = false"
           >
             <template #icon>
               <NIcon><BookExclamationMark20Filled /></NIcon>
             </template>
-            Pasirink arba įrašyk svarbiausią klausimą, kuris
-            <strong>bus sprendžiamas posėdyje</strong> (ar yra įtrauktas į
-            darbotvarkę).
+            <p class="inline-flex items-center">
+              <span>Kiekvienas posėdis svarsto</span>
+              <NTag class="mx-2" :bordered="false" round size="small">
+                <template #icon
+                  ><NIcon :component="BookQuestionMark20Filled"></NIcon
+                ></template>
+                <strong>klausimus</strong>
+              </NTag>
+            </p>
+            <p class="my-0">
+              Patogiausia juos surasti posėdžio darbotvarkėje.
+              <strong> Pasirink arba įrašyk klausimus</strong>, kurie yra
+              įtraukti į darbotvarkę.
+            </p>
           </NAlert>
         </FadeTransition>
         <NGrid cols="1">
@@ -122,6 +135,7 @@
 import { trans as $t } from "laravel-vue-i18n";
 import {
   BookExclamationMark20Filled,
+  BookQuestionMark20Filled,
   PeopleTeamAdd24Filled,
   PuzzlePiece20Regular,
   Question24Regular,
@@ -157,7 +171,7 @@ const props = defineProps<{
 const showDoingForm = ref(false);
 const loading = ref(false);
 const question = ref(null);
-const showAlert = ref(false);
+const showAlert = ref(true);
 
 const doingTemplate = {
   title: "Planuotas posėdis",

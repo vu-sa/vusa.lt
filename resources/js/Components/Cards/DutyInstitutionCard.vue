@@ -13,7 +13,7 @@
       <span :class="{ 'font-bold': isPadalinys }">{{ institution.name }}</span>
     </template>
     <template #header-extra>
-      <div class="inline-flex gap-2">
+      <div class="inline-flex gap-3">
         <NPopover>
           <template #trigger>
             <NButton text size="small" circle @click.stop>

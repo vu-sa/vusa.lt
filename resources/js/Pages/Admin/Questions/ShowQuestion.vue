@@ -33,12 +33,6 @@
         </NBreadcrumbItem>
       </NBreadcrumb>
     </template>
-    <template #title>
-      <span class="inline-flex items-center"
-        ><NIcon class="mr-2" :component="BookQuestionMark20Filled" />
-        {{ question.title }}</span
-      >
-    </template>
     <template #after-heading>
       <StatusTag :status="question.status" />
     </template>
