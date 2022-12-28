@@ -27,7 +27,8 @@
 
           <NFormItemGi label="Pareigybės tipas" :span="2">
             <NSelect
-              v-model:value="form.type"
+              v-model:value="form.types"
+              multiple
               :options="dutyTypes"
               label-field="title"
               value-field="id"
@@ -101,6 +102,8 @@ const props = defineProps<{
 }>();
 
 const form = useForm("dutyInstitution", props.duty);
+
+console.log(form.types);
 
 const institutionsFromDatabase = props.dutyInstitutions.map(
   (dutyInstitution) => ({
