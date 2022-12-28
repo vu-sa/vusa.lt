@@ -59,35 +59,16 @@
             </NTag>
           </div>
         </template>
-        <div class="mb-2 flex items-center gap-4">
-          <NButton round size="tiny" secondary @click="showDoingModal = true"
-            ><template #icon><NIcon :component="Sparkle20Filled" /></template
-            >Sukurti veiklą</NButton
-          >
-        </div>
 
-        <DoingsTabPane :doings="question.doings"></DoingsTabPane>
+        <DoingsTabPane
+          :question="question"
+          :doings="question.doings"
+          :doing-template="doingTemplate"
+          :doing-types="doingTypes"
+        ></DoingsTabPane>
       </NTabPane>
     </NTabs>
   </PageContent>
-  <NModal
-    v-model:show="showDoingModal"
-    class="prose prose-sm max-w-xl dark:prose-invert"
-    :title="`${$t('Sukurti veiklą')} (${question.title})`"
-    :bordered="false"
-    size="large"
-    role="card"
-    aria-modal="true"
-    preset="card"
-  >
-    <DoingForm
-      :doing="doingTemplate"
-      :question="question"
-      :doing-types="doingTypes"
-      model-route="doings.store"
-      @success="showDoingModal = false"
-    ></DoingForm>
-  </NModal>
   <NModal
     v-model:show="showQuestionModal"
     class="prose prose-sm max-w-xl dark:prose-invert"

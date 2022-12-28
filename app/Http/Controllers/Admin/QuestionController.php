@@ -88,7 +88,7 @@ class QuestionController extends Controller
     {
         $question = $question->load(['doings' => function ($query) {
             $query->orderBy('date');
-        }])->load('institution', 'activities');
+        }])->load('institution', 'activities', 'doings.comments', 'doings.tasks', 'doings.documents');
         
         return Inertia::render('Admin/Questions/ShowQuestion', [
             'question' => [

@@ -23,7 +23,7 @@
       ></NButton>
     </template> -->
     <NSteps class="mb-8" :current="(current as number)" :status="currentStatus">
-      <NStep title="Pasirink klausimą"> </NStep>
+      <NStep title="Pasirink klausimus"> </NStep>
       <NStep title="Sukurk posėdžio įvykį"> </NStep>
     </NSteps>
     <FadeTransition mode="out-in">

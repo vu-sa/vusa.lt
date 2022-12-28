@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Traits\HasComments;
 use Illuminate\Support\Carbon;
+use App\Models\Comment;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
@@ -66,5 +67,10 @@ class Doing extends Model
     public function users()
     {
         return $this->hasManyDeepFromRelations($this->questions(), (new Question)->institution(), (new DutyInstitution)->duties(), (new Duty())->users());
+    }
+
+    public function comments()
+    {
+        return $this->morphMany(Comment::class, 'commentable');
     }
 }
