@@ -33,9 +33,9 @@
         </NBreadcrumbItem>
       </NBreadcrumb>
     </template>
-    <template #after-heading>
-      <StatusTag :status="question.status" />
-    </template>
+    <!-- <template #after-heading>
+        <StatusTag :status="question.status" />
+      </template> -->
     <template #aside-header>
       <div class="inline-flex gap-2">
         <ShowActivityLog :activities="question.activities" />
@@ -45,8 +45,14 @@
         ></NButton>
       </div>
     </template>
+    <QuestionGroupCard :question-group="question.question_group" />
 
-    <NTabs animated type="line" default-value="Veiklos">
+    <NTabs
+      animated
+      type="line"
+      :default-value="currentQuestionsTabPane"
+      @update:value="updateQuestionsTabPane"
+    >
       <NTabPane name="Apie">
         <p>{{ question.description }}</p>
       </NTabPane>
@@ -73,6 +79,7 @@
     v-model:show="showQuestionModal"
     class="prose prose-sm max-w-xl dark:prose-invert"
     :bordered="false"
+    title="Redaguoti klausimą"
     size="large"
     role="card"
     aria-modal="true"
@@ -111,15 +118,15 @@ import {
   NTag,
 } from "naive-ui";
 import { ref } from "vue";
+import { useStorage } from "@vueuse/core";
 import route from "ziggy-js";
 
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
-import DoingForm from "@/Components/AdminForms/DoingForm.vue";
 import DoingsTabPane from "@/Components/TabPaneContent/DoingsTabPane.vue";
-import HelpTextModal from "@/Components/Buttons/HelperButtons/HelpTextModal.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import QuestionForm from "@/Components/AdminForms/QuestionForm.vue";
+import QuestionGroupCard from "@/Components/Cards/QuickContentCards/QuestionGroupCard.vue";
 import ShowActivityLog from "@/Components/Buttons/ShowActivityLog.vue";
 import StatusTag from "@/Components/Tags/StatusTag.vue";
 import getRelativeTime from "@/Composables/getRelativeTime";
@@ -131,7 +138,15 @@ const props = defineProps<{
   doingTypes: Record<string, any>;
 }>();
 
-const showDoingModal = ref(false);
+const currentQuestionsTabPane = useStorage(
+  "admin-CurrentQuestionsTabPane",
+  "Apie"
+);
+
+const updateQuestionsTabPane = (value) => {
+  currentQuestionsTabPane.value = value;
+};
+
 const showQuestionModal = ref(false);
 
 const doingTemplate = {

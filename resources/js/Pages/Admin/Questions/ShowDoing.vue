@@ -80,8 +80,13 @@
       </div>
     </template>
 
-    <NTabs default-value="Aprašymas" animated type="line">
-      <NTabPane name="Aprašymas">
+    <NTabs
+      :default-value="currentDoingsTabPane"
+      animated
+      type="line"
+      @update:value="updateDoingsTabPane"
+    >
+      <NTabPane name="Apie">
         <div v-if="doing.tasks.length > 0" class="m-4 h-fit">
           <h2>Užduotys</h2>
           <SingleTask v-for="task in doing.tasks" :key="task.id" :task="task" />
@@ -161,6 +166,7 @@ import { computed, h, ref } from "vue";
 import route from "ziggy-js";
 
 import { contentTypeOptions, documentTemplate } from "@/Composables/someTypes";
+import { useStorage } from "@vueuse/core";
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import CommentTipTap from "@/Components/TipTap/CommentTipTap.vue";
 import CommentViewer from "@/Components/Comments/CommentViewer.vue";
@@ -185,10 +191,14 @@ const props = defineProps<{
 }>();
 
 const currentCommentField = ref("");
-
 const showModal = ref(false);
-
 const selectedDocument = ref(null);
+
+const currentDoingsTabPane = useStorage("admin-CurrentDoingsTabPane", "Apie");
+
+const updateDoingsTabPane = (value) => {
+  currentDoingsTabPane.value = value;
+};
 
 const contentModel = computed(() => ({
   id: props.doing.id,

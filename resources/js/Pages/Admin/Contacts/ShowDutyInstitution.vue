@@ -29,7 +29,12 @@
         :duty-institution="dutyInstitution"
       ></DoingsNeedingAttentionCard>
     </div>
-    <NTabs animated type="line">
+    <NTabs
+      :default-value="currentDutyInstitutionsTabPane"
+      animated
+      type="line"
+      @update:value="updateDIsTabPane"
+    >
       <NTabPane display-directive="show:lazy" name="Apie">
         <div class="m-4">
           <NCollapse
@@ -183,6 +188,7 @@ import {
   NTag,
 } from "naive-ui";
 import { ref } from "vue";
+import { useStorage } from "@vueuse/core";
 import route from "ziggy-js";
 
 import { documentTemplate } from "@/Composables/someTypes";
@@ -205,6 +211,14 @@ defineProps<{
 }>();
 
 const selectedDocument = ref(null);
+const currentDutyInstitutionsTabPane = useStorage(
+  "admin-CurrentDutyInstitutionsTabPane",
+  "Apie"
+);
+
+const updateDIsTabPane = (value) => {
+  currentDutyInstitutionsTabPane.value = value;
+};
 
 const updateSelectedDocument = (document) => {
   selectedDocument.value = document;
