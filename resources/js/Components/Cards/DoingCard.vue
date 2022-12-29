@@ -118,7 +118,7 @@ const icon = computed(() => {
 
 const completedTasks = computed(() => {
   return props.doing.tasks.reduce(
-    (acc: number, task: App.Models.Task) => (acc += task.completed_at === null),
+    (acc: number, task: App.Models.Task) => (acc += task.completed_at !== null),
     0
   );
 });

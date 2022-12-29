@@ -13,6 +13,7 @@ import {
   forceSimulation,
   forceX,
   forceY,
+  select,
 } from "d3";
 import { onBeforeUnmount, onMounted, ref } from "vue";
 
@@ -24,6 +25,7 @@ const props = defineProps<{
 const d3 = {
   create,
   drag,
+  select,
   forceSimulation,
   forceLink,
   forceX,

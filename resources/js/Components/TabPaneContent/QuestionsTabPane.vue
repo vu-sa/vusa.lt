@@ -1,5 +1,5 @@
 <template>
-  <div class="grid grid-cols-4 gap-x-4">
+  <div class="grid grid-cols-3 gap-x-4 xl:grid-cols-4">
     <QuestionCard
       v-for="question in questions"
       :key="question.id"

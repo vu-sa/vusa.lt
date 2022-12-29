@@ -13,19 +13,26 @@
       <MetaIcons />
 
       <NLayout class="min-h-screen">
-        <NLayoutHeader
-          class="fixed z-50 flex flex-row justify-between py-4 pr-8 backdrop-blur-md"
+        <div
+          class="fixed z-50 flex w-full flex-row justify-between py-3 pr-8 backdrop-blur-md dark:border-zinc-700"
         >
           <div class="invisible">
             <NButton secondary round @click="collapsed = !collapsed"
               >Menu</NButton
             >
           </div>
+          <!-- <div class="w-96">
+            <NInput round placeholder="Ieškoti...">
+              <template #suffix
+                ><NIcon :component="Search20Filled"></NIcon
+              ></template>
+            </NInput>
+          </div> -->
           <div class="flex items-center gap-4">
             <NotificationBell />
             <UserAdminOptionsMenu />
           </div>
-        </NLayoutHeader>
+        </div>
         <NLayout class="mt-16" has-sider>
           <NLayoutSider
             class="main-card-gradient ml-4 mb-24 h-fit rounded-md from-white shadow-md"
@@ -79,6 +86,8 @@ import {
   NButton,
   NConfigProvider,
   NDivider,
+  NIcon,
+  NInput,
   NLayout,
   NLayoutContent,
   NLayoutHeader,
@@ -89,6 +98,7 @@ import {
   // NThemeEditor,
 } from "naive-ui";
 import { Head, usePage } from "@inertiajs/inertia-vue3";
+import { Search20Filled } from "@vicons/fluent";
 import { computed, onMounted, ref, watch } from "vue";
 import { useStorage } from "@vueuse/core";
 
