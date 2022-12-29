@@ -7,11 +7,14 @@
   >
     <slot />
     <template #footer>
-      <div class="flex items-center justify-between">
+      <div class="flex flex-row-reverse items-center justify-between">
+        <div class="ml-auto inline-flex h-fit w-fit">
+          <NButton size="small" text
+            ><template #icon
+              ><NIcon :component="Info24Regular"></NIcon></template
+          ></NButton>
+        </div>
         <slot name="action-button" />
-        <NButton size="small" text
-          ><template #icon><NIcon :component="Info24Regular"></NIcon></template
-        ></NButton>
       </div> </template
   ></NCard>
 </template>

@@ -95,7 +95,6 @@
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
 import {
-  ArrowTurnRight20Filled,
   BookQuestionMark20Filled,
   DocumentEdit24Regular,
   Home24Regular,
@@ -103,16 +102,13 @@ import {
   Sparkle20Filled,
 } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
-import { Link } from "@inertiajs/inertia-vue3";
 import {
   NBreadcrumb,
   NBreadcrumbItem,
   NButton,
-  NDataTable,
   NEllipsis,
   NIcon,
   NModal,
-  NPopover,
   NTabPane,
   NTabs,
   NTag,
@@ -122,7 +118,6 @@ import { useStorage } from "@vueuse/core";
 import route from "ziggy-js";
 
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
-import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import DoingsTabPane from "@/Components/TabPaneContent/DoingsTabPane.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import QuestionForm from "@/Components/AdminForms/QuestionForm.vue";
@@ -156,83 +151,4 @@ const doingTemplate = {
   // datetime now YYYY-MM-DD HH:MM:SS and delimit T
   date: new Date().toISOString().split("T").join(" ").slice(0, 16) + ":00",
 };
-
-const columns = [
-  {
-    title: "ID",
-    key: "id",
-  },
-  {
-    title: "Pavadinimas",
-    key: "title",
-  },
-  {
-    title: "Tipai",
-    key: "types",
-    render(row) {
-      return (
-        <div>
-          {row.types.map(({ title }) => {
-            return <NTag size="small">{title}</NTag>;
-          })}
-        </div>
-      );
-    },
-  },
-  {
-    title: "Status",
-    key: "status",
-    render(row) {
-      return <StatusTag status={row.status} />;
-    },
-  },
-  {
-    title: "Įvykio data",
-    key: "date",
-  },
-  {
-    title: "Paskutinis atnaujinimas",
-    key: "updated_at",
-    render(row) {
-      return <span>{getRelativeTime(row.updated_at)}</span>;
-    },
-  },
-  {
-    title: "Veiksmai",
-    key: "actions",
-    render(row) {
-      return (
-        <div class="flex gap-2">
-          <NPopover>
-            {{
-              default: () => "Peržiūrėti įvykį",
-              trigger: () => (
-                <Link
-                  href={route("doings.show", {
-                    question: props.question.id,
-                    doing: row.id,
-                  })}
-                >
-                  <NButton size="small">
-                    {{
-                      icon: () => <NIcon component={ArrowTurnRight20Filled} />,
-                    }}
-                  </NButton>
-                </Link>
-              ),
-            }}
-          </NPopover>
-          <DeleteModelButton
-            model={row}
-            size="small"
-            modelRoute="doings.destroy"
-            modelRouteParams={{
-              doing: row.id,
-            }}
-          />
-        </div>
-      );
-    },
-  },
-];
 </script>
