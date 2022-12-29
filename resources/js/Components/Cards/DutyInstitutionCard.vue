@@ -57,7 +57,7 @@
         >
           {{ type.title }}
         </NTag>
-        <a
+        <!-- <a
           v-if="showLastMeeting"
           class="inline-flex items-center"
           target="_blank"
@@ -68,7 +68,7 @@
           <span class="font-bold">{{
             getRelativeTime(institution.lastMeetingDoing?.date)
           }}</span>
-        </a>
+        </a> -->
       </div>
     </template>
   </NCard>
