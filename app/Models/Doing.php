@@ -21,7 +21,8 @@ class Doing extends Model
 
     protected $casts = [
         // 'created_at' => 'timestamp'
-        'created_at' => 'datetime:Y-m-d H:i'
+        'created_at' => 'datetime:Y-m-d H:i',
+        'extra_attributes' => 'array'
     ];
 
     public function getActivitylogOptions(): LogOptions

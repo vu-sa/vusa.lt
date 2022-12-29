@@ -80,11 +80,18 @@
       </div>
     </template>
 
-    <NTabs default-value="Dokumentai" animated type="line">
+    <NTabs default-value="Aprašymas" animated type="line">
       <NTabPane name="Aprašymas">
         <div v-if="doing.tasks.length > 0" class="m-4 h-fit">
           <h2>Užduotys</h2>
           <SingleTask v-for="task in doing.tasks" :key="task.id" :task="task" />
+        </div>
+        <div
+          v-if="doing.extra_attributes?.andOther"
+          class="border border-vusa-red p-4"
+        >
+          Įvykį sukūręs žmogus pažymėjo jį, kaip turintį kitų klausimų...
+          <!-- Sutvarkyti šią funkciją... -->
         </div>
       </NTabPane>
       <NTabPane name="Dokumentai">
@@ -128,15 +135,7 @@
   ></FileSelectDrawer>
 </template>
 
-<script lang="ts">
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
-
-export default {
-  layout: AdminLayout,
-};
-</script>
-
-<script setup lang="ts">
+<script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
 import {
   BookQuestionMark20Filled,
@@ -162,6 +161,7 @@ import { computed, h, ref } from "vue";
 import route from "ziggy-js";
 
 import { contentTypeOptions, documentTemplate } from "@/Composables/someTypes";
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import CommentTipTap from "@/Components/TipTap/CommentTipTap.vue";
 import CommentViewer from "@/Components/Comments/CommentViewer.vue";
 import DoingForm from "@/Components/AdminForms/DoingForm.vue";
@@ -173,6 +173,10 @@ import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import ShowActivityLog from "@/Components/Buttons/ShowActivityLog.vue";
 import SingleTask from "@/Components/Tasks/SingleTask.vue";
 import StatusTag from "@/Components/Tags/StatusTag.vue";
+
+defineOptions({
+  layout: AdminLayout,
+});
 
 const props = defineProps<{
   doing: Record<string, any>;
@@ -193,24 +197,20 @@ const contentModel = computed(() => ({
   modelTypes: props.doing.types,
 }));
 
-const renderIcon = (icon) => {
-  return () => {
-    return h(NIcon, null, {
-      default: () => h(icon),
-    });
-  };
-};
-
 const breadcrumbOptions = [
   {
     label: "Pradinis",
     key: "dashboard",
-    icon: renderIcon(Home24Regular),
+    icon: () => {
+      return <NIcon component={Home24Regular}></NIcon>;
+    },
   },
   {
     label: props.question?.institution.name,
     key: "institution",
-    icon: renderIcon(PeopleTeam32Filled),
+    icon: () => {
+      return <NIcon component={PeopleTeam32Filled}></NIcon>;
+    },
   },
 ];
 

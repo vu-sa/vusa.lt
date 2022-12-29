@@ -89,6 +89,11 @@ class DoingController extends Controller
                             'status' => 'Sukurtas',
                             'institution_id' => $request->input('questionForm')['institution_id']
                         ]);
+
+                        if (!is_null($request->input('questionForm')['andOther'] ?? null)) {
+                            $doing->extra_attributes = ['andOther' => $request->input('questionForm')['andOther']];
+                            $doing->save();
+                        }
                         break;
                     }
                 }
