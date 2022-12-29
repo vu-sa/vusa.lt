@@ -80,6 +80,21 @@
   <!-- </NThemeEditor> -->
 </template>
 
+<script lang="ts">
+import { isDarkMode } from "@/Composables/darkMode";
+import { ref } from "vue";
+
+const isThemeDark = ref(isDarkMode());
+
+const configProviderPropsRef = computed<ConfigProviderProps>(() => ({
+  theme: isThemeDark.value ? darkTheme : undefined,
+}));
+
+const { message } = createDiscreteApi(["message"], {
+  configProviderProps: configProviderPropsRef,
+});
+</script>
+
 <script setup lang="ts">
 import {
   ConfigProviderProps,
@@ -90,7 +105,6 @@ import {
   NInput,
   NLayout,
   NLayoutContent,
-  NLayoutHeader,
   NLayoutSider,
   NModal,
   createDiscreteApi,
@@ -99,10 +113,10 @@ import {
 } from "naive-ui";
 import { Head, usePage } from "@inertiajs/inertia-vue3";
 import { Search20Filled } from "@vicons/fluent";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, watch } from "vue";
 import { useStorage } from "@vueuse/core";
 
-import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
+import { updateDarkMode } from "@/Composables/darkMode";
 import AdminMenu from "@/Components/Menus/AdminMenu.vue";
 import AppLogo from "@/Components/AppLogo.vue";
 import Changelog from "@/Components/Cards/ChangelogCard.vue";
@@ -121,8 +135,6 @@ defineProps<{
 const showModal = ref(false);
 const mounted = ref(false);
 const collapsed = useStorage("admin-menu-collapsed", false);
-
-const isThemeDark = ref(isDarkMode());
 
 const successMessage = computed(() => usePage().props.value.flash.success);
 const infoMessage = computed(() => usePage().props.value.flash.info);
@@ -179,15 +191,9 @@ const darkThemeOverrides = {
   },
 };
 
+const lightColorScheme = "light";
+
 onMounted(() => {
   mounted.value = true;
-});
-
-const configProviderPropsRef = computed<ConfigProviderProps>(() => ({
-  theme: isThemeDark.value ? darkTheme : undefined,
-}));
-
-const { message } = createDiscreteApi(["message"], {
-  configProviderProps: configProviderPropsRef,
 });
 </script>
