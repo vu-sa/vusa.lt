@@ -1,5 +1,5 @@
 <template>
-  <NBadge :dot="notifications.length > 0">
+  <NBadge :offset="[-2, -4]" :value="notifications.length">
     <NPopover
       trigger="click"
       size="small"
@@ -7,8 +7,9 @@
       :show-arrow="true"
     >
       <template #trigger>
-        <NButton circle size="small" text
-          ><template #icon><NIcon :component="Alert24Regular"></NIcon></template
+        <NButton circle text
+          ><template #icon
+            ><NIcon :size="24" :component="Alert24Regular"></NIcon></template
         ></NButton>
       </template>
       <div

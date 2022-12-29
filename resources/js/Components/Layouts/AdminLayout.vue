@@ -28,8 +28,9 @@
               ></template>
             </NInput>
           </div> -->
-          <div class="flex items-center gap-4">
-            <NotificationBell />
+          <div class="mt-1 flex items-center gap-8">
+            <TaskIndicatorButton class="mt-0.5" />
+            <NotificationBell class="mt-1" />
             <UserAdminOptionsMenu />
           </div>
         </div>
@@ -112,7 +113,6 @@ import {
   // NThemeEditor,
 } from "naive-ui";
 import { Head, usePage } from "@inertiajs/inertia-vue3";
-import { Search20Filled } from "@vicons/fluent";
 import { computed, onMounted, watch } from "vue";
 import { useStorage } from "@vueuse/core";
 
@@ -124,6 +124,7 @@ import DarkModeSwitch from "@/Components/Buttons/DarkModeSwitch.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
 import NotificationBell from "@/Components/Notifications/NotificationBell.vue";
+import TaskIndicatorButton from "../Buttons/TaskIndicatorButton.vue";
 import UserAdminOptionsMenu from "@/Components/Menus/UserSettingsDropdown.vue";
 
 defineProps<{
@@ -190,8 +191,6 @@ const darkThemeOverrides = {
     footerColor: "rgb(30 30 33)",
   },
 };
-
-const lightColorScheme = "light";
 
 onMounted(() => {
   mounted.value = true;
