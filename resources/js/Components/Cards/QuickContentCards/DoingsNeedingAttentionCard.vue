@@ -9,7 +9,11 @@
     >
       <span class="inline-flex items-center text-3xl font-bold">
         <NIcon class="mr-1" :component="Sparkle20Filled"></NIcon>
-        {{ doingsNotNeedingAttention }} / {{ doings.length }}</span
+        <NNumberAnimation
+          :from="0"
+          :to="doingsNotNeedingAttention"
+        ></NNumberAnimation>
+        / {{ doings.length }}</span
       >
     </NProgress>
     <p class="mt-4 flex items-center gap-2">
@@ -29,9 +33,9 @@
 </template>
 
 <script setup lang="tsx">
-import { NIcon, NProgress, NTag } from "naive-ui";
+import { NIcon, NNumberAnimation, NProgress, NTag } from "naive-ui";
 import { Sparkle20Filled } from "@vicons/fluent";
-import { computed } from "vue";
+import { computed, onMounted, ref } from "vue";
 
 import MeetingDocumentButton from "@/Components/Buttons/QActButtons/MeetingDocumentButton.vue";
 import QuickContentCard from "@/Components/Cards/QuickContentCards/QuickContentCard.vue";
@@ -54,7 +58,11 @@ const doingsNotNeedingAttention = computed(() => {
   );
 });
 
-const percentage = computed(() => {
-  return Math.round((doingsNotNeedingAttention.value / doings.length) * 100);
+const percentage = ref(0);
+
+onMounted(() => {
+  percentage.value = Math.round(
+    (doingsNotNeedingAttention.value / doings.length) * 100
+  );
 });
 </script>

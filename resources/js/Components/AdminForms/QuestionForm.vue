@@ -23,7 +23,7 @@
           placeholder="Aprašykite klausimo kontekstą, jeigu to reikia..."
         ></NInput>
       </NFormItemGi>
-      <NFormItemGi label="Statusas" path="status" required :span="2">
+      <!-- <NFormItemGi label="Statusas" path="status" required :span="2">
         <NRadioGroup v-model:value="questionForm.status">
           <NRadio
             v-for="status in questionStatusOptions"
@@ -32,7 +32,7 @@
             ><StatusTag :status="status.label"></StatusTag
           ></NRadio>
         </NRadioGroup>
-      </NFormItemGi>
+      </NFormItemGi> -->
       <NFormItemGi :show-label="false"
         ><NButton type="primary" @click="createQuestion"
           >Sukurti</NButton
