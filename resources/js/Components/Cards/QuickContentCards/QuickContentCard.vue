@@ -5,6 +5,9 @@
       footer: 'soft',
     }"
   >
+    <template #header-extra>
+      <slot name="header-extra" />
+    </template>
     <slot />
     <template #footer>
       <div class="flex flex-row-reverse items-center justify-between">

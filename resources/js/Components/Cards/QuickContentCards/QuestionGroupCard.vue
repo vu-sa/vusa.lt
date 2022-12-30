@@ -1,45 +1,62 @@
 <template>
   <QuickContentCard class="mb-4">
-    <template v-if="questionGroup">
+    <FadeTransition mode="out-in">
+      <div v-if="questionGroup">
+        <div class="flex items-center gap-2">
+          <Link
+            class="inline-flex items-center gap-2"
+            :href="route('questionGroups.show', questionGroup.id)"
+          >
+            <NIcon :size="30" :component="NotebookQuestionMark24Filled" />
+            <span class="text-2xl font-bold line-clamp-1">{{
+              questionGroup.title
+            }}</span>
+          </Link>
+        </div>
+        <p class="mt-4">
+          Šis klausimas priklauso
+          <strong>{{ questionGroup.title }}</strong> klausimo grupei.
+        </p>
+      </div>
+      <p v-else class="mt-2">Klausimas nepriklauso jokiai klausimo grupei.</p>
+    </FadeTransition>
+    <template #action-button>
       <div class="flex items-center gap-2">
         <Link
-          class="inline-flex items-center gap-2"
+          v-if="questionGroup"
           :href="route('questionGroups.show', questionGroup.id)"
         >
-          <NIcon :size="36" :component="NotebookQuestionMark24Filled" />
-          <span class="text-3xl font-bold">{{ questionGroup.title }}</span>
+          <NButton icon-placement="right" secondary size="small"
+            ><template #icon
+              ><NIcon :component="ArrowUpRight24Filled" /></template
+            >Eiti</NButton
+          >
         </Link>
+        <QuestionGroupChanger :question="question"
+          ><template v-if="questionGroup"
+            >Pakeisti?</template
+          ></QuestionGroupChanger
+        >
       </div>
-      <p class="mt-2">
-        Šis klausimas priklauso
-        <strong>{{ questionGroup.title }}</strong> klausimo grupei.
-      </p>
-    </template>
-
-    <p v-else class="mt-2">Klausimas nepriklauso jokiai klausimo grupei.</p>
-    <template #action-button>
-      <NButton v-if="questionGroup" secondary size="small"
-        >safoiasnfioas</NButton
-      >
-      <NButton v-else secondary size="small">
-        <template #icon
-          ><NIcon :component="NotebookQuestionMark24Filled"></NIcon
-        ></template>
-        Pridėti?</NButton
-      >
     </template>
   </QuickContentCard>
 </template>
 
 <script setup lang="tsx">
+import {
+  ArrowUpRight24Filled,
+  NotebookQuestionMark24Filled,
+} from "@vicons/fluent";
 import { Link } from "@inertiajs/inertia-vue3";
 import { NButton, NIcon } from "naive-ui";
-import { NotebookQuestionMark24Filled } from "@vicons/fluent";
 import route from "ziggy-js";
 
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
+import QuestionGroupChanger from "@/Components/Buttons/QuestionGroupChanger.vue";
 import QuickContentCard from "@/Components/Cards/QuickContentCards/QuickContentCard.vue";
 
 defineProps<{
   questionGroup?: App.Models.QuestionGroup;
+  question: App.Models.Question;
 }>();
 </script>

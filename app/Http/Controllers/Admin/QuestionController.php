@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Type;
 use App\Models\Doing;
+use App\Models\QuestionGroup;
 
 class QuestionController extends Controller
 {
@@ -147,5 +148,13 @@ class QuestionController extends Controller
         $question->delete();
 
         return redirect()->route('questions.index')->with('success', 'Klausimas sėkmingai ištrintas');
+    }
+
+    public function attachQuestionGroup(Question $question, QuestionGroup $questionGroup, Request $request) {
+        
+        $question->question_group()->associate($questionGroup);
+        $question->save();
+
+        return back()->with('success', 'Klausimas sėkmingai pridėtas prie grupės');
     }
 }

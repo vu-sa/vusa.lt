@@ -24,6 +24,8 @@ Route::feeds();
 Route::prefix('admin')->group(function () {
     Route::middleware(['auth', 'verified'])->group(function () {
 
+        // TODO: use a namespace group
+
         // Main
         Route::get('/', [Admin\DashboardController::class, 'dashboard'])->name('dashboard');
         Route::get('profile', [Admin\DashboardController::class, 'userSettings'])->name('profile');
@@ -51,6 +53,7 @@ Route::prefix('admin')->group(function () {
 
         Route::resource('questions', Admin\QuestionController::class);
         Route::resource('questionGroups', Admin\QuestionGroupController::class);
+        Route::post('questions/{question}/attach/{questionGroup}', [Admin\QuestionController::class, 'attachQuestionGroup'])->name('questions.attachQuestionGroup');
         Route::resource('doings', Admin\DoingController::class);
 
         Route::resource('saziningaiExams', Admin\SaziningaiExamsController::class);

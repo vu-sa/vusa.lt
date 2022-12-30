@@ -19,3 +19,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 */
+
+Route::prefix('v1')->namespace('Api')->group(function () {
+    // Route::middleware(['auth:api'])->group(function () {
+        Route::apiResource('questionGroups', 'ApiQuestionGroupController');
+    // });
+});

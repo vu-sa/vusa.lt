@@ -4,7 +4,7 @@
       <NBreadcrumb class="mb-4 w-full">
         <NBreadcrumbItem @click="Inertia.get(route('dashboard'))">
           <div>
-            <NIcon class="mr-2" size="16" :component="Home24Regular"> </NIcon>
+            <NIcon class="mr-2" size="16" :component="Home24Filled"> </NIcon>
 
             Pradinis
           </div>
@@ -14,7 +14,7 @@
             Inertia.get(route('dutyInstitutions.show', question.institution.id))
           "
           ><div>
-            <NIcon class="mr-2" size="16" :component="PeopleTeam32Filled">
+            <NIcon class="mr-2" size="16" :component="PeopleTeam24Filled">
             </NIcon>
             <NEllipsis style="max-width: 200px">
               {{ question.institution.name }}</NEllipsis
@@ -39,14 +39,16 @@
     <template #aside-header>
       <div class="inline-flex gap-2">
         <ShowActivityLog :activities="question.activities" />
-        <NButton secondary circle @click="showQuestionModal = true"
-          ><template #icon
-            ><NIcon :component="DocumentEdit24Regular"></NIcon></template
-        ></NButton>
+        <MoreOptionsButton
+          edit
+          @edit-click="showQuestionModal = true"
+        ></MoreOptionsButton>
       </div>
     </template>
-    <QuestionGroupCard :question-group="question.question_group" />
-
+    <QuestionGroupCard
+      :question="question"
+      :question-group="question.question_group"
+    />
     <NTabs
       animated
       type="line"
@@ -93,19 +95,15 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t } from "laravel-vue-i18n";
 import {
   BookQuestionMark20Filled,
-  DocumentEdit24Regular,
-  Home24Regular,
-  PeopleTeam32Filled,
-  Sparkle20Filled,
+  Home24Filled,
+  PeopleTeam24Filled,
 } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import {
   NBreadcrumb,
   NBreadcrumbItem,
-  NButton,
   NEllipsis,
   NIcon,
   NModal,
@@ -119,6 +117,7 @@ import route from "ziggy-js";
 
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import DoingsTabPane from "@/Components/TabPaneContent/DoingsTabPane.vue";
+import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import QuestionForm from "@/Components/AdminForms/QuestionForm.vue";
 import QuestionGroupCard from "@/Components/Cards/QuickContentCards/QuestionGroupCard.vue";

@@ -52,7 +52,13 @@ class QuestionGroupController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'title' => 'required',
+        ]);
+
+        $questionGroup = QuestionGroup::create($validated);
+
+        return back()->with('success', 'Klausimo grupė sukurta')->with('data', $questionGroup->id);
     }
 
     /**
@@ -63,7 +69,14 @@ class QuestionGroupController extends Controller
      */
     public function show(QuestionGroup $questionGroup)
     {
-        //
+        $questionGroup->load('questions.doings', 'questions.institution:id,name');
+
+        $institutions = $questionGroup->questions->pluck('institution')->unique('id');
+
+        return Inertia::render('Admin/Questions/ShowQuestionGroup', [
+            'questionGroup' => $questionGroup,
+            'institutions' => $institutions,
+        ]);
     }
 
     /**
@@ -86,7 +99,13 @@ class QuestionGroupController extends Controller
      */
     public function update(Request $request, QuestionGroup $questionGroup)
     {
-        //
+        $validated = $request->validate(
+            ['title' => 'required']
+        );
+
+        $questionGroup->update($validated);
+
+        return back()->with('success', 'Klausimo grupė atnaujinta');
     }
 
     /**
@@ -97,6 +116,8 @@ class QuestionGroupController extends Controller
      */
     public function destroy(QuestionGroup $questionGroup)
     {
-        //
+        $questionGroup->delete();
+
+        return redirect()->route('dashboard')->with('success', 'Klausimo grupė ištrinta.');
     }
 }
