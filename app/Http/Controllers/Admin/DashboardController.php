@@ -43,6 +43,17 @@ class DashboardController extends Controller
         ]);
     }
 
+    public function userTasks()
+    {
+        $user = User::find(auth()->user()->id);
+
+        $tasks = $user->tasks->load('taskable.users');
+
+        return Inertia::render('Admin/ShowTasks', [
+            'tasks' => $tasks
+        ]);
+    }
+
     public function dutyInstitutionGraph() {
        
         // return dutyInstitutions with user count

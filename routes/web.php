@@ -29,6 +29,7 @@ Route::prefix('admin')->group(function () {
         // Main
         Route::get('/', [Admin\DashboardController::class, 'dashboard'])->name('dashboard');
         Route::get('profile', [Admin\DashboardController::class, 'userSettings'])->name('profile');
+        Route::get('userTasks', [Admin\DashboardController::class, 'userTasks'])->name('userTasks');
         Route::get('dutyInstitutionGraph', [Admin\DashboardController::class, 'dutyInstitutionGraph'])->name('dutyInstitutionGraph');
 
         // Resources

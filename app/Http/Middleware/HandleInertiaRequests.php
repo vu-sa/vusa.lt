@@ -44,7 +44,9 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request)
     {
-        $user = User::find(Auth::id());
+        $user = User::withCount(['tasks' => function ($query) {
+            $query->whereNull('completed_at');
+        }])->find(Auth::id());
 
         if ($user) {
             $user->padalinys = User::find(Auth::id())?->padalinys()?->shortname;

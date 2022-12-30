@@ -1,5 +1,5 @@
 <template>
-  <NAvatarGroup :options="options" :max="4" :size="40">
+  <NAvatarGroup :options="options" :max="4" :size="size ?? 40">
     <template #avatar="{ option: { name, src } }">
       <NAvatar v-if="src" object-fit="cover" :src="src" />
       <NAvatar v-else>{{ userInitials(name) }}</NAvatar>
@@ -12,6 +12,7 @@ import { NAvatar, NAvatarGroup } from "naive-ui";
 
 const props = defineProps<{
   users: Record<string, any>;
+  size?: number;
 }>();
 
 const options = props.users.map((user: Record<string, any>) => ({

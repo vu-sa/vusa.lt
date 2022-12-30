@@ -88,4 +88,9 @@ class User extends Authenticatable
 
         return $padaliniai->unique();
     }
+
+    public function tasks()
+    {
+        return $this->belongsToMany(Task::class);
+    }
 }
