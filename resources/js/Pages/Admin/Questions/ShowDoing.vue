@@ -53,15 +53,10 @@
         ></NButton>
 
         <ShowActivityLog :activities="doing.activities" />
-        <NModal
+        <CardModal
           v-model:show="showModal"
-          class="prose prose-sm max-w-xl dark:prose-invert"
           :title="`${$t('Redaguoti veiklą')} (${question?.title})`"
-          :bordered="false"
-          size="large"
-          role="card"
-          aria-modal="true"
-          preset="card"
+          @close="showModal = false"
         >
           <DoingForm
             :doing="doing"
@@ -69,7 +64,7 @@
             :model-route="'doings.update'"
             @success="showModal = false"
           ></DoingForm>
-        </NModal>
+        </CardModal>
       </div>
     </template>
     <template #below-header>
@@ -157,7 +152,6 @@ import {
   NDropdown,
   NIcon,
   NMessageProvider,
-  NModal,
   NTabPane,
   NTabs,
   NTag,
@@ -168,6 +162,7 @@ import route from "ziggy-js";
 import { contentTypeOptions, documentTemplate } from "@/Composables/someTypes";
 import { useStorage } from "@vueuse/core";
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+import CardModal from "@/Components/Modals/CardModal.vue";
 import CommentTipTap from "@/Components/TipTap/CommentTipTap.vue";
 import CommentViewer from "@/Components/Comments/CommentViewer.vue";
 import DoingForm from "@/Components/AdminForms/DoingForm.vue";

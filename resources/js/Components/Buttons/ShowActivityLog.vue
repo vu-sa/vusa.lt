@@ -3,15 +3,10 @@
     ><template #icon
       ><NIcon :component="DocumentOnePage24Regular"></NIcon></template
   ></NButton>
-  <NModal
+  <CardModal
     v-model:show="showModal"
-    class="max-w-xl dark:prose-invert"
     title="Įrašo pokyčiai"
-    :bordered="false"
-    size="large"
-    role="card"
-    aria-modal="true"
-    preset="card"
+    @close="showModal = false"
   >
     <div v-if="activities.length > 0" class="flex flex-col gap-4">
       <div v-for="activity in activities" :key="activity.id">
@@ -30,14 +25,15 @@
       </div>
     </div>
     <p v-else>Jokių pokyčių nerasta.</p>
-  </NModal>
+  </CardModal>
 </template>
 
 <script setup lang="ts">
 import { DocumentOnePage24Regular } from "@vicons/fluent";
-import { NButton, NIcon, NModal } from "naive-ui";
+import { NButton, NIcon } from "naive-ui";
 import { ref } from "vue";
 
+import CardModal from "@/Components/Modals/CardModal.vue";
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
 import getRelativeTime from "@/Composables/getRelativeTime";
 

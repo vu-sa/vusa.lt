@@ -10,16 +10,10 @@
       />
     </UpsertModelLayout>
     <NButton @click="showModal = true">Sukurti ryšį</NButton>
-    <NModal
+    <CardModal
       v-model:show="showModal"
-      class="prose prose-sm dark:prose-invert"
-      style="max-width: 600px"
       :title="`Sukurti naują ryšį`"
-      :bordered="false"
-      size="large"
-      role="card"
-      aria-modal="true"
-      preset="card"
+      @close="showModal = false"
       ><NForm label-placement="top">
         <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
           <NFormItemGi :span="6" label="Modelio tipas">
@@ -44,7 +38,7 @@
           </NFormItemGi>
         </NGrid>
         <NButton type="primary" @click="submitRelationForm">Sukurti</NButton>
-      </NForm></NModal
+      </NForm></CardModal
     >
     <NDataTable
       class="mt-4"
@@ -62,8 +56,6 @@ import {
   NForm,
   NFormItemGi,
   NGrid,
-  NInput,
-  NModal,
   NSelect,
 } from "naive-ui";
 import { computed, ref } from "vue";
@@ -71,6 +63,7 @@ import { useForm } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+import CardModal from "@/Components/Modals/CardModal.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import RelationshipForm from "@/Components/AdminForms/RelationshipForm.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";

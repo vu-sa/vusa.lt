@@ -4,17 +4,12 @@
       ><NIcon :component="PeopleTeamAdd24Filled"></NIcon></template
     >Pranešti?</NButton
   >
-  <NModal
+  <CardModal
     v-model:show="showDoingForm"
     display-directive="show"
     class="prose prose-sm max-w-xl transition dark:prose-invert"
     :title="`${$t('Pranešti apie artėjantį posėdį')}`"
-    :bordered="false"
-    size="large"
-    role="card"
-    aria-modal="true"
-    preset="card"
-    @update:show="current = 1"
+    @close="showDoingForm = false"
   >
     <!-- <template #header-extra>
       <NButton v-if="current === 1" text
@@ -134,7 +129,7 @@
         ></NButton>
       </FadeTransition>
     </div>
-  </NModal>
+  </CardModal>
 </template>
 
 <script setup lang="ts">
@@ -156,7 +151,6 @@ import {
   NGrid,
   NIcon,
   NInput,
-  NModal,
   NPopover,
   NSelect,
   NStep,
@@ -169,6 +163,7 @@ import { useStorage } from "@vueuse/core";
 import route from "ziggy-js";
 
 import { questionOptions } from "@/Composables/someTypes";
+import CardModal from "@/Components/Modals/CardModal.vue";
 import DoingForm from "@/Components/AdminForms/DoingForm.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 

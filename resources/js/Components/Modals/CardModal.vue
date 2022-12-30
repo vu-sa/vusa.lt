@@ -9,6 +9,7 @@
     preset="card"
     @close="$emit('close')"
     @mask-click="$emit('close')"
+    @esc="$emit('close')"
   >
     <slot />
   </NModal>

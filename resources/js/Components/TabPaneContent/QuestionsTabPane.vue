@@ -15,30 +15,26 @@
       <span>Sukurti klausimą</span>
     </div>
   </div>
-  <NModal
+  <CardModal
     v-if="institution"
     v-model:show="showModal"
-    class="prose prose-sm max-w-xl dark:prose-invert"
     title="Sukurti klausimą"
-    :bordered="false"
-    size="large"
-    role="card"
-    aria-modal="true"
-    preset="card"
+    @close="showModal = false"
   >
     <QuestionForm
       :form="questionForm"
       :duty-institution="institution"
       @question-stored="showModal = false"
     />
-  </NModal>
+  </CardModal>
 </template>
 
 <script setup lang="tsx">
 import { BookQuestionMark20Filled } from "@vicons/fluent";
-import { NIcon, NModal } from "naive-ui";
+import { NIcon } from "naive-ui";
 import { ref } from "vue";
 
+import CardModal from "@/Components/Modals/CardModal.vue";
 import QuestionCard from "@/Components/Cards/QuestionCard.vue";
 import QuestionForm from "@/Components/AdminForms/QuestionForm.vue";
 

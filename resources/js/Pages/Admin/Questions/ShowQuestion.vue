@@ -77,21 +77,16 @@
       </NTabPane>
     </NTabs>
   </PageContent>
-  <NModal
+  <CardModal
     v-model:show="showQuestionModal"
-    class="prose prose-sm max-w-xl dark:prose-invert"
-    :bordered="false"
     title="Redaguoti klausimą"
-    size="large"
-    role="card"
-    aria-modal="true"
-    preset="card"
+    @close="showQuestionModal = false"
     ><QuestionForm
       :form="question"
       :duty-institution="question.institution"
       @question-stored="showQuestionModal = false"
     ></QuestionForm
-  ></NModal>
+  ></CardModal>
 </template>
 
 <script setup lang="tsx">
@@ -106,7 +101,6 @@ import {
   NBreadcrumbItem,
   NEllipsis,
   NIcon,
-  NModal,
   NTabPane,
   NTabs,
   NTag,
@@ -116,21 +110,22 @@ import { useStorage } from "@vueuse/core";
 import route from "ziggy-js";
 
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+import CardModal from "@/Components/Modals/CardModal.vue";
 import DoingsTabPane from "@/Components/TabPaneContent/DoingsTabPane.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import QuestionForm from "@/Components/AdminForms/QuestionForm.vue";
 import QuestionGroupCard from "@/Components/Cards/QuickContentCards/QuestionGroupCard.vue";
 import ShowActivityLog from "@/Components/Buttons/ShowActivityLog.vue";
-import StatusTag from "@/Components/Tags/StatusTag.vue";
-import getRelativeTime from "@/Composables/getRelativeTime";
 
 defineOptions({ layout: AdminLayout });
 
-const props = defineProps<{
+defineProps<{
   question: Record<string, any>;
   doingTypes: Record<string, any>;
 }>();
+
+const showQuestionModal = ref(false);
 
 const currentQuestionsTabPane = useStorage(
   "admin-CurrentQuestionsTabPane",
@@ -140,8 +135,6 @@ const currentQuestionsTabPane = useStorage(
 const updateQuestionsTabPane = (value) => {
   currentQuestionsTabPane.value = value;
 };
-
-const showQuestionModal = ref(false);
 
 const doingTemplate = {
   title: "",

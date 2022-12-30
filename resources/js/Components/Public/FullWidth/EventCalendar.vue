@@ -140,16 +140,10 @@
       </div>
     </div>
   </div>
-  <NModal
+  <CardModal
     v-model:show="showModal"
-    class="prose prose-sm dark:prose-invert"
-    style="max-width: 500px"
     :title="$t('Kalendoriaus sinchronizavimo instrukcija')"
-    :bordered="false"
-    size="large"
-    role="card"
-    aria-modal="true"
-    preset="card"
+    @close="showModal = false"
   >
     <p v-if="$page.props.locale === 'lt'">
       <strong>Pirmiausia</strong>, nusikopijuok nuorodą!
@@ -265,7 +259,7 @@
         vusa.lt
       </template>
     </template>
-  </NModal>
+  </CardModal>
   <!-- <NDivider /> -->
 </template>
 
@@ -286,7 +280,6 @@ import {
   NConfigProvider,
   NDivider,
   NIcon,
-  NModal,
   NTabPane,
   NTabs,
   darkTheme,
@@ -294,6 +287,7 @@ import {
 import { ref } from "vue";
 import route from "ziggy-js";
 
+import CardModal from "@/Components/Modals/CardModal.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 const props = defineProps<{

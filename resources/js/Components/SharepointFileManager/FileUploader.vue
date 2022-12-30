@@ -1,15 +1,9 @@
 <template>
   <component :is="button" @click="showModal = true"></component>
-  <NModal
+  <CardModal
     v-model:show="showModal"
-    class="prose prose-sm dark:prose-invert"
-    style="max-width: 600px"
     :title="`Įkelti naują failą`"
-    :bordered="false"
-    size="large"
-    role="card"
-    aria-modal="true"
-    preset="card"
+    @close="showModal = false"
   >
     <p v-if="!contentTypeOptions">
       Negalite įkelti failo, nes nėra numatyta turinio tipų šiai formai.
@@ -104,7 +98,7 @@
         @click="handleValidateClick"
         >Įkelti naują failą</NButton
       ></NForm
-    ></NModal
+    ></CardModal
   >
 </template>
 
@@ -120,7 +114,6 @@ import {
   NIcon,
   NInput,
   NInputGroup,
-  NModal,
   NP,
   NSelect,
   // NTag,
@@ -133,6 +126,8 @@ import {
 import { computed, ref, watch } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
+
+import CardModal from "@/Components/Modals/CardModal.vue";
 
 const props = defineProps<{
   button: any; // yes

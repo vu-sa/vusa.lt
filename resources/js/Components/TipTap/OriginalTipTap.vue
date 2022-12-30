@@ -126,11 +126,10 @@
       class="max-h-72 min-h-[12em] overflow-y-scroll rounded-b-lg border-vusa-yellow/50 bg-stone-50/40 shadow-inner dark:bg-zinc-800/70"
     />
   </div>
-  <NModal
+  <CardModal
     v-model:show="showFileModal"
-    preset="card"
     title="Sukurti nuorodą"
-    class="max-w-3xl"
+    @close="showFileModal = false"
   >
     <div class="rounded-sm">
       <NTabs type="line" animated>
@@ -193,7 +192,7 @@
         </NTabPane>
       </NTabs>
     </div>
-  </NModal>
+  </CardModal>
 </template>
 
 <script setup lang="ts">
@@ -216,7 +215,6 @@ import {
   NButton,
   NIcon,
   NInput,
-  NModal,
   NSelect,
   NTabPane,
   NTabs,
@@ -233,6 +231,8 @@ import TableRow from "@tiptap/extension-table-row";
 import TipTapLink from "@tiptap/extension-link";
 import Youtube from "@tiptap/extension-youtube";
 import route from "ziggy-js";
+
+import CardModal from "@/Components/Modals/CardModal.vue";
 
 const props = defineProps<{
   modelValue: string;

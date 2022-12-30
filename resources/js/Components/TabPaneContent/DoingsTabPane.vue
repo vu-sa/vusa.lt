@@ -15,16 +15,11 @@
       <span>Sukurti veiklą</span>
     </div>
   </div>
-  <NModal
+  <CardModal
     v-if="question"
     v-model:show="showModal"
-    class="prose prose-sm max-w-xl dark:prose-invert"
     title="Sukurti veiklą"
-    :bordered="false"
-    size="large"
-    role="card"
-    aria-modal="true"
-    preset="card"
+    @close="showModal = false"
   >
     <DoingForm
       :doing="doingTemplate"
@@ -33,14 +28,15 @@
       model-route="doings.store"
       @success="showModal = false"
     />
-  </NModal>
+  </CardModal>
 </template>
 
 <script setup lang="tsx">
-import { NIcon, NModal } from "naive-ui";
+import { NIcon } from "naive-ui";
 import { Sparkle20Filled } from "@vicons/fluent";
 import { ref } from "vue";
 
+import CardModal from "@/Components/Modals/CardModal.vue";
 import DoingCard from "../Cards/DoingCard.vue";
 import DoingForm from "../AdminForms/DoingForm.vue";
 

@@ -7,9 +7,6 @@
             <template #label>
               <div class="flex gap-1">
                 <span> Papildoma informacija </span>
-                <HelpTextHover
-                  >Rodoma pareigybės skliausteliuose
-                </HelpTextHover>
               </div>
             </template>
             <NInput
@@ -27,11 +24,7 @@
           <NFormItemGi :span="2">
             <template #label>
               <div class="flex gap-1">
-                <span>Papildoma nuotrauka</span
-                ><HelpTextButton
-                  >Ši nuotrauka bus rodoma „{{ dutyUser.duty.name }}“
-                  pareigybei.</HelpTextButton
-                >
+                <span>Papildoma nuotrauka</span>
               </div></template
             >
             <UploadImageButtons
@@ -101,7 +94,6 @@ import { useForm } from "@inertiajs/inertia-vue3";
 import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
 
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
-import HelpTextButton from "@/Components/Buttons/HelperButtons/HelpTextButton.vue";
 import UploadImageButtons from "@/Components/Buttons/UploadImageButtons.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
