@@ -1,7 +1,7 @@
 <template>
   <QuickContentCard>
     <NProgress
-      class="mt-2 mb-4"
+      class="mb-4"
       color="#fbb01b"
       type="line"
       :percentage="percentage"

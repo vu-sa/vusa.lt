@@ -1,7 +1,6 @@
 <template>
-  <PageContent>
-    <h2>Tavo institucijos</h2>
-    <div class="my-4 flex max-w-4xl flex-wrap gap-4">
+  <PageContent title="Tavo institucijos">
+    <div class="flex max-w-4xl flex-wrap gap-4">
       <DutyInstitutionCard
         v-for="institution in dutyInstitutions"
         :key="institution.id"
@@ -11,8 +10,8 @@
         show-last-meeting
       />
     </div>
-    <h3>Naudingos nuorodos</h3>
-    <div class="mt-4 flex gap-2">
+    <h3 class="my-4">Naudingos nuorodos</h3>
+    <div class="flex gap-2">
       <NButton
         type="warning"
         secondary

@@ -4,11 +4,11 @@
       <NBreadcrumb class="mb-4 w-full">
         <AdminBreadcrumbItem
           :visit-route="route('dashboard')"
-          :icon="Home24Regular"
+          :icon="Home24Filled"
         >
           Pradinis
         </AdminBreadcrumbItem>
-        <AdminBreadcrumbItem :icon="PeopleTeam32Filled">
+        <AdminBreadcrumbItem :icon="PeopleTeam24Filled">
           <NEllipsis style="max-width: 200px">
             {{ dutyInstitution.name }}</NEllipsis
           >
@@ -23,8 +23,10 @@
         :last-meeting-doing="dutyInstitution.lastMeetingDoing"
         :duty-institution="dutyInstitution"
         :doing-types="doingTypes"
+        content-style="margin-top: 0.5em"
       ></LastMeetingCard>
       <DoingsNeedingAttentionCard
+        content-style="margin-top: 0.5em"
         :questions-with-doings="dutyInstitution.questions"
         :duty-institution="dutyInstitution"
       ></DoingsNeedingAttentionCard>
@@ -99,7 +101,7 @@
         "
       >
         <template #tab>
-          <NIcon class="mr-1" :component="PeopleTeam32Filled"></NIcon>
+          <NIcon class="mr-1" :component="PeopleTeam24Filled"></NIcon>
           Susijusios institucijos
         </template>
         <div class="m-4">
@@ -152,14 +154,12 @@
       <InstitutionAvatarGroup :users="dutyInstitution.users" />
     </template>
     <template #aside-header>
-      <NButton
-        secondary
-        circle
-        @click="
+      <MoreOptionsButton
+        edit
+        @edit-click="
           Inertia.visit(route('dutyInstitutions.edit', dutyInstitution.id))
         "
-        ><template #icon><NIcon :component="Edit20Filled"></NIcon></template
-      ></NButton>
+      ></MoreOptionsButton>
     </template>
   </PageContent>
   <FileSelectDrawer
@@ -170,9 +170,10 @@
 
 <script setup lang="tsx">
 import {
-  Edit20Filled,
-  Home24Regular,
-  PeopleTeam32Filled,
+  Edit24Filled,
+  Home24Filled,
+  MoreHorizontal24Filled,
+  PeopleTeam24Filled,
   Sparkle20Filled,
 } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
@@ -181,6 +182,7 @@ import {
   NButton,
   NCollapse,
   NCollapseItem,
+  NDropdown,
   NEllipsis,
   NIcon,
   NTabPane,
@@ -200,12 +202,13 @@ import FileSelectDrawer from "@/Components/SharepointFileManager/FileDrawer.vue"
 import InstitutionAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import LastMeetingCard from "@/Components/Cards/QuickContentCards/LastMeetingCard.vue";
 import ModelsDocumentViewer from "@/Components/SharepointFileManager/ModelsDocumentViewer.vue";
+import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import QuestionsTabPane from "@/Components/TabPaneContent/QuestionsTabPane.vue";
 
 defineOptions({ layout: AdminLayout });
 
-defineProps<{
+const props = defineProps<{
   doingTypes: any;
   dutyInstitution: App.Models.DutyInstitution;
 }>();

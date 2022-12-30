@@ -8,25 +8,36 @@
   />
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
 import {
+  BookQuestionMark24Regular,
   CalendarLtr24Regular,
+  DocumentMultiple24Regular,
+  DocumentSettings20Regular,
+  Flow20Regular,
+  Flowchart20Regular,
   Folder24Regular,
+  Grid24Regular,
   Home24Regular,
+  ImageArrowBack24Regular,
   Navigation24Regular,
+  News24Regular,
   Notebook24Regular,
+  NotebookQuestionMark24Regular,
   People24Regular,
   PeopleSearch24Regular,
+  PeopleTeam24Regular,
   Person24Regular,
+  PersonBoard24Regular,
+  PuzzlePiece24Regular,
   Settings24Regular,
-  SlideText24Regular,
-  Sparkle20Filled,
-  Sparkle20Regular,
+  ShieldKeyhole24Regular,
+  Sparkle24Regular,
   TabDesktopNewPage20Regular,
 } from "@vicons/fluent";
-import { Component, computed, h, ref } from "vue";
 import { Link, usePage } from "@inertiajs/inertia-vue3";
 import { NIcon, NMenu } from "naive-ui";
+import { computed, ref } from "vue";
 import route from "ziggy-js";
 
 defineProps<{
@@ -67,152 +78,219 @@ const setActiveKey = (route: string | undefined) => {
 
 setActiveKey(route().current());
 
-const renderIcon = (icon: Component) => {
-  return () => h(NIcon, null, { default: () => h(icon) });
-};
-
 const menuOptions = computed(() => [
   {
-    label: () => h(Link, { href: route("dashboard") }, () => "Pradinis"),
+    label: () => {
+      return <Link href={route("dashboard")}>Pradinis</Link>;
+    },
     key: "dashboard",
-    icon: renderIcon(Home24Regular),
+    icon: () => {
+      return <NIcon component={Home24Regular}></NIcon>;
+    },
   },
+
   {
     label: "Veikla",
     key: "doings",
-    icon: renderIcon(Sparkle20Regular),
+    icon: () => {
+      return <NIcon component={Sparkle24Regular}></NIcon>;
+    },
     show: can.institutions,
     children: [
       {
-        label: () =>
-          h(Link, { href: route("questions.index") }, () => "Klausimai"),
+        label: () => {
+          return <Link href={route("questions.index")}>Klausimai</Link>;
+        },
         key: "questions",
+        icon: () => {
+          return <NIcon component={BookQuestionMark24Regular}></NIcon>;
+        },
       },
       {
-        label: () =>
-          h(
-            Link,
-            { href: route("questionGroups.index") },
-            () => "Klausimų grupės"
-          ),
+        label: () => {
+          return (
+            <Link href={route("questionGroups.index")}>Klausimų grupės</Link>
+          );
+        },
         key: "questionGroups",
+        icon: () => {
+          return <NIcon component={NotebookQuestionMark24Regular}></NIcon>;
+        },
       },
       {
-        label: () => h(Link, { href: route("doings.index") }, () => "Veiklos"),
+        label: () => {
+          return <Link href={route("doings.index")}>Veiklos</Link>;
+        },
         key: "doings",
+        icon: () => {
+          return <NIcon component={Sparkle24Regular}></NIcon>;
+        },
       },
     ],
   },
   {
     label: "Žmonės",
     key: "contacts",
-    icon: renderIcon(Person24Regular),
+    icon: () => {
+      return <NIcon component={Person24Regular}></NIcon>;
+    },
     show: can.users || can.institutions,
     children: [
       {
-        label: () =>
-          h(
-            Link,
-            { href: route("dutyInstitutions.index") },
-            () => "Institucijos"
-          ),
+        label: () => {
+          return (
+            <Link href={route("dutyInstitutions.index")}>Institucijos</Link>
+          );
+        },
         key: "dutyInstitutions",
+        icon: () => {
+          return <NIcon component={PeopleTeam24Regular}></NIcon>;
+        },
       },
       {
-        label: () =>
-          h(
-            Link,
-            { href: route("dutyInstitutionGraph") },
-            () => "Institucijų grafikas"
-          ),
+        label: () => {
+          return (
+            <Link href={route("dutyInstitutionGraph")}>
+              Institucijų grafikas
+            </Link>
+          );
+        },
+        key: "dutyInstitutionsGraph",
+        icon: () => {
+          return <NIcon component={Flowchart20Regular}></NIcon>;
+        },
       },
       {
-        label: () => h(Link, { href: route("duties.index") }, () => "Pareigos"),
+        label: () => {
+          return <Link href={route("duties.index")}>Pareigos</Link>;
+        },
         key: "duties",
+        icon: () => {
+          return <NIcon component={PuzzlePiece24Regular}></NIcon>;
+        },
       },
       {
-        label: () => h(Link, { href: route("users.index") }, () => "Kontaktai"),
+        label: () => {
+          return <Link href={route("users.index")}>Kontaktai</Link>;
+        },
         key: "users",
         show: can.users,
+        icon: () => {
+          return <NIcon component={Person24Regular}></NIcon>;
+        },
       },
     ],
   },
   {
     label: "vusa.lt",
     key: "content",
-    icon: renderIcon(TabDesktopNewPage20Regular),
+    icon: () => {
+      return <NIcon component={TabDesktopNewPage20Regular}></NIcon>;
+    },
     show: can.content,
     children: [
       {
-        label: () => h(Link, { href: route("pages.index") }, () => "Puslapiai"),
+        label: () => {
+          return <Link href={route("pages.index")}>Puslapiai</Link>;
+        },
         key: "pages",
         show: can.pages,
+        icon: () => {
+          return <NIcon component={DocumentMultiple24Regular}></NIcon>;
+        },
       },
       {
-        label: () => h(Link, { href: route("news.index") }, () => "Naujienos"),
+        label: () => {
+          return <Link href={route("news.index")}>Naujienos</Link>;
+        },
         key: "news",
         show: can.news,
+        icon: () => {
+          return <NIcon component={News24Regular}></NIcon>;
+        },
       },
       {
-        label: () =>
-          h(
-            Link,
-            { href: route("mainPage.index") },
-            () => "Pradinio puslapio mygtukai"
-          ),
+        label: () => {
+          return <Link href={route("mainPage.index")}>Greitieji mygtukai</Link>;
+        },
         key: "mainPage",
         show: can.mainPage,
+        icon: () => {
+          return <NIcon component={Grid24Regular}></NIcon>;
+        },
       },
       {
-        label: () =>
-          h(Link, { href: route("banners.index") }, () => "Baneriai"),
+        label: () => {
+          return <Link href={route("banners.index")}>Baneriai</Link>;
+        },
         key: "banners",
         show: can.banners,
+        icon: () => {
+          return <NIcon component={ImageArrowBack24Regular}></NIcon>;
+        },
       },
       {
-        label: () =>
-          h(Link, { href: route("navigation.index") }, () => "Navigacija"),
+        label: () => {
+          return <Link href={route("navigation.index")}>Navigacija</Link>;
+        },
         key: "navigation",
-        // icon: renderIcon(Navigation24Regular),
         show: can.navigation,
+        icon: () => {
+          return <NIcon component={Navigation24Regular}></NIcon>;
+        },
       },
       {
-        label: () =>
-          h(Link, { href: route("calendar.index") }, () => "Kalendorius"),
+        label: () => {
+          return <Link href={route("calendar.index")}>Kalendorius</Link>;
+        },
         key: "calendar",
-        // icon: renderIcon(CalendarLtr24Regular),
         show: can.calendar,
+        icon: () => {
+          return <NIcon component={CalendarLtr24Regular}></NIcon>;
+        },
       },
       {
-        label: () => h(Link, { href: route("files.index") }, () => "Failai"),
+        label: () => {
+          return <Link href={route("files.index")}>Failai</Link>;
+        },
         key: "files",
-        // icon: renderIcon(Folder24Regular),
         show: can.files,
+        icon: () => {
+          return <NIcon component={Folder24Regular}></NIcon>;
+        },
       },
     ],
   },
   {
     label: "Registracijos",
     key: "registrations",
-    icon: renderIcon(Notebook24Regular),
+    icon: () => {
+      return <NIcon component={Notebook24Regular}></NIcon>;
+    },
     show: can.content || can.saziningai,
     children: [
       {
-        label: () =>
-          h(Link, { href: route("saziningaiExams.index") }, () => "Sąžiningai"),
+        label: () => {
+          return <Link href={route("saziningaiExams.index")}>Sąžiningai</Link>;
+        },
         key: "saziningai",
-        icon: renderIcon(PeopleSearch24Regular),
+        icon: () => {
+          return <NIcon component={PeopleSearch24Regular}></NIcon>;
+        },
         show: can.saziningai,
       },
       {
-        label: () =>
-          h(
-            Link,
-            { href: route("registrationForms.show", 2) },
-            () => "Narių registracija"
-          ),
+        label: () => {
+          return (
+            <Link href={route("registrationForms.show", 2)}>
+              Narių registracija
+            </Link>
+          );
+        },
         key: "memberRegister",
-        icon: renderIcon(People24Regular),
+        icon: () => {
+          return <NIcon component={People24Regular}></NIcon>;
+        },
         show: can.content,
       },
     ],
@@ -220,26 +298,46 @@ const menuOptions = computed(() => [
   {
     label: "Nustatymai",
     key: "settings",
-    icon: renderIcon(Settings24Regular),
+    icon: () => {
+      return <NIcon component={Settings24Regular}></NIcon>;
+    },
     children: [
       {
-        label: () => h(Link, { href: route("types.index") }, () => "Tipai"),
+        label: () => {
+          return <Link href={route("types.index")}>Tipai</Link>;
+        },
         key: "types",
+        icon: () => {
+          return <NIcon component={DocumentSettings20Regular}></NIcon>;
+        },
       },
       {
-        label: () =>
-          h(Link, { href: route("relationships.index") }, () => "Ryšiai"),
+        label: () => {
+          return <Link href={route("relationships.index")}>Ryšiai</Link>;
+        },
         key: "relationships",
+        icon: () => {
+          return <NIcon component={Flow20Regular}></NIcon>;
+        },
       },
       // role index
       {
-        label: () => h(Link, { href: route("roles.index") }, () => "Rolės"),
+        label: () => {
+          return <Link href={route("roles.index")}>Rolės</Link>;
+        },
         key: "roles",
+        icon: () => {
+          return <NIcon component={PersonBoard24Regular}></NIcon>;
+        },
       },
       {
-        label: () =>
-          h(Link, { href: route("permissions.index") }, () => "Leidimai"),
+        label: () => {
+          return <Link href={route("permissions.index")}>Leidimai</Link>;
+        },
         key: "permissions",
+        icon: () => {
+          return <NIcon component={ShieldKeyhole24Regular}></NIcon>;
+        },
       },
     ],
     show: can.settings,

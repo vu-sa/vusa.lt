@@ -1,6 +1,6 @@
 <template>
   <QuickContentCard>
-    <div class="mt-2 inline-flex items-center gap-2">
+    <div class="inline-flex items-center gap-2">
       <NIcon :size="36" :component="CalendarClock20Regular"></NIcon>
 
       <span class="text-3xl font-bold">

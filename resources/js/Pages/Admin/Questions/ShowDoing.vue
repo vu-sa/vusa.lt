@@ -145,8 +145,8 @@ import { trans as $t } from "laravel-vue-i18n";
 import {
   BookQuestionMark20Filled,
   DocumentEdit24Regular,
-  Home24Regular,
-  PeopleTeam32Filled,
+  Home24Filled,
+  PeopleTeam24Filled,
   Sparkle20Filled,
 } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
@@ -162,7 +162,7 @@ import {
   NTabs,
   NTag,
 } from "naive-ui";
-import { computed, h, ref } from "vue";
+import { computed, ref } from "vue";
 import route from "ziggy-js";
 
 import { contentTypeOptions, documentTemplate } from "@/Composables/someTypes";
@@ -212,14 +212,14 @@ const breadcrumbOptions = [
     label: "Pradinis",
     key: "dashboard",
     icon: () => {
-      return <NIcon component={Home24Regular}></NIcon>;
+      return <NIcon component={Home24Filled}></NIcon>;
     },
   },
   {
     label: props.question?.institution.name,
     key: "institution",
     icon: () => {
-      return <NIcon component={PeopleTeam32Filled}></NIcon>;
+      return <NIcon component={PeopleTeam24Filled}></NIcon>;
     },
   },
 ];
