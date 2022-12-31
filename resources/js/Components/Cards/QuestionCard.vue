@@ -29,14 +29,16 @@
       v-if="question.doings_count"
       class="inline-flex items-center gap-1 text-xs"
     >
-      <NIcon :component="Sparkle20Filled" /><span>{{
-        question.doings_count
-      }}</span>
+      <NIcon :component="Sparkle20Filled" />
+      <span>{{ question.doings_count }}</span>
     </div>
-    <div class="text-xs"><slot /></div>
+    <div class="text-xs">
+      <slot />
+    </div>
     <template #footer>
       <div class="flex items-end justify-between gap-2">
-        <span class="text-xs text-zinc-500">#{{ question.id }}</span>
+        <span class="my-auto text-xs text-zinc-500">#{{ question.id }}</span>
+        <DoingsStatusDonut :doings="question.doings" :width="30" :height="30" />
       </div>
     </template>
   </NCard>
@@ -54,7 +56,7 @@ import { NButton, NCard, NEllipsis, NIcon } from "naive-ui";
 import route from "ziggy-js";
 
 import { getYYYYMMMM } from "@/Composables/getRelativeTime";
-import StatusTag from "@/Components/Tags/StatusTag.vue";
+import DoingsStatusDonut from "@/Components/Statistics/DoingsStatusDonut.vue";
 
 defineProps<{
   question: App.Models.Question;
