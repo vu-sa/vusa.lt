@@ -1,7 +1,7 @@
 <template>
   <NCard
     size="small"
-    segmented
+    :segmented="{ content: true, footer: 'soft' }"
     class="bg-red my-2 max-w-lg cursor-pointer shadow-sm"
     hoverable
     as="button"

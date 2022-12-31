@@ -2,21 +2,15 @@
   <NCard
     size="small"
     class="my-2 cursor-pointer overflow-hidden shadow-sm"
-    style="border-radius: 0.75em"
+    style="border-radius: 0.5em"
+    :segmented="{
+      content: 'soft',
+    }"
     hoverable
     as="button"
     @click="Inertia.visit(route('doings.show', doing.id))"
     ><template #header>{{ doing.title }}</template>
-    <template #footer>
-      <!-- <div class="flex items-center justify-between gap-2"> -->
-      <!-- <StatusTag :status="doing.status"></StatusTag> -->
-      <!-- <div class="inline-flex items-center gap-1">
-          <NIcon :component="Sparkle20Filled" /><span>{{
-            doing.doings_count
-          }}</span>
-        </div> -->
-      <!-- </div> -->
-    </template>
+
     <div class="text-xs text-zinc-700 dark:text-zinc-500">
       <div class="flex items-center gap-1">
         <NIcon :depth="3" size="10" :component="CalendarClock24Filled" />
@@ -38,10 +32,13 @@
       </div>
     </div>
     <div class="absolute -bottom-8 right-0 opacity-10">
-      <NIcon size="80" :color="iconColor" :depth="1">
+      <NIcon size="80" :depth="4">
         <component :is="icon"></component>
       </NIcon>
     </div>
+    <template #footer>
+      <StatusTag :status="doing.status"></StatusTag>
+    </template>
   </NCard>
 </template>
 
@@ -67,20 +64,20 @@ const props = defineProps<{
   doing: App.Models.Doing;
 }>();
 
-const iconColor = computed(() => {
-  let status = props.doing.status;
+// const iconColor = computed(() => {
+//   let status = props.doing.status;
 
-  switch (status) {
-    case "Sukurtas":
-      return "#2080f0";
-    case "Pabaigtas":
-      return "#18a058";
-    case "Atmestas":
-      return "#bd2835";
-    default:
-      return "#bd2835";
-  }
-});
+//   switch (status) {
+//     case "Sukurtas":
+//       return "#2080f0";
+//     case "Pabaigtas":
+//       return "#18a058";
+//     case "Atmestas":
+//       return "#bd2835";
+//     default:
+//       return "#bd2835";
+//   }
+// });
 
 const icon = computed(() => {
   let types = props.doing.types;

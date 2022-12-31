@@ -46,26 +46,25 @@
       <span class="text-gray-500">{{ doing.date }}</span>
     </template>
     <template #aside-header>
-      <div class="flex items-center gap-4">
-        <NButton secondary circle @click="showModal = true"
-          ><template #icon
-            ><NIcon :component="DocumentEdit24Regular"></NIcon></template
-        ></NButton>
-
+      <div class="inline-flex gap-2">
         <ShowActivityLog :activities="doing.activities" />
-        <CardModal
-          v-model:show="showModal"
-          :title="`${$t('Redaguoti veiklą')} (${question?.title})`"
-          @close="showModal = false"
-        >
-          <DoingForm
-            :doing="doing"
-            :question="question"
-            :model-route="'doings.update'"
-            @success="showModal = false"
-          ></DoingForm>
-        </CardModal>
+        <MoreOptionsButton
+          edit
+          @edit-click="showModal = true"
+        ></MoreOptionsButton>
       </div>
+      <CardModal
+        v-model:show="showModal"
+        :title="`${$t('Redaguoti veiklą')} (${question?.title})`"
+        @close="showModal = false"
+      >
+        <DoingForm
+          :doing="doing"
+          :question="question"
+          :model-route="'doings.update'"
+          @success="showModal = false"
+        ></DoingForm>
+      </CardModal>
     </template>
     <template #below-header>
       <div class="flex gap-2">
@@ -170,6 +169,7 @@ import FileButton from "@/Components/SharepointFileManager/FileButton.vue";
 import FileSelectDrawer from "@/Components/SharepointFileManager/FileDrawer.vue";
 import FileUploader from "@/Components/SharepointFileManager/FileUploader.vue";
 import FileUploaderBasicButton from "@/Components/SharepointFileManager/FileUploaderBasicButton.vue";
+import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import ShowActivityLog from "@/Components/Buttons/ShowActivityLog.vue";
 import SingleTask from "@/Components/Tasks/SingleTask.vue";

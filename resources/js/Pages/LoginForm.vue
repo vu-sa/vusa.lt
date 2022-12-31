@@ -58,7 +58,11 @@
             <span>Tik su VU SA paskyromis.</span></NPopover
           >
 
-          <NButton attr-type="submit" :disabled="form.processing">
+          <NButton
+            attr-type="submit"
+            :disabled="form.processing"
+            :loading="form.processing"
+          >
             Prisijungti
           </NButton>
         </div>
