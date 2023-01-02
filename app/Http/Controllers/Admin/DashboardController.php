@@ -47,7 +47,7 @@ class DashboardController extends Controller
     {
         $user = User::find(auth()->user()->id);
 
-        $tasks = $user->tasks->load('taskable.users');
+        $tasks = $user->tasks->load('taskable', 'users');
 
         return Inertia::render('Admin/ShowTasks', [
             'tasks' => $tasks

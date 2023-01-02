@@ -61,6 +61,7 @@ class User extends Authenticatable
         return $this->hasMany(Calendar::class, 'user_id', 'id');
     }
 
+    // TODO: return only current duties
     public function duties()
     {
         return $this->belongsToMany(Duty::class, 'duties_users', 'user_id', 'duty_id')->using(DutyUser::class)->withPivot(['id', 'attributes', 'start_date', 'end_date'])->withTimestamps();

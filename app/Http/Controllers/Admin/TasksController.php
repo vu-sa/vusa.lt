@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Task;
 use App\Http\Controllers\Controller as Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class TasksController extends Controller
 {
@@ -41,7 +42,25 @@ class TasksController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required',
+            'due_date' => 'required',
+        ]);
+
+        // if no taskable_type is provided, set it to App\\Models\\User and id to auth()->id()
+        if (!isset($validated['taskable_type'])) {
+        $validated['taskable_type'] = 'App\\Models\\User';
+            $validated['taskable_id'] = auth()->id();
+        }
+
+        // change due_date to Carbon object
+        $validated['due_date'] = Carbon::createFromTimestamp($validated['due_date'] / 1000);
+
+        $task = Task::create($validated);
+
+        $task->users()->attach(auth()->id());
+
+        return back()->with('success', 'Užduotis sėkmingai pridėta');
     }
 
     /**
@@ -100,5 +119,7 @@ class TasksController extends Controller
         }
 
         $task->save();
+
+        return back()->with('success', 'Užduoties būsena sėkmingai atnaujinta');
     }
 }
