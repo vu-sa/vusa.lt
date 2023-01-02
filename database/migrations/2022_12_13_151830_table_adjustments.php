@@ -17,7 +17,7 @@ return new class extends Migration
         Schema::table('questions', function (Blueprint $table) {
             $table->unsignedInteger('question_group_id')->nullable()->change();
 
-            // $table->dropForeign('questions_question_group_id_foreign');
+            $table->dropForeign('questions_question_group_id_foreign');
             $table->foreign('question_group_id')->references('id')->on('question_groups')->nullOnDelete();
         });
 

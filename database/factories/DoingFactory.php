@@ -20,7 +20,6 @@ class DoingFactory extends Factory
             'title' => $this->faker->sentence,
             'status' => $this->faker->randomElement(['Sukurtas', 'Pabaigtas']),
             'date' => $this->faker->dateTime,
-            'doing_type_id' => $this->faker->numberBetween(1, 3),
             'created_at' => $this->faker->dateTimeBetween('-1 year', 'now'),
             'updated_at' => $this->faker->dateTimeBetween('-1 year', 'now'),
         ];

@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\Doing;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -16,8 +18,26 @@ class CommentFactory extends Factory
      */
     public function definition()
     {
+        $commentable = $this->commentable();
+        
         return [
-            //
+            'comment' => $this->faker->paragraph(),
+            'user_id' => User::factory(),
         ];
+    }
+
+    public function configure()
+    {
+        return $this->for(
+            static::factoryForModel($this->commentable()),
+            'commentable',
+        );
+    }
+
+    public function commentable()
+    {
+        return $this->faker->randomElement([
+            Doing::class,
+        ]);
     }
 }
