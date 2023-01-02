@@ -2,11 +2,11 @@
 
 namespace App\Policies;
 
-use App\Models\SaziningaiExamObserver;
+use App\Models\Duty;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class SaziningaiExamObserversPolicy
+class DutyPolicy
 {
     use HandlesAuthorization;
 
@@ -18,17 +18,17 @@ class SaziningaiExamObserversPolicy
      */
     public function viewAny(User $user)
     {
-        return $user->can('create saziningai content');
+        return $user->can('create unit duties');
     }
 
     /**
      * Determine whether the user can view the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\SaziningaiExamObserver  $saziningaiExamObserver
+     * @param  \App\Models\Duty  $duty
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, SaziningaiExamObserver $saziningaiExamObserver)
+    public function view(User $user, Duty $duty)
     {
         //
     }
@@ -41,41 +41,45 @@ class SaziningaiExamObserversPolicy
      */
     public function create(User $user)
     {
-        return $user->can('create saziningai content');
+        return $user->can('create unit duties');
     }
 
     /**
      * Determine whether the user can update the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\SaziningaiExamObserver  $saziningaiExamObserver
+     * @param  \App\Models\Duty  $duty
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, SaziningaiExamObserver $saziningaiExamObserver)
+    public function update(User $user, Duty $duty)
     {
-        return $user->can('edit saziningai content');
+        if ($user->can('edit unit duties')) {
+            return $user->padalinys()->id == $duty->padalinys()->id;
+        }
     }
 
     /**
      * Determine whether the user can delete the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\SaziningaiExamObserver  $saziningaiExamObserver
+     * @param  \App\Models\Duty  $duty
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, SaziningaiExamObserver $saziningaiExamObserver)
+    public function delete(User $user, Duty $duty)
     {
-        return $user->can('delete saziningai content');
+        if ($user->can('delete unit duties')) {
+            return $user->padalinys()->id == $duty->padalinys()->id;
+        }
     }
 
     /**
      * Determine whether the user can restore the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\SaziningaiExamObserver  $saziningaiExamObserver
+     * @param  \App\Models\Duty  $duty
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function restore(User $user, SaziningaiExamObserver $saziningaiExamObserver)
+    public function restore(User $user, Duty $duty)
     {
         //
     }
@@ -84,10 +88,10 @@ class SaziningaiExamObserversPolicy
      * Determine whether the user can permanently delete the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\SaziningaiExamObserver  $saziningaiExamObserver
+     * @param  \App\Models\Duty  $duty
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function forceDelete(User $user, SaziningaiExamObserver $saziningaiExamObserver)
+    public function forceDelete(User $user, Duty $duty)
     {
         //
     }

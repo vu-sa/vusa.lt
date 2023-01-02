@@ -2,11 +2,11 @@
 
 namespace App\Policies;
 
-use App\Models\Banner;
+use App\Models\SaziningaiExamFlow;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class BannersPolicy
+class SaziningaiExamFlowPolicy
 {
     use HandlesAuthorization;
 
@@ -18,17 +18,17 @@ class BannersPolicy
      */
     public function viewAny(User $user)
     {
-        return $user->can('create unit content');
+        return $user->can('create saziningai content');
     }
 
     /**
      * Determine whether the user can view the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\Banner  $banner
+     * @param  \App\Models\SaziningaiExamFlow  $saziningaiExamFlow
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Banner $banner)
+    public function view(User $user, SaziningaiExamFlow $saziningaiExamFlow)
     {
         //
     }
@@ -41,47 +41,41 @@ class BannersPolicy
      */
     public function create(User $user)
     {
-        return $user->can('create unit content');
+        return $user->can('create saziningai content');
     }
 
     /**
      * Determine whether the user can update the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\Banner  $banner
+     * @param  \App\Models\SaziningaiExamFlow  $saziningaiExamFlow
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Banner $banner)
+    public function update(User $user, SaziningaiExamFlow $saziningaiExamFlow)
     {
-        if ($user->can('edit unit content')) {
-            return $user->padalinys()->id == $banner->padalinys->id;
-        }
-
-        return false;
+        return $user->can('edit saziningai content');
     }
 
     /**
      * Determine whether the user can delete the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\Banner  $banner
+     * @param  \App\Models\SaziningaiExamFlow  $saziningaiExamFlow
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Banner $banner)
+    public function delete(User $user, SaziningaiExamFlow $saziningaiExamFlow)
     {
-        if ($user->can('delete unit content')) {
-            return $user->padalinys()->id == $banner->padalinys->id;
-        }
+        return $user->can('delete saziningai content');
     }
 
     /**
      * Determine whether the user can restore the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\Banner  $banner
+     * @param  \App\Models\SaziningaiExamFlow  $saziningaiExamFlow
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function restore(User $user, Banner $banner)
+    public function restore(User $user, SaziningaiExamFlow $saziningaiExamFlow)
     {
         //
     }
@@ -90,10 +84,10 @@ class BannersPolicy
      * Determine whether the user can permanently delete the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\Banner  $banner
+     * @param  \App\Models\SaziningaiExamFlow  $saziningaiExamFlow
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function forceDelete(User $user, Banner $banner)
+    public function forceDelete(User $user, SaziningaiExamFlow $saziningaiExamFlow)
     {
         //
     }

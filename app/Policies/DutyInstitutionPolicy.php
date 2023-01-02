@@ -6,7 +6,7 @@ use App\Models\DutyInstitution;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class DutyInstitutionsPolicy
+class DutyInstitutionPolicy
 {
     use HandlesAuthorization;
 

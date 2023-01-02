@@ -2,11 +2,11 @@
 
 namespace App\Policies;
 
-use App\Models\SaziningaiExamFlow;
+use App\Models\Type;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class SaziningaiExamFlowsPolicy
+class TypePolicy
 {
     use HandlesAuthorization;
 
@@ -18,17 +18,17 @@ class SaziningaiExamFlowsPolicy
      */
     public function viewAny(User $user)
     {
-        return $user->can('create saziningai content');
+        //
     }
 
     /**
      * Determine whether the user can view the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\SaziningaiExamFlow  $saziningaiExamFlow
+     * @param  \App\Models\Type  $type
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, SaziningaiExamFlow $saziningaiExamFlow)
+    public function view(User $user, Type $type)
     {
         //
     }
@@ -41,41 +41,41 @@ class SaziningaiExamFlowsPolicy
      */
     public function create(User $user)
     {
-        return $user->can('create saziningai content');
+        //
     }
 
     /**
      * Determine whether the user can update the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\SaziningaiExamFlow  $saziningaiExamFlow
+     * @param  \App\Models\Type  $type
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, SaziningaiExamFlow $saziningaiExamFlow)
+    public function update(User $user, Type $type)
     {
-        return $user->can('edit saziningai content');
+        //
     }
 
     /**
      * Determine whether the user can delete the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\SaziningaiExamFlow  $saziningaiExamFlow
+     * @param  \App\Models\Type  $type
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, SaziningaiExamFlow $saziningaiExamFlow)
+    public function delete(User $user, Type $type)
     {
-        return $user->can('delete saziningai content');
+        //
     }
 
     /**
      * Determine whether the user can restore the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\SaziningaiExamFlow  $saziningaiExamFlow
+     * @param  \App\Models\Type  $type
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function restore(User $user, SaziningaiExamFlow $saziningaiExamFlow)
+    public function restore(User $user, Type $type)
     {
         //
     }
@@ -84,10 +84,10 @@ class SaziningaiExamFlowsPolicy
      * Determine whether the user can permanently delete the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\SaziningaiExamFlow  $saziningaiExamFlow
+     * @param  \App\Models\Type  $type
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function forceDelete(User $user, SaziningaiExamFlow $saziningaiExamFlow)
+    public function forceDelete(User $user, Type $type)
     {
         //
     }
