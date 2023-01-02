@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Providers;
+namespace App\Listeners;
 
 use App\Models\Doing;
 use App\Notifications\CommentSubmitted;
-use App\Providers\UserComments;
+use App\Events\UserComments;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Notification;
@@ -24,7 +24,7 @@ class SendCommentNotification
     /**
      * Handle the event.
      *
-     * @param  \App\Providers\UserComments  $event
+     * @param  \App\Events\UserComments  $event
      * @return void
      */
     public function handle(UserComments $event)

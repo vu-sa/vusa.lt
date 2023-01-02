@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller as Controller;
 use App\Models\Comment;
 use App\Models\Doing;
 use App\Models\User;
-use App\Providers\UserComments;
+use App\Events\UserComments;
 use Illuminate\Http\Request;
 
 class CommentController extends Controller
