@@ -89,7 +89,6 @@ import {
 import { Inertia } from "@inertiajs/inertia";
 import { NIcon, NUpload, NUploadDragger } from "naive-ui";
 import { computed } from "vue";
-import { slice, split } from "lodash";
 
 import FileButton from "@/Components/Buttons/FileButton.vue";
 import FolderButton from "@/Components/Buttons/FolderButton.vue";
@@ -107,7 +106,7 @@ const props = defineProps<{
 const showedDirectories = computed(() => {
   const ar = [];
   props.directories.forEach((element, index) => {
-    const folderName = slice(split(element, "/"), -1)[0];
+    const folderName = element.split("/").slice(-1)[0];
     ar.push({ id: index, folderName: folderName, folderPath: element });
   });
   return ar;
@@ -117,7 +116,7 @@ const showedDirectories = computed(() => {
 const showedFiles = computed(() => {
   const ar = [];
   props.files.forEach((element, index) => {
-    const fileName = slice(split(element, "/"), -1)[0];
+    const fileName = element.split("/").slice(-1)[0];
     ar.push({ id: index, fileName: fileName, filePath: element });
   });
   return ar;
@@ -126,7 +125,7 @@ const showedFiles = computed(() => {
 // Generate next path from button click
 const getNextPath = (selectedDirectory) => {
   if (selectedDirectory === "../") {
-    const arrayPath = split(props.currentPath, "/");
+    const arrayPath = props.currentPath.split("/");
     let selectedDirectory = "";
     arrayPath.pop();
 

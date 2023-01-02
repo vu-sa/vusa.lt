@@ -220,8 +220,8 @@ import {
   NTabs,
   createDiscreteApi,
 } from "naive-ui";
-import { debounce } from "lodash";
 import { onBeforeUnmount, ref } from "vue";
+import { useDebounceFn } from "@vueuse/core";
 import Image from "@tiptap/extension-image";
 import StarterKit from "@tiptap/starter-kit";
 import Table from "@tiptap/extension-table";
@@ -251,7 +251,7 @@ const getLinkAndModal = () => {
   showFileModal.value = true;
 };
 
-const getFiles = debounce((query) => {
+const getFiles = useDebounceFn((query) => {
   if (query.length > 2) {
     message.loading("Ieškoma...");
     Inertia.post(
@@ -279,7 +279,7 @@ const getFiles = debounce((query) => {
   }
 }, 500);
 
-const getImages = debounce((query) => {
+const getImages = useDebounceFn((query) => {
   if (query.length > 2) {
     message.loading("Ieškoma...");
     Inertia.post(

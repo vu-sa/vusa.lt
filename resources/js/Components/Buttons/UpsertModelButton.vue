@@ -2,7 +2,7 @@
   <NPopconfirm @positive-click="upsertModel">
     <template #trigger>
       <NSpin :show="showSpin" size="small">
-        <NButton>{{ capitalize(buttonText) }}</NButton>
+        <NButton>{{ buttonText }}</NButton>
       </NSpin>
     </template>
     Ar tikrai {{ buttonText }}?
@@ -13,7 +13,6 @@
 import { Inertia, Method } from "@inertiajs/inertia";
 import { InertiaForm } from "@inertiajs/inertia-vue3";
 import { NButton, NPopconfirm, NSpin, UploadFileInfo } from "naive-ui";
-import { capitalize } from "lodash";
 import { computed, ref } from "vue";
 import route from "ziggy-js";
 
@@ -30,7 +29,7 @@ const modelMethod = computed(() => {
 });
 
 const buttonText = computed(() => {
-  return modelMethod.value === Method.POST ? "sukurti" : "atnaujinti";
+  return modelMethod.value === Method.POST ? "Sukurti" : "Atnaujinti";
 });
 
 const upsertModel = () => {

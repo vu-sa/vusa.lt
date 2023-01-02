@@ -70,8 +70,8 @@ import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
 import { NButton, NIcon, NInput, NModal } from "naive-ui";
 import { Search20Filled } from "@vicons/fluent";
-import { debounce } from "lodash";
 import { ref } from "vue";
+import { useDebounceFn } from "@vueuse/core";
 import route from "ziggy-js";
 
 const showSearch = ref(false);
@@ -81,7 +81,7 @@ const changeShowSearch = () => {
   showSearch.value = !showSearch.value;
 };
 
-const handleSearchInput = debounce((input) => {
+const handleSearchInput = useDebounceFn((input) => {
   if (input.length > 2) {
     searchInputLoading.value = true;
     Inertia.post(

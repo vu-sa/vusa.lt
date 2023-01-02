@@ -173,7 +173,7 @@ const selectedKeys = ref([]);
 
 const options_padaliniai = computed(() => {
   return padaliniai.map((padalinys) => ({
-    label: $t(split(padalinys.fullname, "atstovybė ")[1]),
+    label: $t(padalinys.fullname.split("atstovybė ")[1]),
     key: padalinys.alias,
   }));
 });

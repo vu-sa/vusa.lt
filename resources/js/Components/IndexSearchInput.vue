@@ -15,8 +15,7 @@
 import { Inertia } from "@inertiajs/inertia";
 import { NInput } from "naive-ui";
 import { ref } from "vue";
-
-import { debounce } from "lodash";
+import { useDebounceFn } from "@vueuse/core";
 
 const props = defineProps<{
   payloadName: string;
@@ -29,7 +28,7 @@ const emit = defineEmits<{
 
 const loading = ref(false);
 
-const handleSearchInput = debounce((input) => {
+const handleSearchInput = useDebounceFn((input) => {
   loading.value = true;
   Inertia.reload({
     data: { page: 1, [props.payloadName]: input },

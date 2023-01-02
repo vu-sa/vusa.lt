@@ -40,9 +40,9 @@ export default {
 <script setup lang="ts">
 import { Head } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
-import { NInput, createDiscreteApi } from "naive-ui";
-import { debounce } from "lodash";
+import { createDiscreteApi } from "naive-ui";
 import { ref } from "vue";
+import { useDebounceFn } from "@vueuse/core";
 
 import ContactWithPhotoForUsers from "@/Components/Public/ContactWithPhotoForUsers.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
@@ -73,7 +73,7 @@ const loadingNameInput = ref(false);
 const { message } = createDiscreteApi(["message"]);
 
 // handleNameInput with half second delay and then update contacts with inertia request
-const handleNameInput = debounce((input: string) => {
+const handleNameInput = useDebounceFn((input: string) => {
   const name = input;
   if (name.length > 2) {
     loadingNameInput.value = true;
