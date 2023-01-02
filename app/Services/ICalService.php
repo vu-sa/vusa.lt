@@ -1,6 +1,6 @@
 <?php
 
-namespace App\ICalendars;
+namespace App\Services;
 
 use App\Models\Calendar as CalendarModel;
 use Spatie\IcalendarGenerator\Components\Calendar;
@@ -8,7 +8,7 @@ use Spatie\IcalendarGenerator\Components\Event;
 use Illuminate\Support\Carbon;
 use DateTime;
 
-class MainCalendar {
+class IcalendarService {
 
     private function parseCalendarEventsForICS($calendars, $en = false) {
         // foreach event in calendar
@@ -76,5 +76,5 @@ class MainCalendar {
         ->get();
 
         return $calendar;
-        }
+    }
 }

@@ -23,7 +23,7 @@ use App\Models\SaziningaiExamObserver;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
-use App\ICalendars\MainCalendar;
+use App\Services\IcalendarService;
 use App\Mail\ConfirmExamRegistration;
 use App\Mail\ConfirmMemberRegistration;
 use App\Mail\ConfirmObserverRegistration;
@@ -594,7 +594,7 @@ class MainController extends Controller
 
 	public function publicAllEventCalendar() {
 		
-		$ics = new MainCalendar;
+		$ics = new IcalendarService;
 
 		return response($ics->get())
     		->header('Content-Type', 'text/calendar; charset=utf-8');
