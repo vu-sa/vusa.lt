@@ -15,6 +15,20 @@
               placeholder="Įrašyti tekstą..."
             />
           </NFormItemGi>
+          <NFormItemGi label="Pareigų ėjimo pradžia" required :span="2"
+            ><NDatePicker
+              v-model:formatted-value="form.start_date"
+              value-format="yyyy-MM-dd"
+              type="date"
+              clearable
+          /></NFormItemGi>
+          <NFormItemGi label="Pareigų ėjimo pabaiga" required :span="2"
+            ><NDatePicker
+              v-model:formatted-value="form.end_date"
+              value-format="yyyy-MM-dd"
+              type="date"
+              clearable
+          /></NFormItemGi>
           <NFormItemGi label="Aprašymas" :span="6">
             <TipTap
               v-model="form.attributes.info_text"
@@ -82,6 +96,7 @@
 
 <script setup lang="ts">
 import {
+  NDatePicker,
   NForm,
   NFormItemGi,
   NGrid,

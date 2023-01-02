@@ -20,6 +20,11 @@
           >
             <Link :href="route('duties.edit', { id: duty.id })"
               >{{ duty.name }}
+              {{
+                `(nuo ${duty.pivot.start_date} iki ${
+                  duty.pivot.end_date ?? "dabar"
+                })`
+              }}
               {{ duty.email ? ` (${duty.email})` : "" }}
 
               <NButton

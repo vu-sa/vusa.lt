@@ -78,10 +78,14 @@ class DutyUserController extends Controller
      */
     public function update(Request $request, DutyUser $dutyUser)
     {
-        $dutyUser->attributes = $request->input('attributes');
-        // dd($dutyUser->attributes);
-        $dutyUser->save();
+        $validated = $request->validate([
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+            'attributes' => 'nullable|array'
+        ]);
 
+        $dutyUser->update($validated);
+        
         return back()->with('success', 'Pareigybė sėkmingai atnaujinta!');
     }
 

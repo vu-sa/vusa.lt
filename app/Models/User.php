@@ -63,7 +63,7 @@ class User extends Authenticatable
 
     public function duties()
     {
-        return $this->belongsToMany(Duty::class, 'duties_users', 'user_id', 'duty_id')->using(DutyUser::class)->withPivot(['id', 'attributes'])->withTimestamps();
+        return $this->belongsToMany(Duty::class, 'duties_users', 'user_id', 'duty_id')->using(DutyUser::class)->withPivot(['id', 'attributes', 'start_date', 'end_date'])->withTimestamps();
     }
 
     // TODO: more logical return of padalinys

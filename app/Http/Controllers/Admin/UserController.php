@@ -120,7 +120,8 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        
+        // user load duties with pivot
+
         return Inertia::render('Admin/Contacts/EditUser', [
             'contact' => [
                 'id' => $user->id,
