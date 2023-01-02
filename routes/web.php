@@ -85,6 +85,8 @@ Route::prefix('admin')->group(function () {
         Route::post('sharepoint/addFile', [Admin\SharepointController::class, 'addFile'])->name('sharepoint.addFile');
         Route::post('sharepoint/getFiles', [Admin\SharepointController::class, 'getFilesFromDocumentIds'])->name('sharepoint.getFiles');
         Route::delete('sharepoint/{id}', [Admin\SharepointController::class, 'destroyFile'])->name('sharepoint.destroy');
+
+        Route::post('/logout', [Admin\UserController::class, 'logout'])->name('logout');
     });
 });
 
@@ -170,6 +172,7 @@ Route::get('naujiena/archyvas', [Public\MainController::class, 'newsArchive']);
 
 // render login form
 Route::inertia('login', 'LoginForm')->middleware('guest')->name('login');
+Route::post('login', [Admin\UserController::class, 'authenticate'])->middleware('guest');
 
 Route::get('saziningai-registracija', [Public\MainController::class, 'saziningaiExamRegistration'])->name('saziningaiExamRegistration');
 Route::post('saziningai-registracija', [Public\MainController::class, 'storeSaziningaiExamRegistration'])->name('saziningaiExamRegistration.store');

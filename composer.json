@@ -13,7 +13,6 @@
         "guzzlehttp/guzzle": "^7.2",
         "inertiajs/inertia-laravel": "^0.6.3",
         "intervention/image": "^2.3",
-        "laravel/fortify": "^1.13",
         "laravel/framework": "^9.19.0",
         "laravel/scout": "^9.6",
         "laravel/telescope": "^4.6",
