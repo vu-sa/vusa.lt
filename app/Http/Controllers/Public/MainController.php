@@ -451,18 +451,40 @@ class MainController extends Controller
 
 	public function search()
 	{
-
 		// get search query
 		$search = request()->data['input'];
 
 		// search calendar events by title and get 5 most recent with only title, date and id, but spaces are not important
-		$calendar = Calendar::where('title', 'like', "%{$search}%")->orderBy('date', 'desc')->take(5)->get(['title', 'date', 'id']);
+		$calendar = Calendar::search($search)->orderBy('date', 'desc')->take(5)->get()->map(function ($calendar) {
+			return [
+				'id' => $calendar->id,
+				'title' => $calendar->title,
+				'date' => $calendar->date,
+				'permalink' => $calendar->permalink,
+				'lang' => $calendar->lang,
+			];
+		});
 
 		// search news by title and get 5 most recent with only title, publish_time and id and permalink
-		$news = News::where('title', 'like', "%{$search}%")->orderBy('publish_time', 'desc')->take(5)->get(['title', 'publish_time', 'id', 'permalink', 'lang']);
+		$news = News::search($search)->orderBy('publish_time', 'desc')->take(5)->get()->map(function ($news) {
+			return [
+				'id' => $news->id,
+				'title' => $news->title,
+				'publish_time' => $news->publish_time,
+				'permalink' => $news->permalink,
+				'lang' => $news->lang,
+			];
+		});
 
 		// search pages by title and get 5 most recent with only title, id and permalink
-		$pages = Page::where('title', 'like', "%{$search}%")->orderBy('created_at', 'desc')->take(5)->get(['title', 'id', 'permalink', 'lang']);
+		$pages = Page::search($search)->orderBy('created_at', 'desc')->take(5)->get()->map(function ($page) {
+			return [
+				'id' => $page->id,
+				'title' => $page->title,
+				'permalink' => $page->permalink,
+				'lang' => $page->lang,
+			];
+		});
 
 		return back()->with('search_calendar', $calendar)->with('search_news', $news)->with('search_pages', $pages);
 	}

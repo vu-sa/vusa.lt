@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Feed\Feedable;
 use Spatie\Feed\FeedItem;
 use Illuminate\Support\Carbon;
+use Laravel\Scout\Searchable;
 
 class News extends Model implements Feedable
 {
-    use HasFactory;
+    use HasFactory, Searchable;
 
     protected $table = 'news';
 
@@ -57,5 +58,18 @@ class News extends Model implements Feedable
     public static function getFeedItems()
     {
         return News::orderByDesc('publish_time')->take(15)->get();
+    }
+
+    public function toSearchableArray()
+    {
+        $array = $this->toArray();
+
+        // Customize array...
+        // return only title
+        $array = [
+            'title' => $this->title,
+        ];
+
+        return $array;
     }
 }
