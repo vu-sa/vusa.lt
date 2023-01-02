@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use App\Models\SharepointDocument;
 use App\Services\SharepointAppGraph;
@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Microsoft\Graph\Model;
+use App\Http\Controllers\Controller;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class SharepointController extends Controller
