@@ -2,12 +2,12 @@
 
 namespace App\Notifications;
 
-use App\Mail\InformChairAboutMemberRegistration;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class MemberRegistered extends Notification
+class ProtocolUploadUrgentNotification extends Notification
 {
     use Queueable;
 
@@ -16,11 +16,9 @@ class MemberRegistered extends Notification
      *
      * @return void
      */
-    public function __construct($data, $registerLocation, $chairEmail)
+    public function __construct()
     {
-        $this->data = $data;
-        $this->registerLocation = $registerLocation;
-        $this->email = $chairEmail;
+        //
     }
 
     /**
@@ -31,7 +29,7 @@ class MemberRegistered extends Notification
      */
     public function via($notifiable)
     {
-        return ['mail', 'database'];
+        return ['mail'];
     }
 
     /**
@@ -42,8 +40,10 @@ class MemberRegistered extends Notification
      */
     public function toMail($notifiable)
     {
-        return (new InformChairAboutMemberRegistration($this->data, $this->registerLocation))
-            ->to($this->email);
+        return (new MailMessage)
+                    ->line('The introduction to the notification.')
+                    ->action('Notification Action', url('/'))
+                    ->line('Thank you for using our application!');
     }
 
     /**
@@ -55,8 +55,7 @@ class MemberRegistered extends Notification
     public function toArray($notifiable)
     {
         return [
-            'objectName' => $this->data['name'],
-            'actionUrl' => ["routeName" => 'registrationForms.show', "model" => 2]
+            //
         ];
     }
 }

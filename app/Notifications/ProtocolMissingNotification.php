@@ -7,7 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class CommentSubmitted extends Notification
+class ProtocolMissingNotification extends Notification
 {
     use Queueable;
 
@@ -16,11 +16,9 @@ class CommentSubmitted extends Notification
      *
      * @return void
      */
-    public function __construct($commenter, $modelCommentedOn, $route)
+    public function __construct()
     {
-        $this->commenter = $commenter;
-        $this->modelCommentedOn = $modelCommentedOn;
-        $this->route = $route;
+        //
     }
 
     /**
@@ -31,7 +29,21 @@ class CommentSubmitted extends Notification
      */
     public function via($notifiable)
     {
-        return ['database'];
+        return ['mail'];
+    }
+
+    /**
+     * Get the mail representation of the notification.
+     *
+     * @param  mixed  $notifiable
+     * @return \Illuminate\Notifications\Messages\MailMessage
+     */
+    public function toMail($notifiable)
+    {
+        return (new MailMessage)
+                    ->line('The introduction to the notification.')
+                    ->action('Notification Action', url('/'))
+                    ->line('Thank you for using our application!');
     }
 
     /**
@@ -43,8 +55,7 @@ class CommentSubmitted extends Notification
     public function toArray($notifiable)
     {
         return [
-            'commenterName' => $this->commenter->name,
-            'route' => ["routeName" => $this->route, "model" => $this->modelCommentedOn->id]
+            //
         ];
     }
 }

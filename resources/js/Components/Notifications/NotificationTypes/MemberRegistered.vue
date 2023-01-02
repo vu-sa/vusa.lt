@@ -1,6 +1,6 @@
 <template>
   <span>
-    <strong>{{ data.registeredName }}</strong> užsiregistravo per VU SA
+    <strong>{{ data.objectName }}</strong> užsiregistravo per VU SA
     registraciją.
   </span>
 </template>

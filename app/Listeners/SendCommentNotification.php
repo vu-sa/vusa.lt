@@ -5,6 +5,7 @@ namespace App\Listeners;
 use App\Models\Doing;
 use App\Notifications\CommentSubmitted;
 use App\Events\UserComments;
+use App\Notifications\CommentNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Notification;
@@ -36,7 +37,7 @@ class SendCommentNotification
             $users = $event->modelCommentedOn->questions->first()->institution->duties->pluck('users')->flatten()->unique('id');
 
             // send notification to user
-            Notification::send($users, new CommentSubmitted($event->commenter, $event->modelCommentedOn, $event->route));
+            Notification::send($users, new CommentNotification($event->commenter, $event->modelCommentedOn, $event->route));
         }
     }
 }

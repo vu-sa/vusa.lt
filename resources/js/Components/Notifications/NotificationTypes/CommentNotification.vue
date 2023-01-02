@@ -1,6 +1,6 @@
 <template>
   <span>
-    <strong>{{ data.commenterName }}</strong> paliko komentarą.
+    <strong>{{ data.objectName }}</strong> paliko komentarą.
   </span>
 </template>
 

@@ -68,9 +68,11 @@ const MemberRegistered = defineAsyncComponent(
     import("@/Components/Notifications/NotificationTypes/MemberRegistered.vue")
 );
 
-const CommentSubmitted = defineAsyncComponent(
+const CommentNotification = defineAsyncComponent(
   () =>
-    import("@/Components/Notifications/NotificationTypes/CommentSubmitted.vue")
+    import(
+      "@/Components/Notifications/NotificationTypes/CommentNotification.vue"
+    )
 );
 
 const getNotificationComponent = (type: string) => {
@@ -79,8 +81,8 @@ const getNotificationComponent = (type: string) => {
   switch (type) {
     case "App\\Notifications\\MemberRegistered":
       return MemberRegistered;
-    case "App\\Notifications\\CommentSubmitted":
-      return CommentSubmitted;
+    case "App\\Notifications\\CommentNotification":
+      return CommentNotification;
     default:
       return MemberRegistered;
   }
