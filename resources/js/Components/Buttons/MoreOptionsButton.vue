@@ -2,6 +2,7 @@
   <NDropdown trigger="click" :options="moreOptions" @select="handleSelect">
     <NButton
       :size="small ? 'small' : 'medium'"
+      :disabled="disabled"
       circle
       :tertiary="!small"
       :quaternary="small"
@@ -35,6 +36,7 @@ import { ref } from "vue";
 const emit = defineEmits(["editClick", "deleteClick"]);
 
 const props = defineProps<{
+  disabled?: boolean;
   small?: boolean;
   edit?: boolean;
   delete?: boolean;
@@ -57,6 +59,7 @@ const moreOptions = [
     icon: () => {
       return <NIcon color="text-vusa-red" component={Delete24Filled}></NIcon>;
     },
+    show: props.delete,
   },
 ];
 

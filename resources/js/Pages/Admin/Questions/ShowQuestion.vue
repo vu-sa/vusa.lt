@@ -40,6 +40,7 @@
       <div class="inline-flex gap-2">
         <ShowActivityLog :activities="question.activities" />
         <MoreOptionsButton
+          disabled
           edit
           @edit-click="showQuestionModal = true"
         ></MoreOptionsButton>
