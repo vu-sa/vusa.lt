@@ -81,10 +81,10 @@ Route::prefix('admin')->group(function () {
 
         Route::post('files/uploadImage', [Admin\FilesController::class, 'uploadImage'])->name('files.uploadImage');
 
-        Route::get('sharepoint', [SharepointController::class, 'index'])->name('sharepoint.index');
-        Route::post('sharepoint/addFile', [SharepointController::class, 'addFile'])->name('sharepoint.addFile');
-        Route::post('sharepoint/getFiles', [SharepointController::class, 'getFilesFromDocumentIds'])->name('sharepoint.getFiles');
-        Route::delete('sharepoint/{id}', [SharepointController::class, 'destroyFile'])->name('sharepoint.destroy');
+        Route::get('sharepoint', [Admin\SharepointController::class, 'index'])->name('sharepoint.index');
+        Route::post('sharepoint/addFile', [Admin\SharepointController::class, 'addFile'])->name('sharepoint.addFile');
+        Route::post('sharepoint/getFiles', [Admin\SharepointController::class, 'getFilesFromDocumentIds'])->name('sharepoint.getFiles');
+        Route::delete('sharepoint/{id}', [Admin\SharepointController::class, 'destroyFile'])->name('sharepoint.destroy');
     });
 });
 
