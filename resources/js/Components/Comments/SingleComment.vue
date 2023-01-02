@@ -9,12 +9,11 @@
         <span :title="comment.created_at" class="mr-2 text-sm text-gray-500">
           {{ getRelativeTime(comment.created_at) }}
         </span>
-        <NDropdown :options="options" @select="handleSelect">
-          <NButton size="small" quaternary circle
-            ><template #icon
-              ><NIcon :component="MoreHorizontal32Filled"></NIcon></template
-          ></NButton>
-        </NDropdown>
+        <MoreOptionsButton
+          small
+          delete
+          @delete-click="handleDelete"
+        ></MoreOptionsButton>
       </div>
     </div>
     <div class="mt-2 text-sm" v-html="comment.comment"></div>
@@ -23,10 +22,10 @@
 
 <script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
-import { MoreHorizontal32Filled } from "@vicons/fluent";
-import { NButton, NCard, NDropdown, NIcon } from "naive-ui";
+import { NCard } from "naive-ui";
 import route from "ziggy-js";
 
+import MoreOptionsButton from "../Buttons/MoreOptionsButton.vue";
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
 import getRelativeTime from "@/Composables/getRelativeTime";
 
@@ -34,38 +33,24 @@ const props = defineProps<{
   comment: Record<string, any>;
 }>();
 
-const options = [
-  {
-    label: "Redaguoti",
-    key: "edit",
-  },
-  {
-    label: "Ištrinti",
-    key: "delete",
-  },
-];
+const handleEdit = () => {
+  Inertia.get(
+    route("users.comments.edit", {
+      user: props.comment.user.id,
+      comment: props.comment.id,
+    })
+  );
+};
 
-const handleSelect = (option: string) => {
-  switch (option) {
-    case "edit":
-      Inertia.get(
-        route("users.comments.edit", {
-          user: props.comment.user.id,
-          comment: props.comment.id,
-        })
-      );
-      break;
-    case "delete":
-      Inertia.delete(
-        route("users.comments.destroy", {
-          user: props.comment.user.id,
-          comment: props.comment.id,
-        }),
-        {
-          preserveScroll: true,
-        }
-      );
-      break;
-  }
+const handleDelete = () => {
+  Inertia.delete(
+    route("users.comments.destroy", {
+      user: props.comment.user.id,
+      comment: props.comment.id,
+    }),
+    {
+      preserveScroll: true,
+    }
+  );
 };
 </script>

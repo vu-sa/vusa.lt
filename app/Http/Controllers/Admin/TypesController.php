@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Type;
 use App\Http\Controllers\Controller as Controller;
 use App\Services\SharepointAppGraph;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class TypesController extends Controller
@@ -107,8 +109,6 @@ class TypesController extends Controller
             'parent_id' => 'nullable|exists:types,id|different:id',
         ]);
 
-        // if 
-
         $type->update($request->only('title', 'model_type', 'description', 'parent_id'));
 
         return redirect()->route('types.index')->with('success', 'Turinio tipas sėkmingai atnaujintas!');
@@ -122,6 +122,15 @@ class TypesController extends Controller
      */
     public function destroy(Type $type)
     {
-        //
+        throw new Exception("Šiuo metu negalima trinti tipų, pavojinga...", 1);
+        
+        DB::transaction(function () use ($type) {
+            // delete typeables
+            DB::table('typeables')->where('type_id', $type->id)->delete();
+            // delete type
+            $type->delete();
+        });
+
+        return back()->with('success', 'Tipas ištrintas');
     }
 }

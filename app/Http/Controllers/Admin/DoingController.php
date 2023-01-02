@@ -8,6 +8,7 @@ use App\Services\DoingStatusManager;
 use App\Services\SharepointAppGraph;
 use App\Services\TaskCreator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Microsoft\Graph\Model;
 use Inertia\Inertia;
 
@@ -178,21 +179,24 @@ class DoingController extends Controller
      */
     public function destroy(Doing $doing)
     {
-        // detach doings from questions
-        $doing->questions()->detach();
+        
+        DB::transaction(function () use ($doing) {
+            // detach doings from questions
+            $doing->questions()->detach();
 
-        // detach doings from types
-        $doing->types()->detach();
+            // detach doings from types
+            $doing->types()->detach();
 
-        // delete tasks
-        $doing->tasks()->delete();
+            // delete tasks
+            $doing->tasks()->delete();
 
-        // delete comments
-        $doing->comments()->delete();
+            // delete comments
+            $doing->comments()->delete();
 
-        // delete doing
-        $doing->delete();
+            // delete doing
+            $doing->delete();
+        });
 
-        return redirect()->route('doings.index')->with('success', 'Veikla ištrinta!');
+        return back()->with('success', 'Veikla ištrinta!');
     }
 }

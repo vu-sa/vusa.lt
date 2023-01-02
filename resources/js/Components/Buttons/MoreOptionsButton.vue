@@ -1,10 +1,26 @@
 <template>
   <NDropdown trigger="click" :options="moreOptions" @select="handleSelect">
-    <NButton circle :tertiary="!small" :quaternary="small" @click.stop
+    <NButton
+      :size="small ? 'small' : 'medium'"
+      circle
+      :tertiary="!small"
+      :quaternary="small"
+      @click.stop
       ><template #icon
         ><NIcon :component="MoreHorizontal24Filled"></NIcon></template
     ></NButton>
   </NDropdown>
+  <NModal
+    v-model:show="showDeleteModal"
+    preset="dialog"
+    title="Dialog"
+    content="Ar tikrai ištrinti?"
+    type="warning"
+    positive-text="Ištrinti"
+    negative-text="Atšaukti"
+    @positive-click="$emit('deleteClick')"
+    @negative-click="showDeleteModal = false"
+  />
 </template>
 
 <script setup lang="tsx">
@@ -13,7 +29,8 @@ import {
   Edit24Filled,
   MoreHorizontal24Filled,
 } from "@vicons/fluent";
-import { NButton, NDropdown, NIcon } from "naive-ui";
+import { NButton, NDropdown, NIcon, NModal } from "naive-ui";
+import { ref } from "vue";
 
 const emit = defineEmits(["editClick", "deleteClick"]);
 
@@ -22,6 +39,8 @@ const props = defineProps<{
   edit?: boolean;
   delete?: boolean;
 }>();
+
+const showDeleteModal = ref(false);
 
 const moreOptions = [
   {
@@ -36,9 +55,8 @@ const moreOptions = [
     label: "Ištrinti",
     key: "delete",
     icon: () => {
-      return <NIcon color="#bd2835" component={Delete24Filled}></NIcon>;
+      return <NIcon color="text-vusa-red" component={Delete24Filled}></NIcon>;
     },
-    show: props.delete,
   },
 ];
 
@@ -48,7 +66,7 @@ const handleSelect = (key: string) => {
       emit("editClick");
       break;
     case "delete":
-      emit("deleteClick");
+      showDeleteModal.value = true;
       break;
     default:
       break;

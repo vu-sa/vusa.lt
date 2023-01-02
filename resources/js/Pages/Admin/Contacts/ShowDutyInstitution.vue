@@ -20,7 +20,7 @@
     </template>
     <div class="mb-16 flex min-h-[16em] gap-4 py-2">
       <LastMeetingCard
-        :last-meeting-doing="dutyInstitution.lastMeetingDoing"
+        :last-meeting-doing="dutyInstitution?.lastMeetingDoing"
         :duty-institution="dutyInstitution"
         :doing-types="doingTypes"
         content-style="margin-top: 0.5em"

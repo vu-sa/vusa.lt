@@ -6,6 +6,7 @@
         :model="contentTypes"
         :columns="columns"
         edit-route="types.edit"
+        destroy-route="types.destroy"
       />
     </div>
   </PageContent>

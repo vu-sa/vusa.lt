@@ -86,12 +86,13 @@ class TasksController extends Controller
      */
     public function destroy(Task $task)
     {
-        //
+        $task->delete();
+
+        return back()->with('success', 'Užduotis sėkmingai ištrinta');
     }
 
     public function updateCompletionStatus(Request $request, Task $task)
-    {
-        
+    {      
         if ($request->completed == true) {
             $task->completed_at = now();
         } else {

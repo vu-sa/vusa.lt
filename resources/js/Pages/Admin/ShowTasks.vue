@@ -32,11 +32,14 @@
 
 <script setup lang="tsx">
 import { Home24Filled, Sparkle24Filled } from "@vicons/fluent";
+import { Inertia } from "@inertiajs/inertia";
 import { NButton, NCheckbox, NDataTable, NIcon, NTag } from "naive-ui";
 import { computed, ref } from "vue";
+import route from "ziggy-js";
 
 import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 
 const props = defineProps<{
@@ -94,6 +97,20 @@ const columns = [
     title: "Sukurta",
     key: "created_at",
   },
+  {
+    key: "moreOptions",
+    render(row) {
+      return (
+        <MoreOptionsButton
+          delete
+          small
+          onDeleteClick={() => {
+            handleDelete(row);
+          }}
+        ></MoreOptionsButton>
+      );
+    },
+  },
 ];
 
 const rowClassName = (row) => {
@@ -126,6 +143,10 @@ const shownTasks = computed(() => {
     return !task.completed_at;
   });
 });
+
+const handleDelete = (task: App.Models.Task) => {
+  Inertia.delete(route("tasks.destroy", { task: task.id }));
+};
 </script>
 
 <style scoped>

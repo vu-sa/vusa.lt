@@ -69,6 +69,7 @@ Route::prefix('admin')->group(function () {
         Route::resource('types', Admin\TypesController::class);
         Route::resource('relationships', Admin\RelationshipController::class);
         Route::post('relationships/{relationship}/storeModelRelationship', [Admin\RelationshipController::class, 'storeModelRelationship'])->name('relationships.storeModelRelationship');
+        Route::delete('relationships/relationshipables/{relationshipable}', [Admin\RelationshipController::class, 'deleteModelRelationship'])->name('relationships.deleteModelRelationship');
         Route::resource('roles', Admin\RoleController::class);
         Route::resource('permissions', Admin\PermissionController::class);
         Route::resource('tasks', Admin\TasksController::class);

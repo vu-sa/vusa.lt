@@ -1,25 +1,28 @@
 <template>
   <QuickContentCard>
-    <div class="inline-flex items-center gap-2">
-      <NIcon :size="36" :component="CalendarClock20Regular"></NIcon>
+    <template v-if="lastMeetingDoing">
+      <div class="inline-flex items-center gap-2">
+        <NIcon :size="36" :component="CalendarClock20Regular"></NIcon>
 
-      <span class="text-3xl font-bold">
-        prieš
-        <NNumberAnimation
-          :from="0"
-          :to="getDaysDifference(lastMeetingDoing.date)"
-        ></NNumberAnimation>
-        d.
-      </span>
-    </div>
-    <p class="mt-4">
-      Paskutinis posėdis vyko
-      <Link
-        :href="route('doings.show', lastMeetingDoing.id)"
-        class="font-bold"
-        >{{ getMMMMDD(lastMeetingDoing.date) }}</Link
-      >
-    </p>
+        <span class="text-3xl font-bold">
+          prieš
+          <NNumberAnimation
+            :from="0"
+            :to="getDaysDifference(lastMeetingDoing.date)"
+          ></NNumberAnimation>
+          d.
+        </span>
+      </div>
+      <p class="mt-4">
+        Paskutinis posėdis vyko
+        <Link
+          :href="route('doings.show', lastMeetingDoing.id)"
+          class="font-bold"
+          >{{ getMMMMDD(lastMeetingDoing.date) }}</Link
+        >
+      </p>
+    </template>
+    <p v-else>Nėra užfiksuoto jokio posėdžio. 😢</p>
     <template #action-button>
       <NewMeetingButton
         :duty-institution="dutyInstitution"
@@ -42,6 +45,6 @@ import QuickContentCard from "@/Components/Cards/QuickContentCards/QuickContentC
 defineProps<{
   doingTypes: any;
   dutyInstitution: App.Models.DutyInstitution;
-  lastMeetingDoing: App.Models.Doing;
+  lastMeetingDoing?: App.Models.Doing;
 }>();
 </script>

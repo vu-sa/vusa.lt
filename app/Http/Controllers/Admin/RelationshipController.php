@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 use App\Http\Controllers\Controller as Controller;
+use App\Models\Relationshipable;
 use Illuminate\Support\Facades\DB;
 
 // Controller is used for the relationship object, which describes
@@ -135,7 +136,15 @@ class RelationshipController extends Controller
      */
     public function destroy(Relationship $relationship)
     {
-        //
+
+        DB::transaction(function () use ($relationship) {
+            
+            // remove all relationshipables
+            DB::table('relationshipables')->where('relationship_id', $relationship->id);
+            $relationship->delete();
+        });
+
+        return back()->with('success', 'Ryšio tipas tarp modelių ištrintas');
     }
 
     // Store relationship between models
@@ -155,4 +164,9 @@ class RelationshipController extends Controller
             ->with('success', 'Ryšys sukurtas sėkmingai.');
     }
 
+    public function deleteModelRelationship(Relationshipable $relationshipable) {
+        $relationshipable->delete();
+
+        return back()->with('success', 'Ryšys tarp modelių ištrintas.');
+    }
 }

@@ -9,6 +9,8 @@ class Relationship extends Model
 {
     use HasFactory;
 
+    // Basically they are relationship types, not relationships. But oh well...
+
     protected $guarded = [];
 
     protected $appends = ['related_model'];

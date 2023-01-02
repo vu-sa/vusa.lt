@@ -42,13 +42,14 @@
     >
     <NDataTable
       class="mt-4"
+      size="small"
       :data="relationshipables"
       :columns="relationshipableColumns"
     ></NDataTable>
   </PageContent>
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
 import { Inertia } from "@inertiajs/inertia";
 import {
   NButton,
@@ -64,6 +65,7 @@ import route from "ziggy-js";
 
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
+import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import RelationshipForm from "@/Components/AdminForms/RelationshipForm.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
@@ -126,6 +128,18 @@ const relationshipableColumns = [
     title: "Relationship ID",
     key: "related_model_id",
   },
+  {
+    key: "more",
+    render(row) {
+      return (
+        <MoreOptionsButton
+          small
+          delete
+          onDeleteClick={() => handleDeleteRelationship(row.id)}
+        />
+      );
+    },
+  },
 ];
 
 const modelTypeOptions = [
@@ -140,10 +154,15 @@ const modelTypeOptions = [
 ];
 
 const handleUpdateModelType = (value: string) => {
+  relationForm.reset("model_id", "related_model_id");
   Inertia.reload({
     data: {
       modelType: value,
     },
   });
+};
+
+const handleDeleteRelationship = (id: number) => {
+  Inertia.delete(route("relationships.deleteModelRelationship", id));
 };
 </script>

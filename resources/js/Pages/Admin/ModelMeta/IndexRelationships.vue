@@ -6,6 +6,7 @@
         :model="relationships"
         :columns="columns"
         edit-route="relationships.edit"
+        destroy-route="relationships.destroy"
       />
     </div>
   </PageContent>
