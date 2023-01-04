@@ -1,5 +1,9 @@
 <template>
-  <NBadge type="info" :offset="[0, -4]" :value="$page.props.user.tasks_count">
+  <NBadge
+    type="info"
+    :offset="[0, -4]"
+    :value="$page.props.auth.user.tasks_count"
+  >
     <NButton text circle @click="Inertia.visit(route('userTasks'))"
       ><template #icon
         ><NIcon :size="24" :component="TasksApp24Regular"></NIcon></template

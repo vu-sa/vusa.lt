@@ -1,8 +1,8 @@
 <template>
   <PageContent title="Tavo institucijos">
     <div class="flex max-w-4xl flex-wrap gap-4">
-      <DutyInstitutionCard
-        v-for="institution in dutyInstitutions"
+      <InstitutionCard
+        v-for="institution in institutions"
         :key="institution.id"
         :institution="institution"
         :duties="duties"
@@ -50,7 +50,7 @@ import { ExternalLinkSquareAlt } from "@vicons/fa";
 import { NButton, NIcon } from "naive-ui";
 
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
-import DutyInstitutionCard from "@/Components/Cards/DutyInstitutionCard.vue";
+import InstitutionCard from "@/Components/Cards/InstitutionCard.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 
 defineOptions({
@@ -58,7 +58,7 @@ defineOptions({
 });
 
 defineProps<{
-  dutyInstitutions: Record<string, any>[];
+  institutions: Record<string, any>[];
   duties: App.Models.Duty[];
 }>();
 

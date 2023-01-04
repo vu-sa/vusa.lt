@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Duty;
-use App\Models\DutyInstitution;
+use App\Models\Institution;
 use App\Models\Type;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -27,7 +27,7 @@ class DutyFactory extends Factory
             'name' => $this->faker->jobTitle(),
             // generate html description
             'description' => '<p>' . $this->faker->paragraph(1) . '</p><p>' . $this->faker->paragraph(1) . '</p>',
-            'institution_id' => DutyInstitution::inRandomOrder()->select('id')->first()->id,
+            'institution_id' => Institution::inRandomOrder()->select('id')->first()->id,
             'email' => $this->faker->safeEmail(),
         ];
     }

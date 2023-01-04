@@ -6,7 +6,7 @@
       :content-model-options="objectOptions"
       :content-type-options="contentTypeOptions"
       :prespecified-type="'Protokolai'"
-      :related-object-name="dutyInstitution.name"
+      :related-object-name="institution.name"
     ></FileUploader>
   </NMessageProvider>
 </template>
@@ -20,18 +20,18 @@ import { contentTypeOptions } from "@/Composables/someTypes";
 import FileUploader from "@/Components/SharepointFileManager/FileUploader.vue";
 
 const props = defineProps<{
-  dutyInstitution: App.Models.DutyInstitution;
-  questions: Record<string, any>[];
+  institution: App.Models.Institution;
+  matters: App.Models.InstitutionMatter[];
 }>();
 
 const objectOptions = computed(() => {
-  return props.questions.map((question) => {
+  return props.matters.map((matter) => {
     return {
-      label: question.title,
-      key: question.id,
+      label: matter.title,
+      key: matter.id,
       disabled: true,
       // map doings as children where type is Posėdis
-      children: question.doings
+      children: matter.doings
         .filter((doing) => doing.types.some((type) => type.title === "Posėdis"))
         .map((doing) => {
           return {
@@ -57,7 +57,7 @@ const meetingButton = (
   <NButton size="small">
     {{
       default: () => "Įkelti protokolą?",
-      icon: <NIcon component={DocumentAdd24Filled}></NIcon>,
+      icon: () => <NIcon component={DocumentAdd24Filled}></NIcon>,
     }}
   </NButton>
 );

@@ -23,7 +23,7 @@
       <NFormItemGi label="Administracinė vusa.lt rolė" :span="2">
         <NSelect
           v-model:value="form.roles"
-          :disabled="!$page.props.user.isSuperAdmin"
+          :disabled="!$page.props.auth.user.isSuperAdmin"
           :options="rolesOptions"
           clearable
           multiple
@@ -84,7 +84,7 @@ const props = defineProps<{
   deleteModelRoute?: string;
 }>();
 
-const form = useForm("dutyInstitution", props.user);
+const form = useForm("institution", props.user);
 
 const dutyOptions = props.duties.map((duty) => ({
   label: `${duty.name} (${duty.institution?.padalinys?.shortname})`,

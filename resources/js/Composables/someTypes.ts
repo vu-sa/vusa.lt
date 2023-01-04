@@ -1,4 +1,4 @@
-export const questionOptions = [
+export const matterOptions = [
   {
     label: "Studijų tinklelio peržiūra",
     value: "Studijų tinklelio peržiūra",

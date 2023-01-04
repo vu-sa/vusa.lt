@@ -18,34 +18,41 @@ return new class extends Migration
      */
     public function up()
     {
+        
         // migrate duties institutions types
         DB::table('duties_institutions_types')->get()->each(function ($type) {
             $new_type = Type::create([
                 'title' => $type->name,
-                'model_type' => DutyInstitution::class,
+                'model_type' => 'App\Models\DutyInstitution',
                 'description' => $type->description,
                 'slug' => $type->alias,
                 'extra_attributes' => $type->attributes,
             ]);
 
-            $dutyInstitutions = DutyInstitution::where('type_id', $type->id)->get();
+            $dutyInstitutions = DB::table('duties_institutions')->where('type_id', $type->id)->get();
             foreach ($dutyInstitutions as $dutyInstitution) {
-                $dutyInstitution->types()->attach($new_type->id);
-                $dutyInstitution->save();
+                DB::table('typeables')->insert([
+                    'type_id' => $new_type->id,
+                    'typeable_id' => $dutyInstitution->id,
+                    'typeable_type' => 'App\Models\DutyInstitution'
+                ]);
             }
         });
 
         DB::table('duties_types')->get()->each(function ($type) {
             $new_type = Type::create([
                 'title' => $type->name,
-                'model_type' => Duty::class,
+                'model_type' => 'App\Models\Duty',
                 'description' => $type->description,
             ]);
 
-            $duties = Duty::where('type_id', $type->id)->get();
+            $duties = Duty::withTrashed()->where('type_id', $type->id)->get();
             foreach ($duties as $duty) {
-                $duty->types()->attach($new_type->id);
-                $duty->save();
+                DB::table('typeables')->insert([
+                    'type_id' => $new_type->id,
+                    'typeable_id' => $duty->id,
+                    'typeable_type' => 'App\Models\Duty'
+                ]);
             }
         });
 
@@ -55,7 +62,7 @@ return new class extends Migration
                 'model_type' => Doing::class,
             ]);
 
-            $doings = Doing::where('doing_type_id', $type->id)->get();
+            $doings = Doing::withTrashed()->where('doing_type_id', $type->id)->get();
             foreach ($doings as $doing) {
                 $doing->types()->attach($new_type->id);
                 $doing->save();

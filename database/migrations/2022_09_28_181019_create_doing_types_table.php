@@ -24,7 +24,6 @@ return new class extends Migration
         DB::table('doing_types')->insert([
             ['title' => 'Susitikimas'],
             ['title' => 'Laiškas'],
-            ['title' => 'Posėdis'],
         ]);
     }
 

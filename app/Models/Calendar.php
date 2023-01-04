@@ -23,17 +23,12 @@ class Calendar extends Model implements HasMedia
     protected $casts = [
         'updated_at' => 'datetime:Y-m-d H:i:s',
         'created_at' => 'datetime:Y-m-d H:i:s',
-        'attributes' => 'array',
+        'extra_attributes' => 'array',
     ];
-
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id', 'id');
-    }
 
     public function padalinys()
     {
-        return $this->belongsTo(Padalinys::class, 'padalinys_id', 'id');
+        return $this->belongsTo(Padalinys::class, 'padalinys_id');
     }
 
     public function category()

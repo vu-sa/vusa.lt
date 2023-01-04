@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Duty;
 use App\Http\Controllers\Controller as Controller;
+use App\Providers\RouteServiceProvider;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 
@@ -41,7 +43,7 @@ class UserController extends Controller
         })->with(['duties:id,institution_id', 'duties.institution:id,padalinys_id','duties.institution.padalinys:id,shortname'])
         ->paginate(20);
 
-        return Inertia::render('Admin/Contacts/IndexUsers', [
+        return Inertia::render('Admin/Contacts/IndexUser', [
             'users' => $users,
         ]);
     }
@@ -121,26 +123,12 @@ class UserController extends Controller
     public function edit(User $user)
     {
         // user load duties with pivot
+        $user->load(['duties' => function ($query) {
+            $query->withPivot('start_date', 'end_date');
+        }])->load('roles');
 
         return Inertia::render('Admin/Contacts/EditUser', [
-            'contact' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'profile_photo_path' => $user->profile_photo_path,
-                'phone' => $user->phone,
-                'roles' => $user->getRoleNames(),
-                'duties' => $user->duties->map(function ($duty) {
-                    return [
-                        'id' => $duty->id,
-                        'email' => $duty->email,
-                        'name' => $duty->name,
-                        'institution' => $duty->institution,
-                        'pivot' => $duty->pivot,
-                        'type' => $duty->type,
-                    ];
-                }),
-            ],
+            'user' => $user,
             // get all roles
             'roles' => Role::all(),
             'duties' => $this->getDutiesForForm()
@@ -165,7 +153,7 @@ class UserController extends Controller
         DB::transaction(function () use ($request, $user) {
 
             $user->update($request->only('name', 'email', 'phone', 'profile_photo_path'));
-            $user->duties()->sync($request->duties);
+            $user->duties()->syncWithPivotValues($request->duties, ['start_date' => Carbon::now()]);
 
             // check if user is super admin
             if (auth()->user()->hasRole('Super Admin')) {
@@ -277,13 +265,12 @@ class UserController extends Controller
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
- 
+
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
- 
-            return redirect()->intended('dashboard');
+            return redirect()->intended(RouteServiceProvider::HOME);
         }
- 
+
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
         ])->onlyInput('email');

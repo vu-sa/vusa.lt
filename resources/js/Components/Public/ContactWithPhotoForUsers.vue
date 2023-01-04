@@ -15,7 +15,7 @@
         <h2 class="flex flex-auto items-center gap-2 px-2 text-slate-900">
           <span>{{ contact.name }}</span>
           <NButton
-            v-if="$page.props.user"
+            v-if="$page.props.auth.user"
             secondary
             circle
             size="tiny"
@@ -38,7 +38,7 @@
               </p>
             </template>
             <!-- <span
-              v-html="duty.pivot?.attributes?.info_text ?? duty.description"
+              v-html="duty.pivot?.extra_attributes?.info_text ?? duty.description"
             ></span> -->
           </NPopover>
           <p v-else class="my-1">
@@ -92,7 +92,9 @@ const getImageUrl = (contact: App.Models.User) => {
     // check all duties for duties name which includes kuratorius
     // iterate object simply because it may not be iterable
     if (props.duty.name.toLowerCase().includes("kuratorius")) {
-      return props.duty.pivot.attributes?.additional_photo ?? contact.image;
+      return (
+        props.duty.pivot.extra_attributes?.additional_photo ?? contact.image
+      );
     }
   }
   return contact.profile_photo_path ?? "";
@@ -124,13 +126,13 @@ const checkIfContactNameEndsWithEDot = (
 
 // ! TIK KURATORIAMS: nusprendžia, ar rodyti studijų programą
 const showStudyProgram = (contact: App.Models.User, duty) => {
-  if (!contact.pivot?.attributes?.study_program) {
+  if (!contact.pivot?.extra_attributes?.study_program) {
     return null;
   }
 
   // check if name includes kuratorius
   if (duty.type_id === 5) {
-    return `(${contact.pivot.attributes.study_program})`;
+    return `(${contact.pivot.extra_attributes.study_program})`;
   }
 
   return null;

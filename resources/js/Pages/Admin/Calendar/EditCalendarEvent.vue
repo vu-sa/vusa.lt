@@ -36,6 +36,10 @@ const props = defineProps<{
 
 const calendar = ref(props.calendar);
 
-calendar.value.attributes = checkForEmptyArray(calendar.value.attributes);
-calendar.value.attributes.en = checkForEmptyArray(calendar.value.attributes.en);
+calendar.value.extra_attributes = checkForEmptyArray(
+  calendar.value.extra_attributes
+);
+calendar.value.extra_attributes.en = checkForEmptyArray(
+  calendar.value.extra_attributes.en
+);
 </script>

@@ -25,9 +25,9 @@ class Relationship extends Model
         return $this->morphedByMany($model, 'relationshipable');
     }
 
-    public function duty_institutions()
+    public function institutions()
     {
-        return $this->morphedByMany(DutyInstitution::class, 'relationshipable');
+        return $this->morphedByMany(Institution::class, 'relationshipable');
     }
 
     public function getRelatedModelAttribute()

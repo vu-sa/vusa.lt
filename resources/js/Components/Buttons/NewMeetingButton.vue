@@ -24,9 +24,9 @@
     <FadeTransition mode="out-in">
       <NForm
         v-if="current === 1"
-        ref="questionFormRef"
-        :rules="questionFormRules"
-        :model="questionForm"
+        ref="matterFormRef"
+        :rules="matterFormRules"
+        :model="matterForm"
       >
         <FadeTransition>
           <NAlert
@@ -60,12 +60,12 @@
         <NGrid cols="1">
           <NFormItemGi label="Klausimo pavadinimas" path="titlesOrIds" required>
             <NSelect
-              v-model:value="questionForm.titlesOrIds"
+              v-model:value="matterForm.titlesOrIds"
               placeholder="Studijų tinklelio peržiūra"
               filterable
               multiple
               tag
-              :options="allQuestionOptions"
+              :options="allMatterOptions"
               ><template #action>
                 <span
                   class="prose-sm prose-gray text-xs text-zinc-400 dark:prose-invert"
@@ -77,7 +77,7 @@
             <NPopover>
               <template #trigger>
                 <NCheckbox
-                  v-model:checked="questionForm.andOther"
+                  v-model:checked="matterForm.andOther"
                   class="ml-4 w-fit"
                   ><span class="whitespace-nowrap">ir kiti...</span></NCheckbox
                 >
@@ -87,12 +87,12 @@
             </NPopover>
           </NFormItemGi>
           <NFormItemGi
-            v-if="!isExistingQuestionSelected"
+            v-if="!isExistingMatterSelected"
             label="Aprašymas"
             path="description"
           >
             <NInput
-              v-model:value="questionForm.description"
+              v-model:value="matterForm.description"
               type="textarea"
               placeholder="Aprašykite klausimo (-ų) kontekstą, jeigu to reikia..."
             ></NInput>
@@ -101,7 +101,7 @@
             <NButton
               :loading="loading"
               type="primary"
-              @click.prevent="pickQuestion"
+              @click.prevent="pickMatter"
               >Toliau...</NButton
             >
           </NFormItemGi>
@@ -111,7 +111,7 @@
         v-else-if="current === 2"
         :doing="doingTemplate"
         :doing-types="doingTypes"
-        :question-form="questionForm"
+        :matter-form="matterForm"
         model-route="doings.store"
         @success="showDoingForm = false"
       ></DoingForm>
@@ -162,13 +162,13 @@ import { useForm, usePage } from "@inertiajs/inertia-vue3";
 import { useStorage } from "@vueuse/core";
 import route from "ziggy-js";
 
-import { questionOptions } from "@/Composables/someTypes";
+import { matterOptions } from "@/Composables/someTypes";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import DoingForm from "@/Components/AdminForms/DoingForm.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 const props = defineProps<{
-  dutyInstitution: Record<string, any>;
+  institution: Record<string, any>;
   doingTypes: any;
 }>();
 
@@ -179,7 +179,9 @@ const showAlert = useStorage("new-meeting-button-alert", true);
 const doingTemplate = {
   title: "Planuotas posėdis",
   // type_id where label = "Posėdis"
-  type_id: props.doingTypes.find((type: any) => type.label === "Posėdis").value,
+  type_id: props.doingTypes.find(
+    (type: App.Models.Type) => type.label === "Posėdis"
+  )?.value,
   status: "Sukurtas",
   // datetime now YYYY-MM-DD HH:MM:SS and delimit T
   date: null,
@@ -188,41 +190,41 @@ const doingTemplate = {
 const current = ref(1);
 const currentStatus = ref("process");
 
-const questionForm = useForm({
+const matterForm = useForm({
   titlesOrIds: [],
   description: "",
   andOther: false,
-  institution_id: props.dutyInstitution.id,
+  institution_id: props.institution.id,
 });
 
-const questionFormRef = ref(null);
+const matterFormRef = ref(null);
 
-const isExistingQuestionSelected = computed(() => {
-  // check if questionForm title is number
-  return !isNaN(questionForm.title);
+const isExistingMatterSelected = computed(() => {
+  // check if matterForm title is number
+  return !isNaN(matterForm.title);
 });
 
-const allQuestionOptions = [
+const allMatterOptions = [
   {
     type: "group",
     label: "Sukurti klausimai",
     key: "group1",
-    children: props.dutyInstitution.questions.map((question) => ({
-      label: question.title,
-      value: question.id,
+    children: props.institution.matters.map((matter) => ({
+      label: matter.title,
+      value: matter.id,
     })),
   },
   {
     type: "group",
     label: "Nauji šabloniniai klausimai",
     key: "group2",
-    children: questionOptions,
+    children: matterOptions,
   },
 ];
 
-const pickQuestion = (e: MouseEvent) => {
+const pickMatter = (e: MouseEvent) => {
   loading.value = true;
-  questionFormRef.value?.validate((errors) => {
+  matterFormRef.value?.validate((errors) => {
     if (!errors) {
       current.value = 2;
     }
@@ -230,7 +232,7 @@ const pickQuestion = (e: MouseEvent) => {
   });
 };
 
-const questionFormRules = {
+const matterFormRules = {
   titlesOrIds: {
     required: true,
     type: "array",

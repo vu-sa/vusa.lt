@@ -27,6 +27,6 @@ import CategoryCard from "@/Components/Public/CategoryCard.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 defineProps<{
-  institutions: App.Models.DutyInstitution[];
+  institutions: App.Models.Institution[];
 }>();
 </script>

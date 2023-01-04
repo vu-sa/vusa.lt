@@ -33,8 +33,8 @@ class SendCommentNotification
         // check if model is App\Models\Doing
         if ($event->modelCommentedOn instanceof Doing) {
             // get all doing's institution users
-            // TODO: fix for multiple questions
-            $users = $event->modelCommentedOn->questions->first()->institution->duties->pluck('users')->flatten()->unique('id');
+            // TODO: fix for multiple matters
+            $users = $event->modelCommentedOn->matters->first()->institution->duties->pluck('users')->flatten()->unique('id');
 
             // send notification to user
             Notification::send($users, new CommentNotification($event->commenter, $event->modelCommentedOn, $event->route));

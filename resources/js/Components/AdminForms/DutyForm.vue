@@ -49,7 +49,7 @@
         <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
           <NFormItemGi label="Pareigų pavadinimas" :span="2">
             <NInput
-              v-model:value="form.attributes.en.name"
+              v-model:value="form.extra_attributes.en.name"
               type="text"
               placeholder="Prezidentė"
             />
@@ -57,7 +57,7 @@
 
           <NFormItemGi label="Aprašymas" :span="6">
             <TipTap
-              v-model="form.attributes.en.description"
+              v-model="form.extra_attributes.en.description"
               :search-files="$page.props.search.other"
             />
           </NFormItemGi>
@@ -95,20 +95,18 @@ import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 const props = defineProps<{
   duty: App.Models.Duty;
   dutyTypes: App.Models.Type[];
-  dutyInstitutions: App.Models.DutyInstitution[];
+  institutions: App.Models.Institution[];
   hasUsers?: boolean;
   modelRoute: string;
   deleteModelRoute?: string;
 }>();
 
-const form = useForm("dutyInstitution", props.duty);
+const form = useForm("institution", props.duty);
 
 console.log(form.types);
 
-const institutionsFromDatabase = props.dutyInstitutions.map(
-  (dutyInstitution) => ({
-    label: `${dutyInstitution.name} (${dutyInstitution.padalinys?.shortname})`,
-    value: dutyInstitution.id,
-  })
-);
+const institutionsFromDatabase = props.institutions.map((institution) => ({
+  label: `${institution.name} (${institution.padalinys?.shortname})`,
+  value: institution.id,
+}));
 </script>

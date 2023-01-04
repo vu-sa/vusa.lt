@@ -18,6 +18,7 @@ import { ref } from "vue";
 import { useDebounceFn } from "@vueuse/core";
 
 const props = defineProps<{
+  // model?: string;
   payloadName: string;
 }>();
 
@@ -31,6 +32,7 @@ const loading = ref(false);
 const handleSearchInput = useDebounceFn((input) => {
   loading.value = true;
   Inertia.reload({
+    // only: [props.model],
     data: { page: 1, [props.payloadName]: input },
     onSuccess: () => {
       emit("resetPaginate");

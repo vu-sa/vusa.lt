@@ -28,6 +28,5 @@ class AdminSeeder extends Seeder
         ]);
 
         User::where('email', 'test@test.com')->first()->assignRole('Super Admin');
-
     }
 }

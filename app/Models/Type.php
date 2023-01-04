@@ -5,11 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Activitylog\LogOptions;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 class Type extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $guarded = [];
 
@@ -23,9 +24,9 @@ class Type extends Model
         return LogOptions::defaults()->logOnly(['*'])->logOnlyDirty();
     }
 
-    public function duty_institutions()
+    public function institutions()
     {
-        return $this->morphedByMany(DutyInstitution::class, 'typeable');
+        return $this->morphedByMany(Institution::class, 'typeable');
     }
 
     public function duties()

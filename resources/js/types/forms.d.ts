@@ -9,15 +9,15 @@ declare global {
       | "description"
       | "category"
       | "url"
-      | "attributes"
+      | "extra_attributes"
       | "location"
     > {
     id?: number;
   }
 
-  interface DutyInstitutionForm
+  interface InstitutionForm
     extends Pick<
-      App.Models.DutyInstitution,
+      App.Models.Institution,
       "name" | "short_name" | "alias" | "description" | "padalinys_id"
     > {
     id?: number;

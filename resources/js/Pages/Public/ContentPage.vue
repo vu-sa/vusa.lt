@@ -20,7 +20,7 @@
       </NBreadcrumb>
       <h1 class="col-span-3 col-start-1 inline-flex gap-4">
         <span class="text-gray-900 dark:text-white">{{ page.title }}</span>
-        <NButton v-if="$page.props.user" text @click="editPage"
+        <NButton v-if="$page.props.auth.user" text @click="editPage"
           ><NIcon :size="32" :component="DocumentEdit20Regular"
         /></NButton>
       </h1>

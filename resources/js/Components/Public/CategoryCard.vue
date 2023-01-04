@@ -9,7 +9,7 @@
       class="mx-auto mt-4 w-fit cursor-pointer text-center font-bold text-gray-900 transition hover:text-vusa-red dark:text-zinc-50"
       @click="inertiaVisitOnClick(institution.alias)"
     >
-      {{ dutyInstitutionName }}
+      {{ institutionName }}
     </h2>
     <div
       v-if="isPadalinys(institution)"
@@ -65,7 +65,7 @@
         class="w-full cursor-pointer text-center font-bold text-gray-900 duration-500 hover:text-vusa-red dark:text-zinc-50"
         @click="inertiaVisitOnClick(institution.alias)"
       >
-        {{ dutyInstitutionName }}
+        {{ institutionName }}
       </h2>
       <div
         v-if="isPadalinys(institution)"
@@ -127,10 +127,10 @@ import { usePage } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 
 const props = defineProps<{
-  institution: App.Models.DutyInstitution;
+  institution: App.Models.Institution;
 }>();
 
-const isPadalinys = (institution: App.Models.DutyInstitution) => {
+const isPadalinys = (institution: App.Models.Institution) => {
   // check if institution type is null
   if (institution.type === null) return false;
   return institution.type.alias === "vu-sa-padaliniai";
@@ -145,13 +145,13 @@ const inertiaVisitOnClick = (alias: string) => {
   );
 };
 
-const dutyInstitutionName = computed(() => {
+const institutionName = computed(() => {
   const locale = usePage().props.value.locale;
 
   if (locale === "en") {
     return (
-      props.institution.attributes?.en?.short_name ??
-      props.institution.attributes?.en?.name ??
+      props.institution.extra_attributes?.en?.short_name ??
+      props.institution.extra_attributes?.en?.name ??
       props.institution.short_name ??
       props.institution.name
     );

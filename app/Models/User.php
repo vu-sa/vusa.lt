@@ -5,15 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use App\Models\DutyUser;
+use App\Models\Dutiable;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class User extends Authenticatable
 {
-    use Notifiable, HasFactory, HasRoles;
-
-    protected $table = 'users';
+    use Notifiable, HasFactory, HasRoles, HasUlids, LogsActivity, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -36,8 +38,6 @@ class User extends Authenticatable
         'email_verified_at',
         'last_login',
         'microsoft_token',
-        'two_factor_recovery_codes',
-        'two_factor_secret',
     ];
 
     /**
@@ -48,6 +48,11 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults();
+    }
 
     // Access banner with relationship
 
@@ -64,7 +69,9 @@ class User extends Authenticatable
     // TODO: return only current duties
     public function duties()
     {
-        return $this->belongsToMany(Duty::class, 'duties_users', 'user_id', 'duty_id')->using(DutyUser::class)->withPivot(['id', 'attributes', 'start_date', 'end_date'])->withTimestamps();
+        return $this->morphToMany(Duty::class, 'dutiable')
+        ->using(Dutiable::class)->withPivot(['extra_attributes', 'start_date', 'end_date'])
+        ->withTimestamps();
     }
 
     // TODO: more logical return of padalinys

@@ -42,7 +42,7 @@
           </NFormItemGi>
 
           <NFormItemGi label="Visos dienos renginys" :span="2">
-            <NSwitch v-model:value="form.attributes.all_day" />
+            <NSwitch v-model:value="form.extra_attributes.all_day" />
           </NFormItemGi>
 
           <NFormItemGi label="Kategorija" :span="2">
@@ -64,7 +64,7 @@
 
           <NFormItemGi label="Organizatorius" :span="2">
             <NInput
-              v-model:value="form.attributes.organizer"
+              v-model:value="form.extra_attributes.organizer"
               :placeholder="`Nieko neįrašius, organizatorius bus ${defaultOrganizer}`"
               type="text"
             />
@@ -72,7 +72,7 @@
 
           <NFormItemGi label="Facebook nuoroda" :span="2">
             <NInput
-              v-model:value="form.attributes.facebook_url"
+              v-model:value="form.extra_attributes.facebook_url"
               type="text"
               placeholder="https://www.facebook.com/events/584152539934772"
             />
@@ -80,7 +80,7 @@
 
           <NFormItemGi label="Youtube video kodas" :span="2">
             <NInput
-              v-model:value="form.attributes.video_url"
+              v-model:value="form.extra_attributes.video_url"
               type="text"
               placeholder="dQw4w9WgXcQ"
             />
@@ -118,21 +118,21 @@
             label="Renginys arba informacija prieinama ne tik LT studentams"
             :span="2"
           >
-            <NSwitch v-model:value="form.attributes.en.shown" />
+            <NSwitch v-model:value="form.extra_attributes.en.shown" />
           </NFormItemGi>
 
           <NFormItemGi label="Pavadinimas" :span="2">
             <NInput
-              v-model:value="form.attributes.en.title"
-              :disabled="!form.attributes.en.shown"
+              v-model:value="form.extra_attributes.en.title"
+              :disabled="!form.extra_attributes.en.shown"
               type="text"
               placeholder="Įrašyti pavadinimą..."
             />
           </NFormItemGi>
           <NFormItemGi label="Renginio vieta" :span="2">
             <NInput
-              v-model:value="form.attributes.en.location"
-              :disabled="!form.attributes.en.shown"
+              v-model:value="form.extra_attributes.en.location"
+              :disabled="!form.extra_attributes.en.shown"
               type="text"
               placeholder="AB Imeda poilsiavietė, Kiškiai, Ignalinos raj."
             />
@@ -140,8 +140,8 @@
 
           <NFormItemGi label="CTO (Call to action) nuoroda" :span="2">
             <NInput
-              v-model:value="form.attributes.en.url"
-              :disabled="!form.attributes.en.shown"
+              v-model:value="form.extra_attributes.en.url"
+              :disabled="!form.extra_attributes.en.shown"
               type="text"
               placeholder="https://vusa.lt/..."
             />
@@ -149,8 +149,8 @@
 
           <NFormItemGi label="Organizatorius" :span="2">
             <NInput
-              v-model:value="form.attributes.en.organizer"
-              :disabled="!form.attributes.en.shown"
+              v-model:value="form.extra_attributes.en.organizer"
+              :disabled="!form.extra_attributes.en.shown"
               :placeholder="`Nieko neįrašius, organizatorius bus ${defaultOrganizer}`"
               type="text"
             />
@@ -158,8 +158,8 @@
 
           <NFormItemGi label="Facebook nuoroda" :span="2">
             <NInput
-              v-model:value="form.attributes.en.facebook_url"
-              :disabled="!form.attributes.en.shown"
+              v-model:value="form.extra_attributes.en.facebook_url"
+              :disabled="!form.extra_attributes.en.shown"
               type="text"
               placeholder="https://www.facebook.com/events/584152539934772"
             />
@@ -167,19 +167,19 @@
 
           <NFormItemGi label="Youtube video kodas" :span="2">
             <NInput
-              v-model:value="form.attributes.en.video_url"
-              :disabled="!form.attributes.en.shown"
+              v-model:value="form.extra_attributes.en.video_url"
+              :disabled="!form.extra_attributes.en.shown"
               type="text"
               placeholder="dQw4w9WgXcQ"
             />
           </NFormItemGi>
           <NFormItemGi
-            v-show="form.attributes.en.shown"
+            v-show="form.extra_attributes.en.shown"
             label="Aprašymas"
             :span="6"
           >
             <TipTap
-              v-model="form.attributes.en.description"
+              v-model="form.extra_attributes.en.description"
               :search-files="$page.props.search.other"
             />
           </NFormItemGi>
@@ -255,13 +255,16 @@ const convertDateRange = (form_date_range: Array<string | number>) => {
   return form_date_range;
 };
 
-if (form.attributes !== null) {
-  form.attributes.date_range = convertDateRange(form.attributes.date_range);
+if (form.extra_attributes !== null) {
+  form.extra_attributes.date_range = convertDateRange(
+    form.extra_attributes.date_range
+  );
 }
 
 const defaultOrganizer = computed(() => {
   return (
-    props.calendar.padalinys?.shortname ?? usePage().props.value.user.padalinys
+    props.calendar.padalinys?.shortname ??
+    usePage().props.value.auth.user.padalinys
   );
 });
 
@@ -282,9 +285,9 @@ if (props.images !== undefined) {
 const uploadRef = ref<UploadInst | null>(null);
 const upload = uploadRef;
 
-// if no attributes are provided, create an empty object
-if (!form.attributes || form.attributes.length === 0) {
-  form.attributes = {};
+// if no extra_attributes are provided, create an empty object
+if (!form.extra_attributes || form.extra_attributes.length === 0) {
+  form.extra_attributes = {};
 }
 // map category options to array
 const categoryOptions = props.categories.map((category) => ({

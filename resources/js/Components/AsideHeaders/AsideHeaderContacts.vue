@@ -14,7 +14,7 @@ import AsideHeaderButton from "@/Components/Buttons/AsideHeaderButton.vue";
 
 const options = [
   {
-    route: "dutyInstitutions.index",
+    route: "institutions.index",
     title: "Institucijos",
   },
   {

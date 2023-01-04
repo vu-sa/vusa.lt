@@ -3,26 +3,41 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\DutyUser;
+use App\Models\Dutiable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Duty extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity, HasUlids, SoftDeletes;
     
-    protected $table = 'duties';
-
-    protected $with = ['types'];
-
     protected $casts = [
-        'attributes' => 'array',
+        'extra_attributes' => 'array',
     ];
 
     protected $guarded = [];
 
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults();
+    }
+
+    public function dutiables()
+    {
+        return $this->hasMany(Dutiable::class);
+    }
+
     public function users()
     {
-        return $this->belongsToMany(User::class, 'duties_users', 'duty_id', 'user_id')->using(DutyUser::class)->withPivot(['id', 'attributes'])->withTimestamps();
+        return $this->morphedByMany(User::class, 'dutiable')->using(Dutiable::class)->withPivot(['id', 'extra_attributes'])->withTimestamps();
+    }
+
+    public function contacts()
+    {
+        return $this->morphedByMany(Contact::class, 'dutiable')->using(Dutiable::class)->withPivot(['id', 'extra_attributes'])->withTimestamps();
     }
 
     public function types()
@@ -32,7 +47,7 @@ class Duty extends Model
 
     public function institution()
     {
-        return $this->belongsTo(DutyInstitution::class, 'institution_id');
+        return $this->belongsTo(Institution::class);
     }
 
     public function padalinys()

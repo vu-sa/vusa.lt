@@ -16,10 +16,10 @@ class IcalendarService {
         $events = [];
 
         foreach ($calendars as $event) {
-            $eventObject = Event::create($en ? ($event?->attributes['en']['title'] ?? $event->title) : $event->title)->startsAt(DateTime::createFromFormat('Y-m-d H:i:s', $event->date));
+            $eventObject = Event::create($en ? ($event?->extra_attributes['en']['title'] ?? $event->title) : $event->title)->startsAt(DateTime::createFromFormat('Y-m-d H:i:s', $event->date));
 
             $eventObject->description($en 
-                ? (strip_tags(($event?->attributes['en']['description'] ?? $event->description) ?? $event->description))
+                ? (strip_tags(($event?->extra_attributes['en']['description'] ?? $event->description) ?? $event->description))
                 : strip_tags($event->description));
 
             // there are many old events that have no end date. we need to manage this
@@ -43,7 +43,7 @@ class IcalendarService {
                 $eventObject->address($event->location);
             }
 
-            if (($event->attributes['all_day'] ?? null) === true) {
+            if (($event->extra_attributes['all_day'] ?? null) === true) {
                 $eventObject->fullDay();
             }
 
@@ -63,9 +63,9 @@ class IcalendarService {
         $lang = request()->lang;
 
         if ($lang === 'en') {
-            $calendars = CalendarModel::where('attributes->en->shown', 'true')->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'description', 'attributes')->take(250)->get();
+            $calendars = CalendarModel::where('extra_attributes->en->shown', 'true')->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'description', 'extra_attributes')->take(250)->get();
         } else {
-            $calendars = CalendarModel::orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'description', 'attributes')->take(250)->get();
+            $calendars = CalendarModel::orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'description', 'extra_attributes')->take(250)->get();
         }
 
         // get last calendar models

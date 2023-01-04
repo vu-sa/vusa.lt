@@ -25,8 +25,8 @@
     </p>
     <template #action-button>
       <MeetingDocumentButton
-        :duty-institution="dutyInstitution"
-        :questions="questionsWithDoings"
+        :institution="institution"
+        :matters="mattersWithDoings"
       />
     </template>
   </QuickContentCard>
@@ -41,21 +41,23 @@ import MeetingDocumentButton from "@/Components/Buttons/QActButtons/MeetingDocum
 import QuickContentCard from "@/Components/Cards/QuickContentCards/QuickContentCard.vue";
 
 const props = defineProps<{
-  questionsWithDoings: App.Models.Doing[];
-  dutyInstitution: App.Models.DutyInstitution;
+  mattersWithDoings: App.Models.Doing[];
+  institution: App.Models.Institution;
 }>();
 
 const doings = [].concat(
-  ...props.questionsWithDoings.map((question) => {
-    return question.doings;
+  ...props.mattersWithDoings.map((matter) => {
+    return matter.doings;
   })
 );
 
 const doingsNotNeedingAttention = computed(() => {
-  return doings.reduce(
-    (acc, val) => (acc += val.needs_attention === false ? 1 : 0),
-    0
-  );
+  return 1;
+
+  // return doings.reduce(
+  //   (acc, val) => (acc += val.needs_attention === false ? 1 : 0),
+  //   0
+  // );
 });
 
 const percentage = ref(0);

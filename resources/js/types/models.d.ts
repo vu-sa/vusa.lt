@@ -17,11 +17,9 @@ declare namespace App.Models {
     lang: string;
     order: number;
     is_active: number;
-    user_id: number;
     padalinys_id: number;
     created_at: any;
     updated_at: any;
-    user?: App.Models.User | null;
     padalinys?: App.Models.Padalinys | null;
   }
 
@@ -34,13 +32,11 @@ declare namespace App.Models {
     location: string | null;
     category: string | null;
     url: string | null;
-    user_id: number | null;
     padalinys_id: number;
-    attributes: string | null;
+    extra_attributes: string | null;
     created_at: any;
     updated_at: any;
     registration_form_id: number | null;
-    user?: App.Models.User | null;
     padalinys?: App.Models.Padalinys | null;
     registration_form?: App.Models.RegistrationForm | null;
   }
@@ -56,59 +52,132 @@ declare namespace App.Models {
   }
 
   export interface Comment {
-    id: number;
-    parent_id: number | null;
+    id: string;
+    parent_id: string | null;
     comment: string;
-    user_id: number;
+    user_id: string;
     commentable_type: string;
-    commentable_id: number;
+    commentable_id: string;
     created_at: any;
     updated_at: any;
+    deleted_at: any | null;
     commentable?: any | null;
     comments?: Array<App.Models.Comment> | null;
     user?: App.Models.User | null;
     comments_count?: number | null;
   }
 
+  export interface Contact {
+    id: string;
+    name: string;
+    email: string | null;
+    phone: string | null;
+    profile_photo_path: string | null;
+    created_at: any;
+    updated_at: any;
+    deleted_at: any | null;
+    duties?: Array<App.Models.Duty> | null;
+    duties_count?: number | null;
+  }
+
+  export interface Doable {
+    doable_type: string;
+    doable_id: string;
+    doing_id: string;
+    created_at: any;
+    updated_at: any;
+    doing?: App.Models.Doing | null;
+    user?: App.Models.User | null;
+  }
+
   export interface Doing {
-    id: number;
+    id: string;
     title: string;
     status: string;
     date: string;
+    extra_attributes: string | null;
     created_at: any;
     updated_at: any;
-    questions?: Array<App.Models.Question> | null;
+    deleted_at: any | null;
     types?: Array<App.Models.Type> | null;
     documents?: Array<App.Models.SharepointDocument> | null;
     tasks?: Array<App.Models.Task> | null;
-    users?: any | null;
-    questions_count?: number | null;
     types_count?: number | null;
     documents_count?: number | null;
     tasks_count?: number | null;
+    readonly needs_attention?: any;
+  }
+
+  export interface Dutiable {
+    duty_id: string;
+    dutiable_id: string;
+    dutiable_type: string;
+    start_date: string;
+    end_date: string | null;
+    extra_attributes: string | null;
+    created_at: any;
+    updated_at: any;
+    duty?: App.Models.Duty | null;
+    user?: App.Models.User | null;
+    contact?: App.Models.Contact | null;
   }
 
   export interface Duty {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
-    institution_id: number;
+    institution_id: string;
     order: number;
     email: string | null;
-    attributes: string | null;
+    extra_attributes: string | null;
     places_to_occupy: number | null;
     created_at: any;
     updated_at: any;
+    deleted_at: any | null;
+    dutiables?: Array<App.Models.Dutiable> | null;
     users?: Array<App.Models.User> | null;
     types?: Array<App.Models.Type> | null;
-    institution?: App.Models.DutyInstitution | null;
+    institution?: App.Models.Institution | null;
+    dutiables_count?: number | null;
     users_count?: number | null;
     types_count?: number | null;
   }
 
-  export interface DutyInstitution {
-    id: number;
-    pid: number | null;
+  export interface Goal {
+    id: string;
+    group_id: string;
+    title: string;
+    description: string | null;
+    start_date: string;
+    end_date: string | null;
+    created_at: any;
+    updated_at: any;
+    deleted_at: any | null;
+    group?: App.Models.GoalGroup | null;
+  }
+
+  export interface GoalGroup {
+    id: string;
+    title: string;
+    description: string | null;
+    created_at: any;
+    updated_at: any;
+    deleted_at: any | null;
+    goals?: Array<App.Models.Goal> | null;
+    goals_count?: number | null;
+  }
+
+  export interface GoalInstitutionMatter {
+    goal_id: string;
+    matter_id: string;
+    created_at: any;
+    updated_at: any;
+    goal?: App.Models.Goal | null;
+  }
+
+  export interface Institution {
+    id: string;
+    parent_id: string | null;
     name: string | null;
     short_name: string | null;
     alias: string;
@@ -117,33 +186,50 @@ declare namespace App.Models {
     padalinys_id: number | null;
     created_at: any;
     updated_at: any;
-    attributes: string | null;
+    extra_attributes: string | null;
+    deleted_at: any | null;
     duties?: Array<App.Models.Duty> | null;
     types?: Array<App.Models.Type> | null;
     padalinys?: App.Models.Padalinys | null;
-    questions?: Array<App.Models.Question> | null;
-    doings?: any | null;
     users?: any | null;
     documents?: Array<App.Models.SharepointDocument> | null;
     given_relationships?: Array<App.Models.Relationship> | null;
     received_relationships?: Array<App.Models.Relationship> | null;
     duties_count?: number | null;
     types_count?: number | null;
-    questions_count?: number | null;
     documents_count?: number | null;
     given_relationships_count?: number | null;
     received_relationships_count?: number | null;
   }
 
-  export interface DutyUser {
-    id: number;
-    duty_id: number;
-    user_id: number;
-    attributes: string | null;
+  export interface InstitutionMatter {
+    id: string;
+    institution_id: string;
+    title: string;
+    description: string | null;
     created_at: any;
     updated_at: any;
-    duty?: App.Models.Duty | null;
-    user?: App.Models.User | null;
+    deleted_at: any | null;
+    institution?: App.Models.Institution | null;
+    meetings?: Array<App.Models.InstitutionMeeting> | null;
+    doings?: Array<App.Models.Doing> | null;
+    goal?: App.Models.Goal | null;
+    users?: any | null;
+    meetings_count?: number | null;
+    doings_count?: number | null;
+  }
+
+  export interface InstitutionMeeting {
+    id: string;
+    title: string;
+    description: string | null;
+    start_time: string;
+    end_time: string | null;
+    created_at: any;
+    updated_at: any;
+    deleted_at: any | null;
+    matters?: Array<App.Models.InstitutionMatter> | null;
+    matters_count?: number | null;
   }
 
   export interface MainPage {
@@ -161,8 +247,6 @@ declare namespace App.Models {
     created_at: any;
     updated_at: any;
     padalinys?: App.Models.Padalinys | null;
-    users?: Array<App.Models.User> | null;
-    users_count?: number | null;
   }
 
   export interface Navigation {
@@ -220,7 +304,7 @@ declare namespace App.Models {
     banners?: Array<App.Models.Banner> | null;
     calendar?: Array<App.Models.Calendar> | null;
     duties?: Array<App.Models.Duty> | null;
-    institutions?: Array<App.Models.DutyInstitution> | null;
+    institutions?: Array<App.Models.Institution> | null;
     news?: Array<App.Models.News> | null;
     pages?: Array<App.Models.Page> | null;
     users?: Array<App.Models.User> | null;
@@ -240,12 +324,12 @@ declare namespace App.Models {
     permalink: string | null;
     text: string;
     lang: string;
+    other_lang_id: number | null;
     category_id: number | null;
     is_active: boolean;
     padalinys_id: number;
     created_at: any;
     updated_at: any;
-    other_lang_id: number | null;
     padalinys?: App.Models.Padalinys | null;
     category?: App.Models.Category | null;
   }
@@ -262,31 +346,6 @@ declare namespace App.Models {
     roles_count?: number | null;
     users_count?: number | null;
     permissions_count?: number | null;
-  }
-
-  export interface Question {
-    id: number;
-    title: string;
-    description: string | null;
-    status: string;
-    question_group_id: number | null;
-    institution_id: number;
-    created_at: any;
-    updated_at: any;
-    institution?: App.Models.DutyInstitution | null;
-    doings?: Array<App.Models.Doing> | null;
-    question_group?: App.Models.QuestionGroup | null;
-    users?: any | null;
-    doings_count?: number | null;
-  }
-
-  export interface QuestionGroup {
-    id: number;
-    title: string;
-    created_at: any;
-    updated_at: any;
-    questions?: Array<App.Models.Question> | null;
-    questions_count?: number | null;
   }
 
   export interface Registration {
@@ -316,8 +375,8 @@ declare namespace App.Models {
     type: string | null;
     created_at: any;
     updated_at: any;
-    duty_institutions?: Array<App.Models.DutyInstitution> | null;
-    duty_institutions_count?: number | null;
+    institutions?: Array<App.Models.Institution> | null;
+    institutions_count?: number | null;
     readonly related_model?: any;
   }
 
@@ -396,7 +455,8 @@ declare namespace App.Models {
   export interface SharepointDocument {
     sharepoint_id: string;
     documentable_type: string;
-    documentable_id: number;
+    documentable_id: string;
+    id: string;
   }
 
   export interface Tag {
@@ -409,7 +469,7 @@ declare namespace App.Models {
   }
 
   export interface Task {
-    id: number;
+    id: string;
     name: string;
     description: string | null;
     due_date: string | null;
@@ -418,6 +478,7 @@ declare namespace App.Models {
     completed_at: any | null;
     created_at: any;
     updated_at: any;
+    deleted_at: any | null;
     taskable?: any | null;
     users?: Array<App.Models.User> | null;
     users_count?: number | null;
@@ -433,24 +494,23 @@ declare namespace App.Models {
     extra_attributes: string | null;
     created_at: any;
     updated_at: any;
-    duty_institutions?: Array<App.Models.DutyInstitution> | null;
+    deleted_at: any | null;
+    institutions?: Array<App.Models.Institution> | null;
     duties?: Array<App.Models.Duty> | null;
     doings?: Array<App.Models.Doing> | null;
     documents?: Array<App.Models.SharepointDocument> | null;
-    duty_institutions_count?: number | null;
+    institutions_count?: number | null;
     duties_count?: number | null;
     doings_count?: number | null;
     documents_count?: number | null;
   }
 
   export interface User {
-    id: number;
+    id: string;
     email: string;
     phone: string | null;
     name: string;
     password: string | null;
-    two_factor_secret: string | null;
-    two_factor_recovery_codes: string | null;
     is_active: boolean;
     email_verified_at: any | null;
     remember_token: string | null;
@@ -460,11 +520,14 @@ declare namespace App.Models {
     updated_at: any | null;
     created_at: any;
     profile_photo_path: string | null;
+    deleted_at: any | null;
     banners?: Array<App.Models.Banner> | null;
     calendar?: Array<App.Models.Calendar> | null;
     duties?: Array<App.Models.Duty> | null;
+    tasks?: Array<App.Models.Task> | null;
     banners_count?: number | null;
     calendar_count?: number | null;
     duties_count?: number | null;
+    tasks_count?: number | null;
   }
 }

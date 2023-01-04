@@ -18,7 +18,7 @@
       >
       <template #title
         >{{ article.title }}
-        <NButton v-if="$page.props.user" text @click="editNews"
+        <NButton v-if="$page.props.auth.user" text @click="editNews"
           ><NIcon size="28" :component="DocumentEdit24Regular" /></NButton
       ></template>
       <template #image

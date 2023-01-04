@@ -30,7 +30,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/', [Admin\DashboardController::class, 'dashboard'])->name('dashboard');
         Route::get('profile', [Admin\DashboardController::class, 'userSettings'])->name('profile');
         Route::get('userTasks', [Admin\DashboardController::class, 'userTasks'])->name('userTasks');
-        Route::get('dutyInstitutionGraph', [Admin\DashboardController::class, 'dutyInstitutionGraph'])->name('dutyInstitutionGraph');
+        Route::get('institutionGraph', [Admin\DashboardController::class, 'institutionGraph'])->name('institutionGraph');
 
         // Resources
         Route::resource('pages', Admin\PagesController::class);
@@ -52,9 +52,9 @@ Route::prefix('admin')->group(function () {
         Route::resource('registrationForms', Admin\RegistrationFormController::class);
         Route::resource('registrations', Admin\RegistrationController::class);
 
-        Route::resource('questions', Admin\QuestionController::class);
-        Route::resource('questionGroups', Admin\QuestionGroupController::class);
-        Route::post('questions/{question}/attach/{questionGroup}', [Admin\QuestionController::class, 'attachQuestionGroup'])->name('questions.attachQuestionGroup');
+        Route::resource('matters', Admin\InstitutionMatterController::class);
+        Route::resource('goals', Admin\GoalController::class);
+        Route::post('matters/{matter}/attach/{goal}', [Admin\InstitutionMatterController::class, 'attachGoal'])->name('matters.attachGoal');
         Route::resource('doings', Admin\DoingController::class);
 
         Route::resource('saziningaiExams', Admin\SaziningaiExamsController::class);
@@ -62,9 +62,9 @@ Route::prefix('admin')->group(function () {
         Route::resource('saziningaiExamObservers', Admin\SaziningaiExamObserversController::class);
         Route::resource('files', Admin\FilesController::class);
         Route::resource('duties', Admin\DutyController::class);
-        Route::resource('dutyUsers', Admin\DutyUserController::class);
-        Route::resource('dutyInstitutions', Admin\DutyInstitutionController::class);
-        Route::post('dutyInstitutions/reorderDuties', [Admin\DutyInstitutionController::class, 'reorderDuties'])->name('dutyInstitutions.reorderDuties');
+        Route::resource('dutiables', Admin\DutiableController::class);
+        Route::resource('institutions', Admin\InstitutionController::class);
+        Route::post('institutions/reorderDuties', [Admin\InstitutionController::class, 'reorderDuties'])->name('institutions.reorderDuties');
 
         Route::resource('types', Admin\TypesController::class);
         Route::resource('relationships', Admin\RelationshipController::class);

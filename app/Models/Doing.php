@@ -7,13 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Traits\HasComments;
 use Illuminate\Support\Carbon;
 use App\Models\Comment;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Doing extends Model
 {
-    use HasFactory, LogsActivity, HasComments, HasRelationships;
+    use HasFactory, HasComments, HasRelationships, HasUlids, LogsActivity, SoftDeletes;
 
     protected $with = ['types'];
 
@@ -27,27 +29,22 @@ class Doing extends Model
 
     public function getActivitylogOptions(): LogOptions
     {
-        return LogOptions::defaults()->logOnly(['*'])->logOnlyDirty();
+        return LogOptions::defaults();
     }
 
-    public function getNeedsAttentionAttribute() {
-        if ($this->status === 'Pabaigtas') {
-            return false;
-        }
-
-        $now = Carbon::now();
-        $date = Carbon::parse($this->date);
-
-        if ($now->gt($date)) {
-            return true;
-        }
-
-        return true;
-    }
-
-    public function questions()
+    public function doables()
     {
-        return $this->belongsToMany(Question::class);
+        return $this->hasMany(Doable::class);
+    }
+
+    public function goals()
+    {
+        return $this->morphedByMany(Goal::class, 'doable', 'doables');
+    }
+
+    public function matters()
+    {
+        return $this->morphedByMany(InstitutionMatter::class, 'doable', 'doables');
     }
 
     public function types()
@@ -67,11 +64,26 @@ class Doing extends Model
 
     public function users()
     {
-        return $this->hasManyDeepFromRelations($this->questions(), (new Question)->institution(), (new DutyInstitution)->duties(), (new Duty())->users());
+        return $this->hasManyDeepFromRelations($this->matters(), (new InstitutionMatter())->institution(), (new Institution())->duties(), (new Duty())->users());
     }
 
     public function comments()
     {
         return $this->morphMany(Comment::class, 'commentable');
     }
+
+    // public function getNeedsAttentionAttribute() {
+    //     if ($this->status === 'Pabaigtas') {
+    //         return false;
+    //     }
+
+    //     $now = Carbon::now();
+    //     $date = Carbon::parse($this->date);
+
+    //     if ($now->gt($date)) {
+    //         return true;
+    //     }
+
+    //     return true;
+    // }
 }

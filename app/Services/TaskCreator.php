@@ -3,10 +3,8 @@
 namespace App\Services;
 
 use App\Models\Doing;
-use App\Models\DutyInstitution;
 use App\Models\Task;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Collection;
 
 class TaskCreator
 {
@@ -28,9 +26,9 @@ class TaskCreator
         // if ($doing->start_date->isToday() || $doing->start_date->isFuture()) {
         // }
 
-        // TODO: fix for multiple questions
+        // TODO: fix for multiple matters
 
-        $institution = $doing->questions->first()->institution;
+        $institution = $doing->matters->first()->institution;
 
         $users = $institution->duties->pluck('users')->flatten()->unique('id');
 

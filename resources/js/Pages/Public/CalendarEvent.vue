@@ -18,7 +18,7 @@
             >
               <span>{{
                 $page.props.locale === "en"
-                  ? event.attributes?.en?.title ?? event.title
+                  ? event.extra_attributes?.en?.title ?? event.title
                   : event.title
               }}</span>
             </h1>
@@ -37,17 +37,17 @@
             class="prose dark:prose-invert sm:max-w-[70ch]"
             v-html="
               $page.props.locale === 'en'
-                ? event.attributes?.en?.description ?? event.description
+                ? event.extra_attributes?.en?.description ?? event.description
                 : event.description
             "
           ></div>
 
           <iframe
-            v-if="event.attributes?.video_url"
+            v-if="event.extra_attributes?.video_url"
             class="mb-8 mt-4 aspect-video h-auto w-full rounded-2xl"
             width="560"
             height="315"
-            :src="`https://www.youtube-nocookie.com/embed/${event.attributes?.video_url}`"
+            :src="`https://www.youtube-nocookie.com/embed/${event.extra_attributes?.video_url}`"
             title="YouTube video player"
             frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -76,18 +76,18 @@
           >
             <div class="absolute top-6 right-6">
               <NButton
-                v-if="event.attributes?.facebook_url"
+                v-if="event.extra_attributes?.facebook_url"
                 secondary
                 size="small"
                 circle
-                @click="windowOpen(event.attributes?.facebook_url)"
+                @click="windowOpen(event.extra_attributes?.facebook_url)"
                 ><NIcon :component="FacebookF"></NIcon
               ></NButton>
             </div>
             <p v-if="false" class="col-span-2 mb-4 flex w-4/5 text-lg">
               {{
                 $page.props.locale === "en"
-                  ? event.attributes?.en?.title ?? event.title
+                  ? event.extra_attributes?.en?.title ?? event.title
                   : event.title
               }}
             </p>
@@ -112,7 +112,7 @@
               <NIcon :component="Home32Regular"></NIcon>
               <span>{{
                 $page.props.locale === "en"
-                  ? event.attributes?.en?.location ?? event.location
+                  ? event.extra_attributes?.en?.location ?? event.location
                   : event.location
               }}</span>
             </template>
@@ -213,7 +213,9 @@ const hasNoImage = computed(() => {
 });
 
 const eventOrganizer = computed((): string => {
-  return props.event.attributes?.organizer ?? props.event.padalinys.shortname;
+  return (
+    props.event.extra_attributes?.organizer ?? props.event.padalinys.shortname
+  );
 });
 
 const windowOpen = (url: string) => {

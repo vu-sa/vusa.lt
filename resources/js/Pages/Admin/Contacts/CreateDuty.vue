@@ -5,28 +5,25 @@
         :duty="duty"
         model-route="duties.store"
         :duty-types="dutyTypes"
-        :duty-institutions="dutyInstitutions"
+        :institutions="institutions"
       />
     </UpsertModelLayout>
   </PageContent>
 </template>
 
-<script lang="ts">
+<script setup lang="tsx">
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
-
-export default {
-  layout: AdminLayout,
-};
-</script>
-
-<script setup lang="ts">
 import DutyForm from "@/Components/AdminForms/DutyForm.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
+defineOptions({
+  layout: AdminLayout,
+});
+
 defineProps<{
-  dutyTypes: App.Models.DutyType[];
-  dutyInstitutions: App.Models.DutyInstitution[];
+  dutyTypes: App.Models.Type[];
+  institutions: App.Models.Institution[];
 }>();
 
 const duty = {

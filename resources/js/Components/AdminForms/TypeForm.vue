@@ -73,7 +73,7 @@ const form = useForm("type", props.type);
 
 const modelTypes = [
   {
-    value: "App\\Models\\DutyInstitution",
+    value: "App\\Models\\Institution",
     label: "Institucija",
   },
   {

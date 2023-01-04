@@ -18,7 +18,7 @@ class Relationshipable extends Pivot
             $query->where('types.id', $this->relationshipable_id);
         })->get();
 
-        // map giverDutyInstitutions with receiverDutyInstitutions by padalinys_id and receiverType
+        // map giverInstitutions with receiverInstitutions by padalinys_id and receiverType
         $this->giver->map(function ($giver) use (&$relationships, $model_type, $retrieve_models) {
             $giver->receiver = $model_type::whereHas('types', function ($query) {
                 $query->where('types.id', $this->related_model_id);
@@ -51,7 +51,7 @@ class Relationshipable extends Pivot
             $query->where('types.id', $this->related_model_id);
         })->get();
 
-        // map giverDutyInstitutions with receiverDutyInstitutions by padalinys_id and receiverType
+        // map giverInstitutions with receiverInstitutions by padalinys_id and receiverType
         $this->receiver->map(function ($receiver) use (&$relationships, $model_type, $retrieve_models) {
             $receiver->giver = $model_type::whereHas('types', function ($query) {
                 $query->where('types.id', $this->relationshipable_id);

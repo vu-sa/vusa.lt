@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Public;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
 use App\Models\Calendar;
-use App\Models\DutyInstitution;
+use App\Models\Institution;
 use App\Models\MainPage;
 use App\Models\Navigation;
 use App\Models\News;
@@ -82,14 +82,14 @@ class MainController extends Controller
 
 	private function getCalendarGoogleLink($calendarEvent, $en = false) {
 
-		$googleLink = Link::create($en ? ($calendarEvent?->attributes['en']['title'] ?? $calendarEvent->title) : $calendarEvent->title, 
+		$googleLink = Link::create($en ? ($calendarEvent?->extra_attributes['en']['title'] ?? $calendarEvent->title) : $calendarEvent->title, 
 				DateTime::createFromFormat('Y-m-d H:i:s', $calendarEvent->date), 
 				$calendarEvent->end_date 
 					? DateTime::createFromFormat('Y-m-d H:i:s', $calendarEvent->end_date) 
 					: Carbon::parse($calendarEvent->date)->addHour()->toDateTime())
 			->description($en 
 				? (strip_tags(
-					($calendarEvent?->attributes['en']['description'] ?? $calendarEvent->description)
+					($calendarEvent?->extra_attributes['en']['description'] ?? $calendarEvent->description)
 					?? $calendarEvent->description))
 				: strip_tags($calendarEvent->description))
 			->address($calendarEvent->location ?? "")
@@ -109,7 +109,7 @@ class MainController extends Controller
 		$news = News::where([['padalinys_id', '=', $padalinys->id],['lang', app()->getLocale()], ['draft', '=', 0]])->where('publish_time', '<=', date('Y-m-d H:i:s'))->orderBy('publish_time', 'desc')->take(4)->get();
 
 		if (app()->getLocale() === 'en') {
-            $calendar = Calendar::where('attributes->en->shown', 'true')->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'attributes', 'category')->take(400)->get();
+            $calendar = Calendar::where('extra_attributes->en->shown', 'true')->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'extra_attributes', 'category')->take(400)->get();
         } else {
             $calendar = Calendar::orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'category')->take(400)->get();
         }
@@ -141,7 +141,7 @@ class MainController extends Controller
 					'id' => $calendar->id,
 					'date' => $calendar->date,
 					'end_date' => $calendar->end_date,
-					'title' => app()->getLocale() === 'en' ? ($calendar->attributes['en']['title'] ?? $calendar->title) : $calendar->title,
+					'title' => app()->getLocale() === 'en' ? ($calendar->extra_attributes['en']['title'] ?? $calendar->title) : $calendar->title,
 					'category' => $calendar->category,
 					'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale() === 'en')
 				];
@@ -276,14 +276,14 @@ class MainController extends Controller
 			$padaliniai = Padalinys::where('type', '=', 'padalinys')->orderBy('shortname')->get();
 			$padaliniaiInstitutions = [];
 			foreach ($padaliniai as $key => $padalinys) {
-				$institution = DutyInstitution::where('alias', '=', $padalinys->alias)->first();
+				$institution = Institution::where('alias', '=', $padalinys->alias)->first();
 				// add institution to array
 				array_push($padaliniaiInstitutions, $institution);
 			}
 
 			$duties_institutions = new EloquentCollection($padaliniaiInstitutions);
 		} else {
-			$duties_institutions = DutyInstitution::whereHas('duties')
+			$duties_institutions = Institution::whereHas('duties')
 				// TODO: Čia reikia aiškesnės logikos
 				->when(
 					!request()->alias,
@@ -322,12 +322,12 @@ class MainController extends Controller
 
 		if ($alias == 'studentu-atstovai') {
 			// get all student duty institutions that have type 'studentu-atstovu-organas' and is of the same padalinys as the current one
-			$duty_institutions = DutyInstitution::with(['duties.users'])->where([['padalinys_id', '=', $padalinys->id]])->whereHas('type', function (Builder $query) {
+			$institutions = Institution::with(['duties.users'])->where([['padalinys_id', '=', $padalinys->id]])->whereHas('type', function (Builder $query) {
 				$query->where('alias', 'studentu-atstovu-organas');
 			})->get()->sortBy('name')->values();
 
 			return Inertia::render('Public/Contacts/StudentRepresentatives', [
-				'institutions' => $duty_institutions
+				'institutions' => $institutions
 			])->withViewData([
 				'title' => 'Studentų atstovai',
 				'description' => 'VU SA studentų atstovai',
@@ -339,27 +339,27 @@ class MainController extends Controller
 			$child_duty_types = Type::where('parent_id', '=', $duty_type->id)->get();
 
 			if ($padalinys->id === 16) {
-				$duty_institution = DutyInstitution::where('alias', '=', 'centrinis-biuras')->first();
+				$institution = Institution::where('alias', '=', 'centrinis-biuras')->first();
 			} else {
-				$duty_institution = DutyInstitution::where('padalinys_id', '=', $padalinys->id)->first();
+				$institution = Institution::where('padalinys_id', '=', $padalinys->id)->first();
 			}
 
 			$alias_duties = collect([]);
 
 			foreach ($child_duty_types as $child_duty_type) {
 
-				$alias_duties = $alias_duties->merge($duty_institution->duties->where('type_id', '=', $child_duty_type->id)->sortBy('order')->values());
+				$alias_duties = $alias_duties->merge($institution->duties->where('type_id', '=', $child_duty_type->id)->sortBy('order')->values());
 			}
 
-			$alias_duties = $alias_duties->merge($duty_institution->duties->where('type_id', '=', $duty_type->id)->sortBy('order')->values());
+			$alias_duties = $alias_duties->merge($institution->duties->where('type_id', '=', $duty_type->id)->sortBy('order')->values());
 		} else {
-			$duty_institution = DutyInstitution::where('alias', '=', $alias)->first();
+			$institution = Institution::where('alias', '=', $alias)->first();
 
-			if (is_null($duty_institution)) {
+			if (is_null($institution)) {
 				abort(404);
 			}
 
-			$alias_duties = $duty_institution->duties->sortBy('order')->values();
+			$alias_duties = $institution->duties->sortBy('order')->values();
 		}
 
 		$alias_contacts = [];
@@ -377,14 +377,14 @@ class MainController extends Controller
 		$alias_contact_collection = $alias_contact_collection->unique();
 
 		return Inertia::render('Public/Contacts/ContactsShow', [
-			'institution' => $duty_institution,
-			'contacts' => $alias_contact_collection->map(function ($contact) use ($duty_institution) {
+			'institution' => $institution,
+			'contacts' => $alias_contact_collection->map(function ($contact) use ($institution) {
 				return [
 					'id' => $contact->id,
 					'name' => $contact->name,
 					'email' => $contact->email,
 					'phone' => $contact->phone,
-					'duties' => $contact->duties->where('institution_id', '=', $duty_institution->id),
+					'duties' => $contact->duties->where('institution_id', '=', $institution->id),
 					'profile_photo_path' => function () use ($contact) {
 						if (substr($contact->profile_photo_path, 0, 4) == 'http') {
 							return $contact->profile_photo_path;
@@ -593,7 +593,7 @@ class MainController extends Controller
 			$query->where('name', '=', 'Pirmakursių stovykla');
 		})->with('padalinys:id,alias,fullname')->with(['media'])->get()->sortBy('padalinys.alias');
 		
-		return Inertia::render('Public/SummerCamps', ['events' => $events->makeHidden(['description', 'location', 'category', 'url', 'user_id', 'attributes'])->values()->all()])->withViewData([
+		return Inertia::render('Public/SummerCamps', ['events' => $events->makeHidden(['description', 'location', 'category', 'url', 'user_id', 'extra_attributes'])->values()->all()])->withViewData([
 			'title' => 'Pirmakursių stovyklos',
 			'description' => 'Universiteto tvarka niekada su ja nesusidūrusiam žmogui gali pasirodyti labai sudėtinga ir būtent dėl to jau prieš septyniolika metų Vilniaus universiteto Studentų atstovybė (VU SA) surengė pirmąją pirmakursių stovyklą.',
 		]);

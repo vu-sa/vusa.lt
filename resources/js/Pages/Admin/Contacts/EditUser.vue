@@ -1,8 +1,8 @@
 <template>
-  <PageContent :title="contact.name" :back-url="route('users.index')">
-    <UpsertModelLayout :errors="$attrs.errors" :model="contact">
+  <PageContent :title="user.name" :back-url="route('users.index')">
+    <UpsertModelLayout :errors="$attrs.errors" :model="user">
       <UserForm
-        :user="contact"
+        :user="user"
         :roles="roles"
         :duties="duties"
         model-route="users.update"
@@ -10,11 +10,11 @@
       />
     </UpsertModelLayout>
     <template #aside-card>
-      <div v-if="contact.duties.length > 0" class="main-card h-fit max-w-sm">
-        <strong>Šiuo metu {{ contact.name }} užima šias pareigas:</strong>
+      <div v-if="user.duties.length > 0" class="main-card h-fit max-w-sm">
+        <strong>Šiuo metu {{ user.name }} užima šias pareigas:</strong>
         <ul class="list-inside">
           <li
-            v-for="duty in contact.duties"
+            v-for="duty in user.duties"
             :key="duty.id"
             class="flex-inline gap-2"
           >
@@ -33,7 +33,7 @@
                 size="tiny"
                 @click.prevent="
                   Inertia.visit(
-                    route('dutyUsers.edit', { dutyUser: duty.pivot.id })
+                    route('dutiables.edit', { dutiable: duty.pivot.id })
                   )
                 "
               >
@@ -41,10 +41,6 @@
                   <PersonEdit24Regular />
                 </NIcon>
               </NButton>
-
-              <!-- duty.attributes?.study_program
-                  ? `(${duty.attributes?.study_program})`
-                  : "" -->
             </Link>
           </li>
         </ul>
@@ -54,28 +50,26 @@
   </PageContent>
 </template>
 
-<script lang="ts">
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
-
-export default {
-  layout: AdminLayout,
-};
-</script>
-
-<script setup lang="ts">
+<script setup lang="tsx">
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
 import { NButton, NIcon } from "naive-ui";
 import { PersonEdit24Regular } from "@vicons/fluent";
 import route from "ziggy-js";
 
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 import UserForm from "@/Components/AdminForms/UserForm.vue";
 
+defineOptions({
+  layout: AdminLayout,
+});
+
 defineProps<{
-  contact: App.Models.User;
+  user: App.Models.User;
   roles: App.Models.Role[];
+  // TODO: don't return all duties from the controller immediately
   duties: App.Models.Duty[];
 }>();
 </script>

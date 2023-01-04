@@ -54,6 +54,6 @@ import ContactWithPhotoForDuties from "@/Components/Public/ContactWithPhotoForDu
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 defineProps<{
-  institutions: App.Models.DutyInstitution[];
+  institutions: App.Models.Institution[];
 }>();
 </script>

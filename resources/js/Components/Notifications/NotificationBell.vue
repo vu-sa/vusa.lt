@@ -1,5 +1,5 @@
 <template>
-  <NBadge :offset="[-2, -4]" :value="notifications.length">
+  <NBadge :offset="[-2, -4]" :value="notifications?.length">
     <NPopover
       trigger="click"
       size="small"
@@ -42,9 +42,13 @@ import { usePage } from "@inertiajs/inertia-vue3";
 
 import NotificationItem from "./NotificationItem.vue";
 
-const notifications = ref(usePage().props.value.user?.notifications);
+const notifications = ref(
+  usePage<InertiaProps>().props.value.auth?.user?.notifications
+);
 
 const removeNotification = (id: number) => {
+  if (!notifications.value) return;
+
   notifications.value = notifications.value.filter(
     (notification: any) => notification.id !== id
   );

@@ -27,7 +27,7 @@
         >
           <span>{{ contact.name }}</span>
           <NButton
-            v-if="$page.props.user"
+            v-if="$page.props.auth.user"
             secondary
             circle
             size="tiny"
@@ -105,29 +105,29 @@ const dutyDescription = (duty) => {
 
   if (locale === "en") {
     return (
-      duty.attributes?.en?.description ??
-      duty.pivot?.attributes?.info_text ??
+      duty.extra_attributes?.en?.description ??
+      duty.pivot?.extra_attributes?.info_text ??
       duty.description
     );
   }
 
-  return duty.pivot?.attributes?.info_text ?? duty.description;
+  return duty.pivot?.extra_attributes?.info_text ?? duty.description;
 };
 
 const showAdditionalInfo = (duty) => {
-  if (!duty.pivot?.attributes?.study_program) {
+  if (!duty.pivot?.extra_attributes?.study_program) {
     return null;
   }
 
   const locale = usePage().props.value.locale;
 
   if (locale === "en") {
-    return duty.pivot.attributes?.en?.study_program == null
-      ? `(${duty.pivot.attributes?.study_program})`
-      : `(${duty.pivot.attributes?.en?.study_program})`;
+    return duty.pivot.extra_attributes?.en?.study_program == null
+      ? `(${duty.pivot.extra_attributes?.study_program})`
+      : `(${duty.pivot.extra_attributes?.en?.study_program})`;
   }
 
-  return `(${duty.pivot.attributes?.study_program})`;
+  return `(${duty.pivot.extra_attributes?.study_program})`;
 };
 
 // ! TIK KURATORIAMS: nusprendžia, kurią nuotrauką imti, pagal tai, ar url turi "kuratoriai"
@@ -139,7 +139,7 @@ const getImageUrl = (contact: App.Models.User) => {
     for (const duty of Object.keys(contact.duties)) {
       if (contact.duties[duty].name.toLowerCase().includes("kuratorius")) {
         return (
-          contact.duties[duty].pivot.attributes?.additional_photo ??
+          contact.duties[duty].pivot.extra_attributes?.additional_photo ??
           contact.profile_photo_path
         );
       }
@@ -155,12 +155,12 @@ const changeDutyNameEndings = (
   // check for english locale and just return english
   let locale = usePage().props.value.locale;
 
-  if (locale === "en" && duty.attributes?.en?.name) {
-    return duty.attributes?.en?.name;
+  if (locale === "en" && duty.extra_attributes?.en?.name) {
+    return duty.extra_attributes?.en?.name;
   }
 
   // check if duty name should not be explicitly changed
-  if (duty.pivot.attributes?.use_original_duty_name) return duty.name;
+  if (duty.pivot.extra_attributes?.use_original_duty_name) return duty.name;
 
   // replace duty.name ending 'ius' with 'ė', but only on end of string
   let womanizedTitle = duty.name

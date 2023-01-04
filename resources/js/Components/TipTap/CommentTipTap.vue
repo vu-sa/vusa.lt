@@ -28,14 +28,14 @@
         </button>
       </div>
       <div class="flex items-center gap-2">
-        <UserAvatar :user="$page.props.user" />
+        <UserAvatar :user="$page.props.auth.user" />
         <NButton
           secondary
           :disabled="editor?.getHTML() == '<p></p>'"
           :loading="loading"
           round
           class="w-full"
-          @click="submitComment($page.props.user)"
+          @click="submitComment($page.props.auth.user)"
           ><template #icon
             ><NIcon :component="CommentAdd24Regular"></NIcon></template
           >Pridėti komentarą</NButton

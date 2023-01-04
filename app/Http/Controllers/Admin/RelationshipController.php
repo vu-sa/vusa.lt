@@ -92,7 +92,7 @@ class RelationshipController extends Controller
 
         $related_models = [];
 
-        if ($model_type === 'App\Models\DutyInstitution') {
+        if ($model_type === 'App\Models\Institution') {
             $related_models = $model_type::select('id', 'name')->get();
         } elseif ($model_type === 'App\Models\Type') {
             $related_models = $model_type::select('id', 'title')->get();

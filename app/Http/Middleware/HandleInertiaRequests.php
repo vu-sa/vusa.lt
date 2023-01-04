@@ -59,17 +59,20 @@ class HandleInertiaRequests extends Middleware
                 'env' => config('app.env'),
                 'url' => config('app.url'),
             ],
-            // is used in the admin navigation to show only the allowed pages
-            'can' => is_null($request->user()) ? false : [
-                'calendar' => $request->user()->can('edit unit calendar'),
-                'content' => $request->user()->can('edit unit content'),
-                'files' => $request->user()->can('edit unit content'),
-                'institutions' => $request->user()->can('edit institution content'),
-                'navigation' => $request->user()->hasRole('Super Admin'),
-                'saziningai' => $request->user()->can('edit saziningai content'),
-                'settings' => $request->user()->hasRole('Super Admin'),
-                'users' => $request->user()->can('edit unit users'),
+            'auth' => [
+                'can' => is_null($request->user()) ? false : [
+                    'calendar' => fn () => $request->user()->can('edit unit calendar'),
+                    'content' => fn () => $request->user()->can('edit unit content'),
+                    'files' => fn () => $request->user()->can('edit unit content'),
+                    'institutions' => fn () => $request->user()->can('edit institution content'),
+                    'navigation' => fn () => $request->user()->hasRole('Super Admin'),
+                    'saziningai' => fn () => !$request->user()->can('edit saziningai content'),
+                    'settings' => fn () => $request->user()->hasRole('Super Admin'),
+                    'users' => fn () => $request->user()->can('edit unit users'),
+                ],
+                'user' => $user,
             ],
+            // is used in the admin navigation to show only the allowed pages
             'flash' => [
                 'data' => fn () => $request->session()->get('data'),
                 'info' => fn () => $request->session()->get('info'),
@@ -93,8 +96,6 @@ class HandleInertiaRequests extends Middleware
                 'pages' => $request->session()->get('search_pages') ?? [],
                 'other' => $request->session()->get('search_other') ?? [],
             ],
-            // current user
-            'user' => $user,
         ]);
     }
 }

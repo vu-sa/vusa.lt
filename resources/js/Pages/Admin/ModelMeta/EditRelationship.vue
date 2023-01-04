@@ -25,17 +25,22 @@
               @update:value="handleUpdateModelType"
             ></NSelect>
           </NFormItemGi>
-          <NFormItemGi :span="6" label="Modelis">
-            <NSelect v-model:value="relationForm.model_id" :options="options">
+          <NFormItemGi :span="6" label="Ryšio suteikėjas">
+            <NSelect
+              v-model:value="relationForm.model_id"
+              filterable
+              :options="options"
+            >
             </NSelect>
           </NFormItemGi>
-          <NFormItemGi :span="6" label="Susijęs modelis">
+          <NFormItemGi :span="6" label="Ryšio gavėjas">
             <NSelect
               v-model:value="relationForm.related_model_id"
               :options="options"
             >
             </NSelect>
           </NFormItemGi>
+          <!-- TODO: paaiškinti, kas yra ryšio suteikėjas ir ryšio gavėjas. -->
         </NGrid>
         <NButton type="primary" @click="submitRelationForm">Sukurti</NButton>
       </NForm></CardModal
@@ -144,8 +149,8 @@ const relationshipableColumns = [
 
 const modelTypeOptions = [
   {
-    label: "Duty Institution",
-    value: "App\\Models\\DutyInstitution",
+    label: "Institution",
+    value: "App\\Models\\Institution",
   },
   {
     label: "Type",

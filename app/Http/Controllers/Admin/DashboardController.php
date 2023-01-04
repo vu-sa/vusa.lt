@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller as Controller;
-use App\Models\DutyInstitution;
+use App\Models\Institution;
 use App\Models\Relationshipable;
 use App\Models\Type;
 use App\Models\User;
@@ -19,16 +19,16 @@ class DashboardController extends Controller
         $user = User::find(auth()->user()->id);
         $duties = $user->duties;
 
-        $dutyInstitutions = $duties->pluck('institution')->flatten()->unique();
+        $institutions = $duties->pluck('institution')->flatten()->unique();
 
         // convert to eloquent collection
-        $dutyInstitutions = new EloquentCollection($dutyInstitutions);
+        $institutions = new EloquentCollection($institutions);
 
-        $dutyInstitutions->load('users:users.id,profile_photo_path');
+        $institutions->load('users:users.id,profile_photo_path');
 
         return Inertia::render('Admin/ShowDashboard', [
-            'dutyInstitutions' => $dutyInstitutions->map(function ($institution) {
-                return [...$institution->toArray(), 'lastMeetingDoing' => $institution->lastMeetingDoing()];
+            'institutions' => $institutions->map(function ($institution) {
+                return [...$institution->toArray(), 'lastMeeting' => $institution->lastMeeting()];
             }),
             'duties' => $duties->load('institution')
         ]);
@@ -54,28 +54,28 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function dutyInstitutionGraph() {
+    public function institutionGraph() {
        
-        // return dutyInstitutions with user count
-        $dutyInstitutions = DutyInstitution::withCount('users')->get();
+        // return institutions with user count
+        $institutions = Institution::withCount('users')->get();
 
         // get relationships for duty institutions
-        $dutyInstitutionRelationships = DB::table('relationshipables')->where('relationshipable_type', DutyInstitution::class)->get();
+        $institutionRelationships = DB::table('relationshipables')->where('relationshipable_type', Institution::class)->get();
 
         $typeRelationships = $this->getTypeRelationships();
 
-        $dutyInstitutionRelationships = $dutyInstitutionRelationships->merge($typeRelationships);
+        $institutionRelationships = $institutionRelationships->merge($typeRelationships);
 
-        return Inertia::render('Admin/ShowDutyInstitutionGraph', [
-            'dutyInstitutions' => $dutyInstitutions,
-            'dutyInstitutionRelationships' => $dutyInstitutionRelationships,
+        return Inertia::render('Admin/ShowInstitutionGraph', [
+            'institutions' => $institutions,
+            'institutionRelationships' => $institutionRelationships,
         ]);
     }
 
     protected function getTypeRelationships()
     {
         $relationships = Relationshipable::where('relationshipable_type', Type::class)->get()->map(function ($relationshipable) {
-            return $relationshipable->getRelatedModelsFromGivenType(DutyInstitution::class);
+            return $relationshipable->getRelatedModelsFromGivenType(Institution::class);
         });
 
         return collect($relationships)->flatten(1);

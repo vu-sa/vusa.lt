@@ -26,7 +26,7 @@ return new class extends Migration
             $table->unique(['doing_id', 'question_id']);
         });
 
-        Doing::all()->each(function (Doing $doing) {
+        Doing::withTrashed()->get()->each(function (Doing $doing) {
             $doing->questions()->attach($doing->question_id);
         });
 

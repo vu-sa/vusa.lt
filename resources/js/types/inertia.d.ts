@@ -12,9 +12,11 @@ declare global {
       env: string;
       url: string;
     };
-    can: {
-      [key: string]: boolean;
-    };
+    auth: {
+      can: {
+        [key: string]: boolean;
+      };
+      user: InertiaUserGlobal;
     errors: {
       [key: string]: string;
     };

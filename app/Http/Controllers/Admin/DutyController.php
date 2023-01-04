@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Duty;
-use App\Models\DutyInstitution;
+use App\Models\Institution;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller as Controller;
 use App\Models\Type;
@@ -37,7 +37,7 @@ class DutyController extends Controller
             });
         })->with(['institution:id,name,short_name,padalinys_id','institution.padalinys:id,shortname'])->paginate(20);
 
-        return Inertia::render('Admin/Contacts/IndexDuties', [
+        return Inertia::render('Admin/Contacts/IndexDuty', [
             'duties' => $duties,
         ]);
     }
@@ -49,11 +49,11 @@ class DutyController extends Controller
      */
     public function create()
     {
-        $dutyInstitutions = $this->getDutyInstitutionsForForm();
+        $institutions = $this->getInstitutionsForForm();
         
         return Inertia::render('Admin/Contacts/CreateDuty', [
             'dutyTypes' => Type::where('model_type', Duty::class)->get(),
-            'dutyInstitutions' => $dutyInstitutions,
+            'institutions' => $institutions,
         ]);
     }
 
@@ -77,7 +77,7 @@ class DutyController extends Controller
             'institution_id' => $request->institution['id'],
         ]);
 
-        $duty->attributes = $request->all()['attributes'];
+        $duty->extra_attributes = $request->extra_attributes;
         $duty->save();
 
         $duty->types()->sync($request->type);
@@ -104,7 +104,7 @@ class DutyController extends Controller
      */
     public function edit(Duty $duty)
     {
-        $dutyInstitutions = $this->getDutyInstitutionsForForm();
+        $institutions = $this->getInstitutionsForForm();
 
         return Inertia::render('Admin/Contacts/EditDuty', [
             'duty' => [
@@ -113,7 +113,7 @@ class DutyController extends Controller
             ],
             'users' => $duty->users,
             'dutyTypes' => Type::where('model_type', Duty::class)->get(),
-            'dutyInstitutions' => $dutyInstitutions
+            'institutions' => $institutions
         ]);
     }
 
@@ -132,10 +132,10 @@ class DutyController extends Controller
         ]);
 
         DB::transaction(function () use ($request, $duty) {
-            $duty->update($request->only('name', 'description', 'email', 'attributes'));
+            $duty->update($request->only('name', 'description', 'email', 'extra_attributes'));
 
             $duty->institution()->disassociate();
-            $duty->institution()->associate(DutyInstitution::find($request->institution['id']));
+            $duty->institution()->associate(Institution::find($request->institution['id']));
             $duty->save();
 
             $duty->types()->sync($request->types);
@@ -157,9 +157,9 @@ class DutyController extends Controller
         return redirect()->route('duties.index')->with('info', 'Pareigybė sėkmingai ištrinta!');
     }
 
-    private function getDutyInstitutionsForForm(): Collection
+    private function getInstitutionsForForm(): Collection
     {
-        return DutyInstitution::select('id', 'name', 'alias', 'padalinys_id')->when(!request()->user()->hasRole('Super Admin'), function ($query) {
+        return Institution::select('id', 'name', 'alias', 'padalinys_id')->when(!request()->user()->hasRole('Super Admin'), function ($query) {
                 $query->where('padalinys_id', auth()->user()->padalinys()->id);
         })->with('padalinys:id,shortname')->get();
     }

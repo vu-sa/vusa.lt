@@ -6,7 +6,7 @@
       :doing="doing"
     ></DoingCard>
     <div
-      v-if="question"
+      v-if="matter"
       role="button"
       class="mx-1 my-2 flex flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-zinc-700 p-2 text-zinc-500 duration-200 hover:shadow-inner dark:bg-zinc-900/60"
       @click="showModal = true"
@@ -16,14 +16,14 @@
     </div>
   </div>
   <CardModal
-    v-if="question"
+    v-if="matter"
     v-model:show="showModal"
     title="Sukurti veiklą"
     @close="showModal = false"
   >
     <DoingForm
       :doing="doingTemplate"
-      :question="question"
+      :matter="matter"
       :doing-types="doingTypes"
       model-route="doings.store"
       @success="showModal = false"
@@ -44,7 +44,7 @@ defineProps<{
   doings: App.Models.Doing[];
   doingTemplate: any;
   doingTypes: any;
-  question: App.Models.Question;
+  matter: App.Models.InstitutionMatter;
 }>();
 
 const showModal = ref(false);

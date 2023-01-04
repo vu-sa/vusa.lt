@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Calendar;
 use App\Models\Duty;
-use App\Models\DutyInstitution;
+use App\Models\Institution;
 use App\Models\MainPage;
 use App\Models\News;
 use App\Models\Page;
@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
         $this->call(AdminSeeder::class);
         $this->call(PadaliniaiSeeder::class);
 
-        DutyInstitution::factory(10)->create();
+        Institution::factory(10)->create();
         
         User::factory()->has(Duty::factory()->count(3))->count(10)->create();
         

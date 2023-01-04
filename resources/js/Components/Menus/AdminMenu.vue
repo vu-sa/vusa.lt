@@ -44,7 +44,7 @@ defineProps<{
   collapsed: boolean;
 }>();
 
-const { can } = usePage<InertiaProps>().props.value;
+const { auth } = usePage<InertiaProps>().props.value;
 const activeKey = ref("");
 
 // set active key with a switch
@@ -59,7 +59,7 @@ const setActiveKey = (route: string | undefined) => {
   if (["pages", "news", "mainPage", "banners"].includes(routeParts[0])) {
     activeKey.value = "content";
   }
-  if (["dutyInstitutions", "duties", "users"].includes(routeParts[0])) {
+  if (["institutions", "duties", "users"].includes(routeParts[0])) {
     activeKey.value = "contacts";
   }
   if (routeParts[0] === "navigation") {
@@ -95,24 +95,22 @@ const menuOptions = computed(() => [
     icon: () => {
       return <NIcon component={Sparkle24Regular}></NIcon>;
     },
-    show: can.institutions,
+    show: auth.can.institutions,
     children: [
       {
         label: () => {
-          return <Link href={route("questions.index")}>Klausimai</Link>;
+          return <Link href={route("matters.index")}>Klausimai</Link>;
         },
-        key: "questions",
+        key: "matters",
         icon: () => {
           return <NIcon component={BookQuestionMark24Regular}></NIcon>;
         },
       },
       {
         label: () => {
-          return (
-            <Link href={route("questionGroups.index")}>Klausimų grupės</Link>
-          );
+          return <Link href={route("goals.index")}>Klausimų grupės</Link>;
         },
-        key: "questionGroups",
+        key: "goals",
         icon: () => {
           return <NIcon component={NotebookQuestionMark24Regular}></NIcon>;
         },
@@ -134,15 +132,13 @@ const menuOptions = computed(() => [
     icon: () => {
       return <NIcon component={Person24Regular}></NIcon>;
     },
-    show: can.users || can.institutions,
+    show: auth.can.users || auth.can.institutions,
     children: [
       {
         label: () => {
-          return (
-            <Link href={route("dutyInstitutions.index")}>Institucijos</Link>
-          );
+          return <Link href={route("institutions.index")}>Institucijos</Link>;
         },
-        key: "dutyInstitutions",
+        key: "institutions",
         icon: () => {
           return <NIcon component={PeopleTeam24Regular}></NIcon>;
         },
@@ -150,12 +146,10 @@ const menuOptions = computed(() => [
       {
         label: () => {
           return (
-            <Link href={route("dutyInstitutionGraph")}>
-              Institucijų grafikas
-            </Link>
+            <Link href={route("institutionGraph")}>Institucijų grafikas</Link>
           );
         },
-        key: "dutyInstitutionsGraph",
+        key: "institutionsGraph",
         icon: () => {
           return <NIcon component={Flowchart20Regular}></NIcon>;
         },
@@ -174,7 +168,7 @@ const menuOptions = computed(() => [
           return <Link href={route("users.index")}>Kontaktai</Link>;
         },
         key: "users",
-        show: can.users,
+        show: auth.can.users,
         icon: () => {
           return <NIcon component={Person24Regular}></NIcon>;
         },
@@ -187,14 +181,14 @@ const menuOptions = computed(() => [
     icon: () => {
       return <NIcon component={TabDesktopNewPage20Regular}></NIcon>;
     },
-    show: can.content,
+    show: auth.can.content,
     children: [
       {
         label: () => {
           return <Link href={route("pages.index")}>Puslapiai</Link>;
         },
         key: "pages",
-        show: can.pages,
+        show: auth.can.pages,
         icon: () => {
           return <NIcon component={DocumentMultiple24Regular}></NIcon>;
         },
@@ -204,7 +198,7 @@ const menuOptions = computed(() => [
           return <Link href={route("news.index")}>Naujienos</Link>;
         },
         key: "news",
-        show: can.news,
+        show: auth.can.news,
         icon: () => {
           return <NIcon component={News24Regular}></NIcon>;
         },
@@ -214,7 +208,7 @@ const menuOptions = computed(() => [
           return <Link href={route("mainPage.index")}>Greitieji mygtukai</Link>;
         },
         key: "mainPage",
-        show: can.mainPage,
+        show: auth.can.mainPage,
         icon: () => {
           return <NIcon component={Grid24Regular}></NIcon>;
         },
@@ -224,7 +218,7 @@ const menuOptions = computed(() => [
           return <Link href={route("banners.index")}>Baneriai</Link>;
         },
         key: "banners",
-        show: can.banners,
+        show: auth.can.banners,
         icon: () => {
           return <NIcon component={ImageArrowBack24Regular}></NIcon>;
         },
@@ -234,7 +228,7 @@ const menuOptions = computed(() => [
           return <Link href={route("navigation.index")}>Navigacija</Link>;
         },
         key: "navigation",
-        show: can.navigation,
+        show: auth.can.navigation,
         icon: () => {
           return <NIcon component={Navigation24Regular}></NIcon>;
         },
@@ -244,7 +238,7 @@ const menuOptions = computed(() => [
           return <Link href={route("calendar.index")}>Kalendorius</Link>;
         },
         key: "calendar",
-        show: can.calendar,
+        show: auth.can.calendar,
         icon: () => {
           return <NIcon component={CalendarLtr24Regular}></NIcon>;
         },
@@ -254,7 +248,7 @@ const menuOptions = computed(() => [
           return <Link href={route("files.index")}>Failai</Link>;
         },
         key: "files",
-        show: can.files,
+        show: auth.can.files,
         icon: () => {
           return <NIcon component={Folder24Regular}></NIcon>;
         },
@@ -267,7 +261,7 @@ const menuOptions = computed(() => [
     icon: () => {
       return <NIcon component={Notebook24Regular}></NIcon>;
     },
-    show: can.content || can.saziningai,
+    show: auth.can.content || auth.can.saziningai,
     children: [
       {
         label: () => {
@@ -277,7 +271,7 @@ const menuOptions = computed(() => [
         icon: () => {
           return <NIcon component={PeopleSearch24Regular}></NIcon>;
         },
-        show: can.saziningai,
+        show: auth.can.saziningai,
       },
       {
         label: () => {
@@ -291,7 +285,7 @@ const menuOptions = computed(() => [
         icon: () => {
           return <NIcon component={People24Regular}></NIcon>;
         },
-        show: can.content,
+        show: auth.can.content,
       },
     ],
   },
@@ -340,7 +334,7 @@ const menuOptions = computed(() => [
         },
       },
     ],
-    show: can.settings,
+    show: auth.can.settings,
   },
 ]);
 </script>

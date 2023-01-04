@@ -88,7 +88,7 @@ class CalendarController extends Controller
             'location' => $request->location,
             'url' => $request->url,
             'category' => $request->category,
-            'attributes' => $request->all()['attributes']
+            'extra_attributes' => $request->extra_attributes
         ]);
 
         return redirect()->route('calendar.index')->with('success', 'Kalendoriaus įvykis sėkmingai sukurtas!');
@@ -138,7 +138,7 @@ class CalendarController extends Controller
         ]);
 
         DB::transaction(function () use ($request, $calendar) {
-            $calendar->update($request->only(['date', 'end_date', 'title', 'description', 'location', 'url', 'category', 'attributes']));
+            $calendar->update($request->only(['date', 'end_date', 'title', 'description', 'location', 'url', 'category', 'extra_attributes']));
 
             // if request has files
             

@@ -1,5 +1,5 @@
 <template>
-  <PageContent :title="`${$page.props.user.name}`">
+  <PageContent :title="`${$page.props.auth.user.name}`">
     <div class="main-card max-w-3xl">
       <!-- <p>{{ salutation }}</p> -->
       <div class="mb-4">

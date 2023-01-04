@@ -22,9 +22,9 @@
           class="prose prose-sm my-auto dark:prose-invert"
         >
           <h1>
-            {{ dutyInstitutionName }}
+            {{ institutionName }}
           </h1>
-          <div v-html="dutyInstitutionDescription"></div>
+          <div v-html="institutionDescription"></div>
         </div>
         <!-- <template v-for="duty in institution"> -->
         <ContactWithPhotoForDuties
@@ -59,25 +59,27 @@ import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 
 const props = defineProps<{
   contacts: Array<App.Models.User>;
-  institution: App.Models.DutyInstitution;
+  institution: App.Models.Institution;
 }>();
 
-const dutyInstitutionName = computed(() => {
+const institutionName = computed(() => {
   const locale = usePage().props.value.locale;
 
   if (locale === "en") {
-    return props.institution.attributes?.en?.name ?? props.institution.name;
+    return (
+      props.institution.extra_attributes?.en?.name ?? props.institution.name
+    );
   }
 
   return props.institution.name ?? "";
 });
 
-const dutyInstitutionDescription = computed(() => {
+const institutionDescription = computed(() => {
   const locale = usePage().props.value.locale;
 
   if (locale === "en") {
     return (
-      props.institution.attributes?.en?.description ??
+      props.institution.extra_attributes?.en?.description ??
       props.institution.description
     );
   }

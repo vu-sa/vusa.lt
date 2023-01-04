@@ -1,6 +1,6 @@
 <template>
   <QuickContentCard>
-    <template v-if="lastMeetingDoing">
+    <template v-if="lastMeeting">
       <div class="inline-flex items-center gap-2">
         <NIcon :size="36" :component="CalendarClock20Regular"></NIcon>
 
@@ -8,26 +8,22 @@
           prieš
           <NNumberAnimation
             :from="0"
-            :to="getDaysDifference(lastMeetingDoing.date)"
+            :to="getDaysDifference(lastMeeting.date)"
           ></NNumberAnimation>
           d.
         </span>
       </div>
       <p class="mt-4">
         Paskutinis posėdis vyko
-        <Link
-          :href="route('doings.show', lastMeetingDoing.id)"
-          class="font-bold"
-          >{{ getMMMMDD(lastMeetingDoing.date) }}</Link
-        >
+        <Link :href="route('doings.show', lastMeeting.id)" class="font-bold">{{
+          getMMMMDD(lastMeeting.date)
+        }}</Link>
       </p>
+      lastMeeting
     </template>
     <p v-else>Nėra užfiksuoto jokio posėdžio. 😢</p>
     <template #action-button>
-      <NewMeetingButton
-        :duty-institution="dutyInstitution"
-        :doing-types="doingTypes"
-      />
+      <NewMeetingButton :institution="institution" :doing-types="doingTypes" />
     </template>
   </QuickContentCard>
 </template>
@@ -44,7 +40,7 @@ import QuickContentCard from "@/Components/Cards/QuickContentCards/QuickContentC
 
 defineProps<{
   doingTypes: any;
-  dutyInstitution: App.Models.DutyInstitution;
-  lastMeetingDoing?: App.Models.Doing;
+  institution: App.Models.Institution;
+  lastMeeting?: App.Models.InstitutionMeeting;
 }>();
 </script>

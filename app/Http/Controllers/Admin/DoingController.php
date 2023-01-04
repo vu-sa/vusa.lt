@@ -29,7 +29,7 @@ class DoingController extends Controller
     {
         $search = request()->input('search');
 
-        $doings = Doing::with('questions')->when(!request()->user()->hasRole('Super Admin'), function ($query) {
+        $doings = Doing::with('matters')->when(!request()->user()->hasRole('Super Admin'), function ($query) {
             $query->where('padalinys_id', '=', request()->user()->padalinys()->id);
         })->when(!is_null($search), function ($query) use ($search) {
             $query->where('title', 'like', "%{$search}%");
@@ -37,14 +37,14 @@ class DoingController extends Controller
 
         $unpaginatedDoings = $doings->get();
 
-        // pluck all questions 
+        // pluck all matters 
         $paginatedDoings = $doings->paginate(20);
 
-        $questions = $unpaginatedDoings->pluck('questions')->flatten()->unique('id')->values();
+        $matters = $unpaginatedDoings->pluck('matters')->flatten()->unique('id')->values();
 
-        return Inertia::render('Admin/Questions/IndexDoings', [
+        return Inertia::render('Admin/IndexDoing', [
             'doings' => $paginatedDoings,
-            'questions' => $questions,
+            'matters' => $matters,
         ]);
     }
 
@@ -76,30 +76,30 @@ class DoingController extends Controller
         
         $doing->types()->sync($request->type_id);
 
-        if (!is_null($request->input('questionForm'))) {
-            // parse 'titlesOrIds' for new questions
-            foreach ($request->input('questionForm')['titlesOrIds'] as $value) {
+        if (!is_null($request->input('matterForm'))) {
+            // parse 'titlesOrIds' for new matters
+            foreach ($request->input('matterForm')['titlesOrIds'] as $value) {
                 switch (gettype($value)) {
                     case 'integer':
-                        $doing->questions()->attach($value);
+                        $doing->matters()->attach($value);
                         break;
                     case 'string':
-                        $doing->questions()->create([
+                        $doing->matters()->create([
                             'title' => $value,
-                            'description' => $request->input('questionForm')['description'],
+                            'description' => $request->input('matterForm')['description'],
                             'status' => 'Sukurtas',
-                            'institution_id' => $request->input('questionForm')['institution_id']
+                            'institution_id' => $request->input('matterForm')['institution_id']
                         ]);
 
-                        if (!is_null($request->input('questionForm')['andOther'] ?? null)) {
-                            $doing->extra_attributes = ['andOther' => $request->input('questionForm')['andOther']];
+                        if (!is_null($request->input('matterForm')['andOther'] ?? null)) {
+                            $doing->extra_attributes = ['andOther' => $request->input('matterForm')['andOther']];
                             $doing->save();
                         }
                         break;
                     }
                 }
         } else {
-            $doing->questions()->sync($request->question_id);
+            $doing->matters()->sync($request->matter_id);
         }
 
         DoingStatusManager::generateStatusForNewDoing($doing);
@@ -124,8 +124,8 @@ class DoingController extends Controller
             $sharepointFiles = $graph->collectSharepointFiles($doing->documents);
         }
 
-        return Inertia::render('Admin/Questions/ShowDoing', [
-            'question' => $doing->questions->first()?->load('institution'),
+        return Inertia::render('Admin/ShowDoing', [
+            'matter' => $doing->matters->first()?->load('institution'),
             'doing' => [
                     ...$doing->toArray(),
                     'activities' => $doing->activities->map(function ($activity) {
@@ -179,10 +179,9 @@ class DoingController extends Controller
      */
     public function destroy(Doing $doing)
     {
-        
         DB::transaction(function () use ($doing) {
-            // detach doings from questions
-            $doing->questions()->detach();
+            // detach doings from matters
+            $doing->matters()->detach();
 
             // detach doings from types
             $doing->types()->detach();

@@ -10,7 +10,7 @@
         :duty="duty"
         :has-users="hasUsers"
         :duty-types="dutyTypes"
-        :duty-institutions="dutyInstitutions"
+        :institutions="institutions"
         model-route="duties.update"
         delete-model-route="duties.destroy"
       />
@@ -56,14 +56,6 @@
   </PageContent>
 </template>
 
-<script lang="ts">
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
-
-export default {
-  layout: AdminLayout,
-};
-</script>
-
 <script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
@@ -79,15 +71,20 @@ import { computed, ref } from "vue";
 import route from "ziggy-js";
 
 import { checkForEmptyArray } from "@/Composables/checkAttributes";
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import DutyForm from "@/Components/AdminForms/DutyForm.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
+defineOptions({
+  layout: AdminLayout,
+});
+
 const props = defineProps<{
   duty: App.Models.Duty;
   users: App.Models.User[];
-  dutyTypes: App.Models.DutyType[];
-  dutyInstitutions: App.Models.DutyInstitution[];
+  dutyTypes: App.Models.Type[];
+  institutions: App.Models.Institution[];
 }>();
 
 const { message } = createDiscreteApi(["message"]);
@@ -96,8 +93,10 @@ const hasUsers = computed(() => props.users.length > 0);
 
 const duty = ref(props.duty);
 
-duty.value.attributes = checkForEmptyArray(duty.value.attributes);
-duty.value.attributes.en = checkForEmptyArray(duty.value.attributes.en);
+duty.value.extra_attributes = checkForEmptyArray(duty.value.extra_attributes);
+duty.value.extra_attributes.en = checkForEmptyArray(
+  duty.value.extra_attributes.en
+);
 
 ////////////////////////////////////////////////////////////////////////////////
 
