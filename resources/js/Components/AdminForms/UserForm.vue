@@ -93,7 +93,7 @@ const dutyOptions = props.duties.map((duty) => ({
 
 const rolesOptions = props.roles.map((role) => ({
   label: role.name,
-  value: role.name,
+  value: role.id,
 }));
 
 form.duties = props.user.duties?.map((duty) => duty.id);

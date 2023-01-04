@@ -125,13 +125,15 @@ class UserController extends Controller
         // user load duties with pivot
         $user->load(['duties' => function ($query) {
             $query->withPivot('start_date', 'end_date');
-        }])->load('roles');
+        }]);
 
         return Inertia::render('Admin/People/EditUser', [
-            'user' => $user,
+            'user' => fn () => [
+                ...$user->toArray(), 'roles' => $user->roles()->pluck('id')->toArray()
+            ],
             // get all roles
-            'roles' => Role::all(),
-            'duties' => $this->getDutiesForForm()
+            'roles' => fn () => Role::all(),
+            'duties' => fn () => $this->getDutiesForForm()
         ]);
     }
 
@@ -146,8 +148,8 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => 'required',
-            'email' => 'required',
-            'duties' => 'required',
+            'email' => 'required|email',
+            'roles' => 'array'
         ]);
 
         DB::transaction(function () use ($request, $user) {
@@ -157,14 +159,8 @@ class UserController extends Controller
 
             // check if user is super admin
             if (auth()->user()->hasRole('Super Admin')) {
-                // check if user is super admin
-                if ($request->has('roles')) {
-                    $user->syncRoles($request->roles);
-                } else {
-                    $user->syncRoles([]);
-                }
+                $user->syncRoles($request->roles);
             }
-
         });
 
         return back()->with('success', 'Kontaktas sėkmingai atnaujintas!');
