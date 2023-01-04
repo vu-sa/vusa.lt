@@ -43,7 +43,7 @@ class UserController extends Controller
         })->with(['duties:id,institution_id', 'duties.institution:id,padalinys_id','duties.institution.padalinys:id,shortname'])
         ->paginate(20);
 
-        return Inertia::render('Admin/Contacts/IndexUser', [
+        return Inertia::render('Admin/People/IndexUser', [
             'users' => $users,
         ]);
     }
@@ -55,7 +55,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Admin/Contacts/CreateUser', [
+        return Inertia::render('Admin/People/CreateUser', [
             'roles' => Role::all(),
             'duties' => $this->getDutiesForForm()
         ]);
@@ -127,7 +127,7 @@ class UserController extends Controller
             $query->withPivot('start_date', 'end_date');
         }])->load('roles');
 
-        return Inertia::render('Admin/Contacts/EditUser', [
+        return Inertia::render('Admin/People/EditUser', [
             'user' => $user,
             // get all roles
             'roles' => Role::all(),

@@ -66,7 +66,7 @@ class HandleInertiaRequests extends Middleware
                     'files' => fn () => $request->user()->can('edit unit content'),
                     'institutions' => fn () => $request->user()->can('edit institution content'),
                     'navigation' => fn () => $request->user()->hasRole('Super Admin'),
-                    'saziningai' => fn () => !$request->user()->can('edit saziningai content'),
+                    'saziningai' => fn () => $request->user()->can('edit saziningai content'),
                     'settings' => fn () => $request->user()->hasRole('Super Admin'),
                     'users' => fn () => $request->user()->can('edit unit users'),
                 ],

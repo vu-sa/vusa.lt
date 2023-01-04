@@ -1,9 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use App\Models\GoalGroup;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class GoalGroupController extends Controller
 {
@@ -14,7 +16,11 @@ class GoalGroupController extends Controller
      */
     public function index()
     {
-        //
+        $goalGroups = GoalGroup::all()->paginate();
+
+        return Inertia::render('Admin/Representation/IndexGoalGroups', [
+            'goalGroups' => $goalGroups,
+        ]);
     }
 
     /**

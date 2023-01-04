@@ -32,7 +32,7 @@ class InstitutionMatterController extends Controller
             $query->where('title', 'like', "%{$search}%");
         })->paginate(20);
 
-        return Inertia::render('Admin/IndexMatter', [
+        return Inertia::render('Admin/Representation/IndexMatter', [
             'matters' => $matters,
         ]);
     }
@@ -92,7 +92,7 @@ class InstitutionMatterController extends Controller
             $query->orderBy('date');
         }])->load('institution', 'activities', 'doings.comments', 'doings.tasks', 'doings.documents');
         
-        return Inertia::render('Admin/ShowMatter', [
+        return Inertia::render('Admin/Representation/ShowMatter', [
             'matter' => [
                 ...$matter->toArray(),
                 'activities' => $matter->activities->map(function ($activity) {

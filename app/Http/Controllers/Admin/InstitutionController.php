@@ -35,7 +35,7 @@ class InstitutionController extends Controller
             $query->where('name', 'like', "%{$search}%")->orWhere('short_name', 'like', "%{$search}%")->orWhere('alias', 'like', "%{$search}%");
         })->paginate(20);
 
-        return Inertia::render('Admin/Contacts/IndexInstitution', [
+        return Inertia::render('Admin/People/IndexInstitution', [
             'institutions' => $institutions,
         ]);
     }
@@ -47,7 +47,7 @@ class InstitutionController extends Controller
      */
     public function create()
     {       
-        return Inertia::render('Admin/Contacts/CreateInstitution', [
+        return Inertia::render('Admin/People/CreateInstitution', [
             'padaliniai' => Padalinys::orderBy('shortname_vu')->get()->map(function ($padalinys) {
                 return [
                     'id' => $padalinys->id,
@@ -107,7 +107,7 @@ class InstitutionController extends Controller
         $receivedRelationships = $institution->receivedRelationshipModels();
         $givenRelationships = $institution->givenRelationshipModels();
 
-        return Inertia::render('Admin/Contacts/ShowInstitution', [
+        return Inertia::render('Admin/People/ShowInstitution', [
             'institution' => [
                 ...$institution->toArray(), 
                 'matters' => $matters->load('doings')->loadCount('doings')->map(function ($matter) {
@@ -163,7 +163,7 @@ class InstitutionController extends Controller
      */
     public function edit(Institution $institution)
     {
-        return Inertia::render('Admin/Contacts/EditInstitution', [
+        return Inertia::render('Admin/People/EditInstitution', [
             'institution' => [
                 ...$institution->toArray(),
                 'types' => $institution->types->first()?->id,

@@ -29,7 +29,7 @@ class GoalController extends Controller
             $query->where('name', 'like', "%{$search}%")->orWhere('short_name', 'like', "%{$search}%")->orWhere('alias', 'like', "%{$search}%");
         })->paginate(20);
 
-        return Inertia::render('Admin/IndexGoal', [
+        return Inertia::render('Admin/Representation/IndexGoal', [
             'goals' => $goals,
         ]);
     }
@@ -73,7 +73,7 @@ class GoalController extends Controller
 
         $institutions = $goal->matters->pluck('institution')->unique('id');
 
-        return Inertia::render('Admin/ShowGoal', [
+        return Inertia::render('Admin/Representation/ShowGoal', [
             'goal' => $goal,
             'institutions' => $institutions,
         ]);

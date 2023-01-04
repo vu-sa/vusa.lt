@@ -42,7 +42,7 @@ class DoingController extends Controller
 
         $matters = $unpaginatedDoings->pluck('matters')->flatten()->unique('id')->values();
 
-        return Inertia::render('Admin/IndexDoing', [
+        return Inertia::render('Admin/Representation/IndexDoing', [
             'doings' => $paginatedDoings,
             'matters' => $matters,
         ]);
@@ -124,7 +124,7 @@ class DoingController extends Controller
             $sharepointFiles = $graph->collectSharepointFiles($doing->documents);
         }
 
-        return Inertia::render('Admin/ShowDoing', [
+        return Inertia::render('Admin/Representation/ShowDoing', [
             'matter' => $doing->matters->first()?->load('institution'),
             'doing' => [
                     ...$doing->toArray(),

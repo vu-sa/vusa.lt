@@ -64,7 +64,7 @@ class DutiableController extends Controller
      */
     public function edit(Dutiable $dutiable)
     {
-        return Inertia::render('Admin/Contacts/EditDutiable', [
+        return Inertia::render('Admin/People/EditDutiable', [
             'dutiable' => $dutiable,
         ]);
     }

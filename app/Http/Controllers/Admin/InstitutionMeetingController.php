@@ -1,11 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use App\Models\InstitutionMeeting as Meeting;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
-class MeetingController extends Controller
+class InstitutionMeetingController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -14,7 +16,11 @@ class MeetingController extends Controller
      */
     public function index()
     {
-        //
+        $meetings = Meeting::all();
+
+        return Inertia::render('Admin/Institution/Meetings/Index', [
+            'meetings' => $meetings,
+        ]);
     }
 
     /**

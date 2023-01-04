@@ -1,5 +1,5 @@
 <template>
-  <PageContent title="Klausimų grupės">
+  <PageContent title="Tikslai">
     <div class="main-card">
       <IndexSearchInput payload-name="search" />
       <IndexDataTable
@@ -13,19 +13,15 @@
   </PageContent>
 </template>
 
-<script lang="ts">
+<script setup lang="tsx">
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
-
-export default {
-  layout: AdminLayout,
-};
-</script>
-
-<script setup lang="ts">
 import IndexDataTable from "@/Components/IndexDataTable.vue";
 import IndexSearchInput from "@/Components/IndexSearchInput.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
+
+defineOptions({
+  layout: AdminLayout,
+});
 
 defineProps<{
   goals: PaginatedModels<Record<string, any>>;

@@ -37,7 +37,7 @@ class DutyController extends Controller
             });
         })->with(['institution:id,name,short_name,padalinys_id','institution.padalinys:id,shortname'])->paginate(20);
 
-        return Inertia::render('Admin/Contacts/IndexDuty', [
+        return Inertia::render('Admin/People/IndexDuty', [
             'duties' => $duties,
         ]);
     }
@@ -51,7 +51,7 @@ class DutyController extends Controller
     {
         $institutions = $this->getInstitutionsForForm();
         
-        return Inertia::render('Admin/Contacts/CreateDuty', [
+        return Inertia::render('Admin/People/CreateDuty', [
             'dutyTypes' => Type::where('model_type', Duty::class)->get(),
             'institutions' => $institutions,
         ]);
@@ -106,7 +106,7 @@ class DutyController extends Controller
     {
         $institutions = $this->getInstitutionsForForm();
 
-        return Inertia::render('Admin/Contacts/EditDuty', [
+        return Inertia::render('Admin/People/EditDuty', [
             'duty' => [
                 ...$duty->load('institution')->toArray(),
                 'types' => $duty->types->pluck('id'),

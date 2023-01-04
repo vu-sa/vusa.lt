@@ -47,6 +47,8 @@ Route::prefix('admin')->group(function () {
         Route::post('users/{user}/detach/{duty}', [Admin\UserController::class, 'detachFromDuty'])->name('users.detach');
         Route::post('notification/{id}/markAsRead', [Admin\UserNotificationsController::class, 'markAsRead'])->name('notifications.markAsRead');
 
+        Route::resource('contacts', Admin\ContactController::class);
+
         Route::resource('calendar', Admin\CalendarController::class);
         Route::post('calendar/{calendar}/media/{media}', [Admin\CalendarController::class, 'destroyMedia'])->name('calendar.destroyMedia');
         Route::resource('registrationForms', Admin\RegistrationFormController::class);
@@ -54,8 +56,10 @@ Route::prefix('admin')->group(function () {
 
         Route::resource('matters', Admin\InstitutionMatterController::class);
         Route::resource('goals', Admin\GoalController::class);
+        Route::resource('goalGroups', Admin\GoalGroupController::class);
         Route::post('matters/{matter}/attach/{goal}', [Admin\InstitutionMatterController::class, 'attachGoal'])->name('matters.attachGoal');
         Route::resource('doings', Admin\DoingController::class);
+        Route::resource('meetings', Admin\InstitutionMeetingController::class);
 
         Route::resource('saziningaiExams', Admin\SaziningaiExamsController::class);
         Route::resource('saziningaiExamFlows', Admin\SaziningaiExamFlowsController::class);
