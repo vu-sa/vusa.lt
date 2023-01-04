@@ -10,20 +10,23 @@
 
 <script setup lang="tsx">
 import {
+  BookContacts28Regular,
   BookQuestionMark24Regular,
   CalendarLtr24Regular,
+  DeviceMeetingRoomRemote24Regular,
   DocumentMultiple24Regular,
   DocumentSettings20Regular,
   Flow20Regular,
   Flowchart20Regular,
   Folder24Regular,
   Grid24Regular,
+  HatGraduation24Regular,
   Home24Regular,
   ImageArrowBack24Regular,
+  Important24Regular,
   Navigation24Regular,
   News24Regular,
   Notebook24Regular,
-  NotebookQuestionMark24Regular,
   People24Regular,
   PeopleSearch24Regular,
   PeopleTeam24Regular,
@@ -33,6 +36,7 @@ import {
   Settings24Regular,
   ShieldKeyhole24Regular,
   Sparkle24Regular,
+  StarLineHorizontal324Regular,
   TabDesktopNewPage20Regular,
 } from "@vicons/fluent";
 import { Link, usePage } from "@inertiajs/inertia-vue3";
@@ -90,16 +94,56 @@ const menuOptions = computed(() => [
   },
 
   {
-    label: "Veikla",
+    label: "Atstovavimas",
     key: "doings",
     icon: () => {
-      return <NIcon component={Sparkle24Regular}></NIcon>;
+      return <NIcon component={HatGraduation24Regular}></NIcon>;
     },
     show: auth.can.institutions,
     children: [
       {
         label: () => {
-          return <Link href={route("matters.index")}>Klausimai</Link>;
+          return <Link href={route("goals.index")}>Tikslai</Link>;
+        },
+        key: "goals",
+        icon: () => {
+          return <NIcon component={StarLineHorizontal324Regular}></NIcon>;
+        },
+      },
+      {
+        label: () => {
+          return <Link href={route("goalGroups.index")}>Tikslų grupės</Link>;
+        },
+        key: "goalGroups",
+        icon: () => {
+          return <NIcon component={Sparkle24Regular}></NIcon>;
+        },
+      },
+      {
+        label: () => {
+          return <Link href={route("doings.index")}>Veiksmai</Link>;
+        },
+        key: "doings",
+        icon: () => {
+          return <NIcon component={Important24Regular}></NIcon>;
+        },
+      },
+      {
+        key: "divider",
+        type: "divider",
+      },
+      {
+        label: () => {
+          return <Link href={route("institutions.index")}>Institucijos</Link>;
+        },
+        key: "institutions",
+        icon: () => {
+          return <NIcon component={PeopleTeam24Regular}></NIcon>;
+        },
+      },
+      {
+        label: () => {
+          return <Link href={route("matters.index")}>Svarstomi klausimai</Link>;
         },
         key: "matters",
         icon: () => {
@@ -108,20 +152,22 @@ const menuOptions = computed(() => [
       },
       {
         label: () => {
-          return <Link href={route("goals.index")}>Klausimų grupės</Link>;
+          return <Link href={route("meetings.index")}>Posėdžiai</Link>;
         },
-        key: "goals",
+        key: "meetings",
         icon: () => {
-          return <NIcon component={NotebookQuestionMark24Regular}></NIcon>;
+          return <NIcon component={DeviceMeetingRoomRemote24Regular}></NIcon>;
         },
       },
       {
         label: () => {
-          return <Link href={route("doings.index")}>Veiklos</Link>;
+          return (
+            <Link href={route("institutionGraph")}>Institucijų grafa</Link>
+          );
         },
-        key: "doings",
+        key: "institutionsGraph",
         icon: () => {
-          return <NIcon component={Sparkle24Regular}></NIcon>;
+          return <NIcon component={Flowchart20Regular}></NIcon>;
         },
       },
     ],
@@ -136,22 +182,12 @@ const menuOptions = computed(() => [
     children: [
       {
         label: () => {
-          return <Link href={route("institutions.index")}>Institucijos</Link>;
+          return <Link href={route("users.index")}>Nariai</Link>;
         },
-        key: "institutions",
+        key: "users",
+        show: auth.can.users,
         icon: () => {
-          return <NIcon component={PeopleTeam24Regular}></NIcon>;
-        },
-      },
-      {
-        label: () => {
-          return (
-            <Link href={route("institutionGraph")}>Institucijų grafikas</Link>
-          );
-        },
-        key: "institutionsGraph",
-        icon: () => {
-          return <NIcon component={Flowchart20Regular}></NIcon>;
+          return <NIcon component={Person24Regular}></NIcon>;
         },
       },
       {
@@ -165,12 +201,12 @@ const menuOptions = computed(() => [
       },
       {
         label: () => {
-          return <Link href={route("users.index")}>Kontaktai</Link>;
+          return <Link href={route("contacts.index")}>Kiti kontaktai</Link>;
         },
-        key: "users",
+        key: "contacts",
         show: auth.can.users,
         icon: () => {
-          return <NIcon component={Person24Regular}></NIcon>;
+          return <NIcon component={BookContacts28Regular}></NIcon>;
         },
       },
     ],
