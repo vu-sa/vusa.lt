@@ -20,7 +20,7 @@
           >
         </p>
         <p :title="activity.created_at" class="mt-0 text-sm text-gray-500">
-          {{ getRelativeTime(activity.created_at) }}
+          {{ formatRelativeTime(activity.created_at) }}
         </p>
       </div>
     </div>
@@ -33,9 +33,9 @@ import { DocumentOnePage24Regular } from "@vicons/fluent";
 import { NButton, NIcon } from "naive-ui";
 import { ref } from "vue";
 
+import { formatRelativeTime } from "@/Utils/IntlTime";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
-import getRelativeTime from "@/Composables/getRelativeTime";
 
 defineProps<{
   activities: Record<string, any>;

@@ -12,7 +12,7 @@
       @click="showModal = true"
     >
       <NIcon size="40" :depth="5" :component="BookQuestionMark20Filled"></NIcon>
-      <span>Sukurti klausimą</span>
+      <span>Sukurti svarstomą klausimą</span>
     </div>
   </div>
   <CardModal

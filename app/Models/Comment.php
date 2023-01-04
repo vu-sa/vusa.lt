@@ -16,6 +16,10 @@ class Comment extends Model
 
     protected $with = ['user:id,name,profile_photo_path'];
 
+    protected $casts = [
+        'created_at' => 'timestamp'
+    ];
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults();

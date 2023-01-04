@@ -11,7 +11,7 @@
         />
       </p>
       <p class="text-xs text-zinc-500 dark:text-zinc-400">
-        {{ getRelativeTime(notification.created_at) }}
+        {{ formatRelativeTime(notification.created_at) }}
       </p>
     </div>
     <div class="flex flex-col gap-2">
@@ -55,7 +55,7 @@ import { NButton, NIcon } from "naive-ui";
 import { defineAsyncComponent } from "vue";
 import route from "ziggy-js";
 
-import getRelativeTime from "@/Composables/getRelativeTime";
+import { formatRelativeTime } from "@/Utils/IntlTime";
 
 defineProps<{
   notification: Record<string, any>;

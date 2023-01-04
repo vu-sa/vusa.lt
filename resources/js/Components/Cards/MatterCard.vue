@@ -12,7 +12,12 @@
       </NEllipsis>
       <div class="flex items-center gap-1 text-xs text-zinc-400">
         <NIcon :component="CalendarClock24Filled" />
-        <time>{{ getYYYYMMMM(matter.created_at * 1000) }}</time>
+        <time>{{
+          formatStaticTime(matter.created_at * 1000, {
+            year: "numeric",
+            month: "long",
+          })
+        }}</time>
       </div>
     </template>
     <template #header-extra>
@@ -55,7 +60,7 @@ import { Inertia } from "@inertiajs/inertia";
 import { NButton, NCard, NEllipsis, NIcon } from "naive-ui";
 import route from "ziggy-js";
 
-import { getYYYYMMMM } from "@/Composables/getRelativeTime";
+import { formatStaticTime } from "@/Utils/IntlTime";
 import DoingsStatusDonut from "@/Components/Statistics/DoingsStatusDonut.vue";
 
 defineProps<{

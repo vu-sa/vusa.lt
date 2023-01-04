@@ -76,6 +76,8 @@ class DoingController extends Controller
         
         $doing->types()->sync($request->type_id);
 
+        // TODO: This is not needed anymore, as it's transferred to matters
+
         if (!is_null($request->input('matterForm'))) {
             // parse 'titlesOrIds' for new matters
             foreach ($request->input('matterForm')['titlesOrIds'] as $value) {

@@ -13,6 +13,12 @@ class InstitutionMeeting extends Model
 {
     use HasFactory, HasUlids, LogsActivity, SoftDeletes;
 
+    protected $guarded = [];
+
+    protected $casts = [
+        'start_time' => 'timestamp',
+    ];
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults();
@@ -20,7 +26,7 @@ class InstitutionMeeting extends Model
 
     public function matters()
     {
-        return $this->belongsToMany(InstitutionMatter::class);
+        return $this->belongsToMany(InstitutionMatter::class, 'institution_meeting_matter', 'meeting_id', 'matter_id')->using(InstitutionMeetingMatter::class);
     }
 
     public function documents()

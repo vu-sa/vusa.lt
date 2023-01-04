@@ -52,7 +52,7 @@ class Institution extends Model
         return $this->hasManyDeepFromRelations($this->matters(), (new InstitutionMatter())->meetings());
     }
 
-    // get the last doing for institution which is of type 'pristatymas'
+    // TODO: two separate functions for latest in past, and earliest in future
     public function lastMeeting() : ?InstitutionMeeting
     {
         return $this->meetings()->latest()->first();

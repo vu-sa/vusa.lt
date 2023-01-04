@@ -203,7 +203,7 @@ return new class extends Migration
 
         Schema::create('institution_meetings', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->string('title');
+            // $table->string('title');
             $table->text('description')->nullable();
             $table->dateTime('start_time');
             $table->dateTime('end_time')->nullable();

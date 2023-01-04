@@ -6,6 +6,7 @@ use App\Models\InstitutionMeeting as Meeting;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Services\InstitutionMeetingService as MeetingService;
 
 class InstitutionMeetingController extends Controller
 {
@@ -41,7 +42,20 @@ class InstitutionMeetingController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'start_time' => 'required|integer',
+        ]);
+
+        // convert timestamp to date
+        $validated['start_time'] = date('Y-m-d H:i:s', $validated['start_time'] / 1000);
+
+        $meeting = Meeting::create($validated);
+
+        if ($request->has('mattersForm')) {
+            MeetingService::storeAndAttachMattersToMeeting($request->mattersForm, $meeting);
+        }
+
+        return back()->with('success', 'Posėdis sukurtas sėkmingai!');
     }
 
     /**

@@ -139,6 +139,7 @@ const collapsed = useStorage("admin-menu-collapsed", false);
 
 const successMessage = computed(() => usePage().props.value.flash.success);
 const infoMessage = computed(() => usePage().props.value.flash.info);
+const errorMessage = computed(() => usePage().props.value.errors);
 
 watch(successMessage, (successMessage) => {
   if (successMessage) {
@@ -153,6 +154,18 @@ watch(infoMessage, (infoMessage) => {
     usePage().props.value.flash.info = null;
   }
 });
+
+// Run only in dev
+if (usePage().props.value.app.env === "local") {
+  watch(errorMessage, (errorMessage) => {
+    if (errorMessage) {
+      // loop over the object and display each error
+      for (const [key, value] of Object.entries(errorMessage)) {
+        message.error(`${key}: ${value}`);
+      }
+    }
+  });
+}
 
 // compute if the width is less than 768px
 const isMobile = ref(window.innerWidth < 768);

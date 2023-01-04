@@ -57,33 +57,20 @@
         >
           {{ type.title }}
         </NTag>
-        <!-- <a
-          v-if="showLastMeeting"
-          class="inline-flex items-center"
-          target="_blank"
-          :href="route('doings.show', institution.lastMeeting?.id)"
-          @click.stop
-        >
-          <NIcon class="mx-1" :component="CalendarClock24Filled"></NIcon>
-          <span class="font-bold">{{
-            getRelativeTime(institution.lastMeeting?.date)
-          }}</span>
-        </a> -->
       </div>
     </template>
   </NCard>
 </template>
 
 <script setup lang="tsx">
-import { CalendarClock24Filled, MoreHorizontal24Filled } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
-import { NAvatar, NButton, NCard, NIcon, NPopover, NTag } from "naive-ui";
+import { MoreHorizontal24Filled } from "@vicons/fluent";
+import { NButton, NCard, NIcon, NPopover, NTag } from "naive-ui";
 import { computed } from "vue";
 import route from "ziggy-js";
 
 import InstitutionAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
-import getRelativeTime from "@/Composables/getRelativeTime";
 
 const props = defineProps<{
   institution: App.Models.Institution;

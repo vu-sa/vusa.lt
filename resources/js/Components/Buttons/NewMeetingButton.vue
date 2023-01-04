@@ -1,15 +1,15 @@
 <template>
-  <NButton size="small" @click="showDoingForm = true"
+  <NButton size="small" @click="showMeetingForm = true"
     ><template #icon
       ><NIcon :component="PeopleTeamAdd24Filled"></NIcon></template
     >Pranešti?</NButton
   >
   <CardModal
-    v-model:show="showDoingForm"
+    v-model:show="showMeetingForm"
     display-directive="show"
     class="prose prose-sm max-w-xl transition dark:prose-invert"
     :title="`${$t('Pranešti apie artėjantį posėdį')}`"
-    @close="showDoingForm = false"
+    @close="showMeetingForm = false"
   >
     <!-- <template #header-extra>
       <NButton v-if="current === 1" text
@@ -24,82 +24,92 @@
     <FadeTransition mode="out-in">
       <NForm
         v-if="current === 1"
-        ref="matterFormRef"
-        :rules="matterFormRules"
-        :model="matterForm"
+        ref="mattersFormRef"
+        :rules="mattersFormRules"
+        :model="mattersForm"
       >
         <FadeTransition>
-          <NAlert
-            v-if="showAlert"
-            style="background-color: rgba(0, 0, 0, 0)"
-            title="Įsidėmėk!"
-            closable
-            class="mb-4"
-            type="default"
-            @close="showAlert = false"
+          <SuggestionAlert
+            :show-alert="showAlert"
+            @alert-closed="showAlert = false"
           >
-            <template #icon>
-              <NIcon><BookExclamationMark20Filled /></NIcon>
-            </template>
             <p class="inline-flex items-center">
-              <span>Kiekvienas posėdis svarsto</span>
-              <NTag class="mx-2" :bordered="false" round size="small">
+              <span>Kiekvienas posėdis turi</span>
+              <ModelChip>
                 <template #icon
                   ><NIcon :component="BookQuestionMark20Filled"></NIcon
                 ></template>
-                <strong>klausimus</strong>
-              </NTag>
+                svarstomų klausimų</ModelChip
+              >
             </p>
             <p class="my-0">
               Patogiausia juos surasti posėdžio darbotvarkėje.
-              <strong> Pasirink arba įrašyk klausimus</strong>, kurie yra
-              įtraukti į darbotvarkę.
+              <strong> Pasirink klausimus</strong>, kurie yra įtraukti į
+              darbotvarkę.
             </p>
-          </NAlert>
+          </SuggestionAlert>
         </FadeTransition>
         <NGrid cols="1">
-          <NFormItemGi label="Klausimo pavadinimas" path="titlesOrIds" required>
+          <NFormItemGi label="Svarstomi klausimai" path="idArray">
             <NSelect
-              v-model:value="matterForm.titlesOrIds"
+              v-model:value="mattersForm.idArray"
               placeholder="Studijų tinklelio peržiūra"
               filterable
               multiple
-              tag
-              :options="allMatterOptions"
-              ><template #action>
-                <span
-                  class="prose-sm prose-gray text-xs text-zinc-400 dark:prose-invert"
-                  >Gali naudoti ir savo klausimą! Įrašyk +
-                  <NTag size="tiny">Enter</NTag></span
-                >
-              </template></NSelect
+              :options="existingMatterOptions"
+            ></NSelect>
+          </NFormItemGi>
+          <NFormItemGi :show-label="false">
+            <NCheckbox v-model:checked="hasNewMatters"
+              ><span
+                >Posėdyje yra dar <strong>nesukurtų</strong> svarstomų
+                klausimų.</span
+              ></NCheckbox
             >
-            <NPopover>
-              <template #trigger>
-                <NCheckbox
-                  v-model:checked="matterForm.andOther"
-                  class="ml-4 w-fit"
-                  ><span class="whitespace-nowrap">ir kiti...</span></NCheckbox
-                >
-              </template>
-              <strong>„ir kiti...“</strong> – leidžia suprasti, kad yra kitų, be
-              jau pažymėtų, svarstomų klausimų.
-            </NPopover>
           </NFormItemGi>
-          <NFormItemGi
-            v-if="!isExistingMatterSelected"
-            label="Aprašymas"
-            path="description"
-          >
-            <NInput
-              v-model:value="matterForm.description"
-              type="textarea"
-              placeholder="Aprašykite klausimo (-ų) kontekstą, jeigu to reikia..."
-            ></NInput>
-          </NFormItemGi>
+          <template v-if="hasNewMatters">
+            <NFormItemGi label="Nauji svarstomi klausimai" path="newMatters">
+              <NSelect
+                v-model:value="mattersForm.newTitleArray"
+                placeholder="Studijų tinklelio peržiūra"
+                filterable
+                multiple
+                tag
+                :options="newMatterOptions"
+                ><template #action>
+                  <span
+                    class="prose-sm prose-gray text-xs text-zinc-400 dark:prose-invert"
+                    >Gali naudoti ir savo klausimą! Įrašyk +
+                    <NTag size="tiny">Enter</NTag></span
+                  >
+                </template></NSelect
+              >
+              <NPopover>
+                <template #trigger>
+                  <NCheckbox
+                    v-model:checked="mattersForm.moreMattersUndefined"
+                    class="ml-4 w-fit"
+                    ><span class="whitespace-nowrap"
+                      >ir kiti...</span
+                    ></NCheckbox
+                  >
+                </template>
+                <strong>„ir kiti...“</strong> – leidžia suprasti, kad yra kitų
+                svarstomų klausimų, kuriuos sunku apibrėžti.
+              </NPopover>
+            </NFormItemGi>
+            <NFormItemGi label="Aprašymas" path="description">
+              <NInput
+                v-model:value="mattersForm.newMatterDescription"
+                type="textarea"
+                placeholder="Aprašykite klausimo (-ų) kontekstą, jeigu to reikia..."
+              ></NInput>
+            </NFormItemGi>
+          </template>
           <NFormItemGi :show-label="false">
             <NButton
               :loading="loading"
+              :disabled="!isMatterChosen"
               type="primary"
               @click.prevent="pickMatter"
               >Toliau...</NButton
@@ -107,14 +117,13 @@
           </NFormItemGi>
         </NGrid>
       </NForm>
-      <DoingForm
+      <MeetingForm
         v-else-if="current === 2"
-        :doing="doingTemplate"
-        :doing-types="doingTypes"
-        :matter-form="matterForm"
-        model-route="doings.store"
-        @success="showDoingForm = false"
-      ></DoingForm>
+        :meeting="meetingTemplate"
+        :matters-form="mattersForm"
+        model-route="meetings.store"
+        @success="showMeetingForm = false"
+      ></MeetingForm>
     </FadeTransition>
     <div class="absolute bottom-8 right-12">
       <FadeTransition>
@@ -135,16 +144,12 @@
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
 import {
-  BookExclamationMark20Filled,
   BookQuestionMark20Filled,
   PeopleTeamAdd24Filled,
-  PuzzlePiece20Regular,
   Question24Regular,
 } from "@vicons/fluent";
 import {
-  NAlert,
   NButton,
-  NButtonGroup,
   NCheckbox,
   NForm,
   NFormItemGi,
@@ -158,62 +163,62 @@ import {
   NTag,
 } from "naive-ui";
 import { computed, ref } from "vue";
-import { useForm, usePage } from "@inertiajs/inertia-vue3";
+import { useForm } from "@inertiajs/inertia-vue3";
 import { useStorage } from "@vueuse/core";
-import route from "ziggy-js";
 
 import { matterOptions } from "@/Composables/someTypes";
 import CardModal from "@/Components/Modals/CardModal.vue";
-import DoingForm from "@/Components/AdminForms/DoingForm.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
+import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
+import ModelChip from "../Chips/ModelChip.vue";
+import SuggestionAlert from "../Alerts/SuggestionAlert.vue";
 
 const props = defineProps<{
   institution: Record<string, any>;
-  doingTypes: any;
 }>();
 
-const showDoingForm = ref(false);
+const showMeetingForm = ref(false);
 const loading = ref(false);
-const showAlert = useStorage("new-meeting-button-alert", true);
-
-const doingTemplate = {
-  title: "Planuotas posėdis",
-  // type_id where label = "Posėdis"
-  type_id: props.doingTypes.find(
-    (type: App.Models.Type) => type.label === "Posėdis"
-  )?.value,
-  status: "Sukurtas",
-  // datetime now YYYY-MM-DD HH:MM:SS and delimit T
-  date: null,
-};
-
 const current = ref(1);
 const currentStatus = ref("process");
+const hasNewMatters = ref(false);
+const mattersFormRef = ref(null);
+const showAlert = useStorage("new-meeting-button-alert", true);
 
-const matterForm = useForm({
-  titlesOrIds: [],
-  description: "",
-  andOther: false,
+const meetingTemplate = {
+  // title: "Planuotas posėdis",
+  // type_id where label = "Posėdis"
+  // type_id: props.doingTypes.find(
+  //   (type: App.Models.Type) => type.label === "Posėdis"
+  // )?.value,
+  status: "Sukurtas",
+  // datetime now YYYY-MM-DD HH:MM:SS and delimit T
+  start_time: null,
+};
+
+const mattersForm = useForm({
+  idArray: [],
+  moreMattersUndefined: false,
+  newTitleArray: [],
+  newMatterDescription: "",
   institution_id: props.institution.id,
 });
 
-const matterFormRef = ref(null);
-
-const isExistingMatterSelected = computed(() => {
-  // check if matterForm title is number
-  return !isNaN(matterForm.title);
-});
-
-const allMatterOptions = [
+const existingMatterOptions = [
   {
     type: "group",
-    label: "Sukurti klausimai",
+    label: "Esami klausimai",
     key: "group1",
-    children: props.institution.matters.map((matter) => ({
-      label: matter.title,
-      value: matter.id,
-    })),
+    children: props.institution.matters.map((matter: Record<string, any>) => {
+      return {
+        label: matter.title,
+        value: matter.id,
+      };
+    }),
   },
+];
+
+const newMatterOptions = [
   {
     type: "group",
     label: "Nauji šabloniniai klausimai",
@@ -222,9 +227,13 @@ const allMatterOptions = [
   },
 ];
 
+const isMatterChosen = computed(() => {
+  return mattersForm.idArray.length > 0 || mattersForm.newTitleArray.length > 0;
+});
+
 const pickMatter = (e: MouseEvent) => {
   loading.value = true;
-  matterFormRef.value?.validate((errors) => {
+  mattersFormRef.value?.validate((errors) => {
     if (!errors) {
       current.value = 2;
     }
@@ -232,7 +241,7 @@ const pickMatter = (e: MouseEvent) => {
   });
 };
 
-const matterFormRules = {
+const mattersFormRules = {
   titlesOrIds: {
     required: true,
     type: "array",

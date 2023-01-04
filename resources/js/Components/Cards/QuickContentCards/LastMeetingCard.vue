@@ -5,25 +5,36 @@
         <NIcon :size="36" :component="CalendarClock20Regular"></NIcon>
 
         <span class="text-3xl font-bold">
-          prieš
+          {{ lastMeetinginFuture ? "po" : "prieš" }}
           <NNumberAnimation
             :from="0"
-            :to="getDaysDifference(lastMeeting.date)"
+            :to="Math.abs(daysDifference)"
           ></NNumberAnimation>
           d.
         </span>
       </div>
       <p class="mt-4">
-        Paskutinis posėdis vyko
-        <Link :href="route('doings.show', lastMeeting.id)" class="font-bold">{{
-          getMMMMDD(lastMeeting.date)
-        }}</Link>
+        {{
+          lastMeetinginFuture ? "Kitas posėdis vyks" : "Paskutinis posėdis vyko"
+        }}
+        <Link
+          :href="route('meetings.show', lastMeeting.id)"
+          class="font-bold"
+          >{{
+            formatStaticTime(lastMeeting.start_time * 1000, {
+              year: "numeric",
+              month: "long",
+              day: "2-digit",
+            })
+          }}</Link
+        >
       </p>
-      lastMeeting
     </template>
     <p v-else>Nėra užfiksuoto jokio posėdžio. 😢</p>
     <template #action-button>
-      <NewMeetingButton :institution="institution" :doing-types="doingTypes" />
+      <NMessageProvider
+        ><NewMeetingButton :institution="institution"
+      /></NMessageProvider>
     </template>
   </QuickContentCard>
 </template>
@@ -31,16 +42,22 @@
 <script setup lang="tsx">
 import { CalendarClock20Regular } from "@vicons/fluent";
 import { Link } from "@inertiajs/inertia-vue3";
-import { NIcon, NNumberAnimation } from "naive-ui";
+import { NIcon, NMessageProvider, NNumberAnimation } from "naive-ui";
+import { computed } from "vue";
 import route from "ziggy-js";
 
-import { getDaysDifference, getMMMMDD } from "@/Composables/getRelativeTime";
+import { formatStaticTime, getDaysDifference } from "@/Utils/IntlTime";
 import NewMeetingButton from "@/Components/Buttons/NewMeetingButton.vue";
 import QuickContentCard from "@/Components/Cards/QuickContentCards/QuickContentCard.vue";
 
-defineProps<{
+const props = defineProps<{
   doingTypes: any;
   institution: App.Models.Institution;
   lastMeeting?: App.Models.InstitutionMeeting;
 }>();
+
+const daysDifference = getDaysDifference(props.lastMeeting.start_time * 1000);
+
+// check if daysDifference is in future
+const lastMeetinginFuture = computed(() => daysDifference < 0);
 </script>

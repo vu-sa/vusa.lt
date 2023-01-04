@@ -2,11 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\Question;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\InstitutionMatter;
 use Illuminate\Database\Seeder;
 
-class QuestionSeeder extends Seeder
+class InstitutionMatterSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -15,6 +14,6 @@ class QuestionSeeder extends Seeder
      */
     public function run()
     {
-        Question::factory()->count(10)->create();
+        InstitutionMatter::factory()->count(10)->create();
     }
 }

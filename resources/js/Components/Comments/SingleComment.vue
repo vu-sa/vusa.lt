@@ -7,7 +7,7 @@
       </div>
       <div class="flex items-center">
         <span :title="comment.created_at" class="mr-2 text-sm text-gray-500">
-          {{ getRelativeTime(comment.created_at) }}
+          {{ formatRelativeTime(comment.created_at) }}
         </span>
         <MoreOptionsButton
           small
@@ -25,9 +25,9 @@ import { Inertia } from "@inertiajs/inertia";
 import { NCard } from "naive-ui";
 import route from "ziggy-js";
 
+import { formatRelativeTime } from "@/Utils/IntlTime";
 import MoreOptionsButton from "../Buttons/MoreOptionsButton.vue";
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
-import getRelativeTime from "@/Composables/getRelativeTime";
 
 const props = defineProps<{
   comment: Record<string, any>;

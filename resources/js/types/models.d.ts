@@ -5,10 +5,6 @@
  */
 
 declare namespace App.Models {
-  export interface ModelTemplate {
-    id: number;
-  }
-
   export interface Banner {
     id: number;
     title: string;
@@ -99,13 +95,19 @@ declare namespace App.Models {
     created_at: any;
     updated_at: any;
     deleted_at: any | null;
+    doables?: Array<App.Models.Doable> | null;
+    goals?: Array<App.Models.Goal> | null;
+    matters?: Array<App.Models.InstitutionMatter> | null;
     types?: Array<App.Models.Type> | null;
     documents?: Array<App.Models.SharepointDocument> | null;
     tasks?: Array<App.Models.Task> | null;
+    users?: any | null;
+    doables_count?: number | null;
+    goals_count?: number | null;
+    matters_count?: number | null;
     types_count?: number | null;
     documents_count?: number | null;
     tasks_count?: number | null;
-    readonly needs_attention?: any;
   }
 
   export interface Dutiable {
@@ -136,10 +138,12 @@ declare namespace App.Models {
     deleted_at: any | null;
     dutiables?: Array<App.Models.Dutiable> | null;
     users?: Array<App.Models.User> | null;
+    contacts?: Array<App.Models.Contact> | null;
     types?: Array<App.Models.Type> | null;
     institution?: App.Models.Institution | null;
     dutiables_count?: number | null;
     users_count?: number | null;
+    contacts_count?: number | null;
     types_count?: number | null;
   }
 
@@ -153,7 +157,11 @@ declare namespace App.Models {
     created_at: any;
     updated_at: any;
     deleted_at: any | null;
+    matters?: Array<App.Models.InstitutionMatter> | null;
+    doings?: Array<App.Models.Doing> | null;
     group?: App.Models.GoalGroup | null;
+    matters_count?: number | null;
+    doings_count?: number | null;
   }
 
   export interface GoalGroup {
@@ -191,12 +199,15 @@ declare namespace App.Models {
     duties?: Array<App.Models.Duty> | null;
     types?: Array<App.Models.Type> | null;
     padalinys?: App.Models.Padalinys | null;
+    matters?: Array<App.Models.InstitutionMatter> | null;
+    meetings?: any | null;
     users?: any | null;
     documents?: Array<App.Models.SharepointDocument> | null;
     given_relationships?: Array<App.Models.Relationship> | null;
     received_relationships?: Array<App.Models.Relationship> | null;
     duties_count?: number | null;
     types_count?: number | null;
+    matters_count?: number | null;
     documents_count?: number | null;
     given_relationships_count?: number | null;
     received_relationships_count?: number | null;
@@ -213,23 +224,35 @@ declare namespace App.Models {
     institution?: App.Models.Institution | null;
     meetings?: Array<App.Models.InstitutionMeeting> | null;
     doings?: Array<App.Models.Doing> | null;
-    goal?: App.Models.Goal | null;
+    goals?: Array<App.Models.Goal> | null;
     users?: any | null;
     meetings_count?: number | null;
     doings_count?: number | null;
+    goals_count?: number | null;
   }
 
   export interface InstitutionMeeting {
     id: string;
-    title: string;
     description: string | null;
-    start_time: string;
+    start_time: number;
     end_time: string | null;
     created_at: any;
     updated_at: any;
     deleted_at: any | null;
     matters?: Array<App.Models.InstitutionMatter> | null;
+    documents?: Array<App.Models.SharepointDocument> | null;
     matters_count?: number | null;
+    documents_count?: number | null;
+  }
+
+  export interface InstitutionMeetingMatter {
+    id: string;
+    meeting_id: string;
+    matter_id: string;
+    created_at: any;
+    updated_at: any;
+    matter?: App.Models.InstitutionMatter | null;
+    meeting?: App.Models.InstitutionMeeting | null;
   }
 
   export interface MainPage {
@@ -384,8 +407,8 @@ declare namespace App.Models {
     id: number;
     relationship_id: number;
     relationshipable_type: string;
-    relationshipable_id: number;
-    related_model_id: number;
+    relationshipable_id: string;
+    related_model_id: string;
     created_at: any;
     updated_at: any;
   }
