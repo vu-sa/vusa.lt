@@ -10,14 +10,12 @@
           </div>
         </NBreadcrumbItem>
         <NBreadcrumbItem
-          @click="
-            Inertia.get(route('institutions.show', matter.institution.id))
-          "
+          @click="Inertia.get(route('institutions.show', firstInstitution.id))"
           ><div>
             <NIcon class="mr-2" size="16" :component="PeopleTeam24Filled">
             </NIcon>
             <NEllipsis style="max-width: 200px">
-              {{ matter.institution.name }}</NEllipsis
+              {{ firstInstitution.name }}</NEllipsis
             >
           </div>
         </NBreadcrumbItem>
@@ -81,7 +79,7 @@
     @close="showMatterModal = false"
     ><MatterForm
       :form="matter"
-      :institution="matter.institution"
+      :institution="firstInstitution"
       @matter-stored="showMatterModal = false"
     ></MatterForm
   ></CardModal>
@@ -103,7 +101,7 @@ import {
   NTabs,
   NTag,
 } from "naive-ui";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { useStorage } from "@vueuse/core";
 import route from "ziggy-js";
 
@@ -138,4 +136,8 @@ const doingTemplate = {
   // datetime now YYYY-MM-DD HH:MM:SS and delimit T
   date: new Date().toISOString().split("T").join(" ").slice(0, 16) + ":00",
 };
+
+const firstInstitution = computed(() => {
+  return props.matter.institutions[0];
+});
 </script>
