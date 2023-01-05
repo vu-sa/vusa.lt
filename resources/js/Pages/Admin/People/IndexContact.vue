@@ -1,27 +1,21 @@
 <template>
-  <PageContent title="Kontaktai" :create-url="route('contacts.create')">
+  <IndexPageLayout
+    title="Kontaktai"
+    model-name="contacts"
+    :can-use-routes="canUseRoutes"
+    :columns="columns"
+    :paginated-models="contacts"
+  >
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
-    <div class="main-card">
-      <IndexSearchInput payload-name="name" model="contacts" />
-      <IndexDataTable
-        edit-route="contacts.edit"
-        :model="contacts"
-        :columns="columns"
-      />
-    </div>
-  </PageContent>
+  </IndexPageLayout>
 </template>
 
 <script setup lang="tsx">
-import route from "ziggy-js";
-
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import AsideHeader from "@/Components/AsideHeaders/AsideHeaderContacts.vue";
-import IndexDataTable from "@/Components/IndexDataTable.vue";
-import IndexSearchInput from "@/Components/IndexSearchInput.vue";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
 
 defineOptions({
   layout: AdminLayout,
@@ -31,7 +25,12 @@ defineProps<{
   contacts: PaginatedModels<App.Models.Contact>;
 }>();
 
-// Parse paginated contact data into columns
+const canUseRoutes = {
+  create: true,
+  show: false,
+  edit: true,
+  destroy: true,
+};
 
 const columns = [
   {

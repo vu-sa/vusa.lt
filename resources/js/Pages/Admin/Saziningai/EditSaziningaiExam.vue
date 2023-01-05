@@ -8,7 +8,7 @@
         delete-model-route="saziningaiExams.destroy"
       ></SaziningaiExamForm>
 
-      <div class="main-card mt-4">
+      <NCard class="subtle-gray-gradient mt-4">
         <h3 class="flex items-center">
           Srautai
           <NButton text style="margin-left: 0.5em" @click="manageFlowModal()">
@@ -42,7 +42,7 @@
             </ul>
           </template>
         </ol>
-      </div>
+      </NCard>
       <NModal
         v-model:show="showFlowModal"
         preset="dialog"
@@ -64,6 +64,7 @@
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 
 export default {
+  components: { NCard },
   layout: AdminLayout,
 };
 </script>
@@ -71,7 +72,7 @@ export default {
 <script setup lang="ts">
 import { AddCircle20Regular } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
-import { NButton, NDatePicker, NIcon, NModal, NPopover } from "naive-ui";
+import { NButton, NCard, NDatePicker, NIcon, NModal, NPopover } from "naive-ui";
 import { reactive, ref } from "vue";
 import route from "ziggy-js";
 

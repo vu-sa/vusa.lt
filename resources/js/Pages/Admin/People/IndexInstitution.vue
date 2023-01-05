@@ -1,29 +1,22 @@
 <template>
-  <PageContent title="Institucijos" :create-url="route('institutions.create')">
+  <IndexPageLayout
+    title="Institucijos"
+    model-name="institutions"
+    :can-use-routes="canUseRoutes"
+    :columns="columns"
+    :paginated-models="institutions"
+  >
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
-    <div class="main-card">
-      <IndexSearchInput payload-name="search" />
-      <IndexDataTable
-        edit-route="institutions.edit"
-        show-route="institutions.show"
-        :model="institutions"
-        :columns="columns"
-      >
-      </IndexDataTable>
-    </div>
-  </PageContent>
+  </IndexPageLayout>
 </template>
 
 <script setup lang="tsx">
-import route from "ziggy-js";
-
+import { DataTableColumns } from "naive-ui";
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import AsideHeader from "@/Components/AsideHeaders/AsideHeaderContacts.vue";
-import IndexDataTable from "@/Components/IndexDataTable.vue";
-import IndexSearchInput from "@/Components/IndexSearchInput.vue";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
 
 defineOptions({
@@ -34,7 +27,14 @@ defineProps<{
   institutions: PaginatedModels<App.Models.Institution[]>;
 }>();
 
-const columns = [
+const canUseRoutes = {
+  create: true,
+  show: false,
+  edit: true,
+  destroy: true,
+};
+
+const columns: DataTableColumns<App.Models.Institution> = [
   {
     title: "Pavadinimas",
     key: "name",

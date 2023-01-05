@@ -116,14 +116,14 @@
       </NTabPane>
       <NTabPane name="Komentarai">
         <div class="max-w-2xl">
-          <div class="main-card">
+          <NCard class="subtle-gray-gradient">
             <h2>Komentarai</h2>
             <CommentTipTap
               v-model:text="currentCommentField"
               :content-model="contentModel"
             />
             <CommentViewer :comments="doing.comments" />
-          </div>
+          </NCard>
         </div>
       </NTabPane>
     </NTabs>

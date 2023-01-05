@@ -149,7 +149,7 @@ declare namespace App.Models {
 
   export interface Goal {
     id: string;
-    group_id: string;
+    group_id: string | null;
     title: string;
     description: string | null;
     start_date: string;
@@ -234,12 +234,13 @@ declare namespace App.Models {
   export interface InstitutionMeeting {
     id: string;
     description: string | null;
-    start_time: number;
+    start_time: string;
     end_time: string | null;
     created_at: any;
     updated_at: any;
     deleted_at: any | null;
     matters?: Array<App.Models.InstitutionMatter> | null;
+    institutions?: Array<App.Models.Institution> | null;
     documents?: Array<App.Models.SharepointDocument> | null;
     matters_count?: number | null;
     documents_count?: number | null;
@@ -399,7 +400,9 @@ declare namespace App.Models {
     created_at: any;
     updated_at: any;
     institutions?: Array<App.Models.Institution> | null;
+    relationshipables?: Array<App.Models.Relationshipable> | null;
     institutions_count?: number | null;
+    relationshipables_count?: number | null;
     readonly related_model?: any;
   }
 
@@ -411,6 +414,9 @@ declare namespace App.Models {
     related_model_id: string;
     created_at: any;
     updated_at: any;
+    relationship?: App.Models.Relationship | null;
+    relationshipable?: any | null;
+    related_relationshipable?: any | null;
   }
 
   export interface Role {

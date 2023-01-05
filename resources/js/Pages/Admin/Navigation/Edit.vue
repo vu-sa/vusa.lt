@@ -1,6 +1,6 @@
 <template>
   <PageContent :title="navigation.name">
-    <div class="main-card">
+    <NCard class="subtle-gray-gradient">
       <h3 class="mb-4">Bendra informacija</h3>
 
       <form
@@ -43,7 +43,7 @@
           />
         </div>
       </form>
-    </div>
+    </NCard>
   </PageContent>
 </template>
 
@@ -51,12 +51,13 @@
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 
 export default {
+  components: { NCard },
   layout: AdminLayout,
 };
 </script>
 
 <script setup lang="ts">
-import { NInput } from "naive-ui";
+import { NCard, NInput } from "naive-ui";
 import { reactive } from "vue";
 
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";

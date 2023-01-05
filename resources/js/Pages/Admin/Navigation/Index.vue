@@ -3,7 +3,7 @@
     <!-- <template #aside-header>
       <AsideHeader></AsideHeader>
     </template> -->
-    <div class="main-card">
+    <NCard class="subtle-gray-gradient">
       <NTree
         block-line
         :data="data"
@@ -27,7 +27,7 @@
           Ar tikrai atnaujinti?
         </n-popconfirm>
       </div>
-    </div>
+    </NCard>
   </PageContent>
 </template>
 
@@ -35,6 +35,7 @@
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 
 export default {
+  components: { NCard },
   layout: AdminLayout,
 };
 </script>
@@ -43,7 +44,7 @@ export default {
 // import { Edit16Regular } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
-import { NButton, NPopconfirm, NSpin, NTree } from "naive-ui";
+import { NButton, NCard, NPopconfirm, NSpin, NTree } from "naive-ui";
 import { h, ref } from "vue";
 import route from "ziggy-js";
 

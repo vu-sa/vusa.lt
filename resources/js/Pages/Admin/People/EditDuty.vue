@@ -16,7 +16,7 @@
       />
     </UpsertModelLayout>
     <template #aside-card>
-      <div v-if="hasUsers" class="main-card h-fit w-fit max-w-lg">
+      <NCard v-if="hasUsers" class="subtle-gray-gradient h-fit w-fit max-w-lg">
         <strong>Šiuo metu šias pareigas užima:</strong>
         <ul class="mt-2 list-none">
           <li v-for="user in users" :key="user.id" class="mb-1">
@@ -48,10 +48,10 @@
             </Link>
           </li>
         </ul>
-      </div>
-      <p v-else class="main-card h-fit w-fit">
+      </NCard>
+      <NCard v-else class="subtle-gray-gradient h-fit w-fit">
         Šių pareigų kolkas niekas neužima.
-      </p>
+      </NCard>
     </template>
   </PageContent>
 </template>
@@ -63,6 +63,7 @@ import { LinkDismiss20Filled } from "@vicons/fluent";
 import {
   NAvatar,
   NButton,
+  NCard,
   NIcon,
   NPopconfirm,
   createDiscreteApi,

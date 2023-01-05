@@ -1,26 +1,19 @@
 <template>
-  <PageContent title="Veiksmai">
-    <div class="main-card">
-      <IndexSearchInput payload-name="search" />
-      <IndexDataTable
-        show-route="doings.show"
-        destroy-route="doings.destroy"
-        :model="doings"
-        :columns="columns"
-      >
-      </IndexDataTable>
-    </div>
-  </PageContent>
+  <IndexPageLayout
+    title="Veiksmai"
+    model-name="doings"
+    :can-use-routes="canUseRoutes"
+    :columns="columns"
+    :paginated-models="doings"
+  >
+  </IndexPageLayout>
 </template>
 
 <script setup lang="tsx">
-import { NTag } from "naive-ui";
+import { DataTableColumns, NTag } from "naive-ui";
 
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
-import IndexDataTable from "@/Components/IndexDataTable.vue";
-import IndexSearchInput from "@/Components/IndexSearchInput.vue";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
+import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
 
 defineOptions({
   layout: AdminLayout,
@@ -30,7 +23,14 @@ defineProps<{
   doings: PaginatedModels<App.Models.Doing[]>;
 }>();
 
-const columns = [
+const canUseRoutes = {
+  create: true,
+  show: true,
+  edit: true,
+  destroy: true,
+};
+
+const columns: DataTableColumns<App.Models.Doing> = [
   {
     title: "Pavadinimas",
     key: "title",
@@ -48,16 +48,14 @@ const columns = [
     title: "Svarstomi klausimai",
     key: "matters",
     render(row) {
-      return row.matters.map((matter) => (
-        <NTag key={matter.id}>{matter.id}</NTag>
-      ));
+      return row.goals?.map((goal) => <NTag key={goal.id}>{goal.id}</NTag>);
     },
   },
   {
     title: "Tipai",
     key: "types",
     render(row) {
-      return row.types.map((type) => <NTag key={type.id}>{type.title}</NTag>);
+      return row.types?.map((type) => <NTag key={type.id}>{type.title}</NTag>);
     },
   },
 ];

@@ -1,51 +1,52 @@
 <template>
-  <PageContent title="Baneriai" :create-url="route('banners.create')">
+  <IndexPageLayout
+    title="Baneriai"
+    model-name="banners"
+    :can-use-routes="canUseRoutes"
+    :columns="columns"
+    :paginated-models="banners"
+  >
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
-    <div class="main-card">
-      <IndexSearchInput payload-name="title" />
-      <IndexDataTable
-        edit-route="banners.edit"
-        :model="banners"
-        :columns="columns"
-      />
-    </div>
-  </PageContent>
+  </IndexPageLayout>
 </template>
 
-<script lang="ts">
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
-
-export default {
-  layout: AdminLayout,
-};
-</script>
-
-<script setup lang="ts">
-import { h } from "vue";
-import AsideHeader from "@/Components/AsideHeaders/AsideHeaderContent.vue";
-import IndexDataTable from "@/Components/IndexDataTable.vue";
-import IndexSearchInput from "@/Components/IndexSearchInput.vue";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+<script setup lang="tsx">
+import { DataTableColumns } from "naive-ui";
 import route from "ziggy-js";
+
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+import AsideHeader from "@/Components/AsideHeaders/AsideHeaderContent.vue";
+import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
+
+defineOptions({
+  layout: AdminLayout,
+});
 
 defineProps<{
   banners: PaginatedModels<App.Models.Banner[]>;
 }>();
 
-const columns = [
+const canUseRoutes = {
+  create: true,
+  show: false,
+  edit: true,
+  destroy: true,
+};
+
+const columns: DataTableColumns<App.Models.Banner> = [
   {
     title: "Pavadinimas",
     key: "title",
-    render(row: App.Models.Banner) {
-      return h(
-        "span",
-        {
-          class: row.is_active ? "text-green-700 font-bold" : "text-red-700",
-          href: route("banners.edit", { id: row.id }),
-        },
-        { default: () => row.title }
+    render(row) {
+      return (
+        <span
+          class={row.is_active ? "font-bold text-green-700" : "text-red-700"}
+          href={route("banners.edit", { id: row.id })}
+        >
+          {row.title}
+        </span>
       );
     },
   },

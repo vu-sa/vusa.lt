@@ -1,44 +1,42 @@
 <template>
-  <PageContent title="Puslapiai" :create-url="route('pages.create')">
+  <IndexPageLayout
+    title="Puslapiai"
+    model-name="pages"
+    :can-use-routes="canUseRoutes"
+    :columns="columns"
+    :paginated-models="pages"
+  >
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
-    <div class="main-card">
-      <IndexSearchInput payload-name="title" />
-      <IndexDataTable
-        :model="pages"
-        :columns="columns"
-        edit-route="pages.edit"
-        destroy-route="pages.destroy"
-        @update-filters-value="padaliniaiFilterOptionValues = $event"
-      />
-    </div>
-  </PageContent>
+  </IndexPageLayout>
 </template>
 
-<script lang="ts">
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
-
-export default {
-  layout: AdminLayout,
-};
-</script>
-
-<script setup lang="ts">
+<script setup lang="tsx">
 import { DataTableColumns } from "naive-ui";
 import { h, ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
 import route from "ziggy-js";
 
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import AsideHeader from "@/Components/AsideHeaders/AsideHeaderContent.vue";
-import IndexDataTable from "@/Components/IndexDataTable.vue";
-import IndexSearchInput from "@/Components/IndexSearchInput.vue";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
+
+defineOptions({
+  layout: AdminLayout,
+});
 
 defineProps<{
   pages: PaginatedModels<App.Models.Page[]>;
 }>();
+
+const canUseRoutes = {
+  create: true,
+  show: false,
+  edit: true,
+  destroy: true,
+};
 
 const padaliniaiFilterOptions = ref(
   usePage().props.value.padaliniai.map((padalinys) => {

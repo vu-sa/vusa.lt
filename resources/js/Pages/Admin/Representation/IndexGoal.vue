@@ -1,23 +1,17 @@
 <template>
-  <PageContent title="Tikslai">
-    <div class="main-card">
-      <IndexSearchInput payload-name="search" />
-      <IndexDataTable
-        show-route="goals.show"
-        destroy-route="goals.destroy"
-        :model="goals"
-        :columns="columns"
-      >
-      </IndexDataTable>
-    </div>
-  </PageContent>
+  <IndexPageLayout
+    title="Tikslai"
+    model-name="goals"
+    :can-use-routes="canUseRoutes"
+    :columns="columns"
+    :paginated-models="goals"
+  >
+  </IndexPageLayout>
 </template>
 
 <script setup lang="tsx">
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
-import IndexDataTable from "@/Components/IndexDataTable.vue";
-import IndexSearchInput from "@/Components/IndexSearchInput.vue";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
 
 defineOptions({
   layout: AdminLayout,
@@ -26,6 +20,13 @@ defineOptions({
 defineProps<{
   goals: PaginatedModels<Record<string, any>>;
 }>();
+
+const canUseRoutes = {
+  create: true,
+  show: false,
+  edit: true,
+  destroy: true,
+};
 
 const columns = [
   {

@@ -1,34 +1,37 @@
 <template>
-  <PageContent title="Rolės" :create-url="route('roles.create')">
-    <div class="main-card">
-      <IndexSearchInput payload-name="text" />
-      <IndexDataTable
-        :model="roles"
-        :columns="columns"
-        edit-route="roles.edit"
-      />
-    </div>
-  </PageContent>
+  <IndexPageLayout
+    title="Rolės"
+    model-name="roles"
+    :can-use-routes="canUseRoutes"
+    :columns="columns"
+    :paginated-models="roles"
+  >
+  </IndexPageLayout>
 </template>
 
 <script setup lang="tsx">
-import route from "ziggy-js";
+import { DataTableColumns } from "naive-ui";
 
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
-import IndexDataTable from "@/Components/IndexDataTable.vue";
-import IndexSearchInput from "@/Components/IndexSearchInput.vue";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
 
 defineOptions({
   layout: AdminLayout,
 });
 
-const props = defineProps<{
-  roles: PaginatedModels<any>;
+defineProps<{
+  roles: PaginatedModels<App.Models.Role>;
 }>();
 
+const canUseRoutes = {
+  create: true,
+  show: false,
+  edit: true,
+  destroy: true,
+};
+
 // add columns
-const columns = [
+const columns: DataTableColumns<App.Models.Role> = [
   {
     title: "ID",
     key: "id",

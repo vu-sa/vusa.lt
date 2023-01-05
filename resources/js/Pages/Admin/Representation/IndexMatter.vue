@@ -1,24 +1,17 @@
 <template>
-  <PageContent title="Svarstomi klausimai">
-    <div class="main-card">
-      <IndexSearchInput payload-name="search" />
-      <IndexDataTable
-        show-route="matters.show"
-        destroy-route="matters.destroy"
-        :model="matters"
-        :columns="columns"
-      >
-      </IndexDataTable>
-    </div>
-  </PageContent>
+  <IndexPageLayout
+    title="Svarstomi klausimai"
+    model-name="matters"
+    :can-use-routes="canUseRoutes"
+    :columns="columns"
+    :paginated-models="matters"
+  >
+  </IndexPageLayout>
 </template>
 
 <script setup lang="tsx">
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
-import IndexDataTable from "@/Components/IndexDataTable.vue";
-import IndexSearchInput from "@/Components/IndexSearchInput.vue";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
+import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
 
 defineOptions({
   layout: AdminLayout,
@@ -27,6 +20,13 @@ defineOptions({
 defineProps<{
   matters: PaginatedModels<App.Models.InstitutionMatter[]>;
 }>();
+
+const canUseRoutes = {
+  create: true,
+  show: false,
+  edit: true,
+  destroy: true,
+};
 
 const columns = [
   {

@@ -1,29 +1,24 @@
 <template>
-  <PageContent title="Pareigos" :create-url="route('duties.create')">
+  <IndexPageLayout
+    title="Pareigos"
+    model-name="duties"
+    :can-use-routes="canUseRoutes"
+    :columns="columns"
+    :paginated-models="duties"
+  >
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
-    <div class="main-card">
-      <IndexSearchInput payload-name="title" />
-      <IndexDataTable
-        edit-route="duties.edit"
-        :model="duties"
-        :columns="columns"
-      />
-    </div>
-  </PageContent>
+  </IndexPageLayout>
 </template>
 
 <script setup lang="tsx">
-import { Link } from "@inertiajs/inertia-vue3";
-import { h, ref } from "vue";
+import { h } from "vue";
 import route from "ziggy-js";
 
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import AsideHeader from "@/Components/AsideHeaders/AsideHeaderContacts.vue";
-import IndexDataTable from "@/Components/IndexDataTable.vue";
-import IndexSearchInput from "@/Components/IndexSearchInput.vue";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
 
 defineOptions({
   layout: AdminLayout,
@@ -33,55 +28,55 @@ defineProps<{
   duties: PaginatedModels<App.Models.Duty>;
 }>();
 
-const createColumns = () => {
-  return [
-    {
-      title: "Pavadinimas",
-      key: "name",
-      minWidth: 150,
-    },
-    {
-      title: "Tipas",
-      key: "type.name",
-      width: 150,
-    },
-    {
-      title: "El. paštas",
-      key: "email",
-      minWidth: 150,
-      render(row) {
-        return (
-          <a
-            href={`mailto:${row.email}`}
-            class="transition hover:text-vusa-red"
-          >
-            {row.email}
-          </a>
-        );
-      },
-    },
-    {
-      title: "Institucija",
-      key: "institution.id",
-      minWidth: 100,
-      render(row: App.Models.Duty) {
-        return h(
-          "a",
-          {
-            href: route("institutions.edit", {
-              id: row.institution.id,
-            }),
-            target: "_blank",
-            class: "hover:text-vusa-red transition",
-          },
-          {
-            default: () => row.institution.short_name ?? row.institution.name,
-          }
-        );
-      },
-    },
-  ];
+const canUseRoutes = {
+  create: true,
+  show: false,
+  edit: true,
+  destroy: true,
 };
 
-const columns = ref(createColumns());
+const columns = [
+  {
+    title: "Pavadinimas",
+    key: "name",
+    minWidth: 150,
+  },
+  {
+    title: "Tipas",
+    key: "type.name",
+    width: 150,
+  },
+  {
+    title: "El. paštas",
+    key: "email",
+    minWidth: 150,
+    render(row) {
+      return (
+        <a href={`mailto:${row.email}`} class="transition hover:text-vusa-red">
+          {row.email}
+        </a>
+      );
+    },
+  },
+  {
+    title: "Institucija",
+    key: "institution.id",
+    minWidth: 100,
+    render(row: App.Models.Duty) {
+      return h(
+        "a",
+        {
+          href: route("institutions.edit", {
+            id: row.institution.id,
+          }),
+          target: "_blank",
+          class: "hover:text-vusa-red transition",
+        },
+        {
+          default: () => row.institution.short_name ?? row.institution.name,
+        }
+      );
+    },
+  },
+];
 </script>

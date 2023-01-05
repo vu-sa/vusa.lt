@@ -1,19 +1,15 @@
 <template>
-  <PageContent title="Naujienos" :create-url="route('news.create')">
+  <IndexPageLayout
+    title="Naujienos"
+    model-name="news"
+    :can-use-routes="canUseRoutes"
+    :columns="columns"
+    :paginated-models="news"
+  >
     <template #aside-header>
       <AsideHeader></AsideHeader>
     </template>
-    <div class="main-card">
-      <IndexSearchInput payload-name="title" />
-      <IndexDataTable
-        destroy-route="news.destroy"
-        edit-route="news.edit"
-        :model="news"
-        :columns="columns"
-        @update-filters-value="padaliniaiFilterOptionValues = $event"
-      />
-    </div>
-  </PageContent>
+  </IndexPageLayout>
 </template>
 
 <script setup lang="ts">
@@ -24,20 +20,25 @@ import { usePage } from "@inertiajs/inertia-vue3";
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import AsideHeader from "@/Components/AsideHeaders/AsideHeaderContent.vue";
 
-import IndexDataTable from "@/Components/IndexDataTable.vue";
-import IndexSearchInput from "@/Components/IndexSearchInput.vue";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
 import route from "ziggy-js";
 
 defineOptions({ layout: AdminLayout });
 
 defineProps<{
-  news: PaginatedModels<App.Models.News[]>;
+  news: PaginatedModels<App.Models.News>;
 }>();
 
+const canUseRoutes = {
+  create: true,
+  show: false,
+  edit: true,
+  destroy: true,
+};
+
 const padaliniaiFilterOptions = ref(
-  usePage<InertiaProps>().props.value.padaliniai.map((padalinys) => {
+  usePage().props.value.padaliniai.map((padalinys) => {
     return {
       label: padalinys.shortname,
       value: padalinys.id,
@@ -127,7 +128,7 @@ const columns: DataTableColumns<App.Models.News> = [
     filterOptionValues: padaliniaiFilterOptionValues,
     filterOptions: padaliniaiFilterOptions,
     render(row) {
-      return row.padalinys.shortname;
+      return row.padalinys?.shortname;
     },
   },
   {

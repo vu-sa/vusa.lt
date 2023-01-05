@@ -1,27 +1,33 @@
 <template>
-  <PageContent title="Narių registracija">
-    <div class="main-card">
-      <IndexDataTable
-        :model="registrationForm"
-        :columns="columns"
-      ></IndexDataTable>
-    </div>
-  </PageContent>
+  <IndexPageLayout
+    title="Registracija"
+    model-name="registrations"
+    :can-use-routes="canUseRoutes"
+    :columns="columns"
+    :paginated-models="registrationForm"
+  >
+  </IndexPageLayout>
 </template>
 
 <script setup lang="ts">
 import { DataTableColumns } from "naive-ui";
 import { h } from "vue";
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 
-import IndexDataTable from "@/Components/IndexDataTable.vue";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
 
 defineOptions({ layout: AdminLayout });
 
 const props = defineProps<{
   registrationForm: PaginatedModels<any>;
 }>();
+
+const canUseRoutes = {
+  create: false,
+  show: false,
+  edit: false,
+  destroy: false,
+};
 
 const renderObjects = (object: Record<string, any>) => {
   return Object.entries(object).map(([key, value]) => {

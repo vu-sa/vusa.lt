@@ -1,35 +1,36 @@
 <template>
-  <PageContent title="Ryšiai" :create-url="route('relationships.create')">
-    <div class="main-card">
-      <IndexSearchInput payload-name="text" />
-      <IndexDataTable
-        :model="relationships"
-        :columns="columns"
-        edit-route="relationships.edit"
-        destroy-route="relationships.destroy"
-      />
-    </div>
-  </PageContent>
+  <IndexPageLayout
+    title="Ryšiai"
+    model-name="relationships"
+    :can-use-routes="canUseRoutes"
+    :columns="columns"
+    :paginated-models="relationships"
+  >
+  </IndexPageLayout>
 </template>
 
 <script setup lang="ts">
-import route from "ziggy-js";
-
+import { DataTableColumns } from "naive-ui";
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
-import IndexDataTable from "@/Components/IndexDataTable.vue";
-import IndexSearchInput from "@/Components/IndexSearchInput.vue";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
 
-const props = defineProps<{
-  relationships: PaginatedModels<any>;
+defineProps<{
+  relationships: PaginatedModels<App.Models.Relationship>;
 }>();
 
 defineOptions({
   layout: AdminLayout,
 });
 
+const canUseRoutes = {
+  create: true,
+  show: false,
+  edit: true,
+  destroy: true,
+};
+
 // add columns
-const columns = [
+const columns: DataTableColumns = [
   {
     title: "ID",
     key: "id",

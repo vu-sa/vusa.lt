@@ -38,7 +38,7 @@
   >
     <FadeTransition appear
       ><main class="col-span w-full overflow-visible">
-        <slot></slot></main
+        <slot /></main
     ></FadeTransition>
     <slot name="aside-card"></slot>
   </div>

@@ -3,7 +3,7 @@
     remote
     size="small"
     class="overflow-auto"
-    :data="model.data"
+    :data="paginatedModels.data"
     :scroll-x="768"
     :max-height="dataTableMaxHeight"
     :columns="columnsWithActions"
@@ -21,20 +21,18 @@ import { ArrowForward20Filled, Edit20Filled } from "@vicons/fluent";
 import { DataTableColumns, NButton, NDataTable, NIcon } from "naive-ui";
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
-import { computed, h, reactive, ref } from "vue";
+import { computed, reactive, ref } from "vue";
 import route from "ziggy-js";
 
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 
 const props = defineProps<{
-  columns: DataTableColumns<any>;
-  model: PaginatedModels<any[]>;
+  columns: DataTableColumns<Record<string, any>>;
+  paginatedModels: PaginatedModels<Record<string, any>>;
   showRoute?: string;
   editRoute?: string;
   destroyRoute?: string;
 }>();
-
-console.log(props.model);
 
 // Append the column array with an actions columns
 const columnsWithActions = computed(() => {
@@ -86,9 +84,9 @@ const loading = ref(false);
 const padaliniaiFilters = ref<number[]>([]);
 
 const pagination = reactive({
-  itemCount: props.model.total,
-  page: props.model.current_page,
-  pageCount: props.model.last_page,
+  itemCount: props.paginatedModels.total,
+  page: props.paginatedModels.current_page,
+  pageCount: props.paginatedModels.last_page,
   pageSize: 20,
   showQuickJumper: true,
 });
@@ -101,8 +99,8 @@ const handleChange = (page: number, filters: number[]) => {
     onSuccess: () => {
       emit("updateFiltersValue", filters);
       pagination.page = page;
-      pagination.itemCount = props.model.total;
-      pagination.pageCount = props.model.last_page;
+      pagination.itemCount = props.paginatedModels.total;
+      pagination.pageCount = props.paginatedModels.last_page;
       loading.value = false;
     },
   });

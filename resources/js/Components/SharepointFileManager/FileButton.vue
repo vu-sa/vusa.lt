@@ -37,14 +37,14 @@ const props = defineProps<{
 
 const gradientClasses = computed(() => {
   if (props.document.type === "Veiklą reglamentuojantys dokumentai") {
-    return "from-zinc-200 main-card-gradient bg-gradient-to-b";
+    return "from-zinc-200 subtle-gray-gradient bg-gradient-to-b";
   }
 
   if (props.document.type === "Metodinė medžiaga") {
     return "from-vusa-yellow/30 to-white dark:from-vusa-red/60 dark:to-zinc-700/80 bg-gradient-to-b";
   }
 
-  return "main-card-gradient dark:from-zinc-800/90 dark:to-zinc-700/90";
+  return "subtle-gray-gradient dark:from-zinc-800/90 dark:to-zinc-700/90";
 });
 
 const fileTypeIcon = computed(() => {

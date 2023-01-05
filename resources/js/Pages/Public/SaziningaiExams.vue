@@ -8,7 +8,7 @@
         <p class="my-6 text-gray-800 dark:text-zinc-100">
           Registruotis reikia į kiekvieną srautą atskirai.
         </p>
-        <div class="main-card w-full rounded-md p-0">
+        <NCard class="subtle-gray-gradient w-full rounded-md p-0">
           <NDataTable
             size="small"
             :scroll-x="1200"
@@ -16,7 +16,7 @@
             :columns="columns"
           >
           </NDataTable>
-        </div>
+        </NCard>
       </div>
     </article>
   </FadeTransition>

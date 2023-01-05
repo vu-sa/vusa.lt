@@ -1,7 +1,7 @@
 <template>
   <PageContent title="Failų tvarkyklė">
     <div>
-      <div id="folders" class="main-card">
+      <NCard id="folders" class="subtle-gray-gradient">
         <h2 class="text-2xl font-bold">
           Aplankai ({{ showedDirectories.length }})
         </h2>
@@ -28,11 +28,11 @@
             </div>
           </FolderButton>
         </div>
-      </div>
-      <div
+      </NCard>
+      <NCard
         v-if="showedFiles.length > 0"
         id="files"
-        class="main-card max-h-full transition-all"
+        class="subtle-gray-gradient max-h-full transition-all"
       >
         <h2 class="text-2xl font-bold">Failai ({{ showedFiles.length }})</h2>
         <transition-group
@@ -67,7 +67,7 @@
             </div>
           </FileButton>
         </transition-group>
-      </div>
+      </NCard>
     </div>
   </PageContent>
 </template>
@@ -87,7 +87,7 @@ import {
   Image48Regular,
 } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
-import { NIcon, NUpload, NUploadDragger } from "naive-ui";
+import { NCard, NIcon, NUpload, NUploadDragger } from "naive-ui";
 import { computed } from "vue";
 
 import FileButton from "@/Components/Buttons/FileButton.vue";

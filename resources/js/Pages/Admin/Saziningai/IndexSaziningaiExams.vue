@@ -1,40 +1,34 @@
 <template>
-  <PageContent
+  <IndexPageLayout
     title="Sažiningai"
-    :create-url="route('saziningaiExamRegistration')"
+    model-name="saziningaiExams"
+    :can-use-routes="canUseRoutes"
+    :columns="columns"
+    :paginated-models="exams"
   >
-    <div class="main-card">
-      <!-- <IndexSearchInput payload-name=""></IndexSearchInput> -->
-      <IndexDataTable
-        destroy-route="saziningaiExams.destroy"
-        edit-route="saziningaiExams.edit"
-        :model="exams"
-        :columns="columns"
-      ></IndexDataTable>
-    </div>
-  </PageContent>
+  </IndexPageLayout>
 </template>
 
-<script lang="ts">
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
-
-export default {
-  layout: AdminLayout,
-};
-</script>
-
-<script setup lang="ts">
+<script setup lang="tsx">
 import { DataTableColumns } from "naive-ui";
 
-import route from "ziggy-js";
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
 
-import IndexDataTable from "@/Components/IndexDataTable.vue";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-// import IndexSearchInput from "@/Components/IndexSearchInput.vue";
+defineOptions({
+  layout: AdminLayout,
+});
 
 defineProps<{
-  exams: PaginatedModels<App.Models.SaziningaiExam[]>;
+  exams: PaginatedModels<App.Models.SaziningaiExam>;
 }>();
+
+const canUseRoutes = {
+  create: true,
+  show: false,
+  edit: true,
+  destroy: true,
+};
 
 const columns: DataTableColumns<App.Models.SaziningaiExam> = [
   {

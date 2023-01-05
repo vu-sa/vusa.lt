@@ -1,55 +1,49 @@
 <template>
-  <PageContent title="Renginiai" :create-url="route('calendar.create')">
-    <div class="main-card">
-      <IndexSearchInput payload-name="title" />
-      <IndexDataTable
-        edit-route="calendar.edit"
-        :model="calendar"
-        :columns="columns"
-      />
-    </div>
-  </PageContent>
+  <IndexPageLayout
+    title="Renginiai"
+    model-name="calendar"
+    :can-use-routes="canUseRoutes"
+    :columns="columns"
+    :paginated-models="calendar"
+  >
+  </IndexPageLayout>
 </template>
 
-<script lang="ts">
+<script setup lang="tsx">
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
 
-export default {
+defineOptions({
   layout: AdminLayout,
-};
-</script>
-
-<script setup lang="ts">
-import { ref } from "vue";
-import IndexDataTable from "@/Components/IndexDataTable.vue";
-import IndexSearchInput from "@/Components/IndexSearchInput.vue";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import route from "ziggy-js";
+});
 
 defineProps<{
-  calendar: PaginatedModels<App.Models.Calendar[]>;
+  calendar: PaginatedModels<App.Models.Calendar>;
 }>();
 
-const createColumns = () => {
-  return [
-    {
-      title: "Pavadinimas",
-      key: "title",
-    },
-    {
-      title: "Data",
-      key: "date",
-    },
-    {
-      title: "Padalinys",
-      key: "padalinys.shortname",
-    },
-    {
-      title: "Kategorija",
-      key: "category.name",
-    },
-  ];
+const canUseRoutes = {
+  create: true,
+  show: false,
+  edit: true,
+  destroy: true,
 };
 
-const columns = ref(createColumns());
+const columns = [
+  {
+    title: "Pavadinimas",
+    key: "title",
+  },
+  {
+    title: "Data",
+    key: "date",
+  },
+  {
+    title: "Padalinys",
+    key: "padalinys.shortname",
+  },
+  {
+    title: "Kategorija",
+    key: "category.name",
+  },
+];
 </script>

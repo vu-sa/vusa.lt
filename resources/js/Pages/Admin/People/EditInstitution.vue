@@ -23,7 +23,7 @@
     </UpsertModelLayout>
 
     <template #aside-card>
-      <div v-if="duties" class="main-card h-fit max-w-md">
+      <NCard v-if="duties" class="subtle-gray-gradient h-fit max-w-md">
         <strong>Šiuo metu institucijai priklauso šios pareigos:</strong>
         <TransitionGroup name="list" tag="ul" class="list-inside">
           <li v-for="duty in duties" :key="duty.id" class="gap-4">
@@ -45,10 +45,10 @@
             <NButton @click="saveReorderedDuties">Atnaujinti</NButton>
           </div>
         </FadeTransition>
-      </div>
-      <p v-else class="main-card col-span-3 h-fit">
+      </NCard>
+      <NCard v-else class="subtle-gray-gradient col-span-3 h-fit">
         Ši institucija <strong>neturi</strong> pareigų.
-      </p>
+      </NCard>
     </template>
   </PageContent>
 </template>
@@ -60,7 +60,7 @@ import {
 } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
-import { NButton, NIcon } from "naive-ui";
+import { NButton, NCard, NIcon } from "naive-ui";
 import { ref } from "vue";
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import route from "ziggy-js";

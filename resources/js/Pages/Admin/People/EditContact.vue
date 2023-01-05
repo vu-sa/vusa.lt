@@ -10,7 +10,10 @@
       />
     </UpsertModelLayout>
     <template #aside-card>
-      <div v-if="contact.duties.length > 0" class="main-card h-fit max-w-sm">
+      <NCard
+        v-if="contact.duties.length > 0"
+        class="subtle-gray-gradient h-fit max-w-sm"
+      >
         <strong>Šiuo metu {{ contact.name }} užima šias pareigas:</strong>
         <ul class="list-inside">
           <li
@@ -44,7 +47,7 @@
             </Link>
           </li>
         </ul>
-      </div>
+      </NCard>
       <p v-else>Šis žmogus neturi pareigų.</p>
     </template>
   </PageContent>
@@ -53,7 +56,7 @@
 <script setup lang="tsx">
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
-import { NButton, NIcon } from "naive-ui";
+import { NButton, NCard, NIcon } from "naive-ui";
 import { PersonEdit24Regular } from "@vicons/fluent";
 import route from "ziggy-js";
 

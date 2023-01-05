@@ -1,6 +1,6 @@
 <template>
   <PageContent :title="`${$page.props.auth.user.name}`">
-    <div class="main-card max-w-3xl">
+    <NCard class="subtle-gray-gradient">
       <!-- <p>{{ salutation }}</p> -->
       <div class="mb-4">
         <p>Tavo rolės:</p>
@@ -12,30 +12,22 @@
         Jeigu kiltų klausimų, rašykite
         <a href="mailto:it@vusa.lt">it@vusa.lt</a>
       </p>
-    </div>
+    </NCard>
   </PageContent>
 </template>
 
-<script lang="ts">
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
-
-export default {
-  layout: AdminLayout,
-};
-</script>
-
-<script setup lang="ts">
+<script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
+import { NCard } from "naive-ui";
 
+import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 
-defineProps<{
-  roles: Record<string, any>[];
-}>();
+defineOptions({
+  layout: AdminLayout,
+});
 
-// const salutation = computed(() => {
-//   // change name word ending to salutation
-//   const name = usePage().props.value.user.name;
-//   return `Sveiki prisijungę, ${name}`;
-// });
+defineProps<{
+  roles: string[];
+}>();
 </script>

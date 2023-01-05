@@ -36,7 +36,7 @@
         </div>
         <NLayout class="mt-16" has-sider>
           <NLayoutSider
-            class="main-card-gradient ml-4 mb-24 h-fit rounded-md from-white shadow-md"
+            class="subtle-gray-gradient ml-4 mb-24 h-fit rounded-md from-white shadow-md"
             collapse-mode="width"
             :collapsed-width="isMobile ? 0 : 64"
             :width="200"

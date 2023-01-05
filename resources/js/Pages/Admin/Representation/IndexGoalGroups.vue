@@ -1,23 +1,17 @@
 <template>
-  <PageContent title="Tikslų grupės">
-    <div class="main-card">
-      <IndexSearchInput payload-name="search" />
-      <IndexDataTable
-        show-route="goalGroups.show"
-        destroy-route="goalGroups.destroy"
-        :model="goalGroups"
-        :columns="columns"
-      >
-      </IndexDataTable>
-    </div>
-  </PageContent>
+  <IndexPageLayout
+    title="Tikslų grupės"
+    model-name="goalGroups"
+    :can-use-routes="canUseRoutes"
+    :columns="columns"
+    :paginated-models="goalGroups"
+  >
+  </IndexPageLayout>
 </template>
 
 <script setup lang="tsx">
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
-import IndexDataTable from "@/Components/IndexDataTable.vue";
-import IndexSearchInput from "@/Components/IndexSearchInput.vue";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
 
 defineOptions({
   layout: AdminLayout,
@@ -26,6 +20,13 @@ defineOptions({
 defineProps<{
   goalGroups: PaginatedModels<App.Models.GoalGroup>;
 }>();
+
+const canUseRoutes = {
+  create: true,
+  show: false,
+  edit: true,
+  destroy: true,
+};
 
 const columns = [
   {

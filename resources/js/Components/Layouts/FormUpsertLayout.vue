@@ -1,5 +1,5 @@
 <template>
-  <div class="main-card">
+  <NCard class="subtle-gray-gradient shadow-sm">
     <p class="mb-4 text-2xl font-extrabold">
       <slot name="card-header">Informacija</slot>
     </p>
@@ -14,11 +14,11 @@
       </ul>
     </NAlert>
     <slot />
-  </div>
+  </NCard>
 </template>
 
 <script setup lang="ts">
-import { NAlert } from "naive-ui";
+import { NAlert, NCard } from "naive-ui";
 import { computed } from "vue";
 
 const props = defineProps<{

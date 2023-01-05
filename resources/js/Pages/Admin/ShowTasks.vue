@@ -22,22 +22,32 @@
         >Neatliktos</NButton
       ><TaskCreator />
     </div>
-    <NSpin :show="loading">
-      <NDataTable
-        size="small"
-        :data="shownTasks"
-        :columns="columns"
-        :row-class-name="rowClassName"
-      ></NDataTable>
-      <template #description>Tuojaus... </template>
-    </NSpin>
+    <NCard class="subtle-gray-gradient">
+      <NSpin :show="loading">
+        <NDataTable
+          size="small"
+          :data="shownTasks"
+          :columns="columns"
+          :row-class-name="rowClassName"
+        ></NDataTable>
+        <template #description>Tuojaus... </template>
+      </NSpin>
+    </NCard>
   </AdminContentPage>
 </template>
 
 <script setup lang="tsx">
 import { Home24Filled, Sparkle24Filled } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
-import { NButton, NCheckbox, NDataTable, NIcon, NSpin, NTag } from "naive-ui";
+import {
+  NButton,
+  NCard,
+  NCheckbox,
+  NDataTable,
+  NIcon,
+  NSpin,
+  NTag,
+} from "naive-ui";
 import { computed, ref } from "vue";
 import route from "ziggy-js";
 
