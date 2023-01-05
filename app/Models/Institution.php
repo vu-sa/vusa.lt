@@ -44,7 +44,7 @@ class Institution extends Model
 
     public function matters()
     {
-        return $this->hasMany(InstitutionMatter::class);
+        return $this->belongsToMany(InstitutionMatter::class);
     }
 
     public function meetings()

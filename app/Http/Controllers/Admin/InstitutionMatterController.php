@@ -88,7 +88,7 @@ class InstitutionMatterController extends Controller
      */
     public function show(Matter $matter)
     {
-        $matter = $matter->load('institution', 'goals', 'activities', 'activities.causer');
+        $matter = $matter->load('institutions', 'goals', 'activities', 'activities.causer');
 
         return Inertia::render('Admin/Representation/ShowMatter', [
             'matter' => $matter,

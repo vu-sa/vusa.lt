@@ -20,14 +20,16 @@ class InstitutionMatter extends Model
 
     protected $guarded = [];
 
+    protected $table = 'matters';
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()->logOnly(['*'])->logOnlyDirty();
     }
 
-    public function institution()
+    public function institutions()
     {
-        return $this->belongsTo(Institution::class);
+        return $this->belongsToMany(Institution::class);
     }
 
     public function meetings()

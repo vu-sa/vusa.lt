@@ -101,7 +101,6 @@ declare namespace App.Models {
     types?: Array<App.Models.Type> | null;
     documents?: Array<App.Models.SharepointDocument> | null;
     tasks?: Array<App.Models.Task> | null;
-    users?: any | null;
     doables_count?: number | null;
     goals_count?: number | null;
     matters_count?: number | null;
@@ -215,17 +214,16 @@ declare namespace App.Models {
 
   export interface InstitutionMatter {
     id: string;
-    institution_id: string;
     title: string;
     description: string | null;
     created_at: any;
     updated_at: any;
     deleted_at: any | null;
-    institution?: App.Models.Institution | null;
+    institutions?: Array<App.Models.Institution> | null;
     meetings?: Array<App.Models.InstitutionMeeting> | null;
     doings?: Array<App.Models.Doing> | null;
     goals?: Array<App.Models.Goal> | null;
-    users?: any | null;
+    institutions_count?: number | null;
     meetings_count?: number | null;
     doings_count?: number | null;
     goals_count?: number | null;
@@ -240,10 +238,11 @@ declare namespace App.Models {
     updated_at: any;
     deleted_at: any | null;
     matters?: Array<App.Models.InstitutionMatter> | null;
-    institutions?: Array<App.Models.Institution> | null;
     documents?: Array<App.Models.SharepointDocument> | null;
+    tasks?: Array<App.Models.Task> | null;
     matters_count?: number | null;
     documents_count?: number | null;
+    tasks_count?: number | null;
   }
 
   export interface InstitutionMeetingMatter {
