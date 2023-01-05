@@ -63,11 +63,11 @@ class InstitutionMatterController extends Controller
         // $validated['status'] = 'Sukurtas';
         $validated['institution_id'] = $request->institution_id;
         // if no matter group, create one
-        // if (is_null($request->matter_group_id)) {
+        // if (is_null($request->goal_id)) {
         //     $goal = Goal::create([
         //         'title' => 'Klausimo \"' . $validated['title'] . '\" grupė',
         //     ]);
-        //     $validated['matter_group_id'] = $goal->id;
+        //     $validated['goal_id'] = $goal->id;
         // } else {
         //     // ...
         // }
@@ -88,20 +88,10 @@ class InstitutionMatterController extends Controller
      */
     public function show(Matter $matter)
     {
-        $matter = $matter->load(['doings' => function ($query) {
-            $query->orderBy('date');
-        }])->load('institution', 'activities', 'doings.comments', 'doings.tasks', 'doings.documents');
+        $matter = $matter->load('institution', 'goals', 'activities', 'activities.causer');
         
         return Inertia::render('Admin/Representation/ShowMatter', [
-            'matter' => [
-                ...$matter->toArray(),
-                'activities' => $matter->activities->map(function ($activity) {
-                    return [
-                        ...$activity->toArray(),
-                        'causer' => $activity->causer,
-                    ];
-                }),
-            ],
+            'matter' => $matter,
             'doingTypes' => Type::where('model_type', Doing::class)->get()->map(function ($doingType) {
                 return [
                     'value' => $doingType->id,
@@ -153,9 +143,8 @@ class InstitutionMatterController extends Controller
 
     public function attachGoal(Matter $matter, Goal $goal, Request $request) {
         
-        $matter->matter_group()->associate($goal);
-        $matter->save();
+        $matter->goals()->attach($goal);
 
-        return back()->with('success', 'Klausimas sėkmingai pridėtas prie grupės');
+        return back()->with('success', 'Svarstomas klausimas sėkmingai pridėtas prie tikslo');
     }
 }

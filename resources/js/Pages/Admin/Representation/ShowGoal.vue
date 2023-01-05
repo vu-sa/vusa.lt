@@ -14,7 +14,7 @@
             <NIcon
               class="mr-2"
               size="16"
-              :component="NotebookQuestionMark24Filled"
+              :component="StarLineHorizontal324Filled"
             >
             </NIcon>
             <NEllipsis style="max-width: 200px"> {{ goal.title }}</NEllipsis>
@@ -54,13 +54,17 @@
       title="Redaguoti klausimo grupę"
       @close="showModal = false"
     >
-      <GoalForm :matter-group="goal" @form-success="showModal = false" />
+      <GoalForm :goal="goal" @form-success="showModal = false" />
     </CardModal>
   </PageContent>
 </template>
 
 <script setup lang="tsx">
-import { Home24Filled, NotebookQuestionMark24Filled } from "@vicons/fluent";
+import {
+  Home24Filled,
+  StarLineHorizontal324Filled,
+  StarLineHorizontal324Regular,
+} from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import {
   NBreadcrumb,
@@ -89,7 +93,7 @@ const props = defineProps<{
 }>();
 
 const showModal = ref(false);
-const selectedInstitution = ref<number | null>(null);
+const selectedInstitution = ref<string | null>(null);
 
 const shownMatters = computed(() => {
   let matters = props.goal.matters;
@@ -103,7 +107,7 @@ const shownMatters = computed(() => {
   });
 });
 
-const handleClick = (id: number) => {
+const handleClick = (id: App.Models.Institution["id"]) => {
   if (selectedInstitution.value === id) {
     selectedInstitution.value = null;
     return;

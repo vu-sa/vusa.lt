@@ -2,7 +2,7 @@
   <NSpin :show="!isFinished">
     <NForm ref="formRef" :rules="rules" :model="model">
       <NGrid cols="1"
-        ><NFormItemGi label="Klausimo grupės pavadinimas" required path="title"
+        ><NFormItemGi label="Tikslo pavadinimas" required path="title"
           ><NSelect
             v-model:value="model.title"
             :options="data"
@@ -14,7 +14,7 @@
             ><template #action>
               <span
                 class="prose-sm prose-gray text-xs text-zinc-400 dark:prose-invert"
-                >Gali sukurti ir savo klausimo grupę! Įrašyk +
+                >Gali sukurti ir savo tikslą! Įrašyk +
                 <NTag size="tiny">Enter</NTag></span
               >
             </template></NSelect
@@ -31,7 +31,7 @@
         </NFormItemGi>
       </NGrid>
     </NForm>
-    <template #description> Krauname klausimų grupes. 😊 </template>
+    <template #description> Krauname tikslus. 😊 </template>
   </NSpin>
 </template>
 
@@ -54,7 +54,7 @@ import route from "ziggy-js";
 const emit = defineEmits(["closeModal"]);
 
 const props = defineProps<{
-  matter: App.Models.Matter;
+  matter: App.Models.InstitutionMatter;
 }>();
 
 const loading = ref(false);
@@ -65,7 +65,7 @@ const rules = {
   },
 };
 const model = useForm({
-  title: props.matter.matter_group_id,
+  title: props.matter.goal_id,
 });
 
 const formRef = ref(null);

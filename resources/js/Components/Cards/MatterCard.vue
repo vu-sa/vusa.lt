@@ -26,9 +26,9 @@
           ><NIcon :component="MoreHorizontal24Filled"></NIcon></template
       ></NButton>
     </template>
-    <div v-if="matter.matter_group" class="flex items-center gap-1 text-xs">
+    <div v-if="matter.goal" class="flex items-center gap-1 text-xs">
       <NIcon :component="NotebookQuestionMark24Filled" />
-      <span class="line-clamp-1">{{ matter.matter_group.title }}</span>
+      <span class="line-clamp-1">{{ matter.goal.title }}</span>
     </div>
     <div
       v-if="matter.doings_count"

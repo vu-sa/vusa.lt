@@ -56,9 +56,9 @@ class GoalController extends Controller
             'title' => 'required',
         ]);
 
-        $goal = Goal::create($validated);
+        $goal = Goal::create($validated + ['start_date' => now()]);
 
-        return back()->with('success', 'Klausimo grupė sukurta')->with('data', $goal->id);
+        return back()->with('success', 'Tikslas sukurtas')->with('data', $goal->id);
     }
 
     /**

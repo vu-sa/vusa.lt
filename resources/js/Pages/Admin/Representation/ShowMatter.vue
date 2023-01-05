@@ -46,7 +46,7 @@
         ></MoreOptionsButton>
       </div>
     </template>
-    <GoalCard :matter="matter" :matter-group="matter.matter_group" />
+    <GoalCard :matter="matter" :goals="matter.goals" />
     <NTabs
       animated
       type="line"
@@ -60,9 +60,9 @@
         <template #tab>
           <div class="flex gap-2">
             Veiklos
-            <NTag size="small" round>
+            <!-- <NTag size="small" round>
               {{ matter.doings.length }}
-            </NTag>
+            </NTag> -->
           </div>
         </template>
 
@@ -119,7 +119,7 @@ import ShowActivityLog from "@/Components/Buttons/ShowActivityLog.vue";
 defineOptions({ layout: AdminLayout });
 
 defineProps<{
-  matter: Record<string, any>;
+  matter: App.Models.InstitutionMatter;
   doingTypes: Record<string, any>;
 }>();
 

@@ -1,21 +1,22 @@
 <template>
   <QuickContentCard class="mb-4">
     <FadeTransition mode="out-in">
-      <div v-if="goal">
+      <!-- TODO: Make card for many goals -->
+      <div v-if="goals">
         <div class="flex items-center gap-2">
           <Link
             class="inline-flex items-center gap-2"
-            :href="route('goals.show', goal.id)"
+            :href="route('goals.show', goals[0].id)"
           >
             <NIcon :size="30" :component="NotebookQuestionMark24Filled" />
             <span class="text-2xl font-bold line-clamp-1">{{
-              goal.title
+              goals[0].title
             }}</span>
           </Link>
         </div>
         <p class="mt-4">
           Šis svarstomas klausimas priklauso
-          <strong>{{ goal.title }}</strong> tikslui.
+          <strong>{{ goals[0].title }}</strong> tikslui.
         </p>
       </div>
       <p v-else class="mt-2">
@@ -24,7 +25,7 @@
     </FadeTransition>
     <template #action-button>
       <div class="flex items-center gap-2">
-        <Link v-if="goal" :href="route('goals.show', goal.id)">
+        <Link v-if="goals" :href="route('goals.show', goals[0].id)">
           <NButton icon-placement="right" secondary size="small"
             ><template #icon
               ><NIcon :component="ArrowUpRight24Filled" /></template
@@ -32,7 +33,7 @@
           >
         </Link>
         <GoalChanger :matter="matter"
-          ><template v-if="goal">Pakeisti?</template></GoalChanger
+          ><template v-if="goals">Pakeisti?</template></GoalChanger
         >
       </div>
     </template>
@@ -53,7 +54,7 @@ import GoalChanger from "@/Components/Buttons/GoalChanger.vue";
 import QuickContentCard from "@/Components/Cards/QuickContentCards/QuickContentCard.vue";
 
 defineProps<{
-  goal?: App.Models.Goal;
+  goals?: App.Models.Goal[];
   matter: App.Models.InstitutionMatter;
 }>();
 </script>

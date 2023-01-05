@@ -1,5 +1,5 @@
 <template>
-  <PageContent title="Veiklos">
+  <PageContent title="Veiksmai">
     <div class="main-card">
       <IndexSearchInput payload-name="search" />
       <IndexDataTable

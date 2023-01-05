@@ -1,5 +1,5 @@
 <template>
-  <PageContent title="Klausimai">
+  <PageContent title="Svarstomi klausimai">
     <div class="main-card">
       <IndexSearchInput payload-name="search" />
       <IndexDataTable
