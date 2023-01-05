@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Contact;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class ContactController extends Controller
 {
@@ -22,7 +23,11 @@ class ContactController extends Controller
      */
     public function index()
     {
-        //
+        $contacts = Contact::all()->paginate(20);
+
+        return Inertia::render('Admin/People/IndexContact', [
+            'contacts' => $contacts,
+        ]);
     }
 
     /**
@@ -32,7 +37,10 @@ class ContactController extends Controller
      */
     public function create()
     {
-        //
+        // TODO: implement duties later
+        return Inertia::render('Admin/People/CreateContact', [
+            // 'duties' => $this->getDutiesForForm()
+        ]);
     }
 
     /**
@@ -65,7 +73,9 @@ class ContactController extends Controller
      */
     public function edit(Contact $contact)
     {
-        //
+        return Inertia::render('Admin/People/EditContact', [
+            'contact' => $contact,
+        ]);
     }
 
     /**
