@@ -72,7 +72,7 @@ class PagesController extends Controller
             'permalink' => 'required|string|max:255|unique:pages',
         ]);
 
-        $padalinys_id = User::find(Auth::user()->id)->padalinys()?->id;
+        $padalinys_id = User::find(Auth::id())->padalinys()?->id;
 
         if (is_null($padalinys_id)) {
             $padalinys_id = request()->user()->hasRole('Super Admin') ? 16 : null;

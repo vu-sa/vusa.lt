@@ -38,7 +38,7 @@ class UserController extends Controller
         })->
             when(!$request->user()->hasRole('Super Admin'), function ($query) {
                 $query->whereHas('duties.institution', function ($query) {
-                    $query->where('padalinys_id', Auth::user()->padalinys()->id);
+                    $query->where('padalinys_id', User::find(Auth::id())->padalinys()->id);
                 });
         })->with(['duties:id,institution_id', 'duties.institution:id,padalinys_id','duties.institution.padalinys:id,shortname'])
         ->paginate(20);
@@ -186,7 +186,7 @@ class UserController extends Controller
         return Duty::with(['institution:id,padalinys_id', 'institution.padalinys:id,shortname'])
         ->when(!auth()->user()->hasRole('Super Admin'), function ($query) { 
             $query->whereHas('institution', function ($query) {
-                $query->where('padalinys_id', Auth::user()->padalinys()?->id);
+                $query->where('padalinys_id', User::find(Auth::id())->padalinys()?->id);
             });
         })->get();
     }

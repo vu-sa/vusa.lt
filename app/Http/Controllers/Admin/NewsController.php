@@ -73,7 +73,7 @@ class NewsController extends Controller
             'publish_time' => 'required',
         ]);
 
-        $padalinys_id = User::find(Auth::user()->id)->padalinys()?->id;
+        $padalinys_id = User::find(Auth::id())->padalinys()?->id;
 
         if (is_null($padalinys_id)) {
             $padalinys_id = request()->user()->hasRole('Super Admin') ? 16 : null;
