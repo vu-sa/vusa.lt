@@ -1,35 +1,10 @@
 <template>
   <PageContent :title="matter.title" breadcrumb>
     <template #above-header>
-      <NBreadcrumb class="mb-4 w-full">
-        <NBreadcrumbItem @click="Inertia.get(route('dashboard'))">
-          <div>
-            <NIcon class="mr-2" size="16" :component="Home24Filled"> </NIcon>
-
-            Pradinis
-          </div>
-        </NBreadcrumbItem>
-        <NBreadcrumbItem
-          @click="Inertia.get(route('institutions.show', firstInstitution.id))"
-          ><div>
-            <NIcon class="mr-2" size="16" :component="PeopleTeam24Filled">
-            </NIcon>
-            <NEllipsis style="max-width: 200px">
-              {{ firstInstitution.name }}</NEllipsis
-            >
-          </div>
-        </NBreadcrumbItem>
-        <NBreadcrumbItem>
-          <div>
-            <NIcon
-              class="mr-2"
-              size="16"
-              :component="BookQuestionMark20Filled"
-            />
-            {{ matter.title }}
-          </div>
-        </NBreadcrumbItem>
-      </NBreadcrumb>
+      <AdminBreadcrumbDisplayer
+        :options="breadcrumbOptions"
+        class="mb-4 w-full"
+      />
     </template>
     <!-- <template #after-heading>
         <StatusTag :status="matter.status" />
@@ -105,6 +80,7 @@ import { computed, ref } from "vue";
 import { useStorage } from "@vueuse/core";
 import route from "ziggy-js";
 
+import AdminBreadcrumbDisplayer from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import DoingsTabPane from "@/Components/TabPaneContent/DoingsTabPane.vue";
@@ -116,7 +92,7 @@ import ShowActivityLog from "@/Components/Buttons/ShowActivityLog.vue";
 
 defineOptions({ layout: AdminLayout });
 
-defineProps<{
+const props = defineProps<{
   matter: App.Models.InstitutionMatter;
   doingTypes: Record<string, any>;
 }>();
@@ -138,6 +114,37 @@ const doingTemplate = {
 };
 
 const firstInstitution = computed(() => {
-  return props.matter.institutions[0];
+  if (props.matter.institutions?.length === 0) {
+    return {
+      id: 0,
+      name: "Nenurodyta",
+    };
+  }
+
+  return props.matter?.institutions?.[0];
 });
+
+const breadcrumbOptions: App.Props.BreadcrumbOption[] = [
+  {
+    label: firstInstitution.value?.name ?? "Nenurodyta",
+    icon: PeopleTeam24Filled,
+    routeOptions: {
+      name: "institutions.show",
+      params: {
+        institution: firstInstitution.value?.id,
+      },
+    },
+  },
+  {
+    label: props.matter.title,
+    icon: BookQuestionMark20Filled,
+    routeOptions: {
+      name: "institutions.matters.show",
+      params: {
+        institution: firstInstitution.value?.id,
+        matter: props.matter.id,
+      },
+    },
+  },
+];
 </script>
