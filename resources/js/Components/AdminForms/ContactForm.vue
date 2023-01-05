@@ -1,7 +1,13 @@
 <template>
-  <NForm :model="form" label-placement="top">
-    <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
-      <NFormItemGi label="Vardas ir pavardė" :span="2" required>
+  <NForm
+    require-mark-placement="right-hanging"
+    :style="{
+      maxWidth: '640px',
+    }"
+    :model="form"
+  >
+    <NGrid cols="1" :x-gap="24">
+      <NFormItemGi label="Vardas ir pavardė" :span="1" required>
         <NInput
           v-model:value="form.name"
           type="text"
@@ -9,14 +15,14 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="El. paštas" :span="2" required>
+      <NFormItemGi label="El. paštas" :span="1" required>
         <NInput
           v-model:value="form.email"
           placeholder="vardas.pavarde@email.com"
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Tel. numeris" :span="2">
+      <NFormItemGi label="Tel. numeris" :span="1">
         <NInput v-model:value="form.phone" placeholder="+370 612 34 567" />
       </NFormItemGi>
 

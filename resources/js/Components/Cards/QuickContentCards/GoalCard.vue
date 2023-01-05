@@ -2,7 +2,7 @@
   <QuickContentCard class="mb-4">
     <FadeTransition mode="out-in">
       <!-- TODO: Make card for many goals -->
-      <div v-if="goals">
+      <div v-if="goals.length > 0">
         <div class="flex items-center gap-2">
           <Link
             class="inline-flex items-center gap-2"
@@ -25,7 +25,7 @@
     </FadeTransition>
     <template #action-button>
       <div class="flex items-center gap-2">
-        <Link v-if="goals" :href="route('goals.show', goals[0].id)">
+        <Link v-if="goals.length > 0" :href="route('goals.show', goals[0]?.id)">
           <NButton icon-placement="right" secondary size="small"
             ><template #icon
               ><NIcon :component="ArrowUpRight24Filled" /></template
@@ -53,8 +53,10 @@ import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import GoalChanger from "@/Components/Buttons/GoalChanger.vue";
 import QuickContentCard from "@/Components/Cards/QuickContentCards/QuickContentCard.vue";
 
-defineProps<{
-  goals?: App.Models.Goal[];
+const props = defineProps<{
+  goals: App.Models.Goal[] | [];
   matter: App.Models.InstitutionMatter;
 }>();
+
+console.log(props.goals);
 </script>

@@ -211,7 +211,7 @@ class InstitutionController extends Controller
      */
     public function destroy(Institution $institution)
     {
-        //
+        return back()->with('info', 'Institucijų šiuo metu negalima ištrinti...');
     }
 
     public function reorderDuties(Request $request)

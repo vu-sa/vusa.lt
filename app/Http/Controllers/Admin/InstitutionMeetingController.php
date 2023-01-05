@@ -100,6 +100,9 @@ class InstitutionMeetingController extends Controller
      */
     public function destroy(Meeting $meeting)
     {
-        //
+        // delete meeting
+        $meeting->delete();
+
+        return back()->with('success', 'Posėdis ištrintas sėkmingai!');
     }
 }

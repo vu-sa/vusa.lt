@@ -18,7 +18,13 @@
 
 <script setup lang="tsx">
 import { ArrowForward20Filled, Edit20Filled } from "@vicons/fluent";
-import { DataTableColumns, NButton, NDataTable, NIcon } from "naive-ui";
+import {
+  DataTableColumns,
+  NButton,
+  NButtonGroup,
+  NDataTable,
+  NIcon,
+} from "naive-ui";
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
 import { computed, reactive, ref } from "vue";
@@ -41,34 +47,32 @@ const columnsWithActions = computed(() => {
     {
       title: props.editRoute || props.destroyRoute ? "Veiksmai" : null,
       key: "actions",
-      width: 150,
+      width: 175,
       render(row) {
         return (
-          <div class="flex gap-1">
+          <NButtonGroup size="small">
             {props.showRoute ? (
-              <Link href={route(props.showRoute, row.id)}>
-                <NButton size="small">
-                  {{
-                    icon: () => <NIcon component={ArrowForward20Filled} />,
-                  }}
-                </NButton>
-              </Link>
+              <NButton
+                quaternary
+                onClick={() => Inertia.visit(route(props.showRoute, row.id))}
+              >
+                {{
+                  icon: () => <NIcon component={ArrowForward20Filled} />,
+                }}
+              </NButton>
             ) : null}
             {props.editRoute ? (
-              <Link href={route(props.editRoute, row.id)}>
-                <NButton size="small">
-                  {{ icon: () => <NIcon component={Edit20Filled} /> }}
-                </NButton>
-              </Link>
+              <NButton
+                quaternary
+                onClick={() => Inertia.visit(route(props.editRoute, row.id))}
+              >
+                {{ icon: () => <NIcon component={Edit20Filled} /> }}
+              </NButton>
             ) : null}
             {props.destroyRoute ? (
-              <DeleteModelButton
-                size="small"
-                form={row}
-                modelRoute={props.destroyRoute}
-              />
+              <DeleteModelButton form={row} modelRoute={props.destroyRoute} />
             ) : null}
-          </div>
+          </NButtonGroup>
         );
       },
     },

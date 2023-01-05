@@ -6,18 +6,17 @@
     @positive-click="destroyModel()"
   >
     <template #trigger>
-      <div class="flex">
-        <NButton
-          type="error"
-          :loading="loading"
-          :disabled="disabled"
-          :size="size"
-        >
-          <template #icon>
-            <NIcon :component="Delete20Filled" size="18" />
-          </template>
-        </NButton>
-      </div>
+      <NButton
+        type="error"
+        quaternary
+        :loading="loading"
+        :disabled="disabled"
+        :size="size"
+      >
+        <template #icon>
+          <NIcon :component="Delete20Filled" />
+        </template>
+      </NButton>
     </template>
     <!-- TODO: make this logic only for duties, or remove it -->
     <template v-if="disabled"

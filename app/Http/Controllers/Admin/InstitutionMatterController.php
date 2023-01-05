@@ -89,7 +89,7 @@ class InstitutionMatterController extends Controller
     public function show(Matter $matter)
     {
         $matter = $matter->load('institution', 'goals', 'activities', 'activities.causer');
-        
+
         return Inertia::render('Admin/Representation/ShowMatter', [
             'matter' => $matter,
             'doingTypes' => Type::where('model_type', Doing::class)->get()->map(function ($doingType) {
