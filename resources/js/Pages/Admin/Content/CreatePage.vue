@@ -1,6 +1,6 @@
 <template>
   <PageContent title="Naujas puslapis" :back-url="route('pages.index')">
-    <UpsertModelLayout :errors="$attrs.errors" :model="page">
+    <UpsertModelLayout :errors="$page.props.errors" :model="page">
       <template #card-header> Puslapio informacija </template>
       <PageForm :page="page" model-route="pages.store" />
     </UpsertModelLayout>

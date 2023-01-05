@@ -25,7 +25,7 @@
         model-route="news.destroy"
       ></DeleteModelButton>
     </template>
-    <UpsertModelLayout :errors="$attrs.errors" :model="news">
+    <UpsertModelLayout :errors="$page.props.errors" :model="news">
       <template #card-header> Puslapio informacija </template>
       <NewsForm
         :news="news"

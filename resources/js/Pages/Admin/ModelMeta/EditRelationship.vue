@@ -3,7 +3,7 @@
     :title="relationship.name"
     :back-url="route('relationships.index')"
   >
-    <UpsertModelLayout :errors="$attrs.errors" :model="relationship">
+    <UpsertModelLayout :errors="$page.props.errors" :model="relationship">
       <RelationshipForm
         :relationship="relationship"
         model-route="relationships.update"

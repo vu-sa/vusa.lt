@@ -1,35 +1,30 @@
 <template>
   <PageContent title="Naujas kontaktas">
-    <UpsertModelLayout :errors="$attrs.errors" :model="contact">
+    <UpsertModelLayout :errors="$page.props.errors" :model="user">
       <UserForm
-        :user="contact"
-        model-route="users.store"
-        :roles="roles"
+        :user="user"
         :duties="duties"
+        :roles="roles"
+        model-route="users.store"
       />
     </UpsertModelLayout>
   </PageContent>
 </template>
 
-<script lang="ts">
+<script setup lang="tsx">
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
-
-export default {
-  layout: AdminLayout,
-};
-</script>
-
-<script setup lang="ts">
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 import UserForm from "@/Components/AdminForms/UserForm.vue";
+
+defineOptions({ layout: AdminLayout });
 
 defineProps<{
   roles: App.Models.Role[];
   duties: App.Models.Duty[];
 }>();
 
-const contact = {
+const user = {
   name: "",
   email: "",
   phone: null,

@@ -5,7 +5,7 @@
     })`"
     :back-url="route('duties.index')"
   >
-    <UpsertModelLayout :errors="$attrs.errors" :model="duty">
+    <UpsertModelLayout :errors="$page.props.errors" :model="duty">
       <DutyForm
         :duty="duty"
         :has-users="hasUsers"

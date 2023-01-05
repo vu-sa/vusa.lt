@@ -1,6 +1,6 @@
 <template>
   <PageContent :title="calendar.title">
-    <UpsertModelLayout :errors="$attrs.errors" :model="calendar">
+    <UpsertModelLayout :errors="$page.props.errors" :model="calendar">
       <CalendarForm
         model-route="calendar.update"
         delete-model-route="calendar.destroy"

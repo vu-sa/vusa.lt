@@ -1,6 +1,6 @@
 <template>
   <PageContent :title="contentType.title" :back-url="route('types.index')">
-    <UpsertModelLayout :errors="$attrs.errors" :model="contentType">
+    <UpsertModelLayout :errors="$page.props.errors" :model="contentType">
       <TypeForm
         :content-types="contentTypes"
         :type="contentType"

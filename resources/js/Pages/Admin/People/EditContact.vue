@@ -1,20 +1,20 @@
 <template>
-  <PageContent :title="user.name" :back-url="route('users.index')">
-    <UpsertModelLayout :errors="$page.props.errors" :model="user">
-      <UserForm
-        :user="user"
+  <PageContent :title="contact.name" :back-url="route('contacts.index')">
+    <UpsertModelLayout :errors="$page.props.errors" :model="contact">
+      <ContactForm
+        :contact="contact"
         :roles="roles"
         :duties="duties"
-        model-route="users.update"
-        delete-model-route="users.destroy"
+        model-route="contacts.update"
+        delete-model-route="contacts.destroy"
       />
     </UpsertModelLayout>
     <template #aside-card>
-      <div v-if="user.duties.length > 0" class="main-card h-fit max-w-sm">
-        <strong>Šiuo metu {{ user.name }} užima šias pareigas:</strong>
+      <div v-if="contact.duties.length > 0" class="main-card h-fit max-w-sm">
+        <strong>Šiuo metu {{ contact.name }} užima šias pareigas:</strong>
         <ul class="list-inside">
           <li
-            v-for="duty in user.duties"
+            v-for="duty in contact.duties"
             :key="duty.id"
             class="flex-inline gap-2"
           >
@@ -58,16 +58,16 @@ import { PersonEdit24Regular } from "@vicons/fluent";
 import route from "ziggy-js";
 
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+import ContactForm from "@/Components/AdminForms/ContactForm.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
-import UserForm from "@/Components/AdminForms/UserForm.vue";
 
 defineOptions({
   layout: AdminLayout,
 });
 
 defineProps<{
-  user: App.Models.User;
+  contact: App.Models.Contact;
   roles: App.Models.Role[];
   // TODO: don't return all duties from the controller immediately
   duties: App.Models.Duty[];

@@ -1,6 +1,6 @@
 <template>
   <PageContent :title="exam.subject_name + ' - ' + exam.created_at">
-    <UpsertModelLayout :errors="$attrs.errors" :model="exam">
+    <UpsertModelLayout :errors="$page.props.errors" :model="exam">
       <SaziningaiExamForm
         :exam="exam"
         :padaliniai="padaliniai"

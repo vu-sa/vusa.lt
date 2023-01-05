@@ -14,7 +14,7 @@
         :padalinys-shortname="page.padalinys?.shortname"
       ></PreviewModelButton>
     </template>
-    <UpsertModelLayout :errors="$attrs.errors" :model="page">
+    <UpsertModelLayout :errors="$page.props.errors" :model="page">
       <template #card-header>
         <span>Puslapio informacija</span>
       </template>

@@ -3,7 +3,7 @@
     title="Naujas pradinio puslapio mygtukas"
     :back-url="route('mainPage.index')"
   >
-    <UpsertModelLayout :errors="$attrs.errors" :model="mainPage">
+    <UpsertModelLayout :errors="$page.props.errors" :model="mainPage">
       <MainPageForm :main-page="mainPage" model-route="mainPage.store" />
     </UpsertModelLayout>
   </PageContent>

@@ -1,6 +1,6 @@
 <template>
   <PageContent title="Nauja naujiena" :back-url="route('news.index')">
-    <UpsertModelLayout :errors="$attrs.errors" :model="news">
+    <UpsertModelLayout :errors="$page.props.errors" :model="news">
       <template #card-header> Puslapio informacija </template>
       <NewsForm :news="news" model-route="news.store" />
     </UpsertModelLayout>

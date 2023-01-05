@@ -1,6 +1,6 @@
 <template>
   <PageContent title="Naujas įvykis">
-    <UpsertModelLayout :errors="$attrs.errors" :model="calendar">
+    <UpsertModelLayout :errors="$page.props.errors" :model="calendar">
       <CalendarForm
         model-route="calendar.store"
         :calendar="calendar"

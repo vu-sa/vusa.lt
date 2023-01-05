@@ -3,7 +3,7 @@
     :title="`${dutiable.duty.name} (${dutiable.user.name})`"
     :back-url="route('users.edit', dutiable.user.id)"
   >
-    <UpsertModelLayout :errors="$attrs.errors" :model="dutiable">
+    <UpsertModelLayout :errors="$page.props.errors" :model="dutiable">
       <DutiableForm :dutiable="dutiable" model-route="dutiables.update" />
     </UpsertModelLayout>
   </PageContent>

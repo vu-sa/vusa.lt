@@ -1,6 +1,6 @@
 <template>
   <PageContent title="Nauja pareiga">
-    <UpsertModelLayout :errors="$attrs.errors" :model="duty">
+    <UpsertModelLayout :errors="$page.props.errors" :model="duty">
       <DutyForm
         :duty="duty"
         model-route="duties.store"

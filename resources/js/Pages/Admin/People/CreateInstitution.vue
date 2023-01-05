@@ -1,6 +1,6 @@
 <template>
   <PageContent title="Nauja institucija">
-    <UpsertModelLayout :errors="$attrs.errors" :model="institution">
+    <UpsertModelLayout :errors="$page.props.errors" :model="institution">
       <InstitutionForm
         :padaliniai="padaliniai"
         model-route="institutions.store"

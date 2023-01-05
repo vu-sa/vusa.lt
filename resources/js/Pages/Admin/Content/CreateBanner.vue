@@ -1,6 +1,6 @@
 <template>
   <PageContent title="Naujas baneris" :back-url="route('banners.index')">
-    <UpsertModelLayout :errors="$attrs.errors" :model="banner">
+    <UpsertModelLayout :errors="$page.props.errors" :model="banner">
       <BannerForm :banner="banner" model-route="banners.store" />
     </UpsertModelLayout>
   </PageContent>

@@ -12,7 +12,7 @@
         :padalinys-shortname="institution.padalinys?.shortname"
       ></PreviewModelButton>
     </template>
-    <UpsertModelLayout :errors="$attrs.errors" :model="institution">
+    <UpsertModelLayout :errors="$page.props.errors" :model="institution">
       <InstitutionForm
         :padaliniai="padaliniai"
         model-route="institutions.update"
