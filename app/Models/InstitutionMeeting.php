@@ -8,10 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
+
 
 class InstitutionMeeting extends Model
 {
-    use HasFactory, HasUlids, LogsActivity, SoftDeletes;
+    use HasFactory, HasUlids, HasRelationships, LogsActivity, SoftDeletes;
 
     protected $guarded = [];
 
@@ -27,6 +29,11 @@ class InstitutionMeeting extends Model
     public function matters()
     {
         return $this->belongsToMany(InstitutionMatter::class, 'institution_meeting_matter', 'meeting_id', 'matter_id')->using(InstitutionMeetingMatter::class);
+    }
+
+    public function institutions()
+    {
+        return $this->hasManyDeepFromRelations($this->matters(), (new InstitutionMatter())->institution())->distinct();
     }
 
     public function documents()

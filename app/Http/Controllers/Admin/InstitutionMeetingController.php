@@ -17,9 +17,9 @@ class InstitutionMeetingController extends Controller
      */
     public function index()
     {
-        $meetings = Meeting::all();
+        $meetings = Meeting::with('institutions')->paginate(20);
 
-        return Inertia::render('Admin/Institution/Meetings/Index', [
+        return Inertia::render('Admin/Representation/IndexMeeting', [
             'meetings' => $meetings,
         ]);
     }
