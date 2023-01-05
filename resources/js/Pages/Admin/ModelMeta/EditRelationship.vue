@@ -48,7 +48,7 @@
     <NDataTable
       class="mt-4"
       size="small"
-      :data="relationshipables"
+      :data="relationship.relationshipables"
       :columns="relationshipableColumns"
     ></NDataTable>
   </PageContent>
@@ -80,9 +80,8 @@ defineOptions({
 });
 
 const props = defineProps<{
-  relationship: Record<string, any>;
-  relatedModels: Record<string, any>[];
-  relationshipables: Record<string, any>[];
+  relationship: App.Models.Relationship;
+  relatedModels?: Record<string, any>[];
 }>();
 
 const showModal = ref(false);
@@ -97,6 +96,10 @@ const relationTemplate = {
 const relationForm = useForm("modelsRelation", relationTemplate);
 
 const options = computed(() => {
+  if (!props.relatedModels) {
+    return [];
+  }
+
   return props.relatedModels.map((model) => {
     return {
       label: model.name ?? model.title,
@@ -122,16 +125,22 @@ const submitRelationForm = () => {
 
 const relationshipableColumns = [
   {
-    title: "Relationshipable Type",
+    title: "Modelio tipas",
     key: "relationshipable_type",
   },
   {
-    title: "Relationshipable ID",
-    key: "relationshipable_id",
+    title: "Ryšio suteikėjas",
+    key: "relationshipable",
+    render(row) {
+      return row.relationshipable.name ?? row.relationshipable.title;
+    },
   },
   {
-    title: "Relationship ID",
-    key: "related_model_id",
+    title: "Ryšio gavėjas",
+    key: "related_model",
+    render(row) {
+      return row.relationshipable.name ?? row.relationshipable.title;
+    },
   },
   {
     key: "more",
@@ -164,6 +173,7 @@ const handleUpdateModelType = (value: string) => {
     data: {
       modelType: value,
     },
+    only: ["relatedModels"],
   });
 };
 

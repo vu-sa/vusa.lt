@@ -25,6 +25,7 @@
         "spatie/icalendar-generator": "^2.3",
         "spatie/laravel-activitylog": "^4.6",
         "spatie/laravel-collection-macros": "^7.11",
+        "spatie/laravel-enum": "^3.0",
         "spatie/laravel-feed": "^4.1",
         "spatie/laravel-google-fonts": "^1.2",
         "spatie/laravel-medialibrary": "^10.0.0",

@@ -30,6 +30,11 @@ class Relationship extends Model
         return $this->morphedByMany(Institution::class, 'relationshipable');
     }
 
+    public function relationshipables()
+    {
+        return $this->hasMany(Relationshipable::class);
+    }
+
     public function getRelatedModelAttribute()
     {
         // gets related model

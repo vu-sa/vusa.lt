@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Relationship;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-
 use App\Http\Controllers\Controller as Controller;
 use App\Models\Relationshipable;
+use App\Services\RelationshipService;
 use Illuminate\Support\Facades\DB;
 
 // Controller is used for the relationship object, which describes
@@ -81,30 +81,25 @@ class RelationshipController extends Controller
      */
     public function edit(Relationship $relationship, Request $request)
     {
+        $validated = $request->validate([
+            'modelType' => 'nullable|string',
+        ]);
+        
         // get model type from request
-        $model_type = request()->input('model_type');
-
-        $model_type = null;
-
-        if ($request->modelType) {
-            $model_type = $request->modelType;
-        } 
-
+        $model_type = $validated['modelType'] ?? null;
         $related_models = [];
 
-        if ($model_type === 'App\Models\Institution') {
-            $related_models = $model_type::select('id', 'name')->get();
-        } elseif ($model_type === 'App\Models\Type') {
-            $related_models = $model_type::select('id', 'title')->get();
+        // if model type is not null, get related models
+        // TODO: use a way to check allowed models
+        if (!is_null($model_type)) {
+            $related_models = RelationshipService::getModelsByClass($model_type);
         }
+
+        $relationship->load('relationshipables', 'relationshipables.relationshipable', 'relationshipables.relatedRelationshipable');
         
         return Inertia::render('Admin/ModelMeta/EditRelationship', [
             'relationship' => $relationship,
-            'relatedModels' => $related_models,
-            // retrieve all relationshipables where relationship_id is $relationship->id
-            'relationshipables' => DB::table('relationshipables')
-                ->where('relationship_id', $relationship->id)
-                ->get()
+            'relatedModels' => Inertia::lazy(fn () => $related_models),
         ]);
     }
 
@@ -136,7 +131,6 @@ class RelationshipController extends Controller
      */
     public function destroy(Relationship $relationship)
     {
-
         DB::transaction(function () use ($relationship) {
             
             // remove all relationshipables

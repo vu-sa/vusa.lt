@@ -73,4 +73,16 @@ class Relationshipable extends Pivot
 
         return $relationships;
     }
+
+    public function relationship() {
+        return $this->belongsTo(Relationship::class);
+    }
+
+    public function relationshipable() {
+        return $this->morphTo();
+    }
+
+    public function relatedRelationshipable() {
+        return $this->morphTo('related_model', 'relationshipable_type');
+    }
 }
