@@ -2,9 +2,10 @@
   <NSpin :show="!isFinished">
     <NForm ref="formRef" :rules="rules" :model="model">
       <NGrid cols="1"
-        ><NFormItemGi label="Tikslo pavadinimas" required path="title"
-          ><NSelect
-            v-model:value="model.title"
+        ><NFormItemGi label="Tikslo pavadinimas" required path="title">
+          <!-- TODO: Dabar neveikia sukūrimas tikslo iš šios vietos -->
+          <NSelect
+            v-model:value="model.id"
             :options="data"
             tag
             filterable
@@ -23,7 +24,7 @@
         <NFormItemGi :show-label="false">
           <NButton
             :loading="loading"
-            :disabled="!model.title"
+            :disabled="!model.id"
             type="primary"
             @click.prevent="pickGoal"
             >Pridėti</NButton
@@ -59,13 +60,13 @@ const props = defineProps<{
 
 const loading = ref(false);
 const rules = {
-  title: {
+  id: {
     required: true,
     message: "Privaloma pasirinkti klausimo grupę",
   },
 };
 const model = useForm({
-  title: props.matter.goal_id,
+  id: props.matter.goal_id,
 });
 
 const formRef = ref(null);
@@ -75,44 +76,39 @@ const { data, isFinished } = useAxios("/api/v1/goals");
 const pickGoal = () => {
   formRef.value?.validate((errors) => {
     if (!errors) {
-      switch (typeof model.title) {
-        case "string":
-          model.post(route("goals.store"), {
-            onSuccess: (page) => {
-              Inertia.post(
-                route("matters.attachGoal", {
-                  matter: props.matter.id,
-                  goal: page.props.flash.data,
-                }),
-                {},
-                {
-                  onSuccess: () => {
-                    emit("closeModal");
-                  },
-                }
-              );
-            },
-          });
-          break;
-        case "number":
-          Inertia.post(
-            route("matters.attachGoal", {
-              matter: props.matter.id,
-              // the title is an id number here...
-              goal: model.title,
-            }),
-            {},
-            {
-              onSuccess: () => {
-                emit("closeModal");
-              },
-            }
-          );
-          break;
-
-        default:
-          break;
-      }
+      // switch (typeof model.title) {
+      // case "string":
+      //   model.post(route("goals.store"), {
+      //     onSuccess: (page) => {
+      //       Inertia.post(
+      //         route("matters.attachGoal", {
+      //           matter: props.matter.id,
+      //           goal: page.props.flash.data,
+      //         }),
+      //         {},
+      //         {
+      //           onSuccess: () => {
+      //             emit("closeModal");
+      //           },
+      //         }
+      //       );
+      //     },
+      //   });
+      //   break;
+      // case "number":
+      Inertia.post(
+        route("matters.attachGoal", {
+          matter: props.matter.id,
+          // the title is an id number here...
+          goal: model.id,
+        }),
+        {},
+        {
+          onSuccess: () => {
+            emit("closeModal");
+          },
+        }
+      );
     }
   });
 };

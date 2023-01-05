@@ -8,7 +8,7 @@
             class="inline-flex items-center gap-2"
             :href="route('goals.show', goals[0].id)"
           >
-            <NIcon :size="30" :component="NotebookQuestionMark24Filled" />
+            <NIcon :size="30" :component="StarLineHorizontal324Filled" />
             <span class="text-2xl font-bold line-clamp-1">{{
               goals[0].title
             }}</span>
@@ -43,14 +43,14 @@
 <script setup lang="tsx">
 import {
   ArrowUpRight24Filled,
-  NotebookQuestionMark24Filled,
+  StarLineHorizontal324Filled,
 } from "@vicons/fluent";
 import { Link } from "@inertiajs/inertia-vue3";
 import { NButton, NIcon } from "naive-ui";
 import route from "ziggy-js";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
-import GoalChanger from "@/Components/Buttons/GoalChanger.vue";
+import GoalChanger from "@/Components/Buttons/GoalChangerButton.vue";
 import QuickContentCard from "@/Components/Cards/QuickContentCards/QuickContentCard.vue";
 
 const props = defineProps<{

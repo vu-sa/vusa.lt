@@ -134,7 +134,7 @@ const props = defineProps<{
   contentModel?: Record<string, any>; // yes
   contentModelOptions?: Record<string, any>[];
   contentTypeOptions: Record<string, any>[]; // yes
-  relatedObjectName?: string;
+  relatedObjectName?: string | null;
   // keywords: Record<string, any>[]; // maybe
 
   // If some options are prespecified, they are automatically included in the request model
@@ -148,7 +148,7 @@ const message = useMessage();
 
 const originalFileName = ref("");
 const fileExtension = ref("");
-const nameValue = ref(null);
+const nameValue = ref<string | null>(null);
 
 const formRef = ref(null);
 const model = useForm({
@@ -304,7 +304,7 @@ const generateNameForFile = () => {
 
   // if posėdis
   if (
-    props.contentModel.modelTypes.some((x) => x.title === "Posėdis") &&
+    props.contentModel?.modelTypes.some((x) => x.title === "Posėdis") &&
     model.typeValue === "Protokolai"
   ) {
     let relatedObjectName =
@@ -330,7 +330,15 @@ const onObjectChange = (value) => {
   model.contentModel.id = value;
 };
 
-const genitivize = (name: string) => {
-  return name.replace(/a$/, "os").replace(/as$/, "o").replace(/iai$/, "ių");
+const genitivize = (name: string | null) => {
+  if (name === null) {
+    return "";
+  }
+
+  return name
+    .replace(/a$/, "os")
+    .replace(/as$/, "o")
+    .replace(/iai$/, "ių")
+    .replace(/ė$/, "ės");
 };
 </script>

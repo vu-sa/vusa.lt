@@ -26,7 +26,7 @@
     <template #action-button>
       <MeetingDocumentButton
         :institution="institution"
-        :matters="mattersWithDoings"
+        :matters="mattersWithMeetings"
       />
     </template>
   </QuickContentCard>
@@ -41,13 +41,13 @@ import MeetingDocumentButton from "@/Components/Buttons/QActButtons/MeetingDocum
 import QuickContentCard from "@/Components/Cards/QuickContentCards/QuickContentCard.vue";
 
 const props = defineProps<{
-  mattersWithDoings: App.Models.Doing[];
+  mattersWithMeetings: App.Models.InstitutionMatter[];
   institution: App.Models.Institution;
 }>();
 
 const doings = [].concat(
-  ...props.mattersWithDoings.map((matter) => {
-    return matter.doings;
+  ...props.mattersWithMeetings.map((matter) => {
+    return matter.meetings;
   })
 );
 

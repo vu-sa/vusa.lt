@@ -7,7 +7,7 @@ import { arc, create, group, pie, rollup, scaleOrdinal, select } from "d3";
 import { onBeforeUnmount, onMounted, ref } from "vue";
 
 const props = defineProps<{
-  doings?: App.Models.Doing[];
+  meetings?: App.Models.InstitutionMeeting[];
   width: number;
   height: number;
 }>();
@@ -23,7 +23,7 @@ const svg = d3
   .attr("height", props.height);
 
 const groupedData = d3.rollup(
-  props.doings,
+  props.meetings,
   (v) => v.length,
   (d) => d.status
 );

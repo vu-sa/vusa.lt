@@ -66,7 +66,12 @@ class InstitutionMeetingController extends Controller
      */
     public function show(Meeting $meeting)
     {
-        //
+        $meeting->load('matters.institution', 'tasks', 'activities.causer');
+        
+        // show meeting
+        return Inertia::render('Admin/Representation/ShowMeeting', [
+            'meeting' => $meeting,
+        ]);
     }
 
     /**

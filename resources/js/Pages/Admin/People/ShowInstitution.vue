@@ -25,11 +25,11 @@
         :doing-types="doingTypes"
         content-style="margin-top: 0.5em"
       ></LastMeetingCard>
-      <DoingsNeedingAttentionCard
+      <MeetingsNeedingAttentionCard
         content-style="margin-top: 0.5em"
-        :matters-with-doings="institution.matters"
+        :matters-with-meetings="institution.matters"
         :institution="institution"
-      ></DoingsNeedingAttentionCard>
+      ></MeetingsNeedingAttentionCard>
     </div>
     <NTabs
       :default-value="currentInstitutionsTabPane"
@@ -135,7 +135,7 @@
       </NTabPane>
       <NTabPane
         name="Veiklų dokumentai"
-        :disabled="institution.doings?.length === 0"
+        :disabled="institution.meetings?.length === 0"
         display-directive="show:lazy"
       >
         <template #tab>
@@ -143,7 +143,7 @@
         </template>
         <div class="m-4">
           <ModelsDocumentViewer
-            v-if="institution.meetings.length > 0"
+            v-if="institution.meetings?.length > 0"
             :model-collection-with-documents="institution.meetings"
             @file-button-click="updateSelectedDocument"
           ></ModelsDocumentViewer>
@@ -194,12 +194,12 @@ import route from "ziggy-js";
 import { documentTemplate } from "@/Composables/someTypes";
 import AdminBreadcrumbItem from "@/Components/BreadcrumbItems/AdminBreadcrumbItem.vue";
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
-import DoingsNeedingAttentionCard from "@/Components/Cards/QuickContentCards/DoingsNeedingAttentionCard.vue";
 import FileSelectDrawer from "@/Components/SharepointFileManager/FileDrawer.vue";
 import InstitutionAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import InstitutionCard from "@/Components/Cards/InstitutionCard.vue";
 import LastMeetingCard from "@/Components/Cards/QuickContentCards/LastMeetingCard.vue";
 import MattersTabPane from "@/Components/TabPaneContent/MattersTabPane.vue";
+import MeetingsNeedingAttentionCard from "@/Components/Cards/QuickContentCards/MeetingsNeedingAttentionCard.vue";
 import ModelsDocumentViewer from "@/Components/SharepointFileManager/ModelsDocumentViewer.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";

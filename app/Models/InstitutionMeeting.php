@@ -40,4 +40,9 @@ class InstitutionMeeting extends Model
     {
         return $this->morphMany(SharepointDocument::class, 'documentable');
     }
+
+    public function tasks()
+    {
+        return $this->morphMany(Task::class, 'taskable');
+    }
 }

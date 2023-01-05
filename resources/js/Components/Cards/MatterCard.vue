@@ -43,7 +43,12 @@
     <template #footer>
       <div class="flex items-end justify-between gap-2">
         <span class="my-auto text-xs text-zinc-500">#{{ matter.id }}</span>
-        <DoingsStatusDonut :doings="matter.doings" :width="30" :height="30" />
+        <DoingsStatusDonut
+          v-if="false"
+          :meetings="matter.meetings"
+          :width="30"
+          :height="30"
+        />
       </div>
     </template>
   </NCard>

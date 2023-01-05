@@ -1,7 +1,7 @@
 <template>
   <NButton secondary size="small" @click="showModal = true">
     <template #icon
-      ><NIcon :component="NotebookQuestionMark24Filled"></NIcon
+      ><NIcon :component="StarLineHorizontal324Filled"></NIcon
     ></template>
     <slot>Pridėti?</slot></NButton
   >
@@ -16,11 +16,11 @@
 
 <script setup lang="tsx">
 import { NButton, NIcon } from "naive-ui";
-import { NotebookQuestionMark24Filled } from "@vicons/fluent";
+import { StarLineHorizontal324Filled } from "@vicons/fluent";
 import { ref } from "vue";
 
 import CardModal from "@/Components/Modals/CardModal.vue";
-import GoalSelector from "@/Components/AdminForms/GoalSelector.vue";
+import GoalSelector from "@/Components/AdminForms/GoalSelectorForm.vue";
 
 defineProps<{
   matter: App.Models.InstitutionMatter;

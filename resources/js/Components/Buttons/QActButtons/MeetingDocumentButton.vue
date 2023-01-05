@@ -31,25 +31,23 @@ const objectOptions = computed(() => {
       key: matter.id,
       disabled: true,
       // map doings as children where type is Posėdis
-      children: matter.doings
-        .filter((doing) => doing.types.some((type) => type.title === "Posėdis"))
-        .map((doing) => {
-          return {
-            label: doing.title,
-            key: doing.id,
-          };
-        }),
+      children: matter.meetings?.map((meeting) => {
+        return {
+          label: meeting.id,
+          key: meeting.id,
+        };
+      }),
     };
   });
 });
 
 const contentModel = computed(() => ({
-  type: "App\\Models\\Doing",
-  modelTypes: [
-    {
-      title: "Posėdis",
-    },
-  ],
+  type: "App\\Models\\Meeting",
+  // modelTypes: [
+  //   {
+  //     title: "Posėdis",
+  //   },
+  // ],
   //   contentTypes: props.doing.types,
 }));
 

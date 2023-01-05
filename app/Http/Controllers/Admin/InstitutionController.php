@@ -91,8 +91,7 @@ class InstitutionController extends Controller
      */
     public function show(Institution $institution)
     {
-        $institution->load('types', 'padalinys', 'matters');
-        $matters = $institution->matters;
+        $institution->load('types', 'padalinys', 'matters.meetings.documents', 'users');
 
         $users = $institution->users()->get()->unique('id')->values();
 
@@ -110,11 +109,6 @@ class InstitutionController extends Controller
         return Inertia::render('Admin/People/ShowInstitution', [
             'institution' => [
                 ...$institution->toArray(), 
-                'matters' => $matters->load('doings')->loadCount('doings')->map(function ($matter) {
-                    return [...$matter->toArray(), 'doings' => $matter->doings->map(function ($doing) {
-                        return $doing->toArray();
-                    })];
-                }),
                 'users' => $users,
                 'types' => $institution->types->load('documents')->map(function ($type) use ($institution) {
                     return 
@@ -142,9 +136,6 @@ class InstitutionController extends Controller
                 'receivedRelationships' => $receivedRelationships,
                 'givenRelationships' => $givenRelationships,
                 'lastMeeting' => $institution->lastMeeting(),
-                'meetings' => $institution->meetings()->withWhereHas('documents')->get()->map(function ($doing) {
-                    return [...$doing->toArray()];
-                }),
             ],
             'doingTypes' => Type::where('model_type', Doing::class)->get()->map(function ($doingType) {
                 return [

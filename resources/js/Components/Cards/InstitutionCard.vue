@@ -9,6 +9,13 @@
     class="cursor-pointer shadow-sm"
     @click="Inertia.visit(route('institutions.show', institution.id))"
   >
+    <template #cover>
+      <img
+        v-if="institution.image_url"
+        class="h-32 object-cover"
+        :src="institution.image_url"
+      />
+    </template>
     <template #header>
       <span :class="{ 'font-bold': isPadalinys }">{{ institution.name }}</span>
     </template>
