@@ -56,8 +56,13 @@ const props = defineProps<{
   lastMeeting?: App.Models.InstitutionMeeting;
 }>();
 
-const daysDifference = getDaysDifference(props.lastMeeting.start_time * 1000);
+const daysDifference = props.lastMeeting
+  ? getDaysDifference(props.lastMeeting.start_time * 1000)
+  : undefined;
 
 // check if daysDifference is in future
-const lastMeetinginFuture = computed(() => daysDifference < 0);
+const lastMeetinginFuture = computed(() => {
+  if (daysDifference === undefined) return undefined;
+  return daysDifference < 0;
+});
 </script>

@@ -24,7 +24,7 @@ class DashboardController extends Controller
         // convert to eloquent collection
         $institutions = new EloquentCollection($institutions);
 
-        $institutions->load('users:users.id,profile_photo_path');
+        $institutions->load('users:users.id,users.name,profile_photo_path');
 
         return Inertia::render('Admin/ShowDashboard', [
             'institutions' => $institutions->map(function ($institution) {
