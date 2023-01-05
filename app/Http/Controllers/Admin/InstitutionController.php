@@ -91,7 +91,7 @@ class InstitutionController extends Controller
      */
     public function show(Institution $institution)
     {
-        $institution->load('types', 'padalinys', 'matters.meetings.documents', 'users');
+        $institution->load('types', 'padalinys', 'users', 'matters.meetings.documents');
 
         $users = $institution->users()->get()->unique('id')->values();
 

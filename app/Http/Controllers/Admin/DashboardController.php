@@ -27,9 +27,7 @@ class DashboardController extends Controller
         $institutions->load('users:users.id,users.name,profile_photo_path');
 
         return Inertia::render('Admin/ShowDashboard', [
-            'institutions' => $institutions->map(function ($institution) {
-                return [...$institution->toArray(), 'lastMeeting' => $institution->lastMeeting()];
-            }),
+            'institutions' => $institutions,
             'duties' => $duties->load('institution')
         ]);
     }

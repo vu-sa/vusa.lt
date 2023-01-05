@@ -126,20 +126,11 @@ class DoingController extends Controller
             $sharepointFiles = $graph->collectSharepointFiles($doing->documents);
         }
 
+        $doing->load('activities.causer', 'tasks', 'comments', 'doables', 'users');
+
         return Inertia::render('Admin/Representation/ShowDoing', [
             'matter' => $doing->matters->first()?->load('institution'),
-            'doing' => [
-                    ...$doing->toArray(),
-                    'activities' => $doing->activities->map(function ($activity) {
-                        return [
-                            ...$activity->toArray(),
-                            // 'date' => $activity->date->format('Y-m-d'),
-                            'causer' => $activity->causer
-                        ];
-                    }),
-                    'tasks' => $doing->tasks,
-                    'comments' => $doing->comments->reverse()->values(),
-                ],
+            'doing' => $doing,
             'documents' => $sharepointFiles,
         ]);
     }

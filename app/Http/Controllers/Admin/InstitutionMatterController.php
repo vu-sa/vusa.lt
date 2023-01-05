@@ -59,21 +59,10 @@ class InstitutionMatterController extends Controller
             'title' => 'required',
         ]);
 
-        // add status "Sukurtas" to validated
-        // $validated['status'] = 'Sukurtas';
-        $validated['institution_id'] = $request->institution_id;
-        // if no matter group, create one
-        // if (is_null($request->goal_id)) {
-        //     $goal = Goal::create([
-        //         'title' => 'Klausimo \"' . $validated['title'] . '\" grupė',
-        //     ]);
-        //     $validated['goal_id'] = $goal->id;
-        // } else {
-        //     // ...
-        // }
-
         $matter = Matter::create($validated);
 
+        // attach institutions
+        $matter->institutions()->attach($request->institution_id);
         $matter->goals()->attach($request->goal_id);
 
         // reminder to adjust matter creation in the frontend

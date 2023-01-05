@@ -64,7 +64,7 @@ class Doing extends Model
 
     public function users()
     {
-        return $this->hasManyDeepFromRelations($this->matters(), (new InstitutionMatter())->institution(), (new Institution())->duties(), (new Duty())->users());
+        return $this->belongsToMany(User::class);
     }
 
     public function comments()

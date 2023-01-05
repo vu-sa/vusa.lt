@@ -29,7 +29,7 @@ class InstitutionMatter extends Model
 
     public function institutions()
     {
-        return $this->belongsToMany(Institution::class);
+        return $this->belongsToMany(Institution::class, 'institutions_matters', 'matter_id', 'institution_id');
     }
 
     public function meetings()

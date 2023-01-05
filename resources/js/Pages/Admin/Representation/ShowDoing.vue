@@ -101,7 +101,6 @@
               :button="FileUploaderBasicButton"
               :content-type-options="contentTypeOptions"
               :content-model="contentModel"
-              :related-object-name="matter.institution.name"
             ></FileUploader>
           </NMessageProvider>
         </div>
@@ -148,6 +147,7 @@ import {
   NBreadcrumb,
   NBreadcrumbItem,
   NButton,
+  NCard,
   NDropdown,
   NIcon,
   NMessageProvider,

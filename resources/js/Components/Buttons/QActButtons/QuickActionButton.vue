@@ -11,11 +11,12 @@
 </template>
 
 <script setup lang="ts">
+import { Component } from "vue";
 import { NButton, NIcon } from "naive-ui";
 
 defineProps<{
   buttonType?: any;
-  icon: any;
+  icon: Component;
   secondary?: boolean;
   strong?: boolean;
 }>();

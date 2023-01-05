@@ -66,6 +66,11 @@ class User extends Authenticatable
         return $this->hasMany(Calendar::class, 'user_id', 'id');
     }
 
+    public function doings()
+    {
+        return $this->belongsToMany(Doing::class);
+    }
+
     // TODO: return only current duties
     public function duties()
     {
