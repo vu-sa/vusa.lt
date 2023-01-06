@@ -61,21 +61,8 @@
 </template>
 
 <script setup lang="tsx">
-import {
-  BookQuestionMark20Filled,
-  Home24Filled,
-  PeopleTeam24Filled,
-} from "@vicons/fluent";
-import { Inertia } from "@inertiajs/inertia";
-import {
-  NBreadcrumb,
-  NBreadcrumbItem,
-  NEllipsis,
-  NIcon,
-  NTabPane,
-  NTabs,
-  NTag,
-} from "naive-ui";
+import { BookQuestionMark20Filled, PeopleTeam24Filled } from "@vicons/fluent";
+import { NTabPane, NTabs } from "naive-ui";
 import { computed, ref } from "vue";
 import { useStorage } from "@vueuse/core";
 
@@ -97,10 +84,9 @@ const props = defineProps<{
 }>();
 
 const showMatterModal = ref(false);
-
 const currentMattersTabPane = useStorage("admin-CurrentMattersTabPane", "Apie");
 
-const updateMattersTabPane = (value) => {
+const updateMattersTabPane = (value: string | number) => {
   currentMattersTabPane.value = value;
 };
 

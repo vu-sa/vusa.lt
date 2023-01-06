@@ -131,7 +131,7 @@ class DoingController extends Controller
         return Inertia::render('Admin/Representation/ShowDoing', [
             'matter' => $doing->matters->first()?->load('institution'),
             'doing' => $doing,
-            'documents' => $sharepointFiles,
+            'sharepointFiles' => $sharepointFiles,
         ]);
     }
 

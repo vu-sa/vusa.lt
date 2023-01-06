@@ -54,7 +54,7 @@ declare namespace App.Models {
     user_id: string;
     commentable_type: string;
     commentable_id: string;
-    created_at: any;
+    created_at: number; // casted to timestamp
     updated_at: any;
     deleted_at: any | null;
     commentable?: any | null;
@@ -232,7 +232,7 @@ declare namespace App.Models {
   export interface InstitutionMeeting {
     id: string;
     description: string | null;
-    start_time: string;
+    start_time: number; // casted to number
     end_time: string | null;
     created_at: any;
     updated_at: any;

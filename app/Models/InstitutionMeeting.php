@@ -10,7 +10,6 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
-
 class InstitutionMeeting extends Model
 {
     use HasFactory, HasUlids, HasRelationships, LogsActivity, SoftDeletes;

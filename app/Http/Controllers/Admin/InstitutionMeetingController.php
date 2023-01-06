@@ -7,6 +7,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Services\InstitutionMeetingService as MeetingService;
+use App\Services\SharepointAppGraph;
+use Illuminate\Support\Benchmark;
 
 class InstitutionMeetingController extends Controller
 {
@@ -65,12 +67,21 @@ class InstitutionMeetingController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show(Meeting $meeting)
-    {
-        $meeting->load('matters.institution', 'tasks', 'activities.causer');
+    { 
+        $sharepointFiles = [];
         
+        if ($meeting->documents()->count() > 0) {
+            $graph = new SharepointAppGraph();
+        
+            $sharepointFiles = $graph->collectSharepointFiles($meeting->documents);
+        }
+        
+        $meeting->load('matters.institutions', 'tasks', 'activities.causer');
+
         // show meeting
         return Inertia::render('Admin/Representation/ShowMeeting', [
             'meeting' => $meeting,
+            'sharepointFiles' => $sharepointFiles,
         ]);
     }
 

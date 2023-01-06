@@ -1,49 +1,25 @@
 <template>
   <PageContent :title="meeting.title" :breadcrumb="true">
     <template #above-header>
-      <NBreadcrumb v-if="matter" class="mb-4 w-full">
-        <NBreadcrumbItem>
-          <NDropdown
-            placement="bottom-start"
-            :options="breadcrumbOptions"
-            @select="handleBreadcrumbDropdownSelect"
-          >
-            <span>...</span>
-          </NDropdown>
-        </NBreadcrumbItem>
-        <NBreadcrumbItem
-          @click="
-            Inertia.visit(
-              route('matters.show', {
-                matter: matter.id,
-              })
-            )
-          "
-        >
-          <div>
-            <NIcon
-              class="mr-2"
-              size="16"
-              :component="BookQuestionMark20Filled"
-            />
-            {{ matter.title }}
-          </div>
-        </NBreadcrumbItem>
-        <NBreadcrumbItem
-          ><div>
-            <NIcon class="mr-1" size="16" :component="Sparkle20Filled" />
-            {{ meeting.title }}
-          </div></NBreadcrumbItem
-        >
-      </NBreadcrumb>
+      <AdminBreadcrumbDisplayer
+        :options="breadcrumbOptions"
+        class="mb-4 w-full"
+      />
     </template>
     <template #after-heading>
-      <StatusTag :status="meeting.status" />
-      <NTag v-if="!matter" size="small" round :bordered="false" type="warning"
-        >Veikla be klausimo</NTag
-      >
+      <!-- <StatusTag :status="meeting.status" /> -->
+      <!-- <NTag
+        v-if="!meeting.matters"
+        size="small"
+        round
+        :bordered="false"
+        type="warning"
+        >Veikla be klausimų</NTag
+      > -->
 
-      <span class="text-gray-500">{{ meeting.start_time }}</span>
+      <span class="text-gray-500">{{
+        formatStaticTime(meeting.start_time * 1000)
+      }}</span>
     </template>
     <template #aside-header>
       <div class="inline-flex gap-2">
@@ -55,12 +31,12 @@
       </div>
       <CardModal
         v-model:show="showModal"
-        :title="`${$t('Redaguoti veiklą')} (${matter?.title})`"
+        :title="`${$t('Redaguoti veiklą')} (${meeting.matters?.[0].title})`"
         @close="showModal = false"
       >
         <MeetingForm
           :meeting="meeting"
-          :matter="matter"
+          :matter="meeting.matters?.[0]"
           :model-route="'meetings.update'"
           @success="showModal = false"
         ></MeetingForm>
@@ -105,13 +81,13 @@
               :button="FileUploaderBasicButton"
               :content-type-options="contentTypeOptions"
               :content-model="contentModel"
-              :related-object-name="matter.institution.name"
+              :related-object-name="meeting.matters?.[0].institutions?.[0].name"
             ></FileUploader>
           </NMessageProvider>
         </div>
         <div class="m-4 flex max-w-4xl flex-wrap gap-6">
           <FileButton
-            v-for="document in documents"
+            v-for="document in sharepointFiles"
             :key="document.id"
             :document="document"
             @click="selectedDocument = document"
@@ -142,16 +118,17 @@
 import { trans as $t } from "laravel-vue-i18n";
 import {
   BookQuestionMark20Filled,
-  DocumentEdit24Regular,
+  DeviceMeetingRoomRemote24Regular,
   Home24Filled,
   PeopleTeam24Filled,
   Sparkle20Filled,
 } from "@vicons/fluent";
-import { Inertia } from "@inertiajs/inertia";
 import {
+  type DropdownOption,
   NBreadcrumb,
   NBreadcrumbItem,
   NButton,
+  NCard,
   NDropdown,
   NIcon,
   NMessageProvider,
@@ -159,11 +136,14 @@ import {
   NTabs,
   NTag,
 } from "naive-ui";
+import { Inertia } from "@inertiajs/inertia";
 import { computed, ref } from "vue";
 
-
+import { Link } from "@inertiajs/inertia-vue3";
 import { contentTypeOptions, documentTemplate } from "@/Composables/someTypes";
+import { formatStaticTime } from "@/Utils/IntlTime";
 import { useStorage } from "@vueuse/core";
+import AdminBreadcrumbDisplayer from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import CommentTipTap from "@/Components/TipTap/CommentTipTap.vue";
@@ -185,7 +165,8 @@ defineOptions({
 
 const props = defineProps<{
   meeting: App.Models.InstitutionMeeting;
-  //   documents: [];
+  // TODO: need to define this type
+  sharepointFiles: App.Models.SharepointFile[];
 }>();
 
 const currentCommentField = ref("");
@@ -208,48 +189,43 @@ const contentModel = computed(() => ({
   modelTypes: props.meeting.types,
 }));
 
-const breadcrumbOptions = [
+const breadcrumbDropdownOptions: DropdownOption[] = [
   {
-    label: "Pradinis",
-    key: "dashboard",
-    icon: () => {
-      return <NIcon component={Home24Filled}></NIcon>;
-    },
-  },
-  {
-    label: props.matter?.institution.name,
-    key: "institution",
+    label: () => (
+      <Link
+        href={route(
+          "institutions.show",
+          props.meeting.matters?.[0]?.institutions?.[0].id
+        )}
+      >
+        {props.meeting.matters?.[0]?.institutions?.[0].name}
+      </Link>
+    ),
     icon: () => {
       return <NIcon component={PeopleTeam24Filled}></NIcon>;
     },
   },
 ];
 
-const handleBreadcrumbDropdownSelect = (key) => {
-  switch (key) {
-    case "dashboard":
-      Inertia.visit(route("dashboard"));
-      break;
-    case "institution":
-      Inertia.visit(route("institutions.show", props.matter.institution.id));
-      break;
-    default:
-      break;
-  }
-};
-
-const title = computed(() => {
-  // check if undefined
-  if (props.meeting.matters) {
-    return "Neturi klausimų";
-  }
-
-  // check if matters is empty
-  if (props.meeting.matters.length === 0) {
-    return "Neturi klausimų";
-  }
-
-  //   get first props.meeting.matters title
-  return props.meeting.matters[0].title;
-});
+const breadcrumbOptions: App.Props.BreadcrumbOption[] = [
+  {
+    label: "...",
+    // icon: PeopleTeam24Filled,
+    dropdownOptions: breadcrumbDropdownOptions,
+  },
+  {
+    label: props.meeting.matters?.[0].title,
+    icon: BookQuestionMark20Filled,
+    routeOptions: {
+      name: "matters.show",
+      params: {
+        matter: props.meeting.matters?.[0].id,
+      },
+    },
+  },
+  {
+    label: props.meeting.start_time,
+    icon: DeviceMeetingRoomRemote24Regular,
+  },
+];
 </script>

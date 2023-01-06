@@ -103,7 +103,7 @@
 </template>
 
 <script setup lang="ts">
-import type { FormRules, UploadFileInfo } from "naive-ui";
+import type { FormInst, FormRules, UploadFileInfo } from "naive-ui";
 
 import { Archive24Regular } from "@vicons/fluent";
 import {
@@ -149,7 +149,7 @@ const originalFileName = ref("");
 const fileExtension = ref("");
 const nameValue = ref<string | null>(null);
 
-const formRef = ref(null);
+const formRef = ref<FormInst | null>(null);
 const model = useForm({
   datetimeValue: null,
   descriptionValue: "",
@@ -280,7 +280,7 @@ const handleValidateClick = (e) => {
   });
 };
 
-const unwatch = watch(model, (newModel) => {
+const unwatch = watch(model, () => {
   nameValue.value = generateNameForFile();
 });
 
@@ -303,7 +303,7 @@ const generateNameForFile = () => {
 
   // if posėdis
   if (
-    props.contentModel?.modelTypes.some((x) => x.title === "Posėdis") &&
+    props.contentModel?.modelTypes?.some((x) => x.title === "Posėdis") &&
     model.typeValue === "Protokolai"
   ) {
     let relatedObjectName =

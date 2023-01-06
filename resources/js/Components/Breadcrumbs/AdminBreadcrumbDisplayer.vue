@@ -34,7 +34,7 @@ const breadcrumbOptions = computed<App.Props.BreadcrumbOption[]>(() => {
 
   // add Home item to beggining
   options.unshift({
-    label: "Pradžia",
+    label: "Pradinis",
     icon: Home24Filled,
     routeOptions: { name: "dashboard" },
   });

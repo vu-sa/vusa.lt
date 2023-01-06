@@ -13,7 +13,8 @@
       {{ option.label }}
     </div>
     <NDropdown v-else :options="option.dropdownOptions">
-      <component :is="iconWithLabel" />
+      <component :is="iconWithLabel" v-if="option.icon" />
+      <span v-else>...</span>
     </NDropdown>
   </NBreadcrumbItem>
 </template>
@@ -21,7 +22,6 @@
 <script setup lang="tsx">
 import { Inertia } from "@inertiajs/inertia";
 import { NBreadcrumbItem, NDropdown, NIcon } from "naive-ui";
-
 
 const props = defineProps<{
   option: App.Props.BreadcrumbOption;
