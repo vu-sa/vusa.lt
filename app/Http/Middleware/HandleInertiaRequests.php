@@ -46,7 +46,7 @@ class HandleInertiaRequests extends Middleware
     {
         $user = User::withCount(['tasks' => function ($query) {
             $query->whereNull('completed_at');
-        }])->find(Auth::id());
+        }])->with('roles')->find(Auth::id());
 
         if ($user) {
             $user->padalinys = User::find(Auth::id())?->padalinys()?->shortname;
