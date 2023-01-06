@@ -46,7 +46,7 @@ import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
 import { NButton, NCard, NPopconfirm, NSpin, NTree } from "naive-ui";
 import { h, ref } from "vue";
-import route from "ziggy-js";
+
 
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 

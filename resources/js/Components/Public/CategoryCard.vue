@@ -124,7 +124,6 @@ import { Inertia } from "@inertiajs/inertia";
 import { NButton } from "naive-ui";
 import { computed } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
-import route from "ziggy-js";
 
 const props = defineProps<{
   institution: App.Models.Institution;

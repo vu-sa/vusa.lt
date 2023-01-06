@@ -74,7 +74,7 @@ import { File, FilePdf, FileWord } from "@vicons/fa";
 import { NButton, NButtonGroup, NDataTable, NDivider, NIcon } from "naive-ui";
 import { onMounted, ref } from "vue";
 import axios from "axios";
-import route from "ziggy-js";
+
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import FuzzySearcher from "@/Components/SharepointFileManager/FuzzySearcher.vue";

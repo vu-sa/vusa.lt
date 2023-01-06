@@ -50,7 +50,7 @@ import {
 import { ref } from "vue";
 import { useAxios } from "@vueuse/integrations/useAxios";
 import { useForm } from "@inertiajs/inertia-vue3";
-import route from "ziggy-js";
+
 
 const emit = defineEmits(["closeModal"]);
 

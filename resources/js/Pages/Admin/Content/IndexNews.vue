@@ -22,7 +22,7 @@ import AsideHeader from "@/Components/AsideHeaders/AsideHeaderContent.vue";
 
 import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
-import route from "ziggy-js";
+
 
 defineOptions({ layout: AdminLayout });
 

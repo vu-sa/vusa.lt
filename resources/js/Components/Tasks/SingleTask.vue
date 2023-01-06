@@ -14,7 +14,7 @@
 import { Inertia } from "@inertiajs/inertia";
 import { NCheckbox } from "naive-ui";
 import { ref } from "vue";
-import route from "ziggy-js";
+
 
 const props = defineProps<{
   task: Record<string, any>;

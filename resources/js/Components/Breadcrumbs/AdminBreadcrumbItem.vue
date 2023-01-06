@@ -21,7 +21,7 @@
 <script setup lang="tsx">
 import { Inertia } from "@inertiajs/inertia";
 import { NBreadcrumbItem, NDropdown, NIcon } from "naive-ui";
-import route from "ziggy-js";
+
 
 const props = defineProps<{
   option: App.Props.BreadcrumbOption;

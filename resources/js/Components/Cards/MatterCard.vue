@@ -63,7 +63,6 @@ import {
 } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import { NButton, NCard, NEllipsis, NIcon } from "naive-ui";
-import route from "ziggy-js";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
 import DoingsStatusDonut from "@/Components/Statistics/DoingsStatusDonut.vue";

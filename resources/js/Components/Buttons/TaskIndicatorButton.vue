@@ -15,5 +15,5 @@
 import { Inertia } from "@inertiajs/inertia";
 import { NBadge, NButton, NIcon } from "naive-ui";
 import { TasksApp24Regular } from "@vicons/fluent";
-import route from "ziggy-js";
+
 </script>

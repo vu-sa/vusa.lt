@@ -69,7 +69,7 @@ import {
   createDiscreteApi,
 } from "naive-ui";
 import { computed, ref } from "vue";
-import route from "ziggy-js";
+
 
 import { checkForEmptyArray } from "@/Composables/checkAttributes";
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";

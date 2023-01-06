@@ -160,7 +160,7 @@ import {
   NTag,
 } from "naive-ui";
 import { computed, ref } from "vue";
-import route from "ziggy-js";
+
 
 import { contentTypeOptions, documentTemplate } from "@/Composables/someTypes";
 import { useStorage } from "@vueuse/core";

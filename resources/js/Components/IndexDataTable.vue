@@ -18,17 +18,12 @@
 
 <script setup lang="tsx">
 import { ArrowForward20Filled, Edit20Filled } from "@vicons/fluent";
-import {
-  DataTableColumns,
-  NButton,
-  NButtonGroup,
-  NDataTable,
-  NIcon,
-} from "naive-ui";
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
+import { NButton, NButtonGroup, NDataTable, NIcon } from "naive-ui";
 import { computed, reactive, ref } from "vue";
-import route from "ziggy-js";
+
+import type { DataTableColumns } from "naive-ui";
 
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 

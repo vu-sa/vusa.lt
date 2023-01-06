@@ -42,7 +42,7 @@ import {
 import { Link, usePage } from "@inertiajs/inertia-vue3";
 import { NIcon, NMenu } from "naive-ui";
 import { computed, ref } from "vue";
-import route from "ziggy-js";
+
 
 defineProps<{
   collapsed: boolean;

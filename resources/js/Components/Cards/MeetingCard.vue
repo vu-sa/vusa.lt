@@ -68,7 +68,6 @@ import {
 import { Inertia } from "@inertiajs/inertia";
 import { NCard, NIcon, NSpin } from "naive-ui";
 import { computed, ref } from "vue";
-import route from "ziggy-js";
 
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import StatusTag from "@/Components/Tags/StatusTag.vue";

@@ -189,7 +189,7 @@ import {
 } from "naive-ui";
 import { ref } from "vue";
 import { useStorage } from "@vueuse/core";
-import route from "ziggy-js";
+
 
 import { documentTemplate } from "@/Composables/someTypes";
 import AdminBreadcrumbItem from "@/Components/BreadcrumbItems/AdminBreadcrumbItem.vue";

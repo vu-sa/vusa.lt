@@ -85,7 +85,7 @@ import { Inertia } from "@inertiajs/inertia";
 import { Link, usePage } from "@inertiajs/inertia-vue3";
 import { NIcon, NPagination } from "naive-ui";
 import { ref } from "vue";
-import route from "ziggy-js";
+
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import HomeCard from "@/Components/Public/HomeCard.vue";

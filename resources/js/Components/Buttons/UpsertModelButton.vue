@@ -12,9 +12,8 @@
 <script setup lang="ts">
 import { Inertia, Method } from "@inertiajs/inertia";
 import { InertiaForm } from "@inertiajs/inertia-vue3";
-import { NButton, NPopconfirm, NSpin, UploadFileInfo } from "naive-ui";
+import { NButton, NPopconfirm, NSpin, type UploadFileInfo } from "naive-ui";
 import { computed, ref } from "vue";
-import route from "ziggy-js";
 
 const props = defineProps<{
   form: InertiaForm<App.Models.ModelTemplate>;

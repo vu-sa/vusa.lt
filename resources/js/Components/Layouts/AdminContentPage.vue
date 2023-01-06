@@ -49,7 +49,7 @@ import { AddCircle32Regular, ArrowCircleLeft32Regular } from "@vicons/fluent";
 import { Head, Link } from "@inertiajs/inertia-vue3";
 import { NDivider, NIcon } from "naive-ui";
 import { computed } from "vue";
-import route from "ziggy-js";
+
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 

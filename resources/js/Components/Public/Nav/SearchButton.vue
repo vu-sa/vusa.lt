@@ -72,7 +72,7 @@ import { NButton, NIcon, NInput, NModal } from "naive-ui";
 import { Search20Filled } from "@vicons/fluent";
 import { ref } from "vue";
 import { useDebounceFn } from "@vueuse/core";
-import route from "ziggy-js";
+
 
 const showSearch = ref(false);
 const searchInputLoading = ref(false);

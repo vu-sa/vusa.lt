@@ -940,7 +940,7 @@
 import { Link } from "@inertiajs/inertia-vue3";
 import { NButton, NCollapse, NCollapseItem, NDivider, NModal } from "naive-ui";
 import { ref } from "vue";
-import route from "ziggy-js";
+
 
 import VUSA from "../2-VU-SA.vue";
 

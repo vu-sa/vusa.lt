@@ -13,7 +13,7 @@
 import { Microsoft as MicrosoftIcon } from "@vicons/fa";
 import { NButton, NIcon } from "naive-ui";
 import { ref } from "vue";
-import route from "ziggy-js";
+
 
 const loadingRef = ref(false);
 

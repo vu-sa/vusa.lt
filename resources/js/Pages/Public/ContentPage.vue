@@ -47,7 +47,7 @@ import { Head } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
 import { NBreadcrumb, NBreadcrumbItem, NButton, NIcon } from "naive-ui";
 import { usePage } from "@inertiajs/inertia-vue3";
-import route from "ziggy-js";
+
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 

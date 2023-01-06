@@ -46,7 +46,7 @@ export default {
 </script>
 
 <script setup lang="ts">
-import route from "ziggy-js";
+
 
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import NewsForm from "@/Components/AdminForms/NewsForm.vue";

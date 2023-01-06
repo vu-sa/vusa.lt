@@ -53,7 +53,6 @@ import {
 import { Link } from "@inertiajs/inertia-vue3";
 import { NButton, NIcon } from "naive-ui";
 import { defineAsyncComponent } from "vue";
-import route from "ziggy-js";
 
 import { formatRelativeTime } from "@/Utils/IntlTime";
 

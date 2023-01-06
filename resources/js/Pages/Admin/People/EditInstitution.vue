@@ -63,7 +63,7 @@ import { Link } from "@inertiajs/inertia-vue3";
 import { NButton, NCard, NIcon } from "naive-ui";
 import { ref } from "vue";
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
-import route from "ziggy-js";
+
 
 import { checkForEmptyArray } from "@/Composables/checkAttributes";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";

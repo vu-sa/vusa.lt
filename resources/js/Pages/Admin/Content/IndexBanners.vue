@@ -14,7 +14,7 @@
 
 <script setup lang="tsx">
 import { DataTableColumns } from "naive-ui";
-import route from "ziggy-js";
+
 
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import AsideHeader from "@/Components/AsideHeaders/AsideHeaderContent.vue";

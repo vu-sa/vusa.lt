@@ -74,7 +74,6 @@ import { Inertia } from "@inertiajs/inertia";
 import { MoreHorizontal24Filled } from "@vicons/fluent";
 import { NButton, NCard, NIcon, NPopover, NTag } from "naive-ui";
 import { computed } from "vue";
-import route from "ziggy-js";
 
 import InstitutionAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";

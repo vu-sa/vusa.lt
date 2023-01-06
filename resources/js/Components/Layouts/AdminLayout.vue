@@ -98,7 +98,7 @@ const { message } = createDiscreteApi(["message"], {
 
 <script setup lang="ts">
 import {
-  ConfigProviderProps,
+  type ConfigProviderProps,
   NButton,
   NConfigProvider,
   NDivider,

@@ -17,7 +17,7 @@
 import { NButton, NForm, NFormItemGi, NGrid, NInput } from "naive-ui";
 import { ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
-import route from "ziggy-js";
+
 
 const emit = defineEmits(["formSuccess"]);
 

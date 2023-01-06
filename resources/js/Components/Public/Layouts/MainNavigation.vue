@@ -137,8 +137,7 @@ import {
   NTree,
 } from "naive-ui";
 import { computed, reactive, ref } from "vue";
-import { split } from "lodash";
-import route, { RouteParamsWithQueryOverload } from "ziggy-js";
+import type { RouteParamsWithQueryOverload } from "ziggy-js";
 
 import AppLogo from "@/Components/AppLogo.vue";
 import DarkModeSwitch from "@/Components/Buttons/DarkModeSwitch.vue";

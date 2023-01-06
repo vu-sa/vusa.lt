@@ -76,7 +76,7 @@
 import { ArrowCircleRight20Regular } from "@vicons/fluent";
 import { Link } from "@inertiajs/inertia-vue3";
 import { NIcon } from "naive-ui";
-import route from "ziggy-js";
+
 
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 

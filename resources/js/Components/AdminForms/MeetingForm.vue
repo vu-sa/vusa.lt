@@ -66,7 +66,7 @@ import {
   NSelect,
 } from "naive-ui";
 import { ref } from "vue";
-import route from "ziggy-js";
+
 
 // import { meetingOptions, meetingStatusOptions } from "@/Composables/someTypes";
 import StatusTag from "@/Components/Tags/StatusTag.vue";

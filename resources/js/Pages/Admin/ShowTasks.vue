@@ -49,7 +49,7 @@ import {
   NTag,
 } from "naive-ui";
 import { computed, ref } from "vue";
-import route from "ziggy-js";
+
 
 import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";

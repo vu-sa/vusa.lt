@@ -14,7 +14,7 @@ import {
 import { Inertia } from "@inertiajs/inertia";
 import { NButton, NDropdown, NIcon } from "naive-ui";
 import { h, ref } from "vue";
-import route from "ziggy-js";
+
 
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
 

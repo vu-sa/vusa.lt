@@ -23,7 +23,7 @@
 <script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
 import { NCard } from "naive-ui";
-import route from "ziggy-js";
+
 
 import { formatRelativeTime } from "@/Utils/IntlTime";
 import MoreOptionsButton from "../Buttons/MoreOptionsButton.vue";

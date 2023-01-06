@@ -74,7 +74,7 @@ import { Mail20Regular, Phone20Regular } from "@vicons/fluent";
 import { NButton, NIcon, NImage, NPopover } from "naive-ui";
 
 import { PersonEdit24Regular } from "@vicons/fluent";
-import route from "ziggy-js";
+
 
 const props = defineProps<{
   contact: App.Models.User;

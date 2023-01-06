@@ -285,7 +285,7 @@ import {
   darkTheme,
 } from "naive-ui";
 import { ref } from "vue";
-import route from "ziggy-js";
+
 
 import CardModal from "@/Components/Modals/CardModal.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";

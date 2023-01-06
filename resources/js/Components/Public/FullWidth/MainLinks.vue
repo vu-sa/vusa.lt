@@ -20,7 +20,7 @@ import { trans as $t } from "laravel-vue-i18n";
 import { Inertia } from "@inertiajs/inertia";
 import { NButton } from "naive-ui";
 import { usePage } from "@inertiajs/inertia-vue3";
-import route from "ziggy-js";
+
 
 defineProps<{ mainPage: Array<App.Models.MainPage> }>();
 

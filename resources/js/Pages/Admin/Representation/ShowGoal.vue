@@ -74,7 +74,7 @@ import {
   NIcon,
 } from "naive-ui";
 import { computed, ref } from "vue";
-import route from "ziggy-js";
+
 
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";

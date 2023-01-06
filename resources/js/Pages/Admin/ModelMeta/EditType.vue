@@ -35,7 +35,7 @@
 <script setup lang="ts">
 import { NMessageProvider } from "naive-ui";
 import { ref } from "vue";
-import route from "ziggy-js";
+
 
 import { contentTypeOptions, documentTemplate } from "@/Composables/someTypes";
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";

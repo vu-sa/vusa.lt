@@ -19,7 +19,7 @@ export default {
 </script>
 
 <script setup lang="ts">
-import route from "ziggy-js";
+
 
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import RelationshipForm from "@/Components/AdminForms/RelationshipForm.vue";

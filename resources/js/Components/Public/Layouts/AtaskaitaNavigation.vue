@@ -221,7 +221,7 @@ import {
   NTree,
 } from "naive-ui";
 import { ref } from "vue";
-import route from "ziggy-js";
+
 
 // map padaliniai to options_padaliniai
 

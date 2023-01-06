@@ -47,7 +47,7 @@ import {
 } from "@vicons/fluent";
 import { Link } from "@inertiajs/inertia-vue3";
 import { NButton, NIcon } from "naive-ui";
-import route from "ziggy-js";
+
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import GoalChanger from "@/Components/Buttons/GoalChangerButton.vue";

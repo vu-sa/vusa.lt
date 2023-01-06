@@ -1,8 +1,8 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import "./bootstrap";
 
 import { InertiaProgress } from "@inertiajs/progress";
 
+import { ZiggyVue } from "../../vendor/tightenco/ziggy/src/js/vue.js";
 import { createApp, h } from "vue";
 import { createInertiaApp } from "@inertiajs/inertia-vue3";
 import { i18nVue } from "laravel-vue-i18n";
@@ -29,6 +29,7 @@ createInertiaApp({
           return await langs[`../../lang/${lang}.json`]();
         },
       })
+      .use(ZiggyVue)
       .mount(el);
   },
 });

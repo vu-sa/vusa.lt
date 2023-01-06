@@ -78,7 +78,6 @@ import {
 } from "naive-ui";
 import { computed, ref } from "vue";
 import { useStorage } from "@vueuse/core";
-import route from "ziggy-js";
 
 import AdminBreadcrumbDisplayer from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";

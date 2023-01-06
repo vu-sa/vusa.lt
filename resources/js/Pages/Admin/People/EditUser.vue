@@ -58,7 +58,7 @@ import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
 import { NButton, NCard, NIcon } from "naive-ui";
 import { PersonEdit24Regular } from "@vicons/fluent";
-import route from "ziggy-js";
+
 
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";

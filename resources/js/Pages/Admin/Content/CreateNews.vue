@@ -16,7 +16,7 @@ export default {
 </script>
 
 <script setup lang="ts">
-import route from "ziggy-js";
+
 
 import NewsForm from "@/Components/AdminForms/NewsForm.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";

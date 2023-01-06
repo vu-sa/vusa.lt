@@ -7,7 +7,7 @@
 <script setup lang="ts">
 import { NButton, NIcon } from "naive-ui";
 import { PreviewLink20Filled } from "@vicons/fluent";
-import route from "ziggy-js";
+
 
 const props = defineProps<{
   mainRoute: string;

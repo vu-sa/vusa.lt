@@ -24,7 +24,7 @@
 
 <script setup lang="tsx">
 import { DataTableColumns, NCard } from "naive-ui";
-import route from "ziggy-js";
+
 
 import IndexDataTable from "@/Components/IndexDataTable.vue";
 import IndexSearchInput from "@/Components/IndexSearchInput.vue";

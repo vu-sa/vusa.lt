@@ -44,7 +44,6 @@ import { CalendarClock20Regular } from "@vicons/fluent";
 import { Link } from "@inertiajs/inertia-vue3";
 import { NIcon, NMessageProvider, NNumberAnimation } from "naive-ui";
 import { computed } from "vue";
-import route from "ziggy-js";
 
 import { formatStaticTime, getDaysDifference } from "@/Utils/IntlTime";
 import NewMeetingButton from "@/Components/Buttons/NewMeetingButton.vue";

@@ -74,7 +74,7 @@ import { HatGraduation20Regular, Person20Filled } from "@vicons/fluent";
 import { Head } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
 import { NButton, NDivider, NIcon } from "naive-ui";
-import route from "ziggy-js";
+
 
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 

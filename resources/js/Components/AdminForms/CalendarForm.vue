@@ -212,12 +212,11 @@ import {
   NTabPane,
   NTabs,
   NUpload,
-  UploadFileInfo,
-  UploadInst,
+  type UploadFileInfo,
+  type UploadInst,
 } from "naive-ui";
 import { computed, ref } from "vue";
 import { useForm, usePage } from "@inertiajs/inertia-vue3";
-import route from "ziggy-js";
 
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import TipTap from "@/Components/TipTap/OriginalTipTap.vue";

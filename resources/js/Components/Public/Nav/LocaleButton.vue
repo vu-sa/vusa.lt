@@ -18,7 +18,7 @@ import { NBadge, NButton, NDropdown, NIcon } from "naive-ui";
 import { computed } from "vue";
 import { loadLanguageAsync } from "laravel-vue-i18n";
 import { usePage } from "@inertiajs/inertia-vue3";
-import route from "ziggy-js";
+
 
 const props = defineProps<{
   locale: string;

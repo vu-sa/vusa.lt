@@ -128,7 +128,7 @@ export default {
 import { Head } from "@inertiajs/inertia-vue3";
 import { Link } from "@inertiajs/inertia-vue3";
 import { onMounted, ref } from "vue";
-import route from "ziggy-js";
+
 
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";

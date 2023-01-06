@@ -18,10 +18,14 @@
 
 <script setup lang="ts">
 import { Inertia } from "@inertiajs/inertia";
-import { NButton, NUpload, UploadFileInfo, createDiscreteApi } from "naive-ui";
+import {
+  NButton,
+  NUpload,
+  type UploadFileInfo,
+  createDiscreteApi,
+} from "naive-ui";
 import { ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
-import route from "ziggy-js";
 
 const props = defineProps<{
   modelValue: string | null;

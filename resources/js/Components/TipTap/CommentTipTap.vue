@@ -57,7 +57,7 @@ import { NButton, NIcon } from "naive-ui";
 import { onBeforeUnmount, ref } from "vue";
 import StarterKit from "@tiptap/starter-kit";
 import TipTapLink from "@tiptap/extension-link";
-import route from "ziggy-js";
+
 
 import UserAvatar from "../Avatars/UserAvatar.vue";
 

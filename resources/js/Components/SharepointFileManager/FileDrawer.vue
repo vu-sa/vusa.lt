@@ -67,7 +67,7 @@ import {
   NTag,
 } from "naive-ui";
 import { computed, ref, watch } from "vue";
-import route from "ziggy-js";
+
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 

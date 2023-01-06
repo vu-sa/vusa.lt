@@ -46,6 +46,7 @@
 
 <script lang="ts">
 import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
+import type ProjectSharedProps from "@/Types/inertia";
 
 export default {
   layout: PublicLayout,
@@ -58,7 +59,6 @@ import { DocumentEdit24Regular } from "@vicons/fluent";
 import { Head, usePage } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
 import { NBackTop, NButton, NIcon } from "naive-ui";
-import route from "ziggy-js";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import NewsArticle from "@/Components/Public/NewsArticle.vue";
@@ -77,7 +77,7 @@ const openAnotherLangNews = () => {
     route("news", {
       lang: props.otherLangNews.lang,
       newsString: props.otherLangNews.lang === "lt" ? "naujiena" : "news",
-      padalinys: usePage().props.value.alias,
+      padalinys: usePage<ProjectSharedProps>().props.value.alias,
       permalink: props.otherLangNews.permalink,
     }),
     "_blank"

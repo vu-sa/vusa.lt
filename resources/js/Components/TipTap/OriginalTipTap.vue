@@ -230,7 +230,7 @@ import TableHeader from "@tiptap/extension-table-header";
 import TableRow from "@tiptap/extension-table-row";
 import TipTapLink from "@tiptap/extension-link";
 import Youtube from "@tiptap/extension-youtube";
-import route from "ziggy-js";
+
 
 import CardModal from "@/Components/Modals/CardModal.vue";
 

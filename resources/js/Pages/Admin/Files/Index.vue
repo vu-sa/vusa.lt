@@ -93,7 +93,7 @@ import { computed } from "vue";
 import FileButton from "@/Components/Buttons/FileButton.vue";
 import FolderButton from "@/Components/Buttons/FolderButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import route from "ziggy-js";
+
 
 // Declare props
 const props = defineProps<{

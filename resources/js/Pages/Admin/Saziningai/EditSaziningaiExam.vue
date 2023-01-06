@@ -74,7 +74,7 @@ import { AddCircle20Regular } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import { NButton, NCard, NDatePicker, NIcon, NModal, NPopover } from "naive-ui";
 import { reactive, ref } from "vue";
-import route from "ziggy-js";
+
 
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import SaziningaiExamForm from "@/Components/AdminForms/SaziningaiExamForm.vue";

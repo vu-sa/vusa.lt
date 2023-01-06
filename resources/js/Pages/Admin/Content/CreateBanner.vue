@@ -15,7 +15,7 @@ export default {
 </script>
 
 <script setup lang="ts">
-import route from "ziggy-js";
+
 
 import BannerForm from "@/Components/AdminForms/BannerForm.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";

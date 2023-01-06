@@ -31,7 +31,7 @@ import { Delete20Filled } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import { NButton, NIcon, NPopconfirm, NPopover } from "naive-ui";
 import { ref } from "vue";
-import route from "ziggy-js";
+
 
 const props = defineProps<{
   disabled?: boolean;
