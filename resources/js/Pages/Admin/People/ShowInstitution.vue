@@ -1,19 +1,10 @@
 <template>
   <PageContent breadcrumb>
     <template #above-header>
-      <NBreadcrumb class="mb-4 w-full">
-        <AdminBreadcrumbItem
-          :visit-route="route('dashboard')"
-          :icon="Home24Filled"
-        >
-          Pradinis
-        </AdminBreadcrumbItem>
-        <AdminBreadcrumbItem :icon="PeopleTeam24Filled">
-          <NEllipsis style="max-width: 200px">
-            {{ institution.name }}</NEllipsis
-          >
-        </AdminBreadcrumbItem>
-      </NBreadcrumb>
+      <AdminBreadcrumbDisplayer
+        :options="breadcrumbOptions"
+        class="mb-4 w-full"
+      />
     </template>
     <template #title>
       <span class="text-3xl">{{ institution.name }}</span>
@@ -167,32 +158,21 @@
 </template>
 
 <script setup lang="tsx">
-import {
-  Edit24Filled,
-  Home24Filled,
-  MoreHorizontal24Filled,
-  PeopleTeam24Filled,
-  Sparkle20Filled,
-} from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import {
-  NBreadcrumb,
-  NButton,
   NCollapse,
   NCollapseItem,
-  NDropdown,
-  NEllipsis,
   NIcon,
   NTabPane,
   NTabs,
   NTag,
 } from "naive-ui";
+import { PeopleTeam24Filled, Sparkle20Filled } from "@vicons/fluent";
 import { ref } from "vue";
 import { useStorage } from "@vueuse/core";
 
-
 import { documentTemplate } from "@/Composables/someTypes";
-import AdminBreadcrumbItem from "@/Components/BreadcrumbItems/AdminBreadcrumbItem.vue";
+import AdminBreadcrumbDisplayer from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import FileSelectDrawer from "@/Components/SharepointFileManager/FileDrawer.vue";
 import InstitutionAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
@@ -249,4 +229,11 @@ const typeRelationships = (type) => {
   // don't return undefined values, but empty array
   return relationshipModels;
 };
+
+const breadcrumbOptions: App.Props.BreadcrumbOption[] = [
+  {
+    label: props.institution.name,
+    icon: PeopleTeam24Filled,
+  },
+];
 </script>

@@ -12,6 +12,7 @@ use App\Models\Type;
 use App\Models\Doing;
 use App\Models\Relationshipable;
 use App\Services\SharepointAppGraph;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
 class InstitutionController extends Controller
 {
@@ -93,7 +94,8 @@ class InstitutionController extends Controller
     {
         $institution->load('types', 'padalinys', 'users', 'matters.meetings.documents');
 
-        $users = $institution->users()->get()->unique('id')->values();
+        $users = $institution->users->unique('id')->values();
+        $meetings = new EloquentCollection($institution->matters->pluck('meetings')->flatten());
 
         $sharepointFiles = [];        
         
@@ -136,6 +138,7 @@ class InstitutionController extends Controller
                 'receivedRelationships' => $receivedRelationships,
                 'givenRelationships' => $givenRelationships,
                 'lastMeeting' => $institution->lastMeeting(),
+                'meetings' => $meetings->unique()
             ],
             'doingTypes' => Type::where('model_type', Doing::class)->get()->map(function ($doingType) {
                 return [

@@ -10,7 +10,7 @@ declare global {
 
     namespace Props {
       export interface BreadcrumbOption {
-        label: string;
+        label: string | null;
         icon?: Component;
         dropdownOptions?: DropdownOption[];
         routeOptions?: {
