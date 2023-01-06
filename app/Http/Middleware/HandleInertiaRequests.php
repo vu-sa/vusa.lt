@@ -44,12 +44,10 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request)
     {
-        $user = User::withCount(['tasks' => function ($query) {
-            $query->whereNull('completed_at');
-        }])->with('roles')->find(Auth::id());
+        $user = $this->getLoggedInUserForInertia();
 
         if ($user) {
-            $user->padalinys = User::find(Auth::id())?->padalinys()?->shortname;
+            $user->padalinys = $user->padalinys()?->shortname;
             $user->isSuperAdmin = $user->hasRole('Super Admin');
             $user->notifications = $user->unreadNotifications;
         }
@@ -98,4 +96,13 @@ class HandleInertiaRequests extends Middleware
             ],
         ]);
     }
+
+    protected function getLoggedInUserForInertia(): ?User
+        {
+            $user = User::withCount(['tasks' => function ($query) {
+                $query->whereNull('completed_at');
+            }])->with('roles')->find(Auth::id());
+
+            return $user;
+        }
 }
