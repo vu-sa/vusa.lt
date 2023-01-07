@@ -8,6 +8,7 @@ use App\Models\Relationshipable;
 use App\Models\Type;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -32,10 +33,16 @@ class DashboardController extends Controller
 
     public function userSettings()
     {
-        $user = User::find(auth()->user()->id);
+        $user = User::find(Auth::id());
+
+        $user->load('roles:id,name', 
+            'duties:id,name,institution_id', 
+            'duties.roles:id,name', 
+            'duties.institution:id,padalinys_id', 
+            'duties.institution.padalinys:id,shortname');
         
         return Inertia::render('Admin/ShowUserSettings', [
-            'roles' => $user->getRoleNames(),
+            'user' => $user->toArray(),
         ]);
     }
 

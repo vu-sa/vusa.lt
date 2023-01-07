@@ -6,8 +6,11 @@ use App\Models\Duty;
 use App\Models\Institution;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller as Controller;
+use App\Models\Role;
 use App\Models\Type;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 
@@ -110,8 +113,10 @@ class DutyController extends Controller
             'duty' => [
                 ...$duty->load('institution')->toArray(),
                 'types' => $duty->types->pluck('id'),
+                'roles' => $duty->roles()->pluck('id')->toArray()
             ],
             'users' => $duty->users,
+            'roles' => Role::all(),
             'dutyTypes' => Type::where('model_type', Duty::class)->get(),
             'institutions' => $institutions
         ]);
@@ -137,6 +142,15 @@ class DutyController extends Controller
             $duty->institution()->disassociate();
             $duty->institution()->associate(Institution::find($request->institution['id']));
             $duty->save();
+
+            if (true) {
+                // check if user is super admin
+                if ($request->has('roles')) {
+                    $duty->syncRoles($request->roles);
+                } else {
+                    $duty->syncRoles([]);
+                }
+            }
 
             $duty->types()->sync($request->types);
         });

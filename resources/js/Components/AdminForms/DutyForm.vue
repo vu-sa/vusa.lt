@@ -37,6 +37,17 @@
             />
           </NFormItemGi>
 
+          <NFormItemGi label="Administracinė vusa.lt rolė" :span="2">
+            <NSelect
+              v-model:value="form.roles"
+              :options="rolesOptions"
+              clearable
+              multiple
+              type="text"
+              placeholder="Be rolės..."
+            />
+          </NFormItemGi>
+
           <NFormItemGi label="Aprašymas" :span="6">
             <TipTap
               v-model="form.description"
@@ -95,6 +106,7 @@ import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 const props = defineProps<{
   duty: App.Models.Duty;
   dutyTypes: App.Models.Type[];
+  roles: App.Models.Role[];
   institutions: App.Models.Institution[];
   hasUsers?: boolean;
   modelRoute: string;
@@ -103,7 +115,10 @@ const props = defineProps<{
 
 const form = useForm("institution", props.duty);
 
-console.log(form.types);
+const rolesOptions = props.roles.map((role) => ({
+  label: role.name,
+  value: role.id,
+}));
 
 const institutionsFromDatabase = props.institutions.map((institution) => ({
   label: `${institution.name} (${institution.padalinys?.shortname})`,

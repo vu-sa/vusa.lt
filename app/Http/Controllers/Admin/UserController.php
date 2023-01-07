@@ -90,7 +90,7 @@ class UserController extends Controller
             }
 
             // check if user is super admin
-            if (auth()->user()->hasRole('Super Admin')) {
+            if (User::find(Auth::id())->hasRole('Super Admin')) {
                 // check if user is super admin
                 if ($request->has('roles')) {
                     $user->syncRoles($request->roles);

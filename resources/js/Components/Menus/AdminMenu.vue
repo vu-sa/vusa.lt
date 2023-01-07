@@ -43,12 +43,11 @@ import { Link, usePage } from "@inertiajs/inertia-vue3";
 import { NIcon, NMenu } from "naive-ui";
 import { computed, ref } from "vue";
 
-
 defineProps<{
   collapsed: boolean;
 }>();
 
-const { auth } = usePage<InertiaProps>().props.value;
+const { auth } = usePage().props.value;
 const activeKey = ref("");
 
 // set active key with a switch

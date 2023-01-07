@@ -23,7 +23,7 @@
       <NFormItemGi label="Administracinė vusa.lt rolė" :span="2">
         <NSelect
           v-model:value="form.roles"
-          :disabled="!$page.props.auth.user.isSuperAdmin"
+          :disabled="!$page.props.auth.user?.isSuperAdmin ?? true"
           :options="rolesOptions"
           clearable
           multiple

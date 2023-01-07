@@ -101,12 +101,14 @@ declare namespace App.Models {
     types?: Array<App.Models.Type> | null;
     documents?: Array<App.Models.SharepointDocument> | null;
     tasks?: Array<App.Models.Task> | null;
+    users?: Array<App.Models.User> | null;
     doables_count?: number | null;
     goals_count?: number | null;
     matters_count?: number | null;
     types_count?: number | null;
     documents_count?: number | null;
     tasks_count?: number | null;
+    users_count?: number | null;
   }
 
   export interface Dutiable {
@@ -136,11 +138,13 @@ declare namespace App.Models {
     updated_at: any;
     deleted_at: any | null;
     dutiables?: Array<App.Models.Dutiable> | null;
+    roles?: Array<App.Models.Role> | null; // manually added
     users?: Array<App.Models.User> | null;
     contacts?: Array<App.Models.Contact> | null;
     types?: Array<App.Models.Type> | null;
     institution?: App.Models.Institution | null;
     dutiables_count?: number | null;
+    roles_count?: number | null; // manually added
     users_count?: number | null;
     contacts_count?: number | null;
     types_count?: number | null;
@@ -551,11 +555,15 @@ declare namespace App.Models {
     deleted_at: any | null;
     banners?: Array<App.Models.Banner> | null;
     calendar?: Array<App.Models.Calendar> | null;
+    doings?: Array<App.Models.Doing> | null;
     duties?: Array<App.Models.Duty> | null;
+    roles?: Array<App.Models.Role> | null; // manually added
     tasks?: Array<App.Models.Task> | null;
     banners_count?: number | null;
     calendar_count?: number | null;
+    doings_count?: number | null;
     duties_count?: number | null;
+    roles_count?: number | null; // manually added
     tasks_count?: number | null;
   }
 }

@@ -10,6 +10,7 @@ use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Cache;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -105,5 +106,28 @@ class User extends Authenticatable
     public function tasks()
     {
         return $this->belongsToMany(Task::class);
+    }
+
+    public function isSuperAdmin()
+    {           
+        if ($this->hasRole('Super Admin')) {
+            return true;
+        }
+
+        // check against all duties
+
+        return Cache::remember('super-admin-' . $this->id, 60, function () {
+
+            $duties = $this->load('duties:id', 'duties.roles:id')->duties()->get();
+    
+            // check if at least one duty has super admin role
+            foreach ($duties as $duty) {
+                if ($duty->hasRole('Super Admin')) {
+                    return true;
+                }
+            }
+
+            return false;
+        });
     }
 }

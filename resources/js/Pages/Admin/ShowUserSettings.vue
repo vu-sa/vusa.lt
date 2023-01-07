@@ -1,11 +1,22 @@
 <template>
-  <PageContent :title="`${$page.props.auth.user.name}`">
+  <PageContent :title="`${$page.props.auth.user?.name}`">
     <NCard class="subtle-gray-gradient">
       <!-- <p>{{ salutation }}</p> -->
       <div class="mb-4">
         <p>Tavo rolės:</p>
-        <ul v-for="(role, index) in roles" :key="index" class="list-inside">
-          <li class="font-bold">{{ $t(role) }}</li>
+        <ul class="list-inside">
+          <li v-for="(role, index) in user.roles" :key="role.id">
+            <strong>{{ $t(role.name) }}</strong>
+          </li>
+          <template v-for="duty in user.duties">
+            <li v-for="role in duty.roles" :key="role.id">
+              <strong>{{ $t(role.name) }}</strong> ({{
+                `iš pareigybės „${duty.name}“, kuri yra iš ${
+                  duty.institution?.padalinys?.shortname ?? "nežinomo padalinio"
+                }`
+              }})
+            </li>
+          </template>
         </ul>
       </div>
       <p>
@@ -28,6 +39,6 @@ defineOptions({
 });
 
 defineProps<{
-  roles: string[];
+  user: App.Models.User;
 }>();
 </script>

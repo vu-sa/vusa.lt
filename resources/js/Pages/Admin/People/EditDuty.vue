@@ -9,6 +9,7 @@
       <DutyForm
         :duty="duty"
         :has-users="hasUsers"
+        :roles="roles"
         :duty-types="dutyTypes"
         :institutions="institutions"
         model-route="duties.update"
@@ -70,7 +71,6 @@ import {
 } from "naive-ui";
 import { computed, ref } from "vue";
 
-
 import { checkForEmptyArray } from "@/Composables/checkAttributes";
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import DutyForm from "@/Components/AdminForms/DutyForm.vue";
@@ -84,6 +84,7 @@ defineOptions({
 const props = defineProps<{
   duty: App.Models.Duty;
   users: App.Models.User[];
+  roles: App.Models.Role[];
   dutyTypes: App.Models.Type[];
   institutions: App.Models.Institution[];
 }>();

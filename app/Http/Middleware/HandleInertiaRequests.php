@@ -45,30 +45,31 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request)
     {
         $user = $this->getLoggedInUserForInertia();
-
-        if ($user) {
-            $user->padalinys = $user->padalinys()?->shortname;
-            $user->isSuperAdmin = $user->hasRole('Super Admin');
-            $user->notifications = $user->unreadNotifications;
-        }
+        
+        $isSuperAdmin = $user ? $user->isSuperAdmin() : false;
 
         return array_merge(parent::share($request), [
             'app' => [
-                'env' => config('app.env'),
-                'url' => config('app.url'),
+                'env' => fn () => config('app.env'),
+                'url' => fn () => config('app.url'),
             ],
             'auth' => [
-                'can' => is_null($request->user()) ? false : [
-                    'calendar' => fn () => $request->user()->can('edit unit calendar'),
-                    'content' => fn () => $request->user()->can('edit unit content'),
-                    'files' => fn () => $request->user()->can('edit unit content'),
-                    'institutions' => fn () => $request->user()->can('edit institution content'),
-                    'navigation' => fn () => $request->user()->hasRole('Super Admin'),
-                    'saziningai' => fn () => $request->user()->can('edit saziningai content'),
-                    'settings' => fn () => $request->user()->hasRole('Super Admin'),
-                    'users' => fn () => $request->user()->can('edit unit users'),
+                'can' => is_null($user) ? null : [
+                    'calendar' => fn () => $user->can('edit unit calendar'),
+                    'content' => fn () => $user->can('edit unit content'),
+                    'files' => fn () => $user->can('edit unit content'),
+                    'institutions' => fn () => $user->can('edit institution content'),
+                    'navigation' => fn () => $isSuperAdmin,
+                    'saziningai' => fn () => $user->can('edit saziningai content'),
+                    'settings' => fn () => $isSuperAdmin,
+                    'users' => fn () => $user->can('edit unit users'),
                 ],
-                'user' => $user,
+                'user' => is_null($user) ? null : [
+                    ...$user->toArray(), 
+                    'padalinys' => $user->padalinys()?->shortname, 
+                    'isSuperAdmin' => $isSuperAdmin,
+                    'unreadNotifications' => $user->unreadNotifications()
+                ],
             ],
             // is used in the admin navigation to show only the allowed pages
             'flash' => [
@@ -76,9 +77,7 @@ class HandleInertiaRequests extends Middleware
                 'info' => fn () => $request->session()->get('info'),
                 'success' => fn () => $request->session()->get('success'),
             ],
-            'locale' => function () {
-                return app()->getLocale();
-            },
+            'locale' => fn () => app()->getLocale(),
             'misc' => $request->session()->get('misc') ?? "",
             'padaliniai' => Padalinys::where('type', '=', 'padalinys')->orderBy('shortname_vu')->get()->map(function ($padalinys) {
                 return [
@@ -101,7 +100,7 @@ class HandleInertiaRequests extends Middleware
         {
             $user = User::withCount(['tasks' => function ($query) {
                 $query->whereNull('completed_at');
-            }])->with('roles')->find(Auth::id());
+            }])->with('roles', 'duties:id,name', 'duties.roles')->find(Auth::id());
 
             return $user;
         }
