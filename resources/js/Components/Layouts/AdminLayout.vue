@@ -99,6 +99,7 @@ const { message } = createDiscreteApi(["message"], {
 <script setup lang="ts">
 import {
   type ConfigProviderProps,
+  type MessageReactive,
   NButton,
   NConfigProvider,
   NDivider,
@@ -114,7 +115,7 @@ import {
 } from "naive-ui";
 import { Head, usePage } from "@inertiajs/inertia-vue3";
 import { computed, onMounted, watch } from "vue";
-import { useStorage } from "@vueuse/core";
+import { useOnline, useStorage } from "@vueuse/core";
 
 import { updateDarkMode } from "@/Composables/darkMode";
 import AdminMenu from "@/Components/Menus/AdminMenu.vue";
@@ -136,10 +137,19 @@ defineProps<{
 const showModal = ref(false);
 const mounted = ref(false);
 const collapsed = useStorage("admin-menu-collapsed", false);
+const online = useOnline();
 
 const successMessage = computed(() => usePage().props.value.flash.success);
 const infoMessage = computed(() => usePage().props.value.flash.info);
 const errorMessage = computed(() => usePage().props.value.errors);
+
+const errorOnlineReactiveMessage = () => {
+  return message.error("Jūsų interneto ryšys buvo nutrauktas.", {
+    duration: 0,
+  });
+};
+
+const errorOnlineMessage = ref<MessageReactive | null>(null);
 
 watch(successMessage, (successMessage) => {
   if (successMessage) {
@@ -152,6 +162,17 @@ watch(infoMessage, (infoMessage) => {
   if (infoMessage) {
     message.info(infoMessage);
     usePage().props.value.flash.info = null;
+  }
+});
+
+watch(online, (online) => {
+  if (!online) {
+    errorOnlineMessage.value = errorOnlineReactiveMessage();
+  } else {
+    if (errorOnlineMessage.value) {
+      errorOnlineMessage.value.destroy();
+      message.success("Jūsų interneto ryšys buvo atkurtas.");
+    }
   }
 });
 
