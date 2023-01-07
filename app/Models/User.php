@@ -73,12 +73,13 @@ class User extends Authenticatable
         return $this->belongsToMany(Doing::class);
     }
 
-    // TODO: return only current duties
     public function duties()
     {
         return $this->morphToMany(Duty::class, 'dutiable')
-        ->using(Dutiable::class)->withPivot(['extra_attributes', 'start_date', 'end_date'])
-        ->withTimestamps();
+            ->using(Dutiable::class)
+            ->withPivot(['extra_attributes'])
+            ->wherePivot('end_date', '>=', now())->orWherePivot('end_date', null)
+            ->withTimestamps();
     }
 
     // TODO: more logical return of padalinys
