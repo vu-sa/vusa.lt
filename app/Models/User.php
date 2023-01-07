@@ -11,12 +11,13 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Cache;
+use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 class User extends Authenticatable
 {
-    use Notifiable, HasFactory, HasRoles, HasUlids, LogsActivity, SoftDeletes;
+    use Notifiable, HasFactory, HasRelationships, HasRoles, HasUlids, LogsActivity, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -88,46 +89,11 @@ class User extends Authenticatable
 
     public function padaliniai()
     {
-        $padaliniai = [];
-        
-        $this->load('duties.institution.padalinys');
-        foreach ($this->duties as $duty) {
-            if ($duty->institution->padalinys) {
-                $padaliniai[] = $duty->institution->padalinys;
-            }
-        }
-
-        // collect unique padaliniai
-        $padaliniai = new Collection($padaliniai);
-
-        return $padaliniai->unique();
+        return $this->hasManyDeepFromRelations($this->duties(), (new Duty())->institution(), (new Institution())->padalinys());
     }
 
     public function tasks()
     {
         return $this->belongsToMany(Task::class);
-    }
-
-    public function isSuperAdmin()
-    {           
-        if ($this->hasRole('Super Admin')) {
-            return true;
-        }
-
-        // check against all duties
-
-        return Cache::remember('super-admin-' . $this->id, 60, function () {
-
-            $duties = $this->load('duties:id', 'duties.roles:id')->duties()->get();
-    
-            // check if at least one duty has super admin role
-            foreach ($duties as $duty) {
-                if ($duty->hasRole('Super Admin')) {
-                    return true;
-                }
-            }
-
-            return false;
-        });
     }
 }

@@ -2,16 +2,14 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Calendar;
-use App\Models\Navigation;
+use App\Models\Padalinys;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
-use App\Models\Padalinys;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Page;
-use App\Models\SaziningaiExam;
 use App\Models\User;
-use Illuminate\Support\Facades\Route;
+use App\Actions\AuthorizeUserAndDutyByRole as Authorizer;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Cache;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -45,28 +43,34 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request)
     {
         $user = $this->getLoggedInUserForInertia();
-        
-        $isSuperAdmin = $user ? $user->isSuperAdmin() : false;
+
+        $isSuperAdmin = false;
+
+        if (!is_null ($user)) {
+            $isSuperAdmin = $user->hasRole(config('permission.super_admin_role_name'));
+        }
+
+        $userAuthorizer = new Authorizer($user);
 
         return array_merge(parent::share($request), [
             'app' => [
                 'env' => fn () => config('app.env'),
                 'url' => fn () => config('app.url'),
             ],
-            'auth' => [
-                'can' => is_null($user) ? null : [
-                    'calendar' => fn () => $user->can('edit unit calendar'),
-                    'content' => fn () => $user->can('edit unit content'),
-                    'files' => fn () => $user->can('edit unit content'),
-                    'institutions' => fn () => $user->can('edit institution content'),
+            'auth' => is_null($user) ? null : [
+                'can' => fn () => [
+                    'calendar' => fn () => $userAuthorizer->check('edit unit content'),
+                    'content' => fn () => $userAuthorizer->check('edit unit content'),
+                    'files' => fn () => $userAuthorizer->check('edit unit content'),
+                    'institutions' => fn () => $userAuthorizer->check('edit institution content'),
                     'navigation' => fn () => $isSuperAdmin,
-                    'saziningai' => fn () => $user->can('edit saziningai content'),
+                    'saziningai' => fn () => $userAuthorizer->check('edit saziningai content'),
                     'settings' => fn () => $isSuperAdmin,
-                    'users' => fn () => $user->can('edit unit users'),
+                    'users' => fn () => $userAuthorizer->check('edit unit users'),
                 ],
-                'user' => is_null($user) ? null : [
+                'user' => fn () => [
                     ...$user->toArray(), 
-                    'padalinys' => $user->padalinys()?->shortname, 
+                    'padaliniai' => $user->padaliniai()->get(['padaliniai.id', 'padaliniai.shortname'])->unique(), 
                     'isSuperAdmin' => $isSuperAdmin,
                     'unreadNotifications' => $user->unreadNotifications()
                 ],
@@ -79,14 +83,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'locale' => fn () => app()->getLocale(),
             'misc' => $request->session()->get('misc') ?? "",
-            'padaliniai' => Padalinys::where('type', '=', 'padalinys')->orderBy('shortname_vu')->get()->map(function ($padalinys) {
-                return [
-                    'id' => $padalinys->id,
-                    'alias' => $padalinys->alias,
-                    'shortname' => $padalinys->shortname,
-                    'fullname' => $padalinys->fullname,
-                ];
-            }),
+            'padaliniai' => fn () => $this->getPadaliniaiForInertia(),
             'search' => [
                 'calendar' => $request->session()->get('search_calendar') ?? [],
                 'news' => $request->session()->get('search_news') ?? [],
@@ -96,7 +93,7 @@ class HandleInertiaRequests extends Middleware
         ]);
     }
 
-    protected function getLoggedInUserForInertia(): ?User
+    private function getLoggedInUserForInertia(): ?User
         {
             $user = User::withCount(['tasks' => function ($query) {
                 $query->whereNull('completed_at');
@@ -104,4 +101,13 @@ class HandleInertiaRequests extends Middleware
 
             return $user;
         }
+
+    private function getPadaliniaiForInertia(): Collection
+    {
+        $padaliniai = Cache::rememberForever('padaliniai-for-inertia', 
+            fn () => Padalinys::where('type', '=', 'padalinys')->orderBy('shortname_vu')->get(['id', 'alias', 'shortname', 'fullname'])
+        );
+
+        return $padaliniai;
+    }
 }

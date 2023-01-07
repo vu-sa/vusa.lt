@@ -1,7 +1,7 @@
 export {};
 
-interface InertiaUserGlobal extends App.Models.User {
-  padalinys: App.Models.Padalinys;
+interface User extends App.Models.User {
+  padaliniai: Pick<App.Models.Padalinys, "id" | "shortname">;
   isSuperAdmin: boolean;
   notifications: Record<string, any>[] | null;
 }
@@ -16,8 +16,8 @@ declare module "@inertiajs/inertia" {
       can: {
         [key: string]: boolean;
       };
-      user?: InertiaUserGlobal;
-    };
+      user: User;
+    } | null;
     flash: {
       data: any;
       info: string | null;

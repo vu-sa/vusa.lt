@@ -158,4 +158,7 @@ return [
 
         'store' => 'default',
     ],
+
+    // define super admin role name
+    'super_admin_role_name' => 'Super Admin',
 ];
