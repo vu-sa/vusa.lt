@@ -20,8 +20,8 @@ declare module "@inertiajs/inertia" {
     };
     flash: {
       data: any;
-      info: string;
-      success: string;
+      info: string | null;
+      success: string | null;
     };
     locale: "lt" | "en";
     misc: any;
