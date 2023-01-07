@@ -1,5 +1,8 @@
 export {};
 
+// TODO: namespace
+// TODO: more Laravel classes return types
+
 declare global {
   interface PaginatedModels<T> {
     current_page: number;

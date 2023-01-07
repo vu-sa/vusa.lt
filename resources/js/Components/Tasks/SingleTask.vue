@@ -15,7 +15,6 @@ import { Inertia } from "@inertiajs/inertia";
 import { NCheckbox } from "naive-ui";
 import { ref } from "vue";
 
-
 const props = defineProps<{
   task: Record<string, any>;
 }>();

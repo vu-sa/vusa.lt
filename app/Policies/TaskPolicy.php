@@ -41,7 +41,7 @@ class TaskPolicy
      */
     public function create(User $user)
     {
-        //
+        return true;
     }
 
     /**
@@ -65,7 +65,13 @@ class TaskPolicy
      */
     public function delete(User $user, Task $task)
     {
-        //
+        // check if the task taskable is a user
+        if ($task->taskable_type == 'App\Models\User') {
+            // check if the task taskable is the current user
+            if ($task->taskable_id == $user->id) {
+                return true;
+            }
+        }
     }
 
     /**
