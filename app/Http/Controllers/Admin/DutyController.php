@@ -34,7 +34,7 @@ class DutyController extends Controller
 
         $duties = Duty::when(!is_null($title), function ($query) use ($title) {
             $query->where('name', 'like', "%{$title}%")->orWhere('email', 'like', "%{$title}%");
-        })->when(!$request->user()->hasRole('Super Admin'), function ($query) {
+        })->when(!$request->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
             $query->whereHas('institution', function ($query) {
                 $query->where('padalinys_id', auth()->user()->padalinys()->id);
             });
@@ -173,7 +173,7 @@ class DutyController extends Controller
 
     private function getInstitutionsForForm(): Collection
     {
-        return Institution::select('id', 'name', 'alias', 'padalinys_id')->when(!request()->user()->hasRole('Super Admin'), function ($query) {
+        return Institution::select('id', 'name', 'alias', 'padalinys_id')->when(!request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
                 $query->where('padalinys_id', auth()->user()->padalinys()->id);
         })->with('padalinys:id,shortname')->get();
     }

@@ -28,7 +28,7 @@ class BannerController extends Controller
 
         $banners = Banner::
             // check if admin, if not return only pages from current user padalinys
-            when(!$request->user()->hasRole('Super Admin'), function ($query) use ($request) {
+            when(!$request->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($request) {
                 $query->where('padalinys_id', '=', $request->user()->padalinys()->id);
                 // check request for padaliniai, if not empty return only pages from request padaliniai
             })->when(!empty($padaliniai), function ($query) use ($padaliniai) {

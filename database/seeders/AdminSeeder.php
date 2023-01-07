@@ -27,6 +27,6 @@ class AdminSeeder extends Seeder
                 'profile_photo_path' => $faker->imageUrl(640, 480, 'people', true),
         ]);
 
-        User::where('email', 'test@test.com')->first()->assignRole('Super Admin');
+        User::where('email', 'test@test.com')->first()->assignRole(config('permission.super_admin_role_name'));
     }
 }

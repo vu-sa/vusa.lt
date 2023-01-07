@@ -26,7 +26,7 @@ class InstitutionMatterController extends Controller
     {
         $search = request()->input('search');
 
-        $matters = Matter::when(!request()->user()->hasRole('Super Admin'), function ($query) {
+        $matters = Matter::when(!request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
             $query->where('padalinys_id', '=', request()->user()->padalinys()->id);
         })->when(!is_null($search), function ($query) use ($search) {
             $query->where('title', 'like', "%{$search}%");

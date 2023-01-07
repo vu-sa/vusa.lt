@@ -36,7 +36,7 @@ class UserController extends Controller
         when(!is_null($name), function ($query) use ($name) {
             $query->where('name', 'like', "%{$name}%")->orWhere('email', 'like', "%{$name}%");
         })->
-            when(!$request->user()->hasRole('Super Admin'), function ($query) {
+            when(!$request->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
                 $query->whereHas('duties.institution', function ($query) {
                     $query->where('padalinys_id', User::find(Auth::id())->padalinys()->id);
                 });
@@ -90,7 +90,7 @@ class UserController extends Controller
             }
 
             // check if user is super admin
-            if (User::find(Auth::id())->hasRole('Super Admin')) {
+            if (User::find(Auth::id())->hasRole(config('permission.super_admin_role_name'))) {
                 // check if user is super admin
                 if ($request->has('roles')) {
                     $user->syncRoles($request->roles);
@@ -158,7 +158,7 @@ class UserController extends Controller
             $user->duties()->syncWithPivotValues($request->duties, ['start_date' => Carbon::now()]);
 
             // check if user is super admin
-            if (auth()->user()->hasRole('Super Admin')) {
+            if (auth()->user()->hasRole(config('permission.super_admin_role_name'))) {
                 $user->syncRoles($request->roles);
             }
         });
@@ -184,7 +184,7 @@ class UserController extends Controller
     private function getDutiesForForm()
     {
         return Duty::with(['institution:id,padalinys_id', 'institution.padalinys:id,shortname'])
-        ->when(!auth()->user()->hasRole('Super Admin'), function ($query) { 
+        ->when(!auth()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) { 
             $query->whereHas('institution', function ($query) {
                 $query->where('padalinys_id', User::find(Auth::id())->padalinys()?->id);
             });

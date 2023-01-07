@@ -31,7 +31,7 @@ class PagesController extends Controller
 
         $pages = Page::
             // check if admin, if not return only pages from current user padalinys
-            when(!$request->user()->hasRole('Super Admin'), function ($query) use ($request) {
+            when(!$request->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($request) {
                 $query->where('padalinys_id', '=', $request->user()->padalinys()->id);
                 // check request for padaliniai, if not empty return only pages from request padaliniai
             })->when(!empty($padaliniai), function ($query) use ($padaliniai) {
@@ -75,7 +75,7 @@ class PagesController extends Controller
         $padalinys_id = User::find(Auth::id())->padalinys()?->id;
 
         if (is_null($padalinys_id)) {
-            $padalinys_id = request()->user()->hasRole('Super Admin') ? 16 : null;
+            $padalinys_id = request()->user()->hasRole(config('permission.super_admin_role_name')) ? 16 : null;
         }
 
         $page = Page::create([
@@ -109,7 +109,7 @@ class PagesController extends Controller
      */
     public function edit(Page $page)
     {
-        $other_lang_pages = Page::with('padalinys:id,shortname')->when(!request()->user()->hasRole('Super Admin'), function ($query) use ($page) {
+        $other_lang_pages = Page::with('padalinys:id,shortname')->when(!request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($page) {
             $query->where('padalinys_id', request()->user()->padalinys()->id);  
         })->where('lang', '!=', $page->lang)->select('id', 'title', 'padalinys_id')->get();
 

@@ -30,7 +30,7 @@ class InstitutionController extends Controller
     {
         $search = request()->input('search');
 
-        $institutions = Institution::with('padalinys:id,shortname')->when(!request()->user()->hasRole('Super Admin'), function ($query) {
+        $institutions = Institution::with('padalinys:id,shortname')->when(!request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
             $query->where('padalinys_id', '=', request()->user()->padalinys()->id);
         })->when(!is_null($search), function ($query) use ($search) {
             $query->where('name', 'like', "%{$search}%")->orWhere('short_name', 'like', "%{$search}%")->orWhere('alias', 'like', "%{$search}%");
