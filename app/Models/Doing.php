@@ -44,7 +44,7 @@ class Doing extends Model
 
     public function matters()
     {
-        return $this->morphedByMany(InstitutionMatter::class, 'doable', 'doables');
+        return $this->morphedByMany(Matter::class, 'doable', 'doables');
     }
 
     public function types()

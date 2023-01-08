@@ -39,7 +39,7 @@ import MatterCard from "@/Components/Cards/MatterCard.vue";
 import MatterForm from "@/Components/AdminForms/MatterForm.vue";
 
 defineProps<{
-  matters: App.Models.InstitutionMatter[];
+  matters: App.Models.Matter[];
   institution: App.Models.Institution;
 }>();
 

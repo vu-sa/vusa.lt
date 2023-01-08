@@ -3,10 +3,10 @@
 namespace App\Services;
 
 use App\Models\Institution;
-use App\Models\InstitutionMatter as Matter;
-use App\Models\InstitutionMeeting as Meeting;
+use App\Models\Matter as Matter;
+use App\Models\Meeting as Meeting;
 
-class InstitutionMeetingService
+class MeetingService
 {  
     /**
      * 

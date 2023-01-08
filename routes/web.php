@@ -54,12 +54,12 @@ Route::prefix('admin')->group(function () {
         Route::resource('registrationForms', Admin\RegistrationFormController::class);
         Route::resource('registrations', Admin\RegistrationController::class);
 
-        Route::resource('matters', Admin\InstitutionMatterController::class);
+        Route::resource('matters', Admin\MatterController::class);
         Route::resource('goals', Admin\GoalController::class);
         Route::resource('goalGroups', Admin\GoalGroupController::class);
-        Route::post('matters/{matter}/attach/{goal}', [Admin\InstitutionMatterController::class, 'attachGoal'])->name('matters.attachGoal');
+        Route::post('matters/{matter}/attach/{goal}', [Admin\MatterController::class, 'attachGoal'])->name('matters.attachGoal');
         Route::resource('doings', Admin\DoingController::class);
-        Route::resource('meetings', Admin\InstitutionMeetingController::class);
+        Route::resource('meetings', Admin\MeetingController::class);
 
         Route::resource('saziningaiExams', Admin\SaziningaiExamsController::class);
         Route::resource('saziningaiExamFlows', Admin\SaziningaiExamFlowsController::class);

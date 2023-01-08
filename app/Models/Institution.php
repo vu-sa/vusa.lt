@@ -44,16 +44,16 @@ class Institution extends Model
 
     public function matters()
     {
-        return $this->belongsToMany(InstitutionMatter::class, 'institutions_matters', 'institution_id', 'matter_id');
+        return $this->belongsToMany(Matter::class, 'institutions_matters', 'institution_id', 'matter_id');
     }
 
     public function meetings()
     {
-        return $this->hasManyDeepFromRelations($this->matters(), (new InstitutionMatter())->meetings());
+        return $this->belongsToMany(Meeting::class);
     }
 
     // TODO: two separate functions for latest in past, and earliest in future
-    public function lastMeeting() : ?InstitutionMeeting
+    public function lastMeeting() : ?Meeting
     {
         return $this->meetings()->latest()->first();
     }

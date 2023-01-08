@@ -22,7 +22,7 @@ class Goal extends Model
 
     public function matters()
     {
-        return $this->belongsToMany(InstitutionMatter::class, 'goal_institution_matter', 'goal_id', 'matter_id');
+        return $this->belongsToMany(Matter::class);
     }
 
     public function doings()

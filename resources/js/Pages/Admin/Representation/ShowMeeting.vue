@@ -158,7 +158,7 @@ defineOptions({
 });
 
 const props = defineProps<{
-  meeting: App.Models.InstitutionMeeting;
+  meeting: App.Models.Meeting;
   // TODO: need to define this type
   sharepointFiles: App.Models.SharepointFile[];
 }>();
@@ -179,7 +179,7 @@ const updateMeetingsTabPane = (value) => {
 const contentModel = computed(() => ({
   id: props.meeting.id,
   title: props.meeting.title,
-  type: "App\\Models\\InstitutionMeeting",
+  type: "App\\Models\\Meeting",
   modelTypes: props.meeting.types,
 }));
 

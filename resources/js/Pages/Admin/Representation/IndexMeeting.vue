@@ -19,7 +19,7 @@ defineOptions({
 });
 
 defineProps<{
-  meetings: PaginatedModels<App.Models.InstitutionMeeting[]>;
+  meetings: PaginatedModels<App.Models.Meeting[]>;
 }>();
 
 const canUseRoutes = {
@@ -29,7 +29,7 @@ const canUseRoutes = {
   destroy: true,
 };
 
-const columns: DataTableColumns<App.Models.InstitutionMeeting> = [
+const columns: DataTableColumns<App.Models.Meeting> = [
   {
     title: "Institucijos",
     key: "institutions",

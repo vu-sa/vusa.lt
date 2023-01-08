@@ -52,7 +52,7 @@ import QuickContentCard from "@/Components/Cards/QuickContentCards/QuickContentC
 const props = defineProps<{
   doingTypes: any;
   institution: App.Models.Institution;
-  lastMeeting?: App.Models.InstitutionMeeting;
+  lastMeeting?: App.Models.Meeting;
 }>();
 
 const daysDifference = props.lastMeeting

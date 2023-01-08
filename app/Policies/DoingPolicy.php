@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Models\Doing;
-use App\Models\InstitutionMatter as Matter;
+use App\Models\Matter as Matter;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 

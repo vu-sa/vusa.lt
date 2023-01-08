@@ -55,7 +55,7 @@ import { useForm } from "@inertiajs/inertia-vue3";
 const emit = defineEmits(["closeModal"]);
 
 const props = defineProps<{
-  matter: App.Models.InstitutionMatter;
+  matter: App.Models.Matter;
 }>();
 
 const loading = ref(false);

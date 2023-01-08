@@ -152,7 +152,7 @@ defineOptions({
 
 const props = defineProps<{
   doing: App.Models.Doing;
-  matter: App.Models.InstitutionMatter;
+  matter: App.Models.Matter;
   sharepointFiles: App.Models.SharepointFile[];
 }>();
 

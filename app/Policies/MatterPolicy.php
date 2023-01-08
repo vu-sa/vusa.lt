@@ -2,11 +2,11 @@
 
 namespace App\Policies;
 
-use App\Models\InstitutionMatter as Matter;
+use App\Models\Matter as Matter;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class InstitutionMatterPolicy
+class MatterPolicy
 {
     use HandlesAuthorization;
 

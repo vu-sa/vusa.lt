@@ -68,6 +68,6 @@ import { formatStaticTime } from "@/Utils/IntlTime";
 import DoingsStatusDonut from "@/Components/Statistics/DoingsStatusDonut.vue";
 
 defineProps<{
-  matter: App.Models.InstitutionMatter;
+  matter: App.Models.Matter;
 }>();
 </script>

@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller as Controller;
-use App\Models\InstitutionMatter as Matter;
+use App\Models\Matter;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Type;
 use App\Models\Doing;
 use App\Models\Goal;
 
-class InstitutionMatterController extends Controller
+class MatterController extends Controller
 {
     public function __construct()
     {

@@ -1,9 +1,9 @@
 <?php
 
 namespace App\Actions;
-use App\Models\InstitutionMeeting;
+use App\Models\Meeting;
 
-class InstitutionMeetingNotifyDaysLeft 
+class MeetingNotifyDaysLeft 
 {
    public function execute(int $daysLeft)
    {

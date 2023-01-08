@@ -76,10 +76,10 @@ const emit = defineEmits(["success"]);
 
 const props = defineProps<{
   institution?: App.Models.Institution;
-  meeting: App.Models.InstitutionMeeting;
+  meeting: App.Models.Meeting;
   // meetingTypes?: any;
   modelRoute: string;
-  matter?: App.Models.InstitutionMatter;
+  matter?: App.Models.Matter;
   // This question form is from a quick action button, idk if it shouldn't be refactored
   mattersForm?: InertiaForm<Record<string, any>>;
 }>();

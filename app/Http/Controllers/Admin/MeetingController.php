@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\InstitutionMeeting as Meeting;
+use App\Models\Meeting as Meeting;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Services\InstitutionMeetingService as MeetingService;
+use App\Services\MeetingService as MeetingService;
 use App\Services\SharepointAppGraph;
 use Illuminate\Support\Benchmark;
 use Illuminate\Support\Carbon;
 
-class InstitutionMeetingController extends Controller
+class MeetingController extends Controller
 {
     /**
      * Display a listing of the resource.

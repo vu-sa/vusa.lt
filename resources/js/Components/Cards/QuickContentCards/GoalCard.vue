@@ -55,7 +55,7 @@ import QuickContentCard from "@/Components/Cards/QuickContentCards/QuickContentC
 
 const props = defineProps<{
   goals: App.Models.Goal[] | [];
-  matter: App.Models.InstitutionMatter;
+  matter: App.Models.Matter;
 }>();
 
 console.log(props.goals);

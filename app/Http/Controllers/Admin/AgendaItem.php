@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\InstitutionMeetingMatter;
+use App\Models\AgendaItem;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-class InstitutionMeetingMatterController extends Controller
+class AgendaItemController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -42,10 +42,10 @@ class InstitutionMeetingMatterController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\InstitutionMeetingMatter  $institutionMeetingMatter
+     * @param  \App\Models\AgendaItem  $agendaItem
      * @return \Illuminate\Http\Response
      */
-    public function show(InstitutionMeetingMatter $institutionMeetingMatter)
+    public function show(AgendaItem $agendaItem)
     {
         //
     }
@@ -53,10 +53,10 @@ class InstitutionMeetingMatterController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\InstitutionMeetingMatter  $institutionMeetingMatter
+     * @param  \App\Models\AgendaItem  $agendaItem
      * @return \Illuminate\Http\Response
      */
-    public function edit(InstitutionMeetingMatter $institutionMeetingMatter)
+    public function edit(AgendaItem $agendaItem)
     {
         //
     }
@@ -65,10 +65,10 @@ class InstitutionMeetingMatterController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\InstitutionMeetingMatter  $institutionMeetingMatter
+     * @param  \App\Models\AgendaItem  $agendaItem
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, InstitutionMeetingMatter $institutionMeetingMatter)
+    public function update(Request $request, AgendaItem $agendaItem)
     {
         //
     }
@@ -76,10 +76,10 @@ class InstitutionMeetingMatterController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\InstitutionMeetingMatter  $institutionMeetingMatter
+     * @param  \App\Models\AgendaItem  $agendaItem
      * @return \Illuminate\Http\Response
      */
-    public function destroy(InstitutionMeetingMatter $institutionMeetingMatter)
+    public function destroy(AgendaItem $agendaItem)
     {
         //
     }

@@ -73,7 +73,7 @@ import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import StatusTag from "@/Components/Tags/StatusTag.vue";
 
 const props = defineProps<{
-  meeting: App.Models.InstitutionMeeting;
+  meeting: App.Models.Meeting;
 }>();
 
 const spinning = ref(false);

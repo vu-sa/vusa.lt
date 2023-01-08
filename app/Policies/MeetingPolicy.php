@@ -2,11 +2,11 @@
 
 namespace App\Policies;
 
-use App\Models\InstitutionMeeting;
+use App\Models\Meeting;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class InstitutionMeetingPolicy
+class MeetingPolicy
 {
     use HandlesAuthorization;
 
@@ -25,10 +25,10 @@ class InstitutionMeetingPolicy
      * Determine whether the user can view the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\InstitutionMeeting  $institutionMeeting
+     * @param  \App\Models\Meeting  $meeting
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, InstitutionMeeting $institutionMeeting)
+    public function view(User $user, Meeting $meeting)
     {
         //
     }
@@ -48,10 +48,10 @@ class InstitutionMeetingPolicy
      * Determine whether the user can update the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\InstitutionMeeting  $institutionMeeting
+     * @param  \App\Models\Meeting  $meeting
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, InstitutionMeeting $institutionMeeting)
+    public function update(User $user, Meeting $meeting)
     {
         //
     }
@@ -60,10 +60,10 @@ class InstitutionMeetingPolicy
      * Determine whether the user can delete the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\InstitutionMeeting  $institutionMeeting
+     * @param  \App\Models\Meeting  $meeting
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, InstitutionMeeting $institutionMeeting)
+    public function delete(User $user, Meeting $meeting)
     {
         //
     }
@@ -72,10 +72,10 @@ class InstitutionMeetingPolicy
      * Determine whether the user can restore the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\InstitutionMeeting  $institutionMeeting
+     * @param  \App\Models\Meeting  $meeting
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function restore(User $user, InstitutionMeeting $institutionMeeting)
+    public function restore(User $user, Meeting $meeting)
     {
         //
     }
@@ -84,10 +84,10 @@ class InstitutionMeetingPolicy
      * Determine whether the user can permanently delete the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\InstitutionMeeting  $institutionMeeting
+     * @param  \App\Models\Meeting  $meeting
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function forceDelete(User $user, InstitutionMeeting $institutionMeeting)
+    public function forceDelete(User $user, Meeting $meeting)
     {
         //
     }

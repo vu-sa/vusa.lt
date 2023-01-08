@@ -21,7 +21,7 @@ import FileUploader from "@/Components/SharepointFileManager/FileUploader.vue";
 
 const props = defineProps<{
   institution: App.Models.Institution;
-  matters: App.Models.InstitutionMatter[];
+  matters: App.Models.Matter[];
 }>();
 
 const objectOptions = computed(() => {
@@ -42,7 +42,7 @@ const objectOptions = computed(() => {
 });
 
 const contentModel = computed(() => ({
-  type: "App\\Models\\InstitutionMeeting",
+  type: "App\\Models\\Meeting",
   // modelTypes: [
   //   {
   //     title: "Posėdis",

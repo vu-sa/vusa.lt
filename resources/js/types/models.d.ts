@@ -5,6 +5,11 @@
  */
 
 declare namespace App.Models {
+  export interface AgendaItem {
+    matter?: App.Models.Matter | null;
+    meeting?: App.Models.Meeting | null;
+  }
+
   export interface Banner {
     id: number;
     title: string;
@@ -97,7 +102,7 @@ declare namespace App.Models {
     deleted_at: any | null;
     doables?: Array<App.Models.Doable> | null;
     goals?: Array<App.Models.Goal> | null;
-    matters?: Array<App.Models.InstitutionMatter> | null;
+    matters?: Array<App.Models.Matter> | null;
     types?: Array<App.Models.Type> | null;
     documents?: Array<App.Models.SharepointDocument> | null;
     tasks?: Array<App.Models.Task> | null;
@@ -158,7 +163,7 @@ declare namespace App.Models {
     created_at: any;
     updated_at: any;
     deleted_at: any | null;
-    matters?: Array<App.Models.InstitutionMatter> | null;
+    matters?: Array<App.Models.Matter> | null;
     doings?: Array<App.Models.Doing> | null;
     group?: App.Models.GoalGroup | null;
     matters_count?: number | null;
@@ -176,12 +181,9 @@ declare namespace App.Models {
     goals_count?: number | null;
   }
 
-  export interface GoalInstitutionMatter {
-    goal_id: string;
-    matter_id: string;
-    created_at: any;
-    updated_at: any;
+  export interface GoalMatter {
     goal?: App.Models.Goal | null;
+    matter?: App.Models.Matter | null;
   }
 
   export interface Institution {
@@ -200,7 +202,7 @@ declare namespace App.Models {
     duties?: Array<App.Models.Duty> | null;
     types?: Array<App.Models.Type> | null;
     padalinys?: App.Models.Padalinys | null;
-    matters?: Array<App.Models.InstitutionMatter> | null;
+    matters?: Array<App.Models.Matter> | null;
     meetings?: any | null;
     users?: any | null;
     documents?: Array<App.Models.SharepointDocument> | null;
@@ -212,51 +214,6 @@ declare namespace App.Models {
     documents_count?: number | null;
     given_relationships_count?: number | null;
     received_relationships_count?: number | null;
-  }
-
-  export interface InstitutionMatter {
-    id: string;
-    title: string;
-    description: string | null;
-    created_at: any;
-    updated_at: any;
-    deleted_at: any | null;
-    institutions?: Array<App.Models.Institution> | null;
-    meetings?: Array<App.Models.InstitutionMeeting> | null;
-    doings?: Array<App.Models.Doing> | null;
-    goals?: Array<App.Models.Goal> | null;
-    institutions_count?: number | null;
-    meetings_count?: number | null;
-    doings_count?: number | null;
-    goals_count?: number | null;
-  }
-
-  export interface InstitutionMeeting {
-    id: string;
-    description: string | null;
-    start_time: string;
-    end_time: string | null;
-    created_at: any;
-    updated_at: any;
-    deleted_at: any | null;
-    matters?: Array<App.Models.InstitutionMatter> | null;
-    documents?: Array<App.Models.SharepointDocument> | null;
-    tasks?: Array<App.Models.Task> | null;
-    comments?: Array<App.Models.Comment> | null;
-    matters_count?: number | null;
-    documents_count?: number | null;
-    tasks_count?: number | null;
-    comments_count?: number | null;
-  }
-
-  export interface InstitutionMeetingMatter {
-    id: string;
-    meeting_id: string;
-    matter_id: string;
-    created_at: any;
-    updated_at: any;
-    matter?: App.Models.InstitutionMatter | null;
-    meeting?: App.Models.InstitutionMeeting | null;
   }
 
   export interface MainPage {
@@ -274,6 +231,36 @@ declare namespace App.Models {
     created_at: any;
     updated_at: any;
     padalinys?: App.Models.Padalinys | null;
+  }
+
+  export interface Matter {
+    id: string;
+    title: string;
+    description: string | null;
+    created_at: any;
+    updated_at: any;
+    deleted_at: any | null;
+    institutions?: Array<App.Models.Institution> | null;
+    meetings?: Array<App.Models.Meeting> | null;
+    doings?: Array<App.Models.Doing> | null;
+    goals?: Array<App.Models.Goal> | null;
+    institutions_count?: number | null;
+    meetings_count?: number | null;
+    doings_count?: number | null;
+    goals_count?: number | null;
+  }
+
+  export interface Meeting {
+    matters?: Array<App.Models.Matter> | null;
+    agenda_items?: Array<App.Models.AgendaItem> | null;
+    documents?: Array<App.Models.SharepointDocument> | null;
+    tasks?: Array<App.Models.Task> | null;
+    comments?: Array<App.Models.Comment> | null;
+    matters_count?: number | null;
+    agenda_items_count?: number | null;
+    documents_count?: number | null;
+    tasks_count?: number | null;
+    comments_count?: number | null;
   }
 
   export interface Navigation {

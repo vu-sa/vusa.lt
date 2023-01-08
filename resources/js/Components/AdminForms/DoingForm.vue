@@ -80,7 +80,7 @@ const props = defineProps<{
   doing: App.Models.Doing;
   doingTypes?: any;
   modelRoute: string;
-  matter?: App.Models.InstitutionMatter;
+  matter?: App.Models.Matter;
   // This question form is from a quick action button, idk if it shouldn't be refactored
   matterForm?: Record<string, any>;
 }>();

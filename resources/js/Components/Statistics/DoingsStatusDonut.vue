@@ -7,7 +7,7 @@ import { arc, create, group, pie, rollup, scaleOrdinal, select } from "d3";
 import { onBeforeUnmount, onMounted, ref } from "vue";
 
 const props = defineProps<{
-  meetings?: App.Models.InstitutionMeeting[];
+  meetings?: App.Models.Meeting[];
   width: number;
   height: number;
 }>();

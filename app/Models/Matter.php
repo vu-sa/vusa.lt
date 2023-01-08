@@ -10,7 +10,7 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
-class InstitutionMatter extends Model
+class Matter extends Model
 {
     use HasFactory, HasRelationships, HasUlids, LogsActivity, SoftDeletes;
 
@@ -34,7 +34,7 @@ class InstitutionMatter extends Model
 
     public function meetings()
     {
-        return $this->belongsToMany(InstitutionMeeting::class, 'institution_meeting_matter', 'matter_id', 'meeting_id');
+        return $this->belongsToMany(Meeting::class, 'agenda_items')->using(AgendaItem::class);
     }
 
     public function doings()
@@ -44,7 +44,7 @@ class InstitutionMatter extends Model
 
     public function goals()
     {
-        return $this->belongsToMany(Goal::class, 'goal_institution_matter', 'matter_id', 'goal_id');
+        return $this->belongsToMany(Goal::class);
     }
 
     public function users()

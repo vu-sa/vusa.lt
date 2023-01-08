@@ -44,7 +44,7 @@ defineProps<{
   doings: App.Models.Doing[];
   doingTemplate: any;
   doingTypes: any;
-  matter: App.Models.InstitutionMatter;
+  matter: App.Models.Matter;
 }>();
 
 const showModal = ref(false);
