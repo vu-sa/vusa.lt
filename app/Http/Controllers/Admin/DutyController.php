@@ -146,6 +146,14 @@ class DutyController extends Controller
             if (true) {
                 // check if user is super admin
                 if ($request->has('roles')) {
+                    
+                    // foreach check if super admin
+                    foreach ($request->roles as $role) {
+                        if (Role::find($role)->name == config('permission.super_admin_role_name')) {
+                            abort(403, 'Negalima priskirti šios rolės pareigybėms! Bandykite iš naujo');
+                        }
+                    }
+                    
                     $duty->syncRoles($request->roles);
                 } else {
                     $duty->syncRoles([]);
