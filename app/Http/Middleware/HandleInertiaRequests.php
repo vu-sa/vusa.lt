@@ -45,12 +45,12 @@ class HandleInertiaRequests extends Middleware
         $user = $this->getLoggedInUserForInertia();
 
         $isSuperAdmin = false;
+        $userAuthorizer = null;
 
         if (!is_null ($user)) {
             $isSuperAdmin = $user->hasRole(config('permission.super_admin_role_name'));
+            $userAuthorizer = new Authorizer($user);
         }
-
-        $userAuthorizer = new Authorizer($user);
 
         return array_merge(parent::share($request), [
             'app' => [
