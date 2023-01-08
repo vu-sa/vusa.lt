@@ -22,6 +22,6 @@ defineOptions({
 });
 
 defineProps<{
-  dutiable: App.Models.Dutiable;
+  dutiable: App.Entities.Dutiable;
 }>();
 </script>

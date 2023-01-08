@@ -31,7 +31,7 @@ const canUseRoutes = {
 };
 
 // add columns
-const columns: DataTableColumns<App.Models.Permission> = [
+const columns: DataTableColumns<App.Entities.Permission> = [
   {
     title: "ID",
     key: "id",

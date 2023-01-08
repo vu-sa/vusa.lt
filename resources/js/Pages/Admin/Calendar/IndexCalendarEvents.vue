@@ -18,7 +18,7 @@ defineOptions({
 });
 
 defineProps<{
-  calendar: PaginatedModels<App.Models.Calendar>;
+  calendar: PaginatedModels<App.Entities.Calendar>;
 }>();
 
 const canUseRoutes = {

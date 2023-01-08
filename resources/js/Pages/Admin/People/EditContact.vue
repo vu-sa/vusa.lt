@@ -70,9 +70,9 @@ defineOptions({
 });
 
 defineProps<{
-  contact: App.Models.Contact;
-  roles: App.Models.Role[];
+  contact: App.Entities.Contact;
+  roles: App.Entities.Role[];
   // TODO: don't return all duties from the controller immediately
-  duties: App.Models.DutyExtended[];
+  duties: App.Entities.Duty[];
 }>();
 </script>

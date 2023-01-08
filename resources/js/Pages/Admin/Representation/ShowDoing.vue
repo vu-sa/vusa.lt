@@ -151,9 +151,9 @@ defineOptions({
 });
 
 const props = defineProps<{
-  doing: App.Models.Doing;
-  matter: App.Models.Matter;
-  sharepointFiles: App.Models.SharepointFile[];
+  doing: App.Entities.Doing;
+  matter: App.Entities.Matter;
+  sharepointFiles: App.Entities.SharepointFile[];
 }>();
 
 const currentCommentField = ref("");

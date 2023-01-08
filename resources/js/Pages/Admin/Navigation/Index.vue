@@ -51,7 +51,7 @@ import { h, ref } from "vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 
 const props = defineProps<{
-  navigation: App.Models.Navigation;
+  navigation: App.Entities.Navigation;
 }>();
 
 const parseNavigation = (array, id) => {

@@ -77,10 +77,10 @@ defineOptions({
 });
 
 const props = defineProps<{
-  institution: App.Models.Institution;
-  institutionTypes: Array<App.Models.Type>;
-  duties: Array<App.Models.DutyExtended>;
-  padaliniai: Array<App.Models.Padalinys>;
+  institution: App.Entities.Institution;
+  institutionTypes: Array<App.Entities.Type>;
+  duties: Array<App.Entities.Duty>;
+  padaliniai: Array<App.Entities.Padalinys>;
 }>();
 
 const institution = ref(props.institution);
@@ -108,7 +108,7 @@ const dutiesWereReordered = ref(false);
 
 // this function only reorders the array, but does not change the order value of the duties
 // the order value is assigned in the backend, using the indexes of the array, which is the one manipulated here
-const reorderDuties = (direction: "up" | "down", duty: App.Models.Duty) => {
+const reorderDuties = (direction: "up" | "down", duty: App.Entities.Duty) => {
   const index = duties.value.indexOf(duty);
   if (index === -1) {
     return;

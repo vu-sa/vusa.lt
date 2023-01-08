@@ -24,8 +24,8 @@ defineOptions({
 });
 
 defineProps<{
-  padaliniai: Array<App.Models.Padalinys>;
-  institutionTypes: App.Models.Type[];
+  padaliniai: Array<App.Entities.Padalinys>;
+  institutionTypes: App.Entities.Type[];
 }>();
 
 const institution = reactive({

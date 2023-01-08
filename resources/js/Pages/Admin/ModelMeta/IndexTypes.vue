@@ -19,7 +19,7 @@ defineOptions({
 });
 
 defineProps<{
-  types: PaginatedModels<App.Models.Type>;
+  types: PaginatedModels<App.Entities.Type>;
 }>();
 
 const canUseRoutes = {
@@ -30,7 +30,7 @@ const canUseRoutes = {
 };
 
 // add columns
-const columns: DataTableColumns<App.Models.Type> = [
+const columns: DataTableColumns<App.Entities.Type> = [
   {
     title: "ID",
     key: "id",

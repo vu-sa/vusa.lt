@@ -20,7 +20,7 @@ defineOptions({
 });
 
 defineProps<{
-  exams: PaginatedModels<App.Models.SaziningaiExam>;
+  exams: PaginatedModels<App.Entities.SaziningaiExam>;
 }>();
 
 const canUseRoutes = {
@@ -30,7 +30,7 @@ const canUseRoutes = {
   destroy: true,
 };
 
-const columns: DataTableColumns<App.Models.SaziningaiExam> = [
+const columns: DataTableColumns<App.Entities.SaziningaiExam> = [
   {
     title: "Dalyko pavadinimas",
     key: "subject_name",

@@ -3,7 +3,7 @@ export {};
 declare global {
   interface CalendarEventForm
     extends Pick<
-      App.Models.Calendar,
+      App.Entities.Calendar,
       | "title"
       | "date"
       | "description"
@@ -17,7 +17,7 @@ declare global {
 
   interface InstitutionForm
     extends Pick<
-      App.Models.Institution,
+      App.Entities.Institution,
       "name" | "short_name" | "alias" | "description" | "padalinys_id"
     > {
     id?: number;
@@ -25,7 +25,7 @@ declare global {
 
   interface SaziningaiExamForm
     extends Omit<
-      App.Models.SaziningaiExam,
+      App.Entities.SaziningaiExam,
       | "id"
       | "uuid"
       | "created_at"
@@ -34,7 +34,7 @@ declare global {
       | "observers"
       | "observers_count"
     > {
-    flows: Array<Pick<App.Models.SaziningaiExamFlow, "start_time">>;
+    flows: Array<Pick<App.Entities.SaziningaiExamFlow, "start_time">>;
     acceptGDPR: boolean;
     acceptDataManagement: boolean;
   }

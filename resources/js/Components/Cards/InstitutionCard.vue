@@ -79,10 +79,10 @@ import InstitutionAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
 
 const props = defineProps<{
-  institution: App.Models.Institution;
+  institution: App.Entities.Institution;
   isPadalinys?: boolean;
   showLastMeeting?: boolean;
-  duties: App.Models.DutyExtended[];
+  duties: App.Entities.Duty[];
 }>();
 
 const institutionDuties = computed(() => {

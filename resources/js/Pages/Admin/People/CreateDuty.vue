@@ -22,8 +22,8 @@ defineOptions({
 });
 
 defineProps<{
-  dutyTypes: App.Models.Type[];
-  institutions: App.Models.Institution[];
+  dutyTypes: App.Entities.Type[];
+  institutions: App.Entities.Institution[];
 }>();
 
 const duty = {

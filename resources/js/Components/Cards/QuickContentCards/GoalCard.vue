@@ -54,8 +54,8 @@ import GoalChanger from "@/Components/Buttons/GoalChangerButton.vue";
 import QuickContentCard from "@/Components/Cards/QuickContentCards/QuickContentCard.vue";
 
 const props = defineProps<{
-  goals: App.Models.Goal[] | [];
-  matter: App.Models.Matter;
+  goals: App.Entities.Goal[] | [];
+  matter: App.Entities.Matter;
 }>();
 
 console.log(props.goals);

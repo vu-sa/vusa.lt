@@ -50,14 +50,14 @@ import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 interface contactUserInterface
   extends Array<
     Pick<
-      App.Models.User,
+      App.Entities.User,
       "id" | "name" | "email" | "phone" | "profile_photo_path" | "duties"
     >
   > {
   // TODO: type only returns strings of institution and type. Need to fix interface
   duties: Array<
     Pick<
-      App.Models.Duty,
+      App.Entities.Duty,
       "id" | "name" | "email" | "description" | "institution" | "type"
     >
   >;

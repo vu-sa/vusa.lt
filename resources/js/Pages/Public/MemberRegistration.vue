@@ -209,7 +209,7 @@ import { useForm } from "@inertiajs/inertia-vue3";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 const props = defineProps<{
-  padaliniaiOptions: Array<App.Models.Padalinys>;
+  padaliniaiOptions: Array<App.Entities.Padalinys>;
 }>();
 
 const aboutLink = computed(() =>

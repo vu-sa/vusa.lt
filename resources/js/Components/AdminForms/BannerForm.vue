@@ -49,7 +49,7 @@ import UploadImageButtons from "@/Components/Buttons/UploadImageButtons.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{
-  banner: App.Models.Banner;
+  banner: App.Entities.Banner;
   modelRoute: string;
   deleteModelRoute?: string;
 }>();

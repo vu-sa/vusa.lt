@@ -28,7 +28,7 @@ defineOptions({
 });
 
 defineProps<{
-  pages: PaginatedModels<App.Models.Page[]>;
+  pages: PaginatedModels<App.Entities.Page[]>;
 }>();
 
 const canUseRoutes = {
@@ -54,7 +54,7 @@ padaliniaiFilterOptions.value.unshift({
   value: 16,
 });
 
-const columns: DataTableColumns<App.Models.News> = [
+const columns: DataTableColumns<App.Entities.News> = [
   {
     title: "ID",
     key: "id",

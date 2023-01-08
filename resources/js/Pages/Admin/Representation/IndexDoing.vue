@@ -20,7 +20,7 @@ defineOptions({
 });
 
 defineProps<{
-  doings: PaginatedModels<App.Models.Doing[]>;
+  doings: PaginatedModels<App.Entities.Doing[]>;
 }>();
 
 const canUseRoutes = {
@@ -30,7 +30,7 @@ const canUseRoutes = {
   destroy: true,
 };
 
-const columns: DataTableColumns<App.Models.Doing> = [
+const columns: DataTableColumns<App.Entities.Doing> = [
   {
     title: "Pavadinimas",
     key: "title",

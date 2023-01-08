@@ -77,10 +77,10 @@ import StatusTag from "@/Components/Tags/StatusTag.vue";
 const emit = defineEmits(["success"]);
 
 const props = defineProps<{
-  doing: App.Models.Doing;
+  doing: App.Entities.Doing;
   doingTypes?: any;
   modelRoute: string;
-  matter?: App.Models.Matter;
+  matter?: App.Entities.Matter;
   // This question form is from a quick action button, idk if it shouldn't be refactored
   matterForm?: Record<string, any>;
 }>();

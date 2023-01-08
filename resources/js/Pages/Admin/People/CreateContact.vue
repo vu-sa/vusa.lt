@@ -15,7 +15,7 @@ import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 defineOptions({ layout: AdminLayout });
 
 defineProps<{
-  // duties: App.Models.DutyExtended[];
+  // duties: App.Entities.Duty[];
 }>();
 
 const contact = {

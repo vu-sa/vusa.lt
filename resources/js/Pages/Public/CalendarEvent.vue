@@ -202,7 +202,7 @@ import { computed, h } from "vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 const props = defineProps<{
-  event: App.Models.Calendar;
+  event: App.Entities.Calendar;
   images: Record<string, any> | null;
   googleLink: string;
 }>();

@@ -22,7 +22,7 @@ import { useForm } from "@inertiajs/inertia-vue3";
 const emit = defineEmits(["formSuccess"]);
 
 const props = defineProps<{
-  goal: App.Models.Goal;
+  goal: App.Entities.Goal;
 }>();
 
 const formRef = ref(null);

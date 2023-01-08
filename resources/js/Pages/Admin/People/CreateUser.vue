@@ -20,8 +20,8 @@ import UserForm from "@/Components/AdminForms/UserForm.vue";
 defineOptions({ layout: AdminLayout });
 
 defineProps<{
-  roles: App.Models.Role[];
-  duties: App.Models.DutyExtended[];
+  roles: App.Entities.Role[];
+  duties: App.Entities.Duty[];
 }>();
 
 const user = {

@@ -45,7 +45,7 @@ import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{
-  relationship: App.Models.Relationship;
+  relationship: App.Entities.Relationship;
   // contentTypes: Record<string, any>[];
   modelRoute: string;
   deleteModelRoute?: string;

@@ -39,6 +39,6 @@ defineOptions({
 });
 
 defineProps<{
-  user: App.Models.User;
+  user: App.Entities.User;
 }>();
 </script>

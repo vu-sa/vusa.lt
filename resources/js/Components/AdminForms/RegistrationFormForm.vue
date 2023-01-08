@@ -54,7 +54,7 @@ import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{
-  registrationForm: App.Models.RegistrationForm;
+  registrationForm: App.Entities.RegistrationForm;
   modelRoute: string;
   deleteModelRoute?: string;
 }>();

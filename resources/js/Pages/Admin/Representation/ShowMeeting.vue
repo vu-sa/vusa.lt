@@ -158,9 +158,9 @@ defineOptions({
 });
 
 const props = defineProps<{
-  meeting: App.Models.Meeting;
+  meeting: App.Entities.Meeting;
   // TODO: need to define this type
-  sharepointFiles: App.Models.SharepointFile[];
+  sharepointFiles: App.Entities.SharepointFile[];
 }>();
 
 const currentCommentField = ref("");

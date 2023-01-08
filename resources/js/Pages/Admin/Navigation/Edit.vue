@@ -64,7 +64,7 @@ import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{
-  navigation: App.Models.Navigation;
+  navigation: App.Entities.Navigation;
 }>();
 
 const navigation = reactive(props.navigation);

@@ -65,8 +65,8 @@ import UploadImageButtons from "@/Components/Buttons/UploadImageButtons.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{
-  contact: App.Models.Contact;
-  // duties: App.Models.DutyExtended[];
+  contact: App.Entities.Contact;
+  // duties: App.Entities.Duty[];
   modelRoute: string;
   deleteModelRoute?: string;
 }>();

@@ -123,8 +123,8 @@ import { useForm } from "@inertiajs/inertia-vue3";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 const props = defineProps<{
-  padaliniaiOptions: App.Models.Padalinys[];
-  saziningaiExamFlows: App.Models.SaziningaiExamFlow[];
+  padaliniaiOptions: App.Entities.Padalinys[];
+  saziningaiExamFlows: App.Entities.SaziningaiExamFlow[];
 }>();
 
 const showModal = ref(false);

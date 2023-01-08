@@ -81,9 +81,9 @@ import SaziningaiExamForm from "@/Components/AdminForms/SaziningaiExamForm.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 const props = defineProps<{
-  exam: App.Models.SaziningaiExam;
-  padaliniai: Array<App.Models.Padalinys>;
-  flows: Array<App.Models.SaziningaiExamFlow>;
+  exam: App.Entities.SaziningaiExam;
+  padaliniai: Array<App.Entities.Padalinys>;
+  flows: Array<App.Entities.SaziningaiExamFlow>;
 }>();
 
 const exam = reactive(props.exam);

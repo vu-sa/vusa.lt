@@ -64,7 +64,7 @@ const emit = defineEmits<{
 }>();
 
 const props = defineProps<{
-  institution: App.Models.Institution;
+  institution: App.Entities.Institution;
   form: any;
 }>();
 

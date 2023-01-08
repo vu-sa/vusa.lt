@@ -119,8 +119,8 @@ import UploadImageButtons from "@/Components/Buttons/UploadImageButtons.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{
-  news: App.Models.News;
-  otherLangNews: App.Models.News[];
+  news: App.Entities.News;
+  otherLangNews: App.Entities.News[];
   modelRoute: string;
   deleteModelRoute?: string;
 }>();

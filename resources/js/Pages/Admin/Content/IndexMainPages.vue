@@ -21,7 +21,7 @@ import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
 defineOptions({ layout: AdminLayout });
 
 defineProps<{
-  mainPages: PaginatedModels<App.Models.MainPage>;
+  mainPages: PaginatedModels<App.Entities.MainPage>;
 }>();
 
 const canUseRoutes = {
@@ -31,7 +31,7 @@ const canUseRoutes = {
   destroy: true,
 };
 
-const columns: DataTableColumns<App.Models.MainPage> = [
+const columns: DataTableColumns<App.Entities.MainPage> = [
   {
     title: "Pavadinimas",
     key: "text",

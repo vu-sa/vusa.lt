@@ -79,7 +79,7 @@ import ShowActivityLog from "@/Components/Buttons/ActivityLogButton.vue";
 defineOptions({ layout: AdminLayout });
 
 const props = defineProps<{
-  matter: App.Models.Matter;
+  matter: App.Entities.Matter;
   doingTypes: Record<string, any>;
 }>();
 

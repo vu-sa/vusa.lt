@@ -1,7 +1,7 @@
 export {};
 
-interface User extends App.Models.User {
-  padaliniai: Pick<App.Models.Padalinys, "id" | "shortname">;
+interface User extends App.Entities.User {
+  padaliniai: Pick<App.Entities.Padalinys, "id" | "shortname">;
   isSuperAdmin: boolean;
   notifications: Record<string, any>[] | null;
 }
@@ -26,7 +26,7 @@ declare module "@inertiajs/inertia" {
     locale: "lt" | "en";
     misc: any;
     padaliniai: Pick<
-      App.Models.Padalinys,
+      App.Entities.Padalinys,
       "id" | "alias" | "shortname" | "fullname"
     >[];
     search: {

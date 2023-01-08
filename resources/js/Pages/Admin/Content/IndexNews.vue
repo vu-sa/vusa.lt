@@ -27,7 +27,7 @@ import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
 defineOptions({ layout: AdminLayout });
 
 defineProps<{
-  news: PaginatedModels<App.Models.News>;
+  news: PaginatedModels<App.Entities.News>;
 }>();
 
 const canUseRoutes = {
@@ -53,7 +53,7 @@ padaliniaiFilterOptions.value.unshift({
   value: 16,
 });
 
-const columns: DataTableColumns<App.Models.News> = [
+const columns: DataTableColumns<App.Entities.News> = [
   {
     title: "ID",
     key: "id",

@@ -135,12 +135,12 @@ import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 
 defineProps<{
-  events: App.Models.News;
+  events: App.Entities.News;
 }>();
 
 const isThemeDark = ref(isDarkMode());
 
-const getFacultyName = (event: App.Models.Calendar) => {
+const getFacultyName = (event: App.Entities.Calendar) => {
   if (!event.padalinys) return "";
 
   // split string into two parts, separated by string "Vilniaus universiteto Studentų atstovybė"
@@ -170,7 +170,7 @@ const getFacultyName = (event: App.Models.Calendar) => {
   return facultyName;
 };
 
-const get5thResponsiveImage = (event: App.Models.Calendar) => {
+const get5thResponsiveImage = (event: App.Entities.Calendar) => {
   if (event.media.length === 0) return "";
 
   let mainUrl = event.media[0].original_url;

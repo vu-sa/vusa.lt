@@ -69,8 +69,8 @@ import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{
-  page: App.Models.Page;
-  otherLangPages?: App.Models.Page[];
+  page: App.Entities.Page;
+  otherLangPages?: App.Entities.Page[];
   modelRoute: string;
   deleteModelRoute?: string;
 }>();

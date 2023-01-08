@@ -126,9 +126,9 @@ import UploadImageButtons from "@/Components/Buttons/UploadImageButtons.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{
-  institution: App.Models.Institution;
-  institutionTypes: App.Models.Type[];
-  padaliniai: Array<App.Models.Padalinys>;
+  institution: App.Entities.Institution;
+  institutionTypes: App.Entities.Type[];
+  padaliniai: Array<App.Entities.Padalinys>;
   modelRoute: string;
   deleteModelRoute?: string;
 }>();

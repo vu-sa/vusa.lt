@@ -58,8 +58,8 @@ import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 
 const props = defineProps<{
-  contacts: Array<App.Models.User>;
-  institution: App.Models.Institution;
+  contacts: Array<App.Entities.User>;
+  institution: App.Entities.Institution;
 }>();
 
 const institutionName = computed(() => {

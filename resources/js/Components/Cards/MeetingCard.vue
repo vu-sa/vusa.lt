@@ -73,7 +73,7 @@ import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import StatusTag from "@/Components/Tags/StatusTag.vue";
 
 const props = defineProps<{
-  meeting: App.Models.Meeting;
+  meeting: App.Entities.Meeting;
 }>();
 
 const spinning = ref(false);
@@ -121,7 +121,7 @@ const icon = computed(() => {
 
 const completedTasks = computed(() => {
   return props.meeting.tasks.reduce(
-    (acc: number, task: App.Models.Task) => (acc += task.completed_at !== null),
+    (acc: number, task: App.Entities.Task) => (acc += task.completed_at !== null),
     0
   );
 });

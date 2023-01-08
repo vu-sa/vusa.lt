@@ -25,7 +25,7 @@ defineOptions({
 });
 
 defineProps<{
-  banners: PaginatedModels<App.Models.Banner[]>;
+  banners: PaginatedModels<App.Entities.Banner[]>;
 }>();
 
 const canUseRoutes = {
@@ -35,7 +35,7 @@ const canUseRoutes = {
   destroy: true,
 };
 
-const columns: DataTableColumns<App.Models.Banner> = [
+const columns: DataTableColumns<App.Entities.Banner> = [
   {
     title: "Pavadinimas",
     key: "title",

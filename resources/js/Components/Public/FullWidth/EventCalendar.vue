@@ -291,7 +291,7 @@ import CardModal from "@/Components/Modals/CardModal.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 const props = defineProps<{
-  calendar: Array<App.Models.Calendar>;
+  calendar: Array<App.Entities.Calendar>;
   isThemeDark: boolean;
   showPhotos: boolean;
 }>();

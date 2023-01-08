@@ -10,7 +10,7 @@ import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import TaskManager from "@/Components/Tasks/TaskManager.vue";
 
 defineProps<{
-  tasks: App.Models.Task[];
+  tasks: App.Entities.Task[];
 }>();
 
 defineOptions({

@@ -41,10 +41,10 @@ import DoingCard from "../Cards/DoingCard.vue";
 import DoingForm from "../AdminForms/DoingForm.vue";
 
 defineProps<{
-  doings: App.Models.Doing[];
+  doings: App.Entities.Doing[];
   doingTemplate: any;
   doingTypes: any;
-  matter: App.Models.Matter;
+  matter: App.Entities.Matter;
 }>();
 
 const showModal = ref(false);

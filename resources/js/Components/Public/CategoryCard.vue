@@ -126,10 +126,10 @@ import { computed } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
 
 const props = defineProps<{
-  institution: App.Models.Institution;
+  institution: App.Entities.Institution;
 }>();
 
-const isPadalinys = (institution: App.Models.Institution) => {
+const isPadalinys = (institution: App.Entities.Institution) => {
   // check if institution type is null
   if (institution.type === null) return false;
   return institution.type.alias === "vu-sa-padaliniai";

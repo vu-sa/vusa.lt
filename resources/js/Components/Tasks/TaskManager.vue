@@ -32,13 +32,13 @@ import TaskCreator from "@/Components/Tasks/TaskCreator.vue";
 import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 
 const props = defineProps<{
-  tasks: App.Models.Task[];
+  tasks: App.Entities.Task[];
 }>();
 
 const loading = ref(false);
 const buttonNames = ["Visos", "Atliktos", "Neatliktos"];
 
-const iconComponent = (row: App.Models.Task) => {
+const iconComponent = (row: App.Entities.Task) => {
   switch (row.taskable_type) {
     case "App\\Models\\Doing":
       return Sparkle24Filled;
@@ -47,7 +47,7 @@ const iconComponent = (row: App.Models.Task) => {
   }
 };
 
-const columns: DataTableColumns<App.Models.Task> = [
+const columns: DataTableColumns<App.Entities.Task> = [
   {
     align: "center",
     key: "checkbox",
@@ -114,7 +114,7 @@ const columns: DataTableColumns<App.Models.Task> = [
   },
 ];
 
-const rowClassName = (row: App.Models.Task) => {
+const rowClassName = (row: App.Entities.Task) => {
   if (row.completed_at !== null) {
     return "bg-zinc-100/50 opacity-30 dark:bg-zinc-900/50 dark:opacity-30";
   }
@@ -136,7 +136,7 @@ const shownTasks = computed(() => {
   });
 });
 
-const handleDelete = async (task: App.Models.Task) => {
+const handleDelete = async (task: App.Entities.Task) => {
   loading.value = true;
 
   Inertia.delete(route("tasks.destroy", task.id), {
@@ -146,7 +146,7 @@ const handleDelete = async (task: App.Models.Task) => {
   });
 };
 
-const updateTaskCompletion = (task: App.Models.Task) => {
+const updateTaskCompletion = (task: App.Entities.Task) => {
   loading.value = true;
   console.log("setTrue", task.completed_at === null);
 

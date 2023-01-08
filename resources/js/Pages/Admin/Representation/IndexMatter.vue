@@ -18,7 +18,7 @@ defineOptions({
 });
 
 defineProps<{
-  matters: PaginatedModels<App.Models.Matter[]>;
+  matters: PaginatedModels<App.Entities.Matter[]>;
 }>();
 
 const canUseRoutes = {

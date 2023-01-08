@@ -45,7 +45,7 @@ import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 defineProps<{
-  page: App.Models.Page;
-  otherLangPages: App.Models.Page[];
+  page: App.Entities.Page;
+  otherLangPages: App.Entities.Page[];
 }>();
 </script>

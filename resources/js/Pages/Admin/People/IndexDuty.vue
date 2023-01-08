@@ -24,7 +24,7 @@ defineOptions({
 });
 
 defineProps<{
-  duties: PaginatedModels<App.Models.DutyExtended>;
+  duties: PaginatedModels<App.Entities.Duty>;
 }>();
 
 const canUseRoutes = {
@@ -61,7 +61,7 @@ const columns = [
     title: "Institucija",
     key: "institution.id",
     minWidth: 100,
-    render(row: App.Models.DutyExtended) {
+    render(row: App.Entities.Duty) {
       return h(
         "a",
         {

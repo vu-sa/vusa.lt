@@ -41,8 +41,8 @@ import MeetingDocumentButton from "@/Components/Buttons/QActButtons/MeetingDocum
 import QuickContentCard from "@/Components/Cards/QuickContentCards/QuickContentCard.vue";
 
 const props = defineProps<{
-  mattersWithMeetings: App.Models.Matter[];
-  institution: App.Models.Institution;
+  mattersWithMeetings: App.Entities.Matter[];
+  institution: App.Entities.Institution;
 }>();
 
 const doings = [].concat(

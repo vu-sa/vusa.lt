@@ -64,8 +64,8 @@ import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import NewsArticle from "@/Components/Public/NewsArticle.vue";
 
 const props = defineProps<{
-  article: App.Models.News;
-  otherLangNews: App.Models.News | null;
+  article: App.Entities.News;
+  otherLangNews: App.Entities.News | null;
 }>();
 
 const editNews = () => {

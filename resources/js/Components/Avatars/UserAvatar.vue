@@ -27,7 +27,7 @@ withDefaults(
     showName?: boolean;
     showPadalinys?: boolean;
     size?: string | number;
-    user: App.Models.User;
+    user: App.Entities.User;
   }>(),
   {
     size: "small",

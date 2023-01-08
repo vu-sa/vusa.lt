@@ -91,11 +91,11 @@ import { PersonEdit24Regular } from "@vicons/fluent";
 import { usePage } from "@inertiajs/inertia-vue3";
 
 defineProps<{
-  contact: App.Models.User;
+  contact: App.Entities.User;
   index: string;
 }>();
 
-const openEdit = (contact: App.Models.User) => {
+const openEdit = (contact: App.Entities.User) => {
   window.open(route("users.edit", { user: contact.id }), "_blank");
 };
 
@@ -130,7 +130,7 @@ const showAdditionalInfo = (duty) => {
 };
 
 // ! TIK KURATORIAMS: nusprendžia, kurią nuotrauką imti, pagal tai, ar url turi "kuratoriai"
-const getImageUrl = (contact: App.Models.User) => {
+const getImageUrl = (contact: App.Entities.User) => {
   const url = new URL(window.location.href);
   if (url.pathname.includes("kuratoriai") && contact.duties) {
     // check all duties for duties name which includes kuratorius
@@ -148,8 +148,8 @@ const getImageUrl = (contact: App.Models.User) => {
 };
 
 const changeDutyNameEndings = (
-  contact: App.Models.User,
-  duty: App.Models.DutyExtended
+  contact: App.Entities.User,
+  duty: App.Entities.Duty
 ) => {
   // check for english locale and just return english
   let locale = usePage().props.value.locale;

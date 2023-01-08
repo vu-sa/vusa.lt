@@ -224,7 +224,7 @@ import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{
   calendar: CalendarEventForm;
-  categories: App.Models.Category[];
+  categories: App.Entities.Category[];
   images?: any;
   modelRoute: string;
   deleteModelRoute?: string;

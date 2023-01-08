@@ -35,7 +35,7 @@ import { ref } from "vue";
 
 const props = defineProps<{
   disabled?: boolean;
-  form: App.Models.ModelTemplate;
+  form: App.Entities.ModelTemplate;
   modelRoute: string;
   size?: "small" | "medium" | "large";
 }>();

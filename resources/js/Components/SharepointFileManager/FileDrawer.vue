@@ -75,7 +75,7 @@ import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 const emit = defineEmits<{ (event: "closeDrawer"): void }>();
 
 const props = defineProps<{
-  document: App.Models.Document;
+  document: App.Entities.Document;
 }>();
 
 const active = ref(false);

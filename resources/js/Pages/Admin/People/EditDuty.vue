@@ -82,11 +82,11 @@ defineOptions({
 });
 
 const props = defineProps<{
-  duty: App.Models.Duty;
-  users: App.Models.User[];
-  roles: App.Models.Role[];
-  dutyTypes: App.Models.Type[];
-  institutions: App.Models.Institution[];
+  duty: App.Entities.Duty;
+  users: App.Entities.User[];
+  roles: App.Entities.Role[];
+  dutyTypes: App.Entities.Type[];
+  institutions: App.Entities.Institution[];
 }>();
 
 const { message } = createDiscreteApi(["message"]);
@@ -102,7 +102,7 @@ duty.value.extra_attributes.en = checkForEmptyArray(
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const detachUserFromDuty = (user: App.Models.User) => {
+const detachUserFromDuty = (user: App.Entities.User) => {
   Inertia.post(
     route("users.detach", {
       user: user.id,

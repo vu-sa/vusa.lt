@@ -18,7 +18,7 @@ defineOptions({
 });
 
 defineProps<{
-  institutions: App.Models.Institution[];
+  institutions: App.Entities.Institution[];
   institutionRelationships: Record<string, any>[];
 }>();
 </script>

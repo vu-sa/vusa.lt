@@ -43,7 +43,7 @@ import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{
-  mainPage: App.Models.MainPage;
+  mainPage: App.Entities.MainPage;
   modelRoute: string;
   deleteModelRoute?: string;
 }>();

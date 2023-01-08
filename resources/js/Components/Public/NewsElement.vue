@@ -68,10 +68,9 @@ import { Clock20Regular } from "@vicons/fluent";
 import { Link } from "@inertiajs/inertia-vue3";
 import { NIcon } from "naive-ui";
 
-
 import HomeCard from "@/Components/Public/HomeCard.vue";
 
 defineProps<{
-  news: App.Models.News[] | null;
+  news: App.Entities.News[] | null;
 }>();
 </script>

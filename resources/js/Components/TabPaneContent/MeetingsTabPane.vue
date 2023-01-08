@@ -45,10 +45,10 @@ import MeetingCard from "@/Components/Cards/MeetingCard.vue";
 import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
 
 defineProps<{
-  meetings: App.Models.Meeting[];
+  meetings: App.Entities.Meeting[];
   meetingTemplate: any;
   meetingTypes: any;
-  matter: App.Models.Matter;
+  matter: App.Entities.Matter;
 }>();
 
 const showModal = ref(false);

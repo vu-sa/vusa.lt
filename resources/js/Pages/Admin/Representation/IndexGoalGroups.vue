@@ -18,7 +18,7 @@ defineOptions({
 });
 
 defineProps<{
-  goalGroups: PaginatedModels<App.Models.GoalGroup>;
+  goalGroups: PaginatedModels<App.Entities.GoalGroup>;
 }>();
 
 const canUseRoutes = {

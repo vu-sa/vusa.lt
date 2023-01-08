@@ -76,16 +76,16 @@ import { NButton, NIcon, NImage, NPopover } from "naive-ui";
 import { PersonEdit24Regular } from "@vicons/fluent";
 
 const props = defineProps<{
-  contact: App.Models.User;
-  duty: App.Models.Duty;
+  contact: App.Entities.User;
+  duty: App.Entities.Duty;
 }>();
 
-const openEdit = (contact: App.Models.User) => {
+const openEdit = (contact: App.Entities.User) => {
   window.open(route("users.edit", { user: contact.id }), "_blank");
 };
 
 // ! TIK KURATORIAMS: nusprendžia, kurią nuotrauką imti, pagal tai, ar url turi "kuratoriai"
-const getImageUrl = (contact: App.Models.User) => {
+const getImageUrl = (contact: App.Entities.User) => {
   const url = new URL(window.location.href);
   if (url.pathname.includes("kuratoriai") && props.duty) {
     // check all duties for duties name which includes kuratorius
@@ -102,8 +102,8 @@ const getImageUrl = (contact: App.Models.User) => {
 // ! TIK KURATORIAMS: pakeisti galūnes
 // check
 const checkIfContactNameEndsWithEDot = (
-  contact: App.Models.User,
-  duty: App.Models.DutyExtended
+  contact: App.Entities.User,
+  duty: App.Entities.Duty
 ) => {
   if (contact.name.endsWith("ė")) {
     // replace duty.name ending 'ius' with 'ė', but only on end
@@ -124,7 +124,7 @@ const checkIfContactNameEndsWithEDot = (
 };
 
 // ! TIK KURATORIAMS: nusprendžia, ar rodyti studijų programą
-const showStudyProgram = (contact: App.Models.User, duty) => {
+const showStudyProgram = (contact: App.Entities.User, duty) => {
   if (!contact.pivot?.extra_attributes?.study_program) {
     return null;
   }

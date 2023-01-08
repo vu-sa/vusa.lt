@@ -26,6 +26,6 @@ import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 defineProps<{
-  banner: App.Models.Banner;
+  banner: App.Entities.Banner;
 }>();
 </script>

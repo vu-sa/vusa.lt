@@ -181,7 +181,7 @@ import ModelChip from "../Chips/ModelChip.vue";
 import SuggestionAlert from "../Alerts/SuggestionAlert.vue";
 
 const props = defineProps<{
-  institution: App.Models.Institution;
+  institution: App.Entities.Institution;
 }>();
 
 const showMeetingForm = ref(false);
@@ -196,7 +196,7 @@ const meetingTemplate = {
   // title: "Planuotas posėdis",
   // type_id where label = "Posėdis"
   // type_id: props.doingTypes.find(
-  //   (type: App.Models.Type) => type.label === "Posėdis"
+  //   (type: App.Entities.Type) => type.label === "Posėdis"
   // )?.value,
   status: "Sukurtas",
   // datetime now YYYY-MM-DD HH:MM:SS and delimit T

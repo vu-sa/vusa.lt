@@ -235,7 +235,7 @@ import { useForm } from "@inertiajs/inertia-vue3";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 const props = defineProps<{
-  padaliniaiOptions: Array<App.Models.Padalinys>;
+  padaliniaiOptions: Array<App.Entities.Padalinys>;
 }>();
 
 // formRefs are needed by Naive UI
@@ -342,7 +342,7 @@ const rules: FormRules = {
     // check if any item in array is empty
     validator(
       rule: unknown,
-      value: Array<Pick<App.Models.SaziningaiExamFlow, "start_time">>
+      value: Array<Pick<App.Entities.SaziningaiExamFlow, "start_time">>
     ) {
       if (!value || value.length === 0) {
         return new Error("Įveskite bent vieno atsiskaitymo atsiskaitymo laiką");

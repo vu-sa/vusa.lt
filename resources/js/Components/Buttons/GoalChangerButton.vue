@@ -23,7 +23,7 @@ import CardModal from "@/Components/Modals/CardModal.vue";
 import GoalSelector from "@/Components/AdminForms/GoalSelectorForm.vue";
 
 defineProps<{
-  matter: App.Models.Matter;
+  matter: App.Entities.Matter;
 }>();
 
 const showModal = ref(false);

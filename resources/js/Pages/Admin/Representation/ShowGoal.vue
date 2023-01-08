@@ -67,8 +67,8 @@ defineOptions({
 });
 
 const props = defineProps<{
-  goal: App.Models.Goal;
-  institutions: App.Models.Institution[];
+  goal: App.Entities.Goal;
+  institutions: App.Entities.Institution[];
 }>();
 
 const showModal = ref(false);

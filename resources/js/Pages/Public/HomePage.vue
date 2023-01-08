@@ -54,10 +54,10 @@ import EventCalendar from "@/Components/Public/FullWidth/EventCalendar.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 defineProps<{
-  news: Array<App.Models.News>;
-  banners: Array<App.Models.Banner>;
-  mainPage: Array<App.Models.MainPage>;
-  calendar: Array<App.Models.Calendar>;
+  news: Array<App.Entities.News>;
+  banners: Array<App.Entities.Banner>;
+  mainPage: Array<App.Entities.MainPage>;
+  calendar: Array<App.Entities.Calendar>;
 }>();
 
 const isThemeDark = ref(isDarkMode());

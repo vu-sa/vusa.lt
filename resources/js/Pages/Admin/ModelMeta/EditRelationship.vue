@@ -80,7 +80,7 @@ defineOptions({
 });
 
 const props = defineProps<{
-  relationship: App.Models.Relationship;
+  relationship: App.Entities.Relationship;
   relatedModels?: Record<string, any>[];
 }>();
 

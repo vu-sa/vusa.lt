@@ -95,8 +95,8 @@ import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{
-  exam: App.Models.SaziningaiExam;
-  padaliniai: App.Models.Padalinys[];
+  exam: App.Entities.SaziningaiExam;
+  padaliniai: App.Entities.Padalinys[];
   modelRoute: string;
   deleteModelRoute?: string;
 }>();

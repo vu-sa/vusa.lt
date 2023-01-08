@@ -22,7 +22,7 @@ defineOptions({
 });
 
 defineProps<{
-  users: PaginatedModels<App.Models.User>;
+  users: PaginatedModels<App.Entities.User>;
 }>();
 
 const canUseRoutes = {
@@ -40,7 +40,7 @@ const columns = [
   {
     title: "El. paštas",
     key: "email",
-    render(row: App.Models.User) {
+    render(row: App.Entities.User) {
       return (
         <a href={`mailto:${row.email}`} class="transition hover:text-vusa-red">
           {row.email}
@@ -51,7 +51,7 @@ const columns = [
   {
     title: "Telefonas",
     key: "phone",
-    render(row: App.Models.User) {
+    render(row: App.Entities.User) {
       return (
         <a href={`mailto:${row.phone}`} class="transition hover:text-vusa-red">
           {row.phone}

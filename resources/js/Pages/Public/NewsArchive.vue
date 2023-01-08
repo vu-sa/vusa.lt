@@ -91,7 +91,7 @@ import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import HomeCard from "@/Components/Public/HomeCard.vue";
 
 const props = defineProps<{
-  news: PaginatedModels<App.Models.News>;
+  news: PaginatedModels<App.Entities.News>;
 }>();
 
 const locale = ref(usePage().props.value.locale);

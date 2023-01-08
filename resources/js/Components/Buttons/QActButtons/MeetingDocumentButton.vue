@@ -20,8 +20,8 @@ import { contentTypeOptions } from "@/Composables/someTypes";
 import FileUploader from "@/Components/SharepointFileManager/FileUploader.vue";
 
 const props = defineProps<{
-  institution: App.Models.Institution;
-  matters: App.Models.Matter[];
+  institution: App.Entities.Institution;
+  matters: App.Entities.Matter[];
 }>();
 
 const objectOptions = computed(() => {

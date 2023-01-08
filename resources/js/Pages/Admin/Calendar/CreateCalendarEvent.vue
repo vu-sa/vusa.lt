@@ -24,7 +24,7 @@ import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 defineProps<{
-  categories: App.Models.Category[];
+  categories: App.Entities.Category[];
 }>();
 
 const calendar = {

@@ -15,7 +15,7 @@ import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
 
 defineProps<{
-  relationships: PaginatedModels<App.Models.Relationship>;
+  relationships: PaginatedModels<App.Entities.Relationship>;
 }>();
 
 defineOptions({

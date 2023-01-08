@@ -55,7 +55,7 @@ import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 defineProps<{
-  news: App.Models.News;
-  otherLangNews: App.Models.News[] | null;
+  news: App.Entities.News;
+  otherLangNews: App.Entities.News[] | null;
 }>();
 </script>

@@ -24,7 +24,7 @@ defineOptions({
 });
 
 defineProps<{
-  institutions: PaginatedModels<App.Models.Institution[]>;
+  institutions: PaginatedModels<App.Entities.Institution[]>;
 }>();
 
 const canUseRoutes = {
@@ -34,7 +34,7 @@ const canUseRoutes = {
   destroy: true,
 };
 
-const columns: DataTableColumns<App.Models.Institution> = [
+const columns: DataTableColumns<App.Entities.Institution> = [
   {
     title: "Pavadinimas",
     key: "name",

@@ -21,8 +21,7 @@ import { Inertia } from "@inertiajs/inertia";
 import { NButton } from "naive-ui";
 import { usePage } from "@inertiajs/inertia-vue3";
 
-
-defineProps<{ mainPage: Array<App.Models.MainPage> }>();
+defineProps<{ mainPage: Array<App.Entities.MainPage> }>();
 
 const goToLink = (link: string | null) => {
   // if link is null, return nothing

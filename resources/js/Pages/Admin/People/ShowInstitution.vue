@@ -197,7 +197,7 @@ defineOptions({ layout: AdminLayout });
 
 const props = defineProps<{
   doingTypes: any;
-  institution: App.Models.Institution;
+  institution: App.Entities.Institution;
 }>();
 
 const selectedDocument = ref(null);

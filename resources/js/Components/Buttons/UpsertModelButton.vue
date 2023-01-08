@@ -16,7 +16,7 @@ import { NButton, NPopconfirm, NSpin, type UploadFileInfo } from "naive-ui";
 import { computed, ref } from "vue";
 
 const props = defineProps<{
-  form: InertiaForm<App.Models.ModelTemplate>;
+  form: InertiaForm<App.Entities.ModelTemplate>;
   images?: UploadFileInfo[];
   modelRoute: string;
 }>();
