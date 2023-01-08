@@ -74,7 +74,7 @@ import GoalCard from "@/Components/Cards/QuickContentCards/GoalCard.vue";
 import MatterForm from "@/Components/AdminForms/MatterForm.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import ShowActivityLog from "@/Components/Buttons/ShowActivityLog.vue";
+import ShowActivityLog from "@/Components/Buttons/ActivityLogButton.vue";
 
 defineOptions({ layout: AdminLayout });
 

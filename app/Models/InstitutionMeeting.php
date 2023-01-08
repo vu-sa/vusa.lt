@@ -22,7 +22,7 @@ class InstitutionMeeting extends Model
 
     public function getActivitylogOptions(): LogOptions
     {
-        return LogOptions::defaults();
+        return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
     public function matters()
@@ -43,5 +43,10 @@ class InstitutionMeeting extends Model
     public function tasks()
     {
         return $this->morphMany(Task::class, 'taskable');
+    }
+
+    public function comments()
+    {
+        return $this->morphMany(Comment::class, 'commentable');
     }
 }

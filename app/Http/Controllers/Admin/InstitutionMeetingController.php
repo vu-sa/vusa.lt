@@ -9,6 +9,7 @@ use Inertia\Inertia;
 use App\Services\InstitutionMeetingService as MeetingService;
 use App\Services\SharepointAppGraph;
 use Illuminate\Support\Benchmark;
+use Illuminate\Support\Carbon;
 
 class InstitutionMeetingController extends Controller
 {
@@ -76,7 +77,7 @@ class InstitutionMeetingController extends Controller
             $sharepointFiles = $graph->collectSharepointFiles($meeting->documents);
         }
         
-        $meeting->load('matters.institutions', 'tasks', 'activities.causer');
+        $meeting->load('matters.institutions', 'tasks', 'activities.causer', 'comments');
 
         // show meeting
         return Inertia::render('Admin/Representation/ShowMeeting', [
@@ -105,7 +106,15 @@ class InstitutionMeetingController extends Controller
      */
     public function update(Request $request, Meeting $meeting)
     {
-        //
+        $validated = $request->validate([
+            'start_time' => 'required|integer',
+        ]);
+
+        $validated['start_time'] = Carbon::createFromTimestamp($validated['start_time'] / 1000)->toDateTime();
+
+        $meeting->update($validated);
+
+        return back()->with('success', 'Posėdis atnaujintas sėkmingai!');
     }
 
     /**

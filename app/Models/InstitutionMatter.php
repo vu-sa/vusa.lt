@@ -24,7 +24,7 @@ class InstitutionMatter extends Model
 
     public function getActivitylogOptions(): LogOptions
     {
-        return LogOptions::defaults()->logOnly(['*'])->logOnlyDirty();
+        return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
     public function institutions()

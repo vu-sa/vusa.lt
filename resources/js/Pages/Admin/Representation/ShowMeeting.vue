@@ -119,17 +119,11 @@ import { trans as $t } from "laravel-vue-i18n";
 import {
   BookQuestionMark24Filled,
   DeviceMeetingRoomRemote24Regular,
-  Home24Filled,
   PeopleTeam24Filled,
-  Sparkle20Filled,
 } from "@vicons/fluent";
 import {
   type DropdownOption,
-  NBreadcrumb,
-  NBreadcrumbItem,
-  NButton,
   NCard,
-  NDropdown,
   NIcon,
   NMessageProvider,
   NTabPane,
@@ -137,12 +131,12 @@ import {
   NTag,
 } from "naive-ui";
 import { Inertia } from "@inertiajs/inertia";
-import { computed, ref } from "vue";
-
 import { Link } from "@inertiajs/inertia-vue3";
+import { computed, ref } from "vue";
+import { useStorage } from "@vueuse/core";
+
 import { contentTypeOptions, documentTemplate } from "@/Composables/someTypes";
 import { formatStaticTime } from "@/Utils/IntlTime";
-import { useStorage } from "@vueuse/core";
 import AdminBreadcrumbDisplayer from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
@@ -155,7 +149,7 @@ import FileUploaderBasicButton from "@/Components/SharepointFileManager/FileUplo
 import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import ShowActivityLog from "@/Components/Buttons/ShowActivityLog.vue";
+import ShowActivityLog from "@/Components/Buttons/ActivityLogButton.vue";
 import SingleTask from "@/Components/Tasks/SingleTask.vue";
 import StatusTag from "@/Components/Tags/StatusTag.vue";
 

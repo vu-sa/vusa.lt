@@ -5,12 +5,15 @@
       </AdminBreadcrumbDisplayer>
     </template>
     <template #aside-header>
-      <MoreOptionsButton
-        edit
-        delete
-        @edit-click="showModal = true"
-        @delete-click="handleDelete"
-      ></MoreOptionsButton>
+      <div class="inline-flex gap-2">
+        <ActivityLogButton :activities="goal.activities" />
+        <MoreOptionsButton
+          edit
+          delete
+          @edit-click="showModal = true"
+          @delete-click="handleDelete"
+        ></MoreOptionsButton>
+      </div>
     </template>
     <div class="mb-2 flex min-w-min flex-wrap items-center gap-2">
       <FilterButtonGroup
@@ -48,6 +51,7 @@ import { Inertia } from "@inertiajs/inertia";
 import { NIcon } from "naive-ui";
 import { computed, ref } from "vue";
 
+import ActivityLogButton from "@/Components/Buttons/ActivityLogButton.vue";
 import AdminBreadcrumbDisplayer from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";

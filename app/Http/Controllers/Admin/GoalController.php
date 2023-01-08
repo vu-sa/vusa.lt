@@ -69,7 +69,7 @@ class GoalController extends Controller
      */
     public function show(Goal $goal)
     {
-        $goal->load('matters.doings', 'matters.institutions:id,name');
+        $goal->load('matters.doings', 'matters.institutions:id,name', 'activities.causer');
 
         $institutions = $goal->matters->pluck('institutions')->flatten()->unique('id');
 

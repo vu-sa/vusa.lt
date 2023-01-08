@@ -92,7 +92,7 @@ class InstitutionController extends Controller
      */
     public function show(Institution $institution)
     {
-        $institution->load('types', 'padalinys', 'users', 'matters.meetings.documents');
+        $institution->load('types', 'padalinys', 'users', 'matters.meetings.documents', 'activities.causer');
 
         $users = $institution->users->unique('id')->values();
         $meetings = new EloquentCollection($institution->matters->pluck('meetings')->flatten());

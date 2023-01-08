@@ -59,7 +59,7 @@ defineOptions({
 
 defineProps<{
   institutions: Record<string, any>[];
-  duties: App.Models.Duty[];
+  duties: App.Models.DutyExtended[];
 }>();
 
 const windowOpen = (url: string, target: string) => {

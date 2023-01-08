@@ -44,7 +44,11 @@ export const formatRelativeTime = (
 
 export const formatStaticTime = (
   timestamp: number | Date,
-  dateTimeOptions: Intl.DateTimeFormatOptions,
+  dateTimeOptions: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  },
   locale: "lt" | "en" = "lt"
 ) => {
   const time = new Intl.DateTimeFormat(locale, dateTimeOptions).format(

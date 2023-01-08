@@ -75,7 +75,6 @@ import { NButton, NIcon, NImage, NPopover } from "naive-ui";
 
 import { PersonEdit24Regular } from "@vicons/fluent";
 
-
 const props = defineProps<{
   contact: App.Models.User;
   duty: App.Models.Duty;
@@ -104,7 +103,7 @@ const getImageUrl = (contact: App.Models.User) => {
 // check
 const checkIfContactNameEndsWithEDot = (
   contact: App.Models.User,
-  duty: App.Models.Duty
+  duty: App.Models.DutyExtended
 ) => {
   if (contact.name.endsWith("ė")) {
     // replace duty.name ending 'ius' with 'ė', but only on end

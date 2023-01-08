@@ -32,8 +32,9 @@ class InstitutionMeetingService
                 'title' => $title,
                 'description' => $mattersForm['newMatterDescription'],
                 // 'status' => 'Sukurtas',
-                'institution_id' => $mattersForm['institution_id']
             ]);
+
+            $matter->institutions()->attach($mattersForm['institution_id']);
 
             $meeting->matters()->attach($matter->id);
         }

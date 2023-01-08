@@ -54,7 +54,7 @@ declare namespace App.Models {
     user_id: string;
     commentable_type: string;
     commentable_id: string;
-    created_at: number; // casted to timestamp
+    created_at: any;
     updated_at: any;
     deleted_at: any | null;
     commentable?: any | null;
@@ -138,13 +138,11 @@ declare namespace App.Models {
     updated_at: any;
     deleted_at: any | null;
     dutiables?: Array<App.Models.Dutiable> | null;
-    roles?: Array<App.Models.Role> | null; // manually added
     users?: Array<App.Models.User> | null;
     contacts?: Array<App.Models.Contact> | null;
     types?: Array<App.Models.Type> | null;
     institution?: App.Models.Institution | null;
     dutiables_count?: number | null;
-    roles_count?: number | null; // manually added
     users_count?: number | null;
     contacts_count?: number | null;
     types_count?: number | null;
@@ -236,7 +234,7 @@ declare namespace App.Models {
   export interface InstitutionMeeting {
     id: string;
     description: string | null;
-    start_time: number; // casted to number
+    start_time: string;
     end_time: string | null;
     created_at: any;
     updated_at: any;
@@ -244,9 +242,11 @@ declare namespace App.Models {
     matters?: Array<App.Models.InstitutionMatter> | null;
     documents?: Array<App.Models.SharepointDocument> | null;
     tasks?: Array<App.Models.Task> | null;
+    comments?: Array<App.Models.Comment> | null;
     matters_count?: number | null;
     documents_count?: number | null;
     tasks_count?: number | null;
+    comments_count?: number | null;
   }
 
   export interface InstitutionMeetingMatter {
@@ -506,7 +506,7 @@ declare namespace App.Models {
     description: string | null;
     due_date: string | null;
     taskable_type: string;
-    taskable_id: number;
+    taskable_id: string;
     completed_at: any | null;
     created_at: any;
     updated_at: any;
@@ -557,13 +557,12 @@ declare namespace App.Models {
     calendar?: Array<App.Models.Calendar> | null;
     doings?: Array<App.Models.Doing> | null;
     duties?: Array<App.Models.Duty> | null;
-    roles?: Array<App.Models.Role> | null; // manually added
+    padaliniai?: any | null;
     tasks?: Array<App.Models.Task> | null;
     banners_count?: number | null;
     calendar_count?: number | null;
     doings_count?: number | null;
     duties_count?: number | null;
-    roles_count?: number | null; // manually added
     tasks_count?: number | null;
   }
 }

@@ -79,7 +79,7 @@ defineOptions({
 const props = defineProps<{
   institution: App.Models.Institution;
   institutionTypes: Array<App.Models.Type>;
-  duties: Array<App.Models.Duty>;
+  duties: Array<App.Models.DutyExtended>;
   padaliniai: Array<App.Models.Padalinys>;
 }>();
 

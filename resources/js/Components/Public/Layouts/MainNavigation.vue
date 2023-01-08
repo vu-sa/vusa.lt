@@ -38,7 +38,7 @@
         </NDropdown>
       </NScrollbar>
       <NButton
-        v-if="$page.props.auth.user"
+        v-if="$page.props.auth?.user"
         quaternary
         circle
         size="small"

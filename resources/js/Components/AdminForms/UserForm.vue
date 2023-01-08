@@ -79,7 +79,7 @@ import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 const props = defineProps<{
   user: App.Models.User;
   roles: App.Models.Role[];
-  duties: App.Models.Duty[];
+  duties: App.Models.DutyExtended[];
   modelRoute: string;
   deleteModelRoute?: string;
 }>();

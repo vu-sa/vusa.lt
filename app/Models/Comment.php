@@ -22,7 +22,7 @@ class Comment extends Model
 
     public function getActivitylogOptions(): LogOptions
     {
-        return LogOptions::defaults();
+        return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
     public function commentable()

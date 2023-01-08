@@ -142,7 +142,7 @@ import FileUploader from "@/Components/SharepointFileManager/FileUploader.vue";
 import FileUploaderBasicButton from "@/Components/SharepointFileManager/FileUploaderBasicButton.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import ShowActivityLog from "@/Components/Buttons/ShowActivityLog.vue";
+import ShowActivityLog from "@/Components/Buttons/ActivityLogButton.vue";
 import SingleTask from "@/Components/Tasks/SingleTask.vue";
 import StatusTag from "@/Components/Tags/StatusTag.vue";
 

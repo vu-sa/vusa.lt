@@ -15,7 +15,6 @@
 <script setup lang="tsx">
 import { h } from "vue";
 
-
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import AsideHeader from "@/Components/AsideHeaders/AsideHeaderContacts.vue";
 import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
@@ -25,7 +24,7 @@ defineOptions({
 });
 
 defineProps<{
-  duties: PaginatedModels<App.Models.Duty>;
+  duties: PaginatedModels<App.Models.DutyExtended>;
 }>();
 
 const canUseRoutes = {
@@ -62,7 +61,7 @@ const columns = [
     title: "Institucija",
     key: "institution.id",
     minWidth: 100,
-    render(row: App.Models.Duty) {
+    render(row: App.Models.DutyExtended) {
       return h(
         "a",
         {

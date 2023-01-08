@@ -27,7 +27,7 @@ class Duty extends Model implements AuthorizableContract
 
     public function getActivitylogOptions(): LogOptions
     {
-        return LogOptions::defaults();
+        return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
     public function dutiables()

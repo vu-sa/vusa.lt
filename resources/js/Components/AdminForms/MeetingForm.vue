@@ -75,7 +75,7 @@ import StatusTag from "@/Components/Tags/StatusTag.vue";
 const emit = defineEmits(["success"]);
 
 const props = defineProps<{
-  institution: App.Models.Institution;
+  institution?: App.Models.Institution;
   meeting: App.Models.InstitutionMeeting;
   // meetingTypes?: any;
   modelRoute: string;
@@ -106,20 +106,22 @@ const rules = {
 };
 
 const upsertMeeting = () => {
+  const isPatch = props.modelRoute === "meetings.update";
+
   formRef.value?.validate((errors) => {
     if (errors) {
       /* empty */
     } else {
       meetingForm.transform((data) => ({
         ...data,
-        institution_id: props.institution.id,
+        institution_id: props.institution?.id ?? undefined,
         matter_id: props.matter?.id,
         mattersForm: props.mattersForm?.data(),
       }));
 
       meetingForm.submit(
-        props.modelRoute === "meetings.update" ? Method.PATCH : Method.POST,
-        route(props.modelRoute),
+        isPatch ? Method.PATCH : Method.POST,
+        route(props.modelRoute, isPatch ? props.meeting.id : undefined),
         {
           onSuccess: () => {
             showModal.value = false;

@@ -104,7 +104,7 @@ import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{
-  duty: App.Models.Duty;
+  duty: App.Models.DutyExtended;
   dutyTypes: App.Models.Type[];
   roles: App.Models.Role[];
   institutions: App.Models.Institution[];

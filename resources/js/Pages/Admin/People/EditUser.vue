@@ -73,6 +73,6 @@ defineProps<{
   user: App.Models.User;
   roles: App.Models.Role[];
   // TODO: don't return all duties from the controller immediately
-  duties: App.Models.Duty[];
+  duties: App.Models.DutyExtended[];
 }>();
 </script>

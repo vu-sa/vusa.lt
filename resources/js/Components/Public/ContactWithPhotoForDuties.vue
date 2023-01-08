@@ -90,7 +90,6 @@ import { NButton, NIcon, NImage, NPopover } from "naive-ui";
 import { PersonEdit24Regular } from "@vicons/fluent";
 import { usePage } from "@inertiajs/inertia-vue3";
 
-
 defineProps<{
   contact: App.Models.User;
   index: string;
@@ -150,7 +149,7 @@ const getImageUrl = (contact: App.Models.User) => {
 
 const changeDutyNameEndings = (
   contact: App.Models.User,
-  duty: App.Models.Duty
+  duty: App.Models.DutyExtended
 ) => {
   // check for english locale and just return english
   let locale = usePage().props.value.locale;

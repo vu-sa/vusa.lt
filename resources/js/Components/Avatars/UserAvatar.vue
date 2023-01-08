@@ -26,7 +26,7 @@ withDefaults(
   defineProps<{
     showName?: boolean;
     showPadalinys?: boolean;
-    size: string | number;
+    size?: string | number;
     user: App.Models.User;
   }>(),
   {

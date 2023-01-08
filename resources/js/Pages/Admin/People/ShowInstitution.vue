@@ -146,6 +146,8 @@
       <InstitutionAvatarGroup :users="institution.users" />
     </template>
     <template #aside-header>
+      <ShowActivityLog :activities="institution.activities" />
+
       <MoreOptionsButton
         edit
         @edit-click="Inertia.visit(route('institutions.edit', institution.id))"
@@ -189,6 +191,7 @@ import MeetingsNeedingAttentionCard from "@/Components/Cards/QuickContentCards/M
 import ModelsDocumentViewer from "@/Components/SharepointFileManager/ModelsDocumentViewer.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import ShowActivityLog from "@/Components/Buttons/ActivityLogButton.vue";
 
 defineOptions({ layout: AdminLayout });
 

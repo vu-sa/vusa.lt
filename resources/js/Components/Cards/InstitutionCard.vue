@@ -82,7 +82,7 @@ const props = defineProps<{
   institution: App.Models.Institution;
   isPadalinys?: boolean;
   showLastMeeting?: boolean;
-  duties: App.Models.Duty[];
+  duties: App.Models.DutyExtended[];
 }>();
 
 const institutionDuties = computed(() => {

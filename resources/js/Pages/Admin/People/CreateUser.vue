@@ -21,7 +21,7 @@ defineOptions({ layout: AdminLayout });
 
 defineProps<{
   roles: App.Models.Role[];
-  duties: App.Models.Duty[];
+  duties: App.Models.DutyExtended[];
 }>();
 
 const user = {
