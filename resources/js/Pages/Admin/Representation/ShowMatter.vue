@@ -61,7 +61,7 @@
 </template>
 
 <script setup lang="tsx">
-import { BookQuestionMark20Filled, PeopleTeam24Filled } from "@vicons/fluent";
+import { BookQuestionMark24Filled, PeopleTeam24Filled } from "@vicons/fluent";
 import { NTabPane, NTabs } from "naive-ui";
 import { computed, ref } from "vue";
 import { useStorage } from "@vueuse/core";
@@ -122,7 +122,7 @@ const breadcrumbOptions: App.Props.BreadcrumbOption[] = [
   },
   {
     label: props.matter.title,
-    icon: BookQuestionMark20Filled,
+    icon: BookQuestionMark24Filled,
     routeOptions: {
       name: "institutions.matters.show",
       params: {

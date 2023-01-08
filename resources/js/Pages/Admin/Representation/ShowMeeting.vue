@@ -117,7 +117,7 @@
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
 import {
-  BookQuestionMark20Filled,
+  BookQuestionMark24Filled,
   DeviceMeetingRoomRemote24Regular,
   Home24Filled,
   PeopleTeam24Filled,
@@ -215,7 +215,7 @@ const breadcrumbOptions: App.Props.BreadcrumbOption[] = [
   },
   {
     label: props.meeting.matters?.[0].title,
-    icon: BookQuestionMark20Filled,
+    icon: BookQuestionMark24Filled,
     routeOptions: {
       name: "matters.show",
       params: {

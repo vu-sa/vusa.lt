@@ -105,7 +105,7 @@
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
 import {
-  BookQuestionMark20Filled,
+  BookQuestionMark24Filled,
   DocumentEdit24Regular,
   Home24Filled,
   PeopleTeam24Filled,

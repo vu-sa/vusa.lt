@@ -54,8 +54,8 @@
 </template>
 
 <script setup lang="ts">
-import { InertiaForm, useForm } from "@inertiajs/inertia-vue3";
 import {
+  type FormInst,
   NButton,
   NDatePicker,
   NForm,
@@ -65,8 +65,9 @@ import {
   NRadioGroup,
   NSelect,
 } from "naive-ui";
+import { type InertiaForm, useForm } from "@inertiajs/inertia-vue3";
+import { Method } from "@inertiajs/inertia";
 import { ref } from "vue";
-
 
 // import { meetingOptions, meetingStatusOptions } from "@/Composables/someTypes";
 import StatusTag from "@/Components/Tags/StatusTag.vue";
@@ -74,7 +75,8 @@ import StatusTag from "@/Components/Tags/StatusTag.vue";
 const emit = defineEmits(["success"]);
 
 const props = defineProps<{
-  meeting: Record<string, any>;
+  institution: App.Models.Institution;
+  meeting: App.Models.InstitutionMeeting;
   // meetingTypes?: any;
   modelRoute: string;
   matter?: App.Models.InstitutionMatter;
@@ -84,7 +86,7 @@ const props = defineProps<{
 
 const showModal = ref(false);
 const meetingForm = useForm(props.meeting);
-const formRef = ref(null);
+const formRef = ref<FormInst | null>(null);
 
 const rules = {
   // title: {
@@ -110,29 +112,21 @@ const upsertMeeting = () => {
     } else {
       meetingForm.transform((data) => ({
         ...data,
+        institution_id: props.institution.id,
         matter_id: props.matter?.id,
         mattersForm: props.mattersForm?.data(),
       }));
-      if (props.modelRoute == "meetings.update") {
-        meetingForm.patch(
-          route("meetings.update", {
-            meeting: props.meeting.id,
-          }),
-          {
-            onSuccess: () => {
-              showModal.value = false;
-              emit("success");
-            },
-          }
-        );
-      } else {
-        meetingForm.post(route("meetings.store"), {
+
+      meetingForm.submit(
+        props.modelRoute === "meetings.update" ? Method.PATCH : Method.POST,
+        route(props.modelRoute),
+        {
           onSuccess: () => {
             showModal.value = false;
             emit("success");
           },
-        });
-      }
+        }
+      );
     }
   });
 };

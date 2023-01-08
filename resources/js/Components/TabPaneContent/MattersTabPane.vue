@@ -11,7 +11,7 @@
       class="mx-1 my-2 flex h-36 flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-zinc-700 p-2 text-zinc-500 duration-200 hover:shadow-inner dark:bg-zinc-900/60"
       @click="showModal = true"
     >
-      <NIcon size="40" :depth="5" :component="BookQuestionMark20Filled"></NIcon>
+      <NIcon size="40" :depth="5" :component="BookQuestionMark24Filled"></NIcon>
       <span>Sukurti svarstomą klausimą</span>
     </div>
   </div>
@@ -30,7 +30,7 @@
 </template>
 
 <script setup lang="tsx">
-import { BookQuestionMark20Filled } from "@vicons/fluent";
+import { BookQuestionMark24Filled } from "@vicons/fluent";
 import { NIcon } from "naive-ui";
 import { ref } from "vue";
 

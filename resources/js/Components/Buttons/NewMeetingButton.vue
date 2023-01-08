@@ -37,7 +37,7 @@
               <span>Kiekvienas posėdis turi</span>
               <ModelChip>
                 <template #icon
-                  ><NIcon :component="BookQuestionMark20Filled"></NIcon
+                  ><NIcon :component="BookQuestionMark24Filled"></NIcon
                 ></template>
                 svarstomų klausimų</ModelChip
               >
@@ -50,7 +50,13 @@
           </SuggestionAlert>
         </FadeTransition>
         <NGrid cols="1">
-          <NFormItemGi label="Svarstomi klausimai" path="idArray">
+          <NFormItemGi path="idArray">
+            <template #label>
+              <div class="flex items-center gap-1">
+                <NIcon :component="BookQuestionMark24Filled" :depth="1"></NIcon>
+                <span>Svarstomi klausimai</span>
+              </div></template
+            >
             <NSelect
               v-model:value="mattersForm.idArray"
               placeholder="Studijų tinklelio peržiūra"
@@ -119,6 +125,7 @@
       </NForm>
       <MeetingForm
         v-else-if="current === 2"
+        :institution="institution"
         :meeting="meetingTemplate"
         :matters-form="mattersForm"
         model-route="meetings.store"
@@ -144,7 +151,7 @@
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
 import {
-  BookQuestionMark20Filled,
+  BookQuestionMark24Filled,
   PeopleTeamAdd24Filled,
   Question24Regular,
 } from "@vicons/fluent";
@@ -174,7 +181,7 @@ import ModelChip from "../Chips/ModelChip.vue";
 import SuggestionAlert from "../Alerts/SuggestionAlert.vue";
 
 const props = defineProps<{
-  institution: Record<string, any>;
+  institution: App.Models.Institution;
 }>();
 
 const showMeetingForm = ref(false);
