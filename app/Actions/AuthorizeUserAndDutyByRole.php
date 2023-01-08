@@ -33,6 +33,10 @@ class AuthorizeUserAndDutyByRole
 
     public function checkAllRoleables(string $permission)
     {        
+        if ($this->user->hasRole(config('permission.super_admin_role_name'))) {
+            return true;
+        }
+        
         // TODO: check, if cache invalidation works on this
         return Cache::remember($permission . '-' . $this->user->id, 1800, function () use ($permission) {
             // check if user has permission

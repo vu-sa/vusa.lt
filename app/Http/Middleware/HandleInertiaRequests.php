@@ -3,13 +3,13 @@
 namespace App\Http\Middleware;
 
 use App\Models\Padalinys;
-use Illuminate\Http\Request;
-use Inertia\Middleware;
-use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Actions\AuthorizeUserAndDutyByRole as Authorizer;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
+use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
 {
