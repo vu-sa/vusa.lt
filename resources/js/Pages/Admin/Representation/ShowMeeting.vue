@@ -185,7 +185,7 @@ const updateMeetingsTabPane = (value) => {
 const contentModel = computed(() => ({
   id: props.meeting.id,
   title: props.meeting.title,
-  type: "App\\Models\\Meeting",
+  type: "App\\Models\\InstitutionMeeting",
   modelTypes: props.meeting.types,
 }));
 

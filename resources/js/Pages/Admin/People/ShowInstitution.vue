@@ -125,12 +125,13 @@
         </div>
       </NTabPane>
       <NTabPane
-        name="Veiklų dokumentai"
+        name="Posėdžių dokumentai"
         :disabled="institution.meetings?.length === 0"
         display-directive="show:lazy"
       >
         <template #tab>
-          <NIcon class="mr-1" :component="Sparkle20Filled" /> Veiklų dokumentai
+          <NIcon class="mr-1" :component="DeviceMeetingRoomRemote24Filled" />
+          Posėdžių dokumentai
         </template>
         <div class="m-4">
           <ModelsDocumentViewer
@@ -158,6 +159,12 @@
 </template>
 
 <script setup lang="tsx">
+import {
+  DeviceMeetingRoomRemote24Filled,
+  DeviceMeetingRoomRemote24Regular,
+  PeopleTeam24Filled,
+  Sparkle20Filled,
+} from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import {
   NCollapse,
@@ -167,7 +174,6 @@ import {
   NTabs,
   NTag,
 } from "naive-ui";
-import { PeopleTeam24Filled, Sparkle20Filled } from "@vicons/fluent";
 import { ref } from "vue";
 import { useStorage } from "@vueuse/core";
 

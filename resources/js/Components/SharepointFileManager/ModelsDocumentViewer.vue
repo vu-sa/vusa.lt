@@ -72,8 +72,8 @@
 import { AppsList20Filled, Grid20Filled } from "@vicons/fluent";
 import { File, FilePdf, FileWord } from "@vicons/fa";
 import { NButton, NButtonGroup, NDataTable, NDivider, NIcon } from "naive-ui";
+import { type UseAxiosReturn, useAxios } from "@vueuse/integrations/useAxios";
 import { onMounted, ref } from "vue";
-import axios from "axios";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import FuzzySearcher from "@/Components/SharepointFileManager/FuzzySearcher.vue";
@@ -91,7 +91,7 @@ const loading = ref(true);
 const absolute = ref(true);
 const viewMode = ref("grid");
 
-const loadedDocuments = ref([]);
+const loadedDocuments = ref<any>([]);
 
 const updateResults = (newResults) => {
   results.value = newResults;
@@ -110,22 +110,34 @@ const results = ref(mapDocuments());
 const getFiles = async () => {
   let documents = mapDocuments();
 
+  if (documents.length === 0) {
+    loading.value = false;
+    console.log("No documents found.");
+    return;
+  }
+
   let documentIDArray = documents.map((document) => {
     return document.id;
   });
 
-  axios
-    .post(route("sharepoint.getFiles"), { documentIds: documentIDArray })
-    .then((response) => {
-      loadedDocuments.value = response.data;
-      results.value = response.data.map((document, index) => {
-        return {
-          item: document,
-          refIndex: index,
-        };
-      });
-      loading.value = false;
+  const { data, isFinished }: UseAxiosReturn<Record<string, any>[]> =
+    await useAxios(route("sharepoint.getFiles"), {
+      method: "POST",
+      data: { documentIds: documentIDArray },
     });
+
+  loadedDocuments.value = data;
+
+  if (data.value) {
+    results.value = data.value.map((document, index) => {
+      return {
+        item: document,
+        refIndex: index,
+      };
+    });
+  }
+
+  loading.value = false;
 };
 
 const rowProps = (row) => {

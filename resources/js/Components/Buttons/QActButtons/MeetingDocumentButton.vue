@@ -42,7 +42,7 @@ const objectOptions = computed(() => {
 });
 
 const contentModel = computed(() => ({
-  type: "App\\Models\\Meeting",
+  type: "App\\Models\\InstitutionMeeting",
   // modelTypes: [
   //   {
   //     title: "Posėdis",
