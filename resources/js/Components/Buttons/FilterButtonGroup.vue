@@ -15,17 +15,17 @@ import { NButton } from "naive-ui";
 import { ref } from "vue";
 
 const emit = defineEmits<{
-  (e: "click", value: string): void;
+  (e: "click", value: string | null): void;
 }>();
 
-const props = defineProps<{
-  buttonNames: string[];
+defineProps<{
+  buttonNames: Array<string | null>;
 }>();
 
-const currentButton = ref<string>(props.buttonNames[0]);
+const currentButton = ref<string | null>(null);
 
-const handleClick = (name: string) => {
-  currentButton.value = name;
+const handleClick = (name: string | null) => {
+  currentButton.value = name ?? "Be pavadinimo";
   emit("click", name);
 };
 </script>

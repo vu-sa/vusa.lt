@@ -1,41 +1,10 @@
 <template>
   <PageContent :title="doing.title" :breadcrumb="true">
     <template #above-header>
-      <NBreadcrumb v-if="matter" class="mb-4 w-full">
-        <NBreadcrumbItem>
-          <NDropdown
-            placement="bottom-start"
-            :options="breadcrumbOptions"
-            @select="handleBreadcrumbDropdownSelect"
-          >
-            <span>...</span>
-          </NDropdown>
-        </NBreadcrumbItem>
-        <NBreadcrumbItem
-          @click="
-            Inertia.visit(
-              route('matters.show', {
-                matter: matter.id,
-              })
-            )
-          "
-        >
-          <div>
-            <NIcon
-              class="mr-2"
-              size="16"
-              :component="BookQuestionMark20Filled"
-            />
-            {{ matter.title }}
-          </div>
-        </NBreadcrumbItem>
-        <NBreadcrumbItem
-          ><div>
-            <NIcon class="mr-1" size="16" :component="Sparkle20Filled" />
-            {{ doing.title }}
-          </div></NBreadcrumbItem
-        >
-      </NBreadcrumb>
+      <AdminBreadcrumbDisplayer
+        class="mb-4 w-full"
+        :options="breadcrumbOptions"
+      />
     </template>
     <template #after-heading>
       <StatusTag :status="doing.status" />
@@ -140,6 +109,8 @@ import {
   DocumentEdit24Regular,
   Home24Filled,
   PeopleTeam24Filled,
+  Person24Filled,
+  Person24Regular,
   Sparkle20Filled,
 } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
@@ -157,9 +128,9 @@ import {
 } from "naive-ui";
 import { computed, ref } from "vue";
 
-
 import { contentTypeOptions, documentTemplate } from "@/Composables/someTypes";
 import { useStorage } from "@vueuse/core";
+import AdminBreadcrumbDisplayer from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import CommentTipTap from "@/Components/TipTap/CommentTipTap.vue";
@@ -180,14 +151,25 @@ defineOptions({
 });
 
 const props = defineProps<{
-  doing: Record<string, any>;
-  matter: Record<string, any> | null;
-  documents: Record<string, any>[];
+  doing: App.Models.Doing;
+  matter: App.Models.InstitutionMatter;
+  sharepointFiles: App.Models.SharepointFile[];
 }>();
 
 const currentCommentField = ref("");
 const showModal = ref(false);
 const selectedDocument = ref(null);
+
+const breadcrumbOptions: App.Props.BreadcrumbOption[] = [
+  {
+    label: props.doing.users?.[0].name,
+    icon: Person24Filled,
+  },
+  {
+    label: props.doing.title,
+    icon: Sparkle20Filled,
+  },
+];
 
 const currentDoingsTabPane = useStorage("admin-CurrentDoingsTabPane", "Apie");
 
@@ -201,23 +183,6 @@ const contentModel = computed(() => ({
   type: "App\\Models\\Doing",
   modelTypes: props.doing.types,
 }));
-
-const breadcrumbOptions = [
-  {
-    label: "Pradinis",
-    key: "dashboard",
-    icon: () => {
-      return <NIcon component={Home24Filled}></NIcon>;
-    },
-  },
-  {
-    label: props.matter?.institution.name,
-    key: "institution",
-    icon: () => {
-      return <NIcon component={PeopleTeam24Filled}></NIcon>;
-    },
-  },
-];
 
 const handleBreadcrumbDropdownSelect = (key) => {
   switch (key) {

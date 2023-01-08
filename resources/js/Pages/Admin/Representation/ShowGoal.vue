@@ -1,26 +1,8 @@
 <template>
   <PageContent :title="goal.title" breadcrumb>
     <template #above-header>
-      <NBreadcrumb class="mb-4 w-full">
-        <NBreadcrumbItem @click="Inertia.get(route('dashboard'))">
-          <div>
-            <NIcon class="mr-2" size="16" :component="Home24Filled"> </NIcon>
-
-            Pradinis
-          </div>
-        </NBreadcrumbItem>
-        <NBreadcrumbItem
-          ><div>
-            <NIcon
-              class="mr-2"
-              size="16"
-              :component="StarLineHorizontal324Filled"
-            >
-            </NIcon>
-            <NEllipsis style="max-width: 200px"> {{ goal.title }}</NEllipsis>
-          </div>
-        </NBreadcrumbItem>
-      </NBreadcrumb>
+      <AdminBreadcrumbDisplayer class="mb-4 w-full" :options="breadcrumbItems">
+      </AdminBreadcrumbDisplayer>
     </template>
     <template #aside-header>
       <MoreOptionsButton
@@ -31,23 +13,24 @@
       ></MoreOptionsButton>
     </template>
     <div class="mb-2 flex min-w-min flex-wrap items-center gap-2">
-      <NButton
-        v-for="institution in institutions"
-        :key="institution.id"
-        size="small"
-        :type="institution.id === selectedInstitution ? 'primary' : 'default'"
-        strong
-        @click="handleClick(institution.id)"
-        >{{ institution.name }}</NButton
-      >
+      <FilterButtonGroup
+        :button-names="buttonNames"
+        @click="handleFilterClick"
+      />
     </div>
     <div class="grid grid-cols-3 gap-x-4">
       <MatterCard
         v-for="matter in shownMatters"
         :key="matter.id"
         :matter="matter"
-        >{{ matter.institution?.name }}</MatterCard
-      >
+        ><div v-for="institution in matter.institutions" :key="institution.id">
+          <ModelChip
+            ><template #icon
+              ><NIcon :component="StarLineHorizontal324Filled" /> </template
+            >{{ institution.name }}</ModelChip
+          >
+        </div>
+      </MatterCard>
     </div>
     <CardModal
       v-model:show="showModal"
@@ -60,26 +43,18 @@
 </template>
 
 <script setup lang="tsx">
-import {
-  Home24Filled,
-  StarLineHorizontal324Filled,
-  StarLineHorizontal324Regular,
-} from "@vicons/fluent";
+import { Home24Filled, StarLineHorizontal324Filled } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
-import {
-  NBreadcrumb,
-  NBreadcrumbItem,
-  NButton,
-  NEllipsis,
-  NIcon,
-} from "naive-ui";
+import { NIcon } from "naive-ui";
 import { computed, ref } from "vue";
 
-
+import AdminBreadcrumbDisplayer from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
+import FilterButtonGroup from "@/Components/Buttons/FilterButtonGroup.vue";
 import GoalForm from "@/Components/AdminForms/GoalForm.vue";
 import MatterCard from "@/Components/Cards/MatterCard.vue";
+import ModelChip from "@/Components/Chips/ModelChip.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 
@@ -94,6 +69,16 @@ const props = defineProps<{
 
 const showModal = ref(false);
 const selectedInstitution = ref<string | null>(null);
+const buttonNames = props.institutions.map((institution) => institution.name);
+const breadcrumbItems: App.Props.BreadcrumbOption[] = [
+  {
+    label: "Klausimų grupės",
+  },
+  {
+    label: props.goal.title,
+    icon: StarLineHorizontal324Filled,
+  },
+];
 
 const shownMatters = computed(() => {
   let matters = props.goal.matters;
@@ -103,17 +88,15 @@ const shownMatters = computed(() => {
   }
 
   return matters?.filter((matter) => {
-    return matter.institution?.id === selectedInstitution.value ?? matters;
+    return matter.institutions?.some((institution) => {
+      console.log(institution.name, selectedInstitution.value);
+      return institution.name === selectedInstitution.value;
+    });
   });
 });
 
-const handleClick = (id: App.Models.Institution["id"]) => {
-  if (selectedInstitution.value === id) {
-    selectedInstitution.value = null;
-    return;
-  }
-  selectedInstitution.value = id;
-  return;
+const handleFilterClick = (name: string | null) => {
+  selectedInstitution.value = name ?? "Be pavadinimo";
 };
 
 const handleDelete = () => {

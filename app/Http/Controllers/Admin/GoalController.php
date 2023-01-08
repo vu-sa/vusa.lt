@@ -69,13 +69,13 @@ class GoalController extends Controller
      */
     public function show(Goal $goal)
     {
-        $goal->load('matters.doings', 'matters.institution:id,name');
+        $goal->load('matters.doings', 'matters.institutions:id,name');
 
-        $institutions = $goal->matters->pluck('institution')->unique('id');
+        $institutions = $goal->matters->pluck('institutions')->flatten()->unique('id');
 
         return Inertia::render('Admin/Representation/ShowGoal', [
             'goal' => $goal,
-            'institutions' => $institutions,
+            'institutions' => $institutions->values(),
         ]);
     }
 

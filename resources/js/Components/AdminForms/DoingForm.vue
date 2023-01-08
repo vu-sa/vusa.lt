@@ -57,6 +57,7 @@
 </template>
 
 <script setup lang="ts">
+import { Method } from "@inertiajs/inertia";
 import {
   NButton,
   NDatePicker,
@@ -68,8 +69,7 @@ import {
   NSelect,
 } from "naive-ui";
 import { ref } from "vue";
-import { useForm } from "@inertiajs/inertia-vue3";
-
+import { useForm, usePage } from "@inertiajs/inertia-vue3";
 
 import { doingOptions, doingStatusOptions } from "@/Composables/someTypes";
 import StatusTag from "@/Components/Tags/StatusTag.vue";
@@ -80,9 +80,9 @@ const props = defineProps<{
   doing: App.Models.Doing;
   doingTypes?: any;
   modelRoute: string;
-  question?: App.Models.Question;
+  matter?: App.Models.InstitutionMatter;
   // This question form is from a quick action button, idk if it shouldn't be refactored
-  questionForm?: Record<string, any>;
+  matterForm?: Record<string, any>;
 }>();
 
 const showModal = ref(false);
@@ -114,27 +114,19 @@ const upsertDoing = () => {
         ...data,
         question_id: props.question?.id,
         questionForm: props.questionForm,
+        user_id: usePage().props.value.auth?.user.id,
       }));
-      if (props.modelRoute == "doings.update") {
-        doingForm.patch(
-          route(props.modelRoute, {
-            doing: props.doing.id,
-          }),
-          {
-            onSuccess: () => {
-              showModal.value = false;
-              emit("success");
-            },
-          }
-        );
-      } else {
-        doingForm.post(route(props.modelRoute), {
+
+      doingForm.submit(
+        props.modelRoute === "doings.update" ? Method.PATCH : Method.POST,
+        route(props.modelRoute),
+        {
           onSuccess: () => {
             showModal.value = false;
             emit("success");
           },
-        });
-      }
+        }
+      );
     }
   });
 };

@@ -163,7 +163,7 @@ const updateTaskCompletion = (task: App.Models.Task) => {
   );
 };
 
-const handleClick = (name: string) => {
+const handleClick = (name: string | null) => {
   switch (name) {
     case "Visos":
       showCompletedTasks.value = null;

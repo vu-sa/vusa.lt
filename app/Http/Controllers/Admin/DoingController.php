@@ -69,43 +69,17 @@ class DoingController extends Controller
         $request->validate([
             'title' => 'required',
             'type_id' => 'required',
+            'user_id' => 'required'
         ]);
     
         $doing = Doing::create
             ($request->only('title') + ['status' => 'Sukurtas', 'date' => $request->date ?? now()]);
         
         $doing->types()->sync($request->type_id);
-
-        // TODO: This is not needed anymore, as it's transferred to matters
-
-        if (!is_null($request->input('matterForm'))) {
-            // parse 'titlesOrIds' for new matters
-            foreach ($request->input('matterForm')['titlesOrIds'] as $value) {
-                switch (gettype($value)) {
-                    case 'integer':
-                        $doing->matters()->attach($value);
-                        break;
-                    case 'string':
-                        $doing->matters()->create([
-                            'title' => $value,
-                            'description' => $request->input('matterForm')['description'],
-                            'status' => 'Sukurtas',
-                            'institution_id' => $request->input('matterForm')['institution_id']
-                        ]);
-
-                        if (!is_null($request->input('matterForm')['andOther'] ?? null)) {
-                            $doing->extra_attributes = ['andOther' => $request->input('matterForm')['andOther']];
-                            $doing->save();
-                        }
-                        break;
-                    }
-                }
-        } else {
-            $doing->matters()->sync($request->matter_id);
-        }
+        $doing->users()->sync($request->user_id);
 
         DoingStatusManager::generateStatusForNewDoing($doing);
-        TaskCreator::createAutomaticTasks($doing);
+        // TaskCreator::createAutomaticTasks($doing);
 
         return redirect()->route('doings.show', $doing)->with('success', 'Veiksmas sukurtas!');
     }
