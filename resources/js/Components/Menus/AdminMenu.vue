@@ -10,38 +10,19 @@
 
 <script setup lang="tsx">
 import {
-  BookContacts28Regular,
-  BookQuestionMark24Regular,
-  CalendarLtr24Regular,
-  DeviceMeetingRoomRemote24Regular,
-  DocumentMultiple24Regular,
-  DocumentSettings20Regular,
-  Flow20Regular,
   Flowchart20Regular,
   Folder24Regular,
-  Grid24Regular,
   HatGraduation24Regular,
   Home24Regular,
-  ImageArrowBack24Regular,
-  Important24Regular,
-  Navigation24Regular,
-  News24Regular,
   Notebook24Regular,
-  People24Regular,
-  PeopleSearch24Regular,
-  PeopleTeam24Regular,
-  Person24Regular,
-  PersonBoard24Regular,
-  PuzzlePiece24Regular,
   Settings24Regular,
-  ShieldKeyhole24Regular,
-  Sparkle24Regular,
-  StarLineHorizontal324Regular,
   TabDesktopNewPage20Regular,
 } from "@vicons/fluent";
 import { Link, usePage } from "@inertiajs/inertia-vue3";
 import { NIcon, NMenu } from "naive-ui";
 import { computed, ref } from "vue";
+
+import Icons from "@/Types/Icons/regular";
 
 defineProps<{
   collapsed: boolean;
@@ -98,7 +79,7 @@ const menuOptions = computed(() => [
     icon: () => {
       return <NIcon component={HatGraduation24Regular}></NIcon>;
     },
-    show: auth.can.institutions,
+    show: auth?.can.institutions,
     children: [
       {
         label: () => {
@@ -106,7 +87,7 @@ const menuOptions = computed(() => [
         },
         key: "goals",
         icon: () => {
-          return <NIcon component={StarLineHorizontal324Regular}></NIcon>;
+          return <NIcon component={Icons.GOAL}></NIcon>;
         },
       },
       {
@@ -115,7 +96,7 @@ const menuOptions = computed(() => [
         },
         key: "goalGroups",
         icon: () => {
-          return <NIcon component={Sparkle24Regular}></NIcon>;
+          return <NIcon component={Icons.GOAL_GROUP}></NIcon>;
         },
       },
       {
@@ -124,7 +105,7 @@ const menuOptions = computed(() => [
         },
         key: "doings",
         icon: () => {
-          return <NIcon component={Important24Regular}></NIcon>;
+          return <NIcon component={Icons.DOING}></NIcon>;
         },
       },
       {
@@ -137,7 +118,7 @@ const menuOptions = computed(() => [
         },
         key: "institutions",
         icon: () => {
-          return <NIcon component={PeopleTeam24Regular}></NIcon>;
+          return <NIcon component={Icons.INSTITUTION}></NIcon>;
         },
       },
       {
@@ -146,7 +127,7 @@ const menuOptions = computed(() => [
         },
         key: "matters",
         icon: () => {
-          return <NIcon component={BookQuestionMark24Regular}></NIcon>;
+          return <NIcon component={Icons.MATTER}></NIcon>;
         },
       },
       {
@@ -155,7 +136,7 @@ const menuOptions = computed(() => [
         },
         key: "meetings",
         icon: () => {
-          return <NIcon component={DeviceMeetingRoomRemote24Regular}></NIcon>;
+          return <NIcon component={Icons.MEETING}></NIcon>;
         },
       },
       {
@@ -175,18 +156,18 @@ const menuOptions = computed(() => [
     label: "Žmonės",
     key: "contacts",
     icon: () => {
-      return <NIcon component={Person24Regular}></NIcon>;
+      return <NIcon component={Icons.USER}></NIcon>;
     },
-    show: auth.can.users || auth.can.institutions,
+    show: auth?.can.users || auth?.can.institutions,
     children: [
       {
         label: () => {
           return <Link href={route("users.index")}>Nariai</Link>;
         },
         key: "users",
-        show: auth.can.users,
+        show: auth?.can.users,
         icon: () => {
-          return <NIcon component={Person24Regular}></NIcon>;
+          return <NIcon component={Icons.USER}></NIcon>;
         },
       },
       {
@@ -195,7 +176,7 @@ const menuOptions = computed(() => [
         },
         key: "duties",
         icon: () => {
-          return <NIcon component={PuzzlePiece24Regular}></NIcon>;
+          return <NIcon component={Icons.DUTY}></NIcon>;
         },
       },
       {
@@ -203,9 +184,9 @@ const menuOptions = computed(() => [
           return <Link href={route("contacts.index")}>Kiti kontaktai</Link>;
         },
         key: "contacts",
-        show: auth.can.users,
+        show: auth?.can.users,
         icon: () => {
-          return <NIcon component={BookContacts28Regular}></NIcon>;
+          return <NIcon component={Icons.CONTACT}></NIcon>;
         },
       },
     ],
@@ -216,16 +197,16 @@ const menuOptions = computed(() => [
     icon: () => {
       return <NIcon component={TabDesktopNewPage20Regular}></NIcon>;
     },
-    show: auth.can.content,
+    show: auth?.can.content,
     children: [
       {
         label: () => {
           return <Link href={route("pages.index")}>Puslapiai</Link>;
         },
         key: "pages",
-        show: auth.can.pages,
+        show: auth?.can.pages,
         icon: () => {
-          return <NIcon component={DocumentMultiple24Regular}></NIcon>;
+          return <NIcon component={Icons.PAGE}></NIcon>;
         },
       },
       {
@@ -233,9 +214,9 @@ const menuOptions = computed(() => [
           return <Link href={route("news.index")}>Naujienos</Link>;
         },
         key: "news",
-        show: auth.can.news,
+        show: auth?.can.news,
         icon: () => {
-          return <NIcon component={News24Regular}></NIcon>;
+          return <NIcon component={Icons.NEWS}></NIcon>;
         },
       },
       {
@@ -243,9 +224,9 @@ const menuOptions = computed(() => [
           return <Link href={route("mainPage.index")}>Greitieji mygtukai</Link>;
         },
         key: "mainPage",
-        show: auth.can.mainPage,
+        show: auth?.can.mainPage,
         icon: () => {
-          return <NIcon component={Grid24Regular}></NIcon>;
+          return <NIcon component={Icons.MAINPAGE}></NIcon>;
         },
       },
       {
@@ -253,9 +234,9 @@ const menuOptions = computed(() => [
           return <Link href={route("banners.index")}>Baneriai</Link>;
         },
         key: "banners",
-        show: auth.can.banners,
+        show: auth?.can.banners,
         icon: () => {
-          return <NIcon component={ImageArrowBack24Regular}></NIcon>;
+          return <NIcon component={Icons.BANNER}></NIcon>;
         },
       },
       {
@@ -263,9 +244,9 @@ const menuOptions = computed(() => [
           return <Link href={route("navigation.index")}>Navigacija</Link>;
         },
         key: "navigation",
-        show: auth.can.navigation,
+        show: auth?.can.navigation,
         icon: () => {
-          return <NIcon component={Navigation24Regular}></NIcon>;
+          return <NIcon component={Icons.NAVIGATION}></NIcon>;
         },
       },
       {
@@ -273,9 +254,9 @@ const menuOptions = computed(() => [
           return <Link href={route("calendar.index")}>Kalendorius</Link>;
         },
         key: "calendar",
-        show: auth.can.calendar,
+        show: auth?.can.calendar,
         icon: () => {
-          return <NIcon component={CalendarLtr24Regular}></NIcon>;
+          return <NIcon component={Icons.CALENDAR}></NIcon>;
         },
       },
       {
@@ -283,7 +264,7 @@ const menuOptions = computed(() => [
           return <Link href={route("files.index")}>Failai</Link>;
         },
         key: "files",
-        show: auth.can.files,
+        show: auth?.can.files,
         icon: () => {
           return <NIcon component={Folder24Regular}></NIcon>;
         },
@@ -296,7 +277,7 @@ const menuOptions = computed(() => [
     icon: () => {
       return <NIcon component={Notebook24Regular}></NIcon>;
     },
-    show: auth.can.content || auth.can.saziningai,
+    show: auth?.can.content || auth?.can.saziningai,
     children: [
       {
         label: () => {
@@ -304,9 +285,9 @@ const menuOptions = computed(() => [
         },
         key: "saziningai",
         icon: () => {
-          return <NIcon component={PeopleSearch24Regular}></NIcon>;
+          return <NIcon component={Icons.SAZININGAIEXAM}></NIcon>;
         },
-        show: auth.can.saziningai,
+        show: auth?.can.saziningai,
       },
       {
         label: () => {
@@ -318,9 +299,9 @@ const menuOptions = computed(() => [
         },
         key: "memberRegister",
         icon: () => {
-          return <NIcon component={People24Regular}></NIcon>;
+          return <NIcon component={Icons.USER}></NIcon>;
         },
-        show: auth.can.content,
+        show: auth?.can.content,
       },
     ],
   },
@@ -337,7 +318,7 @@ const menuOptions = computed(() => [
         },
         key: "types",
         icon: () => {
-          return <NIcon component={DocumentSettings20Regular}></NIcon>;
+          return <NIcon component={Icons.TYPE}></NIcon>;
         },
       },
       {
@@ -346,7 +327,7 @@ const menuOptions = computed(() => [
         },
         key: "relationships",
         icon: () => {
-          return <NIcon component={Flow20Regular}></NIcon>;
+          return <NIcon component={Icons.RELATIONSHIP}></NIcon>;
         },
       },
       // role index
@@ -356,7 +337,7 @@ const menuOptions = computed(() => [
         },
         key: "roles",
         icon: () => {
-          return <NIcon component={PersonBoard24Regular}></NIcon>;
+          return <NIcon component={Icons.ROLE}></NIcon>;
         },
       },
       {
@@ -365,11 +346,11 @@ const menuOptions = computed(() => [
         },
         key: "permissions",
         icon: () => {
-          return <NIcon component={ShieldKeyhole24Regular}></NIcon>;
+          return <NIcon component={Icons.PERMISSION}></NIcon>;
         },
       },
     ],
-    show: auth.can.settings,
+    show: auth?.can.settings,
   },
 ]);
 </script>

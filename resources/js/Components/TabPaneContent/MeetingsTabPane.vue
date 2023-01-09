@@ -11,11 +11,7 @@
       class="mx-1 my-2 flex flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-zinc-700 p-2 text-zinc-500 duration-200 hover:shadow-inner dark:bg-zinc-900/60"
       @click="showModal = true"
     >
-      <NIcon
-        size="24"
-        :depth="5"
-        :component="DeviceMeetingRoomRemote24Regular"
-      ></NIcon>
+      <NIcon size="24" :depth="5" :component="Icons.MEETING"></NIcon>
       <span>Sukurti veiklą?</span>
     </div>
   </div>
@@ -36,9 +32,9 @@
 </template>
 
 <script setup lang="tsx">
-import { DeviceMeetingRoomRemote24Regular } from "@vicons/fluent";
 import { NIcon } from "naive-ui";
 import { ref } from "vue";
+import Icons from "@/Types/Icons/filled";
 
 import CardModal from "@/Components/Modals/CardModal.vue";
 import MeetingCard from "@/Components/Cards/MeetingCard.vue";

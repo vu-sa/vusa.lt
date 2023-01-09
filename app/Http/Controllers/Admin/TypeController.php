@@ -10,11 +10,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
-class TypesController extends Controller
+class TypeController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(Doing::class, 'doing');
+        $this->authorizeResource(Type::class, 'type');
     }
     
     /**
@@ -25,7 +25,7 @@ class TypesController extends Controller
     public function index()
     {
         return Inertia::render('Admin/ModelMeta/IndexTypes', [
-            'contentTypes' => Type::paginate(20),
+            'types' => Type::paginate(20),
         ]);
     }
 

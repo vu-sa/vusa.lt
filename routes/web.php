@@ -70,15 +70,15 @@ Route::prefix('admin')->group(function () {
         Route::resource('institutions', Admin\InstitutionController::class);
         Route::post('institutions/reorderDuties', [Admin\InstitutionController::class, 'reorderDuties'])->name('institutions.reorderDuties');
 
-        Route::resource('types', Admin\TypesController::class);
+        Route::resource('types', Admin\TypeController::class);
         Route::resource('relationships', Admin\RelationshipController::class);
         Route::post('relationships/{relationship}/storeModelRelationship', [Admin\RelationshipController::class, 'storeModelRelationship'])->name('relationships.storeModelRelationship');
         Route::delete('relationships/relationshipables/{relationshipable}', [Admin\RelationshipController::class, 'deleteModelRelationship'])->name('relationships.deleteModelRelationship');
         Route::resource('roles', Admin\RoleController::class);
         Route::patch('roles/{role}/attach/{model}/permissions', [Admin\RoleController::class, 'syncPermissionGroup'])->name('roles.syncPermissionGroup');
         Route::resource('permissions', Admin\PermissionController::class);
-        Route::resource('tasks', Admin\TasksController::class);
-        Route::post('tasks/{task}/updateCompletionStatus', [Admin\TasksController::class, 'updateCompletionStatus'])->name('tasks.updateCompletionStatus');
+        Route::resource('tasks', Admin\TaskController::class);
+        Route::post('tasks/{task}/updateCompletionStatus', [Admin\TaskController::class, 'updateCompletionStatus'])->name('tasks.updateCompletionStatus');
 
         Route::post('files/search', [Admin\FilesController::class, 'searchForFiles'])->name('files.search');
         Route::post('images/search', [Admin\FilesController::class, 'searchForImages'])->name('images.search');

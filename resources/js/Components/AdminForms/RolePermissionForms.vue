@@ -2,7 +2,7 @@
   <div class="max-w-2xl">
     <section v-for="entity in entities" :key="entity.key">
       <EntityDescription :title="entity.title" :icon="entity.icon">
-        <div class="col-span-2" v-html="entity.description"></div>
+        <component :is="entity.description"></component>
       </EntityDescription>
       <PermissionTable
         :model-type="entity.key"
@@ -15,11 +15,11 @@
 </template>
 
 <script setup lang="tsx">
-import { ImageArrowBack24Regular } from "@vicons/fluent";
 import { NDivider } from "naive-ui";
 
-import { h } from "vue";
+import * as Descriptions from "@/Components/EntityDescriptions/DescriptionComponents";
 import EntityDescription from "@/Components/EntityDescriptions/EntityDescription.vue";
+import Icons from "@/Types/Icons/regular";
 import PermissionTable from "@/Features/Admin/PermissionTable.vue";
 
 const props = defineProps<{
@@ -79,10 +79,9 @@ const filterPermissionsFor = (modelType: string) => {
 const entities = [
   {
     title: "Baneriai",
-    icon: ImageArrowBack24Regular,
+    icon: Icons.BANNER,
     key: "banners",
-    description: `
-      <p>Baneriai yra paveikslėliai su nuorodomis, besikeičiantys karuselės principu. Jie yra naudojami pagrindiniame puslapyje, skirti reklamuoti bendroves, VU SA PKP bei partnerius.</p><p>Šiuo metu banerių funkcija yra <strong class='text-vusa-red'>išjungta.</strong></p>`,
+    description: Descriptions.BannerDescription,
   },
 ];
 </script>

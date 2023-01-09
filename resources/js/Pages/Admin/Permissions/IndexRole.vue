@@ -33,10 +33,6 @@ const canUseRoutes = {
 // add columns
 const columns: DataTableColumns<App.Entities.Role> = [
   {
-    title: "ID",
-    key: "id",
-  },
-  {
     title: "Pavadinimas",
     key: "name",
   },

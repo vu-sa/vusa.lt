@@ -163,9 +163,7 @@
 <script setup lang="tsx">
 import {
   DeviceMeetingRoomRemote24Filled,
-  DeviceMeetingRoomRemote24Regular,
   PeopleTeam24Filled,
-  Sparkle20Filled,
 } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import {

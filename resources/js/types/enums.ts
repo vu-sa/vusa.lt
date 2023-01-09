@@ -1,6 +1,6 @@
 export enum Models {
   AGENDAITEM = "agendaItem",
-  BANNER = "banner",
+  BANNER = "banner", // described
   CALENDAR = "calendar",
   CATEGORY = "category",
   COMMENT = "comment",

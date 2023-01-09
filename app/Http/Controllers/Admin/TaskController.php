@@ -7,7 +7,7 @@ use App\Http\Controllers\Controller as Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
-class TasksController extends Controller
+class TaskController extends Controller
 {
     public function __construct()
     {

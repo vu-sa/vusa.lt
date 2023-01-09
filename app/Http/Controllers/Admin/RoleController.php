@@ -38,7 +38,7 @@ class RoleController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('Admin/Permissions/CreateRole');
     }
 
     /**
@@ -49,7 +49,13 @@ class RoleController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required',
+        ]);
+
+        $role = Role::create($validated);
+
+        return redirect()->route('roles.index')->with('success', 'Rolė sukurta.');
     }
 
     /**

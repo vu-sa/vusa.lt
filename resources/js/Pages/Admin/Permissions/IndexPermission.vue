@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="tsx">
-import { DataTableColumns } from "naive-ui";
+import type { DataTableColumns } from "naive-ui";
 
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
@@ -24,25 +24,17 @@ defineProps<{
 }>();
 
 const canUseRoutes = {
-  create: true,
+  create: false,
   show: false,
-  edit: true,
-  destroy: true,
+  edit: false,
+  destroy: false,
 };
 
 // add columns
 const columns: DataTableColumns<App.Entities.Permission> = [
   {
-    title: "ID",
-    key: "id",
-  },
-  {
     title: "Pavadinimas",
     key: "name",
-  },
-  {
-    title: "Guard name",
-    key: "guard_name",
   },
   {
     title: "Sukurtas",
