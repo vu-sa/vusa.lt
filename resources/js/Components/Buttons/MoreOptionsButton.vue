@@ -57,7 +57,7 @@ const moreOptions = [
     label: "Ištrinti",
     key: "delete",
     icon: () => {
-      return <NIcon color="text-vusa-red" component={Delete24Filled}></NIcon>;
+      return <NIcon color="#bd2835" component={Delete24Filled}></NIcon>;
     },
     show: props.delete,
   },

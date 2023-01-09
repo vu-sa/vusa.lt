@@ -75,6 +75,7 @@ Route::prefix('admin')->group(function () {
         Route::post('relationships/{relationship}/storeModelRelationship', [Admin\RelationshipController::class, 'storeModelRelationship'])->name('relationships.storeModelRelationship');
         Route::delete('relationships/relationshipables/{relationshipable}', [Admin\RelationshipController::class, 'deleteModelRelationship'])->name('relationships.deleteModelRelationship');
         Route::resource('roles', Admin\RoleController::class);
+        Route::patch('roles/{role}/attach/{model}/permissions', [Admin\RoleController::class, 'syncPermissionGroup'])->name('roles.syncPermissionGroup');
         Route::resource('permissions', Admin\PermissionController::class);
         Route::resource('tasks', Admin\TasksController::class);
         Route::post('tasks/{task}/updateCompletionStatus', [Admin\TasksController::class, 'updateCompletionStatus'])->name('tasks.updateCompletionStatus');

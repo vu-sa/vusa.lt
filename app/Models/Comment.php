@@ -14,6 +14,8 @@ class Comment extends Model
 
     protected $guarded = [];
 
+    protected $touches = ['commentable'];
+
     protected $with = ['user:id,name,profile_photo_path'];
 
     protected $casts = [

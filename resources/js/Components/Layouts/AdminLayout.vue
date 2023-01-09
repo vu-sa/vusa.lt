@@ -14,7 +14,7 @@
 
       <NLayout class="min-h-screen">
         <div
-          class="fixed z-50 flex w-full flex-row justify-between py-3 pr-8 backdrop-blur-md dark:border-zinc-700"
+          class="fixed z-50 flex w-full flex-row justify-between py-3 pr-8 dark:border-zinc-700"
         >
           <div class="invisible">
             <NButton secondary round @click="collapsed = !collapsed"
