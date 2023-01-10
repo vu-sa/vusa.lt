@@ -13,13 +13,15 @@ import { Home24Filled } from "@vicons/fluent";
 import { NBreadcrumb } from "naive-ui";
 import { computed } from "vue";
 
-import AdminBreadcrumbItem from "@/Components/Breadcrumbs/AdminBreadcrumbItem.vue";
+import AdminBreadcrumbItem, {
+  type BreadcrumbOption,
+} from "@/Components/Breadcrumbs/AdminBreadcrumbItem.vue";
 
 const props = defineProps<{
-  options: App.Props.BreadcrumbOption[];
+  options: BreadcrumbOption[];
 }>();
 
-const breadcrumbOptions = computed<App.Props.BreadcrumbOption[]>(() => {
+const breadcrumbOptions = computed<BreadcrumbOption[]>(() => {
   let options = props.options;
 
   // ? Pasiūlė Copilot

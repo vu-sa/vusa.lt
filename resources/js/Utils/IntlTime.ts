@@ -7,7 +7,8 @@ export const formatRelativeTime = (
   dateTimeOptions: Intl.RelativeTimeFormatOptions = {
     numeric: "auto",
   },
-  locale: App.Locale = "lt"
+  // check locale against App.Enums.LocaleEnum
+  locale: App.Enums.LocaleEnum = App.Enums.LocaleEnum.LT
 ) => {
   const date = new Date(timestamp);
 

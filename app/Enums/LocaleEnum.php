@@ -7,9 +7,9 @@ use Spatie\Enum\Laravel\Enum;
 
 /**
  * @typescript
- * @method static self INSTITUTION()
- * @method static self TYPE()
+ * @method static self LT()
+ * @method static self EN()
  */
-final class AllowedRelationshipablesEnum extends Enum {
+final class LocaleEnum extends Enum {
     use hasCamelCaseLabels;
 }

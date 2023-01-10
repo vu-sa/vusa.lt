@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Enums\CRUDEnum;
-use App\Enums\PermissableModelEnum;
+use App\Enums\ModelEnum;
 use App\Enums\PermissionScopeEnum;
 use App\Models\Permission;
 
@@ -20,10 +20,12 @@ class ModelPermissionSeeder extends Seeder
     {
         $permissionsToCreate = [];
 
-        foreach (PermissableModelEnum::toValues() as $model) {
-            foreach (CRUDEnum::toValues() as $crud) {
-                foreach (PermissionScopeEnum::toValues() as $scope) {
-                    $permissionsToCreate[] = $this->simplePluralize($model) . '.' . $crud . '.' . $scope;
+        foreach (ModelEnum::toLabels() as $model) {
+            $pluralizedModel = $this->simplePluralize($model);
+            
+            foreach (CRUDEnum::toLabels() as $crud) {
+                foreach (PermissionScopeEnum::toLabels() as $scope) {
+                    $permissionsToCreate[] = $pluralizedModel . '.' . $crud . '.' . $scope;
                 }
             }
         }
@@ -45,7 +47,7 @@ class ModelPermissionSeeder extends Seeder
         } 
 
         // if word is navigation or calendar then we don't want to pluralize it
-        if ($word == 'navigation' || $word == 'calendar') {
+        if ($word == 'navigation' || $word == 'calendar' || $word == 'news') {
             return $word;
         }
 

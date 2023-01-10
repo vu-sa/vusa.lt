@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use App\Enums\ModelEnum;
+use App\Enums\PermissionScopeEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -44,6 +46,8 @@ class Institution extends Model
 
     public function matters()
     {
+        dd(ModelEnum::cases(), PermissionScopeEnum::cases());
+        
         return $this->belongsToMany(Matter::class, 'institutions_matters', 'institution_id', 'matter_id');
     }
 

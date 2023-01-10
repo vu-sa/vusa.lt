@@ -182,6 +182,10 @@ declare namespace App.Models {
   }
 
   export interface GoalMatter {
+    goal_id: string;
+    matter_id: string;
+    created_at: any;
+    updated_at: any;
     goal?: App.Models.Goal | null;
     matter?: App.Models.Matter | null;
   }
@@ -203,7 +207,7 @@ declare namespace App.Models {
     types?: Array<App.Models.Type> | null;
     padalinys?: App.Models.Padalinys | null;
     matters?: Array<App.Models.Matter> | null;
-    meetings?: any | null;
+    meetings?: Array<App.Models.Meeting> | null;
     users?: any | null;
     documents?: Array<App.Models.SharepointDocument> | null;
     given_relationships?: Array<App.Models.Relationship> | null;
@@ -211,6 +215,7 @@ declare namespace App.Models {
     duties_count?: number | null;
     types_count?: number | null;
     matters_count?: number | null;
+    meetings_count?: number | null;
     documents_count?: number | null;
     given_relationships_count?: number | null;
     received_relationships_count?: number | null;
@@ -251,6 +256,13 @@ declare namespace App.Models {
   }
 
   export interface Meeting {
+    id: string;
+    description: string | null;
+    start_time: string;
+    end_time: string | null;
+    created_at: any;
+    updated_at: any;
+    deleted_at: any | null;
     matters?: Array<App.Models.Matter> | null;
     agenda_items?: Array<App.Models.AgendaItem> | null;
     documents?: Array<App.Models.SharepointDocument> | null;
@@ -349,14 +361,14 @@ declare namespace App.Models {
   }
 
   export interface Permission {
-    id: number;
+    id: string;
     name: string;
     guard_name: string;
     created_at: any | null;
     updated_at: any | null;
-    roles?: Array<Spatie.Permission.Models.Role> | null;
+    roles?: Array<App.Models.Role> | null;
     users?: Array<App.Models.User> | null;
-    permissions?: Array<Spatie.Permission.Models.Permission> | null;
+    permissions?: Array<App.Models.Permission> | null;
     roles_count?: number | null;
     users_count?: number | null;
     permissions_count?: number | null;
@@ -410,12 +422,12 @@ declare namespace App.Models {
   }
 
   export interface Role {
-    id: number;
+    id: string;
     name: string;
     guard_name: string;
     created_at: any | null;
     updated_at: any | null;
-    permissions?: Array<Spatie.Permission.Models.Permission> | null;
+    permissions?: Array<App.Models.Permission> | null;
     users?: Array<App.Models.User> | null;
     permissions_count?: number | null;
     users_count?: number | null;

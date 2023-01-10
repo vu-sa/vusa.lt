@@ -23,8 +23,22 @@
 import { Inertia } from "@inertiajs/inertia";
 import { NBreadcrumbItem, NDropdown, NIcon } from "naive-ui";
 
+import type { Component } from "vue";
+import type { DropdownOption } from "naive-ui";
+import type { RouteParam, RouteParamsWithQueryOverload } from "ziggy-js";
+
+export interface BreadcrumbOption {
+  label: string | null;
+  icon?: Component;
+  dropdownOptions?: DropdownOption[];
+  routeOptions?: {
+    name: string;
+    params?: RouteParamsWithQueryOverload | RouteParam;
+  };
+}
+
 const props = defineProps<{
-  option: App.Props.BreadcrumbOption;
+  option: BreadcrumbOption;
 }>();
 
 const iconWithLabel = () => {
@@ -35,17 +49,4 @@ const iconWithLabel = () => {
     </div>
   );
 };
-
-// const handleBreadcrumbDropdownSelect = (key) => {
-//   switch (key) {
-//     case "dashboard":
-//       Inertia.visit(route("dashboard"));
-//       break;
-//     case "institution":
-//       Inertia.visit(route("institutions.show", props.matter.institution.id));
-//       break;
-//     default:
-//       break;
-//   }
-// };
 </script>

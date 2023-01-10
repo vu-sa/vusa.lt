@@ -5,18 +5,20 @@ namespace App\Enums;
 use Spatie\Enum\Laravel\Enum;
 
 /**
- * @method static self own()
- * @method static self padalinys()
- * @method static self all()
+ * @typescript
+ * @method static self OWN()
+ * @method static self PADALINYS()
+ * @method static self ALL()
  */
 
  class PermissionScopeEnum extends Enum {
-    protected static function values(): array
+    
+    protected static function labels(): array
     {
         return [
-            'own' => 'own',
-            'padalinys' => 'padalinys',
-            'all' => '*',
+            'OWN' => 'own',
+            'PADALINYS' => 'padalinys',
+            'ALL' => '*',
         ];
     }
  }
