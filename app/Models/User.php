@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use App\Models\Pivots\Dutiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use App\Models\Dutiable;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;

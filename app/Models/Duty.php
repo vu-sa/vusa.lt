@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Pivots\Dutiable;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Dutiable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;

@@ -10,7 +10,7 @@ use Inertia\Inertia;
 use App\Models\Padalinys;
 use App\Models\Type;
 use App\Models\Doing;
-use App\Models\Relationshipable;
+use App\Models\Pivots\Relationshipable;
 use App\Services\SharepointAppGraph;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 

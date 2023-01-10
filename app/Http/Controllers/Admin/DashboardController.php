@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller as Controller;
 use App\Models\Institution;
-use App\Models\Relationshipable;
+use App\Models\Pivots\Relationshipable;
 use App\Models\Type;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
