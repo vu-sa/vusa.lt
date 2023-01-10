@@ -5,11 +5,6 @@
  */
 
 declare namespace App.Models {
-  export interface AgendaItem {
-    matter?: App.Models.Matter | null;
-    meeting?: App.Models.Meeting | null;
-  }
-
   export interface Banner {
     id: number;
     title: string;
@@ -81,16 +76,6 @@ declare namespace App.Models {
     duties_count?: number | null;
   }
 
-  export interface Doable {
-    doable_type: string;
-    doable_id: string;
-    doing_id: string;
-    created_at: any;
-    updated_at: any;
-    doing?: App.Models.Doing | null;
-    user?: App.Models.User | null;
-  }
-
   export interface Doing {
     id: string;
     title: string;
@@ -100,7 +85,7 @@ declare namespace App.Models {
     created_at: any;
     updated_at: any;
     deleted_at: any | null;
-    doables?: Array<App.Models.Doable> | null;
+    doables?: Array<App.Models.Pivots.Doable> | null;
     goals?: Array<App.Models.Goal> | null;
     matters?: Array<App.Models.Matter> | null;
     types?: Array<App.Models.Type> | null;
@@ -116,20 +101,6 @@ declare namespace App.Models {
     users_count?: number | null;
   }
 
-  export interface Dutiable {
-    duty_id: string;
-    dutiable_id: string;
-    dutiable_type: string;
-    start_date: string;
-    end_date: string | null;
-    extra_attributes: string | null;
-    created_at: any;
-    updated_at: any;
-    duty?: App.Models.Duty | null;
-    user?: App.Models.User | null;
-    contact?: App.Models.Contact | null;
-  }
-
   export interface Duty {
     id: string;
     name: string;
@@ -142,7 +113,7 @@ declare namespace App.Models {
     created_at: any;
     updated_at: any;
     deleted_at: any | null;
-    dutiables?: Array<App.Models.Dutiable> | null;
+    dutiables?: Array<App.Models.Pivots.Dutiable> | null;
     users?: Array<App.Models.User> | null;
     contacts?: Array<App.Models.Contact> | null;
     types?: Array<App.Models.Type> | null;
@@ -179,15 +150,6 @@ declare namespace App.Models {
     deleted_at: any | null;
     goals?: Array<App.Models.Goal> | null;
     goals_count?: number | null;
-  }
-
-  export interface GoalMatter {
-    goal_id: string;
-    matter_id: string;
-    created_at: any;
-    updated_at: any;
-    goal?: App.Models.Goal | null;
-    matter?: App.Models.Matter | null;
   }
 
   export interface Institution {
@@ -264,7 +226,7 @@ declare namespace App.Models {
     updated_at: any;
     deleted_at: any | null;
     matters?: Array<App.Models.Matter> | null;
-    agenda_items?: Array<App.Models.AgendaItem> | null;
+    agenda_items?: Array<App.Models.Pivots.AgendaItem> | null;
     documents?: Array<App.Models.SharepointDocument> | null;
     tasks?: Array<App.Models.Task> | null;
     comments?: Array<App.Models.Comment> | null;
@@ -402,23 +364,10 @@ declare namespace App.Models {
     created_at: any;
     updated_at: any;
     institutions?: Array<App.Models.Institution> | null;
-    relationshipables?: Array<App.Models.Relationshipable> | null;
+    relationshipables?: Array<App.Models.Pivots.Relationshipable> | null;
     institutions_count?: number | null;
     relationshipables_count?: number | null;
     readonly related_model?: any;
-  }
-
-  export interface Relationshipable {
-    id: number;
-    relationship_id: number;
-    relationshipable_type: string;
-    relationshipable_id: string;
-    related_model_id: string;
-    created_at: any;
-    updated_at: any;
-    relationship?: App.Models.Relationship | null;
-    relationshipable?: any | null;
-    related_relationshipable?: any | null;
   }
 
   export interface Role {
@@ -563,5 +512,47 @@ declare namespace App.Models {
     doings_count?: number | null;
     duties_count?: number | null;
     tasks_count?: number | null;
+  }
+}
+
+declare namespace App.Models.Pivots {
+  export interface AgendaItem {}
+
+  export interface Doable {
+    doable_type: string;
+    doable_id: string;
+    doing_id: string;
+    created_at: any;
+    updated_at: any;
+  }
+
+  export interface Dutiable {
+    duty_id: string;
+    dutiable_id: string;
+    dutiable_type: string;
+    start_date: string;
+    end_date: string | null;
+    extra_attributes: string | null;
+    created_at: any;
+    updated_at: any;
+  }
+
+  export interface GoalMatter {
+    goal_id: string;
+    matter_id: string;
+    created_at: any;
+    updated_at: any;
+  }
+
+  export interface Relationshipable {
+    id: number;
+    relationship_id: number;
+    relationshipable_type: string;
+    relationshipable_id: string;
+    related_model_id: string;
+    created_at: any;
+    updated_at: any;
+    relationshipable?: any | null;
+    related_relationshipable?: any | null;
   }
 }
