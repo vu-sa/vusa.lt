@@ -28,7 +28,7 @@
 import { NCollapse, NCollapseItem, NDivider } from "naive-ui";
 
 import * as Descriptions from "@/Components/EntityDescriptions/DescriptionComponents";
-import { Models } from "@/Types/enums";
+import { ModelEnum } from "@/Types/enums";
 import { pluralizeModels } from "@/Utils/String";
 import EntityDescription from "@/Components/EntityDescriptions/EntityDescription.vue";
 import Icons from "@/Types/Icons/regular";
@@ -55,7 +55,12 @@ const filterPermissionsFor = (modelType: string) => {
   return filteredPermissions;
 };
 
-// create const abilities from App.Enums.PermissionAbilities
+// console.log(ModelEnum.PAGE);
+
+const page = ModelEnum.PAGE;
+
+console.log(page);
+// create const abilities from PermissionAbilities
 // const abilities = Object.values(PermissionAbilities);
 // const models = Object.values(Models);
 
@@ -79,43 +84,44 @@ const permissableItems = [
       {
         title: "Puslapiai",
         icon: Icons.PAGE,
-        key: pluralizeModels(Models.PAGE),
+        // get label of enum
+        key: pluralizeModels(ModelEnum.PAGE),
         description: Descriptions.PageDescription,
       },
       {
         title: "Naujienos",
         icon: Icons.NEWS,
-        key: pluralizeModels(Models.NEWS),
+        key: pluralizeModels(ModelEnum.NEWS),
         description: Descriptions.NewsDescription,
       },
       {
         title: "Baneriai",
         icon: Icons.BANNER,
-        key: pluralizeModels(Models.BANNER),
+        key: pluralizeModels(ModelEnum.BANNER),
         description: Descriptions.BannerDescription,
       },
       {
         title: "Kalendorius",
         icon: Icons.CALENDAR,
-        key: pluralizeModels(Models.CALENDAR),
+        key: pluralizeModels(ModelEnum.CALENDAR),
         description: Descriptions.CalendarDescription,
       },
       {
         title: "Greitieji mygtukai",
-        icon: Icons.MAINPAGE,
-        key: pluralizeModels(Models.MAINPAGE),
+        icon: Icons.MAIN_PAGE,
+        key: pluralizeModels(ModelEnum.MAIN_PAGE),
         description: Descriptions.MainPageDescription,
       },
       {
         title: "Navigacija",
         icon: Icons.NAVIGATION,
-        key: pluralizeModels(Models.NAVIGATION),
+        key: pluralizeModels(ModelEnum.NAVIGATION),
         description: Descriptions.NavigationDescription,
       },
       {
         title: "Sąžiningai egzaminai",
-        icon: Icons.SAZININGAIEXAM,
-        key: pluralizeModels(Models.SAZININGAIEXAM),
+        icon: Icons.SAZININGAI_EXAM,
+        key: pluralizeModels(ModelEnum.SAZININGAI_EXAM),
         description: Descriptions.SaziningaiExamDescription,
       },
     ],
@@ -126,49 +132,49 @@ const permissableItems = [
       {
         title: "Naudotojai",
         icon: Icons.USER,
-        key: pluralizeModels(Models.USER),
+        key: pluralizeModels(ModelEnum.USER),
         description: Descriptions.UserDescription,
       },
       {
         title: "Institucijos",
         icon: Icons.INSTITUTION,
-        key: pluralizeModels(Models.INSTITUTION),
+        key: pluralizeModels(ModelEnum.INSTITUTION),
         description: Descriptions.InstitutionDescription,
       },
       {
         title: "Svarstomi klausimai (temos)",
         icon: Icons.MATTER,
-        key: pluralizeModels(Models.MATTER),
+        key: pluralizeModels(ModelEnum.MATTER),
         description: Descriptions.MatterDescription,
       },
       {
         title: "Susitikimai",
         icon: Icons.MEETING,
-        key: pluralizeModels(Models.MEETING),
+        key: pluralizeModels(ModelEnum.MEETING),
         description: Descriptions.MeetingDescription,
       },
       {
         title: "Veiklos (veiksmai)",
         icon: Icons.DOING,
-        key: pluralizeModels(Models.DOING),
+        key: pluralizeModels(ModelEnum.DOING),
         description: Descriptions.DoingDescription,
       },
       {
         title: "Pareigybės",
         icon: Icons.DUTY,
-        key: pluralizeModels(Models.DUTY),
+        key: pluralizeModels(ModelEnum.DUTY),
         description: Descriptions.DutyDescription,
       },
       {
         title: "Tikslai",
         icon: Icons.GOAL,
-        key: pluralizeModels(Models.GOAL),
+        key: pluralizeModels(ModelEnum.GOAL),
         description: Descriptions.GoalDescription,
       },
       {
         title: "Kontaktai",
         icon: Icons.CONTACT,
-        key: pluralizeModels(Models.CONTACT),
+        key: pluralizeModels(ModelEnum.CONTACT),
         description: Descriptions.ContactDescription,
       },
     ],
@@ -184,32 +190,32 @@ const permissableItems = [
       },
       {
         title: "Dokumentai",
-        icon: Icons.SHAREPOINTDOCUMENT,
-        key: pluralizeModels(Models.SHAREPOINTDOCUMENT),
+        icon: Icons.SHAREPOINT_DOCUMENT,
+        key: pluralizeModels(ModelEnum.SHAREPOINT_DOCUMENT),
         description: Descriptions.SharepointDocumentDescription,
       },
       {
         title: "Užduotys",
         icon: Icons.TASK,
-        key: pluralizeModels(Models.TASK),
+        key: pluralizeModels(ModelEnum.TASK),
         description: Descriptions.TaskDescription,
       },
       {
         title: "Ryšiai",
         icon: Icons.RELATIONSHIP,
-        key: pluralizeModels(Models.RELATIONSHIP),
+        key: pluralizeModels(ModelEnum.RELATIONSHIP),
         description: Descriptions.RelationshipDescription,
       },
       {
         title: "Rolės",
         icon: Icons.ROLE,
-        key: pluralizeModels(Models.ROLE),
+        key: pluralizeModels(ModelEnum.ROLE),
         description: Descriptions.RoleDescription,
       },
       {
         title: "Leidimai",
         icon: Icons.PERMISSION,
-        key: pluralizeModels(Models.PERMISSION),
+        key: pluralizeModels(ModelEnum.PERMISSION),
         description: Descriptions.PermissionDescription,
       },
     ],

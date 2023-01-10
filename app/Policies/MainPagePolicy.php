@@ -4,11 +4,21 @@ namespace App\Policies;
 
 use App\Models\MainPage;
 use App\Models\User;
+use App\Policies\Traits\UseUserDutiesForAuthorization;
+use Illuminate\Support\Str;
+use App\Enums\ModelEnum;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class MainPagePolicy
 {
-    use HandlesAuthorization;
+    use HandlesAuthorization, UseUserDutiesForAuthorization;
+
+    private $pluralModelName;
+
+    public function __construct()
+    {
+        $this->pluralModelName = Str::plural(ModelEnum::MAIN_PAGE()->label);
+    }
 
     /**
      * Determine whether the user can view any models.
@@ -16,9 +26,9 @@ class MainPagePolicy
      * @param  \App\Models\User  $user
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function viewAny(User $user)
+    public function viewAny(User $user): bool
     {
-        return $user->can('create unit content');
+        return $this->forUser($user)->check($this->pluralModelName . '.index.padalinys');
     }
 
     /**

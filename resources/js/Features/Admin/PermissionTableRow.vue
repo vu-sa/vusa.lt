@@ -57,15 +57,14 @@ import {
 } from "@vicons/fluent";
 import { type Component, ref } from "vue";
 import { NCheckbox, NIcon, NSwitch } from "naive-ui";
-import type { InertiaForm } from "@inertiajs/inertia-vue3";
-import type { PermissionAbilities } from "@/Types/enums";
+import type { CRUDEnum } from "@/Types/enums";
 
 const emit = defineEmits<{
   (e: "update", scope: string | undefined): void;
 }>();
 
 const props = defineProps<{
-  ability: PermissionAbilities;
+  ability: CRUDEnum;
   disabled: boolean;
   defaultValue: string | undefined;
   icon: Component;

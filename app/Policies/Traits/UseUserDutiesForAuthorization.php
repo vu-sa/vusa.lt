@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Actions;
+namespace App\Policies\Traits;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 
-class AuthorizeUserAndDutyByRole
+trait UseUserDutiesForAuthorization
 {
     // The purpose of this is to authorize an user action not only
     // against the user but also against the duties that the user
@@ -17,21 +17,14 @@ class AuthorizeUserAndDutyByRole
     private $user;
     private $duties;
 
-    public function __construct(User $user)
+    public function forUser(User $user): self
     {
         $this->user = $user;
-    }
-    
-    protected function getDuties()
-    {
-        if (!isset($this->duties)) {
-            $this->duties = $this->user->duties()->get(['id']);
-        }
 
-        return $this->duties;
+        return $this;
     }
 
-    public function checkAllRoleables(string $permission)
+    public function checkAllRoleables(string $permission): bool
     {        
         if ($this->user->hasRole(config('permission.super_admin_role_name'))) {
             return true;
@@ -59,9 +52,29 @@ class AuthorizeUserAndDutyByRole
     }
 
     // alias for checkAllRoleables
-    public function check(string $permission)
+    public function check(string $permission): bool
     {
         return $this->checkAllRoleables($permission);
+    }
+
+    public function checkArray(array $permissions): bool
+    {
+        foreach ($permissions as $permission) {
+            if ($this->check($permission)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function getDuties(): array
+    {
+        if (!isset($this->duties)) {
+            $this->duties = $this->user->duties()->get(['id']);
+        }
+
+        return $this->duties;
     }
     
 }

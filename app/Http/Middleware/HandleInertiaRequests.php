@@ -4,7 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\Padalinys;
 use App\Models\User;
-use App\Actions\AuthorizeUserAndDutyByRole as Authorizer;
+use App\Enums\ModelEnum;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Collection;
@@ -45,11 +45,9 @@ class HandleInertiaRequests extends Middleware
         $user = $this->getLoggedInUserForInertia();
 
         $isSuperAdmin = false;
-        $userAuthorizer = null;
 
         if (!is_null ($user)) {
             $isSuperAdmin = $user->hasRole(config('permission.super_admin_role_name'));
-            $userAuthorizer = new Authorizer($user);
         }
 
         return array_merge(parent::share($request), [
@@ -59,15 +57,11 @@ class HandleInertiaRequests extends Middleware
             ],
             'auth' => is_null($user) ? null : [
                 'can' => fn () => [
-                    'calendar' => fn () => $userAuthorizer->check('edit unit content'),
-                    'content' => fn () => $userAuthorizer->check('edit unit content'),
-                    'files' => fn () => $userAuthorizer->check('edit unit content'),
-                    'institutions' => fn () => $userAuthorizer->check('edit institution content'),
-                    'navigation' => fn () => $isSuperAdmin,
-                    'saziningai' => fn () => $userAuthorizer->check('edit saziningai content'),
-                    'settings' => fn () => $isSuperAdmin,
-                    'users' => fn () => $userAuthorizer->check('edit unit users'),
-                ],
+                    'index' => collect(ModelEnum::toLabels())
+                        ->map(function ($model) use ($user) {
+                            return [$model => $user->can('index', $model)];
+                        })->toArray()
+                    ],
                 'user' => fn () => [
                     ...$user->toArray(), 
                     'padaliniai' => $user->padaliniai()->get(['padaliniai.id', 'padaliniai.shortname'])->unique(), 

@@ -226,7 +226,7 @@ const menuOptions = computed(() => [
         key: "mainPage",
         show: auth?.can.mainPage,
         icon: () => {
-          return <NIcon component={Icons.MAINPAGE}></NIcon>;
+          return <NIcon component={Icons.MAIN_PAGE}></NIcon>;
         },
       },
       {
@@ -285,7 +285,7 @@ const menuOptions = computed(() => [
         },
         key: "saziningai",
         icon: () => {
-          return <NIcon component={Icons.SAZININGAIEXAM}></NIcon>;
+          return <NIcon component={Icons.SAZININGAI_EXAM}></NIcon>;
         },
         show: auth?.can.saziningai,
       },

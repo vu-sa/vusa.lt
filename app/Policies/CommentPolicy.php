@@ -4,11 +4,22 @@ namespace App\Policies;
 
 use App\Models\Comment;
 use App\Models\User;
+use App\Policies\Traits\UseUserDutiesForAuthorization;
+use Illuminate\Support\Str;
+use App\Enums\ModelEnum;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Auth\Access\Response;
 
 class CommentPolicy
 {
-    use HandlesAuthorization;
+    use HandlesAuthorization, UseUserDutiesForAuthorization;
+
+    private $pluralModelName;
+
+    public function __construct()
+    {
+        $this->pluralModelName = Str::plural(ModelEnum::COMMENT()->label);
+    }
 
     /**
      * Determine whether the user can view any models.
@@ -16,9 +27,9 @@ class CommentPolicy
      * @param  \App\Models\User  $user
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function viewAny(User $user)
+    public function viewAny(User $user): Response | bool
     {
-        return true;
+        return $this->forUser($user)->check($this->pluralModelName . '.index.padalinys');
     }
 
     /**

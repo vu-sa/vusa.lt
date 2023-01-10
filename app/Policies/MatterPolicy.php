@@ -4,11 +4,21 @@ namespace App\Policies;
 
 use App\Models\Matter as Matter;
 use App\Models\User;
+use App\Policies\Traits\UseUserDutiesForAuthorization;
+use Illuminate\Support\Str;
+use App\Enums\ModelEnum;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class MatterPolicy
 {
-    use HandlesAuthorization;
+    use HandlesAuthorization, UseUserDutiesForAuthorization;
+
+    private $pluralModelName;
+
+    public function __construct()
+    {
+        $this->pluralModelName = Str::plural(ModelEnum::MATTER()->label);
+    }
 
     /**
      * Determine whether the user can view any models.
@@ -16,9 +26,9 @@ class MatterPolicy
      * @param  \App\Models\User  $user
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function viewAny(User $user)
+    public function viewAny(User $user): bool
     {
-        return false;
+        return $this->forUser($user)->check($this->pluralModelName . '.index.padalinys');
     }
 
     /**

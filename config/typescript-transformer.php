@@ -50,7 +50,7 @@ return [
      * The package will write the generated TypeScript to this file.
      */
 
-    'output_file' => resource_path('js/Types/generated.d.ts'),
+    'output_file' => resource_path('js/Types/enums.ts'),
 
     /*
      * When the package is writing types to the output file, a writer is used to
@@ -58,7 +58,7 @@ return [
      * But you can also use the `ModuleWriter` or implement your own.
      */
 
-    'writer' => Spatie\TypeScriptTransformer\Writers\TypeDefinitionWriter::class,
+    'writer' => Spatie\TypeScriptTransformer\Writers\ModuleWriter::class,
 
     /*
      * The generated TypeScript file can be formatted. We ship a Prettier formatter

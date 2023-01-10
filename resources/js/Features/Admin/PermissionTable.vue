@@ -12,7 +12,7 @@
             <th></th>
             <!-- TODO: Paaiškinti detaliau, kas tas "padalinyje" -->
             <th>Padalinyje</th>
-            <th>Visur</th>
+            <th>{{ modelType }}</th>
           </tr>
         </thead>
         <tbody class="border-t-8 border-transparent">
@@ -43,11 +43,10 @@
 
 <script setup lang="tsx">
 import { type Component, ref } from "vue";
-import { ImageArrowBack24Regular } from "@vicons/fluent";
 import { NButton, NSpin } from "naive-ui";
 import { useForm } from "@inertiajs/inertia-vue3";
 
-import { PermissionAbilities } from "@/Types/enums";
+import { CRUDEnum } from "@/Types/enums";
 import PermissionTableRow from "@/Features/Admin/PermissionTableRow.vue";
 
 const props = defineProps<{
@@ -57,7 +56,7 @@ const props = defineProps<{
   icon: Component;
 }>();
 
-const abilities = Object.values(PermissionAbilities);
+const abilities = Object.values(CRUDEnum);
 const formDisabled = ref(false);
 const loading = ref(false);
 

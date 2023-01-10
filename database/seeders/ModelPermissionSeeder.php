@@ -8,6 +8,7 @@ use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
 use App\Enums\PermissionScopeEnum;
 use App\Models\Permission;
+use Illuminate\Support\Str;
 
 class ModelPermissionSeeder extends Seeder
 {
@@ -21,7 +22,7 @@ class ModelPermissionSeeder extends Seeder
         $permissionsToCreate = [];
 
         foreach (ModelEnum::toLabels() as $model) {
-            $pluralizedModel = $this->simplePluralize($model);
+            $pluralizedModel = Str::plural($model);
             
             foreach (CRUDEnum::toLabels() as $crud) {
                 foreach (PermissionScopeEnum::toLabels() as $scope) {
@@ -36,21 +37,5 @@ class ModelPermissionSeeder extends Seeder
                 'guard_name' => 'web',
             ]);
         }
-    }
-
-    private function simplePluralize ($word)
-    {
-        $lastLetter = substr($word, -1);
-
-        if ($lastLetter == 'y') {
-            return substr($word, 0, -1) . 'ies';
-        } 
-
-        // if word is navigation or calendar then we don't want to pluralize it
-        if ($word == 'navigation' || $word == 'calendar' || $word == 'news') {
-            return $word;
-        }
-
-        return $word . 's';
     }
 }

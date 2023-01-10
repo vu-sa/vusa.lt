@@ -2,14 +2,14 @@
 
 namespace App\Policies;
 
-use App\Models\Page;
+use App\Models\Category;
 use App\Models\User;
 use App\Policies\Traits\UseUserDutiesForAuthorization;
 use Illuminate\Support\Str;
 use App\Enums\ModelEnum;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class PagePolicy
+class CategoryPolicy
 {
     use HandlesAuthorization, UseUserDutiesForAuthorization;
 
@@ -17,7 +17,7 @@ class PagePolicy
 
     public function __construct()
     {
-        $this->pluralModelName = Str::plural(ModelEnum::PAGE()->label);
+        $this->pluralModelName = Str::plural(ModelEnum::CATEGORY()->label);
     }
 
     /**
@@ -35,10 +35,10 @@ class PagePolicy
      * Determine whether the user can view the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\Page  $page
+     * @param  \App\Models\Category  $category
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Page $page)
+    public function view(User $user, Category $category)
     {
         //
     }
@@ -51,45 +51,41 @@ class PagePolicy
      */
     public function create(User $user)
     {
-        return $user->can('create unit content');
+        //
     }
 
     /**
      * Determine whether the user can update the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\Page  $page
+     * @param  \App\Models\Category  $category
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Page $page)
+    public function update(User $user, Category $category)
     {
-        if ($user->can('edit unit content')) {
-            return $user->padalinys()->id == $page->padalinys->id;
-        }
+        //
     }
 
     /**
      * Determine whether the user can delete the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\Page  $page
+     * @param  \App\Models\Category  $category
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Page $page)
+    public function delete(User $user, Category $category)
     {
-        if ($user->can('delete unit content')) {
-            return $user->padalinys()->id == $page->padalinys->id;
-        }
+        //
     }
 
     /**
      * Determine whether the user can restore the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\Page  $page
+     * @param  \App\Models\Category  $category
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function restore(User $user, Page $page)
+    public function restore(User $user, Category $category)
     {
         //
     }
@@ -98,10 +94,10 @@ class PagePolicy
      * Determine whether the user can permanently delete the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\Page  $page
+     * @param  \App\Models\Category  $category
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function forceDelete(User $user, Page $page)
+    public function forceDelete(User $user, Category $category)
     {
         //
     }

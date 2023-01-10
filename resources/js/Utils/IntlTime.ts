@@ -1,3 +1,5 @@
+import { LocaleEnum } from "@/Types/enums";
+
 const MINUTE_MILISECONDS = 60 * 1000;
 const HOUR_MILISECONDS = MINUTE_MILISECONDS * 60;
 const DAY_MILISECONDS = HOUR_MILISECONDS * 24;
@@ -7,8 +9,8 @@ export const formatRelativeTime = (
   dateTimeOptions: Intl.RelativeTimeFormatOptions = {
     numeric: "auto",
   },
-  // check locale against App.Enums.LocaleEnum
-  locale: App.Enums.LocaleEnum = App.Enums.LocaleEnum.LT
+  // check locale against LocaleEnum
+  locale: LocaleEnum = LocaleEnum.LT
 ) => {
   const date = new Date(timestamp);
 
