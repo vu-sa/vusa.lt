@@ -36,8 +36,7 @@
           round
           class="w-full"
           @click="submitComment($page.props.auth.user)"
-          ><template #icon
-            ><NIcon :component="CommentAdd24Regular"></NIcon></template
+          ><template #icon><NIcon :component="Icons.COMMENT"></NIcon></template
           >Pridėti komentarą</NButton
         >
       </div>
@@ -46,20 +45,16 @@
 </template>
 
 <script setup lang="ts">
-import {
-  CommentAdd24Regular,
-  TextBold20Regular,
-  TextItalic20Regular,
-} from "@vicons/fluent";
 import { EditorContent, useEditor } from "@tiptap/vue-3";
 import { Inertia } from "@inertiajs/inertia";
 import { NButton, NIcon } from "naive-ui";
+import { TextBold20Regular, TextItalic20Regular } from "@vicons/fluent";
 import { onBeforeUnmount, ref } from "vue";
 import StarterKit from "@tiptap/starter-kit";
 import TipTapLink from "@tiptap/extension-link";
 
-
-import UserAvatar from "../Avatars/UserAvatar.vue";
+import Icons from "@/Types/Icons/regular";
+import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
 
 const props = defineProps<{
   text: string;

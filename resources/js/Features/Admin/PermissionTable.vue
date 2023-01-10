@@ -22,16 +22,17 @@
             :disabled="formDisabled"
             :default-value="formTemplate[ability]"
             :permissions="permissions"
-            :icon="ImageArrowBack24Regular"
+            :icon="icon"
             :ability="ability"
             @update="permissionForm[ability] = $event"
           ></PermissionTableRow>
         </tbody>
       </table>
-      <div class="mt-4">
+      <div class="mt-4 flex justify-end">
         <NButton
-          :disabled="formDisabled"
-          secondary
+          :disabled="formDisabled || !permissionForm.isDirty"
+          :loading="loading"
+          type="primary"
           @click="updatePermissionsForRole"
           >Atnaujinti</NButton
         >
@@ -41,9 +42,9 @@
 </template>
 
 <script setup lang="tsx">
+import { type Component, ref } from "vue";
 import { ImageArrowBack24Regular } from "@vicons/fluent";
 import { NButton, NSpin } from "naive-ui";
-import { ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 
 import { PermissionAbilities } from "@/Types/enums";
@@ -53,6 +54,7 @@ const props = defineProps<{
   permissions: string[];
   role: App.Entities.Role;
   modelType: string;
+  icon: Component;
 }>();
 
 const abilities = Object.values(PermissionAbilities);
@@ -73,8 +75,6 @@ const getAbilityScopeFromModelPermissions = (
 
   // delimit permission string to get ability and scope
   let permissionDelimited = filteredPermissions[0].split(".");
-
-  console.log(permissionDelimited, abilityInForm);
 
   if (permissionDelimited.length !== 3) {
     formDisabled.value = true;

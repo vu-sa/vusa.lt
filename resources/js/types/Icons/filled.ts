@@ -3,6 +3,7 @@ import {
   BookContacts28Filled,
   BookQuestionMark24Filled,
   CalendarLtr24Filled,
+  Comment24Filled,
   DeviceMeetingRoomRemote24Filled,
   DocumentMultiple24Filled,
   DocumentSettings20Filled,
@@ -20,12 +21,17 @@ import {
   ShieldKeyhole24Filled,
   Sparkle24Filled,
   StarLineHorizontal324Filled,
+  TaskListSquareLtr24Regular,
 } from "@vicons/fluent";
+import type { Component } from "vue";
 
-export default {
+import type { Models } from "../enums";
+
+const icons: Record<keyof typeof Models, Component> = {
   BANNER: ImageArrowBack24Filled,
   CALENDAR: CalendarLtr24Filled,
   CONTACT: BookContacts28Filled,
+  COMMENT: Comment24Filled,
   DOING: Important24Filled,
   DUTY: PuzzlePiece24Filled,
   GOAL: StarLineHorizontal324Filled,
@@ -41,6 +47,10 @@ export default {
   ROLE: PersonBoard24Filled,
   RELATIONSHIP: Flow20Filled,
   SAZININGAIEXAM: PeopleSearch24Filled,
+  SHAREPOINTDOCUMENT: DocumentMultiple24Filled,
+  TASK: TaskListSquareLtr24Regular,
   TYPE: DocumentSettings20Filled,
   USER: Person24Filled,
 };
+
+export default icons;
