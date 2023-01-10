@@ -50,7 +50,7 @@ class RoleController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required',
+            'name' => 'required|unique:roles,name',
         ]);
 
         $role = Role::create($validated);
@@ -77,6 +77,11 @@ class RoleController extends Controller
      */
     public function edit(Role $role)
     {
+        // not load Super Admin
+        if ($role->name === config('permission.super_admin_role_name')) {
+            return back()->with('info', 'Negalima redaguoti šios rolės.');
+        }
+        
         $role->load('permissions:id,name');
         
         // edit role
@@ -108,7 +113,14 @@ class RoleController extends Controller
      */
     public function destroy(Role $role)
     {
-        //
+        // check if role is not Super Admin
+        if ($role->name === config('permission.super_admin_role_name')) {
+            return back()->with('info', 'Negalima ištrinti šios rolės.');
+        }
+
+        $role->delete();
+
+        return back()->with('success', 'Rolė ištrinta.');
     }
 
     public function syncPermissionGroup(Role $role, string $model, Request $request) 

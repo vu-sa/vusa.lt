@@ -12,7 +12,7 @@ use App\Http\Controllers\Controller as Controller;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 
 class UserController extends Controller
 {
@@ -158,8 +158,11 @@ class UserController extends Controller
             $user->duties()->syncWithPivotValues($request->duties, ['start_date' => Carbon::now()]);
 
             // check if user is super admin
-            if (auth()->user()->hasRole(config('permission.super_admin_role_name'))) {
-                $user->syncRoles($request->roles);
+            if (User::find(Auth::id())->hasRole(config('permission.super_admin_role_name'))) {
+                // get roles from ids
+                $roles = Role::find($request->roles);
+                // dd($roles);
+                $user->syncRoles($roles);
             }
         });
 

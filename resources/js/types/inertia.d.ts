@@ -1,9 +1,11 @@
 export {};
 
-interface User extends App.Entities.User {
+import { LocaleEnum, ModelEnum } from "./enums";
+
+interface User extends Omit<App.Entities.User, "padaliniai"> {
   padaliniai: Pick<App.Entities.Padalinys, "id" | "shortname">;
   isSuperAdmin: boolean;
-  notifications: Record<string, any>[] | null;
+  unreadNotifications: Record<string, any>[] | null;
 }
 
 declare module "@inertiajs/inertia" {
@@ -14,7 +16,7 @@ declare module "@inertiajs/inertia" {
     };
     auth: {
       can: {
-        [key: string]: boolean;
+        index: { [str in ModelEnum]?: boolean };
       };
       user: User;
     } | null;
@@ -23,7 +25,7 @@ declare module "@inertiajs/inertia" {
       info: string | null;
       success: string | null;
     };
-    locale: "lt" | "en";
+    locale: LocaleEnum;
     misc: any;
     padaliniai: Pick<
       App.Entities.Padalinys,

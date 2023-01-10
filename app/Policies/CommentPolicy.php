@@ -29,7 +29,7 @@ class CommentPolicy
      */
     public function viewAny(User $user): Response | bool
     {
-        return $this->forUser($user)->check($this->pluralModelName . '.index.padalinys');
+        return $this->forUser($user)->check($this->pluralModelName . '.read.padalinys');
     }
 
     /**

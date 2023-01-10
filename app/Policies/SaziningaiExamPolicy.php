@@ -28,7 +28,7 @@ class SaziningaiExamPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $this->forUser($user)->check($this->pluralModelName . '.index.padalinys');
+        return $this->forUser($user)->check($this->pluralModelName . '.read.padalinys');
     }
 
     /**

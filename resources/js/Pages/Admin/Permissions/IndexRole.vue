@@ -27,7 +27,7 @@ const canUseRoutes = {
   create: true,
   show: false,
   edit: true,
-  destroy: false,
+  destroy: true,
 };
 
 // add columns

@@ -9,7 +9,10 @@
       <template #trigger>
         <NButton circle text
           ><template #icon
-            ><NIcon :size="24" :component="Alert24Regular"></NIcon></template
+            ><NIcon
+              :size="24"
+              :component="Icons.NOTIFICATION"
+            ></NIcon></template
         ></NButton>
       </template>
       <div
@@ -35,15 +38,15 @@
 </template>
 
 <script setup lang="ts">
-import { Alert24Regular } from "@vicons/fluent";
 import { NBadge, NButton, NDivider, NIcon, NPopover } from "naive-ui";
 import { ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
+import Icons from "@/Types/Icons/regular";
 
 import NotificationItem from "./NotificationItem.vue";
 
 const notifications = ref(
-  usePage<InertiaProps>().props.value.auth?.user?.notifications
+  usePage().props.value.auth?.user?.unreadNotifications
 );
 
 const removeNotification = (id: number) => {

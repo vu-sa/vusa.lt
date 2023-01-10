@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\Padalinys;
 use App\Models\User;
 use App\Enums\ModelEnum;
+use App\Models\Institution;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Collection;
@@ -57,16 +58,16 @@ class HandleInertiaRequests extends Middleware
             ],
             'auth' => is_null($user) ? null : [
                 'can' => fn () => [
-                    'index' => collect(ModelEnum::toLabels())
-                        ->map(function ($model) use ($user) {
-                            return [$model => $user->can('index', $model)];
-                        })->toArray()
+                    'index' => (object) collect(ModelEnum::toLabels())
+                        ->mapWithKeys(function ($model) use ($user) {
+                            return [$model => $user->can('viewAny', 'App\\Models\\' . ucfirst($model))];
+                        })->toArray(),
                     ],
                 'user' => fn () => [
                     ...$user->toArray(), 
-                    'padaliniai' => $user->padaliniai()->get(['padaliniai.id', 'padaliniai.shortname'])->unique(), 
                     'isSuperAdmin' => $isSuperAdmin,
-                    'unreadNotifications' => $user->unreadNotifications()
+                    'padaliniai' => $user->padaliniai()->get(['padaliniai.id', 'padaliniai.shortname'])->unique(), 
+                    'unreadNotifications' => $user->unreadNotifications
                 ],
             ],
             // is used in the admin navigation to show only the allowed pages

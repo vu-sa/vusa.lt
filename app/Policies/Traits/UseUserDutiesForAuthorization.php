@@ -3,6 +3,7 @@
 namespace App\Policies\Traits;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 
 trait UseUserDutiesForAuthorization
@@ -29,7 +30,7 @@ trait UseUserDutiesForAuthorization
         if ($this->user->hasRole(config('permission.super_admin_role_name'))) {
             return true;
         }
-        
+
         // TODO: check, if cache invalidation works on this
         return Cache::remember($permission . '-' . $this->user->id, 1800, function () use ($permission) {
             // check if user has permission
@@ -68,10 +69,10 @@ trait UseUserDutiesForAuthorization
         return false;
     }
 
-    protected function getDuties(): array
+    protected function getDuties(): Collection
     {
-        if (!isset($this->duties)) {
-            $this->duties = $this->user->duties()->get(['id']);
+        if (!isset($this->duties)) {          
+            $this->duties = $this->user->load('duties:id')->duties;
         }
 
         return $this->duties;
