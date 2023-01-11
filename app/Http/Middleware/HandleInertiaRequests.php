@@ -6,6 +6,7 @@ use App\Models\Padalinys;
 use App\Models\User;
 use App\Enums\ModelEnum;
 use App\Models\Institution;
+use App\Policies\Traits\UseUserDutiesForAuthorization as Authorizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Collection;
@@ -104,10 +105,13 @@ class HandleInertiaRequests extends Middleware
     }
 
     private function getIndexPermissions(User $user) {
+    
         return Cache::remember('index-permissions-' . $user->id, 3600, function () use ($user) {
+            $authorizer = new Authorizer();
+            
             return collect(ModelEnum::toLabels())
-                ->mapWithKeys(function ($model) use ($user) {
-                    return [$model => $user->can('viewAny', 'App\\Models\\' . ucfirst($model))];
+                ->mapWithKeys(function ($model) use ($user, $authorizer) {
+                    return [$model => $user->can('viewAny', ['App\\Models\\' . ucfirst($model), $authorizer])];
                 })->toArray();
         });
     }

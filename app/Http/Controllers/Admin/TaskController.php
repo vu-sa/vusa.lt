@@ -21,6 +21,7 @@ class TaskController extends Controller
      */
     public function index()
     {
+        $this->authorize('viewAny', [Institution::class, $this->authorizer]);
         //
     }
 

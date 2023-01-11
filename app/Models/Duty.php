@@ -12,10 +12,11 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
+use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Duty extends Model implements AuthorizableContract
 {
-    use HasFactory, Authorizable, HasRoles, LogsActivity, HasUlids, SoftDeletes;
+    use HasFactory, Authorizable, HasRoles, HasRelationships, LogsActivity, HasUlids, SoftDeletes;
     
     protected $casts = [
         'extra_attributes' => 'array',
@@ -43,6 +44,11 @@ class Duty extends Model implements AuthorizableContract
     public function contacts()
     {
         return $this->morphedByMany(Contact::class, 'dutiable')->using(Dutiable::class)->withPivot(['extra_attributes'])->withTimestamps();
+    }
+
+    public function matters()
+    {
+        return $this->hasManyDeepFromRelations($this->institution(), (new Institution())->matters());
     }
 
     public function types()

@@ -4,32 +4,23 @@ namespace App\Policies;
 
 use App\Models\Navigation;
 use App\Models\User;
-use App\Policies\Traits\UseUserDutiesForAuthorization;
+
 use Illuminate\Support\Str;
 use App\Enums\ModelEnum;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class NavigationPolicy
+class NavigationPolicy extends ModelPolicy
 {
-    use HandlesAuthorization, UseUserDutiesForAuthorization;
+    use HandlesAuthorization;
 
-    private $pluralModelName;
+    
 
     public function __construct()
     {
         $this->pluralModelName = Str::plural(ModelEnum::NAVIGATION()->label);
     }
 
-    /**
-     * Determine whether the user can view any models.
-     *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function viewAny(User $user): bool
-    {
-        return $this->forUser($user)->check($this->pluralModelName . '.read.padalinys');
-    }
+    
 
     /**
      * Determine whether the user can view the model.
@@ -43,16 +34,7 @@ class NavigationPolicy
         //
     }
 
-    /**
-     * Determine whether the user can create models.
-     *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function create(User $user)
-    {
-        //
-    }
+
 
     /**
      * Determine whether the user can update the model.

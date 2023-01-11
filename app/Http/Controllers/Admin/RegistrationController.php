@@ -17,6 +17,7 @@ class RegistrationController extends Controller
      */
     public function index()
     {
+        $this->authorize('viewAny', [Institution::class, $this->authorizer]);
         return Excel::download(new RegistrationExport, 'registration.xlsx');
     }
 

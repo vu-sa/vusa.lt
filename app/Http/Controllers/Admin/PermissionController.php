@@ -21,6 +21,7 @@ class PermissionController extends Controller
      */
     public function index()
     {
+        $this->authorize('viewAny', [Institution::class, $this->authorizer]);
         return Inertia::render('Admin/Permissions/IndexPermission', [
             'permissions' => Permission::paginate(20),
         ]);

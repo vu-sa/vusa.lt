@@ -23,6 +23,7 @@ class SaziningaiExamsController extends Controller
      */
     public function index()
     {
+        $this->authorize('viewAny', [Institution::class, $this->authorizer]);
         $exams = SaziningaiExam::with(['flows' => function ($query) {
             $query->select('id', 'exam_uuid', 'start_time')->orderBy('start_time', 'asc');
         }])->with(['padalinys'])->get();

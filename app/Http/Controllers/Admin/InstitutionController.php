@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetInstitutionManagers;
-use App\Services\ModelIndexginator;
+use App\Services\ModelIndexer;
 use App\Models\Institution;
 use App\Models\Duty;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller as Controller;
+use App\Http\Controllers\ResourceController;
 use Inertia\Inertia;
 use App\Models\Padalinys;
 use App\Models\Type;
@@ -16,13 +16,8 @@ use App\Models\Pivots\Relationshipable;
 use App\Services\SharepointAppGraph;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
-class InstitutionController extends Controller
+class InstitutionController extends ResourceController
 {
-    public function __construct()
-    {
-        $this->authorizeResource(Institution::class, 'institution');
-    }
-
     /**
      * Display a listing of the resource.
      *
@@ -30,13 +25,15 @@ class InstitutionController extends Controller
      */
     public function index()
     {
+        $this->authorize('viewAny', [Institution::class, $this->authorizer]);
+
         $search = request()->input('text');
 
-        $institutions = new ModelIndexginator();
-        $institutions = $institutions->execute(Institution::class, $search, 'name');
+        $institutions = new ModelIndexer();
+        $institutions = $institutions->execute(Institution::class, $search, 'name', $this->authorizer);
 
         return Inertia::render('Admin/People/IndexInstitution', [
-            'institutions' => $institutions,
+            'institutions' => $institutions->paginate(20),
         ]);
     }
 
@@ -47,6 +44,8 @@ class InstitutionController extends Controller
      */
     public function create()
     {       
+        $this->authorize('create', [Institution::class, $this->authorizer]);
+        
         return Inertia::render('Admin/People/CreateInstitution', [
             'padaliniai' => Padalinys::orderBy('shortname_vu')->get()->map(function ($padalinys) {
                 return [
@@ -66,6 +65,8 @@ class InstitutionController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', [Institution::class, $this->authorizer]);
+        
         $request->validate([
             'name' => 'required',
             'short_name' => 'required',
@@ -91,6 +92,8 @@ class InstitutionController extends Controller
      */
     public function show(Institution $institution)
     {
+        $this->authorize('view', [Institution::class, $institution, $this->authorizer]);
+        
         $institution->load('types', 'padalinys', 'users', 'matters.meetings.documents', 'activities.causer');
 
         $users = $institution->users->unique('id')->values();
@@ -160,6 +163,8 @@ class InstitutionController extends Controller
      */
     public function edit(Institution $institution)
     {
+        $this->authorize('update', [Institution::class, $institution, $this->authorizer]);
+        
         return Inertia::render('Admin/People/EditInstitution', [
             'institution' => [
                 ...$institution->toArray(),
@@ -185,6 +190,8 @@ class InstitutionController extends Controller
      */
     public function update(Request $request, Institution $institution)
     {
+        $this->authorize('update', [Institution::class, $institution, $this->authorizer]);
+        
         // validate
         $request->validate([
             'name' => 'required',
@@ -208,6 +215,8 @@ class InstitutionController extends Controller
      */
     public function destroy(Institution $institution)
     {
+        $this->authorize('delete', [Institution::class, $institution, $this->authorizer]);
+        
         return back()->with('info', 'Institucijų šiuo metu negalima ištrinti...');
     }
 

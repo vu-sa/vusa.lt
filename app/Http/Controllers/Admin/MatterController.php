@@ -3,19 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller as Controller;
+use App\Http\Controllers\ResourceController;
 use App\Models\Matter;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Type;
 use App\Models\Doing;
 use App\Models\Goal;
+use App\Services\ModelIndexer;
 
-class MatterController extends Controller
+class MatterController extends ResourceController
 {
-    public function __construct()
-    {
-        $this->authorizeResource(Matter::class, 'matter');
-    }
     
     /**
      * Display a listing of the resource.
@@ -24,16 +22,15 @@ class MatterController extends Controller
      */
     public function index()
     {
-        $search = request()->input('search');
+        $this->authorize('viewAny', [Matter::class, $this->authorizer]);
 
-        $matters = Matter::when(!request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
-            $query->where('padalinys_id', '=', request()->user()->padalinys()->id);
-        })->when(!is_null($search), function ($query) use ($search) {
-            $query->where('title', 'like', "%{$search}%");
-        })->paginate(20);
+        $search = request()->input('text');
+
+        $matters = new ModelIndexer();
+        $matters = $matters->execute(Matter::class, $search, 'title', $this->authorizer, 'padaliniai');
 
         return Inertia::render('Admin/Representation/IndexMatter', [
-            'matters' => $matters,
+            'matters' => $matters->paginate(20),
         ]);
     }
 
@@ -44,7 +41,7 @@ class MatterController extends Controller
      */
     public function create()
     {
-        //
+        $this->authorize('create', [Matter::class, $this->authorizer]);
     }
 
     /**
@@ -55,6 +52,8 @@ class MatterController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', [Matter::class, $this->authorizer]);
+        
         $validated = $request->validate([
             'title' => 'required',
         ]);
@@ -77,6 +76,9 @@ class MatterController extends Controller
      */
     public function show(Matter $matter)
     {
+        $this->authorize('view', [Matter::class, $matter, $this->authorizer]);
+        
+        
         $matter = $matter->load('institutions', 'goals', 'activities', 'activities.causer');
 
         return Inertia::render('Admin/Representation/ShowMatter', [
@@ -98,7 +100,8 @@ class MatterController extends Controller
      */
     public function edit(Matter $matter)
     {
-        //
+        $this->authorize('update', [Matter::class, $matter, $this->authorizer]);
+        
     }
 
     /**
@@ -110,7 +113,8 @@ class MatterController extends Controller
      */
     public function update(Request $request, Matter $matter)
     {
-        //
+        $this->authorize('update', [Matter::class, $matter, $this->authorizer]);
+        
     }
 
     /**
@@ -121,6 +125,8 @@ class MatterController extends Controller
      */
     public function destroy(Matter $matter)
     {
+        $this->authorize('delete', [Matter::class, $matter, $this->authorizer]);
+        
         // delete doing_matter records
         $matter->doings()->detach();
 

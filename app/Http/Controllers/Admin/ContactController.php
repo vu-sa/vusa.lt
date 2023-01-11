@@ -23,6 +23,7 @@ class ContactController extends Controller
      */
     public function index()
     {
+        $this->authorize('viewAny', [Institution::class, $this->authorizer]);
         $contacts = Contact::all()->paginate(20);
 
         return Inertia::render('Admin/People/IndexContact', [

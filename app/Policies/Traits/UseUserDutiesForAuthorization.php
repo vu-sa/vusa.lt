@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
-trait UseUserDutiesForAuthorization
+class UseUserDutiesForAuthorization
 {
     // The purpose of this is to authorize an user action not only
     // against the user but also against the duties that the user
@@ -18,9 +18,16 @@ trait UseUserDutiesForAuthorization
 
     // TODO: cache somehow against duty-permission? user-ability-modeltype?
 
-    private User $user;
-    private Collection $duties;
-    private Collection $permissableDuties;
+    public User $user;
+    public Collection $duties;
+    public Collection $permissableDuties;
+    public bool $isAllScope = false;
+
+    public function __construct()
+    {
+        $this->duties = new Collection();
+        $this->permissableDuties = new Collection();
+    }
 
     public function getPermissableDuties(): Collection
     {
@@ -36,11 +43,11 @@ trait UseUserDutiesForAuthorization
 
     public function checkAllRoleables(string $permission): bool
     {        
+        $this->permissableDuties = new Collection();
+        
         if ($this->user->hasRole(config('permission.super_admin_role_name'))) {
             return true;
         }
-
-        $this->permissableDuties = new Collection();
 
         // TODO: check, if cache invalidation works on this
         // return Cache::remember($permission . '-' . $this->user->id, 1800, function () use ($permission) {
@@ -56,6 +63,14 @@ trait UseUserDutiesForAuthorization
             foreach ($this->duties as $duty) {
                 if ($duty->hasPermissionTo($permission)) {
                     $this->permissableDuties->push($duty);
+                    // check if $duty has permission to all, but delimit permission by period
+                    // delimit $permission
+                    $globalPermVariant = explode('.', $permission);
+                    $globalPermVariant[2] = '*';
+                    $globalPermVariant = implode('.', $globalPermVariant);
+                    if ($duty->hasPermissionTo($globalPermVariant)) {
+                        $this->isAllScope = true;
+                    }
                 }
             }
 
@@ -76,14 +91,14 @@ trait UseUserDutiesForAuthorization
 
     protected function getDuties(): Collection
     {
-        if (!isset($this->duties)) {          
-            $this->duties = $this->user->load('duties:id,institution_id', 'duties.institution:id')->duties;
+        if ($this->duties->count() === 0) {          
+            $this->duties = $this->user->load('duties:id,name,institution_id', 'duties.institution:id', 'duties.roles.permissions')->duties;
         }
 
         return $this->duties;
     }
 
-    private function getPadaliniaiFromPermissableDuties (): Collection
+    private function getPadaliniaiFromPermissableDuties(): Collection
     {
         $padaliniai = $this->permissableDuties->load('institution.padalinys')->pluck('institution.padalinys')->flatten(1)->unique('id')->values();
 

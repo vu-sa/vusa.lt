@@ -53,4 +53,9 @@ class Matter extends Model
     {
         return $this->hasManyDeepFromRelations($this->institution(), (new Institution())->duties(), (new Duty())->users());
     }
+
+    public function padaliniai()
+    {
+        return $this->hasManyDeepFromRelations($this->institutions(), (new Institution())->padalinys());
+    }
 }

@@ -24,6 +24,7 @@ class TypeController extends Controller
      */
     public function index()
     {
+        $this->authorize('viewAny', [Institution::class, $this->authorizer]);
         return Inertia::render('Admin/ModelMeta/IndexTypes', [
             'types' => Type::paginate(20),
         ]);

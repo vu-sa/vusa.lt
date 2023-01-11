@@ -4,31 +4,20 @@ namespace App\Policies;
 
 use App\Models\Banner;
 use App\Models\User;
-use App\Policies\Traits\UseUserDutiesForAuthorization;
+
 use Illuminate\Support\Str;
 use App\Enums\ModelEnum;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class BannerPolicy
+class BannerPolicy extends ModelPolicy
 {
-    use HandlesAuthorization, UseUserDutiesForAuthorization;
+    use HandlesAuthorization;
 
-    private $pluralModelName;
+    
 
     public function __construct()
     {
         $this->pluralModelName = Str::plural(ModelEnum::BANNER()->label);
-    }
-
-    /**
-     * Determine whether the user can view any models.
-     *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function viewAny(User $user): bool
-    {
-        return $this->forUser($user)->check($this->pluralModelName . '.read.padalinys');
     }
 
     /**
@@ -43,16 +32,7 @@ class BannerPolicy
         //
     }
 
-    /**
-     * Determine whether the user can create models.
-     *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function create(User $user)
-    {
-        return $user->can('create unit content');
-    }
+
 
     /**
      * Determine whether the user can update the model.

@@ -20,6 +20,7 @@ class MeetingController extends Controller
      */
     public function index()
     {
+        $this->authorize('viewAny', [Institution::class, $this->authorizer]);
         $meetings = Meeting::with('institutions')->paginate(20);
 
         return Inertia::render('Admin/Representation/IndexMeeting', [

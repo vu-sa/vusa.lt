@@ -16,6 +16,7 @@ class GoalGroupController extends Controller
      */
     public function index()
     {
+        $this->authorize('viewAny', [Institution::class, $this->authorizer]);
         $goalGroups = GoalGroup::all()->paginate();
 
         return Inertia::render('Admin/Representation/IndexGoalGroups', [

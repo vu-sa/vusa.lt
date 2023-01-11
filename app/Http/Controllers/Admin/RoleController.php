@@ -7,12 +7,13 @@ use App\Enums\CRUDEnum;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\ResourceController;
 use App\Models\Calendar;
 use App\Models\Permission;
 use Illuminate\Support\Benchmark;
 use Inertia\Inertia;
 
-class RoleController extends Controller
+class RoleController extends ResourceController
 {
     public function __construct()
     {
@@ -25,7 +26,9 @@ class RoleController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index()
-    {        
+    {
+        $this->authorize('viewAny', [Role::class, $this->authorizer]);  
+
         return Inertia::render('Admin/Permissions/IndexRole', [
             'roles' => Role::paginate(20),
         ]);

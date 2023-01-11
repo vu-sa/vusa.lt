@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\AgendaItem;
-use App\Http\Controllers\Controller;
+use App\Models\Pivots\AgendaItem;
+use App\Http\Controllers\ResourceController;
 use Illuminate\Http\Request;
 
-class AgendaItemController extends Controller
+class AgendaItemController extends ResourceController
 {
     /**
      * Display a listing of the resource.
@@ -15,6 +15,7 @@ class AgendaItemController extends Controller
      */
     public function index()
     {
+        $this->authorize('viewAny', [AgendaItem::class, $this->authorizer]);
         //
     }
 

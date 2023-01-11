@@ -2,33 +2,22 @@
 
 namespace App\Policies;
 
+use App\Enums\CRUDEnum;
 use App\Models\Matter as Matter;
 use App\Models\User;
-use App\Policies\Traits\UseUserDutiesForAuthorization;
+
 use Illuminate\Support\Str;
 use App\Enums\ModelEnum;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use App\Policies\Traits\UseUserDutiesForAuthorization as Authorizer;
 
-class MatterPolicy
+class MatterPolicy extends ModelPolicy
 {
-    use HandlesAuthorization, UseUserDutiesForAuthorization;
-
-    private $pluralModelName;
+    use HandlesAuthorization;
 
     public function __construct()
     {
         $this->pluralModelName = Str::plural(ModelEnum::MATTER()->label);
-    }
-
-    /**
-     * Determine whether the user can view any models.
-     *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function viewAny(User $user): bool
-    {
-        return $this->forUser($user)->check($this->pluralModelName . '.read.padalinys');
     }
 
     /**
@@ -38,36 +27,15 @@ class MatterPolicy
      * @param  \App\Models\Matter  $matter
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Matter $matter)
+    public function view(User $user, Matter $matter, Authorizer $authorizer)
     {
-        if ($matter->users->contains($user)) {
-            return true;
-        }
-
-        if ($user->padaliniai()->contains($matter->institution->padalinys)) {
-            return true;
-        }
-    }
-
-    /**
-     * Determine whether the user can create models.
-     *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function create(User $user)
-    {
-        if ($user->can('create institution content')) {
-            return true;
-        }
+        $this->authorizer = $authorizer;
         
-        if (!request()->has('matter_id')) {
-            return false;
-        }
-
-        if (Matter::find(request()->matter_id)->users->contains($user)) {
+        if ($this->commonChecker($user, $matter, CRUDEnum::READ()->label, $this->pluralModelName)) {
             return true;
         }
+
+        return false;
     }
 
     /**
@@ -77,9 +45,15 @@ class MatterPolicy
      * @param  \App\Models\Matter  $matter
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Matter $matter)
+    public function update(User $user, Matter $matter, Authorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $matter, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -89,9 +63,15 @@ class MatterPolicy
      * @param  \App\Models\Matter  $matter
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Matter $matter)
+    public function delete(User $user, Matter $matter, Authorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+
+        if ($this->commonChecker($user, $matter, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

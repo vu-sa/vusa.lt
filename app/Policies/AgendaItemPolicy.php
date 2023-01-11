@@ -5,31 +5,20 @@ namespace App\Policies;
 use App\Models\Pivots\AgendaItem;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
-use App\Policies\Traits\UseUserDutiesForAuthorization;
+use App\Policies\Traits\UseUserDutiesForAuthorization as Authorizer;
 use Illuminate\Support\Str;
 use App\Enums\ModelEnum;
 
-class AgendaItemPolicy
+class AgendaItemPolicy extends ModelPolicy
 {
-    use HandlesAuthorization, UseUserDutiesForAuthorization;
-
-    private $pluralModelName;
+    use HandlesAuthorization;
 
     public function __construct()
     {
         $this->pluralModelName = Str::plural(ModelEnum::AGENDA_ITEM()->label);
     }
 
-    /**
-     * Determine whether the user can view any models.
-     *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function viewAny(User $user): bool
-    {
-        return $this->forUser($user)->check($this->pluralModelName . '.read.padalinys');
-    }
+    
 
     /**
      * Determine whether the user can view the model.
@@ -39,17 +28,6 @@ class AgendaItemPolicy
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function view(User $user, AgendaItem $agendaItem)
-    {
-        //
-    }
-
-    /**
-     * Determine whether the user can create models.
-     *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function create(User $user)
     {
         //
     }

@@ -27,6 +27,7 @@ class DoingController extends Controller
      */
     public function index()
     {
+        $this->authorize('viewAny', [Institution::class, $this->authorizer]);
         $search = request()->input('search');
 
         $doings = Doing::with('matters')->when(!request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {

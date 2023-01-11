@@ -21,6 +21,7 @@ class GoalController extends Controller
      */
     public function index()
     {
+        $this->authorize('viewAny', [Institution::class, $this->authorizer]);
         $search = request()->input('search');
 
         $goals = Goal::when(!request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {

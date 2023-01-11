@@ -28,6 +28,7 @@ class RelationshipController extends Controller
      */
     public function index()
     {
+        $this->authorize('viewAny', [Institution::class, $this->authorizer]);
         return Inertia::render('Admin/ModelMeta/IndexRelationships', [
             'relationships' => Relationship::all()->paginate(20),
         ]);

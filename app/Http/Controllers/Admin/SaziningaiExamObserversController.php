@@ -22,6 +22,7 @@ class SaziningaiExamObserversController extends Controller
      */
     public function index()
     {
+        $this->authorize('viewAny', [Institution::class, $this->authorizer]);
         // $observers = SaziningaiExamObserver::all();
 
         // return Inertia::render('Admin/Saziningai/Observers/Index', [
