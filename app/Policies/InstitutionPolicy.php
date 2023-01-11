@@ -40,13 +40,7 @@ class InstitutionPolicy
      */
     public function view(User $user, Institution $institution)
     {
-        // If an user is part of the institution
-        if ($institution->users->contains($user)) {
-            return true;
-        }
-
-        // If the user belongs to same padalinys as the institution
-        if ($user->padaliniai()->contains($institution->padalinys)) {
+        if ($this->institutionCheck($user, $institution, 'read')) {
             return true;
         }
 
@@ -61,7 +55,7 @@ class InstitutionPolicy
      */
     public function create(User $user)
     {
-        return $user->can('create unit duties') || $user->can('create institution content');
+        return $this->forUser($user)->check($this->pluralModelName . '.create.padalinys');
     }
 
     /**
@@ -73,9 +67,11 @@ class InstitutionPolicy
      */
     public function update(User $user, Institution $institution)
     {
-        if ($user->can('edit unit duties') || $user->can('edit institution content')) {
-            return $user->padalinys()->id == $institution->padalinys->id;
+        if ($this->institutionCheck($user, $institution, 'update')) {
+            return true;
         }
+
+        return false;
     }
 
     /**
@@ -87,9 +83,12 @@ class InstitutionPolicy
      */
     public function delete(User $user, Institution $institution)
     {
-        if ($user->can('delete unit duties')) {
-            return $user->padalinys()->id == $institution->padalinys->id;
+        // Doesn't make sense to delete own institution
+        if ($this->institutionCheck($user, $institution, 'delete')) {
+            return true;
         }
+
+        return false;
     }
 
     /**
@@ -114,5 +113,34 @@ class InstitutionPolicy
     public function forceDelete(User $user, Institution $institution)
     {
         //
+    }
+
+    protected function institutionCheck(User $user, Institution $institution, string $ability): bool
+    {
+        if ($this->forUser($user)->check($this->pluralModelName . '.' . $ability . '.' . 'own')) {
+            
+            $permissableDuties = $this->getPermissableDuties();
+            
+            foreach ($permissableDuties as $duty) {
+                if ($duty->institution()->where('id', $institution->id)->exists()) {
+                    return true;
+                }
+            }
+        }
+
+        // If the user has permission to view padalinys and user belongs to same padalinys as the institution
+        if ($this->forUser($user)->check($this->pluralModelName . '.' . $ability . '.' . 'padalinys')) {
+            
+            $permissablePadaliniai = $user->padaliniai()
+                ->whereIn('duties.id', $this->getPermissableDuties()
+                ->pluck('id'))
+                ->get();
+            
+            if ($permissablePadaliniai->contains($institution->padalinys)) {
+                return true;
+            };
+        }
+
+        return false;
     }
 }

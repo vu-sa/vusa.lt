@@ -27,4 +27,10 @@ class AgendaItem extends Pivot
     {
         return $this->belongsTo(Meeting::class);
     }
+    // TODO: it's from the meeting side, although agendaItems can be accessed from matters also,
+    // but it's less logical that way
+    public function institutions()
+    {
+        return $this->hasManyThrough(Institution::class, Meeting::class);
+    }
 }

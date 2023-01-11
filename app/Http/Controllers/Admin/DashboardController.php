@@ -39,7 +39,7 @@ class DashboardController extends Controller
 
         $user->load('roles:id,name', 
             'duties:id,name,institution_id', 
-            'duties.roles:id,name', 
+            'duties.roles:id,name', 'duties.roles.permissions:id,name',
             'duties.institution:id,padalinys_id', 
             'duties.institution.padalinys:id,shortname');
         

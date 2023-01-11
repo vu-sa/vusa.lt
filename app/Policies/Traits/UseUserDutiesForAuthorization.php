@@ -4,6 +4,7 @@ namespace App\Policies\Traits;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
 trait UseUserDutiesForAuthorization
@@ -15,8 +16,14 @@ trait UseUserDutiesForAuthorization
     // The authorization mechanism is role based. The user must
     // have a duty with a role that has the permission.
 
-    private $user;
-    private $duties;
+    private User $user;
+    private Collection $duties;
+    private Collection $permissableDuties;
+
+    public function getPermissableDuties(): Collection
+    {
+        return $this->permissableDuties;
+    }
 
     public function forUser(User $user): self
     {
@@ -31,8 +38,10 @@ trait UseUserDutiesForAuthorization
             return true;
         }
 
+        $this->permissableDuties = new Collection();
+
         // TODO: check, if cache invalidation works on this
-        return Cache::remember($permission . '-' . $this->user->id, 1800, function () use ($permission) {
+        // return Cache::remember($permission . '-' . $this->user->id, 1800, function () use ($permission) {
             // check if user has permission
             if ($this->user->hasPermissionTo($permission)) {
                 return true;
@@ -41,15 +50,20 @@ trait UseUserDutiesForAuthorization
             $this->getDuties();
 
             // check if at least one duty has permission
+            // TODO: should check all duties and in the object save the duties that have the abiility
             foreach ($this->duties as $duty) {
                 if ($duty->hasPermissionTo($permission)) {
-                    return true;
+                    $this->permissableDuties->push($duty);
                 }
             }
 
-            return false;
+            if ($this->permissableDuties->count() > 0) {
+                return true;
             }
-        );
+
+            return false;
+            // }
+        // );
     }
 
     // alias for checkAllRoleables
@@ -58,21 +72,22 @@ trait UseUserDutiesForAuthorization
         return $this->checkAllRoleables($permission);
     }
 
-    public function checkArray(array $permissions): bool
-    {
-        foreach ($permissions as $permission) {
-            if ($this->check($permission)) {
-                return true;
-            }
-        }
+    // if array is checked, then permissable IDs are reset
+    // public function checkArray(array $permissions): bool
+    // {
+    //     foreach ($permissions as $permission) {
+    //         if ($this->check($permission)) {
+    //             return true;
+    //         }
+    //     }
 
-        return false;
-    }
+    //     return false;
+    // }
 
     protected function getDuties(): Collection
     {
         if (!isset($this->duties)) {          
-            $this->duties = $this->user->load('duties:id')->duties;
+            $this->duties = $this->user->load('duties:id,institution_id', 'duties.institution:id')->duties;
         }
 
         return $this->duties;

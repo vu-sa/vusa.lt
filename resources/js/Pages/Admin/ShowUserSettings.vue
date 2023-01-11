@@ -15,6 +15,11 @@
                   duty.institution?.padalinys?.shortname ?? "nežinomo padalinio"
                 }`
               }})
+              <ul class="ml-4 list-inside">
+                <li v-for="permission in role.permissions" :key="permission.id">
+                  {{ $t(permission.name) }}
+                </li>
+              </ul>
             </li>
           </template>
         </ul>

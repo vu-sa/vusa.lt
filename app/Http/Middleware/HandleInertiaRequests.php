@@ -58,10 +58,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'auth' => is_null($user) ? null : [
                 'can' => fn () => [
-                    'index' => (object) collect(ModelEnum::toLabels())
-                        ->mapWithKeys(function ($model) use ($user) {
-                            return [$model => $user->can('viewAny', 'App\\Models\\' . ucfirst($model))];
-                        })->toArray(),
+                    'index' => fn () => $this->getIndexPermissions($user),
                     ],
                 'user' => fn () => [
                     ...$user->toArray(), 
@@ -104,5 +101,14 @@ class HandleInertiaRequests extends Middleware
         );
 
         return $padaliniai;
+    }
+
+    private function getIndexPermissions(User $user) {
+        return Cache::remember('index-permissions-' . $user->id, 3600, function () use ($user) {
+            return collect(ModelEnum::toLabels())
+                ->mapWithKeys(function ($model) use ($user) {
+                    return [$model => $user->can('viewAny', 'App\\Models\\' . ucfirst($model))];
+                })->toArray();
+        });
     }
 }
