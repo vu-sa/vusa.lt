@@ -2,25 +2,23 @@
 
 namespace App\Policies;
 
+use App\Enums\CRUDEnum;
 use App\Models\Type;
 use App\Models\User;
 
 use Illuminate\Support\Str;
 use App\Enums\ModelEnum;
+use App\Services\ModelAuthorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class TypePolicy extends ModelPolicy
 {
     use HandlesAuthorization;
 
-    
-
     public function __construct()
     {
         $this->pluralModelName = Str::plural(ModelEnum::TYPE()->label);
     }
-
-    
 
     /**
      * Determine whether the user can view the model.
@@ -29,12 +27,16 @@ class TypePolicy extends ModelPolicy
      * @param  \App\Models\Type  $type
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Type $type)
+    public function view(User $user, Type $type, ModelAuthorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $type, CRUDEnum::READ()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
-
-
 
     /**
      * Determine whether the user can update the model.
@@ -43,9 +45,15 @@ class TypePolicy extends ModelPolicy
      * @param  \App\Models\Type  $type
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Type $type)
+    public function update(User $user, Type $type, ModelAuthorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $type, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

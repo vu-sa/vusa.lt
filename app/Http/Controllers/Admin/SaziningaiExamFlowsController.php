@@ -3,16 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\ResourceController;
 use App\Models\SaziningaiExamFlow;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class SaziningaiExamFlowsController extends Controller
+class SaziningaiExamFlowsController extends ResourceController
 {
-    public function __construct()
-    {
-        $this->authorizeResource(SaziningaiExamFlow::class, 'saziningaiExamFlow');
-    }
     
     /**
      * Display a listing of the resource.
@@ -21,7 +18,7 @@ class SaziningaiExamFlowsController extends Controller
      */
     public function index()
     {
-        $this->authorize('viewAny', [Institution::class, $this->authorizer]);
+        $this->authorize('viewAny', [SaziningaiExamFlow::class, $this->authorizer]);
         //
     }
 
@@ -32,7 +29,7 @@ class SaziningaiExamFlowsController extends Controller
      */
     public function create()
     {
-        //
+        $this->authorize('create', [SaziningaiExamFlow::class, $this->authorizer]);
     }
 
     /**
@@ -43,6 +40,8 @@ class SaziningaiExamFlowsController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', [SaziningaiExamFlow::class, $this->authorizer]);
+        
         // Store new flow
         $saziningaiExamFlow = new SaziningaiExamFlow();
         $saziningaiExamFlow->exam_uuid = $request->exam_uuid;
@@ -60,7 +59,7 @@ class SaziningaiExamFlowsController extends Controller
      */
     public function show(SaziningaiExamFlow $saziningaiExamFlow)
     {
-        //
+        $this->authorize('view', [SaziningaiExamFlow::class, $saziningaiExamFlow, $this->authorizer]);
     }
 
     /**
@@ -71,7 +70,11 @@ class SaziningaiExamFlowsController extends Controller
      */
     public function edit(SaziningaiExamFlow $saziningaiExamFlow)
     {
-        //
+        $this->authorize('update', [SaziningaiExamFlow::class, $saziningaiExamFlow, $this->authorizer]);
+
+        return Inertia::render('Admin/SaziningaiExamFlows/Edit', [
+            'saziningaiExamFlow' => $saziningaiExamFlow,
+        ]);
     }
 
     /**
@@ -83,6 +86,8 @@ class SaziningaiExamFlowsController extends Controller
      */
     public function update(Request $request, SaziningaiExamFlow $saziningaiExamFlow)
     {
+        $this->authorize('update', [SaziningaiExamFlow::class, $saziningaiExamFlow, $this->authorizer]);
+        
         // Update the flow time
         $saziningaiExamFlow->start_time = date('Y-m-d H:i:s', $request->start_time);
         $saziningaiExamFlow->save();
@@ -99,6 +104,6 @@ class SaziningaiExamFlowsController extends Controller
      */
     public function destroy(SaziningaiExamFlow $saziningaiExamFlow)
     {
-        //
+        $this->authorize('delete', [SaziningaiExamFlow::class, $saziningaiExamFlow, $this->authorizer]);
     }
 }

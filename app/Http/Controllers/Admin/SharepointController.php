@@ -169,7 +169,7 @@ class SharepointController extends Controller
         return $uploadedFile;
     }
 
-    public function destroyFile($id) {
+    public function destroyFile($id) {        
         $graph = new SharepointAppGraph();
 
         $site = $graph->getSiteById(config('filesystems.sharepoint.site_id'));

@@ -2,11 +2,13 @@
 
 namespace App\Policies;
 
+use App\Enums\CRUDEnum;
 use App\Models\Meeting;
 use App\Models\User;
 
 use Illuminate\Support\Str;
 use App\Enums\ModelEnum;
+use App\Services\ModelAuthorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class MeetingPolicy extends ModelPolicy
@@ -20,8 +22,6 @@ class MeetingPolicy extends ModelPolicy
         $this->pluralModelName = Str::plural(ModelEnum::MEETING()->label);
     }
 
-    
-
     /**
      * Determine whether the user can view the model.
      *
@@ -29,12 +29,16 @@ class MeetingPolicy extends ModelPolicy
      * @param  \App\Models\Meeting  $meeting
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Meeting $meeting)
+    public function view(User $user, Meeting $meeting, ModelAuthorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $meeting, CRUDEnum::READ()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
-
-
 
     /**
      * Determine whether the user can update the model.
@@ -43,9 +47,15 @@ class MeetingPolicy extends ModelPolicy
      * @param  \App\Models\Meeting  $meeting
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Meeting $meeting)
+    public function update(User $user, Meeting $meeting, ModelAuthorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $meeting, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -55,9 +65,15 @@ class MeetingPolicy extends ModelPolicy
      * @param  \App\Models\Meeting  $meeting
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Meeting $meeting)
+    public function delete(User $user, Meeting $meeting, ModelAuthorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $meeting, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

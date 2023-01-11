@@ -2,25 +2,22 @@
 
 namespace App\Policies;
 
+use App\Enums\CRUDEnum;
 use App\Models\User;
 
 use Illuminate\Support\Str;
 use App\Enums\ModelEnum;
+use App\Services\ModelAuthorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class UserPolicy extends ModelPolicy
 {
-
     use HandlesAuthorization;
-
-    
 
     public function __construct()
     {
         $this->pluralModelName = Str::plural(ModelEnum::USER()->label);
     }
-
-    
 
     /**
      * Determine whether the user can view the model.
@@ -29,11 +26,16 @@ class UserPolicy extends ModelPolicy
      * @param  \App\Models\User  $model
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, User $model)
+    public function view(User $user, User $model, ModelAuthorizer $authorizer)
     {
+        $this->authorizer = $authorizer;
         
-    }
+        if ($this->commonChecker($user, $model, CRUDEnum::READ()->label, $this->pluralModelName)) {
+            return true;
+        }
 
+        return false;
+    }
 
     /**
      * Determine whether the user can update the model.
@@ -44,11 +46,15 @@ class UserPolicy extends ModelPolicy
      */
 
     // TODO:: fix this policy to use for each
-    public function update(User $user, User $model)
-    {       
-        if ($user->can('edit unit users')) {
-            return $model->padaliniai()->contains($user->padaliniai()->first()?->id) || (is_null($model->padaliniai()->first()));
+    public function update(User $user, User $model, ModelAuthorizer $authorizer)
+    {
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $model, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
+            return true;
         }
+
+        return false;
     }
 
     /**
@@ -58,11 +64,15 @@ class UserPolicy extends ModelPolicy
      * @param  \App\Models\User  $model
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, User $model)
+    public function delete(User $user, User $model, ModelAuthorizer $authorizer)
     {
-        if ($user->can('delete unit users')) {
-            return $model->padaliniai()->contains($user->padaliniai()->first()->id) || (is_null($model->padaliniai()->first()));
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $model, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
+            return true;
         }
+
+        return false;
     }
 
     /**
@@ -89,6 +99,7 @@ class UserPolicy extends ModelPolicy
         
     }
 
+    // TODO: wild policies
     public function storeFromMicrosoft(User $user)
     {
         return true;

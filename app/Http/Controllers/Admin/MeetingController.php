@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Meeting as Meeting;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\ResourceController;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Services\MeetingService as MeetingService;
@@ -11,7 +12,7 @@ use App\Services\SharepointAppGraph;
 use Illuminate\Support\Benchmark;
 use Illuminate\Support\Carbon;
 
-class MeetingController extends Controller
+class MeetingController extends ResourceController
 {
     /**
      * Display a listing of the resource.
@@ -20,7 +21,8 @@ class MeetingController extends Controller
      */
     public function index()
     {
-        $this->authorize('viewAny', [Institution::class, $this->authorizer]);
+        $this->authorize('viewAny', [Meeting::class, $this->authorizer]);
+
         $meetings = Meeting::with('institutions')->paginate(20);
 
         return Inertia::render('Admin/Representation/IndexMeeting', [
@@ -35,7 +37,9 @@ class MeetingController extends Controller
      */
     public function create()
     {
-        //
+        $this->authorize('create', [Meeting::class, $this->authorizer]);
+
+        return Inertia::render('Admin/Representation/CreateMeeting');
     }
 
     /**
@@ -46,6 +50,8 @@ class MeetingController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', [Meeting::class, $this->authorizer]);
+
         $validated = $request->validate([
             'start_time' => 'required|integer',
         ]);
@@ -70,6 +76,8 @@ class MeetingController extends Controller
      */
     public function show(Meeting $meeting)
     { 
+        $this->authorize('view', [Meeting::class, $meeting, $this->authorizer]);
+        
         $sharepointFiles = [];
         
         if ($meeting->documents()->count() > 0) {
@@ -95,7 +103,11 @@ class MeetingController extends Controller
      */
     public function edit(Meeting $meeting)
     {
-        //
+        $this->authorize('update', [Meeting::class, $meeting, $this->authorizer]);
+
+        return Inertia::render('Admin/Representation/EditMeeting', [
+            'meeting' => $meeting,
+        ]);
     }
 
     /**
@@ -107,6 +119,8 @@ class MeetingController extends Controller
      */
     public function update(Request $request, Meeting $meeting)
     {
+        $this->authorize('update', [Meeting::class, $meeting, $this->authorizer]);
+        
         $validated = $request->validate([
             'start_time' => 'required|integer',
         ]);
@@ -126,6 +140,8 @@ class MeetingController extends Controller
      */
     public function destroy(Meeting $meeting)
     {
+        $this->authorize('delete', [Meeting::class, $meeting, $this->authorizer]);
+        
         // delete meeting
         $meeting->delete();
 

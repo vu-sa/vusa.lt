@@ -6,16 +6,11 @@ use App\Models\MainPage;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
+use App\Http\Controllers\ResourceController;
 use Illuminate\Support\Facades\DB;
 
-class MainPageController extends Controller
+class MainPageController extends ResourceController
 {
-
-    public function __construct()
-    {
-        $this->authorizeResource(MainPage::class, 'mainPage');
-    }
-
     /**
      * Display a listing of the resource.
      *
@@ -23,6 +18,8 @@ class MainPageController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('viewAny', [MainPage::class, $this->authorizer]);
+        
         $padaliniai = request()->input('padaliniai');
         $text = request()->input('text');
 
@@ -51,6 +48,8 @@ class MainPageController extends Controller
      */
     public function create()
     {
+        $this->authorize('create', [MainPage::class, $this->authorizer]);
+        
         return Inertia::render('Admin/Content/CreateMainPage');
     }
 
@@ -62,6 +61,8 @@ class MainPageController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', [MainPage::class, $this->authorizer]);
+        
         $request->validate([
             'text' => 'required',
             'link' => 'required',
@@ -90,7 +91,7 @@ class MainPageController extends Controller
      */
     public function show(MainPage $mainPage)
     {
-        //
+        $this->authorize('view', [MainPage::class, $mainPage, $this->authorizer]);
     }
 
     /**
@@ -101,6 +102,8 @@ class MainPageController extends Controller
      */
     public function edit(MainPage $mainPage)
     {        
+        $this->authorize('update', [MainPage::class, $mainPage, $this->authorizer]);
+        
         return Inertia::render('Admin/Content/EditMainPage', [
             'mainPage' => $mainPage
         ]);
@@ -115,6 +118,8 @@ class MainPageController extends Controller
      */
     public function update(Request $request, MainPage $mainPage)
     {
+        $this->authorize('update', [MainPage::class, $mainPage, $this->authorizer]);
+        
         $request->validate([
             'text' => 'required',
             'link' => 'required',
@@ -135,6 +140,8 @@ class MainPageController extends Controller
      */
     public function destroy(MainPage $mainPage)
     {
+        $this->authorize('delete', [MainPage::class, $mainPage, $this->authorizer]);
+        
         $mainPage->delete();
 
         return redirect()->route('mainPage.index')->with('info', 'Sėkmingai ištrintas pradinio puslapio mygtukas!');

@@ -4,10 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\GoalGroup;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\ResourceController;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class GoalGroupController extends Controller
+class GoalGroupController extends ResourceController
 {
     /**
      * Display a listing of the resource.
@@ -16,7 +17,8 @@ class GoalGroupController extends Controller
      */
     public function index()
     {
-        $this->authorize('viewAny', [Institution::class, $this->authorizer]);
+        $this->authorize('viewAny', [GoalGroup::class, $this->authorizer]);
+
         $goalGroups = GoalGroup::all()->paginate();
 
         return Inertia::render('Admin/Representation/IndexGoalGroups', [
@@ -31,7 +33,9 @@ class GoalGroupController extends Controller
      */
     public function create()
     {
-        //
+        $this->authorize('create', [GoalGroup::class, $this->authorizer]);
+
+        return Inertia::render('Admin/Representation/CreateGoalGroup');
     }
 
     /**
@@ -42,7 +46,19 @@ class GoalGroupController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $this->authorize('create', [GoalGroup::class, $this->authorizer]);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string|max:255',
+        ]);
+
+        $goalGroup = GoalGroup::create([
+            'name' => $request->name,
+            'description' => $request->description,
+        ]);
+
+        return redirect()->route('goalGroups.index');
     }
 
     /**
@@ -53,7 +69,7 @@ class GoalGroupController extends Controller
      */
     public function show(GoalGroup $goalGroup)
     {
-        //
+        $this->authorize('view', [GoalGroup::class, $goalGroup, $this->authorizer]);
     }
 
     /**
@@ -64,7 +80,11 @@ class GoalGroupController extends Controller
      */
     public function edit(GoalGroup $goalGroup)
     {
-        //
+        $this->authorize('update', [GoalGroup::class, $goalGroup, $this->authorizer]);
+
+        return Inertia::render('Admin/Representation/EditGoalGroup', [
+            'goalGroup' => $goalGroup,
+        ]);
     }
 
     /**
@@ -76,7 +96,19 @@ class GoalGroupController extends Controller
      */
     public function update(Request $request, GoalGroup $goalGroup)
     {
-        //
+        $this->authorize('update', [GoalGroup::class, $goalGroup, $this->authorizer]);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string|max:255',
+        ]);
+
+        $goalGroup->update([
+            'name' => $request->name,
+            'description' => $request->description,
+        ]);
+
+        return redirect()->route('goalGroups.index');
     }
 
     /**
@@ -87,6 +119,10 @@ class GoalGroupController extends Controller
      */
     public function destroy(GoalGroup $goalGroup)
     {
-        //
+        $this->authorize('delete', [GoalGroup::class, $goalGroup, $this->authorizer]);
+
+        $goalGroup->delete();
+
+        return redirect()->route('goalGroups.index');
     }
 }

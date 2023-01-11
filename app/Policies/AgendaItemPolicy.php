@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\CRUDEnum;
 use App\Models\Pivots\AgendaItem;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
@@ -18,8 +19,6 @@ class AgendaItemPolicy extends ModelPolicy
         $this->pluralModelName = Str::plural(ModelEnum::AGENDA_ITEM()->label);
     }
 
-    
-
     /**
      * Determine whether the user can view the model.
      *
@@ -27,9 +26,15 @@ class AgendaItemPolicy extends ModelPolicy
      * @param  \App\Models\Pivots\AgendaItem  $agendaItem
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, AgendaItem $agendaItem)
+    public function view(User $user, AgendaItem $agendaItem, Authorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $agendaItem, CRUDEnum::READ()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -39,9 +44,15 @@ class AgendaItemPolicy extends ModelPolicy
      * @param  \App\Models\Pivots\AgendaItem  $agendaItem
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, AgendaItem $agendaItem)
+    public function update(User $user, AgendaItem $agendaItem, Authorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $agendaItem, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -51,9 +62,15 @@ class AgendaItemPolicy extends ModelPolicy
      * @param  \App\Models\Pivots\AgendaItem  $agendaItem
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, AgendaItem $agendaItem)
+    public function delete(User $user, AgendaItem $agendaItem, Authorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $agendaItem, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

@@ -7,10 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Cache;
 use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -56,8 +54,6 @@ class User extends Authenticatable
         return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
-    // Access banner with relationship
-
     public function banners()
     {
         return $this->hasMany(Banner::class, 'user_id', 'id');
@@ -80,12 +76,6 @@ class User extends Authenticatable
             ->withPivot(['extra_attributes'])
             ->wherePivot('end_date', '>=', now())->orWherePivot('end_date', null)
             ->withTimestamps();
-    }
-
-    // TODO: more logical return of padalinys
-    public function padalinys()
-    {
-        return $this->duties()->first()?->institution?->padalinys;
     }
 
     public function padaliniai()

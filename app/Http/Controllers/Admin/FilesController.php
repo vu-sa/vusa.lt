@@ -10,7 +10,7 @@ use Intervention\Image\Facades\Image;
 
 class FilesController extends Controller
 {
-
+    // TODO: add authorization and just do something with whole this section
     /**
      * Display a listing of the resource.
      *

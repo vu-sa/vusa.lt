@@ -2,11 +2,13 @@
 
 namespace App\Policies;
 
+use App\Enums\CRUDEnum;
 use App\Models\Contact;
 use App\Models\User;
 
 use Illuminate\Support\Str;
 use App\Enums\ModelEnum;
+use App\Services\ModelAuthorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class ContactPolicy extends ModelPolicy
@@ -27,13 +29,17 @@ class ContactPolicy extends ModelPolicy
      * @param  \App\Models\Contact  $contact
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Contact $contact)
+    public function view(User $user, Contact $contact, ModelAuthorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $contact, CRUDEnum::READ()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
-
-
-
+    
     /**
      * Determine whether the user can update the model.
      *
@@ -41,9 +47,15 @@ class ContactPolicy extends ModelPolicy
      * @param  \App\Models\Contact  $contact
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Contact $contact)
+    public function update(User $user, Contact $contact, ModelAuthorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $contact, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -53,9 +65,15 @@ class ContactPolicy extends ModelPolicy
      * @param  \App\Models\Contact  $contact
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Contact $contact)
+    public function delete(User $user, Contact $contact, ModelAuthorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $contact, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

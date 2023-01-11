@@ -2,11 +2,13 @@
 
 namespace App\Policies;
 
+use App\Enums\CRUDEnum;
 use App\Models\Category;
 use App\Models\User;
 
 use Illuminate\Support\Str;
 use App\Enums\ModelEnum;
+use App\Services\ModelAuthorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class CategoryPolicy extends ModelPolicy
@@ -29,12 +31,16 @@ class CategoryPolicy extends ModelPolicy
      * @param  \App\Models\Category  $category
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Category $category)
+    public function view(User $user, Category $category, ModelAuthorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $category, CRUDEnum::READ()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
-
-
 
     /**
      * Determine whether the user can update the model.
@@ -43,9 +49,15 @@ class CategoryPolicy extends ModelPolicy
      * @param  \App\Models\Category  $category
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Category $category)
+    public function update(User $user, Category $category, ModelAuthorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $category, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -55,9 +67,15 @@ class CategoryPolicy extends ModelPolicy
      * @param  \App\Models\Category  $category
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Category $category)
+    public function delete(User $user, Category $category, ModelAuthorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $category, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

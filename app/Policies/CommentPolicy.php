@@ -2,11 +2,13 @@
 
 namespace App\Policies;
 
+use App\Enums\CRUDEnum;
 use App\Models\Comment;
 use App\Models\User;
 
 use Illuminate\Support\Str;
 use App\Enums\ModelEnum;
+use App\Services\ModelAuthorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Auth\Access\Response;
 
@@ -26,9 +28,15 @@ class CommentPolicy extends ModelPolicy
      * @param  \App\Models\Comment  $comment
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Comment $comment)
+    public function view(User $user, Comment $comment, ModelAuthorizer $authorizer)
     {
-        return true;
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $comment, CRUDEnum::READ()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -38,9 +46,15 @@ class CommentPolicy extends ModelPolicy
      * @param  \App\Models\Comment  $comment
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Comment $comment)
+    public function update(User $user, Comment $comment, ModelAuthorizer $authorizer)
     {
-        return true;
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $comment, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -50,10 +64,15 @@ class CommentPolicy extends ModelPolicy
      * @param  \App\Models\Comment  $comment
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Comment $comment)
+    public function delete(User $user, Comment $comment, ModelAuthorizer $authorizer)
     {
-        // check if comment is owned by user
-        return $user->id == $comment->user->id;
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $comment, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

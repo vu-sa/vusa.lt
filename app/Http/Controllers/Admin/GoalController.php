@@ -4,16 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Goal;
 use App\Http\Controllers\Controller as Controller;
+use App\Http\Controllers\ResourceController;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class GoalController extends Controller
-{
-    public function __construct()
-    {
-        $this->authorizeResource(Goal::class, 'goal');
-    }
-    
+class GoalController extends ResourceController
+{    
     /**
      * Display a listing of the resource.
      *
@@ -21,7 +17,8 @@ class GoalController extends Controller
      */
     public function index()
     {
-        $this->authorize('viewAny', [Institution::class, $this->authorizer]);
+        $this->authorize('viewAny', [Goal::class, $this->authorizer]);
+
         $search = request()->input('search');
 
         $goals = Goal::when(!request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
@@ -42,7 +39,9 @@ class GoalController extends Controller
      */
     public function create()
     {
-        //
+        $this->authorize('create', [Goal::class, $this->authorizer]);
+
+        return Inertia::render('Admin/Representation/CreateGoal');
     }
 
     /**
@@ -53,6 +52,8 @@ class GoalController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', [Goal::class, $this->authorizer]);
+        
         $validated = $request->validate([
             'title' => 'required',
         ]);
@@ -70,6 +71,8 @@ class GoalController extends Controller
      */
     public function show(Goal $goal)
     {
+        $this->authorize('view', [Goal::class, $goal, $this->authorizer]);
+        
         $goal->load('matters.doings', 'matters.institutions:id,name', 'activities.causer');
 
         $institutions = $goal->matters->pluck('institutions')->flatten()->unique('id');
@@ -88,7 +91,11 @@ class GoalController extends Controller
      */
     public function edit(Goal $goal)
     {
-        //
+        $this->authorize('update', [Goal::class, $goal, $this->authorizer]);
+
+        return Inertia::render('Admin/Representation/EditGoal', [
+            'goal' => $goal,
+        ]);
     }
 
     /**
@@ -100,6 +107,8 @@ class GoalController extends Controller
      */
     public function update(Request $request, Goal $goal)
     {
+        $this->authorize('update', [Goal::class, $goal, $this->authorizer]);
+        
         $validated = $request->validate(
             ['title' => 'required']
         );
@@ -117,6 +126,8 @@ class GoalController extends Controller
      */
     public function destroy(Goal $goal)
     {
+        $this->authorize('delete', [Goal::class, $goal, $this->authorizer]);
+        
         $goal->delete();
 
         return redirect()->route('dashboard')->with('success', 'Klausimo grupė ištrinta.');

@@ -2,25 +2,23 @@
 
 namespace App\Policies;
 
+use App\Enums\CRUDEnum;
 use App\Models\SaziningaiExam;
 use App\Models\User;
 
 use Illuminate\Support\Str;
 use App\Enums\ModelEnum;
+use App\Services\ModelAuthorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class SaziningaiExamPolicy extends ModelPolicy
 {
     use HandlesAuthorization;
 
-    
-
     public function __construct()
     {
         $this->pluralModelName = Str::plural(ModelEnum::SAZININGAI_EXAM()->label);
     }
-
-    
 
     /**
      * Determine whether the user can view the model.
@@ -29,12 +27,16 @@ class SaziningaiExamPolicy extends ModelPolicy
      * @param  \App\Models\SaziningaiExam  $saziningaiExam
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, SaziningaiExam $saziningaiExam)
+    public function view(User $user, SaziningaiExam $saziningaiExam, ModelAuthorizer $authorizer)
     {
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $saziningaiExam, CRUDEnum::READ()->label, $this->pluralModelName, false)) {
+            return true;
+        }
+
         return false;
     }
-
-
 
     /**
      * Determine whether the user can update the model.
@@ -43,9 +45,15 @@ class SaziningaiExamPolicy extends ModelPolicy
      * @param  \App\Models\SaziningaiExam  $saziningaiExam
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, SaziningaiExam $saziningaiExam)
+    public function update(User $user, SaziningaiExam $saziningaiExam, ModelAuthorizer $authorizer)
     {
-        return $user->can('edit saziningai content');
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $saziningaiExam, CRUDEnum::UPDATE()->label, $this->pluralModelName, false)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -55,11 +63,17 @@ class SaziningaiExamPolicy extends ModelPolicy
      * @param  \App\Models\SaziningaiExam  $saziningaiExam
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, SaziningaiExam $saziningaiExam)
+    public function delete(User $user, SaziningaiExam $saziningaiExam, ModelAuthorizer $authorizer)
     {
-        return $user->can('delete saziningai content');
-    }
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $saziningaiExam, CRUDEnum::DELETE()->label, $this->pluralModelName, false)) {
+            return true;
+        }
 
+        return false;
+    }
+    
     /**
      * Determine whether the user can restore the model.
      *

@@ -4,9 +4,12 @@ namespace App\Models\Pivots;
 
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
+use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Dutiable extends MorphPivot
 {
+    use HasRelationships;
+    
     protected $table = 'dutiables';
 
     protected $with = ['duty'];
@@ -15,6 +18,12 @@ class Dutiable extends MorphPivot
         'extra_attributes' => AsArrayObject::class,
     ];
 
+    // dutiable
+    public function dutiable()
+    {
+        return $this->morphTo();
+    }
+    
     public function duty()
     {
         return $this->belongsTo(Duty::class);
@@ -28,5 +37,10 @@ class Dutiable extends MorphPivot
     public function contact()
     {
         return $this->belongsTo(Contact::class);
+    }
+
+    public function padaliniai()
+    {
+        return $this->hasManyDeepFromRelations($this->duty(), (new Duty)->padaliniai());
     }
 }

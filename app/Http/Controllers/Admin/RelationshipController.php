@@ -6,21 +6,17 @@ use App\Models\Relationship;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
-use App\Models\Relationshipable;
+use App\Http\Controllers\ResourceController;
+use App\Models\Pivots\Relationshipable;
 use App\Services\RelationshipService;
 use Illuminate\Support\Facades\DB;
 
 // Controller is used for the relationship object, which describes
 // content related relationships.
 
-class RelationshipController extends Controller
+class RelationshipController extends ResourceController
 {
-    
-    public function __construct()
-    {
-        $this->authorizeResource(Relationship::class, 'relationship');
-    }
-    
+
     /**
      * Display a listing of the resource.
      *
@@ -28,7 +24,8 @@ class RelationshipController extends Controller
      */
     public function index()
     {
-        $this->authorize('viewAny', [Institution::class, $this->authorizer]);
+        $this->authorize('viewAny', [Relationship::class, $this->authorizer]);
+
         return Inertia::render('Admin/ModelMeta/IndexRelationships', [
             'relationships' => Relationship::all()->paginate(20),
         ]);
@@ -41,6 +38,8 @@ class RelationshipController extends Controller
      */
     public function create()
     {
+        $this->authorize('create', [Relationship::class, $this->authorizer]);
+        
         return Inertia::render('Admin/ModelMeta/CreateRelationship');
     }
 
@@ -52,6 +51,8 @@ class RelationshipController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', [Relationship::class, $this->authorizer]);
+        
         $request->validate([
             'name' => 'required',
             'slug' => 'required|unique:relationships,slug',
@@ -71,7 +72,11 @@ class RelationshipController extends Controller
      */
     public function show(Relationship $relationship)
     {
-        //
+        $this->authorize('view', [Relationship::class, $relationship, $this->authorizer]);
+
+        return Inertia::render('Admin/ModelMeta/ShowRelationship', [
+            'relationship' => $relationship,
+        ]);
     }
 
     /**
@@ -82,6 +87,8 @@ class RelationshipController extends Controller
      */
     public function edit(Relationship $relationship, Request $request)
     {
+        $this->authorize('update', [Relationship::class, $relationship, $this->authorizer]);
+        
         $validated = $request->validate([
             'modelType' => 'nullable|string',
         ]);
@@ -113,6 +120,8 @@ class RelationshipController extends Controller
      */
     public function update(Request $request, Relationship $relationship)
     {
+        $this->authorize('update', [Relationship::class, $relationship, $this->authorizer]);
+        
         $request->validate([
             'name' => 'required',
             'slug' => 'required|unique:relationships,slug,' . $relationship->id,
@@ -132,6 +141,8 @@ class RelationshipController extends Controller
      */
     public function destroy(Relationship $relationship)
     {
+        $this->authorize('delete', [Relationship::class, $relationship, $this->authorizer]);
+        
         DB::transaction(function () use ($relationship) {
             
             // remove all relationshipables
@@ -145,6 +156,8 @@ class RelationshipController extends Controller
     // Store relationship between models
     public function storeModelRelationship(Request $request, Relationship $relationship)
     {
+        $this->authorize('create', [Relationshipable::class, $relationship, $this->authorizer]);
+        
         $request->validate([
             'model_id' => 'required',
             'model_type' => 'required',
@@ -159,7 +172,9 @@ class RelationshipController extends Controller
             ->with('success', 'Ryšys sukurtas sėkmingai.');
     }
 
-    public function deleteModelRelationship(Relationshipable $relationshipable) {
+    public function deleteModelRelationship(Relationshipable $relationshipable) { 
+        $this->authorize('delete', [Relationshipable::class, $relationshipable, $this->authorizer]);
+
         $relationshipable->delete();
 
         return back()->with('success', 'Ryšys tarp modelių ištrintas.');

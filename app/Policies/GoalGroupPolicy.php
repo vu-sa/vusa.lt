@@ -2,18 +2,18 @@
 
 namespace App\Policies;
 
+use App\Enums\CRUDEnum;
 use App\Models\GoalGroup;
 use App\Models\User;
 
 use Illuminate\Support\Str;
 use App\Enums\ModelEnum;
+use App\Services\ModelAuthorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class GoalGroupPolicy extends ModelPolicy
 {
     use HandlesAuthorization;
-
-    
 
     public function __construct()
     {
@@ -29,12 +29,16 @@ class GoalGroupPolicy extends ModelPolicy
      * @param  \App\Models\GoalGroup  $goalGroup
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, GoalGroup $goalGroup)
+    public function view(User $user, GoalGroup $goalGroup, ModelAuthorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $goalGroup, CRUDEnum::READ()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
-
-
 
     /**
      * Determine whether the user can update the model.
@@ -43,9 +47,15 @@ class GoalGroupPolicy extends ModelPolicy
      * @param  \App\Models\GoalGroup  $goalGroup
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, GoalGroup $goalGroup)
+    public function update(User $user, GoalGroup $goalGroup, ModelAuthorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $goalGroup, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -55,11 +65,17 @@ class GoalGroupPolicy extends ModelPolicy
      * @param  \App\Models\GoalGroup  $goalGroup
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, GoalGroup $goalGroup)
+    public function delete(User $user, GoalGroup $goalGroup, ModelAuthorizer $authorizer)
     {
-        //
-    }
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $goalGroup, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
+            return true;
+        }
 
+        return false;
+    }
+    
     /**
      * Determine whether the user can restore the model.
      *

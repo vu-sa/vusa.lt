@@ -16,7 +16,6 @@ class AgendaItemController extends ResourceController
     public function index()
     {
         $this->authorize('viewAny', [AgendaItem::class, $this->authorizer]);
-        //
     }
 
     /**
@@ -26,7 +25,7 @@ class AgendaItemController extends ResourceController
      */
     public function create()
     {
-        //
+        $this->authorize('create', [AgendaItem::class, $this->authorizer]);
     }
 
     /**
@@ -37,7 +36,7 @@ class AgendaItemController extends ResourceController
      */
     public function store(Request $request)
     {
-        //
+        $this->authorize('create', [AgendaItem::class, $this->authorizer]);
     }
 
     /**
@@ -48,7 +47,7 @@ class AgendaItemController extends ResourceController
      */
     public function show(AgendaItem $agendaItem)
     {
-        //
+        $this->authorize('view', [AgendaItem::class, $agendaItem, $this->authorizer]);
     }
 
     /**
@@ -59,7 +58,7 @@ class AgendaItemController extends ResourceController
      */
     public function edit(AgendaItem $agendaItem)
     {
-        //
+        $this->authorize('update', [AgendaItem::class, $agendaItem, $this->authorizer]);
     }
 
     /**
@@ -71,7 +70,7 @@ class AgendaItemController extends ResourceController
      */
     public function update(Request $request, AgendaItem $agendaItem)
     {
-        //
+        $this->authorize('update', [AgendaItem::class, $agendaItem, $this->authorizer]);
     }
 
     /**
@@ -82,6 +81,6 @@ class AgendaItemController extends ResourceController
      */
     public function destroy(AgendaItem $agendaItem)
     {
-        //
+        $this->authorize('delete', [AgendaItem::class, $agendaItem, $this->authorizer]);
     }
 }

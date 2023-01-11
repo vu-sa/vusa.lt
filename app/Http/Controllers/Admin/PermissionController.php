@@ -5,14 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Permission;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\ResourceController;
 use Inertia\Inertia;
 
-class PermissionController extends Controller
+class PermissionController extends ResourceController
 {
-    public function __construct()
-    {
-        $this->authorizeResource(Permission::class, 'permission');
-    }
     
     /**
      * Display a listing of the resource.
@@ -21,7 +18,8 @@ class PermissionController extends Controller
      */
     public function index()
     {
-        $this->authorize('viewAny', [Institution::class, $this->authorizer]);
+        $this->authorize('viewAny', [Permission::class, $this->authorizer]);
+
         return Inertia::render('Admin/Permissions/IndexPermission', [
             'permissions' => Permission::paginate(20),
         ]);
@@ -34,7 +32,7 @@ class PermissionController extends Controller
      */
     public function create()
     {
-        //
+        $this->authorize('create', [Permission::class, $this->authorizer]);
     }
 
     /**
@@ -45,7 +43,7 @@ class PermissionController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $this->authorize('create', [Permission::class, $this->authorizer]);
     }
 
     /**
@@ -56,7 +54,7 @@ class PermissionController extends Controller
      */
     public function show(Permission $permission)
     {
-        //
+        $this->authorize('view', [Permission::class, $permission, $this->authorizer]);
     }
 
     /**
@@ -67,7 +65,7 @@ class PermissionController extends Controller
      */
     public function edit(Permission $permission)
     {
-        //
+        $this->authorize('update', [Permission::class, $permission, $this->authorizer]);
     }
 
     /**
@@ -79,7 +77,7 @@ class PermissionController extends Controller
      */
     public function update(Request $request, Permission $permission)
     {
-        //
+        $this->authorize('update', [Permission::class, $permission, $this->authorizer]);
     }
 
     /**
@@ -90,6 +88,6 @@ class PermissionController extends Controller
      */
     public function destroy(Permission $permission)
     {
-        //
+        $this->authorize('delete', [Permission::class, $permission, $this->authorizer]);
     }
 }

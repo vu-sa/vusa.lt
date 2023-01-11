@@ -6,19 +6,15 @@ use App\Models\Calendar;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
+use App\Http\Controllers\ResourceController;
 use App\Models\Category;
 use Illuminate\Support\Facades\DB;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
-class CalendarController extends Controller
+class CalendarController extends ResourceController
 {
-    public function __construct()
-    {
-        $this->authorizeResource(Calendar::class, 'calendar');
-    }
-
     /**
      * Display a listing of the resource.
      *
@@ -26,6 +22,8 @@ class CalendarController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('viewAny', [Calendar::class, $this->authorizer]);
+        
         $padaliniai = $request->padaliniai;
         $title = $request->title;
 
@@ -54,6 +52,8 @@ class CalendarController extends Controller
      */
     public function create()
     {        
+        $this->authorize('create', [Calendar::class, $this->authorizer]);
+        
         return Inertia::render('Admin/Calendar/CreateCalendarEvent', [
             'categories' => Category::all()
         ]);
@@ -67,6 +67,8 @@ class CalendarController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', [Calendar::class, $this->authorizer]);
+        
         $request->validate([
             'date' => 'required|date',
             'title' => 'required',
@@ -102,7 +104,12 @@ class CalendarController extends Controller
      */
     public function show(Calendar $calendar)
     {
-        //
+        $this->authorize('view', [Calendar::class, $calendar, $this->authorizer]);
+        
+        return Inertia::render('Admin/Calendar/ShowCalendarEvent', [
+            'calendar' => $calendar,
+            'images' => $calendar->getMedia('images')
+        ]);
     }
 
     /**
@@ -113,6 +120,8 @@ class CalendarController extends Controller
      */
     public function edit(Calendar $calendar)
     {
+        $this->authorize('update', [Calendar::class, $calendar, $this->authorizer]);
+        
         return Inertia::render('Admin/Calendar/EditCalendarEvent', [
             'calendar' => $calendar,
             'categories' => Category::all(),
@@ -129,7 +138,7 @@ class CalendarController extends Controller
      */
     public function update(Request $request, Calendar $calendar)
     {
-        $request->all();
+        $this->authorize('update', [Calendar::class, $calendar, $this->authorizer]);
 
         $request->validate([
             'date' => 'required|date',
@@ -165,12 +174,15 @@ class CalendarController extends Controller
      */
     public function destroy(Calendar $calendar)
     {
+        $this->authorize('delete', [Calendar::class, $calendar, $this->authorizer]);
+        
         $calendar->delete();
 
         return redirect()->route('calendar.index')->with('info', 'Kalendoriaus įvykis ištrintas!');
     }
-
+    // TODO: something with this???
     public function destroyMedia(Calendar $calendar, Media $media) {
+        
         $this->authorize('destroyMedia', $calendar);
         
         $calendar->getMedia('images')->where('id', '=', $media->id)->first()->delete();

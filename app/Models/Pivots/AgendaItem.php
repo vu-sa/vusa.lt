@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class AgendaItem extends Pivot
 {
-    use HasUlids, LogsActivity;
+    use HasUlids, HasRelationships, LogsActivity;
     
     protected $guarded = [];
 
@@ -32,5 +33,16 @@ class AgendaItem extends Pivot
     public function institutions()
     {
         return $this->hasManyThrough(Institution::class, Meeting::class);
+    }
+
+    public function padaliniai()
+    {
+        return $this->hasManyDeep(
+            Padalinys::class,
+            [Meeting::class, Institution::class],
+            ['id', 'id', 'id'],
+            ['meeting_id', 'institution_id', 'id'],
+            ['id', 'id', 'id']
+        );
     }
 }

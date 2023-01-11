@@ -4,18 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Contact;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\ResourceController;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class ContactController extends Controller
+class ContactController extends ResourceController
 {
-    
-    public function __construct()
-    {
-        // resource policy
-        $this->authorizeResource(Contact::class, 'contact');
-    }
-    
     /**
      * Display a listing of the resource.
      *
@@ -23,7 +17,8 @@ class ContactController extends Controller
      */
     public function index()
     {
-        $this->authorize('viewAny', [Institution::class, $this->authorizer]);
+        $this->authorize('viewAny', [Contact::class, $this->authorizer]);
+
         $contacts = Contact::all()->paginate(20);
 
         return Inertia::render('Admin/People/IndexContact', [
@@ -38,6 +33,8 @@ class ContactController extends Controller
      */
     public function create()
     {
+        $this->authorize('create', [Contact::class, $this->authorizer]);
+        
         // TODO: implement duties later
         return Inertia::render('Admin/People/CreateContact', [
             // 'duties' => $this->getDutiesForForm()
@@ -52,7 +49,7 @@ class ContactController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $this->authorize('create', [Contact::class, $this->authorizer]);
     }
 
     /**
@@ -63,7 +60,7 @@ class ContactController extends Controller
      */
     public function show(Contact $contact)
     {
-        //
+        $this->authorize('view', [Contact::class, $contact, $this->authorizer]);
     }
 
     /**
@@ -74,6 +71,8 @@ class ContactController extends Controller
      */
     public function edit(Contact $contact)
     {
+        $this->authorize('update', [Contact::class, $contact, $this->authorizer]);
+        
         return Inertia::render('Admin/People/EditContact', [
             'contact' => $contact,
         ]);
@@ -88,7 +87,7 @@ class ContactController extends Controller
      */
     public function update(Request $request, Contact $contact)
     {
-        //
+        $this->authorize('update', [Contact::class, $contact, $this->authorizer]);
     }
 
     /**
@@ -99,6 +98,6 @@ class ContactController extends Controller
      */
     public function destroy(Contact $contact)
     {
-        //
+        $this->authorize('delete', [Contact::class, $contact, $this->authorizer]);
     }
 }

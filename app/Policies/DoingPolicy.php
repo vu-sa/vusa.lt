@@ -2,26 +2,24 @@
 
 namespace App\Policies;
 
+use App\Enums\CRUDEnum;
 use App\Models\Doing;
 use App\Models\Matter as Matter;
 use App\Models\User;
 
 use Illuminate\Support\Str;
 use App\Enums\ModelEnum;
+use App\Services\ModelAuthorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class DoingPolicy extends ModelPolicy
 {
     use HandlesAuthorization;
 
-    
-
     public function __construct()
     {
         $this->pluralModelName = Str::plural(ModelEnum::DOING()->label);
     }
-
-    
 
     /**
      * Determine whether the user can view the model.
@@ -30,9 +28,15 @@ class DoingPolicy extends ModelPolicy
      * @param  \App\Models\Doing  $doing
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Doing $doing)
+    public function view(User $user, Doing $doing, ModelAuthorizer $authorizer)
     {
-        return $doing->users->contains($user);
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $doing, CRUDEnum::READ()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -42,9 +46,15 @@ class DoingPolicy extends ModelPolicy
      * @param  \App\Models\Doing  $doing
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Doing $doing)
+    public function update(User $user, Doing $doing, ModelAuthorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $doing, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -54,9 +64,15 @@ class DoingPolicy extends ModelPolicy
      * @param  \App\Models\Doing  $doing
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Doing $doing)
+    public function delete(User $user, Doing $doing, ModelAuthorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $doing, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

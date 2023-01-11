@@ -2,25 +2,23 @@
 
 namespace App\Policies;
 
+use App\Enums\CRUDEnum;
 use App\Models\Goal;
 use App\Models\User;
 
 use Illuminate\Support\Str;
 use App\Enums\ModelEnum;
+use App\Services\ModelAuthorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class GoalPolicy extends ModelPolicy
 {
     use HandlesAuthorization;
 
-    
-
     public function __construct()
     {
         $this->pluralModelName = Str::plural(ModelEnum::GOAL()->label);
     }
-
-    
 
     /**
      * Determine whether the user can view the model.
@@ -29,12 +27,16 @@ class GoalPolicy extends ModelPolicy
      * @param  \App\Models\Goal  $goal
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Goal $goal)
+    public function view(User $user, Goal $goal, ModelAuthorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $goal, CRUDEnum::READ()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
-
-
 
     /**
      * Determine whether the user can update the model.
@@ -43,9 +45,15 @@ class GoalPolicy extends ModelPolicy
      * @param  \App\Models\Goal  $goal
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Goal $goal)
+    public function update(User $user, Goal $goal, ModelAuthorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $goal, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -55,9 +63,15 @@ class GoalPolicy extends ModelPolicy
      * @param  \App\Models\Goal  $goal
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Goal $goal)
+    public function delete(User $user, Goal $goal, ModelAuthorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $goal, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

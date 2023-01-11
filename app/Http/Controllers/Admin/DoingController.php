@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Doing;
 use App\Http\Controllers\Controller as Controller;
+use App\Http\Controllers\ResourceController;
 use App\Services\DoingStatusManager;
 use App\Services\SharepointAppGraph;
 use App\Services\TaskCreator;
@@ -12,14 +13,8 @@ use Illuminate\Support\Facades\DB;
 use Microsoft\Graph\Model;
 use Inertia\Inertia;
 
-class DoingController extends Controller
-{
-
-    public function __construct()
-    {
-        $this->authorizeResource(Doing::class, 'doing');
-    }
-    
+class DoingController extends ResourceController
+{    
     /**
      * Display a listing of the resource.
      *
@@ -27,7 +22,8 @@ class DoingController extends Controller
      */
     public function index()
     {
-        $this->authorize('viewAny', [Institution::class, $this->authorizer]);
+        $this->authorize('viewAny', [Doing::class, $this->authorizer]);
+
         $search = request()->input('search');
 
         $doings = Doing::with('matters')->when(!request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
@@ -56,7 +52,9 @@ class DoingController extends Controller
      */
     public function create()
     {
-        //
+        $this->authorize('create', [Doing::class, $this->authorizer]);
+
+        return Inertia::render('Admin/Representation/CreateDoing');
     }
 
     /**
@@ -67,6 +65,8 @@ class DoingController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', [Doing::class, $this->authorizer]);
+        
         $request->validate([
             'title' => 'required',
             'type_id' => 'required',
@@ -93,6 +93,8 @@ class DoingController extends Controller
      */
     public function show(Doing $doing)
     {
+        $this->authorize('view', [Doing::class, $doing, $this->authorizer]);
+        
         $sharepointFiles = [];
         
         if ($doing->documents->count() > 0) {
@@ -118,7 +120,11 @@ class DoingController extends Controller
      */
     public function edit(Doing $doing)
     {
-        //
+        $this->authorize('update', [Doing::class, $doing, $this->authorizer]);
+
+        return Inertia::render('Admin/Representation/EditDoing', [
+            'doing' => $doing->load('types', 'users'),
+        ]);
     }
 
     /**
@@ -130,6 +136,8 @@ class DoingController extends Controller
      */
     public function update(Request $request, Doing $doing)
     {
+        $this->authorize('update', [Doing::class, $doing, $this->authorizer]);
+        
         $request->validate([
             'title' => 'required',
         ]);
@@ -147,6 +155,8 @@ class DoingController extends Controller
      */
     public function destroy(Doing $doing)
     {
+        $this->authorize('delete', [Doing::class, $doing, $this->authorizer]);
+        
         DB::transaction(function () use ($doing) {
             // detach doings from matters
             $doing->matters()->detach();

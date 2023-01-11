@@ -16,11 +16,6 @@ use Inertia\Inertia;
 
 class RoleController extends ResourceController
 {
-    public function __construct()
-    {
-        $this->authorizeResource(Role::class, 'role');
-    }
-
     /**
      * Display a listing of the resource.
      *
@@ -42,6 +37,8 @@ class RoleController extends ResourceController
      */
     public function create()
     {
+        $this->authorize('create', [Role::class, $this->authorizer]);
+        
         return Inertia::render('Admin/Permissions/CreateRole');
     }
 
@@ -53,6 +50,8 @@ class RoleController extends ResourceController
      */
     public function store(Request $request)
     {
+        $this->authorize('create', [Role::class, $this->authorizer]);
+        
         $validated = $request->validate([
             'name' => 'required|unique:roles,name',
         ]);
@@ -70,7 +69,14 @@ class RoleController extends ResourceController
      */
     public function show(Role $role)
     {
-        //
+        $this->authorize('view', [Role::class, $role, $this->authorizer]);
+        
+        $role->load('permissions:id,name');
+        
+        // show role
+        return Inertia::render('Admin/Permissions/ShowRole', [
+            'role' => $role,
+        ]);
     }
 
     /**
@@ -81,6 +87,8 @@ class RoleController extends ResourceController
      */
     public function edit(Role $role)
     {
+        $this->authorize('update', [Role::class, $role, $this->authorizer]);
+        
         // not load Super Admin
         if ($role->name === config('permission.super_admin_role_name')) {
             return back()->with('info', 'Negalima redaguoti šios rolės.');
@@ -103,10 +111,20 @@ class RoleController extends ResourceController
      */
     public function update(Request $request, Role $role)
     {
-        // $validated = $request->validate([
-        //     'name' => 'required',
-        //     'permissions' => 'required|array',
-        // ]);
+        $this->authorize('update', [Role::class, $role, $this->authorizer]);
+        
+        // not update Super Admin
+        if ($role->name === config('permission.super_admin_role_name')) {
+            return back()->with('info', 'Negalima redaguoti šios rolės.');
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|unique:roles,name,' . $role->id,
+        ]);
+
+        $role->update($validated);
+
+        return back()->with('success', 'Rolė atnaujinta.');
     }
 
     /**
@@ -117,6 +135,8 @@ class RoleController extends ResourceController
      */
     public function destroy(Role $role)
     {
+        $this->authorize('delete', [Role::class, $role, $this->authorizer]);
+        
         // check if role is not Super Admin
         if ($role->name === config('permission.super_admin_role_name')) {
             return back()->with('info', 'Negalima ištrinti šios rolės.');
@@ -129,6 +149,8 @@ class RoleController extends ResourceController
 
     public function syncPermissionGroup(Role $role, string $model, Request $request) 
     {
+        $this->authorize('update', [Role::class, $role, $this->authorizer]);
+        
         $validated = $request->validate([
             'create' => 'string',
             'read' => 'string',

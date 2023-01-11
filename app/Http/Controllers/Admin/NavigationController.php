@@ -6,8 +6,9 @@ use App\Models\Navigation;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
+use App\Http\Controllers\ResourceController;
 
-class NavigationController extends Controller
+class NavigationController extends ResourceController
 {
 
     public function __construct()
@@ -37,6 +38,8 @@ class NavigationController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('viewAny', [Navigation::class, $this->authorizer]);
+        
         return Inertia::render('Admin/Navigation/Index', [
             'navigation' => Navigation::where('lang', '=', 'lt')->orderBy('order')->get(),
         ]);
@@ -49,7 +52,9 @@ class NavigationController extends Controller
      */
     public function create()
     {
-        //
+        $this->authorize('create', [Navigation::class, $this->authorizer]);
+        
+        return Inertia::render('Admin/Navigation/Create');
     }
 
     /**
@@ -60,7 +65,7 @@ class NavigationController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($request->_value);
+        $this->authorize('create', [Navigation::class, $this->authorizer]);
         
         $this->postNavigation($request->_value);
 
@@ -75,7 +80,7 @@ class NavigationController extends Controller
      */
     public function show(Navigation $navigation)
     {
-        //
+        $this->authorize('view', [Navigation::class, $navigation, $this->authorizer]);
     }
 
     /**
@@ -86,6 +91,8 @@ class NavigationController extends Controller
      */
     public function edit(Navigation $navigation)
     {
+        $this->authorize('update', [Navigation::class, $navigation, $this->authorizer]);
+        
         return Inertia::render('Admin/Navigation/Edit', [
             'navigation' => $navigation,
         ]);
@@ -100,6 +107,8 @@ class NavigationController extends Controller
      */
     public function update(Request $request, Navigation $navigation)
     {
+        $this->authorize('update', [Navigation::class, $navigation, $this->authorizer]);
+        
         $navigation->name = $request->name;
         $navigation->url = $request->url;
         // $navigation->order = $request->order;
@@ -116,6 +125,10 @@ class NavigationController extends Controller
      */
     public function destroy(Navigation $navigation)
     {
-        //
+        $this->authorize('delete', [Navigation::class, $navigation, $this->authorizer]);
+        
+        $navigation->delete();
+
+        return back();
     }
 }

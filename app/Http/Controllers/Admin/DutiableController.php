@@ -6,14 +6,10 @@ use App\Models\Pivots\Dutiable;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
+use App\Http\Controllers\ResourceController;
 
-class DutiableController extends Controller
-{
-    public function __construct()
-    {
-        $this->authorizeResource(Dutiable::class, 'dutiable');
-    }
-    
+class DutiableController extends ResourceController
+{    
     /**
      * Display a listing of the resource.
      *
@@ -21,7 +17,7 @@ class DutiableController extends Controller
      */
     public function index()
     {
-        $this->authorize('viewAny', [Institution::class, $this->authorizer]);
+        $this->authorize('viewAny', [Dutiable::class, $this->authorizer]);
         //
     }
 
@@ -32,7 +28,8 @@ class DutiableController extends Controller
      */
     public function create()
     {
-        //
+        $this->authorize('create', [Dutiable::class, $this->authorizer]);
+        
     }
 
     /**
@@ -43,7 +40,8 @@ class DutiableController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $this->authorize('create', [Dutiable::class, $this->authorizer]);
+        
     }
 
     /**
@@ -54,7 +52,7 @@ class DutiableController extends Controller
      */
     public function show(Dutiable $dutiable)
     {
-        //
+        $this->authorize('view', [Dutiable::class, $dutiable, $this->authorizer]);
     }
 
     /**
@@ -65,6 +63,8 @@ class DutiableController extends Controller
      */
     public function edit(Dutiable $dutiable)
     {
+        $this->authorize('update', [Dutiable::class, $dutiable, $this->authorizer]);
+        
         return Inertia::render('Admin/People/EditDutiable', [
             'dutiable' => $dutiable,
         ]);
@@ -79,6 +79,8 @@ class DutiableController extends Controller
      */
     public function update(Request $request, Dutiable $dutiable)
     {
+        $this->authorize('update', [Dutiable::class, $dutiable, $this->authorizer]);
+        
         $validated = $request->validate([
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
@@ -98,6 +100,10 @@ class DutiableController extends Controller
      */
     public function destroy(Dutiable $dutiable)
     {
-        //
+        $this->authorize('delete', [Dutiable::class, $dutiable, $this->authorizer]);
+        
+        $dutiable->delete();
+        
+        return back()->with('success', 'Pareigybės laikotarpis sėkmingai ištrintas!');
     }
 }

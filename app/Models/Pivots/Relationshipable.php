@@ -8,6 +8,11 @@ class Relationshipable extends Pivot
 {
     protected $table = 'relationshipables';
 
+    public function relationshipable()
+    {
+        return $this->morphTo();
+    }
+
     public function getRelatedModelsFromGivenType($model_type, $giver_id = null, $retrieve_models = false) {
              
         $relationships = [];
@@ -76,10 +81,6 @@ class Relationshipable extends Pivot
 
     public function relationship() {
         return $this->belongsTo(Relationship::class);
-    }
-
-    public function relationshipable() {
-        return $this->morphTo();
     }
 
     public function relatedRelationshipable() {

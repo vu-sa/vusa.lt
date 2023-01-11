@@ -2,11 +2,13 @@
 
 namespace App\Policies;
 
+use App\Enums\CRUDEnum;
 use App\Models\Calendar;
 use App\Models\User;
 
 use Illuminate\Support\Str;
 use App\Enums\ModelEnum;
+use App\Services\ModelAuthorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class CalendarPolicy extends ModelPolicy
@@ -29,9 +31,15 @@ class CalendarPolicy extends ModelPolicy
      * @param  \App\Models\Calendar  $calendar
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Calendar $calendar)
+    public function view(User $user, Calendar $calendar, ModelAuthorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $calendar, CRUDEnum::READ()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -41,11 +49,15 @@ class CalendarPolicy extends ModelPolicy
      * @param  \App\Models\Calendar  $calendar
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Calendar $calendar)
+    public function update(User $user, Calendar $calendar, ModelAuthorizer $authorizer)
     {
-        if ($user->can('edit unit calendar')) {
-            return $user->padalinys()->id == $calendar->padalinys->id;
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $calendar, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
+            return true;
         }
+
+        return false;
     }
 
     /**
@@ -55,11 +67,15 @@ class CalendarPolicy extends ModelPolicy
      * @param  \App\Models\Calendar  $calendar
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Calendar $calendar)
+    public function delete(User $user, Calendar $calendar, ModelAuthorizer $authorizer)
     {
-        if ($user->can('delete unit calendar')) {
-            return $user->padalinys()->id == $calendar->padalinys->id;
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $calendar, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
+            return true;
         }
+
+        return false;
     }
 
     /**
@@ -86,6 +102,7 @@ class CalendarPolicy extends ModelPolicy
         //
     }
 
+    // TODO: wild policy
     public function destroyMedia(User $user, Calendar $calendar)
     {
         if ($user->can('delete unit calendar')) {

@@ -2,25 +2,23 @@
 
 namespace App\Policies;
 
+use App\Enums\CRUDEnum;
 use App\Models\Relationship;
 use App\Models\User;
 
 use Illuminate\Support\Str;
 use App\Enums\ModelEnum;
+use App\Services\ModelAuthorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class RelationshipPolicy extends ModelPolicy
 {
     use HandlesAuthorization;
 
-    
-
     public function __construct()
     {
         $this->pluralModelName = Str::plural(ModelEnum::RELATIONSHIP()->label);
     }
-
-    
 
     /**
      * Determine whether the user can view the model.
@@ -29,12 +27,16 @@ class RelationshipPolicy extends ModelPolicy
      * @param  \App\Models\Relationship  $relationship
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Relationship $relationship)
+    public function view(User $user, Relationship $relationship, ModelAuthorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $relationship, CRUDEnum::READ()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
-
-
 
     /**
      * Determine whether the user can update the model.
@@ -43,9 +45,15 @@ class RelationshipPolicy extends ModelPolicy
      * @param  \App\Models\Relationship  $relationship
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Relationship $relationship)
+    public function update(User $user, Relationship $relationship, ModelAuthorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $relationship, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -55,9 +63,15 @@ class RelationshipPolicy extends ModelPolicy
      * @param  \App\Models\Relationship  $relationship
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Relationship $relationship)
+    public function delete(User $user, Relationship $relationship, ModelAuthorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $relationship, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

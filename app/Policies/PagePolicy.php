@@ -2,25 +2,23 @@
 
 namespace App\Policies;
 
+use App\Enums\CRUDEnum;
 use App\Models\Page;
 use App\Models\User;
 
 use Illuminate\Support\Str;
 use App\Enums\ModelEnum;
+use App\Services\ModelAuthorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class PagePolicy extends ModelPolicy
 {
     use HandlesAuthorization;
 
-    
-
     public function __construct()
     {
         $this->pluralModelName = Str::plural(ModelEnum::PAGE()->label);
     }
-
-    
 
     /**
      * Determine whether the user can view the model.
@@ -29,12 +27,16 @@ class PagePolicy extends ModelPolicy
      * @param  \App\Models\Page  $page
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Page $page)
+    public function view(User $user, Page $page, ModelAuthorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $page, CRUDEnum::READ()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
-
-
 
     /**
      * Determine whether the user can update the model.
@@ -43,11 +45,15 @@ class PagePolicy extends ModelPolicy
      * @param  \App\Models\Page  $page
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Page $page)
+    public function update(User $user, Page $page, ModelAuthorizer $authorizer)
     {
-        if ($user->can('edit unit content')) {
-            return $user->padalinys()->id == $page->padalinys->id;
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $page, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
+            return true;
         }
+
+        return false;
     }
 
     /**
@@ -57,11 +63,15 @@ class PagePolicy extends ModelPolicy
      * @param  \App\Models\Page  $page
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Page $page)
+    public function delete(User $user, Page $page, ModelAuthorizer $authorizer)
     {
-        if ($user->can('delete unit content')) {
-            return $user->padalinys()->id == $page->padalinys->id;
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $page, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
+            return true;
         }
+
+        return false;
     }
 
     /**

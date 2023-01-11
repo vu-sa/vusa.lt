@@ -6,16 +6,12 @@ use App\Models\Page;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
+use App\Http\Controllers\ResourceController;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 
-class PagesController extends Controller
+class PagesController extends ResourceController
 {
-
-    public function __construct()
-    {
-        $this->authorizeResource(Page::class, 'page');
-    }
 
     /**
      * Display a listing of the resource.
@@ -24,7 +20,7 @@ class PagesController extends Controller
      */
     public function index(Request $request)
     {
-        // $pages = Page::orderByDesc('created_at')->paginate(20);
+        $this->authorize('viewAny', [Page::class, $this->authorizer]);
 
         $padaliniai = request()->input('padaliniai');
         $title = request()->input('title');
@@ -54,6 +50,8 @@ class PagesController extends Controller
      */
     public function create()
     {
+        $this->authorize('create', [Page::class, $this->authorizer]);
+        
         return Inertia::render('Admin/Content/CreatePage');
     }
 
@@ -65,6 +63,8 @@ class PagesController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', [Page::class, $this->authorizer]);
+        
         $request->validate([
             'title' => 'required|string|max:255',
             'text' => 'required|string',
@@ -98,7 +98,7 @@ class PagesController extends Controller
      */
     public function show(Page $page)
     {
-        //
+        $this->authorize('view', [Page::class, $page, $this->authorizer]);
     }
 
     /**
@@ -109,6 +109,8 @@ class PagesController extends Controller
      */
     public function edit(Page $page)
     {
+        $this->authorize('update', [Page::class, $page, $this->authorizer]);
+        
         $other_lang_pages = Page::with('padalinys:id,shortname')->when(!request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($page) {
             $query->where('padalinys_id', request()->user()->padalinys()->id);  
         })->where('lang', '!=', $page->lang)->select('id', 'title', 'padalinys_id')->get();
@@ -139,6 +141,8 @@ class PagesController extends Controller
      */
     public function update(Request $request, Page $page)
     {
+        $this->authorize('update', [Page::class, $page, $this->authorizer]);
+        
         $other_lang_page = Page::find($page->other_lang_id);
 
         $page->update($request->only('title', 'text', 'lang', 'other_lang_id'));
@@ -165,6 +169,8 @@ class PagesController extends Controller
      */
     public function destroy(Page $page)
     {
+        $this->authorize('delete', [Page::class, $page, $this->authorizer]);
+        
         $page->delete();
 
         return redirect()->route('pages.index')->with('info', 'Puslapis ištrintas');

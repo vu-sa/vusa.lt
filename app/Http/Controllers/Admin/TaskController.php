@@ -4,16 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Task;
 use App\Http\Controllers\Controller as Controller;
+use App\Http\Controllers\ResourceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
-class TaskController extends Controller
-{
-    public function __construct()
-    {
-        $this->authorizeResource(Task::class, 'task');
-    }
-    
+class TaskController extends ResourceController
+{    
     /**
      * Display a listing of the resource.
      *
@@ -32,7 +28,7 @@ class TaskController extends Controller
      */
     public function create()
     {
-        //
+        $this->authorize('create', [Institution::class, $this->authorizer]);
     }
 
     /**
@@ -43,6 +39,8 @@ class TaskController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', [Institution::class, $this->authorizer]);
+        
         $validated = $request->validate([
             'name' => 'required',
             'due_date' => 'required',
@@ -72,7 +70,7 @@ class TaskController extends Controller
      */
     public function show(Task $task)
     {
-        //
+        $this->authorize('view', [Task::class, $task, $this->authorizer]);
     }
 
     /**
@@ -83,7 +81,7 @@ class TaskController extends Controller
      */
     public function edit(Task $task)
     {
-        //
+        $this->authorize('update', [Task::class, $task, $this->authorizer]);
     }
 
     /**
@@ -95,7 +93,19 @@ class TaskController extends Controller
      */
     public function update(Request $request, Task $task)
     {
-        //
+        $this->authorize('update', [Task::class, $task, $this->authorizer]);
+
+        $validated = $request->validate([
+            'name' => 'required',
+            'due_date' => 'required',
+        ]);
+
+        // change due_date to Carbon object
+        $validated['due_date'] = Carbon::createFromTimestamp($validated['due_date'] / 1000);
+
+        $task->update($validated);
+
+        return back()->with('success', 'Užduotis sėkmingai atnaujinta');
     }
 
     /**
@@ -106,6 +116,8 @@ class TaskController extends Controller
      */
     public function destroy(Task $task)
     {
+        $this->authorize('delete', [Task::class, $task, $this->authorizer]);
+        
         $task->delete();
 
         return back()->with('success', 'Užduotis sėkmingai ištrinta');

@@ -9,19 +9,14 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Duty;
 use App\Http\Controllers\Controller as Controller;
+use App\Http\Controllers\ResourceController;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Models\Role;
 
-class UserController extends Controller
+class UserController extends ResourceController
 {
-
-    public function __construct()
-    {
-        $this->authorizeResource(User::class, 'user');
-    }
-
     /**
      * Display a listing of the resource.
      *
@@ -29,6 +24,8 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('viewAny', [User::class, $this->authorizer]);
+        
         // For search
         $name = request()->input('name');
 
@@ -55,6 +52,8 @@ class UserController extends Controller
      */
     public function create()
     {
+        $this->authorize('create', [User::class, $this->authorizer]);
+        
         return Inertia::render('Admin/People/CreateUser', [
             'roles' => Role::all(),
             'duties' => $this->getDutiesForForm()
@@ -69,6 +68,8 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', [User::class, $this->authorizer]);
+        
         $request->validate([
             'name' => 'required',
             'duties' => 'required',
@@ -111,7 +112,13 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        //
+        $this->authorize('view', [User::class, $user, $this->authorizer]);
+        
+        return Inertia::render('Admin/People/ShowUser', [
+            'user' => $user->load(['duties' => function ($query) {
+                $query->withPivot('start_date', 'end_date');
+            }])
+        ]);
     }
 
     /**
@@ -122,6 +129,8 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
+        $this->authorize('update', [User::class, $user, $this->authorizer]);
+        
         // user load duties with pivot
         $user->load(['duties' => function ($query) {
             $query->withPivot('start_date', 'end_date');
@@ -146,6 +155,8 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        $this->authorize('update', [User::class, $user, $this->authorizer]);
+        
         $request->validate([
             'name' => 'required',
             'email' => 'required|email',
@@ -177,7 +188,8 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        //cuser 
+        $this->authorize('delete', [User::class, $user, $this->authorizer]);
+
         $user->duties()->detach();
         $user->delete();
 

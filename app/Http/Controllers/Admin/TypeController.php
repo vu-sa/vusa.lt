@@ -4,19 +4,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Type;
 use App\Http\Controllers\Controller as Controller;
+use App\Http\Controllers\ResourceController;
 use App\Services\SharepointAppGraph;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
-class TypeController extends Controller
-{
-    public function __construct()
-    {
-        $this->authorizeResource(Type::class, 'type');
-    }
-    
+class TypeController extends ResourceController
+{    
     /**
      * Display a listing of the resource.
      *
@@ -24,7 +20,8 @@ class TypeController extends Controller
      */
     public function index()
     {
-        $this->authorize('viewAny', [Institution::class, $this->authorizer]);
+        $this->authorize('viewAny', [Type::class, $this->authorizer]);
+
         return Inertia::render('Admin/ModelMeta/IndexTypes', [
             'types' => Type::paginate(20),
         ]);
@@ -37,6 +34,8 @@ class TypeController extends Controller
      */
     public function create()
     {
+        $this->authorize('create', [Type::class, $this->authorizer]);
+        
         return Inertia::render('Admin/ModelMeta/CreateType', [
             'contentTypes' => Type::select('id', 'title', 'model_type')->get(),
         ]);
@@ -50,6 +49,8 @@ class TypeController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', [Type::class, $this->authorizer]);
+        
         $request->validate([
             'title' => 'required',
             'model_type' => 'required',
@@ -70,7 +71,11 @@ class TypeController extends Controller
      */
     public function show(Type $type)
     {
-        //
+        $this->authorize('view', [Type::class, $type, $this->authorizer]);
+
+        return Inertia::render('Admin/ModelMeta/ShowType', [
+            'contentType' => $type->toArray(),
+        ]);
     }
 
     /**
@@ -81,6 +86,8 @@ class TypeController extends Controller
      */
     public function edit(Type $type)
     {
+        $this->authorize('update', [Type::class, $type, $this->authorizer]);
+        
         $sharepointFiles = [];
 
         if ($type->documents->count() > 0) {
@@ -104,6 +111,8 @@ class TypeController extends Controller
      */
     public function update(Request $request, Type $type)
     {
+        $this->authorize('update', [Type::class, $type, $this->authorizer]);
+        
         $request->validate([
             'title' => 'required',
             'model_type' => 'required',
@@ -123,7 +132,7 @@ class TypeController extends Controller
      */
     public function destroy(Type $type)
     {
-        throw new Exception("Šiuo metu negalima trinti tipų, pavojinga...", 1);
+        $this->authorize('delete', [Type::class, $type, $this->authorizer]);
         
         DB::transaction(function () use ($type) {
             // delete typeables

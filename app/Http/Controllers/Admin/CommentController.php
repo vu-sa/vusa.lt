@@ -7,16 +7,11 @@ use App\Models\Comment;
 use App\Models\Doing;
 use App\Models\User;
 use App\Events\UserComments;
+use App\Http\Controllers\ResourceController;
 use Illuminate\Http\Request;
 
-class CommentController extends Controller
+class CommentController extends ResourceController
 {
-    
-    public function __construct()
-    {
-        $this->authorizeResource(Comment::class, 'comment');
-    }
-    
     /**
      * Display a listing of the resource.
      *
@@ -25,7 +20,7 @@ class CommentController extends Controller
      */
     public function index(User $user)
     {
-        //
+        $this->authorize('viewAny', [Comment::class, $this->authorizer]);
     }
 
     /**
@@ -36,7 +31,7 @@ class CommentController extends Controller
      */
     public function create(User $user)
     {
-
+        $this->authorize('create', [Comment::class, $this->authorizer]);
     }
 
     /**
@@ -48,6 +43,8 @@ class CommentController extends Controller
      */
     public function store(Request $request, User $user)
     {
+        $this->authorize('create', [Comment::class, $this->authorizer]);
+        
         // check if request commentable type is App\Models\Doing
         if ($request->commentable_type != 'App\Models\Doing') {
             return redirect()->back()->with('error', 'Įvyko klaida');
@@ -74,7 +71,7 @@ class CommentController extends Controller
      */
     public function show(User $user, Comment $comment)
     {
-        //
+        $this->authorize('view', [Comment::class, $comment, $this->authorizer]);
     }
 
     /**
@@ -86,7 +83,7 @@ class CommentController extends Controller
      */
     public function edit(User $user, Comment $comment)
     {
-        //
+        $this->authorize('update', [Comment::class, $comment, $this->authorizer]);
     }
 
     /**
@@ -99,7 +96,10 @@ class CommentController extends Controller
      */
     public function update(Request $request, User $user, Comment $comment)
     {
-        //
+        $this->authorize('update', [Comment::class, $comment, $this->authorizer]);
+
+        // update comment
+        $comment->update($request->all());
     }
 
     /**
@@ -111,6 +111,8 @@ class CommentController extends Controller
      */
     public function destroy(User $user, Comment $comment)
     {
+        $this->authorize('delete', [Comment::class, $comment, $this->authorizer]);
+        
         // delete comment
         $comment->delete();
     }

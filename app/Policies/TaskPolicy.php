@@ -2,25 +2,23 @@
 
 namespace App\Policies;
 
+use App\Enums\CRUDEnum;
 use App\Models\Task;
 use App\Models\User;
 
 use Illuminate\Support\Str;
 use App\Enums\ModelEnum;
+use App\Services\ModelAuthorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class TaskPolicy extends ModelPolicy
 {
     use HandlesAuthorization;
 
-    
-
     public function __construct()
     {
         $this->pluralModelName = Str::plural(ModelEnum::TASK()->label);
     }
-
-    
 
     /**
      * Determine whether the user can view the model.
@@ -29,9 +27,15 @@ class TaskPolicy extends ModelPolicy
      * @param  \App\Models\Task  $task
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Task $task)
+    public function view(User $user, Task $task, ModelAuthorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $task, CRUDEnum::READ()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -41,9 +45,15 @@ class TaskPolicy extends ModelPolicy
      * @param  \App\Models\Task  $task
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Task $task)
+    public function update(User $user, Task $task, ModelAuthorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $task, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -53,15 +63,15 @@ class TaskPolicy extends ModelPolicy
      * @param  \App\Models\Task  $task
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Task $task)
+    public function delete(User $user, Task $task, ModelAuthorizer $authorizer)
     {
-        // check if the task taskable is a user
-        if ($task->taskable_type == 'App\Models\User') {
-            // check if the task taskable is the current user
-            if ($task->taskable_id == $user->id) {
-                return true;
-            }
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $task, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
+            return true;
         }
+
+        return false;
     }
 
     /**
