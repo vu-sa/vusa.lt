@@ -12,6 +12,7 @@
       <IndexDataTable
         :paginated-models="paginatedModels"
         :columns="columns"
+        :model-name="modelName"
         :show-route="canUseRoutes.show ? `${modelName}.show` : undefined"
         :edit-route="canUseRoutes.edit ? `${modelName}.edit` : undefined"
         :destroy-route="
@@ -23,8 +24,7 @@
 </template>
 
 <script setup lang="tsx">
-import { DataTableColumns, NCard } from "naive-ui";
-
+import { type DataTableColumns, NCard } from "naive-ui";
 
 import IndexDataTable from "@/Components/IndexDataTable.vue";
 import IndexSearchInput from "@/Components/IndexSearchInput.vue";

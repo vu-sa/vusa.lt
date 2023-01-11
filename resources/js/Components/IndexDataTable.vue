@@ -30,6 +30,7 @@ import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 const props = defineProps<{
   columns: DataTableColumns<Record<string, any>>;
   paginatedModels: PaginatedModels<Record<string, any>>;
+  modelName: string;
   showRoute?: string;
   editRoute?: string;
   destroyRoute?: string;
@@ -94,6 +95,7 @@ const handleChange = (page: number, filters: number[]) => {
   loading.value = true;
   Inertia.reload({
     data: { page: page, padaliniai: filters },
+    only: [props.modelName],
     preserveState: true,
     onSuccess: () => {
       emit("updateFiltersValue", filters);

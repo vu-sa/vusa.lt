@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetInstitutionManagers;
+use App\Services\ModelIndexginator;
 use App\Models\Institution;
 use App\Models\Duty;
 use Illuminate\Http\Request;
@@ -29,13 +30,10 @@ class InstitutionController extends Controller
      */
     public function index()
     {
-        $search = request()->input('search');
+        $search = request()->input('text');
 
-        $institutions = Institution::with('padalinys:id,shortname')->when(!request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
-            $query->where('padalinys_id', '=', request()->user()->padalinys()->id);
-        })->when(!is_null($search), function ($query) use ($search) {
-            $query->where('name', 'like', "%{$search}%")->orWhere('short_name', 'like', "%{$search}%")->orWhere('alias', 'like', "%{$search}%");
-        })->paginate(20);
+        $institutions = new ModelIndexginator();
+        $institutions = $institutions->execute(Institution::class, $search, 'name');
 
         return Inertia::render('Admin/People/IndexInstitution', [
             'institutions' => $institutions,

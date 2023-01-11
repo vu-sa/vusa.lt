@@ -16,6 +16,8 @@ trait UseUserDutiesForAuthorization
     // The authorization mechanism is role based. The user must
     // have a duty with a role that has the permission.
 
+    // TODO: cache somehow against duty-permission? user-ability-modeltype?
+
     private User $user;
     private Collection $duties;
     private Collection $permissableDuties;
@@ -72,18 +74,6 @@ trait UseUserDutiesForAuthorization
         return $this->checkAllRoleables($permission);
     }
 
-    // if array is checked, then permissable IDs are reset
-    // public function checkArray(array $permissions): bool
-    // {
-    //     foreach ($permissions as $permission) {
-    //         if ($this->check($permission)) {
-    //             return true;
-    //         }
-    //     }
-
-    //     return false;
-    // }
-
     protected function getDuties(): Collection
     {
         if (!isset($this->duties)) {          
@@ -92,5 +82,17 @@ trait UseUserDutiesForAuthorization
 
         return $this->duties;
     }
-    
+
+    private function getPadaliniaiFromPermissableDuties (): Collection
+    {
+        $padaliniai = $this->permissableDuties->load('institution.padalinys')->pluck('institution.padalinys')->flatten(1)->unique('id')->values();
+
+        return new Collection($padaliniai);
+    }
+
+    // alias
+    public function getPadaliniai(): Collection
+    {
+        return $this->getPadaliniaiFromPermissableDuties();
+    }
 }

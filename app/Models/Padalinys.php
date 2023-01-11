@@ -8,6 +8,8 @@ class Padalinys extends Model
 {
     protected $table = 'padaliniai';
 
+    protected $guarded = [];
+
     public function banners()
     {
         return $this->hasMany(Banner::class, 'padalinys_id');

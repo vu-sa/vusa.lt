@@ -6,17 +6,18 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Institution extends Model
 {
-    use HasFactory, HasRelationships, HasUlids, SoftDeletes, LogsActivity;
+    use HasFactory, HasRelationships, HasUlids, SoftDeletes, LogsActivity, Searchable;
 
     protected $guarded = [];
 
-    protected $with = ['types', 'padalinys:id,alias'];
+    protected $with = ['types', 'padalinys:id,alias,shortname'];
 
     protected $casts = [
         'extra_attributes' => 'array',
@@ -112,5 +113,18 @@ class Institution extends Model
         });
 
         return $relationships;
+    }
+
+    public function toSearchableArray()
+    {
+        $array = $this->toArray();
+
+        // Customize array...
+        // return only title
+        $array = [
+            'name' => $this->name,
+        ];
+
+        return $array;
     }
 }
