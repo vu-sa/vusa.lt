@@ -13,14 +13,10 @@ class PermissionPolicy extends ModelPolicy
 {
     use HandlesAuthorization;
 
-    
-
     public function __construct()
     {
         $this->pluralModelName = Str::plural(ModelEnum::PERMISSION()->label);
     }
-
-    
 
     /**
      * Determine whether the user can view the model.

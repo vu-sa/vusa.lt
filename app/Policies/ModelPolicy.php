@@ -4,7 +4,7 @@ namespace App\Policies;
 
 use App\Enums\PermissionScopeEnum;
 use App\Models\User;
-use App\Policies\Traits\UseUserDutiesForAuthorization as Authorizer;
+use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -52,7 +52,7 @@ class ModelPolicy {
      * @param  string $relationToDuties
      * @return bool
      */
-    protected function commonChecker(User $user, Model $model, string $ability, string $relationToDuties): bool
+    protected function commonChecker(User $user, Model $model, string $ability, string $relationToDuties, $hasManyPadalinys = true): bool
     {
         if ($this->authorizer->forUser($user)->check($this->pluralModelName . '.' . $ability . '.' . PermissionScopeEnum::ALL()->label)) {
             return true;
@@ -62,12 +62,14 @@ class ModelPolicy {
             
             $permissableDuties = $this->authorizer->getPermissableDuties();
 
-            $permissableModels = new Collection($permissableDuties->load($relationToDuties)->pluck($relationToDuties));
+            $permissableModels = new Collection($permissableDuties->$relationToDuties);
             
             if ($permissableModels->contains($model)) {
                 return true;
             };
         }
+
+        $padalinysRelation = $hasManyPadalinys ? 'padaliniai' : 'padalinys';
 
         // If the user has permission to view padalinys and user belongs to same padalinys as the institution
         if ($this->authorizer->forUser($user)->check($this->pluralModelName . '.' . $ability . '.' . PermissionScopeEnum::PADALINYS()->label)) {
@@ -76,8 +78,10 @@ class ModelPolicy {
                 ->whereIn('duties.id', $this->authorizer->getPermissableDuties()
                 ->pluck('id'))
                 ->get();
+
+            $padaliniaiIntersect = $model->load($padalinysRelation)->$padalinysRelation->intersect($permissablePadaliniai);
             
-            if ($permissablePadaliniai->contains($model->padalinys)) {
+            if ($padaliniaiIntersect->isNotEmpty()) {
                 return true;
             };
         }

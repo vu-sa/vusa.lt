@@ -1,13 +1,12 @@
 <?php
 
-namespace App\Policies\Traits;
+namespace App\Services;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Cache;
+// use Illuminate\Support\Facades\Cache;
 
-class UseUserDutiesForAuthorization
+class ModelAuthorizer
 {
     // The purpose of this is to authorize an user action not only
     // against the user but also against the duties that the user

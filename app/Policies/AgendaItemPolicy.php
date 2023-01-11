@@ -5,7 +5,7 @@ namespace App\Policies;
 use App\Models\Pivots\AgendaItem;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
-use App\Policies\Traits\UseUserDutiesForAuthorization as Authorizer;
+use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Support\Str;
 use App\Enums\ModelEnum;
 

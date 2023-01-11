@@ -27,7 +27,7 @@ class MatterController extends ResourceController
         $search = request()->input('text');
 
         $matters = new ModelIndexer();
-        $matters = $matters->execute(Matter::class, $search, 'title', $this->authorizer, 'padaliniai');
+        $matters = $matters->execute(Matter::class, $search, 'title', $this->authorizer);
 
         return Inertia::render('Admin/Representation/IndexMatter', [
             'matters' => $matters->paginate(20),

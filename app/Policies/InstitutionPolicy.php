@@ -7,7 +7,7 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use App\Enums\ModelEnum;
 use Illuminate\Auth\Access\HandlesAuthorization;
-use App\Policies\Traits\UseUserDutiesForAuthorization as Authorizer;
+use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
@@ -31,7 +31,7 @@ class InstitutionPolicy extends ModelPolicy
     {
         $this->authorizer = $authorizer;
         
-        if ($this->commonChecker($user, $institution, 'read', 'institution')) {
+        if ($this->commonChecker($user, $institution, 'read', 'institution', false)) {
             return true;
         }
 
@@ -49,7 +49,7 @@ class InstitutionPolicy extends ModelPolicy
     {
         $this->authorizer = $authorizer;
         
-        if ($this->commonChecker($user, $institution, 'update', 'institution')) {
+        if ($this->commonChecker($user, $institution, 'update', 'institution', false)) {
             return true;
         }
 
@@ -66,7 +66,7 @@ class InstitutionPolicy extends ModelPolicy
     public function delete(User $user, Institution $institution, Authorizer $authorizer)
     {
         // Doesn't make sense to delete own institution
-        if ($this->commonChecker($user, $institution, 'delete', 'institution')) {
+        if ($this->commonChecker($user, $institution, 'delete', 'institution', false)) {
             return true;
         }
 

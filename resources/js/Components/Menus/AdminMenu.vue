@@ -205,8 +205,6 @@ const menuOptions = computed(() => [
     icon: () => {
       return <NIcon component={TabDesktopNewPage20Regular}></NIcon>;
     },
-    show:
-      auth?.can.index.page || auth?.can.index.news || auth?.can.index.mainPage,
     children: [
       {
         label: () => {

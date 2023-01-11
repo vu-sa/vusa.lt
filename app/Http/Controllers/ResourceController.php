@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Policies\Traits\UseUserDutiesForAuthorization as Authorizer;
-
+use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\ModelIndexer;
 
 class ResourceController extends Controller
 {
     protected $authorizer;
+    protected $indexer;
     
     public function __construct()
     {
         $this->authorizer = new Authorizer();
+        $this->indexer = new ModelIndexer();
     }
 }

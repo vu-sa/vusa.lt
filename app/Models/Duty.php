@@ -61,8 +61,9 @@ class Duty extends Model implements AuthorizableContract
         return $this->belongsTo(Institution::class);
     }
 
-    public function padalinys()
+    // it has only one padalinys all times, but it's better to have this method with this name
+    public function padaliniai()
     {
-        return $this->institution->padalinys;
+        return $this->hasManyDeepFromRelations($this->institution(), (new Institution())->padalinys());
     }
 }

@@ -6,7 +6,7 @@ use App\Models\Padalinys;
 use App\Models\User;
 use App\Enums\ModelEnum;
 use App\Models\Institution;
-use App\Policies\Traits\UseUserDutiesForAuthorization as Authorizer;
+use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Collection;

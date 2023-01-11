@@ -9,7 +9,7 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use App\Enums\ModelEnum;
 use Illuminate\Auth\Access\HandlesAuthorization;
-use App\Policies\Traits\UseUserDutiesForAuthorization as Authorizer;
+use App\Services\ModelAuthorizer as Authorizer;
 
 class MatterPolicy extends ModelPolicy
 {

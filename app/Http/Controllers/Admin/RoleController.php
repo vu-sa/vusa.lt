@@ -11,6 +11,7 @@ use App\Http\Controllers\ResourceController;
 use App\Models\Calendar;
 use App\Models\Permission;
 use Illuminate\Support\Benchmark;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 class RoleController extends ResourceController
@@ -159,7 +160,15 @@ class RoleController extends ResourceController
         $role->permissions()->attach($permissionsToAttach);
 
         // $role->syncPermissions($validated['permissions']);
+        
+        $this->clearCacheforRoleUsers($role);
 
         return back()->with('success', 'Rolės leidimai atnaujinti');
+    }
+
+    protected function clearCacheforRoleUsers(Role $role) {
+        $role->usersThroughDuties->each(function($user) {
+            Cache::forget('index-permissions-' . $user->id);
+        });
     }
 }
