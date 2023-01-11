@@ -144,14 +144,23 @@
     </NTabs>
     <template #after-heading>
       <InstitutionAvatarGroup :users="institution.users" />
+      <template v-if="institution.institutionManagers.length > 0">
+        <NDivider v-if="institution.institutionManagers.length > 0" vertical />
+        <span class="text-xs text-zinc-500">Admin:</span>
+        <InstitutionAvatarGroup :users="institution.institutionManagers" />
+      </template>
     </template>
     <template #aside-header>
-      <ShowActivityLog :activities="institution.activities" />
+      <div class="flex gap-2">
+        <ShowActivityLog :activities="institution.activities" />
 
-      <MoreOptionsButton
-        edit
-        @edit-click="Inertia.visit(route('institutions.edit', institution.id))"
-      ></MoreOptionsButton>
+        <MoreOptionsButton
+          edit
+          @edit-click="
+            Inertia.visit(route('institutions.edit', institution.id))
+          "
+        ></MoreOptionsButton>
+      </div>
     </template>
   </PageContent>
   <FileSelectDrawer
@@ -169,6 +178,7 @@ import { Inertia } from "@inertiajs/inertia";
 import {
   NCollapse,
   NCollapseItem,
+  NDivider,
   NIcon,
   NTabPane,
   NTabs,

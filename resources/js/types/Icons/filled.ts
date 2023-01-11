@@ -13,6 +13,7 @@ import {
   Flow20Filled,
   FlowchartCircle24Filled,
   Grid24Filled,
+  Home24Filled,
   ImageArrowBack24Filled,
   Important24Filled,
   Navigation24Filled,
@@ -31,8 +32,9 @@ import {
   TextBulletListSquare24Filled,
 } from "@vicons/fluent";
 import type { Component } from "vue";
+import type { ModelEnum } from "../enums";
 
-const icons: Record<keyof typeof ModelEnum, Component> = {
+const modelIcons: Record<keyof typeof ModelEnum, Component> = {
   AGENDA_ITEM: CalendarAgenda24Filled,
   BANNER: ImageArrowBack24Filled,
   CALENDAR: CalendarLtr24Filled,
@@ -66,4 +68,8 @@ const icons: Record<keyof typeof ModelEnum, Component> = {
   USER: Person24Filled,
 };
 
-export default icons;
+const otherIcons: Record<string, Component> = {
+  HOME: Home24Filled,
+};
+
+export default { ...modelIcons, ...otherIcons };

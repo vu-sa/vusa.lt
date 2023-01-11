@@ -14,8 +14,10 @@ import { NBreadcrumb } from "naive-ui";
 import { computed } from "vue";
 
 import AdminBreadcrumbItem, {
-  type BreadcrumbOption,
+  type BreadcrumbOptionInterface,
 } from "@/Components/Breadcrumbs/AdminBreadcrumbItem.vue";
+
+export type BreadcrumbOption = BreadcrumbOptionInterface;
 
 const props = defineProps<{
   options: BreadcrumbOption[];

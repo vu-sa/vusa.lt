@@ -117,6 +117,10 @@ class InstitutionPolicy
 
     protected function institutionCheck(User $user, Institution $institution, string $ability): bool
     {
+        if ($this->forUser($user)->check($this->pluralModelName . '.' . $ability . '.' . '*')) {
+            return true;
+        }
+        
         if ($this->forUser($user)->check($this->pluralModelName . '.' . $ability . '.' . 'own')) {
             
             $permissableDuties = $this->getPermissableDuties();

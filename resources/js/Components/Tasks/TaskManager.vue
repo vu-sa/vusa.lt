@@ -27,6 +27,7 @@ import { computed, ref } from "vue";
 import type { DataTableColumns } from "naive-ui";
 
 import FilterButtonGroup from "@/Components/Buttons/FilterButtonGroup.vue";
+import Icons from "@/Types/Icons/regular";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import TaskCreator from "@/Components/Tasks/TaskCreator.vue";
 import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
@@ -41,7 +42,7 @@ const buttonNames = ["Visos", "Atliktos", "Neatliktos"];
 const iconComponent = (row: App.Entities.Task) => {
   switch (row.taskable_type) {
     case "App\\Models\\Doing":
-      return Sparkle24Filled;
+      return Icons.DOING;
     default:
       return Home24Filled;
   }

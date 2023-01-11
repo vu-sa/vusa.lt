@@ -13,6 +13,7 @@ import {
   Flow20Regular,
   FlowchartCircle24Regular,
   Grid24Regular,
+  Home24Regular,
   ImageArrowBack24Regular,
   Important24Regular,
   Navigation24Regular,
@@ -33,7 +34,7 @@ import {
 import type { Component } from "vue";
 import type { ModelEnum } from "../enums";
 
-const icons: Record<keyof typeof ModelEnum, Component> = {
+const modelIcons: Record<keyof typeof ModelEnum, Component> = {
   AGENDA_ITEM: CalendarAgenda24Regular,
   BANNER: ImageArrowBack24Regular,
   CALENDAR: CalendarLtr24Regular,
@@ -67,4 +68,8 @@ const icons: Record<keyof typeof ModelEnum, Component> = {
   USER: Person24Regular,
 };
 
-export default icons;
+const otherIcons: Record<string, Component> = {
+  HOME: Home24Regular,
+};
+
+export default { ...modelIcons, ...otherIcons };

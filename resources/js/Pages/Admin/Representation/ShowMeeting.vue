@@ -117,11 +117,6 @@
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
 import {
-  BookQuestionMark24Filled,
-  DeviceMeetingRoomRemote24Regular,
-  PeopleTeam24Filled,
-} from "@vicons/fluent";
-import {
   type DropdownOption,
   NCard,
   NIcon,
@@ -132,12 +127,16 @@ import {
 } from "naive-ui";
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
+import { PeopleTeam24Filled } from "@vicons/fluent";
 import { computed, ref } from "vue";
 import { useStorage } from "@vueuse/core";
+import Icons from "@/Types/Icons/regular";
 
 import { contentTypeOptions, documentTemplate } from "@/Composables/someTypes";
 import { formatStaticTime } from "@/Utils/IntlTime";
-import AdminBreadcrumbDisplayer from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
+import AdminBreadcrumbDisplayer, {
+  type BreadcrumbOption,
+} from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import CommentTipTap from "@/Components/TipTap/CommentTipTap.vue";
@@ -160,7 +159,7 @@ defineOptions({
 const props = defineProps<{
   meeting: App.Entities.Meeting;
   // TODO: need to define this type
-  sharepointFiles: App.Entities.SharepointFile[];
+  sharepointFiles: App.Entities.SharepointDocument[];
 }>();
 
 const currentCommentField = ref("");
@@ -201,7 +200,7 @@ const breadcrumbDropdownOptions: DropdownOption[] = [
   },
 ];
 
-const breadcrumbOptions: App.Props.BreadcrumbOption[] = [
+const breadcrumbOptions: BreadcrumbOption[] = [
   {
     label: "...",
     // icon: PeopleTeam24Filled,
@@ -209,7 +208,7 @@ const breadcrumbOptions: App.Props.BreadcrumbOption[] = [
   },
   {
     label: props.meeting.matters?.[0].title,
-    icon: BookQuestionMark24Filled,
+    icon: Icons.MATTER,
     routeOptions: {
       name: "matters.show",
       params: {
@@ -219,7 +218,7 @@ const breadcrumbOptions: App.Props.BreadcrumbOption[] = [
   },
   {
     label: props.meeting.start_time,
-    icon: DeviceMeetingRoomRemote24Regular,
+    icon: Icons.MEETING,
   },
 ];
 </script>

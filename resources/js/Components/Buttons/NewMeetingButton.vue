@@ -37,7 +37,7 @@
               <span>Kiekvienas posėdis turi</span>
               <ModelChip>
                 <template #icon
-                  ><NIcon :component="BookQuestionMark24Filled"></NIcon
+                  ><NIcon :component="Icons.MATTER"></NIcon
                 ></template>
                 svarstomų klausimų</ModelChip
               >
@@ -53,7 +53,7 @@
           <NFormItemGi path="idArray">
             <template #label>
               <div class="flex items-center gap-1">
-                <NIcon :component="BookQuestionMark24Filled" :depth="1"></NIcon>
+                <NIcon :component="Icons.MATTER" :depth="1"></NIcon>
                 <span>Svarstomi klausimai</span>
               </div></template
             >
@@ -151,11 +151,6 @@
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
 import {
-  BookQuestionMark24Filled,
-  PeopleTeamAdd24Filled,
-  Question24Regular,
-} from "@vicons/fluent";
-import {
   NButton,
   NCheckbox,
   NForm,
@@ -169,6 +164,7 @@ import {
   NSteps,
   NTag,
 } from "naive-ui";
+import { PeopleTeamAdd24Filled, Question24Regular } from "@vicons/fluent";
 import { computed, ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 import { useStorage } from "@vueuse/core";
@@ -176,6 +172,7 @@ import { useStorage } from "@vueuse/core";
 import { matterOptions } from "@/Composables/someTypes";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
+import Icons from "@/Types/Icons/regular";
 import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
 import ModelChip from "../Chips/ModelChip.vue";
 import SuggestionAlert from "../Alerts/SuggestionAlert.vue";

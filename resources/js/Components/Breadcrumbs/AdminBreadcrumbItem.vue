@@ -27,7 +27,7 @@ import type { Component } from "vue";
 import type { DropdownOption } from "naive-ui";
 import type { RouteParam, RouteParamsWithQueryOverload } from "ziggy-js";
 
-export interface BreadcrumbOption {
+export interface BreadcrumbOptionInterface {
   label: string | null;
   icon?: Component;
   dropdownOptions?: DropdownOption[];
@@ -38,7 +38,7 @@ export interface BreadcrumbOption {
 }
 
 const props = defineProps<{
-  option: BreadcrumbOption;
+  option: BreadcrumbOptionInterface;
 }>();
 
 const iconWithLabel = () => {

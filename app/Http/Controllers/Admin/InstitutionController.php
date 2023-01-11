@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\GetInstitutionManagers;
 use App\Models\Institution;
 use App\Models\Duty;
 use Illuminate\Http\Request;
@@ -97,6 +98,9 @@ class InstitutionController extends Controller
         $users = $institution->users->unique('id')->values();
         $meetings = new EloquentCollection($institution->matters->pluck('meetings')->flatten());
 
+        // get duties where belongs to same padalinys as institution, and where has permissions
+        $institutionManagers = GetInstitutionManagers::execute($institution);
+
         $sharepointFiles = [];        
         
         if ($institution->documents->count() > 0) {
@@ -112,6 +116,7 @@ class InstitutionController extends Controller
             'institution' => [
                 ...$institution->toArray(), 
                 'users' => $users,
+                'institutionManagers' => $institutionManagers,
                 'types' => $institution->types->load('documents')->map(function ($type) use ($institution) {
                     return 
                         [...$type->toArray(), 
@@ -132,13 +137,13 @@ class InstitutionController extends Controller
                                 'relationships' => $relationships,
                             ];
                         }),
-                        ];
+                    ];
                 }),
                 'sharepointFiles' => $sharepointFiles,
                 'receivedRelationships' => $receivedRelationships,
                 'givenRelationships' => $givenRelationships,
                 'lastMeeting' => $institution->lastMeeting(),
-                'meetings' => $meetings->unique()
+                'meetings' => $meetings->unique(),
             ],
             'doingTypes' => Type::where('model_type', Doing::class)->get()->map(function ($doingType) {
                 return [
