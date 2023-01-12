@@ -35,4 +35,9 @@ class Goal extends Model
     {
         return $this->belongsTo(GoalGroup::class);
     }
+
+    public function padalinys()
+    {
+        return $this->belongsTo(Padalinys::class);
+    }
 }

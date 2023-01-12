@@ -14,14 +14,12 @@
 <script setup lang="ts">
 import { reactive } from "vue";
 
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+
 import InstitutionForm from "@/Components/AdminForms/InstitutionForm.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
-defineOptions({
-  layout: AdminLayout,
-});
+
 
 defineProps<{
   padaliniai: Array<App.Entities.Padalinys>;
@@ -35,7 +33,7 @@ const institution = reactive({
   description: "",
   padalinys_id: null,
   types: null,
-  attributes: {
+  extra_attributes: {
     en: {
       name: "",
       short_name: "",

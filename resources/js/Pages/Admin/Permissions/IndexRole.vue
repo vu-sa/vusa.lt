@@ -12,12 +12,7 @@
 <script setup lang="tsx">
 import type { DataTableColumns } from "naive-ui";
 
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
-
-defineOptions({
-  layout: AdminLayout,
-});
 
 defineProps<{
   roles: PaginatedModels<App.Entities.Role>;

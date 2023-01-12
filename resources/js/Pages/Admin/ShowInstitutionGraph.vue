@@ -8,14 +8,9 @@
 </template>
 
 <script setup lang="ts">
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 
 import Graph from "@/Components/Graphs/InstitutionGraph.vue";
-
-defineOptions({
-  layout: AdminLayout,
-});
 
 defineProps<{
   institutions: App.Entities.Institution[];

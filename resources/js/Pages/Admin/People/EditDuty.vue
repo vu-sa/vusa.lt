@@ -72,14 +72,10 @@ import {
 import { computed, ref } from "vue";
 
 import { checkForEmptyArray } from "@/Composables/checkAttributes";
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+
 import DutyForm from "@/Components/AdminForms/DutyForm.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
-
-defineOptions({
-  layout: AdminLayout,
-});
 
 const props = defineProps<{
   duty: App.Entities.Duty;

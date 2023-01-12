@@ -11,15 +11,11 @@
 
 <script setup lang="ts">
 
-
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import DutiableForm from "@/Components/AdminForms/DutiableForm.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
-defineOptions({
-  layout: AdminLayout,
-});
+
 
 defineProps<{
   dutiable: App.Entities.Dutiable;

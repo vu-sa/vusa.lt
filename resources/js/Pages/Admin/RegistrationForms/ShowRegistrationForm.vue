@@ -10,13 +10,12 @@
 </template>
 
 <script setup lang="ts">
-import { DataTableColumns } from "naive-ui";
 import { h } from "vue";
+import type { DataTableColumns } from "naive-ui";
 
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
 
-defineOptions({ layout: AdminLayout });
+
 
 const props = defineProps<{
   registrationForm: PaginatedModels<any>;

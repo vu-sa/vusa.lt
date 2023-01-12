@@ -15,13 +15,8 @@
 <script setup lang="tsx">
 import { h } from "vue";
 
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import AsideHeader from "@/Components/AsideHeaders/AsideHeaderContacts.vue";
 import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
-
-defineOptions({
-  layout: AdminLayout,
-});
 
 defineProps<{
   duties: PaginatedModels<App.Entities.Duty>;

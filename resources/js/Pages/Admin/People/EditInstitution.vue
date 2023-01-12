@@ -62,7 +62,6 @@ import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
 import { NButton, NCard, NIcon } from "naive-ui";
 import { ref } from "vue";
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 
 
 import { checkForEmptyArray } from "@/Composables/checkAttributes";
@@ -72,9 +71,7 @@ import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
-defineOptions({
-  layout: AdminLayout,
-});
+
 
 const props = defineProps<{
   institution: App.Entities.Institution;

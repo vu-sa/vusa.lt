@@ -45,17 +45,17 @@
   </PageContent>
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
 import { ExternalLinkSquareAlt } from "@vicons/fa";
 import { NButton, NIcon } from "naive-ui";
 
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+//
 import InstitutionCard from "@/Components/Cards/InstitutionCard.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 
-defineOptions({
-  layout: AdminLayout,
-});
+// defineOptions({
+//   layout: AdminLayout,
+// });
 
 defineProps<{
   institutions: Record<string, any>[];

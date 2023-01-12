@@ -66,4 +66,7 @@ class Duty extends Model implements AuthorizableContract
     {
         return $this->hasManyDeepFromRelations($this->institution(), (new Institution())->padalinys());
     }
+
+    // add "duty" relation which points to self
+    
 }

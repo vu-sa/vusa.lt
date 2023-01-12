@@ -19,7 +19,8 @@ class DashboardController extends Controller
     public function dashboard()
     {
         // load user duty institutions
-        $user = User::with('duties.institution', 'duties.institution.users:users.id,users.name,profile_photo_path')->find(auth()->user()->id);
+        $user = User::with('duties.institution.padalinys', 'duties.institution.users:users.id,users.name,profile_photo_path')->find(auth()->user()->id);
+        
         $duties = $user->duties;
 
         $institutions = $duties->pluck('institution')->flatten()->unique();

@@ -1,7 +1,6 @@
 <template>
   <img
-    class="max-w-lg"
-    :class="{ white: isThemeDark }"
+    class="max-w-lg dark:invert"
     :src="
       $page.props.locale !== 'en'
         ? '/logos/vusa.lin.hor.svg'
@@ -9,15 +8,3 @@
     "
   />
 </template>
-
-<script setup lang="ts">
-defineProps<{
-  isThemeDark: boolean;
-}>();
-</script>
-
-<style>
-.white {
-  filter: invert(1);
-}
-</style>

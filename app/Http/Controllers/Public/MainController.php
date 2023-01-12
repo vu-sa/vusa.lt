@@ -689,48 +689,48 @@ class MainController extends Controller
 
 		if ($locale == 'en') {
 			if ($permalink == 'pradzia') {
-				return Inertia::render('Public/Ataskaita2022/Content/0-EN');
+				return Inertia::render('Ataskaita2022/Content/0-EN');
 			} else if ($permalink == 'sveikinimai') {
-				return Inertia::render('Public/Ataskaita2022/Content/1-EN');
+				return Inertia::render('Ataskaita2022/Content/1-EN');
 			} else if ($permalink == 'vu-sa') {
-				return Inertia::render('Public/Ataskaita2022/Content/2-EN');
+				return Inertia::render('Ataskaita2022/Content/2-EN');
 			} else if ($permalink == 'mvp') {
-				return Inertia::render('Public/Ataskaita2022/Content/3-EN');
+				return Inertia::render('Ataskaita2022/Content/3-EN');
 			} else if ($permalink == 'studijos') {
-				return Inertia::render('Public/Ataskaita2022/Content/4-EN');
+				return Inertia::render('Ataskaita2022/Content/4-EN');
 			} else if ($permalink == 'organizacija') {
-				return Inertia::render('Public/Ataskaita2022/Content/5-EN');
+				return Inertia::render('Ataskaita2022/Content/5-EN');
 			} else if ($permalink == 'bendruomene') {
-				return Inertia::render('Public/Ataskaita2022/Content/6-EN');
+				return Inertia::render('Ataskaita2022/Content/6-EN');
 			} else if ($permalink == 'sritys') {
-				return Inertia::render('Public/Ataskaita2022/Content/7-EN');
+				return Inertia::render('Ataskaita2022/Content/7-EN');
 			} else if ($permalink == 'padeka') {
-				return Inertia::render('Public/Ataskaita2022/Content/8-EN');
+				return Inertia::render('Ataskaita2022/Content/8-EN');
 			}
 
-			return Inertia::render('Public/Ataskaita2022/Content/0-EN');
+			return Inertia::render('Ataskaita2022/Content/0-EN');
 		}
 
 		if ($permalink == 'pradzia') {
-			return Inertia::render('Public/Ataskaita2022/Content/0-LT');
+			return Inertia::render('Ataskaita2022/Content/0-LT');
 		} else if ($permalink == 'sveikinimai') {
-			return Inertia::render('Public/Ataskaita2022/Content/1-LT');
+			return Inertia::render('Ataskaita2022/Content/1-LT');
 		} else if ($permalink == 'vu-sa') {
-			return Inertia::render('Public/Ataskaita2022/Content/2-LT');
+			return Inertia::render('Ataskaita2022/Content/2-LT');
 		} else if ($permalink == 'mvp') {
-			return Inertia::render('Public/Ataskaita2022/Content/3-LT');
+			return Inertia::render('Ataskaita2022/Content/3-LT');
 		} else if ($permalink == 'studijos') {
-			return Inertia::render('Public/Ataskaita2022/Content/4-LT');
+			return Inertia::render('Ataskaita2022/Content/4-LT');
 		} else if ($permalink == 'organizacija') {
-			return Inertia::render('Public/Ataskaita2022/Content/5-LT');
+			return Inertia::render('Ataskaita2022/Content/5-LT');
 		} else if ($permalink == 'bendruomene') {
-			return Inertia::render('Public/Ataskaita2022/Content/6-LT');
+			return Inertia::render('Ataskaita2022/Content/6-LT');
 		} else if ($permalink == 'sritys') {
-			return Inertia::render('Public/Ataskaita2022/Content/7-LT');
+			return Inertia::render('Ataskaita2022/Content/7-LT');
 		} else if ($permalink == 'padeka') {
-			return Inertia::render('Public/Ataskaita2022/Content/8-LT');
+			return Inertia::render('Ataskaita2022/Content/8-LT');
 		}
 
-		return Inertia::render('Public/Ataskaita2022/Content/0-LT');
+		return Inertia::render('Ataskaita2022/Content/0-LT');
 	}
 }

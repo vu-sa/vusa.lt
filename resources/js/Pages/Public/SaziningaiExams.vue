@@ -91,18 +91,10 @@
   </NModal>
 </template>
 
-<script lang="ts">
-import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
-
-export default {
-  layout: PublicLayout,
-};
-</script>
-
 <script setup lang="ts">
 import {
-  FormInst,
-  FormValidationError,
+  type FormInst,
+  type FormValidationError,
   NButton,
   NCard,
   NCheckbox,
@@ -118,7 +110,6 @@ import { Head } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
 import { h, ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
-
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 

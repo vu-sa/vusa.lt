@@ -60,21 +60,11 @@
   </PageContent>
 </template>
 
-<script lang="ts">
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
-
-export default {
-  components: { NCard },
-  layout: AdminLayout,
-};
-</script>
-
 <script setup lang="ts">
 import { AddCircle20Regular } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import { NButton, NCard, NDatePicker, NIcon, NModal, NPopover } from "naive-ui";
 import { reactive, ref } from "vue";
-
 
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import SaziningaiExamForm from "@/Components/AdminForms/SaziningaiExamForm.vue";

@@ -177,21 +177,13 @@
   <!-- </PublicLayout> -->
 </template>
 
-<script lang="ts">
-import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
-
-export default {
-  layout: PublicLayout,
-};
-</script>
-
 <script setup lang="ts">
 import { trans as $t, getActiveLanguage } from "laravel-vue-i18n";
 import {
-  FormInst,
-  FormItemRule,
-  FormRules,
-  FormValidationError,
+  type FormInst,
+  type FormItemRule,
+  type FormRules,
+  type FormValidationError,
   NButton,
   NCheckbox,
   NForm,
@@ -204,7 +196,6 @@ import { Head, Link, usePage } from "@inertiajs/inertia-vue3";
 import { Method } from "@inertiajs/inertia";
 import { computed, ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
-
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 

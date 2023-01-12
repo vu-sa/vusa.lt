@@ -70,14 +70,11 @@ class InstitutionController extends ResourceController
         $request->validate([
             'name' => 'required',
             'short_name' => 'required',
-            'alias' => 'required|unique:duties_institutions,alias',
+            'alias' => 'required|unique:institutions,alias',
             'padalinys_id' => 'required',
         ]);
 
-        $institution = Institution::create($request->only('name', 'short_name', 'alias', 'padalinys_id', 'image_url'));
-
-        $institution->extra_attributes = $request->extra_attributes;
-        $institution->save();
+        $institution = Institution::create($request->only('name', 'short_name', 'alias', 'padalinys_id', 'image_url', 'extra_attributes'));
 
         $institution->types()->sync($request->types);
 

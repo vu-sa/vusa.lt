@@ -12,12 +12,10 @@
 <script setup lang="tsx">
 import { DataTableColumns, NTag } from "naive-ui";
 
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+
 import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
 
-defineOptions({
-  layout: AdminLayout,
-});
+
 
 defineProps<{
   doings: PaginatedModels<App.Entities.Doing[]>;

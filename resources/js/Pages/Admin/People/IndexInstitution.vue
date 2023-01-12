@@ -13,15 +13,10 @@
 </template>
 
 <script setup lang="tsx">
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import AsideHeader from "@/Components/AsideHeaders/AsideHeaderContacts.vue";
 import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
 import type { DataTableColumns } from "naive-ui";
-
-defineOptions({
-  layout: AdminLayout,
-});
 
 defineProps<{
   institutions: PaginatedModels<App.Entities.Institution[]>;

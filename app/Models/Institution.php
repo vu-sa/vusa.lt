@@ -17,7 +17,7 @@ class Institution extends Model
 
     protected $guarded = [];
 
-    protected $with = ['types', 'padalinys:id,alias,shortname'];
+    protected $with = ['types'];
 
     protected $casts = [
         'extra_attributes' => 'array',

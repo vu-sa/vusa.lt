@@ -6,12 +6,8 @@
 
 <script setup lang="tsx">
 import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
-import RoleForm from "@/Components/AdminForms/RolePermissionForms.vue";
 
-defineOptions({
-  layout: AdminLayout,
-});
+import RoleForm from "@/Components/AdminForms/RolePermissionForms.vue";
 
 defineProps<{
   role: App.Entities.Role;

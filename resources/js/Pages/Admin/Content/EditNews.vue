@@ -37,17 +37,7 @@
   </PageContent>
 </template>
 
-<script lang="ts">
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
-
-export default {
-  layout: AdminLayout,
-};
-</script>
-
 <script setup lang="ts">
-
-
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import NewsForm from "@/Components/AdminForms/NewsForm.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";

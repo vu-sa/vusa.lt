@@ -33,13 +33,7 @@
   </FadeTransition>
 </template>
 
-<script lang="ts">
-import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
 
-export default {
-  layout: PublicLayout,
-};
-</script>
 
 <script setup lang="ts">
 import { DocumentEdit20Regular, HatGraduation20Filled } from "@vicons/fluent";

@@ -201,20 +201,12 @@
   <!-- </PublicLayout> -->
 </template>
 
-<script lang="ts">
-import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
-
-export default {
-  layout: PublicLayout,
-};
-</script>
-
 <script setup lang="ts">
 import {
-  FormInst,
-  FormItemRule,
-  FormRules,
-  FormValidationError,
+  type FormInst,
+  type FormItemRule,
+  type FormRules,
+  type FormValidationError,
   NButton,
   NCheckbox,
   NDatePicker,
@@ -230,7 +222,6 @@ import { Head } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
 import { computed, ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
-
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 

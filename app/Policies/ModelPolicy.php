@@ -49,10 +49,10 @@ class ModelPolicy {
      * @param  User $user
      * @param  Model $model
      * @param  string $ability
-     * @param  string $relationToDuties
+     * @param  string $relationFromDuties
      * @return bool
      */
-    protected function commonChecker(User $user, Model $model, string $ability, string $relationToDuties, $hasManyPadalinys = true): bool
+    protected function commonChecker(User $user, Model $model, string $ability, string $relationFromDuties, $hasManyPadalinys = true): bool
     {
         if ($this->authorizer->forUser($user)->check($this->pluralModelName . '.' . $ability . '.' . PermissionScopeEnum::ALL()->label)) {
             return true;
@@ -62,8 +62,12 @@ class ModelPolicy {
             
             $permissableDuties = $this->authorizer->getPermissableDuties();
 
-            $permissableModels = new Collection($permissableDuties->$relationToDuties);
-            
+            if ($relationFromDuties === 'duties') {
+                $permissableModels = $permissableDuties;
+            } else {
+                $permissableModels = $permissableDuties->load($relationFromDuties)->pluck($relationFromDuties)->flatten();
+            }
+
             if ($permissableModels->contains($model)) {
                 return true;
             };
@@ -79,9 +83,20 @@ class ModelPolicy {
                 ->pluck('id'))
                 ->get();
 
-            $padaliniaiIntersect = $model->load($padalinysRelation)->$padalinysRelation->intersect($permissablePadaliniai);
-            
-            if ($padaliniaiIntersect->isNotEmpty()) {
+            $modelPadaliniai = $model->load($padalinysRelation)->$padalinysRelation;
+
+            $modelCollection = new Collection();
+
+            if ($modelPadaliniai instanceof Model) {
+                $modelCollection->push($modelPadaliniai);
+            }
+
+            if ($modelPadaliniai instanceof Collection) {
+                $modelCollection = $modelPadaliniai;
+            }
+
+            // final intersection check
+            if ($modelCollection->intersect($permissablePadaliniai)->isNotEmpty()) {
                 return true;
             };
         }

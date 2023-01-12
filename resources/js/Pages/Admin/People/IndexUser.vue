@@ -13,13 +13,11 @@
 </template>
 
 <script setup lang="tsx">
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+
 import AsideHeader from "@/Components/AsideHeaders/AsideHeaderContacts.vue";
 import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
 
-defineOptions({
-  layout: AdminLayout,
-});
+
 
 defineProps<{
   users: PaginatedModels<App.Entities.User>;

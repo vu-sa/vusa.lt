@@ -14,11 +14,9 @@
 
 <script setup lang="tsx">
 import { DataTableColumns } from "naive-ui";
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+
 import AsideHeader from "@/Components/AsideHeaders/AsideHeaderContent.vue";
 import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
-
-defineOptions({ layout: AdminLayout });
 
 defineProps<{
   mainPages: PaginatedModels<App.Entities.MainPage>;

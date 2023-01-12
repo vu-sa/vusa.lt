@@ -167,14 +167,6 @@
   </FadeTransition>
 </template>
 
-<script lang="ts">
-import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
-
-export default {
-  layout: PublicLayout,
-};
-</script>
-
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
 import {
@@ -185,7 +177,7 @@ import {
   PeopleTeam28Regular,
 } from "@vicons/fluent";
 import {
-  CountdownProps,
+  type CountdownProps,
   NButton,
   NCountdown,
   NDivider,

@@ -67,17 +67,11 @@ import {
 import { computed, ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 
-
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import RelationshipForm from "@/Components/AdminForms/RelationshipForm.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
-
-defineOptions({
-  layout: AdminLayout,
-});
 
 const props = defineProps<{
   relationship: App.Entities.Relationship;

@@ -38,13 +38,7 @@
   </div>
 </template>
 
-<script lang="ts">
-import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
 
-export default {
-  layout: PublicLayout,
-};
-</script>
 
 <script setup lang="ts">
 import { Link } from "@inertiajs/inertia-vue3";

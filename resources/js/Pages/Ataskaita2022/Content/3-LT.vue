@@ -1397,7 +1397,7 @@ import {
   NTimeline,
   NTimelineItem,
 } from "naive-ui";
-import Planas from "@/Pages/Public/Ataskaita2022/3-Planas.vue";
+import Planas from "@/Pages/Ataskaita2022/3-Planas.vue";
 </script>
 
 <style scoped>

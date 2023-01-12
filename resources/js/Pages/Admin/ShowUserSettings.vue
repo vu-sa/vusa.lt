@@ -36,12 +36,7 @@
 import { trans as $t } from "laravel-vue-i18n";
 import { NCard } from "naive-ui";
 
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-
-defineOptions({
-  layout: AdminLayout,
-});
 
 defineProps<{
   user: App.Entities.User;

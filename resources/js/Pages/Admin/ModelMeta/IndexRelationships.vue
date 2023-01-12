@@ -10,17 +10,12 @@
 </template>
 
 <script setup lang="ts">
-import { DataTableColumns } from "naive-ui";
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
+import type { DataTableColumns } from "naive-ui";
 
 defineProps<{
   relationships: PaginatedModels<App.Entities.Relationship>;
 }>();
-
-defineOptions({
-  layout: AdminLayout,
-});
 
 const canUseRoutes = {
   create: true,

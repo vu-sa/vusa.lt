@@ -10,14 +10,6 @@
   </PageContent>
 </template>
 
-<script lang="ts">
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
-
-export default {
-  layout: AdminLayout,
-};
-</script>
-
 <script setup lang="ts">
 import CalendarForm from "@/Components/AdminForms/CalendarForm.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";

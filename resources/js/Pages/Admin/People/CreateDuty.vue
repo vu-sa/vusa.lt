@@ -12,14 +12,9 @@
 </template>
 
 <script setup lang="tsx">
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import DutyForm from "@/Components/AdminForms/DutyForm.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
-
-defineOptions({
-  layout: AdminLayout,
-});
 
 defineProps<{
   dutyTypes: App.Entities.Type[];
@@ -32,7 +27,7 @@ const duty = {
   email: null,
   institution: {},
   type: null,
-  attributes: {
+  extra_attributes: {
     en: {
       name: "",
       description: "",

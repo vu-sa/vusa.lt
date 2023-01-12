@@ -263,11 +263,6 @@
   <!-- <NDivider /> -->
 </template>
 
-<script lang="ts">
-import { createDiscreteApi } from "naive-ui";
-const { message } = createDiscreteApi(["message"]);
-</script>
-
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
 import { Calendar, PopoverRow } from "v-calendar";
@@ -285,7 +280,6 @@ import {
   darkTheme,
 } from "naive-ui";
 import { ref } from "vue";
-
 
 import CardModal from "@/Components/Modals/CardModal.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";

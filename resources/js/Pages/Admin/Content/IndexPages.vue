@@ -17,15 +17,9 @@ import { DataTableColumns } from "naive-ui";
 import { h, ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
 
-
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
 import AsideHeader from "@/Components/AsideHeaders/AsideHeaderContent.vue";
 import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
-
-defineOptions({
-  layout: AdminLayout,
-});
 
 defineProps<{
   pages: PaginatedModels<App.Entities.Page[]>;

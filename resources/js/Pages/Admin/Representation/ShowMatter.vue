@@ -67,7 +67,7 @@ import { computed, ref } from "vue";
 import { useStorage } from "@vueuse/core";
 
 import AdminBreadcrumbDisplayer from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+
 import CardModal from "@/Components/Modals/CardModal.vue";
 import DoingsTabPane from "@/Components/TabPaneContent/DoingsTabPane.vue";
 import GoalCard from "@/Components/Cards/QuickContentCards/GoalCard.vue";
@@ -75,8 +75,6 @@ import MatterForm from "@/Components/AdminForms/MatterForm.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import ShowActivityLog from "@/Components/Buttons/ActivityLogButton.vue";
-
-defineOptions({ layout: AdminLayout });
 
 const props = defineProps<{
   matter: App.Entities.Matter;

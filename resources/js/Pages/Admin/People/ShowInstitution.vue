@@ -189,7 +189,7 @@ import { useStorage } from "@vueuse/core";
 
 import { documentTemplate } from "@/Composables/someTypes";
 import AdminBreadcrumbDisplayer from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+
 import FileSelectDrawer from "@/Components/SharepointFileManager/FileDrawer.vue";
 import InstitutionAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import InstitutionCard from "@/Components/Cards/InstitutionCard.vue";
@@ -200,8 +200,6 @@ import ModelsDocumentViewer from "@/Components/SharepointFileManager/ModelsDocum
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import ShowActivityLog from "@/Components/Buttons/ActivityLogButton.vue";
-
-defineOptions({ layout: AdminLayout });
 
 const props = defineProps<{
   doingTypes: any;

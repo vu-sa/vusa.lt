@@ -142,6 +142,8 @@ class RoleController extends ResourceController
             return back()->with('info', 'Negalima ištrinti šios rolės.');
         }
 
+        $this->clearCacheforRoleUsers($role);
+
         $role->delete();
 
         return back()->with('success', 'Rolė ištrinta.');

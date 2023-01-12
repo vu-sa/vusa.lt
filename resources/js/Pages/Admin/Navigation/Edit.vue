@@ -47,15 +47,6 @@
   </PageContent>
 </template>
 
-<script lang="ts">
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
-
-export default {
-  components: { NCard },
-  layout: AdminLayout,
-};
-</script>
-
 <script setup lang="ts">
 import { NCard, NInput } from "naive-ui";
 import { reactive } from "vue";

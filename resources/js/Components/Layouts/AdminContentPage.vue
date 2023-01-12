@@ -37,8 +37,8 @@
     class="mt-4 mb-12 grid max-w-7xl grid-flow-row-dense grid-cols-[1fr_auto] gap-x-8 lg:grid-flow-col"
   >
     <FadeTransition appear
-      ><main class="col-span w-full overflow-visible">
-        <slot /></main
+      ><div class="col-span w-full overflow-visible">
+        <slot /></div
     ></FadeTransition>
     <slot name="aside-card"></slot>
   </div>
@@ -49,7 +49,6 @@ import { AddCircle32Regular, ArrowCircleLeft32Regular } from "@vicons/fluent";
 import { Head, Link } from "@inertiajs/inertia-vue3";
 import { NDivider, NIcon } from "naive-ui";
 import { computed } from "vue";
-
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 

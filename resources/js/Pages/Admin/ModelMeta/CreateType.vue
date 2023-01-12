@@ -11,14 +11,12 @@
 </template>
 
 <script setup lang="tsx">
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import TypeForm from "@/Components/AdminForms/TypeForm.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
-defineOptions({
-  layout: AdminLayout,
-});
+
 
 defineProps<{
   contentTypes: Record<string, any>[];

@@ -53,7 +53,7 @@ import { computed, ref } from "vue";
 
 import ActivityLogButton from "@/Components/Buttons/ActivityLogButton.vue";
 import AdminBreadcrumbDisplayer from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+
 import CardModal from "@/Components/Modals/CardModal.vue";
 import FilterButtonGroup from "@/Components/Buttons/FilterButtonGroup.vue";
 import GoalForm from "@/Components/AdminForms/GoalForm.vue";
@@ -61,10 +61,6 @@ import MatterCard from "@/Components/Cards/MatterCard.vue";
 import ModelChip from "@/Components/Chips/ModelChip.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-
-defineOptions({
-  layout: AdminLayout,
-});
 
 const props = defineProps<{
   goal: App.Entities.Goal;

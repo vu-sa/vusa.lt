@@ -4,9 +4,9 @@
       IMPLEMENTATION OF VU SR STRATEGIC GUIDELINES FOR ACTIVITIES 2021-2022
     </h2>
     <NDivider></NDivider>
-    <h3 class="text-center mb-4">STRATEGIC OBJECTIVES OF VU SR</h3>
+    <h3 class="mb-4 text-center">STRATEGIC OBJECTIVES OF VU SR</h3>
     <NDivider></NDivider>
-    <h4 class="text-center font-bold text-2xl">
+    <h4 class="text-center text-2xl font-bold">
       1. Members of the Vilnius University community support the idea of freeing
       up 60 credits.
     </h4>
@@ -46,7 +46,7 @@
     <NDivider></NDivider>
     <!-- 2 -->
     <section>
-      <h4 class="text-center font-bold text-2xl">
+      <h4 class="text-center text-2xl font-bold">
         2. Vilnius University community is aware of the experiences and needs of
         individuals with individual needs and is able to respond to them.
       </h4>
@@ -88,7 +88,7 @@
     <h3 class="text-center">Goals set in VU SR divisions</h3>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         3. On 1st of April 2022, an analysis of the compulsory subjects of two
         (geography and chemistry) study programs of the first cycle of studies
         were carried out.
@@ -120,7 +120,7 @@
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         4. By 30th of June 2022, VU EVAF lecturers know and use convenient and
         student-inclusive methods, therefore, at least 70% of the students will
         be able to use them. Students who have completed surveys are satisfied
@@ -152,7 +152,7 @@
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         5. On 30th of June 2022, the academic community of VU EVAF knows and
         adheres to the description of the procedure for preparing, defending,
         evaluating and storing written works of VU EVAF Students.
@@ -189,7 +189,7 @@
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         6. By 1st of May 2022, a plan for the renewal of laboratory work at the
         Faculty of Physics of Vilnius University has been prepared.
       </h4>
@@ -220,7 +220,7 @@
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         7. On 1st of September 2022, the implementation of the academic
         integration plan for VU FF Master’s first-year students who have
         completed bachelor's studies in other VU departments/universities is
@@ -261,7 +261,7 @@
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         8. During the 2021-2022 academic year, VU FLF is informed about the
         importance of an open and safe emotional environment, where
         student-teacher relations are based on mutual respect and community
@@ -289,7 +289,7 @@
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         9. On 15th of June 2022, on the basis of the document defining the
         principles of scheduling adopted by VU FLF, schedules of at least 20% of
         tier Bachelors and Marsters program groups have been drawn up.
@@ -316,7 +316,7 @@
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         10. By 1st of July 2022, the reasons for poor communication with
         students by VU FSF lecturers have been clarified and described.
       </h4>
@@ -348,7 +348,7 @@
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         11. By 1st of September 2022, the lists of elective subjects of at least
         two students of the 1st (bachelor's) cycle programs at VU GMC (not in
         line with previous semesters) increase by at least 1 new or already
@@ -387,7 +387,7 @@
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         12. The topics specified in the description of the module (subject) of
         the Study Introduction (Cultural history and anthropology and History
         Study Programs) updated by 1 July 2022 are detailed, correspond to the
@@ -415,7 +415,7 @@
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         13. By 1st of July 2022, the process of teaching foreign subjects of a
         specialty provides the student with the abilities to communicate in
         writing and orally in academic, social and professional activities.
@@ -446,7 +446,7 @@
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         By 1st of July 2022, according to the system developed by VU SA KF and
         VU KF student representatives, at least 6 1st and 2nd cycle study
         programs have been prepared and at least 75% implemented the annual
@@ -490,7 +490,7 @@
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         15. On 30th of April 2022, more than 85% of VU KnF students would
         recommend studying at VU.
       </h4>
@@ -542,7 +542,7 @@
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         16. On 1st of July 2022, VU SA KnF implemented initiatives that respond
         to the vision of the green university.
       </h4>
@@ -576,7 +576,7 @@
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         17. On 1st of July 2022, foreign students of VU MF feel full members of
         the community and know and receive relevant information in a timely
         manner.
@@ -612,7 +612,7 @@
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         18. On 30th of June 2022, an electronicized system for assessing the
         practical skills acquired during the internship registration and
         internment was developed.
@@ -630,7 +630,7 @@
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         19. On 30th of April 2022, at least 3 new initiatives connecting the VU
         MIF community were implemented.
       </h4>
@@ -677,7 +677,7 @@
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         20. On 1st of July 2022, representatives of students of each VU MIF SPC
         have raised problems relevant to the improvement of their SP, of which
         at least 1 has been solved by the SPC.
@@ -706,7 +706,7 @@
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         21. On 1st of July 2022, the scope of reports of professional
         practitioners of at least 1 VU ŠA 1st cycle study programs has been
         adjusted, reducing the scope of each task.
@@ -737,7 +737,7 @@
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         22. On 29th of March 2022, the list of members of VU SA ŠA includes at
         least 27 members.
       </h4>
@@ -768,7 +768,7 @@
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         23. On 2nd of May 2022, at least 5 initiatives to develop a culture of
         academic literacy have been organized at VU TF.
       </h4>
@@ -810,7 +810,7 @@
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         24. On 11th of April 2022, the evaluation sections of at least 10
         full-time subjects of the I-VII semesters of law studies at VU TF are
         detailed and approved by the SPC.
@@ -847,7 +847,7 @@
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         25. On 1st of July 2022, VU TSPMI Master's students are given the
         opportunity to choose an additional foreign language in the form of
         non-study program subjects and 70% of the total number of students. They
@@ -877,7 +877,7 @@
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         26. On 1st of July 2022, at least 2 proactive measures to improve the
         psychosocial environment of VU TSPMI are in operation and at least 15%
         of VU TSPMI community members have used them.
@@ -910,7 +910,7 @@
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         27. On 30th of September 2022, at least 3 scientific articles of VU VM
         students will be published in the media.
       </h4>
@@ -951,7 +951,7 @@ import {
   NTimeline,
   NTimelineItem,
 } from "naive-ui";
-import Planas from "@/Pages/Public/Ataskaita2022/3-Planas.vue";
+import Planas from "@/Pages/Ataskaita2022/3-Planas.vue";
 </script>
 
 <style scoped>

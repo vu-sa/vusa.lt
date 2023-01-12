@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Goal;
 use App\Http\Controllers\Controller as Controller;
 use App\Http\Controllers\ResourceController;
+use App\Services\ModelIndexer;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -19,13 +20,10 @@ class GoalController extends ResourceController
     {
         $this->authorize('viewAny', [Goal::class, $this->authorizer]);
 
-        $search = request()->input('search');
+        $indexer = new ModelIndexer();
 
-        $goals = Goal::when(!request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
-            $query->where('padalinys_id', '=', request()->user()->padalinys()->id);
-        })->when(!is_null($search), function ($query) use ($search) {
-            $query->where('name', 'like', "%{$search}%")->orWhere('short_name', 'like', "%{$search}%")->orWhere('alias', 'like', "%{$search}%");
-        })->paginate(20);
+        $search = request()->input('search');
+        $goals = $indexer->execute(Goal::class, $search, 'name', $this->authorizer, null);
 
         return Inertia::render('Admin/Representation/IndexGoal', [
             'goals' => $goals,

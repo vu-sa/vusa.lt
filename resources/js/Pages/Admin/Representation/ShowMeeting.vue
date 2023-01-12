@@ -137,7 +137,7 @@ import { formatStaticTime } from "@/Utils/IntlTime";
 import AdminBreadcrumbDisplayer, {
   type BreadcrumbOption,
 } from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
+
 import CardModal from "@/Components/Modals/CardModal.vue";
 import CommentTipTap from "@/Components/TipTap/CommentTipTap.vue";
 import CommentViewer from "@/Components/Comments/CommentViewer.vue";
@@ -151,10 +151,6 @@ import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import ShowActivityLog from "@/Components/Buttons/ActivityLogButton.vue";
 import SingleTask from "@/Components/Tasks/SingleTask.vue";
 import StatusTag from "@/Components/Tags/StatusTag.vue";
-
-defineOptions({
-  layout: AdminLayout,
-});
 
 const props = defineProps<{
   meeting: App.Entities.Meeting;

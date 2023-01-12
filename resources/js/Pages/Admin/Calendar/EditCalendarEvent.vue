@@ -12,14 +12,6 @@
   </PageContent>
 </template>
 
-<script lang="ts">
-import AdminLayout from "@/Components/Layouts/AdminLayout.vue";
-
-export default {
-  layout: AdminLayout,
-};
-</script>
-
 <script setup lang="ts">
 import { ref } from "vue";
 
