@@ -1,89 +1,90 @@
 <template>
-  <div
+  <Link
+    :href="notification.data.object.url"
     class="flex max-w-sm items-center gap-2 rounded-sm p-2 text-zinc-700 transition hover:bg-zinc-200/80 dark:text-zinc-50 dark:hover:bg-zinc-800/80"
   >
     <NIcon :component="People24Regular" />
-    <div class="w-full">
-      <p class="text-xs text-zinc-700 dark:text-zinc-300">
-        <component
-          :is="getNotificationComponent(notification.type)"
-          :data="notification.data"
-        />
-      </p>
+    <div
+      v-if="notificationType"
+      class="w-full text-xs text-zinc-700 dark:text-zinc-300"
+    >
+      <component
+        :is="getNotificationComponent(notificationType)"
+        :data="notification.data"
+      />
       <p class="text-xs text-zinc-500 dark:text-zinc-400">
-        {{ formatRelativeTime(notification.created_at) }}
+        {{ new Date(notification.created_at) }}
       </p>
     </div>
     <div class="flex flex-col gap-2">
-      <Link
-        :href="
-          route(
-            notification.data.route['routeName'],
-            notification.data.route['model']
-          )
-        "
-      >
-        <NButton v-if="notification.data.route" size="tiny" tertiary circle>
-          <template #icon><NIcon :component="ArrowForward24Filled" /></template>
-        </NButton>
-      </Link>
-      <Link
-        method="post"
-        :href="route('notifications.markAsRead', notification.id)"
-      >
-        <NButton
-          size="tiny"
-          tertiary
-          circle
-          @click="$emit('markAsRead', notification.id)"
-        >
-          <template #icon><NIcon :component="Checkmark24Filled" /></template>
-        </NButton>
-      </Link>
+      <NButton size="tiny" tertiary circle @click.stop="handleClick">
+        <template #icon><NIcon :component="Checkmark24Filled" /></template>
+      </NButton>
     </div>
-  </div>
+  </Link>
 </template>
 
 <script setup lang="ts">
-import {
-  ArrowForward24Filled,
-  Checkmark24Filled,
-  People24Regular,
-} from "@vicons/fluent";
+import { Checkmark24Filled, People24Regular } from "@vicons/fluent";
 import { Link } from "@inertiajs/inertia-vue3";
 import { NButton, NIcon } from "naive-ui";
 import { defineAsyncComponent } from "vue";
+import { useAxios } from "@vueuse/integrations/useAxios";
 
-import { formatRelativeTime } from "@/Utils/IntlTime";
+export type NotificationData = {
+  object: {
+    modelClass: string;
+    name: string | null;
+    url: string;
+  };
+  subject: {
+    image: string;
+    modelClass: string;
+    name: string;
+  };
+  text: string;
+};
 
-defineProps<{
-  notification: Record<string, any>;
+const props = defineProps<{
+  notification: App.Entities.Notification<NotificationData>;
 }>();
 
-defineEmits<{ (event: "markAsRead", id: number): void }>();
+const emit = defineEmits<{
+  (event: "markAsRead", id: string): void;
+  (event: "hidePopover"): void;
+}>();
 
-const MemberRegistered = defineAsyncComponent(
-  () =>
-    import("@/Components/Notifications/NotificationTypes/MemberRegistered.vue")
-);
+const notificationType = props.notification.type.split("\\").pop();
 
-const CommentNotification = defineAsyncComponent(
-  () =>
-    import(
-      "@/Components/Notifications/NotificationTypes/CommentNotification.vue"
-    )
-);
+const handleClick = async () => {
+  let { execute } = useAxios(
+    route("notifications.markAsRead", props.notification.id),
+    { method: "post" },
+    { immediate: false }
+  );
+
+  await execute();
+
+  emit("markAsRead", props.notification.id);
+};
+
+const notificationComponents = {
+  MemberRegistered: defineAsyncComponent(
+    () => import("./NotificationTypes/MemberRegistered.vue")
+  ),
+  ModelCommented: defineAsyncComponent(
+    () => import("./NotificationTypes/ModelCommented.vue")
+  ),
+};
 
 const getNotificationComponent = (type: string) => {
-  console.log(type);
-
   switch (type) {
-    case "App\\Notifications\\MemberRegistered":
-      return MemberRegistered;
-    case "App\\Notifications\\CommentNotification":
-      return CommentNotification;
+    case "MemberRegistered":
+      return notificationComponents.MemberRegistered;
+    case "CommentNotification":
+      return notificationComponents.ModelCommented;
     default:
-      return MemberRegistered;
+      return notificationComponents.ModelCommented;
   }
 };
 </script>

@@ -15,8 +15,6 @@ class MeetingPolicy extends ModelPolicy
 {
     use HandlesAuthorization;
 
-    
-
     public function __construct()
     {
         $this->pluralModelName = Str::plural(ModelEnum::MEETING()->label);

@@ -12,6 +12,7 @@
 <script setup lang="tsx">
 import type { DataTableColumns } from "naive-ui";
 
+import { formatStaticTime } from "@/Utils/IntlTime";
 import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
 
 defineProps<{
@@ -40,6 +41,13 @@ const columns: DataTableColumns<App.Entities.Meeting> = [
     title: "Pradžios laikas",
     key: "start_time",
     minWidth: 200,
+    render(row) {
+      return formatStaticTime(row.start_time * 1000, {
+        year: "numeric",
+        month: "long",
+        day: "2-digit",
+      });
+    },
   },
 ];
 </script>

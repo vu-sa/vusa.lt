@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Pivots\AgendaItem;
+use App\Models\Traits\HasComments;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,7 +14,7 @@ use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Meeting extends Model
 {
-    use HasFactory, HasUlids, HasRelationships, LogsActivity, SoftDeletes;
+    use HasFactory, HasComments, HasUlids, HasRelationships, LogsActivity, SoftDeletes;
 
     protected $guarded = [];
 
@@ -54,5 +55,15 @@ class Meeting extends Model
     public function comments()
     {
         return $this->morphMany(Comment::class, 'commentable');
+    }
+
+    public function users()
+    {
+        return $this->hasManyDeepFromRelations($this->institutions(), (new Institution)->users());
+    }
+
+    public function padaliniai()
+    {
+        return $this->hasManyDeepFromRelations($this->institutions(), (new Institution)->padalinys());
     }
 }

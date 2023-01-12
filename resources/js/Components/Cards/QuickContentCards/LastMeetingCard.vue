@@ -55,13 +55,15 @@ const props = defineProps<{
   lastMeeting?: App.Entities.Meeting;
 }>();
 
-const daysDifference = props.lastMeeting
-  ? getDaysDifference(props.lastMeeting.start_time * 1000)
-  : undefined;
+const daysDifference = computed(() => {
+  return props.lastMeeting
+    ? getDaysDifference(props.lastMeeting.start_time * 1000)
+    : undefined;
+});
 
 // check if daysDifference is in future
 const lastMeetinginFuture = computed(() => {
-  if (daysDifference === undefined) return undefined;
-  return daysDifference < 0;
+  if (daysDifference.value === undefined) return undefined;
+  return daysDifference.value < 0;
 });
 </script>

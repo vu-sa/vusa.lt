@@ -55,10 +55,12 @@ import TipTapLink from "@tiptap/extension-link";
 
 import Icons from "@/Types/Icons/regular";
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
+import type { ModelEnum } from "@/Types/enums";
 
 const props = defineProps<{
   text: string;
-  contentModel: Record<string, any>;
+  commentable: Record<string, any>;
+  modelName: ModelEnum;
 }>();
 
 const emit = defineEmits(["update:text"]);
@@ -94,8 +96,8 @@ const submitComment = (user: unknown) => {
   Inertia.post(
     route("users.comments.store", user.id),
     {
-      commentable_type: props.contentModel.type,
-      commentable_id: props.contentModel.id,
+      commentable_type: props.modelName,
+      commentable_id: props.commentable.id,
       comment: editor.value?.getHTML(),
       route: route().current(),
     },
@@ -103,6 +105,9 @@ const submitComment = (user: unknown) => {
       preserveScroll: true,
       onSuccess: () => {
         editor.value?.chain().focus().setContent("").run();
+        loading.value = false;
+      },
+      onError: () => {
         loading.value = false;
       },
     }

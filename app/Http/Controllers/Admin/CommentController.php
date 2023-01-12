@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\ModelEnum;
 use App\Http\Controllers\Controller as Controller;
 use App\Models\Comment;
 use App\Models\Doing;
@@ -9,6 +10,8 @@ use App\Models\User;
 use App\Events\UserComments;
 use App\Http\Controllers\ResourceController;
 use Illuminate\Http\Request;
+use Spatie\Enum\Laravel\Rules\EnumRule;
+use Illuminate\Support\Str;
 
 class CommentController extends ResourceController
 {
@@ -29,10 +32,10 @@ class CommentController extends ResourceController
      * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function create(User $user)
-    {
-        $this->authorize('create', [Comment::class, $this->authorizer]);
-    }
+    // public function create(User $user)
+    // {
+    //     $this->authorize('create', [Comment::class, $this->authorizer]);
+    // }
 
     /**
      * Store a newly created resource in storage.
@@ -44,20 +47,19 @@ class CommentController extends ResourceController
     public function store(Request $request, User $user)
     {
         $this->authorize('create', [Comment::class, $this->authorizer]);
-        
-        // check if request commentable type is App\Models\Doing
-        if ($request->commentable_type != 'App\Models\Doing') {
-            return redirect()->back()->with('error', 'Įvyko klaida');
-        } 
 
-        $model = $request->commentable_type::find($request->commentable_id);
+        $validated = $request->validate([
+            'commentable_type' => [new EnumRule(ModelEnum::class), 'required'],
+            'commentable_id' => 'required|ulid',
+            'comment' => 'required|string',
+            'route' => 'nullable|string'
+        ]);
 
-        $model->addComment($request->comment, $user);
+        $modelClass = 'App\\Models\\' . Str::ucfirst($validated['commentable_type']);
 
-        // dispatch event
-        UserComments::dispatch($user, $model, $request->route);
+        $model = $modelClass::find($request->commentable_id);
 
-        // $commenter, $modelCommentedOn, $route, $parentModelId = null
+        $model->comment($request->comment);
 
         return redirect()->back()->with('success', 'Komentaras pridėtas.');
     }

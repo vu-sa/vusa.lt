@@ -132,9 +132,10 @@ import { contentTypeOptions, documentTemplate } from "@/Composables/someTypes";
 import { useStorage } from "@vueuse/core";
 import AdminBreadcrumbDisplayer from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 
+import ActivityLogButton from "@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import CommentTipTap from "@/Components/TipTap/CommentTipTap.vue";
-import CommentViewer from "@/Components/Comments/CommentViewer.vue";
+import CommentViewer from "@/Features/Admin/CommentViewer/CommentViewer.vue";
 import DoingForm from "@/Components/AdminForms/DoingForm.vue";
 import FileButton from "@/Components/SharepointFileManager/FileButton.vue";
 import FileSelectDrawer from "@/Components/SharepointFileManager/FileDrawer.vue";
@@ -142,7 +143,6 @@ import FileUploader from "@/Components/SharepointFileManager/FileUploader.vue";
 import FileUploaderBasicButton from "@/Components/SharepointFileManager/FileUploaderBasicButton.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import ActivityLogButton from "@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue";
 import SingleTask from "@/Components/Tasks/SingleTask.vue";
 import StatusTag from "@/Components/Tags/StatusTag.vue";
 

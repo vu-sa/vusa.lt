@@ -94,7 +94,8 @@
             <h2>Komentarai</h2>
             <CommentTipTap
               v-model:text="currentCommentField"
-              :content-model="contentModel"
+              :commentable="meeting"
+              :model-name="ModelEnum.MEETING"
             />
             <CommentViewer :comments="meeting.comments" />
           </NCard>
@@ -132,9 +133,11 @@ import AdminBreadcrumbDisplayer, {
   type BreadcrumbOption,
 } from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 
+import { ModelEnum } from "@/Types/enums";
+import ActivityLogButton from "@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import CommentTipTap from "@/Components/TipTap/CommentTipTap.vue";
-import CommentViewer from "@/Components/Comments/CommentViewer.vue";
+import CommentViewer from "@/Features/Admin/CommentViewer/CommentViewer.vue";
 import FileButton from "@/Components/SharepointFileManager/FileButton.vue";
 import FileSelectDrawer from "@/Components/SharepointFileManager/FileDrawer.vue";
 import FileUploader from "@/Components/SharepointFileManager/FileUploader.vue";
@@ -142,7 +145,6 @@ import FileUploaderBasicButton from "@/Components/SharepointFileManager/FileUplo
 import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import ActivityLogButton from "@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue";
 import SingleTask from "@/Components/Tasks/SingleTask.vue";
 import StatusTag from "@/Components/Tags/StatusTag.vue";
 

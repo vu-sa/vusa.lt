@@ -27,6 +27,18 @@ declare namespace App.Entities {
 
   export type Navigation = App.Models.Navigation;
   export type News = App.Models.News;
+
+  export interface Notification<T> {
+    created_at: string;
+    data: T;
+    id: string;
+    notifiable_id: string;
+    notifiable_type: string;
+    read_at: string | null;
+    type: string;
+    updated_at: string;
+  }
+
   export type Padalinys = App.Models.Padalinys;
   export type Page = App.Models.Page;
   export type Permission = App.Models.Permission;

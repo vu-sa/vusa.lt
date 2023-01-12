@@ -18,7 +18,7 @@
           </div> -->
       <div class="mt-1 flex items-center gap-8">
         <TaskIndicatorButton class="mt-0.5" />
-        <NotificationBell class="mt-1" />
+        <NMessageProvider><NotificationBell class="mt-1" /></NMessageProvider>
         <UserAdminOptionsMenu />
       </div>
     </div>
@@ -72,6 +72,7 @@ import {
   NLayout,
   NLayoutContent,
   NLayoutSider,
+  NMessageProvider,
   NModal,
   useMessage,
   // NThemeEditor,

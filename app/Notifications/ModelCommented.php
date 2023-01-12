@@ -7,20 +7,24 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class CommentNotification extends Notification
+class ModelCommented extends Notification implements ShouldQueue
 {
     use Queueable;
+
+    protected string $text;
+    protected array $objectArray;
+    protected array $subjectArray;
 
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct($commenter, $modelCommentedOn, $route)
+    public function __construct(string $text, $objectArray = null, $subjectArray = null)
     {
-        $this->commenter = $commenter;
-        $this->modelCommentedOn = $modelCommentedOn;
-        $this->route = $route;
+        $this->text = $text;
+        $this->objectArray = $objectArray;
+        $this->subjectArray = $subjectArray;
     }
 
     /**
@@ -43,8 +47,9 @@ class CommentNotification extends Notification
     public function toArray($notifiable)
     {
         return [
-            'objectName' => $this->commenter->name,
-            'route' => ["routeName" => $this->route, "model" => $this->modelCommentedOn->id]
+            'text' => $this->text,
+            'object' => $this->objectArray,
+            'subject' => $this->subjectArray,
         ];
     }
 }

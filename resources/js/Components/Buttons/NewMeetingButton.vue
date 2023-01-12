@@ -18,12 +18,20 @@
       ></NButton>
     </template> -->
     <NSteps class="mb-8" :current="(current as number)" :status="currentStatus">
-      <NStep title="Pasirink klausimus"> </NStep>
-      <NStep title="Sukurk posėdžio įvykį"> </NStep>
+      <NStep title="Sukurk posėdį">
+        <template #icon>
+          <NIcon :component="Icons.MEETING"></NIcon>
+        </template>
+      </NStep>
+      <NStep title="Pasirink klausimus">
+        <template #icon>
+          <NIcon :component="Icons.MATTER"></NIcon>
+        </template>
+      </NStep>
     </NSteps>
     <FadeTransition mode="out-in">
       <NForm
-        v-if="current === 1"
+        v-if="current === 2"
         ref="mattersFormRef"
         :rules="mattersFormRules"
         :model="mattersForm"
@@ -50,7 +58,10 @@
           </SuggestionAlert>
         </FadeTransition>
         <NGrid cols="1">
-          <NFormItemGi path="idArray">
+          <NFormItemGi
+            v-if="existingMatterOptions[0]?.children?.length > 0"
+            path="idArray"
+          >
             <template #label>
               <div class="flex items-center gap-1">
                 <NIcon :component="Icons.MATTER" :depth="1"></NIcon>
@@ -124,7 +135,7 @@
         </NGrid>
       </NForm>
       <MeetingForm
-        v-else-if="current === 2"
+        v-else-if="current === 1"
         :institution="institution"
         :meeting="meetingTemplate"
         :matters-form="mattersForm"
@@ -163,6 +174,7 @@ import {
   NStep,
   NSteps,
   NTag,
+  type SelectGroupOption,
 } from "naive-ui";
 import { PeopleTeamAdd24Filled, Question24Regular } from "@vicons/fluent";
 import { computed, ref } from "vue";
@@ -196,6 +208,7 @@ const meetingTemplate = {
   //   (type: App.Entities.Type) => type.label === "Posėdis"
   // )?.value,
   status: "Sukurtas",
+  institution_id: props.institution.id,
   // datetime now YYYY-MM-DD HH:MM:SS and delimit T
   start_time: null,
 };
@@ -208,20 +221,22 @@ const mattersForm = useForm({
   institution_id: props.institution.id,
 });
 
-const existingMatterOptions = [
+const existingMatterOptions: Array<SelectGroupOption> = [
   {
     type: "group",
     label: "Esami klausimai",
     key: "group1",
-    children: props.institution.matters.map((matter: Record<string, any>) => {
-      return {
-        label: matter.title,
-        value: matter.id,
-      };
-    }),
+    children:
+      props.institution.matters?.map((matter: Record<string, any>) => {
+        return {
+          label: matter.title,
+          value: matter.id,
+        };
+      }) ?? [],
   },
 ];
 
+// wrap option into array
 const newMatterOptions = [
   {
     type: "group",

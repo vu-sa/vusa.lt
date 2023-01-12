@@ -52,7 +52,7 @@ export const formatStaticTime = (
     month: "numeric",
     day: "numeric",
   },
-  locale: "lt" | "en" = "lt"
+  locale: LocaleEnum = LocaleEnum.LT
 ) => {
   const time = new Intl.DateTimeFormat(locale, dateTimeOptions).format(
     timestamp
@@ -67,8 +67,6 @@ export const getDaysDifference = (timestamp: number) => {
   const daysDifference = Math.round(
     (now.getTime() - timestamp) / DAY_MILISECONDS
   );
-
-  console.log(now, new Date(timestamp), daysDifference);
 
   return daysDifference;
 };

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Meeting as Meeting;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\ResourceController;
+use App\Http\Requests\StoreMeetingRequest;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Services\MeetingService as MeetingService;
@@ -35,12 +36,12 @@ class MeetingController extends ResourceController
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
-    {
-        $this->authorize('create', [Meeting::class, $this->authorizer]);
+    // public function create()
+    // {
+    //     $this->authorize('create', [Meeting::class, $this->authorizer]);
 
-        return Inertia::render('Admin/Representation/CreateMeeting');
-    }
+    //     return Inertia::render('Admin/Representation/CreateMeeting');
+    // }
 
     /**
      * Store a newly created resource in storage.
@@ -48,22 +49,15 @@ class MeetingController extends ResourceController
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreMeetingRequest $request)
     {
-        $this->authorize('create', [Meeting::class, $this->authorizer]);
+        $meeting = Meeting::create($request->safe()->only('start_time'));
 
-        $validated = $request->validate([
-            'start_time' => 'required|integer',
-        ]);
+        $meeting->institutions()->attach($request->safe()->institution_id);
 
-        // convert timestamp to date
-        $validated['start_time'] = date('Y-m-d H:i:s', $validated['start_time'] / 1000);
-
-        $meeting = Meeting::create($validated);
-
-        if ($request->has('mattersForm')) {
-            MeetingService::storeAndAttachMattersToMeeting($request->mattersForm, $meeting);
-        }
+        // if ($request->has('mattersForm')) {
+        //     MeetingService::storeAndAttachMattersToMeeting($request->mattersForm, $meeting);
+        // }
 
         return back()->with('success', 'Posėdis sukurtas sėkmingai!');
     }
@@ -86,7 +80,7 @@ class MeetingController extends ResourceController
             $sharepointFiles = $graph->collectSharepointFiles($meeting->documents);
         }
         
-        $meeting->load('matters.institutions', 'tasks', 'activities.causer', 'comments');
+        $meeting->load('institutions', 'tasks', 'activities.causer', 'comments');
 
         // show meeting
         return Inertia::render('Admin/Representation/ShowMeeting', [

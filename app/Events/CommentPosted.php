@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Models\Comment;
 use App\Models\User;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
@@ -11,27 +12,22 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class UserComments
+class CommentPosted
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $commenter;
-    public $modelCommentedOn;
-    public $route;
+    public $comment;
     
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct(User $commenter, $modelCommentedOn, $route)
+    public function __construct(Comment $comment)
     {
-        $this->commenter = $commenter;
-        $this->modelCommentedOn = $modelCommentedOn;
-        $this->route = $route;
+        $this->comment = $comment;
     }
-
-
+    
     /**
      * Get the channels the event should broadcast on.
      *
