@@ -1,15 +1,19 @@
-import "./bootstrap";
-
 import { InertiaProgress } from "@inertiajs/progress";
 
 import { ZiggyVue } from "../../vendor/tightenco/ziggy/src/js/vue.js";
 import { createApp, h } from "vue";
 import { createInertiaApp } from "@inertiajs/inertia-vue3";
+import { defineAsyncComponent } from "vue";
 import { i18nVue } from "laravel-vue-i18n";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
 
-import AdminLayout from "./PersistentLayouts/PersistentAdminLayout.vue";
-import PublicLayout from "./PersistentLayouts/PersistentPublicLayout.vue";
+const AdminLayout = defineAsyncComponent(
+  () => import("./PersistentLayouts/PersistentAdminLayout.vue")
+);
+
+const PublicLayout = defineAsyncComponent(
+  () => import("./PersistentLayouts/PersistentPublicLayout.vue")
+);
 
 const appName =
   window.document.getElementsByTagName("title")[0]?.innerText || "Laravel";

@@ -53,7 +53,9 @@ import {
 } from "naive-ui";
 import { ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
+import { useWebNotification } from "@vueuse/core";
 import Icons from "@/Types/Icons/regular";
+import type { EventHook, UseWebNotificationOptions } from "@vueuse/core";
 
 import NotificationItem, {
   type NotificationData,
@@ -65,6 +67,7 @@ const notifications = ref(
 
 const message = useMessage();
 const notification = useNotification();
+const onWebNotificationClick = ref<EventHook | null>(null);
 
 const removeNotification = (id: number) => {
   if (!notifications.value) return;
@@ -87,5 +90,23 @@ window.Echo.private(
       return <NAvatar src={notificationSent.subject.image}></NAvatar>;
     },
   });
+
+  const options: UseWebNotificationOptions = {
+    title: notificationSent.text.replaceAll(/<\/?[^>]+(>|$)/gi, ""),
+    dir: "auto",
+    lang: usePage().props.value.locale,
+    renotify: true,
+    tag: "notification",
+    icon: notificationSent.subject.image,
+  };
+
+  const { isSupported, onClick, show } = useWebNotification(options);
+
+  if (isSupported.value) {
+    show();
+    onClick.on((evt: Event) => {
+      window.location.assign(notificationSent.object.url);
+    });
+  }
 });
 </script>
