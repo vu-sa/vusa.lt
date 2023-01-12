@@ -50,6 +50,20 @@ class ContactController extends ResourceController
     public function store(Request $request)
     {
         $this->authorize('create', [Contact::class, $this->authorizer]);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:contacts|unique:users',
+            'phone' => 'required|string|max:255',
+        ]);
+
+        $contact = Contact::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+        ]);
+
+        return redirect()->route('contacts.index')->with('success', 'Kontaktas sukurtas.');
     }
 
     /**
@@ -58,10 +72,10 @@ class ContactController extends ResourceController
      * @param  \App\Models\Contact  $contact
      * @return \Illuminate\Http\Response
      */
-    public function show(Contact $contact)
-    {
-        $this->authorize('view', [Contact::class, $contact, $this->authorizer]);
-    }
+    // public function show(Contact $contact)
+    // {
+    //     $this->authorize('view', [Contact::class, $contact, $this->authorizer]);
+    // }
 
     /**
      * Show the form for editing the specified resource.
@@ -88,6 +102,20 @@ class ContactController extends ResourceController
     public function update(Request $request, Contact $contact)
     {
         $this->authorize('update', [Contact::class, $contact, $this->authorizer]);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:contacts,email,' . $contact->id . ',id|unique:users,email,' . $contact->id . ',id',
+            'phone' => 'required|string|max:255',
+        ]);
+
+        $contact->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+        ]);
+
+        return redirect()->back()->with('success', 'Kontaktas atnaujintas.');
     }
 
     /**
@@ -99,5 +127,9 @@ class ContactController extends ResourceController
     public function destroy(Contact $contact)
     {
         $this->authorize('delete', [Contact::class, $contact, $this->authorizer]);
+
+        $contact->delete();
+
+        return redirect()->route('contacts.index')->with('success', 'Kontaktas ištrintas.');
     }
 }

@@ -7,12 +7,9 @@
 </template>
 
 <script setup lang="tsx">
-
 import ContactForm from "@/Components/AdminForms/ContactForm.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
-
-
 
 defineProps<{
   // duties: App.Entities.Duty[];
@@ -23,6 +20,6 @@ const contact = {
   email: "",
   phone: null,
   // duties: [],
-  profile_photo_path: null,
+  // profile_photo_path: null,
 };
 </script>

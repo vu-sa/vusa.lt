@@ -13,6 +13,12 @@ class Contact extends Model
 {
     use HasFactory, HasUlids, SoftDeletes, LogsActivity;
 
+    public $fillable = [
+        'name',
+        'email',
+        'phone',
+    ];
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()->logUnguarded()->logOnlyDirty();

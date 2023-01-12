@@ -13,7 +13,7 @@
     <span v-if="showName" class="ml-2"
       >{{ user.name }}
       <template v-if="showPadalinys"
-        >({{ user.padalinys ?? "Be padalinio" }})</template
+        >({{ user.padaliniai ?? "Be padalinio" }})</template
       ></span
     >
   </div>

@@ -24,7 +24,7 @@ import { NButton, NDivider, NIcon } from "naive-ui";
 import { ref } from "vue";
 
 import { formatRelativeTime } from "@/Utils/IntlTime";
-import ActivityLogItem from "@/Components/ActivityLogItem.vue";
+import ActivityLogItem from "@/Features/Admin/ActivityLog/ActivityLogItem.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
 

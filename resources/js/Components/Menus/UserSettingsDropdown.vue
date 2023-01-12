@@ -1,40 +1,31 @@
 <template>
   <NDropdown :options="options">
     <NButton text size="tiny">
-      <UserAvatar :size="28" show-padalinys :user="$page.props.auth.user" />
+      <UserAvatar :size="28" show-padalinys :user="$page.props.auth?.user" />
     </NButton>
   </NDropdown>
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
 import {
   DoorArrowRight28Regular,
   PersonSettings16Regular,
 } from "@vicons/fluent";
+import { type DropdownOption, NButton, NDropdown, NIcon } from "naive-ui";
 import { Inertia } from "@inertiajs/inertia";
-import { NButton, NDropdown, NIcon } from "naive-ui";
-import { h, ref } from "vue";
-
+import { ref } from "vue";
 
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
 
-import type { Component } from "vue";
-
 const loading = ref(false);
 
-const renderIcon = (icon: Component) => {
-  return () => {
-    return h(NIcon, null, {
-      default: () => h(icon),
-    });
-  };
-};
-
-const options = [
+const options: DropdownOption[] = [
   {
     label: "Nustatymai",
     key: "user-settings",
-    icon: renderIcon(PersonSettings16Regular),
+    icon() {
+      return <NIcon component={PersonSettings16Regular}></NIcon>;
+    },
     props: {
       onClick: () => {
         Inertia.visit(route("profile"));
@@ -44,7 +35,9 @@ const options = [
   {
     label: "Atsijungti",
     key: "logout",
-    icon: renderIcon(DoorArrowRight28Regular),
+    icon() {
+      return <NIcon component={DoorArrowRight28Regular}></NIcon>;
+    },
     props: {
       onClick: () => {
         loading.value = true;

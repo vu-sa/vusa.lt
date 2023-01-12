@@ -199,7 +199,7 @@ import MeetingsNeedingAttentionCard from "@/Components/Cards/QuickContentCards/M
 import ModelsDocumentViewer from "@/Components/SharepointFileManager/ModelsDocumentViewer.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import ShowActivityLog from "@/Components/Buttons/ActivityLogButton.vue";
+import ShowActivityLog from "@/Features/Admin/ActivityLog/ActivityLogButton.vue";
 
 const props = defineProps<{
   doingTypes: any;

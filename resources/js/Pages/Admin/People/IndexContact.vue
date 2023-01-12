@@ -13,11 +13,8 @@
 </template>
 
 <script setup lang="tsx">
-
 import AsideHeader from "@/Components/AsideHeaders/AsideHeaderContacts.vue";
 import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
-
-
 
 defineProps<{
   contacts: PaginatedModels<App.Entities.Contact>;

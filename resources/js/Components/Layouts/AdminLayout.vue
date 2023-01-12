@@ -103,8 +103,6 @@ const collapsed = useStorage("admin-menu-collapsed", false);
 const online = useOnline();
 const message = useMessage();
 
-const isThemeDark = ref(isDarkMode());
-
 const successMessage = computed(() => usePage().props.value.flash.success);
 const infoMessage = computed(() => usePage().props.value.flash.info);
 const errorMessage = computed(() => usePage().props.value.errors);

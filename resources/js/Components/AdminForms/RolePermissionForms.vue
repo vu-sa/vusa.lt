@@ -32,7 +32,7 @@ import { ModelEnum } from "@/Types/enums";
 import { pluralizeModels } from "@/Utils/String";
 import EntityDescription from "@/Components/EntityDescriptions/EntityDescription.vue";
 import Icons from "@/Types/Icons/regular";
-import PermissionTable from "@/Features/Admin/PermissionTable.vue";
+import PermissionTable from "@/Features/Admin/PermissionTable/PermissionTable.vue";
 
 const props = defineProps<{
   role: App.Entities.Role;

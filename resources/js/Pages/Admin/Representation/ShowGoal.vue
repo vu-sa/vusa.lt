@@ -51,7 +51,7 @@ import { Inertia } from "@inertiajs/inertia";
 import { NIcon } from "naive-ui";
 import { computed, ref } from "vue";
 
-import ActivityLogButton from "@/Components/Buttons/ActivityLogButton.vue";
+import ActivityLogButton from "@/Features/Admin/ActivityLog/ActivityLogButton.vue";
 import AdminBreadcrumbDisplayer from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 
 import CardModal from "@/Components/Modals/CardModal.vue";

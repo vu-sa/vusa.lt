@@ -47,7 +47,7 @@ import { NButton, NSpin } from "naive-ui";
 import { useForm } from "@inertiajs/inertia-vue3";
 
 import { CRUDEnum } from "@/Types/enums";
-import PermissionTableRow from "@/Features/Admin/PermissionTableRow.vue";
+import PermissionTableRow from "@/Features/Admin/PermissionTable/PermissionTableRow.vue";
 
 const props = defineProps<{
   permissions: string[];

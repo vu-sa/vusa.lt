@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="tsx">
-import { DataTableColumns } from "naive-ui";
+import type { DataTableColumns } from "naive-ui";
 
 import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
 
@@ -19,9 +19,9 @@ defineProps<{
 }>();
 
 const canUseRoutes = {
-  create: true,
+  create: false,
   show: true,
-  edit: true,
+  edit: false,
   destroy: true,
 };
 
@@ -31,10 +31,15 @@ const columns: DataTableColumns<App.Entities.Meeting> = [
     key: "institutions",
     minWidth: 200,
     render(row) {
-      return row.institutions
-        ?.map((institution) => institution.name)
-        .join(", ");
+      return row.institutions.length === 0
+        ? "Neturi institucijos"
+        : row.institutions?.map((institution) => institution.name).join(", ");
     },
+  },
+  {
+    title: "Pradžios laikas",
+    key: "start_time",
+    minWidth: 200,
   },
 ];
 </script>

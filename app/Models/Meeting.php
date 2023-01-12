@@ -38,7 +38,7 @@ class Meeting extends Model
 
     public function institutions()
     {
-        return $this->hasManyDeepFromRelations($this->matters(), (new Matter())->institution())->distinct();
+        return $this->belongsToMany(Institution::class);
     }
 
     public function documents()

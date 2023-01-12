@@ -74,7 +74,7 @@ import GoalCard from "@/Components/Cards/QuickContentCards/GoalCard.vue";
 import MatterForm from "@/Components/AdminForms/MatterForm.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import ShowActivityLog from "@/Components/Buttons/ActivityLogButton.vue";
+import ShowActivityLog from "@/Features/Admin/ActivityLog/ActivityLogButton.vue";
 
 const props = defineProps<{
   matter: App.Entities.Matter;

@@ -64,5 +64,3 @@ const isIndex = computed(() => {
   return route().current("*.index");
 });
 </script>
-
-<style></style>

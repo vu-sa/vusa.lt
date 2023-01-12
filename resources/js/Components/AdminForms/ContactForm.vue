@@ -37,12 +37,12 @@
         ></NTransfer>
       </NFormItemGi> -->
 
-      <NFormItemGi label="Nuotrauka" :span="2">
+      <!-- <NFormItemGi label="Nuotrauka" :span="2">
         <UploadImageButtons
           v-model="form.profile_photo_path"
           :path="'contacts'"
         ></UploadImageButtons>
-      </NFormItemGi>
+      </NFormItemGi> -->
     </NGrid>
 
     <div class="flex justify-end gap-2">
@@ -57,11 +57,11 @@
 </template>
 
 <script setup lang="ts">
-import { NForm, NFormItemGi, NGrid, NInput, NTransfer } from "naive-ui";
+import { NForm, NFormItemGi, NGrid, NInput } from "naive-ui";
 import { useForm } from "@inertiajs/inertia-vue3";
 
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
-import UploadImageButtons from "@/Components/Buttons/UploadImageButtons.vue";
+// import UploadImageButtons from "@/Components/Buttons/UploadImageButtons.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{

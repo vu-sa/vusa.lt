@@ -1,6 +1,6 @@
 <template>
-  <!-- v-show="mounted" -->
   <NConfigProvider
+    v-show="mounted"
     :theme="isThemeDark ? darkTheme : undefined"
     :theme-overrides="isThemeDark ? darkThemeOverrides : themeOverrides"
   >
@@ -18,13 +18,14 @@
 
 <script setup lang="tsx">
 import { NConfigProvider, NMessageProvider, darkTheme } from "naive-ui";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import Layout from "@/Components/Layouts/AdminLayout.vue";
 
 const isThemeDark = ref(isDarkMode());
+const mounted = ref(false);
 
 updateDarkMode(isThemeDark);
 
@@ -55,4 +56,8 @@ const darkThemeOverrides = {
     footerColor: "rgb(30 30 33)",
   },
 };
+
+onMounted(() => {
+  mounted.value = true;
+});
 </script>

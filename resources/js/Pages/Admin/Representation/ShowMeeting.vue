@@ -29,14 +29,9 @@
           @edit-click="showModal = true"
         ></MoreOptionsButton>
       </div>
-      <CardModal
-        v-model:show="showModal"
-        :title="`${$t('Redaguoti veiklą')} (${meeting.matters?.[0].title})`"
-        @close="showModal = false"
-      >
+      <CardModal v-model:show="showModal" @close="showModal = false">
         <MeetingForm
           :meeting="meeting"
-          :matter="meeting.matters?.[0]"
           :model-route="'meetings.update'"
           @success="showModal = false"
         ></MeetingForm>
@@ -81,7 +76,6 @@
               :button="FileUploaderBasicButton"
               :content-type-options="contentTypeOptions"
               :content-model="contentModel"
-              :related-object-name="meeting.matters?.[0].institutions?.[0].name"
             ></FileUploader>
           </NMessageProvider>
         </div>
@@ -148,7 +142,7 @@ import FileUploaderBasicButton from "@/Components/SharepointFileManager/FileUplo
 import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import ShowActivityLog from "@/Components/Buttons/ActivityLogButton.vue";
+import ShowActivityLog from "@/Features/Admin/ActivityLog/ActivityLogButton.vue";
 import SingleTask from "@/Components/Tasks/SingleTask.vue";
 import StatusTag from "@/Components/Tags/StatusTag.vue";
 
@@ -167,6 +161,10 @@ const currentMeetingsTabPane = useStorage(
   "Apie"
 );
 
+const mainInstitution = computed(() => {
+  return props.meeting.institutions?.[0] ?? "Be institucijos";
+});
+
 const updateMeetingsTabPane = (value) => {
   currentMeetingsTabPane.value = value;
 };
@@ -178,43 +176,45 @@ const contentModel = computed(() => ({
   modelTypes: props.meeting.types,
 }));
 
-const breadcrumbDropdownOptions: DropdownOption[] = [
-  {
-    label: () => (
-      <Link
-        href={route(
-          "institutions.show",
-          props.meeting.matters?.[0]?.institutions?.[0].id
-        )}
-      >
-        {props.meeting.matters?.[0]?.institutions?.[0].name}
-      </Link>
-    ),
-    icon: () => {
-      return <NIcon component={PeopleTeam24Filled}></NIcon>;
-    },
-  },
-];
+// const breadcrumbDropdownOptions: DropdownOption[] = [
+//   {
+//     label: () => (
+//       <Link
+//         href={route("institutions.show", props.meeting.institutions?.[0].id)}
+//       >
+//         {props.meeting.institutions?.[0].name}
+//       </Link>
+//     ),
+//     icon: () => {
+//       return <NIcon component={PeopleTeam24Filled}></NIcon>;
+//     },
+//   },
+// ];
 
 const breadcrumbOptions: BreadcrumbOption[] = [
   {
-    label: "...",
-    // icon: PeopleTeam24Filled,
-    dropdownOptions: breadcrumbDropdownOptions,
-  },
-  {
-    label: props.meeting.matters?.[0].title,
-    icon: Icons.MATTER,
+    label: mainInstitution.value.name,
+    icon: PeopleTeam24Filled,
     routeOptions: {
-      name: "matters.show",
+      name: "institutions.show",
       params: {
-        matter: props.meeting.matters?.[0].id,
+        institution: mainInstitution.value.id,
       },
     },
   },
-  {
-    label: props.meeting.start_time,
-    icon: Icons.MEETING,
-  },
+  // {
+  //   label: props.meeting.matters?.[0].title,
+  //   icon: Icons.MATTER,
+  //   routeOptions: {
+  //     name: "matters.show",
+  //     params: {
+  //       matter: props.meeting.matters?.[0].id,
+  //     },
+  //   },
+  // },
+  // {
+  //   label: props.meeting.start_time,
+  //   icon: Icons.MEETING,
+  // },
 ];
 </script>

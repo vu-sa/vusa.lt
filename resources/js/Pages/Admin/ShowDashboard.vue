@@ -49,13 +49,8 @@
 import { ExternalLinkSquareAlt } from "@vicons/fa";
 import { NButton, NIcon } from "naive-ui";
 
-//
 import InstitutionCard from "@/Components/Cards/InstitutionCard.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-
-// defineOptions({
-//   layout: AdminLayout,
-// });
 
 defineProps<{
   institutions: Record<string, any>[];

@@ -82,8 +82,8 @@ import { Inertia } from "@inertiajs/inertia";
 import { NCard, NIcon, NUpload, NUploadDragger } from "naive-ui";
 import { computed } from "vue";
 
-import FileButton from "@/Components/Buttons/FileButton.vue";
-import FolderButton from "@/Components/Buttons/FolderButton.vue";
+import FileButton from "@/Components/Buttons/Deprecated/FileButton.vue";
+import FolderButton from "@/Components/Buttons/Deprecated/FolderButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 
 // Declare props
