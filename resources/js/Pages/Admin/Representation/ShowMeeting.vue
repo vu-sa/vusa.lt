@@ -110,31 +110,18 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t } from "laravel-vue-i18n";
-import {
-  type DropdownOption,
-  NCard,
-  NIcon,
-  NMessageProvider,
-  NTabPane,
-  NTabs,
-  NTag,
-} from "naive-ui";
-import { Inertia } from "@inertiajs/inertia";
-import { Link } from "@inertiajs/inertia-vue3";
+import { NCard, NMessageProvider, NTabPane, NTabs, NTag } from "naive-ui";
 import { PeopleTeam24Filled } from "@vicons/fluent";
 import { computed, ref } from "vue";
 import { useStorage } from "@vueuse/core";
-import Icons from "@/Types/Icons/regular";
 
+import { ModelEnum } from "@/Types/enums";
 import { contentTypeOptions, documentTemplate } from "@/Composables/someTypes";
 import { formatStaticTime } from "@/Utils/IntlTime";
+import ActivityLogButton from "@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue";
 import AdminBreadcrumbDisplayer, {
   type BreadcrumbOption,
 } from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
-
-import { ModelEnum } from "@/Types/enums";
-import ActivityLogButton from "@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import CommentTipTap from "@/Components/TipTap/CommentTipTap.vue";
 import CommentViewer from "@/Features/Admin/CommentViewer/CommentViewer.vue";
@@ -146,7 +133,6 @@ import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import SingleTask from "@/Components/Tasks/SingleTask.vue";
-import StatusTag from "@/Components/Tags/StatusTag.vue";
 
 const props = defineProps<{
   meeting: App.Entities.Meeting;

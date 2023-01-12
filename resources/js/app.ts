@@ -6,6 +6,7 @@ import { ZiggyVue } from "../../vendor/tightenco/ziggy/src/js/vue.js";
 import { createApp, h } from "vue";
 import { createInertiaApp } from "@inertiajs/inertia-vue3";
 import { i18nVue } from "laravel-vue-i18n";
+import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
 
 import AdminLayout from "./PersistentLayouts/PersistentAdminLayout.vue";
 import PublicLayout from "./PersistentLayouts/PersistentPublicLayout.vue";
@@ -16,19 +17,24 @@ const appName =
 createInertiaApp({
   title: (title) => `${title} - ${appName}`,
   resolve: (name) => {
-    const pages = import.meta.glob("./Pages/**/*.vue", { eager: true });
-    const page = pages[`./Pages/${name}.vue`];
-    if (!page) {
-      return import("./Pages/NotFound.vue");
-    }
+    const page = resolvePageComponent(
+      `./Pages/${name}.vue`,
+      import.meta.glob("./Pages/**/*.vue")
+    );
 
-    if (name.startsWith("Admin/")) {
-      page.default.layout = AdminLayout;
-    }
+    page.then((module) => {
+      if (!module) {
+        return import("./Pages/NotFound.vue");
+      }
 
-    if (name.startsWith("Public/")) {
-      page.default.layout = PublicLayout;
-    }
+      if (name.startsWith("Admin/")) {
+        module.default.layout = AdminLayout;
+      }
+
+      if (name.startsWith("Public/")) {
+        module.default.layout = PublicLayout;
+      }
+    });
 
     return page;
   },

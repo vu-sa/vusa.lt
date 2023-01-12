@@ -18,7 +18,9 @@
           </div> -->
       <div class="mt-1 flex items-center gap-8">
         <TaskIndicatorButton class="mt-0.5" />
-        <NMessageProvider><NotificationBell class="mt-1" /></NMessageProvider>
+        <NNotificationProvider placement="bottom-right"
+          ><NMessageProvider><NotificationBell class="mt-1" /></NMessageProvider
+        ></NNotificationProvider>
         <UserAdminOptionsMenu />
       </div>
     </div>
@@ -74,6 +76,7 @@ import {
   NLayoutSider,
   NMessageProvider,
   NModal,
+  NNotificationProvider,
   useMessage,
   // NThemeEditor,
 } from "naive-ui";

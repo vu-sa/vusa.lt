@@ -235,13 +235,13 @@ declare namespace App.Models {
     institutions?: Array<App.Models.Institution> | null;
     documents?: Array<App.Models.SharepointDocument> | null;
     tasks?: Array<App.Models.Task> | null;
-    comments?: Array<App.Models.Comment> | null;
+    users?: any | null;
+    padaliniai?: any | null;
     matters_count?: number | null;
     agenda_items_count?: number | null;
     institutions_count?: number | null;
     documents_count?: number | null;
     tasks_count?: number | null;
-    comments_count?: number | null;
   }
 
   export interface Navigation {

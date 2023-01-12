@@ -40,26 +40,31 @@
   </NBadge>
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
 import {
+  NAvatar,
   NBadge,
   NButton,
   NDivider,
   NIcon,
   NPopover,
   useMessage,
+  useNotification,
 } from "naive-ui";
 import { ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
 import Icons from "@/Types/Icons/regular";
 
-import NotificationItem from "./NotificationItem.vue";
+import NotificationItem, {
+  type NotificationData,
+} from "./NotificationItem.vue";
 
 const notifications = ref(
   usePage().props.value.auth?.user?.unreadNotifications
 );
 
 const message = useMessage();
+const notification = useNotification();
 
 const removeNotification = (id: number) => {
   if (!notifications.value) return;
@@ -70,4 +75,17 @@ const removeNotification = (id: number) => {
 
   message.success("Komentaras pažymėtas kaip perskaitytas.");
 };
+
+window.Echo.private(
+  "App.Models.User." + usePage().props.value.auth?.user.id
+).notification((notificationSent: NotificationData) => {
+  notification.info({
+    content() {
+      return <div v-html={notificationSent.text}></div>;
+    },
+    avatar() {
+      return <NAvatar src={notificationSent.subject.image}></NAvatar>;
+    },
+  });
+});
 </script>

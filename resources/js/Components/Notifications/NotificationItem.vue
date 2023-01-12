@@ -1,7 +1,8 @@
 <template>
-  <Link
-    :href="notification.data.object.url"
+  <div
+    role="button"
     class="flex max-w-sm items-center gap-2 rounded-sm p-2 text-zinc-700 transition hover:bg-zinc-200/80 dark:text-zinc-50 dark:hover:bg-zinc-800/80"
+    @click="Inertia.visit(notification.data.object.url)"
   >
     <NIcon :component="People24Regular" />
     <div
@@ -21,11 +22,12 @@
         <template #icon><NIcon :component="Checkmark24Filled" /></template>
       </NButton>
     </div>
-  </Link>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { Checkmark24Filled, People24Regular } from "@vicons/fluent";
+import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
 import { NButton, NIcon } from "naive-ui";
 import { defineAsyncComponent } from "vue";

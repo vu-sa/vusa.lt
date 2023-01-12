@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -35,7 +36,7 @@ class ModelCommented extends Notification implements ShouldQueue
      */
     public function via($notifiable)
     {
-        return ['database'];
+        return ['database', 'broadcast'];
     }
 
     /**
@@ -51,5 +52,14 @@ class ModelCommented extends Notification implements ShouldQueue
             'object' => $this->objectArray,
             'subject' => $this->subjectArray,
         ];
+    }
+
+    public function toBroadcast($notifiable)
+    {
+        return new BroadcastMessage([
+            'text' => $this->text,
+            'object' => $this->objectArray,
+            'subject' => $this->subjectArray
+        ]);
     }
 }
