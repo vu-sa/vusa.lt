@@ -23,7 +23,7 @@
     </template>
     <template #aside-header>
       <div class="inline-flex gap-2">
-        <ShowActivityLog :activities="meeting.activities" />
+        <ActivityLogButton :activities="meeting.activities" />
         <MoreOptionsButton
           edit
           @edit-click="showModal = true"
@@ -142,7 +142,7 @@ import FileUploaderBasicButton from "@/Components/SharepointFileManager/FileUplo
 import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import ShowActivityLog from "@/Features/Admin/ActivityLog/ActivityLogButton.vue";
+import ActivityLogButton from "@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue";
 import SingleTask from "@/Components/Tasks/SingleTask.vue";
 import StatusTag from "@/Components/Tags/StatusTag.vue";
 

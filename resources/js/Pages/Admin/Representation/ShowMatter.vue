@@ -11,7 +11,7 @@
       </template> -->
     <template #aside-header>
       <div class="inline-flex gap-2">
-        <ShowActivityLog :activities="matter.activities" />
+        <ActivityLogButton :activities="matter.activities" />
         <MoreOptionsButton
           disabled
           edit
@@ -68,13 +68,13 @@ import { useStorage } from "@vueuse/core";
 
 import AdminBreadcrumbDisplayer from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 
+import ActivityLogButton from "@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import DoingsTabPane from "@/Components/TabPaneContent/DoingsTabPane.vue";
 import GoalCard from "@/Components/Cards/QuickContentCards/GoalCard.vue";
 import MatterForm from "@/Components/AdminForms/MatterForm.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import ShowActivityLog from "@/Features/Admin/ActivityLog/ActivityLogButton.vue";
 
 const props = defineProps<{
   matter: App.Entities.Matter;

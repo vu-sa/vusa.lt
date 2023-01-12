@@ -152,7 +152,7 @@
     </template>
     <template #aside-header>
       <div class="flex gap-2">
-        <ShowActivityLog :activities="institution.activities" />
+        <ActivityLogButton :activities="institution.activities" />
 
         <MoreOptionsButton
           edit
@@ -190,6 +190,7 @@ import { useStorage } from "@vueuse/core";
 import { documentTemplate } from "@/Composables/someTypes";
 import AdminBreadcrumbDisplayer from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 
+import ActivityLogButton from "@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue";
 import FileSelectDrawer from "@/Components/SharepointFileManager/FileDrawer.vue";
 import InstitutionAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import InstitutionCard from "@/Components/Cards/InstitutionCard.vue";
@@ -199,7 +200,6 @@ import MeetingsNeedingAttentionCard from "@/Components/Cards/QuickContentCards/M
 import ModelsDocumentViewer from "@/Components/SharepointFileManager/ModelsDocumentViewer.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import ShowActivityLog from "@/Features/Admin/ActivityLog/ActivityLogButton.vue";
 
 const props = defineProps<{
   doingTypes: any;
