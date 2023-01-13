@@ -78,6 +78,25 @@ class DashboardController extends Controller
         ]);
     }
 
+    public function workspace(Institution $institution) {
+        
+        // check if institution has id
+        if (!is_null($institution->id)) {
+            $institution->load('meetings.comments');
+        } else {
+            $institution = null;
+        }
+
+        $user = User::with('institutions')->find(auth()->user()->id);
+
+        return Inertia::render('Admin/ShowWorkspace', 
+        [
+            'institution' => fn () => $institution,
+            'user' => fn () => $user,
+        ]
+    );
+    }
+
     protected function getTypeRelationships()
     {
         $relationships = Relationshipable::where('relationshipable_type', Type::class)->get()->map(function ($relationshipable) {

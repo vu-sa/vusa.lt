@@ -87,4 +87,9 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Task::class);
     }
+
+    public function institutions()
+    {
+        return $this->hasManyDeepFromRelations($this->duties(), (new Duty())->institution());
+    }
 }

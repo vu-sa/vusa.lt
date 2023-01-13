@@ -17,6 +17,9 @@
             </NInput>
           </div> -->
       <div class="mt-1 flex items-center gap-8">
+        <Link :href="route('workspace')"
+          ><NButton secondary>Workspace</NButton></Link
+        >
         <TaskIndicatorButton class="mt-0.5" />
         <NNotificationProvider placement="bottom-right"
           ><NMessageProvider><NotificationBell class="mt-1" /></NMessageProvider
@@ -66,7 +69,7 @@
 </template>
 
 <script setup lang="tsx">
-import { Head, usePage } from "@inertiajs/inertia-vue3";
+import { Head, Link, usePage } from "@inertiajs/inertia-vue3";
 import {
   type MessageReactive,
   NButton,

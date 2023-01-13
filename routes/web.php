@@ -30,6 +30,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/', [Admin\DashboardController::class, 'dashboard'])->name('dashboard');
         Route::get('profile', [Admin\DashboardController::class, 'userSettings'])->name('profile');
         Route::get('userTasks', [Admin\DashboardController::class, 'userTasks'])->name('userTasks');
+        Route::get('workspace/{institution?}', [Admin\DashboardController::class, 'workspace'])->name('workspace');
         Route::get('institutionGraph', [Admin\DashboardController::class, 'institutionGraph'])->name('institutionGraph');
 
         // Resources

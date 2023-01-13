@@ -36,7 +36,7 @@ class ModelCommented extends Notification implements ShouldQueue
      */
     public function via($notifiable)
     {
-        return ['database', 'broadcast'];
+        return ['database', 'broadcast', 'mail'];
     }
 
     /**
@@ -61,5 +61,12 @@ class ModelCommented extends Notification implements ShouldQueue
             'object' => $this->objectArray,
             'subject' => $this->subjectArray
         ]);
+    }
+
+    public function toMail($notifiable)
+    {
+        return (new MailMessage)->greeting('Hello!')
+            ->subject('New comment')
+            ->line($this->text);
     }
 }

@@ -82,18 +82,6 @@
           ></FileButton>
         </div>
       </NTabPane>
-      <NTabPane name="Komentarai">
-        <div class="max-w-2xl">
-          <NCard class="subtle-gray-gradient">
-            <h2>Komentarai</h2>
-            <CommentTipTap
-              v-model:text="currentCommentField"
-              :content-model="contentModel"
-            />
-            <CommentViewer :comments="doing.comments" />
-          </NCard>
-        </div>
-      </NTabPane>
     </NTabs>
   </PageContent>
   <FileSelectDrawer
@@ -104,38 +92,18 @@
 
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
-import {
-  BookQuestionMark24Filled,
-  DocumentEdit24Regular,
-  Home24Filled,
-  PeopleTeam24Filled,
-  Person24Filled,
-  Person24Regular,
-  Sparkle20Filled,
-} from "@vicons/fluent";
-import { Inertia } from "@inertiajs/inertia";
-import {
-  NBreadcrumb,
-  NBreadcrumbItem,
-  NButton,
-  NCard,
-  NDropdown,
-  NIcon,
-  NMessageProvider,
-  NTabPane,
-  NTabs,
-  NTag,
-} from "naive-ui";
+import { NMessageProvider, NTabPane, NTabs, NTag } from "naive-ui";
+import { Person24Filled, Sparkle20Filled } from "@vicons/fluent";
 import { computed, ref } from "vue";
 
 import { contentTypeOptions, documentTemplate } from "@/Composables/someTypes";
 import { useStorage } from "@vueuse/core";
-import AdminBreadcrumbDisplayer from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
+import AdminBreadcrumbDisplayer, {
+  type BreadcrumbOption,
+} from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 
 import ActivityLogButton from "@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
-import CommentTipTap from "@/Components/TipTap/CommentTipTap.vue";
-import CommentViewer from "@/Features/Admin/CommentViewer/CommentViewer.vue";
 import DoingForm from "@/Components/AdminForms/DoingForm.vue";
 import FileButton from "@/Components/SharepointFileManager/FileButton.vue";
 import FileSelectDrawer from "@/Components/SharepointFileManager/FileDrawer.vue";
@@ -152,11 +120,10 @@ const props = defineProps<{
   sharepointFiles: App.Entities.SharepointFile[];
 }>();
 
-const currentCommentField = ref("");
 const showModal = ref(false);
 const selectedDocument = ref(null);
 
-const breadcrumbOptions: App.Props.BreadcrumbOption[] = [
+const breadcrumbOptions: BreadcrumbOption[] = [
   {
     label: props.doing.users?.[0].name,
     icon: Person24Filled,
@@ -179,17 +146,4 @@ const contentModel = computed(() => ({
   type: "App\\Models\\Doing",
   modelTypes: props.doing.types,
 }));
-
-const handleBreadcrumbDropdownSelect = (key) => {
-  switch (key) {
-    case "dashboard":
-      Inertia.visit(route("dashboard"));
-      break;
-    case "institution":
-      Inertia.visit(route("institutions.show", props.matter.institution.id));
-      break;
-    default:
-      break;
-  }
-};
 </script>

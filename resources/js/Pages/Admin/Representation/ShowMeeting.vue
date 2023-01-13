@@ -88,19 +88,6 @@
           ></FileButton>
         </div>
       </NTabPane>
-      <NTabPane name="Komentarai">
-        <div class="max-w-2xl">
-          <NCard class="subtle-gray-gradient">
-            <h2>Komentarai</h2>
-            <CommentTipTap
-              v-model:text="currentCommentField"
-              :commentable="meeting"
-              :model-name="ModelEnum.MEETING"
-            />
-            <CommentViewer :comments="meeting.comments" />
-          </NCard>
-        </div>
-      </NTabPane>
     </NTabs>
   </PageContent>
   <FileSelectDrawer
@@ -115,7 +102,6 @@ import { PeopleTeam24Filled } from "@vicons/fluent";
 import { computed, ref } from "vue";
 import { useStorage } from "@vueuse/core";
 
-import { ModelEnum } from "@/Types/enums";
 import { contentTypeOptions, documentTemplate } from "@/Composables/someTypes";
 import { formatStaticTime } from "@/Utils/IntlTime";
 import ActivityLogButton from "@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue";
@@ -123,8 +109,6 @@ import AdminBreadcrumbDisplayer, {
   type BreadcrumbOption,
 } from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
-import CommentTipTap from "@/Components/TipTap/CommentTipTap.vue";
-import CommentViewer from "@/Features/Admin/CommentViewer/CommentViewer.vue";
 import FileButton from "@/Components/SharepointFileManager/FileButton.vue";
 import FileSelectDrawer from "@/Components/SharepointFileManager/FileDrawer.vue";
 import FileUploader from "@/Components/SharepointFileManager/FileUploader.vue";
@@ -140,7 +124,6 @@ const props = defineProps<{
   sharepointFiles: App.Entities.SharepointDocument[];
 }>();
 
-const currentCommentField = ref("");
 const showModal = ref(false);
 const selectedDocument = ref(null);
 
