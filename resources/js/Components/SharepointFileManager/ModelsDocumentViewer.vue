@@ -75,6 +75,7 @@ import { NButton, NButtonGroup, NDataTable, NDivider, NIcon } from "naive-ui";
 import { type UseAxiosReturn, useAxios } from "@vueuse/integrations/useAxios";
 import { onMounted, ref } from "vue";
 
+import { fileSize } from "@/Utils/Calc";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import FuzzySearcher from "@/Components/SharepointFileManager/FuzzySearcher.vue";
 import ModelDocumentButton from "@/Components/SharepointFileManager/ModelDocumentButton.vue";
@@ -177,14 +178,6 @@ const columns = [
     key: "item.type",
   },
 ];
-
-const fileSize = (size) => {
-  const bytes = size;
-  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-  if (bytes === 0) return "0 Byte";
-  const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)).toString());
-  return Math.round(bytes / Math.pow(1024, i), 2) + " " + sizes[i];
-};
 
 const fileIcon = (mimeType) => {
   if (

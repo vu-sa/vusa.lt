@@ -26,8 +26,9 @@
       </template>
     </NScrollbar>
     <CommentPart
+      :commentable_type="'meeting'"
       :text="currentCommentText"
-      :meeting-with-comments="meetingShown"
+      :model="meetingShown"
     ></CommentPart>
   </div>
 </template>

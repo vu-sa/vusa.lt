@@ -82,7 +82,7 @@ const props = defineProps<{
 }>();
 
 const showModal = ref(false);
-const selectedDocument = ref(null);
+const selectedDocument = ref<App.Entities.SharepointDocument | null>(null);
 
 const mainInstitution: App.Entities.Institution | string =
   props.meeting.institutions?.[0] ?? "Be institucijos";

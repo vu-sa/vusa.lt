@@ -35,12 +35,16 @@
               </tr>
               <tr>
                 <td class="font-bold">Dydis</td>
-                <td>{{ fileSize }}</td>
+                <td>{{ fileSize(activeDocument.size) }}</td>
               </tr>
               <tr>
                 <td class="font-bold">Tipas</td>
                 <td>
-                  <NTag size="small">{{ activeDocument.type }}</NTag>
+                  <NTag size="small">
+                    <NEllipsis style="max-width: 140px">{{
+                      activeDocument.type
+                    }}</NEllipsis>
+                  </NTag>
                 </td>
               </tr>
               <tr>
@@ -49,6 +53,11 @@
               </tr>
             </tbody>
           </NTable>
+          <CommentPart
+            :commentable_type="'sharepoint_document'"
+            :text="currentCommentText"
+            :model="document"
+          ></CommentPart>
         </div>
       </FadeTransition>
     </NDrawerContent>
@@ -62,24 +71,27 @@ import {
   NButton,
   NDrawer,
   NDrawerContent,
+  NEllipsis,
   NIcon,
   NTable,
   NTag,
 } from "naive-ui";
 import { computed, ref, watch } from "vue";
 
-
+import { fileSize } from "@/Utils/Calc";
+import CommentPart from "@/Features/Admin/Workspace/CommentPart.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 // define emit for close
 const emit = defineEmits<{ (event: "closeDrawer"): void }>();
 
 const props = defineProps<{
-  document: App.Entities.Document;
+  document: App.Entities.SharepointDocument;
 }>();
 
 const active = ref(false);
 const activeDocument = ref(null);
+const currentCommentText = ref("");
 
 const loadingDelete = ref(false);
 
@@ -124,19 +136,6 @@ const fileIcon = computed(() => {
   }
 });
 
-// compute file size in human readable format
-const fileSize = computed(() => {
-  if (activeDocument.value === null) {
-    return "";
-  }
-
-  const bytes = activeDocument.value.size;
-  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-  if (bytes === 0) return "0 Byte";
-  const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)).toString());
-  return Math.round(bytes / Math.pow(1024, i), 2) + " " + sizes[i];
-});
-
 const handleOpen = () => {
   window.open(activeDocument.value.webUrl);
 };
@@ -152,3 +151,15 @@ const handleDelete = (id) => {
   });
 };
 </script>
+
+<style>
+/* make td sizes consistent */
+.n-table td {
+  min-width: 100px;
+}
+
+/* make table responsive */
+.n-table {
+  overflow-x: auto;
+}
+</style>

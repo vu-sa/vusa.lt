@@ -2,19 +2,18 @@
   <div class="grid max-h-full w-full grid-rows-[1fr_140px] bg-white">
     <NScrollbar ref="commentScroll" class="p-4" style="max-height: 600px">
       <template
-        v-for="comment in meetingWithComments?.comments"
+        v-for="comment in model?.comments"
         :key="comment.id"
         :comment="comment"
       >
-        <div class="mb-4 grid grid-cols-[50px_1fr] gap-x-4">
+        <div class="mb-4 grid grid-cols-[40px_1fr] gap-x-4 gap-y-2">
           <UserAvatar bold :size="32" :user="comment.user" />
-          <div class="inline-flex items-center">
+          <div class="inline-flex flex-col">
             <strong class="text-md">{{ comment.user.name }}</strong>
             <span
               :title="comment.created_at"
-              class="mr-2 text-sm text-gray-500"
+              class="mr-2 text-xs text-gray-500"
             >
-              <span class="mx-4">·</span>
               <span>{{
                 formatRelativeTime(new Date(comment.created_at))
               }}</span>
@@ -46,7 +45,6 @@ import { usePage } from "@inertiajs/inertia-vue3";
 import { formatRelativeTime } from "@/Utils/IntlTime";
 import CommentTipTap from "../CommentViewer/CommentTipTap.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
-import SingleComment from "../CommentViewer/SingleComment.vue";
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
 
 defineEmits<{
@@ -54,7 +52,8 @@ defineEmits<{
 }>();
 
 const props = defineProps<{
-  meetingWithComments?: Record<string, any>;
+  model?: Record<string, any>;
+  commentable_type: string;
   text: string;
 }>();
 
@@ -63,7 +62,7 @@ const text = ref(null);
 const commentScroll = ref<ScrollbarInst | null>(null);
 
 watch(
-  () => props.meetingWithComments?.comments,
+  () => props.model?.comments,
   (comments) => {
     commentScroll.value?.scrollTo(0, commentScroll.value.scrollHeight);
   }
@@ -74,8 +73,8 @@ const submitComment = (user: unknown) => {
   Inertia.post(
     route("users.comments.store", usePage().props.value.auth?.user.id),
     {
-      commentable_type: "Meeting",
-      commentable_id: props.meetingWithComments.id,
+      commentable_type: props.commentable_type,
+      commentable_id: props.model.id,
       comment: text.value,
     },
     {

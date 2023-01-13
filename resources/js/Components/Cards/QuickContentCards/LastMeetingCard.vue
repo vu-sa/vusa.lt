@@ -3,12 +3,14 @@
     <template v-if="lastMeeting">
       <div class="inline-flex items-center gap-2">
         <NIcon :size="36" :component="CalendarClock20Regular"></NIcon>
-
-        <span v-if="daysDifference" class="text-3xl font-bold">
+        <span v-if="daysDifference === 0" class="text-3xl font-bold"
+          >šiandien</span
+        >
+        <span v-else-if="!daysDifference" class="text-3xl font-bold">
           {{ lastMeetinginFuture ? "po" : "prieš" }}
           <NNumberAnimation
             :from="0"
-            :to="Math.abs(daysDifference)"
+            :to="Math.abs(daysDifference ?? 0)"
           ></NNumberAnimation>
           d.
         </span>
@@ -60,6 +62,8 @@ const daysDifference = computed(() => {
     ? getDaysDifference(props.lastMeeting.start_time)
     : undefined;
 });
+
+console.log(daysDifference.value!);
 
 // check if daysDifference is in future
 const lastMeetinginFuture = computed(() => {
