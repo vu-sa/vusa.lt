@@ -24,8 +24,9 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('inspire')
-                 ->hourly();
+        $schedule->call(function () {
+            \App\Actions\MeetingNotifyDaysLeft::execute(2);
+        })->daily('15:00');
     }
 
     /**
