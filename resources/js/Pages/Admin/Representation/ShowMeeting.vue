@@ -1,25 +1,10 @@
 <template>
-  <PageContent :title="meeting.title" :breadcrumb="true">
+  <PageContent :breadcrumb="true" :title="meetingTitle">
     <template #above-header>
       <AdminBreadcrumbDisplayer
         :options="breadcrumbOptions"
         class="mb-4 w-full"
       />
-    </template>
-    <template #after-heading>
-      <!-- <StatusTag :status="meeting.status" /> -->
-      <!-- <NTag
-        v-if="!meeting.matters"
-        size="small"
-        round
-        :bordered="false"
-        type="warning"
-        >Veikla be klausimų</NTag
-      > -->
-
-      <span class="text-gray-500">{{
-        formatStaticTime(meeting.start_time * 1000)
-      }}</span>
     </template>
     <template #aside-header>
       <div class="inline-flex gap-2">
@@ -44,51 +29,24 @@
         }}</NTag>
       </div>
     </template>
-
-    <NTabs
-      :default-value="currentMeetingsTabPane"
-      animated
-      type="line"
-      @update:value="updateMeetingsTabPane"
-    >
-      <NTabPane name="Apie">
-        <div v-if="meeting.tasks.length > 0" class="m-4 h-fit">
-          <h2>Užduotys</h2>
-          <SingleTask
-            v-for="task in meeting.tasks"
-            :key="task.id"
-            :task="task"
-          />
-        </div>
-        <div
-          v-if="meeting.extra_attributes?.andOther"
-          class="border border-vusa-red p-4"
-        >
-          Įvykį sukūręs žmogus pažymėjo jį, kaip turintį kitų klausimų...
-          <!-- Sutvarkyti šią funkciją... -->
-        </div>
-      </NTabPane>
-      <NTabPane name="Dokumentai">
-        <div class="m-4 flex items-center gap-4">
-          <h2 class="mb-0">Dokumentai</h2>
-          <NMessageProvider>
-            <FileUploader
-              :button="FileUploaderBasicButton"
-              :content-type-options="contentTypeOptions"
-              :content-model="contentModel"
-            ></FileUploader>
-          </NMessageProvider>
-        </div>
-        <div class="m-4 flex max-w-4xl flex-wrap gap-6">
-          <FileButton
-            v-for="document in sharepointFiles"
-            :key="document.id"
-            :document="document"
-            @click="selectedDocument = document"
-          ></FileButton>
-        </div>
-      </NTabPane>
-    </NTabs>
+    <div class="m-4 flex items-center gap-4">
+      <h2 class="mb-0">Dokumentai</h2>
+      <NMessageProvider>
+        <FileUploader
+          :button="FileUploaderBasicButton"
+          :content-type-options="contentTypeOptions"
+          :content-model="contentModel"
+        ></FileUploader>
+      </NMessageProvider>
+    </div>
+    <div class="m-4 flex max-w-4xl flex-wrap gap-6">
+      <FileButton
+        v-for="document in sharepointFiles"
+        :key="document.id"
+        :document="document"
+        @click="selectedDocument = document"
+      ></FileButton>
+    </div>
   </PageContent>
   <FileSelectDrawer
     :document="selectedDocument"
@@ -97,7 +55,7 @@
 </template>
 
 <script setup lang="tsx">
-import { NCard, NMessageProvider, NTabPane, NTabs, NTag } from "naive-ui";
+import { NMessageProvider, NTag } from "naive-ui";
 import { PeopleTeam24Filled } from "@vicons/fluent";
 import { computed, ref } from "vue";
 import { useStorage } from "@vueuse/core";
@@ -116,7 +74,6 @@ import FileUploaderBasicButton from "@/Components/SharepointFileManager/FileUplo
 import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import SingleTask from "@/Components/Tasks/SingleTask.vue";
 
 const props = defineProps<{
   meeting: App.Entities.Meeting;
@@ -127,18 +84,14 @@ const props = defineProps<{
 const showModal = ref(false);
 const selectedDocument = ref(null);
 
-const currentMeetingsTabPane = useStorage(
-  "admin-CurrentMeetingsTabPane",
-  "Apie"
-);
+const mainInstitution: App.Entities.Institution | string =
+  props.meeting.institutions?.[0] ?? "Be institucijos";
 
-const mainInstitution = computed(() => {
-  return props.meeting.institutions?.[0] ?? "Be institucijos";
-});
-
-const updateMeetingsTabPane = (value) => {
-  currentMeetingsTabPane.value = value;
-};
+const meetingTitle = `${formatStaticTime(new Date(props.meeting.start_time), {
+  year: "numeric",
+  month: "long",
+  day: "2-digit",
+})} ${mainInstitution.name} posėdis`;
 
 const contentModel = computed(() => ({
   id: props.meeting.id,
@@ -147,45 +100,16 @@ const contentModel = computed(() => ({
   modelTypes: props.meeting.types,
 }));
 
-// const breadcrumbDropdownOptions: DropdownOption[] = [
-//   {
-//     label: () => (
-//       <Link
-//         href={route("institutions.show", props.meeting.institutions?.[0].id)}
-//       >
-//         {props.meeting.institutions?.[0].name}
-//       </Link>
-//     ),
-//     icon: () => {
-//       return <NIcon component={PeopleTeam24Filled}></NIcon>;
-//     },
-//   },
-// ];
-
 const breadcrumbOptions: BreadcrumbOption[] = [
   {
-    label: mainInstitution.value.name,
+    label: mainInstitution.name,
     icon: PeopleTeam24Filled,
     routeOptions: {
       name: "institutions.show",
       params: {
-        institution: mainInstitution.value.id,
+        institution: mainInstitution.id,
       },
     },
   },
-  // {
-  //   label: props.meeting.matters?.[0].title,
-  //   icon: Icons.MATTER,
-  //   routeOptions: {
-  //     name: "matters.show",
-  //     params: {
-  //       matter: props.meeting.matters?.[0].id,
-  //     },
-  //   },
-  // },
-  // {
-  //   label: props.meeting.start_time,
-  //   icon: Icons.MEETING,
-  // },
 ];
 </script>

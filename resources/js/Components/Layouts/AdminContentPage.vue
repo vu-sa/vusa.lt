@@ -10,10 +10,11 @@
     class="flex max-w-7xl flex-row flex-wrap items-center gap-4 overflow-visible"
     :class="{ 'pb-2': title }"
   >
-    <Link v-if="!isIndex && backUrl" :href="backUrl">
-      <div class="flex">
-        <NIcon size="28" :component="ArrowCircleLeft32Regular" /></div
-    ></Link>
+    <NButton v-if="!isIndex && backUrl" text class="flex" @click="back">
+      <template #icon>
+        <NIcon size="28" :component="ArrowCircleLeft32Regular"
+      /></template>
+    </NButton>
     <h1 class="mb-0">
       <slot name="title">{{ title }}</slot>
     </h1>
@@ -47,15 +48,15 @@
 <script setup lang="ts">
 import { AddCircle32Regular, ArrowCircleLeft32Regular } from "@vicons/fluent";
 import { Head, Link } from "@inertiajs/inertia-vue3";
-import { NDivider, NIcon } from "naive-ui";
+import { NButton, NDivider, NIcon } from "naive-ui";
 import { computed } from "vue";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 defineProps<{
   breadcrumb?: true;
+  backUrl: string;
   createUrl?: string;
-  backUrl?: string;
   headerDivider?: boolean;
   title?: string;
 }>();
@@ -63,4 +64,6 @@ defineProps<{
 const isIndex = computed(() => {
   return route().current("*.index");
 });
+
+const back = () => window.history.back();
 </script>

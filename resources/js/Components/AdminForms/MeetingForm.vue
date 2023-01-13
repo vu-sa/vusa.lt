@@ -85,7 +85,17 @@ const props = defineProps<{
 }>();
 
 const showModal = ref(false);
-const meetingForm = useForm(props.meeting);
+
+// check if meeting start_time is in string, then convert it to timestamp
+const meetingToForm = (meeting: App.Entities.Meeting) => ({
+  ...meeting,
+  start_time: meeting.start_time
+    ? new Date(meeting.start_time).getTime()
+    : undefined,
+});
+
+const meetingForm = useForm(meetingToForm(props.meeting));
+
 const formRef = ref<FormInst | null>(null);
 
 const rules = {

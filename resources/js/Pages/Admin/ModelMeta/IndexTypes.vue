@@ -1,7 +1,7 @@
 <template>
   <IndexPageLayout
     title="Turinio tipai"
-    model-name="relationships"
+    model-name="types"
     :can-use-routes="canUseRoutes"
     :columns="columns"
     :paginated-models="types"
@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="tsx">
-import { DataTableColumns } from "naive-ui";
+import type { DataTableColumns } from "naive-ui";
 
 import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
 

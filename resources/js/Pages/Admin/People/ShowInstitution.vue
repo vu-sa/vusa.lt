@@ -16,11 +16,11 @@
         :doing-types="doingTypes"
         content-style="margin-top: 0.5em"
       ></LastMeetingCard>
-      <MeetingsNeedingAttentionCard
+      <!-- <MeetingsNeedingAttentionCard
         content-style="margin-top: 0.5em"
         :matters-with-meetings="institution.matters"
         :institution="institution"
-      ></MeetingsNeedingAttentionCard>
+      ></MeetingsNeedingAttentionCard> -->
     </div>
     <NTabs
       :default-value="currentInstitutionsTabPane"

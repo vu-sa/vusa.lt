@@ -19,7 +19,7 @@ class Meeting extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'start_time' => 'timestamp',
+        // 'start_time' => 'timestamp',
     ];
 
     public function getActivitylogOptions(): LogOptions
