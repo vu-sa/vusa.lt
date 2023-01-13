@@ -85,14 +85,7 @@ const meetingForm = ref<Record<string, any> | null>(null);
 const agendaItemsForm = ref<Record<string, any> | null>(null);
 
 const meetingTemplate = {
-  // title: "Planuotas posėdis",
-  // type_id where label = "Posėdis"
-  // type_id: props.doingTypes.find(
-  //   (type: App.Entities.Type) => type.label === "Posėdis"
-  // )?.value,
-  status: "Sukurtas",
   institution_id: props.institution.id,
-  // datetime now YYYY-MM-DD HH:MM:SS and delimit T
   start_time: null,
 };
 

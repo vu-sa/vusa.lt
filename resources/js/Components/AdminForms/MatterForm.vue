@@ -7,7 +7,7 @@
           placeholder="Studijų tinklelio peržiūra"
           filterable
           tag
-          :options="matterOptions"
+          :options="defaultOptions"
           ><template #action>
             <span
               class="prose-sm prose-gray text-xs text-zinc-400 dark:prose-invert"
@@ -55,8 +55,7 @@ import {
 } from "naive-ui";
 import { useForm } from "@inertiajs/inertia-vue3";
 
-
-import { matterOptions } from "@/Composables/someTypes";
+import { modelNameDefaultOptions } from "@/Composables/someTypes";
 import StatusTag from "@/Components/Tags/StatusTag.vue";
 
 const emit = defineEmits<{
@@ -69,6 +68,13 @@ const props = defineProps<{
 }>();
 
 const matterForm = useForm(props.form);
+
+const defaultOptions = modelNameDefaultOptions.map((option) => {
+  return {
+    label: option,
+    value: option,
+  };
+});
 
 const matterStatusOptions = [
   {
@@ -95,4 +101,33 @@ const createMatter = () => {
     }
   );
 };
+
+// const existingMatterOptions: Array<SelectGroupOption> = [
+//   {
+//     type: "group",
+//     label: "Esami klausimai",
+//     key: "group1",
+//     children:
+//       props.institution.matters?.map((matter: Record<string, any>) => {
+//         return {
+//           label: matter.title,
+//           value: matter.id,
+//         };
+//       }) ?? [],
+//   },
+// ];
+
+// wrap option into array
+// const newMatterOptions = [
+//   {
+//     type: "group",
+//     label: "Nauji šabloniniai klausimai",
+//     key: "group2",
+//     children: matterOptions,
+//   },
+// ];
+
+// const isMatterChosen = computed(() => {
+//   return mattersForm.idArray.length > 0 || mattersForm.newTitleArray.length > 0;
+// });
 </script>

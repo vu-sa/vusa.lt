@@ -115,33 +115,4 @@ const agendaItemRules = {
     trigger: ["blur"],
   },
 };
-
-// const existingMatterOptions: Array<SelectGroupOption> = [
-//   {
-//     type: "group",
-//     label: "Esami klausimai",
-//     key: "group1",
-//     children:
-//       props.institution.matters?.map((matter: Record<string, any>) => {
-//         return {
-//           label: matter.title,
-//           value: matter.id,
-//         };
-//       }) ?? [],
-//   },
-// ];
-
-// wrap option into array
-// const newMatterOptions = [
-//   {
-//     type: "group",
-//     label: "Nauji šabloniniai klausimai",
-//     key: "group2",
-//     children: matterOptions,
-//   },
-// ];
-
-// const isMatterChosen = computed(() => {
-//   return mattersForm.idArray.length > 0 || mattersForm.newTitleArray.length > 0;
-// });
 </script>

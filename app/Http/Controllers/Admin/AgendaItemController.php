@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\GetInstitutionManagers;
 use App\Models\Pivots\AgendaItem;
 use App\Http\Controllers\ResourceController;
 use App\Http\Requests\StoreAgendaItemsRequest;
+use App\Models\Meeting;
+use App\Services\TaskCreator;
 use Illuminate\Http\Request;
 
 class AgendaItemController extends ResourceController
@@ -43,6 +46,17 @@ class AgendaItemController extends ResourceController
                     'meeting_id' => $request->safe()->meeting_id,
                     'title' => $agendaItemTitle,
                 ]);
+            }
+
+            if ($request->safe()->moreAgendaItemsUndefined) {
+                // TODO: nebūtinai bus first
+                $meeting = Meeting::find($request->safe()->meeting_id);
+                
+                $institution = $meeting->institutions->first();
+                
+                $institutionManagers = GetInstitutionManagers::execute($institution);
+
+                TaskCreator::createMoreAgendaItemsUndefined($institutionManagers, $meeting);
             }
         }
 

@@ -3,8 +3,11 @@
 namespace App\Services;
 
 use App\Models\Doing;
+use App\Models\Meeting;
 use App\Models\Task;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection as SupportCollection;
 
 class TaskCreator
 {
@@ -39,5 +42,18 @@ class TaskCreator
         ]);
 
         $task->users()->sync($users->pluck('id'));
+    }
+
+    public static function createMoreAgendaItemsUndefined(SupportCollection $users, Meeting $meeting)
+    {
+        $task = Task::create([
+            'name' => 'Sutvarkyti darbotvarkės klausimus',
+            'taskable_id' => $meeting->id,
+            'taskable_type' => Meeting::class,
+        ]);
+
+        $task->users()->sync($users->pluck('id'));
+
+        return $task;
     }
 }

@@ -6,7 +6,7 @@
         <span v-if="daysDifference === 0" class="text-3xl font-bold"
           >šiandien</span
         >
-        <span v-else-if="!daysDifference" class="text-3xl font-bold">
+        <span v-else class="text-3xl font-bold">
           {{ lastMeetinginFuture ? "po" : "prieš" }}
           <NNumberAnimation
             :from="0"
@@ -63,7 +63,7 @@ const daysDifference = computed(() => {
     : undefined;
 });
 
-console.log(daysDifference.value!);
+console.log(daysDifference.value);
 
 // check if daysDifference is in future
 const lastMeetinginFuture = computed(() => {

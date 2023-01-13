@@ -1,32 +1,30 @@
-export const matterOptions = [
-  {
-    label: "Studijų tinklelio peržiūra",
-    value: "Studijų tinklelio peržiūra",
-  },
-  {
-    label: "Studentų nuomonės išnagrinėjimas posėdyje",
-    value: "Studentų nuomonės išnagrinėjimas posėdyje",
-  },
-  {
-    label: "Dėstytojo keitimas",
-    value: "Dėstytojo keitimas",
-  },
-];
+export const modelNameDefaultOptions = {
+  matter: [
+    "Studijų tinklelio peržiūra",
+    "Studentų nuomonės išnagrinėjimas posėdyje",
+    "Dėstytojo keitimas",
+  ],
+  doing: [
+    "Susitikimas su studentais",
+    "Planuotas posėdis",
+    "Susitikimas su koordinatoriumi",
+  ],
+  doingStatus: ["Sukurtas", "Pabaigtas"],
+};
 
-export const doingOptions = [
-  {
-    label: "Susitikimas su studentais",
-    value: "Susitikimas su studentais",
-  },
-  {
-    label: "Planuotas posėdis",
-    value: "Planuotas posėdis",
-  },
-  {
-    label: "Susitikimas su koordinatoriumi",
-    value: "Susitikimas su koordinatoriumi",
-  },
-];
+export const modelTypeDefaultOptions = {
+  sharepointFile: [
+    "Metodinė medžiaga",
+    "Protokolai",
+    "Pristatymai",
+    "Šablonai",
+    "Veiklą reglamentuojantys dokumentai",
+  ],
+};
+
+export const modelStatusDefaultOptions = {
+  doing: ["Sukurtas", "Pabaigtas"],
+};
 
 export const contentTypeOptions = [
   {
