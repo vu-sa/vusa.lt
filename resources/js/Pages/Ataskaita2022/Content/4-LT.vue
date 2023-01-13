@@ -1601,7 +1601,7 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
         class="text-lg duration-200 hover:text-red-600 font-bold"
         :href="
           route('main.ataskaita2022', {
-            lang: $page.props.locale,
+            lang: $page.props.app.locale,
             permalink: 'organizacija',
           })
         "

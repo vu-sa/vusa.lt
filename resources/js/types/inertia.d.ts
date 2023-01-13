@@ -12,6 +12,7 @@ declare module "@inertiajs/inertia" {
   interface PageProps {
     app: {
       env: "local" | "production";
+      locale: LocaleEnum;
       url: string;
     };
     auth: {
@@ -25,7 +26,6 @@ declare module "@inertiajs/inertia" {
       info: string | null;
       success: string | null;
     };
-    locale: LocaleEnum;
     misc: any;
     padaliniai: Pick<
       App.Entities.Padalinys,

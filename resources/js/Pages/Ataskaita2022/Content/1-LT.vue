@@ -596,7 +596,7 @@
       <Link
         class="text-lg duration-200 hover:text-red-600 font-bold"
         :href="
-          route('main.ataskaita2022', { lang: $page.props.locale, permalink: 'vu-sa' })
+          route('main.ataskaita2022', { lang: $page.props.app.locale, permalink: 'vu-sa' })
         "
         >Apie VU SA >></Link
       >

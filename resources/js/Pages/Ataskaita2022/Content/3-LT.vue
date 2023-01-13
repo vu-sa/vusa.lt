@@ -1381,7 +1381,7 @@ nariams."
       <Link
         class="text-lg duration-200 hover:text-red-600 font-bold"
         :href="
-          route('main.ataskaita2022', { lang: $page.props.locale, permalink: 'studijos' })
+          route('main.ataskaita2022', { lang: $page.props.app.locale, permalink: 'studijos' })
         "
         >Kokybiškos studijos ir joms pritaikyta aplinka >></Link
       >

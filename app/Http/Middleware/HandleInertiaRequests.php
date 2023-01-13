@@ -55,6 +55,7 @@ class HandleInertiaRequests extends Middleware
         return array_merge(parent::share($request), [
             'app' => [
                 'env' => fn () => config('app.env'),
+                'locale' => fn () => app()->getLocale(),
                 'url' => fn () => config('app.url'),
             ],
             'auth' => is_null($user) ? null : [
@@ -74,7 +75,6 @@ class HandleInertiaRequests extends Middleware
                 'info' => fn () => $request->session()->get('info'),
                 'success' => fn () => $request->session()->get('success'),
             ],
-            'locale' => fn () => app()->getLocale(),
             'misc' => $request->session()->get('misc') ?? "",
             'padaliniai' => fn () => $this->getPadaliniaiForInertia(),
             'search' => [

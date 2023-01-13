@@ -7,11 +7,11 @@
       </h1>
       <div class="prose col-span-3 col-start-1 dark:prose-invert">
         <p>
-          <strong v-if="$page.props.locale === 'lt'"
+          <strong v-if="$page.props.app.locale === 'lt'"
             >Kiekvienas VU studentas gali tapti VU SA nariu!
           </strong>
           <strong v-else>Every VU student can become a VU SR member! </strong>
-          <span v-if="$page.props.locale === 'lt'"
+          <span v-if="$page.props.app.locale === 'lt'"
             >Užsiregistruok ir lauk pakvietimo iš padalinio komandos!
           </span>
           <span v-else>Register and wait for the invite from the team! </span>
@@ -19,7 +19,7 @@
           >.
         </p>
 
-        <p v-if="$page.props.locale === 'lt'">
+        <p v-if="$page.props.app.locale === 'lt'">
           Taip pat gali registruotis ir į mūsų programas, klubus ir projektus
           (PKP)!
 
@@ -81,7 +81,7 @@
           </NFormItem>
           <NFormItem path="acceptGDPR"
             ><NCheckbox v-model:checked="formValue.acceptGDPR">
-              <span v-if="$page.props.locale === 'lt'">
+              <span v-if="$page.props.app.locale === 'lt'">
                 Susipažinau su
                 <a
                   target="_blank"
@@ -108,7 +108,7 @@
           >
           <NFormItem path="acceptDataManagement">
             <NCheckbox v-model:checked="formValue.acceptDataManagement">
-              <template v-if="$page.props.locale === 'lt'">
+              <template v-if="$page.props.app.locale === 'lt'">
                 Sutinku, kad mano pateikti asmens duomenys būtų tvarkomi vidaus
                 administravimo tikslu pagal Asmens duomenų tvarkymo Vilniaus
                 universiteto Studentų atstovybėje tvarkos aprašą
@@ -122,7 +122,7 @@
             </NCheckbox>
           </NFormItem>
           <div class="text-sm">
-            <p v-if="$page.props.locale === 'lt'">
+            <p v-if="$page.props.app.locale === 'lt'">
               Duomenų valdytojas yra Vilniaus universiteto Studentų atstovybė.
             </p>
             <p v-else>
@@ -146,12 +146,12 @@
                 <a href="mailto:info@vusa.lt">info@vusa.lt</a>
               </li>
             </ul>
-            <p v-if="$page.props.locale === 'lt'">
+            <p v-if="$page.props.app.locale === 'lt'">
               Jūsų pateikti duomenys bus naudojami susisiekti su jumis.
             </p>
             <p v-else>The data you provide will be used to contact you.</p>
 
-            <p v-if="$page.props.locale === 'lt'">
+            <p v-if="$page.props.app.locale === 'lt'">
               Duomenų subjektas turi teisę susipažinti su savo asmens
               duomenimis, teisę reikalauti ištaisyti neteisingus, neišsamius,
               netikslius savo asmens duomenis ir kitas teisės aktais numatytas

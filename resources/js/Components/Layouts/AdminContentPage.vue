@@ -55,7 +55,7 @@ import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 defineProps<{
   breadcrumb?: true;
-  backUrl: string;
+  backUrl?: string;
   createUrl?: string;
   headerDivider?: boolean;
   title?: string;

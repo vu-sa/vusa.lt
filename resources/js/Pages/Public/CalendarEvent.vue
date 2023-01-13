@@ -17,7 +17,7 @@
               class="flex items-center px-12 text-4xl font-extrabold text-gray-900 dark:text-zinc-50 lg:text-5xl"
             >
               <span>{{
-                $page.props.locale === "en"
+                $page.props.app.locale === "en"
                   ? event.extra_attributes?.en?.title ?? event.title
                   : event.title
               }}</span>
@@ -36,7 +36,7 @@
           <div
             class="prose dark:prose-invert sm:max-w-[70ch]"
             v-html="
-              $page.props.locale === 'en'
+              $page.props.app.locale === 'en'
                 ? event.extra_attributes?.en?.description ?? event.description
                 : event.description
             "
@@ -86,7 +86,7 @@
             </div>
             <p v-if="false" class="col-span-2 mb-4 flex w-4/5 text-lg">
               {{
-                $page.props.locale === "en"
+                $page.props.app.locale === "en"
                   ? event.extra_attributes?.en?.title ?? event.title
                   : event.title
               }}
@@ -111,7 +111,7 @@
             <template v-if="event.location">
               <NIcon :component="Home32Regular"></NIcon>
               <span>{{
-                $page.props.locale === "en"
+                $page.props.app.locale === "en"
                   ? event.extra_attributes?.en?.location ?? event.location
                   : event.location
               }}</span>

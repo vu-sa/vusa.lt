@@ -69,7 +69,7 @@ const lt_options = computed(() => [
 ]);
 
 const options = computed(() => {
-  if (props.locale !== "lt") {
+  if (props.app.locale !== "lt") {
     return lt_options.value;
   } else {
     return en_options.value;
@@ -77,7 +77,7 @@ const options = computed(() => {
 });
 
 const icon = computed(() => {
-  if (props.locale !== "en") {
+  if (props.app.locale !== "en") {
     return "https://hatscripts.github.io/circle-flags/flags/lt.svg";
   } else {
     return "https://hatscripts.github.io/circle-flags/flags/gb.svg";
@@ -86,7 +86,7 @@ const icon = computed(() => {
 
 const handleSelectLanguage = (key) => {
   const newLang = locales.filter((l) => {
-    return l !== props.locale;
+    return l !== props.app.locale;
   });
 
   if (key === "home") {

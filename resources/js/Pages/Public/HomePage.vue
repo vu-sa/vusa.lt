@@ -17,7 +17,7 @@
       <MainLinks :main-page="mainPage" /></div
   ></FadeTransition>
 
-  <FadeTransition v-if="$page.props.locale === 'lt'">
+  <FadeTransition v-if="$page.props.app.locale === 'lt'">
     <div class="mt-8">
       <BannerCarousel :banners="banners" />
     </div>
@@ -27,7 +27,7 @@
     <div class="mt-4"><NewsElement :news="news" /></div>
   </FadeTransition>
 
-  <FadeTransition v-if="$page.props.locale === 'lt'" appear>
+  <FadeTransition v-if="$page.props.app.locale === 'lt'" appear>
     <div><SummerCamps :is-theme-dark="isThemeDark" /></div
   ></FadeTransition>
 

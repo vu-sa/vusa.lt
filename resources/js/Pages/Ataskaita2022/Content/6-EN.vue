@@ -1140,7 +1140,7 @@
         class="text-lg duration-200 hover:text-red-600 font-bold"
         :href="
           route('main.ataskaita2022', {
-            lang: $page.props.locale,
+            lang: $page.props.app.locale,
             permalink: 'sritys',
           })
         "

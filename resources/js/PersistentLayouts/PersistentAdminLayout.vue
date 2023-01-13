@@ -1,6 +1,7 @@
 <template>
   <NConfigProvider
     v-show="mounted"
+    :locale="enUS"
     :theme="isThemeDark ? darkTheme : undefined"
     :theme-overrides="isThemeDark ? darkThemeOverrides : themeOverrides"
   >
@@ -17,7 +18,7 @@
 </template>
 
 <script setup lang="tsx">
-import { NConfigProvider, NMessageProvider, darkTheme } from "naive-ui";
+import { NConfigProvider, NMessageProvider, darkTheme, enUS } from "naive-ui";
 import { onMounted, ref } from "vue";
 
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";

@@ -10,7 +10,7 @@
         }}!
       </p>
       <Link
-        v-if="$page.props.locale === 'lt'"
+        v-if="$page.props.app.locale === 'lt'"
         :href="route('main.newsArchive', { lang: 'lt' })"
         >Daugiau →</Link
       >

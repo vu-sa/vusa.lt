@@ -11,7 +11,7 @@
         <Link
           :href="
             route('main.ataskaita2022', {
-              lang: $page.props.locale,
+              lang: $page.props.app.locale,
               permalink: 'sveikinimai',
             })
           "
@@ -23,7 +23,7 @@
         <Link
           :href="
             route('main.ataskaita2022', {
-              lang: $page.props.locale,
+              lang: $page.props.app.locale,
               permalink: 'vu-sa',
             })
           "
@@ -34,7 +34,7 @@
         <Link
           :href="
             route('main.ataskaita2022', {
-              lang: $page.props.locale,
+              lang: $page.props.app.locale,
               permalink: 'mvp',
             })
           "
@@ -45,7 +45,7 @@
         <Link
           :href="
             route('main.ataskaita2022', {
-              lang: $page.props.locale,
+              lang: $page.props.app.locale,
               permalink: 'studijos',
             })
           "
@@ -57,7 +57,7 @@
         <Link
           :href="
             route('main.ataskaita2022', {
-              lang: $page.props.locale,
+              lang: $page.props.app.locale,
               permalink: 'sritys',
             })
           "

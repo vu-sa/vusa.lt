@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasComments;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,7 +14,7 @@ use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Institution extends Model
 {
-    use HasFactory, HasRelationships, HasUlids, SoftDeletes, LogsActivity, Searchable;
+    use HasFactory, HasRelationships, HasUlids, SoftDeletes, LogsActivity, Searchable, HasComments;
 
     protected $guarded = [];
 

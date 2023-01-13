@@ -23,7 +23,7 @@
             route('padalinys.contacts.alias', {
               alias: 'koordinatoriai',
               padalinys: institution.alias,
-              lang: $page.props.locale,
+              lang: $page.props.app.locale,
             })
           )
         "
@@ -37,7 +37,7 @@
             route('padalinys.contacts.alias', {
               alias: 'kuratoriai',
               padalinys: institution.alias,
-              lang: $page.props.locale,
+              lang: $page.props.app.locale,
             })
           )
         "
@@ -51,7 +51,7 @@
             route('padalinys.contacts.alias', {
               alias: 'studentu-atstovai',
               padalinys: institution.alias,
-              lang: $page.props.locale,
+              lang: $page.props.app.locale,
             })
           )
         "
@@ -79,7 +79,7 @@
               route('padalinys.contacts.alias', {
                 alias: 'koordinatoriai',
                 padalinys: institution.alias,
-                lang: $page.props.locale,
+                lang: $page.props.app.locale,
               })
             )
           "
@@ -93,7 +93,7 @@
               route('padalinys.contacts.alias', {
                 alias: 'kuratoriai',
                 padalinys: institution.alias,
-                lang: $page.props.locale,
+                lang: $page.props.app.locale,
               })
             )
           "
@@ -107,7 +107,7 @@
               route('padalinys.contacts.alias', {
                 alias: 'studentu-atstovai',
                 padalinys: institution.alias,
-                lang: $page.props.locale,
+                lang: $page.props.app.locale,
               })
             )
           "
