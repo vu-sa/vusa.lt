@@ -25,7 +25,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->call(function () {
-            \App\Actions\MeetingNotifyDaysLeft::execute(2);
+            \App\Actions\Schedulable\MeetingNotifyDaysLeft::execute(2);
         })->daily('15:00');
     }
 

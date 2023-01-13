@@ -19,7 +19,6 @@ import { computed } from "vue";
 import { loadLanguageAsync } from "laravel-vue-i18n";
 import { usePage } from "@inertiajs/inertia-vue3";
 
-
 const props = defineProps<{
   locale: string;
 }>();
@@ -69,7 +68,7 @@ const lt_options = computed(() => [
 ]);
 
 const options = computed(() => {
-  if (props.app.locale !== "lt") {
+  if (props.locale !== "lt") {
     return lt_options.value;
   } else {
     return en_options.value;
@@ -77,7 +76,7 @@ const options = computed(() => {
 });
 
 const icon = computed(() => {
-  if (props.app.locale !== "en") {
+  if (props.locale !== "en") {
     return "https://hatscripts.github.io/circle-flags/flags/lt.svg";
   } else {
     return "https://hatscripts.github.io/circle-flags/flags/gb.svg";
@@ -86,7 +85,7 @@ const icon = computed(() => {
 
 const handleSelectLanguage = (key) => {
   const newLang = locales.filter((l) => {
-    return l !== props.app.locale;
+    return l !== props.locale;
   });
 
   if (key === "home") {

@@ -14,7 +14,7 @@
         :data="notification.data"
       />
       <p class="text-xs text-zinc-500 dark:text-zinc-400">
-        {{ new Date(notification.created_at) }}
+        {{ formatRelativeTime(new Date(notification.created_at)) }}
       </p>
     </div>
     <div class="flex flex-col gap-2">
@@ -31,6 +31,7 @@ import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
 import { NButton, NIcon } from "naive-ui";
 import { defineAsyncComponent } from "vue";
+import { formatRelativeTime } from "@/Utils/IntlTime";
 import { useAxios } from "@vueuse/integrations/useAxios";
 
 export type NotificationData = {

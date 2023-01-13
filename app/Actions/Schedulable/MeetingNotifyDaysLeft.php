@@ -1,6 +1,7 @@
 <?php
 
-namespace App\Actions;
+namespace App\Actions\Schedulable;
+
 use App\Models\Meeting;
 use App\Notifications\MeetingSoonNotification;
 

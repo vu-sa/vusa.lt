@@ -54,13 +54,6 @@
           <h2>Užduotys</h2>
           <SingleTask v-for="task in doing.tasks" :key="task.id" :task="task" />
         </div>
-        <div
-          v-if="doing.extra_attributes?.andOther"
-          class="border border-vusa-red p-4"
-        >
-          Įvykį sukūręs žmogus pažymėjo jį, kaip turintį kitų klausimų...
-          <!-- Sutvarkyti šią funkciją... -->
-        </div>
       </NTabPane>
       <NTabPane name="Dokumentai">
         <div class="m-4 flex items-center gap-4">

@@ -4,7 +4,7 @@ namespace App\Enums\Traits;
 
 use Closure;
 
-trait hasCamelCaseLabels
+trait HasCamelCaseLabels
 {
     // 
     protected static function labels(): Closure

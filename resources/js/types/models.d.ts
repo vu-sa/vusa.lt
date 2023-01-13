@@ -519,6 +519,7 @@ declare namespace App.Models {
     duties?: Array<App.Models.Duty> | null;
     padaliniai?: any | null;
     tasks?: Array<App.Models.Task> | null;
+    institutions?: any | null;
     banners_count?: number | null;
     calendar_count?: number | null;
     doings_count?: number | null;

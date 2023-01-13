@@ -72,12 +72,6 @@ class MainController extends Controller
 		if (request()->padalinys != null) {
 			$this->alias = in_array(request()->padalinys, ["Padaliniai", "naujas"]) ? '' : request()->padalinys;
 		}
-
-		// get main navigation
-		$vusa = Padalinys::where('shortname', 'VU SA')->first();
-		$mainNavigation = Navigation::where([['padalinys_id', $vusa->id], ['lang', app()->getLocale()]])->orderBy('order')->get();
-
-		Inertia::share('mainNavigation', $mainNavigation);
 	}
 
 	private function getCalendarGoogleLink($calendarEvent, $en = false) {

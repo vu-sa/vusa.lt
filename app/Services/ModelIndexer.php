@@ -20,12 +20,8 @@ class ModelIndexer {
         }
         
         $user = User::find((Auth::id()));
-        $lowercasedModel = Str::lcfirst(class_basename($modelClass));
-        $pluralModel = Str::plural($lowercasedModel);
         $padalinysRelationString = $hasManyPadalinys ? 'padaliniai' : 'padalinys';
         
-        // for ambiguity reasons, we need to set an optional variable for whereHas
-
         // first need to check if has permission to view all models
 
         // TODO: get only needed data for index
