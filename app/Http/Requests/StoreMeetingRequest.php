@@ -36,6 +36,4 @@ class StoreMeetingRequest extends ResourceRequest
             'institution_id' => 'required|ulid'
         ];
     }
-
-    
 }

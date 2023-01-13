@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use Illuminate\Support\Facades\Route;
-use Laravel\Socialite\Facades\Socialite;
 
 Route::get('/', [DashboardController::class, 'dashboard'])->name('dashboard');
 Route::get('profile', [DashboardController::class, 'userSettings'])->name('profile');
@@ -38,6 +37,7 @@ Route::resource('goals', GoalController::class);
 Route::resource('goalGroups', GoalGroupController::class);
 Route::post('matters/{matter}/attach/{goal}', [MatterController::class, 'attachGoal'])->name('matters.attachGoal');
 Route::resource('doings', DoingController::class);
+Route::resource('agendaItems', AgendaItemController::class);
 Route::resource('meetings', MeetingController::class);
 
 Route::resource('saziningaiExams', SaziningaiExamsController::class);

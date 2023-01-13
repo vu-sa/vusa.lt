@@ -4,7 +4,7 @@
       <div class="inline-flex items-center gap-2">
         <NIcon :size="36" :component="CalendarClock20Regular"></NIcon>
 
-        <span class="text-3xl font-bold">
+        <span v-if="daysDifference" class="text-3xl font-bold">
           {{ lastMeetinginFuture ? "po" : "prieš" }}
           <NNumberAnimation
             :from="0"
@@ -21,7 +21,7 @@
           :href="route('meetings.show', lastMeeting.id)"
           class="font-bold"
           >{{
-            formatStaticTime(lastMeeting.start_time * 1000, {
+            formatStaticTime(new Date(lastMeeting.start_time), {
               year: "numeric",
               month: "long",
               day: "2-digit",
@@ -57,7 +57,7 @@ const props = defineProps<{
 
 const daysDifference = computed(() => {
   return props.lastMeeting
-    ? getDaysDifference(props.lastMeeting.start_time * 1000)
+    ? getDaysDifference(props.lastMeeting.start_time)
     : undefined;
 });
 

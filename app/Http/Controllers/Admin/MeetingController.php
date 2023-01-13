@@ -55,11 +55,7 @@ class MeetingController extends ResourceController
 
         $meeting->institutions()->attach($request->safe()->institution_id);
 
-        // if ($request->has('mattersForm')) {
-        //     MeetingService::storeAndAttachMattersToMeeting($request->mattersForm, $meeting);
-        // }
-
-        return back()->with('success', 'Posėdis sukurtas sėkmingai!');
+        return back()->with(['success' => 'Posėdis sukurtas sėkmingai!', 'data' => $meeting]);
     }
 
     /**

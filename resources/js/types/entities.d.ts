@@ -21,9 +21,7 @@ declare namespace App.Entities {
   export type MainPage = App.Models.MainPage;
   export type Matter = App.Models.Matter;
 
-  export interface Meeting extends Omit<App.Models.Meeting, "start_time"> {
-    start_time: number; // casted to number
-  }
+  export type Meeting = App.Models.Meeting;
 
   export type Navigation = App.Models.Navigation;
   export type News = App.Models.News;

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Pivots\AgendaItem;
 use App\Http\Controllers\ResourceController;
+use App\Http\Requests\StoreAgendaItemsRequest;
 use Illuminate\Http\Request;
 
 class AgendaItemController extends ResourceController
@@ -34,9 +35,20 @@ class AgendaItemController extends ResourceController
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreAgendaItemsRequest $request)
     {
-        $this->authorize('create', [AgendaItem::class, $this->authorizer]);
+        if ($request->has('agendaItemTitles')) {
+            foreach ($request->safe()->agendaItemTitles as $agendaItemTitle) {
+                AgendaItem::create([
+                    'meeting_id' => $request->safe()->meeting_id,
+                    'title' => $agendaItemTitle,
+                ]);
+            }
+        }
+
+        // pass event where there are agenda items that are not defined
+
+        return back()->with(['success' => 'Darbotvarkės punktai sukurti sėkmingai!']);
     }
 
     /**

@@ -3,12 +3,12 @@ import {
   Alert24Regular,
   BookContacts28Regular,
   BookQuestionMark24Regular,
-  CalendarAgenda24Regular,
   CalendarLtr24Regular,
   Comment24Regular,
   DeviceMeetingRoomRemote24Regular,
   DocumentBulletList24Regular,
   DocumentMultiple24Regular,
+  DocumentSave24Regular,
   DocumentSettings20Regular,
   Flow20Regular,
   FlowchartCircle24Regular,
@@ -35,7 +35,7 @@ import type { Component } from "vue";
 import type { ModelEnum } from "../enums";
 
 const modelIcons: Record<keyof typeof ModelEnum, Component> = {
-  AGENDA_ITEM: CalendarAgenda24Regular,
+  AGENDA_ITEM: DocumentBulletList24Regular,
   BANNER: ImageArrowBack24Regular,
   CALENDAR: CalendarLtr24Regular,
   CATEGORY: TextBulletListSquare24Regular,
@@ -61,7 +61,7 @@ const modelIcons: Record<keyof typeof ModelEnum, Component> = {
   SAZININGAI_EXAM: PeopleSearch24Regular,
   SAZININGAI_EXAM_FLOW: PeopleSearch24Regular,
   SAZININGAI_EXAM_OBSERVER: PeopleSearch24Regular,
-  SHAREPOINT_DOCUMENT: DocumentBulletList24Regular,
+  SHAREPOINT_DOCUMENT: DocumentSave24Regular,
   TAG: Tag24Regular,
   TASK: TaskListSquareLtr24Regular,
   TYPE: DocumentSettings20Regular,

@@ -5,14 +5,14 @@ const HOUR_MILISECONDS = MINUTE_MILISECONDS * 60;
 const DAY_MILISECONDS = HOUR_MILISECONDS * 24;
 
 export const formatRelativeTime = (
-  timestamp: number | Date,
+  time: number | Date,
   dateTimeOptions: Intl.RelativeTimeFormatOptions = {
     numeric: "auto",
   },
   // check locale against LocaleEnum
   locale: LocaleEnum = LocaleEnum.LT
 ) => {
-  const date = new Date(timestamp);
+  const date = new Date(time);
 
   const rtf = new Intl.RelativeTimeFormat(locale, dateTimeOptions);
 
@@ -41,12 +41,12 @@ export const formatRelativeTime = (
   } else if (secondsDifference != 0) {
     return rtf.format(secondsDifference, "second");
   } else {
-    return locale === "lt" ? "dabar" : "now";
+    return locale === LocaleEnum.LT ? "dabar" : "now";
   }
 };
 
 export const formatStaticTime = (
-  timestamp: number | Date,
+  time: number | Date,
   dateTimeOptions: Intl.DateTimeFormatOptions = {
     year: "numeric",
     month: "numeric",
@@ -54,18 +54,19 @@ export const formatStaticTime = (
   },
   locale: LocaleEnum = LocaleEnum.LT
 ) => {
-  const time = new Intl.DateTimeFormat(locale, dateTimeOptions).format(
-    timestamp
+  const staticTime = new Intl.DateTimeFormat(locale, dateTimeOptions).format(
+    time
   );
 
-  return time;
+  return staticTime;
 };
 
-export const getDaysDifference = (timestamp: number) => {
+export const getDaysDifference = (time: number | Date) => {
   const now = new Date();
+  const difference = new Date(time);
 
   const daysDifference = Math.round(
-    (now.getTime() - timestamp) / DAY_MILISECONDS
+    (now.getTime() - difference.getTime()) / DAY_MILISECONDS
   );
 
   return daysDifference;

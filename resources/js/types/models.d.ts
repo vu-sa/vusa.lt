@@ -529,7 +529,16 @@ declare namespace App.Models {
 }
 
 declare namespace App.Models.Pivots {
-  export interface AgendaItem {}
+  export interface AgendaItem {
+    id: string;
+    meeting_id: string;
+    matter_id: string | null;
+    created_at: any;
+    updated_at: any;
+    title: string;
+    start_time: number | null;
+    outcome: string | null;
+  }
 
   export interface Doable {
     doable_type: string;

@@ -45,8 +45,8 @@
       </NFormItemGi> -->
 
       <NFormItemGi :span="2" :show-label="false"
-        ><NButton type="primary" @click="upsertMeeting"
-          >Sukurti</NButton
+        ><NButton type="primary" @click="handleSubmit"
+          >Toliau...</NButton
         ></NFormItemGi
       >
     </NGrid>
@@ -65,20 +65,24 @@ import {
   NRadioGroup,
   NSelect,
 } from "naive-ui";
-import { type InertiaForm, useForm } from "@inertiajs/inertia-vue3";
 import { Method } from "@inertiajs/inertia";
 import { ref } from "vue";
+import type { InertiaForm } from "@inertiajs/inertia-vue3";
 
 // import { meetingOptions, meetingStatusOptions } from "@/Composables/someTypes";
 import StatusTag from "@/Components/Tags/StatusTag.vue";
 
-const emit = defineEmits(["success"]);
+const emit = defineEmits<{
+  (event: "submit", form: any): void;
+  (event: "success", ...args: any[]): void;
+}>();
 
 const props = defineProps<{
+  loading?: boolean;
   institution?: App.Entities.Institution;
   meeting: App.Entities.Meeting;
   // meetingTypes?: any;
-  modelRoute: string;
+  modelRoute?: string;
   matter?: App.Entities.Matter;
   // This question form is from a quick action button, idk if it shouldn't be refactored
   mattersForm?: InertiaForm<Record<string, any>>;
@@ -94,8 +98,7 @@ const meetingToForm = (meeting: App.Entities.Meeting) => ({
     : undefined,
 });
 
-const meetingForm = useForm(meetingToForm(props.meeting));
-
+const meetingForm = ref(meetingToForm(props.meeting));
 const formRef = ref<FormInst | null>(null);
 
 const rules = {
@@ -115,6 +118,16 @@ const rules = {
   // },
 };
 
+const handleSubmit = () => {
+  formRef.value?.validate((errors) => {
+    if (errors) {
+      /* empty */
+    } else {
+      emit("submit", meetingForm.value);
+    }
+  });
+};
+
 const upsertMeeting = () => {
   const isPatch = props.modelRoute === "meetings.update";
 
@@ -122,14 +135,14 @@ const upsertMeeting = () => {
     if (errors) {
       /* empty */
     } else {
-      meetingForm.transform((data) => ({
+      meetingForm.value.transform((data) => ({
         ...data,
         institution_id: props.institution?.id ?? undefined,
         matter_id: props.matter?.id,
         mattersForm: props.mattersForm?.data(),
       }));
 
-      meetingForm.submit(
+      meetingForm.value.submit(
         isPatch ? Method.PATCH : Method.POST,
         route(props.modelRoute, isPatch ? props.meeting.id : undefined),
         {
