@@ -60,7 +60,7 @@
       </NLayoutSider>
       <NLayoutContent
         class="h-full min-h-full overflow-x-scroll"
-        content-style="padding: 0rem 2rem 2rem 3rem"
+        content-style="padding: 0rem 3rem 2rem 3rem"
       >
         <slot />
       </NLayoutContent>

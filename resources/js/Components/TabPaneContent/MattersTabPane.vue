@@ -12,7 +12,7 @@
       @click="showModal = true"
     >
       <NIcon size="40" :depth="5" :component="BookQuestionMark24Filled"></NIcon>
-      <span>Sukurti svarstomą klausimą</span>
+      <span>Sukurti svarstomą klausimą...</span>
     </div>
   </div>
   <CardModal
@@ -22,7 +22,7 @@
     @close="showModal = false"
   >
     <MatterForm
-      :form="matterForm"
+      :form="matterTemplate"
       :institution="institution"
       @matter-stored="showModal = false"
     />
@@ -34,6 +34,7 @@ import { BookQuestionMark24Filled } from "@vicons/fluent";
 import { NIcon } from "naive-ui";
 import { ref } from "vue";
 
+import { matterTemplate } from "@/Types/formTemplates";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import MatterCard from "@/Components/Cards/MatterCard.vue";
 import MatterForm from "@/Components/AdminForms/MatterForm.vue";
@@ -44,10 +45,4 @@ defineProps<{
 }>();
 
 const showModal = ref(false);
-
-const matterForm = {
-  title: "",
-  description: "",
-  status: "",
-};
 </script>

@@ -24,7 +24,6 @@ use Spatie\Enum\Laravel\Enum;
  * @method static self MEETING()
  * @method static self NAVIGATION()
  * @method static self NEWS()
- * @method static self NOTIFICATION()
  * @method static self PAGE()
  * @method static self PERMISSION()
  * @method static self RELATIONSHIP()

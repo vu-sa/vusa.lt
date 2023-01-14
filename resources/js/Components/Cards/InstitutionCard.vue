@@ -1,9 +1,6 @@
 <template>
   <NCard
     hoverable
-    :segmented="{
-      footer: 'soft',
-    }"
     as="button"
     style="max-width: 400px"
     class="cursor-pointer shadow-sm"

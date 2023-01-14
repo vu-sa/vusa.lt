@@ -21,6 +21,14 @@ export const doingTemplate: Pick<
   date: new Date().toISOString().split("T").join(" ").slice(0, 16) + ":00",
 };
 
+export const matterTemplate: Pick<
+  App.Entities.Matter,
+  "title" | "description"
+> = {
+  title: "",
+  description: "",
+};
+
 export const typeTemplate: Pick<
   App.Entities.Type,
   "title" | "slug" | "description" | "model_type" | "parent_id"

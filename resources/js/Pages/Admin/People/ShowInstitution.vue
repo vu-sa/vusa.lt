@@ -75,6 +75,7 @@
           </div>
         </template>
         <MattersTabPane
+          v-if="institution.matters && institution.matters?.length > 0"
           :institution="institution"
           :matters="institution.matters"
         ></MattersTabPane>
@@ -117,23 +118,6 @@
               </template>
             </div>
           </template>
-        </div>
-      </NTabPane>
-      <NTabPane
-        name="Posėdžių dokumentai"
-        :disabled="institution.meetings?.length === 0"
-        display-directive="show:lazy"
-      >
-        <template #tab>
-          <NIcon class="mr-1" :component="DeviceMeetingRoomRemote24Filled" />
-          Posėdžių dokumentai
-        </template>
-        <div class="m-4">
-          <ModelsDocumentViewer
-            v-if="institution.meetings?.length > 0"
-            :model-collection-with-documents="institution.meetings"
-            @file-button-click="updateSelectedDocument"
-          ></ModelsDocumentViewer>
         </div>
       </NTabPane>
     </NTabs>
@@ -183,7 +167,9 @@ import { ref } from "vue";
 import { useStorage } from "@vueuse/core";
 
 import { documentTemplate } from "@/Types/formOptions";
-import AdminBreadcrumbDisplayer from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
+import AdminBreadcrumbDisplayer, {
+  type BreadcrumbOption,
+} from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 
 import ActivityLogButton from "@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue";
 import FileSelectDrawer from "@/Components/SharepointFileManager/FileDrawer.vue";
@@ -239,7 +225,7 @@ const typeRelationships = (type) => {
   return relationshipModels;
 };
 
-const breadcrumbOptions: App.Props.BreadcrumbOption[] = [
+const breadcrumbOptions: BreadcrumbOption[] = [
   {
     label: props.institution.name,
     icon: PeopleTeam24Filled,

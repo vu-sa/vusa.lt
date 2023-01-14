@@ -121,7 +121,7 @@ const handleFiltersChange = (filters) => {
 const dataTableMaxHeight = ref(window.innerHeight);
 
 const calculateDataTableMaxHeight = () => {
-  dataTableMaxHeight.value = window.innerHeight - 350;
+  dataTableMaxHeight.value = window.innerHeight - 400;
   // check if the height is less than 400px
   if (dataTableMaxHeight.value < 425) {
     dataTableMaxHeight.value = 425;
