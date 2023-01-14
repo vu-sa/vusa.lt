@@ -9,6 +9,7 @@ use App\Http\Requests\StoreAgendaItemsRequest;
 use App\Models\Meeting;
 use App\Services\TaskCreator;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class AgendaItemController extends ResourceController
 {
@@ -74,6 +75,10 @@ class AgendaItemController extends ResourceController
     public function show(AgendaItem $agendaItem)
     {
         $this->authorize('view', [AgendaItem::class, $agendaItem, $this->authorizer]);
+
+        return Inertia::render('Admin/Representation/ShowAgendaItem', [
+            'agendaItem' => $agendaItem,
+        ]);
     }
 
     /**
@@ -97,6 +102,14 @@ class AgendaItemController extends ResourceController
     public function update(Request $request, AgendaItem $agendaItem)
     {
         $this->authorize('update', [AgendaItem::class, $agendaItem, $this->authorizer]);
+
+        $validated = $request->validate([
+            'title' => 'required|string',
+        ]);
+
+        $agendaItem->update($validated);
+
+        return back()->with(['success' => 'Darbotvarkės punktas atnaujintas sėkmingai!']);
     }
 
     /**

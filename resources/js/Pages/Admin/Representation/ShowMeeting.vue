@@ -15,7 +15,10 @@
           @edit-click="showModal = true"
         ></MoreOptionsButton>
       </div>
-      <CardModal v-model:show="showModal" @close="showModal = false">
+      <CardModal
+        v-model:show="showMeetingModal"
+        @close="showMeetingModal = false"
+      >
         <MeetingForm
           :meeting="meeting"
           :model-route="'meetings.update'"
@@ -33,8 +36,20 @@
     <div>
       <h3>Darbotvarkė</h3>
       <ol class="list-inside">
-        <li v-for="agenda_item in meeting.agenda_items" :key="agenda_item.id">
-          {{ agenda_item.title }}
+        <li
+          v-for="(agenda_item, index) in meeting.agenda_items"
+          :key="agenda_item.id"
+          class="group inline-flex gap-2"
+        >
+          <span>{{ index + 1 }}. {{ agenda_item.title }}</span>
+          <NButton
+            size="tiny"
+            class="invisible transition duration-200 group-hover:visible"
+            strong
+            text
+            @click="handleAgendaClick(agenda_item)"
+            ><template #icon><NIcon :component="Edit24Filled"></NIcon></template
+          ></NButton>
         </li>
       </ol>
     </div>
@@ -43,13 +58,13 @@
       <h2 class="mb-0">Dokumentai</h2>
       <NMessageProvider>
         <FileUploaderBasicButton
-          @click="showFileUploader = true"
+          @click="showFileUploadModal = true"
         ></FileUploaderBasicButton>
         <FileUploader
-          :show="showFileUploader"
+          :show="showFileUploadModal"
           :sharepoint-file-type-options="sharepointFileTypeOptions"
           :content-model="contentModel"
-          @close="showFileUploader = false"
+          @close="showFileUploadModal = false"
         ></FileUploader>
       </NMessageProvider>
     </div>
@@ -69,26 +84,39 @@
     :document="selectedDocument"
     @close-drawer="selectedDocument = documentTemplate"
   ></FileSelectDrawer>
+  <CardModal
+    v-model:show="showAgendaItemModal"
+    @close="showAgendaItemModal = false"
+  >
+    <AgendaItemForm
+      v-if="selectedAgendaItem"
+      :agenda-item="selectedAgendaItem"
+      @submit="handleAgendaItemSubmit"
+    />
+  </CardModal>
 </template>
 
 <script setup lang="tsx">
 import {
   type DropdownOption,
+  NButton,
   NDivider,
   NIcon,
   NMessageProvider,
   NTag,
 } from "naive-ui";
-import { PeopleTeam24Filled } from "@vicons/fluent";
+import { Edit24Filled, PeopleTeam24Filled } from "@vicons/fluent";
 import { computed, ref } from "vue";
 import { useStorage } from "@vueuse/core";
 
+import { Inertia } from "@inertiajs/inertia";
 import { documentTemplate, modelTypes } from "@/Types/formOptions";
 import { formatStaticTime } from "@/Utils/IntlTime";
 import ActivityLogButton from "@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue";
 import AdminBreadcrumbDisplayer, {
   type BreadcrumbOption,
 } from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
+import AgendaItemForm from "@/Components/AdminForms/AgendaItemForm.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import FileButton from "@/Components/SharepointFileManager/FileButton.vue";
 import FileSelectDrawer from "@/Components/SharepointFileManager/FileDrawer.vue";
@@ -106,9 +134,12 @@ const props = defineProps<{
   sharepointFiles: App.Entities.SharepointDocument[];
 }>();
 
-const showModal = ref(false);
-const showFileUploader = ref(false);
+const showMeetingModal = ref(false);
+const showAgendaItemModal = ref(false);
+const showFileUploadModal = ref(false);
+
 const selectedDocument = ref<App.Entities.SharepointDocument | null>(null);
+const selectedAgendaItem = ref<App.Entities.AgendaItem | null>(null);
 
 const mainInstitution: App.Entities.Institution | string =
   props.meeting.institutions?.[0] ?? "Be institucijos";
@@ -133,6 +164,11 @@ const sharepointFileTypeOptions = computed(() => {
   }));
 });
 
+const handleAgendaClick = (agendaItem: App.Entities.AgendaItem) => {
+  selectedAgendaItem.value = agendaItem;
+  showAgendaItemModal.value = true;
+};
+
 const breadcrumbOptions: BreadcrumbOption[] = [
   {
     label: mainInstitution.name,
@@ -156,4 +192,12 @@ const additionalDropdownOptions: DropdownOption[] = [
     },
   },
 ];
+
+const handleAgendaItemSubmit = (agendaItem: App.Entities.AgendaItem) => {
+  Inertia.patch(route("agendaItems.update", agendaItem.id), agendaItem, {
+    onSuccess: () => {
+      showAgendaItemModal.value = false;
+    },
+  });
+};
 </script>
