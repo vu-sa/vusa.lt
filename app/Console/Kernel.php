@@ -25,8 +25,12 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->call(function () {
-            \App\Actions\Schedulable\MeetingNotifyDaysLeft::execute(2);
+            \App\Actions\Schedulable\MeetingNotifier::notifyDaysLeft(2);
         })->daily('15:00');
+
+        $schedule->call(function () {
+            \App\Actions\Schedulable\MeetingNotifier::notifyOnMeetingUnfinishedStatus();
+        })->days([1, 3, 6])->daily('11:00');
     }
 
     /**
