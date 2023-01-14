@@ -15,7 +15,6 @@ export const modelDefaults = {
     "Planuotas posėdis",
     "Susitikimas su koordinatoriumi",
   ],
-  doingStatus: ["Sukurtas", "Pabaigtas"],
 };
 
 export const modelTypes = {

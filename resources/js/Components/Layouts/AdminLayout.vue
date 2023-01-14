@@ -59,7 +59,7 @@
         </NModal>
       </NLayoutSider>
       <NLayoutContent
-        class="min-h-full"
+        class="h-full min-h-full overflow-x-scroll"
         content-style="padding: 0rem 2rem 2rem 3rem"
       >
         <slot />

@@ -3,8 +3,6 @@
     <UpsertModelLayout :errors="$page.props.errors" :model="contact">
       <ContactForm
         :contact="contact"
-        :roles="roles"
-        :duties="duties"
         model-route="contacts.update"
         delete-model-route="contacts.destroy"
       />
@@ -19,6 +17,5 @@ import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 defineProps<{
   contact: App.Entities.Contact;
-  // duties: App.Entities.Duty[];
 }>();
 </script>

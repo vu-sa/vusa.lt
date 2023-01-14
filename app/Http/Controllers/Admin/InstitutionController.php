@@ -13,8 +13,10 @@ use App\Models\Padalinys;
 use App\Models\Type;
 use App\Models\Doing;
 use App\Models\Pivots\Relationshipable;
+use App\Models\User;
 use App\Services\SharepointAppGraph;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Facades\Auth;
 
 class InstitutionController extends ResourceController
 {
@@ -45,14 +47,18 @@ class InstitutionController extends ResourceController
     public function create()
     {       
         $this->authorize('create', [Institution::class, $this->authorizer]);
-        
+
+        $padaliniai = [];
+
+        if ($this->authorizer->checkAllRoleables("create.institution.*")) {
+            $padaliniai = Padalinys::orderBy('shortname_vu')->get(['id', 'shortname']);
+        } else {
+            // TODO: bet nepatikrina, ar tuose padaliniuose turi institution.padalinys teises
+            $padaliniai = User::with('padaliniai:padaliniai.id,shortname')->find(Auth::user()->id)->padaliniai->unique();
+        }
+
         return Inertia::render('Admin/People/CreateInstitution', [
-            'padaliniai' => Padalinys::orderBy('shortname_vu')->get()->map(function ($padalinys) {
-                return [
-                    'id' => $padalinys->id,
-                    'shortname' => $padalinys->shortname,
-                ];
-            }),
+            'padaliniai' => $padaliniai,
             'institutionTypes' => Type::where('model_type', Institution::class)->get(),
         ]);
     }

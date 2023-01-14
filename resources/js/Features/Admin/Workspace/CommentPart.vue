@@ -1,12 +1,14 @@
 <template>
-  <div class="grid max-h-full w-full grid-rows-[1fr_140px] bg-white">
-    <NScrollbar ref="commentScroll" class="p-4" style="max-height: 600px">
+  <div class="grid max-h-full w-full grid-rows-[1fr_155px]">
+    <NScrollbar ref="commentScroll" class="px-4" style="max-height: 700px">
       <template
         v-for="comment in model?.comments"
         :key="comment.id"
         :comment="comment"
       >
-        <div class="mb-4 grid grid-cols-[40px_1fr] gap-x-4 gap-y-2">
+        <div
+          class="mb-4 grid grid-cols-[40px_1fr] gap-x-4 gap-y-2 first:pt-4 last:pb-4"
+        >
           <UserAvatar bold :size="32" :user="comment.user" />
           <div class="inline-flex flex-col">
             <strong class="text-md">{{ comment.user.name }}</strong>
@@ -22,7 +24,7 @@
           <div></div>
           <div class="mt-2 text-sm" v-html="comment.comment"></div>
         </div>
-        <hr class="my-4 last:invisible" />
+        <hr class="my-4 last:invisible dark:border-zinc-600" />
       </template>
     </NScrollbar>
     <div class="relative">
@@ -68,7 +70,7 @@ watch(
   }
 );
 
-const submitComment = (user: unknown) => {
+const submitComment = () => {
   loading.value = true;
   Inertia.post(
     route("users.comments.store", usePage().props.value.auth?.user.id),

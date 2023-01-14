@@ -35,10 +35,10 @@
   />
 
   <div
-    class="mt-4 mb-12 grid max-w-7xl grid-flow-row-dense grid-cols-[1fr_auto] gap-x-8 lg:grid-flow-col"
+    class="mt-4 grid max-w-7xl grid-flow-row-dense grid-cols-[1fr_auto] gap-x-8 lg:grid-flow-col"
   >
     <FadeTransition appear
-      ><div class="col-span w-full overflow-visible">
+      ><div class="col-span min-h-full w-full overflow-visible">
         <slot /></div
     ></FadeTransition>
     <slot name="aside-card"></slot>

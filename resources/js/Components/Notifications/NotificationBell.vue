@@ -79,34 +79,34 @@ const removeNotification = (id: number) => {
   message.success("Komentaras pažymėtas kaip perskaitytas.");
 };
 
-window.Echo.private(
-  "App.Models.User." + usePage().props.value.auth?.user.id
-).notification((notificationSent: NotificationData) => {
-  notification.info({
-    content() {
-      return <div v-html={notificationSent.text}></div>;
-    },
-    avatar() {
-      return <NAvatar src={notificationSent.subject.image}></NAvatar>;
-    },
-  });
+// window.Echo.private(
+//   "App.Models.User." + usePage().props.value.auth?.user.id
+// ).notification((notificationSent: NotificationData) => {
+//   notification.info({
+//     content() {
+//       return <div v-html={notificationSent.text}></div>;
+//     },
+//     avatar() {
+//       return <NAvatar src={notificationSent.subject.image}></NAvatar>;
+//     },
+//   });
 
-  const options: UseWebNotificationOptions = {
-    title: notificationSent.text.replaceAll(/<\/?[^>]+(>|$)/gi, ""),
-    dir: "auto",
-    lang: usePage().props.value.locale,
-    renotify: true,
-    tag: "notification",
-    icon: notificationSent.subject.image,
-  };
+//   const options: UseWebNotificationOptions = {
+//     title: notificationSent.text.replaceAll(/<\/?[^>]+(>|$)/gi, ""),
+//     dir: "auto",
+//     lang: usePage().props.value.locale,
+//     renotify: true,
+//     tag: "notification",
+//     icon: notificationSent.subject.image,
+//   };
 
-  const { isSupported, onClick, show } = useWebNotification(options);
+//   const { isSupported, onClick, show } = useWebNotification(options);
 
-  if (isSupported.value) {
-    show();
-    onClick.on((evt: Event) => {
-      window.location.assign(notificationSent.object.url);
-    });
-  }
-});
+//   if (isSupported.value) {
+//     show();
+//     onClick.on((evt: Event) => {
+//       window.location.assign(notificationSent.object.url);
+//     });
+//   }
+// });
 </script>

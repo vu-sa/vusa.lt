@@ -6,6 +6,7 @@ use App\Models\Contact;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\ResourceController;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class ContactController extends ResourceController
@@ -51,17 +52,14 @@ class ContactController extends ResourceController
     {
         $this->authorize('create', [Contact::class, $this->authorizer]);
 
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:contacts|unique:users',
-            'phone' => 'required|string|max:255',
+            'email' => 'nullable|string|email|max:255|unique:contacts|unique:users',
+            'phone' => 'nullable|string|max:255',
+            'extra_attributes' => 'array'
         ]);
 
-        $contact = Contact::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-        ]);
+        $contact = Contact::create($validated);
 
         return redirect()->route('contacts.index')->with('success', 'Kontaktas sukurtas.');
     }
@@ -72,10 +70,14 @@ class ContactController extends ResourceController
      * @param  \App\Models\Contact  $contact
      * @return \Illuminate\Http\Response
      */
-    // public function show(Contact $contact)
-    // {
-    //     $this->authorize('view', [Contact::class, $contact, $this->authorizer]);
-    // }
+    public function show(Contact $contact)
+    {
+        $this->authorize('view', [Contact::class, $contact, $this->authorizer]);
+
+        return Inertia::render('Admin/People/ShowContact', [
+            'contact' => $contact->load('activities.causer', 'comments'),
+        ]);
+    }
 
     /**
      * Show the form for editing the specified resource.
@@ -103,17 +105,14 @@ class ContactController extends ResourceController
     {
         $this->authorize('update', [Contact::class, $contact, $this->authorizer]);
 
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:contacts,email,' . $contact->id . ',id|unique:users,email,' . $contact->id . ',id',
-            'phone' => 'required|string|max:255',
+            'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('contacts')->ignore($contact->id)],
+            'phone' => 'nullable|string|max:255',
+            'extra_attributes' => 'array'
         ]);
 
-        $contact->update([
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-        ]);
+        $contact->update($validated);
 
         return redirect()->back()->with('success', 'Kontaktas atnaujintas.');
     }

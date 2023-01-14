@@ -72,6 +72,7 @@ declare namespace App.Models {
     created_at: any;
     updated_at: any;
     deleted_at: any | null;
+    extra_attributes: string | null;
     duties?: Array<App.Models.Duty> | null;
     duties_count?: number | null;
   }

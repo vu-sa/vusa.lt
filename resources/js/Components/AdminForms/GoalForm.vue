@@ -18,7 +18,6 @@ import { NButton, NForm, NFormItemGi, NGrid, NInput } from "naive-ui";
 import { ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 
-
 const emit = defineEmits(["formSuccess"]);
 
 const props = defineProps<{

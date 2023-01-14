@@ -2,7 +2,7 @@
   <div class="flex flex-col">
     <EditorContent
       :editor="editor"
-      class="max-h-32 min-h-[6rem] overflow-y-scroll border bg-white outline-zinc-400 dark:bg-zinc-800/70"
+      class="max-h-32 min-h-[6rem] overflow-y-scroll border bg-white outline-zinc-400 dark:border-zinc-600 dark:bg-zinc-800/70"
     />
     <div
       v-if="editor"

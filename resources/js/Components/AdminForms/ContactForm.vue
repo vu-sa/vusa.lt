@@ -26,6 +26,23 @@
         <NInput v-model:value="form.phone" placeholder="+370 612 34 567" />
       </NFormItemGi>
 
+      <NFormItemGi label="Mokslinis laipsnis" :span="1">
+        <NSelect
+          v-model:value="form.extra_attributes.degree"
+          placeholder="Daktaro laipsnis"
+          :options="degreeOptions"
+        ></NSelect>
+      </NFormItemGi>
+
+      <NFormItemGi label="Pedagoginis vardas" :span="1">
+        <NSelect
+          v-model:value="form.extra_attributes.pedagogical_name"
+          :disabled="form.extra_attributes.degree !== 'daktaras'"
+          placeholder="Docentas"
+          :options="pedagogicalNameOptions"
+        ></NSelect>
+      </NFormItemGi>
+
       <!-- <NFormItemGi label="Pareigybės" :span="6">
         <NTransfer
           ref="transfer"
@@ -57,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { NForm, NFormItemGi, NGrid, NInput } from "naive-ui";
+import { NForm, NFormItemGi, NGrid, NInput, NSelect } from "naive-ui";
 import { useForm } from "@inertiajs/inertia-vue3";
 
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
@@ -72,6 +89,17 @@ const props = defineProps<{
 }>();
 
 const form = useForm("contact", props.contact);
+
+const degreeOptions = [
+  { label: "Bakalauro laipsnis", value: "bakalauras" },
+  { label: "Magistro laipsnis", value: "magistras" },
+  { label: "Daktaro laipsnis", value: "daktaras" },
+];
+
+const pedagogicalNameOptions = [
+  { label: "Docentas", value: "docentas" },
+  { label: "Profesorius", value: "profesorius" },
+];
 
 // const dutyOptions = props.duties.map((duty) => ({
 //   label: `${duty.name} (${duty.institution?.padalinys?.shortname})`,

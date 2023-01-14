@@ -66,9 +66,11 @@ import { NTabPane, NTabs } from "naive-ui";
 import { computed, ref } from "vue";
 import { useStorage } from "@vueuse/core";
 
-import AdminBreadcrumbDisplayer from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
-
+import { doingTemplate } from "@/Types/formTemplates";
 import ActivityLogButton from "@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue";
+import AdminBreadcrumbDisplayer, {
+  type BreadcrumbOption,
+} from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import DoingsTabPane from "@/Components/TabPaneContent/DoingsTabPane.vue";
 import GoalCard from "@/Components/Cards/QuickContentCards/GoalCard.vue";
@@ -88,14 +90,6 @@ const updateMattersTabPane = (value: string | number) => {
   currentMattersTabPane.value = value;
 };
 
-const doingTemplate = {
-  title: "",
-  type_id: "",
-  status: "Sukurtas",
-  // datetime now YYYY-MM-DD HH:MM:SS and delimit T
-  date: new Date().toISOString().split("T").join(" ").slice(0, 16) + ":00",
-};
-
 const firstInstitution = computed(() => {
   if (props.matter.institutions?.length === 0) {
     return {
@@ -107,7 +101,7 @@ const firstInstitution = computed(() => {
   return props.matter?.institutions?.[0];
 });
 
-const breadcrumbOptions: App.Props.BreadcrumbOption[] = [
+const breadcrumbOptions: BreadcrumbOption[] = [
   {
     label: firstInstitution.value?.name ?? "Nenurodyta",
     icon: PeopleTeam24Filled,

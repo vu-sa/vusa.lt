@@ -6,14 +6,10 @@
     :columns="columns"
     :paginated-models="contacts"
   >
-    <template #aside-header>
-      <AsideHeader></AsideHeader>
-    </template>
   </IndexPageLayout>
 </template>
 
 <script setup lang="tsx">
-import AsideHeader from "@/Components/AsideHeaders/AsideHeaderContacts.vue";
 import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
 
 defineProps<{
@@ -22,7 +18,7 @@ defineProps<{
 
 const canUseRoutes = {
   create: true,
-  show: false,
+  show: true,
   edit: true,
   destroy: true,
 };
