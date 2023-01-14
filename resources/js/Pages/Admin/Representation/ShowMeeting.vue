@@ -11,6 +11,7 @@
         <ActivityLogButton :activities="meeting.activities" />
         <MoreOptionsButton
           edit
+          :more-options="additionalDropdownOptions"
           @edit-click="showModal = true"
         ></MoreOptionsButton>
       </div>
@@ -62,7 +63,13 @@
 </template>
 
 <script setup lang="tsx">
-import { NMessageProvider, NTag } from "naive-ui";
+import {
+  type DropdownOption,
+  NDivider,
+  NIcon,
+  NMessageProvider,
+  NTag,
+} from "naive-ui";
 import { PeopleTeam24Filled } from "@vicons/fluent";
 import { computed, ref } from "vue";
 import { useStorage } from "@vueuse/core";
@@ -126,6 +133,17 @@ const breadcrumbOptions: BreadcrumbOption[] = [
       params: {
         institution: mainInstitution.id,
       },
+    },
+  },
+];
+
+const additionalDropdownOptions: DropdownOption[] = [
+  {
+    label: "Pridėti darbotvarkės punktų",
+    key: "add-agenda-item",
+    icon: () => <NIcon component={Icons.AGENDA_ITEM} />,
+    onClick: () => {
+      showModal.value = true;
     },
   },
 ];

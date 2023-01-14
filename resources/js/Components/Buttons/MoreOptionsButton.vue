@@ -1,5 +1,5 @@
 <template>
-  <NDropdown trigger="click" :options="moreOptions" @select="handleSelect">
+  <NDropdown trigger="click" :options="dropdownOptions" @select="handleSelect">
     <NButton
       :size="small ? 'small' : 'medium'"
       :disabled="disabled"
@@ -30,8 +30,14 @@ import {
   Edit24Filled,
   MoreHorizontal24Filled,
 } from "@vicons/fluent";
-import { NButton, NDropdown, NIcon, NModal } from "naive-ui";
-import { ref } from "vue";
+import {
+  type DropdownOption,
+  NButton,
+  NDropdown,
+  NIcon,
+  NModal,
+} from "naive-ui";
+import { computed, ref } from "vue";
 
 const emit = defineEmits(["editClick", "deleteClick"]);
 
@@ -40,11 +46,12 @@ const props = defineProps<{
   small?: boolean;
   edit?: boolean;
   delete?: boolean;
+  moreOptions?: DropdownOption[];
 }>();
 
 const showDeleteModal = ref(false);
 
-const moreOptions = [
+const defaultOptions: DropdownOption[] = [
   {
     label: "Redaguoti",
     key: "edit",
@@ -62,6 +69,12 @@ const moreOptions = [
     show: props.delete,
   },
 ];
+
+// add those two arrays of options if they are not empty
+const dropdownOptions = computed(() => {
+  const options = props.moreOptions ? props.moreOptions : [];
+  return [...options, ...defaultOptions];
+});
 
 const handleSelect = (key: string) => {
   switch (key) {
