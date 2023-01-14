@@ -9,14 +9,12 @@ use App\Models\Duty;
 use Illuminate\Http\Request;
 use App\Http\Controllers\ResourceController;
 use Inertia\Inertia;
-use App\Models\Padalinys;
 use App\Models\Type;
 use App\Models\Doing;
 use App\Models\Pivots\Relationshipable;
-use App\Models\User;
+use App\Services\ResourceServices\InstitutionService;
 use App\Services\SharepointAppGraph;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
-use Illuminate\Support\Facades\Auth;
 
 class InstitutionController extends ResourceController
 {
@@ -48,14 +46,7 @@ class InstitutionController extends ResourceController
     {       
         $this->authorize('create', [Institution::class, $this->authorizer]);
 
-        $padaliniai = [];
-
-        if ($this->authorizer->checkAllRoleables("create.institution.*")) {
-            $padaliniai = Padalinys::orderBy('shortname_vu')->get(['id', 'shortname']);
-        } else {
-            // TODO: bet nepatikrina, ar tuose padaliniuose turi institution.padalinys teises
-            $padaliniai = User::with('padaliniai:padaliniai.id,shortname')->find(Auth::user()->id)->padaliniai->unique();
-        }
+        $padaliniai = InstitutionService::getPadaliniaiForUpserts($this->authorizer);
 
         return Inertia::render('Admin/People/CreateInstitution', [
             'padaliniai' => $padaliniai,
@@ -167,7 +158,7 @@ class InstitutionController extends ResourceController
     public function edit(Institution $institution)
     {
         $this->authorize('update', [Institution::class, $institution, $this->authorizer]);
-        
+
         return Inertia::render('Admin/People/EditInstitution', [
             'institution' => [
                 ...$institution->toArray(),
@@ -175,12 +166,7 @@ class InstitutionController extends ResourceController
             ],
             'duties' => $institution->duties->sortBy('order')->values(),
             'institutionTypes' => Type::where('model_type', Institution::class)->get(),
-            'padaliniai' => Padalinys::orderBy('shortname_vu')->get()->map(function ($padalinys) {
-                return [
-                    'id' => $padalinys->id,
-                    'shortname' => $padalinys->shortname,
-                ];
-            }),
+            'padaliniai' => InstitutionService::getPadaliniaiForUpserts($this->authorizer)
         ]);
     }
 
