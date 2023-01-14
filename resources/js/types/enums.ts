@@ -30,7 +30,6 @@ export enum ModelEnum {
   "MEETING" = "meeting",
   "NAVIGATION" = "navigation",
   "NEWS" = "news",
-  "NOTIFICATION" = "notification",
   "PAGE" = "page",
   "PERMISSION" = "permission",
   "RELATIONSHIP" = "relationship",

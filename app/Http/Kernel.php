@@ -39,6 +39,7 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\UrlRewrite::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
+            \App\Http\Middleware\UpdateLastAction::class,
         ],
 
         'api' => [
