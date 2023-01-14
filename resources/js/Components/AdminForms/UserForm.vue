@@ -20,7 +20,7 @@
         <NInput v-model:value="form.phone" placeholder="+370 612 34 567" />
       </NFormItemGi>
 
-      <NFormItemGi label="Administracinė vusa.lt rolė" :span="2">
+      <!-- <NFormItemGi label="Administracinė vusa.lt rolė" :span="2">
         <NSelect
           v-model:value="form.roles"
           :disabled="!$page.props.auth.user?.isSuperAdmin ?? true"
@@ -30,7 +30,7 @@
           type="text"
           placeholder="Be rolės..."
         />
-      </NFormItemGi>
+      </NFormItemGi> -->
 
       <NFormItemGi label="Pareigybės" :span="6">
         <NTransfer

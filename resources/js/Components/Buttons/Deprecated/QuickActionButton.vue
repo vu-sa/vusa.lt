@@ -11,8 +11,8 @@
 </template>
 
 <script setup lang="ts">
-import { Component } from "vue";
 import { NButton, NIcon } from "naive-ui";
+import type { Component } from "vue";
 
 defineProps<{
   buttonType?: any;

@@ -1,10 +1,5 @@
 <template>
-  <component :is="button" @click="showModal = true"></component>
-  <CardModal
-    v-model:show="showModal"
-    :title="`Įkelti naują failą`"
-    @close="showModal = false"
-  >
+  <CardModal :show="show" :title="`Įkelti naują failą`" @close="$emit('close')">
     <p v-if="!sharepointFileTypeOptions">
       Negalite įkelti failo, nes nėra numatyta turinio tipų šiai formai.
       Susisiekite su administratoriumi.
@@ -128,11 +123,13 @@ import { useForm } from "@inertiajs/inertia-vue3";
 
 import CardModal from "@/Components/Modals/CardModal.vue";
 
+defineEmits(["close", "success"]);
+
 const props = defineProps<{
-  button: any; // yes
   contentModel?: Record<string, any>; // yes
   contentModelOptions?: Record<string, any>[];
   sharepointFileTypeOptions: Record<string, any>[]; // yes
+  show: boolean; // yes
   relatedObjectName?: string | null;
   // keywords: Record<string, any>[]; // maybe
 

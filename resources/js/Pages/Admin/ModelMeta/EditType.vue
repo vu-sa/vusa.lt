@@ -10,10 +10,14 @@
     <div class="m-4 flex items-center gap-4">
       <h2 class="mb-0">Dokumentai</h2>
       <NMessageProvider>
+        <FileUploaderBasicButton
+          @click="showFileUploader = true"
+        ></FileUploaderBasicButton>
         <FileUploader
-          :button="FileUploaderBasicButton"
+          :show="showFileUploader"
           :sharepoint-file-type-options="sharepointFileTypeOptions"
           :content-model="contentModel"
+          @close="showFileUploader = false"
         ></FileUploader>
       </NMessageProvider>
     </div>
@@ -52,6 +56,7 @@ const props = defineProps<{
 }>();
 
 const selectedDocument = ref(null);
+const showFileUploader = ref(false);
 
 const sharepointFileTypeOptions = computed(() => {
   return modelTypes.sharepointFile.map((type) => {

@@ -50,6 +50,7 @@ import { onBeforeUnmount, ref, watch } from "vue";
 import StarterKit from "@tiptap/starter-kit";
 import TipTapLink from "@tiptap/extension-link";
 import TipTapMarkButton from "./TipTap/TipTapMarkButton.vue";
+import Underline from "@tiptap/extension-underline";
 
 const props = defineProps<{
   text: string;
@@ -72,6 +73,7 @@ const editor = useEditor({
     TipTapLink.configure({
       openOnClick: false,
     }),
+    Underline,
   ],
   content: text.value,
   onUpdate: () => {

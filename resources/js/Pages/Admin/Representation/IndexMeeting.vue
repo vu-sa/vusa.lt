@@ -42,7 +42,7 @@ const columns: DataTableColumns<App.Entities.Meeting> = [
     key: "start_time",
     minWidth: 200,
     render(row) {
-      return formatStaticTime(row.start_time * 1000, {
+      return formatStaticTime(new Date(row.start_time), {
         year: "numeric",
         month: "long",
         day: "2-digit",

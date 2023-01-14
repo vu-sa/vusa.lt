@@ -32,10 +32,14 @@
     <div class="m-4 flex items-center gap-4">
       <h2 class="mb-0">Dokumentai</h2>
       <NMessageProvider>
+        <FileUploaderBasicButton
+          @click="showFileUploader = true"
+        ></FileUploaderBasicButton>
         <FileUploader
-          :button="FileUploaderBasicButton"
+          :show="showFileUploader"
           :sharepoint-file-type-options="sharepointFileTypeOptions"
           :content-model="contentModel"
+          @close="showFileUploader = false"
         ></FileUploader>
       </NMessageProvider>
     </div>
@@ -46,6 +50,9 @@
         :document="document"
         @click="selectedDocument = document"
       ></FileButton>
+      <NewGridItemButton :icon="Icons.SHAREPOINT_DOCUMENT"
+        >Įkelti naują dokumentą?</NewGridItemButton
+      >
     </div>
   </PageContent>
   <FileSelectDrawer
@@ -71,8 +78,10 @@ import FileButton from "@/Components/SharepointFileManager/FileButton.vue";
 import FileSelectDrawer from "@/Components/SharepointFileManager/FileDrawer.vue";
 import FileUploader from "@/Components/SharepointFileManager/FileUploader.vue";
 import FileUploaderBasicButton from "@/Components/SharepointFileManager/FileUploaderBasicButton.vue";
+import Icons from "@/Types/Icons/regular";
 import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
+import NewGridItemButton from "@/Components/Buttons/NewGridItemButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 
 const props = defineProps<{
@@ -82,6 +91,7 @@ const props = defineProps<{
 }>();
 
 const showModal = ref(false);
+const showFileUploader = ref(false);
 const selectedDocument = ref<App.Entities.SharepointDocument | null>(null);
 
 const mainInstitution: App.Entities.Institution | string =

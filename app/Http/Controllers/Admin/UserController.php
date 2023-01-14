@@ -77,14 +77,13 @@ class UserController extends ResourceController
         ]);
 
         DB::transaction(function () use ($request) {
-            $user = new User();
-
-            $user->name = $request->name;
-            $user->email = $request->email;
-            $user->phone = $request->phone;
-            $user->profile_photo_path = $request->profile_photo_path;
-
-            $user->save();
+            // create user
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'profile_photo_path' => $request->profile_photo_path,
+            ]);
 
             foreach ($request->duties as $duty) {
                 $user->duties()->attach($duty);
