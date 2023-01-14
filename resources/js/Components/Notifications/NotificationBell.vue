@@ -18,12 +18,19 @@
         ></NButton>
       </template>
       <template #header
-        ><header class="flex">
+        ><header class="flex justify-between gap-4">
           <span class="text-lg font-bold text-zinc-900 dark:text-zinc-50"
             >Pranešimai</span
-          >
-        </header></template
-      >
+          ><NButton
+            :disabled="notifications.length === 0"
+            size="tiny"
+            :loading="loading"
+            text
+            @click="handleAllRead"
+            >Pažymėti visus<template #icon
+              ><NIcon :component="CheckmarkCircle24Regular"></NIcon></template
+          ></NButton></header
+      ></template>
       <div
         v-if="notifications.length > 0"
         class="max-h-96 max-w-xs overflow-auto pr-4 sm:max-w-lg"
@@ -57,6 +64,8 @@ import { useWebNotification } from "@vueuse/core";
 import Icons from "@/Types/Icons/regular";
 import type { EventHook, UseWebNotificationOptions } from "@vueuse/core";
 
+import { CheckmarkCircle24Regular } from "@vicons/fluent";
+import { useAxios } from "@vueuse/integrations/useAxios";
 import NotificationItem, {
   type NotificationData,
 } from "./NotificationItem.vue";
@@ -66,8 +75,7 @@ const notifications = ref(
 );
 
 const message = useMessage();
-const notification = useNotification();
-const onWebNotificationClick = ref<EventHook | null>(null);
+const loading = ref(false);
 
 const removeNotification = (id: number) => {
   if (!notifications.value) return;
@@ -78,6 +86,23 @@ const removeNotification = (id: number) => {
 
   message.success("Komentaras pažymėtas kaip perskaitytas.");
 };
+
+const handleAllRead = async () => {
+  loading.value = true;
+
+  const { isFinished } = await useAxios(route("notifications.markAllAsRead"), {
+    method: "POST",
+  });
+
+  if (isFinished.value) {
+    notifications.value = [];
+    loading.value = false;
+    message.success("Visi pranešimai pažymėti kaip perskaityti.");
+  }
+};
+
+const notification = useNotification();
+const onWebNotificationClick = ref<EventHook | null>(null);
 
 // window.Echo.private(
 //   "App.Models.User." + usePage().props.value.auth?.user.id

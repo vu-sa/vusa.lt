@@ -11,4 +11,10 @@ class UserNotificationsController extends Controller
         // mark notification as read
         auth()->user()->unreadNotifications->where('id', $id)->markAsRead();
     }
+
+    public function markAllAsRead()
+    {
+        // mark all notifications as read
+        auth()->user()->unreadNotifications->markAsRead();
+    }
 }
