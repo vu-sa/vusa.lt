@@ -3,10 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Type;
-use App\Http\Controllers\Controller as Controller;
 use App\Http\Controllers\ResourceController;
 use App\Services\SharepointAppGraph;
-use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -50,10 +48,10 @@ class TypeController extends ResourceController
     public function store(Request $request)
     {
         $this->authorize('create', [Type::class, $this->authorizer]);
-        
+
         $request->validate([
             'title' => 'required',
-            'model_type' => 'required',
+            'model_type' => 'string|required',
             'parent_id' => 'nullable|exists:types,id|different:id',
         ]);
 

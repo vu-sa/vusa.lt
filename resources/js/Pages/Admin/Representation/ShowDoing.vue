@@ -61,7 +61,7 @@
           <NMessageProvider>
             <FileUploader
               :button="FileUploaderBasicButton"
-              :content-type-options="contentTypeOptions"
+              :sharepoint-file-type-options="sharepointFileTypeOptions"
               :content-model="contentModel"
             ></FileUploader>
           </NMessageProvider>
@@ -89,7 +89,7 @@ import { NMessageProvider, NTabPane, NTabs, NTag } from "naive-ui";
 import { Person24Filled, Sparkle20Filled } from "@vicons/fluent";
 import { computed, ref } from "vue";
 
-import { contentTypeOptions, documentTemplate } from "@/Composables/someTypes";
+import { documentTemplate, modelTypes } from "@/Types/formOptions";
 import { useStorage } from "@vueuse/core";
 import AdminBreadcrumbDisplayer, {
   type BreadcrumbOption,
@@ -115,6 +115,13 @@ const props = defineProps<{
 
 const showModal = ref(false);
 const selectedDocument = ref(null);
+
+const sharepointFileTypeOptions = computed(() => [
+  modelTypes.sharepointFile.map((type) => ({
+    label: type,
+    value: type,
+  })),
+]);
 
 const breadcrumbOptions: BreadcrumbOption[] = [
   {

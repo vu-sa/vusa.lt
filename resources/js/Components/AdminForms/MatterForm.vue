@@ -55,7 +55,7 @@ import {
 } from "naive-ui";
 import { useForm } from "@inertiajs/inertia-vue3";
 
-import { modelNameDefaultOptions } from "@/Composables/someTypes";
+import { modelDefaults, modelStatus } from "@/Types/formOptions";
 import StatusTag from "@/Components/Tags/StatusTag.vue";
 
 const emit = defineEmits<{
@@ -69,23 +69,19 @@ const props = defineProps<{
 
 const matterForm = useForm(props.form);
 
-const defaultOptions = modelNameDefaultOptions.map((option) => {
+const defaultOptions = modelDefaults.matter.map((option) => {
   return {
     label: option,
     value: option,
   };
 });
 
-const matterStatusOptions = [
-  {
-    label: "Sukurtas",
-    value: "Sukurtas",
-  },
-  {
-    label: "Pabaigtas",
-    value: "Pabaigtas",
-  },
-];
+const matterStatusOptions = modelStatus.matter.map((option) => {
+  return {
+    label: option,
+    value: option,
+  };
+});
 
 const createMatter = () => {
   matterForm.post(

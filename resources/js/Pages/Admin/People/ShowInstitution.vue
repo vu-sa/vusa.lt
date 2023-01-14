@@ -187,7 +187,7 @@ import {
 import { ref } from "vue";
 import { useStorage } from "@vueuse/core";
 
-import { documentTemplate } from "@/Composables/someTypes";
+import { documentTemplate } from "@/Types/formOptions";
 import AdminBreadcrumbDisplayer from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 
 import ActivityLogButton from "@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue";

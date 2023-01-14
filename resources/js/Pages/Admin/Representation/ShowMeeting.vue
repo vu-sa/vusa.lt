@@ -34,7 +34,7 @@
       <NMessageProvider>
         <FileUploader
           :button="FileUploaderBasicButton"
-          :content-type-options="contentTypeOptions"
+          :sharepoint-file-type-options="sharepointFileTypeOptions"
           :content-model="contentModel"
         ></FileUploader>
       </NMessageProvider>
@@ -60,7 +60,7 @@ import { PeopleTeam24Filled } from "@vicons/fluent";
 import { computed, ref } from "vue";
 import { useStorage } from "@vueuse/core";
 
-import { contentTypeOptions, documentTemplate } from "@/Composables/someTypes";
+import { documentTemplate, modelTypes } from "@/Types/formOptions";
 import { formatStaticTime } from "@/Utils/IntlTime";
 import ActivityLogButton from "@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue";
 import AdminBreadcrumbDisplayer, {
@@ -99,6 +99,13 @@ const contentModel = computed(() => ({
   type: "App\\Models\\Meeting",
   modelTypes: props.meeting.types,
 }));
+
+const sharepointFileTypeOptions = computed(() => {
+  return modelTypes.sharepointFile.map((type) => ({
+    label: type,
+    value: type,
+  }));
+});
 
 const breadcrumbOptions: BreadcrumbOption[] = [
   {

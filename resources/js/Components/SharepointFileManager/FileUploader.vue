@@ -5,13 +5,13 @@
     :title="`Įkelti naują failą`"
     @close="showModal = false"
   >
-    <p v-if="!contentTypeOptions">
+    <p v-if="!sharepointFileTypeOptions">
       Negalite įkelti failo, nes nėra numatyta turinio tipų šiai formai.
       Susisiekite su administratoriumi.
     </p>
     <NForm
       ref="formRef"
-      :disabled="!contentTypeOptions || loading"
+      :disabled="!sharepointFileTypeOptions || loading"
       :model="model"
       :rules="rules"
     >
@@ -30,7 +30,7 @@
           v-model:value="model.typeValue"
           :disabled="model.uploadValue"
           placeholder="Pasirink failo tipą..."
-          :options="contentTypeOptions"
+          :options="sharepointFileTypeOptions"
         ></NSelect
       ></NFormItem>
       <!-- <NFormItem label="Raktažodžiai" path="keywordsValue"
@@ -93,7 +93,7 @@
       </NFormItem>
 
       <NButton
-        :disabled="!contentTypeOptions"
+        :disabled="!sharepointFileTypeOptions"
         :loading="loading"
         @click="handleValidateClick"
         >Įkelti naują failą</NButton
@@ -132,7 +132,7 @@ const props = defineProps<{
   button: any; // yes
   contentModel?: Record<string, any>; // yes
   contentModelOptions?: Record<string, any>[];
-  contentTypeOptions: Record<string, any>[]; // yes
+  sharepointFileTypeOptions: Record<string, any>[]; // yes
   relatedObjectName?: string | null;
   // keywords: Record<string, any>[]; // maybe
 

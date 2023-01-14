@@ -4,7 +4,7 @@
       :button="meetingButton"
       :content-model="contentModel"
       :content-model-options="objectOptions"
-      :content-type-options="contentTypeOptions"
+      :sharepoint-file-type-options="sharepointFileTypeOptions"
       :prespecified-type="'Protokolai'"
       :related-object-name="institution.name"
     ></FileUploader>
@@ -16,13 +16,22 @@ import { DocumentAdd24Filled } from "@vicons/fluent";
 import { NButton, NIcon, NMessageProvider } from "naive-ui";
 import { computed } from "vue";
 
-import { contentTypeOptions } from "@/Composables/someTypes";
+import { modelTypes } from "@/Types/formOptions";
 import FileUploader from "@/Components/SharepointFileManager/FileUploader.vue";
 
 const props = defineProps<{
   institution: App.Entities.Institution;
   matters: App.Entities.Matter[];
 }>();
+
+const sharepointFileTypeOptions = computed(() => {
+  return modelTypes.sharepointFile.map((type) => {
+    return {
+      label: type,
+      value: type,
+    };
+  });
+});
 
 const objectOptions = computed(() => {
   return props.matters.map((matter) => {

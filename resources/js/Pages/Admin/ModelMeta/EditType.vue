@@ -12,7 +12,7 @@
       <NMessageProvider>
         <FileUploader
           :button="FileUploaderBasicButton"
-          :content-type-options="contentTypeOptions"
+          :sharepoint-file-type-options="sharepointFileTypeOptions"
           :content-model="contentModel"
         ></FileUploader>
       </NMessageProvider>
@@ -34,9 +34,9 @@
 
 <script setup lang="ts">
 import { NMessageProvider } from "naive-ui";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
-import { contentTypeOptions, documentTemplate } from "@/Composables/someTypes";
+import { documentTemplate, modelTypes } from "@/Types/formOptions";
 
 import FileButton from "@/Components/SharepointFileManager/FileButton.vue";
 import FileSelectDrawer from "@/Components/SharepointFileManager/FileDrawer.vue";
@@ -52,6 +52,15 @@ const props = defineProps<{
 }>();
 
 const selectedDocument = ref(null);
+
+const sharepointFileTypeOptions = computed(() => {
+  return modelTypes.sharepointFile.map((type) => {
+    return {
+      label: type,
+      value: type,
+    };
+  });
+});
 
 const contentModel = {
   id: props.contentType.id,

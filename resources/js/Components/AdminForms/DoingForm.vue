@@ -36,16 +36,6 @@
           :options="doingTypes"
         ></NSelect
       ></NFormItemGi>
-      <!-- <NFormItemGi label="Statusas" path="status" required :span="2">
-        <NRadioGroup v-model:value="doingForm.status">
-          <NRadio
-            v-for="status in doingStatusOptions"
-            :key="status.value"
-            :value="status.value"
-            ><StatusTag :status="status.label"></StatusTag
-          ></NRadio>
-        </NRadioGroup>
-      </NFormItemGi> -->
 
       <NFormItemGi :span="2" :show-label="false"
         ><NButton type="primary" @click="upsertDoing"
@@ -71,7 +61,7 @@ import {
 import { ref } from "vue";
 import { useForm, usePage } from "@inertiajs/inertia-vue3";
 
-import { doingOptions, doingStatusOptions } from "@/Composables/someTypes";
+import { doingOptions } from "@/Types/formOptions";
 import StatusTag from "@/Components/Tags/StatusTag.vue";
 
 const emit = defineEmits(["success"]);

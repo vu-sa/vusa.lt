@@ -28,7 +28,7 @@
       <NFormItemGi required label="Modelio tipas" :span="2">
         <NSelect
           v-model:value="form.model_type"
-          :options="modelTypes"
+          :options="modelDefaults"
           placeholder="Institucija"
           @update:value="form.parent_id = null"
         />
@@ -38,6 +38,7 @@
           v-model:value="form.parent_id"
           label-field="title"
           value-field="id"
+          :clearable="true"
           :options="parentTypeOptions"
           placeholder="Studentų atstovybė"
         />
@@ -59,11 +60,12 @@ import { NForm, NFormItemGi, NGrid, NInput, NSelect } from "naive-ui";
 import { computed } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 
+import { modelTypes } from "@/Types/formOptions";
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{
-  type: App.Entities.MainPage;
+  type: App.Entities.Type;
   contentTypes: Record<string, any>[];
   modelRoute: string;
   deleteModelRoute?: string;
@@ -71,20 +73,12 @@ const props = defineProps<{
 
 const form = useForm("type", props.type);
 
-const modelTypes = [
-  {
-    value: "App\\Models\\Institution",
-    label: "Institucija",
-  },
-  {
-    value: "App\\Models\\Duty",
-    label: "Pareigybė",
-  },
-  {
-    value: "App\\Models\\Doing",
-    label: "Veikla",
-  },
-];
+const modelDefaults = modelTypes.type.map((type) => {
+  return {
+    value: "App\\Models\\" + type,
+    label: type,
+  };
+});
 
 const parentTypeOptions = computed(() => {
   return props.contentTypes.filter(
