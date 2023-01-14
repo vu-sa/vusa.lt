@@ -30,7 +30,16 @@
         }}</NTag>
       </div>
     </template>
-    <div class="m-4 flex items-center gap-4">
+    <div>
+      <h3>Darbotvarkė</h3>
+      <ol class="list-inside">
+        <li v-for="agenda_item in meeting.agenda_items" :key="agenda_item.id">
+          {{ agenda_item.title }}
+        </li>
+      </ol>
+    </div>
+    <NDivider />
+    <div class="mt-4 flex items-center gap-4">
       <h2 class="mb-0">Dokumentai</h2>
       <NMessageProvider>
         <FileUploaderBasicButton

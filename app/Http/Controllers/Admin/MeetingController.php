@@ -76,7 +76,7 @@ class MeetingController extends ResourceController
             $sharepointFiles = $graph->collectSharepointFiles($meeting->documents);
         }
         
-        $meeting->load('institutions', 'tasks', 'activities.causer', 'comments');
+        $meeting->load('institutions', 'tasks', 'activities.causer', 'comments', 'agendaItems');
 
         // show meeting
         return Inertia::render('Admin/Representation/ShowMeeting', [

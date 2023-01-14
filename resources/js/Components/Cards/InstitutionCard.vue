@@ -43,10 +43,10 @@
             >
           </div>
         </NPopover>
-        <NButton circle size="small" quaternary @click.stop
+        <!-- <NButton circle size="small" quaternary @click.stop
           ><template #icon
             ><NIcon :component="MoreHorizontal24Filled"></NIcon></template
-        ></NButton>
+        ></NButton> -->
       </div>
     </template>
     <InstitutionAvatarGroup
