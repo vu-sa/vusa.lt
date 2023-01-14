@@ -16,11 +16,6 @@
         :doing-types="doingTypes"
         content-style="margin-top: 0.5em"
       ></LastMeetingCard>
-      <!-- <MeetingsNeedingAttentionCard
-        content-style="margin-top: 0.5em"
-        :matters-with-meetings="institution.matters"
-        :institution="institution"
-      ></MeetingsNeedingAttentionCard> -->
     </div>
     <NTabs
       :default-value="currentInstitutionsTabPane"
@@ -196,7 +191,6 @@ import InstitutionAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import InstitutionCard from "@/Components/Cards/InstitutionCard.vue";
 import LastMeetingCard from "@/Components/Cards/QuickContentCards/LastMeetingCard.vue";
 import MattersTabPane from "@/Components/TabPaneContent/MattersTabPane.vue";
-import MeetingsNeedingAttentionCard from "@/Components/Cards/QuickContentCards/MeetingsNeedingAttentionCard.vue";
 import ModelsDocumentViewer from "@/Components/SharepointFileManager/ModelsDocumentViewer.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";

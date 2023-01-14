@@ -1,5 +1,5 @@
 <template>
-  <NButton tertiary circle @click="showModal = true"
+  <NButton :disabled="!activities" tertiary circle @click="showModal = true"
     ><template #icon
       ><NIcon :component="DocumentOnePage24Regular"></NIcon></template
   ></NButton>
@@ -14,7 +14,6 @@
         <NDivider class="last:hidden" />
       </div>
     </div>
-    <p v-else>Jokių pokyčių nerasta.</p>
   </CardModal>
 </template>
 
@@ -23,10 +22,8 @@ import { DocumentOnePage24Regular } from "@vicons/fluent";
 import { NButton, NDivider, NIcon } from "naive-ui";
 import { ref } from "vue";
 
-import { formatRelativeTime } from "@/Utils/IntlTime";
 import ActivityLogItem from "@/Features/Admin/ActivityLogViewer/ActivityLogItem.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
-import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
 
 defineProps<{
   activities: Record<string, any>;

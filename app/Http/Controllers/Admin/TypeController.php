@@ -55,6 +55,8 @@ class TypeController extends ResourceController
             'parent_id' => 'nullable|exists:types,id|different:id',
         ]);
 
+        // TODO: somehow check if model_type is valid and allowed
+
         Type::create($request->only('title', 'model_type', 'description', 'parent_id'));
 
         return redirect()->route('types.index')
