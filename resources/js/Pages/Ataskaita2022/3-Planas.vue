@@ -39,15 +39,14 @@ import {
   ArrowCircleLeft28Regular,
   ArrowCircleRight28Regular,
 } from "@vicons/fluent";
-import { Inertia } from "@inertiajs/inertia";
 import { NButton, NIcon } from "naive-ui";
-import { usePage } from "@inertiajs/inertia-vue3";
+import { router, usePage } from "@inertiajs/vue3";
 import AtaskaitaLayout from "@/Components/Public/Layouts/AtaskaitaLayout.vue";
 
 const inertiaVisitOnClick = (permalink) => {
-  Inertia.visit(
+  router.visit(
     route("main.ataskaita2022", {
-      lang: usePage().props.value.locale,
+      lang: usePage().props.locale,
       permalink: permalink,
     })
   );

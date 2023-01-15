@@ -66,13 +66,11 @@
   </NModal>
 </template>
 <script setup lang="ts">
-import { Inertia } from "@inertiajs/inertia";
-import { Link } from "@inertiajs/inertia-vue3";
+import { Link, router } from "@inertiajs/vue3";
 import { NButton, NIcon, NInput, NModal } from "naive-ui";
 import { Search20Filled } from "@vicons/fluent";
 import { ref } from "vue";
 import { useDebounceFn } from "@vueuse/core";
-
 
 const showSearch = ref(false);
 const searchInputLoading = ref(false);
@@ -84,7 +82,7 @@ const changeShowSearch = () => {
 const handleSearchInput = useDebounceFn((input) => {
   if (input.length > 2) {
     searchInputLoading.value = true;
-    Inertia.post(
+    router.post(
       route("search"),
       {
         data: { input: input },

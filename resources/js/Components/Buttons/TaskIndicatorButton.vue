@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="tsx">
-import { Inertia } from "@inertiajs/inertia";
+import { router } from "@inertiajs/vue3";
 import { NBadge, NButton, NIcon } from "naive-ui";
 import { TasksApp24Regular } from "@vicons/fluent";
 import { ref } from "vue";
@@ -21,7 +21,7 @@ const loading = ref(false);
 
 const handleClick = () => {
   loading.value = true;
-  Inertia.visit(route("userTasks"), {
+  router.visit(route("userTasks"), {
     preserveState: true,
     onSuccess: () => {
       loading.value = false;

@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import { Inertia } from "@inertiajs/inertia";
+import { router } from "@inertiajs/vue3";
 import { NCheckbox } from "naive-ui";
 import { ref } from "vue";
 
@@ -22,7 +22,7 @@ const props = defineProps<{
 const checked = ref(!!props.task.completed_at);
 
 const updateCompletionStatus = (checkedBox: boolean) => {
-  Inertia.post(
+  router.post(
     route("tasks.updateCompletionStatus", { task: props.task.id }),
     {
       completed: checkedBox,

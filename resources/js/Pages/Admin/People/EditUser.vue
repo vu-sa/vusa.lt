@@ -35,7 +35,7 @@
                 circle
                 size="tiny"
                 @click.prevent="
-                  Inertia.visit(
+                  router.visit(
                     route('dutiables.edit', { dutiable: duty.pivot.id })
                   )
                 "
@@ -54,8 +54,7 @@
 </template>
 
 <script setup lang="tsx">
-import { Inertia } from "@inertiajs/inertia";
-import { Link } from "@inertiajs/inertia-vue3";
+import { Link, router } from "@inertiajs/vue3";
 import { NButton, NCard, NIcon } from "naive-ui";
 import { PersonEdit24Regular } from "@vicons/fluent";
 

@@ -42,7 +42,7 @@
         quaternary
         circle
         size="small"
-        @click="Inertia.visit(route('dashboard'))"
+        @click="router.visit(route('dashboard'))"
         ><NIcon :size="16" :component="AnimalTurtle24Filled"></NIcon
       ></NButton>
     </div>
@@ -121,8 +121,7 @@ import {
   ChevronDown20Filled,
   Navigation24Filled,
 } from "@vicons/fluent";
-import { Inertia } from "@inertiajs/inertia";
-import { Link, usePage } from "@inertiajs/inertia-vue3";
+import { Link, router, usePage } from "@inertiajs/vue3";
 import {
   NButton,
   NCollapse,
@@ -153,9 +152,9 @@ defineProps<{
 
 // map padaliniai to options_padaliniai
 
-const padaliniai = usePage().props.value.padaliniai;
-const mainNavigation = ref(usePage().props.value.mainNavigation);
-const locale = ref(usePage().props.value.locale);
+const padaliniai = usePage().props.padaliniai;
+const mainNavigation = ref(usePage().props.mainNavigation);
+const locale = ref(usePage().props.locale);
 const activeDrawer = ref(false);
 const toggleMenu = () => {
   activeDrawer.value = !activeDrawer.value;
@@ -165,7 +164,7 @@ const homeParams: RouteParamsWithQueryOverload = reactive({
   lang: locale.value,
 });
 
-const activeMenuKey = ref(usePage().props.value.navigationItemId);
+const activeMenuKey = ref(usePage().props.navigationItemId);
 
 const expandedKeys = ref([]);
 const selectedKeys = ref([]);
@@ -200,7 +199,7 @@ const navigation = computed(() =>
   parseNavigation(Object.entries(mainNavigation.value), 0)
 );
 
-const getPadalinys = (alias = usePage().props.value.alias) => {
+const getPadalinys = (alias = usePage().props.alias) => {
   for (const padalinys of padaliniai) {
     if (padalinys.alias == alias) {
       return padalinys.shortname.split(" ").pop();
@@ -220,7 +219,7 @@ const handleSelectPadalinys = (key) => {
     i = key[0];
   }
 
-  Inertia.reload({
+  router.reload({
     data: {
       padalinys: i,
     },
@@ -259,7 +258,7 @@ const handleSelectNavigation = (id: number) => {
       } else {
         url = item[1].url;
         // message.info("Navigating to " + url);
-        Inertia.visit(
+        router.visit(
           route("main.page", { lang: locale.value, permalink: url }),
           {
             preserveScroll: false,
@@ -278,7 +277,7 @@ const localeSelect = (lang: string) => {
     locale.value = "lt";
   }
   // update navigation
-  mainNavigation.value = usePage().props.value.mainNavigation;
+  mainNavigation.value = usePage().props.mainNavigation;
   // update app logo button
   homeParams.lang = locale.value;
   // reset padalinys value if home

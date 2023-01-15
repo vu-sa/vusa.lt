@@ -34,7 +34,7 @@
 import { NConfigProvider, darkTheme } from "naive-ui";
 import { defineAsyncComponent, onMounted, ref } from "vue";
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
-import { usePage } from "@inertiajs/inertia-vue3";
+import { usePage } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
@@ -90,7 +90,7 @@ var Tawk_API = Tawk_API || {},
 
 onMounted(() => {
   // if page props app.env is local, then don't run Clarity
-  if (usePage().props.value.app.env !== "local") {
+  if (usePage().props.app.env !== "local") {
     (function (c, l, a, r, i, t, y) {
       c[a] =
         c[a] ||

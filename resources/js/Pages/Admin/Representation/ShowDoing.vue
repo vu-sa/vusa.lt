@@ -23,7 +23,7 @@
 import { Person24Filled, Sparkle20Filled } from "@vicons/fluent";
 import { ref } from "vue";
 
-import { usePage } from "@inertiajs/inertia-vue3";
+import { usePage } from "@inertiajs/vue3";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import DoingForm from "@/Components/AdminForms/DoingForm.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
@@ -40,7 +40,7 @@ const handleSubmit = (form: any) => {
   form
     .transform((data: any) => ({
       ...data,
-      user_id: usePage().props.value.auth?.user.id,
+      user_id: usePage().props.auth?.user.id,
     }))
     .patch(route("doings.update", props.doing.id));
   showModal.value = false;

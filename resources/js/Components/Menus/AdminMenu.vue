@@ -18,7 +18,7 @@ import {
   Settings24Regular,
   TabDesktopNewPage20Regular,
 } from "@vicons/fluent";
-import { Link, usePage } from "@inertiajs/inertia-vue3";
+import { Link, usePage } from "@inertiajs/vue3";
 import { NIcon, NMenu } from "naive-ui";
 import { computed, ref } from "vue";
 
@@ -28,7 +28,7 @@ defineProps<{
   collapsed: boolean;
 }>();
 
-const { auth } = usePage().props.value;
+const { auth } = usePage().props;
 const activeKey = ref("");
 
 // set active key with a switch

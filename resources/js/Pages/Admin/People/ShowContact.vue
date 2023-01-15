@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="tsx">
-import { Inertia } from "@inertiajs/inertia";
+import { router } from "@inertiajs/vue3";
 import { ref } from "vue";
 
 import ActivityLogButton from "@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue";
@@ -38,10 +38,10 @@ const props = defineProps<{
 const commentText = ref("");
 
 const handleEdit = () => {
-  Inertia.get(route("contacts.edit", props.contact.id));
+  router.get(route("contacts.edit", props.contact.id));
 };
 
 const handleDelete = () => {
-  Inertia.delete(route("contacts.destroy", props.contact.id));
+  router.delete(route("contacts.destroy", props.contact.id));
 };
 </script>

@@ -74,7 +74,7 @@
 
 <script setup lang="ts">
 import { ArrowCircleRight20Regular } from "@vicons/fluent";
-import { Link } from "@inertiajs/inertia-vue3";
+import { Link } from "@inertiajs/vue3";
 import { NIcon } from "naive-ui";
 
 

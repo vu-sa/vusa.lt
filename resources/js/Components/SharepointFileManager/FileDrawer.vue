@@ -66,7 +66,7 @@
 
 <script setup lang="ts">
 import { File, FilePdf, FileWord } from "@vicons/fa";
-import { Inertia } from "@inertiajs/inertia";
+import { router } from "@inertiajs/vue3";
 import {
   NButton,
   NDrawer,
@@ -142,7 +142,7 @@ const handleOpen = () => {
 
 const handleDelete = (id) => {
   loadingDelete.value = true;
-  Inertia.delete(route("sharepoint.destroy", id), {
+  router.delete(route("sharepoint.destroy", id), {
     preserveState: true,
     onSuccess: () => {
       loadingDelete.value = false;

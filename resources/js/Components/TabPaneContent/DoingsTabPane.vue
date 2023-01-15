@@ -26,15 +26,14 @@
 </template>
 
 <script setup lang="tsx">
-import { Inertia } from "@inertiajs/inertia";
 import { NIcon } from "naive-ui";
 import { ref } from "vue";
+import { usePage } from "@inertiajs/vue3";
 
 import { doingTemplate } from "@/Types/formTemplates";
-import { usePage } from "@inertiajs/inertia-vue3";
 import CardModal from "@/Components/Modals/CardModal.vue";
-import DoingCard from "../Cards/DoingCard.vue";
-import DoingForm from "../AdminForms/DoingForm.vue";
+import DoingCard from "@/Components/Cards/DoingCard.vue";
+import DoingForm from "@/Components/AdminForms/DoingForm.vue";
 import Icons from "@/Types/Icons/filled";
 
 defineProps<{
@@ -49,7 +48,7 @@ const handleDoingSubmit = (form: any) => {
   form
     .transform((data: any) => ({
       ...data,
-      user_id: usePage().props.value.auth?.user.id,
+      user_id: usePage().props.auth?.user.id,
     }))
     .post(route("doings.store"), {
       onSuccess: () => {

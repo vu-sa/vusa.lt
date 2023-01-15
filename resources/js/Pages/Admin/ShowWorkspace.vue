@@ -37,7 +37,7 @@
 import { NButton, NScrollbar, NTree } from "naive-ui";
 import { computed, ref } from "vue";
 
-import { Link } from "@inertiajs/inertia-vue3";
+import { Link } from "@inertiajs/vue3";
 import CommentPart from "@/Features/Admin/Workspace/CommentPart.vue";
 
 const props = defineProps<{

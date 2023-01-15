@@ -25,7 +25,7 @@
 
 <script setup lang="tsx">
 import { NButton, NForm, NFormItemGi, NGrid, NInput } from "naive-ui";
-import { useForm } from "@inertiajs/inertia-vue3";
+import { useForm } from "@inertiajs/vue3";
 
 // import { modelDefaults } from "@/Types/formOptions";
 

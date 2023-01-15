@@ -72,10 +72,9 @@
 </template>
 
 <script setup lang="ts">
-import { Head, useForm, usePage } from "@inertiajs/inertia-vue3";
+import { Head, useForm, usePage } from "@inertiajs/vue3";
 import { NButton, NForm, NFormItem, NInput, NPopover } from "naive-ui";
 import { reactive, ref } from "vue";
-
 
 import AppLogo from "@/Components/AppLogo.vue";
 import MicrosoftButton from "@/Components/Buttons/MicrosoftLoginButton.vue";
@@ -104,7 +103,7 @@ const submit = () => {
     .post(route("login"), {
       onFinish: () => {
         form.reset("password");
-        errors.value = usePage<InertiaProps>().props.value.errors;
+        errors.value = usePage().props.errors;
         hasErrors.value = Object.keys(errors.value).length > 0;
       },
     });

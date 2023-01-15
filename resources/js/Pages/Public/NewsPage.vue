@@ -44,20 +44,10 @@
   </FadeTransition>
 </template>
 
-<script lang="ts">
-import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
-import type ProjectSharedProps from "@/Types/inertia";
-
-export default {
-  layout: PublicLayout,
-};
-</script>
-
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
 import { DocumentEdit24Regular } from "@vicons/fluent";
-import { Head, usePage } from "@inertiajs/inertia-vue3";
-import { Inertia } from "@inertiajs/inertia";
+import { Head, router, usePage } from "@inertiajs/vue3";
 import { NBackTop, NButton, NIcon } from "naive-ui";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
@@ -69,7 +59,7 @@ const props = defineProps<{
 }>();
 
 const editNews = () => {
-  Inertia.visit(route("news.edit", { id: props.article.id }));
+  router.visit(route("news.edit", { id: props.article.id }));
 };
 
 const openAnotherLangNews = () => {
@@ -77,7 +67,7 @@ const openAnotherLangNews = () => {
     route("news", {
       lang: props.otherLangNews.lang,
       newsString: props.otherLangNews.lang === "lt" ? "naujiena" : "news",
-      padalinys: usePage<ProjectSharedProps>().props.value.alias,
+      padalinys: usePage().props.alias,
       permalink: props.otherLangNews.permalink,
     }),
     "_blank"

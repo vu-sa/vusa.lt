@@ -200,7 +200,6 @@
 </template>
 
 <script setup lang="ts">
-import { Inertia } from "@inertiajs/inertia";
 import {
   NDatePicker,
   NForm,
@@ -216,7 +215,7 @@ import {
   type UploadInst,
 } from "naive-ui";
 import { computed, ref } from "vue";
-import { useForm, usePage } from "@inertiajs/inertia-vue3";
+import { router, useForm, usePage } from "@inertiajs/vue3";
 
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
@@ -262,8 +261,7 @@ if (form.extra_attributes !== null) {
 
 const defaultOrganizer = computed(() => {
   return (
-    props.calendar.padalinys?.shortname ??
-    usePage().props.value.auth.user.padalinys
+    props.calendar.padalinys?.shortname ?? usePage().props.auth.user.padalinys
   );
 });
 
@@ -308,7 +306,7 @@ const handleUploadRemove = (options: {
   event?: Event;
 }) => {
   if (options.file.status === "pending") return;
-  Inertia.post(
+  router.post(
     route("calendar.destroyMedia", {
       calendar: form.id,
       media: options.file.id,

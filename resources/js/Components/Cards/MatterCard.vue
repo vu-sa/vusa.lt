@@ -5,7 +5,7 @@
     class="bg-red my-2 max-w-lg cursor-pointer shadow-sm"
     hoverable
     as="button"
-    @click="Inertia.visit(route('matters.show', matter.id))"
+    @click="router.visit(route('matters.show', matter.id))"
     ><template #header>
       <NEllipsis>
         {{ matter.title }}
@@ -61,7 +61,7 @@ import {
   NotebookQuestionMark24Filled,
   Sparkle20Filled,
 } from "@vicons/fluent";
-import { Inertia } from "@inertiajs/inertia";
+import { router } from "@inertiajs/vue3";
 import { NButton, NCard, NEllipsis, NIcon } from "naive-ui";
 
 import { formatStaticTime } from "@/Utils/IntlTime";

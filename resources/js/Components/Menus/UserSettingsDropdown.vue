@@ -12,8 +12,8 @@ import {
   PersonSettings16Regular,
 } from "@vicons/fluent";
 import { type DropdownOption, NButton, NDropdown, NIcon } from "naive-ui";
-import { Inertia } from "@inertiajs/inertia";
 import { ref } from "vue";
+import { router } from "@inertiajs/vue3";
 
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
 
@@ -28,7 +28,7 @@ const options: DropdownOption[] = [
     },
     props: {
       onClick: () => {
-        Inertia.visit(route("profile"));
+        router.visit(route("profile"));
       },
     },
   },
@@ -41,7 +41,7 @@ const options: DropdownOption[] = [
     props: {
       onClick: () => {
         loading.value = true;
-        Inertia.post(route("logout"));
+        router.post(route("logout"));
       },
     },
   },

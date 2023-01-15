@@ -218,10 +218,8 @@ import {
   NSelect,
   createDiscreteApi,
 } from "naive-ui";
-import { Head } from "@inertiajs/inertia-vue3";
-import { Inertia } from "@inertiajs/inertia";
+import { Head, router, useForm } from "@inertiajs/vue3";
 import { computed, ref } from "vue";
-import { useForm } from "@inertiajs/inertia-vue3";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
@@ -392,7 +390,7 @@ const handleValidateClick = (e: MouseEvent) => {
   e.preventDefault();
   formRef.value?.validate((errors: Array<FormValidationError> | undefined) => {
     if (!errors) {
-      Inertia.post(route("saziningaiExamRegistration.store"), formValue, {
+      router.post(route("saziningaiExamRegistration.store"), formValue, {
         onSuccess: () => {
           message.success(
             `Ačiū už atsiskaitymo „${formValue.subject_name}“ užregistravimą!`

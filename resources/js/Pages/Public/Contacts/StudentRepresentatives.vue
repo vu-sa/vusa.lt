@@ -41,7 +41,7 @@
 
 
 <script setup lang="ts">
-import { Link } from "@inertiajs/inertia-vue3";
+import { Link } from "@inertiajs/vue3";
 import { NDivider } from "naive-ui";
 
 import ContactWithPhotoForDuties from "@/Components/Public/ContactWithPhotoForDuties.vue";

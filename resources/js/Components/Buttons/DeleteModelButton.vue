@@ -28,7 +28,7 @@
 
 <script setup lang="ts">
 import { Delete20Filled } from "@vicons/fluent";
-import { Inertia } from "@inertiajs/inertia";
+import { router } from "@inertiajs/vue3";
 import { NButton, NIcon, NPopconfirm, NPopover } from "naive-ui";
 import { ref } from "vue";
 
@@ -44,7 +44,7 @@ const loading = ref(false);
 
 const destroyModel = () => {
   loading.value = true;
-  Inertia.delete(route(props.modelRoute, props.form.id), {
+  router.delete(route(props.modelRoute, props.form.id), {
     onSuccess: () => {
       loading.value = false;
     },

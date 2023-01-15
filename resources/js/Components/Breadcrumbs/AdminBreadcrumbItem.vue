@@ -2,7 +2,7 @@
   <NBreadcrumbItem
     @click="
       option.routeOptions
-        ? Inertia.visit(
+        ? router.visit(
             route(option.routeOptions.name, option.routeOptions.params)
           )
         : undefined
@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="tsx">
-import { Inertia } from "@inertiajs/inertia";
+import { router } from "@inertiajs/vue3";
 import { NBreadcrumbItem, NDropdown, NIcon } from "naive-ui";
 
 import type { Component } from "vue";

@@ -21,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import { Inertia } from "@inertiajs/inertia";
+import { router } from "@inertiajs/vue3";
 import { NCard } from "naive-ui";
 
 import { formatRelativeTime } from "@/Utils/IntlTime";
@@ -33,7 +33,7 @@ const props = defineProps<{
 }>();
 
 const handleDelete = () => {
-  Inertia.delete(
+  router.delete(
     route("users.comments.destroy", {
       user: props.comment.user.id,
       comment: props.comment.id,

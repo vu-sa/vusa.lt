@@ -41,15 +41,13 @@
 </template>
 
 <script setup lang="tsx">
-import { Inertia } from "@inertiajs/inertia";
 import { NScrollbar, type ScrollbarInst } from "naive-ui";
 import { ref, watch } from "vue";
-import { usePage } from "@inertiajs/inertia-vue3";
+import { router, usePage } from "@inertiajs/vue3";
 
 import { formatRelativeTime } from "@/Utils/IntlTime";
 import CommentTipTap from "../CommentViewer/CommentTipTap.vue";
 import FadeTransitionGroup from "@/Components/Transitions/FadeTransitionGroup.vue";
-import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
 
 defineEmits<{
@@ -75,8 +73,8 @@ watch(
 
 const submitComment = () => {
   loading.value = true;
-  Inertia.post(
-    route("users.comments.store", usePage().props.value.auth?.user.id),
+  router.post(
+    route("users.comments.store", usePage().props.auth?.user.id),
     {
       commentable_type: props.commentable_type,
       commentable_id: props.model.id,

@@ -81,7 +81,7 @@ import {
   NTag,
   //   type SelectGroupOption,
 } from "naive-ui";
-import { useForm } from "@inertiajs/inertia-vue3";
+import { useForm } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";

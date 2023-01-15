@@ -14,7 +14,7 @@
     <template #more-options>
       <MoreOptionsButton
         edit
-        @edit-click="Inertia.visit(route('institutions.edit', institution.id))"
+        @edit-click="router.visit(route('institutions.edit', institution.id))"
       />
     </template>
     <div class="mb-16 flex min-h-[16em] gap-4 py-2">
@@ -44,7 +44,7 @@
 </template>
 
 <script setup lang="tsx">
-import { Inertia } from "@inertiajs/inertia";
+import { router } from "@inertiajs/vue3";
 import { NDivider } from "naive-ui";
 // import { ref } from "vue";
 

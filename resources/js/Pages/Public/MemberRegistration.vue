@@ -192,10 +192,9 @@ import {
   NSelect,
   createDiscreteApi,
 } from "naive-ui";
-import { Head, Link, usePage } from "@inertiajs/inertia-vue3";
-import { Method } from "@inertiajs/inertia";
+import { Head, Link, useForm, usePage } from "@inertiajs/vue3";
+import { Method } from "@inertiajs/core";
 import { computed, ref } from "vue";
-import { useForm } from "@inertiajs/inertia-vue3";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
@@ -205,16 +204,16 @@ const props = defineProps<{
 
 const aboutLink = computed(() =>
   route("main.page", {
-    lang: usePage().props.value.locale,
-    permalink: usePage().props.value.locale === "lt" ? "apie" : "about",
+    lang: usePage().props.locale,
+    permalink: usePage().props.locale === "lt" ? "apie" : "about",
   })
 );
 
 const pkpLink = computed(() =>
   route("main.page", {
-    lang: usePage().props.value.locale,
+    lang: usePage().props.locale,
     permalink:
-      usePage().props.value.locale === "lt"
+      usePage().props.locale === "lt"
         ? "programos-klubai-projektai"
         : "programs-clubs-projects",
   })
@@ -366,7 +365,7 @@ const handleValidateClick = (e: MouseEvent) => {
       formValue.submit(
         Method.POST,
         route("main.memberRegistration.store", {
-          lang: usePage().props.value.locale,
+          lang: usePage().props.locale,
         }),
         {
           onSuccess: () => {

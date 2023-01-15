@@ -62,7 +62,7 @@
 
 <script setup lang="ts">
 import { AddCircle20Regular } from "@vicons/fluent";
-import { Inertia } from "@inertiajs/inertia";
+import { router } from "@inertiajs/vue3";
 import { NButton, NCard, NDatePicker, NIcon, NModal, NPopover } from "naive-ui";
 import { reactive, ref } from "vue";
 
@@ -95,7 +95,7 @@ const manageFlowModal = (id = null, datetime = null) => {
 
 const submitFlow = (flow_id, timestamp) => {
   if (flow_id) {
-    Inertia.patch(
+    router.patch(
       route("saziningaiExamFlows.update", flow_id),
       {
         start_time: timestamp / 1000,
@@ -110,7 +110,7 @@ const submitFlow = (flow_id, timestamp) => {
       }
     );
   } else {
-    Inertia.post(
+    router.post(
       route("saziningaiExamFlows.store"),
       {
         exam_uuid: exam.uuid,

@@ -18,10 +18,9 @@
 
 <script setup lang="tsx">
 import { ArrowForward20Filled, Edit20Filled } from "@vicons/fluent";
-import { Inertia } from "@inertiajs/inertia";
-import { Link } from "@inertiajs/inertia-vue3";
 import { NButton, NButtonGroup, NDataTable, NIcon } from "naive-ui";
 import { computed, reactive, ref } from "vue";
+import { router } from "@inertiajs/vue3";
 
 import type { DataTableColumns } from "naive-ui";
 
@@ -50,7 +49,7 @@ const columnsWithActions = computed(() => {
             {props.showRoute ? (
               <NButton
                 quaternary
-                onClick={() => Inertia.visit(route(props.showRoute, row.id))}
+                onClick={() => router.visit(route(props.showRoute, row.id))}
               >
                 {{
                   icon: () => <NIcon component={ArrowForward20Filled} />,
@@ -60,7 +59,7 @@ const columnsWithActions = computed(() => {
             {props.editRoute ? (
               <NButton
                 quaternary
-                onClick={() => Inertia.visit(route(props.editRoute, row.id))}
+                onClick={() => router.visit(route(props.editRoute, row.id))}
               >
                 {{ icon: () => <NIcon component={Edit20Filled} /> }}
               </NButton>
@@ -93,7 +92,7 @@ const pagination = reactive({
 
 const handleChange = (page: number, filters: number[]) => {
   loading.value = true;
-  Inertia.reload({
+  router.reload({
     data: { page: page, padaliniai: filters },
     only: [props.modelName],
     preserveState: true,

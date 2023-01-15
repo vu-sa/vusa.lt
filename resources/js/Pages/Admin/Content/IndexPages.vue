@@ -13,9 +13,9 @@
 </template>
 
 <script setup lang="tsx">
-import { DataTableColumns } from "naive-ui";
 import { h, ref } from "vue";
-import { usePage } from "@inertiajs/inertia-vue3";
+import { usePage } from "@inertiajs/vue3";
+import type { DataTableColumns } from "naive-ui";
 
 import AsideHeader from "@/Components/AsideHeaders/AsideHeaderContent.vue";
 import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
@@ -33,7 +33,7 @@ const canUseRoutes = {
 };
 
 const padaliniaiFilterOptions = ref(
-  usePage().props.value.padaliniai.map((padalinys) => {
+  usePage().props.padaliniai.map((padalinys) => {
     return {
       label: padalinys.shortname,
       value: padalinys.id,

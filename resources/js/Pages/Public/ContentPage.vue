@@ -33,15 +33,10 @@
   </FadeTransition>
 </template>
 
-
-
 <script setup lang="ts">
 import { DocumentEdit20Regular, HatGraduation20Filled } from "@vicons/fluent";
-import { Head } from "@inertiajs/inertia-vue3";
-import { Inertia } from "@inertiajs/inertia";
+import { Head, router, usePage } from "@inertiajs/vue3";
 import { NBreadcrumb, NBreadcrumbItem, NButton, NIcon } from "naive-ui";
-import { usePage } from "@inertiajs/inertia-vue3";
-
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
@@ -50,7 +45,7 @@ const props = defineProps<{
   page: Record<string, any>;
 }>();
 
-const mainNavigation = usePage().props.value.mainNavigation;
+const mainNavigation = usePage().props.mainNavigation;
 
 const getBreadcrumbTree = (navigationItemId: number) => {
   const breadcrumbTree = [];
@@ -68,7 +63,7 @@ const getBreadcrumbTree = (navigationItemId: number) => {
 const breadcrumbTree = getBreadcrumbTree(props.navigationItemId);
 
 const editPage = () => {
-  Inertia.visit(route("pages.edit", { id: props.page.id }));
+  router.visit(route("pages.edit", { id: props.page.id }));
 };
 </script>
 

@@ -17,7 +17,6 @@
 </template>
 
 <script setup lang="ts">
-import { Inertia } from "@inertiajs/inertia";
 import {
   NButton,
   NUpload,
@@ -25,7 +24,7 @@ import {
   createDiscreteApi,
 } from "naive-ui";
 import { ref } from "vue";
-import { usePage } from "@inertiajs/inertia-vue3";
+import { router, usePage } from "@inertiajs/vue3";
 
 const props = defineProps<{
   modelValue: string | null;
@@ -61,14 +60,14 @@ const uploadFile = (options: {
 }) => {
   const file = options.file;
 
-  Inertia.post(
+  router.post(
     route("files.uploadImage"),
     { file, path: props.path },
     {
       preserveScroll: true,
       preserveState: true,
       onSuccess: () => {
-        modelValue.value = usePage<InertiaProps>().props.value.misc;
+        modelValue.value = usePage().props.misc;
         emit("update:modelValue", modelValue);
         message.success("Failas įkeltas");
       },

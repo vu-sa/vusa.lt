@@ -10,13 +10,12 @@
 </template>
 
 <script setup lang="ts">
-import { Inertia, Method } from "@inertiajs/inertia";
-import { InertiaForm } from "@inertiajs/inertia-vue3";
 import { NButton, NPopconfirm, NSpin, type UploadFileInfo } from "naive-ui";
 import { computed, ref } from "vue";
+import { router } from "@inertiajs/vue3";
 
 const props = defineProps<{
-  form: InertiaForm<App.Entities.ModelTemplate>;
+  form: any;
   images?: UploadFileInfo[];
   modelRoute: string;
 }>();
@@ -24,11 +23,11 @@ const props = defineProps<{
 const showSpin = ref(false);
 
 const modelMethod = computed(() => {
-  return props.modelRoute.includes("update") ? Method.PATCH : Method.POST;
+  return props.modelRoute.includes("update") ? "patch" : "post";
 });
 
 const buttonText = computed(() => {
-  return modelMethod.value === Method.POST ? "Sukurti" : "Atnaujinti";
+  return modelMethod.value === "post" ? "Sukurti" : "Atnaujinti";
 });
 
 const upsertModel = () => {
@@ -50,7 +49,7 @@ const upsertModel = () => {
     );
   } else {
     showSpin.value = true;
-    Inertia.post(
+    router.post(
       route(props.modelRoute, props.form.id),
       {
         ...props.form,

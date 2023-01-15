@@ -70,16 +70,11 @@
   </FadeTransition>
 </template>
 
-
-
 <script setup lang="ts">
 import { Clock20Regular } from "@vicons/fluent";
-import { Head } from "@inertiajs/inertia-vue3";
-import { Inertia } from "@inertiajs/inertia";
-import { Link, usePage } from "@inertiajs/inertia-vue3";
+import { Head, Link, router, usePage } from "@inertiajs/vue3";
 import { NIcon, NPagination } from "naive-ui";
 import { ref } from "vue";
-
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import HomeCard from "@/Components/Public/HomeCard.vue";
@@ -88,10 +83,10 @@ const props = defineProps<{
   news: PaginatedModels<App.Entities.News>;
 }>();
 
-const locale = ref(usePage().props.value.locale);
+const locale = ref(usePage().props.locale);
 
 const handlePageChange = (page) => {
-  Inertia.reload({
+  router.reload({
     data: {
       page: page,
     },

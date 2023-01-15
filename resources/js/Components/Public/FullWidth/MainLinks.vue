@@ -17,9 +17,8 @@
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import { Inertia } from "@inertiajs/inertia";
 import { NButton } from "naive-ui";
-import { usePage } from "@inertiajs/inertia-vue3";
+import { router, usePage } from "@inertiajs/vue3";
 
 defineProps<{ mainPage: Array<App.Entities.MainPage> }>();
 
@@ -30,7 +29,7 @@ const goToLink = (link: string | null) => {
   }
 
   // check if link is external
-  let padalinysAlias = usePage().props.value.alias;
+  let padalinysAlias = usePage().props.alias;
   if (link.includes("http")) {
     window.open(link, "_blank");
     return;
@@ -46,16 +45,16 @@ const goToLink = (link: string | null) => {
     if (link.charAt(0) === "/") {
       link = link.substring(1);
     }
-    Inertia.visit(
+    router.visit(
       route("main.page", {
-        lang: usePage().props.value.locale,
+        lang: usePage().props.locale,
         permalink: link,
       })
     );
   } else {
-    Inertia.visit(
+    router.visit(
       route("padalinys.page", {
-        lang: usePage().props.value.locale,
+        lang: usePage().props.locale,
         permalink: link,
         padalinys: padalinysAlias,
       })

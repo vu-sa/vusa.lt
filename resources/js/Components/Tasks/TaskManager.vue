@@ -21,7 +21,7 @@
 
 <script setup lang="tsx">
 import { Home24Filled, Sparkle24Filled } from "@vicons/fluent";
-import { Inertia } from "@inertiajs/inertia";
+import { router } from "@inertiajs/vue3";
 import { NCard, NCheckbox, NDataTable, NIcon, NSpin, NTag } from "naive-ui";
 import { computed, ref } from "vue";
 import type { DataTableColumns } from "naive-ui";
@@ -140,7 +140,7 @@ const shownTasks = computed(() => {
 const handleDelete = async (task: App.Entities.Task) => {
   loading.value = true;
 
-  Inertia.delete(route("tasks.destroy", task.id), {
+  router.delete(route("tasks.destroy", task.id), {
     onSuccess: () => {
       loading.value = false;
     },
@@ -151,7 +151,7 @@ const updateTaskCompletion = (task: App.Entities.Task) => {
   loading.value = true;
   console.log("setTrue", task.completed_at === null);
 
-  Inertia.post(
+  router.post(
     route("tasks.updateCompletionStatus", task.id),
     {
       completed: task.completed_at === null,

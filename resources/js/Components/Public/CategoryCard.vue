@@ -19,7 +19,7 @@
         round
         size="small"
         @click.stop="
-          Inertia.visit(
+          router.visit(
             route('padalinys.contacts.alias', {
               alias: 'koordinatoriai',
               padalinys: institution.alias,
@@ -33,7 +33,7 @@
         round
         size="small"
         @click.stop="
-          Inertia.visit(
+          router.visit(
             route('padalinys.contacts.alias', {
               alias: 'kuratoriai',
               padalinys: institution.alias,
@@ -47,7 +47,7 @@
         round
         size="small"
         @click.stop="
-          Inertia.visit(
+          router.visit(
             route('padalinys.contacts.alias', {
               alias: 'studentu-atstovai',
               padalinys: institution.alias,
@@ -75,7 +75,7 @@
           round
           size="small"
           @click.stop="
-            Inertia.visit(
+            router.visit(
               route('padalinys.contacts.alias', {
                 alias: 'koordinatoriai',
                 padalinys: institution.alias,
@@ -89,7 +89,7 @@
           round
           size="small"
           @click.stop="
-            Inertia.visit(
+            router.visit(
               route('padalinys.contacts.alias', {
                 alias: 'kuratoriai',
                 padalinys: institution.alias,
@@ -103,7 +103,7 @@
           round
           size="small"
           @click.stop="
-            Inertia.visit(
+            router.visit(
               route('padalinys.contacts.alias', {
                 alias: 'studentu-atstovai',
                 padalinys: institution.alias,
@@ -120,10 +120,9 @@
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import { Inertia } from "@inertiajs/inertia";
 import { NButton } from "naive-ui";
 import { computed } from "vue";
-import { usePage } from "@inertiajs/inertia-vue3";
+import { router, usePage } from "@inertiajs/vue3";
 
 const props = defineProps<{
   institution: App.Entities.Institution;
@@ -136,16 +135,16 @@ const isPadalinys = (institution: App.Entities.Institution) => {
 };
 
 const inertiaVisitOnClick = (alias: string) => {
-  Inertia.visit(
+  router.visit(
     route("main.contacts.alias", {
       alias: alias,
-      lang: usePage().props.value.locale,
+      lang: usePage().props.locale,
     })
   );
 };
 
 const institutionName = computed(() => {
-  const locale = usePage().props.value.locale;
+  const locale = usePage().props.locale;
 
   if (locale === "en") {
     return (

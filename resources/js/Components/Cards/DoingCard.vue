@@ -9,7 +9,7 @@
       }"
       hoverable
       as="button"
-      @click="Inertia.visit(route('doings.show', doing.id))"
+      @click="router.visit(route('doings.show', doing.id))"
       ><template #header>{{ doing.title }}</template>
       <template #header-extra>
         <MoreOptionsButton
@@ -63,7 +63,7 @@ import {
   Sparkle20Filled,
   TaskListLtr20Regular,
 } from "@vicons/fluent";
-import { Inertia } from "@inertiajs/inertia";
+import { router } from "@inertiajs/vue3";
 import { NCard, NIcon, NSpin } from "naive-ui";
 import { computed, ref } from "vue";
 
@@ -78,7 +78,7 @@ const spinning = ref(false);
 
 const handleDelete = () => {
   spinning.value = true;
-  Inertia.delete(route("doings.destroy", props.doing.id), {
+  router.delete(route("doings.destroy", props.doing.id), {
     preserveScroll: true,
   });
 };

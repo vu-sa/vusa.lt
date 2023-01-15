@@ -58,8 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { Inertia } from "@inertiajs/inertia";
-import { Link } from "@inertiajs/inertia-vue3";
+import { Link, router } from "@inertiajs/vue3";
 import { LinkDismiss20Filled } from "@vicons/fluent";
 import {
   NAvatar,
@@ -99,7 +98,7 @@ duty.value.extra_attributes.en = checkForEmptyArray(
 ////////////////////////////////////////////////////////////////////////////////
 
 const detachUserFromDuty = (user: App.Entities.User) => {
-  Inertia.post(
+  router.post(
     route("users.detach", {
       user: user.id,
       duty: props.duty.id,

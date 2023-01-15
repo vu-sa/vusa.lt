@@ -58,11 +58,9 @@ import {
   ArrowCircleDown24Regular,
   ArrowCircleUp24Regular,
 } from "@vicons/fluent";
-import { Inertia } from "@inertiajs/inertia";
-import { Link } from "@inertiajs/inertia-vue3";
+import { Link, router } from "@inertiajs/vue3";
 import { NButton, NCard, NIcon } from "naive-ui";
 import { ref } from "vue";
-
 
 import { checkForEmptyArray } from "@/Composables/checkAttributes";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
@@ -70,8 +68,6 @@ import InstitutionForm from "@/Components/AdminForms/InstitutionForm.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
-
-
 
 const props = defineProps<{
   institution: App.Entities.Institution;
@@ -129,7 +125,7 @@ const saveReorderedDuties = () => {
     duty.order = index;
     return duty;
   });
-  Inertia.post(
+  router.post(
     route("institutions.reorderDuties"),
     {
       duties: newDuties,

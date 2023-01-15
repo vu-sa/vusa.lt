@@ -12,9 +12,9 @@
 </template>
 
 <script setup lang="ts">
-import { Inertia } from "@inertiajs/inertia";
 import { NInput } from "naive-ui";
 import { ref } from "vue";
+import { router } from "@inertiajs/vue3";
 import { useDebounceFn } from "@vueuse/core";
 
 const props = defineProps<{
@@ -31,7 +31,7 @@ const loading = ref(false);
 
 const handleSearchInput = useDebounceFn((input) => {
   loading.value = true;
-  Inertia.reload({
+  router.reload({
     // only: [props.model],
     data: { page: 1, [props.payloadName]: input },
     onSuccess: () => {

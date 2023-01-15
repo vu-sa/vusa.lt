@@ -59,7 +59,7 @@ import {
   useNotification,
 } from "naive-ui";
 import { ref } from "vue";
-import { usePage } from "@inertiajs/inertia-vue3";
+import { usePage } from "@inertiajs/vue3";
 import { useWebNotification } from "@vueuse/core";
 import Icons from "@/Types/Icons/regular";
 import type { EventHook, UseWebNotificationOptions } from "@vueuse/core";
@@ -71,7 +71,7 @@ import NotificationItem, {
 } from "./NotificationItem.vue";
 
 const notifications = ref(
-  usePage().props.value.auth?.user?.unreadNotifications
+  usePage().props.auth?.user?.unreadNotifications
 );
 
 const message = useMessage();
@@ -105,7 +105,7 @@ const notification = useNotification();
 const onWebNotificationClick = ref<EventHook | null>(null);
 
 // window.Echo.private(
-//   "App.Models.User." + usePage().props.value.auth?.user.id
+//   "App.Models.User." + usePage().props.auth?.user.id
 // ).notification((notificationSent: NotificationData) => {
 //   notification.info({
 //     content() {
@@ -116,7 +116,7 @@ const onWebNotificationClick = ref<EventHook | null>(null);
 //         <NAvatar
 //           src={
 //             notificationSent.subject?.image ??
-//             usePage().props.value.auth?.user.profile_photo_path
+//             usePage().props.auth?.user.profile_photo_path
 //           }
 //         ></NAvatar>
 //       );
@@ -126,10 +126,10 @@ const onWebNotificationClick = ref<EventHook | null>(null);
 //   const options: UseWebNotificationOptions = {
 //     title: notificationSent.text.replaceAll(/<\/?[^>]+(>|$)/gi, ""),
 //     dir: "auto",
-//     lang: usePage().props.value.locale,
+//     lang: usePage().props.locale,
 //     renotify: true,
 //     tag: "notification",
-//     icon: notificationSent.subject?.image ?? usePage().props.value.auth?.user,
+//     icon: notificationSent.subject?.image ?? usePage().props.auth?.user,
 //   };
 
 //   const { isSupported, onClick, show } = useWebNotification(options);

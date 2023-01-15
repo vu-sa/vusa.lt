@@ -42,7 +42,7 @@
 
 <script setup lang="ts">
 import { NForm, NFormItemGi, NGrid, NInput, NSwitch } from "naive-ui";
-import { useForm } from "@inertiajs/inertia-vue3";
+import { useForm } from "@inertiajs/vue3";
 
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import UploadImageButtons from "@/Components/Buttons/UploadImageButtons.vue";

@@ -58,7 +58,6 @@
 </template>
 
 <script setup lang="tsx">
-import { Inertia } from "@inertiajs/inertia";
 import {
   NButton,
   NDataTable,
@@ -68,7 +67,7 @@ import {
   NSelect,
 } from "naive-ui";
 import { computed, ref } from "vue";
-import { useForm } from "@inertiajs/inertia-vue3";
+import { router, useForm } from "@inertiajs/vue3";
 
 import CardModal from "@/Components/Modals/CardModal.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
@@ -166,7 +165,7 @@ const modelTypeOptions = [
 
 const handleUpdateModelType = (value: string) => {
   relationForm.reset("model_id", "related_model_id");
-  Inertia.reload({
+  router.reload({
     data: {
       modelType: value,
     },
@@ -175,6 +174,6 @@ const handleUpdateModelType = (value: string) => {
 };
 
 const handleDeleteRelationship = (id: number) => {
-  Inertia.delete(route("relationships.deleteModelRelationship", id));
+  router.delete(route("relationships.deleteModelRelationship", id));
 };
 </script>

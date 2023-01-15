@@ -44,7 +44,7 @@
 
 
 <script setup lang="ts">
-import { Head, usePage } from "@inertiajs/inertia-vue3";
+import { Head, usePage } from "@inertiajs/vue3";
 import { computed } from "vue";
 
 import ContactWithPhotoForDuties from "@/Components/Public/ContactWithPhotoForDuties.vue";
@@ -57,7 +57,7 @@ const props = defineProps<{
 }>();
 
 const institutionName = computed(() => {
-  const locale = usePage().props.value.locale;
+  const locale = usePage().props.locale;
 
   if (locale === "en") {
     return (
@@ -69,7 +69,7 @@ const institutionName = computed(() => {
 });
 
 const institutionDescription = computed(() => {
-  const locale = usePage().props.value.locale;
+  const locale = usePage().props.locale;
 
   if (locale === "en") {
     return (

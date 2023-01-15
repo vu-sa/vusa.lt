@@ -2,7 +2,7 @@
   <div
     role="button"
     class="flex max-w-sm items-center gap-2 rounded-sm p-2 text-zinc-700 transition hover:bg-zinc-200/80 dark:text-zinc-50 dark:hover:bg-zinc-800/80"
-    @click="Inertia.visit(notification.data.object.url)"
+    @click="router.visit(notification.data.object.url)"
   >
     <NIcon :component="People24Regular" />
     <div
@@ -27,12 +27,12 @@
 
 <script setup lang="ts">
 import { Checkmark24Filled, People24Regular } from "@vicons/fluent";
-import { Inertia } from "@inertiajs/inertia";
-import { Link } from "@inertiajs/inertia-vue3";
 import { NButton, NIcon } from "naive-ui";
 import { defineAsyncComponent } from "vue";
-import { formatRelativeTime } from "@/Utils/IntlTime";
+import { router } from "@inertiajs/vue3";
 import { useAxios } from "@vueuse/integrations/useAxios";
+
+import { formatRelativeTime } from "@/Utils/IntlTime";
 
 export type NotificationData = {
   object: {

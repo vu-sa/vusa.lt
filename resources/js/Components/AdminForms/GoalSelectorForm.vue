@@ -37,7 +37,6 @@
 </template>
 
 <script setup lang="tsx">
-import { Inertia } from "@inertiajs/inertia";
 import {
   NButton,
   NForm,
@@ -48,7 +47,7 @@ import {
   NTag,
 } from "naive-ui";
 import { ref } from "vue";
-import { useForm } from "@inertiajs/inertia-vue3";
+import { router, useForm } from "@inertiajs/vue3";
 
 defineEmits<{
   (e: "submit", form: any): void;

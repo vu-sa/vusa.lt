@@ -51,7 +51,7 @@ import {
   NSelect,
 } from "naive-ui";
 import { ref } from "vue";
-import { useForm } from "@inertiajs/inertia-vue3";
+import { useForm } from "@inertiajs/vue3";
 
 import { modelDefaults } from "@/Types/formOptions";
 import UserAvatar from "../Avatars/UserAvatar.vue";

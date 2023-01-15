@@ -109,7 +109,7 @@ import { Edit24Filled, PeopleTeam24Filled } from "@vicons/fluent";
 import { computed, ref } from "vue";
 import { useStorage } from "@vueuse/core";
 
-import { Inertia } from "@inertiajs/inertia";
+import { router } from "@inertiajs/vue3";
 import { documentTemplate, modelTypes } from "@/Types/formOptions";
 import { formatStaticTime } from "@/Utils/IntlTime";
 import ActivityLogButton from "@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue";
@@ -194,7 +194,7 @@ const additionalDropdownOptions: DropdownOption[] = [
 ];
 
 const handleAgendaItemSubmit = (agendaItem: App.Entities.AgendaItem) => {
-  Inertia.patch(route("agendaItems.update", agendaItem.id), agendaItem, {
+  router.patch(route("agendaItems.update", agendaItem.id), agendaItem, {
     onSuccess: () => {
       showAgendaItemModal.value = false;
     },

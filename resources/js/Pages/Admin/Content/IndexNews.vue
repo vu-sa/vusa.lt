@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
 import { h, ref } from "vue";
-import { usePage } from "@inertiajs/inertia-vue3";
+import { usePage } from "@inertiajs/vue3";
 import type { DataTableColumns } from "naive-ui";
 
 import AsideHeader from "@/Components/AsideHeaders/AsideHeaderContent.vue";
@@ -34,7 +34,7 @@ const canUseRoutes = {
 };
 
 const padaliniaiFilterOptions = ref(
-  usePage().props.value.padaliniai.map((padalinys) => {
+  usePage().props.padaliniai.map((padalinys) => {
     return {
       label: padalinys.shortname,
       value: padalinys.id,

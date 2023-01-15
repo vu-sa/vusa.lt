@@ -46,7 +46,7 @@
 
 <script setup lang="ts">
 import { AddCircle32Regular, ArrowCircleLeft32Regular } from "@vicons/fluent";
-import { Head, Link } from "@inertiajs/inertia-vue3";
+import { Head, Link } from "@inertiajs/vue3";
 import { NButton, NDivider, NIcon } from "naive-ui";
 import { computed } from "vue";
 

@@ -119,7 +119,7 @@ import {
   useMessage,
 } from "naive-ui";
 import { computed, ref, watch } from "vue";
-import { useForm } from "@inertiajs/inertia-vue3";
+import { useForm } from "@inertiajs/vue3";
 
 import CardModal from "@/Components/Modals/CardModal.vue";
 

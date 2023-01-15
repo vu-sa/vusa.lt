@@ -29,11 +29,8 @@
   </FadeTransition>
 </template>
 
-
-
 <script setup lang="ts">
-import { Head } from "@inertiajs/inertia-vue3";
-import { Inertia } from "@inertiajs/inertia";
+import { Head, router } from "@inertiajs/vue3";
 import { createDiscreteApi } from "naive-ui";
 import { ref } from "vue";
 import { useDebounceFn } from "@vueuse/core";
@@ -71,7 +68,7 @@ const handleNameInput = useDebounceFn((input: string) => {
   const name = input;
   if (name.length > 2) {
     loadingNameInput.value = true;
-    Inertia.reload({
+    router.reload({
       only: ["searchContacts"],
       data: { name: name },
       onSuccess: () => {

@@ -188,7 +188,7 @@ import {
   NSpace,
 } from "naive-ui";
 import { FacebookF, Google } from "@vicons/fa";
-import { Head } from "@inertiajs/inertia-vue3";
+import { Head } from "@inertiajs/vue3";
 import { computed, h } from "vue";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";

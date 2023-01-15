@@ -15,7 +15,10 @@
     <div
       class="prose prose-sm flex w-fit flex-col items-center justify-center dark:prose-invert lg:h-4/5 lg:w-1/2 lg:items-start 2xl:w-3/4"
     >
-      <p v-if="$page.props.app.locale === 'lt'" class="text-2xl font-bold lg:w-2/3">
+      <p
+        v-if="$page.props.app.locale === 'lt'"
+        class="text-2xl font-bold lg:w-2/3"
+      >
         <span class="font-extrabold">Naujiena!</span> Sek visus VU studentų
         renginius bei įvykius
         <span class="text-vusa-red">čia!</span>
@@ -151,7 +154,9 @@
     <p v-else><strong>First</strong>, copy the link!</p>
 
     <div class="flex flex-col gap-1">
-      <p v-if="$page.props.app.locale === 'en'" class="font-bold">All events:</p>
+      <p v-if="$page.props.app.locale === 'en'" class="font-bold">
+        All events:
+      </p>
       <div class="flex gap-4">
         <div class="flex items-center rounded-2xl bg-zinc-100/50 px-4">
           <span>{{ route("calendar.ics") }}</span>
@@ -268,8 +273,7 @@ import { trans as $t } from "laravel-vue-i18n";
 import { Calendar, PopoverRow } from "v-calendar";
 import { Copy16Regular } from "@vicons/fluent";
 import { Google } from "@vicons/fa";
-import { Head } from "@inertiajs/inertia-vue3";
-import { Link } from "@inertiajs/inertia-vue3";
+import { Head, Link } from "@inertiajs/vue3";
 import {
   NButton,
   NConfigProvider,

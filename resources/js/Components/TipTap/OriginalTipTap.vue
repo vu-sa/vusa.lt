@@ -210,7 +210,7 @@ import {
   // TextQuote20Filled,
 } from "@vicons/fluent";
 import { EditorContent, useEditor } from "@tiptap/vue-3";
-import { Inertia } from "@inertiajs/inertia";
+import { router } from "@inertiajs/vue3";
 import {
   NButton,
   NIcon,
@@ -254,7 +254,7 @@ const getLinkAndModal = () => {
 const getFiles = useDebounceFn((query) => {
   if (query.length > 2) {
     message.loading("Ieškoma...");
-    Inertia.post(
+    router.post(
       route("files.search"),
       {
         data: {
@@ -282,7 +282,7 @@ const getFiles = useDebounceFn((query) => {
 const getImages = useDebounceFn((query) => {
   if (query.length > 2) {
     message.loading("Ieškoma...");
-    Inertia.post(
+    router.post(
       route("images.search"),
       {
         data: {

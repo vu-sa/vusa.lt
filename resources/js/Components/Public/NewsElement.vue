@@ -65,7 +65,7 @@
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
 import { Clock20Regular } from "@vicons/fluent";
-import { Link } from "@inertiajs/inertia-vue3";
+import { Link } from "@inertiajs/vue3";
 import { NIcon } from "naive-ui";
 
 import HomeCard from "@/Components/Public/HomeCard.vue";

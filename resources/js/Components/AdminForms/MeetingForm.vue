@@ -65,9 +65,8 @@ import {
   NRadioGroup,
   NSelect,
 } from "naive-ui";
-import { Method } from "@inertiajs/inertia";
+import { Method } from "@inertiajs/core";
 import { ref } from "vue";
-import type { InertiaForm } from "@inertiajs/inertia-vue3";
 
 // import { meetingOptions, meetingStatusOptions } from "@/Composables/someTypes";
 import StatusTag from "@/Components/Tags/StatusTag.vue";
@@ -85,7 +84,7 @@ const props = defineProps<{
   modelRoute?: string;
   matter?: App.Entities.Matter;
   // This question form is from a quick action button, idk if it shouldn't be refactored
-  mattersForm?: InertiaForm<Record<string, any>>;
+  mattersForm?: Record<string, any>;
 }>();
 
 const showModal = ref(false);

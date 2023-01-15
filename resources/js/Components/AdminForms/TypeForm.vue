@@ -58,7 +58,7 @@
 <script setup lang="ts">
 import { NForm, NFormItemGi, NGrid, NInput, NSelect } from "naive-ui";
 import { computed } from "vue";
-import { useForm } from "@inertiajs/inertia-vue3";
+import { useForm } from "@inertiajs/vue3";
 
 import { modelTypes } from "@/Types/formOptions";
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";

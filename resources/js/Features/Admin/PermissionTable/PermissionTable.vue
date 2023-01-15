@@ -44,7 +44,7 @@
 <script setup lang="tsx">
 import { type Component, ref } from "vue";
 import { NButton, NSpin } from "naive-ui";
-import { useForm } from "@inertiajs/inertia-vue3";
+import { useForm } from "@inertiajs/vue3";
 
 import { CRUDEnum } from "@/Types/enums";
 import PermissionTableRow from "@/Features/Admin/PermissionTable/PermissionTableRow.vue";

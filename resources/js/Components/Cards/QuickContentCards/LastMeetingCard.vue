@@ -43,7 +43,7 @@
 
 <script setup lang="tsx">
 import { CalendarClock20Regular } from "@vicons/fluent";
-import { Link } from "@inertiajs/inertia-vue3";
+import { Link } from "@inertiajs/vue3";
 import { NIcon, NMessageProvider, NNumberAnimation } from "naive-ui";
 import { computed } from "vue";
 

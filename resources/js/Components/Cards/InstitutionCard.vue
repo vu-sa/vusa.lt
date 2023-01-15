@@ -4,7 +4,7 @@
     as="button"
     style="max-width: 400px"
     class="cursor-pointer shadow-sm"
-    @click="Inertia.visit(route('institutions.show', institution.id))"
+    @click="router.visit(route('institutions.show', institution.id))"
   >
     <template #cover>
       <img
@@ -69,7 +69,7 @@
 </template>
 
 <script setup lang="tsx">
-import { Inertia } from "@inertiajs/inertia";
+import { router } from "@inertiajs/vue3";
 import { MoreHorizontal24Filled } from "@vicons/fluent";
 import { NButton, NCard, NIcon, NPopover, NTag } from "naive-ui";
 import { computed } from "vue";

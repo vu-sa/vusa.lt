@@ -45,7 +45,7 @@
 </template>
 
 <script setup lang="tsx">
-import { Inertia } from "@inertiajs/inertia";
+import { router } from "@inertiajs/vue3";
 import { NIcon } from "naive-ui";
 import { computed, ref } from "vue";
 
@@ -102,6 +102,6 @@ const handleFilterClick = (name: string | null) => {
 };
 
 const handleDelete = () => {
-  Inertia.delete(route("goals.destroy", props.goal.id));
+  router.delete(route("goals.destroy", props.goal.id));
 };
 </script>

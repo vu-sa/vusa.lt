@@ -69,7 +69,7 @@
 </template>
 
 <script setup lang="tsx">
-import { Head, Link, usePage } from "@inertiajs/inertia-vue3";
+import { Head, Link, usePage } from "@inertiajs/vue3";
 import {
   type MessageReactive,
   NButton,
@@ -110,9 +110,9 @@ const collapsed = useStorage("admin-menu-collapsed", false);
 const online = useOnline();
 const message = useMessage();
 
-const successMessage = computed(() => usePage().props.value.flash.success);
-const infoMessage = computed(() => usePage().props.value.flash.info);
-const errorMessage = computed(() => usePage().props.value.errors);
+const successMessage = computed(() => usePage().props.flash.success);
+const infoMessage = computed(() => usePage().props.flash.info);
+const errorMessage = computed(() => usePage().props.errors);
 
 const errorOnlineReactiveMessage = () => {
   return message.error("Jūsų interneto ryšys buvo nutrauktas.", {
@@ -125,14 +125,14 @@ const errorOnlineMessage = ref<MessageReactive | null>(null);
 watch(successMessage, (successMessage) => {
   if (successMessage) {
     message.success(successMessage);
-    usePage().props.value.flash.success = null;
+    usePage().props.flash.success = null;
   }
 });
 
 watch(infoMessage, (infoMessage) => {
   if (infoMessage) {
     message.info(infoMessage);
-    usePage().props.value.flash.info = null;
+    usePage().props.flash.info = null;
   }
 });
 
@@ -148,7 +148,7 @@ watch(online, (online) => {
 });
 
 // Run only in dev
-if (usePage().props.value.app.env === "local") {
+if (usePage().props.app.env === "local") {
   watch(errorMessage, (errorMessage) => {
     if (errorMessage) {
       // loop over the object and display each error

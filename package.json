@@ -7,6 +7,7 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
+    "@inertiajs/vue3": "^1.0.0",
     "@storybook/addons": "^6.5.15",
     "@storybook/theming": "^6.5.15",
     "@tiptap/extension-bubble-menu": "^2.0.0-beta.54",
@@ -29,9 +30,6 @@
     "v-calendar": "^3.0.0-alpha.8"
   },
   "devDependencies": {
-    "@inertiajs/inertia": "^0.11.0",
-    "@inertiajs/inertia-vue3": "^0.6.0",
-    "@inertiajs/progress": "^0.2.6",
     "@storybook/addon-essentials": "^7.0.0-beta.15",
     "@storybook/addon-interactions": "^7.0.0-beta.15",
     "@storybook/addon-links": "^7.0.0-beta.15",

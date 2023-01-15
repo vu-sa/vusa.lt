@@ -57,11 +57,10 @@
 
 <script setup lang="tsx">
 import { ArrowUpRight24Filled } from "@vicons/fluent";
-import { Link } from "@inertiajs/inertia-vue3";
+import { Link, router } from "@inertiajs/vue3";
 import { NButton, NIcon } from "naive-ui";
 import { ref } from "vue";
 
-import { Inertia } from "@inertiajs/inertia";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import GoalSelectorForm from "@/Components/AdminForms/GoalSelectorForm.vue";
@@ -78,13 +77,13 @@ const loading = ref(false);
 
 const handleModalOpen = () => {
   loading.value = true;
-  Inertia.reload({ only: ["goals"], onSuccess: () => (loading.value = false) });
+  router.reload({ only: ["goals"], onSuccess: () => (loading.value = false) });
   showModal.value = true;
 };
 
 const handleGoalChange = (goal: App.Entities.Goal) => {
   console.log(goal);
-  Inertia.post(
+  router.post(
     route("matters.attachGoal", props.matter.id),
     { goal_id: goal.id },
     {

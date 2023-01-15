@@ -78,12 +78,12 @@ import {
   Folder48Regular,
   Image48Regular,
 } from "@vicons/fluent";
-import { Inertia } from "@inertiajs/inertia";
 import { NCard, NIcon, NUpload, NUploadDragger } from "naive-ui";
 import { computed } from "vue";
+import { router } from "@inertiajs/vue3";
 
-import FileButton from "@/Components/Buttons/Deprecated/FileButton.vue";
-import FolderButton from "@/Components/Buttons/Deprecated/FolderButton.vue";
+import FileButton from "@/Components/Deprecated/FileButton.vue";
+import FolderButton from "@/Components/Deprecated/FolderButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 
 // Declare props
@@ -130,7 +130,7 @@ const getNextPath = (selectedDirectory) => {
 
 // On directory button click, get all files and directories
 const getAllFilesAndDirectories = async (selectedDirectory) => {
-  await Inertia.reload({
+  await router.reload({
     data: { currentPath: getNextPath(selectedDirectory) },
   });
 };
@@ -143,7 +143,7 @@ const openFile = (filePath) => {
 
 const uploadFile = (e) => {
   const file = e.file;
-  Inertia.post(
+  router.post(
     route("files.store"),
     { file, path: props.currentPath },
     {

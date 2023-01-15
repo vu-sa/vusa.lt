@@ -110,7 +110,7 @@ import {
   NSwitch,
 } from "naive-ui";
 import { computed, watch } from "vue";
-import { useForm } from "@inertiajs/inertia-vue3";
+import { useForm } from "@inertiajs/vue3";
 import latinize from "latinize";
 
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";

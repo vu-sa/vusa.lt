@@ -62,7 +62,7 @@ import { trans as $t } from "laravel-vue-i18n";
 import { NButton, NIcon, NStep, NSteps } from "naive-ui";
 import { PeopleTeamAdd24Filled, Question24Regular } from "@vicons/fluent";
 import { ref } from "vue";
-import { useForm } from "@inertiajs/inertia-vue3";
+import { useForm } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 
 import AgendaItemsForm from "@/Components/AdminForms/Special/AgendaItemsForm.vue";

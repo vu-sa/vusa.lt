@@ -54,7 +54,7 @@ import {
   NSelect,
 } from "naive-ui";
 import { ref } from "vue";
-import { useForm } from "@inertiajs/inertia-vue3";
+import { useForm } from "@inertiajs/vue3";
 
 import { modelDefaults, modelStatus } from "@/Types/formOptions";
 import StatusTag from "@/Components/Tags/StatusTag.vue";

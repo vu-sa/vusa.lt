@@ -15,7 +15,7 @@
 
 
 <script setup lang="ts">
-import { Head } from "@inertiajs/inertia-vue3";
+import { Head } from "@inertiajs/vue3";
 
 import CategoryCard from "@/Components/Public/CategoryCard.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";

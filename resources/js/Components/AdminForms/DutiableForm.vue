@@ -105,7 +105,7 @@ import {
   NTabPane,
   NTabs,
 } from "naive-ui";
-import { useForm } from "@inertiajs/inertia-vue3";
+import { useForm } from "@inertiajs/vue3";
 import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
 
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
