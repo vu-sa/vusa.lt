@@ -1,5 +1,5 @@
 <template>
-  <div class="inline-flex flex-row items-center">
+  <div class="not-prose inline-flex flex-row items-center">
     <NAvatar
       round
       :size="size"

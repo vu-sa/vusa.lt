@@ -58,8 +58,8 @@ class RelationshipService
         return [
             'outgoingDirect' => $outgoingDirect,
             'incomingDirect' => $incomingDirect,
-            'outgoingDirectByType' => $outgoingDirectByType,
-            'incomingDirectByType' => $incomingDirectByType,
+            'outgoingByType' => $outgoingDirectByType,
+            'incomingByType' => $incomingDirectByType,
         ];
     }
 

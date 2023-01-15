@@ -10,42 +10,42 @@ use Illuminate\Support\Carbon;
 
 class DoingStatusManager {
     
-    public static function generateStatusForNewDoing(Doing $doing) {
-        $weekdaysBeforeDoing = self::getRelativeWeekdaysBeforeDoing($doing);
+    // public static function generateStatusForNewDoing(Doing $doing) {
+    //     $weekdaysBeforeDoing = self::getRelativeWeekdaysBeforeDoing($doing);
 
-        switch (true) {
-            case $weekdaysBeforeDoing < 0:
-                $doing->status = "Sukurtas po įvykio";
-                break;
-            case $weekdaysBeforeDoing < 3:
-                $doing->status = "Sukurtas per vėlai";
-                break;
-            default: 
-                $doing->status = "Sukurtas";
-                break;
-        }
+    //     switch (true) {
+    //         case $weekdaysBeforeDoing < 0:
+    //             $doing->status = "Sukurtas po įvykio";
+    //             break;
+    //         case $weekdaysBeforeDoing < 3:
+    //             $doing->status = "Sukurtas per vėlai";
+    //             break;
+    //         default: 
+    //             $doing->status = "Sukurtas";
+    //             break;
+    //     }
 
-        $doing->save();
-    }
+    //     $doing->save();
+    // }
 
-    protected static function getRelativeWeekdaysBeforeDoing($doing): int {
-        $currentDate = self::roundDateToMidnight(now());
+    // protected static function getRelativeWeekdaysBeforeDoing($doing): int {
+    //     $currentDate = self::roundDateToMidnight(now());
         
-        // check if date is 3 workdays before
-        $objectDay = Carbon::parse($doing->date)->startOfDay();
+    //     // check if date is 3 workdays before
+    //     $objectDay = Carbon::parse($doing->date)->startOfDay();
         
-        $days = $currentDate->diffInWeekdays($objectDay, false);
+    //     $days = $currentDate->diffInWeekdays($objectDay, false);
 
-        return $days;
-    }
+    //     return $days;
+    // }
 
-    protected static function roundDateToMidnight(Carbon $date): Carbon {
-        if ($date->hour < 10) {
-            $roundedDate = $date->startOfDay();
-        } else {
-            $roundedDate = $date->startOfDay()->addDays(1);
-        }
+    // protected static function roundDateToMidnight(Carbon $date): Carbon {
+    //     if ($date->hour < 10) {
+    //         $roundedDate = $date->startOfDay();
+    //     } else {
+    //         $roundedDate = $date->startOfDay()->addDays(1);
+    //     }
 
-        return $roundedDate;
-    }
+    //     return $roundedDate;
+    // }
 }

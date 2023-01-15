@@ -35,8 +35,8 @@ Route::resource('registrations', RegistrationController::class);
 
 Route::resource('matters', MatterController::class);
 Route::resource('goals', GoalController::class);
+Route::post('matters/{matter}/attach', [MatterController::class, 'attachGoal'])->name('matters.attachGoal');
 Route::resource('goalGroups', GoalGroupController::class);
-Route::post('matters/{matter}/attach/{goal}', [MatterController::class, 'attachGoal'])->name('matters.attachGoal');
 Route::resource('doings', DoingController::class);
 Route::resource('agendaItems', AgendaItemController::class);
 Route::resource('meetings', MeetingController::class);

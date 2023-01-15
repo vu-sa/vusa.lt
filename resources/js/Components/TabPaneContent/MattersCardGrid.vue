@@ -1,5 +1,5 @@
 <template>
-  <div class="grid grid-cols-3 gap-x-4 xl:grid-cols-4">
+  <div class="grid grid-cols-4 gap-x-4">
     <MatterCard
       v-for="matter in matters"
       :key="matter.id"
@@ -16,7 +16,6 @@
     </div>
   </div>
   <CardModal
-    v-if="institution"
     v-model:show="showModal"
     title="Sukurti klausimą"
     @close="showModal = false"
@@ -24,7 +23,7 @@
     <MatterForm
       :form="matterTemplate"
       :institution="institution"
-      @matter-stored="showModal = false"
+      @submit="handleSubmit"
     />
   </CardModal>
 </template>
@@ -39,10 +38,25 @@ import CardModal from "@/Components/Modals/CardModal.vue";
 import MatterCard from "@/Components/Cards/MatterCard.vue";
 import MatterForm from "@/Components/AdminForms/MatterForm.vue";
 
-defineProps<{
+const props = defineProps<{
   matters: App.Entities.Matter[];
   institution: App.Entities.Institution;
 }>();
 
 const showModal = ref(false);
+
+const handleSubmit = (form: any) => {
+  form
+    .transform((data: any) => {
+      return {
+        ...data,
+        institution_id: props.institution.id,
+      };
+    })
+    .post(route("matters.store"), {
+      onSuccess: () => {
+        showModal.value = false;
+      },
+    });
+};
 </script>

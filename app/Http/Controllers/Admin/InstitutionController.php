@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetInstitutionManagers;
-use App\Actions\GetRelatedInstitutionRelationships;
 use App\Services\ModelIndexer;
 use App\Models\Institution;
 use App\Models\Duty;
@@ -12,11 +11,9 @@ use App\Http\Controllers\ResourceController;
 use Inertia\Inertia;
 use App\Models\Type;
 use App\Models\Doing;
-use App\Models\Pivots\Relationshipable;
 use App\Services\RelationshipService;
 use App\Services\ResourceServices\InstitutionService;
 use App\Services\SharepointAppGraph;
-use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
 class InstitutionController extends ResourceController
 {

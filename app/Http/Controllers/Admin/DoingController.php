@@ -69,17 +69,16 @@ class DoingController extends ResourceController
         
         $request->validate([
             'title' => 'required',
-            'type_id' => 'required',
             'user_id' => 'required'
         ]);
     
         $doing = Doing::create
             ($request->only('title') + ['status' => 'Sukurtas', 'date' => $request->date ?? now()]);
         
-        $doing->types()->sync($request->type_id);
+        // $doing->types()->sync($request->type_id);
         $doing->users()->sync($request->user_id);
 
-        DoingStatusManager::generateStatusForNewDoing($doing);
+        // DoingStatusManager::generateStatusForNewDoing($doing);
         // TaskCreator::createAutomaticTasks($doing);
 
         return redirect()->route('doings.show', $doing)->with('success', 'Veiksmas sukurtas!');
@@ -94,21 +93,11 @@ class DoingController extends ResourceController
     public function show(Doing $doing)
     {
         $this->authorize('view', [Doing::class, $doing, $this->authorizer]);
-        
-        $sharepointFiles = [];
-        
-        if ($doing->documents->count() > 0) {
-            $graph = new SharepointAppGraph();
-        
-            $sharepointFiles = $graph->collectSharepointFiles($doing->documents);
-        }
 
         $doing->load('activities.causer', 'tasks', 'comments', 'doables', 'users');
 
         return Inertia::render('Admin/Representation/ShowDoing', [
-            'matter' => $doing->matters->first()?->load('institution'),
             'doing' => $doing,
-            'sharepointFiles' => $sharepointFiles,
         ]);
     }
 
@@ -140,9 +129,13 @@ class DoingController extends ResourceController
         
         $request->validate([
             'title' => 'required',
+            'user_id' => 'required',
+            'date' => 'required'
         ]);
 
-        $doing->update($request->only('title', 'status', 'date'));
+        $doing->update($request->only('title', 'date'));
+
+        $doing->users()->sync($request->only('user_id'));
 
         return redirect()->route('doings.show', $doing)->with('success', 'Veikla atnaujinta!');
     }

@@ -1,7 +1,7 @@
 import { InertiaProgress } from "@inertiajs/progress";
 
+import { type DefineComponent, createApp, h } from "vue";
 import { ZiggyVue } from "../../vendor/tightenco/ziggy/src/js/vue.js";
-import { createApp, h } from "vue";
 import { createInertiaApp } from "@inertiajs/inertia-vue3";
 import { defineAsyncComponent } from "vue";
 import { i18nVue } from "laravel-vue-i18n";
@@ -24,7 +24,7 @@ createInertiaApp({
     const page = resolvePageComponent(
       `./Pages/${name}.vue`,
       import.meta.glob("./Pages/**/*.vue")
-    );
+    ) as Promise<DefineComponent>;
 
     page.then((module) => {
       if (!module) {

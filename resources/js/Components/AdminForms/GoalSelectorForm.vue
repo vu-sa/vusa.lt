@@ -1,12 +1,12 @@
 <template>
-  <NSpin :show="!isFinished">
+  <NSpin :show="loading">
     <NForm ref="formRef" :rules="rules" :model="model">
       <NGrid cols="1"
         ><NFormItemGi label="Tikslo pavadinimas" required path="title">
           <!-- TODO: Dabar neveikia sukūrimas tikslo iš šios vietos -->
           <NSelect
             v-model:value="model.id"
-            :options="data"
+            :options="goals"
             tag
             filterable
             label-field="title"
@@ -26,7 +26,7 @@
             :loading="loading"
             :disabled="!model.id"
             type="primary"
-            @click.prevent="pickGoal"
+            @click.prevent="$emit('submit', model)"
             >Pridėti</NButton
           >
         </NFormItemGi>
@@ -48,68 +48,28 @@ import {
   NTag,
 } from "naive-ui";
 import { ref } from "vue";
-import { useAxios } from "@vueuse/integrations/useAxios";
 import { useForm } from "@inertiajs/inertia-vue3";
 
-
-const emit = defineEmits(["closeModal"]);
-
-const props = defineProps<{
-  matter: App.Entities.Matter;
+defineEmits<{
+  (e: "submit", form: any): void;
 }>();
 
-const loading = ref(false);
+const props = defineProps<{
+  goals?: App.Entities.Goal[] | [];
+  current: App.Entities.Goal | null;
+  loading: boolean;
+}>();
+
 const rules = {
   id: {
     required: true,
     message: "Privaloma pasirinkti klausimo grupę",
   },
 };
+
 const model = useForm({
-  id: props.matter.goal_id,
+  id: props.current?.id || null,
 });
 
 const formRef = ref(null);
-
-const { data, isFinished } = useAxios("/api/v1/goals");
-
-const pickGoal = () => {
-  formRef.value?.validate((errors) => {
-    if (!errors) {
-      // switch (typeof model.title) {
-      // case "string":
-      //   model.post(route("goals.store"), {
-      //     onSuccess: (page) => {
-      //       Inertia.post(
-      //         route("matters.attachGoal", {
-      //           matter: props.matter.id,
-      //           goal: page.props.flash.data,
-      //         }),
-      //         {},
-      //         {
-      //           onSuccess: () => {
-      //             emit("closeModal");
-      //           },
-      //         }
-      //       );
-      //     },
-      //   });
-      //   break;
-      // case "number":
-      Inertia.post(
-        route("matters.attachGoal", {
-          matter: props.matter.id,
-          // the title is an id number here...
-          goal: model.id,
-        }),
-        {},
-        {
-          onSuccess: () => {
-            emit("closeModal");
-          },
-        }
-      );
-    }
-  });
-};
 </script>

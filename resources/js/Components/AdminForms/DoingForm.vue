@@ -28,17 +28,12 @@
           :actions="['confirm']"
         />
       </NFormItemGi>
-      <NFormItemGi v-if="doingTypes" label="Tipas" path="doing_type_id" required
-        ><NSelect
-          v-model:value="doingForm.type_id"
-          placeholder="Pasirinkti tipą"
-          filterable
-          :options="doingTypes"
-        ></NSelect
-      ></NFormItemGi>
+      <NFormItemGi label="Atsakingas" :span="2">
+        <UserAvatar :user="$page.props.auth.user" show-name />
+      </NFormItemGi>
 
       <NFormItemGi :span="2" :show-label="false"
-        ><NButton type="primary" @click="upsertDoing"
+        ><NButton type="primary" @click="handleSubmit"
           >Sukurti</NButton
         ></NFormItemGi
       >
@@ -47,35 +42,29 @@
 </template>
 
 <script setup lang="ts">
-import { Method } from "@inertiajs/inertia";
 import {
   NButton,
   NDatePicker,
   NForm,
   NFormItemGi,
   NGrid,
-  NRadio,
-  NRadioGroup,
   NSelect,
 } from "naive-ui";
 import { ref } from "vue";
-import { useForm, usePage } from "@inertiajs/inertia-vue3";
+import { useForm } from "@inertiajs/inertia-vue3";
 
-import { doingOptions } from "@/Types/formOptions";
-import StatusTag from "@/Components/Tags/StatusTag.vue";
+import { modelDefaults } from "@/Types/formOptions";
+import UserAvatar from "../Avatars/UserAvatar.vue";
 
-const emit = defineEmits(["success"]);
+const emit = defineEmits<{
+  (e: "submit", form: any): void;
+}>();
 
 const props = defineProps<{
   doing: App.Entities.Doing;
-  doingTypes?: any;
-  modelRoute: string;
-  matter?: App.Entities.Matter;
-  // This question form is from a quick action button, idk if it shouldn't be refactored
-  matterForm?: Record<string, any>;
 }>();
 
-const showModal = ref(false);
+const loading = ref(false);
 const doingForm = useForm(props.doing);
 const formRef = ref(null);
 
@@ -89,35 +78,15 @@ const rules = {
     trigger: ["blur"],
     message: "Veiklos data yra privaloma",
   },
-  type_id: {
-    required: true,
-    trigger: ["blur"],
-  },
 };
 
-const upsertDoing = () => {
-  formRef.value?.validate((errors) => {
-    if (errors) {
-      /* empty */
-    } else {
-      doingForm.transform((data) => ({
-        ...data,
-        question_id: props.question?.id,
-        questionForm: props.questionForm,
-        user_id: usePage().props.value.auth?.user.id,
-      }));
+const doingOptions = modelDefaults.doing.map((doing) => ({
+  label: doing,
+  value: doing,
+}));
 
-      doingForm.submit(
-        props.modelRoute === "doings.update" ? Method.PATCH : Method.POST,
-        route(props.modelRoute),
-        {
-          onSuccess: () => {
-            showModal.value = false;
-            emit("success");
-          },
-        }
-      );
-    }
-  });
+const handleSubmit = () => {
+  loading.value = true;
+  emit("submit", doingForm);
 };
 </script>

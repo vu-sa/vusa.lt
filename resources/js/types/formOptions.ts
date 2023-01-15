@@ -10,11 +10,7 @@ export const modelDefaults = {
     "Studentų nuomonės išnagrinėjimas posėdyje",
     "Dėstytojo keitimas",
   ],
-  doing: [
-    "Susitikimas su studentais",
-    "Planuotas posėdis",
-    "Susitikimas su koordinatoriumi",
-  ],
+  doing: ["Susitikimas su studentais", "Susitikimas su koordinatoriumi"],
 };
 
 export const modelTypes = {

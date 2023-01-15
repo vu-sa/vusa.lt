@@ -28,8 +28,7 @@
         :matter="matter"
         ><div v-for="institution in matter.institutions" :key="institution.id">
           <ModelChip
-            ><template #icon
-              ><NIcon :component="StarLineHorizontal324Filled" /> </template
+            ><template #icon><NIcon :component="Icons.GOAL" /> </template
             >{{ institution.name }}</ModelChip
           >
         </div>
@@ -46,17 +45,19 @@
 </template>
 
 <script setup lang="tsx">
-import { Home24Filled, StarLineHorizontal324Filled } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import { NIcon } from "naive-ui";
 import { computed, ref } from "vue";
 
 import ActivityLogButton from "@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue";
-import AdminBreadcrumbDisplayer from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
+import AdminBreadcrumbDisplayer, {
+  type BreadcrumbOption,
+} from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 
 import CardModal from "@/Components/Modals/CardModal.vue";
 import FilterButtonGroup from "@/Components/Buttons/FilterButtonGroup.vue";
 import GoalForm from "@/Components/AdminForms/GoalForm.vue";
+import Icons from "@/Types/Icons/filled";
 import MatterCard from "@/Components/Cards/MatterCard.vue";
 import ModelChip from "@/Components/Chips/ModelChip.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
@@ -70,13 +71,14 @@ const props = defineProps<{
 const showModal = ref(false);
 const selectedInstitution = ref<string | null>(null);
 const buttonNames = props.institutions.map((institution) => institution.name);
-const breadcrumbItems: App.Props.BreadcrumbOption[] = [
+const breadcrumbItems: BreadcrumbOption[] = [
   {
     label: "Klausimų grupės",
+    icon: Icons.GOAL_GROUP,
   },
   {
     label: props.goal.title,
-    icon: StarLineHorizontal324Filled,
+    icon: Icons.GOAL,
   },
 ];
 

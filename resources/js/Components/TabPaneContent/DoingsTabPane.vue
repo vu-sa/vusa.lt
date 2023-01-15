@@ -11,7 +11,7 @@
       class="mx-1 my-2 flex flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-zinc-700 p-2 text-zinc-500 duration-200 hover:shadow-inner dark:bg-zinc-900/60"
       @click="showModal = true"
     >
-      <NIcon size="24" :depth="5" :component="Sparkle20Filled"></NIcon>
+      <NIcon size="24" :depth="5" :component="Icons.GOAL"></NIcon>
       <span>Sukurti veiklą?</span>
     </div>
   </div>
@@ -21,31 +21,40 @@
     title="Sukurti veiklą"
     @close="showModal = false"
   >
-    <DoingForm
-      :doing="doingTemplate"
-      :matter="matter"
-      :doing-types="doingTypes"
-      model-route="doings.store"
-      @success="showModal = false"
-    />
+    <DoingForm :doing="doingTemplate" @submit="handleDoingSubmit" />
   </CardModal>
 </template>
 
 <script setup lang="tsx">
+import { Inertia } from "@inertiajs/inertia";
 import { NIcon } from "naive-ui";
-import { Sparkle20Filled } from "@vicons/fluent";
 import { ref } from "vue";
 
+import { doingTemplate } from "@/Types/formTemplates";
+import { usePage } from "@inertiajs/inertia-vue3";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import DoingCard from "../Cards/DoingCard.vue";
 import DoingForm from "../AdminForms/DoingForm.vue";
+import Icons from "@/Types/Icons/filled";
 
 defineProps<{
   doings: App.Entities.Doing[];
-  doingTemplate: any;
   doingTypes: any;
   matter: App.Entities.Matter;
 }>();
 
 const showModal = ref(false);
+
+const handleDoingSubmit = (form: any) => {
+  form
+    .transform((data: any) => ({
+      ...data,
+      user_id: usePage().props.value.auth?.user.id,
+    }))
+    .post(route("doings.store"), {
+      onSuccess: () => {
+        showModal.value = false;
+      },
+    });
+};
 </script>

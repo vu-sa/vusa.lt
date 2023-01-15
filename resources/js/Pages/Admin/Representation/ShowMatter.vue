@@ -1,53 +1,26 @@
 <template>
-  <PageContent :title="matter.title" breadcrumb>
-    <template #above-header>
-      <AdminBreadcrumbDisplayer
-        :options="breadcrumbOptions"
-        class="mb-4 w-full"
-      />
+  <ShowPageLayout :breadcrumb-options="breadcrumbOptions" :model="matter">
+    <template #title>
+      <span class="text-3xl">{{ matter.title }}</span>
     </template>
-    <!-- <template #after-heading>
-        <StatusTag :status="matter.status" />
-      </template> -->
-    <template #aside-header>
-      <div class="inline-flex gap-2">
-        <ActivityLogButton :activities="matter.activities" />
-        <MoreOptionsButton
-          disabled
-          edit
-          @edit-click="showMatterModal = true"
-        ></MoreOptionsButton>
-      </div>
+    <template #more-options>
+      <MoreOptionsButton
+        disabled
+        edit
+        @edit-click="showMatterModal = true"
+      ></MoreOptionsButton>
     </template>
-    <GoalCard :matter="matter" :goals="matter.goals" />
-    <NTabs
-      animated
-      type="line"
-      :default-value="currentMattersTabPane"
-      @update:value="updateMattersTabPane"
-    >
-      <NTabPane name="Apie">
-        <p>{{ matter.description }}</p>
-      </NTabPane>
-      <NTabPane name="Veiklos">
-        <template #tab>
-          <div class="flex gap-2">
-            Veiklos
-            <!-- <NTag size="small" round>
-              {{ matter.doings.length }}
-            </NTag> -->
-          </div>
-        </template>
-
-        <DoingsTabPane
-          :matter="matter"
-          :doings="matter.doings"
-          :doing-template="doingTemplate"
-          :doing-types="doingTypes"
-        ></DoingsTabPane>
-      </NTabPane>
-    </NTabs>
-  </PageContent>
+    <GoalCard :matter="matter" :goals="goals" />
+    <div>
+      <h3>Veiklos</h3>
+      <DoingsTabPane
+        :matter="matter"
+        :doings="matter.doings"
+        :doing-template="doingTemplate"
+        :doing-types="doingTypes"
+      ></DoingsTabPane>
+    </div>
+  </ShowPageLayout>
   <CardModal
     v-model:show="showMatterModal"
     title="Redaguoti klausimą"
@@ -55,40 +28,31 @@
     ><MatterForm
       :form="matter"
       :institution="firstInstitution"
-      @matter-stored="showMatterModal = false"
+      @submit="handleMatterSubmit"
     ></MatterForm
   ></CardModal>
 </template>
 
 <script setup lang="tsx">
 import { BookQuestionMark24Filled, PeopleTeam24Filled } from "@vicons/fluent";
-import { NTabPane, NTabs } from "naive-ui";
 import { computed, ref } from "vue";
-import { useStorage } from "@vueuse/core";
 
 import { doingTemplate } from "@/Types/formTemplates";
-import ActivityLogButton from "@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue";
-import AdminBreadcrumbDisplayer, {
-  type BreadcrumbOption,
-} from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import DoingsTabPane from "@/Components/TabPaneContent/DoingsTabPane.vue";
 import GoalCard from "@/Components/Cards/QuickContentCards/GoalCard.vue";
 import MatterForm from "@/Components/AdminForms/MatterForm.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import ShowPageLayout from "@/Components/Layouts/ShowPageLayout.vue";
+import type { BreadcrumbOption } from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 
 const props = defineProps<{
   matter: App.Entities.Matter;
+  goals?: App.Entities.Goal[];
   doingTypes: Record<string, any>;
 }>();
 
 const showMatterModal = ref(false);
-const currentMattersTabPane = useStorage("admin-CurrentMattersTabPane", "Apie");
-
-const updateMattersTabPane = (value: string | number) => {
-  currentMattersTabPane.value = value;
-};
 
 const firstInstitution = computed(() => {
   if (props.matter.institutions?.length === 0) {
@@ -100,6 +64,10 @@ const firstInstitution = computed(() => {
 
   return props.matter?.institutions?.[0];
 });
+
+const handleMatterSubmit = (form: Record<string, any>) => {
+  console.log(form);
+};
 
 const breadcrumbOptions: BreadcrumbOption[] = [
   {

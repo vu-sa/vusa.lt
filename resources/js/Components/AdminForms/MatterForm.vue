@@ -34,7 +34,7 @@
         </NRadioGroup>
       </NFormItemGi> -->
       <NFormItemGi :show-label="false"
-        ><NButton type="primary" @click="createMatter"
+        ><NButton :loading="loading" type="primary" @click="handleSubmit"
           >Sukurti</NButton
         ></NFormItemGi
       >
@@ -53,13 +53,14 @@ import {
   NRadioGroup,
   NSelect,
 } from "naive-ui";
+import { ref } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 
 import { modelDefaults, modelStatus } from "@/Types/formOptions";
 import StatusTag from "@/Components/Tags/StatusTag.vue";
 
 const emit = defineEmits<{
-  (e: "matterStored"): void;
+  (e: "submit", form: any): void;
 }>();
 
 const props = defineProps<{
@@ -68,6 +69,7 @@ const props = defineProps<{
 }>();
 
 const matterForm = useForm(props.form);
+const loading = ref(false);
 
 const defaultOptions = modelDefaults.matter.map((option) => {
   return {
@@ -76,27 +78,17 @@ const defaultOptions = modelDefaults.matter.map((option) => {
   };
 });
 
-const matterStatusOptions = modelStatus.matter.map((option) => {
-  return {
-    label: option,
-    value: option,
-  };
-});
-
-const createMatter = () => {
-  matterForm.post(
-    route("matters.store", {
-      institution_id: props.institution.id,
-    }),
-    {
-      preserveScroll: true,
-      onSuccess: () => {
-        emit("matterStored");
-        matterForm.reset();
-      },
-    }
-  );
+const handleSubmit = () => {
+  loading.value = true;
+  emit("submit", matterForm);
 };
+
+// const matterStatusOptions = modelStatus.matter.map((option) => {
+//   return {
+//     label: option,
+//     value: option,
+//   };
+// });
 
 // const existingMatterOptions: Array<SelectGroupOption> = [
 //   {

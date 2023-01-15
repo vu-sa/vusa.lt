@@ -4,7 +4,6 @@
   >
   <!-- Usually maybe for breadcrumb -->
   <slot name="above-header" />
-  <NDivider v-if="breadcrumb" />
 
   <header
     class="flex max-w-7xl flex-row flex-wrap items-center gap-4 overflow-visible"

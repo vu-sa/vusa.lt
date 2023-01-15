@@ -78,17 +78,12 @@ class MatterController extends ResourceController
     {
         $this->authorize('view', [Matter::class, $matter, $this->authorizer]);
         
-        
-        $matter = $matter->load('institutions', 'goals', 'activities', 'activities.causer');
+        $matter = $matter->load('institutions', 'doings', 'goals', 'activities.causer');
 
         return Inertia::render('Admin/Representation/ShowMatter', [
             'matter' => $matter,
-            'doingTypes' => Type::where('model_type', Doing::class)->get()->map(function ($doingType) {
-                return [
-                    'value' => $doingType->id,
-                    'label' => $doingType->title,
-                ];
-            }),
+            'doingTypes' => Type::where('model_type', Doing::class)->get(['id', 'title']),
+            'goals' => Inertia::lazy(fn () => Goal::get(['id', 'title']))
         ]);
     }
 
@@ -136,9 +131,22 @@ class MatterController extends ResourceController
         return redirect()->route('matters.index')->with('success', 'Klausimas sėkmingai ištrintas');
     }
 
-    public function attachGoal(Matter $matter, Goal $goal, Request $request) {
+    public function attachGoal(Matter $matter, Request $request) {
         
-        $matter->goals()->attach($goal);
+        $this->authorize('update', [Matter::class, $matter, $this->authorizer]);
+
+        $validated = $request->validate([
+            'goal_id' => 'required',
+        ]);
+
+        // dd($validated);
+        // get padalinys from first matter institution
+        $padalinys = $matter->institutions->first()->padalinys;
+
+        // check if goal_id exists if not, create new with that name
+        $goal = Goal::firstOrCreate(['id' => $validated['goal_id']], ['title' => $validated['goal_id'], 'padalinys_id' => $padalinys->id, 'start_date' => now()]);
+
+        $matter->goals()->sync($goal);
 
         return back()->with('success', 'Svarstomas klausimas sėkmingai pridėtas prie tikslo');
     }

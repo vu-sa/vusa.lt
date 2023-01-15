@@ -52,7 +52,7 @@
       v-if="institution.users"
       :users="institution.users"
     />
-
+    <slot></slot>
     <template #footer>
       <div class="flex justify-between gap-2">
         <NTag

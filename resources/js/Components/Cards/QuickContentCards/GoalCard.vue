@@ -2,21 +2,21 @@
   <QuickContentCard class="mb-4">
     <FadeTransition mode="out-in">
       <!-- TODO: Make card for many goals -->
-      <div v-if="goals.length > 0">
+      <div v-if="matter.goals && matter.goals?.length > 0">
         <div class="flex items-center gap-2">
           <Link
             class="inline-flex items-center gap-2"
-            :href="route('goals.show', goals[0].id)"
+            :href="route('goals.show', matter.goals[0].id)"
           >
-            <NIcon :size="30" :component="StarLineHorizontal324Filled" />
+            <NIcon :size="30" :component="Icons.GOAL" />
             <span class="text-2xl font-bold line-clamp-1">{{
-              goals[0].title
+              matter.goals[0].title
             }}</span>
           </Link>
         </div>
         <p class="mt-4">
           Šis svarstomas klausimas priklauso
-          <strong>{{ goals[0].title }}</strong> tikslui.
+          <strong>{{ matter.goals[0].title }}</strong> tikslui.
         </p>
       </div>
       <p v-else class="mt-2">
@@ -25,38 +25,73 @@
     </FadeTransition>
     <template #action-button>
       <div class="flex items-center gap-2">
-        <Link v-if="goals.length > 0" :href="route('goals.show', goals[0]?.id)">
+        <Link
+          v-if="matter.goals && matter.goals.length > 0"
+          :href="route('goals.show', matter.goals[0].id)"
+        >
           <NButton icon-placement="right" secondary size="small"
             ><template #icon
               ><NIcon :component="ArrowUpRight24Filled" /></template
             >Eiti</NButton
           >
         </Link>
-        <GoalChanger :matter="matter"
-          ><template v-if="goals">Pakeisti?</template></GoalChanger
+        <NButton secondary size="small" @click="handleModalOpen">
+          <template #icon><NIcon :component="Icons.GOAL"></NIcon></template>
+          <slot>Pridėti?</slot></NButton
         >
+        <CardModal
+          v-model:show="showModal"
+          display-directive="show"
+          title="Pakeisti tikslą"
+          @close="showModal = false"
+          ><GoalSelectorForm
+            :goals="goals"
+            :loading="loading"
+            :current="matter?.goals?.[0] ?? null"
+            @submit="handleGoalChange"
+        /></CardModal>
       </div>
     </template>
   </QuickContentCard>
 </template>
 
 <script setup lang="tsx">
-import {
-  ArrowUpRight24Filled,
-  StarLineHorizontal324Filled,
-} from "@vicons/fluent";
+import { ArrowUpRight24Filled } from "@vicons/fluent";
 import { Link } from "@inertiajs/inertia-vue3";
 import { NButton, NIcon } from "naive-ui";
+import { ref } from "vue";
 
-
+import { Inertia } from "@inertiajs/inertia";
+import CardModal from "@/Components/Modals/CardModal.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
-import GoalChanger from "@/Components/Buttons/GoalChangerButton.vue";
+import GoalSelectorForm from "@/Components/AdminForms/GoalSelectorForm.vue";
+import Icons from "@/Types/Icons/filled";
 import QuickContentCard from "@/Components/Cards/QuickContentCards/QuickContentCard.vue";
 
 const props = defineProps<{
-  goals: App.Entities.Goal[] | [];
   matter: App.Entities.Matter;
+  goals: App.Entities.Goal[] | [] | undefined;
 }>();
 
-console.log(props.goals);
+const showModal = ref(false);
+const loading = ref(false);
+
+const handleModalOpen = () => {
+  loading.value = true;
+  Inertia.reload({ only: ["goals"], onSuccess: () => (loading.value = false) });
+  showModal.value = true;
+};
+
+const handleGoalChange = (goal: App.Entities.Goal) => {
+  console.log(goal);
+  Inertia.post(
+    route("matters.attachGoal", props.matter.id),
+    { goal_id: goal.id },
+    {
+      onSuccess: () => {
+        showModal.value = false;
+      },
+    }
+  );
+};
 </script>
