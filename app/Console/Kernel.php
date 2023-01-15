@@ -31,6 +31,10 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () {
             \App\Actions\Schedulable\MeetingNotifier::notifyOnMeetingUnfinishedStatus();
         })->days([1, 3, 6])->daily('11:00');
+
+        $schedule->call(function () {
+            \App\Actions\Schedulable\ReflectionNotifier::notifyUsers();
+        })->fridays()->at('17:30');
     }
 
     /**

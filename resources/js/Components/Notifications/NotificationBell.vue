@@ -112,7 +112,14 @@ const onWebNotificationClick = ref<EventHook | null>(null);
 //       return <div v-html={notificationSent.text}></div>;
 //     },
 //     avatar() {
-//       return <NAvatar src={notificationSent.subject.image}></NAvatar>;
+//       return (
+//         <NAvatar
+//           src={
+//             notificationSent.subject?.image ??
+//             usePage().props.value.auth?.user.profile_photo_path
+//           }
+//         ></NAvatar>
+//       );
 //     },
 //   });
 
@@ -122,7 +129,7 @@ const onWebNotificationClick = ref<EventHook | null>(null);
 //     lang: usePage().props.value.locale,
 //     renotify: true,
 //     tag: "notification",
-//     icon: notificationSent.subject.image,
+//     icon: notificationSent.subject?.image ?? usePage().props.value.auth?.user,
 //   };
 
 //   const { isSupported, onClick, show } = useWebNotification(options);
