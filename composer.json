@@ -9,6 +9,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.1",
+        "ajcastro/eager-load-pivot-relations": "^0.3.0",
         "beyondcode/laravel-websockets": "^1.13",
         "doctrine/dbal": "^3.2",
         "guzzlehttp/guzzle": "^7.2",

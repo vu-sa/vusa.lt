@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasContentRelationships;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Activitylog\LogOptions;
 use Illuminate\Database\Eloquent\Model;
@@ -10,7 +11,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Type extends Model
 {
-    use HasFactory, LogsActivity, SoftDeletes;
+    use HasFactory, HasContentRelationships, LogsActivity, SoftDeletes;
 
     protected $guarded = [];
 

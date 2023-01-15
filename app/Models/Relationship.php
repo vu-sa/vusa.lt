@@ -2,19 +2,18 @@
 
 namespace App\Models;
 
+use AjCastro\EagerLoadPivotRelations\EagerLoadPivotTrait;
 use App\Models\Pivots\Relationshipable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Relationship extends Model
 {
-    use HasFactory;
+    use HasFactory, EagerLoadPivotTrait;
 
     // Basically they are relationship types, not relationships. But oh well...
 
     protected $guarded = [];
-
-    protected $appends = ['related_model'];
 
     protected $casts = [
         'created_at' => 'datetime',
@@ -36,8 +35,8 @@ class Relationship extends Model
         return $this->hasMany(Relationshipable::class);
     }
 
-    public function getRelatedModelAttribute()
+    public function types()
     {
-        // gets related model
+        return $this->morphedByMany(Type::class, 'relationshipable');
     }
 }

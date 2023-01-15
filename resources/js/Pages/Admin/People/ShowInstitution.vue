@@ -17,6 +17,7 @@
         content-style="margin-top: 0.5em"
       ></LastMeetingCard>
     </div>
+    <!-- <RelatedModelCarousel :institution="institution"></RelatedModelCarousel> -->
     <NTabs
       :default-value="currentInstitutionsTabPane"
       animated
@@ -24,7 +25,7 @@
       @update:value="updateDIsTabPane"
     >
       <NTabPane display-directive="show:lazy" name="Apie">
-        <div class="m-4">
+        <!-- <div class="m-4">
           <NCollapse
             arrow-placement="right"
             :default-expanded-names="['Studijų programos komitetas']"
@@ -50,7 +51,7 @@
                     :model-collection-with-documents="[type]"
                     @file-button-click="updateSelectedDocument"
                   ></ModelsDocumentViewer>
-                  <!-- Something is amiss here -->
+                  Something is amiss here
                   <template v-if="typeRelationships(type).length > 0">
                     <h3 class="my-4">Susijusios institucijos pagal tipą</h3>
                     <InstitutionCard
@@ -63,7 +64,7 @@
               </NCollapseItem>
             </template>
           </NCollapse>
-        </div>
+        </div> -->
       </NTabPane>
       <NTabPane name="Svarstomi klausimai">
         <template #tab>
@@ -79,46 +80,6 @@
           :institution="institution"
           :matters="institution.matters"
         ></MattersTabPane>
-      </NTabPane>
-      <NTabPane
-        name="Susijusios institucijos"
-        :disabled="
-          institution.givenRelationships.length === 0 &&
-          institution.receivedRelationships.length === 0
-        "
-      >
-        <template #tab>
-          <NIcon class="mr-1" :component="PeopleTeam24Filled"></NIcon>
-          Susijusios institucijos
-        </template>
-        <div class="m-4">
-          <template v-if="institution.givenRelationships.length > 0">
-            <h3>Suteikti ryšiai</h3>
-            <div class="my-4 flex max-w-4xl flex-wrap gap-4">
-              <template
-                v-for="relationship in institution.givenRelationships"
-                :key="relationship.pivot.related_model_id"
-              >
-                <InstitutionCard
-                  :institution="relationship.pivot.related_model"
-                ></InstitutionCard>
-              </template>
-            </div>
-          </template>
-          <template v-if="institution.receivedRelationships.length > 0">
-            <h3>Įgyti ryšiai</h3>
-            <div class="my-4 flex max-w-4xl flex-wrap gap-4">
-              <template
-                v-for="relationship in institution.receivedRelationships"
-                :key="relationship.pivot.related_model_id"
-              >
-                <InstitutionCard
-                  :institution="relationship.pivot.related_model"
-                ></InstitutionCard>
-              </template>
-            </div>
-          </template>
-        </div>
       </NTabPane>
     </NTabs>
     <template #after-heading>
@@ -180,6 +141,7 @@ import MattersTabPane from "@/Components/TabPaneContent/MattersTabPane.vue";
 import ModelsDocumentViewer from "@/Components/SharepointFileManager/ModelsDocumentViewer.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import RelatedModelCarousel from "@/Components/Carousels/RelatedModelCarousel.vue";
 
 const props = defineProps<{
   doingTypes: any;
@@ -200,30 +162,30 @@ const updateSelectedDocument = (document) => {
   selectedDocument.value = document;
 };
 
-const typeRelationships = (type) => {
-  // create array
-  let relationshipModels = [];
+// const typeRelationships = (type) => {
+//   // create array
+//   let relationshipModels = [];
 
-  relationshipModels = relationshipModels.concat(
-    type.givenRelationships.map((relationshipPacket) => {
-      return relationshipPacket.relationships.map((relationship) => {
-        return relationship.receiver_model;
-      });
-    })
-  );
+//   relationshipModels = relationshipModels.concat(
+//     type.givenRelationships.map((relationshipPacket) => {
+//       return relationshipPacket.relationships.map((relationship) => {
+//         return relationship.receiver_model;
+//       });
+//     })
+//   );
 
-  // append receivedRelationships
-  relationshipModels = relationshipModels.concat(
-    type.receivedRelationships.map((relationshipPacket) => {
-      return relationshipPacket.relationships.map((relationship) => {
-        return relationship.giver_model;
-      });
-    })
-  );
+//   // append receivedRelationships
+//   relationshipModels = relationshipModels.concat(
+//     type.receivedRelationships.map((relationshipPacket) => {
+//       return relationshipPacket.relationships.map((relationship) => {
+//         return relationship.giver_model;
+//       });
+//     })
+//   );
 
-  // don't return undefined values, but empty array
-  return relationshipModels;
-};
+//   // don't return undefined values, but empty array
+//   return relationshipModels;
+// };
 
 const breadcrumbOptions: BreadcrumbOption[] = [
   {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetInstitutionManagers;
+use App\Actions\GetRelatedInstitutionRelationships;
 use App\Services\ModelIndexer;
 use App\Models\Institution;
 use App\Models\Duty;
@@ -12,6 +13,7 @@ use Inertia\Inertia;
 use App\Models\Type;
 use App\Models\Doing;
 use App\Models\Pivots\Relationshipable;
+use App\Services\RelationshipService;
 use App\Services\ResourceServices\InstitutionService;
 use App\Services\SharepointAppGraph;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -88,14 +90,10 @@ class InstitutionController extends ResourceController
     {
         $this->authorize('view', [Institution::class, $institution, $this->authorizer]);
         
-        $institution->load('types', 'padalinys', 'users', 'matters.meetings.documents', 'activities.causer');
-
-        $users = $institution->users->unique('id')->values();
-        $meetings = new EloquentCollection($institution->matters->pluck('meetings')->flatten());
-
+        $institution->load('padalinys', 'types.documents', 'users', 'matters', 'meetings', 'activities.causer');      
+        
+        $institution->users = $institution->users->unique('id')->values();
         // get duties where belongs to same padalinys as institution, and where has permissions
-        $institutionManagers = GetInstitutionManagers::execute($institution);
-
         $sharepointFiles = [];        
         
         if ($institution->documents->count() > 0) {
@@ -104,48 +102,15 @@ class InstitutionController extends ResourceController
             $sharepointFiles = $graph->collectSharepointFiles($institution->documents);
         }
 
-        $receivedRelationships = $institution->receivedRelationshipModels();
-        $givenRelationships = $institution->givenRelationshipModels();
-
         return Inertia::render('Admin/People/ShowInstitution', [
             'institution' => [
                 ...$institution->toArray(), 
-                'users' => $users,
-                'institutionManagers' => $institutionManagers,
-                'types' => $institution->types->load('documents')->map(function ($type) use ($institution) {
-                    return 
-                        [...$type->toArray(), 
-                        'givenRelationships' => Relationshipable::where('relationshipable_type', Type::class)
-                            ->where('relationshipable_id', $type->id)->get()
-                            ->map(function ($relationshipable) use ($institution)
-                            {
-                                $relationships = $relationshipable->getRelatedModelsFromGivenType(Institution::class, $institution->id, true);
-                                return [
-                                    'relationshipable' => $relationshipable,
-                                    'relationships' => $relationships,
-                                ];
-                            }),
-                        'receivedRelationships' => Relationshipable::where('relationshipable_type', Type::class)->where('related_model_id', $type->id)->get()->map(function ($relationshipable) use ($institution) {
-                            $relationships = $relationshipable->getRelatedModelsFromReceiverType(Institution::class, $institution->id, true);
-                            return [
-                                'relationshipable' => $relationshipable,
-                                'relationships' => $relationships,
-                            ];
-                        }),
-                    ];
-                }),
+                'institutionManagers' => GetInstitutionManagers::execute($institution),
+                'relatedInstitutions' => RelationshipService::getRelatedInstitutionRelations($institution),
                 'sharepointFiles' => $sharepointFiles,
-                'receivedRelationships' => $receivedRelationships,
-                'givenRelationships' => $givenRelationships,
                 'lastMeeting' => $institution->lastMeeting(),
-                'meetings' => $meetings->unique(),
             ],
-            'doingTypes' => Type::where('model_type', Doing::class)->get()->map(function ($doingType) {
-                return [
-                    'value' => $doingType->id,
-                    'label' => $doingType->title,
-                ];
-            }),
+            'doingTypes' => Type::where('model_type', Doing::class)->get(['id', 'title']),
         ]);
     }
 
@@ -184,7 +149,6 @@ class InstitutionController extends ResourceController
         // validate
         $request->validate([
             'name' => 'required',
-            'short_name' => 'required',
             'padalinys_id' => 'required',
         ]);
         

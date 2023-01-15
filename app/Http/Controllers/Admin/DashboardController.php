@@ -8,6 +8,7 @@ use App\Models\Institution;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Type;
 use App\Models\User;
+use App\Services\RelationshipService;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -65,16 +66,9 @@ class DashboardController extends Controller
         // return institutions with user count
         $institutions = Institution::withCount('users')->get();
 
-        // get relationships for duty institutions
-        $institutionRelationships = DB::table('relationshipables')->where('relationshipable_type', Institution::class)->get();
-
-        $typeRelationships = $this->getTypeRelationships();
-
-        $institutionRelationships = $institutionRelationships->merge($typeRelationships);
-
         return Inertia::render('Admin/ShowInstitutionGraph', [
             'institutions' => $institutions,
-            'institutionRelationships' => $institutionRelationships,
+            'institutionRelationships' => RelationshipService::getAllRelatedInstitutions(),
         ]);
     }
 
@@ -90,19 +84,10 @@ class DashboardController extends Controller
         $user = User::with('institutions')->find(auth()->user()->id);
 
         return Inertia::render('Admin/ShowWorkspace', 
-        [
-            'institution' => fn () => $institution,
-            'user' => fn () => $user,
-        ]
-    );
-    }
-
-    protected function getTypeRelationships()
-    {
-        $relationships = Relationshipable::where('relationshipable_type', Type::class)->get()->map(function ($relationshipable) {
-            return $relationshipable->getRelatedModelsFromGivenType(Institution::class);
-        });
-
-        return collect($relationships)->flatten(1);
+            [
+                'institution' => fn () => $institution,
+                'user' => fn () => $user,
+            ]
+        );
     }
 }

@@ -177,15 +177,11 @@ declare namespace App.Models {
     meetings?: Array<App.Models.Meeting> | null;
     users?: any | null;
     documents?: Array<App.Models.SharepointDocument> | null;
-    given_relationships?: Array<App.Models.Relationship> | null;
-    received_relationships?: Array<App.Models.Relationship> | null;
     duties_count?: number | null;
     types_count?: number | null;
     matters_count?: number | null;
     meetings_count?: number | null;
     documents_count?: number | null;
-    given_relationships_count?: number | null;
-    received_relationships_count?: number | null;
   }
 
   export interface MainPage {
@@ -373,9 +369,10 @@ declare namespace App.Models {
     updated_at: any;
     institutions?: Array<App.Models.Institution> | null;
     relationshipables?: Array<App.Models.Pivots.Relationshipable> | null;
+    types?: Array<App.Models.Type> | null;
     institutions_count?: number | null;
     relationshipables_count?: number | null;
-    readonly related_model?: any;
+    types_count?: number | null;
   }
 
   export interface Role {
@@ -507,7 +504,7 @@ declare namespace App.Models {
     is_active: boolean;
     email_verified_at: any | null;
     remember_token: string | null;
-    last_login: any | null;
+    last_action: any | null;
     microsoft_token: string | null;
     google_token: string | null;
     updated_at: any | null;
@@ -577,6 +574,7 @@ declare namespace App.Models.Pivots {
     created_at: any;
     updated_at: any;
     relationshipable?: any | null;
-    related_relationshipable?: any | null;
+    related_model?: any | null;
+    relationship?: App.Models.Relationship | null;
   }
 }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Traits\HasComments;
+use App\Models\Traits\HasContentRelationships;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,7 +15,7 @@ use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Institution extends Model
 {
-    use HasFactory, HasRelationships, HasUlids, SoftDeletes, LogsActivity, Searchable, HasComments;
+    use HasFactory, HasContentRelationships, HasRelationships, HasUlids, SoftDeletes, LogsActivity, Searchable, HasComments;
 
     protected $guarded = [];
 
@@ -68,52 +69,6 @@ class Institution extends Model
     public function documents()
     {
         return $this->morphMany(SharepointDocument::class, 'documentable');
-    }
-
-    public function givenRelationships()
-    {
-        return $this->morphToMany(Relationship::class, 'relationshipable')->withPivot(['related_model_id', 'relationshipable_id']);
-    }
-
-    public function givenRelationshipModels()
-    {
-        // load relationships on pivot
-        $relationships = $this->givenRelationships()->get();
-
-        // get related models
-        $relationships->map(function ($relationship) {
-            // add related model to pivot
-            $relationship->pivot->related_model = Institution::find($relationship->pivot->related_model_id);
-        });
-
-        return $relationships;
-    }
-
-    public function receivedRelationships()
-    {
-        return $this->morphToMany(Relationship::class, 'relationshipable', null, 'related_model_id')->withPivot(['related_model_id', 'relationshipable_id']);
-    }
-
-    public function receivedTypeRelationships() {
-        $types = $this->types()->get()->map(function ($type) {
-            return $type->receivedRelationshipModels();
-        })->flatten();
-        
-        return $types;
-    }
-
-    public function receivedRelationshipModels()
-    {
-        // load relationships on pivot
-        $relationships = $this->receivedRelationships()->get();
-
-        // get related models
-        $relationships->map(function ($relationship) {
-            // add related model to pivot
-            $relationship->pivot->related_model = Institution::find($relationship->pivot->relationshipable_id);
-        });
-
-        return $relationships;
     }
 
     public function toSearchableArray()

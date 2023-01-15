@@ -103,7 +103,7 @@ class RelationshipController extends ResourceController
             $related_models = RelationshipService::getModelsByClass($model_type);
         }
 
-        $relationship->load('relationshipables', 'relationshipables.relationshipable', 'relationshipables.relatedRelationshipable');
+        $relationship->load('relationshipables', 'relationshipables.relationshipable', 'relationshipables.related_model');
         
         return Inertia::render('Admin/ModelMeta/EditRelationship', [
             'relationship' => $relationship,
