@@ -12,7 +12,7 @@
       </div>
     </template>
     <NDivider />
-    <div class="min-h-[50vh]"></div>
+    <div class="min-h-[45vh]"></div>
     <CommentPart
       v-model:text="commentText"
       class="mt-auto h-[35vh] border border-zinc-400 dark:border-zinc-700"

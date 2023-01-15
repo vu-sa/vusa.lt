@@ -4,7 +4,7 @@
     :offset="[0, -4]"
     :value="$page.props.auth.user.tasks_count"
   >
-    <NButton text circle @click="Inertia.visit(route('userTasks'))"
+    <NButton :loading="loading" text circle @click="handleClick"
       ><template #icon
         ><NIcon :size="24" :component="TasksApp24Regular"></NIcon></template
     ></NButton>
@@ -15,5 +15,17 @@
 import { Inertia } from "@inertiajs/inertia";
 import { NBadge, NButton, NIcon } from "naive-ui";
 import { TasksApp24Regular } from "@vicons/fluent";
+import { ref } from "vue";
 
+const loading = ref(false);
+
+const handleClick = () => {
+  loading.value = true;
+  Inertia.visit(route("userTasks"), {
+    preserveState: true,
+    onSuccess: () => {
+      loading.value = false;
+    },
+  });
+};
 </script>

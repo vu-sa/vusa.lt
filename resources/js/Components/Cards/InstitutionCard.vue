@@ -17,34 +17,36 @@
       <span :class="{ 'font-bold': isPadalinys }">{{ institution.name }}</span>
     </template>
     <template #header-extra>
-      <div class="inline-flex gap-3">
-        <NPopover>
-          <template #trigger>
-            <NButton text size="small" circle @click.stop>
-              <template #icon>
-                <UserAvatar :user="$page.props.auth.user" :size="24" />
-              </template>
-            </NButton>
-          </template>
-          <div class="flex flex-col gap-2">
-            <NButton
-              v-for="duty in institutionDuties"
-              :key="duty.id"
-              size="small"
-              secondary
-            >
-              <template #icon>
-                <UserAvatar :user="$page.props.auth.user" :size="16" />
-              </template>
-              {{ duty.name }}</NButton
-            >
-          </div>
-        </NPopover>
-        <!-- <NButton circle size="small" quaternary @click.stop
-          ><template #icon
-            ><NIcon :component="MoreHorizontal24Filled"></NIcon></template
-        ></NButton> -->
-      </div>
+      <slot name="header-extra">
+        <div v-if="institutionDuties" class="inline-flex gap-3">
+          <NPopover>
+            <template #trigger>
+              <NButton text size="small" circle @click.stop>
+                <template #icon>
+                  <UserAvatar :user="$page.props.auth.user" :size="24" />
+                </template>
+              </NButton>
+            </template>
+            <div class="flex flex-col gap-2">
+              <NButton
+                v-for="duty in institutionDuties"
+                :key="duty.id"
+                size="small"
+                secondary
+              >
+                <template #icon>
+                  <UserAvatar :user="$page.props.auth.user" :size="16" />
+                </template>
+                {{ duty.name }}</NButton
+              >
+            </div>
+          </NPopover>
+          <!-- <NButton circle size="small" quaternary @click.stop
+            ><template #icon
+              ><NIcon :component="MoreHorizontal24Filled"></NIcon></template
+          ></NButton> -->
+        </div>
+      </slot>
     </template>
     <InstitutionAvatarGroup
       v-if="institution.users"
@@ -79,11 +81,11 @@ const props = defineProps<{
   institution: App.Entities.Institution;
   isPadalinys?: boolean;
   showLastMeeting?: boolean;
-  duties: App.Entities.Duty[];
+  duties?: App.Entities.Duty[];
 }>();
 
 const institutionDuties = computed(() => {
-  return props.duties.filter((duty) => {
+  return props.duties?.filter((duty) => {
     return duty.institution_id === props.institution.id;
   });
 });

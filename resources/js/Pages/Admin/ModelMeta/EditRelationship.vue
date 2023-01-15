@@ -29,6 +29,7 @@
             <NSelect
               v-model:value="relationForm.model_id"
               filterable
+              clearable
               :options="options"
             >
             </NSelect>
@@ -36,6 +37,8 @@
           <NFormItemGi :span="6" label="Ryšio gavėjas">
             <NSelect
               v-model:value="relationForm.related_model_id"
+              filterable
+              clearable
               :options="options"
             >
             </NSelect>
@@ -133,7 +136,7 @@ const relationshipableColumns = [
     title: "Ryšio gavėjas",
     key: "related_model",
     render(row) {
-      return row.relationshipable.name ?? row.relationshipable.title;
+      return row.related_model.name ?? row.related_model.title;
     },
   },
   {

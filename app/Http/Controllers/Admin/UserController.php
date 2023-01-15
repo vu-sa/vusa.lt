@@ -171,9 +171,9 @@ class UserController extends ResourceController
             if (User::find(Auth::id())->hasRole(config('permission.super_admin_role_name'))) {
                 // check if user is super admin
                 if ($request->has('roles')) {
-                    $user->syncRoles($request->roles);
+                    $user->roles()->sync($request->roles);
                 } else {
-                    $user->syncRoles([]);
+                    $user->roles()->sync([]);
                 }
             }
         });

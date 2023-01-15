@@ -1,31 +1,33 @@
 <template>
   <div class="grid max-h-full w-full grid-rows-[1fr_155px]">
     <NScrollbar ref="commentScroll" class="px-4" style="max-height: 700px">
-      <template
-        v-for="comment in model?.comments"
-        :key="comment.id"
-        :comment="comment"
-      >
+      <FadeTransitionGroup>
         <div
-          class="mb-4 grid grid-cols-[40px_1fr] gap-x-4 gap-y-2 first:pt-4 last:pb-4"
+          v-for="comment in model?.comments"
+          :key="comment.id"
+          :comment="comment"
         >
-          <UserAvatar bold :size="32" :user="comment.user" />
-          <div class="inline-flex flex-col">
-            <strong class="text-md">{{ comment.user.name }}</strong>
-            <span
-              :title="comment.created_at"
-              class="mr-2 text-xs text-gray-500"
-            >
-              <span>{{
-                formatRelativeTime(new Date(comment.created_at))
-              }}</span>
-            </span>
+          <div
+            class="mb-4 grid grid-cols-[40px_1fr] gap-x-4 gap-y-2 first:pt-4 last:pb-4"
+          >
+            <UserAvatar bold :size="32" :user="comment.user" />
+            <div class="inline-flex flex-col">
+              <strong class="text-md">{{ comment.user.name }}</strong>
+              <span
+                :title="comment.created_at"
+                class="mr-2 text-xs text-gray-500"
+              >
+                <span>{{
+                  formatRelativeTime(new Date(comment.created_at))
+                }}</span>
+              </span>
+            </div>
+            <div></div>
+            <div class="mt-2 text-sm" v-html="comment.comment"></div>
           </div>
-          <div></div>
-          <div class="mt-2 text-sm" v-html="comment.comment"></div>
+          <hr class="my-4 last:invisible dark:border-zinc-600" />
         </div>
-        <hr class="my-4 last:invisible dark:border-zinc-600" />
-      </template>
+      </FadeTransitionGroup>
     </NScrollbar>
     <div class="relative">
       <CommentTipTap
@@ -46,6 +48,7 @@ import { usePage } from "@inertiajs/inertia-vue3";
 
 import { formatRelativeTime } from "@/Utils/IntlTime";
 import CommentTipTap from "../CommentViewer/CommentTipTap.vue";
+import FadeTransitionGroup from "@/Components/Transitions/FadeTransitionGroup.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
 
