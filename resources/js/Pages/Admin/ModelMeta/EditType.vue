@@ -42,10 +42,10 @@ import { computed, ref } from "vue";
 
 import { documentTemplate, modelTypes } from "@/Types/formOptions";
 
-import FileButton from "@/Components/SharepointFileManager/FileButton.vue";
-import FileSelectDrawer from "@/Components/SharepointFileManager/FileDrawer.vue";
-import FileUploader from "@/Components/SharepointFileManager/FileUploader.vue";
-import FileUploaderBasicButton from "@/Components/SharepointFileManager/FileUploaderBasicButton.vue";
+import FileButton from "@/Features/Admin/SharepointFileManager/Viewer/FileButton.vue";
+import FileSelectDrawer from "@/Features/Admin/SharepointFileManager/Viewer/FileDrawer.vue";
+import FileUploader from "@/Features/Admin/SharepointFileManager/FileUploader.vue";
+import FileUploaderBasicButton from "@/Features/Admin/SharepointFileManager/FileUploaderBasicButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import TypeForm from "@/Components/AdminForms/TypeForm.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
