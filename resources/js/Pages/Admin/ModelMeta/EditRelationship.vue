@@ -69,6 +69,7 @@ import {
 import { computed, ref } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
 
+import { modelTypes } from "@/Types/formOptions";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
@@ -152,16 +153,12 @@ const relationshipableColumns = [
   },
 ];
 
-const modelTypeOptions = [
-  {
-    label: "Institution",
-    value: "App\\Models\\Institution",
-  },
-  {
-    label: "Type",
-    value: "App\\Models\\Type",
-  },
-];
+const modelTypeOptions = modelTypes.relationshipable.map((relationshipable) => {
+  return {
+    label: relationshipable,
+    value: "App\\Models\\" + relationshipable,
+  };
+});
 
 const handleUpdateModelType = (value: string) => {
   relationForm.reset("model_id", "related_model_id");

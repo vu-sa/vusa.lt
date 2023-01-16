@@ -54,7 +54,6 @@ import MatterCard from "@/Components/Cards/MatterCard.vue";
 import ModelChip from "@/Components/Chips/ModelChip.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
-import type { BreadcrumbOption } from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 
 const props = defineProps<{

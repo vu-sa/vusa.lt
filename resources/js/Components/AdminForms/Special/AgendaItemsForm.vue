@@ -9,7 +9,7 @@
           <span>Kiekvienas posėdis turi</span>
           <ModelChip>
             <template #icon
-              ><NIcon :component="Icons.AGENDA_ITEM"></NIcon
+              ><NIcon :component="IconsRegular.AGENDA_ITEM"></NIcon
             ></template>
             darbotvarkės klausimų</ModelChip
           >
@@ -21,7 +21,13 @@
       </SuggestionAlert>
     </FadeTransition>
     <NGrid cols="1">
-      <NFormItemGi label="Nauji svarstomi klausimai" path="newMatters">
+      <NFormItemGi path="newMatters">
+        <template #label>
+          <span class="inline-flex items-center gap-1"
+            ><NIcon :component="IconsFilled.AGENDA_ITEM"></NIcon>Nauji svarstomi
+            klausimai</span
+          >
+        </template>
         <NSelect
           v-model:value="agendaItemForm.agendaItemTitles"
           placeholder="Studijų tinklelio peržiūra"
@@ -85,7 +91,8 @@ import { useForm } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
-import Icons from "@/Types/Icons/regular";
+import IconsFilled from "@/Types/Icons/filled";
+import IconsRegular from "@/Types/Icons/regular";
 import ModelChip from "@/Components/Chips/ModelChip.vue";
 import SuggestionAlert from "@/Components/Alerts/SuggestionAlert.vue";
 

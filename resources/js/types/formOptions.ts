@@ -14,6 +14,10 @@ export const modelDefaults = {
 };
 
 export const modelTypes = {
+  relationshipable: [
+    uppercase(ModelEnum.INSTITUTION),
+    uppercase(ModelEnum.TYPE),
+  ],
   sharepointFile: [
     "Metodinė medžiaga",
     "Protokolai",
@@ -31,10 +35,6 @@ export const modelTypes = {
 export const modelStatus = {
   doing: ["Sukurtas", "Pabaigtas"],
   matter: ["Sukurtas", "Pabaigtas"],
-};
-
-export const modelStatusDefaults = {
-  doing: ["Sukurtas", "Pabaigtas"],
 };
 
 export const documentTemplate = {

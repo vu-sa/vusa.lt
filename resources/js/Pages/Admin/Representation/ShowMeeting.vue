@@ -34,7 +34,7 @@
         <li
           v-for="(agenda_item, index) in meeting.agenda_items"
           :key="agenda_item.id"
-          class="group inline-flex gap-2"
+          class="flex group gap-2"
         >
           <span>{{ index + 1 }}. {{ agenda_item.title }}</span>
           <NButton
@@ -49,7 +49,7 @@
       </ol>
     </div>
     <NDivider />
-    <div class="mt-4 flex items-center gap-4">
+    <div class="flex mt-4 items-center gap-4">
       <h2 class="mb-0">Dokumentai</h2>
       <NMessageProvider>
         <FileUploaderBasicButton
@@ -63,7 +63,7 @@
         ></FileUploader>
       </NMessageProvider>
     </div>
-    <div class="m-4 flex max-w-4xl flex-wrap gap-6">
+    <div class="flex m-4 max-w-4xl flex-wrap gap-6">
       <FileButton
         v-for="document in sharepointFiles"
         :key="document.id"

@@ -63,7 +63,7 @@ import { ref } from "vue";
 
 import CardModal from "@/Components/Modals/CardModal.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
-import GoalSelectorForm from "@/Components/AdminForms/GoalSelectorForm.vue";
+import GoalSelectorForm from "@/Components/AdminForms/Special/GoalSelectorForm.vue";
 import Icons from "@/Types/Icons/filled";
 import QuickContentCard from "@/Components/Cards/QuickContentCards/QuickContentCard.vue";
 

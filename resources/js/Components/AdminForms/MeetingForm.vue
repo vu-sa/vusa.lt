@@ -16,7 +16,12 @@
           </template></NSelect
         >
       </NFormItemGi> -->
-      <NFormItemGi label="Data" :span="2" path="start_time" required>
+      <NFormItemGi :span="2" path="start_time" required>
+        <template #label>
+          <span class="inline-flex items-center gap-1"
+            ><NIcon :component="Icons.DATE"></NIcon> <span>Data</span></span
+          >
+        </template>
         <NDatePicker
           v-model:value="meetingForm.start_time"
           :first-day-of-week="0"
@@ -37,6 +42,7 @@
 </template>
 
 <script setup lang="ts">
+import { CalendarLtr24Filled } from "@vicons/fluent";
 import {
   type FormInst,
   NButton,
@@ -44,9 +50,11 @@ import {
   NForm,
   NFormItemGi,
   NGrid,
+  NIcon,
 } from "naive-ui";
-import { Method } from "@inertiajs/core";
 import { ref } from "vue";
+
+import Icons from "@/Types/Icons/filled";
 
 const emit = defineEmits<{
   (event: "submit", form: any): void;

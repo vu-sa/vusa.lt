@@ -18,21 +18,21 @@
       ></NButton>
     </template> -->
     <NSteps class="mb-8" :current="(current as number)" :status="currentStatus">
-      <NStep title="Sukurk posėdį">
+      <NStep title="Nurodyk posėdžio datą">
         <template #icon>
-          <NIcon :component="Icons.MEETING"></NIcon>
+          <NIcon :component="IconsRegular.MEETING"></NIcon>
         </template>
       </NStep>
       <NStep title="Įrašyk klausimus">
         <template #icon>
-          <NIcon :component="Icons.MATTER"></NIcon>
+          <NIcon :component="IconsRegular.AGENDA_ITEM"></NIcon>
         </template>
       </NStep>
     </NSteps>
     <FadeTransition mode="out-in">
       <MeetingForm
         v-if="current === 1"
-        :meeting="meetingTemplate"
+        :meeting="meetingTemplateWithId"
         @submit="handleMeetingFormSubmit"
       ></MeetingForm>
       <AgendaItemsForm
@@ -65,10 +65,11 @@ import { ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 
+import { meetingTemplate } from "@/Types/formTemplates";
 import AgendaItemsForm from "@/Components/AdminForms/Special/AgendaItemsForm.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
-import Icons from "@/Types/Icons/regular";
+import IconsRegular from "@/Types/Icons/regular";
 import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
 
 const props = defineProps<{
@@ -84,9 +85,10 @@ const showAlert = useStorage("new-meeting-button-alert", true);
 const meetingForm = ref<Record<string, any> | null>(null);
 const agendaItemsForm = ref<Record<string, any> | null>(null);
 
-const meetingTemplate = {
+// use meetingTemplate but change institution_id to props.institution.id
+const meetingTemplateWithId = {
+  ...meetingTemplate,
   institution_id: props.institution.id,
-  start_time: null,
 };
 
 const handleMeetingFormSubmit = (meeting: Record<string, any>) => {
@@ -107,8 +109,6 @@ const handleAgendaItemsFormSubmit = (agendaItems: Record<string, any>) => {
   let agendaItemsFormToSubmit = useForm<Record<string, any>>(
     agendaItemsForm.value
   );
-
-  console.log(meetingFormToSubmit, agendaItemsFormToSubmit);
 
   // submit meeting
   meetingFormToSubmit

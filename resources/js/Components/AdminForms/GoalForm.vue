@@ -1,7 +1,12 @@
 <template>
   <NForm ref="formRef" :model="model" :rules="rules">
     <NGrid cols="1">
-      <NFormItemGi label="Pavadinimas" required path="title">
+      <NFormItemGi required path="title">
+        <template #label>
+          <span class="inline-flex items-center gap-1"
+            ><NIcon :component="Icons.TITLE" />Pavadinimas</span
+          >
+        </template>
         <NInput v-model:value="model.title"></NInput>
       </NFormItemGi>
       <NFormItemGi :show-label="false"
@@ -14,9 +19,10 @@
 </template>
 
 <script setup lang="tsx">
-import { NButton, NForm, NFormItemGi, NGrid, NInput } from "naive-ui";
+import { NButton, NForm, NFormItemGi, NGrid, NIcon, NInput } from "naive-ui";
 import { ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
+import Icons from "@/Types/icons/filled";
 
 const emit = defineEmits(["formSuccess"]);
 

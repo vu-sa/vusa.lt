@@ -29,6 +29,11 @@ export const matterTemplate: Pick<
   description: "",
 };
 
+export const meetingTemplate = {
+  institution_id: null,
+  start_time: null,
+};
+
 export const typeTemplate: Pick<
   App.Entities.Type,
   "title" | "slug" | "description" | "model_type" | "parent_id"

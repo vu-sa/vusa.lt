@@ -4,6 +4,11 @@
       <NGrid cols="1"
         ><NFormItemGi label="Tikslo pavadinimas" required path="title">
           <!-- TODO: Dabar neveikia sukūrimas tikslo iš šios vietos -->
+          <template #label
+            ><span class="inline-flex items-center gap-1"
+              ><NIcon :component="Icons.TITLE" />Tikslo pavadinimas</span
+            ></template
+          >
           <NSelect
             v-model:value="model.id"
             :options="goals"
@@ -42,12 +47,14 @@ import {
   NForm,
   NFormItemGi,
   NGrid,
+  NIcon,
   NSelect,
   NSpin,
   NTag,
 } from "naive-ui";
 import { ref } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
+import Icons from "@/Types/Icons/filled";
 
 defineEmits<{
   (e: "submit", form: any): void;

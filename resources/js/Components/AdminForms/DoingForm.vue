@@ -28,7 +28,7 @@
           :actions="['confirm']"
         />
       </NFormItemGi>
-      <NFormItemGi label="Atsakingas" :span="2">
+      <NFormItemGi label="Atsakingas (-a)" :span="2">
         <UserAvatar :user="$page.props.auth.user" show-name />
       </NFormItemGi>
 
