@@ -62,7 +62,7 @@
         class="h-full min-h-full overflow-x-scroll"
         content-style="padding: 0rem 3rem 2rem 3rem"
       >
-        <slot />
+        <NMessageProvider><slot /></NMessageProvider>
       </NLayoutContent>
     </NLayout>
   </NLayout>

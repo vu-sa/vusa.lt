@@ -6,18 +6,20 @@
           Aplankai ({{ showedDirectories.length }})
         </h2>
         <div class="grid grid-cols-4 gap-3 lg:grid-cols-8 2xl:grid-cols-8">
-          <FolderButton
+          <button
             v-if="currentPath !== 'public/files'"
+            class="relative flex h-40 flex-col items-center justify-center rounded-xl border-2 p-2 duration-200 hover:bg-stone-100"
             @click="getAllFilesAndDirectories('../')"
           >
             <div class="mb-2">
               <NIcon size="32"><ArrowCircleLeft28Regular /></NIcon>
             </div>
             <div class="break-all text-center text-sm">Atgal</div>
-          </FolderButton>
-          <FolderButton
+          </button>
+          <button
             v-for="directory in showedDirectories"
             :key="directory.id"
+            class="relative flex h-40 flex-col items-center justify-center rounded-xl border-2 p-2 duration-200 hover:bg-stone-100"
             @click="getAllFilesAndDirectories(directory.folderPath)"
           >
             <div class="mb-2">
@@ -26,7 +28,7 @@
             <div class="break-all text-center text-sm">
               {{ directory.folderName }}
             </div>
-          </FolderButton>
+          </button>
         </div>
       </NCard>
       <NCard
@@ -52,20 +54,23 @@
               </NUploadDragger>
             </NUpload>
           </div>
-          <FileButton
+          <button
             v-for="file in showedFiles"
             :key="file.id"
+            class="relative flex h-40 items-center justify-center rounded-xl border-2 p-2 duration-200 hover:bg-stone-100"
             @click="openFile(file.filePath)"
           >
-            <div class="mb-2">
-              <NIcon size="32"><Image48Regular /></NIcon>
+            <div class="flex flex-col items-center">
+              <div class="mb-2">
+                <NIcon size="32"><Image48Regular /></NIcon>
+              </div>
+              <div
+                class="overflow-hidden text-ellipsis whitespace-pre-line break-all text-center text-sm"
+              >
+                {{ file.fileName }}
+              </div>
             </div>
-            <div
-              class="overflow-hidden text-ellipsis whitespace-pre-line break-all text-center text-sm"
-            >
-              {{ file.fileName }}
-            </div>
-          </FileButton>
+          </button>
         </transition-group>
       </NCard>
     </div>

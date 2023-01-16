@@ -27,9 +27,9 @@ import { router } from "@inertiajs/vue3";
 import type { DataTableColumns } from "naive-ui";
 
 import FilterButtonGroup from "@/Components/Buttons/FilterButtonGroup.vue";
-import Icons from "@/Types/Icons/regular";
+import Icons from "@/Types/Icons/filled";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
-import TaskCreator from "@/Components/Tasks/TaskCreator.vue";
+import TaskCreator from "./TaskCreator.vue";
 import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 
 const props = defineProps<{
@@ -43,6 +43,8 @@ const iconComponent = (row: App.Entities.Task) => {
   switch (row.taskable_type) {
     case "App\\Models\\Doing":
       return Icons.DOING;
+    case "App\\Models\\User":
+      return Icons.USER;
     default:
       return Home24Filled;
   }
@@ -74,10 +76,7 @@ const columns: DataTableColumns<App.Entities.Task> = [
       return (
         <NTag bordered={false} round size="small">
           {{
-            default: () => [
-              <span>{row.taskable.title}</span>,
-              <span class="text-xs"> #{row.taskable.id}</span>,
-            ],
+            default: () => [<span>{row.taskable.title}</span>],
             icon: () => <NIcon component={iconComponent(row)}></NIcon>,
           }}
         </NTag>

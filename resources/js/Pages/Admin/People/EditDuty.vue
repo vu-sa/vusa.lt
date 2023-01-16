@@ -66,7 +66,7 @@ import {
   NCard,
   NIcon,
   NPopconfirm,
-  createDiscreteApi,
+  useMessage,
 } from "naive-ui";
 import { computed, ref } from "vue";
 
@@ -84,7 +84,7 @@ const props = defineProps<{
   institutions: App.Entities.Institution[];
 }>();
 
-const { message } = createDiscreteApi(["message"]);
+const message = useMessage();
 
 const hasUsers = computed(() => props.users.length > 0);
 
