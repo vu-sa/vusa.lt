@@ -1,3 +1,5 @@
+// TODO: remove
+
 export function checkForEmptyArray(attributes) {
   // check if attributes prototype is Object
   if (Object.prototype.toString.call(attributes) === "[object Object]")

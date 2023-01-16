@@ -6,9 +6,6 @@
     :columns="columns"
     :paginated-models="pages"
   >
-    <template #aside-header>
-      <AsideHeader></AsideHeader>
-    </template>
   </IndexPageLayout>
 </template>
 
@@ -17,8 +14,7 @@ import { h, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 import type { DataTableColumns } from "naive-ui";
 
-import AsideHeader from "@/Components/AsideHeaders/AsideHeaderContent.vue";
-import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
+import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
 
 defineProps<{

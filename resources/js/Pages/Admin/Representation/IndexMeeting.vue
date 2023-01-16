@@ -13,7 +13,7 @@
 import type { DataTableColumns } from "naive-ui";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
-import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
+import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
 defineProps<{
   meetings: PaginatedModels<App.Entities.Meeting[]>;

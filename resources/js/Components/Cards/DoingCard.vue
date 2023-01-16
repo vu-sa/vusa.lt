@@ -26,15 +26,19 @@
         </div>
         <div class="flex gap-2">
           <div class="inline-flex items-center gap-1">
-            <NIcon :depth="3" size="10" :component="Document24Filled" />
+            <NIcon
+              :depth="3"
+              size="10"
+              :component="Icons.SHAREPOINT_DOCUMENT"
+            />
             <span>{{ doing.documents.length }}</span>
           </div>
           <div class="inline-flex items-center gap-1">
-            <NIcon :depth="3" size="10" :component="Comment24Filled" />
+            <NIcon :depth="3" size="10" :component="Icons.COMMENT" />
             <span>{{ doing.comments.length }}</span>
           </div>
           <div class="inline-flex items-center gap-1">
-            <NIcon :depth="3" size="10" :component="TaskListLtr20Regular" />
+            <NIcon :depth="3" size="10" :component="Icons.TASK" />
             <span>{{ completedTasks }} / {{ doing.tasks.length }}</span>
           </div>
         </div>
@@ -44,10 +48,6 @@
           <component :is="icon"></component>
         </NIcon>
       </div>
-      <template #footer>
-        <StatusTag :status="doing.status"></StatusTag>
-        <span class="my-auto ml-2 text-xs text-zinc-500">#{{ doing.id }}</span>
-      </template>
     </NCard>
   </NSpin>
 </template>
@@ -55,20 +55,17 @@
 <script setup lang="tsx">
 import {
   CalendarClock24Filled,
-  Comment24Filled,
-  Document24Filled,
   MailArrowUp24Filled,
   PeopleCommunity28Filled,
   PersonChat24Regular,
   Sparkle20Filled,
-  TaskListLtr20Regular,
 } from "@vicons/fluent";
-import { router } from "@inertiajs/vue3";
 import { NCard, NIcon, NSpin } from "naive-ui";
 import { computed, ref } from "vue";
+import { router } from "@inertiajs/vue3";
 
+import Icons from "@/Types/Icons/filled";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
-import StatusTag from "@/Components/Tags/StatusTag.vue";
 
 const props = defineProps<{
   doing: App.Entities.Doing;
@@ -119,7 +116,8 @@ const icon = computed(() => {
 
 const completedTasks = computed(() => {
   return props.doing.tasks.reduce(
-    (acc: number, task: App.Entities.Task) => (acc += task.completed_at !== null),
+    (acc: number, task: App.Entities.Task) =>
+      (acc += task.completed_at !== null),
     0
   );
 });

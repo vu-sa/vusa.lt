@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
+import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 import type { DataTableColumns } from "naive-ui";
 
 defineProps<{

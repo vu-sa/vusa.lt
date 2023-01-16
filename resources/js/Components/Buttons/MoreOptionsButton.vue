@@ -1,5 +1,10 @@
 <template>
-  <NDropdown trigger="click" :options="dropdownOptions" @select="handleSelect">
+  <NDropdown
+    placement="bottom-end"
+    trigger="click"
+    :options="dropdownOptions"
+    @select="handleSelect"
+  >
     <NButton
       :size="small ? 'small' : 'medium'"
       :disabled="disabled"

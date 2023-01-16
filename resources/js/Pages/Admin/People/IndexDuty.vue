@@ -6,17 +6,13 @@
     :columns="columns"
     :paginated-models="duties"
   >
-    <template #aside-header>
-      <AsideHeader></AsideHeader>
-    </template>
   </IndexPageLayout>
 </template>
 
 <script setup lang="tsx">
 import { h } from "vue";
 
-import AsideHeader from "@/Components/AsideHeaders/AsideHeaderContacts.vue";
-import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
+import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
 defineProps<{
   duties: PaginatedModels<App.Entities.Duty>;

@@ -44,12 +44,6 @@
           <component :is="icon"></component>
         </NIcon>
       </div>
-      <template #footer>
-        <StatusTag :status="meeting.status"></StatusTag>
-        <span class="my-auto ml-2 text-xs text-zinc-500"
-          >#{{ meeting.id }}</span
-        >
-      </template>
     </NCard>
   </NSpin>
 </template>
@@ -65,12 +59,11 @@ import {
   Sparkle20Filled,
   TaskListLtr20Regular,
 } from "@vicons/fluent";
-import { router } from "@inertiajs/vue3";
 import { NCard, NIcon, NSpin } from "naive-ui";
 import { computed, ref } from "vue";
+import { router } from "@inertiajs/vue3";
 
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
-import StatusTag from "@/Components/Tags/StatusTag.vue";
 
 const props = defineProps<{
   meeting: App.Entities.Meeting;
@@ -121,7 +114,8 @@ const icon = computed(() => {
 
 const completedTasks = computed(() => {
   return props.meeting.tasks.reduce(
-    (acc: number, task: App.Entities.Task) => (acc += task.completed_at !== null),
+    (acc: number, task: App.Entities.Task) =>
+      (acc += task.completed_at !== null),
     0
   );
 });

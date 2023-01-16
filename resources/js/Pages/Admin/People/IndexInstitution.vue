@@ -6,15 +6,11 @@
     :columns="columns"
     :paginated-models="institutions"
   >
-    <template #aside-header>
-      <AsideHeader></AsideHeader>
-    </template>
   </IndexPageLayout>
 </template>
 
 <script setup lang="tsx">
-import AsideHeader from "@/Components/AsideHeaders/AsideHeaderContacts.vue";
-import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
+import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
 import type { DataTableColumns } from "naive-ui";
 

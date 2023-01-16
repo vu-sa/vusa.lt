@@ -26,8 +26,8 @@
 <script setup lang="tsx">
 import { type DataTableColumns, NCard } from "naive-ui";
 
-import IndexDataTable from "@/Components/IndexDataTable.vue";
-import IndexSearchInput from "@/Components/IndexSearchInput.vue";
+import IndexDataTable from "@/Components/Layouts/IndexModel/IndexDataTable.vue";
+import IndexSearchInput from "@/Components/Layouts/IndexModel/IndexSearchInput.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 
 defineProps<{

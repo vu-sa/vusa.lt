@@ -20,10 +20,10 @@
 </template>
 
 <script setup lang="tsx">
-import { Home24Filled, Sparkle24Filled } from "@vicons/fluent";
-import { router } from "@inertiajs/vue3";
+import { Home24Filled } from "@vicons/fluent";
 import { NCard, NCheckbox, NDataTable, NIcon, NSpin, NTag } from "naive-ui";
 import { computed, ref } from "vue";
+import { router } from "@inertiajs/vue3";
 import type { DataTableColumns } from "naive-ui";
 
 import FilterButtonGroup from "@/Components/Buttons/FilterButtonGroup.vue";

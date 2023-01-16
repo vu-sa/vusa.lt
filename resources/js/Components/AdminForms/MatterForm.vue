@@ -23,16 +23,6 @@
           placeholder="Aprašykite klausimo kontekstą, jeigu to reikia..."
         ></NInput>
       </NFormItemGi>
-      <!-- <NFormItemGi label="Statusas" path="status" required :span="2">
-        <NRadioGroup v-model:value="matterForm.status">
-          <NRadio
-            v-for="status in matterStatusOptions"
-            :key="status.value"
-            :value="status.value"
-            ><StatusTag :status="status.label"></StatusTag
-          ></NRadio>
-        </NRadioGroup>
-      </NFormItemGi> -->
       <NFormItemGi :show-label="false"
         ><NButton :loading="loading" type="primary" @click="handleSubmit"
           >Sukurti</NButton
@@ -43,21 +33,11 @@
 </template>
 
 <script setup lang="tsx">
-import {
-  NButton,
-  NForm,
-  NFormItemGi,
-  NGrid,
-  NInput,
-  NRadio,
-  NRadioGroup,
-  NSelect,
-} from "naive-ui";
+import { NButton, NForm, NFormItemGi, NGrid, NInput, NSelect } from "naive-ui";
 import { ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 
-import { modelDefaults, modelStatus } from "@/Types/formOptions";
-import StatusTag from "@/Components/Tags/StatusTag.vue";
+import { modelDefaults } from "@/Types/formOptions";
 
 const emit = defineEmits<{
   (e: "submit", form: any): void;

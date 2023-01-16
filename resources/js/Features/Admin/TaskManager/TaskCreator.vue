@@ -40,7 +40,6 @@ import {
 import { ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 
-
 const model = useForm("task", {
   name: "",
   due_date: new Date().getTime(),

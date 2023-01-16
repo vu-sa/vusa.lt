@@ -12,10 +12,7 @@
     </NAvatar>
     <span v-if="showName" class="ml-2" :class="{ 'font-bold': bold }"
       >{{ user.name }}
-      <template v-if="showPadalinys"
-        >({{ user.padaliniai ?? "Be padalinio" }})</template
-      ></span
-    >
+    </span>
   </div>
 </template>
 
@@ -26,7 +23,6 @@ withDefaults(
   defineProps<{
     bold?: boolean;
     showName?: boolean;
-    showPadalinys?: boolean;
     size?: string | number;
     user: App.Entities.User;
   }>(),

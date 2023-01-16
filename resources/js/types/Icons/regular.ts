@@ -52,7 +52,6 @@ const modelIcons: Record<keyof typeof ModelEnum, Component> = {
   MEETING: DeviceMeetingRoomRemote24Regular,
   NAVIGATION: Navigation24Regular,
   NEWS: News24Regular,
-  NOTIFICATION: Alert24Regular,
   PAGE: DocumentMultiple24Regular,
   PERMISSION: ShieldKeyhole24Regular,
   RELATIONSHIP: Flow20Regular,
@@ -70,6 +69,7 @@ const modelIcons: Record<keyof typeof ModelEnum, Component> = {
 
 const otherIcons: Record<string, Component> = {
   HOME: Home24Regular,
+  NOTIFICATION: Alert24Regular,
 };
 
 export default { ...modelIcons, ...otherIcons };

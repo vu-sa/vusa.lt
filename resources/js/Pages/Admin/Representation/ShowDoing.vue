@@ -27,7 +27,7 @@ import { usePage } from "@inertiajs/vue3";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import DoingForm from "@/Components/AdminForms/DoingForm.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
-import ShowPageLayout from "@/Components/Layouts/ShowPageLayout.vue";
+import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
 import type { BreadcrumbOption } from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 
 const props = defineProps<{

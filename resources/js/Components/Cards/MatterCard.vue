@@ -61,11 +61,11 @@ import {
   NotebookQuestionMark24Filled,
   Sparkle20Filled,
 } from "@vicons/fluent";
-import { router } from "@inertiajs/vue3";
 import { NButton, NCard, NEllipsis, NIcon } from "naive-ui";
+import { router } from "@inertiajs/vue3";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
-import DoingsStatusDonut from "@/Components/Statistics/DoingsStatusDonut.vue";
+import DoingsStatusDonut from "@/Components/Graphs/DoingsStatusDonut.vue";
 
 defineProps<{
   matter: App.Entities.Matter;

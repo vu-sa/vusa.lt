@@ -1,8 +1,5 @@
 <template>
   <PageContent title="Navigacija">
-    <!-- <template #aside-header>
-      <AsideHeader></AsideHeader>
-    </template> -->
     <NCard class="subtle-gray-gradient">
       <NTree
         block-line

@@ -13,9 +13,7 @@
 import { h } from "vue";
 import type { DataTableColumns } from "naive-ui";
 
-import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
-
-
+import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
 const props = defineProps<{
   registrationForm: PaginatedModels<any>;

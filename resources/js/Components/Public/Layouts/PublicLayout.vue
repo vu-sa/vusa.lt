@@ -42,7 +42,7 @@ import Footer from "@/Components/Public/FullWidth/SiteFooter.vue";
 import MainNavigation from "@/Components/Public/Layouts/MainNavigation.vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
 
-const isThemeDark = ref(isDarkMode());
+const isThemeDark = ref<boolean>(isDarkMode());
 const mounted = ref(false);
 
 const themeOverrides = {

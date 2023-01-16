@@ -14,7 +14,6 @@ import { Microsoft as MicrosoftIcon } from "@vicons/fa";
 import { NButton, NIcon } from "naive-ui";
 import { ref } from "vue";
 
-
 const loadingRef = ref(false);
 
 const microsoftRedirect = () => {

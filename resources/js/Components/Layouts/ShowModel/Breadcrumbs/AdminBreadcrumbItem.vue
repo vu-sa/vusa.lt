@@ -20,8 +20,8 @@
 </template>
 
 <script setup lang="tsx">
-import { router } from "@inertiajs/vue3";
 import { NBreadcrumbItem, NDropdown, NIcon } from "naive-ui";
+import { router } from "@inertiajs/vue3";
 
 import type { Component } from "vue";
 import type { DropdownOption } from "naive-ui";

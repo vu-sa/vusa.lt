@@ -1,19 +1,16 @@
 <template>
-  <PageContent :title="goal.title" breadcrumb>
-    <template #above-header>
-      <AdminBreadcrumbDisplayer class="mb-4 w-full" :options="breadcrumbItems">
-      </AdminBreadcrumbDisplayer>
-    </template>
-    <template #aside-header>
-      <div class="inline-flex gap-2">
-        <ActivityLogButton :activities="goal.activities" />
-        <MoreOptionsButton
-          edit
-          delete
-          @edit-click="showModal = true"
-          @delete-click="handleDelete"
-        ></MoreOptionsButton>
-      </div>
+  <ShowPageLayout
+    :model="goal"
+    :title="goal.title"
+    :breadcrumb-options="breadcrumbItems"
+  >
+    <template #more-options>
+      <MoreOptionsButton
+        edit
+        delete
+        @edit-click="showModal = true"
+        @delete-click="handleDelete"
+      />
     </template>
     <div class="mb-2 flex min-w-min flex-wrap items-center gap-2">
       <FilterButtonGroup
@@ -41,18 +38,13 @@
     >
       <GoalForm :goal="goal" @form-success="showModal = false" />
     </CardModal>
-  </PageContent>
+  </ShowPageLayout>
 </template>
 
 <script setup lang="tsx">
-import { router } from "@inertiajs/vue3";
 import { NIcon } from "naive-ui";
 import { computed, ref } from "vue";
-
-import ActivityLogButton from "@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue";
-import AdminBreadcrumbDisplayer, {
-  type BreadcrumbOption,
-} from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
+import { router } from "@inertiajs/vue3";
 
 import CardModal from "@/Components/Modals/CardModal.vue";
 import FilterButtonGroup from "@/Components/Buttons/FilterButtonGroup.vue";
@@ -61,7 +53,9 @@ import Icons from "@/Types/Icons/filled";
 import MatterCard from "@/Components/Cards/MatterCard.vue";
 import ModelChip from "@/Components/Chips/ModelChip.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
+import type { BreadcrumbOption } from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
+import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 
 const props = defineProps<{
   goal: App.Entities.Goal;

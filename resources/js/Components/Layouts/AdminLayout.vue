@@ -87,15 +87,14 @@ import { computed, onMounted, watch } from "vue";
 import { ref } from "vue";
 import { useOnline, useStorage } from "@vueuse/core";
 
-import { isDarkMode } from "@/Composables/darkMode";
 import AdminMenu from "@/Components/Menus/AdminMenu.vue";
 import AppLogo from "@/Components/AppLogo.vue";
 import Changelog from "@/Components/Cards/ChangelogCard.vue";
 import DarkModeSwitch from "@/Components/Buttons/DarkModeSwitch.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
-import NotificationBell from "@/Components/Notifications/NotificationBell.vue";
-import TaskIndicatorButton from "../Buttons/TaskIndicatorButton.vue";
+import NotificationBell from "@/Features/Admin/Notifications/NotificationBell.vue";
+import TaskIndicatorButton from "../../Features/Admin/TaskManager/TaskIndicatorButton.vue";
 import UserAdminOptionsMenu from "@/Components/Menus/UserSettingsDropdown.vue";
 
 defineProps<{

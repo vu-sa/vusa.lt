@@ -6,18 +6,11 @@
     :columns="columns"
     :paginated-models="users"
   >
-    <template #aside-header>
-      <AsideHeader></AsideHeader>
-    </template>
   </IndexPageLayout>
 </template>
 
 <script setup lang="tsx">
-
-import AsideHeader from "@/Components/AsideHeaders/AsideHeaderContacts.vue";
-import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
-
-
+import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
 defineProps<{
   users: PaginatedModels<App.Entities.User>;

@@ -8,12 +8,11 @@
 import { NButton, NIcon } from "naive-ui";
 import { PreviewLink20Filled } from "@vicons/fluent";
 
-
 const props = defineProps<{
   mainRoute: string;
-  mainProps: object;
+  mainProps: Record<string, any>;
   padalinysRoute: string;
-  padalinysProps: object;
+  padalinysProps: Record<string, any>;
   padalinysShortname?: string | null;
 }>();
 

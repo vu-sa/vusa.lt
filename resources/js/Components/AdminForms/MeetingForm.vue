@@ -27,23 +27,6 @@
           :actions="['confirm']"
         />
       </NFormItemGi>
-      <!-- <NFormItemGi
-        v-if="meetingTypes"
-        label="Tipas"
-        path="meeting_type_id"
-        required
-      ></NFormItemGi> -->
-      <!-- <NFormItemGi label="Statusas" path="status" required :span="2">
-        <NRadioGroup v-model:value="meetingForm.status">
-          <NRadio
-            v-for="status in meetingStatusOptions"
-            :key="status.value"
-            :value="status.value"
-            ><StatusTag :status="status.label"></StatusTag
-          ></NRadio>
-        </NRadioGroup>
-      </NFormItemGi> -->
-
       <NFormItemGi :span="2" :show-label="false"
         ><NButton type="primary" @click="handleSubmit"
           >Toliau...</NButton
@@ -61,15 +44,9 @@ import {
   NForm,
   NFormItemGi,
   NGrid,
-  NRadio,
-  NRadioGroup,
-  NSelect,
 } from "naive-ui";
 import { Method } from "@inertiajs/core";
 import { ref } from "vue";
-
-// import { meetingOptions, meetingStatusOptions } from "@/Composables/someTypes";
-import StatusTag from "@/Components/Tags/StatusTag.vue";
 
 const emit = defineEmits<{
   (event: "submit", form: any): void;
@@ -123,34 +100,6 @@ const handleSubmit = () => {
       /* empty */
     } else {
       emit("submit", meetingForm.value);
-    }
-  });
-};
-
-const upsertMeeting = () => {
-  const isPatch = props.modelRoute === "meetings.update";
-
-  formRef.value?.validate((errors) => {
-    if (errors) {
-      /* empty */
-    } else {
-      meetingForm.value.transform((data) => ({
-        ...data,
-        institution_id: props.institution?.id ?? undefined,
-        matter_id: props.matter?.id,
-        mattersForm: props.mattersForm?.data(),
-      }));
-
-      meetingForm.value.submit(
-        isPatch ? Method.PATCH : Method.POST,
-        route(props.modelRoute, isPatch ? props.meeting.id : undefined),
-        {
-          onSuccess: () => {
-            showModal.value = false;
-            emit("success");
-          },
-        }
-      );
     }
   });
 };

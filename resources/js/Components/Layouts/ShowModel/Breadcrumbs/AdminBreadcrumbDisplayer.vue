@@ -1,8 +1,8 @@
 <template>
   <NBreadcrumb>
     <AdminBreadcrumbItem
-      v-for="option in breadcrumbOptions"
-      :key="option.label"
+      v-for="(option, index) in breadcrumbOptions"
+      :key="index"
       :option="option"
     ></AdminBreadcrumbItem
   ></NBreadcrumb>
@@ -15,7 +15,7 @@ import { computed } from "vue";
 
 import AdminBreadcrumbItem, {
   type BreadcrumbOptionInterface,
-} from "@/Components/Breadcrumbs/AdminBreadcrumbItem.vue";
+} from "./AdminBreadcrumbItem.vue";
 
 export type BreadcrumbOption = BreadcrumbOptionInterface;
 

@@ -45,34 +45,20 @@
       <div v-else><span class="text-xs">Naujų pranešimų nėra.</span></div>
     </NPopover>
   </NBadge>
+  <!-- <UseWebNotifications /> -->
 </template>
 
 <script setup lang="tsx">
-import {
-  NAvatar,
-  NBadge,
-  NButton,
-  NDivider,
-  NIcon,
-  NPopover,
-  useMessage,
-  useNotification,
-} from "naive-ui";
+import { NBadge, NButton, NIcon, NPopover, useMessage } from "naive-ui";
 import { ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
-import { useWebNotification } from "@vueuse/core";
 import Icons from "@/Types/Icons/regular";
-import type { EventHook, UseWebNotificationOptions } from "@vueuse/core";
 
 import { CheckmarkCircle24Regular } from "@vicons/fluent";
 import { useAxios } from "@vueuse/integrations/useAxios";
-import NotificationItem, {
-  type NotificationData,
-} from "./NotificationItem.vue";
+import NotificationItem from "./NotificationItem.vue";
 
-const notifications = ref(
-  usePage().props.auth?.user?.unreadNotifications
-);
+const notifications = ref(usePage().props.auth?.user?.unreadNotifications);
 
 const message = useMessage();
 const loading = ref(false);
@@ -100,45 +86,4 @@ const handleAllRead = async () => {
     message.success("Visi pranešimai pažymėti kaip perskaityti.");
   }
 };
-
-const notification = useNotification();
-const onWebNotificationClick = ref<EventHook | null>(null);
-
-// window.Echo.private(
-//   "App.Models.User." + usePage().props.auth?.user.id
-// ).notification((notificationSent: NotificationData) => {
-//   notification.info({
-//     content() {
-//       return <div v-html={notificationSent.text}></div>;
-//     },
-//     avatar() {
-//       return (
-//         <NAvatar
-//           src={
-//             notificationSent.subject?.image ??
-//             usePage().props.auth?.user.profile_photo_path
-//           }
-//         ></NAvatar>
-//       );
-//     },
-//   });
-
-//   const options: UseWebNotificationOptions = {
-//     title: notificationSent.text.replaceAll(/<\/?[^>]+(>|$)/gi, ""),
-//     dir: "auto",
-//     lang: usePage().props.locale,
-//     renotify: true,
-//     tag: "notification",
-//     icon: notificationSent.subject?.image ?? usePage().props.auth?.user,
-//   };
-
-//   const { isSupported, onClick, show } = useWebNotification(options);
-
-//   if (isSupported.value) {
-//     show();
-//     onClick.on((evt: Event) => {
-//       window.location.assign(notificationSent.object.url);
-//     });
-//   }
-// });
 </script>

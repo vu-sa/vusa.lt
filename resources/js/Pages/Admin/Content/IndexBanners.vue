@@ -6,17 +6,13 @@
     :columns="columns"
     :paginated-models="banners"
   >
-    <template #aside-header>
-      <AsideHeader></AsideHeader>
-    </template>
   </IndexPageLayout>
 </template>
 
 <script setup lang="tsx">
 import { DataTableColumns } from "naive-ui";
 
-import AsideHeader from "@/Components/AsideHeaders/AsideHeaderContent.vue";
-import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
+import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
 defineProps<{
   banners: PaginatedModels<App.Entities.Banner[]>;

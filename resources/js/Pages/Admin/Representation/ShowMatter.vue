@@ -43,7 +43,8 @@ import DoingsTabPane from "@/Components/TabPaneContent/DoingsTabPane.vue";
 import GoalCard from "@/Components/Cards/QuickContentCards/GoalCard.vue";
 import MatterForm from "@/Components/AdminForms/MatterForm.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
-import ShowPageLayout from "@/Components/Layouts/ShowPageLayout.vue";
+import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
+import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 import type { BreadcrumbOption } from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 
 const props = defineProps<{

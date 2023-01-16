@@ -25,7 +25,7 @@ import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import Layout from "@/Components/Layouts/AdminLayout.vue";
 
-// import "@/echo";
+import "@/echo";
 
 const isThemeDark = ref(isDarkMode());
 const mounted = ref(false);

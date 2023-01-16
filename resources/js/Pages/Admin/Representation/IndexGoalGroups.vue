@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="tsx">
-import IndexPageLayout from "@/Components/Layouts/IndexPageLayout.vue";
+import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
 defineProps<{
   goalGroups: PaginatedModels<App.Entities.GoalGroup>;

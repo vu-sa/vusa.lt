@@ -1,20 +1,15 @@
 <template>
-  <PageContent :breadcrumb="true" :title="meetingTitle">
-    <template #above-header>
-      <AdminBreadcrumbDisplayer
-        :options="breadcrumbOptions"
-        class="mb-4 w-full"
-      />
-    </template>
-    <template #aside-header>
-      <div class="inline-flex gap-2">
-        <ActivityLogButton :activities="meeting.activities" />
-        <MoreOptionsButton
-          edit
-          :more-options="additionalDropdownOptions"
-          @edit-click="showModal = true"
-        ></MoreOptionsButton>
-      </div>
+  <ShowPageLayout
+    :model="meeting"
+    :breadcrumb-options="breadcrumbOptions"
+    :title="meetingTitle"
+  >
+    <template #more-options>
+      <MoreOptionsButton
+        edit
+        :more-options="additionalDropdownOptions"
+        @edit-click="showModal = true"
+      ></MoreOptionsButton>
       <CardModal
         v-model:show="showMeetingModal"
         @close="showMeetingModal = false"
@@ -79,7 +74,7 @@
         >Įkelti naują dokumentą?</NewGridItemButton
       >
     </div>
-  </PageContent>
+  </ShowPageLayout>
   <FileSelectDrawer
     :document="selectedDocument"
     @close-drawer="selectedDocument = documentTemplate"
@@ -107,26 +102,22 @@ import {
 } from "naive-ui";
 import { Edit24Filled, PeopleTeam24Filled } from "@vicons/fluent";
 import { computed, ref } from "vue";
-import { useStorage } from "@vueuse/core";
 
-import { router } from "@inertiajs/vue3";
 import { documentTemplate, modelTypes } from "@/Types/formOptions";
 import { formatStaticTime } from "@/Utils/IntlTime";
-import ActivityLogButton from "@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue";
-import AdminBreadcrumbDisplayer, {
-  type BreadcrumbOption,
-} from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
+import { router } from "@inertiajs/vue3";
 import AgendaItemForm from "@/Components/AdminForms/AgendaItemForm.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
-import FileButton from "@/Components/SharepointFileManager/FileButton.vue";
-import FileSelectDrawer from "@/Components/SharepointFileManager/FileDrawer.vue";
-import FileUploader from "@/Components/SharepointFileManager/FileUploader.vue";
-import FileUploaderBasicButton from "@/Components/SharepointFileManager/FileUploaderBasicButton.vue";
+import FileButton from "@/Features/Admin/SharepointFileManager/FileButton.vue";
+import FileSelectDrawer from "@/Features/Admin/SharepointFileManager/FileDrawer.vue";
+import FileUploader from "@/Features/Admin/SharepointFileManager/FileUploader.vue";
+import FileUploaderBasicButton from "@/Features/Admin/SharepointFileManager/FileUploaderBasicButton.vue";
 import Icons from "@/Types/Icons/regular";
 import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import NewGridItemButton from "@/Components/Buttons/NewGridItemButton.vue";
-import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
+import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 
 const props = defineProps<{
   meeting: App.Entities.Meeting;

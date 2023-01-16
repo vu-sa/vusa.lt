@@ -44,8 +44,8 @@
 </template>
 
 <script setup lang="tsx">
-import { router } from "@inertiajs/vue3";
 import { NDivider } from "naive-ui";
+import { router } from "@inertiajs/vue3";
 // import { ref } from "vue";
 
 // import { documentTemplate } from "@/Types/formOptions";
@@ -56,8 +56,8 @@ import LastMeetingCard from "@/Components/Cards/QuickContentCards/LastMeetingCar
 import MattersCardGrid from "@/Components/TabPaneContent/MattersCardGrid.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import RelatedModelCarousel from "@/Components/Carousels/RelatedModelCarousel.vue";
-import ShowPageLayout from "@/Components/Layouts/ShowPageLayout.vue";
-import type { BreadcrumbOption } from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
+import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
+import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 
 const props = defineProps<{
   doingTypes: any;

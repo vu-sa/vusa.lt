@@ -28,10 +28,9 @@
 
 <script setup lang="ts">
 import { Delete20Filled } from "@vicons/fluent";
-import { router } from "@inertiajs/vue3";
 import { NButton, NIcon, NPopconfirm, NPopover } from "naive-ui";
 import { ref } from "vue";
-
+import { router } from "@inertiajs/vue3";
 
 const props = defineProps<{
   disabled?: boolean;
