@@ -77,8 +77,8 @@ import { onMounted, ref } from "vue";
 
 import { fileSize } from "@/Utils/Calc";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
-import FuzzySearcher from "@/Components/SharepointFileManager/FuzzySearcher.vue";
-import ModelDocumentButton from "@/Components/SharepointFileManager/ModelDocumentButton.vue";
+import FuzzySearcher from "./FuzzySearcher.vue";
+import ModelDocumentButton from "./ModelDocumentButton.vue";
 
 const emit = defineEmits<{
   (event: "fileButtonClick", document: Record<string, any>): void;
