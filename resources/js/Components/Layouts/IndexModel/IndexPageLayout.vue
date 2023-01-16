@@ -7,8 +7,6 @@
       <slot name="aside-header"></slot>
     </template>
     <NCard class="subtle-gray-gradient">
-      <!-- TODO: fix payload -->
-      <IndexSearchInput payload-name="text" />
       <IndexDataTable
         :paginated-models="paginatedModels"
         :columns="columns"

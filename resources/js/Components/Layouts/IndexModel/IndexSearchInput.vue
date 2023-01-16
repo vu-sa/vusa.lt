@@ -24,7 +24,7 @@ const props = defineProps<{
 
 // TODO: fix this event
 const emit = defineEmits<{
-  (event: "resetPaginate"): void;
+  (event: "completeSearch"): void;
 }>();
 
 const loading = ref(false);
@@ -32,10 +32,9 @@ const loading = ref(false);
 const handleSearchInput = useDebounceFn((input) => {
   loading.value = true;
   router.reload({
-    // only: [props.model],
     data: { page: 1, [props.payloadName]: input },
     onSuccess: () => {
-      emit("resetPaginate");
+      emit("completeSearch");
       loading.value = false;
     },
   });
