@@ -93,6 +93,10 @@ class DutyController extends ResourceController
     public function show(Duty $duty)
     {
         $this->authorize('view', [Duty::class, $duty, $this->authorizer]);
+
+        return Inertia::render('Admin/People/ShowDuty', [
+            'duty' => $duty->load('institution', 'users', 'activities.causer'),
+        ]);
     }
 
     /**

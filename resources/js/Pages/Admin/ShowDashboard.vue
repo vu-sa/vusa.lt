@@ -7,7 +7,6 @@
         :institution="institution"
         :duties="duties"
         :is-padalinys="institution.alias === institution.padalinys.alias"
-        show-last-meeting
       />
     </div>
     <h3 class="my-4">Naudingos nuorodos</h3>

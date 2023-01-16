@@ -12,6 +12,8 @@ class Dutiable extends MorphPivot
     
     protected $table = 'dutiables';
 
+    protected $guarded = [];
+
     protected $with = ['duty'];
 
     protected $casts = [

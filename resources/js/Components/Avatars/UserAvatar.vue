@@ -9,6 +9,11 @@
       <span v-if="!user.profile_photo_path">
         {{ userInitials(user.name) }}
       </span>
+      <template #fallback>
+        <div class="flex h-full w-full items-center justify-center">
+          <div class="my-auto">{{ userInitials(user.name) }}</div>
+        </div>
+      </template>
     </NAvatar>
     <span v-if="showName" class="ml-2" :class="{ 'font-bold': bold }"
       >{{ user.name }}

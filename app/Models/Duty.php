@@ -38,12 +38,12 @@ class Duty extends Model implements AuthorizableContract
 
     public function users()
     {
-        return $this->morphedByMany(User::class, 'dutiable')->using(Dutiable::class)->withPivot(['extra_attributes'])->withTimestamps();
+        return $this->morphedByMany(User::class, 'dutiable')->using(Dutiable::class)->withPivot(['extra_attributes', 'start_date'])->withTimestamps();
     }
 
     public function contacts()
     {
-        return $this->morphedByMany(Contact::class, 'dutiable')->using(Dutiable::class)->withPivot(['extra_attributes'])->withTimestamps();
+        return $this->morphedByMany(Contact::class, 'dutiable')->using(Dutiable::class)->withPivot(['extra_attributes', 'start_date'])->withTimestamps();
     }
 
     public function matters()

@@ -28,17 +28,18 @@
               </NButton>
             </template>
             <div class="flex flex-col gap-2">
-              <NButton
+              <Link
                 v-for="duty in institutionDuties"
                 :key="duty.id"
-                size="small"
-                secondary
+                :href="route('duties.show', duty.id)"
               >
-                <template #icon>
-                  <UserAvatar :user="$page.props.auth.user" :size="16" />
-                </template>
-                {{ duty.name }}</NButton
-              >
+                <NButton size="small" secondary>
+                  <template #icon>
+                    <UserAvatar :user="$page.props.auth.user" :size="16" />
+                  </template>
+                  {{ duty.name }}</NButton
+                >
+              </Link>
             </div>
           </NPopover>
           <!-- <NButton circle size="small" quaternary @click.stop
@@ -69,7 +70,7 @@
 </template>
 
 <script setup lang="tsx">
-import { router } from "@inertiajs/vue3";
+import { Link, router } from "@inertiajs/vue3";
 import { MoreHorizontal24Filled } from "@vicons/fluent";
 import { NButton, NCard, NIcon, NPopover, NTag } from "naive-ui";
 import { computed } from "vue";
