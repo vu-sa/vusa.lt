@@ -1,9 +1,12 @@
 <template>
-  <NButton :loading="loadingRef" type="warning" @click="microsoftRedirect">
+  <NButton
+    type="primary"
+    size="large"
+    :loading="loadingRef"
+    @click="microsoftRedirect"
+  >
     <template #icon>
-      <NIcon>
-        <MicrosoftIcon />
-      </NIcon>
+      <NIcon :component="MicrosoftIcon" />
     </template>
     Tęsti su Microsoft
   </NButton>
