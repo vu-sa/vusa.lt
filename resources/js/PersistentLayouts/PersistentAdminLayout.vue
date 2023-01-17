@@ -5,21 +5,26 @@
     :theme="isThemeDark ? darkTheme : undefined"
     :theme-overrides="isThemeDark ? darkThemeOverrides : themeOverrides"
   >
-    <NMessageProvider>
-      <Layout>
-        <FadeTransition>
-          <main>
-            <slot />
-          </main>
-        </FadeTransition>
-      </Layout>
-    </NMessageProvider>
+    <component
+      :is="$page.props.app.env === 'local' ? NThemeEditor : 'div'"
+      id="before-layout"
+    >
+      <NMessageProvider>
+        <Layout>
+          <FadeTransition>
+            <main>
+              <slot />
+            </main>
+          </FadeTransition>
+        </Layout>
+      </NMessageProvider>
+    </component>
   </NConfigProvider>
 </template>
 
 <script setup lang="tsx">
 import { NConfigProvider, NMessageProvider, darkTheme, enUS } from "naive-ui";
-import { onMounted, ref } from "vue";
+import { defineAsyncComponent, onMounted, ref } from "vue";
 
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
@@ -29,6 +34,10 @@ import Layout from "@/Components/Layouts/AdminLayout.vue";
 
 const isThemeDark = ref(isDarkMode());
 const mounted = ref(false);
+
+const NThemeEditor = defineAsyncComponent(
+  () => import("naive-ui/lib/theme-editor/src/ThemeEditor")
+);
 
 updateDarkMode(isThemeDark);
 
