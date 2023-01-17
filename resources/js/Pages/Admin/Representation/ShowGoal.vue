@@ -13,10 +13,7 @@
       />
     </template>
     <div class="mb-2 flex min-w-min flex-wrap items-center gap-2">
-      <FilterButtonGroup
-        :button-names="buttonNames"
-        @click="handleFilterClick"
-      />
+      <FilterPopselect :options="buttonNames" @click="handleFilterClick" />
     </div>
     <div class="grid grid-cols-3 gap-x-4">
       <MatterCard
@@ -47,7 +44,7 @@ import { computed, ref } from "vue";
 import { router } from "@inertiajs/vue3";
 
 import CardModal from "@/Components/Modals/CardModal.vue";
-import FilterButtonGroup from "@/Components/Buttons/FilterButtonGroup.vue";
+import FilterPopselect from "@/Components/Buttons/FilterPopselect.vue";
 import GoalForm from "@/Components/AdminForms/GoalForm.vue";
 import Icons from "@/Types/Icons/filled";
 import MatterCard from "@/Components/Cards/MatterCard.vue";
@@ -64,6 +61,9 @@ const props = defineProps<{
 const showModal = ref(false);
 const selectedInstitution = ref<string | null>(null);
 const buttonNames = props.institutions.map((institution) => institution.name);
+// add null to the beginning of the array
+buttonNames.unshift("Visi");
+
 const breadcrumbItems: BreadcrumbOption[] = [
   {
     label: "Klausimų grupės",
@@ -78,13 +78,12 @@ const breadcrumbItems: BreadcrumbOption[] = [
 const shownMatters = computed(() => {
   let matters = props.goal.matters;
 
-  if (selectedInstitution.value === null) {
+  if (selectedInstitution.value === "Visi") {
     return matters;
   }
 
   return matters?.filter((matter) => {
     return matter.institutions?.some((institution) => {
-      console.log(institution.name, selectedInstitution.value);
       return institution.name === selectedInstitution.value;
     });
   });

@@ -23,10 +23,10 @@ class GoalController extends ResourceController
         $indexer = new ModelIndexer();
 
         $search = request()->input('search');
-        $goals = $indexer->execute(Goal::class, $search, 'name', $this->authorizer, null);
+        $goals = $indexer->execute(Goal::class, $search, 'title', $this->authorizer, null);
 
         return Inertia::render('Admin/Representation/IndexGoal', [
-            'goals' => $goals,
+            'goals' => $goals->paginate(20),
         ]);
     }
 

@@ -1,9 +1,9 @@
 <template>
   <div class="mb-4 flex gap-2">
-    <FilterButtonGroup
-      :button-names="buttonNames"
+    <FilterPopselect
+      :options="buttonNames"
       @click="handleClick"
-    ></FilterButtonGroup
+    ></FilterPopselect
     ><TaskCreator />
   </div>
   <NCard class="subtle-gray-gradient">
@@ -26,7 +26,7 @@ import { computed, ref } from "vue";
 import { router } from "@inertiajs/vue3";
 import type { DataTableColumns } from "naive-ui";
 
-import FilterButtonGroup from "@/Components/Buttons/FilterButtonGroup.vue";
+import FilterPopselect from "@/Components/Buttons/FilterPopselect.vue";
 import Icons from "@/Types/Icons/filled";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import TaskCreator from "./TaskCreator.vue";
