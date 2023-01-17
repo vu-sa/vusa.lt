@@ -1,37 +1,26 @@
 <template>
   <NAvatarGroup :options="options" :max="4" :size="size ?? 40">
-    <template #avatar="{ option: { name, src } }">
-      <NAvatar v-if="src" object-fit="cover" :src="src">
-        <template #fallback>
-          <div class="flex h-full w-full items-center justify-center">
-            <div class="my-auto">{{ userInitials(name) }}</div>
-          </div>
-        </template>
-      </NAvatar>
-      <NAvatar v-else>{{ userInitials(name) }}</NAvatar>
+    <template #avatar="{ option: option }">
+      <UserPopover :user="option" />
     </template>
   </NAvatarGroup>
 </template>
 
 <script setup lang="tsx">
-import { NAvatar, NAvatarGroup } from "naive-ui";
+import { NAvatarGroup } from "naive-ui";
+import UserPopover from "./UserPopover.vue";
 
 const props = defineProps<{
-  users: Record<string, any>;
+  users: App.Entities.User[];
   size?: number;
 }>();
 
-const options = props.users.map((user: Record<string, any>) => ({
-  name: user.name,
-  src: user.profile_photo_path,
-}));
-
-const userInitials = (name: string) => {
-  if (name === undefined) {
-    return;
-  }
-
-  const words = name.split(" ");
-  return words[0].charAt(0) + words[words.length - 1].charAt(0);
-};
+const options = props.users.map((user: App.Entities.User) => {
+  // return rest and map src and name
+  return {
+    ...user,
+    name: user.name,
+    src: user.profile_photo_path,
+  };
+});
 </script>

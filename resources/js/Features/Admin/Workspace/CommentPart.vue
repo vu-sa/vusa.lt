@@ -10,7 +10,7 @@
           <div
             class="mb-4 grid grid-cols-[40px_1fr] gap-x-4 gap-y-2 first:pt-4 last:pb-4"
           >
-            <UserAvatar bold :size="32" :user="comment.user" />
+            <UserPopover bold :size="32" :user="comment.user" />
             <div class="inline-flex flex-col">
               <strong class="text-md">{{ comment.user.name }}</strong>
               <span
@@ -48,7 +48,7 @@ import { router, usePage } from "@inertiajs/vue3";
 import { formatRelativeTime } from "@/Utils/IntlTime";
 import CommentTipTap from "../CommentViewer/CommentTipTap.vue";
 import FadeTransitionGroup from "@/Components/Transitions/FadeTransitionGroup.vue";
-import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
+import UserPopover from "@/Components/Avatars/UserPopover.vue";
 
 defineEmits<{
   (e: "passText", text: string): void;

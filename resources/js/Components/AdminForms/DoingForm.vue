@@ -29,7 +29,7 @@
         />
       </NFormItemGi>
       <NFormItemGi label="Atsakingas (-a)" :span="2">
-        <UserAvatar :user="$page.props.auth.user" show-name />
+        <UserPopover :user="$page.props.auth.user" show-name />
       </NFormItemGi>
 
       <NFormItemGi :span="2" :show-label="false"
@@ -54,7 +54,7 @@ import { ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 
 import { modelDefaults } from "@/Types/formOptions";
-import UserAvatar from "../Avatars/UserAvatar.vue";
+import UserPopover from "../Avatars/UserPopover.vue";
 
 const emit = defineEmits<{
   (e: "submit", form: any): void;

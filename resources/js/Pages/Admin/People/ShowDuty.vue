@@ -14,20 +14,9 @@
     </template>
     <h2>Dabar einantys pareigas</h2>
     <div class="flex flex-wrap gap-2">
-      <NPopover
-        v-for="user in duty.users"
-        :key="user.id"
-        trigger="hover"
-        :delay="500"
-        :duration="500"
-      >
-        <template #trigger>
-          <NButton text size="small" quaternary>
-            <UserAvatar show-name :user="user" />
-          </NButton>
-        </template>
-        <span>{{ user.name }}</span>
-      </NPopover>
+      <template v-for="user in duty.users" :key="user.id">
+        <UserPopover show-name :user="user" />
+      </template>
     </div>
     <NDivider />
     <h2>Anksčiau ėję pareigas</h2>
@@ -41,7 +30,7 @@ import { NButton, NDivider, NPopover } from "naive-ui";
 import Icons from "@/Types/Icons/filled";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
-import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
+import UserPopover from "@/Components/Avatars/UserPopover.vue";
 import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 
 const props = defineProps<{

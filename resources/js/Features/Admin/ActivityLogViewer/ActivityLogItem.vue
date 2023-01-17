@@ -17,7 +17,7 @@
 
 <script setup lang="tsx">
 import { formatRelativeTime } from "@/Utils/IntlTime";
-import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
+import UserAvatar from "@/Components/Avatars/UserPopover.vue";
 
 defineProps<{
   activity: Record<string, any>;

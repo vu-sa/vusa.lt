@@ -15,7 +15,7 @@ import { type DropdownOption, NButton, NDropdown, NIcon } from "naive-ui";
 import { ref } from "vue";
 import { router } from "@inertiajs/vue3";
 
-import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
+import UserAvatar from "../Avatars/UserAvatar.vue";
 
 const loading = ref(false);
 

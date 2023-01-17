@@ -1,43 +1,32 @@
 <template>
-  <div class="not-prose inline-flex flex-row items-center">
-    <NAvatar
-      round
-      :size="size"
-      object-fit="cover"
-      :src="user.profile_photo_path"
-    >
-      <span v-if="!user.profile_photo_path">
-        {{ userInitials(user.name) }}
-      </span>
-      <template #fallback>
-        <div class="flex h-full w-full items-center justify-center">
-          <div class="my-auto">{{ userInitials(user.name) }}</div>
-        </div>
-      </template>
-    </NAvatar>
-    <span v-if="showName" class="ml-2" :class="{ 'font-bold': bold }"
-      >{{ user.name }}
+  <NAvatar
+    :size="size"
+    round
+    object-fit="cover"
+    :src="user.profile_photo_path ?? undefined"
+  >
+    <span v-if="!user.profile_photo_path">
+      {{ userInitials(user.name) }}
     </span>
-  </div>
+    <template #fallback>
+      <div class="flex h-full w-full items-center justify-center">
+        <div class="my-auto">{{ userInitials(user.name) }}</div>
+      </div>
+    </template>
+  </NAvatar>
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
 import { NAvatar } from "naive-ui";
 
-withDefaults(
-  defineProps<{
-    bold?: boolean;
-    showName?: boolean;
-    size?: string | number;
-    user: App.Entities.User;
-  }>(),
-  {
-    bold: false,
-    size: "small",
-  }
-);
+defineProps<{
+  user: App.Entities.User;
+  size?: number;
+}>();
 
-const userInitials = (name: string) => {
+const userInitials = (name: string | null) => {
+  if (!name) return "";
+
   const words = name.split(" ");
   return words[0].charAt(0) + words[words.length - 1].charAt(0);
 };

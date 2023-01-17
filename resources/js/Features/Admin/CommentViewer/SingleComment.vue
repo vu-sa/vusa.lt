@@ -3,7 +3,7 @@
   <NCard class="mb-4">
     <div class="flex items-center justify-between">
       <div class="flex items-center">
-        <UserAvatar show-name :user="comment.user" />
+        <UserPopover show-name :user="comment.user" />
       </div>
       <div class="flex items-center">
         <span :title="comment.created_at" class="mr-2 text-sm text-gray-500">
@@ -21,12 +21,12 @@
 </template>
 
 <script setup lang="ts">
-import { router } from "@inertiajs/vue3";
 import { NCard } from "naive-ui";
+import { router } from "@inertiajs/vue3";
 
 import { formatRelativeTime } from "@/Utils/IntlTime";
 import MoreOptionsButton from "../../../Components/Buttons/MoreOptionsButton.vue";
-import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
+import UserPopover from "@/Components/Avatars/UserPopover.vue";
 
 const props = defineProps<{
   comment: Record<string, any>;

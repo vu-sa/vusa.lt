@@ -23,7 +23,9 @@
             <template #trigger>
               <NButton text size="small" circle @click.stop>
                 <template #icon>
-                  <UserAvatar :user="$page.props.auth.user" :size="24" />
+                  <div class="not-prose">
+                    <UserAvatar :user="$page.props.auth?.user" :size="24" />
+                  </div>
                 </template>
               </NButton>
             </template>
@@ -35,7 +37,7 @@
               >
                 <NButton size="small" secondary>
                   <template #icon>
-                    <UserAvatar :user="$page.props.auth.user" :size="16" />
+                    <UserAvatar :user="$page.props.auth?.user" :size="16" />
                   </template>
                   {{ duty.name }}</NButton
                 >
@@ -71,8 +73,7 @@
 
 <script setup lang="tsx">
 import { Link, router } from "@inertiajs/vue3";
-import { MoreHorizontal24Filled } from "@vicons/fluent";
-import { NButton, NCard, NIcon, NPopover, NTag } from "naive-ui";
+import { NButton, NCard, NPopover, NTag } from "naive-ui";
 import { computed } from "vue";
 
 import InstitutionAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
