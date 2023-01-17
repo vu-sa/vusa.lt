@@ -5,7 +5,6 @@ namespace App\Policies;
 use App\Enums\CRUDEnum;
 use App\Models\Task;
 use App\Models\User;
-
 use Illuminate\Support\Str;
 use App\Enums\ModelEnum;
 use App\Services\ModelAuthorizer;

@@ -8,8 +8,6 @@ use Illuminate\Support\Str;
 use App\Enums\ModelEnum;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use App\Services\ModelAuthorizer as Authorizer;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
 
 class InstitutionPolicy extends ModelPolicy
 {

@@ -14,10 +14,6 @@ class Task extends Model
 
     protected $guarded = [];
 
-    protected $casts = [
-        'created_at' => 'timestamp'
-    ];
-
     public function taskable()
     {
         return $this->morphTo();

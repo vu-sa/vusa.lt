@@ -2,18 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\ModelEnum;
 use App\Http\Controllers\Controller as Controller;
 use App\Models\Institution;
-use App\Models\Pivots\Relationshipable;
-use App\Models\Type;
 use App\Models\User;
 use App\Services\RelationshipService;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
-use Illuminate\Support\Str;
 
 class DashboardController extends Controller
 {
@@ -57,7 +52,8 @@ class DashboardController extends Controller
         $tasks = $user->tasks->load('taskable', 'users');
 
         return Inertia::render('Admin/ShowTasks', [
-            'tasks' => $tasks
+            'tasks' => $tasks,
+            'institutions' => Inertia::lazy(fn () => Institution::select('id', 'name')->withWhereHas('users:users.id,users.name,profile_photo_path,phone')->get()),
         ]);
     }
 

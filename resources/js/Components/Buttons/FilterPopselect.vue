@@ -2,7 +2,7 @@
   <NPopselect
     v-model:value="value"
     :options="popselectOptions ?? []"
-    @change="$emit('click', value)"
+    @update:value="$emit('click', value)"
   >
     <NButton
       :type="options?.[0] !== value ? 'primary' : 'default'"

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Task;
-use App\Http\Controllers\Controller as Controller;
 use App\Http\Controllers\ResourceController;
+use App\Http\Requests\StoreTaskRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
@@ -17,7 +17,7 @@ class TaskController extends ResourceController
      */
     public function index()
     {
-        $this->authorize('viewAny', [Institution::class, $this->authorizer]);
+        $this->authorize('viewAny', [Task::class, $this->authorizer]);
         //
     }
 
@@ -28,7 +28,7 @@ class TaskController extends ResourceController
      */
     public function create()
     {
-        $this->authorize('create', [Institution::class, $this->authorizer]);
+        $this->authorize('create', [Task::class, $this->authorizer]);
     }
 
     /**
@@ -37,27 +37,18 @@ class TaskController extends ResourceController
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreTaskRequest $request)
     {
-        $this->authorize('create', [Institution::class, $this->authorizer]);
-        
-        $validated = $request->validate([
-            'name' => 'required',
-            'due_date' => 'required',
-        ]);
-
-        // if no taskable_type is provided, set it to App\\Models\\User and id to auth()->id()
-        if (!isset($validated['taskable_type'])) {
-        $validated['taskable_type'] = 'App\\Models\\User';
-            $validated['taskable_id'] = auth()->id();
+        // if separate_tasks is true, create separate tasks for each responsible person
+        if ($request->separate_tasks) {
+            foreach ($request->responsible_people as $responsible_person) {
+                $task = Task::create($request->safe()->only('name', 'taskable_id', 'taskable_type', 'due_date'));
+                $task->users()->attach($responsible_person);
+            }
+        } else {
+            $task = Task::create($request->safe()->only('name', 'taskable_id', 'taskable_type', 'due_date'));
+            $task->users()->attach($request->responsible_people);
         }
-
-        // change due_date to Carbon object
-        $validated['due_date'] = Carbon::createFromTimestamp($validated['due_date'] / 1000);
-
-        $task = Task::create($validated);
-
-        $task->users()->attach(auth()->id());
 
         return back()->with('success', 'Užduotis sėkmingai pridėta');
     }

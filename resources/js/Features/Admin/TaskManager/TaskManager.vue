@@ -9,8 +9,8 @@
   <NCard class="subtle-gray-gradient">
     <NSpin :show="loading">
       <NDataTable
-        size="small"
         :data="shownTasks"
+        size="large"
         :columns="columns"
         :row-class-name="rowClassName"
       ></NDataTable>
@@ -54,16 +54,17 @@ const columns: DataTableColumns<App.Entities.Task> = [
   {
     align: "center",
     key: "checkbox",
-    title: "Done",
     render(row) {
       return (
         <NCheckbox
+          themeOverrides={{ borderRadius: "50%", border: "1px solid" }}
+          size="large"
           onUpdate:checked={() => updateTaskCompletion(row)}
           checked={row.completed_at !== null}
         />
       );
     },
-    width: 75,
+    width: 60,
   },
   {
     title: "Pavadinimas",
@@ -76,7 +77,9 @@ const columns: DataTableColumns<App.Entities.Task> = [
       return (
         <NTag bordered={false} round size="small">
           {{
-            default: () => [<span>{row.taskable.title}</span>],
+            default: () => [
+              <span>{row.taskable.title ?? row.taskable.name}</span>,
+            ],
             icon: () => <NIcon component={iconComponent(row)}></NIcon>,
           }}
         </NTag>
@@ -93,15 +96,12 @@ const columns: DataTableColumns<App.Entities.Task> = [
   {
     title: "Terminas",
     key: "due_date",
-  },
-  {
-    title: "Sukurta",
-    key: "created_at",
+    sorter: "default",
   },
   {
     key: "moreOptions",
     render(row) {
-      return (
+      return row.completed_at === null ? (
         <MoreOptionsButton
           delete
           small
@@ -109,7 +109,7 @@ const columns: DataTableColumns<App.Entities.Task> = [
             handleDelete(row);
           }}
         ></MoreOptionsButton>
-      );
+      ) : null;
     },
   },
 ];
