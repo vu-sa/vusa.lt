@@ -53,7 +53,7 @@ class DashboardController extends Controller
 
         return Inertia::render('Admin/ShowTasks', [
             'tasks' => $tasks,
-            'institutions' => Inertia::lazy(fn () => Institution::select('id', 'name')->withWhereHas('users:users.id,users.name,profile_photo_path,phone')->get()),
+            'taskableInstitutions' => Inertia::lazy(fn () => Institution::select('id', 'name')->withWhereHas('users:users.id,users.name,profile_photo_path,phone')->get()),
         ]);
     }
 

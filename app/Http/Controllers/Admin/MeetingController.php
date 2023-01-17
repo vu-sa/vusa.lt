@@ -6,6 +6,7 @@ use App\Models\Meeting as Meeting;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\ResourceController;
 use App\Http\Requests\StoreMeetingRequest;
+use App\Models\Institution;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Services\MeetingService as MeetingService;
@@ -76,12 +77,13 @@ class MeetingController extends ResourceController
             $sharepointFiles = $graph->collectSharepointFiles($meeting->documents);
         }
         
-        $meeting->load('institutions', 'tasks', 'activities.causer', 'comments', 'agendaItems');
+        $meeting->load('institutions', 'tasks', 'activities.causer', 'comments', 'agendaItems', 'tasks.taskable', 'tasks.users');
 
         // show meeting
         return Inertia::render('Admin/Representation/ShowMeeting', [
             'meeting' => $meeting,
             'sharepointFiles' => $sharepointFiles,
+            'taskableInstitutions' => Inertia::lazy(fn () => $meeting->institutions->load('users')),
         ]);
     }
 

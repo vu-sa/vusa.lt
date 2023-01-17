@@ -80,11 +80,20 @@ import { TaskListSquareAdd24Regular } from "@vicons/fluent";
 import { ref } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
 
+const props = defineProps<{
+  taskable?: {
+    id: number;
+    type: string;
+  };
+}>();
+
 const model = useForm("task", {
   name: "",
   due_date: new Date().getTime(),
   responsible_people: [],
   separate_tasks: false,
+  taskable_id: props.taskable?.id,
+  taskable_type: props.taskable?.type,
 });
 
 const disabled = ref(true);
@@ -94,13 +103,14 @@ const institutions = ref<App.Entities.Institution[] | []>([]);
 const getUsers = () => {
   if (institutions.value.length === 0)
     router.reload({
-      only: ["institutions"],
+      only: ["taskableInstitutions"],
       preserveState: true,
       onBefore: () => {
         console.log("before");
       },
       onSuccess: (page) => {
-        institutions.value = parseInstitutions(page.props.institutions);
+        console.log(page.props);
+        institutions.value = parseInstitutions(page.props.taskableInstitutions);
         disabled.value = false;
         console.log(institutions.value);
       },

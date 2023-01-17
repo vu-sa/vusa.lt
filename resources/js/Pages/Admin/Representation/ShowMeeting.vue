@@ -74,6 +74,12 @@
         >Įkelti naują dokumentą?</NewGridItemButton
       >
     </div>
+    <NDivider />
+    <h3>Užduotys</h3>
+    <TaskManager
+      :taskable="{ id: meeting.id, type: 'App\\Models\\Meeting' }"
+      :tasks="meeting.tasks"
+    />
   </ShowPageLayout>
   <FileSelectDrawer
     :document="selectedDocument"
@@ -117,6 +123,7 @@ import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import NewGridItemButton from "@/Components/Buttons/NewGridItemButton.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
+import TaskManager from "@/Features/Admin/TaskManager/TaskManager.vue";
 import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 
 const props = defineProps<{
@@ -178,9 +185,9 @@ const additionalDropdownOptions: DropdownOption[] = [
     label: "Pridėti darbotvarkės punktų",
     key: "add-agenda-item",
     icon: () => <NIcon component={Icons.AGENDA_ITEM} />,
-    onClick: () => {
-      showModal.value = true;
-    },
+    // onClick: () => {
+    //   showModal.value = true;
+    // },
   },
 ];
 

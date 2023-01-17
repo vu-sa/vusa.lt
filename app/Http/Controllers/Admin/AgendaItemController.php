@@ -57,6 +57,11 @@ class AgendaItemController extends ResourceController
                 
                 $institutionManagers = GetInstitutionManagers::execute($institution);
 
+                // get institution users and merge with institution managers
+                $institutionUsers = $institution->users;
+
+                $institutionManagers = $institutionManagers->merge($institutionUsers);
+
                 TaskCreator::createMoreAgendaItemsUndefined($institutionManagers, $meeting);
             }
         }

@@ -28,7 +28,7 @@ class DutyController extends ResourceController
     {
         $this->authorize('viewAny', [Duty::class, $this->authorizer]);
         
-        $search = request()->input('title');
+        $search = request()->input('text');
 
         $duties = $this->indexer->execute(Duty::class, $search, 'name', $this->authorizer, true);
 
