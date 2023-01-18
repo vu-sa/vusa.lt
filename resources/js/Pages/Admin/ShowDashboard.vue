@@ -1,14 +1,16 @@
 <template>
   <PageContent>
-    <section id="tavo-institucijos">
-      <h2>Tavo institucijos</h2>
-      <div class="flex flex-wrap gap-4">
+    <section id="tavo-institucijos" class="mt-4">
+      <h1>Tavo institucijos</h1>
+      <div class="mt-2 flex flex-wrap gap-4">
         <InstitutionCard
           v-for="institution in institutions"
           :key="institution.id"
           :institution="institution"
+          style="min-width: 400px; max-width: 500px"
           :duties="duties"
           :is-padalinys="institution.alias === institution.padalinys.alias"
+          @click="router.visit(route('institutions.show', institution.id))"
         />
       </div>
     </section>
@@ -70,6 +72,7 @@
 <script setup lang="tsx">
 import { ExternalLinkSquareAlt } from "@vicons/fa";
 import { NAnchor, NAnchorLink, NButton, NIcon } from "naive-ui";
+import { router } from "@inertiajs/vue3";
 
 import InstitutionCard from "@/Components/Cards/InstitutionCard.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";

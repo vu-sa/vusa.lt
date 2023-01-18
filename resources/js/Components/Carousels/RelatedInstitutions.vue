@@ -1,7 +1,6 @@
 <template>
-  <!-- <NCarousel :slides-per-view="4" :space-between="20"> -->
   <!-- Outgoing Direct -->
-  <div class="flex flex-row gap-2">
+  <div class="flex flex-row flex-wrap gap-4">
     <InstitutionCard
       v-for="relationship in institution.relatedInstitutions.outgoingDirect"
       :key="relationship.pivot.related_model_id"
@@ -57,11 +56,10 @@
       </InstitutionCard>
     </template>
   </div>
-  <!-- </NCarousel> -->
 </template>
 
 <script setup lang="tsx">
-import { NCarousel, NIcon, NTag } from "naive-ui";
+import { NIcon } from "naive-ui";
 import {
   PersonArrowLeft24Regular,
   PersonArrowRight24Regular,

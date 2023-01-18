@@ -120,6 +120,9 @@ const handleAgendaItemsFormSubmit = (agendaItems: Record<string, any>) => {
     .post(route("meetings.store"), {
       // after success, submit agenda items
       onSuccess: (page) => {
+        if (page.props.flash.data.id === undefined) {
+          return;
+        }
         agendaItemsFormToSubmit
           .transform((data) => ({
             ...data,
@@ -127,7 +130,6 @@ const handleAgendaItemsFormSubmit = (agendaItems: Record<string, any>) => {
           }))
           .post(route("agendaItems.store"), {
             onSuccess: () => {
-              loading.value = false;
               showMeetingForm.value = false;
               meetingForm.value = null;
               agendaItemsForm.value = null;
@@ -136,6 +138,9 @@ const handleAgendaItemsFormSubmit = (agendaItems: Record<string, any>) => {
           });
       },
       preserveScroll: true,
+      onFinish: () => {
+        loading.value = false;
+      },
     });
 };
 </script>

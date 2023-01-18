@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\Enums\PermissionScopeEnum;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\RelationshipService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -68,9 +69,22 @@ class ModelPolicy {
                 $permissableModels = $permissableDuties->load($relationFromDuties)->pluck($relationFromDuties)->flatten();
             }
 
-            if ($permissableModels->contains($model)) {
+            if ($permissableModels->contains('id', $model->id)) {
                 return true;
-            };
+            }
+
+            // only works for institutions for now
+            // check model relations if institution
+            // TODO 
+            if ($this->pluralModelName === 'institutions') {
+                $institutions = new Collection(RelationshipService::getRelatedInstitutions($model));
+
+                // check if any element exists in relations array, then return true
+                // relations array consists of 4 collections of models, so we need to flatten it
+                if ($institutions->intersect((new Collection($permissableModels)))->isNotEmpty()) {
+                    return true;
+                }
+            }
         }
 
         $padalinysRelation = $hasManyPadalinys ? 'padaliniai' : 'padalinys';

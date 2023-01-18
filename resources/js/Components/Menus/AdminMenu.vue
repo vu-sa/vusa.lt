@@ -80,6 +80,13 @@ const menuOptions = computed(() => [
     icon: () => {
       return <NIcon component={HatGraduation24Regular}></NIcon>;
     },
+    show:
+      auth?.can.index.goal ||
+      auth?.can.index.goalGroup ||
+      auth?.can.index.doing ||
+      auth?.can.index.institution ||
+      auth?.can.index.matter ||
+      auth?.can.index.meeting,
     children: [
       {
         label: () => {
@@ -206,6 +213,14 @@ const menuOptions = computed(() => [
     icon: () => {
       return <NIcon component={TabDesktopNewPage20Regular}></NIcon>;
     },
+    show:
+      auth?.can.index.page ||
+      auth?.can.index.news ||
+      auth?.can.index.mainPage ||
+      auth?.can.index.navigation ||
+      auth?.can.index.banner ||
+      auth?.can.index.file ||
+      auth?.can.index.calendar,
     children: [
       {
         label: () => {

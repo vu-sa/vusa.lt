@@ -6,11 +6,10 @@
     @select="handleSelect"
   >
     <NButton
-      :size="small ? 'small' : 'medium'"
+      :size="small ? 'tiny' : 'small'"
       :disabled="disabled"
       circle
-      :tertiary="!small"
-      :quaternary="small"
+      quaternary
       @click.stop
       ><template #icon
         ><NIcon :component="MoreHorizontal24Filled"></NIcon></template

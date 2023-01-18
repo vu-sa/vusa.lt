@@ -1,10 +1,9 @@
 <template>
   <NCard
     hoverable
+    :size="size"
     as="button"
-    style="min-width: 400px; max-width: 500px"
     class="flex-1 cursor-pointer shadow-sm"
-    @click="router.visit(route('institutions.show', institution.id))"
   >
     <template #cover>
       <img
@@ -54,6 +53,7 @@
     <InstitutionAvatarGroup
       v-if="institution.users"
       :users="institution.users"
+      :size="size === 'small' ? 32 : 40"
     />
     <slot></slot>
     <template #footer>
@@ -61,7 +61,7 @@
         <NTag
           v-for="type in institution.types"
           :key="type.id"
-          size="small"
+          :size="size ? 'tiny' : 'small'"
           :bordered="false"
         >
           {{ type.title }}
@@ -83,6 +83,7 @@ const props = defineProps<{
   institution: App.Entities.Institution;
   isPadalinys?: boolean;
   showLastMeeting?: boolean;
+  size?: "small" | "medium" | "large";
   duties?: App.Entities.Duty[];
 }>();
 

@@ -18,7 +18,7 @@
       @click="back"
     >
       <template #icon>
-        <NIcon size="28" :component="ArrowLeft24Filled"
+        <NIcon size="28" :component="ChevronLeft24Filled"
       /></template>
     </NButton>
     <h1 class="mb-0 whitespace-nowrap">
@@ -58,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { AddCircle32Regular, ArrowLeft24Filled } from "@vicons/fluent";
+import { AddCircle32Regular, ChevronLeft24Filled } from "@vicons/fluent";
 import { Head, Link } from "@inertiajs/vue3";
 import { NButton, NDivider, NIcon, NScrollbar } from "naive-ui";
 import { computed } from "vue";

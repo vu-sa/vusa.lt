@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Services\RelationshipService;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
@@ -68,22 +69,27 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function workspace(Institution $institution) {
+    public function workspace(Request $request) {
         
-        // check if institution has id
-        if (!is_null($institution->id)) {
-            $institution->load('meetings.comments');
-        } else {
-            $institution = null;
-        }
-
-        $user = User::with('institutions')->find(auth()->user()->id);
-
         return Inertia::render('Admin/ShowWorkspace', 
             [
-                'institution' => fn () => $institution,
-                'user' => fn () => $user,
+                'institution' => fn () => $this->getInstitutionForWorkspace($request),
+                // get all institutions where has relationship with auth user
+                'userInstitutions' => Institution::whereHas('users', function ($query) {
+                    $query->where('users.id', auth()->user()->id);
+                })->with('users')->withCount('meetings')->get()
             ]
         );
+    }
+
+    protected function getInstitutionForWorkspace(Request $request) {
+        $institution = null;
+        
+        // check if institution has id
+        if (!is_null($request->input('institution_id'))) {
+            $institution = Institution::with('meetings.comments', 'meetings.tasks', 'meetings.documents', 'users')->find($request->input('institution_id'));
+        }
+
+        return $institution;
     }
 }

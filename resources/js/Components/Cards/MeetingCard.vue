@@ -9,8 +9,20 @@
       }"
       hoverable
       as="button"
-      @click="router.visit(route('meetings.show', meeting.id))"
-      ><template #header>{{ meeting.title }}</template>
+      ><template #header
+        ><h4 class="mb-0 text-sm">
+          {{ formatStaticTime(new Date(meeting.start_time)) }}
+        </h4>
+        <div class="flex items-center gap-1 text-xs">
+          <NIcon :depth="3" size="10" :component="Clock24Filled" />
+          <time class="">{{
+            formatStaticTime(new Date(meeting.start_time), {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          }}</time>
+        </div></template
+      >
       <template #header-extra>
         <MoreOptionsButton
           small
@@ -20,22 +32,22 @@
       </template>
 
       <div class="text-xs text-zinc-700 dark:text-zinc-500">
-        <div class="flex items-center gap-1">
-          <NIcon :depth="3" size="10" :component="CalendarClock24Filled" />
-          <time class="">{{ meeting.created_at }}</time>
-        </div>
         <div class="flex gap-2">
           <div class="inline-flex items-center gap-1">
-            <NIcon :depth="3" size="10" :component="Document24Filled" />
-            <span>{{ meeting.documents.length }}</span>
+            <NIcon
+              :depth="3"
+              size="10"
+              :component="Icons.SHAREPOINT_DOCUMENT"
+            />
+            <span>{{ meeting.documents?.length }}</span>
           </div>
           <div class="inline-flex items-center gap-1">
-            <NIcon :depth="3" size="10" :component="Comment24Filled" />
-            <span>{{ meeting.comments.length }}</span>
+            <NIcon :depth="3" size="10" :component="Icons.COMMENT" />
+            <span>{{ meeting.comments?.length }}</span>
           </div>
           <div class="inline-flex items-center gap-1">
-            <NIcon :depth="3" size="10" :component="TaskListLtr20Regular" />
-            <span>{{ completedTasks }} / {{ meeting.tasks.length }}</span>
+            <NIcon :depth="3" size="10" :component="Icons.TASK" />
+            <span>{{ completedTasks }} / {{ meeting.tasks?.length }}</span>
           </div>
         </div>
       </div>
@@ -51,18 +63,18 @@
 <script setup lang="tsx">
 import {
   CalendarClock24Filled,
+  Clock24Filled,
   Comment24Filled,
   Document24Filled,
-  MailArrowUp24Filled,
   PeopleCommunity28Filled,
-  PersonChat24Regular,
-  Sparkle20Filled,
   TaskListLtr20Regular,
 } from "@vicons/fluent";
 import { NCard, NIcon, NSpin } from "naive-ui";
 import { computed, ref } from "vue";
 import { router } from "@inertiajs/vue3";
+import Icons from "@/Types/Icons/filled";
 
+import { formatStaticTime } from "@/Utils/IntlTime";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 
 const props = defineProps<{
@@ -79,37 +91,7 @@ const handleDelete = () => {
 };
 
 const icon = computed(() => {
-  let types = props.meeting.types;
-
-  if (types === undefined) {
-    return Sparkle20Filled;
-  }
-
-  if (
-    types?.some((type) => {
-      return type.title === "Posėdis";
-    })
-  ) {
-    return PeopleCommunity28Filled;
-  }
-
-  if (
-    types?.some((type) => {
-      return type.title === "Susitikimas";
-    })
-  ) {
-    return PersonChat24Regular;
-  }
-
-  if (
-    types?.some((type) => {
-      return type.title === "Laiškas";
-    })
-  ) {
-    return MailArrowUp24Filled;
-  }
-
-  return Sparkle20Filled;
+  return PeopleCommunity28Filled;
 });
 
 const completedTasks = computed(() => {

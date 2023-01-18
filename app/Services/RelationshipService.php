@@ -63,6 +63,18 @@ class RelationshipService
         ];
     }
 
+    public static function getRelatedInstitutions(Institution $institution) {
+        $relationships = self::getRelatedInstitutionRelations($institution);
+
+        $outgoingDirect = $relationships['outgoingDirect']->pluck('pivot.related_model');
+        $incomingDirect = $relationships['incomingDirect']->pluck('pivot.relationshipable');
+        $outgoingDirectByType = $relationships['outgoingByType']->pluck('pivot.related_model.institutions')->flatten(1);
+        $incomingDirectByType = $relationships['incomingByType']->pluck('pivot.relationshipable.institutions')->flatten(1);
+
+        // return eloquent collection of institutions unique
+        return $outgoingDirect->merge($incomingDirect)->merge($outgoingDirectByType)->merge($incomingDirectByType)->unique('id');
+    }
+
     public static function getAllRelatedInstitutions() {
         $institutionRelationshipables = collect(Relationshipable::where('relationshipable_type', Institution::class)->get(['relationshipable_id', 'related_model_id'])->toArray()); // OK
 

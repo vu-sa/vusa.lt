@@ -4,10 +4,11 @@
   <NConfigProvider :theme-overrides="themeOverrides">
     <div>
       <div
-        class="absolute -z-50 h-full w-full blur-[2px] brightness-50 saturate-50"
+        class="absolute -z-50 h-full w-full blur-[2px] brightness-[35%] saturate-50"
       >
         <NCarousel
           autoplay
+          :interval="3000"
           :show-dots="false"
           :transition-style="{ transitionDuration: '1500ms' }"
           effect="fade"
@@ -34,9 +35,9 @@
           <AppLogo class="hidden w-96 invert sm:block" />
         </div>
         <div
-          class="subtle-gray-gradient m-auto mt-0 flex h-fit w-fit flex-col items-center gap-4 rounded-md border border-zinc-700 p-4 text-zinc-700 shadow-xl sm:mt-auto sm:justify-center sm:p-16"
+          class="subtle-gray-gradient m-auto mt-0 flex h-fit w-fit flex-col items-center gap-4 rounded-lg from-zinc-100 to-white p-4 text-zinc-700 shadow-xl transition-shadow hover:shadow-zinc-900/90 sm:mt-auto sm:justify-center sm:p-12"
         >
-          <h2 class="text-zinc-700">Labas! 👋</h2>
+          <h1 class="font-bold text-zinc-700">Labas! 👋</h1>
           <AppLogo class="w-24 sm:hidden" />
 
           <p class="text-center text-xs text-zinc-600 sm:text-left">

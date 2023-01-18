@@ -23,7 +23,7 @@
 import { ref } from "vue";
 import { router } from "@inertiajs/vue3";
 
-import CommentPart from "@/Features/Admin/Workspace/CommentPart.vue";
+import CommentPart from "@/Features/Admin/CommentViewer/CommentViewer.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
 

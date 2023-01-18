@@ -1,5 +1,10 @@
 <template>
-  <NButton :disabled="!activities" tertiary circle @click="showModal = true"
+  <NButton
+    size="small"
+    :disabled="!activities"
+    quaternary
+    circle
+    @click="showModal = true"
     ><template #icon
       ><NIcon :component="DocumentOnePage24Regular"></NIcon></template
   ></NButton>

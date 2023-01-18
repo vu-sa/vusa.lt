@@ -28,6 +28,7 @@
       <NButton
         type="primary"
         size="small"
+        :disabled="disabled"
         :loading="loading"
         @click="$emit('submit')"
         ><template #icon><NIcon :component="Send20Filled"></NIcon></template
@@ -46,21 +47,24 @@ import {
   TextItalic20Regular,
   TextUnderline20Regular,
 } from "@vicons/fluent";
-import { onBeforeUnmount, ref, watch } from "vue";
+import { computed, onBeforeUnmount, ref, watch } from "vue";
 import StarterKit from "@tiptap/starter-kit";
 import TipTapLink from "@tiptap/extension-link";
 import TipTapMarkButton from "./TipTap/TipTapMarkButton.vue";
 import Underline from "@tiptap/extension-underline";
 
 const props = defineProps<{
-  text: string;
+  text: string | null;
   loading: boolean;
+  disabled: boolean;
 }>();
 
 // :disabled="editor?.getHTML() == '<p></p>'"
 
 const emit = defineEmits(["update:text", "submit"]);
 const text = ref(props.text);
+const loading = ref(props.loading);
+const disabled = computed(() => props.disabled || loading.value);
 
 const editor = useEditor({
   editorProps: {
@@ -82,7 +86,7 @@ const editor = useEditor({
   },
 });
 
-watch(props.loading, (value) => {
+watch(loading, (value) => {
   if (value) {
     editor?.value?.blur();
   } else {

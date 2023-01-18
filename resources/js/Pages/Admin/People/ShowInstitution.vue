@@ -21,7 +21,7 @@
         @edit-click="router.visit(route('institutions.edit', institution.id))"
       />
     </template>
-    <div class="mb-16 flex min-h-[16em] gap-4 py-2">
+    <div class="mb-16 flex min-h-[16em] gap-4">
       <LastMeetingCard
         :last-meeting="institution?.lastMeeting"
         :institution="institution"
@@ -38,7 +38,7 @@
     </div>
     <div class="mt-2">
       <h3>Susijusios institucijos</h3>
-      <RelatedModelCarousel :institution="institution"></RelatedModelCarousel>
+      <RelatedInstitutions :institution="institution"></RelatedInstitutions>
     </div>
   </ShowPageLayout>
   <!-- <FileSelectDrawer
@@ -59,7 +59,7 @@ import InstitutionAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import LastMeetingCard from "@/Components/Cards/QuickContentCards/LastMeetingCard.vue";
 import MattersCardGrid from "@/Components/TabPaneContent/MattersCardGrid.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
-import RelatedModelCarousel from "@/Components/Carousels/RelatedModelCarousel.vue";
+import RelatedInstitutions from "@/Components/Carousels/RelatedInstitutions.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
 import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 

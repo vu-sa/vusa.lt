@@ -27,7 +27,7 @@ class UserController extends ResourceController
         $this->authorize('viewAny', [User::class, $this->authorizer]);
         
         // For search
-        $name = request()->input('name');
+        $name = request()->input('text');
 
         $users = User::
         when(!is_null($name), function ($query) use ($name) {

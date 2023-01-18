@@ -66,7 +66,6 @@
 
 <script setup lang="ts">
 import { File, FilePdf, FileWord } from "@vicons/fa";
-import { router } from "@inertiajs/vue3";
 import {
   NButton,
   NDrawer,
@@ -77,9 +76,10 @@ import {
   NTag,
 } from "naive-ui";
 import { computed, ref, watch } from "vue";
+import { router } from "@inertiajs/vue3";
 
 import { fileSize } from "@/Utils/Calc";
-import CommentPart from "@/Features/Admin/Workspace/CommentPart.vue";
+import CommentPart from "@/Features/Admin/CommentViewer/CommentViewer.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 // define emit for close

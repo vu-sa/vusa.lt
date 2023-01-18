@@ -28,7 +28,7 @@ class InstitutionPolicy extends ModelPolicy
     public function view(User $user, Institution $institution, Authorizer $authorizer)
     {
         $this->authorizer = $authorizer;
-        
+
         if ($this->commonChecker($user, $institution, 'read', 'institution', false)) {
             return true;
         }

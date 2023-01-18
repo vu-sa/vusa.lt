@@ -27,10 +27,10 @@
 <script setup lang="tsx">
 import { NCollapse, NCollapseItem, NDivider } from "naive-ui";
 
-import * as Descriptions from "@/Components/EntityDescriptions/DescriptionComponents";
+import * as Descriptions from "@/Types/EntityDescriptions/DescriptionComponents";
 import { ModelEnum } from "@/Types/enums";
 import { pluralizeModels } from "@/Utils/String";
-import EntityDescription from "@/Components/EntityDescriptions/EntityDescription.vue";
+import EntityDescription from "@/Types/EntityDescriptions/EntityDescription.vue";
 import Icons from "@/Types/Icons/regular";
 import PermissionTable from "@/Features/Admin/PermissionTable/PermissionTable.vue";
 

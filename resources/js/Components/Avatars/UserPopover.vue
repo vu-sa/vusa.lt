@@ -14,9 +14,9 @@
     </template>
     <img v-if="photo" class="w-full rounded-t-sm" :src="photo" alt="" />
     <div
-      class="flex flex-col gap-2 rounded-sm bg-white p-2 text-xs text-zinc-500 dark:bg-zinc-700 dark:text-zinc-200"
+      class="flex flex-col gap-2 rounded-sm bg-white p-2 text-xs text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200"
     >
-      <span class="font-bold text-zinc-100">{{ user.name }}</span>
+      <span class="font-bold dark:text-zinc-100">{{ user.name }}</span>
       <a v-if="user.phone" :href="`tel:${user.phone}`">{{ user.phone }}</a>
     </div>
   </NPopover>

@@ -29,7 +29,7 @@
     </div>
     <NLayout class="mt-16" has-sider>
       <NLayoutSider
-        class="subtle-gray-gradient ml-4 mt-4 h-fit rounded-md from-white shadow-md"
+        class="subtle-gray-gradient my-4 ml-4 h-fit rounded-md from-white shadow-md"
         collapse-mode="width"
         :collapsed-width="isMobile ? 0 : 76"
         :width="220"
