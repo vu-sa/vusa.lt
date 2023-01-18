@@ -60,9 +60,9 @@ class OldSharepointController extends Controller
         // TODO: should consider a function instead, to get files from sharepoint ids
         $graph = new SharepointAppGraph();
         
-        $documents = SharepointDocument::find($request->documentIds);
+        $files = SharepointDocument::find($request->documentIds);
 
-        $sharepointFiles = $graph->collectSharepointFiles($documents);
+        $sharepointFiles = $graph->collectSharepointFiles($files);
 
         return response()->json($sharepointFiles);
     }
@@ -80,7 +80,7 @@ class OldSharepointController extends Controller
 
         $model = $modelType::find($modelId);
 
-        $sharepointFiles = $graph->collectSharepointFiles($model->documents);
+        $sharepointFiles = $graph->collectSharepointFiles($model->files);
 
         Cache::put('sharepoint_files_' . $modelType . '_' . $modelId, $sharepointFiles, 60 * 60);
 

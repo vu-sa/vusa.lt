@@ -14,4 +14,24 @@ class SharepointFile extends Model
     public $timestamps = false;
 
     protected $guarded = [];
+
+    public function fileable()
+    {
+        return $this->morphTo();
+    }
+
+    public function types()
+    {
+        return $this->morphedByMany(Type::class, 'fileable');
+    }
+
+    public function institutions()
+    {
+        return $this->morphedByMany(Institution::class, 'fileable');
+    }
+
+    public function meetings()
+    {
+        return $this->morphedByMany(Meeting::class, 'fileable');
+    }
 }

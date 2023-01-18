@@ -90,10 +90,10 @@ class TypeController extends ResourceController
         
         $sharepointFiles = [];
 
-        if ($type->documents->count() > 0) {
+        if ($type->files->count() > 0) {
             $graph = new SharepointAppGraph();
         
-            $sharepointFiles = $graph->collectSharepointFiles($type->documents);
+            $sharepointFiles = $graph->collectSharepointFiles($type->files);
         }
         
         return Inertia::render('Admin/ModelMeta/EditType', [

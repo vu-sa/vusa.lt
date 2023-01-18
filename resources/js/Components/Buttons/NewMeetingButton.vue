@@ -41,26 +41,19 @@
         @submit="handleAgendaItemsFormSubmit"
       />
     </FadeTransition>
-    <div class="absolute bottom-8 right-12">
-      <FadeTransition>
-        <NButton
-          v-if="!showAlert && current === 2"
-          type="tertiary"
-          color="#bbbbbb"
-          text
-          @click="showAlert = true"
-          ><template #icon
-            ><NIcon size="48" :component="Question24Regular" /></template
-        ></NButton>
-      </FadeTransition>
-    </div>
+    <FadeTransition>
+      <ModalHelperButton
+        v-if="!showAlert && current === 2"
+        @click="showAlert = true"
+      />
+    </FadeTransition>
   </CardModal>
 </template>
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
 import { NButton, NIcon, NStep, NSteps } from "naive-ui";
-import { PeopleTeamAdd24Filled, Question24Regular } from "@vicons/fluent";
+import { PeopleTeamAdd24Filled } from "@vicons/fluent";
 import { ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
@@ -71,6 +64,7 @@ import CardModal from "@/Components/Modals/CardModal.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import IconsRegular from "@/Types/Icons/regular";
 import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
+import ModalHelperButton from "./ModalHelperButton.vue";
 
 const props = defineProps<{
   institution: App.Entities.Institution;

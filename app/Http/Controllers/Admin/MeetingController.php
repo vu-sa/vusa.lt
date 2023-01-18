@@ -71,10 +71,10 @@ class MeetingController extends ResourceController
         
         $sharepointFiles = [];
         
-        if ($meeting->documents()->count() > 0) {
+        if ($meeting->files()->count() > 0) {
             $graph = new SharepointAppGraph();
         
-            $sharepointFiles = $graph->collectSharepointFiles($meeting->documents);
+            $sharepointFiles = $graph->collectSharepointFiles($meeting->files);
         }
         
         $meeting->load('institutions', 'tasks', 'activities.causer', 'comments', 'agendaItems', 'tasks.taskable', 'tasks.users');

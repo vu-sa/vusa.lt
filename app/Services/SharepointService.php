@@ -9,6 +9,7 @@ use Microsoft\Graph\Generated\Drives\Item\Items\Item\Children\ChildrenRequestBui
 use Microsoft\Graph\Generated\Models\Drive;
 use Microsoft\Graph\Generated\Models\DriveItem;
 use Microsoft\Graph\Generated\Models\DriveItemCollectionResponse;
+use Microsoft\Graph\Generated\Models\File;
 use Microsoft\Graph\GraphRequestAdapter;
 use Microsoft\Graph\GraphServiceClient;
 use Microsoft\Kiota\Authentication\Oauth\ClientCredentialContext;
@@ -86,7 +87,7 @@ class SharepointService {
         return(new Exception('General folder not found'));
     }
 
-    public function getDriveItemId_General($driveId = null) {
+    public function getDriveItemId_General($driveId = null): string {
         $driveId = $driveId ?? $this->getDriveId();
         
         return Cache::remember('ms_drive_item_id_for_drive_' . $driveId . '_general_folder', 3500, function () use ($driveId) {
@@ -158,5 +159,25 @@ class SharepointService {
         }
 
         return $parsedDriveItems;
+    }
+
+    public function uploadFile($driveId = null, $driveItem = null, $file, $listItemData) {
+        $driveId = $driveId ?? $this->getDriveId();
+        $driveItemId = $driveItemId ?? $this->getDriveItemId_General();
+
+        $driveItem = new DriveItem();
+        $driveItem->setName($file->getClientOriginalName());
+        $driveItem->setFile(new File());
+        $driveItem->getFile()->setMimeType($file->getMimeType());
+        $driveItem->setAdditionalData([
+            'listItem' => [
+                'fields' => $listItemData
+            ]
+        ]);
+
+        $response = $this->graphServiceClient
+            ->drivesById($driveId)
+            ->itemsById($driveItemId)
+            ->createUploadSession()->post($driveItem);
     }
 }

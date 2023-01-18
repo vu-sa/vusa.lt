@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Traits\HasContentRelationships;
+use App\Models\Traits\HasSharepointFiles;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Activitylog\LogOptions;
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +12,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Type extends Model
 {
-    use HasFactory, HasContentRelationships, LogsActivity, SoftDeletes;
+    use HasFactory, HasContentRelationships, HasSharepointFiles, LogsActivity, SoftDeletes;
 
     protected $guarded = [];
 
@@ -38,10 +39,5 @@ class Type extends Model
     public function doings()
     {
         return $this->morphedByMany(Doing::class, 'typeable');
-    }
-
-    public function documents()
-    {
-        return $this->morphMany(SharepointFile::class, 'documentable');
     }
 }

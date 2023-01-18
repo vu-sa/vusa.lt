@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Institution;
 use App\Models\SharepointFile;
+use App\Models\Type;
 use App\Services\SharepointService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -90,5 +92,14 @@ class SharepointController extends Controller
     public function destroy(SharepointFile $sharepointFile)
     {
         //
+    }
+
+    // get potential fileables, usually when none specified
+    public function getPotentialFileables(Request $request)
+    {
+        return response()->json([
+            'institutions' => Institution::with('meetings:meetings.id,start_time')->get()->map->only('id', 'name', 'meetings'),
+            'types' => Type::all()->map->only('id', 'title'),
+        ]);
     }
 }

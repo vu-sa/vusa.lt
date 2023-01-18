@@ -87,7 +87,7 @@ class DashboardController extends Controller
         
         // check if institution has id
         if (!is_null($request->input('institution_id'))) {
-            $institution = Institution::with('meetings.comments', 'meetings.tasks', 'meetings.documents', 'users')->find($request->input('institution_id'));
+            $institution = Institution::with('meetings.comments', 'meetings.tasks', 'meetings.files', 'users')->find($request->input('institution_id'));
         }
 
         return $institution;

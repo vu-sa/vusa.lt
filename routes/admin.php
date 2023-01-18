@@ -70,5 +70,6 @@ Route::get('sharepoint', [SharepointController::class, 'index'])->name('sharepoi
 Route::post('sharepoint/addFile', [SharepointController::class, 'addFile'])->name('sharepoint.addFile');
 Route::post('sharepoint/getFiles', [SharepointController::class, 'getFilesFromDocumentIds'])->name('sharepoint.getFiles');
 Route::delete('sharepoint/{id}', [SharepointController::class, 'destroyFile'])->name('sharepoint.destroy');
+Route::get('sharepoint/getPotentialFileables', [SharepointController::class, 'getPotentialFileables'])->name('sharepoint.getPotentialFileables');
 
 Route::post('/logout', [UserController::class, 'logout'])->name('logout');

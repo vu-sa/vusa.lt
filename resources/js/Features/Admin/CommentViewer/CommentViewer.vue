@@ -1,5 +1,5 @@
 <template>
-  <div class="grid w-full grid-rows-[minmax(300px,_500px)_155px]">
+  <div class="grid w-full grid-rows-[minmax(200px,_500px)_155px]">
     <div
       v-if="model?.comments && model.comments.length > 0"
       class="rounded-sm border border-zinc-300 px-2 pt-2 dark:border-zinc-700"

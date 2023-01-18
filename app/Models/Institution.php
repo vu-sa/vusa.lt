@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasContentRelationships;
+use App\Models\Traits\HasSharepointFiles;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,7 +16,7 @@ use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Institution extends Model
 {
-    use HasFactory, HasContentRelationships, HasRelationships, HasUlids, SoftDeletes, LogsActivity, Searchable, HasComments;
+    use HasFactory, HasSharepointFiles, HasContentRelationships, HasRelationships, HasUlids, SoftDeletes, LogsActivity, Searchable, HasComments;
 
     protected $guarded = [];
 
@@ -64,11 +65,6 @@ class Institution extends Model
     public function users() 
     {
         return $this->hasManyDeepFromRelations($this->duties(), (new Duty)->users());
-    }
-
-    public function documents()
-    {
-        return $this->morphMany(SharepointFile::class, 'documentable');
     }
 
     public function toSearchableArray()

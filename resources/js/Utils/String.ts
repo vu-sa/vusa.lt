@@ -18,3 +18,23 @@ export const pluralizeModels = (word: string, forPermissions = true) => {
 
   return word + "s";
 };
+
+export const genitivize = (name: string | null) => {
+  if (name === null) {
+    return "";
+  }
+
+  return name
+    .replace(/a$/, "os")
+    .replace(/as$/, "o")
+    .replace(/iai$/, "ių")
+    .replace(/ė$/, "ės");
+};
+
+export const splitFileNameAndExtension = (fileName: string) => {
+  const parts = fileName.split(".");
+  const extension = "." + parts.pop();
+  const name = parts.join(".");
+
+  return { name, extension };
+};

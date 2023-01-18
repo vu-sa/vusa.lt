@@ -49,20 +49,6 @@
       </ol>
     </div>
     <NDivider />
-    <div class="mt-4 flex items-center gap-4">
-      <h2 class="mb-0">Dokumentai</h2>
-      <NMessageProvider>
-        <FileUploaderBasicButton
-          @click="showFileUploadModal = true"
-        ></FileUploaderBasicButton>
-        <FileUploader
-          :show="showFileUploadModal"
-          :sharepoint-file-type-options="sharepointFileTypeOptions"
-          :content-model="contentModel"
-          @close="showFileUploadModal = false"
-        ></FileUploader>
-      </NMessageProvider>
-    </div>
     <div class="m-4 flex max-w-4xl flex-wrap gap-6">
       <FileButton
         v-for="document in sharepointFiles"
@@ -94,14 +80,7 @@
 </template>
 
 <script setup lang="tsx">
-import {
-  type DropdownOption,
-  NButton,
-  NDivider,
-  NIcon,
-  NMessageProvider,
-  NTag,
-} from "naive-ui";
+import { type DropdownOption, NButton, NDivider, NIcon, NTag } from "naive-ui";
 import { Edit24Filled, PeopleTeam24Filled } from "@vicons/fluent";
 import { computed, ref } from "vue";
 
@@ -111,8 +90,6 @@ import { router } from "@inertiajs/vue3";
 import AgendaItemForm from "@/Components/AdminForms/AgendaItemForm.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import FileButton from "@/Features/Admin/SharepointFileManager/Viewer/FileButton.vue";
-import FileUploader from "@/Features/Admin/SharepointFileManager/FileUploader.vue";
-import FileUploaderBasicButton from "@/Features/Admin/SharepointFileManager/FileUploaderBasicButton.vue";
 import Icons from "@/Types/Icons/regular";
 import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
@@ -129,7 +106,6 @@ const props = defineProps<{
 
 const showMeetingModal = ref(false);
 const showAgendaItemModal = ref(false);
-const showFileUploadModal = ref(false);
 
 const selectedDocument = ref<App.Entities.SharepointFile | null>(null);
 const selectedAgendaItem = ref<App.Entities.AgendaItem | null>(null);
@@ -142,13 +118,6 @@ const meetingTitle = `${formatStaticTime(new Date(props.meeting.start_time), {
   month: "long",
   day: "2-digit",
 })} ${mainInstitution.name} posėdis`;
-
-const contentModel = computed(() => ({
-  id: props.meeting.id,
-  title: props.meeting.title,
-  type: "App\\Models\\Meeting",
-  modelTypes: props.meeting.types,
-}));
 
 const sharepointFileTypeOptions = computed(() => {
   return modelTypes.sharepointFile.map((type) => ({

@@ -3,8 +3,11 @@
     class="mt-4 rounded-md border border-zinc-200 p-8 shadow-sm dark:border-zinc-50/10"
   >
     <div class="flex h-8">
-      <div class="w-fit">
+      <div class="flex w-fit gap-2">
         <FuzzySearcher :data="files" @search:results="updateResults" />
+        <NButton circle @click="showFileUploader = true"
+          ><template #icon><NIcon :component="Add24Filled"></NIcon></template
+        ></NButton>
       </div>
       <NButtonGroup class="ml-auto">
         <NButton
@@ -44,15 +47,20 @@
       :file="selectedFile"
       @hide:drawer="selectedFile = null"
     ></FileDrawer>
+    <FileUploader
+      :show="showFileUploader"
+      @close="showFileUploader = false"
+    ></FileUploader>
   </div>
 </template>
 
 <script setup lang="tsx">
-import { AppsList20Filled, Grid20Filled } from "@vicons/fluent";
+import { Add24Filled, AppsList20Filled, Grid20Filled } from "@vicons/fluent";
 import { NButton, NButtonGroup, NDivider, NIcon } from "naive-ui";
 import { computed, ref } from "vue";
 
 import FileDrawer from "./FileDrawer.vue";
+import FileUploader from "../Uploader/FileUploader.vue";
 import FileViewer from "./FileGridTable.vue";
 import FilterPopselect from "@/Components/Buttons/FilterPopselect.vue";
 import FuzzySearcher from "./FuzzySearcher.vue";
@@ -66,6 +74,7 @@ const props = defineProps<{
 }>();
 
 const loading = ref(false);
+const showFileUploader = ref(false);
 const viewMode = ref("grid");
 const selectedFile = ref<MyDriveItem | null>(null);
 const contentTypeFilter = ref<string | null>(null);
@@ -88,7 +97,7 @@ const searchResults = ref<Array<{
 const updateResults = (searchItems) => {
   // if (searchResults?.value?.length === 0) {
   //   loading.value = false;
-  //   console.log("No documents found.");
+  //   console.log("No files found.");
   //   return;
   // }
 

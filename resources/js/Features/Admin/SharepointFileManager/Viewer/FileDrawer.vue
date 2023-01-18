@@ -57,6 +57,7 @@
             </tbody>
           </NTable>
           <CommentPart
+            class="h-48"
             :commentable_type="'sharepoint_file'"
             :text="currentCommentText"
             :model="file"

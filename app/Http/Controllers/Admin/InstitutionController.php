@@ -87,16 +87,16 @@ class InstitutionController extends ResourceController
     {
         $this->authorize('view', [Institution::class, $institution, $this->authorizer]);
         
-        $institution->load('padalinys', 'types.documents', 'users', 'matters', 'meetings', 'activities.causer');      
+        $institution->load('padalinys', 'types.files', 'users', 'matters', 'meetings', 'activities.causer');      
         
         $institution->users = $institution->users->unique('id')->values();
         // get duties where belongs to same padalinys as institution, and where has permissions
         $sharepointFiles = [];        
         
-        if ($institution->documents->count() > 0) {
+        if ($institution->files->count() > 0) {
             $graph = new SharepointAppGraph();
         
-            $sharepointFiles = $graph->collectSharepointFiles($institution->documents);
+            $sharepointFiles = $graph->collectSharepointFiles($institution->files);
         }
 
         return Inertia::render('Admin/People/ShowInstitution', [

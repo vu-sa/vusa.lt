@@ -8,6 +8,7 @@ use App\Models\Traits\HasComments;
 use Illuminate\Support\Carbon;
 use App\Models\Comment;
 use App\Models\Pivots\Doable;
+use App\Models\Pivots\SharepointFileable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
@@ -51,11 +52,6 @@ class Doing extends Model
     public function types()
     {
         return $this->morphToMany(Type::class, 'typeable');
-    }
-
-    public function documents()
-    {
-        return $this->morphMany(SharepointFile::class, 'documentable');
     }
 
     public function tasks()

@@ -19,6 +19,7 @@ export const modelTypes = {
     uppercase(ModelEnum.TYPE),
   ],
   sharepointFile: [
+    "Ataskaitos",
     "Metodinė medžiaga",
     "Protokolai",
     "Pristatymai",
