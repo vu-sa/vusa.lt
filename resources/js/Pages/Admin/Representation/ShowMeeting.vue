@@ -75,7 +75,7 @@
       >
     </div>
     <NDivider />
-    <h3>Užduotys</h3>
+    <h2>Susitikimo užduotys</h2>
     <TaskManager
       :taskable="{ id: meeting.id, type: 'App\\Models\\Meeting' }"
       :tasks="meeting.tasks"

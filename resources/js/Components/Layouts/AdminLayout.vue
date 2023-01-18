@@ -17,9 +17,14 @@
             </NInput>
           </div> -->
       <div class="mt-1 flex items-center gap-8">
-        <Link :href="route('workspace')"
-          ><NButton secondary>Workspace</NButton></Link
-        >
+        <Link class="mt-2" :href="route('workspace')"
+          ><NButton text
+            ><template #icon
+              ><NIcon
+                :size="24"
+                :component="Board24Regular"
+              ></NIcon></template></NButton
+        ></Link>
         <TaskIndicatorButton class="mt-0.5" />
         <NNotificationProvider placement="bottom-right"
           ><NMessageProvider><NotificationBell class="mt-1" /></NMessageProvider
@@ -73,6 +78,7 @@ import {
   type MessageReactive,
   NButton,
   NDivider,
+  NIcon,
   NLayout,
   NLayoutContent,
   NLayoutSider,
@@ -87,6 +93,7 @@ import { computed, onMounted, watch } from "vue";
 import { ref } from "vue";
 import { useOnline, useStorage } from "@vueuse/core";
 
+import { Board24Regular } from "@vicons/fluent";
 import AdminMenu from "@/Components/Menus/AdminMenu.vue";
 import AppLogo from "@/Components/AppLogo.vue";
 import Changelog from "@/Components/Cards/ChangelogCard.vue";

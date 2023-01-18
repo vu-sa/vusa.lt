@@ -2,7 +2,7 @@
   <PageContent>
     <section id="tavo-institucijos" class="mt-4">
       <h1>Tavo institucijos</h1>
-      <div class="mt-2 flex flex-wrap gap-4">
+      <div class="mt-4 flex flex-wrap gap-4 pr-8">
         <InstitutionCard
           v-for="institution in institutions"
           :key="institution.id"

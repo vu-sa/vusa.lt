@@ -36,7 +36,7 @@
             <AppLogo class="hidden w-96 invert sm:block" />
           </div>
           <div
-            class="subtle-gray-gradient m-auto mt-0 flex h-fit w-fit flex-col items-center gap-4 rounded-lg from-zinc-100 to-white p-4 text-zinc-700 shadow-xl transition-shadow hover:shadow-zinc-900/90 sm:mt-auto sm:justify-center sm:p-12"
+            class="subtle-gray-gradient m-auto mt-0 flex h-auto w-fit flex-col items-center gap-4 rounded-lg from-zinc-100 to-white p-4 text-zinc-700 shadow-xl transition-shadow duration-500 ease-in-out hover:shadow-zinc-900/90 sm:mt-auto sm:justify-center sm:p-12"
           >
             <h1 class="font-bold text-zinc-700">Labas! 👋</h1>
             <AppLogo class="w-24 sm:hidden" />
@@ -69,9 +69,7 @@
                 v-else
                 class="flex w-full flex-col gap-4 sm:w-96 sm:justify-center sm:pt-0"
               >
-                <div
-                  class="mt-6 w-full overflow-hidden bg-white px-6 py-4 shadow-lg"
-                >
+                <div class="mt-6 w-full overflow-hidden px-6 py-4">
                   <div v-if="hasErrors" class="mb-4">
                     <div class="font-medium text-vusa-red">
                       Kažkas ne taip...
