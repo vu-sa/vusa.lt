@@ -87,8 +87,6 @@ import { NCard, NIcon, NUpload, NUploadDragger } from "naive-ui";
 import { computed } from "vue";
 import { router } from "@inertiajs/vue3";
 
-import FileButton from "@/Components/Deprecated/FileButton.vue";
-import FolderButton from "@/Components/Deprecated/FolderButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 
 // Declare props

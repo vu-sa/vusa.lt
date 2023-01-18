@@ -28,123 +28,132 @@
           />
         </NCarousel>
       </div>
-      <div
-        class="grid min-h-screen justify-center p-4 sm:grid-cols-2 sm:grid-rows-none"
-      >
-        <div class="flex h-fit justify-center sm:h-auto">
-          <AppLogo class="hidden w-96 invert sm:block" />
-        </div>
+      <FadeTransition appear>
         <div
-          class="subtle-gray-gradient m-auto mt-0 flex h-fit w-fit flex-col items-center gap-4 rounded-lg from-zinc-100 to-white p-4 text-zinc-700 shadow-xl transition-shadow hover:shadow-zinc-900/90 sm:mt-auto sm:justify-center sm:p-12"
+          class="grid min-h-screen justify-center p-4 sm:grid-cols-2 sm:grid-rows-none"
         >
-          <h1 class="font-bold text-zinc-700">Labas! 👋</h1>
-          <AppLogo class="w-24 sm:hidden" />
+          <div class="flex h-fit justify-center sm:h-auto">
+            <AppLogo class="hidden w-96 invert sm:block" />
+          </div>
+          <div
+            class="subtle-gray-gradient m-auto mt-0 flex h-fit w-fit flex-col items-center gap-4 rounded-lg from-zinc-100 to-white p-4 text-zinc-700 shadow-xl transition-shadow hover:shadow-zinc-900/90 sm:mt-auto sm:justify-center sm:p-12"
+          >
+            <h1 class="font-bold text-zinc-700">Labas! 👋</h1>
+            <AppLogo class="w-24 sm:hidden" />
 
-          <p class="text-center text-xs text-zinc-600 sm:text-left">
-            <strong>mano.vusa.lt</strong> gali naudoti VU SA nariai.
-            <Link class="text-zinc-400 underline" :href="route('main.home')"
-              >Kaip tapti?</Link
-            >
-          </p>
-
-          <FadeTransition mode="out-in">
-            <div v-if="!useSimpleRegistration" class="mt-4 flex flex-col gap-4">
-              <MicrosoftButton />
-              <NDivider>Arba</NDivider>
-              <NButton
-                size="tiny"
-                text
-                quaternary
-                @click="useSimpleRegistration = true"
-                ><template #icon
-                  ><NIcon :component="Key24Filled"></NIcon></template
-                >Naudoti kitą prisijungimą</NButton
+            <p class="text-center text-xs text-zinc-600 sm:text-left">
+              <strong>mano.vusa.lt</strong> gali naudoti VU SA nariai.
+              <Link class="text-zinc-400 underline" :href="route('main.home')"
+                >Kaip tapti?</Link
               >
-            </div>
-            <div
-              v-else
-              class="flex w-full flex-col gap-4 sm:w-96 sm:justify-center sm:pt-0"
-            >
+            </p>
+
+            <FadeTransition mode="out-in">
               <div
-                class="mt-6 w-full overflow-hidden bg-white px-6 py-4 shadow-lg"
+                v-if="!useSimpleRegistration"
+                class="mt-4 flex flex-col gap-4"
               >
-                <div v-if="hasErrors" class="mb-4">
-                  <div class="font-medium text-vusa-red">Kažkas ne taip...</div>
-
-                  <ul class="mt-3 list-inside list-disc text-sm text-vusa-red">
-                    <li v-for="(error, key) in errors" :key="key">
-                      {{ error }}
-                    </li>
-                  </ul>
-                </div>
-
-                <div
-                  v-if="status"
-                  class="mb-4 text-sm font-medium text-green-600"
+                <MicrosoftButton />
+                <NDivider>Arba</NDivider>
+                <NButton
+                  size="tiny"
+                  text
+                  quaternary
+                  @click="useSimpleRegistration = true"
+                  ><template #icon
+                    ><NIcon :component="Key24Filled"></NIcon></template
+                  >Naudoti kitą prisijungimą</NButton
                 >
-                  {{ status }}
-                </div>
-
-                <NForm
-                  ref="formRef"
-                  :model="form"
-                  :rules="rules"
-                  @submit.prevent="submit"
-                >
-                  <NFormItem path="email">
-                    <NInput
-                      id="email"
-                      v-model:value="form.email"
-                      round
-                      placeholder="vusa@vusa.lt"
-                      :input-props="{ type: 'email' }"
-                      class="mt-1 block w-full"
-                      required
-                      autofocus
-                    />
-                    <template #label><strong>El. paštas</strong></template>
-                  </NFormItem>
-
-                  <NFormItem class="mt-4" path="password">
-                    <NInput
-                      id="password"
-                      v-model:value="form.password"
-                      round
-                      type="password"
-                      class="mt-1 block w-full"
-                      placeholder="*********"
-                      required
-                      autocomplete="current-password"
-                    />
-                    <template #label><strong>Slaptažodis</strong></template>
-                  </NFormItem>
-
-                  <div class="mt-4 flex items-center justify-between gap-4">
-                    <NButton
-                      size="small"
-                      secondary
-                      @click="useSimpleRegistration = false"
-                      ><template #icon
-                        ><NIcon
-                          :component="ArrowHookUpLeft24Regular"
-                        ></NIcon></template
-                      >Grįžti</NButton
-                    >
-                    <NButton
-                      size="small"
-                      attr-type="submit"
-                      :disabled="form.processing"
-                      :loading="form.processing"
-                    >
-                      Prisijungti
-                    </NButton>
-                  </div>
-                </NForm>
               </div>
-            </div>
-          </FadeTransition>
+              <div
+                v-else
+                class="flex w-full flex-col gap-4 sm:w-96 sm:justify-center sm:pt-0"
+              >
+                <div
+                  class="mt-6 w-full overflow-hidden bg-white px-6 py-4 shadow-lg"
+                >
+                  <div v-if="hasErrors" class="mb-4">
+                    <div class="font-medium text-vusa-red">
+                      Kažkas ne taip...
+                    </div>
+
+                    <ul
+                      class="mt-3 list-inside list-disc text-sm text-vusa-red"
+                    >
+                      <li v-for="(error, key) in errors" :key="key">
+                        {{ error }}
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div
+                    v-if="status"
+                    class="mb-4 text-sm font-medium text-green-600"
+                  >
+                    {{ status }}
+                  </div>
+
+                  <NForm
+                    ref="formRef"
+                    :model="form"
+                    :rules="rules"
+                    @submit.prevent="submit"
+                  >
+                    <NFormItem path="email">
+                      <NInput
+                        id="email"
+                        v-model:value="form.email"
+                        round
+                        placeholder="vusa@vusa.lt"
+                        :input-props="{ type: 'email' }"
+                        class="mt-1 block w-full"
+                        required
+                        autofocus
+                      />
+                      <template #label><strong>El. paštas</strong></template>
+                    </NFormItem>
+
+                    <NFormItem class="mt-4" path="password">
+                      <NInput
+                        id="password"
+                        v-model:value="form.password"
+                        round
+                        type="password"
+                        class="mt-1 block w-full"
+                        placeholder="*********"
+                        required
+                        autocomplete="current-password"
+                      />
+                      <template #label><strong>Slaptažodis</strong></template>
+                    </NFormItem>
+
+                    <div class="mt-4 flex items-center justify-between gap-4">
+                      <NButton
+                        size="small"
+                        secondary
+                        @click="useSimpleRegistration = false"
+                        ><template #icon
+                          ><NIcon
+                            :component="ArrowHookUpLeft24Regular"
+                          ></NIcon></template
+                        >Grįžti</NButton
+                      >
+                      <NButton
+                        size="small"
+                        attr-type="submit"
+                        :disabled="form.processing"
+                        :loading="form.processing"
+                      >
+                        Prisijungti
+                      </NButton>
+                    </div>
+                  </NForm>
+                </div>
+              </div>
+            </FadeTransition>
+          </div>
         </div>
-      </div>
+      </FadeTransition>
     </div>
   </NConfigProvider>
 </template>

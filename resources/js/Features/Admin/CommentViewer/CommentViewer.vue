@@ -1,12 +1,12 @@
 <template>
   <div class="grid w-full grid-rows-[minmax(300px,_500px)_155px]">
     <div
-      v-if="model?.comments"
+      v-if="model?.comments && model.comments.length > 0"
       class="rounded-sm border border-zinc-300 px-2 pt-2 dark:border-zinc-700"
       style="max-height: 500px"
     >
-      <NScrollbar ref="commentScroll" style="height: 100%" class="px-4">
-        <FadeTransitionGroup>
+      <NScrollbar ref="scrollContainer" style="height: 100%" class="px-4">
+        <div ref="commentContainer">
           <div
             v-for="comment in model?.comments"
             :key="comment.id"
@@ -32,10 +32,13 @@
             </div>
             <hr class="my-4 last:invisible dark:border-zinc-600" />
           </div>
-        </FadeTransitionGroup>
+        </div>
       </NScrollbar>
     </div>
-    <div v-else class="flex h-full w-full items-center justify-center">
+    <div
+      v-else
+      class="flex h-full w-full items-center justify-center border border-zinc-300"
+    >
       <p class="h-fit w-fit text-zinc-400">Komentarų nėra</p>
     </div>
 
@@ -55,7 +58,7 @@
 import { NScrollbar, type ScrollbarInst } from "naive-ui";
 import { formatRelativeTime } from "@/Utils/IntlTime";
 // intellisense hates 'ref' in this file
-import { ref, watch } from "vue";
+import { onUpdated, ref } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 import CommentTipTap from "./CommentTipTap.vue";
 import FadeTransitionGroup from "@/Components/Transitions/FadeTransitionGroup.vue";
@@ -73,16 +76,8 @@ const props = defineProps<{
 
 const loading = ref(false);
 const text = ref(null);
-const commentScroll = ref<ScrollbarInst | null>(null);
-
-console.log(!props.model);
-
-watch(
-  () => props.model?.comments,
-  (comments) => {
-    commentScroll.value?.scrollTo(0, commentScroll.value.scrollHeight);
-  }
-);
+const commentContainer = ref<HTMLElement | null>(null);
+const scrollContainer = ref<ScrollbarInst | null>(null);
 
 const submitComment = () => {
   loading.value = true;
@@ -105,4 +100,13 @@ const submitComment = () => {
     }
   );
 };
+
+onUpdated(() => {
+  if (!commentContainer.value || !scrollContainer.value) return;
+
+  scrollContainer.value?.scrollTo({
+    top: commentContainer.value?.scrollHeight,
+    behavior: "smooth",
+  });
+});
 </script>

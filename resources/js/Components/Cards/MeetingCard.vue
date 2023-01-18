@@ -61,14 +61,7 @@
 </template>
 
 <script setup lang="tsx">
-import {
-  CalendarClock24Filled,
-  Clock24Filled,
-  Comment24Filled,
-  Document24Filled,
-  PeopleCommunity28Filled,
-  TaskListLtr20Regular,
-} from "@vicons/fluent";
+import { Clock24Filled, PeopleCommunity28Filled } from "@vicons/fluent";
 import { NCard, NIcon, NSpin } from "naive-ui";
 import { computed, ref } from "vue";
 import { router } from "@inertiajs/vue3";

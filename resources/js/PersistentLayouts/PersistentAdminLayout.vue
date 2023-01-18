@@ -5,27 +5,24 @@
     :theme="isThemeDark ? darkTheme : undefined"
     :theme-overrides="isThemeDark ? darkThemeOverrides : themeOverrides"
   >
-    <component
+    <!-- <component
       :is="$page.props.app.env === 'local' ? NThemeEditor : 'div'"
       id="before-layout"
-    >
-      <NMessageProvider>
-        <Layout>
-          <!-- <FadeTransition> -->
-          <NScrollbar
-            id="main-scroll-container"
-            class="max-h-[calc(100vh-4rem)]"
+    > -->
+    <NMessageProvider>
+      <Layout>
+        <!-- <FadeTransition> -->
+        <NScrollbar id="main-scroll-container" class="max-h-[calc(100vh-4rem)]">
+          <main
+            class="grid max-w-7xl grid-cols-[1fr_minmax(250px,_400px)] items-start py-4 pb-8"
           >
-            <main
-              class="grid max-w-7xl grid-cols-[1fr_minmax(250px,_400px)] items-start py-4 pb-8"
-            >
-              <slot />
-            </main>
-          </NScrollbar>
-          <!-- </FadeTransition> -->
-        </Layout>
-      </NMessageProvider>
-    </component>
+            <slot />
+          </main>
+        </NScrollbar>
+        <!-- </FadeTransition> -->
+      </Layout>
+    </NMessageProvider>
+    <!-- </component> -->
   </NConfigProvider>
 </template>
 
@@ -48,9 +45,9 @@ import Layout from "@/Components/Layouts/AdminLayout.vue";
 const isThemeDark = ref(isDarkMode());
 const mounted = ref(false);
 
-const NThemeEditor = defineAsyncComponent(
-  () => import("naive-ui/lib/theme-editor/src/ThemeEditor")
-);
+// const NThemeEditor = defineAsyncComponent(
+//   () => import("naive-ui/lib/theme-editor/src/ThemeEditor")
+// );
 
 updateDarkMode(isThemeDark);
 

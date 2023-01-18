@@ -1,7 +1,7 @@
 <template>
   <AdminContentPage>
     <div
-      class="m-2 grid h-[calc(100vh-8rem)] w-full grid-cols-[250px_1fr] gap-x-4"
+      class="m-2 grid h-[calc(100vh-8rem)] w-full grid-cols-[275px_1fr] gap-x-4"
     >
       <NScrollbar class="rounded-sm">
         <FadeTransition mode="out-in">
@@ -69,12 +69,12 @@
 </template>
 
 <script setup lang="ts">
-import { NButton, NIcon, NScrollbar, NTree } from "naive-ui";
+import { NButton, NIcon, NScrollbar } from "naive-ui";
 import { computed, ref } from "vue";
 
 import { ChevronLeft24Filled } from "@vicons/fluent";
-import { Link, router } from "@inertiajs/vue3";
 import { formatStaticTime } from "@/Utils/IntlTime";
+import { router } from "@inertiajs/vue3";
 import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
 import CommentPart from "@/Features/Admin/CommentViewer/CommentViewer.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
