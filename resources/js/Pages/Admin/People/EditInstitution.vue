@@ -1,5 +1,6 @@
 <template>
   <PageContent
+    aside
     :title="institution.name ?? institution.short_name"
     :back-url="route('institutions.index')"
   >
@@ -23,7 +24,7 @@
     </UpsertModelLayout>
 
     <template #aside-card>
-      <NCard v-if="duties" class="subtle-gray-gradient h-fit max-w-md">
+      <NCard v-if="duties" class="subtle-gray-gradient">
         <strong>Šiuo metu institucijai priklauso šios pareigos:</strong>
         <TransitionGroup name="list" tag="ul" class="list-inside">
           <li v-for="duty in duties" :key="duty.id" class="gap-4">

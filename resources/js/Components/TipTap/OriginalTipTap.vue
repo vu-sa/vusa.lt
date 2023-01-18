@@ -210,7 +210,6 @@ import {
   // TextQuote20Filled,
 } from "@vicons/fluent";
 import { EditorContent, useEditor } from "@tiptap/vue-3";
-import { router } from "@inertiajs/vue3";
 import {
   NButton,
   NIcon,
@@ -221,6 +220,7 @@ import {
   createDiscreteApi,
 } from "naive-ui";
 import { onBeforeUnmount, ref } from "vue";
+import { router } from "@inertiajs/vue3";
 import { useDebounceFn } from "@vueuse/core";
 import Image from "@tiptap/extension-image";
 import StarterKit from "@tiptap/starter-kit";
@@ -230,7 +230,6 @@ import TableHeader from "@tiptap/extension-table-header";
 import TableRow from "@tiptap/extension-table-row";
 import TipTapLink from "@tiptap/extension-link";
 import Youtube from "@tiptap/extension-youtube";
-
 
 import CardModal from "@/Components/Modals/CardModal.vue";
 

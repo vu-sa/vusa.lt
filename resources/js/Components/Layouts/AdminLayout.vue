@@ -4,7 +4,7 @@
 
   <NLayout class="min-h-screen">
     <div
-      class="fixed z-50 flex w-full flex-row justify-between py-3 pr-8 dark:border-zinc-700"
+      class="fixed z-50 flex h-16 w-full flex-row justify-between border-b py-2 pr-8 dark:border-zinc-800"
     >
       <div class="invisible">
         <NButton secondary round @click="collapsed = !collapsed">Menu</NButton>
@@ -29,10 +29,10 @@
     </div>
     <NLayout class="mt-16" has-sider>
       <NLayoutSider
-        class="subtle-gray-gradient ml-4 mb-24 h-fit rounded-md from-white shadow-md"
+        class="subtle-gray-gradient ml-4 mt-4 h-fit rounded-md from-white shadow-md"
         collapse-mode="width"
-        :collapsed-width="isMobile ? 0 : 64"
-        :width="200"
+        :collapsed-width="isMobile ? 0 : 76"
+        :width="220"
         :collapsed="collapsed"
         show-trigger="bar"
         @collapse="collapsed = true"
@@ -41,7 +41,9 @@
         <a class="h-fit w-fit" href="/">
           <AppLogo class="mx-auto w-full p-2" />
         </a>
-        <AdminMenu :collapsed="collapsed" />
+        <NScrollbar class="max-h-[calc(100vh-20rem)] px-1.5"
+          ><AdminMenu :collapsed="collapsed"
+        /></NScrollbar>
         <NDivider />
 
         <div class="mb-4 flex justify-center gap-4 overflow-hidden">
@@ -58,10 +60,7 @@
           <Changelog />
         </NModal>
       </NLayoutSider>
-      <NLayoutContent
-        class="h-full min-h-full overflow-x-scroll"
-        content-style="padding: 0rem 3rem 2rem 3rem"
-      >
+      <NLayoutContent content-style="padding: 0rem 0rem 0rem 3rem">
         <NMessageProvider><slot /></NMessageProvider>
       </NLayoutContent>
     </NLayout>
@@ -80,6 +79,7 @@ import {
   NMessageProvider,
   NModal,
   NNotificationProvider,
+  NScrollbar,
   useMessage,
   // NThemeEditor,
 } from "naive-ui";

@@ -12,9 +12,16 @@
       <NMessageProvider>
         <Layout>
           <FadeTransition>
-            <main>
-              <slot />
-            </main>
+            <NScrollbar
+              id="main-scroll-container"
+              class="max-h-[calc(100vh-5rem)]"
+            >
+              <main
+                class="grid max-w-7xl grid-cols-[1fr_minmax(250px,_400px)] items-start py-4 pb-8"
+              >
+                <slot />
+              </main>
+            </NScrollbar>
           </FadeTransition>
         </Layout>
       </NMessageProvider>
@@ -23,7 +30,13 @@
 </template>
 
 <script setup lang="tsx">
-import { NConfigProvider, NMessageProvider, darkTheme, enUS } from "naive-ui";
+import {
+  NConfigProvider,
+  NMessageProvider,
+  NScrollbar,
+  darkTheme,
+  enUS,
+} from "naive-ui";
 import { defineAsyncComponent, onMounted, ref } from "vue";
 
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
@@ -73,3 +86,9 @@ onMounted(() => {
   mounted.value = true;
 });
 </script>
+
+<style scoped>
+main {
+  scroll-margin: 5rem 0 0 0;
+}
+</style>

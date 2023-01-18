@@ -2,8 +2,8 @@
   <NCard
     hoverable
     as="button"
-    style="max-width: 400px"
-    class="cursor-pointer shadow-sm"
+    style="min-width: 400px; max-width: 500px"
+    class="flex-1 cursor-pointer shadow-sm"
     @click="router.visit(route('institutions.show', institution.id))"
   >
     <template #cover>
@@ -18,7 +18,7 @@
     </template>
     <template #header-extra>
       <slot name="header-extra">
-        <div v-if="institutionDuties" class="inline-flex gap-3">
+        <div v-if="institutionDuties" class="ml-4 inline-flex gap-3">
           <NPopover>
             <template #trigger>
               <NButton text size="small" circle @click.stop>

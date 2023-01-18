@@ -6,14 +6,13 @@
           :options="breadcrumbOptions"
           class="mb-4 w-full"
         />
-        <NDivider />
       </template>
     </template>
     <template #after-heading>
       <slot name="after-heading"></slot>
     </template>
     <template #aside-header>
-      <div class="flex gap-2">
+      <div class="inline-flex gap-2">
         <ActivityLogButton :activities="model.activities" />
         <slot name="more-options"></slot>
       </div>

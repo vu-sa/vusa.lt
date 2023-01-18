@@ -5,6 +5,7 @@
   ></NButton>
   <CardModal
     v-model:show="showModal"
+    :segmented="{ content: 'soft' }"
     title="Įrašo pokyčiai"
     @close="showModal = false"
   >

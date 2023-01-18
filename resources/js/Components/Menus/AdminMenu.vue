@@ -1,6 +1,7 @@
 <template>
   <NMenu
     v-model:value="activeKey"
+    accordion
     :collapsed="collapsed"
     :collapsed-width="64"
     :collapsed-icon-size="28"

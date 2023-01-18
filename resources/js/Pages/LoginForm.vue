@@ -11,36 +11,40 @@
           :show-dots="false"
           :transition-style="{ transitionDuration: '1500ms' }"
           effect="fade"
-          class="bg-black-800 w-full"
+          class="bg-black-800 h-full w-full"
         >
           <img
             src="/images/ataskaita2022/kitos-nuotraukos/VU SA.jpg"
-            class="w-full object-cover"
+            class="h-full w-full object-cover"
           />
-          <img src="/images/photos/stovykla.jpg" class="object-cover" />
+          <img
+            src="/images/photos/stovykla.jpg"
+            class="h-full w-full object-cover"
+          />
           <img
             src="/images/photos/observatorijos_kiemelis.jpg"
-            class="w-full object-cover"
+            class="h-full w-full object-cover"
           />
         </NCarousel>
       </div>
       <div
-        class="grid min-h-screen justify-center sm:grid-cols-2 sm:grid-rows-none"
+        class="grid min-h-screen justify-center p-4 sm:grid-cols-2 sm:grid-rows-none"
       >
         <div class="flex h-fit justify-center sm:h-auto">
           <AppLogo class="hidden w-96 invert sm:block" />
         </div>
         <div
-          class="subtle-gray-gradient m-auto mt-16 flex h-fit w-fit flex-col items-center gap-4 rounded-md border border-zinc-700 p-16 text-zinc-700 shadow-xl sm:mt-auto sm:justify-center"
+          class="subtle-gray-gradient m-auto mt-0 flex h-fit w-fit flex-col items-center gap-4 rounded-md border border-zinc-700 p-4 text-zinc-700 shadow-xl sm:mt-auto sm:justify-center sm:p-16"
         >
-          <h2 class="text-zinc-700">Labas!</h2>
-          <p class="text-xs text-zinc-600">
+          <h2 class="text-zinc-700">Labas! 👋</h2>
+          <AppLogo class="w-24 sm:hidden" />
+
+          <p class="text-center text-xs text-zinc-600 sm:text-left">
             <strong>mano.vusa.lt</strong> gali naudoti VU SA nariai.
             <Link class="text-zinc-400 underline" :href="route('main.home')"
               >Kaip tapti?</Link
             >
           </p>
-          <AppLogo class="w-24 sm:hidden" />
 
           <FadeTransition mode="out-in">
             <div v-if="!useSimpleRegistration" class="mt-4 flex flex-col gap-4">

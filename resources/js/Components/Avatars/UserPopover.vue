@@ -1,17 +1,22 @@
 <template>
-  <NPopover class="rounded-sm" :show-arrow="false" raw style="max-width: 150px">
+  <NPopover
+    class="not-prose rounded-sm"
+    :show-arrow="false"
+    raw
+    style="max-width: 150px"
+  >
     <template #trigger>
       <UserAvatar v-if="!showName" :user="user" :size="size"></UserAvatar>
-      <div v-else class="flex items-center gap-2">
+      <div v-else class="inline-flex items-center gap-2">
         <UserAvatar :user="user" :size="size"></UserAvatar>
         <span>{{ user.name }}</span>
       </div>
     </template>
     <img v-if="photo" class="w-full rounded-t-sm" :src="photo" alt="" />
     <div
-      class="flex flex-col gap-2 rounded-sm bg-white p-2 text-xs text-zinc-500"
+      class="flex flex-col gap-2 rounded-sm bg-white p-2 text-xs text-zinc-500 dark:bg-zinc-700 dark:text-zinc-200"
     >
-      <span class="font-bold text-zinc-800">{{ user.name }}</span>
+      <span class="font-bold text-zinc-100">{{ user.name }}</span>
       <a v-if="user.phone" :href="`tel:${user.phone}`">{{ user.phone }}</a>
     </div>
   </NPopover>

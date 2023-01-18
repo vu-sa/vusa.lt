@@ -1,5 +1,9 @@
 <template>
-  <ShowPageLayout :breadcrumb-options="breadcrumbOptions" :model="institution">
+  <ShowPageLayout
+    :title="institution.name"
+    :breadcrumb-options="breadcrumbOptions"
+    :model="institution"
+  >
     <template #title>
       <span class="text-3xl">{{ institution.name }}</span>
     </template>

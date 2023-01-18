@@ -1,5 +1,5 @@
 <template>
-  <NCard class="subtle-gray-gradient max-w-2xl">
+  <NCard class="subtle-gray-gradient min-w-[600px]">
     <p class="mb-4 text-2xl font-extrabold">
       <slot name="card-header">Informacija</slot>
     </p>

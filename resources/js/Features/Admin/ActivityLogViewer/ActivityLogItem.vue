@@ -1,14 +1,13 @@
 <template>
-  <UserAvatar class="not-prose" show-name :user="activity.causer" />
-
-  <p class="my-1 flex flex-row items-center gap-1">
-    <template v-if="activity.description === 'created'"
-      ><span> sukūrė įvykį.</span>
-    </template>
-    <template v-else-if="activity.description === 'updated'"
-      ><span>atnaujino įvykį.</span></template
+  <div class="flex items-center justify-between">
+    <span v-if="activity.description === 'created'"> Sukurtas įvykis.</span>
+    <span v-else-if="activity.description === 'updated'"
+      >Atnaujintas įvykis.</span
     >
-  </p>
+    <div class="not-prose w-fit">
+      <UserPopover :size="24" show-name :user="activity.causer" />
+    </div>
+  </div>
   <pre>{{ activity.properties }}</pre>
   <p :title="activity.created_at" class="mt-0 text-sm text-gray-500">
     {{ formatRelativeTime(activity.created_at) }}
@@ -17,7 +16,7 @@
 
 <script setup lang="tsx">
 import { formatRelativeTime } from "@/Utils/IntlTime";
-import UserAvatar from "@/Components/Avatars/UserPopover.vue";
+import UserPopover from "@/Components/Avatars/UserPopover.vue";
 
 defineProps<{
   activity: Record<string, any>;
