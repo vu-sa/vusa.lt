@@ -21,18 +21,6 @@
         ></FileUploader>
       </NMessageProvider>
     </div>
-    <div class="m-4 flex max-w-4xl flex-wrap gap-6">
-      <FileButton
-        v-for="document in contentType.sharepointFiles"
-        :key="document.id"
-        :document="document"
-        @click="selectedDocument = document"
-      ></FileButton>
-    </div>
-    <FileSelectDrawer
-      :document="selectedDocument"
-      @close-drawer="selectedDocument = documentTemplate"
-    ></FileSelectDrawer>
   </PageContent>
 </template>
 
@@ -40,10 +28,8 @@
 import { NMessageProvider } from "naive-ui";
 import { computed, ref } from "vue";
 
-import { documentTemplate, modelTypes } from "@/Types/formOptions";
+import { modelTypes } from "@/Types/formOptions";
 
-import FileButton from "@/Features/Admin/SharepointFileManager/Viewer/FileButton.vue";
-import FileSelectDrawer from "@/Features/Admin/SharepointFileManager/Viewer/FileDrawer.vue";
 import FileUploader from "@/Features/Admin/SharepointFileManager/FileUploader.vue";
 import FileUploaderBasicButton from "@/Features/Admin/SharepointFileManager/FileUploaderBasicButton.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
@@ -55,7 +41,6 @@ const props = defineProps<{
   contentTypes: Record<string, any>[];
 }>();
 
-const selectedDocument = ref(null);
 const showFileUploader = ref(false);
 
 const sharepointFileTypeOptions = computed(() => {

@@ -7,6 +7,7 @@
     :trap-focus="false"
     :width="350"
     placement="right"
+    @update:show="$emit('hide:drawer')"
   >
     <NDrawerContent closable>
       <FadeTransition>
@@ -15,48 +16,50 @@
         >
           <NIcon class="mr-2" size="96" :component="fileIcon" />
           <span class="text-center text-xl tracking-wide">{{
-            activeDocument.name
+            file?.name
           }}</span>
           <div class="flex gap-2">
             <NButton class="mt-4" @click="handleOpen">Atidaryti</NButton>
-            <NButton
+            <!-- <NButton
               :loading="loadingDelete"
               type="error"
               class="mt-4"
-              @click="handleDelete(activeDocument.id)"
+              @click="handleDelete(file?.id)"
               >Ištrinti</NButton
-            >
+            > -->
           </div>
           <NTable class="mt-4">
             <tbody class="text-xs">
               <tr>
                 <td class="font-bold">Sukūrimo data</td>
-                <td>{{ activeDocument.createdDateTime.date }}</td>
+                <td>{{ file?.createdDateTime }}</td>
               </tr>
               <tr>
                 <td class="font-bold">Dydis</td>
-                <td>{{ fileSize(activeDocument.size) }}</td>
+                <td>{{ fileSize(file?.size) }}</td>
               </tr>
               <tr>
                 <td class="font-bold">Tipas</td>
                 <td>
                   <NTag size="small">
                     <NEllipsis style="max-width: 140px">{{
-                      activeDocument.type
+                      file?.listItem?.fields?.additionalData?.Type
                     }}</NEllipsis>
                   </NTag>
                 </td>
               </tr>
               <tr>
                 <td class="font-bold">Aprašymas</td>
-                <td>{{ activeDocument.description }}</td>
+                <td>
+                  {{ file?.listItem?.fields?.additionalData?.Description0 }}
+                </td>
               </tr>
             </tbody>
           </NTable>
           <CommentPart
-            :commentable_type="'sharepoint_document'"
+            :commentable_type="'sharepoint_file'"
             :text="currentCommentText"
-            :model="document"
+            :model="file"
           ></CommentPart>
         </div>
       </FadeTransition>
@@ -76,60 +79,31 @@ import {
   NTag,
 } from "naive-ui";
 import { computed, ref, watch } from "vue";
-import { router } from "@inertiajs/vue3";
+// import { router } from "@inertiajs/vue3";
 
 import { fileSize } from "@/Utils/Calc";
 import CommentPart from "@/Features/Admin/CommentViewer/CommentViewer.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 // define emit for close
-const emit = defineEmits<{ (event: "closeDrawer"): void }>();
+defineEmits<{ (event: "hide:drawer"): void }>();
 
 const props = defineProps<{
-  document: App.Entities.SharepointDocument;
+  file: MyDriveItem | null;
 }>();
 
-const active = ref(false);
-const activeDocument = ref(null);
+const active = computed(() => !!props.file);
 const currentCommentText = ref("");
 
-const loadingDelete = ref(false);
-
-watch(
-  () => props.document,
-  (newDocument) => {
-    if (newDocument.name === "") {
-      return;
-    }
-    active.value = true;
-    activeDocument.value = newDocument;
-  }
-);
-
-watch(
-  () => active.value,
-  (newActive) => {
-    console.log("newActive", newActive);
-    if (!newActive) {
-      emit("closeDrawer");
-    }
-  }
-);
-
 const fileIcon = computed(() => {
-  console.log("activeDocument.value", activeDocument.value);
-  if (activeDocument.value === null) {
-    return File;
-  }
-
   if (
-    props.document.file.mimeType ===
+    props.file?.file?.mimeType ===
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
   ) {
     return FileWord;
   }
 
-  if (activeDocument.value.file.mimeType === "application/pdf") {
+  if (props.file?.file?.mimeType === "application/pdf") {
     return FilePdf;
   } else {
     return File;
@@ -137,19 +111,19 @@ const fileIcon = computed(() => {
 });
 
 const handleOpen = () => {
-  window.open(activeDocument.value.webUrl);
+  if (props.file?.webUrl) window.open(props.file?.webUrl, "_blank");
 };
 
-const handleDelete = (id) => {
-  loadingDelete.value = true;
-  router.delete(route("sharepoint.destroy", id), {
-    preserveState: true,
-    onSuccess: () => {
-      loadingDelete.value = false;
-      active.value = false;
-    },
-  });
-};
+// const handleDelete = (id) => {
+//   loadingDelete.value = true;
+//   router.delete(route("sharepoint.destroy", id), {
+//     preserveState: true,
+//     onSuccess: () => {
+//       loadingDelete.value = false;
+//       active.value = false;
+//     },
+//   });
+// };
 </script>
 
 <style>

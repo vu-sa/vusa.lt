@@ -2,14 +2,16 @@
   <NPopselect
     v-model:value="value"
     :options="popselectOptions ?? []"
-    @update:value="$emit('click', value)"
+    @update:value="$emit('select:value', value)"
   >
     <NButton
       :type="options?.[0] !== value ? 'primary' : 'default'"
       icon-placement="right"
       round
       size="small"
-      >{{ value || "Nepasirinkta" }}
+      ><NEllipsis class="py-1" style="max-width: 200px">{{
+        value || "Nepasirinkta"
+      }}</NEllipsis>
       <template #icon>
         <NIcon :component="ChevronDown24Regular"></NIcon>
       </template>
@@ -19,11 +21,11 @@
 
 <script setup lang="tsx">
 import { ChevronDown24Regular } from "@vicons/fluent";
-import { NButton, NIcon, NPopselect } from "naive-ui";
+import { NButton, NEllipsis, NIcon, NPopselect } from "naive-ui";
 import { computed, ref } from "vue";
 
-const emit = defineEmits<{
-  (e: "click", value: string | null): void;
+defineEmits<{
+  (e: "select:value", value: string | null): void;
 }>();
 
 const props = defineProps<{

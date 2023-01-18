@@ -48,7 +48,7 @@ declare namespace App.Entities {
   export type SaziningaiExam = App.Models.SaziningaiExam;
   export type SaziningaiExamFlow = App.Models.SaziningaiExamFlow;
   export type SaziningaiExamObserver = App.Models.SaziningaiExamObserver;
-  export type SharepointDocument = App.Models.SharepointDocument;
+  export type SharepointFile = App.Models.SharepointFile;
   export type Tag = App.Models.Tag;
   export type Task = App.Models.Task;
   export type Type = App.Models.Type;

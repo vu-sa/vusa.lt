@@ -29,7 +29,7 @@ declare namespace App.Models {
     category: string | null;
     url: string | null;
     padalinys_id: number;
-    extra_attributes: string | null;
+    extra_attributes: Array<any> | any | null;
     created_at: any;
     updated_at: any;
     registration_form_id: number | null;
@@ -72,7 +72,7 @@ declare namespace App.Models {
     created_at: any;
     updated_at: any;
     deleted_at: any | null;
-    extra_attributes: string | null;
+    extra_attributes: Array<any> | any | null;
     duties?: Array<App.Models.Duty> | null;
     duties_count?: number | null;
   }
@@ -82,7 +82,7 @@ declare namespace App.Models {
     title: string;
     status: string;
     date: string;
-    extra_attributes: string | null;
+    extra_attributes: Array<any> | any | null;
     created_at: any;
     updated_at: any;
     deleted_at: any | null;
@@ -90,7 +90,7 @@ declare namespace App.Models {
     goals?: Array<App.Models.Goal> | null;
     matters?: Array<App.Models.Matter> | null;
     types?: Array<App.Models.Type> | null;
-    documents?: Array<App.Models.SharepointDocument> | null;
+    documents?: Array<App.Models.SharepointFile> | null;
     tasks?: Array<App.Models.Task> | null;
     users?: Array<App.Models.User> | null;
     doables_count?: number | null;
@@ -109,7 +109,7 @@ declare namespace App.Models {
     institution_id: string;
     order: number;
     email: string | null;
-    extra_attributes: string | null;
+    extra_attributes: Array<any> | any | null;
     places_to_occupy: number | null;
     created_at: any;
     updated_at: any;
@@ -168,7 +168,7 @@ declare namespace App.Models {
     padalinys_id: number | null;
     created_at: any;
     updated_at: any;
-    extra_attributes: string | null;
+    extra_attributes: Array<any> | any | null;
     deleted_at: any | null;
     duties?: Array<App.Models.Duty> | null;
     types?: Array<App.Models.Type> | null;
@@ -176,7 +176,7 @@ declare namespace App.Models {
     matters?: Array<App.Models.Matter> | null;
     meetings?: Array<App.Models.Meeting> | null;
     users?: any | null;
-    documents?: Array<App.Models.SharepointDocument> | null;
+    documents?: Array<App.Models.SharepointFile> | null;
     duties_count?: number | null;
     types_count?: number | null;
     matters_count?: number | null;
@@ -230,7 +230,7 @@ declare namespace App.Models {
     matters?: Array<App.Models.Matter> | null;
     agenda_items?: Array<App.Models.Pivots.AgendaItem> | null;
     institutions?: Array<App.Models.Institution> | null;
-    documents?: Array<App.Models.SharepointDocument> | null;
+    documents?: Array<App.Models.SharepointFile> | null;
     tasks?: Array<App.Models.Task> | null;
     users?: any | null;
     padaliniai?: any | null;
@@ -441,13 +441,6 @@ declare namespace App.Models {
     padalinys?: App.Models.Padalinys | null;
   }
 
-  export interface SharepointDocument {
-    sharepoint_id: string;
-    documentable_type: string;
-    documentable_id: string;
-    id: string;
-  }
-
   export interface Tag {
     id: number;
     alias: string | null;
@@ -481,14 +474,14 @@ declare namespace App.Models {
     model_type: string | null;
     description: string | null;
     slug: string | null;
-    extra_attributes: string | null;
+    extra_attributes: Array<any> | any | null;
     created_at: any;
     updated_at: any;
     deleted_at: any | null;
     institutions?: Array<App.Models.Institution> | null;
     duties?: Array<App.Models.Duty> | null;
     doings?: Array<App.Models.Doing> | null;
-    documents?: Array<App.Models.SharepointDocument> | null;
+    documents?: Array<App.Models.SharepointFile> | null;
     institutions_count?: number | null;
     duties_count?: number | null;
     doings_count?: number | null;
@@ -552,7 +545,7 @@ declare namespace App.Models.Pivots {
     dutiable_type: string;
     start_date: string;
     end_date: string | null;
-    extra_attributes: string | null;
+    extra_attributes: Array<any> | any | null;
     created_at: any;
     updated_at: any;
     dutiable?: any | null;

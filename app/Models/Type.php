@@ -42,6 +42,6 @@ class Type extends Model
 
     public function documents()
     {
-        return $this->morphMany(SharepointDocument::class, 'documentable');
+        return $this->morphMany(SharepointFile::class, 'documentable');
     }
 }

@@ -12,13 +12,13 @@
         class="flex h-full w-full flex-col justify-center overflow-auto rounded-b-md bg-white dark:bg-zinc-900 dark:text-white"
       >
         <span class="break-words px-2 text-sm line-clamp-2">{{
-          document.name
+          file.name
         }}</span>
       </div>
     </button>
     <span
       class="m-2 mx-auto w-4/5 text-center text-xs text-zinc-400 line-clamp-1"
-      >{{ document.type }}</span
+      >{{ file.listItem?.fields?.additionalData?.Type }}</span
     >
   </div>
 </template>
@@ -27,20 +27,25 @@
 import { File, FilePdf, FileWord } from "@vicons/fa";
 import { NIcon } from "naive-ui";
 import { computed } from "vue";
+import type { DriveItem } from "@microsoft/microsoft-graph-types";
 
 defineEmits<{ (event: "fileButtonClick"): void }>();
 
 const props = defineProps<{
-  // TODO: define document interface
-  document: any;
+  file: DriveItem;
 }>();
 
 const gradientClasses = computed(() => {
-  if (props.document.type === "Veiklą reglamentuojantys dokumentai") {
+  if (
+    props.file.listItem?.fields?.additionalData?.Type ===
+    "Veiklą reglamentuojantys dokumentai"
+  ) {
     return "from-zinc-200 subtle-gray-gradient bg-gradient-to-b";
   }
 
-  if (props.document.type === "Metodinė medžiaga") {
+  if (
+    props.file.listItem?.fields?.additionalData?.Type === "Metodinė medžiaga"
+  ) {
     return "from-vusa-yellow/30 to-white dark:from-vusa-red/60 dark:to-zinc-700/80 bg-gradient-to-b";
   }
 
@@ -49,18 +54,18 @@ const gradientClasses = computed(() => {
 
 const fileTypeIcon = computed(() => {
   // if word file
-  if (props.document.file === undefined) {
+  if (props.file.file === undefined) {
     return File;
   }
 
   if (
-    props.document.file.mimeType ===
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    props.file.file?.mimeType ===
+    "application/vnd.openxmlformats-officefile.wordprocessingml.file"
   ) {
     return FileWord;
   }
 
-  if (props.document.file.mimeType === "application/pdf") {
+  if (props.file.file?.mimeType === "application/pdf") {
     return FilePdf;
   }
 

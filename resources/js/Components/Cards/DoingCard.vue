@@ -26,11 +26,7 @@
         </div>
         <div class="flex gap-2">
           <div class="inline-flex items-center gap-1">
-            <NIcon
-              :depth="3"
-              size="10"
-              :component="Icons.SHAREPOINT_DOCUMENT"
-            />
+            <NIcon :depth="3" size="10" :component="Icons.SHAREPOINT_FILE" />
             <span>{{ doing.documents.length }}</span>
           </div>
           <div class="inline-flex items-center gap-1">

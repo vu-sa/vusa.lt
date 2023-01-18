@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\SharepointDocument;
+use App\Models\SharepointFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
@@ -237,7 +237,7 @@ class SharepointAppGraph {
         $driveItems = $this->getDriveItemsByID(($documents), $drive->getId());
 
         $sharepointFiles = collect($driveItems)->map(function (Model\DriveItem $item) use ($driveItems) {
-            $document = SharepointDocument::with('comments')->where('sharepoint_id', $item->getId())->first();
+            $document = SharepointFile::with('comments')->where('sharepoint_id', $item->getId())->first();
             
             return [
                 // TODO: don't query database for each item

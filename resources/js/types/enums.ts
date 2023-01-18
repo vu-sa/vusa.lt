@@ -38,7 +38,7 @@ export enum ModelEnum {
   "SAZININGAI_EXAM" = "saziningaiExam",
   "SAZININGAI_EXAM_FLOW" = "saziningaiExamFlow",
   "SAZININGAI_EXAM_OBSERVER" = "saziningaiExamObserver",
-  "SHAREPOINT_DOCUMENT" = "sharepointDocument",
+  "SHAREPOINT_FILE" = "sharepointFile",
   "TAG" = "tag",
   "TASK" = "task",
   "TYPE" = "type",

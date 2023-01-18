@@ -30,6 +30,7 @@
     "v-calendar": "^3.0.0-alpha.8"
   },
   "devDependencies": {
+    "@microsoft/microsoft-graph-types": "^2.25.0",
     "@storybook/addon-essentials": "^7.0.0-beta.15",
     "@storybook/addon-interactions": "^7.0.0-beta.15",
     "@storybook/addon-links": "^7.0.0-beta.15",

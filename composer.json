@@ -20,7 +20,7 @@
         "laravel/telescope": "^4.6",
         "laravel/tinker": "^2.7",
         "maatwebsite/excel": "^3.1",
-        "microsoft/microsoft-graph": "^1.75",
+        "microsoft/microsoft-graph": "^2.0.0-RC9",
         "psr/simple-cache": "^2.0",
         "pusher/pusher-php-server": "^7.2",
         "socialiteproviders/microsoft": "^4.1",

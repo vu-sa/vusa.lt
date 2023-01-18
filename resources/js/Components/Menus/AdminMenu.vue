@@ -287,7 +287,7 @@ const menuOptions = computed(() => [
           return <Link href={route("files.index")}>Failai</Link>;
         },
         key: "files",
-        show: auth?.can.index.sharepointDocument,
+        show: auth?.can.index.SharepointFile,
         icon: () => {
           return <NIcon component={Folder24Regular}></NIcon>;
         },

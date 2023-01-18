@@ -34,11 +34,7 @@
       <div class="text-xs text-zinc-700 dark:text-zinc-500">
         <div class="flex gap-2">
           <div class="inline-flex items-center gap-1">
-            <NIcon
-              :depth="3"
-              size="10"
-              :component="Icons.SHAREPOINT_DOCUMENT"
-            />
+            <NIcon :depth="3" size="10" :component="Icons.SHAREPOINT_FILE" />
             <span>{{ meeting.documents?.length }}</span>
           </div>
           <div class="inline-flex items-center gap-1">

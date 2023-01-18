@@ -70,7 +70,7 @@
         :document="document"
         @click="selectedDocument = document"
       ></FileButton>
-      <NewGridItemButton :icon="Icons.SHAREPOINT_DOCUMENT"
+      <NewGridItemButton :icon="Icons.SHAREPOINT_FILE"
         >Įkelti naują dokumentą?</NewGridItemButton
       >
     </div>
@@ -81,10 +81,6 @@
       :tasks="meeting.tasks"
     />
   </ShowPageLayout>
-  <FileSelectDrawer
-    :document="selectedDocument"
-    @close-drawer="selectedDocument = documentTemplate"
-  ></FileSelectDrawer>
   <CardModal
     v-model:show="showAgendaItemModal"
     @close="showAgendaItemModal = false"
@@ -109,13 +105,12 @@ import {
 import { Edit24Filled, PeopleTeam24Filled } from "@vicons/fluent";
 import { computed, ref } from "vue";
 
-import { documentTemplate, modelTypes } from "@/Types/formOptions";
 import { formatStaticTime } from "@/Utils/IntlTime";
+import { modelTypes } from "@/Types/formOptions";
 import { router } from "@inertiajs/vue3";
 import AgendaItemForm from "@/Components/AdminForms/AgendaItemForm.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import FileButton from "@/Features/Admin/SharepointFileManager/Viewer/FileButton.vue";
-import FileSelectDrawer from "@/Features/Admin/SharepointFileManager/Viewer/FileDrawer.vue";
 import FileUploader from "@/Features/Admin/SharepointFileManager/FileUploader.vue";
 import FileUploaderBasicButton from "@/Features/Admin/SharepointFileManager/FileUploaderBasicButton.vue";
 import Icons from "@/Types/Icons/regular";
@@ -129,14 +124,14 @@ import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumb
 const props = defineProps<{
   meeting: App.Entities.Meeting;
   // TODO: need to define this type
-  sharepointFiles: App.Entities.SharepointDocument[];
+  sharepointFiles: App.Entities.SharepointFile[];
 }>();
 
 const showMeetingModal = ref(false);
 const showAgendaItemModal = ref(false);
 const showFileUploadModal = ref(false);
 
-const selectedDocument = ref<App.Entities.SharepointDocument | null>(null);
+const selectedDocument = ref<App.Entities.SharepointFile | null>(null);
 const selectedAgendaItem = ref<App.Entities.AgendaItem | null>(null);
 
 const mainInstitution: App.Entities.Institution | string =

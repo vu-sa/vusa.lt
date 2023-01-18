@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
-class SharepointDocument extends Model
+class SharepointFile extends Model
 {
     use HasFactory, HasUuids, HasComments;
     

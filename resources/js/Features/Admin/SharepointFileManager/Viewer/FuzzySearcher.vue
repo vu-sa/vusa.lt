@@ -19,12 +19,12 @@ import { computed, ref } from "vue";
 import { useFuse } from "@vueuse/integrations/useFuse";
 
 const emit = defineEmits<{
-  (event: "updateResults", results: Record<string, any>[]): void;
+  (event: "search:results", results: Record<string, any>[]): void;
 }>();
 
 const props = defineProps<{
-  data: Record<string, any>[];
-  disabled: boolean;
+  data: Record<string, any>[] | [];
+  disabled?: boolean;
 }>();
 
 const value = ref("");
@@ -40,6 +40,6 @@ const options = computed(() => ({
 const { results } = useFuse(value, props.data, options);
 
 const handleInput = () => {
-  emit("updateResults", results.value);
+  emit("search:results", results.value);
 };
 </script>

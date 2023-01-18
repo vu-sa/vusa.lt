@@ -41,10 +41,6 @@
       <RelatedInstitutions :institution="institution"></RelatedInstitutions>
     </div>
   </ShowPageLayout>
-  <!-- <FileSelectDrawer
-    :document="selectedDocument"
-    @close-drawer="selectedDocument = documentTemplate"
-  ></FileSelectDrawer> -->
 </template>
 
 <script setup lang="tsx">
@@ -53,7 +49,6 @@ import { router } from "@inertiajs/vue3";
 // import { ref } from "vue";
 
 // import { documentTemplate } from "@/Types/formOptions";
-// import FileSelectDrawer from "@/Components/SharepointFileManager/FileDrawer.vue";
 import Icons from "@/Types/Icons/filled";
 import InstitutionAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import LastMeetingCard from "@/Components/Cards/QuickContentCards/LastMeetingCard.vue";
@@ -67,12 +62,6 @@ const props = defineProps<{
   doingTypes: any;
   institution: App.Entities.Institution;
 }>();
-
-// const selectedDocument = ref(null);
-
-// const updateSelectedDocument = (document) => {
-//   selectedDocument.value = document;
-// };
 
 const breadcrumbOptions: BreadcrumbOption[] = [
   {

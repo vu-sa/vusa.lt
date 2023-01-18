@@ -190,9 +190,9 @@ const permissableItems = [
       },
       {
         title: "Dokumentai",
-        icon: Icons.SHAREPOINT_DOCUMENT,
-        key: pluralizeModels(ModelEnum.SHAREPOINT_DOCUMENT),
-        description: Descriptions.SharepointDocumentDescription,
+        icon: Icons.SHAREPOINT_FILE,
+        key: pluralizeModels(ModelEnum.SHAREPOINT_FILE),
+        description: Descriptions.SharepointFileDescription,
       },
       {
         title: "Užduotys",

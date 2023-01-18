@@ -247,7 +247,7 @@ export const SaziningaiExamDescription = (
   </>
 );
 
-export const SharepointDocumentDescription = (
+export const SharepointFileDescription = (
   <>
     <p>
       Dokumentai yra failai, kuriuos galima įkelti prie objekto, pvz.: posėdžio.

@@ -61,7 +61,6 @@ import { formatRelativeTime } from "@/Utils/IntlTime";
 import { onUpdated, ref } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 import CommentTipTap from "./CommentTipTap.vue";
-import FadeTransitionGroup from "@/Components/Transitions/FadeTransitionGroup.vue";
 import UserPopover from "@/Components/Avatars/UserPopover.vue";
 
 defineEmits<{
@@ -69,7 +68,7 @@ defineEmits<{
 }>();
 
 const props = defineProps<{
-  model?: Record<string, any>;
+  model?: Record<string, any> | null;
   commentable_type: string;
   text: string;
 }>();
@@ -85,7 +84,7 @@ const submitComment = () => {
     route("users.comments.store", usePage().props.auth?.user.id),
     {
       commentable_type: props.commentable_type,
-      commentable_id: props.model.id,
+      commentable_id: props.model?.id,
       comment: text.value,
     },
     {
