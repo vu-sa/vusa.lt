@@ -12,6 +12,11 @@
       ><template #header
         ><h4 class="mb-0 text-sm">
           {{ formatStaticTime(new Date(meeting.start_time)) }}
+          {{
+            institution
+              ? `${institution.short_name ?? institution.name} posėdis`
+              : "posėdis"
+          }}
         </h4>
         <div class="flex items-center gap-1 text-xs">
           <NIcon :depth="3" size="10" :component="Clock24Filled" />
@@ -68,6 +73,7 @@ import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 
 const props = defineProps<{
   meeting: App.Entities.Meeting;
+  institution?: App.Entities.Institution;
 }>();
 
 const spinning = ref(false);

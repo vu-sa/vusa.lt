@@ -116,7 +116,7 @@ const mainInstitution: App.Entities.Institution | string =
 const meetingTitle = `${formatStaticTime(new Date(props.meeting.start_time), {
   year: "numeric",
   month: "long",
-  day: "2-digit",
+  day: "numeric",
 })} ${mainInstitution.name} posėdis`;
 
 const sharepointFileTypeOptions = computed(() => {

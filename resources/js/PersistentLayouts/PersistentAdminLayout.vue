@@ -58,6 +58,11 @@ const themeOverrides = {
     primaryColorPressed: "#CC2130FF",
     primaryColorSuppl: "#B93945FF",
   },
+  Carousel: {
+    dotColor: "#ebebeb",
+    dotColorActive: "#bd2835CC",
+    arrowColor: "#bbbbbb",
+  },
   Layout: {
     color: "rgb(250 248 248)",
     headerColor: "rgb(250 248 248)",

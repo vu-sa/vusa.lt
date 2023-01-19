@@ -75,13 +75,14 @@ const breadcrumbOptions: BreadcrumbOption[] = [
 
 const currentTab = useStorage("show-institution-tab", "Svarstomi klausimai");
 
-const relatedInstitutionCount = computed(() => {
-  // check all arrays of related institutions length and sum
-  return Object.values(props.institution.relatedInstitutions).reduce(
-    (acc: number, curr) => acc + curr.length,
-    0
-  );
-});
+// This won't show related institutions, only relationships.
+// const relatedInstitutionCount = computed(() => {
+//   // check all arrays of related institutions length and sum
+//   return Object.values(props.institution.relatedInstitutions).reduce(
+//     (acc: number, curr) => acc + curr.length,
+//     0
+//   );
+// });
 
 const relatedModels = [
   {
@@ -92,7 +93,6 @@ const relatedModels = [
   {
     name: "Susijusios institucijos",
     icon: Icons.INSTITUTION,
-    count: relatedInstitutionCount.value,
   },
 ];
 </script>

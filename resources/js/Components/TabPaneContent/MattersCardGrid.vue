@@ -8,7 +8,7 @@
     ></MatterCard>
     <button
       v-if="institution"
-      class="flex max-w-md flex-col items-center justify-center gap-2 rounded-sm border px-2 py-4 text-zinc-500 duration-200 hover:shadow-inner dark:border-zinc-700 dark:shadow-zinc-900"
+      class="flex max-w-sm flex-col items-center justify-center gap-2 rounded-sm border px-2 py-4 text-zinc-500 duration-200 hover:shadow-inner dark:border-zinc-700 dark:shadow-zinc-900"
       @click="showModal = true"
     >
       <NIcon size="40" :depth="5" :component="AddCircle24Filled"></NIcon>

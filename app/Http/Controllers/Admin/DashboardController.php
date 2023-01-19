@@ -20,10 +20,15 @@ class DashboardController extends Controller
         
         $duties = $user->duties;
 
-        $institutions = $duties->pluck('institution')->flatten()->unique();
+        $institutions = $duties->pluck('institution')->flatten()->unique()->values();
 
         // convert to eloquent collection
         $institutions = new EloquentCollection($institutions);
+
+        // load institutions with meetings where start_time is in the future
+        $institutions->load(['meetings' => function ($query) {
+            $query->where('start_time', '>', now());
+        }])->load('meetings.comments', 'meetings.tasks', 'meetings.files');
 
         return Inertia::render('Admin/ShowDashboard', [
             'institutions' => $institutions,

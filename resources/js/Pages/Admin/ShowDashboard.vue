@@ -1,21 +1,97 @@
 <template>
   <PageContent>
-    <section id="tavo-institucijos" class="mt-4">
-      <h1>Tavo institucijos</h1>
-      <div class="mt-4 flex flex-wrap gap-4 pr-8">
+    <NPopover>
+      <NCheckboxGroup v-model:value="shownSections">
+        <div class="flex flex-col gap-2">
+          <NCheckbox value="Institucijos" label="Tavo institucijos"></NCheckbox>
+          <NCheckbox value="Posėdžiai" label="Artėjantys posėdžiai" />
+          <NCheckbox
+            value="Nuorodos"
+            label="Naudingos nuorodos"
+            disabled
+          ></NCheckbox>
+        </div>
+      </NCheckboxGroup>
+      <template #trigger>
+        <div class="absolute top-0 right-0">
+          <NButton circle quaternary
+            ><template #icon
+              ><NIcon
+                :size="24"
+                :component="Settings24Filled"
+              ></NIcon></template
+          ></NButton>
+        </div>
+      </template>
+    </NPopover>
+    <section
+      v-if="shownSections.includes('Institucijos')"
+      id="tavo-institucijos"
+      class="mb-8"
+    >
+      <h2 class="font-black">Tavo institucijos</h2>
+      <div
+        class="relative mt-4 grid w-full grid-cols-ramFill gap-4 overflow-hidden transition-transform duration-300 ease-in-out"
+        :class="{
+          'max-h-[16rem]': !institutionExpanded,
+          'max-h-[100%]': institutionExpanded,
+        }"
+      >
         <InstitutionCard
           v-for="institution in institutions"
           :key="institution.id"
           :institution="institution"
-          style="min-width: 400px; max-width: 500px"
           :duties="duties"
           :is-padalinys="institution.alias === institution.padalinys.alias"
           @click="router.visit(route('institutions.show', institution.id))"
         />
+        <div
+          v-if="!institutionExpanded && institutions.length > 4"
+          class="absolute bottom-0 h-12 w-full bg-gradient-to-b from-transparent to-[rgb(250,_248,_248)] text-center dark:to-[rgb(30,_30,_33)]"
+        >
+          <NButton
+            secondary
+            circle
+            @click="institutionExpanded = !institutionExpanded"
+            ><template #icon
+              ><NIcon :component="MoreHorizontal24Regular"></NIcon></template
+          ></NButton>
+        </div>
+      </div>
+    </section>
+    <section v-if="shownSections.includes('Posėdžiai')" class="relative mb-8">
+      <h2 class="font-black">Artėjantys posėdžiai</h2>
+
+      <div
+        class="grid grid-cols-ramFill gap-x-4 overflow-hidden"
+        :class="{
+          'max-h-[10rem]': !meetingExpanded,
+          'max-h-[100%]': meetingExpanded,
+        }"
+      >
+        <template v-for="institution in institutions">
+          <MeetingCard
+            v-for="meeting in institution.meetings"
+            :key="meeting.id"
+            style="min-width: 300px; max-width: 400px"
+            :meeting="meeting"
+            :institution="institution"
+            @click="router.visit(route('meetings.show', meeting.id))"
+          ></MeetingCard>
+        </template>
+      </div>
+      <div
+        v-if="!meetingExpanded && institutions.length > 3"
+        class="absolute bottom-0 h-12 w-full bg-gradient-to-b from-transparent to-[rgb(250,_248,_248)] text-center dark:to-[rgb(30,_30,_33)]"
+      >
+        <NButton secondary circle @click="meetingExpanded = !meetingExpanded"
+          ><template #icon
+            ><NIcon :component="MoreHorizontal24Regular"></NIcon></template
+        ></NButton>
       </div>
     </section>
     <section id="naudingos-nuorodos">
-      <h3 class="my-4">Naudingos nuorodos</h3>
+      <h2 class="font-black">Naudingos nuorodos</h2>
       <div class="flex gap-2">
         <NButton
           type="warning"
@@ -48,33 +124,19 @@
         >
       </div>
     </section>
-    <template #aside-card>
-      <!-- <NAnchor
-        class="hidden md:block"
-        style="margin: 0 1rem 0 1rem"
-        listen-to="#main-scroll-container"
-        affix
-        :bound="108"
-      >
-        <NAnchorLink
-          title="Tavo institucijos"
-          href="#tavo-institucijos"
-        ></NAnchorLink>
-        <NAnchorLink
-          title="Naudingos nuorodos"
-          href="#naudingos-nuorodos"
-        ></NAnchorLink>
-      </NAnchor> -->
-    </template>
   </PageContent>
 </template>
 
 <script setup lang="tsx">
 import { ExternalLinkSquareAlt } from "@vicons/fa";
-import { NAnchor, NAnchorLink, NButton, NIcon } from "naive-ui";
+import { NButton, NCheckbox, NCheckboxGroup, NIcon, NPopover } from "naive-ui";
 import { router } from "@inertiajs/vue3";
 
+import { MoreHorizontal24Regular, Settings24Filled } from "@vicons/fluent";
+import { ref } from "vue";
+import { useStorage } from "@vueuse/core";
 import InstitutionCard from "@/Components/Cards/InstitutionCard.vue";
+import MeetingCard from "@/Components/Cards/MeetingCard.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 
 defineProps<{
@@ -85,10 +147,12 @@ defineProps<{
 const windowOpen = (url: string, target: string) => {
   window.open(url, target);
 };
-</script>
 
-<style scoped>
-section {
-  scroll-margin-top: 1rem;
-}
-</style>
+const institutionExpanded = ref(false);
+const meetingExpanded = ref(false);
+
+const shownSections = useStorage("dashboard-sections", [
+  "Institucijos",
+  "Nuorodos",
+]);
+</script>
