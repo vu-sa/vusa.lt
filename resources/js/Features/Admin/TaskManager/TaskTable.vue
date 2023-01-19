@@ -1,6 +1,8 @@
 <template>
   <NDataTable
     :data="tasks"
+    :scroll-x="1000"
+    :bordered="false"
     :columns="tasks.length > 0 ? columns() : []"
     :row-class-name="rowClassName"
     ><template #empty
@@ -58,10 +60,13 @@ const columns: () => DataTableColumns<App.Entities.Task> = () => [
       );
     },
     width: 60,
+    fixed: "left",
   },
   {
     title: "Pavadinimas",
     key: "name",
+    fixed: "left",
+    minWidth: 160,
   },
   {
     title: "Subjektas",
@@ -97,6 +102,7 @@ const columns: () => DataTableColumns<App.Entities.Task> = () => [
   },
   {
     key: "moreOptions",
+    fixed: "right",
     render(row) {
       return row.completed_at === null ? (
         <MoreOptionsButton
@@ -150,3 +156,11 @@ const handleDelete = async (task: App.Entities.Task) => {
   });
 };
 </script>
+
+<style scoped>
+div.n-data-table {
+  /* --n-merged-th-color: transparent; */
+  /* --n-merged-td-color: transparent; */
+  --n-merged-border-color: transparent;
+}
+</style>

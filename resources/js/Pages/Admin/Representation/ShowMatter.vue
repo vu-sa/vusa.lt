@@ -1,8 +1,9 @@
 <template>
-  <ShowPageLayout :breadcrumb-options="breadcrumbOptions" :model="matter">
-    <template #title>
-      <span class="text-3xl">{{ matter.title }}</span>
-    </template>
+  <ShowPageLayout
+    :breadcrumb-options="breadcrumbOptions"
+    :model="matter"
+    :title="matter.title"
+  >
     <template #more-options>
       <MoreOptionsButton
         disabled
@@ -11,7 +12,7 @@
       ></MoreOptionsButton>
     </template>
     <GoalCard :matter="matter" :goals="goals" />
-    <div>
+    <template #below>
       <h3>Veiklos</h3>
       <DoingsTabPane
         :matter="matter"
@@ -19,7 +20,7 @@
         :doing-template="doingTemplate"
         :doing-types="doingTypes"
       ></DoingsTabPane>
-    </div>
+    </template>
   </ShowPageLayout>
   <CardModal
     v-model:show="showMatterModal"

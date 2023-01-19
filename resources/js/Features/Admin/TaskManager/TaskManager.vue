@@ -65,11 +65,3 @@ const handleClick = (name: string | null) => {
   }
 };
 </script>
-
-<style scoped>
-div.n-data-table {
-  --n-merged-th-color: transparent;
-  --n-merged-td-color: transparent;
-  --n-merged-border-color: transparent;
-}
-</style>

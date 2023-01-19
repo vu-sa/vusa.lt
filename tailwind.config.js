@@ -22,6 +22,10 @@ module.exports = {
         "vusa-yellow-quaternary": "#fcc557",
         "vusa-yellow-dark": "#a77002",
       },
+      gridTemplateColumns: {
+        ramFill: "repeat(auto-fill, minmax(320px, 1fr))",
+        ramFit: "repeat(auto-fit, minmax(320px, 1fr))",
+      },
     },
   },
 

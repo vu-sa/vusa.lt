@@ -4,7 +4,9 @@ declare namespace App.Entities {
   export type Calendar = App.Models.Calendar;
   export type Category = App.Models.Category;
   export type Comment = App.Models.Comment;
-  export type Contact = App.Models.Contact;
+  export interface Contact extends App.Models.Contact {
+    comments: Array<App.Models.Comment>;
+  }
   export type Doable = App.Models.Pivots.Doable;
   export type Doing = App.Models.Doing;
   export type Dutiable = App.Models.Pivots.Dutiable;

@@ -1,8 +1,11 @@
 <template>
   <ShowPageLayout
+    :current-tab="currentTab"
     :title="institution.name"
     :breadcrumb-options="breadcrumbOptions"
     :model="institution"
+    :related-models="relatedModels"
+    @change:tab="currentTab = $event"
   >
     <template #title>
       <span class="text-3xl">{{ institution.name }}</span>
@@ -21,34 +24,34 @@
         @edit-click="router.visit(route('institutions.edit', institution.id))"
       />
     </template>
-    <div class="mb-16 flex min-h-[16em] gap-4">
-      <LastMeetingCard
-        :last-meeting="institution?.lastMeeting"
-        :institution="institution"
-        :doing-types="doingTypes"
-        content-style="margin-top: 0.5em"
-      ></LastMeetingCard>
-    </div>
-    <div>
-      <h3>Svarstomi institucijos klausimai</h3>
+    <LastMeetingCard
+      :last-meeting="institution?.lastMeeting"
+      :institution="institution"
+      :doing-types="doingTypes"
+      content-style="margin-top: 0.5em"
+    ></LastMeetingCard>
+    <template #below>
       <MattersCardGrid
+        v-if="currentTab == 'Svarstomi klausimai'"
         :institution="institution"
         :matters="institution.matters"
       ></MattersCardGrid>
-    </div>
-    <div class="mt-2">
-      <h3>Susijusios institucijos</h3>
-      <RelatedInstitutions :institution="institution"></RelatedInstitutions>
-    </div>
+      <RelatedInstitutions
+        v-else-if="currentTab === 'Susijusios institucijos'"
+        :institution="institution"
+      ></RelatedInstitutions>
+    </template>
   </ShowPageLayout>
 </template>
 
 <script setup lang="tsx">
 import { NDivider } from "naive-ui";
 import { router } from "@inertiajs/vue3";
-// import { ref } from "vue";
 
 // import { documentTemplate } from "@/Types/formOptions";
+import { computed, ref, watch } from "vue";
+import { useStorage } from "@vueuse/core";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import Icons from "@/Types/Icons/filled";
 import InstitutionAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import LastMeetingCard from "@/Components/Cards/QuickContentCards/LastMeetingCard.vue";
@@ -67,6 +70,29 @@ const breadcrumbOptions: BreadcrumbOption[] = [
   {
     label: props.institution.name,
     icon: Icons.INSTITUTION,
+  },
+];
+
+const currentTab = useStorage("show-institution-tab", "Svarstomi klausimai");
+
+const relatedInstitutionCount = computed(() => {
+  // check all arrays of related institutions length and sum
+  return Object.values(props.institution.relatedInstitutions).reduce(
+    (acc: number, curr) => acc + curr.length,
+    0
+  );
+});
+
+const relatedModels = [
+  {
+    name: "Svarstomi klausimai",
+    icon: Icons.MATTER,
+    count: props.institution.matters?.length,
+  },
+  {
+    name: "Susijusios institucijos",
+    icon: Icons.INSTITUTION,
+    count: relatedInstitutionCount.value,
   },
 ];
 </script>

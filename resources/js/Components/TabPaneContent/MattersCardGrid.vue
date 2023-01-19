@@ -1,35 +1,35 @@
 <template>
-  <div class="grid grid-cols-4 gap-x-4">
+  <div class="grid grid-cols-ramFill gap-4">
     <MatterCard
       v-for="matter in matters"
       :key="matter.id"
+      class="max-w-md"
       :matter="matter"
     ></MatterCard>
-    <div
+    <button
       v-if="institution"
-      role="button"
-      class="mx-1 my-2 flex h-36 flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-zinc-700 p-2 text-zinc-500 duration-200 hover:shadow-inner dark:bg-zinc-900/60"
+      class="flex max-w-md flex-col items-center justify-center gap-2 rounded-sm border px-2 py-4 text-zinc-500 duration-200 hover:shadow-inner dark:border-zinc-700 dark:shadow-zinc-900"
       @click="showModal = true"
     >
-      <NIcon size="40" :depth="5" :component="BookQuestionMark24Filled"></NIcon>
-      <span>Sukurti svarstomą klausimą...</span>
-    </div>
+      <NIcon size="40" :depth="5" :component="AddCircle24Filled"></NIcon>
+      <span class="text-center">Sukurti naują?</span>
+    </button>
+    <CardModal
+      v-model:show="showModal"
+      title="Sukurti klausimą"
+      @close="showModal = false"
+    >
+      <MatterForm
+        :form="matterTemplate"
+        :institution="institution"
+        @submit="handleSubmit"
+      />
+    </CardModal>
   </div>
-  <CardModal
-    v-model:show="showModal"
-    title="Sukurti klausimą"
-    @close="showModal = false"
-  >
-    <MatterForm
-      :form="matterTemplate"
-      :institution="institution"
-      @submit="handleSubmit"
-    />
-  </CardModal>
 </template>
 
 <script setup lang="tsx">
-import { BookQuestionMark24Filled } from "@vicons/fluent";
+import { AddCircle24Filled, BookQuestionMark24Filled } from "@vicons/fluent";
 import { NIcon } from "naive-ui";
 import { ref } from "vue";
 

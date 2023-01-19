@@ -47,7 +47,7 @@ import {
   TextItalic20Regular,
   TextUnderline20Regular,
 } from "@vicons/fluent";
-import { computed, onBeforeUnmount, ref, watch } from "vue";
+import { onBeforeUnmount, ref } from "vue";
 import StarterKit from "@tiptap/starter-kit";
 import TipTapLink from "@tiptap/extension-link";
 import TipTapMarkButton from "./TipTap/TipTapMarkButton.vue";
@@ -63,8 +63,6 @@ const props = defineProps<{
 
 const emit = defineEmits(["update:text", "submit"]);
 const text = ref(props.text);
-const loading = ref(props.loading);
-const disabled = computed(() => props.disabled || loading.value);
 
 const editor = useEditor({
   editorProps: {
@@ -84,14 +82,6 @@ const editor = useEditor({
     // HTML
     emit("update:text", editor.value?.getHTML());
   },
-});
-
-watch(loading, (value) => {
-  if (value) {
-    editor?.value?.blur();
-  } else {
-    editor?.value?.getHTML() == "<p></p>";
-  }
 });
 
 onBeforeUnmount(() => {

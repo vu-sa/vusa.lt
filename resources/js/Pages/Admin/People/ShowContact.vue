@@ -1,5 +1,10 @@
 <template>
-  <ShowPageLayout :title="contact.name" :model="contact">
+  <ShowPageLayout
+    v-model:current-tab="currentTab"
+    :title="contact.name"
+    :model="contact"
+    :related-models="relatedModels"
+  >
     <template #more-options>
       <MoreOptionsButton
         edit
@@ -9,13 +14,14 @@
       ></MoreOptionsButton>
     </template>
     <NDivider />
-    <div class="min-h-[45vh]"></div>
-    <CommentPart
-      v-model:text="commentText"
-      class="mt-auto h-[35vh] border border-zinc-400 dark:border-zinc-700"
-      :commentable_type="'contact'"
-      :model="contact"
-    />
+    <template #below>
+      <CommentPart
+        v-model:text="commentText"
+        class="mt-auto border border-zinc-400 dark:border-zinc-700"
+        :commentable_type="'contact'"
+        :model="contact"
+      />
+    </template>
   </ShowPageLayout>
 </template>
 
@@ -24,6 +30,7 @@ import { ref } from "vue";
 import { router } from "@inertiajs/vue3";
 
 import CommentPart from "@/Features/Admin/CommentViewer/CommentViewer.vue";
+import Icons from "@/Types/Icons/filled";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
 
@@ -32,6 +39,15 @@ const props = defineProps<{
 }>();
 
 const commentText = ref("");
+const currentTab = ref("Komentarai");
+
+const relatedModels = [
+  {
+    name: "Komentarai",
+    icon: Icons.COMMENT,
+    count: props.contact.comments.length,
+  },
+];
 
 const handleEdit = () => {
   router.get(route("contacts.edit", props.contact.id));

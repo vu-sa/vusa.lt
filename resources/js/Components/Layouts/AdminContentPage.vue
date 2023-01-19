@@ -3,11 +3,11 @@
     ><title v-if="title">{{ title }}</title></Head
   >
   <!-- Usually maybe for breadcrumb -->
-  <slot name="above-header" />
+  <div class="ml-4"><slot name="above-header" /></div>
 
   <header
     v-if="title"
-    class="col-span-2 mb-4 flex max-w-7xl flex-row items-center gap-4 pr-8"
+    class="col-span-2 my-4 ml-4 flex max-w-7xl flex-row items-center gap-4 pr-8"
     :class="{ 'pb-2': title }"
   >
     <NButton
@@ -46,7 +46,7 @@
     class="mt-0"
   />
 
-  <div class="max-w-5xl pr-4" :class="{ 'col-span-2': !aside }">
+  <div class="ml-4 max-w-5xl pr-4" :class="{ 'col-span-2': !aside }">
     <FadeTransition appear
       ><div class="overflow-visible">
         <slot /></div

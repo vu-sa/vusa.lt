@@ -3,8 +3,8 @@
     v-model:value="activeKey"
     accordion
     :collapsed="collapsed"
-    :collapsed-width="64"
-    :collapsed-icon-size="28"
+    :collapsed-width="56"
+    :collapsed-icon-size="26"
     :options="menuOptions"
   />
 </template>

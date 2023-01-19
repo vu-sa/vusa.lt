@@ -36,7 +36,7 @@
       <NLayoutSider
         class="subtle-gray-gradient my-4 ml-4 h-fit rounded-md from-white shadow-md"
         collapse-mode="width"
-        :collapsed-width="isMobile ? 0 : 76"
+        :collapsed-width="isMobile ? 0 : 69"
         :width="220"
         :collapsed="collapsed"
         show-trigger="bar"
@@ -65,7 +65,7 @@
           <Changelog />
         </NModal>
       </NLayoutSider>
-      <NLayoutContent content-style="padding: 0rem 0rem 0rem 3rem">
+      <NLayoutContent :content-style="{ paddingLeft: '2rem' }">
         <NMessageProvider><slot /></NMessageProvider>
       </NLayoutContent>
     </NLayout>
