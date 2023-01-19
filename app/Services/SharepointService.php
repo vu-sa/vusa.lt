@@ -103,7 +103,7 @@ class SharepointService {
         $configuration = new ChildrenRequestBuilderGetRequestConfiguration();
         $queryParameters = new ChildrenRequestBuilderGetQueryParameters();
 
-        $queryParameters->expand = ['listItem'];
+        $queryParameters->expand = ['listItem', 'thumbnails'];
         $configuration->queryParameters = $queryParameters;
         
         $response = $this->graphServiceClient
@@ -155,29 +155,36 @@ class SharepointService {
                         'additionalData' => $driveItem->getListItem()->getFields()->getAdditionalData(),
                     ],
                 ],
+                'thumbnails' => collect($driveItem->getThumbnails())->map(function ($thumbnail) {
+                    return [
+                        'large' => [
+                            'url' => $thumbnail->getLarge()->getUrl(),
+                        ],
+                    ];
+                })
             ];
         }
 
         return $parsedDriveItems;
     }
 
-    public function uploadFile($driveId = null, $driveItem = null, $file, $listItemData) {
-        $driveId = $driveId ?? $this->getDriveId();
-        $driveItemId = $driveItemId ?? $this->getDriveItemId_General();
+    // public function uploadFile($driveId = null, $driveItem = null, $file, $listItemData) {
+    //     $driveId = $driveId ?? $this->getDriveId();
+    //     $driveItemId = $driveItemId ?? $this->getDriveItemId_General();
 
-        $driveItem = new DriveItem();
-        $driveItem->setName($file->getClientOriginalName());
-        $driveItem->setFile(new File());
-        $driveItem->getFile()->setMimeType($file->getMimeType());
-        $driveItem->setAdditionalData([
-            'listItem' => [
-                'fields' => $listItemData
-            ]
-        ]);
+    //     $driveItem = new DriveItem();
+    //     $driveItem->setName($file->getClientOriginalName());
+    //     $driveItem->setFile(new File());
+    //     $driveItem->getFile()->setMimeType($file->getMimeType());
+    //     $driveItem->setAdditionalData([
+    //         'listItem' => [
+    //             'fields' => $listItemData
+    //         ]
+    //     ]);
 
-        $response = $this->graphServiceClient
-            ->drivesById($driveId)
-            ->itemsById($driveItemId)
-            ->createUploadSession()->post($driveItem);
-    }
+    //     $response = $this->graphServiceClient
+    //         ->drivesById($driveId)
+    //         ->itemsById($driveItemId)
+    //         ->createUploadSession()->post($driveItem);
+    // }
 }

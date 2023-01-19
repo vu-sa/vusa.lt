@@ -5,8 +5,22 @@
       :class="gradientClasses"
       @click="$emit('fileButtonClick')"
     >
-      <div class="align-center flex justify-center">
-        <NIcon size="64" :component="fileTypeIcon"></NIcon>
+      <div
+        class="align-center flex h-full justify-center overflow-hidden rounded-t-md"
+      >
+        <FadeTransition mode="out-in">
+          <img
+            v-if="file.thumbnails?.[0].large?.url && showThumbnail"
+            class="h-full w-full rounded-t-md object-cover object-top"
+            :src="file.thumbnails?.[0].large?.url"
+          />
+          <NIcon
+            v-else
+            class="my-auto"
+            size="64"
+            :component="fileTypeIcon"
+          ></NIcon>
+        </FadeTransition>
       </div>
       <div
         class="flex h-full w-full flex-col justify-center overflow-auto rounded-b-md bg-white dark:bg-zinc-900 dark:text-white"
@@ -27,12 +41,15 @@
 import { File, FilePdf, FileWord } from "@vicons/fa";
 import { NIcon } from "naive-ui";
 import { computed } from "vue";
+
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import type { DriveItem } from "@microsoft/microsoft-graph-types";
 
 defineEmits<{ (event: "fileButtonClick"): void }>();
 
 const props = defineProps<{
   file: DriveItem;
+  showThumbnail: boolean;
 }>();
 
 const gradientClasses = computed(() => {

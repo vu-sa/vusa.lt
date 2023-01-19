@@ -9,21 +9,26 @@
           ><template #icon><NIcon :component="Add24Filled"></NIcon></template
         ></NButton>
       </div>
-      <NButtonGroup class="ml-auto">
-        <NButton
-          :disabled="loading"
-          :type="viewMode === 'grid' ? 'primary' : 'default'"
-          @click="viewMode = 'grid'"
-          ><template #icon><NIcon :component="Grid20Filled"></NIcon></template
-        ></NButton>
-        <NButton
-          :disabled="loading"
-          :type="viewMode === 'list' ? 'primary' : 'default'"
-          @click="viewMode = 'list'"
-          ><template #icon
-            ><NIcon :component="AppsList20Filled"></NIcon></template
-        ></NButton>
-      </NButtonGroup>
+      <div class="ml-auto inline-flex items-center gap-4">
+        <NSwitch v-model:value="showThumbnail">
+          <template #icon><NIcon :component="Image24Regular"></NIcon></template>
+        </NSwitch>
+        <NButtonGroup>
+          <NButton
+            :disabled="loading"
+            :type="viewMode === 'grid' ? 'primary' : 'default'"
+            @click="viewMode = 'grid'"
+            ><template #icon><NIcon :component="Grid20Filled"></NIcon></template
+          ></NButton>
+          <NButton
+            :disabled="loading"
+            :type="viewMode === 'list' ? 'primary' : 'default'"
+            @click="viewMode = 'list'"
+            ><template #icon
+              ><NIcon :component="AppsList20Filled"></NIcon></template
+          ></NButton>
+        </NButtonGroup>
+      </div>
     </div>
     <div class="mt-4 flex">
       <FilterPopselect
@@ -41,6 +46,7 @@
       :results="results"
       :loading="loading"
       :view-mode="viewMode"
+      :show-thumbnail="showThumbnail"
       @select:file="handleFileSelect"
     />
     <FileDrawer
@@ -55,10 +61,16 @@
 </template>
 
 <script setup lang="tsx">
-import { Add24Filled, AppsList20Filled, Grid20Filled } from "@vicons/fluent";
-import { NButton, NButtonGroup, NDivider, NIcon } from "naive-ui";
+import {
+  Add24Filled,
+  AppsList20Filled,
+  Grid20Filled,
+  Image24Regular,
+} from "@vicons/fluent";
+import { NButton, NButtonGroup, NDivider, NIcon, NSwitch } from "naive-ui";
 import { computed, ref } from "vue";
 
+import { useStorage } from "@vueuse/core";
 import FileDrawer from "./FileDrawer.vue";
 import FileUploader from "../Uploader/FileUploader.vue";
 import FileViewer from "./FileGridTable.vue";
@@ -75,7 +87,8 @@ const props = defineProps<{
 
 const loading = ref(false);
 const showFileUploader = ref(false);
-const viewMode = ref("grid");
+const viewMode = useStorage("fileManager-viewMode", "grid");
+const showThumbnail = useStorage("fileManager-showThumbnail", true);
 const selectedFile = ref<MyDriveItem | null>(null);
 const contentTypeFilter = ref<string | null>(null);
 

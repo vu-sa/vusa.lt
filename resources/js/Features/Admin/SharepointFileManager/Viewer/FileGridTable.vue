@@ -10,6 +10,7 @@
       <div v-for="result in results" :key="result.refIndex">
         <ModelDocumentButton
           :loading="loading"
+          :show-thumbnail="showThumbnail"
           :file="result.item"
           @file-button-click="$emit('select:file', result.item)"
         ></ModelDocumentButton>
@@ -43,6 +44,7 @@ const emit = defineEmits<{
 defineProps<{
   results: Array<{ item: MyDriveItem; refIndex: number }>;
   loading: boolean;
+  showThumbnail: boolean;
   viewMode: string;
 }>();
 

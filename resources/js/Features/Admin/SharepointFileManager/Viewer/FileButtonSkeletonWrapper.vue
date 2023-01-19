@@ -8,6 +8,7 @@
       <FileButton
         v-else
         :file="file"
+        :show-thumbnail="showThumbnail"
         @file-button-click="$emit('fileButtonClick')"
       ></FileButton>
     </div>
@@ -25,5 +26,6 @@ defineEmits(["fileButtonClick"]);
 defineProps<{
   file: MyDriveItem;
   loading: boolean;
+  showThumbnail: boolean;
 }>();
 </script>

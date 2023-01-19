@@ -14,5 +14,6 @@ declare global {
     | "lastModifiedDateTime"
     | "webUrl"
     | "listItem"
+    | "thumbnails"
   >;
 }
