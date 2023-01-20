@@ -85,27 +85,27 @@ const darkThemeOverrides = {
   },
 };
 
-posthog.init("phc_FwwRPxqMLLsI70ttBuhSPfeP0giF74INihec3WiuByC", {
-  api_host: "https://app.posthog.com",
-});
+// posthog.init(import.meta.env.VITE_POSTHOG_API_KEY, {
+//   api_host: "https://app.posthog.com",
+// });
 
-if (usePage().props?.auth?.user) {
-  posthog.identify(usePage().props.auth.user.id);
-}
+// if (usePage().props?.auth?.user) {
+//   posthog.identify(usePage().props.auth.user.id);
+// }
 
 onMounted(() => {
-  (function (c, l, a, r, i, t, y) {
-    c[a] =
-      c[a] ||
-      function () {
-        (c[a].q = c[a].q || []).push(arguments);
-      };
-    t = l.createElement(r);
-    t.async = 1;
-    t.src = "https://www.clarity.ms/tag/" + i;
-    y = l.getElementsByTagName(r)[0];
-    y.parentNode.insertBefore(t, y);
-  })(window, document, "clarity", "script", "fads3o3wtb");
+  // (function (c, l, a, r, i, t, y) {
+  //   c[a] =
+  //     c[a] ||
+  //     function () {
+  //       (c[a].q = c[a].q || []).push(arguments);
+  //     };
+  //   t = l.createElement(r);
+  //   t.async = 1;
+  //   t.src = "https://www.clarity.ms/tag/" + i;
+  //   y = l.getElementsByTagName(r)[0];
+  //   y.parentNode.insertBefore(t, y);
+  // })(window, document, "clarity", "script", "fads3o3wtb");
 
   mounted.value = true;
 });

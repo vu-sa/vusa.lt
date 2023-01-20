@@ -11,6 +11,7 @@ use App\Models\Category;
 use Illuminate\Support\Facades\DB;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use App\Models\User;
+use App\Services\ModelIndexer;
 use Illuminate\Support\Facades\Auth;
 
 class CalendarController extends ResourceController
@@ -24,24 +25,13 @@ class CalendarController extends ResourceController
     {
         $this->authorize('viewAny', [Calendar::class, $this->authorizer]);
         
-        $padaliniai = $request->padaliniai;
-        $title = $request->title;
+        $search = request()->input('text');
 
-        $calendar = Calendar::
-            // check if admin, if not return only pages from current user padalinys
-            when(!$request->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($request) {
-                $query->where('padalinys_id', '=', $request->user()->padalinys()->id);
-                // check request for padaliniai, if not empty return only pages from request padaliniai
-            })->when(!empty($padaliniai), function ($query) use ($padaliniai) {
-                $query->whereIn('padalinys_id', $padaliniai);
-            })->when(!is_null($title), function ($query) use ($title) {
-                $query->where('title', 'like', "%{$title}%");
-            })->with(['padalinys' => function ($query) {
-                $query->select('id', 'shortname', 'alias');
-            }])->with('category')->orderByDesc('date')->paginate(20);
+        $indexer = new ModelIndexer();
+        $calendar = $indexer->execute(Calendar::class, $search, 'title', $this->authorizer, null);
 
         return Inertia::render('Admin/Calendar/IndexCalendarEvents', [
-            'calendar' => $calendar,
+            'calendar' => $calendar->paginate(20),
         ]);
     }
 

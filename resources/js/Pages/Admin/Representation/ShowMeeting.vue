@@ -3,6 +3,9 @@
     :model="meeting"
     :breadcrumb-options="breadcrumbOptions"
     :title="meetingTitle"
+    :related-models="relatedModels"
+    :current-tab="currentTab"
+    @change:tab="currentTab = $event"
   >
     <template #more-options>
       <MoreOptionsButton
@@ -20,13 +23,6 @@
           @success="showModal = false"
         ></MeetingForm>
       </CardModal>
-    </template>
-    <template #below-header>
-      <div class="flex gap-2">
-        <NTag v-for="type in meeting.types" :key="type.id" size="small">{{
-          type.title
-        }}</NTag>
-      </div>
     </template>
     <div>
       <h3>Darbotvarkė</h3>
@@ -48,35 +44,35 @@
         </li>
       </ol>
     </div>
-    <NDivider />
-    <div class="m-4 flex max-w-4xl flex-wrap gap-6">
-      <FileButton
-        v-for="document in sharepointFiles"
-        :key="document.id"
-        :document="document"
-        @click="selectedDocument = document"
-      ></FileButton>
-      <NewGridItemButton :icon="Icons.SHAREPOINT_FILE"
-        >Įkelti naują dokumentą?</NewGridItemButton
-      >
-    </div>
-    <NDivider />
-    <h2>Susitikimo užduotys</h2>
-    <TaskManager
-      :taskable="{ id: meeting.id, type: 'App\\Models\\Meeting' }"
-      :tasks="meeting.tasks"
-    />
+    <CardModal
+      v-model:show="showAgendaItemModal"
+      @close="showAgendaItemModal = false"
+    >
+      <AgendaItemForm
+        v-if="selectedAgendaItem"
+        :agenda-item="selectedAgendaItem"
+        @submit="handleAgendaItemSubmit"
+      />
+    </CardModal>
+    <template #below>
+      <div v-if="currentTab === 'Failai'" class="grid grid-cols-ramFill gap-4">
+        <FileButton
+          v-for="document in sharepointFiles"
+          :key="document.id"
+          :document="document"
+          @click="selectedDocument = document"
+        ></FileButton>
+        <NewGridItemButton :icon="Icons.SHAREPOINT_FILE"
+          >Įkelti naują dokumentą?</NewGridItemButton
+        >
+      </div>
+      <TaskManager
+        v-else-if="currentTab === 'Užduotys'"
+        :taskable="{ id: meeting.id, type: 'App\\Models\\Meeting' }"
+        :tasks="meeting.tasks"
+      />
+    </template>
   </ShowPageLayout>
-  <CardModal
-    v-model:show="showAgendaItemModal"
-    @close="showAgendaItemModal = false"
-  >
-    <AgendaItemForm
-      v-if="selectedAgendaItem"
-      :agenda-item="selectedAgendaItem"
-      @submit="handleAgendaItemSubmit"
-    />
-  </CardModal>
 </template>
 
 <script setup lang="tsx">
@@ -85,12 +81,14 @@ import { Edit24Filled, PeopleTeam24Filled } from "@vicons/fluent";
 import { computed, ref } from "vue";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
+import { genitivizeEveryWord } from "@/Utils/String";
 import { modelTypes } from "@/Types/formOptions";
 import { router } from "@inertiajs/vue3";
+import { useStorage } from "@vueuse/core";
 import AgendaItemForm from "@/Components/AdminForms/AgendaItemForm.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import FileButton from "@/Features/Admin/SharepointFileManager/Viewer/FileButton.vue";
-import Icons from "@/Types/Icons/regular";
+import Icons from "@/Types/Icons/filled";
 import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import NewGridItemButton from "@/Components/Buttons/NewGridItemButton.vue";
@@ -106,6 +104,7 @@ const props = defineProps<{
 
 const showMeetingModal = ref(false);
 const showAgendaItemModal = ref(false);
+const currentTab = useStorage("show-meeting-tab", "Failai");
 
 const selectedDocument = ref<App.Entities.SharepointFile | null>(null);
 const selectedAgendaItem = ref<App.Entities.AgendaItem | null>(null);
@@ -117,7 +116,7 @@ const meetingTitle = `${formatStaticTime(new Date(props.meeting.start_time), {
   year: "numeric",
   month: "long",
   day: "numeric",
-})} ${mainInstitution.name} posėdis`;
+})} ${genitivizeEveryWord(mainInstitution.name)} posėdis`;
 
 const sharepointFileTypeOptions = computed(() => {
   return modelTypes.sharepointFile.map((type) => ({
@@ -162,4 +161,17 @@ const handleAgendaItemSubmit = (agendaItem: App.Entities.AgendaItem) => {
     },
   });
 };
+
+const relatedModels = [
+  {
+    name: "Failai",
+    icon: Icons.SHAREPOINT_FILE,
+    count: props.meeting.files.length,
+  },
+  {
+    name: "Užduotys",
+    icon: Icons.TASK,
+    count: props.meeting.tasks?.length,
+  },
+];
 </script>

@@ -16,10 +16,11 @@ class ModelIndexer {
     {
         if (!class_exists($modelClass)) {
             // return exception that the class doesn't exist
-            return new Exception('Class ' . $modelClass . ' does not exist');
+            new Exception('Class ' . $modelClass . ' does not exist');
         }
         
         $user = User::find((Auth::id()));
+        
         $padalinysRelationString = $hasManyPadalinys ? 'padaliniai' : 'padalinys';
         
         // first need to check if has permission to view all models

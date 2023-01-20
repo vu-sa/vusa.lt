@@ -75,9 +75,9 @@
       <h2>Artėjantys posėdžiai</h2>
 
       <div
-        class="grid grid-cols-ramFill gap-x-4 overflow-hidden"
+        class="grid grid-cols-ramFill gap-x-4 overflow-y-scroll"
         :class="{
-          'max-h-[10rem]': !meetingExpanded,
+          'max-h-[16rem]': !meetingExpanded,
           'max-h-[100%]': meetingExpanded,
         }"
       >
@@ -92,7 +92,7 @@
           ></MeetingCard>
         </template>
       </div>
-      <div
+      <!-- <div
         v-if="!meetingExpanded && institutions.length > 3"
         class="absolute bottom-0 h-12 w-full bg-gradient-to-b from-transparent to-[rgb(250,_248,_248)] text-center dark:to-[rgb(30,_30,_33)]"
       >
@@ -100,7 +100,7 @@
           ><template #icon
             ><NIcon :component="MoreHorizontal24Regular"></NIcon></template
         ></NButton>
-      </div>
+      </div> -->
     </section>
     <section id="naudingos-nuorodos">
       <h2 class="mb-4">Naudingos nuorodos</h2>

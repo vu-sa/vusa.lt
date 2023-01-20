@@ -2,7 +2,7 @@
   <div class="mb-4 flex gap-2">
     <FilterPopselect
       :options="buttonNames"
-      @click="handleClick"
+      @select:value="handleClick"
     ></FilterPopselect
     ><TaskCreator :taskable="taskable" />
   </div>

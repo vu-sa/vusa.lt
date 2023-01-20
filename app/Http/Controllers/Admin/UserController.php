@@ -14,6 +14,7 @@ use App\Providers\RouteServiceProvider;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Models\Role;
+use App\Services\ModelIndexer;
 
 class UserController extends ResourceController
 {
@@ -26,22 +27,14 @@ class UserController extends ResourceController
     {
         $this->authorize('viewAny', [User::class, $this->authorizer]);
         
-        // For search
-        $name = request()->input('text');
+        $search = request()->input('text');
 
-        $users = User::
-        when(!is_null($name), function ($query) use ($name) {
-            $query->where('name', 'like', "%{$name}%")->orWhere('email', 'like', "%{$name}%");
-        })->
-            when(!$request->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
-                $query->whereHas('duties.institution', function ($query) {
-                    $query->where('padalinys_id', User::find(Auth::id())->padalinys()->id);
-                });
-        })->with(['duties:id,institution_id', 'duties.institution:id,padalinys_id','duties.institution.padalinys:id,shortname'])
-        ->paginate(20);
+        $indexer = new ModelIndexer();
+        $users = $indexer->execute(User::class, $search, 'name', $this->authorizer);
 
         return Inertia::render('Admin/People/IndexUser', [
-            'users' => $users,
+            'users' => $users->with('duties:id,institution_id', 'duties.institution:id,padalinys_id','duties.institution.padalinys:id,shortname')
+            ->paginate(20),
         ]);
     }
 

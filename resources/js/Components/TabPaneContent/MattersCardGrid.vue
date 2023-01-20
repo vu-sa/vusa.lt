@@ -6,14 +6,12 @@
       class="max-w-md"
       :matter="matter"
     ></MatterCard>
-    <button
+    <NewGridItemButton
       v-if="institution"
-      class="flex max-w-sm flex-col items-center justify-center gap-2 rounded-sm border px-2 py-4 text-zinc-500 duration-200 hover:shadow-inner dark:border-zinc-700 dark:shadow-zinc-900"
+      :icon="AddCircle24Filled"
       @click="showModal = true"
     >
-      <NIcon size="40" :depth="5" :component="AddCircle24Filled"></NIcon>
-      <span class="text-center">Sukurti naują?</span>
-    </button>
+    </NewGridItemButton>
     <CardModal
       v-model:show="showModal"
       title="Sukurti klausimą"
@@ -37,6 +35,7 @@ import { matterTemplate } from "@/Types/formTemplates";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import MatterCard from "@/Components/Cards/MatterCard.vue";
 import MatterForm from "@/Components/AdminForms/MatterForm.vue";
+import NewGridItemButton from "../Buttons/NewGridItemButton.vue";
 
 const props = defineProps<{
   matters: App.Entities.Matter[];

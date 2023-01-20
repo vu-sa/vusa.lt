@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
 use App\Http\Controllers\ResourceController;
+use App\Services\ModelIndexer;
 use Illuminate\Support\Facades\DB;
 
 class MainPageController extends ResourceController
@@ -20,24 +21,13 @@ class MainPageController extends ResourceController
     {
         $this->authorize('viewAny', [MainPage::class, $this->authorizer]);
         
-        $padaliniai = request()->input('padaliniai');
-        $text = request()->input('text');
+        $search = request()->input('text');
 
-        $mainPages = MainPage::
-            // check if admin, if not return only pages from current user padalinys
-            when(!$request->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($request) {
-                $query->where('padalinys_id', '=', $request->user()->padalinys()->id);
-                // check request for padaliniai, if not empty return only pages from request padaliniai
-            })->when(!empty($padaliniai), function ($query) use ($padaliniai) {
-                $query->whereIn('padalinys_id', $padaliniai);
-            })->when(!is_null($text), function ($query) use ($text) {
-                $query->where('text', 'like', "%{$text}%");
-            })->with(['padalinys' => function ($query) {
-                $query->select('id', 'shortname', 'alias');
-            }])->orderByDesc('created_at')->paginate(20);
+        $indexer = new ModelIndexer();
+        $mainPages = $indexer->execute(MainPage::class, $search, 'text', $this->authorizer, true);
 
         return Inertia::render('Admin/Content/IndexMainPages', [
-            'mainPages' => $mainPages,
+            'mainPages' => $mainPages->paginate(20),
         ]);
     }
 

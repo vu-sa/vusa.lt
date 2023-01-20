@@ -27,8 +27,25 @@ export const genitivize = (name: string | null) => {
   return name
     .replace(/a$/, "os")
     .replace(/as$/, "o")
+    .replace(/ė$/, "ės")
+    .replace(/is$/, "io")
     .replace(/iai$/, "ių")
     .replace(/ė$/, "ės");
+};
+
+export const genitivizeEveryWord = (name: string | null) => {
+  if (name === null) {
+    return "";
+  }
+
+  // delimit by spaces
+  const words = name.split(" ");
+
+  // genitivize each word
+  const genitivizedWords = words.map((word) => genitivize(word));
+
+  // join back together
+  return genitivizedWords.join(" ");
 };
 
 export const splitFileNameAndExtension = (fileName: string) => {

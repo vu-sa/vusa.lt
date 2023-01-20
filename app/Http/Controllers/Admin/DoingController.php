@@ -6,6 +6,7 @@ use App\Models\Doing;
 use App\Http\Controllers\Controller as Controller;
 use App\Http\Controllers\ResourceController;
 use App\Services\DoingStatusManager;
+use App\Services\ModelIndexer;
 use App\Services\SharepointAppGraph;
 use App\Services\TaskCreator;
 use Illuminate\Http\Request;
@@ -24,24 +25,13 @@ class DoingController extends ResourceController
     {
         $this->authorize('viewAny', [Doing::class, $this->authorizer]);
 
-        $search = request()->input('search');
+        $search = request()->input('text');
 
-        $doings = Doing::with('matters')->when(!request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
-            $query->where('padalinys_id', '=', request()->user()->padalinys()->id);
-        })->when(!is_null($search), function ($query) use ($search) {
-            $query->where('title', 'like', "%{$search}%");
-        });
-
-        $unpaginatedDoings = $doings->get();
-
-        // pluck all matters 
-        $paginatedDoings = $doings->paginate(20);
-
-        $matters = $unpaginatedDoings->pluck('matters')->flatten()->unique('id')->values();
+        $indexer = new ModelIndexer();
+        $doings = $indexer->execute(Doing::class, $search, 'title', $this->authorizer, null);
 
         return Inertia::render('Admin/Representation/IndexDoing', [
-            'doings' => $paginatedDoings,
-            'matters' => $matters,
+            'doings' => $doings->paginate(20),
         ]);
     }
 

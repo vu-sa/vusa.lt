@@ -57,7 +57,10 @@
     />
     <slot></slot>
     <template #footer>
-      <div class="flex justify-between gap-2">
+      <div
+        v-if="institution.types?.length > 0"
+        class="flex justify-between gap-2"
+      >
         <NTag
           v-for="type in institution.types"
           :key="type.id"

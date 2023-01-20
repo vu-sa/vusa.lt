@@ -28,8 +28,8 @@ class InstitutionController extends ResourceController
 
         $search = request()->input('text');
 
-        $institutions = new ModelIndexer();
-        $institutions = $institutions->execute(Institution::class, $search, 'name', $this->authorizer, null);
+        $indexer = new ModelIndexer();
+        $institutions = $indexer->execute(Institution::class, $search, 'name', $this->authorizer, null);
 
         return Inertia::render('Admin/People/IndexInstitution', [
             'institutions' => $institutions->paginate(20),

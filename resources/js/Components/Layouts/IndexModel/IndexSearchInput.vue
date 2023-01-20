@@ -8,11 +8,14 @@
     placeholder="Ieškoti pagal pavadinimą..."
     :loading="loading"
     @input="handleSearchInput"
+    ><template #prefix>
+      <NIcon class="mr-1" :component="Search24Filled" /> </template
   ></NInput>
 </template>
 
 <script setup lang="ts">
-import { NInput } from "naive-ui";
+import { NIcon, NInput } from "naive-ui";
+import { Search24Filled } from "@vicons/fluent";
 import { ref } from "vue";
 import { router } from "@inertiajs/vue3";
 import { useDebounceFn } from "@vueuse/core";

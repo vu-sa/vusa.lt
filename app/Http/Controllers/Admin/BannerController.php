@@ -8,6 +8,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
 use App\Http\Controllers\ResourceController;
 use App\Models\Padalinys;
+use App\Services\ModelIndexer;
 
 class BannerController extends ResourceController
 {
@@ -22,24 +23,13 @@ class BannerController extends ResourceController
         
         $this->authorize('viewAny', [Banner::class, $this->authorizer]);
         
-        $title = request()->input('title');
-        $padaliniai = request()->input('padaliniai');
+        $search = request()->input('text');
 
-        $banners = Banner::
-            // check if admin, if not return only pages from current user padalinys
-            when(!$request->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($request) {
-                $query->where('padalinys_id', '=', $request->user()->padalinys()->id);
-                // check request for padaliniai, if not empty return only pages from request padaliniai
-            })->when(!empty($padaliniai), function ($query) use ($padaliniai) {
-                $query->whereIn('padalinys_id', $padaliniai);
-            })->when(!is_null($title), function ($query) use ($title) {
-                $query->where('title', 'like', "%{$title}%");
-            })->with(['padalinys' => function ($query) {
-                $query->select('id', 'shortname', 'alias');
-            }])->orderByDesc('created_at')->paginate(20);
-
+        $indexer = new ModelIndexer();
+        $banners = $indexer->execute(Banner::class, $search, 'title', $this->authorizer, false);
+        
         return Inertia::render('Admin/Content/IndexBanners', [
-            'banners' => $banners
+            'banners' => $banners->paginate(20)
         ]);
     }
 
