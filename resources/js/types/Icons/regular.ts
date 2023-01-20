@@ -62,7 +62,7 @@ const modelIcons: Record<keyof typeof ModelEnum, Component> = {
   SAZININGAI_EXAM: PeopleSearch24Regular,
   SAZININGAI_EXAM_FLOW: PeopleSearch24Regular,
   SAZININGAI_EXAM_OBSERVER: PeopleSearch24Regular,
-  SHAREPOINT_FILE: DocumentSave24Regular,
+  SHAREPOINT_FILE: DocumentMultiple24Regular,
   TAG: Tag24Regular,
   TASK: TaskListSquareLtr24Regular,
   TYPE: DocumentSettings20Regular,

@@ -6,9 +6,9 @@
     />
     <div
       v-if="editor"
-      class="border-top-0 flex items-center justify-between border-zinc-400 p-4"
+      class="border-top-0 flex items-center justify-between gap-2 border-zinc-400 p-4"
     >
-      <div class="flex items-center gap-2">
+      <div class="flex flex-wrap items-center gap-2">
         <TipTapMarkButton
           :editor="editor"
           :type="'bold'"

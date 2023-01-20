@@ -219,7 +219,7 @@ const menuOptions = computed(() => [
       auth?.can.index.mainPage ||
       auth?.can.index.navigation ||
       auth?.can.index.banner ||
-      auth?.can.index.file ||
+      auth?.can.index.sharepointFile ||
       auth?.can.index.calendar,
     children: [
       {
@@ -287,7 +287,7 @@ const menuOptions = computed(() => [
           return <Link href={route("files.index")}>Failai</Link>;
         },
         key: "files",
-        show: auth?.can.index.SharepointFile,
+        show: auth?.can.index.sharepointFile,
         icon: () => {
           return <NIcon component={Folder24Regular}></NIcon>;
         },
@@ -327,6 +327,16 @@ const menuOptions = computed(() => [
         show: auth?.can.index.institution,
       },
     ],
+  },
+  {
+    label: () => {
+      return <Link href={route("sharepoint.index")}>Failai</Link>;
+    },
+    key: "files",
+    show: auth?.can.index.sharepointFile,
+    icon: () => {
+      return <NIcon component={Icons.SHAREPOINT_FILE}></NIcon>;
+    },
   },
   {
     label: "Nustatymai",
