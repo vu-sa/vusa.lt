@@ -22,7 +22,7 @@
 import { NButton, NForm, NFormItemGi, NGrid, NIcon, NInput } from "naive-ui";
 import { ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
-import Icons from "@/Types/icons/filled";
+import Icons from "@/Types/Icons/filled";
 
 const emit = defineEmits(["formSuccess"]);
 
