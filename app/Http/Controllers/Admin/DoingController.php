@@ -28,7 +28,7 @@ class DoingController extends ResourceController
         $search = request()->input('text');
 
         $indexer = new ModelIndexer();
-        $doings = $indexer->execute(Doing::class, $search, 'title', $this->authorizer, null);
+        $doings = $indexer->execute(Doing::class, $search, 'title', $this->authorizer);
 
         return Inertia::render('Admin/Representation/IndexDoing', [
             'doings' => $doings->paginate(20),

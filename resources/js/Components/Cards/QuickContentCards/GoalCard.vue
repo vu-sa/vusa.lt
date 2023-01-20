@@ -82,7 +82,6 @@ const handleModalOpen = () => {
 };
 
 const handleGoalChange = (goal: App.Entities.Goal) => {
-  console.log(goal);
   router.post(
     route("matters.attachGoal", props.matter.id),
     { goal_id: goal.id },

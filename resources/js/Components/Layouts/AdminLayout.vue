@@ -112,7 +112,6 @@ defineProps<{
 
 const showModal = ref(false);
 const mounted = ref(false);
-const collapsed = useStorage("admin-menu-collapsed", false);
 const online = useOnline();
 const message = useMessage();
 
@@ -167,6 +166,8 @@ if (usePage().props.app.env === "local") {
 
 // compute if the width is less than 768px
 const isMobile = ref(window.innerWidth < 768);
+
+const collapsed = useStorage("admin-menu-collapsed", isMobile.value);
 
 // update the isMobile value when the window is resized
 window.addEventListener("resize", () => {

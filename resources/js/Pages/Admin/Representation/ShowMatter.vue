@@ -3,6 +3,9 @@
     :breadcrumb-options="breadcrumbOptions"
     :model="matter"
     :title="matter.title"
+    :current-tab="currentTab"
+    :related-models="relatedModels"
+    @change:tab="currentTab = $event"
   >
     <template #more-options>
       <MoreOptionsButton
@@ -12,8 +15,17 @@
       ></MoreOptionsButton>
     </template>
     <GoalCard :matter="matter" :goals="goals" />
+    <CardModal
+      v-model:show="showMatterModal"
+      title="Redaguoti klausimą"
+      @close="showMatterModal = false"
+      ><MatterForm
+        :form="matter"
+        :institution="firstInstitution"
+        @submit="handleMatterSubmit"
+      ></MatterForm
+    ></CardModal>
     <template #below>
-      <h3>Veiklos</h3>
       <DoingsTabPane
         :matter="matter"
         :doings="matter.doings"
@@ -22,16 +34,6 @@
       ></DoingsTabPane>
     </template>
   </ShowPageLayout>
-  <CardModal
-    v-model:show="showMatterModal"
-    title="Redaguoti klausimą"
-    @close="showMatterModal = false"
-    ><MatterForm
-      :form="matter"
-      :institution="firstInstitution"
-      @submit="handleMatterSubmit"
-    ></MatterForm
-  ></CardModal>
 </template>
 
 <script setup lang="tsx">
@@ -42,6 +44,7 @@ import { doingTemplate } from "@/Types/formTemplates";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import DoingsTabPane from "@/Components/TabPaneContent/DoingsTabPane.vue";
 import GoalCard from "@/Components/Cards/QuickContentCards/GoalCard.vue";
+import Icons from "@/Types/Icons/filled";
 import MatterForm from "@/Components/AdminForms/MatterForm.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
@@ -54,6 +57,16 @@ const props = defineProps<{
 }>();
 
 const showMatterModal = ref(false);
+
+const currentTab = ref("Veiksmai");
+
+const relatedModels = [
+  {
+    name: "Veiksmai",
+    icon: Icons.DOING,
+    count: props.matter.doings?.length ?? 0,
+  },
+];
 
 const firstInstitution = computed(() => {
   if (props.matter.institutions?.length === 0) {

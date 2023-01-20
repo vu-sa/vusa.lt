@@ -1,8 +1,9 @@
 <template>
-  <ShowPageLayout :breadcrumb-options="breadcrumbOptions" :model="doing">
-    <template #title>
-      {{ doing.title }}
-    </template>
+  <ShowPageLayout
+    :title="doing.title"
+    :breadcrumb-options="breadcrumbOptions"
+    :model="doing"
+  >
     <template #more-options>
       <MoreOptionsButton
         edit
@@ -28,7 +29,7 @@ import CardModal from "@/Components/Modals/CardModal.vue";
 import DoingForm from "@/Components/AdminForms/DoingForm.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
-import type { BreadcrumbOption } from "@/Components/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
+import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 
 const props = defineProps<{
   doing: App.Entities.Doing;

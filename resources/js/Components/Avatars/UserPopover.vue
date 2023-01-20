@@ -7,7 +7,7 @@
   >
     <template #trigger>
       <UserAvatar v-if="!showName" :user="user" :size="size"></UserAvatar>
-      <div v-else class="inline-flex items-center gap-2">
+      <div v-else class="not-prose inline-flex items-center gap-2">
         <UserAvatar :user="user" :size="size"></UserAvatar>
         <span>{{ user.name }}</span>
       </div>
