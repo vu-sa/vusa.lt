@@ -4,6 +4,7 @@ import { createInertiaApp } from "@inertiajs/vue3";
 import { defineAsyncComponent } from "vue";
 import { i18nVue } from "laravel-vue-i18n";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
+// import PosthogPlugin from "./Plugins/posthog";
 
 const AdminLayout = defineAsyncComponent(
   () => import("./PersistentLayouts/PersistentAdminLayout.vue")
@@ -41,17 +42,20 @@ createInertiaApp({
     return page;
   },
   setup({ App, props, el, plugin }) {
-    return createApp({ render: () => h(App, props) })
-      .use(plugin)
-      .use(i18nVue, {
-        fallbackLang: "lt",
-        resolve: async (lang: string) => {
-          const langs = import.meta.glob("../../lang/*.json");
-          return await langs[`../../lang/${lang}.json`]();
-        },
-      })
-      .use(ZiggyVue)
-      .mount(el);
+    return (
+      createApp({ render: () => h(App, props) })
+        .use(plugin)
+        // .use(PosthogPlugin)
+        .use(i18nVue, {
+          fallbackLang: "lt",
+          resolve: async (lang: string) => {
+            const langs = import.meta.glob("../../lang/*.json");
+            return await langs[`../../lang/${lang}.json`]();
+          },
+        })
+        .use(ZiggyVue)
+        .mount(el)
+    );
   },
   progress: {
     // The delay after which the progress bar will

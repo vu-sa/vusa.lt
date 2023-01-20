@@ -35,8 +35,10 @@ import {
   enUS,
 } from "naive-ui";
 import { onMounted, ref } from "vue";
+import posthog from "posthog-js";
 
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
+import { usePage } from "@inertiajs/vue3";
 import Layout from "@/Components/Layouts/AdminLayout.vue";
 
 // import "@/echo";
@@ -83,7 +85,28 @@ const darkThemeOverrides = {
   },
 };
 
+posthog.init("phc_FwwRPxqMLLsI70ttBuhSPfeP0giF74INihec3WiuByC", {
+  api_host: "https://app.posthog.com",
+});
+
+if (usePage().props?.auth?.user) {
+  posthog.identify(usePage().props.auth.user.id);
+}
+
 onMounted(() => {
+  (function (c, l, a, r, i, t, y) {
+    c[a] =
+      c[a] ||
+      function () {
+        (c[a].q = c[a].q || []).push(arguments);
+      };
+    t = l.createElement(r);
+    t.async = 1;
+    t.src = "https://www.clarity.ms/tag/" + i;
+    y = l.getElementsByTagName(r)[0];
+    y.parentNode.insertBefore(t, y);
+  })(window, document, "clarity", "script", "fads3o3wtb");
+
   mounted.value = true;
 });
 </script>

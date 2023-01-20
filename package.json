@@ -28,6 +28,7 @@
     "fuse.js": "^6.6.2",
     "laravel-vue-i18n": "^2.3.2",
     "latinize": "^0.5.0",
+    "posthog-js": "^1.40.1",
     "v-calendar": "^3.0.0-alpha.8"
   },
   "devDependencies": {
