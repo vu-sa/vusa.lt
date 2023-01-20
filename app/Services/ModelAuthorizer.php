@@ -51,6 +51,7 @@ class ModelAuthorizer
         // TODO: check, if cache invalidation works on this
         // return Cache::remember($permission . '-' . $this->user->id, 1800, function () use ($permission) {
             // check if user has permission
+            // TODO: causes a bug, if a person has a permission returned from user, then it doesn't assign global scope
             if ($this->user->hasPermissionTo($permission)) {
                 return true;
             }

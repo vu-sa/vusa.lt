@@ -34,19 +34,19 @@ class Kernel extends ConsoleKernel
 
         $schedule->call(function () {
             \App\Actions\Schedulable\ReflectionNotifier::notifyUsers();
-        })->fridays()->at('17:30');
+        })->fridays()->at('17:15');
 
-        $schedule->call(function () {
-            \App\Actions\Schedulable\TaskNotifier::notifyDaysLeft(3);
-        });
+        // $schedule->call(function () {
+        //     \App\Actions\Schedulable\TaskNotifier::notifyDaysLeft(3);
+        // });
 
-        $schedule->call(function () {
-            \App\Actions\Schedulable\TaskNotifier::notifyDaysLeft(2);
-        });
+        // $schedule->call(function () {
+        //     \App\Actions\Schedulable\TaskNotifier::notifyDaysLeft(2);
+        // });
 
-        $schedule->call(function () {
-            \App\Actions\Schedulable\TaskNotifier::notifyDaysLeft(1);
-        });
+        // $schedule->call(function () {
+        //     \App\Actions\Schedulable\TaskNotifier::notifyDaysLeft(1);
+        // });
     }
 
     /**
