@@ -49,9 +49,7 @@ import { NDivider } from "naive-ui";
 import { router } from "@inertiajs/vue3";
 
 // import { documentTemplate } from "@/Types/formOptions";
-import { computed, ref, watch } from "vue";
 import { useStorage } from "@vueuse/core";
-import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import Icons from "@/Types/Icons/filled";
 import InstitutionAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import LastMeetingCard from "@/Components/Cards/QuickContentCards/LastMeetingCard.vue";

@@ -31,11 +31,11 @@ export default defineConfig({
       ziggy: "/vendor/tightenco/ziggy/dist/vue",
     },
   },
-  // server: {
-  //   watch: {
-  //     usePolling: true,
-  //   },
-  // },
+  server: {
+    watch: {
+      usePolling: true,
+    },
+  },
   build: {
     sourcemap: true,
   },

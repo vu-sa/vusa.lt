@@ -45,7 +45,7 @@
       <div v-else><span class="text-xs">Naujų pranešimų nėra.</span></div>
     </NPopover>
   </NBadge>
-  <UseWebNotifications />
+  <!-- <UseWebNotifications /> -->
 </template>
 
 <script setup lang="tsx">
@@ -57,7 +57,7 @@ import Icons from "@/Types/Icons/regular";
 import { CheckmarkCircle24Regular } from "@vicons/fluent";
 import { useAxios } from "@vueuse/integrations/useAxios";
 import NotificationItem from "./NotificationItem.vue";
-import UseWebNotifications from "./UseWebNotifications.vue";
+// import UseWebNotifications from "./UseWebNotifications.vue";
 
 const notifications = ref(usePage().props.auth?.user?.unreadNotifications);
 
