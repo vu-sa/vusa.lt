@@ -24,6 +24,19 @@
           :type="'underline'"
           :icon="TextUnderline20Regular"
         />
+
+        <TipTapButton
+          :editor="editor"
+          :type="'bulletList'"
+          :icon="TextBulletListLtr24Filled"
+          :callback="() => editor.chain().focus().toggleBulletList().run()"
+        />
+        <TipTapButton
+          :editor="editor"
+          :type="'orderedList'"
+          :icon="TextNumberListLtr24Filled"
+          :callback="() => editor.chain().focus().toggleOrderedList().run()"
+        />
       </div>
       <NButton
         type="primary"
@@ -44,11 +57,14 @@ import { NButton, NIcon } from "naive-ui";
 import {
   Send20Filled,
   TextBold20Regular,
+  TextBulletListLtr24Filled,
   TextItalic20Regular,
+  TextNumberListLtr24Filled,
   TextUnderline20Regular,
 } from "@vicons/fluent";
 import { onBeforeUnmount, ref } from "vue";
 import StarterKit from "@tiptap/starter-kit";
+import TipTapButton from "./TipTap/TipTapButton.vue";
 import TipTapLink from "@tiptap/extension-link";
 import TipTapMarkButton from "./TipTap/TipTapMarkButton.vue";
 import Underline from "@tiptap/extension-underline";

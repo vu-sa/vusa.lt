@@ -17,7 +17,7 @@
     <template #below>
       <CommentPart
         v-model:text="commentText"
-        class="mt-auto border border-zinc-400 dark:border-zinc-700"
+        class="mt-auto h-min"
         :commentable_type="'contact'"
         :model="contact"
       />
