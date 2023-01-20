@@ -38,10 +38,10 @@
       </div>
     </div>
     <NDivider />
-    <NTable size="small">
+    <NTable v-if="filteredUsers.oldUsers.length > 0" size="small">
       <thead>
         <tr>
-          <th>Priskirti</th>
+          <th></th>
           <th>Pareigų ėjimo pradžia</th>
           <th>Pareigų ėjimo pabaiga</th>
         </tr>
@@ -54,6 +54,7 @@
         </tr>
       </tbody>
     </NTable>
+    <p v-else>Nėra duomenų apie anksčiau ėjusius (-as) šias pareigas.</p>
   </ShowPageLayout>
 </template>
 

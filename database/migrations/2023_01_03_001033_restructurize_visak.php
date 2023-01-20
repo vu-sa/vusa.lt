@@ -37,6 +37,50 @@ return new class extends Migration
             $table->char('user_id', 26)->change();
         });
 
+        Schema::table('banners', function (Blueprint $table) {
+            $table->dropForeign(['user_id']);
+            $table->dropColumn('user_id');
+        });
+
+        Schema::table('calendar', function (Blueprint $table) {
+            $table->dropForeign(['user_id']);
+            $table->dropColumn('user_id');
+            $table->renameColumn('attributes', 'extra_attributes');
+        });
+
+        Schema::table('duties_users', function (Blueprint $table) {
+            $table->renameColumn('user_id', 'dutiable_id');
+            $table->string('dutiable_type')->default('User')->after('user_id');
+        });
+
+        Schema::rename('duties_users', 'dutiables');
+
+        DB::table('dutiables')->whereIn('duty_id', [256, 268, 269, 273, 275])->delete();
+
+        Schema::table('dutiables', function (Blueprint $table) {
+            $table->string('dutiable_type')->default(null)->change();
+            $table->dropForeign('duties_users_user_id_foreign');
+            $table->renameColumn('attributes', 'extra_attributes');
+            $table->dropColumn('id');
+            $table->primary(['dutiable_id', 'dutiable_type', 'duty_id']);
+            $table->dropForeign('duties_users_duty_id_foreign');
+        });
+
+        Schema::table('main_page', function (Blueprint $table) {
+            $table->dropForeign('main_page_user_id_foreign');
+            $table->dropColumn('user_id');
+        });
+
+        Schema::table('news', function (Blueprint $table) {
+            $table->dropForeign('news_user_id_foreign');
+            $table->dropColumn('user_id');
+        });
+
+        Schema::table('pages', function (Blueprint $table) {
+            $table->dropForeign('pages_user_id_foreign');
+            $table->dropColumn('user_id');
+        });
+
         Schema::table('users', function (Blueprint $table) {
             $table->char('id', 26)->change();
         });
@@ -49,8 +93,8 @@ return new class extends Migration
             $table->char('model_id', 26)->change();
         });
 
-        Schema::table('duties_users', function (Blueprint $table) {
-            $table->char('user_id', 26)->change();
+        Schema::table('dutiables', function (Blueprint $table) {
+            $table->char('dutiable_id', 26)->change();
         });
 
         Schema::table('task_user', function (Blueprint $table) {
@@ -74,9 +118,9 @@ return new class extends Migration
                         ->where('id', $user->id)
                         ->update(['id' => $ulid]);
 
-                    DB::table('duties_users')
-                        ->where('user_id', $user->id)
-                        ->update(['user_id' => $ulid]);
+                    DB::table('dutiables')
+                        ->where('dutiable_id', $user->id)
+                        ->update(['dutiable_id' => $ulid]);
 
                     DB::table('comments')
                         ->where('user_id', $user->id)
@@ -114,24 +158,6 @@ return new class extends Migration
             $table->softDeletes();
         });
 
-        Schema::table('duties_users', function (Blueprint $table) {
-            $table->renameColumn('user_id', 'dutiable_id');
-            $table->string('dutiable_type')->default('User')->after('user_id');
-        });
-
-        Schema::rename('duties_users', 'dutiables');
-
-        DB::table('dutiables')->whereIn('duty_id', [256, 268, 269, 273, 275])->delete();
-
-        Schema::table('dutiables', function (Blueprint $table) {
-            $table->string('dutiable_type')->default(null)->change();
-            $table->dropIndex('duties_users_user_id_foreign');
-            $table->renameColumn('attributes', 'extra_attributes');
-            $table->dropColumn('id');
-            $table->primary(['dutiable_id', 'dutiable_type', 'duty_id']);
-            $table->dropIndex('duties_users_duty_id_foreign');
-        });
-
         Schema::rename('duties_institutions', 'institutions');
 
         Schema::table('questions', function (Blueprint $table) {
@@ -146,9 +172,12 @@ return new class extends Migration
 
         Schema::table('duties', function (Blueprint $table) {
             // drop foreign key
-            // $table->dropIndex('duties_institution_id_foreign');
-            $table->char('institution_id', 26)->change();
+            $table->dropForeign(['institution_id']);
             $table->renameColumn('attributes', 'extra_attributes');
+        });
+
+        Schema::table('duties', function (Blueprint $table) {
+            $table->char('institution_id', 26)->change();
         });
 
         Schema::table('institutions', function (Blueprint $table) {
@@ -165,7 +194,7 @@ return new class extends Migration
 
         Schema::table('institutions', function (Blueprint $table) {
             $table->softDeletes();
-            $table->dropIndex('duties_institutions_padalinys_id_foreign');
+            $table->dropForeign('duties_institutions_padalinys_id_foreign');
             $table->renameIndex('duties_institutions_pid_alias_unique', 'institutions_parent_id_alias_unique');
             $table->dropIndex('duties_institutions_alias_index');
             // make $table->unsignedInteger('padalinys_id') foreign key on padalinys

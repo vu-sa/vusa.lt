@@ -13,19 +13,6 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('banners', function (Blueprint $table) {
-            $table->dropColumn('user_id');
-        });
-
-        Schema::table('calendar', function (Blueprint $table) {
-            $table->dropColumn('user_id');
-            $table->renameColumn('attributes', 'extra_attributes');
-        });
-
-        Schema::table('navigation', function (Blueprint $table) {
-            $table->foreign('padalinys_id')->references('id')->on('padaliniai');
-        });
-
         Schema::dropIfExists('password_resets');
     }
 

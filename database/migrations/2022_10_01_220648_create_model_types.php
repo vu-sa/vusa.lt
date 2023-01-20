@@ -18,7 +18,7 @@ return new class extends Migration
         // check if duties_institutions_types table is empty
         if (DB::table('duties_institutions_types')->count() === 0) {
             Artisan::call('db:seed', [
-                '--class' => 'DutyInstitutionTypesSeeder',
+                '--class' => 'InstitutionTypesSeeder',
             ]);
     
         }

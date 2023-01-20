@@ -219,51 +219,36 @@ class UserController extends ResourceController
 
     public function storeFromMicrosoft()
     {
-        $microsoftUser = Socialite::driver('microsoft')->user();
+        $microsoftUser = Socialite::driver('microsoft')->stateless()->user();
 
-        // check if microsoft user mail contains 'vusa.lt'
-        if (strpos($microsoftUser->email, 'vusa.lt') == true) {
+        // pirmiausia ieškome per vartotoją, per paštą
+        $user = User::where('email', $microsoftUser->email)->first();
 
-            // pirmiausia ieškome per vartotoją, per paštą
-            $user = User::where('email', $microsoftUser->mail)->first();
+        if ($user) {
+            // jei randama per vartotojo paštą, prijungiam
 
-            if ($user) {
-                // jei randama per vartotojo paštą, prijungiam
+            // if user role is null, add role
+            $user->microsoft_token = $microsoftUser->token;
 
-                // if user role is null, add role
-                $user->microsoft_token = $microsoftUser->token;
-                $user->update([
-                    'email_verified_at' => now(),
-                    // 'image' => $microsoftUser->avatar,
-                ]);
-
-            } else {
-
-                // jei nerandama per vartotojo paštą, ieškome per pareigybės paštą
-                $duty = Duty::where('email', $microsoftUser->mail)->first();
-
-                if ($duty) {
-                    $user = $duty->users()->first();
-                    $user->microsoft_token = $microsoftUser->token;
-                    $user->update([
-                        'email_verified_at' => now(),
-                        // 'image' => $microsoftUser->avatar,
-                    ]);
-
-                } else {
-
-                    $user = new User;
-
-                    $user->microsoft_token = $microsoftUser->token;
-                    $user->name = $microsoftUser->displayName;
-                    $user->email = $microsoftUser->mail;
-                    $user->email_verified_at = now();
-                    $user->save();
-                }
-
+            if (Auth::login($user)) {
+                request()->session()->regenerate();
+                return redirect()->intended(RouteServiceProvider::HOME);
             }
 
-            Auth::login($user);
+            return redirect()->route('dashboard');
+
+        } 
+        
+        $duty = Duty::where('email', $microsoftUser->email)->first();
+
+        if ($duty) {
+            $user = $duty->users()->first();
+            $user->microsoft_token = $microsoftUser->token;
+            
+            if (Auth::login($user)) {
+                request()->session()->regenerate();
+                return redirect()->intended(RouteServiceProvider::HOME);
+            }
 
             return redirect()->route('dashboard');
         }

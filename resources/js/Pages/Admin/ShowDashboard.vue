@@ -3,8 +3,8 @@
     <NPopover>
       <NCheckboxGroup v-model:value="shownSections">
         <div class="flex flex-col gap-2">
-          <NCheckbox value="Institucijos" label="Tavo institucijos"></NCheckbox>
           <NCheckbox value="Veiksmai" label="Greitieji veiksmai"></NCheckbox>
+          <NCheckbox value="Institucijos" label="Tavo institucijos"></NCheckbox>
           <NCheckbox value="Posėdžiai" label="Artėjantys posėdžiai" />
           <NCheckbox
             value="Nuorodos"
@@ -43,9 +43,9 @@
     >
       <h2>Tavo institucijos</h2>
       <div
-        class="relative mt-4 grid w-full grid-cols-ramFill gap-4 overflow-hidden transition-transform duration-300 ease-in-out"
+        class="relative mt-4 grid w-full grid-cols-ramFill gap-4 overflow-hidden pb-4 transition-transform duration-300 ease-in-out"
         :class="{
-          'max-h-[16rem]': !institutionExpanded,
+          'max-h-[18rem]': !institutionExpanded,
           'max-h-[100%]': institutionExpanded,
         }"
       >

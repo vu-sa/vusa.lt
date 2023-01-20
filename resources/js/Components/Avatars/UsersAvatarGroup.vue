@@ -1,5 +1,5 @@
 <template>
-  <NAvatarGroup :options="options" :max="4" :size="size ?? 40">
+  <NAvatarGroup :options="options" :max="max ?? 4" :size="size ?? 40">
     <template #avatar="{ option: option }">
       <UserPopover :user="option" />
     </template>
@@ -12,6 +12,7 @@ import UserPopover from "./UserPopover.vue";
 
 const props = defineProps<{
   users: App.Entities.User[];
+  max?: number;
   size?: number;
 }>();
 
