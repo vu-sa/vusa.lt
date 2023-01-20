@@ -59,5 +59,6 @@ declare namespace App.Entities {
     padaliniai?: Array<App.Models.Padalinys> | null; // manually added
     roles?: Array<App.Models.Role> | null; // manually added
     roles_count?: number | null; // manually added
+    pivot?: App.Models.Pivots.Dutiable | null; // manually added
   }
 }

@@ -26,6 +26,7 @@ const duty = {
   description: "",
   email: null,
   institution: {},
+  places_to_occupy: null,
   type: null,
   extra_attributes: {
     en: {

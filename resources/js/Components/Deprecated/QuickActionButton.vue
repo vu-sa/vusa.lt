@@ -3,10 +3,12 @@
     <NButton
       :strong="strong"
       :secondary="secondary"
+      :theme-overrides="{ iconMarginMedium: '0 0 4px 0' }"
       style="height: 100%; width: 100%"
       :type="buttonType"
-      ><template #icon><NIcon size="20" :component="icon" /></template><slot
-    /></NButton>
+      ><template #icon><NIcon :size="20" :component="icon" /></template>
+      <div class="leading-4"><slot /></div
+    ></NButton>
   </div>
 </template>
 
@@ -30,9 +32,5 @@ defineProps<{
 
 .n-button__content {
   white-space: normal;
-}
-
-.n-button .n-button__icon {
-  margin-right: 0em !important;
 }
 </style>

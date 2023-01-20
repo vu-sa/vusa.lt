@@ -45,8 +45,8 @@ class RouteServiceProvider extends ServiceProvider
 
             Route::middleware(['web', 'auth'])
                 ->namespace('App\\Http\\Controllers\\Admin')
-                // ->domain('mano.' . (explode('://', config('app.url'))[1]))
-                ->prefix('admin')
+                ->domain('mano.' . (explode('://', config('app.url'))[1]))
+                // ->prefix('admin')
                 ->group(base_path('routes/admin.php'));
 
             Route::middleware('web')

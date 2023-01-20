@@ -67,10 +67,12 @@ class DutyController extends ResourceController
         $request->validate([
             'name' => 'required',
             'institution' => 'required',
+            'places_to_occupy' => 'required|numeric',
         ]);
 
         $duty = Duty::create([
             'name' => $request->name,
+            'places_to_occupy' => $request->places_to_occupy,
             'email' => $request->email,
             'description' => $request->description,
             'institution_id' => $request->institution['id'],
@@ -138,10 +140,11 @@ class DutyController extends ResourceController
         $request->validate([
             'name' => 'required',
             'institution' => 'required',
+            'places_to_occupy' => 'required|numeric',
         ]);
 
         DB::transaction(function () use ($request, $duty) {
-            $duty->update($request->only('name', 'description', 'email', 'extra_attributes'));
+            $duty->update($request->only('name', 'description', 'email', 'places_to_occupy', 'extra_attributes'));
 
             $duty->institution()->disassociate();
             $duty->institution()->associate(Institution::find($request->institution['id']));

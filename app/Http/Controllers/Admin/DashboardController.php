@@ -27,8 +27,8 @@ class DashboardController extends Controller
 
         // load institutions with meetings where start_time is in the future
         $institutions->load(['meetings' => function ($query) {
-            $query->where('start_time', '>', now());
-        }])->load('meetings.comments', 'meetings.tasks', 'meetings.files');
+            $query->where('start_time', '>', now())->with('comments', 'tasks', 'files');
+        }]);
 
         return Inertia::render('Admin/ShowDashboard', [
             'institutions' => $institutions,

@@ -15,6 +15,10 @@
             <NInput v-model:value="form.email" placeholder="vusa@vusa.lt" />
           </NFormItemGi>
 
+          <NFormItemGi label="Pareigybę užimančių žmonių skaičius" :span="2"
+            ><NInputNumber v-model:value="form.places_to_occupy"></NInputNumber
+          ></NFormItemGi>
+
           <NFormItemGi label="Institucija" :span="4">
             <NSelect
               v-model:value="form.institution.id"
@@ -93,6 +97,7 @@ import {
   NFormItemGi,
   NGrid,
   NInput,
+  NInputNumber,
   NSelect,
   NTabPane,
   NTabs,

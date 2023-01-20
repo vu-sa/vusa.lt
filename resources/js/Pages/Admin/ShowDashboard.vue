@@ -4,6 +4,7 @@
       <NCheckboxGroup v-model:value="shownSections">
         <div class="flex flex-col gap-2">
           <NCheckbox value="Institucijos" label="Tavo institucijos"></NCheckbox>
+          <NCheckbox value="Veiksmai" label="Greitieji veiksmai"></NCheckbox>
           <NCheckbox value="Posėdžiai" label="Artėjantys posėdžiai" />
           <NCheckbox
             value="Nuorodos"
@@ -24,12 +25,23 @@
         </div>
       </template>
     </NPopover>
+    <section v-if="shownSections.includes('Veiksmai')" class="mb-8">
+      <h2 class="mb-6">Greitieji veiksmai</h2>
+      <div class="flex items-center gap-4">
+        <QuickActionButton :icon="PeopleCommunity24Regular"
+          >Organizuoti <em>focus</em> grupę</QuickActionButton
+        >
+        <QuickActionButton :icon="DocumentCheckmark24Regular"
+          >Organizuoti el. apklausą</QuickActionButton
+        >
+      </div>
+    </section>
     <section
       v-if="shownSections.includes('Institucijos')"
       id="tavo-institucijos"
       class="mb-8"
     >
-      <h2 class="font-black">Tavo institucijos</h2>
+      <h2>Tavo institucijos</h2>
       <div
         class="relative mt-4 grid w-full grid-cols-ramFill gap-4 overflow-hidden transition-transform duration-300 ease-in-out"
         :class="{
@@ -60,7 +72,7 @@
       </div>
     </section>
     <section v-if="shownSections.includes('Posėdžiai')" class="relative mb-8">
-      <h2 class="font-black">Artėjantys posėdžiai</h2>
+      <h2>Artėjantys posėdžiai</h2>
 
       <div
         class="grid grid-cols-ramFill gap-x-4 overflow-hidden"
@@ -91,7 +103,7 @@
       </div>
     </section>
     <section id="naudingos-nuorodos">
-      <h2 class="font-black">Naudingos nuorodos</h2>
+      <h2 class="mb-4">Naudingos nuorodos</h2>
       <div class="flex gap-2">
         <NButton
           type="warning"
@@ -132,12 +144,18 @@ import { ExternalLinkSquareAlt } from "@vicons/fa";
 import { NButton, NCheckbox, NCheckboxGroup, NIcon, NPopover } from "naive-ui";
 import { router } from "@inertiajs/vue3";
 
-import { MoreHorizontal24Regular, Settings24Filled } from "@vicons/fluent";
+import {
+  DocumentCheckmark24Regular,
+  MoreHorizontal24Regular,
+  PeopleCommunity24Regular,
+  Settings24Filled,
+} from "@vicons/fluent";
 import { ref } from "vue";
 import { useStorage } from "@vueuse/core";
 import InstitutionCard from "@/Components/Cards/InstitutionCard.vue";
 import MeetingCard from "@/Components/Cards/MeetingCard.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import QuickActionButton from "@/Components/Deprecated/QuickActionButton.vue";
 
 defineProps<{
   institutions: Record<string, any>[];
@@ -153,6 +171,13 @@ const meetingExpanded = ref(false);
 
 const shownSections = useStorage("dashboard-sections", [
   "Institucijos",
+  "Veiksmai",
   "Nuorodos",
 ]);
 </script>
+
+<style scoped>
+h2 {
+  font-weight: 900;
+}
+</style>
