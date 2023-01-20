@@ -1,7 +1,7 @@
 <?php
 namespace App\Enums;
 
-use App\Enums\Traits\hasCamelCaseLabels;
+use App\Enums\Traits\HasCamelCaseLabels;
 use Spatie\Enum\Laravel\Enum;
 
 /**
