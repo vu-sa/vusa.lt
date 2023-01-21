@@ -11,9 +11,9 @@
       >
         <FadeTransition mode="out-in">
           <img
-            v-if="file.thumbnails?.[0].large?.url && showThumbnail"
+            v-if="file.thumbnails?.[0]?.large.url && showThumbnail"
             class="h-full w-full rounded-t-md object-cover object-top"
-            :src="file.thumbnails?.[0].large?.url"
+            :src="file.thumbnails?.[0]?.large.url"
           />
           <NIcon
             v-else
@@ -39,10 +39,11 @@
 </template>
 
 <script setup lang="ts">
-import { File, FilePdf, FileWord } from "@vicons/fa";
+import { File, FilePdf, FileWord, Folder } from "@vicons/fa";
 import { NIcon } from "naive-ui";
-import { computed } from "vue";
+import { computed, inject } from "vue";
 
+import { router } from "@inertiajs/core";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import type { DriveItem } from "@microsoft/microsoft-graph-types";
 
@@ -52,6 +53,12 @@ const props = defineProps<{
   file: DriveItem;
   showThumbnail: boolean;
 }>();
+
+const sharepointPath = inject("sharepointPath");
+
+const folderPath = () => {
+  return sharepointPath + "/" + props.file.name;
+};
 
 const gradientClasses = computed(() => {
   if (
@@ -71,6 +78,10 @@ const gradientClasses = computed(() => {
 });
 
 const fileTypeIcon = computed(() => {
+  if (props.file.folder) {
+    return Folder;
+  }
+
   // if word file
   if (props.file.file === undefined) {
     return File;
@@ -95,6 +106,14 @@ const handleFileDoubleClick = () => {
     return;
   }
 
-  window.open(props.file.webUrl, "_blank");
+  if (props.file.folder) {
+    router.visit(
+      route("sharepointFiles.index", {
+        path: folderPath(),
+      })
+    );
+  } else {
+    window.open(props.file.webUrl, "_blank");
+  }
 };
 </script>

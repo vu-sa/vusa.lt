@@ -1,19 +1,24 @@
 <template>
   <AdminContentPage title="Sharepoint failai">
-    <ModelsDocumentViewer
+    <SharepointFileManager
       :files="sharepointDriveItems"
       @select:file="handleClick"
-    ></ModelsDocumentViewer>
+    ></SharepointFileManager>
   </AdminContentPage>
 </template>
 
 <script setup lang="tsx">
-import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
-import ModelsDocumentViewer from "@/Features/Admin/SharepointFileManager/Viewer/FileManager.vue";
+import { provide } from "vue";
 
-defineProps<{
+import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
+import SharepointFileManager from "@/Features/Admin/SharepointFileManager/Viewer/FileManager.vue";
+
+const props = defineProps<{
   sharepointDriveItems: MyDriveItem[];
+  path: string;
 }>();
+
+provide("sharepointPath", props.path);
 
 const handleClick = (file: Record<string, any>) => {
   console.log(file);

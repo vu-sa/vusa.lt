@@ -70,7 +70,9 @@ const columns = [
     render(row) {
       return (
         <div class="flex">
-          <NIcon component={fileIcon(row.item.file.mimeType)}></NIcon>
+          {row.item.file ? (
+            <NIcon component={fileIcon(row.item.file.mimeType)}></NIcon>
+          ) : null}
         </div>
       );
     },
@@ -93,7 +95,13 @@ const columns = [
   },
 ];
 
-const fileIcon = (mimeType) => {
+const fileIcon = (mimeType: string | null) => {
+  console.log(mimeType);
+
+  if (mimeType === null) {
+    return File;
+  }
+
   if (
     mimeType ===
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document"

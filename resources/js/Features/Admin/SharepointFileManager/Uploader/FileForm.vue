@@ -3,7 +3,7 @@
     <NFormItem label="Tipas" path="typeValue"
       ><NSelect
         v-model:value="model.typeValue"
-        :disabled="model.uploadValue ?? false"
+        :disabled="!!model.uploadValue"
         placeholder="Pasirink failo tipą..."
         :options="sharepointFileTypeOptions"
       ></NSelect
@@ -103,7 +103,7 @@ import { splitFileNameAndExtension } from "@/Utils/String";
 import { useForm } from "@inertiajs/vue3";
 import type { FormInst, FormRules, UploadFileInfo } from "naive-ui";
 
-defineEmits<{
+const emit = defineEmits<{
   (e: "submit", form: any): void;
   (e: "close"): void;
 }>();
@@ -121,7 +121,7 @@ const originalFileName = ref("");
 const fileExtension = ref<string | undefined>("");
 
 const formRef = ref<FormInst | null>(null);
-const model = useForm<{
+const model = ref<{
   datetimeValue: number | null;
   description0Value: string;
   nameValue: string | null;
@@ -182,7 +182,7 @@ const beforeUpload = async (data: {
   if (!data.file.type) return;
 
   // check if pristatymai is pptx or pdf
-  if (model.typeValue === "Pristatymai") {
+  if (model.value.typeValue === "Pristatymai") {
     if (
       ![
         "application/pdf",
@@ -215,42 +215,39 @@ const handleUploadChange = ({
 }) => {
   // 1. check if file removed
   if (fileList.length === 0) {
-    model.uploadValue = null;
+    model.value.uploadValue = null;
     originalFileName.value = "";
-    model.nameValue = null;
+    model.value.nameValue = setUploadFileName();
     return;
   }
 
-  model.uploadValue = fileList[0];
-  console.log(fileList[0]);
+  model.value.uploadValue = fileList[0];
 
   let { name, extension } = splitFileNameAndExtension(fileList[0].name);
 
   fileExtension.value = extension;
   originalFileName.value = name;
+  model.value.nameValue = setUploadFileName();
 };
 
-const unwatch = watch(model, () => {
-  model.nameValue = setUploadFileName();
-});
-
-// generate name for this file...
+// generate name for this file
 const setUploadFileName = () => {
   fileNameEditDisabled.value = true;
-  if (originalFileName.value === "" || model.typeValue === null) {
+
+  if (originalFileName.value === "" || model.value.typeValue === null) {
     return null;
   }
 
-  const { fileName, isFileNameEditable } = generateNameForFile(
+  const { fileName, isFileNameEditDisabled } = generateNameForFile(
     {
-      dateValue: model.datetimeValue,
-      nameValue: model.nameValue,
-      typeValue: model.typeValue,
+      dateValue: model.value.datetimeValue,
+      nameValue: originalFileName.value,
+      typeValue: model.value.typeValue,
     },
     props.fileable
   );
 
-  fileNameEditDisabled.value = isFileNameEditable;
+  fileNameEditDisabled.value = isFileNameEditDisabled;
   return fileName;
 };
 
@@ -260,15 +257,13 @@ const handleValidateClick = (e: MouseEvent) => {
   formRef.value?.validate((errors) => {
     if (!errors) {
       loading.value = true;
-      // remove watcher, to don't change the seen file name
-      unwatch();
-      if (model.nameValue === null || !fileExtension.value) {
-        return;
-      }
-      model.transform((data) => ({
-        ...data,
-        nameValue: model.nameValue + fileExtension.value,
-      }));
+
+      model.value = {
+        ...model.value,
+        nameValue: model.value.nameValue + fileExtension.value,
+      };
+
+      emit("submit", model.value);
     }
   });
 };

@@ -29,7 +29,7 @@ declare namespace App.Models {
     category: string | null;
     url: string | null;
     padalinys_id: number;
-    extra_attributes: Array<any> | any | null;
+    extra_attributes: string | null;
     created_at: any;
     updated_at: any;
     registration_form_id: number | null;
@@ -72,7 +72,7 @@ declare namespace App.Models {
     created_at: any;
     updated_at: any;
     deleted_at: any | null;
-    extra_attributes: Array<any> | any | null;
+    extra_attributes: string | null;
     duties?: Array<App.Models.Duty> | null;
     duties_count?: number | null;
   }
@@ -82,7 +82,7 @@ declare namespace App.Models {
     title: string;
     status: string;
     date: string;
-    extra_attributes: Array<any> | any | null;
+    extra_attributes: string | null;
     created_at: any;
     updated_at: any;
     deleted_at: any | null;
@@ -90,14 +90,13 @@ declare namespace App.Models {
     goals?: Array<App.Models.Goal> | null;
     matters?: Array<App.Models.Matter> | null;
     types?: Array<App.Models.Type> | null;
-    documents?: Array<App.Models.SharepointFile> | null;
     tasks?: Array<App.Models.Task> | null;
     users?: Array<App.Models.User> | null;
+    padaliniai?: any | null;
     doables_count?: number | null;
     goals_count?: number | null;
     matters_count?: number | null;
     types_count?: number | null;
-    documents_count?: number | null;
     tasks_count?: number | null;
     users_count?: number | null;
   }
@@ -109,13 +108,14 @@ declare namespace App.Models {
     institution_id: string;
     order: number;
     email: string | null;
-    extra_attributes: Array<any> | any | null;
+    extra_attributes: string | null;
     places_to_occupy: number | null;
     created_at: any;
     updated_at: any;
     deleted_at: any | null;
     dutiables?: Array<App.Models.Pivots.Dutiable> | null;
     users?: Array<App.Models.User> | null;
+    current_users?: Array<App.Models.User> | null;
     contacts?: Array<App.Models.Contact> | null;
     matters?: any | null;
     types?: Array<App.Models.Type> | null;
@@ -123,6 +123,7 @@ declare namespace App.Models {
     padaliniai?: any | null;
     dutiables_count?: number | null;
     users_count?: number | null;
+    current_users_count?: number | null;
     contacts_count?: number | null;
     types_count?: number | null;
   }
@@ -168,7 +169,7 @@ declare namespace App.Models {
     padalinys_id: number | null;
     created_at: any;
     updated_at: any;
-    extra_attributes: Array<any> | any | null;
+    extra_attributes: string | null;
     deleted_at: any | null;
     duties?: Array<App.Models.Duty> | null;
     types?: Array<App.Models.Type> | null;
@@ -176,17 +177,14 @@ declare namespace App.Models {
     matters?: Array<App.Models.Matter> | null;
     meetings?: Array<App.Models.Meeting> | null;
     users?: any | null;
-    documents?: Array<App.Models.SharepointFile> | null;
     duties_count?: number | null;
     types_count?: number | null;
     matters_count?: number | null;
     meetings_count?: number | null;
-    documents_count?: number | null;
   }
 
   export interface MainPage {
     id: number;
-    user_id: number | null;
     link: string | null;
     text: string | null;
     image: string | null;
@@ -230,14 +228,12 @@ declare namespace App.Models {
     matters?: Array<App.Models.Matter> | null;
     agenda_items?: Array<App.Models.Pivots.AgendaItem> | null;
     institutions?: Array<App.Models.Institution> | null;
-    documents?: Array<App.Models.SharepointFile> | null;
     tasks?: Array<App.Models.Task> | null;
     users?: any | null;
     padaliniai?: any | null;
     matters_count?: number | null;
     agenda_items_count?: number | null;
     institutions_count?: number | null;
-    documents_count?: number | null;
     tasks_count?: number | null;
   }
 
@@ -258,7 +254,6 @@ declare namespace App.Models {
 
   export interface News {
     id: number;
-    user_id: number | null;
     title: string;
     category_id: number | null;
     permalink: string | null;
@@ -311,7 +306,6 @@ declare namespace App.Models {
 
   export interface Page {
     id: number;
-    user_id: number | null;
     title: string;
     permalink: string | null;
     text: string;
@@ -441,6 +435,18 @@ declare namespace App.Models {
     padalinys?: App.Models.Padalinys | null;
   }
 
+  export interface SharepointFile {
+    sharepoint_id: string;
+    id: string;
+    fileable?: any | null;
+    types?: Array<App.Models.Type> | null;
+    institutions?: Array<App.Models.Institution> | null;
+    meetings?: Array<App.Models.Meeting> | null;
+    types_count?: number | null;
+    institutions_count?: number | null;
+    meetings_count?: number | null;
+  }
+
   export interface Tag {
     id: number;
     alias: string | null;
@@ -474,18 +480,16 @@ declare namespace App.Models {
     model_type: string | null;
     description: string | null;
     slug: string | null;
-    extra_attributes: Array<any> | any | null;
+    extra_attributes: string | null;
     created_at: any;
     updated_at: any;
     deleted_at: any | null;
     institutions?: Array<App.Models.Institution> | null;
     duties?: Array<App.Models.Duty> | null;
     doings?: Array<App.Models.Doing> | null;
-    documents?: Array<App.Models.SharepointFile> | null;
     institutions_count?: number | null;
     duties_count?: number | null;
     doings_count?: number | null;
-    documents_count?: number | null;
   }
 
   export interface User {
@@ -545,7 +549,7 @@ declare namespace App.Models.Pivots {
     dutiable_type: string;
     start_date: string;
     end_date: string | null;
-    extra_attributes: Array<any> | any | null;
+    extra_attributes: string | null;
     created_at: any;
     updated_at: any;
     dutiable?: any | null;
@@ -569,5 +573,15 @@ declare namespace App.Models.Pivots {
     relationshipable?: any | null;
     related_model?: any | null;
     relationship?: App.Models.Relationship | null;
+  }
+
+  export interface SharepointFileable {
+    sharepoint_file_id: string;
+    fileable_type: string;
+    fileable_id: string;
+    created_at: any;
+    updated_at: any;
+    fileable?: any | null;
+    institution?: App.Models.Institution | null;
   }
 }

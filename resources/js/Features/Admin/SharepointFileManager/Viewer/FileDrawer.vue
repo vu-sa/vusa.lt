@@ -43,7 +43,7 @@
                 <td>
                   <NTag size="small">
                     <NEllipsis style="max-width: 140px">{{
-                      file?.listItem?.fields?.additionalData?.Type
+                      file?.listItem?.fields?.properties?.Type
                     }}</NEllipsis>
                   </NTag>
                 </td>
@@ -51,7 +51,7 @@
               <tr>
                 <td class="font-bold">Aprašymas</td>
                 <td>
-                  {{ file?.listItem?.fields?.additionalData?.Description0 }}
+                  {{ file?.listItem?.fields?.properties?.Description0 }}
                 </td>
               </tr>
             </tbody>

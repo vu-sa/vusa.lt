@@ -21,7 +21,10 @@
       ></FileableForm>
       <div v-else-if="current === 2">
         <NMessageProvider>
-          <FileForm :fileable="fileable"></FileForm>
+          <FileForm
+            :fileable="fileForm.fileable"
+            @submit="handleFileSubmit"
+          ></FileForm>
         </NMessageProvider>
       </div>
     </FadeTransition>
@@ -38,6 +41,7 @@
 import { DocumentTableSearch24Regular } from "@vicons/fluent";
 import { NIcon, NMessageProvider, NStep, NSteps } from "naive-ui";
 import { ref } from "vue";
+import { useForm } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 
 import CardModal from "@/Components/Modals/CardModal.vue";
@@ -46,7 +50,7 @@ import FileForm from "./FileForm.vue";
 import FileableForm from "@/Components/AdminForms/Special/FileableForm.vue";
 import ModalHelperButton from "@/Components/Buttons/ModalHelperButton.vue";
 
-defineEmits(["close", "success"]);
+const emit = defineEmits(["close"]);
 
 defineProps<{
   show: boolean; // yes
@@ -55,12 +59,26 @@ defineProps<{
 const current = ref(1);
 const showAlert = useStorage("new-file-button-alert", true);
 
-const fileable = ref<App.Entities.Fileable | null>(null);
+const fileForm = useForm<Record<string, any>>({
+  fileable: null,
+  file: null,
+});
 
-const handleFileableSubmit = (model: App.Entities.Fileable) => {
-  console.log("handleFileableSubmit", model);
-
-  fileable.value = model;
+const handleFileableSubmit = (model: App.Entities.SharepointFileable) => {
+  fileForm.fileable = model;
   current.value = 2;
+};
+
+const handleFileSubmit = (file: any) => {
+  fileForm.file = file;
+  submitFullForm();
+};
+
+const submitFullForm = () => {
+  fileForm.post(route("sharepointFiles.store"), {
+    onSuccess: () => {
+      emit("close");
+    },
+  });
 };
 </script>

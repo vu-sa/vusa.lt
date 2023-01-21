@@ -33,6 +33,7 @@ use Spatie\Enum\Laravel\Enum;
  * @method static self SAZININGAI_EXAM_FLOW()
  * @method static self SAZININGAI_EXAM_OBSERVER()
  * @method static self SHAREPOINT_FILE()
+ * @method static self SHAREPOINT_FILEABLE()
  * @method static self TAG()
  * @method static self TASK()
  * @method static self TYPE()

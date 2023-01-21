@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Pivots\SharepointFileable;
 use App\Models\Traits\HasComments;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,9 +16,9 @@ class SharepointFile extends Model
 
     protected $guarded = [];
 
-    public function fileable()
+    public function fileables()
     {
-        return $this->morphTo();
+        return $this->hasMany(SharepointFileable::class, 'sharepoint_file_id', 'id');
     }
 
     public function types()

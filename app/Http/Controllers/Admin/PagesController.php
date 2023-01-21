@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Page;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Http\Controllers\Controller as Controller;
 use App\Http\Controllers\ResourceController;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;

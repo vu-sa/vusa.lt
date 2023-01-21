@@ -330,7 +330,7 @@ const menuOptions = computed(() => [
   },
   {
     label: () => {
-      return <Link href={route("sharepoint.index")}>Failai</Link>;
+      return <Link href={route("sharepointFiles.index")}>Failai</Link>;
     },
     key: "files",
     show: auth?.can.index.sharepointFile,
