@@ -97,11 +97,11 @@ class SharepointGraphService {
             ->setReturnType(Model\DriveItem::class)
             ->execute();
         } catch (ClientException $e) {
-            throw $e;
-            
             if ($e->getCode() == 404) {
                 return collect([]);
             }
+
+            throw $e;
         }
 
         // wrap in array if not array

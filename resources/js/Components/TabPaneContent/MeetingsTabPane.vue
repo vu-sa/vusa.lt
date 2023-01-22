@@ -1,10 +1,11 @@
 <template>
-  <div class="grid grid-cols-ramFill gap-4">
+  <div class="grid grid-cols-ramFill gap-x-4">
     <MeetingCard
       v-for="meeting in meetings"
       :key="meeting.id"
       class="max-w-sm"
       :meeting="meeting"
+      @click="router.visit(route('meetings.show', meeting.id))"
     ></MeetingCard>
     <NewGridItemButton
       v-if="institution"
@@ -16,14 +17,11 @@
 </template>
 
 <script setup lang="tsx">
-import { NIcon } from "naive-ui";
-import { ref } from "vue";
-import Icons from "@/Types/Icons/filled";
-
 import { AddCircle24Filled } from "@vicons/fluent";
-import CardModal from "@/Components/Modals/CardModal.vue";
+import { ref } from "vue";
+import { router } from "@inertiajs/vue3";
+
 import MeetingCard from "@/Components/Cards/MeetingCard.vue";
-import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
 import NewGridItemButton from "../Buttons/NewGridItemButton.vue";
 
 defineProps<{

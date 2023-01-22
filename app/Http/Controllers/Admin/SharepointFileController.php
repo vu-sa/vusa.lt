@@ -166,6 +166,7 @@ class SharepointFileController extends ResourceController
         // remove trailing slash
         $path = rtrim($path, '/');
 
+        // TODO: need to authorize by path
         $driveItems = $sharepointService->getDriveItemByPath($path, true);
 
         return response()->json($driveItems);

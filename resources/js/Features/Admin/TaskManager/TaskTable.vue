@@ -25,7 +25,7 @@ import {
   NTag,
 } from "naive-ui";
 import { ref } from "vue";
-import { router } from "@inertiajs/vue3";
+import { router, usePage } from "@inertiajs/vue3";
 
 import IconsFilled from "@/Types/Icons/filled";
 import IconsRegular from "@/Types/Icons/regular";
@@ -54,6 +54,11 @@ const columns: () => DataTableColumns<App.Entities.Task> = () => [
         <NCheckbox
           themeOverrides={{ borderRadius: "50%", border: "1px solid" }}
           size="large"
+          disabled={
+            !row.users?.find(
+              (user) => user.id === usePage().props.auth?.user?.id
+            )
+          }
           onUpdate:checked={() => updateTaskCompletion(row)}
           checked={row.completed_at !== null}
         />

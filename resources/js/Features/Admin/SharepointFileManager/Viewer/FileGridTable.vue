@@ -1,10 +1,17 @@
 <template>
   <FadeTransition mode="out-in">
+    <div
+      v-if="results.length === 0"
+      class="flex flex-col items-center justify-center gap-2 text-zinc-400"
+    >
+      <NIcon :size="24" :component="Icons.SHAREPOINT_FILE"></NIcon>
+      <span>Failų nėra.</span>
+    </div>
     <TransitionGroup
-      v-if="viewMode === 'grid'"
+      v-else-if="viewMode === 'grid'"
       name="list"
       tag="div"
-      class="flex max-w-4xl flex-wrap gap-6"
+      class="flex flex-wrap gap-6"
       @after-enter="afterGroupEnter"
     >
       <div v-if="currentPath !== startingPath">
@@ -49,6 +56,7 @@ import { computed, inject, ref } from "vue";
 
 import { fileSize } from "@/Utils/Calc";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
+import Icons from "@/Types/Icons/filled";
 import ModelDocumentButton from "./FileButtonSkeletonWrapper.vue";
 import type { DriveItem } from "@microsoft/microsoft-graph-types";
 

@@ -2,6 +2,7 @@
   <div>
     <div class="mb-4 flex gap-2">
       <FilterPopselect
+        :disabled="disabled"
         :options="buttonNames"
         @select:value="handleClick"
       ></FilterPopselect
@@ -25,6 +26,7 @@ import TaskCreator from "./TaskCreator.vue";
 import TaskTable from "./TaskTable.vue";
 
 const props = defineProps<{
+  disabled?: boolean;
   tasks?: App.Entities.Task[];
   taskable?: {
     id: number;

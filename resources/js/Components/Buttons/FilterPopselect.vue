@@ -1,6 +1,7 @@
 <template>
   <NPopselect
     v-model:value="value"
+    :disabled="disabled"
     :options="popselectOptions ?? []"
     @update:value="$emit('select:value', value)"
   >
@@ -30,7 +31,7 @@ defineEmits<{
 }>();
 
 const props = defineProps<{
-  disabled: boolean;
+  disabled?: boolean;
   options: Array<string | null>;
 }>();
 
