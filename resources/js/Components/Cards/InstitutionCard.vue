@@ -75,7 +75,7 @@
 </template>
 
 <script setup lang="tsx">
-import { Link, router } from "@inertiajs/vue3";
+import { Link } from "@inertiajs/vue3";
 import { NButton, NCard, NPopover, NTag } from "naive-ui";
 import { computed } from "vue";
 

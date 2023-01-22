@@ -52,6 +52,7 @@ class NotifyUsersOfComment implements ShouldQueue
 
         $text = "<p><strong>{$user->name}</strong> paliko komentarą įraše: {$commentable->name}</p>";
 
-        Notification::send($commentable->users->unique(), new ModelCommented($text, $object, $subject));
+        // TODO: send notification to all users that have access to the commentable, e.g. file doesn't work
+        Notification::send($commentable->users?->unique(), new ModelCommented($text, $object, $subject));
     }
 }

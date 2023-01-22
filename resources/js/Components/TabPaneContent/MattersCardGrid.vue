@@ -27,8 +27,7 @@
 </template>
 
 <script setup lang="tsx">
-import { AddCircle24Filled, BookQuestionMark24Filled } from "@vicons/fluent";
-import { NIcon } from "naive-ui";
+import { AddCircle24Filled } from "@vicons/fluent";
 import { ref } from "vue";
 
 import { matterTemplate } from "@/Types/formTemplates";

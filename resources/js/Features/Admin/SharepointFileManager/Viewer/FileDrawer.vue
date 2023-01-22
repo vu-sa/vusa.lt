@@ -1,12 +1,13 @@
 <template>
   <NDrawer
     v-model:show="active"
-    :mask-closable="false"
+    v-model:width="width"
     :auto-focus="false"
     :show-mask="false"
     :trap-focus="false"
-    :width="350"
     placement="right"
+    resizable
+    @mask-click="$emit('hide:drawer')"
     @update:show="$emit('hide:drawer')"
   >
     <NDrawerContent closable>
@@ -31,8 +32,14 @@
           <NTable class="mt-4">
             <tbody class="text-xs">
               <tr>
-                <td class="font-bold">Sukūrimo data</td>
-                <td>{{ file?.createdDateTime }}</td>
+                <td class="font-bold">Failo data</td>
+                <td>
+                  {{
+                    formatStaticTime(
+                      new Date(file?.listItem?.fields?.properties.Date)
+                    )
+                  }}
+                </td>
               </tr>
               <tr>
                 <td class="font-bold">Dydis</td>
@@ -57,10 +64,9 @@
             </tbody>
           </NTable>
           <CommentPart
-            class="h-48"
             :commentable_type="'sharepoint_file'"
             :text="currentCommentText"
-            :model="file"
+            :model="file?.sharepointFile"
           ></CommentPart>
         </div>
       </FadeTransition>
@@ -83,6 +89,8 @@ import { computed, ref, watch } from "vue";
 // import { router } from "@inertiajs/vue3";
 
 import { fileSize } from "@/Utils/Calc";
+import { formatStaticTime } from "@/Utils/IntlTime";
+import { useStorage } from "@vueuse/core";
 import CommentPart from "@/Features/Admin/CommentViewer/CommentViewer.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
@@ -95,6 +103,12 @@ const props = defineProps<{
 
 const active = computed(() => !!props.file);
 const currentCommentText = ref("");
+const width = useStorage("file-drawer-width", 350);
+
+watch(width, (val) => {
+  if (val < 300) width.value = 300;
+  if (val > 600) width.value = 600;
+});
 
 const fileIcon = computed(() => {
   if (

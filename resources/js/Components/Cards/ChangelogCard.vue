@@ -363,5 +363,5 @@
 </template>
 
 <script setup lang="ts">
-import { NCard, NCollapse, NCollapseItem, NDivider, NTooltip } from "naive-ui";
+import { NCard, NCollapse, NCollapseItem, NTooltip } from "naive-ui";
 </script>

@@ -26,7 +26,6 @@
 </template>
 
 <script setup lang="tsx">
-import { NIcon } from "naive-ui";
 import { ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 
@@ -35,7 +34,6 @@ import { doingTemplate } from "@/Types/formTemplates";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import DoingCard from "@/Components/Cards/DoingCard.vue";
 import DoingForm from "@/Components/AdminForms/DoingForm.vue";
-import Icons from "@/Types/Icons/filled";
 import NewGridItemButton from "../Buttons/NewGridItemButton.vue";
 
 defineProps<{

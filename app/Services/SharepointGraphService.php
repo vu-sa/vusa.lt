@@ -239,7 +239,7 @@ class SharepointGraphService {
 
         // load all sharepointFile models wherein sharepointfile.sharepoint_id
         // is in $driveItemIds
-        $sharepointFiles = SharepointFile::whereIn('sharepoint_id', $driveItemIds)->with('fileables')->get();
+        $sharepointFiles = SharepointFile::whereIn('sharepoint_id', $driveItemIds)->with('fileables.fileable', 'comments')->get();
 
         $parsedDriveItems = $driveItems->map(function ($driveItem) use ($sharepointFiles) { 
             return [

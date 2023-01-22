@@ -146,19 +146,11 @@
 <script setup lang="tsx">
 import {
   DocumentCheckmark24Regular,
-  MoreHorizontal24Regular,
   PeopleCommunity24Regular,
   Settings24Filled,
 } from "@vicons/fluent";
 import { ExternalLinkSquareAlt } from "@vicons/fa";
-import {
-  NButton,
-  NCheckbox,
-  NCheckboxGroup,
-  NIcon,
-  NPopover,
-  NScrollbar,
-} from "naive-ui";
+import { NButton, NCheckbox, NCheckboxGroup, NIcon, NPopover } from "naive-ui";
 import { ref } from "vue";
 import { router } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
