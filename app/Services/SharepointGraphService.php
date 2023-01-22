@@ -113,6 +113,20 @@ class SharepointGraphService {
         return $driveItem;
     }
 
+    public function updateDriveItemByPath(string $path, array $fields) : Model\DriveItem 
+    {
+        $path = rawurlencode($path);
+
+        $updatedDriveItem = $this->graph->createRequest("PATCH", "/drives/{$this->driveId}/root:/{$path}")
+            ->attachBody(
+                $fields
+            )
+            ->setReturnType(Model\DriveItem::class)
+            ->execute();
+
+        return $updatedDriveItem;
+    }
+
     public function updateListItem(string $listId, $listItemId, array $fields): Model\ListItem 
     {
         $updatedListItem = 

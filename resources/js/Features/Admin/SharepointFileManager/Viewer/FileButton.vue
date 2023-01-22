@@ -33,7 +33,7 @@
     </button>
     <span
       class="m-2 mx-auto w-4/5 text-center text-xs text-zinc-400 line-clamp-1"
-      >{{ file.listItem?.fields?.additionalData?.Type }}</span
+      >{{ file.listItem?.fields?.properties?.Type }}</span
     >
   </div>
 </template>
@@ -62,15 +62,13 @@ const folderPath = () => {
 
 const gradientClasses = computed(() => {
   if (
-    props.file.listItem?.fields?.additionalData?.Type ===
+    props.file.listItem?.fields?.properties?.Type ===
     "Veiklą reglamentuojantys dokumentai"
   ) {
     return "from-zinc-200 subtle-gray-gradient bg-gradient-to-b";
   }
 
-  if (
-    props.file.listItem?.fields?.additionalData?.Type === "Metodinė medžiaga"
-  ) {
+  if (props.file.listItem?.fields?.properties?.Type === "Metodinė medžiaga") {
     return "from-vusa-yellow/30 to-white dark:from-vusa-red/60 dark:to-zinc-700/80 bg-gradient-to-b";
   }
 

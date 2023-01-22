@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\FileableNameUpdated;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasContentRelationships;
 use App\Models\Traits\HasSharepointFiles;
@@ -78,5 +79,16 @@ class Institution extends Model
         ];
 
         return $array;
+    }
+
+    protected static function booted()
+    {
+        static::saved(function (Institution $institution) {
+            // check if institution name $institution->getChanges()['name'] has changed
+            if (array_key_exists('name', $institution->getChanges())) {
+                // dispatch event FileableNameUpdated
+                FileableNameUpdated::dispatch($institution);
+            }
+        });
     }
 }

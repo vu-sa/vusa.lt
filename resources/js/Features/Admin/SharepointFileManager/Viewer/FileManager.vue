@@ -130,7 +130,7 @@ const results = computed(() => {
   if (contentTypeFilter.value !== "Visi tipai" && contentTypeFilter.value) {
     results = results.filter((result) => {
       return (
-        result.item.listItem?.fields?.additionalData?.Type ===
+        result.item.listItem?.fields?.properties?.Type ===
         contentTypeFilter.value
       );
     });

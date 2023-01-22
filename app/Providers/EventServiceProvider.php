@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Events\CommentPosted;
+use App\Events\FileableNameUpdated;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use App\Listeners\NotifyUsersOfComment;
 
@@ -19,7 +20,10 @@ class EventServiceProvider extends ServiceProvider
         ],
         CommentPosted::class => [
             NotifyUsersOfComment::class,
-        ]
+        ],
+        FileableNameUpdated::class => [
+            \App\Listeners\UpdateSharepointFolder::class,
+        ],
     ];
 
     /**
