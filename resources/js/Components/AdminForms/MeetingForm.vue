@@ -1,21 +1,6 @@
 <template>
   <NForm ref="formRef" :rules="rules" :model="meetingForm">
     <NGrid cols="2">
-      <!-- <NFormItemGi label="Veiklos pavadinimas" path="title" required :span="2">
-        <NSelect
-          v-model:value="meetingForm.title"
-          placeholder="Susitikimas su studentais"
-          filterable
-          tag
-          :options="meetingOptions"
-          ><template #action>
-            <span
-              class="prose-sm prose-gray text-xs text-zinc-400 dark:prose-invert"
-              >Gali įrašyti ir savo veiklą...</span
-            >
-          </template></NSelect
-        >
-      </NFormItemGi> -->
       <NFormItemGi :span="2" path="start_time" required>
         <template #label>
           <span class="inline-flex items-center gap-1"
@@ -42,7 +27,6 @@
 </template>
 
 <script setup lang="ts">
-import { CalendarLtr24Filled } from "@vicons/fluent";
 import {
   type FormInst,
   NButton,
@@ -71,8 +55,6 @@ const props = defineProps<{
   // This question form is from a quick action button, idk if it shouldn't be refactored
   mattersForm?: Record<string, any>;
 }>();
-
-const showModal = ref(false);
 
 // check if meeting start_time is in string, then convert it to timestamp
 const meetingToForm = (meeting: App.Entities.Meeting) => ({

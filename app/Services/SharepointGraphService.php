@@ -80,20 +80,26 @@ class SharepointGraphService {
     }
     
     /**
-     * getDriveItemChildrenByPath
+     * getDriveItemByPath
      *
      * @param  mixed $path
      * @param  mixed $siteId
      * @return array<Model\DriveItem>
      */
-    public function getDriveItemChildrenByPath(string $path): Collection
+    public function getDriveItemByPath(string $path, $getChildren = false): Collection
     {
         // encode path
         $path = rawurlencode($path);
+        $childrenPath = $getChildren ? ':/children' : '';
 
-        $driveItems = $this->graph->createRequest("GET", "/drives/{$this->driveId}/root:/{$path}:/children?\$expand=listItem,thumbnails")
+        $driveItems = $this->graph->createRequest("GET", "/drives/{$this->driveId}/root:/{$path}{$childrenPath}?\$expand=listItem,thumbnails")
             ->setReturnType(Model\DriveItem::class)
             ->execute();
+
+        // wrap in array if not array
+        if (!is_array($driveItems)) {
+            $driveItems = [$driveItems];
+        }
 
         return $this->parseDriveItems($driveItems);
     }
@@ -201,7 +207,7 @@ class SharepointGraphService {
      * @param  array<Model\DriveItem> $driveItems
      * @return Collection
      */
-    private function parseDriveItems(array $driveItems) {
+    private function parseDriveItems(array | Model\DriveItem $driveItems) {
         $driveItems = collect($driveItems);
 
         // get all driveitem ids

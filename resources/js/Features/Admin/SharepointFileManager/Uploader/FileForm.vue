@@ -111,9 +111,9 @@ const emit = defineEmits<{
 const props = defineProps<{
   // fileable is used for name generation
   fileable?: Record<string, any>;
+  loading: boolean;
 }>();
 
-const loading = ref(false);
 const fileNameEditDisabled = ref(true);
 const message = useMessage();
 
@@ -256,8 +256,6 @@ const handleValidateClick = (e: MouseEvent) => {
 
   formRef.value?.validate((errors) => {
     if (!errors) {
-      loading.value = true;
-
       model.value = {
         ...model.value,
         nameValue: model.value.nameValue + fileExtension.value,

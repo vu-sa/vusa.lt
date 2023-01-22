@@ -112,11 +112,14 @@ const selectedAgendaItem = ref<App.Entities.AgendaItem | null>(null);
 const mainInstitution: App.Entities.Institution | string =
   props.meeting.institutions?.[0] ?? "Be institucijos";
 
-const meetingTitle = `${formatStaticTime(new Date(props.meeting.start_time), {
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-})} ${genitivizeEveryWord(mainInstitution.name)} posėdis`;
+const meetingTitle =
+  props.meeting.title === ""
+    ? `${formatStaticTime(new Date(props.meeting.start_time), {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })} ${genitivizeEveryWord(mainInstitution.name)} posėdis`
+    : props.meeting.title;
 
 const sharepointFileTypeOptions = computed(() => {
   return modelTypes.sharepointFile.map((type) => ({
@@ -133,13 +136,17 @@ const handleAgendaClick = (agendaItem: App.Entities.AgendaItem) => {
 const breadcrumbOptions: BreadcrumbOption[] = [
   {
     label: mainInstitution.name,
-    icon: PeopleTeam24Filled,
+    icon: Icons.INSTITUTION,
     routeOptions: {
       name: "institutions.show",
       params: {
         institution: mainInstitution.id,
       },
     },
+  },
+  {
+    label: meetingTitle,
+    icon: Icons.MEETING,
   },
 ];
 

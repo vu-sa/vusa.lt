@@ -29,7 +29,7 @@ class SharepointFileController extends ResourceController
 
         $path = $path ?? 'General';
 
-        $driveItems = $sharepointService->getDriveItemChildrenByPath($path);
+        $driveItems = $sharepointService->getDriveItemByPath($path, true);
 
         return Inertia::render('Admin/Files/IndexSharepoint', [
             'sharepointDriveItems' => $driveItems,
@@ -93,7 +93,7 @@ class SharepointFileController extends ResourceController
             'Date' => date('Y-m-d', intval($validated['file']['datetimeValue'] / 1000)),
         ];
 
-        $sharepointFile = $sharepointFileService->uploadFile($fileToUpload, $fileable, $listItemProperties);
+        $sharepointFile = $sharepointFileService->uploadFile($fileToUpload, $validated['file']['nameValue'], $fileable, $listItemProperties);
         // sharepoint fileable concern - attach sharepoint file to fileable
         $sharepointFileableService->attachFileToFileable($sharepointFile, $fileable);
 

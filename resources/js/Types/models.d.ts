@@ -80,6 +80,7 @@ declare namespace App.Models {
   export interface Doing {
     id: string;
     title: string;
+    drive_item_name: string | null;
     status: string;
     date: string;
     extra_attributes: string | null;
@@ -219,6 +220,7 @@ declare namespace App.Models {
 
   export interface Meeting {
     id: string;
+    title: string;
     description: string | null;
     start_time: string;
     end_time: string | null;
@@ -438,10 +440,11 @@ declare namespace App.Models {
   export interface SharepointFile {
     sharepoint_id: string;
     id: string;
-    fileable?: any | null;
+    fileables?: Array<App.Models.Pivots.SharepointFileable> | null;
     types?: Array<App.Models.Type> | null;
     institutions?: Array<App.Models.Institution> | null;
     meetings?: Array<App.Models.Meeting> | null;
+    fileables_count?: number | null;
     types_count?: number | null;
     institutions_count?: number | null;
     meetings_count?: number | null;

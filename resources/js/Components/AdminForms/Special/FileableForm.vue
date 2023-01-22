@@ -109,7 +109,7 @@ const getInstitutionOptions = async () => {
       children:
         institution.meetings && institution.meetings.length > 0
           ? institution.meetings?.map((meeting: App.Entities.Meeting) => ({
-              label: meeting.start_time,
+              label: meeting.title,
               key: `${meeting.id}_${meeting.start_time}_Meeting`,
             }))
           : undefined,

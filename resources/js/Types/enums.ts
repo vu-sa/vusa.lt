@@ -1,3 +1,12 @@
+export enum AllowedFileablesEnum {
+  "DOING" = "doing",
+  "DUTY" = "duty",
+  "GOAL" = "goal",
+  "INSTITUTION" = "institution",
+  "MEETING" = "meeting",
+  "TYPE" = "type",
+  "USER" = "user",
+}
 export enum AllowedRelationshipablesEnum {
   "INSTITUTION" = "institution",
   "TYPE" = "type",
@@ -39,6 +48,7 @@ export enum ModelEnum {
   "SAZININGAI_EXAM_FLOW" = "saziningaiExamFlow",
   "SAZININGAI_EXAM_OBSERVER" = "saziningaiExamObserver",
   "SHAREPOINT_FILE" = "sharepointFile",
+  "SHAREPOINT_FILEABLE" = "sharepointFileable",
   "TAG" = "tag",
   "TASK" = "task",
   "TYPE" = "type",

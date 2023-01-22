@@ -23,6 +23,7 @@
         <NMessageProvider>
           <FileForm
             :fileable="fileForm.fileable"
+            :loading="loading"
             @submit="handleFileSubmit"
           ></FileForm>
         </NMessageProvider>
@@ -57,6 +58,7 @@ defineProps<{
 }>();
 
 const current = ref(1);
+const loading = ref(false);
 const showAlert = useStorage("new-file-button-alert", true);
 
 const fileForm = useForm<Record<string, any>>({
@@ -75,9 +77,15 @@ const handleFileSubmit = (file: any) => {
 };
 
 const submitFullForm = () => {
+  loading.value = true;
   fileForm.post(route("sharepointFiles.store"), {
     onSuccess: () => {
       emit("close");
+      fileForm.reset();
+    },
+    onFinish: () => {
+      current.value = 1;
+      loading.value = false;
     },
   });
 };

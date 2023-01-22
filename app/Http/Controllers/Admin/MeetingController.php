@@ -12,7 +12,7 @@ use Inertia\Inertia;
 use App\Services\MeetingService as MeetingService;
 use App\Services\SharepointAppGraph;
 use Illuminate\Support\Benchmark;
-use Illuminate\Support\Carbon;
+use Carbon\Carbon;
 
 class MeetingController extends ResourceController
 {
@@ -52,7 +52,10 @@ class MeetingController extends ResourceController
      */
     public function store(StoreMeetingRequest $request)
     {
-        $meeting = Meeting::create($request->safe()->only('start_time'));
+        // generate title for meeting - YYYY-mm-dd HH.mm posėdis
+        $title = Carbon::parse($request->safe()->only('start_time')['start_time'])->locale('lt-LT')->isoFormat('YYYY MMMM DD [d.] HH.mm [val.]') . ' posėdis';
+        
+        $meeting = Meeting::create($request->safe()->only('start_time') + ['title' => $title]);
 
         $meeting->institutions()->attach($request->safe()->institution_id);
 

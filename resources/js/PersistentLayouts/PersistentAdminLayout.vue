@@ -35,10 +35,10 @@ import {
   enUS,
 } from "naive-ui";
 import { onMounted, ref } from "vue";
-import posthog from "posthog-js";
+// import posthog from "posthog-js";
 
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
-import { usePage } from "@inertiajs/vue3";
+// import { usePage } from "@inertiajs/vue3";
 import Layout from "@/Components/Layouts/AdminLayout.vue";
 
 // import "@/echo";

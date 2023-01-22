@@ -121,6 +121,11 @@ const handleAgendaItemsFormSubmit = (agendaItems: Record<string, any>) => {
             // after success, redirect to meeting
             onSuccess: () => {
               showMeetingForm.value = false;
+              current.value = 1;
+              meetingAgendaForm.reset();
+            },
+            onFinish: () => {
+              loading.value = false;
             },
           });
       },
