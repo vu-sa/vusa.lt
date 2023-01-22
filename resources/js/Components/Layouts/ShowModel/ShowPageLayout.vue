@@ -20,7 +20,7 @@
     <template #title>
       <slot name="title" />
     </template>
-    <div class="grid grid-rows-[minmax(300px,_50vh)_auto]">
+    <div class="grid grid-rows-[minmax(300px,_50vh)_minmax(500px,_auto)]">
       <div><slot /></div>
       <div>
         <div v-if="relatedModels" class="flex-items mb-6 flex gap-4">
@@ -30,23 +30,26 @@
             :name="related.name"
             :icon="related.icon"
             :count="related.count"
+            :disabled="related.disabled"
             :active="currentTab === related.name"
             @click="$emit('change:tab', related.name)"
           ></RelatedModelButton>
         </div>
-        <slot name="below" />
+        <FadeTransition mode="out-in"><slot name="below" /></FadeTransition>
       </div>
     </div>
   </AdminContentPage>
 </template>
 
 <script setup lang="tsx">
+import type { Component } from "vue";
+
 import ActivityLogButton from "@/Features/Admin/ActivityLogViewer/ActivityLogButton.vue";
 import AdminBreadcrumbDisplayer from "./Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 import AdminContentPage from "../AdminContentPage.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import RelatedModelButton from "@/Components/Buttons/RelatedModelButton.vue";
 import type { BreadcrumbOption } from "./Breadcrumbs/AdminBreadcrumbDisplayer.vue";
-import type { Component } from "vue";
 
 defineEmits<{
   (e: "change:tab", name: string): void;
@@ -60,6 +63,7 @@ defineProps<{
     name: string;
     icon?: Component;
     count?: number;
+    disabled?: boolean;
   }[];
   title?: string;
 }>();

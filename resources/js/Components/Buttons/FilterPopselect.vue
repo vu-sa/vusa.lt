@@ -5,6 +5,7 @@
     @update:value="$emit('select:value', value)"
   >
     <NButton
+      :disabled="disabled"
       :type="options?.[0] !== value ? 'primary' : 'default'"
       icon-placement="right"
       round
@@ -29,6 +30,7 @@ defineEmits<{
 }>();
 
 const props = defineProps<{
+  disabled: boolean;
   options: Array<string | null>;
 }>();
 

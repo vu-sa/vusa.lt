@@ -3,8 +3,8 @@
     <button
       class="grid h-48 w-full grid-rows-[7fr_4fr] items-center rounded-lg border shadow-sm transition hover:shadow-md focus:outline-none focus:ring focus:ring-vusa-yellow dark:border-zinc-900 dark:bg-zinc-900 dark:focus:ring-vusa-red"
       :class="gradientClasses"
-      @click="$emit('fileButtonClick')"
-      @dblclick="handleFileDoubleClick"
+      @click="handleFileSelect(file)"
+      @dblclick="handleFileDblClick(file)"
     >
       <div
         class="align-center flex h-full justify-center overflow-hidden rounded-t-md"
@@ -43,22 +43,15 @@ import { File, FilePdf, FileWord, Folder } from "@vicons/fa";
 import { NIcon } from "naive-ui";
 import { computed, inject } from "vue";
 
-import { router } from "@inertiajs/core";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import type { DriveItem } from "@microsoft/microsoft-graph-types";
-
-defineEmits<{ (event: "fileButtonClick"): void }>();
 
 const props = defineProps<{
   file: DriveItem;
   showThumbnail: boolean;
 }>();
 
-const sharepointPath = inject("sharepointPath");
-
-const folderPath = () => {
-  return sharepointPath + "/" + props.file.name;
-};
+console.log(props.file.name);
 
 const gradientClasses = computed(() => {
   if (
@@ -99,19 +92,17 @@ const fileTypeIcon = computed(() => {
   return File;
 });
 
-const handleFileDoubleClick = () => {
-  if (props.file.webUrl === null) {
-    return;
+const handleFileSelect = inject<(file: DriveItem) => void>(
+  "handleFileSelect",
+  () => {
+    console.log("handleFileSelect not injected");
   }
+);
 
-  if (props.file.folder) {
-    router.visit(
-      route("sharepointFiles.index", {
-        path: folderPath(),
-      })
-    );
-  } else {
-    window.open(props.file.webUrl, "_blank");
+const handleFileDblClick = inject<(file: DriveItem) => void>(
+  "handleFileDblClick",
+  () => {
+    console.log("handleFileDblClick not injected");
   }
-};
+);
 </script>

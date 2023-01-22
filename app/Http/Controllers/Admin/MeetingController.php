@@ -10,6 +10,7 @@ use App\Models\Institution;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Services\MeetingService as MeetingService;
+use App\Services\ResourceServices\SharepointFileService;
 use App\Services\SharepointAppGraph;
 use Illuminate\Support\Benchmark;
 use Carbon\Carbon;
@@ -72,20 +73,14 @@ class MeetingController extends ResourceController
     { 
         $this->authorize('view', [Meeting::class, $meeting, $this->authorizer]);
         
-        $sharepointFiles = [];
-        
-        if ($meeting->files()->count() > 0) {
-            $graph = new SharepointAppGraph();
-        
-            $sharepointFiles = $graph->collectSharepointFiles($meeting->files);
-        }
-        
         $meeting->load('institutions', 'activities.causer', 'files', 'comments', 'agendaItems', 'tasks.taskable', 'tasks.users');
 
         // show meeting
         return Inertia::render('Admin/Representation/ShowMeeting', [
-            'meeting' => $meeting,
-            'sharepointFiles' => $sharepointFiles,
+            'meeting' => [
+                ...$meeting->toArray(),
+                'sharepointPath' => $meeting->institutions ? SharepointFileService::pathForFileableDriveItem($meeting) : null,
+            ],
             'taskableInstitutions' => Inertia::lazy(fn () => $meeting->institutions->load('users')),
         ]);
     }

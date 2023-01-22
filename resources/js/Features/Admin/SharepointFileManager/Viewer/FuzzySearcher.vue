@@ -1,15 +1,13 @@
 <template>
-  <div class="w-96">
-    <NInput
-      v-model:value="value"
-      :disabled="disabled"
-      round
-      placeholder="Ieškoti..."
-      @input="handleInput"
-    >
-      <template #suffix><NIcon :component="Search20Filled"></NIcon></template>
-    </NInput>
-  </div>
+  <NInput
+    v-model:value="value"
+    :disabled="disabled"
+    round
+    placeholder="Ieškoti..."
+    @input="handleInput"
+  >
+    <template #suffix><NIcon :component="Search20Filled"></NIcon></template>
+  </NInput>
 </template>
 
 <script setup lang="tsx">
@@ -23,8 +21,9 @@ const emit = defineEmits<{
 }>();
 
 const props = defineProps<{
-  data: Record<string, any>[] | [];
+  data: Record<string, any>[] | [] | null;
   disabled?: boolean;
+  skeleton?: boolean;
 }>();
 
 const value = ref("");

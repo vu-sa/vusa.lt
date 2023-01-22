@@ -147,9 +147,9 @@ const handleClick = () => {
         .map((item) => item.trim());
 
       emit("submit", {
-        fileable_id: fileableId,
+        id: fileableId,
         fileable_name: fileableName,
-        fileable_type: fileableType,
+        type: fileableType,
       });
     }
   });

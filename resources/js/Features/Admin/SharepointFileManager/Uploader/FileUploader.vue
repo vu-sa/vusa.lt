@@ -53,7 +53,8 @@ import ModalHelperButton from "@/Components/Buttons/ModalHelperButton.vue";
 
 const emit = defineEmits(["close"]);
 
-defineProps<{
+const props = defineProps<{
+  fileable?: Record<string, any>;
   show: boolean; // yes
 }>();
 
@@ -89,4 +90,8 @@ const submitFullForm = () => {
     },
   });
 };
+
+if (props.fileable) {
+  handleFileableSubmit(props.fileable);
+}
 </script>

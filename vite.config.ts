@@ -16,6 +16,10 @@ export default defineConfig({
           base: null,
           includeAbsolute: false,
         },
+        // compilerOptions: {
+        //   // treat all tags with a dash as custom elements
+        //   isCustomElement: (tag) => tag.includes("-"),
+        // },
       },
     }),
     i18n(),
@@ -28,6 +32,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": "/resources/js",
+      // vue: "vue/dist/vue.esm-bundler.js",
       ziggy: "/vendor/tightenco/ziggy/dist/vue",
     },
   },

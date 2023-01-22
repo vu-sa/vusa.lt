@@ -9,6 +9,7 @@ declare global {
     | "id"
     | "name"
     | "file"
+    | "folder"
     | "size"
     | "createdDateTime"
     | "lastModifiedDateTime"

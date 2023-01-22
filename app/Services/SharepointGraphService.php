@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\SharepointFile;
+use GuzzleHttp\Exception\ClientException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
@@ -92,9 +93,16 @@ class SharepointGraphService {
         $path = rawurlencode($path);
         $childrenPath = $getChildren ? ':/children' : '';
 
-        $driveItems = $this->graph->createRequest("GET", "/drives/{$this->driveId}/root:/{$path}{$childrenPath}?\$expand=listItem,thumbnails")
+        try { $driveItems = $this->graph->createRequest("GET", "/drives/{$this->driveId}/root:/{$path}{$childrenPath}?\$expand=listItem,thumbnails")
             ->setReturnType(Model\DriveItem::class)
             ->execute();
+        } catch (ClientException $e) {
+            throw $e;
+            
+            if ($e->getCode() == 404) {
+                return collect([]);
+            }
+        }
 
         // wrap in array if not array
         if (!is_array($driveItems)) {

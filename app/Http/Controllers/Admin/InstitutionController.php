@@ -13,7 +13,7 @@ use App\Models\Type;
 use App\Models\Doing;
 use App\Services\RelationshipService;
 use App\Services\ResourceServices\InstitutionService;
-use App\Services\SharepointAppGraph;
+use App\Services\ResourceServices\SharepointFileService;
 
 class InstitutionController extends ResourceController
 {
@@ -87,24 +87,17 @@ class InstitutionController extends ResourceController
     {
         $this->authorize('view', [Institution::class, $institution, $this->authorizer]);
         
-        $institution->load('padalinys', 'types.files', 'users', 'matters', 'meetings', 'activities.causer');      
+        $institution->load('padalinys', 'users', 'matters', 'meetings.tasks', 'meetings.comments', 'meetings.files', 'activities.causer');      
         
         $institution->users = $institution->users->unique('id')->values();
         // get duties where belongs to same padalinys as institution, and where has permissions
-        $sharepointFiles = [];        
-        
-        if ($institution->files->count() > 0) {
-            $graph = new SharepointAppGraph();
-        
-            $sharepointFiles = $graph->collectSharepointFiles($institution->files);
-        }
 
         return Inertia::render('Admin/People/ShowInstitution', [
             'institution' => [
-                ...$institution->toArray(), 
+                ...$institution->toArray(),
                 'institutionManagers' => GetInstitutionManagers::execute($institution),
                 'relatedInstitutions' => RelationshipService::getRelatedInstitutionRelations($institution),
-                'sharepointFiles' => $sharepointFiles,
+                'sharepointPath' => $institution->padalinys ? SharepointFileService::pathForFileableDriveItem($institution) : null,
                 'lastMeeting' => $institution->lastMeeting(),
             ],
             'doingTypes' => Type::where('model_type', Doing::class)->get(['id', 'title']),

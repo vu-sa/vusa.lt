@@ -1,17 +1,19 @@
 <template>
-  <div class="mb-4 flex gap-2">
-    <FilterPopselect
-      :options="buttonNames"
-      @select:value="handleClick"
-    ></FilterPopselect
-    ><TaskCreator :taskable="taskable" />
+  <div>
+    <div class="mb-4 flex gap-2">
+      <FilterPopselect
+        :options="buttonNames"
+        @select:value="handleClick"
+      ></FilterPopselect
+      ><TaskCreator :taskable="taskable" />
+    </div>
+    <NCard class="subtle-gray-gradient">
+      <NSpin :show="false">
+        <TaskTable :tasks="shownTasks" />
+        <template #description>Tuojaus... </template>
+      </NSpin>
+    </NCard>
   </div>
-  <NCard class="subtle-gray-gradient">
-    <NSpin :show="false">
-      <TaskTable :tasks="shownTasks" />
-      <template #description>Tuojaus... </template>
-    </NSpin>
-  </NCard>
 </template>
 
 <script setup lang="tsx">

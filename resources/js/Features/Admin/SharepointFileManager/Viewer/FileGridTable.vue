@@ -7,43 +7,56 @@
       class="flex max-w-4xl flex-wrap gap-6"
       @after-enter="afterGroupEnter"
     >
+      <div v-if="currentPath !== startingPath">
+        <ModelDocumentButton
+          :loading="loading"
+          :show-thumbnail="showThumbnail"
+          :file="backButton.item"
+        ></ModelDocumentButton>
+      </div>
       <div v-for="result in results" :key="result.refIndex">
         <ModelDocumentButton
           :loading="loading"
           :show-thumbnail="showThumbnail"
           :file="result.item"
-          @file-button-click="$emit('select:file', result.item)"
         ></ModelDocumentButton>
       </div>
     </TransitionGroup>
     <div v-else-if="viewMode === 'list'" class="rounded-xl">
-      <NDataTable
-        :bordered="false"
-        :data="results"
-        :columns="columns"
-        :row-key="(row) => row.refIndex"
-        :row-props="rowProps"
-      ></NDataTable>
+      <FadeTransition mode="out-in">
+        <div v-if="loading">
+          <NDataTable :loading="loading"></NDataTable>
+        </div>
+        <div v-else>
+          <NDataTable
+            :bordered="false"
+            :loading="loading"
+            :data="resultsWithBackButton"
+            :columns="columns"
+            :row-key="(row) => row.refIndex"
+            :row-props="rowProps"
+          ></NDataTable>
+        </div>
+      </FadeTransition>
     </div>
   </FadeTransition>
 </template>
 
 <script setup lang="tsx">
-import { FilePdf, FileWord } from "@vicons/fa";
-import { NDataTable, NIcon } from "naive-ui";
-import { ref } from "vue";
+import { FilePdf, FileWord, Folder } from "@vicons/fa";
+import { NDataTable, NIcon, NSkeleton } from "naive-ui";
+import { computed, inject, ref } from "vue";
 
 import { fileSize } from "@/Utils/Calc";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import ModelDocumentButton from "./FileButtonSkeletonWrapper.vue";
+import type { DriveItem } from "@microsoft/microsoft-graph-types";
 
-const emit = defineEmits<{
-  (event: "select:file", file: Record<string, any>): void;
-}>();
-
-defineProps<{
-  results: Array<{ item: MyDriveItem; refIndex: number }>;
+const props = defineProps<{
   loading: boolean;
+  startingPath: string;
+  currentPath: string;
+  results: Array<{ item: MyDriveItem; refIndex: number }>;
   showThumbnail: boolean;
   viewMode: string;
 }>();
@@ -54,11 +67,48 @@ const afterGroupEnter = () => {
   absolute.value = false;
 };
 
+const handleFileSelect = inject<(file: DriveItem) => void>(
+  "handleFileSelect",
+  () => {
+    console.log("handleFileSelect not injected");
+  }
+);
+
+const handleFileDblClick = inject<(file: DriveItem) => void>(
+  "handleFileDblClick",
+  () => {
+    console.log("handleFileDblClick not injected");
+  }
+);
+
+const backButton = {
+  item: {
+    name: "...",
+  },
+  refIndex: -1,
+};
+
+// compute results where the first item is the back button
+const resultsWithBackButton = computed(() => {
+  if (props.results.length === 0) {
+    return [];
+  }
+
+  if (props.currentPath === props.startingPath) {
+    return props.results;
+  }
+
+  return [backButton, ...props.results];
+});
+
 const rowProps = (row) => {
   return {
     style: "cursor: pointer; ",
     onClick: () => {
-      emit("select:file", row.item);
+      handleFileSelect(row.item);
+    },
+    ondblclick: () => {
+      handleFileDblClick(row.item);
     },
   };
 };
@@ -72,7 +122,9 @@ const columns = [
         <div class="flex">
           {row.item.file ? (
             <NIcon component={fileIcon(row.item.file.mimeType)}></NIcon>
-          ) : null}
+          ) : (
+            <NIcon component={row.item.folder ? Folder : undefined}></NIcon>
+          )}
         </div>
       );
     },

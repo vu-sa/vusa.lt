@@ -21,7 +21,7 @@ class SharepointFileService
         return $folderName;
     }
     
-    public function pathForFileableDriveItem(Model $fileable) {
+    public static function pathForFileableDriveItem(Model $fileable) {
         // check if model has a trait HasSharepointFiles
         if (!in_array(\App\Models\Traits\HasSharepointFiles::class, class_uses($fileable))) {
             dd(class_uses($fileable), HasSharepointFiles::class);
@@ -63,7 +63,7 @@ class SharepointFileService
 
         $sharepointService = new SharepointGraphService();
 
-        $filePath = $this->pathForFileableDriveItem($fileable) . '/' . $file->getClientOriginalName();
+        $filePath = self::pathForFileableDriveItem($fileable) . '/' . $filename;
 
         $driveItem = $sharepointService->uploadDriveItem($filePath, $file->getContent());
 

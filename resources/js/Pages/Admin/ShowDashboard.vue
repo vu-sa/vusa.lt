@@ -42,12 +42,14 @@
       class="mb-8"
     >
       <h2>Tavo institucijos</h2>
-      <div
-        class="relative mt-4 grid w-full grid-cols-ramFill gap-4 overflow-hidden pb-4 transition-transform duration-300 ease-in-out"
+      <!-- <NScrollbar
         :class="{
           'max-h-[18rem]': !institutionExpanded,
           'max-h-[100%]': institutionExpanded,
         }"
+      > -->
+      <div
+        class="relative mt-4 grid w-full grid-cols-ramFill gap-4 overflow-hidden pb-4 transition-transform duration-300 ease-in-out"
       >
         <InstitutionCard
           v-for="institution in institutions"
@@ -57,30 +59,31 @@
           :is-padalinys="institution.alias === institution.padalinys.alias"
           @click="router.visit(route('institutions.show', institution.id))"
         />
-        <div
-          v-if="!institutionExpanded && institutions.length > 4"
-          class="absolute bottom-0 h-12 w-full bg-gradient-to-b from-transparent to-[rgb(250,_248,_248)] text-center dark:to-[rgb(30,_30,_33)]"
-        >
-          <NButton
-            secondary
-            circle
-            @click="institutionExpanded = !institutionExpanded"
-            ><template #icon
-              ><NIcon :component="MoreHorizontal24Regular"></NIcon></template
-          ></NButton>
-        </div>
+        <!-- <div
+            v-if="!institutionExpanded && institutions.length > 4"
+            class="absolute bottom-0 h-12 w-full bg-gradient-to-b from-transparent to-[rgb(250,_248,_248)] text-center dark:to-[rgb(30,_30,_33)]"
+          >
+            <NButton
+              secondary
+              circle
+              @click="institutionExpanded = !institutionExpanded"
+              ><template #icon
+                ><NIcon :component="MoreHorizontal24Regular"></NIcon></template
+            ></NButton>
+          </div> -->
       </div>
+      <!-- </NScrollbar> -->
     </section>
     <section v-if="shownSections.includes('Posėdžiai')" class="relative mb-8">
       <h2>Artėjantys posėdžiai</h2>
 
-      <div
-        class="grid grid-cols-ramFill gap-x-4 overflow-y-scroll"
+      <!-- <NScrollbar
         :class="{
           'max-h-[16rem]': !meetingExpanded,
           'max-h-[100%]': meetingExpanded,
         }"
-      >
+      > -->
+      <div class="grid grid-cols-ramFill gap-x-4">
         <template v-for="institution in institutions">
           <MeetingCard
             v-for="meeting in institution.meetings"
@@ -92,6 +95,7 @@
           ></MeetingCard>
         </template>
       </div>
+      <!-- </NScrollbar> -->
       <!-- <div
         v-if="!meetingExpanded && institutions.length > 3"
         class="absolute bottom-0 h-12 w-full bg-gradient-to-b from-transparent to-[rgb(250,_248,_248)] text-center dark:to-[rgb(30,_30,_33)]"
@@ -140,18 +144,25 @@
 </template>
 
 <script setup lang="tsx">
-import { ExternalLinkSquareAlt } from "@vicons/fa";
-import { NButton, NCheckbox, NCheckboxGroup, NIcon, NPopover } from "naive-ui";
-import { router } from "@inertiajs/vue3";
-
 import {
   DocumentCheckmark24Regular,
   MoreHorizontal24Regular,
   PeopleCommunity24Regular,
   Settings24Filled,
 } from "@vicons/fluent";
+import { ExternalLinkSquareAlt } from "@vicons/fa";
+import {
+  NButton,
+  NCheckbox,
+  NCheckboxGroup,
+  NIcon,
+  NPopover,
+  NScrollbar,
+} from "naive-ui";
 import { ref } from "vue";
+import { router } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
+
 import InstitutionCard from "@/Components/Cards/InstitutionCard.vue";
 import MeetingCard from "@/Components/Cards/MeetingCard.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";

@@ -23,16 +23,11 @@ class SharepointFileController extends ResourceController
     {
         $this->authorize('viewAny', [SharepointFile::class, $this->authorizer]);
         
-        $sharepointService = new SharepointGraphService();
-
         $path = request()->get('path');
 
         $path = $path ?? 'General';
 
-        $driveItems = $sharepointService->getDriveItemByPath($path, true);
-
         return Inertia::render('Admin/Files/IndexSharepoint', [
-            'sharepointDriveItems' => $driveItems,
             'path' => $path,
         ]);
     }
@@ -62,7 +57,7 @@ class SharepointFileController extends ResourceController
             'fileable' => 'required',
         ]);
 
-        $fileable_class = 'App\\Models\\' . $validated['fileable']['fileable_type'];
+        $fileable_class = 'App\\Models\\' . $validated['fileable']['type'];
 
         // check if fileable class exists
         if (!class_exists($fileable_class)) {
@@ -70,7 +65,7 @@ class SharepointFileController extends ResourceController
         }
 
         // check if fileable exists
-        $fileable = $fileable_class::find($validated['fileable']['fileable_id']);
+        $fileable = $fileable_class::find($validated['fileable']['id']);
         if (!$fileable) {
             return back()->with('error', 'Susijęs objektas neegzistuoja.');
         }
@@ -158,5 +153,21 @@ class SharepointFileController extends ResourceController
             'institutions' => Institution::with('meetings:meetings.id,start_time')->whereHas('padalinys')->get()->map->only('id', 'name', 'meetings'),
             'types' => Type::all()->map->only('id', 'title'),
         ]);
+    }
+
+    public function getDriveItems(Request $request)
+    {
+        $this->authorize('viewAll', [SharepointFile::class, $this->authorizer]);
+
+        $sharepointService = new SharepointGraphService();
+
+        $path = $request->get('path');
+
+        // remove trailing slash
+        $path = rtrim($path, '/');
+
+        $driveItems = $sharepointService->getDriveItemByPath($path, true);
+
+        return response()->json($driveItems);
     }
 }

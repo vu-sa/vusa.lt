@@ -53,7 +53,7 @@
     <NFormItem v-if="model.typeValue" label="Sugeneruotas failo pavadinimas">
       <NInputGroup>
         <NInput
-          v-model:value="model.nameValue"
+          v-model:value="model.tempNameValue"
           :style="{ width: '85%' }"
           placeholder=""
           :disabled="fileNameEditDisabled"
@@ -125,6 +125,8 @@ const model = ref<{
   datetimeValue: number | null;
   description0Value: string;
   nameValue: string | null;
+  // there's a temp, because on submit form, the extension is added to the name and it's not pretty
+  tempNameValue: string | null;
   //   keywordsValue: string[];
   typeValue: string | null;
   uploadValue: UploadFileInfo | null;
@@ -132,6 +134,7 @@ const model = ref<{
   datetimeValue: null,
   description0Value: "",
   nameValue: null,
+  tempNameValue: null,
   //   keywordsValue: [],
   typeValue: null,
   uploadValue: null,
@@ -217,7 +220,7 @@ const handleUploadChange = ({
   if (fileList.length === 0) {
     model.value.uploadValue = null;
     originalFileName.value = "";
-    model.value.nameValue = setUploadFileName();
+    model.value.tempNameValue = setUploadFileName();
     return;
   }
 
@@ -227,7 +230,7 @@ const handleUploadChange = ({
 
   fileExtension.value = extension;
   originalFileName.value = name;
-  model.value.nameValue = setUploadFileName();
+  model.value.tempNameValue = setUploadFileName();
 };
 
 // generate name for this file
@@ -258,7 +261,7 @@ const handleValidateClick = (e: MouseEvent) => {
     if (!errors) {
       model.value = {
         ...model.value,
-        nameValue: model.value.nameValue + fileExtension.value,
+        nameValue: model.value.tempNameValue + fileExtension.value,
       };
 
       emit("submit", model.value);

@@ -7,7 +7,7 @@ use App\Services\ResourceServices\SharepointFileService;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class UpdateSharepointFolder
+class UpdateSharepointFolder implements ShouldQueue
 {
     /**
      * Create the event listener.

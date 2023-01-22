@@ -77,9 +77,9 @@ const columns: () => DataTableColumns<App.Entities.Task> = () => [
           {{
             default: () => [
               <span>
-                {row.taskable.title ??
-                  row.taskable.name ??
-                  row.taskable.start_time}
+                {row.taskable?.title ??
+                  row.taskable?.name ??
+                  row.taskable?.start_time}
               </span>,
             ],
             icon: () => <NIcon component={iconComponent(row)}></NIcon>,

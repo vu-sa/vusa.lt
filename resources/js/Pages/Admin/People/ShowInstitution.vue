@@ -31,8 +31,18 @@
       content-style="margin-top: 0.5em"
     ></LastMeetingCard>
     <template #below>
+      <MeetingsTabPane
+        v-if="currentTab === 'Susitikimai'"
+        :institution="institution"
+        :meetings="institution.meetings"
+      ></MeetingsTabPane>
+      <FileManager
+        v-else-if="currentTab === 'Failai'"
+        :starting-path="institution.sharepointPath"
+        :fileable="{ ...institution, type: 'Institution' }"
+      ></FileManager>
       <MattersCardGrid
-        v-if="currentTab == 'Svarstomi klausimai'"
+        v-else-if="currentTab === 'Svarstomi klausimai'"
         :institution="institution"
         :matters="institution.matters"
       ></MattersCardGrid>
@@ -46,16 +56,15 @@
 
 <script setup lang="tsx">
 import { NDivider } from "naive-ui";
+import { computed, defineAsyncComponent } from "vue";
 import { router } from "@inertiajs/vue3";
+import { useStorage } from "@vueuse/core";
 
 // import { documentTemplate } from "@/Types/formOptions";
-import { useStorage } from "@vueuse/core";
 import Icons from "@/Types/Icons/filled";
 import InstitutionAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import LastMeetingCard from "@/Components/Cards/QuickContentCards/LastMeetingCard.vue";
-import MattersCardGrid from "@/Components/TabPaneContent/MattersCardGrid.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
-import RelatedInstitutions from "@/Components/Carousels/RelatedInstitutions.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
 import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 
@@ -64,6 +73,24 @@ const props = defineProps<{
   institution: App.Entities.Institution;
 }>();
 
+const currentTab = useStorage("show-institution-tab", "Svarstomi klausimai");
+
+const MeetingsTabPane = defineAsyncComponent(
+  () => import("@/Components/TabPaneContent/MeetingsTabPane.vue")
+);
+
+const FileManager = defineAsyncComponent(
+  () => import("@/Features/Admin/SharepointFileManager/Viewer/FileManager.vue")
+);
+
+const MattersCardGrid = defineAsyncComponent(
+  () => import("@/Components/TabPaneContent/MattersCardGrid.vue")
+);
+
+const RelatedInstitutions = defineAsyncComponent(
+  () => import("@/Components/Carousels/RelatedInstitutions.vue")
+);
+
 const breadcrumbOptions: BreadcrumbOption[] = [
   {
     label: props.institution.name,
@@ -71,18 +98,25 @@ const breadcrumbOptions: BreadcrumbOption[] = [
   },
 ];
 
-const currentTab = useStorage("show-institution-tab", "Svarstomi klausimai");
-
-// This won't show related institutions, only relationships.
-// const relatedInstitutionCount = computed(() => {
-//   // check all arrays of related institutions length and sum
-//   return Object.values(props.institution.relatedInstitutions).reduce(
-//     (acc: number, curr) => acc + curr.length,
-//     0
-//   );
-// });
+const relatedInstitutionCount = computed(() => {
+  // reduce props.institution.relatedInstitutions object by checking all arrays lengths
+  return Object.values(props.institution.relatedInstitutions).reduce(
+    (acc, val) => acc + val.length,
+    0
+  );
+});
 
 const relatedModels = [
+  {
+    name: "Susitikimai",
+    icon: Icons.MEETING,
+    count: props.institution.meetings?.length,
+  },
+  {
+    name: "Failai",
+    icon: Icons.SHAREPOINT_FILE,
+    count: props.institution.files?.length,
+  },
   {
     name: "Svarstomi klausimai",
     icon: Icons.MATTER,
@@ -91,6 +125,7 @@ const relatedModels = [
   {
     name: "Susijusios institucijos",
     icon: Icons.INSTITUTION,
+    disabled: relatedInstitutionCount.value === 0,
   },
 ];
 </script>

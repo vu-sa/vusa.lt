@@ -55,17 +55,11 @@
       />
     </CardModal>
     <template #below>
-      <div v-if="currentTab === 'Failai'" class="grid grid-cols-ramFill gap-4">
-        <FileButton
-          v-for="document in sharepointFiles"
-          :key="document.id"
-          :document="document"
-          @click="selectedDocument = document"
-        ></FileButton>
-        <NewGridItemButton :icon="Icons.SHAREPOINT_FILE"
-          >Įkelti naują dokumentą?</NewGridItemButton
-        >
-      </div>
+      <FileManager
+        v-if="currentTab === 'Failai'"
+        :starting-path="meeting.sharepointPath"
+        :fileable="{ ...meeting, type: 'Meeting' }"
+      ></FileManager>
       <TaskManager
         v-else-if="currentTab === 'Užduotys'"
         :taskable="{ id: meeting.id, type: 'App\\Models\\Meeting' }"
@@ -76,8 +70,8 @@
 </template>
 
 <script setup lang="tsx">
-import { type DropdownOption, NButton, NDivider, NIcon, NTag } from "naive-ui";
-import { Edit24Filled, PeopleTeam24Filled } from "@vicons/fluent";
+import { type DropdownOption, NButton, NIcon } from "naive-ui";
+import { Edit24Filled } from "@vicons/fluent";
 import { computed, ref } from "vue";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
@@ -87,26 +81,22 @@ import { router } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 import AgendaItemForm from "@/Components/AdminForms/AgendaItemForm.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
-import FileButton from "@/Features/Admin/SharepointFileManager/Viewer/FileButton.vue";
+import FileManager from "@/Features/Admin/SharepointFileManager/Viewer/FileManager.vue";
 import Icons from "@/Types/Icons/filled";
 import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
-import NewGridItemButton from "@/Components/Buttons/NewGridItemButton.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
 import TaskManager from "@/Features/Admin/TaskManager/TaskManager.vue";
 import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 
 const props = defineProps<{
   meeting: App.Entities.Meeting;
-  // TODO: need to define this type
-  sharepointFiles: App.Entities.SharepointFile[];
 }>();
 
 const showMeetingModal = ref(false);
 const showAgendaItemModal = ref(false);
 const currentTab = useStorage("show-meeting-tab", "Failai");
 
-const selectedDocument = ref<App.Entities.SharepointFile | null>(null);
 const selectedAgendaItem = ref<App.Entities.AgendaItem | null>(null);
 
 const mainInstitution: App.Entities.Institution | string =
@@ -173,7 +163,6 @@ const relatedModels = [
   {
     name: "Failai",
     icon: Icons.SHAREPOINT_FILE,
-    count: props.meeting.files.length,
   },
   {
     name: "Užduotys",
