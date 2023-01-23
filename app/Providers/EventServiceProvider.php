@@ -24,6 +24,9 @@ class EventServiceProvider extends ServiceProvider
         FileableNameUpdated::class => [
             \App\Listeners\UpdateSharepointFolder::class,
         ],
+        \Spatie\ModelStates\Events\StateChanged::class => [
+            \App\Listeners\HandleDoingStateChange::class,
+        ],
     ];
 
     /**

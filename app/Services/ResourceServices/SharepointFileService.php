@@ -2,6 +2,7 @@
 
 namespace App\Services\ResourceServices;
 
+use App\Models\Doing;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\SharepointFile;
@@ -24,7 +25,6 @@ class SharepointFileService
     public static function pathForFileableDriveItem(Model $fileable) {
         // check if model has a trait HasSharepointFiles
         if (!in_array(\App\Models\Traits\HasSharepointFiles::class, class_uses($fileable))) {
-            dd(class_uses($fileable), HasSharepointFiles::class);
             abort(500, 'Model does not have HasSharepointFiles trait');
         }
         
@@ -55,6 +55,24 @@ class SharepointFileService
             $path .= '/' . class_basename($fileable) . '/' . $formattedDatetime . '/' . $fileable->name;
         }
 
+        if ($fileable instanceof Doing) {
+            $fileable->loadMissing('users');
+
+            $path .= '/'. 'Users';
+            $path .= '/' . $fileable->users->first()->name;
+            $path .= '/' . class_basename($fileable->getMorphClass());
+            // add last 4 id letters
+
+            if ($fileable->drive_item_name) {
+                $path .= '/' . $fileable->drive_item_name;
+            } else {
+                $path .= '/' . $fileable->title . '-' . substr($fileable->id, -4);
+                // update doing
+                $fileable->drive_item_name = $fileable->title . '-' . substr($fileable->id, -4);
+                $fileable->save();
+            }
+        }
+
         return $path;
     }
     
@@ -69,7 +87,7 @@ class SharepointFileService
 
         $sharepointFile = SharepointFile::create(['sharepoint_id' => $driveItem->getId()]);
 
-        $listItem = $driveItem->getListItem() ?? abort(500);
+        $listItem = $driveItem->getListItem() ?? abort(404, 'Sharepoint file does not have a list item');
         $sharepointService->updateListItem(config('filesystems.sharepoint.list_id'), $listItem->getId(), $listItemProperties);
 
         return $sharepointFile;

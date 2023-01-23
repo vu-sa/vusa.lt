@@ -41,7 +41,6 @@
     >
       <p class="h-fit w-fit text-zinc-400">Komentarų nėra</p>
     </div>
-
     <div class="relative">
       <CommentTipTap
         v-model:text="text"

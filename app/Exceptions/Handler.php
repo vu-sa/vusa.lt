@@ -51,7 +51,7 @@ class Handler extends ExceptionHandler
 
         if (in_array($response->status(), [403])) {
             return back()->with([
-                'info' => 'Neturite teisių atlikti šiam veiksmui.',
+                'info' => $e->getMessage() ?? 'Neturite teisių atlikti šiam veiksmui.',
             ]);
         } 
 

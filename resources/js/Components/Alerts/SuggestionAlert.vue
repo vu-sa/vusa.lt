@@ -1,7 +1,7 @@
 <template>
   <NAlert
     v-if="showAlert"
-    style="background-color: rgba(0, 0, 0, 0)"
+    style="background-color: rgba(244, 244, 245, 0.2)"
     title="Įsidėmėk!"
     closable
     class="mb-4"
@@ -11,7 +11,7 @@
     <template #icon>
       <NIcon><BookExclamationMark20Filled /></NIcon>
     </template>
-    <slot />
+    <div class="pt-2"><slot /></div>
   </NAlert>
 </template>
 

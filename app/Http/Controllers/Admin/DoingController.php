@@ -3,15 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Doing;
-use App\Http\Controllers\Controller as Controller;
 use App\Http\Controllers\ResourceController;
-use App\Services\DoingStatusManager;
+use App\Http\Requests\StoreDoingRequest;
 use App\Services\ModelIndexer;
-use App\Services\SharepointAppGraph;
-use App\Services\TaskCreator;
+use App\Services\ResourceServices\SharepointFileService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Microsoft\Graph\Model;
 use Inertia\Inertia;
 
 class DoingController extends ResourceController
@@ -53,27 +51,15 @@ class DoingController extends ResourceController
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
-    {
-        $this->authorize('create', [Doing::class, $this->authorizer]);
-        
-        $request->validate([
-            'title' => 'required',
-            'user_id' => 'required'
-        ]);
-    
+    public function store(StoreDoingRequest $request)
+    { 
         $doing = Doing::create
-            ($request->only('title') + ['status' => 'Sukurtas', 'date' => $request->date ?? now()]);
+            ($request->safe()->only('title', 'date'));
         
-        // $doing->types()->sync($request->type_id);
-        $doing->users()->sync($request->user_id);
-
-        // DoingStatusManager::generateStatusForNewDoing($doing);
-        // TaskCreator::createAutomaticTasks($doing);
+        $doing->users()->sync(Auth::id());
 
         return redirect()->route('doings.show', $doing)->with('success', 'Veiksmas sukurtas!');
     }
-
     /**
      * Display the specified resource.
      *
@@ -87,7 +73,10 @@ class DoingController extends ResourceController
         $doing->load('activities.causer', 'tasks', 'comments', 'doables', 'users');
 
         return Inertia::render('Admin/Representation/ShowDoing', [
-            'doing' => $doing,
+            'doing' => [
+                ...$doing->toArray(), 
+                'sharepointPath' => $doing->users->first() ? SharepointFileService::pathForFileableDriveItem($doing) : null,
+            ],
         ]);
     }
 

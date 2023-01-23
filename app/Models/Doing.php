@@ -2,31 +2,32 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use App\Models\Traits\HasComments;
-use Illuminate\Support\Carbon;
 use App\Models\Comment;
 use App\Models\Pivots\Doable;
-use App\Models\Pivots\SharepointFileable;
+use App\Models\Traits\HasSharepointFiles;
+use App\Services\ResourceServices\DoingService;
+use App\States\Doing\DoingState;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\ModelStates\HasStates;
 use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
+use Illuminate\Support\Str;
 
-class Doing extends Model
+class Doing extends Model 
 {
-    use HasFactory, HasComments, HasRelationships, HasUlids, LogsActivity, SoftDeletes;
+    use HasFactory, HasComments, HasRelationships, HasSharepointFiles, HasStates, HasUlids, LogsActivity, SoftDeletes;
 
     protected $with = ['types'];
 
     protected $guarded = [];
 
     protected $casts = [
-        // 'created_at' => 'timestamp'
-        'created_at' => 'datetime:Y-m-d H:i',
-        'extra_attributes' => 'array'
+        'state' => DoingState::class,
     ];
 
     public function getActivitylogOptions(): LogOptions
@@ -74,18 +75,32 @@ class Doing extends Model
         return $this->hasManyDeepFromRelations($this->users(), (new User)->padaliniai());
     }
 
-    // public function getNeedsAttentionAttribute() {
-    //     if ($this->status === 'Pabaigtas') {
-    //         return false;
-    //     }
+    // state management
 
-    //     $now = Carbon::now();
-    //     $date = Carbon::parse($this->date);
+    public function decision($decision)
+    {
+        // based on the decision, call the appropriate method
+        $method = 'decisionTo' . Str::ucfirst(Str::camel($decision));
+        return $this->$method();
+    }
 
-    //     if ($now->gt($date)) {
-    //         return true;
-    //     }
+    public function decisionToProgress()
+    {
+        return $this->state->handleProgress();
+    }
 
-    //     return true;
-    // }
+    public function decisionToApprove()
+    {
+        return $this->state->handleApprove();
+    }
+
+    public function decisionToReject()
+    {
+        return $this->state->handleReject();
+    }
+
+    public function decisionToCancel()
+    {
+        return $this->state->handleCancel();
+    }
 }

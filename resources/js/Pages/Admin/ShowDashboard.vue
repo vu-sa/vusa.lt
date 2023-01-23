@@ -28,12 +28,8 @@
     <section v-if="shownSections.includes('Veiksmai')" class="mb-8">
       <h2 class="mb-6">Greitieji veiksmai</h2>
       <div class="flex items-center gap-4">
-        <QuickActionButton :icon="PeopleCommunity24Regular"
-          >Organizuoti <em>focus</em> grupę</QuickActionButton
-        >
-        <QuickActionButton :icon="DocumentCheckmark24Regular"
-          >Organizuoti el. apklausą</QuickActionButton
-        >
+        <QActFocusGroupButton />
+        <QActSurveyButton />
       </div>
     </section>
     <section
@@ -158,7 +154,9 @@ import { useStorage } from "@vueuse/core";
 import InstitutionCard from "@/Components/Cards/InstitutionCard.vue";
 import MeetingCard from "@/Components/Cards/MeetingCard.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
-import QuickActionButton from "@/Components/Deprecated/QuickActionButton.vue";
+import QActFocusGroupButton from "@/Components/Buttons/QActFocusGroupButton.vue";
+import QActSurveyButton from "@/Components/Buttons/QActSurveyButton.vue";
+import QuickActionButton from "@/Components/Buttons/QuickActionButton.vue";
 
 defineProps<{
   institutions: Record<string, any>[];

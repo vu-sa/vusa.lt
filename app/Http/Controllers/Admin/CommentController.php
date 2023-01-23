@@ -52,6 +52,7 @@ class CommentController extends ResourceController
             'commentable_type' => [new EnumRule(ModelEnum::class), 'required'],
             'commentable_id' => 'required|string', // TODO: sometimes ulid|uuid?
             'comment' => 'required|string',
+            'decision' => 'nullable|string',
             'route' => 'nullable|string'
         ]);
 
@@ -59,8 +60,11 @@ class CommentController extends ResourceController
         $formatted = Str::ucfirst(Str::camel($validated['commentable_type']));
 
         $modelClass = 'App\\Models\\' . $formatted;
-
         $model = $modelClass::find($request->commentable_id);
+
+        if ($request->decision) {
+            $model->decision($request->decision);
+        }
 
         $model->comment($request->comment);
 

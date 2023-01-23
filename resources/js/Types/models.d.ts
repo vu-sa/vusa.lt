@@ -81,7 +81,7 @@ declare namespace App.Models {
     id: string;
     title: string;
     drive_item_name: string | null;
-    status: string;
+    state: string;
     date: string;
     extra_attributes: string | null;
     created_at: any;

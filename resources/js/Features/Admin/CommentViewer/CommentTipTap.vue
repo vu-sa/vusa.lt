@@ -38,23 +38,55 @@
           :callback="() => editor.chain().focus().toggleOrderedList().run()"
         />
       </div>
-      <NButton
-        type="primary"
-        size="small"
-        :disabled="disabled"
-        :loading="loading"
-        @click="$emit('submit')"
-        ><template #icon><NIcon :component="Send20Filled"></NIcon></template
-        >SIŲSTI</NButton
-      >
+      <NButtonGroup type="primary" size="small">
+        <NButton
+          :disabled="disabled"
+          type="primary"
+          :loading="loading"
+          @click="$emit('submit:comment')"
+          ><template #icon><NIcon :component="Send20Filled"></NIcon></template
+          >SIŲSTI</NButton
+        >
+        <NPopover trigger="click" class="rounded-md" raw :show-arrow="false">
+          <div class="flex flex-col rounded-md bg-white">
+            <NButtonGroup size="medium" vertical>
+              <NButton
+                type="success"
+                secondary
+                @click="$emit('submit:comment', 'approve')"
+                ><template #icon
+                  ><NIcon :component="CommentCheckmark24Regular"> </NIcon
+                ></template>
+                ... ir patvirtinti</NButton
+              >
+              <NButton
+                type="warning"
+                tertiary
+                ghost
+                @click="$emit('submit:comment', 'reject')"
+                ><template #icon
+                  ><NIcon :component="CommentError24Regular"> </NIcon></template
+                >... ir grąžinti peržiūrai</NButton
+              >
+            </NButtonGroup>
+          </div>
+          <template #trigger>
+            <NButton type="primary" secondary
+              ><template #icon
+                ><NIcon :component="CaretDown24Filled"></NIcon></template
+            ></NButton>
+          </template>
+        </NPopover>
+      </NButtonGroup>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { EditorContent, useEditor } from "@tiptap/vue-3";
-import { NButton, NIcon } from "naive-ui";
 import {
+  CaretDown24Filled,
+  CommentCheckmark24Regular,
+  CommentError24Regular,
   Send20Filled,
   TextBold20Regular,
   TextBulletListLtr24Filled,
@@ -62,6 +94,8 @@ import {
   TextNumberListLtr24Filled,
   TextUnderline20Regular,
 } from "@vicons/fluent";
+import { EditorContent, useEditor } from "@tiptap/vue-3";
+import { NButton, NButtonGroup, NIcon, NPopover } from "naive-ui";
 import { onBeforeUnmount, ref } from "vue";
 import StarterKit from "@tiptap/starter-kit";
 import TipTapButton from "./TipTap/TipTapButton.vue";
@@ -77,7 +111,7 @@ const props = defineProps<{
 
 // :disabled="editor?.getHTML() == '<p></p>'"
 
-const emit = defineEmits(["update:text", "submit"]);
+const emit = defineEmits(["update:text", "submit:comment"]);
 const text = ref(props.text);
 
 const editor = useEditor({
