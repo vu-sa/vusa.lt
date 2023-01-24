@@ -17,7 +17,18 @@
             >
               <UserPopover bold :size="32" :user="comment.user" />
               <div class="inline-flex flex-col">
-                <strong class="text-md">{{ comment.user.name }}</strong>
+                <div>
+                  <strong class="text-md">{{ comment.user.name }}</strong>
+                  <NTag
+                    v-if="comment.decision"
+                    size="small"
+                    :bordered="false"
+                    round
+                    :type="decisionType(comment.decision)"
+                    class="ml-4"
+                    >{{ comment.decision }}</NTag
+                  >
+                </div>
                 <span
                   :title="comment.created_at"
                   class="mr-2 text-xs text-gray-500"
@@ -47,14 +58,14 @@
         :disabled="!model"
         :loading="loading"
         class="absolute bottom-0 w-full"
-        @submit="submitComment"
+        @submit:comment="submitComment"
       ></CommentTipTap>
     </div>
   </div>
 </template>
 
 <script setup lang="tsx">
-import { NScrollbar, type ScrollbarInst } from "naive-ui";
+import { NScrollbar, NTag, type ScrollbarInst } from "naive-ui";
 import { formatRelativeTime } from "@/Utils/IntlTime";
 // intellisense hates 'ref' in this file
 import { onUpdated, ref } from "vue";
@@ -69,15 +80,14 @@ defineEmits<{
 const props = defineProps<{
   model?: Record<string, any> | null;
   commentable_type: string;
-  text: string;
 }>();
 
 const loading = ref(false);
-const text = ref(null);
+const text = ref<string | null>(null);
 const commentContainer = ref<HTMLElement | null>(null);
 const scrollContainer = ref<ScrollbarInst | null>(null);
 
-const submitComment = () => {
+const submitComment = (decision?: "approve" | "reject") => {
   loading.value = true;
   router.post(
     route("users.comments.store", usePage().props.auth?.user.id),
@@ -85,6 +95,7 @@ const submitComment = () => {
       commentable_type: props.commentable_type,
       commentable_id: props.model?.id,
       comment: text.value,
+      decision: decision ?? undefined,
     },
     {
       preserveScroll: true,
@@ -97,6 +108,17 @@ const submitComment = () => {
       },
     }
   );
+};
+
+const decisionType = (decision: string) => {
+  switch (decision) {
+    case "approve":
+      return "success";
+    case "reject":
+      return "warning";
+    default:
+      return "info";
+  }
 };
 
 onUpdated(() => {

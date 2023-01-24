@@ -2,25 +2,29 @@
 
 namespace App\Notifications;
 
-use App\Mail\InformChairAboutMemberRegistration;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class MemberRegistered extends Notification implements ShouldQueue
+class StateChangeNotification extends Notification implements ShouldQueue
 {
     use Queueable;
+
+    protected string $text;
+    protected array $objectArray;
+    protected array $subjectArray;
 
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct($data, $registerLocation, $chairEmail)
+    public function __construct(string $text, $objectArray = null, $subjectArray = null)
     {
-        $this->data = $data;
-        $this->registerLocation = $registerLocation;
-        $this->email = $chairEmail;
+        $this->text = $text;
+        $this->objectArray = $objectArray;
+        $this->subjectArray = $subjectArray;
     }
 
     /**
@@ -31,7 +35,7 @@ class MemberRegistered extends Notification implements ShouldQueue
      */
     public function via($notifiable)
     {
-        return ['mail', 'database'];
+        return ['database'];
     }
 
     /**
@@ -42,8 +46,10 @@ class MemberRegistered extends Notification implements ShouldQueue
      */
     public function toMail($notifiable)
     {
-        return (new InformChairAboutMemberRegistration($this->data, $this->registerLocation))
-            ->to($this->email);
+        // return (new MailMessage)
+        //             ->line('The introduction to the notification.')
+        //             ->action('Notification Action', url('/'))
+        //             ->line('Thank you for using our application!');
     }
 
     /**
@@ -55,8 +61,9 @@ class MemberRegistered extends Notification implements ShouldQueue
     public function toArray($notifiable)
     {
         return [
-            'objectName' => $this->data['name'],
-            'actionUrl' => ["routeName" => 'registrationForms.show', "model" => 2]
+            'text' => $this->text,
+            'object' => $this->objectArray,
+            'subject' => $this->subjectArray,
         ];
     }
 }

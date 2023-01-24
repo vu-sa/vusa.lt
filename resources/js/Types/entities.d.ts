@@ -8,7 +8,17 @@ declare namespace App.Entities {
     comments: Array<App.Models.Comment>;
   }
   export type Doable = App.Models.Pivots.Doable;
-  export type Doing = App.Models.Doing;
+  export interface Doing extends Omit<App.Models.Doing, "state"> {
+    state:
+      | "draft"
+      | "pending_changes"
+      | "pending_padalinys_approval"
+      | "pending_final_approval"
+      | "approved"
+      | "pending_completion"
+      | "completed"
+      | "canceled";
+  }
   export type Dutiable = App.Models.Pivots.Dutiable;
 
   export interface Duty extends App.Models.Duty {

@@ -49,8 +49,9 @@ class NotifyUsersOfComment implements ShouldQueue
             'name' => optional($commentable)->name ?: optional($commentable)->title ?: null,
             'url' => route($routeName, $commentable->id),
         ];
-
-        $text = "<p><strong>{$user->name}</strong> paliko komentarą įraše: {$commentable->name}</p>";
+        
+        // TODO: not always title, sometimes name, sometimes something else
+        $text = "<p><strong>{$user->name}</strong> paliko komentarą įraše: {$commentable->title}</p>";
 
         // TODO: send notification to all users that have access to the commentable, e.g. file doesn't work
         Notification::send($commentable->users?->unique(), new ModelCommented($text, $object, $subject));

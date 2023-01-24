@@ -18,15 +18,15 @@ abstract class DoingState extends State
     {
         return parent::config()
             ->default(Draft::class)
-            ->allowTransition([Draft::class, PendingChanges::class], PendingPadalinysApproval::class, TransitionToPendingPadalinysApproval::class) 
+            ->allowTransition([Draft::class, PendingChanges::class], PendingPadalinysApproval::class) 
             ->allowTransitions([
-                [PendingPadalinysApproval::class, PendingFinalApproval::class, TransitionPendingPadalinysToFinal::class], 
-                [PendingFinalApproval::class, Approved::class, TransitionFinalToApproved::class], 
-                [Approved::class, PendingCompletion::class, TransitionApprovedToPendingCompletion::class], 
-                [PendingCompletion::class, Completed::class, TransitionPendingCompletionToCompleted::class], 
+                [PendingPadalinysApproval::class, PendingFinalApproval::class], 
+                [PendingFinalApproval::class, Approved::class], 
+                [Approved::class, PendingCompletion::class], 
+                [PendingCompletion::class, Completed::class], 
             ])
-            ->allowTransition([PendingPadalinysApproval::class, PendingFinalApproval::class], PendingChanges::class, TransitionFromPendingToPendingChanges::class) 
-            ->allowTransition([PendingChanges::class, PendingCompletion::class, Approved::class], Cancelled::class, TransitionToCancelled::class) 
+            ->allowTransition([PendingPadalinysApproval::class, PendingFinalApproval::class], PendingChanges::class) 
+            ->allowTransition([PendingChanges::class, PendingCompletion::class, Approved::class], Cancelled::class) 
         ;
     }
 }

@@ -62,11 +62,12 @@ class CommentController extends ResourceController
         $modelClass = 'App\\Models\\' . $formatted;
         $model = $modelClass::find($request->commentable_id);
 
+        // TODO: Add authorization
         if ($request->decision) {
             $model->decision($request->decision);
         }
 
-        $model->comment($request->comment);
+        $model->comment($request->comment, $request->decision);
 
         return redirect()->back()->with('success', 'Komentaras pridėtas.');
     }

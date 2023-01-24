@@ -51,6 +51,7 @@ declare namespace App.Models {
     id: string;
     parent_id: string | null;
     comment: string;
+    decision: string | null;
     user_id: string;
     commentable_type: string;
     commentable_id: string;

@@ -48,7 +48,7 @@
           >SIŲSTI</NButton
         >
         <NPopover trigger="click" class="rounded-md" raw :show-arrow="false">
-          <div class="flex flex-col rounded-md bg-white">
+          <div class="flex flex-col rounded-md bg-zinc-50 dark:bg-zinc-800">
             <NButtonGroup size="medium" vertical>
               <NButton
                 type="success"
@@ -96,7 +96,7 @@ import {
 } from "@vicons/fluent";
 import { EditorContent, useEditor } from "@tiptap/vue-3";
 import { NButton, NButtonGroup, NIcon, NPopover } from "naive-ui";
-import { onBeforeUnmount, ref } from "vue";
+import { onBeforeUnmount, ref, watch } from "vue";
 import StarterKit from "@tiptap/starter-kit";
 import TipTapButton from "./TipTap/TipTapButton.vue";
 import TipTapLink from "@tiptap/extension-link";
@@ -112,7 +112,6 @@ const props = defineProps<{
 // :disabled="editor?.getHTML() == '<p></p>'"
 
 const emit = defineEmits(["update:text", "submit:comment"]);
-const text = ref(props.text);
 
 const editor = useEditor({
   editorProps: {
@@ -127,7 +126,7 @@ const editor = useEditor({
     }),
     Underline,
   ],
-  content: text.value,
+  content: props.text,
   onUpdate: () => {
     // HTML
     emit("update:text", editor.value?.getHTML());

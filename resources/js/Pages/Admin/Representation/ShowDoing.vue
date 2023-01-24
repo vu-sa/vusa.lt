@@ -20,37 +20,7 @@
         <DoingForm :doing="doing" @submit="handleSubmit"></DoingForm>
       </CardModal>
     </template>
-    <QuickContentCard>
-      <p>{{ doing.state }}</p>
-      <NButton @click="showStateChangeModal = true">Atnaujinti būseną</NButton>
-      <CardModal
-        v-model:show="showStateChangeModal"
-        title="Keisti statusą"
-        @close="showStateChangeModal = false"
-      >
-        <div class="not-prose relative min-h-[12rem] w-full">
-          <label>Komentaras</label>
-
-          <CommentTipTap
-            v-model:text="commentText"
-            class="absolute bottom-0 w-full"
-            @submit:comment="submitComment"
-          ></CommentTipTap>
-        </div>
-        <!-- <div class="flex justify-end gap-2">
-          <NButton type="warning" size="small"
-            ><template #icon
-              ><NIcon :component="CommentError24Regular"></NIcon></template
-            >Atmesti</NButton
-          >
-          <NButton type="success" size="small"
-            ><template #icon
-              ><NIcon :component="CommentCheckmark24Regular"></NIcon></template
-            >Patvirtinti</NButton
-          >
-        </div> -->
-      </CardModal>
-    </QuickContentCard>
+    <DoingStatusCard :doing="doing"></DoingStatusCard>
     <template #below>
       <FileManager
         v-if="currentTab === 'Failai'"
@@ -59,7 +29,6 @@
       ></FileManager>
       <CommentViewer
         v-else-if="currentTab === 'Komentarai'"
-        v-model:text="commentText"
         class="mt-auto h-min"
         :commentable_type="'doing'"
         :model="doing"
@@ -74,20 +43,18 @@
 </template>
 
 <script setup lang="tsx">
-import { NButton, NForm, NFormItem, NIcon, NInput } from "naive-ui";
 import { Person24Filled, Sparkle20Filled } from "@vicons/fluent";
 import { ref } from "vue";
-import { router, usePage } from "@inertiajs/vue3";
+import { usePage } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 
 import CardModal from "@/Components/Modals/CardModal.vue";
-import CommentTipTap from "@/Features/Admin/CommentViewer/CommentTipTap.vue";
 import CommentViewer from "@/Features/Admin/CommentViewer/CommentViewer.vue";
 import DoingForm from "@/Components/AdminForms/DoingForm.vue";
+import DoingStatusCard from "@/Components/Cards/QuickContentCards/DoingStateCard.vue";
 import FileManager from "@/Features/Admin/SharepointFileManager/Viewer/FileManager.vue";
 import Icons from "@/Types/Icons/filled";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
-import QuickContentCard from "@/Components/Cards/QuickContentCards/QuickContentCard.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
 import TaskManager from "@/Features/Admin/TaskManager/TaskManager.vue";
 import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
@@ -97,10 +64,7 @@ const props = defineProps<{
 }>();
 
 const currentTab = useStorage("show-doing-tab", "Failai");
-const commentText = ref("");
-const loading = ref(false);
 
-const showStateChangeModal = ref(false);
 const showEditModal = ref(false);
 
 const handleSubmit = (form: any) => {
@@ -123,28 +87,6 @@ const breadcrumbOptions: BreadcrumbOption[] = [
     icon: Sparkle20Filled,
   },
 ];
-
-const submitComment = (decision?: "approve" | "reject") => {
-  // add decision attribute
-  router.post(
-    route("users.comments.store", usePage().props.auth?.user.id),
-    {
-      commentable_type: "doing",
-      commentable_id: props.doing.id,
-      comment: commentText.value,
-      decision: decision ?? "progress",
-    },
-    {
-      preserveScroll: true,
-      onSuccess: () => {
-        loading.value = false;
-      },
-      onError: () => {
-        loading.value = false;
-      },
-    }
-  );
-};
 
 const relatedModels = [
   {
