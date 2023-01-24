@@ -67,9 +67,9 @@
               </div>
               <div
                 v-else
-                class="flex w-full flex-col gap-4 sm:w-96 sm:justify-center sm:pt-0"
+                class="flex flex-col gap-4 sm:w-96 sm:justify-center sm:pt-0"
               >
-                <div class="w-full overflow-hidden px-6 py-4">
+                <div class="px-6 py-4">
                   <div v-if="hasErrors" class="mb-4">
                     <div class="font-medium text-vusa-red">
                       Kažkas ne taip...

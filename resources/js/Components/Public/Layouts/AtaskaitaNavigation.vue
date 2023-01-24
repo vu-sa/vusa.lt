@@ -233,7 +233,7 @@ const toggleMenu = () => {
 // get permalink from url, last part after /
 const getPermalink = () => {
   const url = usePage().url;
-  const urlParts = url.value.split("/");
+  const urlParts = url.split("/");
   const permalink = urlParts[urlParts.length - 1];
   // also trim hashtags
   return permalink.split("#")[0];

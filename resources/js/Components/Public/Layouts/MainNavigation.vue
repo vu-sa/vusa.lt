@@ -1,6 +1,6 @@
 <template>
   <nav
-    class="fixed top-0 z-50 flex max-h-24 w-full flex-row items-center justify-between bg-white/80 px-4 py-2 text-gray-800 shadow-sm backdrop-blur-sm dark:bg-zinc-800/60 dark:text-white lg:px-12 xl:px-24"
+    class="fixed top-0 z-50 flex max-h-24 w-screen flex-row items-center justify-between bg-white/80 py-2 text-gray-800 shadow-sm backdrop-blur-sm dark:bg-zinc-800/60 dark:text-white lg:px-12 xl:px-24"
   >
     <div
       class="flex flex-row items-center space-x-4"
@@ -47,7 +47,7 @@
       ></NButton>
     </div>
 
-    <div v-if="!isMobile" class="flex items-center gap-x-4">
+    <div v-if="!isMobile" class="flex items-center justify-center gap-x-4">
       <NMenu
         v-model:value="activeMenuKey"
         :icon-size="16"

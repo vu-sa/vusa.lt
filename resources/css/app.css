@@ -6,6 +6,73 @@
 
 @layer base {
 
+  /* Some preflight rules */
+
+  *,
+  ::before,
+  ::after {
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: theme('borderColor.DEFAULT');
+  }
+
+  blockquote,
+  dl,
+  dd,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  hr,
+  figure,
+  p,
+  pre {
+    @apply m-0;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-size: inherit;
+    font-weight: inherit;
+  }
+
+  /* ol,
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  } */
+
+  img,
+  svg,
+  video,
+  canvas,
+  audio,
+  iframe,
+  embed,
+  object {
+    display: block;
+    vertical-align: middle;
+  }
+
+  img,
+  video {
+    max-width: 100%;
+    height: auto;
+  }
+
+  a {
+    @apply no-underline text-inherit;
+  }
+  
+  
   /* These two 'body' element selectors are used, because Naive UI disabled forms 
   ** have double, overlaping, placeholders.
   ? May be worth to report it.
@@ -29,17 +96,13 @@
     @apply text-base md:text-lg font-bold mb-2 text-gray-900 dark:text-zinc-100;
   }
 
-  ul {
+  /* ul {
 	  @apply list-disc list-inside;
-  }
+  } */
 
-  ol {
+  /* ol {
 	  @apply list-decimal list-inside;
-  }
-
-  li > p {
-    @apply inline-block;
-  }
+  } */
 
   a {
     @apply hover:text-vusa-red duration-200;

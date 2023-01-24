@@ -9,7 +9,7 @@ import vueJsx from "@vitejs/plugin-vue-jsx";
 
 export default defineConfig({
   plugins: [
-    laravel(["resources/css/app.css", "resources/js/app.ts"]),
+    laravel(["resources/js/app.ts"]),
     vue({
       template: {
         transformAssetUrls: {

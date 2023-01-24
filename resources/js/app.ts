@@ -1,4 +1,5 @@
-import { type Component, type DefineComponent, createApp, h } from "vue";
+import "../css/app.css";
+import { type DefineComponent, createApp, h } from "vue";
 import { ZiggyVue } from "../../vendor/tightenco/ziggy/src/js/vue.js";
 import { createInertiaApp } from "@inertiajs/vue3";
 import { defineAsyncComponent } from "vue";

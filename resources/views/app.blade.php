@@ -25,16 +25,12 @@
     {{-- Fonts --}}
     @googlefonts
 
-    <!-- Styles -->
-    @vite(['resources/css/app.css'])
-
-    {{-- Naive UI must be after, because Tailwind has preflight styles which, otherwise, reset Naive UI --}}
-    <meta name="naive-ui-style" />
+    {{-- CSS and JS --}}
+    @vite(['resources/js/app.ts'])
 
     {{-- Ziggy Routes --}}
     @routes
 
-    @vite(['resources/js/app.ts'])
     @inertiaHead
 </head>
 
