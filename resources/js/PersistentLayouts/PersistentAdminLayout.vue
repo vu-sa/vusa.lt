@@ -35,10 +35,10 @@ import {
   enUS,
 } from "naive-ui";
 import { onMounted, ref } from "vue";
-// import posthog from "posthog-js";
 
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 // import { usePage } from "@inertiajs/vue3";
+import "./posthog";
 import Layout from "@/Components/Layouts/AdminLayout.vue";
 
 // import "@/echo";
@@ -84,14 +84,6 @@ const darkThemeOverrides = {
     footerColor: "rgb(30 30 33)",
   },
 };
-
-// posthog.init(import.meta.env.VITE_POSTHOG_API_KEY, {
-//   api_host: "https://app.posthog.com",
-// });
-
-// if (usePage().props?.auth?.user) {
-//   posthog.identify(usePage().props.auth.user.id);
-// }
 
 onMounted(() => {
   // (function (c, l, a, r, i, t, y) {
