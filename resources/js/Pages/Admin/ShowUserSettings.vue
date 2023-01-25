@@ -28,14 +28,24 @@
         Jeigu kiltų klausimų, rašykite
         <a href="mailto:it@vusa.lt">it@vusa.lt</a>
       </p>
+      <a
+        class="mt-4 flex items-center"
+        target="_blank"
+        href="https://github.com/vu-sa/vusa.lt/pull/122"
+        ><NButton text
+          ><template #icon><NIcon :component="Github"></NIcon></template
+          >Projekto puslapis</NButton
+        ></a
+      >
     </NCard>
   </PageContent>
 </template>
 
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
-import { NCard } from "naive-ui";
+import { NButton, NCard, NIcon } from "naive-ui";
 
+import { Github } from "@vicons/fa";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 
 defineProps<{

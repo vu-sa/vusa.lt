@@ -51,17 +51,18 @@
         /></NScrollbar>
         <NDivider />
 
-        <div class="mb-4 flex justify-center gap-6 overflow-hidden">
-          <div class="w-fit"><DarkModeSwitch /></div>
-          <a
-            v-if="!collapsed"
-            class="flex items-center"
-            target="_blank"
-            href="https://github.com/vu-sa/vusa.lt/pull/122"
-            ><NButton text
-              ><template #icon
-                ><NIcon :component="Github"></NIcon></template></NButton
-          ></a>
+        <div
+          class="mb-4 flex items-center justify-center gap-6 overflow-hidden"
+        >
+          <div class="h-fit w-fit"><DarkModeSwitch class="mb-0.5" /></div>
+          <NButton v-if="!collapsed" text>
+            <template #icon>
+              <NIcon :size="16"
+                ><img
+                  src="https://hatscripts.github.io/circle-flags/flags/gb.svg"
+              /></NIcon>
+            </template>
+          </NButton>
         </div>
         <NModal v-model:show="showModal">
           <Changelog />

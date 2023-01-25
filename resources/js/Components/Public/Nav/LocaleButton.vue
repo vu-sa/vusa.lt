@@ -17,9 +17,10 @@ import { NBadge, NButton, NDropdown, NIcon } from "naive-ui";
 import { computed } from "vue";
 import { loadLanguageAsync } from "laravel-vue-i18n";
 import { router, usePage } from "@inertiajs/vue3";
+import type { LocaleEnum } from "@/Types/enums";
 
 const props = defineProps<{
-  locale: string;
+  locale: LocaleEnum;
 }>();
 
 const emit = defineEmits<{
@@ -99,8 +100,6 @@ const handleSelectLanguage = (key) => {
         },
       }
     );
-    // router.visit(route("main.page", { lang: "lt" }));
-    // message.info("Navigating to " + key);
   } else if (key === "page") {
     router.visit(
       route("main.page", {

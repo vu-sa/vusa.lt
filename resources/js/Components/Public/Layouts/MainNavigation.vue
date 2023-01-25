@@ -17,26 +17,10 @@
       <Link :href="route('main.home', homeParams)" @click="resetPadalinys()">
         <AppLogo :is-theme-dark="isThemeDark" class="w-36" />
       </Link>
-      <NScrollbar>
-        <NDropdown
-          :options="options_padaliniai"
-          placement="top-start"
-          size="small"
-          style="overflow: auto; max-height: 600px"
-          @select="handleSelectPadalinys"
-        >
-          <NButton
-            :disabled="route().current('*page')"
-            size="small"
-            style="border-radius: 0.5rem"
-          >
-            {{ $t(padalinys) }}
-            <NIcon class="ml-1" size="18">
-              <ChevronDown20Filled />
-            </NIcon>
-          </NButton>
-        </NDropdown>
-      </NScrollbar>
+      <PadalinysSelector
+        :padalinys="padalinys"
+        @select:padalinys="handleSelectPadalinys"
+      ></PadalinysSelector>
       <NButton
         v-if="$page.props.auth?.user"
         quaternary
@@ -116,11 +100,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import {
-  AnimalTurtle24Filled,
-  ChevronDown20Filled,
-  Navigation24Filled,
-} from "@vicons/fluent";
+import { AnimalTurtle24Filled, Navigation24Filled } from "@vicons/fluent";
 import { Link, router, usePage } from "@inertiajs/vue3";
 import {
   NButton,
@@ -129,10 +109,8 @@ import {
   NDivider,
   NDrawer,
   NDrawerContent,
-  NDropdown,
   NIcon,
   NMenu,
-  NScrollbar,
   NTree,
 } from "naive-ui";
 import { computed, reactive, ref } from "vue";
@@ -143,6 +121,7 @@ import DarkModeSwitch from "@/Components/Buttons/DarkModeSwitch.vue";
 import FacebookButton from "../Nav/FacebookButton.vue";
 import InstagramButton from "../Nav/InstagramButton.vue";
 import LocaleButton from "../Nav/LocaleButton.vue";
+import PadalinysSelector from "../Nav/PadalinysSelector.vue";
 import SearchButton from "../Nav/SearchButton.vue";
 import StartFM from "@/Components/Public/Nav/StartFM.vue";
 
