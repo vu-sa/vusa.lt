@@ -51,15 +51,17 @@
         /></NScrollbar>
         <NDivider />
 
-        <div class="mb-4 flex justify-center gap-4 overflow-hidden">
+        <div class="mb-4 flex justify-center gap-6 overflow-hidden">
           <div class="w-fit"><DarkModeSwitch /></div>
-          <div v-if="!collapsed" class="w-fit">
-            <FadeTransition>
-              <NButton size="tiny" quaternary @click="showModal = true">
-                v0.3.9
-              </NButton>
-            </FadeTransition>
-          </div>
+          <a
+            v-if="!collapsed"
+            class="flex items-center"
+            target="_blank"
+            href="https://github.com/vu-sa/vusa.lt/pull/122"
+            ><NButton text
+              ><template #icon
+                ><NIcon :component="Github"></NIcon></template></NButton
+          ></a>
         </div>
         <NModal v-model:show="showModal">
           <Changelog />
@@ -94,6 +96,7 @@ import { ref } from "vue";
 import { useOnline, useStorage } from "@vueuse/core";
 
 import { Board24Regular } from "@vicons/fluent";
+import { Github } from "@vicons/fa";
 import AdminMenu from "@/Components/Menus/AdminMenu.vue";
 import AppLogo from "@/Components/AppLogo.vue";
 import Changelog from "@/Components/Cards/ChangelogCard.vue";
