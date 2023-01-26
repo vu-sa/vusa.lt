@@ -44,9 +44,10 @@
 
 <script setup lang="tsx">
 import { DocumentCheckmark24Regular, Info24Regular } from "@vicons/fluent";
-import { ref } from "vue";
-
 import { NIcon } from "naive-ui";
+import { ref } from "vue";
+import { router } from "@inertiajs/vue3";
+
 import CardModal from "../Modals/CardModal.vue";
 import ModalHelperButton from "./ModalHelperButton.vue";
 import QuickActionButton from "./QuickActionButton.vue";
@@ -65,7 +66,7 @@ const showModal = ref(false);
 const showAlert = ref(true);
 
 const handleSubmitForm = (model: Record<string, any>) => {
-  model.post(route("doings.store"), {
+  router.post(route("doings.store"), model, {
     onSuccess: () => {
       showModal.value = false;
       showAlert.value = false;
