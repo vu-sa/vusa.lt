@@ -12,6 +12,7 @@
     @esc="$emit('close')"
   >
     <slot />
+    <template #footer><slot name="footer"></slot></template>
   </NModal>
 </template>
 

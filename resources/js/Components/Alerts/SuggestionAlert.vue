@@ -1,7 +1,7 @@
 <template>
   <NAlert
     v-if="showAlert"
-    style="background-color: rgba(244, 244, 245, 0.2)"
+    style="background-color: rgba(244, 244, 245, 0.05)"
     title="Įsidėmėk!"
     closable
     class="mb-4"

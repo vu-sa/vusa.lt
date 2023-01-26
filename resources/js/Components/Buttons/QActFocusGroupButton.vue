@@ -1,10 +1,75 @@
 <template>
-  <QuickActionButton :icon="PeopleCommunity24Regular"
-    >Organizuoti <em>focus</em> grupę</QuickActionButton
-  >
+  <div>
+    <QuickActionButton
+      :icon="PeopleCommunity24Regular"
+      @click="showModal = true"
+      >Organizuoti <em>focus</em> grupę</QuickActionButton
+    >
+    <CardModal
+      :title="`Organizuoti focus grupę`"
+      :show="showModal"
+      @close="showModal = false"
+    >
+      <SpecialDoingForm
+        :show-alert="showAlert"
+        :form-template="doingTemplate"
+        @alert-closed="showAlert = false"
+        @submit:form="handleSubmitForm"
+      >
+        <template #suggestion-content>
+          <p class="mt-0">
+            <strong> <i>Focus</i> grupės </strong> yra gyvi arba virtualūs
+            susitikimai, kurie <i>fokusuoti</i> ties tam tikru klausimu.
+          </p>
+          <p>
+            Paspausk <strong>„Pradėti!“</strong> ir sukurtame veiksmo šablone
+            rasi visą informaciją apie tai, kaip organizuoti focus grupę.
+          </p>
+          <p class="mb-0">Važiuojam! ✊</p>
+        </template>
+      </SpecialDoingForm>
+      <ModalHelperButton v-if="!showAlert" @click="showAlert = true" />
+      <template #footer
+        ><span class="flex items-center gap-2 text-xs text-zinc-400">
+          <NIcon :component="Info24Regular"></NIcon>
+          <span>
+            Sukurtą <i>focus</i> grupės šabloną galėsi bet kada ištrinti!
+          </span>
+        </span></template
+      >
+    </CardModal>
+  </div>
 </template>
 
 <script setup lang="tsx">
-import { PeopleCommunity24Regular } from "@vicons/fluent";
+import { Info24Regular, PeopleCommunity24Regular } from "@vicons/fluent";
+import { ref } from "vue";
+
+import { NIcon } from "naive-ui";
+import { router } from "@inertiajs/vue3";
+import CardModal from "../Modals/CardModal.vue";
+import ModalHelperButton from "./ModalHelperButton.vue";
 import QuickActionButton from "./QuickActionButton.vue";
+import SpecialDoingForm from "../AdminForms/Special/SpecialDoingForm.vue";
+
+const timeIn7Days = new Date(
+  new Date().getTime() + 7 * 24 * 60 * 60 * 1000
+).getTime();
+
+const doingTemplate = {
+  title: "Studentų focus grupė",
+  date: timeIn7Days,
+};
+
+const showModal = ref(false);
+const showAlert = ref(true);
+
+const handleSubmitForm = (model: Record<string, any>) => {
+  router.post(route("doings.store"), model, {
+    onSuccess: () => {
+      showModal.value = false;
+      showAlert.value = false;
+    },
+  });
+};
 </script>

@@ -10,111 +10,66 @@
       :show="showModal"
       @close="showModal = false"
     >
-      <NForm ref="formRef" :model="model" :rules="rules">
-        <FadeTransition>
-          <SuggestionAlert
-            :show-alert="showAlert"
-            @alert-closed="showAlert = false"
-          >
-            <strong>
-              Elektroninės apklausos yra puikus būdas įvertinti studentų nuomonę
-              (kai tai daroma tinkamai).
-            </strong>
-            <p>
-              Pradėjus apklausos organizavimą, bus sukurtas naujas veiksmas,
-              kuriame susipažinsi su apklausos organizavimo procesu.
-            </p>
-            <p>Pradėkime!</p>
-          </SuggestionAlert>
-        </FadeTransition>
-        <NGrid :cols="1">
-          <NFormItemGi label="Pavadinimas" required path="name">
-            <NInput v-model:value="model.title" />
-          </NFormItemGi>
-          <NFormItemGi label="Preliminari data" required path="date">
-            <NDatePicker
-              v-model:value="model.date"
-              :first-day-of-week="0"
-              placeholder="Datą bus galima pakeisti!"
-              type="date"
-              clearable
-            />
-          </NFormItemGi>
-        </NGrid>
-        <NButton type="primary" @click="handleValidateForm"> Pradėti! </NButton>
-      </NForm>
+      <SpecialDoingForm
+        :show-alert="showAlert"
+        :form-template="doingTemplate"
+        @alert-closed="showAlert = false"
+        @submit:form="handleSubmitForm"
+      >
+        <template #suggestion-content>
+          <p class="mt-0">
+            <strong> Elektroninės apklausos </strong> yra puikus būdas įvertinti
+            studentų nuomonę (kai tai daroma tinkamai).
+          </p>
+          <p>
+            Pradėjus apklausos organizavimą, bus sukurtas naujas veiksmas,
+            <strong
+              >kuriame <u>susipažinsi</u> su apklausos organizavimo
+              procesu</strong
+            >.
+          </p>
+          <p class="mb-0">Pradėkime! ✊</p>
+        </template>
+      </SpecialDoingForm>
       <ModalHelperButton v-if="!showAlert" @click="showAlert = true" />
+      <template #footer
+        ><span class="flex items-center gap-2 text-xs text-zinc-400">
+          <NIcon :component="Info24Regular"></NIcon>Sukurtą el. apklausos
+          organizavimo šabloną galėsi bet kada ištrinti!
+        </span></template
+      >
     </CardModal>
   </div>
 </template>
 
 <script setup lang="tsx">
-import { DocumentCheckmark24Regular } from "@vicons/fluent";
-import {
-  type FormInst,
-  type FormRules,
-  NButton,
-  NDatePicker,
-  NForm,
-  NFormItemGi,
-  NGrid,
-  NInput,
-} from "naive-ui";
+import { DocumentCheckmark24Regular, Info24Regular } from "@vicons/fluent";
 import { ref } from "vue";
-import { useForm } from "@inertiajs/vue3";
 
+import { NIcon } from "naive-ui";
 import CardModal from "../Modals/CardModal.vue";
-import FadeTransition from "../Transitions/FadeTransition.vue";
 import ModalHelperButton from "./ModalHelperButton.vue";
 import QuickActionButton from "./QuickActionButton.vue";
-import SuggestionAlert from "../Alerts/SuggestionAlert.vue";
-
-const showModal = ref(false);
-const showAlert = ref(true);
-
-const formRef = ref<FormInst | null>(null);
+import SpecialDoingForm from "../AdminForms/Special/SpecialDoingForm.vue";
 
 const timeIn7Days = new Date(
   new Date().getTime() + 7 * 24 * 60 * 60 * 1000
 ).getTime();
 
-const model = useForm<{
-  title: string;
-  date: number;
-}>({
+const doingTemplate = {
   title: "Studentų el. apklausa",
   date: timeIn7Days,
-});
-
-const rules: FormRules = {
-  title: [
-    {
-      required: true,
-      message: "Pavadinimas yra privalomas",
-      trigger: "blur",
-    },
-  ],
-  date: [
-    {
-      type: "number",
-      required: true,
-      message: "Data yra privaloma",
-      trigger: "blur",
-    },
-  ],
 };
 
-const handleValidateForm = () => {
-  console.log("handleValidateForm");
-  formRef.value?.validate((errors) => {
-    if (!errors) {
-      model.post(route("doings.store"), {
-        onSuccess: () => {
-          showModal.value = false;
-          showAlert.value = false;
-        },
-      });
-    }
+const showModal = ref(false);
+const showAlert = ref(true);
+
+const handleSubmitForm = (model: Record<string, any>) => {
+  model.post(route("doings.store"), {
+    onSuccess: () => {
+      showModal.value = false;
+      showAlert.value = false;
+    },
   });
 };
 </script>
