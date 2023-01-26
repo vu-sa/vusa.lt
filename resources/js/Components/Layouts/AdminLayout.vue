@@ -3,8 +3,8 @@
   <MetaIcons />
 
   <NLayout class="min-h-screen">
-    <div
-      class="fixed z-50 flex h-16 w-full flex-row justify-between border-b py-2 pr-8 dark:border-zinc-800"
+    <nav
+      class="fixed z-50 flex h-16 w-full flex-row justify-between border-b py-2 pr-8 shadow-sm backdrop-blur-sm dark:border-zinc-800"
     >
       <div class="invisible">
         <NButton secondary round @click="collapsed = !collapsed">Menu</NButton>
@@ -31,7 +31,7 @@
         ></NNotificationProvider>
         <UserAdminOptionsMenu />
       </div>
-    </div>
+    </nav>
     <NLayout class="mt-16" has-sider>
       <NLayoutSider
         class="subtle-gray-gradient my-4 ml-4 h-fit rounded-md from-white shadow-md"
