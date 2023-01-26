@@ -46,7 +46,7 @@ export const formatRelativeTime = (
 };
 
 export const formatStaticTime = (
-  time: number | Date,
+  time: number | Date | undefined,
   dateTimeOptions: Intl.DateTimeFormatOptions = {
     year: "numeric",
     month: "numeric",
@@ -54,8 +54,12 @@ export const formatStaticTime = (
   },
   locale: LocaleEnum = LocaleEnum.LT
 ) => {
+  if (!time) return "";
+  // make date of time
+  const date = new Date(time);
+
   const staticTime = new Intl.DateTimeFormat(locale, dateTimeOptions).format(
-    time
+    date
   );
 
   return staticTime;

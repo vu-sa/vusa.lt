@@ -15,7 +15,8 @@
           </div>
           <NSkeleton v-if="loading" size="medium" circle />
           <NButton v-else circle @click="showFileUploader = true"
-            ><template #icon><NIcon :component="Add24Filled"></NIcon></template
+            ><template #icon
+              ><NIcon :component="DocumentAdd24Regular"></NIcon></template
           ></NButton>
         </div>
         <div class="ml-auto inline-flex items-center gap-4">
@@ -79,7 +80,12 @@
 </template>
 
 <script setup lang="tsx">
-import { Add24Filled, AppsList20Filled, Grid20Filled } from "@vicons/fluent";
+import {
+  Add24Filled,
+  AppsList20Filled,
+  DocumentAdd24Regular,
+  Grid20Filled,
+} from "@vicons/fluent";
 import { NButton, NButtonGroup, NDivider, NIcon, NSkeleton } from "naive-ui";
 import { computed, provide, ref, watch } from "vue";
 import { useAxios } from "@vueuse/integrations/useAxios";

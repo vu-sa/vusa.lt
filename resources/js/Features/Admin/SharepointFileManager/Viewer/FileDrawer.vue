@@ -1,7 +1,7 @@
 <template>
   <NDrawer
-    v-model:show="active"
     v-model:width="width"
+    :show="active"
     :auto-focus="false"
     :show-mask="false"
     :trap-focus="false"
@@ -35,9 +35,7 @@
                 <td class="font-bold">Failo data</td>
                 <td>
                   {{
-                    formatStaticTime(
-                      new Date(file?.listItem?.fields?.properties.Date)
-                    )
+                    formatStaticTime(file?.listItem?.fields?.properties.Date)
                   }}
                 </td>
               </tr>
