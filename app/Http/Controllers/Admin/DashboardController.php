@@ -26,7 +26,7 @@ class DashboardController extends Controller
         $institutions = new EloquentCollection($institutions);
 
         // load institutions with meetings where start_time is in the future
-        $institutions->load(['meetings' => function ($query) {
+        $institutions->filter()->load(['meetings' => function ($query) {
             $query->where('start_time', '>', now())->with('comments', 'tasks', 'files');
         }]);
 

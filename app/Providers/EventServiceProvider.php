@@ -17,6 +17,7 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         \SocialiteProviders\Manager\SocialiteWasCalled::class => [
             \SocialiteProviders\Microsoft\MicrosoftExtendSocialite::class . '@handle',
+            // \SocialiteProviders\Google\GoogleExtendSocialite::class.'@handle',
         ],
         CommentPosted::class => [
             NotifyUsersOfComment::class,
