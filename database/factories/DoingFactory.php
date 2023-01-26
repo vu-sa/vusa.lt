@@ -18,7 +18,6 @@ class DoingFactory extends Factory
     {
         return [
             'title' => $this->faker->sentence,
-            'status' => $this->faker->randomElement(['Sukurtas', 'Pabaigtas']),
             'date' => $this->faker->dateTime,
             'created_at' => $this->faker->dateTimeBetween('-1 year', 'now'),
             'updated_at' => $this->faker->dateTimeBetween('-1 year', 'now'),
