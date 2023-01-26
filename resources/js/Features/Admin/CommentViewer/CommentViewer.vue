@@ -1,11 +1,14 @@
 <template>
-  <div class="grid w-full grid-rows-[minmax(200px,_500px)_155px]">
+  <div class="grid w-full grid-rows-[minmax(150px,min-content)_280px]">
     <div
-      v-if="model?.comments && model.comments.length > 0"
-      class="rounded-sm border border-zinc-300 px-2 pt-2 dark:border-zinc-700"
-      style="max-height: 500px"
+      class="relative flex rounded-sm border border-zinc-300 px-2 pt-2 dark:border-zinc-700"
     >
-      <NScrollbar ref="scrollContainer" style="height: 100%" class="px-4">
+      <NScrollbar
+        v-if="model?.comments && model.comments.length > 0"
+        ref="scrollContainer"
+        style="max-height: 24rem"
+        class="px-4"
+      >
         <div ref="commentContainer">
           <div
             v-for="comment in model?.comments"
@@ -45,22 +48,14 @@
           </div>
         </div>
       </NScrollbar>
+      <p v-else class="m-auto w-fit text-zinc-400">Komentarų nėra</p>
     </div>
-    <div
-      v-else
-      class="flex h-full w-full items-center justify-center border border-zinc-300"
-    >
-      <p class="h-fit w-fit text-zinc-400">Komentarų nėra</p>
-    </div>
-    <div class="relative">
-      <CommentTipTap
-        v-model:text="text"
-        :disabled="!model"
-        :loading="loading"
-        class="absolute bottom-0 w-full"
-        @submit:comment="submitComment"
-      ></CommentTipTap>
-    </div>
+    <CommentTipTap
+      v-model:text="text"
+      :disabled="!model"
+      :loading="loading"
+      @submit:comment="submitComment"
+    ></CommentTipTap>
   </div>
 </template>
 
