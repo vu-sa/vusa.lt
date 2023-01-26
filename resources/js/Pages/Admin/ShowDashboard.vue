@@ -39,6 +39,7 @@
     >
       <h2>Tavo institucijos</h2>
       <div
+        v-if="institutions.length > 0"
         class="relative mt-4 grid w-full grid-cols-ramFill gap-4 overflow-hidden pb-4 transition-transform duration-300 ease-in-out"
       >
         <InstitutionCard
@@ -50,6 +51,7 @@
           @click="router.visit(route('institutions.show', institution.id))"
         />
       </div>
+      <p v-else>Neturi tiesiogiai priskirtų institucijų.</p>
     </section>
     <section v-if="shownSections.includes('Posėdžiai')" class="relative mb-8">
       <h2>Artėjantys posėdžiai</h2>
@@ -64,6 +66,7 @@
             @click="router.visit(route('meetings.show', meeting.id))"
           ></MeetingCard>
         </template>
+        <p class="hidden first:block">Artėjančių posėdžių nėra</p>
       </div>
     </section>
     <section id="naudingos-nuorodos">
@@ -117,7 +120,7 @@ import QActFocusGroupButton from "@/Components/Buttons/QActFocusGroupButton.vue"
 import QActSurveyButton from "@/Components/Buttons/QActSurveyButton.vue";
 
 defineProps<{
-  institutions: App.Entities.Institution[] | null;
+  institutions: App.Entities.Institution[];
   duties: App.Entities.Duty[];
 }>();
 
