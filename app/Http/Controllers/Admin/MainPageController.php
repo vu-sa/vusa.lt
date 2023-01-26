@@ -24,7 +24,7 @@ class MainPageController extends ResourceController
         $search = request()->input('text');
 
         $indexer = new ModelIndexer();
-        $mainPages = $indexer->execute(MainPage::class, $search, 'text', $this->authorizer, true);
+        $mainPages = $indexer->execute(MainPage::class, $search, 'text', $this->authorizer, false);
 
         return Inertia::render('Admin/Content/IndexMainPages', [
             'mainPages' => $mainPages->paginate(20),

@@ -133,7 +133,7 @@ defineProps<{
 
 const padaliniai = usePage().props.padaliniai;
 const mainNavigation = ref(usePage().props.mainNavigation);
-const locale = ref(usePage().props.locale);
+const locale = ref(usePage().props.app.locale);
 const activeDrawer = ref(false);
 const toggleMenu = () => {
   activeDrawer.value = !activeDrawer.value;

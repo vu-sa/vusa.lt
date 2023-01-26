@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Public;
 
 use Inertia\Inertia;
-use App\Http\Controllers\Controller as Controller;
+use App\Http\Controllers\PublicController;
 use App\Models\Calendar;
 use App\Models\Institution;
 use App\Models\MainPage;
@@ -12,9 +12,7 @@ use App\Models\News;
 use App\Models\Padalinys;
 use App\Models\Page;
 use App\Models\User;
-use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\App;
 use App\Models\Registration;
 use App\Models\RegistrationForm;
 use App\Models\SaziningaiExam;
@@ -37,43 +35,8 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 
-class MainController extends Controller
+class MainController extends PublicController
 {
-	public function __construct()
-	{
-		// get subdomain if exists
-		$host = Request::server('HTTP_HOST');
-
-		if ($host !== 'localhost') {
-			// get subdomain, for example 'gmc' or other element
-			$firstElement = explode('.', $host)[0];
-
-			switch ($firstElement) {
-				case 'naujas':
-					$this->alias = 'vusa';
-					break;
-
-				case 'www':
-					$this->alias = 'vusa';
-					break;
-
-				case 'static':
-					$this->alias = 'vusa';
-					break;
-				
-				default:
-					$this->alias = $firstElement;
-					break;
-			}
-		} else {
-			$this->alias = 'vusa';
-		}
-
-		if (request()->padalinys != null) {
-			$this->alias = in_array(request()->padalinys, ["Padaliniai", "naujas"]) ? '' : request()->padalinys;
-		}
-	}
-
 	private function getCalendarGoogleLink($calendarEvent, $en = false) {
 
 		$googleLink = Link::create($en ? ($calendarEvent?->extra_attributes['en']['title'] ?? $calendarEvent->title) : $calendarEvent->title, 
@@ -96,11 +59,9 @@ class MainController extends Controller
 	{
 
 		// get last 4 news by publishing date
-		$padalinys = Padalinys::where('alias', '=', $this->alias)->first();
-
 		$banners = Padalinys::where('alias', 'vusa')->first()->banners()->inRandomOrder()->where('is_active', 1)->get();
 
-		$news = News::where([['padalinys_id', '=', $padalinys->id],['lang', app()->getLocale()], ['draft', '=', 0]])->where('publish_time', '<=', date('Y-m-d H:i:s'))->orderBy('publish_time', 'desc')->take(4)->get();
+		$news = News::where([['padalinys_id', '=', $this->padalinys->id],['lang', app()->getLocale()], ['draft', '=', 0]])->where('publish_time', '<=', date('Y-m-d H:i:s'))->orderBy('publish_time', 'desc')->take(4)->get();
 
 		if (app()->getLocale() === 'en') {
             $calendar = Calendar::where('extra_attributes->en->shown', 'true')->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'extra_attributes', 'category')->take(400)->get();
@@ -108,7 +69,6 @@ class MainController extends Controller
             $calendar = Calendar::orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'category')->take(400)->get();
         }
 
-		Inertia::share('alias', $this->alias);
 		return Inertia::render('Public/HomePage', [
 			'news' => $news->map(function ($news) {
 				return [
@@ -140,7 +100,7 @@ class MainController extends Controller
 					'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale() === 'en')
 				];
 			}),
-			'mainPage' => MainPage::where([['padalinys_id', $padalinys->id], ['lang', app()->getLocale()]])->get(),
+			'mainPage' => MainPage::where([['padalinys_id', $this->padalinys->id], ['lang', app()->getLocale()]])->get(),
 			'banners' => $banners
 		])->withViewData([
 			'description' => 'Vilniaus universiteto Studentų atstovybė (VU SA) – seniausia ir didžiausia Lietuvoje visuomeninė, ne pelno siekianti, nepolitinė, ekspertinė švietimo organizacija'
@@ -199,21 +159,6 @@ class MainController extends Controller
 		]);
 	}
 
-	public function newsArchive()
-
-	{
-		Inertia::share('alias', $this->alias);
-
-		$news = News::select('id', 'title', 'short', 'image', 'permalink', 'publish_time', 'lang')->orderBy('publish_time', 'desc')->paginate(15);
-		// ddd($news);
-		return Inertia::render('Public/NewsArchive', [
-			'news' => $news
-		])->withViewData([
-			'title' => 'Naujienų archyvas',
-			'description' => 'Naujienų archyvas',
-		]);
-	}
-
 	public function getMainNews()
 	{
 		// get last 4 news by publishing date
@@ -225,18 +170,15 @@ class MainController extends Controller
 
 	public function page()
 	{
-		$padalinys = Padalinys::where('alias', '=', $this->alias)->first();
-
-		$page = Page::where([['permalink', '=', request()->permalink], ['padalinys_id', '=', $padalinys->id]])->first();
+		$page = Page::where([['permalink', '=', request()->permalink], ['padalinys_id', '=', $this->padalinys->id]])->first();
 
 		if ($page == null) {
 			abort(404);
 		}
 
-		$navigation_item = Navigation::where([['padalinys_id', '=', $padalinys->id], ['name', '=', $page->title]])->get()->first();
+		$navigation_item = Navigation::where([['padalinys_id', '=', $this->padalinys->id], ['name', '=', $page->title]])->get()->first();
 		$other_lang_page = $page->other_lang_id == null ? null : Page::where('id', '=', $page->other_lang_id)->select('id', 'lang', 'permalink')->first();
 
-		Inertia::share('alias', $page->padalinys->alias);
 		Inertia::share('sharedOtherLangPage', $other_lang_page);
 		return Inertia::render('Public/ContentPage', [
 			'navigationItemId' => $navigation_item?->id,
@@ -261,9 +203,6 @@ class MainController extends Controller
 
 	public function contactsCategory()
 	{
-		$padalinys = Padalinys::where('alias', '=', $this->alias)->first();
-		Inertia::share('alias', $padalinys->alias);
-
 		// Special case for 'padaliniai' alias, since it's a special category, fetched from 'padaliniai' table
 
 		if (request()->alias == 'padaliniai') {
@@ -282,8 +221,8 @@ class MainController extends Controller
 				->when(
 					!request()->alias,
 					// If /kontaktai/{} or /kontaktai/kategorija/{}
-					function ($query) use ($padalinys) {
-						return $query->where([['padalinys_id', '=', $padalinys->id], ['alias', 'not like', '%studentu-atstovai%']]);
+					function ($query) {
+						return $query->where([['padalinys_id', '=', $this->padalinys->id], ['alias', 'not like', '%studentu-atstovai%']]);
 					},
 					// If there's an alias in the url
 					function ($query) {
@@ -309,14 +248,11 @@ class MainController extends Controller
 
 	public function contacts()
 	{
-		$padalinys = Padalinys::where('alias', '=', $this->alias)->first();
-		Inertia::share('alias', $padalinys->alias);
-
 		$alias = request()->alias;
 
 		if ($alias == 'studentu-atstovai') {
 			// get all student duty institutions that have type 'studentu-atstovu-organas' and is of the same padalinys as the current one
-			$institutions = Institution::with(['duties.users'])->where([['padalinys_id', '=', $padalinys->id]])->whereHas('type', function (Builder $query) {
+			$institutions = Institution::with(['duties.users'])->where([['padalinys_id', '=', $this->padalinys->id]])->whereHas('type', function (Builder $query) {
 				$query->where('alias', 'studentu-atstovu-organas');
 			})->get()->sortBy('name')->values();
 
@@ -332,10 +268,10 @@ class MainController extends Controller
 			$duty_type = Type::where('slug', '=', $alias ?? "koordinatoriai")->first();
 			$child_duty_types = Type::where('parent_id', '=', $duty_type->id)->get();
 
-			if ($padalinys->id === 16) {
+			if ($this->padalinys->id === 16) {
 				$institution = Institution::where('alias', '=', 'centrinis-biuras')->first();
 			} else {
-				$institution = Institution::where('padalinys_id', '=', $padalinys->id)->first();
+				$institution = Institution::where('padalinys_id', '=', $this->padalinys->id)->first();
 			}
 
 			$alias_duties = collect([]);
@@ -391,57 +327,55 @@ class MainController extends Controller
 				];
 			})
 		])->withViewData([
-			'title' => $padalinys->name . ' kontaktai',
+			'title' => $this->padalinys->name . ' kontaktai',
 			// description html to plain text
-			'description' => strip_tags($padalinys->description),
+			'description' => strip_tags($this->padalinys->description),
 		]);
 	}
 
-	public function searchContacts()
-	{
-		$padalinys = Padalinys::where('alias', '=', $this->alias)->first();
-		$search_contacts = null;
+	// public function searchContacts()
+	// {
+	// 	$search_contacts = null;
 
-		if (request()->name) {
-			$inputName = request()->name;
-			$search_contacts = User::has('duties')->where('name', 'like', "%{$inputName}%")->get();
-		}
+	// 	if (request()->name) {
+	// 		$inputName = request()->name;
+	// 		$search_contacts = User::has('duties')->where('name', 'like', "%{$inputName}%")->get();
+	// 	}
 
-		Inertia::share('alias', $padalinys->alias);
-		return Inertia::render('Public/Contacts/ContactsSearch', [
+	// 	return Inertia::render('Public/Contacts/ContactsSearch', [
 
-			'searchContacts' => is_null($search_contacts) ? [] : $search_contacts->map(function ($contact) {
+	// 		'searchContacts' => is_null($search_contacts) ? [] : $search_contacts->map(function ($contact) {
 
-				return [
-					'id' => $contact->id,
-					'name' => $contact->name,
-					'email' => $contact->email,
-					'phone' => $contact->phone,
-					'duties' => $contact->duties->map(function ($duty) {
-						return [
-							'id' => $duty->id,
-							'name' => $duty->name,
-							'institution' => $duty->institution->name,
-							'type' => $duty->type->name ?? $duty->type->short_name,
-							'description' => $duty->description,
-							'email' => $duty->email,
-						];
-					}),
-					'profile_photo_path' => function () use ($contact) {
-						if (substr($contact->profile_photo_path, 0, 4) == 'http') {
-							return $contact->profile_photo_path;
-						} else if (is_null($contact->profile_photo_path)) {
-							return null;
-						} else {
-							return Storage::get(str_replace('uploads', 'public', $contact->profile_photo_path)) == null ? null : $contact->profile_photo_path;
-						}
-					}
-				];
-			}),
-		])->withViewData([
-			'title' => 'Kontaktų paieška'
-		]);
-	}
+	// 			return [
+	// 				'id' => $contact->id,
+	// 				'name' => $contact->name,
+	// 				'email' => $contact->email,
+	// 				'phone' => $contact->phone,
+	// 				'duties' => $contact->duties->map(function ($duty) {
+	// 					return [
+	// 						'id' => $duty->id,
+	// 						'name' => $duty->name,
+	// 						'institution' => $duty->institution->name,
+	// 						'type' => $duty->type->name ?? $duty->type->short_name,
+	// 						'description' => $duty->description,
+	// 						'email' => $duty->email,
+	// 					];
+	// 				}),
+	// 				'profile_photo_path' => function () use ($contact) {
+	// 					if (substr($contact->profile_photo_path, 0, 4) == 'http') {
+	// 						return $contact->profile_photo_path;
+	// 					} else if (is_null($contact->profile_photo_path)) {
+	// 						return null;
+	// 					} else {
+	// 						return Storage::get(str_replace('uploads', 'public', $contact->profile_photo_path)) == null ? null : $contact->profile_photo_path;
+	// 					}
+	// 				}
+	// 			];
+	// 		}),
+	// 	])->withViewData([
+	// 		'title' => 'Kontaktų paieška'
+	// 	]);
+	// }
 
 	public function search()
 	{

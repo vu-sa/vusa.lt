@@ -16,7 +16,6 @@ use Laravel\Socialite\Facades\Socialite;
 |
 */
 
-// TODO: get rid of this
 Route::feeds();
 
 Route::get('/auth/redirect', function () {
@@ -30,8 +29,9 @@ Route::middleware('main')->group(function () {
         Route::name('padalinys.')->group(function () {
             Route::domain('{padalinys}.' . explode('://', config('app.url'))[1])->group(function () {
                 Route::get('/', [Public\MainController::class, 'home'])->name('home');
-                Route::get('naujienos', [Public\MainController::class, 'newsArchive'])->name('newsArchive');
-                Route::get('naujiena/archyvas', [Public\MainController::class, 'newsArchive']);
+                Route::get('naujienos', [Public\NewsController::class, 'newsArchive'])->name('newsArchive');
+                Route::redirect('naujiena/archyvas', 'naujienos', 301);
+
                 Route::get('saziningai-registracija', [Public\MainController::class, 'saziningaiExamRegistration'])->name('saziningaiExamRegistration');
                 Route::post('saziningai-registracija', [Public\MainController::class, 'storeSaziningaiExamRegistration'])->name('saziningaiExamRegistration.store');
                 Route::get('saziningai-uzregistruoti-egzaminai', [Public\MainController::class, 'saziningaiExams'])->name('saziningaiExams.registered');
@@ -58,7 +58,8 @@ Route::middleware('main')->group(function () {
             Route::domain(explode('://', config('app.url'))[1])->group(function () {
                 Route::get('/', [Public\MainController::class, 'home'])->name('home');
                 Route::get('naujienos', [Public\MainController::class, 'newsArchive'])->name('newsArchive');
-                Route::get('naujiena/archyvas', [Public\MainController::class, 'newsArchive']);
+                Route::redirect('naujiena/archyvas', 'naujienos', 301);
+
                 Route::get('saziningai-registracija', [Public\MainController::class, 'saziningaiExamRegistration'])->name('saziningaiExamRegistration');
                 Route::post('saziningai-registracija', [Public\MainController::class, 'storeSaziningaiExamRegistration'])->name('saziningaiExamRegistration.store');
                 Route::get('saziningai-uzregistruoti-egzaminai', [Public\MainController::class, 'saziningaiExams'])->name('saziningaiExams.registered');
@@ -95,9 +96,9 @@ Route::middleware('main')->group(function () {
     });
     
     Route::get('/', [Public\MainController::class, 'home'])->name('home');
-    Route::get('naujienos', [Public\MainController::class, 'newsArchive'])->name('newsArchive');
+    Route::get('naujienos', [Public\NewsController::class, 'newsArchive'])->name('newsArchive');
     
-    Route::get('naujiena/archyvas', [Public\MainController::class, 'newsArchive']);
+    Route::redirect('naujiena/archyvas', 'naujienos', 301);
     
     // render login form
     Route::inertia('login', 'LoginForm')->middleware('guest')->name('login');
