@@ -19,11 +19,15 @@
 
         <CommentTipTap
           v-model:text="commentText"
-          style="max-height: 280px"
+          class="mt-4"
+          rounded-top
           :loading="loading"
+          :enable-approve="doing?.approvable"
           :disabled="false"
           @submit:comment="submitComment"
-        ></CommentTipTap>
+        >
+          <template #submit-text>PATEIKTI</template>
+        </CommentTipTap>
       </div>
     </CardModal>
   </QuickContentCard>

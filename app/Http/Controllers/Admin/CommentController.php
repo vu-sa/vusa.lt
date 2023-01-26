@@ -3,15 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\ModelEnum;
-use App\Http\Controllers\Controller as Controller;
 use App\Models\Comment;
-use App\Models\Doing;
 use App\Models\User;
-use App\Events\UserComments;
 use App\Http\Controllers\ResourceController;
 use Illuminate\Http\Request;
 use Spatie\Enum\Laravel\Rules\EnumRule;
 use Illuminate\Support\Str;
+use App\Models\Traits\HasDecisions;
 
 class CommentController extends ResourceController
 {
@@ -63,8 +61,9 @@ class CommentController extends ResourceController
         $model = $modelClass::find($request->commentable_id);
 
         // TODO: Add authorization
-        if ($request->decision) {
-            $model->decision($request->decision);
+        if ($request->decision && class_uses($model, HasDecisions::class)) {
+            $this->authorize('update', [$model::class, $model, $this->authorizer]);
+            $model->decision($request->decision, $this->authorizer);
         }
 
         $model->comment($request->comment, $request->decision);

@@ -81,7 +81,6 @@
 
 <script setup lang="tsx">
 import {
-  Add24Filled,
   AppsList20Filled,
   DocumentAdd24Regular,
   Grid20Filled,
@@ -102,7 +101,7 @@ import FuzzySearcher from "./FuzzySearcher.vue";
 // }>();
 
 const props = defineProps<{
-  fileable?: Record<string, any>;
+  fileable?: { id: number; type: string };
   startingPath?: string;
 }>();
 

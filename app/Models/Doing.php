@@ -5,8 +5,8 @@ namespace App\Models;
 use App\Models\Traits\HasComments;
 use App\Models\Comment;
 use App\Models\Pivots\Doable;
+use App\Models\Traits\HasDecisions;
 use App\Models\Traits\HasSharepointFiles;
-use App\Services\ResourceServices\DoingService;
 use App\States\Doing\DoingState;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -20,7 +20,7 @@ use Illuminate\Support\Str;
 
 class Doing extends Model 
 {
-    use HasFactory, HasComments, HasRelationships, HasSharepointFiles, HasStates, HasUlids, LogsActivity, SoftDeletes;
+    use HasFactory, HasComments, HasDecisions, HasRelationships, HasSharepointFiles, HasStates, HasUlids, LogsActivity, SoftDeletes;
 
     protected $with = ['types'];
 
@@ -73,34 +73,5 @@ class Doing extends Model
     public function padaliniai()
     {
         return $this->hasManyDeepFromRelations($this->users(), (new User)->padaliniai());
-    }
-
-    // state management
-
-    public function decision($decision)
-    {
-        // based on the decision, call the appropriate method
-        $method = 'decisionTo' . Str::ucfirst(Str::camel($decision));
-        return $this->$method();
-    }
-
-    public function decisionToProgress()
-    {
-        return $this->state->handleProgress();
-    }
-
-    public function decisionToApprove()
-    {
-        return $this->state->handleApprove();
-    }
-
-    public function decisionToReject()
-    {
-        return $this->state->handleReject();
-    }
-
-    public function decisionToCancel()
-    {
-        return $this->state->handleCancel();
     }
 }

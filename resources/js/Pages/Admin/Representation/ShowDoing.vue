@@ -25,7 +25,7 @@
       <FileManager
         v-if="currentTab === 'Failai'"
         :starting-path="doing.sharepointPath"
-        :fileable="{ ...doing, type: 'Doing' }"
+        :fileable="{ id: doing.id, type: 'Doing' }"
       ></FileManager>
       <CommentViewer
         v-else-if="currentTab === 'Komentarai'"

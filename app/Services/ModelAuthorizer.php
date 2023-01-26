@@ -37,6 +37,9 @@ class ModelAuthorizer
     {
         $this->user = $user;
 
+        // ? when user is set, reset duties?
+        $this->duties = new Collection();
+
         return $this;
     }
 
@@ -45,6 +48,7 @@ class ModelAuthorizer
         $this->permissableDuties = new Collection();
         
         if ($this->user->hasRole(config('permission.super_admin_role_name'))) {
+            $this->isAllScope = true;
             return true;
         }
 
@@ -73,7 +77,7 @@ class ModelAuthorizer
                     }
                 }
             }
-
+            // * Must be kept, in order to load all duties that are permissable
             if ($this->permissableDuties->count() > 0) {
                 return true;
             }

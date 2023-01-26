@@ -42,7 +42,7 @@
             <AppLogo class="w-24 sm:hidden" />
 
             <p class="text-center text-xs text-zinc-600 sm:text-left">
-              <strong>mano.vusa.lt</strong> gali naudoti VU SA nariai.
+              <strong>vusa.lt/mano</strong> gali naudoti VU SA nariai.
               <Link class="text-zinc-400 underline" :href="route('main.home')"
                 >Kaip tapti?</Link
               >

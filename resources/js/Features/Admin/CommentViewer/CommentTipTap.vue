@@ -1,16 +1,17 @@
 <template>
-  <div class="flex flex-col">
+  <div class="flex flex-col" style="max-height: 280px">
     <div
+      :class="{ 'rounded-t-md': roundedTop }"
       class="grid grid-cols-[60px_1fr] overflow-y-scroll rounded-b-md border dark:border-zinc-600"
     >
       <div ref="commentContainer" class="flex justify-center">
         <UserAvatar
-          :size="24"
-          class="sticky top-4 mt-4"
+          :size="23"
+          class="sticky top-4"
           :user="$page.props.auth?.user"
         ></UserAvatar>
       </div>
-      <EditorContent :editor="editor" />
+      <EditorContent :editor="editor" class="leading-normal" />
       <!-- <NBackTop v-if="commentContainer" :to="commentContainer" /> -->
     </div>
     <div
@@ -54,9 +55,15 @@
           :loading="loading"
           @click="$emit('submit:comment')"
           ><template #icon><NIcon :component="Send20Filled"></NIcon></template
-          >SIŲSTI</NButton
+          ><slot name="submit-text">SIŲSTI</slot></NButton
         >
-        <NPopover trigger="click" class="rounded-md" raw :show-arrow="false">
+        <NPopover
+          v-if="enableApprove"
+          trigger="click"
+          class="rounded-md"
+          raw
+          :show-arrow="false"
+        >
           <div class="flex flex-col rounded-md bg-zinc-50 dark:bg-zinc-800">
             <NButtonGroup size="medium" vertical>
               <NButton
@@ -104,7 +111,7 @@ import {
   TextUnderline20Regular,
 } from "@vicons/fluent";
 import { EditorContent, useEditor } from "@tiptap/vue-3";
-import { NBackTop, NButton, NButtonGroup, NIcon, NPopover } from "naive-ui";
+import { NButton, NButtonGroup, NIcon, NPopover } from "naive-ui";
 import { onBeforeUnmount, ref } from "vue";
 import StarterKit from "@tiptap/starter-kit";
 import TipTapButton from "./TipTap/TipTapButton.vue";
@@ -115,8 +122,10 @@ import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
 
 const props = defineProps<{
   text: string | null;
-  loading: boolean;
   disabled: boolean;
+  loading: boolean;
+  roundedTop?: boolean;
+  enableApprove?: boolean;
 }>();
 
 const emit = defineEmits(["update:text", "submit:comment"]);
@@ -126,7 +135,7 @@ const commentContainer = ref<HTMLElement | null>(null);
 const editor = useEditor({
   editorProps: {
     attributes: {
-      class: "focus:outline-none min-h-[3rem] py-5",
+      class: "focus:outline-none py-4",
     },
   },
   extensions: [

@@ -1,5 +1,5 @@
 <template>
-  <div class="grid max-w-3xl grid-rows-[minmax(150px,min-content)_280px]">
+  <div class="grid max-w-3xl grid-rows-[minmax(150px,min-content)_auto]">
     <div
       class="relative flex rounded-t-md border border-b-0 border-zinc-300 px-2 pt-2 dark:border-zinc-700"
     >
@@ -52,6 +52,7 @@
     </div>
     <CommentTipTap
       v-model:text="text"
+      :enable-approve="model?.approvable"
       :disabled="!model"
       :loading="loading"
       @submit:comment="submitComment"

@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Illuminate\Support\Str;
 
 class DoingController extends ResourceController
 {    
@@ -70,11 +71,14 @@ class DoingController extends ResourceController
     {
         $this->authorize('view', [Doing::class, $doing, $this->authorizer]);
 
+        $modelName = Str::of(class_basename($this))->camel()->plural();
+
         $doing->load('activities.causer', 'tasks', 'comments', 'doables', 'users');
 
         return Inertia::render('Admin/Representation/ShowDoing', [
             'doing' => [
-                ...$doing->toArray(), 
+                ...$doing->toArray(),
+                'approvable' => $this->authorizer->forUser(auth()->user())->check($modelName . '.update.padalinys'),
                 'sharepointPath' => $doing->users->first() ? SharepointFileService::pathForFileableDriveItem($doing) : null,
             ],
         ]);
