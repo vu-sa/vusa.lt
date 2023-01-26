@@ -1,7 +1,6 @@
 // import { toRaw } from "vue";
 
 export function checkForEmptyArray(attributes) {
-  console.log(Object.prototype.toString.call(attributes));
   // check if attributes prototype is Object
   if (Object.prototype.toString.call(attributes) === "[object Object]")
     return attributes;

@@ -49,6 +49,7 @@ class HandleInertiaRequests extends Middleware
         if ($user) {
             $user->padalinys = User::find(Auth::id())?->padalinys()?->shortname;
             $user->isSuperAdmin = $user->hasRole('Super Admin');
+            $user->notifications = $user->unreadNotifications;
         }
 
         return array_merge(parent::share($request), [
@@ -64,6 +65,10 @@ class HandleInertiaRequests extends Middleware
                 'calendar' => $request->user()->can('edit unit calendar'),
                 'files' => true,
                 'saziningai' => $request->user()->can('edit saziningai content'),
+            ],
+            'flash' => [
+                'info' => fn () => $request->session()->get('info'),
+                'success' => fn () => $request->session()->get('success'),
             ],
             'locale' => function () {
                 return app()->getLocale();

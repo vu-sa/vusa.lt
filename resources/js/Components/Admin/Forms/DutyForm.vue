@@ -1,9 +1,9 @@
 <template>
   <NForm :model="form" label-placement="top">
-    <NTabs animated type="card">
+    <NTabs animated type="card" pane-class="overflow-x-auto">
       <NTabPane display-directive="show" name="lt" tab="🇱🇹">
-        <NGrid :span="24" :x-gap="24">
-          <NFormItemGi label="Pareigų pavadinimas" :span="24">
+        <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
+          <NFormItemGi label="Pareigų pavadinimas" :span="2">
             <NInput
               v-model:value="form.name"
               type="text"
@@ -11,24 +11,21 @@
             />
           </NFormItemGi>
 
-          <NFormItemGi label="Pareigybinis el. paštas" :span="12">
+          <NFormItemGi label="Pareigybinis el. paštas" :span="2">
             <NInput v-model:value="form.email" placeholder="vusa@vusa.lt" />
           </NFormItemGi>
 
-          <NFormItemGi label="Institucija" :span="12">
+          <NFormItemGi label="Institucija" :span="4">
             <NSelect
               v-model:value="form.institution.id"
               filterable
-              placeholder="Ieškok institucijos pagal pavadinimą..."
+              placeholder="Pasirink instituciją pagal pavadinimą..."
               :options="institutionsFromDatabase"
               clearable
-              remote
-              :clear-filter-after-select="false"
-              @search="getInstitutionOptions"
             />
           </NFormItemGi>
 
-          <NFormItemGi label="Pareigybės tipas" :span="12">
+          <NFormItemGi label="Pareigybės tipas" :span="2">
             <NSelect
               v-model:value="form.type.id"
               :options="dutyTypes"
@@ -39,7 +36,7 @@
             />
           </NFormItemGi>
 
-          <NFormItemGi label="Aprašymas" :span="24">
+          <NFormItemGi label="Aprašymas" :span="6">
             <TipTap
               v-model="form.description"
               :search-files="$page.props.search.other"
@@ -48,8 +45,8 @@
         </NGrid>
       </NTabPane>
       <NTabPane display-directive="show" name="en" tab="🇬🇧">
-        <NGrid :span="24" :x-gap="24">
-          <NFormItemGi label="Pareigų pavadinimas" :span="24">
+        <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
+          <NFormItemGi label="Pareigų pavadinimas" :span="2">
             <NInput
               v-model:value="form.attributes.en.name"
               type="text"
@@ -57,7 +54,7 @@
             />
           </NFormItemGi>
 
-          <NFormItemGi label="Aprašymas" :span="24">
+          <NFormItemGi label="Aprašymas" :span="6">
             <TipTap
               v-model="form.attributes.en.description"
               :search-files="$page.props.search.other"
@@ -78,12 +75,7 @@
   </NForm>
 </template>
 
-<script lang="ts">
-const { message } = createDiscreteApi(["message"]);
-</script>
-
 <script setup lang="ts">
-import { Inertia } from "@inertiajs/inertia";
 import {
   NForm,
   NFormItemGi,
@@ -92,12 +84,8 @@ import {
   NSelect,
   NTabPane,
   NTabs,
-  createDiscreteApi,
 } from "naive-ui";
-import { debounce } from "lodash";
-import { ref } from "vue";
-import { useForm, usePage } from "@inertiajs/inertia-vue3";
-import route from "ziggy-js";
+import { useForm } from "@inertiajs/inertia-vue3";
 
 import DeleteModelButton from "@/Components/Admin/Buttons/DeleteModelButton.vue";
 import TipTap from "@/Components/TipTap.vue";
@@ -106,51 +94,18 @@ import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue"
 const props = defineProps<{
   duty: App.Models.Duty;
   dutyTypes: App.Models.DutyType[];
-  hasUsers: boolean;
+  dutyInstitutions: App.Models.DutyInstitution[];
+  hasUsers?: boolean;
   modelRoute: string;
   deleteModelRoute?: string;
 }>();
 
 const form = useForm("dutyInstitution", props.duty);
 
-const institutionsFromDatabase = ref([]);
-
-// TODO: label doesn't update after updateModel and refresh page...
-if (props.modelRoute !== "duties.store") {
-  institutionsFromDatabase.value = [
-    {
-      value: form.institution?.id,
-      label: `${form.institution?.name} (${form.institution?.alias})`,
-    },
-  ];
-}
-
-const getInstitutionOptions = debounce((input) => {
-  if (input.length > 2) {
-    message.loading("Ieškoma...");
-    Inertia.post(
-      route("dutyInstitutions.search"),
-      {
-        data: {
-          name: input,
-        },
-      },
-      {
-        preserveState: true,
-        preserveScroll: true,
-        onSuccess: () => {
-          institutionsFromDatabase.value =
-            usePage().props.value.search.other.map(
-              (institution: App.Models.DutyInstitution) => {
-                return {
-                  value: institution.id,
-                  label: `${institution.name} (${institution.alias})`,
-                };
-              }
-            );
-        },
-      }
-    );
-  }
-}, 500);
+const institutionsFromDatabase = props.dutyInstitutions.map(
+  (dutyInstitution) => ({
+    label: `${dutyInstitution.name} (${dutyInstitution.padalinys?.shortname})`,
+    value: dutyInstitution.id,
+  })
+);
 </script>

@@ -1,42 +1,73 @@
 <template>
   <NForm :model="form" label-placement="top">
-    <NTabs animated type="card">
+    <NTabs animated type="card" pane-class="overflow-x-auto">
       <NTabPane display-directive="show" name="lt" tab="🇱🇹">
-        <NGrid :span="24" :x-gap="24">
-          <NFormItemGi label="Studijų programa" :span="12">
+        <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
+          <NFormItemGi :span="2">
+            <template #label>
+              <div class="flex gap-1">
+                <span> Papildoma informacija </span>
+                <HelpTextHover
+                  >Rodoma pareigybės skliausteliuose
+                </HelpTextHover>
+              </div>
+            </template>
             <NInput
               v-model:value="form.attributes.study_program"
               type="text"
               placeholder="Įrašyti tekstą..."
             />
           </NFormItemGi>
-          <NFormItemGi label="Aprašymas" :span="24">
+          <NFormItemGi label="Aprašymas" :span="6">
             <TipTap
               v-model="form.attributes.info_text"
               :search-files="$page.props.search.other"
             />
           </NFormItemGi>
-          <NFormItemGi
-            label="Papildoma kuratoriaus nuotrauka (naudoti tuo atveju, kai asmuo turi daugiau nei vieną nuotrauką, pvz.: nes turi koordinatoriaus pareigybės nuotrauką)"
-            :span="24"
-          >
+          <NFormItemGi :span="2">
+            <template #label>
+              <div class="flex gap-1">
+                <span>Papildoma nuotrauka</span
+                ><HelpTextHover
+                  >Ši nuotrauka bus rodoma „{{ dutyUser.duty.name }}“
+                  pareigybei.</HelpTextHover
+                >
+              </div></template
+            >
             <UploadImageButtons
               v-model="form.attributes.additional_photo"
               :path="'contacts'"
             />
           </NFormItemGi>
+          <NFormItemGi :span="2">
+            <template #label>
+              <div class="flex gap-1">
+                <span>
+                  <strong>Negiminizuoti</strong> kontakto pareigos galūnės
+                </span>
+                <HelpTextHover
+                  >Išjungia automatinį šios kontakto pareigybės giminizavimą
+                  pagal vardą ir pavardę. Bus naudojamas originalus pareigybės
+                  pavadinimas.
+                </HelpTextHover>
+              </div>
+            </template>
+            <NSwitch
+              v-model:value="form.attributes.use_original_duty_name"
+            ></NSwitch>
+          </NFormItemGi>
         </NGrid>
       </NTabPane>
       <NTabPane display-directive="show" name="en" tab="🇬🇧">
-        <NGrid :span="24" :x-gap="24">
-          <NFormItemGi label="Studijų programa" :span="12">
+        <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
+          <NFormItemGi label="Studijų programa" :span="2">
             <NInput
               v-model:value="form.attributes.en.study_program"
               type="text"
               placeholder="Įrašyti tekstą..."
             />
           </NFormItemGi>
-          <NFormItemGi label="Aprašymas" :span="24">
+          <NFormItemGi label="Aprašymas" :span="6">
             <TipTap
               v-model="form.attributes.en.info_text"
               :search-files="$page.props.search.other"
@@ -57,11 +88,20 @@
 </template>
 
 <script setup lang="ts">
-import { NForm, NFormItemGi, NGrid, NInput, NTabPane, NTabs } from "naive-ui";
+import {
+  NForm,
+  NFormItemGi,
+  NGrid,
+  NInput,
+  NSwitch,
+  NTabPane,
+  NTabs,
+} from "naive-ui";
 import { useForm } from "@inertiajs/inertia-vue3";
 import TipTap from "@/Components/TipTap.vue";
 
 import DeleteModelButton from "@/Components/Admin/Buttons/DeleteModelButton.vue";
+import HelpTextHover from "@/Components/HelpTextHover.vue";
 import UploadImageButtons from "@/Components/Admin/Buttons/UploadImageButtons.vue";
 import UpsertModelButton from "@/Components/Admin/Buttons/UpsertModelButton.vue";
 

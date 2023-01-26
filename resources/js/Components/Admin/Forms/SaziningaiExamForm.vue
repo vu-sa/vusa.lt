@@ -1,7 +1,7 @@
 <template>
   <NForm :model="form" label-placement="top">
-    <NGrid :span="24" :x-gap="24">
-      <NFormItemGi label="Pavadinimas" :span="12">
+    <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
+      <NFormItemGi label="Pavadinimas" :span="2">
         <NInput
           v-model:value="form.subject_name"
           type="text"
@@ -9,7 +9,7 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Užregistravusio vardas" :span="12">
+      <NFormItemGi label="Užregistravusio vardas" :span="2">
         <NInput
           v-model:value="form.name"
           type="text"
@@ -17,7 +17,7 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Egzamino tipas" :span="6">
+      <NFormItemGi label="Egzamino tipas" :span="2">
         <NSelect
           v-model:value="form.exam_type"
           :options="examOptions"
@@ -26,7 +26,7 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Padalinys" :span="6">
+      <NFormItemGi label="Padalinys" :span="2">
         <NSelect
           v-model:value="form.padalinys_id"
           :options="padaliniaiOptions"
@@ -34,38 +34,38 @@
           clearable
         />
       </NFormItemGi>
-      <NFormItemGi label="Telefonas" :span="12">
+      <NFormItemGi label="Telefonas" :span="2">
         <NInput
           v-model:value="form.phone"
           type="text"
           placeholder="Įrašyti telefoną..."
         />
       </NFormItemGi>
-      <NFormItemGi label="El. paštas arba kontaktinė informacija" :span="12">
+      <NFormItemGi label="El. paštas arba kontaktinė informacija" :span="2">
         <NInput
           v-model:value="form.email"
           type="text"
           placeholder="Įrašyti el. paštą..."
         />
       </NFormItemGi>
-      <NFormItemGi label="Egzamino vieta" :span="12">
+      <NFormItemGi label="Egzamino vieta" :span="6">
         <NInput
           v-model:value="form.place"
           type="text"
           placeholder="Įrašyti egzamino vietą..."
         />
       </NFormItemGi>
-      <NFormItemGi label="Trukmė" :span="12">
+      <NFormItemGi label="Trukmė" :span="2">
         <NInput
           v-model:value="form.duration"
           type="textarea"
           placeholder="Įrašyti egzamino trukmę..."
         />
       </NFormItemGi>
-      <NFormItemGi label="Laikančiųjų skaičius" :span="6">
+      <NFormItemGi label="Laikančiųjų skaičius" :span="2">
         <NInputNumber v-model:value="form.exam_holders" />
       </NFormItemGi>
-      <NFormItemGi label="Prašytas stebėtojų skaičius" :span="6">
+      <NFormItemGi label="Prašytas stebėtojų skaičius" :span="2">
         <NInputNumber v-model:value="form.students_need" />
       </NFormItemGi>
     </NGrid>

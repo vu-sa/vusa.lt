@@ -28,13 +28,14 @@ use App\ICalendars\MainCalendar;
 use App\Mail\ConfirmExamRegistration;
 use App\Mail\ConfirmMemberRegistration;
 use App\Mail\ConfirmObserverRegistration;
-use App\Mail\InformChairAboutMemberRegistration;
 use App\Mail\InformSaziningaiAboutObserverRegistration;
 use App\Mail\InformSaziningaiAboutRegistration;
+use App\Notifications\NotifyAboutMemberRegistration;
 use Spatie\CalendarLinks\Link;
 use Datetime;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 
 class MainController extends Controller
 {
@@ -107,6 +108,8 @@ class MainController extends Controller
 		// get last 4 news by publishing date
 		$padalinys = Padalinys::where('alias', '=', $this->alias)->first();
 
+		$banners = Padalinys::where('alias', 'vusa')->first()->banners()->inRandomOrder()->where('is_active', 1)->get();
+
 		$news = News::where([['padalinys_id', '=', $padalinys->id],['lang', app()->getLocale()], ['draft', '=', 0]])->where('publish_time', '<=', date('Y-m-d H:i:s'))->orderBy('publish_time', 'desc')->take(4)->get();
 
 		if (app()->getLocale() === 'en') {
@@ -148,6 +151,7 @@ class MainController extends Controller
 				];
 			}),
 			'mainPage' => MainPage::where([['padalinys_id', $padalinys->id], ['lang', app()->getLocale()]])->get(),
+			'banners' => $banners
 		])->withViewData([
 			'description' => 'Vilniaus universiteto Studentų atstovybė (VU SA) – seniausia ir didžiausia Lietuvoje visuomeninė, ne pelno siekianti, nepolitinė, ekspertinė švietimo organizacija'
 		]);
@@ -648,8 +652,7 @@ class MainController extends Controller
 
 		// send mail to the registered person
 		Mail::to($data['email'])->send(new ConfirmMemberRegistration($data, $registerLocation, $chairPerson, $chairEmail));
-		Mail::to($chairEmail)->send(new InformChairAboutMemberRegistration($data, $registerLocation));
-
+		Notification::send($chairPerson, new NotifyAboutMemberRegistration($data, $registerLocation, $chairEmail));
 	}
 
 	public function storeRegistration(RegistrationForm $registrationForm) {

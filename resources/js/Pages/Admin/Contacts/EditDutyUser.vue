@@ -27,6 +27,4 @@ import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue"
 defineProps<{
   dutyUser: Record<string, any>;
 }>();
-
-// const { message } = createDiscreteApi(["message"]);
 </script>

@@ -27,26 +27,19 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
+        // For search
         $name = request()->input('name');
 
-        $users = User::when(!is_null($name), function ($query) use ($name) {
+        $users = User::
+        when(!is_null($name), function ($query) use ($name) {
             $query->where('name', 'like', "%{$name}%")->orWhere('email', 'like', "%{$name}%");
-        })->when(!$request->user()->hasRole('Super Admin'), function ($query) {
-        })->paginate(20);
-
-        // create lengthawarepaginator manually because need some more filtering
-        // $users = new LengthAwarePaginator(
-        //     $users->slice($request->page * 20, 20)->values(),
-        //     count($users),
-        //     20,
-        //     $request->page,
-        //     [
-        //         'path' => $request->url(),
-        //         'query' => $request->query()
-        //     ]
-        // );
-
-        // dd($users, $usersGet);
+        })->
+            when(!$request->user()->hasRole('Super Admin'), function ($query) {
+                $query->whereHas('duties.institution', function ($query) {
+                    $query->where('padalinys_id', Auth::user()->padalinys()->id);
+                });
+        })->with(['duties:id,institution_id', 'duties.institution:id,padalinys_id','duties.institution.padalinys:id,shortname'])
+        ->paginate(20);
 
         return Inertia::render('Admin/Contacts/IndexUsers', [
             'users' => $users,
@@ -60,9 +53,9 @@ class UserController extends Controller
      */
     public function create()
     {
-        //
         return Inertia::render('Admin/Contacts/CreateUser', [
             'roles' => Role::all(),
+            'duties' => $this->getDutiesForForm()
         ]);
     }
 
@@ -105,7 +98,7 @@ class UserController extends Controller
             }
         });
 
-        return redirect()->route('users.index');
+        return redirect()->route('users.index')->with('success', 'Kontaktas sėkmingai sukurtas!');
     }
 
     /**
@@ -148,7 +141,8 @@ class UserController extends Controller
                 }),
             ],
             // get all roles
-            'roles' => Role::all()
+            'roles' => Role::all(),
+            'duties' => $this->getDutiesForForm()
         ]);
     }
 
@@ -164,10 +158,9 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required',
             'email' => 'required',
+            'duties' => 'required',
         ]);
 
-        // dd($request->all(), auth()->user()->hasRole('Super Admin'));
-        
         DB::transaction(function () use ($request, $user) {
 
             $user->update($request->only('name', 'email', 'phone', 'profile_photo_path'));
@@ -185,7 +178,7 @@ class UserController extends Controller
 
         });
 
-        return redirect()->back();
+        return back()->with('success', 'Kontaktas sėkmingai atnaujintas!');
     }
 
     /**
@@ -200,21 +193,31 @@ class UserController extends Controller
         $user->duties()->detach();
         $user->delete();
 
-        return redirect()->route('users.index');
+        return redirect()->route('users.index')->with('info', 'Kontaktas sėkmingai ištrintas!');
+    }
+
+    private function getDutiesForForm()
+    {
+        return Duty::with(['institution:id,padalinys_id', 'institution.padalinys:id,shortname'])
+        ->when(!auth()->user()->hasRole('Super Admin'), function ($query) { 
+            $query->whereHas('institution', function ($query) {
+                $query->where('padalinys_id', Auth::user()->padalinys()?->id);
+            });
+        })->get();
     }
 
     public function detachFromDuty(User $user, Duty $duty)
     {
+        $this->authorize('detachFromDuty', [auth()->user(), $user]);
+
         $user->duties()->detach($duty);
         $user->save();
 
-        return redirect()->back();
+        return back()->with('info', 'Kontaktas sėkmingai atjungtas nuo pareigos!');
     }
 
     public function storeFromMicrosoft()
     {
-        // dd(Socialite::driver('microsoft'));
-
         $microsoftUser = Socialite::driver('microsoft')->user();
 
         // check if microsoft user mail contains 'vusa.lt'

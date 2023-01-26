@@ -43,18 +43,10 @@ export default {
 // import { Edit16Regular } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
-import {
-  NButton,
-  // NIcon,
-  NPopconfirm,
-  NSpin,
-  NTree,
-  // createDiscreteApi,
-} from "naive-ui";
+import { NButton, NPopconfirm, NSpin, NTree } from "naive-ui";
 import { h, ref } from "vue";
 import route from "ziggy-js";
 
-// import AsideHeader from "./AsideHeader.vue";
 import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
 
 const props = defineProps<{
@@ -79,7 +71,6 @@ const parseNavigation = (array, id) => {
       if (result[result.length - 1].children.length === 0) {
         delete result[result.length - 1].children;
       }
-      console.log(result[result.length - 1].children);
     }
   });
   return result;
@@ -101,8 +92,6 @@ const renderSuffix = ({ option }) => {
     )
   );
 };
-
-// const { message } = createDiscreteApi(["message"]);
 
 const dataRef = ref(parseNavigation(props.navigation, 0));
 const showSpin = ref(false);

@@ -146,7 +146,6 @@ const saveReorderedDuties = () => {
       preserveScroll: true,
       onSuccess: () => {
         dutiesWereReordered.value = false;
-        message.success("Pareigų tvarka sėkmingai atnaujinta!");
       },
     }
   );

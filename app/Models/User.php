@@ -66,23 +66,6 @@ class User extends Authenticatable
         return $this->belongsToMany(Duty::class, 'duties_users', 'user_id', 'duty_id')->using(DutyUser::class)->withPivot(['id', 'attributes'])->withTimestamps();
     }
 
-    public function institutions()
-    {
-        $duties = $this->duties;
-        $institutions = [];
-
-        foreach ($duties as $duty) {
-            $institutions[] = $duty->institution;
-        }
-
-        // collect unique institutions
-
-        $institutions = new Collection($institutions);
-
-        return $institutions->unique();
-    }
-
-
     // TODO: more logical return of padalinys
     public function padalinys()
     {
@@ -91,14 +74,12 @@ class User extends Authenticatable
 
     public function padaliniai()
     {
-        $institutions = $this->institutions();
         $padaliniai = [];
-
-        foreach ($institutions as $institution) {
-            // check for null, as some institutions may not have padalinys
-            // TODO: they should have
-            if ($institution->padalinys) {
-                $padaliniai[] = $institution->padalinys;
+        
+        $this->load('duties.institution.padalinys');
+        foreach ($this->duties as $duty) {
+            if ($duty->institution->padalinys) {
+                $padaliniai[] = $duty->institution->padalinys;
             }
         }
 

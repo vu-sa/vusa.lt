@@ -1,7 +1,7 @@
 <template>
   <NForm :model="form" label-placement="top">
-    <NGrid :span="24" :x-gap="24">
-      <NFormItemGi label="Mygtuko tekstas" :span="12">
+    <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
+      <NFormItemGi label="Mygtuko tekstas" :span="2">
         <NInput
           v-model:value="form.text"
           type="text"
@@ -9,14 +9,14 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Nuoroda, į kurią nukreipia mygtukas" :span="12">
+      <NFormItemGi label="Nuoroda, į kurią nukreipia mygtukas" :span="2">
         <NInput
           v-model:value="form.link"
           type="text"
           placeholder="/stipendijos | https://vu.lt"
         />
       </NFormItemGi>
-      <NFormItemGi label="Kalba" :span="12">
+      <NFormItemGi label="Kalba" :span="2">
         <NSelect
           v-model:value="form.lang"
           :options="languageOptions"

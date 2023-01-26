@@ -14,6 +14,13 @@
           <slot></slot>
         </main>
 
+        <FadeTransition appear>
+          <ConsentCard
+            v-if="!cookieConsent"
+            @okay-cookie-consent="cookieConsent = true"
+          />
+        </FadeTransition>
+
         <Footer />
       </div>
 
@@ -25,9 +32,10 @@
 
 <script setup lang="ts">
 import { NConfigProvider, darkTheme } from "naive-ui";
+import { defineAsyncComponent, onMounted, ref } from "vue";
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
-import { onMounted, ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
+import { useStorage } from "@vueuse/core";
 
 import FadeTransition from "../Utils/FadeTransition.vue";
 import Footer from "@/Components/Public/FullWidth/SiteFooter.vue";
@@ -45,6 +53,14 @@ const themeOverrides = {
     primaryColorSuppl: "#B93945FF",
   },
 };
+
+const ConsentCard = defineAsyncComponent(
+  () => import("@/Components/Public/ConsentCard.vue")
+);
+
+const cookieConsent = useStorage("cookie-consent", false);
+
+updateDarkMode(isThemeDark);
 
 // Userway script
 
@@ -89,7 +105,6 @@ onMounted(() => {
     })(window, document, "clarity", "script", "bs7culn3gp");
   }
 
-  updateDarkMode(isThemeDark);
   mounted.value = true;
 });
 </script>

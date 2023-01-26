@@ -7,10 +7,17 @@
   >
     <template #trigger>
       <div class="flex">
-        <NButton type="error" :disabled="disabled" :size="size">
-          <NIcon size="18">
-            <Delete20Filled />
-          </NIcon>
+        <NButton
+          type="error"
+          :loading="loading"
+          :disabled="disabled"
+          :size="size"
+        >
+          <template #icon>
+            <NIcon size="18">
+              <Delete20Filled />
+            </NIcon>
+          </template>
         </NButton>
       </div>
     </template>
@@ -24,13 +31,8 @@
 <script setup lang="ts">
 import { Delete20Filled } from "@vicons/fluent";
 import { Inertia } from "@inertiajs/inertia";
-import {
-  NButton,
-  NIcon,
-  NPopconfirm,
-  NPopover,
-  createDiscreteApi,
-} from "naive-ui";
+import { NButton, NIcon, NPopconfirm, NPopover } from "naive-ui";
+import { ref } from "vue";
 import route from "ziggy-js";
 
 const props = defineProps<{
@@ -40,13 +42,13 @@ const props = defineProps<{
   size?: "small" | "medium" | "large";
 }>();
 
-const { message } = createDiscreteApi(["message"]);
+const loading = ref(false);
 
 const destroyModel = () => {
-  console.log(props.modelRoute, props.form, props.form.id);
+  loading.value = true;
   Inertia.delete(route(props.modelRoute, props.form.id), {
     onSuccess: () => {
-      message.success("Įrašas ištrintas!");
+      loading.value = false;
     },
     preserveScroll: true,
   });

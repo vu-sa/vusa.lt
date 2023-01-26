@@ -49,22 +49,15 @@
               :style="{ maxWidth: '250px' }"
               ><template #trigger>
                 <p class="my-1 cursor-pointer">
-                  {{
-                    dutyName(
-                      checkIfContactNameEndsWithEDot(contact, duty),
-                      duty
-                    )
-                  }}
-                  {{ studyProgram(showStudyProgram(duty), duty) }}
+                  {{ changeDutyNameEndings(contact, duty) }}
+                  {{ showAdditionalInfo(duty) }}
                 </p>
               </template>
               <span v-html="dutyDescription(duty)"></span>
             </NPopover>
             <p v-else class="my-1">
-              {{
-                dutyName(checkIfContactNameEndsWithEDot(contact, duty), duty)
-              }}
-              {{ studyProgram(showStudyProgram(duty), duty) }}
+              {{ changeDutyNameEndings(contact, duty) }}
+              {{ showAdditionalInfo(duty) }}
             </p>
           </template>
         </div>
@@ -107,19 +100,6 @@ const openEdit = (contact: App.Models.User) => {
   window.open(route("users.edit", { user: contact.id }), "_blank");
 };
 
-// firstDutyName is only used, because there are some rushed functions that are still need to be used :)
-// in this case, the duty name is mutated and then passed to this function
-// TODO: cleanup this piece of tragedy...
-const dutyName = (firstDutyName, duty) => {
-  const locale = usePage().props.value.locale;
-
-  if (locale === "en") {
-    return duty.attributes?.en?.name ?? firstDutyName;
-  }
-
-  return firstDutyName ?? "";
-};
-
 const dutyDescription = (duty) => {
   const locale = usePage().props.value.locale;
 
@@ -134,18 +114,20 @@ const dutyDescription = (duty) => {
   return duty.pivot?.attributes?.info_text ?? duty.description;
 };
 
-const studyProgram = (firstStudyProgramTitle, duty) => {
-  const locale = usePage().props.value.locale;
+const showAdditionalInfo = (duty) => {
+  if (!duty.pivot?.attributes?.study_program) {
+    return null;
+  }
 
-  console.log(duty.pivot.attributes?.en);
+  const locale = usePage().props.value.locale;
 
   if (locale === "en") {
     return duty.pivot.attributes?.en?.study_program == null
-      ? firstStudyProgramTitle
+      ? `(${duty.pivot.attributes?.study_program})`
       : `(${duty.pivot.attributes?.en?.study_program})`;
   }
 
-  return firstStudyProgramTitle ?? "";
+  return `(${duty.pivot.attributes?.study_program})`;
 };
 
 // ! TIK KURATORIAMS: nusprendžia, kurią nuotrauką imti, pagal tai, ar url turi "kuratoriai"
@@ -166,17 +148,30 @@ const getImageUrl = (contact: App.Models.User) => {
   return contact.profile_photo_path ?? "";
 };
 
-// ! TIK KURATORIAMS: pakeisti galūnes
-// check
-const checkIfContactNameEndsWithEDot = (
+const changeDutyNameEndings = (
   contact: App.Models.User,
   duty: App.Models.Duty
 ) => {
+  // check for english locale and just return english
+  let locale = usePage().props.value.locale;
+
+  if (locale === "en" && duty.attributes?.en?.name) {
+    return duty.attributes?.en?.name;
+  }
+
+  // check if duty name should not be explicitly changed
+  if (duty.pivot.attributes?.use_original_duty_name) return duty.name;
+
+  // replace duty.name ending 'ius' with 'ė', but only on end of string
+  let womanizedTitle = duty.name
+    .replace(/ius$/, "ė")
+    .replace(/as$/, "ė")
+    .replace(/ys$/, "ė");
   let firstName = contact.name.split(" ")[0];
 
   let namesToWomanize = ["Katrin"];
   if (namesToWomanize.includes(firstName)) {
-    return duty.name.replace(/ius$/, "ė");
+    return womanizedTitle;
   }
 
   let namesNotToWomanize = ["German"];
@@ -184,29 +179,15 @@ const checkIfContactNameEndsWithEDot = (
     return duty.name;
   }
 
-  if (contact.name.endsWith("ė")) {
-    // replace duty.name ending 'ius' with 'ė', but only on end
-    return duty.name.replace(/ius$/, "ė");
+  if (contact.name.endsWith("ė") || firstName.endsWith("ė")) {
+    return womanizedTitle;
   }
 
+  // check for first name ending with 's'
   if (contact.name.endsWith("a") && !firstName.endsWith("s")) {
-    return duty.name.replace(/ius$/, "ė");
+    return womanizedTitle;
   }
 
-  return duty.name;
-};
-
-// ! TIK KURATORIAMS: nusprendžia, ar rodyti studijų programą
-const showStudyProgram = (duty: App.Models.Duty) => {
-  if (!duty.pivot?.attributes?.study_program) {
-    return null;
-  }
-
-  // check if name includes kuratorius
-  if (duty.type?.alias === "kuratoriai") {
-    return `(${duty.pivot.attributes.study_program})`;
-  }
-
-  return null;
+  return duty.name ?? "";
 };
 </script>

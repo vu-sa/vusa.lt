@@ -4,7 +4,7 @@
   >
     <div
       v-if="editor"
-      class="tiptap-navbar flex items-center rounded-t-lg bg-gradient-to-tr from-zinc-200 to-zinc-100 p-2 shadow-sm dark:from-zinc-800/90 dark:to-zinc-700/90"
+      class="tiptap-navbar flex items-center overflow-auto rounded-t-lg bg-gradient-to-tr from-zinc-200 to-zinc-100 p-2 shadow-sm dark:from-zinc-800/90 dark:to-zinc-700/90"
     >
       <!-- <strong class="mb-4">Funkcijos</strong> -->
       <!-- <br /> -->
@@ -123,11 +123,16 @@
 
     <EditorContent
       :editor="editor"
-      class="min-h-[12em] rounded-b-lg border-vusa-yellow/50 bg-stone-50/40 shadow-inner"
+      class="max-h-72 min-h-[12em] overflow-y-scroll rounded-b-lg border-vusa-yellow/50 bg-stone-50/40 shadow-inner dark:bg-zinc-800/70"
     />
   </div>
-  <NModal v-model:show="showFileModal">
-    <div class="w-1/2 rounded-sm bg-white p-4">
+  <NModal
+    v-model:show="showFileModal"
+    preset="card"
+    title="Sukurti nuorodą"
+    class="max-w-3xl"
+  >
+    <div class="rounded-sm">
       <NTabs type="line" animated>
         <NTabPane name="link" tab="Pridėti nuorodą">
           <NInput
@@ -226,6 +231,7 @@ import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
 import TableRow from "@tiptap/extension-table-row";
 import TipTapLink from "@tiptap/extension-link";
+import Youtube from "@tiptap/extension-youtube";
 import route from "ziggy-js";
 
 const props = defineProps<{
@@ -261,11 +267,11 @@ const getFiles = debounce((query) => {
         onSuccess: () => {
           message.success("Pabaigta.");
           const searchFiles = Object.values(props.searchFiles);
-          console.log(searchFiles);
           files.value = searchFiles.map((file) => ({
             // get the file name from the url
             label: `${file.split("/").pop()} (${file})`,
-            value: file,
+            // value: file,
+            value: file.replace("public", "/uploads"),
           }));
         },
       }
@@ -289,7 +295,6 @@ const getImages = debounce((query) => {
         onSuccess: () => {
           message.success("Pabaigta.");
           const searchFiles = Object.values(props.searchFiles);
-          console.log(searchFiles);
           files.value = searchFiles.map((file) => ({
             // get the file name from the url
             label: `${file.split("/").pop()} (${file})`,
@@ -323,7 +328,7 @@ const placeImage = () => {
 const editor = useEditor({
   editorProps: {
     attributes: {
-      class: "prose-sm sm:prose focus:outline-none p-4 h-full",
+      class: "prose dark:prose-invert focus:outline-none p-4 h-full",
     },
   },
   extensions: [
@@ -338,11 +343,15 @@ const editor = useEditor({
     TipTapLink.configure({
       openOnClick: false,
     }),
+    Youtube.configure({
+      HTMLAttributes: {
+        class: "w-full overflow-y-auto",
+      },
+    }),
   ],
   content: modelValue.value,
   onUpdate: () => {
     // HTML
-    // console.log(editor);
     emit("update:modelValue", editor.value?.getHTML());
   },
 });

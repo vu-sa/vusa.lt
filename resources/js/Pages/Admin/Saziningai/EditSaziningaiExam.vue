@@ -104,7 +104,6 @@ const manageFlowModal = (id = null, datetime = null) => {
 
 const submitFlow = (flow_id, timestamp) => {
   if (flow_id) {
-    console.log(flow_id, timestamp);
     Inertia.patch(
       route("saziningaiExamFlows.update", flow_id),
       {
@@ -120,7 +119,6 @@ const submitFlow = (flow_id, timestamp) => {
       }
     );
   } else {
-    console.log(timestamp);
     Inertia.post(
       route("saziningaiExamFlows.store"),
       {

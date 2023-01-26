@@ -4,12 +4,13 @@
       <UserForm
         :user="contact"
         :roles="roles"
+        :duties="duties"
         model-route="users.update"
         delete-model-route="users.destroy"
       />
     </UpsertModelLayout>
     <template #aside-card>
-      <div v-if="contact.duties.length > 0" class="main-card h-fit">
+      <div v-if="contact.duties.length > 0" class="main-card h-fit max-w-sm">
         <strong>Šiuo metu {{ contact.name }} užima šias pareigas:</strong>
         <ul class="list-inside">
           <li
@@ -22,7 +23,6 @@
               {{ duty.email ? ` (${duty.email})` : "" }}
 
               <NButton
-                v-if="hasFillableAttributes(duty)"
                 secondary
                 circle
                 size="tiny"
@@ -71,10 +71,6 @@ import UserForm from "@/Components/Admin/Forms/UserForm.vue";
 defineProps<{
   contact: App.Models.User;
   roles: App.Models.Role[];
+  duties: App.Models.Duty[];
 }>();
-
-const hasFillableAttributes = (duty: App.Models.Duty) => {
-  // return true if duty.name includes "kurator"
-  return duty.type?.alias === "kuratoriai";
-};
 </script>

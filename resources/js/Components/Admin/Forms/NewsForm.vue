@@ -1,7 +1,7 @@
 <template>
   <NForm :model="form" label-placement="top">
-    <NGrid :span="24" :x-gap="24">
-      <NFormItemGi label="Pavadinimas" :span="12">
+    <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
+      <NFormItemGi label="Pavadinimas" :span="2">
         <NInput
           v-model:value="form.title"
           type="text"
@@ -9,7 +9,7 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Nuoroda" :span="12">
+      <NFormItemGi label="Nuoroda" :span="2">
         <NInput
           :value="form.permalink"
           disabled
@@ -18,7 +18,7 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Kalba" :span="12">
+      <NFormItemGi label="Kalba" :span="2">
         <NSelect
           v-model:value="form.lang"
           :options="languageOptions"
@@ -26,7 +26,7 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Kitos kalbos puslapis" :span="12">
+      <NFormItemGi label="Kitos kalbos puslapis" :span="2">
         <NSelect
           v-model:value="form.other_lang_id"
           filterable
@@ -37,7 +37,7 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Naujienos paskelbimo laikas" :span="8">
+      <NFormItemGi label="Naujienos paskelbimo laikas" :span="2">
         <NDatePicker
           v-model:formatted-value="form.publish_time"
           placeholder="Data..."
@@ -46,7 +46,7 @@
         />
       </NFormItemGi>
 
-      <NFormItemGi label="Ar juodraštis?" :span="8">
+      <NFormItemGi label="Ar juodraštis?" :span="2">
         <NSwitch
           v-model:value="form.draft"
           :checked-value="1"
@@ -55,35 +55,35 @@
         </NSwitch>
       </NFormItemGi>
 
-      <NFormItemGi :span="24"
+      <NFormItemGi :span="6"
         ><NDivider> Naujienos nuotrauka</NDivider>
       </NFormItemGi>
 
-      <NFormItemGi label="Nuotrauka" :span="24">
+      <NFormItemGi label="Nuotrauka" :span="2">
         <UploadImageButtons
           v-model="form.image"
           :path="'news'"
         ></UploadImageButtons>
       </NFormItemGi>
 
-      <NFormItemGi label="Nuotraukos autorius" :span="12">
+      <NFormItemGi label="Nuotraukos autorius" :span="2">
         <NInput
           v-model:value="form.image_author"
           type="text"
           placeholder="Žmogus arba organizacija.."
         />
       </NFormItemGi>
-      <NFormItemGi :span="24"
+      <NFormItemGi :span="6"
         ><NDivider> Straipsnio turinys</NDivider>
       </NFormItemGi>
-      <NFormItemGi :span="24">
+      <NFormItemGi :span="6">
         <TipTap v-model="form.short" :search-files="$page.props.search.other" />
         <template #label>
           <span class="text-lg font-bold">Įvadas</span>
         </template>
       </NFormItemGi>
 
-      <NFormItemGi :span="24" class="mt-2">
+      <NFormItemGi :span="6" class="mt-2">
         <TipTap v-model="form.text" :search-files="$page.props.search.other" />
         <template #label>
           <span class="text-lg font-bold">Pagrindinis tekstas</span>

@@ -91,7 +91,7 @@ class CalendarController extends Controller
             'attributes' => $request->all()['attributes']
         ]);
 
-        return redirect()->route('calendar.index');
+        return redirect()->route('calendar.index')->with('success', 'Kalendoriaus įvykis sėkmingai sukurtas!');
     }
 
     /**
@@ -154,7 +154,7 @@ class CalendarController extends Controller
         });
         
 
-        return redirect()->back();
+        return back()->with('success', 'Kalendoriaus įvykis sėkmingai atnaujintas!');
     }
 
     /**
@@ -167,12 +167,14 @@ class CalendarController extends Controller
     {
         $calendar->delete();
 
-        return redirect()->route('calendar.index');
+        return redirect()->route('calendar.index')->with('info', 'Kalendoriaus įvykis ištrintas!');
     }
 
     public function destroyMedia(Calendar $calendar, Media $media) {
         $this->authorize('destroyMedia', $calendar);
         
         $calendar->getMedia('images')->where('id', '=', $media->id)->first()->delete();
+
+        return back()->with('info', 'Nuotrauka ištrinta!');
     }
 }

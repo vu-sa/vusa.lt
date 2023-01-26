@@ -1,5 +1,8 @@
 <template>
   <!-- <NThemeEditor> -->
+  <!-- <Head>
+    <meta v-if="isThemeDark" name="theme-color" content="#bd2835" />
+  </Head> -->
   <FadeTransition>
     <NConfigProvider
       v-show="mounted"
@@ -19,15 +22,16 @@
             >
           </div>
           <div class="flex items-center gap-4">
-            <DarkModeSwitch />
             <UserAvatar />
+            <DarkModeSwitch />
+            <NotificationBell />
           </div>
         </NLayoutHeader>
         <NLayout class="min-h-full" has-sider>
           <NLayoutSider
-            class="ml-4 h-fit rounded-md shadow-sm"
+            class="ml-4 mb-12 h-fit rounded-md shadow-sm"
             collapse-mode="width"
-            :collapsed-width="64"
+            :collapsed-width="isMobile ? 0 : 64"
             :width="200"
             :collapsed="collapsed"
             show-trigger="bar"
@@ -49,7 +53,7 @@
         <NLayoutFooter class="absolute bottom-0 w-full"
           ><div class="mx-auto mb-2 w-fit">
             <NButton size="tiny" quaternary @click="showModal = true">
-              v0.3.4 (2022-09-16)
+              v0.3.9 (2022-09-26)
             </NButton>
           </div>
           <NModal v-model:show="showModal">
@@ -63,8 +67,8 @@
 </template>
 
 <script setup lang="ts">
-import { Head } from "@inertiajs/inertia-vue3";
 import {
+  ConfigProviderProps,
   NButton,
   NConfigProvider,
   NLayout,
@@ -73,10 +77,12 @@ import {
   NLayoutHeader,
   NLayoutSider,
   NModal,
+  createDiscreteApi,
   darkTheme,
   // NThemeEditor,
 } from "naive-ui";
-import { onMounted, ref } from "vue";
+import { Head, usePage } from "@inertiajs/inertia-vue3";
+import { computed, onMounted, ref, watch } from "vue";
 
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import AdminMenu from "@/Components/Admin/Nav/AdminMenu.vue";
@@ -85,6 +91,7 @@ import Changelog from "@/Components/Admin/Misc/ChangelogCard.vue";
 import DarkModeSwitch from "@/Components/DarkModeSwitch.vue";
 import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
+import NotificationBell from "@/Components/Admin/NotificationBell.vue";
 import UserAvatar from "../Nav/UserAvatar.vue";
 
 defineProps<{
@@ -98,6 +105,33 @@ const showModal = ref(false);
 const mounted = ref(false);
 
 const isThemeDark = ref(isDarkMode());
+
+const successMessage = computed(() => usePage().props.value.flash.success);
+const infoMessage = computed(() => usePage().props.value.flash.info);
+
+watch(successMessage, (successMessage) => {
+  if (successMessage) {
+    message.success(successMessage);
+    usePage().props.value.flash.success = null;
+  }
+});
+
+watch(infoMessage, (infoMessage) => {
+  if (infoMessage) {
+    message.info(infoMessage);
+    usePage().props.value.flash.info = null;
+  }
+});
+
+// compute if the width is less than 768px
+const isMobile = ref(window.innerWidth < 768);
+
+// update the isMobile value when the window is resized
+window.addEventListener("resize", () => {
+  isMobile.value = window.innerWidth < 768;
+});
+
+updateDarkMode(isThemeDark);
 
 const themeOverrides = {
   common: {
@@ -114,7 +148,14 @@ const themeOverrides = {
 };
 
 onMounted(() => {
-  updateDarkMode(isThemeDark);
   mounted.value = true;
+});
+
+const configProviderPropsRef = computed<ConfigProviderProps>(() => ({
+  theme: isThemeDark.value ? darkTheme : undefined,
+}));
+
+const { message } = createDiscreteApi(["message"], {
+  configProviderProps: configProviderPropsRef,
 });
 </script>

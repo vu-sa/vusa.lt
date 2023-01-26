@@ -1,8 +1,19 @@
 <template>
   <nav
-    class="fixed top-0 z-50 flex max-h-24 w-full flex-row items-center justify-between bg-white/80 px-6 py-2 text-gray-800 shadow-sm backdrop-blur-sm dark:bg-zinc-800/60 dark:text-white lg:px-24"
+    class="fixed top-0 z-50 flex max-h-24 w-full flex-row items-center justify-between bg-white/80 px-4 py-2 text-gray-800 shadow-sm backdrop-blur-sm dark:bg-zinc-800/60 dark:text-white lg:px-12 xl:px-24"
   >
-    <div class="flex flex-row items-center space-x-4">
+    <div
+      class="flex flex-row items-center space-x-4"
+      :class="{ 'mx-auto': isMobile }"
+    >
+      <!-- Hamburger -->
+      <div v-if="isMobile" class="block">
+        <NButton style="border-radius: 0.5rem" @click="toggleMenu">
+          <NIcon>
+            <Navigation24Filled />
+          </NIcon>
+        </NButton>
+      </div>
       <Link :href="route('main.home', homeParams)" @click="resetPadalinys()">
         <AppLogo class="w-36" />
       </Link>
@@ -35,16 +46,8 @@
         ><NIcon :size="16" :component="AnimalTurtle24Filled"></NIcon
       ></NButton>
     </div>
-    <!-- Hamburger -->
-    <div class="block lg:hidden">
-      <NButton style="border-radius: 0.5rem" @click="toggleMenu">
-        <NIcon>
-          <Navigation24Filled />
-        </NIcon>
-      </NButton>
-    </div>
 
-    <div class="hidden flex-row flex-wrap items-center space-x-4 lg:flex">
+    <div v-if="!isMobile" class="flex items-center gap-x-4">
       <NMenu
         v-model:value="activeMenuKey"
         :icon-size="16"
@@ -53,14 +56,15 @@
         :dropdown-props="{ size: 'medium' }"
         @update:value="handleSelectNavigation"
       />
-      <FacebookButton />
-      <InstagramButton />
-      <SearchButton />
-      <StartFM />
-      <NDivider vertical></NDivider>
-      <DarkModeSwitch />
-
-      <LocaleButton :locale="locale" @change-locale="localeSelect" />
+      <div class="flex flex-wrap items-center gap-4">
+        <FacebookButton />
+        <InstagramButton />
+        <SearchButton />
+        <StartFM />
+        <NDivider vertical></NDivider>
+        <DarkModeSwitch />
+        <LocaleButton :locale="locale" @change-locale="localeSelect" />
+      </div>
     </div>
     <NDrawer
       v-model:show="activeDrawer"
@@ -142,7 +146,7 @@ import FacebookButton from "../Nav/FacebookButton.vue";
 import InstagramButton from "../Nav/InstagramButton.vue";
 import LocaleButton from "../Nav/LocaleButton.vue";
 import SearchButton from "../Nav/SearchButton.vue";
-import StartFM from "@/Components/StartFM.vue";
+import StartFM from "@/Components/Public/Nav/StartFM.vue";
 
 // map padaliniai to options_padaliniai
 
@@ -277,4 +281,17 @@ const localeSelect = (lang: string) => {
   // reset padalinys value if home
   padalinys.value = getPadalinys();
 };
+
+// check if 1024px or less with resize
+const isMobile = ref(false);
+const handleResize = () => {
+  if (window.innerWidth <= 1024) {
+    isMobile.value = true;
+  } else {
+    isMobile.value = false;
+  }
+};
+
+window.addEventListener("resize", handleResize);
+handleResize();
 </script>
