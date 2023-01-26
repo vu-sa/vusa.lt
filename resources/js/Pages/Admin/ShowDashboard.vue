@@ -38,12 +38,6 @@
       class="mb-8"
     >
       <h2>Tavo institucijos</h2>
-      <!-- <NScrollbar
-        :class="{
-          'max-h-[18rem]': !institutionExpanded,
-          'max-h-[100%]': institutionExpanded,
-        }"
-      > -->
       <div
         class="relative mt-4 grid w-full grid-cols-ramFill gap-4 overflow-hidden pb-4 transition-transform duration-300 ease-in-out"
       >
@@ -52,33 +46,13 @@
           :key="institution.id"
           :institution="institution"
           :duties="duties"
-          :is-padalinys="institution.alias === institution.padalinys.alias"
+          :is-padalinys="institution.alias === institution.padalinys?.alias"
           @click="router.visit(route('institutions.show', institution.id))"
         />
-        <!-- <div
-            v-if="!institutionExpanded && institutions.length > 4"
-            class="absolute bottom-0 h-12 w-full bg-gradient-to-b from-transparent to-[rgb(250,_248,_248)] text-center dark:to-[rgb(30,_30,_33)]"
-          >
-            <NButton
-              secondary
-              circle
-              @click="institutionExpanded = !institutionExpanded"
-              ><template #icon
-                ><NIcon :component="MoreHorizontal24Regular"></NIcon></template
-            ></NButton>
-          </div> -->
       </div>
-      <!-- </NScrollbar> -->
     </section>
     <section v-if="shownSections.includes('Posėdžiai')" class="relative mb-8">
       <h2>Artėjantys posėdžiai</h2>
-
-      <!-- <NScrollbar
-        :class="{
-          'max-h-[16rem]': !meetingExpanded,
-          'max-h-[100%]': meetingExpanded,
-        }"
-      > -->
       <div class="grid grid-cols-ramFill gap-x-4">
         <template v-for="institution in institutions">
           <MeetingCard
@@ -91,16 +65,6 @@
           ></MeetingCard>
         </template>
       </div>
-      <!-- </NScrollbar> -->
-      <!-- <div
-        v-if="!meetingExpanded && institutions.length > 3"
-        class="absolute bottom-0 h-12 w-full bg-gradient-to-b from-transparent to-[rgb(250,_248,_248)] text-center dark:to-[rgb(30,_30,_33)]"
-      >
-        <NButton secondary circle @click="meetingExpanded = !meetingExpanded"
-          ><template #icon
-            ><NIcon :component="MoreHorizontal24Regular"></NIcon></template
-        ></NButton>
-      </div> -->
     </section>
     <section id="naudingos-nuorodos">
       <h2 class="mb-4">Naudingos nuorodos</h2>
@@ -140,14 +104,9 @@
 </template>
 
 <script setup lang="tsx">
-import {
-  DocumentCheckmark24Regular,
-  PeopleCommunity24Regular,
-  Settings24Filled,
-} from "@vicons/fluent";
 import { ExternalLinkSquareAlt } from "@vicons/fa";
 import { NButton, NCheckbox, NCheckboxGroup, NIcon, NPopover } from "naive-ui";
-import { ref } from "vue";
+import { Settings24Filled } from "@vicons/fluent";
 import { router } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 
@@ -156,19 +115,15 @@ import MeetingCard from "@/Components/Cards/MeetingCard.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import QActFocusGroupButton from "@/Components/Buttons/QActFocusGroupButton.vue";
 import QActSurveyButton from "@/Components/Buttons/QActSurveyButton.vue";
-import QuickActionButton from "@/Components/Buttons/QuickActionButton.vue";
 
 defineProps<{
-  institutions: Record<string, any>[];
+  institutions: App.Entities.Institution[] | null;
   duties: App.Entities.Duty[];
 }>();
 
 const windowOpen = (url: string, target: string) => {
   window.open(url, target);
 };
-
-const institutionExpanded = ref(false);
-const meetingExpanded = ref(false);
 
 const shownSections = useStorage("dashboard-sections", [
   "Institucijos",

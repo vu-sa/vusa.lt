@@ -62,12 +62,12 @@
         class="flex justify-between gap-2"
       >
         <NTag
-          v-for="type in institution.types"
-          :key="type.id"
+          v-for="institutionType in institution.types"
+          :key="institutionType.id"
           :size="size ? 'tiny' : 'small'"
           :bordered="false"
         >
-          {{ type.title }}
+          {{ institutionType.title }}
         </NTag>
       </div>
     </template>
