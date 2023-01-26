@@ -27,7 +27,7 @@ class DashboardController extends Controller
 
         // load institutions with meetings where start_time is in the future
         // ! The filter() is needed, because some duties may have no institutions and they are null here
-        $institutions->filter()->load(['meetings' => function ($query) {
+        $institutions = $institutions->filter()->load(['meetings' => function ($query) {
             $query->where('start_time', '>', now())->with('comments', 'tasks', 'files');
         }]);
 
