@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Actions\GetInstitutionManagers;
 use App\Events\FileableNameUpdated;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasContentRelationships;
 use App\Models\Traits\HasSharepointFiles;
+use App\Services\RelationshipService;
+use App\Services\ResourceServices\SharepointFileService;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -67,6 +70,21 @@ class Institution extends Model
     public function users() 
     {
         return $this->hasManyDeepFromRelations($this->duties(), (new Duty)->users());
+    }
+
+    public function managers()
+    {
+        return GetInstitutionManagers::execute($this);
+    }
+
+    public function related_institution_relationshipables()
+    {
+        return RelationshipService::getRelatedInstitutionRelations($this);
+    }
+
+    public function sharepoint_path()
+    {
+        return SharepointFileService::pathForFileableDriveItem($this);
     }
 
     public function toSearchableArray()

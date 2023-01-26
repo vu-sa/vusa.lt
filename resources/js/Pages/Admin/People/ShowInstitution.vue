@@ -12,10 +12,10 @@
     </template>
     <template #after-heading>
       <InstitutionAvatarGroup :max="7" :users="institution.users" />
-      <template v-if="institution.institutionManagers.length > 0">
-        <NDivider v-if="institution.institutionManagers.length > 0" vertical />
+      <template v-if="institution.managers.length > 0">
+        <NDivider v-if="institution.managers.length > 0" vertical />
         <span class="text-xs text-zinc-500">Admin:</span>
-        <InstitutionAvatarGroup :users="institution.institutionManagers" />
+        <InstitutionAvatarGroup :users="institution.managers" />
       </template>
     </template>
     <template #more-options>

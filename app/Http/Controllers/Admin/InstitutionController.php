@@ -87,17 +87,18 @@ class InstitutionController extends ResourceController
     {
         $this->authorize('view', [Institution::class, $institution, $this->authorizer]);
         
-        $institution->load('padalinys', 'users', 'matters', 'meetings.tasks', 'meetings.comments', 'meetings.files', 'activities.causer');      
-        
-        $institution->users = $institution->users->unique('id')->values();
-        // get duties where belongs to same padalinys as institution, and where has permissions
+        $institution->load('padalinys', 'users', 'matters')->load(['meetings' => function ($query) {
+            $query->with('tasks', 'comments', 'files')->orderBy('start_time', 'asc');
+        }])->load('activities.causer');      
+
 
         return Inertia::render('Admin/People/ShowInstitution', [
             'institution' => [
                 ...$institution->toArray(),
-                'institutionManagers' => GetInstitutionManagers::execute($institution),
-                'relatedInstitutions' => RelationshipService::getRelatedInstitutionRelations($institution),
-                'sharepointPath' => $institution->padalinys ? SharepointFileService::pathForFileableDriveItem($institution) : null,
+                'users' => $institution->users->unique('id')->values(),
+                'managers' => $institution->managers(),
+                'relatedInstitutions' => $institution->related_institution_relationshipables(),
+                'sharepointPath' => $institution->padalinys ? $institution->sharepoint_path() : null,
                 'lastMeeting' => $institution->lastMeeting(),
             ],
             'doingTypes' => Type::where('model_type', Doing::class)->get(['id', 'title']),
