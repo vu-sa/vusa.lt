@@ -4,9 +4,6 @@
       size="small"
       class="my-2 cursor-pointer overflow-hidden shadow-sm"
       style="border-radius: 0.5em"
-      :segmented="{
-        content: 'soft',
-      }"
       hoverable
       as="button"
       ><template #header>{{ doing.title }}</template>
@@ -18,10 +15,12 @@
         ></MoreOptionsButton>
       </template>
 
+      <DoingStateTag :doing="doing" />
+
       <div class="text-xs text-zinc-700 dark:text-zinc-500">
         <div class="flex items-center gap-1">
           <NIcon :depth="3" size="10" :component="CalendarClock24Filled" />
-          <time class="">{{ doing.created_at }}</time>
+          <time class="">{{ formatStaticTime(new Date(doing.date)) }}</time>
         </div>
         <div class="flex gap-2">
           <div class="inline-flex items-center gap-1">
@@ -51,10 +50,12 @@ import {
   PersonChat24Regular,
   Sparkle20Filled,
 } from "@vicons/fluent";
-import { NCard, NIcon, NSpin } from "naive-ui";
+import { NCard, NIcon, NSpin, NTag } from "naive-ui";
 import { computed, ref } from "vue";
 import { router } from "@inertiajs/vue3";
 
+import { formatStaticTime } from "@/Utils/IntlTime";
+import DoingStateTag from "../Tag/DoingStateTag.vue";
 import Icons from "@/Types/Icons/filled";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 
