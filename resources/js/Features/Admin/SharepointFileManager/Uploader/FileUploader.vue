@@ -83,9 +83,9 @@ const submitFullForm = () => {
     onSuccess: () => {
       emit("close");
       fileForm.reset();
+      current.value = 1;
     },
     onFinish: () => {
-      current.value = 1;
       loading.value = false;
     },
   });

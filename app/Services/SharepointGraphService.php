@@ -186,9 +186,12 @@ class SharepointGraphService {
 
     public function uploadDriveItem(string $filePath, $content) : Model\DriveItem 
     {
+        // if file is more than 100 MB, unauthorized error is thrown
+        abort_if(strlen($content) > 64000000, 403, 'Kolkas neleidžiama įkelti didesnių nei 64MB failų');
+        
         // check if file is more than 4MB
         if (strlen($content) > 4000000) {
-            $uploadSession = $this->graph->createRequest("POST", "/drives/{$this->driveId}/root:/{$filePath}:/createUploadSession?\$expand=listItem")
+            $uploadSession = $this->graph->createRequest("POST", "/drives/{$this->driveId}/root:/{$filePath}:/createUploadSession")
                 ->attachBody([
                     'item' => [
                         '@microsoft.graph.conflictBehavior' => 'rename'
@@ -207,6 +210,8 @@ class SharepointGraphService {
                 ->attachBody($content)
                 ->setReturnType(Model\DriveItem::class)
                 ->execute();
+
+            $uploadedDriveItem = $this->getDriveItemByIdWithListItem($uploadedDriveItem->getId());
         } else {
             $uploadedDriveItem = $this->graph->createRequest("PUT", "/drives/{$this->driveId}/root:/{$filePath}:/content?expand=listItem")
                 ->attachBody($content)
