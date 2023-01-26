@@ -57,10 +57,11 @@ class Institution extends Model
         return $this->belongsToMany(Meeting::class);
     }
 
-    // TODO: two separate functions for latest in past, and earliest in future
     public function lastMeeting() : ?Meeting
     {
-        return $this->meetings()->latest()->first();
+        // get earliest in the future, or if none, latest in past meeting
+        return $this->meetings()->where('start_time', '>=', now())->orderBy('start_time', 'asc')->first() 
+            ?? $this->meetings()->where('start_time', '<', now())->orderBy('start_time', 'desc')->first();
     }
 
     public function users() 
