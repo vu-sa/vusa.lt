@@ -1,7 +1,8 @@
 <template>
   <div class="w-48">
     <button
-      class="grid h-48 w-full grid-rows-[7fr_4fr] items-center rounded-lg border shadow-sm transition hover:shadow-md focus:outline-none focus:ring focus:ring-vusa-yellow dark:border-zinc-900 dark:bg-zinc-900 dark:focus:ring-vusa-red"
+      role="button"
+      class="grid h-48 w-full cursor-pointer grid-rows-[7fr_4fr] items-center rounded-lg border p-0 shadow-sm transition hover:shadow-md focus:outline-none focus:ring focus:ring-vusa-yellow dark:border-zinc-900 dark:bg-zinc-900 dark:focus:ring-vusa-red"
       :class="gradientClasses"
       @click="handleFileSelect(file)"
       @dblclick="handleFileDblClick(file)"
@@ -24,7 +25,7 @@
         </FadeTransition>
       </div>
       <div
-        class="flex h-full w-full flex-col justify-center overflow-auto rounded-b-md bg-white dark:bg-zinc-900 dark:text-white"
+        class="flex h-full w-full flex-col justify-center overflow-auto rounded-b-md bg-white text-zinc-800 dark:bg-zinc-900 dark:text-white"
       >
         <span class="break-words px-2 text-sm line-clamp-2">{{
           file.name

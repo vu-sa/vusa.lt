@@ -4,10 +4,10 @@
     :show="active"
     :auto-focus="false"
     :show-mask="false"
+    :mask-closable="false"
     :trap-focus="false"
     placement="right"
     resizable
-    @mask-click="$emit('hide:drawer')"
     @update:show="$emit('hide:drawer')"
   >
     <NDrawerContent closable>
