@@ -1,9 +1,18 @@
 <template>
   <div class="flex flex-col">
-    <EditorContent
-      :editor="editor"
-      class="min-h-[6rem] overflow-y-scroll border bg-white outline-zinc-400 dark:border-zinc-600 dark:bg-zinc-900"
-    />
+    <div
+      class="grid grid-cols-[60px_1fr] overflow-y-scroll rounded-b-md border dark:border-zinc-600"
+    >
+      <div ref="commentContainer" class="flex justify-center">
+        <UserAvatar
+          :size="24"
+          class="sticky top-4 mt-4"
+          :user="$page.props.auth?.user"
+        ></UserAvatar>
+      </div>
+      <EditorContent :editor="editor" />
+      <!-- <NBackTop v-if="commentContainer" :to="commentContainer" /> -->
+    </div>
     <div
       v-if="editor"
       class="border-top-0 flex items-center justify-between gap-2 border-zinc-400 p-4"
@@ -95,13 +104,14 @@ import {
   TextUnderline20Regular,
 } from "@vicons/fluent";
 import { EditorContent, useEditor } from "@tiptap/vue-3";
-import { NButton, NButtonGroup, NIcon, NPopover } from "naive-ui";
-import { onBeforeUnmount, ref, watch } from "vue";
+import { NBackTop, NButton, NButtonGroup, NIcon, NPopover } from "naive-ui";
+import { onBeforeUnmount, ref } from "vue";
 import StarterKit from "@tiptap/starter-kit";
 import TipTapButton from "./TipTap/TipTapButton.vue";
 import TipTapLink from "@tiptap/extension-link";
 import TipTapMarkButton from "./TipTap/TipTapMarkButton.vue";
 import Underline from "@tiptap/extension-underline";
+import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
 
 const props = defineProps<{
   text: string | null;
@@ -109,14 +119,14 @@ const props = defineProps<{
   disabled: boolean;
 }>();
 
-// :disabled="editor?.getHTML() == '<p></p>'"
-
 const emit = defineEmits(["update:text", "submit:comment"]);
+
+const commentContainer = ref<HTMLElement | null>(null);
 
 const editor = useEditor({
   editorProps: {
     attributes: {
-      class: "focus:outline-none min-h-[4rem] p-4",
+      class: "focus:outline-none min-h-[3rem] py-5",
     },
   },
   extensions: [

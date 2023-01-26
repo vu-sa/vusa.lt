@@ -9,7 +9,6 @@
       }"
       hoverable
       as="button"
-      @click="router.visit(route('doings.show', doing.id))"
       ><template #header>{{ doing.title }}</template>
       <template #header-extra>
         <MoreOptionsButton

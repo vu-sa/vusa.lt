@@ -20,7 +20,7 @@
         <DoingForm :doing="doing" @submit="handleSubmit"></DoingForm>
       </CardModal>
     </template>
-    <DoingStatusCard :doing="doing"></DoingStatusCard>
+    <DoingStateCard :doing="doing"></DoingStateCard>
     <template #below>
       <FileManager
         v-if="currentTab === 'Failai'"
@@ -51,7 +51,7 @@ import { useStorage } from "@vueuse/core";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import CommentViewer from "@/Features/Admin/CommentViewer/CommentViewer.vue";
 import DoingForm from "@/Components/AdminForms/DoingForm.vue";
-import DoingStatusCard from "@/Components/Cards/QuickContentCards/DoingStateCard.vue";
+import DoingStateCard from "@/Components/Cards/QuickContentCards/DoingStateCard.vue";
 import FileManager from "@/Features/Admin/SharepointFileManager/Viewer/FileManager.vue";
 import Icons from "@/Types/Icons/filled";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";

@@ -3,8 +3,12 @@
     <NPopover>
       <NCheckboxGroup v-model:value="shownSections">
         <div class="flex flex-col gap-2">
-          <NCheckbox value="Veiksmai" label="Greitieji veiksmai"></NCheckbox>
+          <NCheckbox
+            value="Greitieji veiksmai"
+            label="Greitieji veiksmai"
+          ></NCheckbox>
           <NCheckbox value="Institucijos" label="Tavo institucijos"></NCheckbox>
+          <NCheckbox value="Veiklos" label="Tavo veiklos" />
           <NCheckbox value="Posėdžiai" label="Artėjantys posėdžiai" />
           <NCheckbox
             value="Nuorodos"
@@ -40,7 +44,7 @@
       <h2>Tavo institucijos</h2>
       <div
         v-if="institutions.length > 0"
-        class="relative mt-4 grid w-full grid-cols-ramFill gap-4 overflow-hidden pb-4 transition-transform duration-300 ease-in-out"
+        class="relative mt-4 grid w-full grid-cols-ramFill items-end gap-4 overflow-hidden pb-4 transition-transform duration-300 ease-in-out"
       >
         <InstitutionCard
           v-for="institution in institutions"
@@ -66,6 +70,18 @@
             @click="router.visit(route('meetings.show', meeting.id))"
           ></MeetingCard>
         </template>
+        <p class="hidden first:block">Artėjančių posėdžių nėra</p>
+      </div>
+    </section>
+    <section v-if="shownSections.includes('Veiklos')" class="relative mb-8">
+      <h2>Tavo veiklos</h2>
+      <div class="grid grid-cols-ramFill gap-x-4">
+        <DoingCard
+          v-for="doing in doings"
+          :key="doing.id"
+          :doing="doing"
+          @click="router.visit(route('doings.show', doing.id))"
+        ></DoingCard>
         <p class="hidden first:block">Artėjančių posėdžių nėra</p>
       </div>
     </section>
@@ -113,6 +129,7 @@ import { Settings24Filled } from "@vicons/fluent";
 import { router } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 
+import DoingCard from "@/Components/Cards/DoingCard.vue";
 import InstitutionCard from "@/Components/Cards/InstitutionCard.vue";
 import MeetingCard from "@/Components/Cards/MeetingCard.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
@@ -122,6 +139,7 @@ import QActSurveyButton from "@/Components/Buttons/QActSurveyButton.vue";
 defineProps<{
   institutions: App.Entities.Institution[];
   duties: App.Entities.Duty[];
+  doings: App.Entities.Doing[];
 }>();
 
 const windowOpen = (url: string, target: string) => {
@@ -129,8 +147,8 @@ const windowOpen = (url: string, target: string) => {
 };
 
 const shownSections = useStorage("dashboard-sections", [
+  "Greitieji veiksmai",
   "Institucijos",
-  "Veiksmai",
   "Nuorodos",
 ]);
 </script>

@@ -1,7 +1,7 @@
 <template>
-  <div class="grid w-full grid-rows-[minmax(150px,min-content)_280px]">
+  <div class="grid max-w-3xl grid-rows-[minmax(150px,min-content)_280px]">
     <div
-      class="relative flex rounded-sm border border-zinc-300 px-2 pt-2 dark:border-zinc-700"
+      class="relative flex rounded-t-md border border-b-0 border-zinc-300 px-2 pt-2 dark:border-zinc-700"
     >
       <NScrollbar
         v-if="model?.comments && model.comments.length > 0"
@@ -62,7 +62,6 @@
 <script setup lang="tsx">
 import { NScrollbar, NTag, type ScrollbarInst } from "naive-ui";
 import { formatRelativeTime } from "@/Utils/IntlTime";
-// intellisense hates 'ref' in this file
 import { onUpdated, ref } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 import CommentTipTap from "./CommentTipTap.vue";

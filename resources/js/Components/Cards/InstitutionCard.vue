@@ -3,13 +3,14 @@
     hoverable
     :size="size"
     as="button"
-    class="flex-1 cursor-pointer shadow-sm"
+    class="h-fit flex-1 cursor-pointer shadow-sm"
   >
     <template #cover>
       <img
-        v-if="institution.image_url"
+        v-if="imageLoaded"
         class="h-32 object-cover"
         :src="institution.image_url"
+        @error="imageLoaded = false"
       />
     </template>
     <template #header>
@@ -77,7 +78,7 @@
 <script setup lang="tsx">
 import { Link } from "@inertiajs/vue3";
 import { NButton, NCard, NPopover, NTag } from "naive-ui";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import InstitutionAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
@@ -89,6 +90,8 @@ const props = defineProps<{
   size?: "small" | "medium" | "large";
   duties?: App.Entities.Duty[];
 }>();
+
+const imageLoaded = ref(true);
 
 const institutionDuties = computed(() => {
   return props.duties?.filter((duty) => {

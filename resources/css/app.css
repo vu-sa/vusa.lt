@@ -17,6 +17,22 @@
     border-color: theme('borderColor.DEFAULT');
   }
 
+  ::before,
+  ::after {
+    --tw-content: '';
+  }
+
+  body {
+    margin: 0;
+    line-height: inherit;
+  }
+
+  hr {
+    height: 0; /* 1 */
+    color: inherit; /* 2 */
+    border-top-width: 1px; /* 3 */
+  }
+
   blockquote,
   dl,
   dd,
@@ -41,6 +57,12 @@
   h6 {
     font-size: inherit;
     font-weight: inherit;
+  }
+
+
+  b,
+  strong {
+    font-weight: bolder;
   }
 
   /* ol,

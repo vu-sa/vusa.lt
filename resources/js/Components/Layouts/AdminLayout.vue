@@ -4,7 +4,7 @@
 
   <NLayout class="min-h-screen">
     <nav
-      class="fixed z-50 flex h-16 w-full flex-row justify-between border-b py-2 pr-8 shadow-sm backdrop-blur-sm dark:border-zinc-800"
+      class="bg-inherit/90 fixed z-50 flex h-16 w-full flex-row justify-between border-b py-2 pr-8 shadow-sm backdrop-blur-sm dark:border-zinc-800"
     >
       <div class="invisible">
         <NButton secondary round @click="collapsed = !collapsed">Menu</NButton>

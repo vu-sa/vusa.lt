@@ -34,6 +34,7 @@
     @inertiaHead
 </head>
 
+{{-- TODO: something injects margin-bottom of 8px --}}
 <body class="font-sans antialiased">
     @inertia
 </body>

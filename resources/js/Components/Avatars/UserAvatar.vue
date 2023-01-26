@@ -1,5 +1,6 @@
 <template>
   <NAvatar
+    v-if="user"
     :size="size"
     round
     object-fit="cover"
@@ -20,7 +21,7 @@
 import { NAvatar } from "naive-ui";
 
 defineProps<{
-  user: App.Entities.User;
+  user?: App.Entities.User;
   size?: number;
 }>();
 

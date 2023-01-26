@@ -14,14 +14,14 @@
       title="Keisti statusą"
       @close="showStateChangeModal = false"
     >
-      <div class="not-prose relative min-h-[12rem] w-full">
+      <div class="not-prose relative w-full">
         <label>Komentaras</label>
 
         <CommentTipTap
           v-model:text="commentText"
+          style="max-height: 280px"
           :loading="loading"
           :disabled="false"
-          class="absolute bottom-0 w-full"
           @submit:comment="submitComment"
         ></CommentTipTap>
       </div>
