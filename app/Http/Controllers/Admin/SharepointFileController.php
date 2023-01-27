@@ -171,4 +171,24 @@ class SharepointFileController extends ResourceController
 
         return response()->json($driveItems);
     }
+
+    public function getDriveItemPermissions(Request $request, string $driveItemId)
+    {
+        $sharepointService = new SharepointGraphService();
+
+        $permissions = $sharepointService->getDriveItemPublicLink($driveItemId);
+
+        return response()->json($permissions);
+    }
+
+    public function createPublicPermission(Request $request, string $driveItemId)
+    {
+        // $this->authorize('update', [SharepointFile::class, $this->authorizer]);
+        
+        $sharepointService = new SharepointGraphService();
+
+        $permission = $sharepointService->createPublicPermission($driveItemId);
+
+        return response()->json($permission);
+    }
 }

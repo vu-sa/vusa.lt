@@ -73,5 +73,7 @@ Route::resource('sharepointFiles', SharepointFileController::class);
 // Route::delete('sharepoint/{id}', [SharepointController::class, 'destroyFile'])->name('sharepoint.destroy');
 Route::get('sharepoint/getPotentialFileables', [SharepointFileController::class, 'getPotentialFileables'])->name('sharepoint.getPotentialFileables');
 Route::get('sharepoint/getDriveItems', [SharepointFileController::class, 'getDriveItems'])->name('sharepoint.getDriveItems');
+Route::get('sharepoint/{id}/permissions', [SharepointFileController::class, 'getDriveItemPermissions'])->name('sharepoint.getDriveItemPermissions');
+Route::post('sharepoint/{id}/permissions/createPublic', [SharepointFileController::class, 'createPublicPermission'])->name('sharepoint.createPublicPermission');
 
 Route::post('/logout', [UserController::class, 'logout'])->name('logout');

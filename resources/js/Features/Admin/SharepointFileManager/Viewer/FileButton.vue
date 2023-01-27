@@ -18,7 +18,7 @@
           />
           <NIcon
             v-else
-            class="my-auto"
+            class="my-auto text-zinc-700"
             size="64"
             :component="fileTypeIcon"
           ></NIcon>

@@ -13,14 +13,14 @@
     <NDrawerContent closable>
       <FadeTransition>
         <div
-          class="mt-8 flex flex-col items-center justify-center gap-4 transition"
+          class="mt-4 flex flex-col items-center justify-center gap-4 transition"
         >
           <NIcon class="mr-2" size="96" :component="fileIcon" />
           <span class="text-center text-xl tracking-wide">{{
             file?.name
           }}</span>
           <div class="flex gap-2">
-            <NButton class="mt-4" @click="handleOpen">Atidaryti</NButton>
+            <NButton size="small" @click="handleOpen">Atidaryti</NButton>
             <!-- <NButton
               :loading="loadingDelete"
               type="error"
@@ -29,7 +29,7 @@
               >Ištrinti</NButton
             > -->
           </div>
-          <NTable class="mt-4">
+          <NTable>
             <tbody class="text-xs">
               <tr>
                 <td class="font-bold">Failo data</td>
@@ -39,10 +39,10 @@
                   }}
                 </td>
               </tr>
-              <tr>
+              <!-- <tr>
                 <td class="font-bold">Dydis</td>
                 <td>{{ fileSize(file?.size) }}</td>
-              </tr>
+              </tr> -->
               <tr>
                 <td class="font-bold">Tipas</td>
                 <td>
@@ -57,6 +57,27 @@
                 <td class="font-bold">Aprašymas</td>
                 <td>
                   {{ file?.listItem?.fields?.properties?.Description0 }}
+                </td>
+              </tr>
+              <tr>
+                <td class="font-bold">Vieša nuoroda</td>
+                <td>
+                  <NSpin size="small" :show="loadingPublicPermission">
+                    <a
+                      v-if="publicPermission?.link?.webUrl"
+                      target="_blank"
+                      :href="publicPermission?.link?.webUrl"
+                      class="line-clamp-1"
+                    >
+                      {{ publicPermission?.link?.webUrl }}
+                    </a>
+                    <NButton
+                      v-else-if="!loadingPublicPermission"
+                      size="tiny"
+                      @click="createPublicPermission"
+                      >Sukurti</NButton
+                    >
+                  </NSpin>
                 </td>
               </tr>
             </tbody>
@@ -80,15 +101,18 @@ import {
   NDrawerContent,
   NEllipsis,
   NIcon,
+  NSpin,
   NTable,
   NTag,
 } from "naive-ui";
 import { computed, ref, watch } from "vue";
+import { useAxios } from "@vueuse/integrations/useAxios";
+import { useStorage } from "@vueuse/core";
+import type { Permission } from "@microsoft/microsoft-graph-types";
 // import { router } from "@inertiajs/vue3";
 
 import { fileSize } from "@/Utils/Calc";
 import { formatStaticTime } from "@/Utils/IntlTime";
-import { useStorage } from "@vueuse/core";
 import CommentPart from "@/Features/Admin/CommentViewer/CommentViewer.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
@@ -101,12 +125,45 @@ const props = defineProps<{
 
 const active = computed(() => !!props.file);
 const currentCommentText = ref("");
+const publicPermission = ref<Permission | null | undefined>(null);
+const loadingPublicPermission = ref(false);
 const width = useStorage("file-drawer-width", 350);
 
 watch(width, (val) => {
   if (val < 300) width.value = 300;
   if (val > 600) width.value = 600;
 });
+
+watch(
+  () => props.file?.id,
+  async (val) => {
+    publicPermission.value = null;
+
+    if (val) {
+      loadingPublicPermission.value = true;
+
+      let { data, isFinished } = await useAxios<Permission>(
+        route("sharepoint.getDriveItemPermissions", props.file?.id)
+      );
+      loadingPublicPermission.value = !isFinished;
+      publicPermission.value = data.value;
+      console.log(data.value);
+    }
+  }
+);
+
+const createPublicPermission = async () => {
+  loadingPublicPermission.value = true;
+
+  let { data, isFinished } = await useAxios<Permission>(
+    route("sharepoint.createPublicPermission", props.file?.id),
+    {
+      method: "POST",
+    }
+  );
+  loadingPublicPermission.value = !isFinished;
+  publicPermission.value = data.value;
+};
 
 const fileIcon = computed(() => {
   if (

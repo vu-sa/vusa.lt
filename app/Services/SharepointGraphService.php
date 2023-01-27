@@ -182,7 +182,53 @@ class SharepointGraphService {
 
         return $this->parseDriveItems($driveItems);
     }
+
+    protected function getDriveItemPermissions(string $driveItemId) : array
+    {
+        $permissions = $this->graph->createRequest("GET", "/drives/{$this->driveId}/items/{$driveItemId}/permissions")
+            ->setReturnType(Model\Permission::class)
+            ->execute();
+
+        return $permissions;
+    }
     
+    /**
+     * parsePermissionsForPublicLink
+     *
+     * @param  array<Model\Permission> $permissions
+     * @return ?Model\Permission
+     */
+    protected function parsePermissionsForPublicLink(array $permissions) : ?Model\Permission
+    {
+        $permissions = collect($permissions);
+        
+        // filter collection for public link. public permissions have a link property which has scope to anonymous
+        $publicLinkPermission = $permissions->filter(function($permission) {
+            return $permission->getLink() && $permission->getLink()->getScope() == 'anonymous';
+        })->first();
+
+        return $publicLinkPermission;
+    }
+
+    public function getDriveItemPublicLink(string $driveItemId) : ?Model\Permission
+    {
+        $permissions = $this->getDriveItemPermissions($driveItemId);
+
+        return $this->parsePermissionsForPublicLink($permissions);
+    }
+
+    public function createPublicPermission(string $driveItemId) : ?Model\Permission
+    {
+        $permission = $this->graph->createRequest("POST", "/drives/{$this->driveId}/items/{$driveItemId}/createLink")
+            ->attachBody([
+                'type' => 'edit',
+                'scope' => 'anonymous'
+            ])
+            ->setReturnType(Model\Permission::class)
+            ->execute();
+
+        return $permission;
+    }
 
     public function uploadDriveItem(string $filePath, $content) : Model\DriveItem 
     {
@@ -264,6 +310,7 @@ class SharepointGraphService {
                         'properties' => $driveItem->getListItem()?->getFields()->getProperties(),
                     ],
                 ],
+                'permissions' => $driveItem->getPermissions(),
                 'thumbnails' => collect($driveItem->getThumbnails())->map(function ($thumbnail) {
                     return [
                         'large' => [
