@@ -92,14 +92,12 @@ declare namespace App.Models {
     goals?: Array<App.Models.Goal> | null;
     matters?: Array<App.Models.Matter> | null;
     types?: Array<App.Models.Type> | null;
-    tasks?: Array<App.Models.Task> | null;
     users?: Array<App.Models.User> | null;
     padaliniai?: any | null;
     doables_count?: number | null;
     goals_count?: number | null;
     matters_count?: number | null;
     types_count?: number | null;
-    tasks_count?: number | null;
     users_count?: number | null;
   }
 

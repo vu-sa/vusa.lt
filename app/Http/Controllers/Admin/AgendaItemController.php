@@ -8,6 +8,7 @@ use App\Http\Controllers\ResourceController;
 use App\Http\Requests\StoreAgendaItemsRequest;
 use App\Models\Meeting;
 use App\Services\TaskCreator;
+use App\Services\TaskService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -50,19 +51,16 @@ class AgendaItemController extends ResourceController
             }
 
             if ($request->safe()->moreAgendaItemsUndefined) {
-                // TODO: nebūtinai bus first
                 $meeting = Meeting::find($request->safe()->meeting_id);
                 
                 $institution = $meeting->institutions->first();
                 
                 $institutionManagers = GetInstitutionManagers::execute($institution);
-
                 // get institution users and merge with institution managers
                 $institutionUsers = $institution->users;
+                $institutionAssociatedUsers = $institutionManagers->merge($institutionUsers);
 
-                $institutionManagers = $institutionManagers->merge($institutionUsers);
-
-                TaskCreator::createMoreAgendaItemsUndefined($institutionManagers, $meeting);
+                TaskService::storeTask('Sutvarkyti darbotvarkės klausimus', $meeting, $institutionAssociatedUsers);
             }
         }
 

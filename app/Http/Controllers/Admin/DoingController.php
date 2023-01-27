@@ -55,9 +55,22 @@ class DoingController extends ResourceController
     public function store(StoreDoingRequest $request)
     { 
         $doing = Doing::create
-            ($request->safe()->only('title', 'date'));
+            ($request->safe()->only('title', 'date') + [
+                // ! somehow this is needed to make the ulid work, otherwise throws an error, trait doesn't work
+                'id' => (string) Str::ulid(),
+                'state' => \App\States\Doing\Draft::$name,
+            ]);
         
         $doing->users()->sync(Auth::id());
+
+        $taskDueDate = $request->safe()->only('date')['date'];
+
+        $doingCreationTasks = [['name' => 'Išgryninti veiklos tikslą su koordinatoriumi', 'due_date' => $taskDueDate], 
+            ['name' => 'Įkelti reikalingus dokumentus į failų skiltį', 'due_date' => $taskDueDate], 
+            ['name' => 'Pateikti peržiūrai', 'due_date' => $taskDueDate]
+        ];
+
+        $doing->storeTasks($doingCreationTasks, $doing->users);
 
         return redirect()->route('doings.show', $doing)->with('success', 'Veiksmas sukurtas!');
     }
@@ -73,7 +86,7 @@ class DoingController extends ResourceController
 
         $modelName = Str::of(class_basename($this))->camel()->plural();
 
-        $doing->load('activities.causer', 'tasks', 'comments', 'doables', 'users');
+        $doing->load('activities.causer', 'tasks.users', 'comments', 'doables', 'users');
 
         return Inertia::render('Admin/Representation/ShowDoing', [
             'doing' => [

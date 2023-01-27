@@ -7,6 +7,7 @@ use App\Models\Comment;
 use App\Models\Pivots\Doable;
 use App\Models\Traits\HasDecisions;
 use App\Models\Traits\HasSharepointFiles;
+use App\Models\Traits\HasTasks;
 use App\States\Doing\DoingState;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -16,11 +17,10 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\ModelStates\HasStates;
 use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
-use Illuminate\Support\Str;
 
 class Doing extends Model 
 {
-    use HasFactory, HasComments, HasDecisions, HasRelationships, HasSharepointFiles, HasStates, HasUlids, LogsActivity, SoftDeletes;
+    use HasFactory, HasComments, HasDecisions, HasRelationships, HasSharepointFiles, HasStates, HasTasks, HasUlids, LogsActivity, SoftDeletes;
 
     protected $with = ['types'];
 
@@ -53,11 +53,6 @@ class Doing extends Model
     public function types()
     {
         return $this->morphToMany(Type::class, 'typeable');
-    }
-
-    public function tasks()
-    {
-        return $this->morphMany(Task::class, 'taskable');
     }
 
     public function users()
