@@ -5,7 +5,7 @@
         :show-alert="showAlert"
         @alert-closed="showAlert = false"
       >
-        <p class="inline-flex items-center">
+        <p class="mt-0 inline-flex items-center">
           <span>Kiekvienas posėdis turi</span>
           <ModelChip>
             <template #icon
@@ -21,46 +21,43 @@
       </SuggestionAlert>
     </FadeTransition>
     <NGrid cols="1">
-      <NFormItemGi path="newMatters">
+      <NFormItemGi path="newAgendaTitles">
         <template #label>
-          <span class="inline-flex items-center gap-1"
-            ><NIcon :component="IconsFilled.AGENDA_ITEM"></NIcon>Nauji svarstomi
+          <span class="mb-2 inline-flex items-center gap-1"
+            ><NIcon :component="IconsFilled.AGENDA_ITEM"></NIcon>Darbotvarkės
             klausimai</span
           >
         </template>
-        <NSelect
+        <NDynamicInput
           v-model:value="agendaItemForm.agendaItemTitles"
-          placeholder="Studijų tinklelio peržiūra"
-          filterable
-          multiple
-          tag
-          ><template #action>
-            <span
-              class="prose-sm prose-gray text-xs text-zinc-400 dark:prose-invert"
-              >Gali naudoti ir savo klausimą! Įrašyk +
-              <NTag size="tiny">Enter</NTag></span
-            >
-          </template></NSelect
+          show-sort-button
         >
-        <NPopover>
-          <template #trigger>
-            <NCheckbox
-              v-model:checked="agendaItemForm.moreAgendaItemsUndefined"
-              class="ml-4 w-fit"
-              ><span class="whitespace-nowrap">ir kiti...</span></NCheckbox
-            >
+          <template #create-button-default>Sukurti</template>
+          <template #default="{ index, value }">
+            <div class="flex w-full items-center gap-1">
+              <span class="ml-1 w-7">{{ `${index + 1}.` }}</span>
+              <NInput
+                v-model:value="agendaItemForm.agendaItemTitles[index]"
+                :placeholder="`Darbotvarkės klausimas nr. ${index + 1}`"
+                @keydown.enter.prevent
+              ></NInput>
+            </div>
           </template>
-          <strong>„ir kiti...“</strong> – leidžia suprasti, kad yra kitų
-          svarstomų klausimų, kuriuos sunku apibrėžti.
-        </NPopover>
+        </NDynamicInput>
       </NFormItemGi>
-      <!-- <NFormItemGi label="Aprašymas" path="description">
-        <NInput
-          v-model:value="mattersForm.newMatterDescription"
-          type="textarea"
-          placeholder="Aprašykite klausimo (-ų) kontekstą, jeigu to reikia..."
-        ></NInput>
-      </NFormItemGi> -->
+      <NFormItemGi>
+        <template #label>
+          <span class="inline-flex items-center gap-1"
+            ><NIcon :component="DocumentSettings20Filled"></NIcon>Papildoma
+            informacija</span
+          >
+        </template>
+        <NCheckbox v-model:checked="agendaItemForm.moreAgendaItemsUndefined"
+          ><span class="whitespace-nowrap"
+            >Vėliau gali atsirasti papildomų klausimų</span
+          ></NCheckbox
+        >
+      </NFormItemGi>
       <NFormItemGi :show-label="false">
         <NButton
           :loading="loading"
@@ -78,10 +75,12 @@
 import {
   NButton,
   NCheckbox,
+  NDynamicInput,
   NForm,
   NFormItemGi,
   NGrid,
   NIcon,
+  NInput,
   NPopover,
   NSelect,
   NTag,
@@ -90,6 +89,7 @@ import {
 import { useForm } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 
+import { DocumentSettings20Filled } from "@vicons/fluent";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import IconsFilled from "@/Types/Icons/filled";
 import IconsRegular from "@/Types/Icons/regular";
