@@ -19,13 +19,13 @@
 <script setup lang="tsx">
 import {
   type DataTableColumns,
+  NButton,
   NCheckbox,
   NDataTable,
   NIcon,
-  NTag,
 } from "naive-ui";
+import { Link, router, usePage } from "@inertiajs/vue3";
 import { ref } from "vue";
-import { router, usePage } from "@inertiajs/vue3";
 
 import IconsFilled from "@/Types/Icons/filled";
 import IconsRegular from "@/Types/Icons/regular";
@@ -77,19 +77,23 @@ const columns: () => DataTableColumns<App.Entities.Task> = () => [
     title: "Subjektas",
     key: "subject",
     render(row) {
+      let modelType = row.taskable_type.split("\\").pop() + "s";
+
       return (
-        <NTag bordered={false} round size="small">
-          {{
-            default: () => [
-              <span>
-                {row.taskable?.title ??
-                  row.taskable?.name ??
-                  row.taskable?.start_time}
-              </span>,
-            ],
-            icon: () => <NIcon component={iconComponent(row)}></NIcon>,
-          }}
-        </NTag>
+        <Link href={route(`${modelType.toLowerCase()}.show`, row.taskable_id)}>
+          <NButton secondary round size="tiny">
+            {{
+              default: () => [
+                <span>
+                  {row.taskable?.title ??
+                    row.taskable?.name ??
+                    row.taskable?.start_time}
+                </span>,
+              ],
+              icon: () => <NIcon component={iconComponent(row)}></NIcon>,
+            }}
+          </NButton>
+        </Link>
       );
     },
   },

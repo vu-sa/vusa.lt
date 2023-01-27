@@ -7,12 +7,15 @@
       :meeting="meeting"
       @click="router.visit(route('meetings.show', meeting.id))"
     ></MeetingCard>
-    <NewGridItemButton
-      v-if="institution"
-      :icon="AddCircle24Filled"
-      @click="showModal = true"
-    >
-    </NewGridItemButton>
+    <template v-if="institution">
+      <NewGridItemButton :icon="AddCircle24Filled" @click="showModal = true">
+      </NewGridItemButton>
+      <NewMeetingModal
+        :institution="institution"
+        :show-modal="showModal"
+        @close="showModal = false"
+      ></NewMeetingModal>
+    </template>
   </div>
 </template>
 
@@ -23,6 +26,7 @@ import { router } from "@inertiajs/vue3";
 
 import MeetingCard from "@/Components/Cards/MeetingCard.vue";
 import NewGridItemButton from "../Buttons/NewGridItemButton.vue";
+import NewMeetingModal from "../Modals/NewMeetingModal.vue";
 
 defineProps<{
   meetings: App.Entities.Meeting[];

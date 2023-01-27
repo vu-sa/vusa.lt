@@ -34,9 +34,14 @@
     </template>
     <p v-else>Nėra užfiksuoto jokio posėdžio. 😢</p>
     <template #action-button>
+      <NewMeetingButton @click="showModal = true" />
       <NMessageProvider
-        ><NewMeetingButton :institution="institution"
-      /></NMessageProvider>
+        ><NewMeetingModal
+          :institution="institution"
+          :show-modal="showModal"
+          @close="showModal = false"
+        ></NewMeetingModal>
+      </NMessageProvider>
     </template>
   </QuickContentCard>
 </template>
@@ -45,10 +50,11 @@
 import { CalendarClock20Regular } from "@vicons/fluent";
 import { Link } from "@inertiajs/vue3";
 import { NIcon, NMessageProvider, NNumberAnimation } from "naive-ui";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import { formatStaticTime, getDaysDifference } from "@/Utils/IntlTime";
 import NewMeetingButton from "@/Components/Buttons/NewMeetingButton.vue";
+import NewMeetingModal from "@/Components/Modals/NewMeetingModal.vue";
 import QuickContentCard from "@/Components/Cards/QuickContentCards/QuickContentCard.vue";
 
 const props = defineProps<{
@@ -57,13 +63,13 @@ const props = defineProps<{
   lastMeeting?: App.Entities.Meeting;
 }>();
 
+const showModal = ref(false);
+
 const daysDifference = computed(() => {
   return props.lastMeeting
     ? getDaysDifference(props.lastMeeting.start_time)
     : undefined;
 });
-
-console.log(daysDifference.value);
 
 // check if daysDifference is in future
 const lastMeetinginFuture = computed(() => {

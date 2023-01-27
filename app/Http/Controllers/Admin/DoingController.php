@@ -86,7 +86,9 @@ class DoingController extends ResourceController
 
         $modelName = Str::of(class_basename($this))->camel()->plural();
 
-        $doing->load('activities.causer', 'tasks.users', 'comments', 'doables', 'users');
+        $doing->load('activities.causer', 'comments', 'doables', 'users')->load(['tasks' => function ($query) {
+            $query->with('users', 'taskable');
+        }]);
 
         return Inertia::render('Admin/Representation/ShowDoing', [
             'doing' => [
