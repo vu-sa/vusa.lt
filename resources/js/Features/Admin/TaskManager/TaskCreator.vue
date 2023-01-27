@@ -39,6 +39,7 @@
               :check-strategy="'child'"
               :options="institutions"
               expand-trigger="hover"
+              :filter="filter"
               filterable
               :max-tag-count="8"
               clearable
@@ -63,6 +64,7 @@
 
 <script setup lang="tsx">
 import {
+  type CascaderOption,
   type FormInst,
   NButton,
   NCascader,
@@ -105,16 +107,15 @@ const getUsers = () => {
     router.reload({
       only: ["taskableInstitutions"],
       preserveState: true,
-      onBefore: () => {
-        console.log("before");
-      },
       onSuccess: (page) => {
-        console.log(page.props);
         institutions.value = parseInstitutions(page.props.taskableInstitutions);
         disabled.value = false;
-        console.log(institutions.value);
       },
     });
+};
+
+const filter = (pattern: string, option: CascaderOption) => {
+  return option.label?.toLowerCase().includes(pattern.toLowerCase());
 };
 
 const rules = {
