@@ -57,7 +57,7 @@ class DoingController extends ResourceController
         $doing = Doing::create
             ($request->safe()->only('title', 'date') + [
                 // ! somehow this is needed to make the ulid work, otherwise throws an error, trait doesn't work
-                'id' => (string) Str::ulid(),
+                'id' => (string) Str::lower(Str::ulid()),
                 'state' => \App\States\Doing\Draft::$name,
             ]);
         
