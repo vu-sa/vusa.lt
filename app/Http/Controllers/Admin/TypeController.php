@@ -89,16 +89,11 @@ class TypeController extends ResourceController
         $this->authorize('update', [Type::class, $type, $this->authorizer]);
         
         $sharepointFiles = [];
-
-        if ($type->files->count() > 0) {
-            $graph = new SharepointAppGraph();
-        
-            $sharepointFiles = $graph->collectSharepointFiles($type->files);
-        }
         
         return Inertia::render('Admin/ModelMeta/EditType', [
             'contentType' => $type->toArray() + ['sharepointFiles' => $sharepointFiles],
             'contentTypes' => Type::select('id', 'title', 'model_type')->get(),
+            'sharepointPath' => $type->sharepoint_path(),
         ]);
     }
 

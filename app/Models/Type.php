@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Traits\HasContentRelationships;
 use App\Models\Traits\HasSharepointFiles;
+use App\Services\ResourceServices\SharepointFileService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Activitylog\LogOptions;
 use Illuminate\Database\Eloquent\Model;
@@ -39,5 +40,10 @@ class Type extends Model
     public function doings()
     {
         return $this->morphedByMany(Doing::class, 'typeable');
+    }
+
+    public function sharepoint_path()
+    {
+        return SharepointFileService::pathForFileableDriveItem($this);
     }
 }

@@ -12,13 +12,13 @@
       >
         <FadeTransition mode="out-in">
           <img
-            v-if="file.thumbnails?.[0]?.large.url && showThumbnail"
+            v-if="file.thumbnails?.[0]?.large?.url && showThumbnail"
             class="h-full w-full rounded-t-md object-cover object-top"
             :src="file.thumbnails?.[0]?.large.url"
           />
           <NIcon
             v-else
-            class="my-auto text-zinc-700"
+            class="my-auto text-zinc-700 dark:text-zinc-200"
             size="64"
             :component="fileTypeIcon"
           ></NIcon>
