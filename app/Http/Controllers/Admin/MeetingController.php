@@ -73,7 +73,9 @@ class MeetingController extends ResourceController
     { 
         $this->authorize('view', [Meeting::class, $meeting, $this->authorizer]);
         
-        $meeting->load('institutions', 'activities.causer', 'files', 'comments', 'agendaItems', 'tasks.taskable', 'tasks.users');
+        $meeting->load('institutions', 'activities.causer', 'files', 'comments', 'agendaItems')->load(['tasks' => function ($query) {
+            $query->with('users', 'taskable');
+        }]);
 
         // show meeting
         return Inertia::render('Admin/Representation/ShowMeeting', [

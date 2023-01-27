@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasSharepointFiles;
+use App\Models\Traits\HasTasks;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,7 +16,7 @@ use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Meeting extends Model
 {
-    use HasFactory, HasComments, HasSharepointFiles, HasUlids, HasRelationships, LogsActivity, SoftDeletes;
+    use HasFactory, HasComments, HasSharepointFiles, HasTasks, HasUlids, HasRelationships, LogsActivity, SoftDeletes;
 
     protected $guarded = [];
 
@@ -41,11 +42,6 @@ class Meeting extends Model
     public function institutions()
     {
         return $this->belongsToMany(Institution::class);
-    }
-
-    public function tasks()
-    {
-        return $this->morphMany(Task::class, 'taskable');
     }
 
     public function comments()

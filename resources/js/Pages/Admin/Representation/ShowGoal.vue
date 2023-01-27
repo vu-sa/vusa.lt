@@ -3,6 +3,9 @@
     :model="goal"
     :title="goal.title"
     :breadcrumb-options="breadcrumbItems"
+    :related-models="relatedModels"
+    :current-tab="currentTab"
+    @change:tab="currentTab = $event"
   >
     <template #more-options>
       <MoreOptionsButton
@@ -35,6 +38,19 @@
     >
       <GoalForm :goal="goal" @form-success="showModal = false" />
     </CardModal>
+    <template #below>
+      <CommentViewer
+        v-if="currentTab === 'Komentarai'"
+        class="mt-auto h-min"
+        :commentable_type="'goal'"
+        :model="goal"
+      />
+      <TaskManager
+        v-else-if="currentTab === 'Užduotys'"
+        :taskable="{ id: goal.id, type: 'App\\Models\\Goal' }"
+        :tasks="goal.tasks"
+      />
+    </template>
   </ShowPageLayout>
 </template>
 
@@ -43,7 +59,9 @@ import { NIcon } from "naive-ui";
 import { computed, ref } from "vue";
 import { router } from "@inertiajs/vue3";
 
+import { useStorage } from "@vueuse/core";
 import CardModal from "@/Components/Modals/CardModal.vue";
+import CommentViewer from "@/Features/Admin/CommentViewer/CommentViewer.vue";
 import FilterPopselect from "@/Components/Buttons/FilterPopselect.vue";
 import GoalForm from "@/Components/AdminForms/GoalForm.vue";
 import Icons from "@/Types/Icons/filled";
@@ -51,6 +69,7 @@ import MatterCard from "@/Components/Cards/MatterCard.vue";
 import ModelChip from "@/Components/Chips/ModelChip.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
+import TaskManager from "@/Features/Admin/TaskManager/TaskManager.vue";
 import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 
 const props = defineProps<{
@@ -72,6 +91,25 @@ const breadcrumbItems: BreadcrumbOption[] = [
   {
     label: props.goal.title,
     icon: Icons.GOAL,
+  },
+];
+
+const currentTab = useStorage("show-goal-tab", "Komentarai");
+
+const relatedModels = [
+  // {
+  //   name: "Failai",
+  //   icon: Icons.SHAREPOINT_FILE,
+  // },
+  {
+    name: "Komentarai",
+    icon: Icons.COMMENT,
+    count: props.goal.comments?.length,
+  },
+  {
+    name: "Užduotys",
+    icon: Icons.TASK,
+    count: props.goal.tasks?.length,
   },
 ];
 

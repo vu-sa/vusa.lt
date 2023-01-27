@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Models\Pivots\Doable;
+use App\Models\Traits\HasComments;
+use App\Models\Traits\HasTasks;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +14,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Goal extends Model
 {
-    use HasFactory, HasUlids, SoftDeletes, LogsActivity;
+    use HasComments, HasFactory, HasTasks, HasUlids, SoftDeletes, LogsActivity;
 
     protected $guarded = [];
 

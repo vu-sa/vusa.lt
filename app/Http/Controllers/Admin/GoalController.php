@@ -71,7 +71,9 @@ class GoalController extends ResourceController
     {
         $this->authorize('view', [Goal::class, $goal, $this->authorizer]);
         
-        $goal->load('matters.doings', 'matters.institutions:id,name', 'activities.causer');
+        $goal->load('matters.doings', 'matters.institutions:id,name', 'activities.causer', 'comments')->load(['tasks' => function ($query) {
+            $query->with('users', 'taskable');
+        }]);
 
         $institutions = $goal->matters->pluck('institutions')->flatten()->unique('id');
 
