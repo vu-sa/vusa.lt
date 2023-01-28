@@ -10,6 +10,7 @@ use App\Services\ResourceServices\SharepointFileableService;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Services\SharepointGraphService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 class SharepointFileController extends ResourceController
@@ -194,6 +195,11 @@ class SharepointFileController extends ResourceController
 
         $types = $fileable->types;
 
+        // types array to string
+        $types_string = $types->map(function ($type) {
+            return $type->id;
+        })->implode(',');
+
         $sharepointService = new SharepointGraphService();
 
         // get all types paths into one array
@@ -205,7 +211,9 @@ class SharepointFileController extends ResourceController
             return;
         }
 
-        $driveItems = $sharepointService->getDriveItemsChildrenByPaths($paths);
+        $driveItems = Cache::remember('sharepoint_drive_items_' . $types_string, 3600, function () use ($sharepointService, $paths) {
+            return $sharepointService->getDriveItemsChildrenByPaths($paths);
+        });
 
         return response()->json($driveItems);
     }
