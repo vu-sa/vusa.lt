@@ -17,7 +17,7 @@ declare namespace App.Entities {
       | "approved"
       | "pending_completion"
       | "completed"
-      | "canceled";
+      | "cancelled";
   }
   export type Dutiable = App.Models.Pivots.Dutiable;
 

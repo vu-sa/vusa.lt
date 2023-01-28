@@ -195,10 +195,11 @@ const doingStateDescriptions: Record<
     borderColorClass: "border-green-500",
     icon: CheckmarkCircle24Regular,
   },
-  canceled: {
+  cancelled: {
     title: "Atšauktas",
     description: <span>Veiksmas atšauktas.</span>,
     borderColorClass: "border-red-500",
+    icon: ArrowExportLtr24Regular,
   },
 };
 

@@ -74,6 +74,7 @@ Route::resource('sharepointFiles', SharepointFileController::class);
 Route::get('sharepoint/getPotentialFileables', [SharepointFileController::class, 'getPotentialFileables'])->name('sharepoint.getPotentialFileables');
 Route::get('sharepoint/getDriveItems', [SharepointFileController::class, 'getDriveItems'])->name('sharepoint.getDriveItems');
 Route::get('sharepoint/{id}/permissions', [SharepointFileController::class, 'getDriveItemPermissions'])->name('sharepoint.getDriveItemPermissions');
+Route::get('sharepoint/{type}/{id}', [SharepointFileController::class, 'getTypesDriveItems'])->name('sharepoint.getTypesDriveItems');
 Route::post('sharepoint/{id}/permissions/createPublic', [SharepointFileController::class, 'createPublicPermission'])->name('sharepoint.createPublicPermission');
 
 Route::post('/logout', [UserController::class, 'logout'])->name('logout');

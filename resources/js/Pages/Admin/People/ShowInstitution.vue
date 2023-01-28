@@ -36,11 +36,22 @@
         :institution="institution"
         :meetings="institution.meetings"
       ></MeetingsTabPane>
-      <FileManager
-        v-else-if="currentTab === 'Failai'"
-        :starting-path="institution.sharepointPath"
-        :fileable="{ ...institution, type: 'Institution' }"
-      ></FileManager>
+      <div v-else-if="currentTab === 'Failai'">
+        <Suspense v-if="institution.types.length > 0">
+          <SimpleFileViewer
+            :fileable="{ id: institution.id, type: 'Institution' }"
+          ></SimpleFileViewer>
+          <template #fallback>
+            <div class="flex h-24 items-center justify-center">
+              Kraunami susiję failai...
+            </div>
+          </template>
+        </Suspense>
+        <FileManager
+          :starting-path="institution.sharepointPath"
+          :fileable="{ ...institution, type: 'Institution' }"
+        ></FileManager>
+      </div>
       <MattersCardGrid
         v-else-if="currentTab === 'Svarstomi klausimai'"
         :institution="institution"
@@ -66,6 +77,7 @@ import InstitutionAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import LastMeetingCard from "@/Components/Cards/QuickContentCards/LastMeetingCard.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
+import SimpleFileViewer from "@/Features/Admin/SharepointFileManager/Viewer/SimpleFileViewer.vue";
 import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 
 const props = defineProps<{

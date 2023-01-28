@@ -1,9 +1,9 @@
 <template>
-  <div class="w-48">
+  <div :class="[small ? 'w-28' : 'w-48']">
     <button
       role="button"
-      class="grid h-48 w-full cursor-pointer grid-rows-[7fr_4fr] items-center rounded-lg border p-0 shadow-sm transition hover:shadow-md focus:outline-none focus:ring focus:ring-vusa-yellow dark:border-zinc-900 dark:bg-zinc-900 dark:focus:ring-vusa-red"
-      :class="gradientClasses"
+      class="grid w-full cursor-pointer grid-rows-[7fr_4fr] items-center rounded-lg border p-0 shadow-sm transition hover:shadow-md focus:outline-none focus:ring focus:ring-vusa-yellow dark:border-zinc-900 dark:bg-zinc-900 dark:focus:ring-vusa-red"
+      :class="gradientClasses.concat([small ? 'h-28' : 'h-48'])"
       @click="handleFileSelect(file)"
       @dblclick="handleFileDblClick(file)"
     >
@@ -19,7 +19,7 @@
           <NIcon
             v-else
             class="my-auto text-zinc-700 dark:text-zinc-200"
-            size="64"
+            :size="small ? 30 : 56"
             :component="fileTypeIcon"
           ></NIcon>
         </FadeTransition>
@@ -27,9 +27,11 @@
       <div
         class="flex h-full w-full flex-col justify-center overflow-auto rounded-b-md bg-white text-zinc-800 dark:bg-zinc-900 dark:text-white"
       >
-        <span class="break-words px-2 text-sm line-clamp-2">{{
-          file.name
-        }}</span>
+        <span
+          :class="[small ? 'text-xs' : 'text-sm']"
+          class="break-words px-2 line-clamp-2"
+          >{{ file.name }}</span
+        >
       </div>
     </button>
     <span
@@ -49,6 +51,7 @@ import type { DriveItem } from "@microsoft/microsoft-graph-types";
 
 const props = defineProps<{
   file: DriveItem;
+  small?: boolean;
   showThumbnail: boolean;
 }>();
 
@@ -59,14 +62,24 @@ const gradientClasses = computed(() => {
     props.file.listItem?.fields?.properties?.Type ===
     "Veiklą reglamentuojantys dokumentai"
   ) {
-    return "from-zinc-200 subtle-gray-gradient bg-gradient-to-b";
+    return ["from-zinc-200", "subtle-gray-gradient", "bg-gradient-to-b"];
   }
 
   if (props.file.listItem?.fields?.properties?.Type === "Metodinė medžiaga") {
-    return "from-vusa-yellow/30 to-white dark:from-vusa-red/60 dark:to-zinc-700/80 bg-gradient-to-b";
+    return [
+      "from-vusa-yellow/30",
+      "to-white",
+      "dark:from-vusa-red/60",
+      "dark:to-zinc-700/80",
+      "bg-gradient-to-b",
+    ];
   }
 
-  return "subtle-gray-gradient dark:from-zinc-800/90 dark:to-zinc-700/90";
+  return [
+    "subtle-gray-gradient",
+    "dark:from-zinc-800/90",
+    "dark:to-zinc-700/90",
+  ];
 });
 
 const fileTypeIcon = computed(() => {

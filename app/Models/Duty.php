@@ -18,6 +18,8 @@ class Duty extends Model implements AuthorizableContract
 {
     use HasFactory, Authorizable, HasRoles, HasRelationships, LogsActivity, HasUlids, SoftDeletes;
     
+    protected $with = ['types'];
+    
     protected $casts = [
         'extra_attributes' => 'array',
     ];

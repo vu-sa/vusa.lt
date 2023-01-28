@@ -161,7 +161,7 @@ class SharepointGraphService {
                 return [
                     'id' => $id,
                     'method' => 'GET',
-                    'url' => "/drives/{$this->driveId}/root:/{$path}:/children?\$expand=listItem"
+                    'url' => "/drives/{$this->driveId}/root:/{$path}:/children?\$expand=listItem,thumbnails"
                 ];
             })->values()->toArray()
         ];
@@ -300,6 +300,7 @@ class SharepointGraphService {
                 })->first(),
                 'name' => $driveItem->getName(),
                 'file' => $driveItem->getFile()?->getProperties(),
+                // if driveitem is a file, get content
                 'folder' => $driveItem->getFolder()?->getProperties(),
                 'size' => $driveItem->getSize(),
                 'createdDateTime' => $driveItem->getCreatedDateTime(),

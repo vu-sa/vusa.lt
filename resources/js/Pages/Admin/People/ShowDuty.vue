@@ -56,6 +56,19 @@
         </tbody>
       </NTable>
       <p v-else>Nėra duomenų apie anksčiau ėjusius (-as) šias pareigas.</p>
+      <div v-if="duty.types && duty.types.length > 0">
+        <NDivider />
+        <Suspense>
+          <SimpleFileViewer
+            :fileable="{ id: duty.id, type: 'Doing' }"
+          ></SimpleFileViewer>
+          <template #fallback>
+            <div class="flex h-24 items-center justify-center">
+              Kraunami susiję failai...
+            </div>
+          </template>
+        </Suspense>
+      </div>
     </template>
     <template #below> </template>
   </ShowPageLayout>

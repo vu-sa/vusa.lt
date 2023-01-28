@@ -172,6 +172,44 @@ class SharepointFileController extends ResourceController
         return response()->json($driveItems);
     }
 
+    public function getTypesDriveItems(Request $request, string $type, string $id)
+    {
+        // $validated = $request->validate([
+        //     'fileable' => 'required',
+        // ]);
+
+        $fileable_class = 'App\\Models\\' . $type;
+
+        // check if fileable class exists
+        if (!class_exists($fileable_class)) {
+            return back()->with('info', 'Neteisinga užklausa. Praneškite administratoriui');
+        }
+
+        // check if fileable exists
+        $fileable = $fileable_class::find($id);
+
+        if (!$fileable) {
+            return back()->with('info', 'Neteisinga užklausa. Praneškite administratoriui');
+        }
+
+        $types = $fileable->types;
+
+        $sharepointService = new SharepointGraphService();
+
+        // get all types paths into one array
+        $paths = $types->map(function ($type) {
+            return $type->sharepoint_path();
+        })->toArray();
+
+        if (empty($paths)) {
+            return;
+        }
+
+        $driveItems = $sharepointService->getDriveItemsChildrenByPaths($paths);
+
+        return response()->json($driveItems);
+    }
+
     public function getDriveItemPermissions(Request $request, string $driveItemId)
     {
         $sharepointService = new SharepointGraphService();

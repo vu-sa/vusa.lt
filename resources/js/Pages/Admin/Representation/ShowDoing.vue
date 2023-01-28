@@ -24,11 +24,22 @@
     </template>
     <DoingStateCard :doing="doing"></DoingStateCard>
     <template #below>
-      <FileManager
-        v-if="currentTab === 'Failai'"
-        :starting-path="doing.sharepointPath"
-        :fileable="{ id: doing.id, type: 'Doing' }"
-      ></FileManager>
+      <div v-if="currentTab === 'Failai'">
+        <Suspense v-if="doing.types.length > 0">
+          <SimpleFileViewer
+            :fileable="{ id: doing.id, type: 'Doing' }"
+          ></SimpleFileViewer>
+          <template #fallback>
+            <div class="flex h-24 items-center justify-center">
+              Kraunami susiję failai...
+            </div>
+          </template>
+        </Suspense>
+        <FileManager
+          :starting-path="doing.sharepointPath"
+          :fileable="{ id: doing.id, type: 'Doing' }"
+        ></FileManager>
+      </div>
       <CommentViewer
         v-else-if="currentTab === 'Komentarai'"
         class="mt-auto h-min"
