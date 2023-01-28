@@ -72,8 +72,10 @@ const columns: () => DataTableColumns<App.Entities.Task> = () => [
     title: "Pavadinimas",
     key: "name",
     fixed: "left",
-    width: 125,
-    ellipsis: true,
+    width: 150,
+    ellipsis: {
+      tooltip: true,
+    },
   },
   {
     title: "Subjektas",
