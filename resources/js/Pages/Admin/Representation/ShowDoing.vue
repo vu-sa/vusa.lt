@@ -44,7 +44,7 @@
 
 <script setup lang="tsx">
 import { Person24Filled, Sparkle20Filled } from "@vicons/fluent";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 
@@ -88,6 +88,10 @@ const breadcrumbOptions: BreadcrumbOption[] = [
   },
 ];
 
+const completedTasks = computed(() => {
+  return props.doing.tasks?.filter((task) => task.completed_at);
+});
+
 const relatedModels = [
   {
     name: "Failai",
@@ -102,7 +106,8 @@ const relatedModels = [
   {
     name: "Užduotys",
     icon: Icons.TASK,
-    count: props.doing.tasks?.length,
+    // count is string of completed tasks / total tasks
+    count: `${completedTasks.value?.length} / ${props.doing.tasks?.length}`,
   },
 ];
 </script>

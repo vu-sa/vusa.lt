@@ -65,6 +65,11 @@ class Doing extends Model
         return $this->morphMany(Comment::class, 'commentable');
     }
 
+    public function institutions()
+    {
+        return $this->hasManyDeepFromRelations($this->users(), (new User)->institutions());
+    }
+
     public function padaliniai()
     {
         return $this->hasManyDeepFromRelations($this->users(), (new User)->padaliniai());

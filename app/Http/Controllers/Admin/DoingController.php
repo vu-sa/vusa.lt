@@ -96,6 +96,7 @@ class DoingController extends ResourceController
                 'approvable' => $this->authorizer->forUser(auth()->user())->check($modelName . '.update.padalinys'),
                 'sharepointPath' => $doing->users->first() ? SharepointFileService::pathForFileableDriveItem($doing) : null,
             ],
+            'taskableInstitutions' => Inertia::lazy(fn () => $doing->institutions->load('users')),
         ]);
     }
 

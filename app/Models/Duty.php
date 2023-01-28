@@ -87,6 +87,12 @@ class Duty extends Model implements AuthorizableContract
         return $this->hasManyDeepFromRelations($this->institution(), (new Institution())->meetings(), (new Meeting())->agendaItems());
     }
 
+    // TODO: tasks should not be completable through duties, only by users
+    public function tasks()
+    {
+        return $this->hasManyDeepFromRelations($this->users(), (new User())->tasks());
+    }
+
     // add "duty" relation which points to self
     
 }

@@ -1,7 +1,7 @@
 <template>
   <NDataTable
     :data="tasks"
-    :scroll-x="1000"
+    :scroll-x="800"
     :bordered="false"
     :columns="tasks.length > 0 ? columns() : []"
     :row-class-name="rowClassName"
@@ -22,6 +22,7 @@ import {
   NButton,
   NCheckbox,
   NDataTable,
+  NEllipsis,
   NIcon,
 } from "naive-ui";
 import { Link, router, usePage } from "@inertiajs/vue3";
@@ -71,11 +72,13 @@ const columns: () => DataTableColumns<App.Entities.Task> = () => [
     title: "Pavadinimas",
     key: "name",
     fixed: "left",
-    minWidth: 160,
+    width: 125,
+    ellipsis: true,
   },
   {
     title: "Subjektas",
     key: "subject",
+    width: 150,
     render(row) {
       let modelType = row.taskable_type.split("\\").pop() + "s";
 
@@ -84,11 +87,11 @@ const columns: () => DataTableColumns<App.Entities.Task> = () => [
           <NButton secondary round size="tiny">
             {{
               default: () => [
-                <span>
+                <NEllipsis class="w-28">
                   {row.taskable?.title ??
                     row.taskable?.name ??
                     row.taskable?.start_time}
-                </span>,
+                </NEllipsis>,
               ],
               icon: () => <NIcon component={iconComponent(row)}></NIcon>,
             }}
@@ -100,6 +103,7 @@ const columns: () => DataTableColumns<App.Entities.Task> = () => [
   {
     title: "Atsakingi žmonės",
     key: "users",
+    width: 150,
     render(row) {
       return <UsersAvatarGroup size={32} users={row.users}></UsersAvatarGroup>;
     },
@@ -107,11 +111,13 @@ const columns: () => DataTableColumns<App.Entities.Task> = () => [
   {
     title: "Terminas",
     key: "due_date",
+    width: 150,
     sorter: "default",
   },
   {
     key: "moreOptions",
     fixed: "right",
+    width: 60,
     render(row) {
       return row.completed_at === null ? (
         <MoreOptionsButton

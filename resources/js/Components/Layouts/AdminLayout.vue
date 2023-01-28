@@ -62,10 +62,10 @@
           class="mb-4 flex items-center justify-center gap-6 overflow-hidden"
         >
           <div class="h-fit w-fit"><DarkModeSwitch class="mb-0.5" /></div>
-          <NPopover>
+          <NPopover v-if="!collapsed">
             Funkcija kūriama...
             <template #trigger>
-              <NButton v-if="!collapsed" text>
+              <NButton text>
                 <template #icon>
                   <NIcon :size="16"
                     ><img

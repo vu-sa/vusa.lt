@@ -101,7 +101,9 @@
       </div>
     </section>
     <section id="naudingos-nuorodos">
-      <h2 class="mb-4">Naudingos nuorodos</h2>
+      <h2 class="mb-4 flex items-center gap-2">
+        <NIcon :component="Link24Filled"></NIcon><span>Naudingos nuorodos</span>
+      </h2>
       <div class="flex gap-2">
         <NButton
           type="warning"
@@ -139,7 +141,11 @@
 
 <script setup lang="tsx">
 import { ExternalLinkSquareAlt } from "@vicons/fa";
-import { LightbulbFilament24Filled, Settings24Filled } from "@vicons/fluent";
+import {
+  LightbulbFilament24Filled,
+  Link24Filled,
+  Settings24Filled,
+} from "@vicons/fluent";
 import { NButton, NCheckbox, NCheckboxGroup, NIcon, NPopover } from "naive-ui";
 import { router } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";

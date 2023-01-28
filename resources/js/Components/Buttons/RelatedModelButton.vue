@@ -21,7 +21,7 @@ import type { Component } from "vue";
 defineProps<{
   name: string;
   icon?: Component;
-  count?: number;
+  count?: number | string;
   active?: boolean;
 }>();
 </script>

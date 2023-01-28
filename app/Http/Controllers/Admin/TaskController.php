@@ -116,6 +116,8 @@ class TaskController extends ResourceController
 
     public function updateCompletionStatus(Request $request, Task $task)
     {      
+        $this->authorize('update', [Task::class, $task, $this->authorizer]);
+        
         if ($request->completed == true) {
             $task->completed_at = now();
         } else {
