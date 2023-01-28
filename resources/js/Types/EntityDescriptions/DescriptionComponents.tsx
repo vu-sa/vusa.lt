@@ -80,7 +80,9 @@ export const GoalDescription = (
       dažniausiai gerai, kad būtų, teigiamas ir reikšmingas poveikis tikslą
       įgyvendinančiai žmonių grupei.
     </p>
-    <p>Tikslas NĖRA:</p>
+    <p>
+      Tikslas <strong>nėra</strong>:
+    </p>
     <ul>
       <li>
         Veikla. Pvz.: <i>„suorganizuoti renginį 100 žmonių kokia nors proga“</i>{" "}
@@ -99,8 +101,8 @@ export const InstitutionDescription = (
   <>
     <p>Institucija yra oficialus žmonių darinys, organas, organizacija.</p>
     <p>
-      Institucija galima matyti kaip centrą didžiosios dalies informacijos.
-      Institucijos ryšiai:
+      Apie instituciją galima galvoti kaip informacijos centrą, jungiantį
+      daugelį kitų objektų . Institucijos ryšiai:
     </p>
     <ul>
       <li>
@@ -181,7 +183,7 @@ export const NavigationDescription = (
 export const NewsDescription = (
   <>
     <p>
-      Naujienos yra puslapiai, turintys specifinį laiką ir rodomi naujienų
+      Naujienos yra puslapiai, turintys skelbimo laiką ir rodomi naujienų
       skiltyje.
     </p>
   </>
@@ -199,7 +201,7 @@ export const PageDescription = (
 export const PermissionDescription = (
   <>
     <p>
-      Teisės suteikia galimybė pasiekti, kuria nors dalį puslapio, jau
+      Teisės suteikia galimybę pasiekti, kuria nors dalį puslapio, jau
       prisijungus prie jo.
     </p>
     <p>
