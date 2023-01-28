@@ -72,6 +72,12 @@ export default [
     description: Descriptions.MeetingDescription,
   },
   {
+    title: "Susitikimo klausimai",
+    icon: Icons.AGENDA_ITEM,
+    key: pluralizeModels(ModelEnum.AGENDA_ITEM),
+    description: Descriptions.AgendaItemDescription,
+  },
+  {
     title: "Veiklos (veiksmai)",
     icon: Icons.DOING,
     key: pluralizeModels(ModelEnum.DOING),

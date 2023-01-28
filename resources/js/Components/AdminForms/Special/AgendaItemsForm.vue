@@ -5,7 +5,7 @@
         :show-alert="showAlert"
         @alert-closed="showAlert = false"
       >
-        <p class="mt-0 inline-flex items-center">
+        <p class="mt-0">
           <span>Kiekvienas posėdis turi</span>
           <ModelChip>
             <template #icon

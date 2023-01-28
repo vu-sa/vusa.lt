@@ -157,7 +157,7 @@ class SharepointFileController extends ResourceController
 
     public function getDriveItems(Request $request)
     {
-        $this->authorize('viewAll', [SharepointFile::class, $this->authorizer]);
+        // $this->authorize('viewAll', [SharepointFile::class, $this->authorizer]);
 
         $sharepointService = new SharepointGraphService();
 

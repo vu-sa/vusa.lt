@@ -53,19 +53,22 @@ const columns = [
     key: "institution.id",
     minWidth: 100,
     render(row: App.Entities.Duty) {
-      return h(
-        "a",
-        {
-          href: route("institutions.edit", {
-            id: row.institution.id,
-          }),
-          target: "_blank",
-          class: "hover:text-vusa-red transition",
-        },
-        {
-          default: () => row.institution.short_name ?? row.institution.name,
-        }
-      );
+      return row.institution
+        ? h(
+            "a",
+            {
+              href: route("institutions.edit", {
+                id: row.institution.id,
+              }),
+              target: "_blank",
+              class: "hover:text-vusa-red transition",
+            },
+            {
+              default: () =>
+                row.institution?.short_name ?? row.institution?.name,
+            }
+          )
+        : null;
     },
   },
 ];

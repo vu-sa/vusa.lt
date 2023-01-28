@@ -1,6 +1,24 @@
 // More details to every item. Also, keep it in database.
 // On the other case, model descriptions describe the current status of a concept implementation
 // in the system. It should be kept in like a wiki or something. Maybe just markdown is enough.
+export const AgendaItemDescription = (
+  <>
+    <p>
+      Kiekvienas posėdis gali turėti posėdžio klausimų. Kiekvienas posėdžio
+      klausimas gali turėti tik vieną posėdį.
+    </p>
+    <p>
+      Posėdžio klausimai skiriasi nuo <strong>svarstomų klausimų</strong> tuo,
+      kad svarstomi klausimai yra tęstiniai, didesnės trukmės negu vienas
+      posėdis ir gali būti priskiriami <strong>tikslui</strong>.
+    </p>
+    <p>
+      Kiekvienas posėdžio klausimas taip pat gali būti priskiriamas ir
+      svarstomam klausimui.
+    </p>
+  </>
+);
+
 export const BannerDescription = (
   <>
     <p>

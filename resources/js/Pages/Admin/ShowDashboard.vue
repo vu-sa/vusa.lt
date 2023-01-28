@@ -4,12 +4,13 @@
       <NCheckboxGroup v-model:value="shownSections">
         <div class="flex flex-col gap-2">
           <NCheckbox
+            disabled
             value="Greitieji veiksmai"
             label="Greitieji veiksmai"
           ></NCheckbox>
           <NCheckbox value="Institucijos" label="Tavo institucijos"></NCheckbox>
-          <NCheckbox value="Veiklos" label="Tavo veiklos" />
           <NCheckbox value="Posėdžiai" label="Artėjantys posėdžiai" />
+          <NCheckbox value="Veiklos" label="Tavo veiklos" />
           <NCheckbox
             value="Nuorodos"
             label="Naudingos nuorodos"
@@ -29,7 +30,7 @@
         </div>
       </template>
     </NPopover>
-    <section v-if="shownSections.includes('Veiksmai')" class="mb-8">
+    <section v-if="shownSections.includes('Greitieji veiksmai')" class="mb-8">
       <h2 class="mb-4 flex items-center gap-2">
         <NIcon
           class="text-vusa-yellow"

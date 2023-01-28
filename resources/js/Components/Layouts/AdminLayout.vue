@@ -24,7 +24,7 @@
             </NInput>
           </div> -->
       <div class="mt-1 flex items-center gap-8">
-        <Link class="mt-2" :href="route('workspace')"
+        <Link v-if="canSeeWorkspace" class="mt-2" :href="route('workspace')"
           ><NButton text
             ><template #icon
               ><NIcon
@@ -62,14 +62,20 @@
           class="mb-4 flex items-center justify-center gap-6 overflow-hidden"
         >
           <div class="h-fit w-fit"><DarkModeSwitch class="mb-0.5" /></div>
-          <NButton v-if="!collapsed" text>
-            <template #icon>
-              <NIcon :size="16"
-                ><img
-                  src="https://hatscripts.github.io/circle-flags/flags/gb.svg"
-              /></NIcon>
+          <NPopover>
+            Funkcija kūriama...
+            <template #trigger>
+              <NButton v-if="!collapsed" text>
+                <template #icon>
+                  <NIcon :size="16"
+                    ><img
+                      class="opacity-40 transition hover:opacity-70"
+                      src="https://hatscripts.github.io/circle-flags/flags/gb.svg"
+                  /></NIcon>
+                </template>
+              </NButton>
             </template>
-          </NButton>
+          </NPopover>
         </div>
         <NModal v-model:show="showModal">
           <Changelog />
@@ -95,6 +101,7 @@ import {
   NMessageProvider,
   NModal,
   NNotificationProvider,
+  NPopover,
   NScrollbar,
   useMessage,
   // NThemeEditor,
@@ -104,7 +111,6 @@ import { ref } from "vue";
 import { useOnline, useStorage } from "@vueuse/core";
 
 import { Board24Regular } from "@vicons/fluent";
-import { Github } from "@vicons/fa";
 import AdminMenu from "@/Components/Menus/AdminMenu.vue";
 import AppLogo from "@/Components/AppLogo.vue";
 import Changelog from "@/Components/Cards/ChangelogCard.vue";
@@ -129,6 +135,16 @@ const message = useMessage();
 const successMessage = computed(() => usePage().props.flash.success);
 const infoMessage = computed(() => usePage().props.flash.info);
 const errorMessage = computed(() => usePage().props.errors);
+
+const canSeeWorkspace = computed(() => {
+  let index = usePage().props.auth?.can?.index;
+
+  if (!index) {
+    return false;
+  }
+  // check if at least one property of index is true
+  return Object.values(index).some((value) => value);
+});
 
 const errorOnlineReactiveMessage = () => {
   return message.error("Jūsų interneto ryšys buvo nutrauktas.", {

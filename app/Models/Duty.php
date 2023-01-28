@@ -66,10 +66,25 @@ class Duty extends Model implements AuthorizableContract
         return $this->belongsTo(Institution::class);
     }
 
+    public function doings()
+    {
+        return $this->hasManyDeepFromRelations($this->users(), (new User())->doings());
+    }
+
     // it has only one padalinys all times, but it's better to have this method with this name
     public function padaliniai()
     {
         return $this->hasManyDeepFromRelations($this->institution(), (new Institution())->padalinys());
+    }
+
+    public function meetings()
+    {
+        return $this->hasManyDeepFromRelations($this->institution(), (new Institution())->meetings());
+    }
+
+    public function agendaItems()
+    {
+        return $this->hasManyDeepFromRelations($this->institution(), (new Institution())->meetings(), (new Meeting())->agendaItems());
     }
 
     // add "duty" relation which points to self
