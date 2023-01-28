@@ -54,12 +54,20 @@ class DoingController extends ResourceController
      */
     public function store(StoreDoingRequest $request)
     { 
-        $doing = Doing::create
-            ($request->safe()->only('title', 'date') + [
-                // ! somehow this is needed to make the ulid work, otherwise throws an error, trait doesn't work
-                'id' => (string) Str::lower(Str::ulid()),
-                'state' => \App\States\Doing\Draft::$name,
-            ]);
+        $doing = new Doing();
+
+        // fill doing instead of create
+        $doing->fill($request->safe()->only('title', 'date') + [
+            // ! somehow this is needed to make the ulid work, otherwise throws an error, trait doesn't work
+            'id' => (string) Str::lower(Str::ulid()),
+            'state' => \App\States\Doing\Draft::$name,
+        ])->save();
+
+        // check if doing has type, then find the type, and sync id to doing
+        if ($request->safe()->has('type')) {
+            $type = \App\Models\Type::where('slug', $request->safe()->only('type')['type'])->firstOrFail();
+            $doing->types()->sync($type->id);
+        }
         
         $doing->users()->sync(Auth::id());
 

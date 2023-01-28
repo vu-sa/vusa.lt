@@ -83,6 +83,7 @@ const doingTemplate = {
     }
   )})`,
   date: timeIn7Days,
+  type: "el-apklausa",
 };
 
 const showModal = ref(false);

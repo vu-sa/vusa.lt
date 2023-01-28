@@ -34,6 +34,7 @@ class StoreDoingRequest extends ResourceRequest
         return [
             'date' => 'required|date:Y-m-d',
             'title' => 'required|string',
+            'type' => 'nullable|string',
         ];
     }
 }

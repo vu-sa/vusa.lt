@@ -53,11 +53,12 @@ class TypeController extends ResourceController
             'title' => 'required',
             'model_type' => 'string|required',
             'parent_id' => 'nullable|exists:types,id|different:id',
+            'slug' => 'nullable|string',
         ]);
 
         // TODO: somehow check if model_type is valid and allowed
 
-        Type::create($request->only('title', 'model_type', 'description', 'parent_id'));
+        Type::create($request->only('title', 'model_type', 'description', 'parent_id', 'slug'));
 
         return redirect()->route('types.index')
             ->with('success', 'Turinio tipas sukurtas sėkmingai.');

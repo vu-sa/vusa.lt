@@ -83,6 +83,7 @@ const doingTemplate = {
     }
   )})`,
   date: timeIn7Days,
+  type: "focus-grupe",
 };
 
 const showModal = ref(false);
