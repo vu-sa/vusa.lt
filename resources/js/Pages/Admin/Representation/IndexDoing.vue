@@ -20,7 +20,7 @@ defineProps<{
 }>();
 
 const canUseRoutes = {
-  create: true,
+  create: false,
   show: true,
   edit: true,
   destroy: true,

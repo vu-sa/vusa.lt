@@ -145,7 +145,7 @@ class InstitutionController extends ResourceController
         ]);
         
         // TODO: short_name and shortname are used as columns in some tables. Need to make the same name.
-        $institution->update($request->only('name', 'short_name', 'description', 'image_url', 'extra_attributes'));
+        $institution->fill($request->only('name', 'short_name', 'description', 'image_url', 'extra_attributes'))->save();
 
         // check if super admin, then update padalinys_id
         if (auth()->user()->hasRole(config('permission.super_admin_role_name'))) {

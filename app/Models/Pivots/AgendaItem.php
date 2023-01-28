@@ -2,6 +2,10 @@
 
 namespace App\Models\Pivots;
 
+use App\Models\Institution;
+use App\Models\Matter;
+use App\Models\Meeting;
+use App\Models\Padalinys;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Spatie\Activitylog\LogOptions;
@@ -13,6 +17,10 @@ class AgendaItem extends Pivot
     use HasUlids, HasRelationships, LogsActivity;
 
     protected $table = 'agenda_items';
+
+    protected $touches = ['meeting'];
+
+    public $incrementing = true;
     
     protected $guarded = [];
 
@@ -34,17 +42,11 @@ class AgendaItem extends Pivot
     // but it's less logical that way
     public function institutions()
     {
-        return $this->hasManyThrough(Institution::class, Meeting::class);
+        return $this->hasManyDeepFromRelations($this->meeting(), (new Meeting)->institutions());
     }
 
     public function padaliniai()
     {
-        return $this->hasManyDeep(
-            Padalinys::class,
-            [Meeting::class, Institution::class],
-            ['id', 'id', 'id'],
-            ['meeting_id', 'institution_id', 'id'],
-            ['id', 'id', 'id']
-        );
+        return $this->hasManyDeepFromRelations($this->institutions(), (new Institution)->padalinys());
     }
 }

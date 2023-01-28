@@ -30,15 +30,16 @@ class Doing extends Model
         'state' => DoingState::class,
     ];
 
+    // TODO: not only soft deletes, but activity log as well don't work properly
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
-    public function doables()
-    {
-        return $this->hasMany(Doable::class);
-    }
+    // public function doables()
+    // {
+    //     return $this->hasMany(Doable::class);
+    // }
 
     public function goals()
     {

@@ -57,12 +57,12 @@ class RegistrationFormController extends Controller
             $registrations = $registrationForm->load('registrations')->registrations;
         } else {
             $registrations = $registrationForm->load(['registrations' => function($query) {
-                $query->where('data->whereToRegister', request()->user()->padalinys()->id);
+                $query->whereIn('data->whereToRegister', request()->user()->padaliniai()->get(['padaliniai.id'])->pluck('id'));
             }])->registrations;
         }
         
         // for now, is accustomed to show only member registration
-        return Inertia::render('Admin/Registrations/ShowRegistrationForm', [
+        return Inertia::render('Admin/RegistrationForms/ShowRegistrationForm', [
             'registrationForm' => $registrations->sortByDesc('created_at')->values()->paginate(20)
         ]);
     }

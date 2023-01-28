@@ -10,7 +10,9 @@
     <template #more-options>
       <MoreOptionsButton
         edit
-        @edit-click="showModal = true"
+        delete
+        @edit-click="showEditModal = true"
+        @delete-click="handleDelete"
       ></MoreOptionsButton>
       <CardModal
         v-model:show="showEditModal"
@@ -45,7 +47,7 @@
 <script setup lang="tsx">
 import { Person24Filled, Sparkle20Filled } from "@vicons/fluent";
 import { computed, ref } from "vue";
-import { usePage } from "@inertiajs/vue3";
+import { router, usePage } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 
 import CardModal from "@/Components/Modals/CardModal.vue";
@@ -110,4 +112,8 @@ const relatedModels = [
     count: `${completedTasks.value?.length} / ${props.doing.tasks?.length}`,
   },
 ];
+
+const handleDelete = () => {
+  router.delete(route("doings.destroy", props.doing.id));
+};
 </script>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller as Controller;
 use App\Models\Institution;
 use App\Models\User;
 use App\Services\RelationshipService;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -16,7 +17,9 @@ class DashboardController extends Controller
     public function dashboard()
     {
         // load user duty institutions
-        $user = User::with('duties.institution.padalinys', 'duties.institution.users:users.id,users.name,profile_photo_path,phone', 'doings.comments', 'doings.tasks')->find(auth()->user()->id);
+        $user = User::with('duties.institution.padalinys', 'duties.institution.users:users.id,users.name,profile_photo_path,phone')->with(['doings' => function (Builder $query) {
+            $query->with('comments', 'tasks')->where('deleted_at', null)->orderBy('date', 'desc');
+        }])->find(auth()->user()->id);
         
         $duties = $user->duties;
 
@@ -34,7 +37,7 @@ class DashboardController extends Controller
         return Inertia::render('Admin/ShowDashboard', [
             'institutions' => $institutions,
             'duties' => $duties,
-            'doings' => $user->doings->sortBy('date')->values(),
+            'doings' => $user->doings->sortBy('date'),
         ]);
     }
 

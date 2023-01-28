@@ -15,7 +15,7 @@ use Illuminate\Queue\SerializesModels;
 
 class FileableNameUpdated
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable, InteractsWithSockets;
 
     public $fileable;
     
@@ -24,7 +24,7 @@ class FileableNameUpdated
      *
      * @return void
      */
-    public function __construct(Model $fileable)
+    public function __construct($fileable)
     {
         $this->fileable = $fileable;
     }

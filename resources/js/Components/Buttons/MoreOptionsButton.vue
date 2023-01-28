@@ -18,8 +18,8 @@
   <NModal
     v-model:show="showDeleteModal"
     preset="dialog"
-    title="Dialog"
-    content="Ar tikrai ištrinti?"
+    title="Ištrinti įrašą?"
+    content="Šis įrašas bus ištrintas negrįžtamai..."
     type="warning"
     positive-text="Ištrinti"
     negative-text="Atšaukti"

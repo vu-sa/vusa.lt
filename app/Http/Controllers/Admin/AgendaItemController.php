@@ -110,7 +110,7 @@ class AgendaItemController extends ResourceController
             'title' => 'required|string',
         ]);
 
-        $agendaItem->update($validated);
+        $agendaItem->fill($validated)->save();
 
         return back()->with(['success' => 'Darbotvarkės punktas atnaujintas sėkmingai!']);
     }

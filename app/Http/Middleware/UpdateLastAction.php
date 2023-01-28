@@ -20,9 +20,15 @@ class UpdateLastAction
     public function handle(Request $request, Closure $next)
     {
         if (Auth::check()) {
+                        
             $user = User::find(Auth::user()->id);
+            
+            $user->disableLogging();
+
             $user->last_action = Carbon::now();
             $user->save();
+
+            $user->enableLogging();
         }
         
         return $next($request);

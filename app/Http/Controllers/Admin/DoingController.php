@@ -84,9 +84,14 @@ class DoingController extends ResourceController
     {
         $this->authorize('view', [Doing::class, $doing, $this->authorizer]);
 
-        $modelName = Str::of(class_basename($this))->camel()->plural();
+        // if soft deleted, redirect to index
+        if ($doing->trashed()) {
+            return redirect()->route('dashboard')->with('info', 'Veikla yra ištrinta! Ją atkurti gali administratorius.');
+        }
 
-        $doing->load('activities.causer', 'comments', 'doables', 'users', 'files')->load(['tasks' => function ($query) {
+        $modelName = Str::of(class_basename($doing))->camel()->plural();
+
+        $doing->load('activities.causer', 'comments', 'users', 'files')->load(['tasks' => function ($query) {
             $query->with('users', 'taskable');
         }]);
 
@@ -132,7 +137,8 @@ class DoingController extends ResourceController
             'date' => 'required'
         ]);
 
-        $doing->update($request->only('title', 'date'));
+        // update doing with model events, so without update()
+        $doing->fill($request->only('title', 'date'))->save();
 
         $doing->users()->sync($request->only('user_id'));
 
@@ -148,7 +154,12 @@ class DoingController extends ResourceController
     public function destroy(Doing $doing)
     {
         $this->authorize('delete', [Doing::class, $doing, $this->authorizer]);
-        
+
+        // check if doing state is draft
+        if (!($doing->state instanceof \App\States\Doing\Draft)) {
+            return back()->with('info', 'Jau tvirtinama / tvirtinta veikla gali būti tik atšaukiama!');
+        }
+
         DB::transaction(function () use ($doing) {
             // detach doings from matters
             $doing->matters()->detach();
@@ -166,6 +177,6 @@ class DoingController extends ResourceController
             $doing->delete();
         });
 
-        return back()->with('success', 'Veikla ištrinta!');
+        return redirect()->route('dashboard')->with('success', 'Veikla ištrinta!');
     }
 }

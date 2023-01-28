@@ -57,7 +57,7 @@ trait HasDecisions
     private function finalApprovalCheck()
     {
         if ($this->state instanceof PendingFinalApproval) {
-            abort_if($this->authorizer->isAllScope === false, 403, 'Neturite pakankamų teisių patvirtinti.');
+            abort_if($this->authorizer->isAllScope === false, 403, 'Neturite pakankamų teisių patvirtinti arba atmesti.');
         }
     }
 }

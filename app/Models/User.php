@@ -40,18 +40,9 @@ class User extends Authenticatable
         'microsoft_token',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array
-     */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-    ];
-
     public function getActivitylogOptions(): LogOptions
     {
-        return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
+        return LogOptions::defaults()->logFillable()->logOnlyDirty();
     }
 
     public function banners()

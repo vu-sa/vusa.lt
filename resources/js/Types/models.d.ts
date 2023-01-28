@@ -93,6 +93,7 @@ declare namespace App.Models {
     matters?: Array<App.Models.Matter> | null;
     types?: Array<App.Models.Type> | null;
     users?: Array<App.Models.User> | null;
+    institutions?: any | null;
     padaliniai?: any | null;
     doables_count?: number | null;
     goals_count?: number | null;
@@ -120,7 +121,11 @@ declare namespace App.Models {
     matters?: any | null;
     types?: Array<App.Models.Type> | null;
     institution?: App.Models.Institution | null;
+    doings?: any | null;
     padaliniai?: any | null;
+    meetings?: any | null;
+    agenda_items?: any | null;
+    tasks?: any | null;
     dutiables_count?: number | null;
     users_count?: number | null;
     current_users_count?: number | null;
@@ -229,13 +234,11 @@ declare namespace App.Models {
     matters?: Array<App.Models.Matter> | null;
     agenda_items?: Array<App.Models.Pivots.AgendaItem> | null;
     institutions?: Array<App.Models.Institution> | null;
-    tasks?: Array<App.Models.Task> | null;
     users?: any | null;
     padaliniai?: any | null;
     matters_count?: number | null;
     agenda_items_count?: number | null;
     institutions_count?: number | null;
-    tasks_count?: number | null;
   }
 
   export interface Navigation {
