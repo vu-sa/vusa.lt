@@ -3,6 +3,7 @@
 namespace App\Services\ResourceServices;
 
 use App\Models\Doing;
+use App\Models\Goal;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\SharepointFile;
@@ -71,6 +72,17 @@ class SharepointFileService
                 $fileable->drive_item_name = $fileable->title . '-' . substr($fileable->id, -4);
                 $fileable->save();
             }
+        }
+
+        if ($fileable instanceof Goal) {
+            $fileable->loadMissing('institutions.padalinys');
+
+            $institution = $fileable->institutions->first();
+
+            $path .= '/'. 'Padaliniai';
+            $path .= '/' . $institution->padalinys->shortname;
+            $path .= '/' . class_basename($institution) . '/' . $institution->name;
+            $path .= '/' . class_basename($fileable->getMorphClass()) . '/' . $fileable->title;
         }
 
         return $path;

@@ -10,8 +10,9 @@
 </template>
 
 <script setup lang="tsx">
-import { DataTableColumns, NTag } from "naive-ui";
+import { type DataTableColumns, NTag } from "naive-ui";
 
+import DoingStateTag from "@/Components/Tag/DoingStateTag.vue";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
 defineProps<{
@@ -38,6 +39,9 @@ const columns: DataTableColumns<App.Entities.Doing> = [
   {
     title: "Statusas",
     key: "status",
+    render(row) {
+      return <DoingStateTag class="my-auto" doing={row} />;
+    },
   },
   {
     title: "Svarstomi klausimai",

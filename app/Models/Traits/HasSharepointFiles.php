@@ -4,6 +4,7 @@ namespace App\Models\Traits;
 
 use App\Events\FileableNameUpdated;
 use App\Models\SharepointFile;
+use App\Services\ResourceServices\SharepointFileService;
 
 trait HasSharepointFiles {
     public function files()
@@ -21,4 +22,9 @@ trait HasSharepointFiles {
     //         }
     //     });
     // }
+
+    public function sharepoint_path()
+    {
+        return SharepointFileService::pathForFileableDriveItem($this);
+    }
 }

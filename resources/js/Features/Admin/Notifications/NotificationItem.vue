@@ -1,21 +1,17 @@
 <template>
   <div
     role="button"
-    class="flex max-w-sm items-center gap-2 rounded-sm p-2 text-zinc-700 transition hover:bg-zinc-200/80 dark:text-zinc-50 dark:hover:bg-zinc-800/80"
+    class="flex max-w-sm cursor-pointer items-center gap-2 rounded-sm p-2 text-zinc-700 transition hover:bg-zinc-200/80 dark:text-zinc-50 dark:hover:bg-zinc-800/80"
     @click="router.visit(notification.data.object.url)"
   >
-    <NIcon :component="People24Regular" />
     <div
       v-if="notificationType"
       class="w-full text-xs text-zinc-700 dark:text-zinc-300"
     >
       <component
         :is="getNotificationComponent(notificationType)"
-        :data="notification.data"
+        :notification="notification"
       />
-      <p class="text-xs text-zinc-500 dark:text-zinc-400">
-        {{ formatRelativeTime(new Date(notification.created_at)) }}
-      </p>
     </div>
     <div class="flex flex-col gap-2">
       <NButton size="tiny" tertiary circle @click.stop="handleClick">
@@ -78,6 +74,9 @@ const notificationComponents = {
   ModelCommented: defineAsyncComponent(
     () => import("./NotificationTypes/ModelCommented.vue")
   ),
+  StateChangeNotification: defineAsyncComponent(
+    () => import("./NotificationTypes/StateChangeNotification.vue")
+  ),
 };
 
 const getNotificationComponent = (type: string) => {
@@ -86,6 +85,8 @@ const getNotificationComponent = (type: string) => {
       return notificationComponents.MemberRegistered;
     case "CommentNotification":
       return notificationComponents.ModelCommented;
+    case "StateChangeNotification":
+      return notificationComponents.StateChangeNotification;
     default:
       return notificationComponents.ModelCommented;
   }

@@ -41,9 +41,4 @@ class Type extends Model
     {
         return $this->morphedByMany(Doing::class, 'typeable');
     }
-
-    public function sharepoint_path()
-    {
-        return SharepointFileService::pathForFileableDriveItem($this);
-    }
 }

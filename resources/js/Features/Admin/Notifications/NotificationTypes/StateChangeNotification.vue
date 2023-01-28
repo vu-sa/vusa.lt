@@ -1,6 +1,6 @@
 <template>
   <div class="flex items-center gap-2">
-    <NIcon :component="Comment24Regular" />
+    <NIcon :component="PersonFeedback24Regular" />
     <div>
       <div v-html="notification.data.text"></div>
       <p class="text-xs text-zinc-500 dark:text-zinc-400">
@@ -11,8 +11,8 @@
 </template>
 
 <script setup lang="ts">
-import { Comment24Regular } from "@vicons/fluent";
 import { NIcon } from "naive-ui";
+import { PersonFeedback24Regular } from "@vicons/fluent";
 import { formatRelativeTime } from "@/Utils/IntlTime";
 
 defineProps<{

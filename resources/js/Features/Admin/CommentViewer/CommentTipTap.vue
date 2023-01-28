@@ -53,10 +53,11 @@
           :disabled="disabled"
           type="primary"
           :loading="loading"
+          icon-placement="right"
           @click="$emit('submit:comment')"
           ><template #icon><NIcon :component="Send20Filled"></NIcon></template
-          ><slot name="submit-text">SIŲSTI</slot></NButton
-        >
+          ><slot name="submit-text"></slot
+        ></NButton>
         <NPopover
           v-if="enableApprove"
           trigger="click"

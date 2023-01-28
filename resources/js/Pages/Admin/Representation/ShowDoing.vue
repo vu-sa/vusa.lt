@@ -79,7 +79,7 @@ const handleSubmit = (form: any) => {
 
 const breadcrumbOptions: BreadcrumbOption[] = [
   {
-    label: props.doing.users?.[0].name,
+    label: props.doing.users?.[0]?.name,
     icon: Person24Filled,
   },
   {
@@ -92,6 +92,7 @@ const relatedModels = [
   {
     name: "Failai",
     icon: Icons.SHAREPOINT_FILE,
+    count: props.doing.files?.length,
   },
   {
     name: "Komentarai",

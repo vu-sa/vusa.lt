@@ -82,11 +82,6 @@ class Institution extends Model
         return RelationshipService::getRelatedInstitutionRelations($this);
     }
 
-    public function sharepoint_path()
-    {
-        return SharepointFileService::pathForFileableDriveItem($this);
-    }
-
     public function toSearchableArray()
     {
         $array = $this->toArray();

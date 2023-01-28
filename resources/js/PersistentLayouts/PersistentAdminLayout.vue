@@ -12,7 +12,7 @@
     <NMessageProvider>
       <Layout>
         <!-- <FadeTransition> -->
-        <NScrollbar id="main-scroll-container" class="max-h-[calc(100vh-4rem)]">
+        <NScrollbar ref="scroll" class="max-h-[calc(100vh-4rem)]">
           <main
             class="grid max-w-7xl grid-cols-[1fr_minmax(250px,_400px)] items-start py-4 pb-8"
           >

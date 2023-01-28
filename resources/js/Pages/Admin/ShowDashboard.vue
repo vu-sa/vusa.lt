@@ -30,7 +30,13 @@
       </template>
     </NPopover>
     <section v-if="shownSections.includes('Veiksmai')" class="mb-8">
-      <h2 class="mb-6">Greitieji veiksmai</h2>
+      <h2 class="mb-4 flex items-center gap-2">
+        <NIcon
+          class="text-vusa-yellow"
+          :component="LightbulbFilament24Filled"
+        ></NIcon
+        ><span>Greitieji veiksmai</span>
+      </h2>
       <div class="flex items-center gap-4">
         <QActFocusGroupButton />
         <QActSurveyButton />
@@ -41,10 +47,13 @@
       id="tavo-institucijos"
       class="mb-8"
     >
-      <h2>Tavo institucijos</h2>
+      <h2 class="flex items-center gap-2">
+        <NIcon :component="Icons.INSTITUTION"></NIcon
+        ><span>Tavo institucijos</span>
+      </h2>
       <div
         v-if="institutions.length > 0"
-        class="relative mt-4 grid w-full grid-cols-ramFill items-end gap-4 overflow-hidden pb-4 transition-transform duration-300 ease-in-out"
+        class="relative mt-4 grid w-full grid-cols-ramFill items-start gap-4 overflow-hidden pb-4 transition-transform duration-300 ease-in-out"
       >
         <InstitutionCard
           v-for="institution in institutions"
@@ -58,7 +67,10 @@
       <p v-else>Neturi tiesiogiai priskirtų institucijų.</p>
     </section>
     <section v-if="shownSections.includes('Posėdžiai')" class="relative mb-8">
-      <h2>Artėjantys posėdžiai</h2>
+      <h2 class="flex items-center gap-2">
+        <NIcon :component="Icons.MEETING"></NIcon
+        ><span>Artėjantys posėdžiai</span>
+      </h2>
       <div class="grid grid-cols-ramFill gap-x-4">
         <template v-for="institution in institutions">
           <MeetingCard
@@ -74,7 +86,9 @@
       </div>
     </section>
     <section v-if="shownSections.includes('Veiklos')" class="relative mb-8">
-      <h2>Tavo veiklos</h2>
+      <h2 class="flex items-center gap-2">
+        <NIcon :component="Icons.DOING"></NIcon><span>Tavo veiklos</span>
+      </h2>
       <div class="grid grid-cols-ramFill gap-x-4">
         <DoingCard
           v-for="doing in doings"
@@ -124,12 +138,13 @@
 
 <script setup lang="tsx">
 import { ExternalLinkSquareAlt } from "@vicons/fa";
+import { LightbulbFilament24Filled, Settings24Filled } from "@vicons/fluent";
 import { NButton, NCheckbox, NCheckboxGroup, NIcon, NPopover } from "naive-ui";
-import { Settings24Filled } from "@vicons/fluent";
 import { router } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 
 import DoingCard from "@/Components/Cards/DoingCard.vue";
+import Icons from "@/Types/Icons/filled";
 import InstitutionCard from "@/Components/Cards/InstitutionCard.vue";
 import MeetingCard from "@/Components/Cards/MeetingCard.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
@@ -156,5 +171,10 @@ const shownSections = useStorage("dashboard-sections", [
 <style scoped>
 h2 {
   font-weight: 900;
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-kerning: auto;
+  /* more compact */
+  letter-spacing: -0.02em;
 }
 </style>

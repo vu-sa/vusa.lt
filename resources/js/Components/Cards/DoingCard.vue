@@ -15,7 +15,7 @@
         ></MoreOptionsButton>
       </template>
 
-      <DoingStateTag :doing="doing" />
+      <DoingStateTag class="mb-4" :doing="doing" />
 
       <div class="text-xs text-zinc-700 dark:text-zinc-500">
         <div class="flex items-center gap-1">

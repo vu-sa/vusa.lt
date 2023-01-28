@@ -2,20 +2,31 @@
   <QuickContentCard>
     <div class="mb-2">
       <h2>{{ currentStateText.title }}</h2>
-      <p>{{ currentStateText.description }}</p>
+      <component :is="currentStateText.description"></component>
     </div>
-    <template #action-button
-      ><NButton @click="showStateChangeModal = true"
-        >Atnaujinti būseną</NButton
-      ></template
-    >
+    <template #action-button>
+      <NPopover :disabled="doing.files.length > 0">
+        Pirmiausia, įkelk bent vieną failą.
+        <template #trigger>
+          <NButton
+            :strong="doing.files.length > 0"
+            :disabled="doing.files.length === 0"
+            icon-placement="right"
+            @click="showStateChangeModal = true"
+            ><template #icon
+              ><NIcon :component="ArrowExportLtr24Regular"></NIcon></template
+            >Naujinti būseną</NButton
+          >
+        </template>
+      </NPopover>
+    </template>
     <CardModal
       v-model:show="showStateChangeModal"
-      title="Keisti statusą"
+      title="Naujinti būseną"
       @close="showStateChangeModal = false"
     >
       <div class="not-prose relative w-full">
-        <label>Komentaras</label>
+        <InfoText>Palik trumpą komentarą</InfoText>
 
         <CommentTipTap
           v-model:text="commentText"
@@ -26,7 +37,7 @@
           :disabled="false"
           @submit:comment="submitComment"
         >
-          <template #submit-text>PATEIKTI</template>
+          <template #submit-text>Pateikti</template>
         </CommentTipTap>
       </div>
     </CardModal>
@@ -34,12 +45,16 @@
 </template>
 
 <script setup lang="tsx">
-import { NButton } from "naive-ui";
+import { NButton, NIcon, NPopover } from "naive-ui";
 import { computed, ref } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 
+import { ArrowExportLtr24Regular } from "@vicons/fluent";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import CommentTipTap from "@/Features/Admin/CommentViewer/CommentTipTap.vue";
+import Icons from "@/Types/Icons/filled";
+import InfoText from "@/Components/SmallElements/InfoText.vue";
+import ModelChip from "@/Components/Chips/ModelChip.vue";
 import QuickContentCard from "./QuickContentCard.vue";
 
 const props = defineProps<{
@@ -75,45 +90,72 @@ const submitComment = (decision?: "approve" | "reject") => {
 
 const doingStateDescriptions: Record<
   App.Entities.Doing["state"],
-  Record<"title" | "description", string>
+  Record<"title" | "description", any>
 > = {
   draft: {
     title: "Šablonas",
-    description:
-      "Į šį veiksmą, prieš jį pateikiant tvirtinimui, reikia įkelti atitinkamus dokumentus ir atnaujinti informaciją.",
+    description: (
+      <span>
+        Atlik
+        <ModelChip>
+          {{
+            default: () => "Užduotys",
+            icon: () => <NIcon component={Icons.TASK}></NIcon>,
+          }}
+        </ModelChip>
+        skiltyje esančias užduotis ir pateik veiksmą tvirtinimui!
+      </span>
+    ),
   },
   pending_changes: {
     title: "Laukiama pakeitimų",
-    description:
-      "Už veiksmą atsakingi asmenys turi atnaujinti informaciją ir pateikti tvirtinimui darkart.",
+    description: (
+      <span>
+        Už veiksmą atsakingi asmenys turi atnaujinti informaciją ir pateikti
+        tvirtinimui darkart."
+      </span>
+    ),
   },
   pending_padalinys_approval: {
     title: "Laukia padalinio tvirtinimo",
-    description:
-      "Veiksmas yra pateiktas tvirtinimui padalinio koordinatoriams.",
+    description: (
+      <span>Veiksmas yra pateiktas tvirtinimui padalinio koordinatoriams.</span>
+    ),
   },
   pending_final_approval: {
     title: "Laukia galutinio tvirtinimo",
-    description: "Laukiama galutinio patvirtinimo iš centrinių koordinatorių.",
+    description: (
+      <span>Laukiama galutinio patvirtinimo iš centrinių koordinatorių.</span>
+    ),
   },
   approved: {
     title: "Patvirtintas",
-    description:
-      "Veiksmas patvirtintas. Po patvirtinimo, laukiama ataskaitos ir pateikimo užbaigimui.",
+    description: (
+      <span>
+        Veiksmas patvirtintas. Po patvirtinimo, laukiama ataskaitos ir pateikimo
+        užbaigimui.
+      </span>
+    ),
   },
   pending_completion: {
     title: "Laukia užbaigimo",
-    description:
-      "Veiksmas įvykdytas, laukiama galutinio patikrinimo dėl įkeltų failų.",
+    description: (
+      <span>
+        Veiksmas įvykdytas, laukiama galutinio patikrinimo dėl įkeltų failų.
+      </span>
+    ),
   },
   completed: {
     title: "Užbaigtas",
-    description:
-      "Veiksmas įvykdytas ir visa susijusi galutinė informacija yra įkelta.",
+    description: (
+      <span>
+        Veiksmas įvykdytas ir visa susijusi galutinė informacija yra įkelta.
+      </span>
+    ),
   },
   canceled: {
     title: "Atšauktas",
-    description: "Veiksmas atšauktas.",
+    description: <span>Veiksmas atšauktas.</span>,
   },
 };
 

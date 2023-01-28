@@ -15,22 +15,6 @@
         @delete-click="handleDelete"
       />
     </template>
-    <div class="mb-2 flex min-w-min flex-wrap items-center gap-2">
-      <FilterPopselect :options="buttonNames" @click="handleFilterClick" />
-    </div>
-    <div class="grid grid-cols-3 gap-x-4">
-      <MatterCard
-        v-for="matter in shownMatters"
-        :key="matter.id"
-        :matter="matter"
-        ><div v-for="institution in matter.institutions" :key="institution.id">
-          <ModelChip
-            ><template #icon><NIcon :component="Icons.GOAL" /> </template
-            >{{ institution.name }}</ModelChip
-          >
-        </div>
-      </MatterCard>
-    </div>
     <CardModal
       v-model:show="showModal"
       title="Redaguoti klausimo grupę"
@@ -39,6 +23,30 @@
       <GoalForm :goal="goal" @form-success="showModal = false" />
     </CardModal>
     <template #below>
+      <div v-if="currentTab === 'Svarstomi klausimai'">
+        <div class="mb-2 flex min-w-min flex-wrap items-center gap-2">
+          <FilterPopselect
+            :options="buttonNames"
+            @select:value="handleFilterClick"
+          />
+        </div>
+        <div class="grid grid-cols-3 gap-x-4">
+          <MatterCard
+            v-for="matter in shownMatters"
+            :key="matter.id"
+            :matter="matter"
+            ><div
+              v-for="institution in matter.institutions"
+              :key="institution.id"
+            >
+              <ModelChip
+                ><template #icon><NIcon :component="Icons.GOAL" /> </template
+                >{{ institution.name }}</ModelChip
+              >
+            </div>
+          </MatterCard>
+        </div>
+      </div>
       <CommentViewer
         v-if="currentTab === 'Komentarai'"
         class="mt-auto h-min"
@@ -78,7 +86,7 @@ const props = defineProps<{
 }>();
 
 const showModal = ref(false);
-const selectedInstitution = ref<string | null>(null);
+const selectedInstitution = ref<string | null>("Visi");
 const buttonNames = props.institutions.map((institution) => institution.name);
 // add null to the beginning of the array
 buttonNames.unshift("Visi");
@@ -94,13 +102,13 @@ const breadcrumbItems: BreadcrumbOption[] = [
   },
 ];
 
-const currentTab = useStorage("show-goal-tab", "Komentarai");
+const currentTab = useStorage("show-goal-tab", "Svarstomi klausimai");
 
 const relatedModels = [
-  // {
-  //   name: "Failai",
-  //   icon: Icons.SHAREPOINT_FILE,
-  // },
+  {
+    name: "Svarstomi klausimai",
+    icon: Icons.MATTER,
+  },
   {
     name: "Komentarai",
     icon: Icons.COMMENT,
@@ -128,6 +136,8 @@ const shownMatters = computed(() => {
 });
 
 const handleFilterClick = (name: string | null) => {
+  console.log(name);
+
   selectedInstitution.value = name ?? "Be pavadinimo";
 };
 

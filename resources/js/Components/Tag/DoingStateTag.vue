@@ -1,6 +1,5 @@
 <template>
   <NTag
-    class="mb-4 shadow-sm"
     :bordered="false"
     size="small"
     :type="stateTypeMap[props.doing.state].tagType"

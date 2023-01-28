@@ -1,6 +1,6 @@
 <template>
   <!-- Component is useful for inline, standartized showings of models and their icons -->
-  <NTag class="mx-2" :bordered="false" round size="small">
+  <NTag class="mx-2 mb-1" round size="tiny">
     <template #icon>
       <slot name="icon" />
     </template>

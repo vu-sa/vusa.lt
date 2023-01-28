@@ -23,6 +23,10 @@
           <!-- <NSwitch v-model:value="showThumbnail" :disabled="loading">
             <template #icon><NIcon :component="Image24Regular"></NIcon></template>
           </NSwitch> -->
+          <NButton :disabled="loading" circle quaternary @click="refreshFiles"
+            ><template #icon
+              ><NIcon :component="ArrowClockwise24Filled"></NIcon></template
+          ></NButton>
           <NButtonGroup>
             <NButton
               :disabled="loading"
@@ -70,7 +74,7 @@
       <FileUploader
         :show="showFileUploader"
         :fileable="fileable"
-        @close="showFileUploader = false"
+        @close="handleFileUploaderClose"
       ></FileUploader>
     </template>
     <p v-else v-once>
@@ -82,6 +86,7 @@
 <script setup lang="tsx">
 import {
   AppsList20Filled,
+  ArrowClockwise24Filled,
   DocumentAdd24Regular,
   Grid20Filled,
 } from "@vicons/fluent";
@@ -222,4 +227,14 @@ const results = computed(() => {
 });
 
 getFiles(path.value);
+
+const refreshFiles = () => {
+  loading.value = true;
+  getFiles(path.value);
+};
+
+const handleFileUploaderClose = () => {
+  showFileUploader.value = false;
+  refreshFiles();
+};
 </script>

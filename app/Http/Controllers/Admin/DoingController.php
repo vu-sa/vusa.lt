@@ -86,7 +86,7 @@ class DoingController extends ResourceController
 
         $modelName = Str::of(class_basename($this))->camel()->plural();
 
-        $doing->load('activities.causer', 'comments', 'doables', 'users')->load(['tasks' => function ($query) {
+        $doing->load('activities.causer', 'comments', 'doables', 'users', 'files')->load(['tasks' => function ($query) {
             $query->with('users', 'taskable');
         }]);
 

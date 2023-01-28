@@ -32,24 +32,23 @@
         </template>
       </SpecialDoingForm>
       <ModalHelperButton v-if="!showAlert" @click="showAlert = true" />
-      <template #footer
-        ><span class="flex items-center gap-2 text-xs text-zinc-400">
-          <NIcon :component="Info24Regular"></NIcon>Sukurtą el. apklausos
-          organizavimo šabloną galėsi bet kada ištrinti!
-        </span></template
-      >
+      <template #footer>
+        <InfoText>
+          Sukurtą el. apklausos organizavimo šabloną galėsi bet kada ištrinti!
+        </InfoText>
+      </template>
     </CardModal>
   </div>
 </template>
 
 <script setup lang="tsx">
-import { DocumentCheckmark24Regular, Info24Regular } from "@vicons/fluent";
-import { NIcon } from "naive-ui";
+import { DocumentCheckmark24Regular } from "@vicons/fluent";
 import { ref } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
 import CardModal from "../Modals/CardModal.vue";
+import InfoText from "../SmallElements/InfoText.vue";
 import ModalHelperButton from "./ModalHelperButton.vue";
 import QuickActionButton from "./QuickActionButton.vue";
 import SpecialDoingForm from "../AdminForms/Special/SpecialDoingForm.vue";
