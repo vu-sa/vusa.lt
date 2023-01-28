@@ -4,8 +4,15 @@
 
   <NLayout class="min-h-screen">
     <nav
-      class="bg-inherit/90 fixed z-50 flex h-16 w-full flex-row justify-between border-b py-2 pr-8 shadow-sm backdrop-blur-sm dark:border-zinc-800"
+      class="fixed z-50 flex h-16 w-full flex-row justify-between border-b py-2 pr-8 shadow-sm backdrop-blur-lg dark:border-zinc-800"
     >
+      <!-- add background image to nav -->
+      <!-- <img
+        v-if="$page.props?.layout?.navBackground"
+        class="absolute inset-0 h-full w-full object-cover opacity-20 brightness-50"
+        alt=""
+        :src="$page.props?.layout?.navBackground"
+      /> -->
       <div class="invisible">
         <NButton secondary round @click="collapsed = !collapsed">Menu</NButton>
       </div>

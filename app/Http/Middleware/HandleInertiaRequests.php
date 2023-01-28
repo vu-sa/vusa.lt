@@ -75,6 +75,9 @@ class HandleInertiaRequests extends Middleware
                 'info' => fn () => $request->session()->get('info'),
                 'success' => fn () => $request->session()->get('success'),
             ],
+            // 'layout' => is_null($user) ? null : [
+            //     'navBackground' => null
+            // ],
             'misc' => $request->session()->get('misc') ?? "",
             'padaliniai' => fn () => $this->getPadaliniaiForInertia(),
             'search' => [

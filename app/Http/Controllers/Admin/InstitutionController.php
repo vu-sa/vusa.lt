@@ -91,6 +91,7 @@ class InstitutionController extends ResourceController
             $query->with('tasks', 'comments', 'files')->orderBy('start_time', 'asc');
         }])->load('activities.causer');      
 
+        // Inertia::share('layout.navBackground', $institution->image_url ?? null);
 
         return Inertia::render('Admin/People/ShowInstitution', [
             'institution' => [
