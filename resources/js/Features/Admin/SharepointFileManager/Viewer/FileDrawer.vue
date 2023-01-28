@@ -59,10 +59,14 @@
                   {{ file?.listItem?.fields?.properties?.Description0 }}
                 </td>
               </tr>
-              <tr>
+              <tr class="h-12">
                 <td class="font-bold">Vieša nuoroda</td>
                 <td>
-                  <NSpin size="small" :show="loadingPublicPermission">
+                  <NSpin
+                    size="small"
+                    :stroke-width="12"
+                    :show="loadingPublicPermission"
+                  >
                     <a
                       v-if="publicPermission?.link?.webUrl"
                       target="_blank"

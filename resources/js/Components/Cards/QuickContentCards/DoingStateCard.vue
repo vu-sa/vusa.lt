@@ -1,9 +1,13 @@
 <template>
-  <QuickContentCard>
-    <div class="mb-2">
-      <h2>{{ currentStateText.title }}</h2>
-      <component :is="currentStateText.description"></component>
-    </div>
+  <QuickContentCard class="border" :class="[currentStateText.borderColorClass]">
+    <template #header>
+      <h2 class="flex items-center gap-2">
+        <NIcon :component="currentStateText.icon"></NIcon
+        ><span>{{ currentStateText.title }}</span>
+      </h2>
+    </template>
+    <component :is="currentStateText.description"></component>
+
     <template #action-button>
       <NPopover :disabled="doing.files.length > 0">
         Pirmiausia, įkelk bent vieną failą.
@@ -49,7 +53,12 @@ import { NButton, NIcon, NPopover } from "naive-ui";
 import { computed, ref } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 
-import { ArrowExportLtr24Regular } from "@vicons/fluent";
+import {
+  ArrowExportLtr24Regular,
+  CheckmarkCircle24Regular,
+  DocumentBulletListClock20Regular,
+  DocumentEdit24Regular,
+} from "@vicons/fluent";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import CommentTipTap from "@/Features/Admin/CommentViewer/CommentTipTap.vue";
 import Icons from "@/Types/Icons/filled";
@@ -90,7 +99,7 @@ const submitComment = (decision?: "approve" | "reject") => {
 
 const doingStateDescriptions: Record<
   App.Entities.Doing["state"],
-  Record<"title" | "description", any>
+  Record<"title" | "description" | "borderColorClass" | "icon", any>
 > = {
   draft: {
     title: "Šablonas",
@@ -106,56 +115,90 @@ const doingStateDescriptions: Record<
         skiltyje esančias užduotis ir pateik veiksmą tvirtinimui!
       </span>
     ),
+    borderColorClass: "border-zinc-500",
+    icon: DocumentEdit24Regular,
   },
   pending_changes: {
     title: "Laukiama pakeitimų",
     description: (
       <span>
-        Už veiksmą atsakingi asmenys turi atnaujinti informaciją ir pateikti
-        tvirtinimui darkart."
+        Pasižiūrėk{" "}
+        <ModelChip>
+          {{
+            default: () => "komentarų",
+            icon: () => <NIcon component={Icons.COMMENT}></NIcon>,
+          }}
+        </ModelChip>{" "}
+        skiltį, pataisyk informaciją, failus ir teik dar kartą!
       </span>
     ),
+    borderColorClass: "border-vusa-yellow",
+    icon: DocumentBulletListClock20Regular,
   },
   pending_padalinys_approval: {
-    title: "Laukia padalinio tvirtinimo",
+    title: "Laukia padalinio pritarimo arba komentarų",
     description: (
-      <span>Veiksmas yra pateiktas tvirtinimui padalinio koordinatoriams.</span>
+      <span>
+        Veiksmas yra pateiktas padalinio koordinatoriams. Jei dokumentai bus
+        sugrąžinti su komentarais atgal, pataisyk ir teik dar kartą.
+      </span>
     ),
+    borderColorClass: "border-blue-500",
+    icon: DocumentBulletListClock20Regular,
   },
   pending_final_approval: {
-    title: "Laukia galutinio tvirtinimo",
+    title: "Laukia galutinio pritarimo",
     description: (
-      <span>Laukiama galutinio patvirtinimo iš centrinių koordinatorių.</span>
+      <span>
+        Laukiama galutinio patvirtinimo iš centrinių koordinatorių! 👀
+      </span>
     ),
+    borderColorClass: "border-blue-500",
+    icon: DocumentBulletListClock20Regular,
   },
   approved: {
     title: "Patvirtintas",
     description: (
       <span>
-        Veiksmas patvirtintas. Po patvirtinimo, laukiama ataskaitos ir pateikimo
-        užbaigimui.
+        Tavo veiksmas patvirtintas ir gali pradėti tolimesnius darbus! Kai
+        įgyvendinsi veiklą, nepamiršk įkelti ataskaitos{" "}
+        <ModelChip>
+          {{
+            default: () => "failų",
+            icon: () => <NIcon component={Icons.SHAREPOINT_FILE}></NIcon>,
+          }}
+        </ModelChip>{" "}
+        skiltyje.
       </span>
     ),
+    borderColorClass: "border-green-500",
+    icon: CheckmarkCircle24Regular,
   },
   pending_completion: {
     title: "Laukia užbaigimo",
     description: (
       <span>
-        Veiksmas įvykdytas, laukiama galutinio patikrinimo dėl įkeltų failų.
+        Veiksmas įvykdytas, laukiama galutinio patikrinimo iš koordinatorių!
       </span>
     ),
+    borderColorClass: "border-blue-500",
+    icon: DocumentBulletListClock20Regular,
   },
   completed: {
     title: "Užbaigtas",
     description: (
       <span>
-        Veiksmas įvykdytas ir visa susijusi galutinė informacija yra įkelta.
+        Veiksmas įvykdytas ir visa susijusi galutinė informacija yra įkelta!
+        Woohoo, way to go! 🎉
       </span>
     ),
+    borderColorClass: "border-green-500",
+    icon: CheckmarkCircle24Regular,
   },
   canceled: {
     title: "Atšauktas",
     description: <span>Veiksmas atšauktas.</span>,
+    borderColorClass: "border-red-500",
   },
 };
 

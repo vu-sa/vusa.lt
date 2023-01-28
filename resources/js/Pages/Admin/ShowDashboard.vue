@@ -134,6 +134,20 @@
             >apklausa.vusa.lt</span
           ></NButton
         >
+        <NButton
+          secondary
+          :bordered="false"
+          size="tiny"
+          round
+          @click="windowOpen('https://office.com', '_blank')"
+          ><template #icon
+            ><div class="ml-2 mr-1">
+              <NIcon :size="10" :component="ExternalLinkSquareAlt"></NIcon></div
+          ></template>
+          <span class="text-zinc-900/70 dark:text-zinc-100/80"
+            >Microsoft 365</span
+          ></NButton
+        >
       </div>
     </section>
   </PageContent>

@@ -5,6 +5,7 @@
       footer: 'soft',
     }"
   >
+    <template #header><slot name="header" /></template>
     <template #header-extra>
       <slot name="header-extra" />
     </template>
@@ -26,3 +27,9 @@
 import { Info24Regular } from "@vicons/fluent";
 import { NButton, NCard, NIcon } from "naive-ui";
 </script>
+
+<style>
+.n-card > .n-card-header {
+  padding-bottom: 0.5rem;
+}
+</style>
