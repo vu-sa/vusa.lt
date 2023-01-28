@@ -60,7 +60,7 @@
         <NDivider />
         <Suspense>
           <SimpleFileViewer
-            :fileable="{ id: duty.id, type: 'Doing' }"
+            :fileable="{ id: duty.id, type: 'Duty' }"
           ></SimpleFileViewer>
           <template #fallback>
             <div class="flex h-24 items-center justify-center">
@@ -82,6 +82,7 @@ import { router } from "@inertiajs/core";
 import Icons from "@/Types/Icons/filled";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
+import SimpleFileViewer from "@/Features/Admin/SharepointFileManager/Viewer/SimpleFileViewer.vue";
 import UserPopover from "@/Components/Avatars/UserPopover.vue";
 import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 
