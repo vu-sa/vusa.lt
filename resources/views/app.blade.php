@@ -35,7 +35,7 @@
 </head>
 
 {{-- TODO: something injects margin-bottom of 8px --}}
-<body class="font-sans antialiased">
+<body class="font-sans antialiased" style="margin-bottom: 0px">
     @inertia
 </body>
 

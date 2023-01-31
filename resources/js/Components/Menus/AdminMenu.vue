@@ -73,7 +73,10 @@ const menuOptions = computed(() => [
       return <NIcon component={Home24Regular}></NIcon>;
     },
   },
-
+  {
+    key: "divider",
+    type: "divider",
+  },
   {
     label: "Atstovavimas",
     key: "representation",

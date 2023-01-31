@@ -7,10 +7,9 @@
   >
     <template #cover>
       <img
-        v-if="imageLoaded"
+        v-if="institution.image_url"
         class="h-32 object-cover"
         :src="institution.image_url"
-        @error="imageLoaded = false"
       />
     </template>
     <template #header>
@@ -90,8 +89,6 @@ const props = defineProps<{
   size?: "small" | "medium" | "large";
   duties?: App.Entities.Duty[];
 }>();
-
-const imageLoaded = ref(true);
 
 const institutionDuties = computed(() => {
   return props.duties?.filter((duty) => {
