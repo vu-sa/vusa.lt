@@ -57,7 +57,6 @@ class MainController extends PublicController
 
 	public function home()
 	{
-
 		// get last 4 news by publishing date
 		$banners = Padalinys::where('alias', 'vusa')->first()->banners()->inRandomOrder()->where('is_active', 1)->get();
 
