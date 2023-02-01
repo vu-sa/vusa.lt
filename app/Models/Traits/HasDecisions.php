@@ -9,15 +9,12 @@ use Illuminate\Support\Str;
 trait HasDecisions
 {
     private ModelAuthorizer $authorizer;
-    private $modelName;
-
-    public function __construct()
-    {
-        $this->modelName = Str::of(class_basename($this))->camel()->plural();
-    }
+    private string $modelName;
     
     public function decision($decision, ModelAuthorizer $authorizer)
     {        
+        $this->modelName = Str::of(class_basename($this))->camel()->plural();
+        
         $this->authorizer = $authorizer;
 
         // based on the decision, call the appropriate method

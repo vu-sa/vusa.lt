@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Models\Traits\HasComments;
 use App\Models\Comment;
-use App\Models\Pivots\Doable;
 use App\Models\Traits\HasDecisions;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTasks;
@@ -20,7 +19,7 @@ use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Doing extends Model 
 {
-    use HasFactory, HasComments, HasDecisions, HasRelationships, HasSharepointFiles, HasStates, HasTasks, HasUlids, LogsActivity, SoftDeletes;
+    use HasFactory, HasStates, HasComments, HasDecisions, HasRelationships, HasSharepointFiles, HasTasks, HasUlids, LogsActivity, SoftDeletes;
 
     protected $with = ['types'];
 
@@ -30,7 +29,6 @@ class Doing extends Model
         'state' => DoingState::class,
     ];
 
-    // TODO: not only soft deletes, but activity log as well don't work properly
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
