@@ -13,6 +13,7 @@ use App\Services\SharepointService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 class SharepointFileService
 {
@@ -32,9 +33,9 @@ class SharepointFileService
         $path = 'General';
 
         if ($fileable instanceof Type) {
-            $typeableType = class_basename($fileable->model_type);
+            $typeableType = Str::plural(class_basename($fileable->model_type));
             
-            $path .= '/' . class_basename($fileable->getMorphClass());
+            $path .= '/' . Str::plural(class_basename($fileable->getMorphClass()));
             $path .= '/' . $typeableType;
             $path .= '/' . $fileable->title;
         }
@@ -43,7 +44,7 @@ class SharepointFileService
             $padalinys = $fileable->load('padalinys')->padalinys;
             $path .= '/'. 'Padaliniai';
             $path .= '/' . $padalinys->shortname;
-            $path .= '/' . class_basename($fileable->getMorphClass()) . '/' . $fileable->name;
+            $path .= '/' . Str::plural(class_basename($fileable->getMorphClass())) . '/' . $fileable->name;
         }
 
         if ($fileable instanceof Meeting) {
@@ -52,8 +53,8 @@ class SharepointFileService
 
             $path .= '/'. 'Padaliniai';
             $path .= '/' . $institution->padalinys->shortname;
-            $path .= '/' . class_basename($institution) . '/' . $institution->name;
-            $path .= '/' . class_basename($fileable) . '/' . $formattedDatetime . '/' . $fileable->name;
+            $path .= '/' . Str::plural(class_basename($institution)) . '/' . $institution->name;
+            $path .= '/' . Str::plural(class_basename($fileable)) . '/' . $formattedDatetime . '/' . $fileable->name;
         }
 
         if ($fileable instanceof Doing) {
@@ -61,7 +62,7 @@ class SharepointFileService
 
             $path .= '/'. 'Users';
             $path .= '/' . $fileable->users->first()->name;
-            $path .= '/' . class_basename($fileable->getMorphClass());
+            $path .= '/' . Str::plural(class_basename($fileable->getMorphClass()));
             // add last 4 id letters
 
             if ($fileable->drive_item_name) {
@@ -81,8 +82,8 @@ class SharepointFileService
 
             $path .= '/'. 'Padaliniai';
             $path .= '/' . $institution->padalinys->shortname;
-            $path .= '/' . class_basename($institution) . '/' . $institution->name;
-            $path .= '/' . class_basename($fileable->getMorphClass()) . '/' . $fileable->title;
+            $path .= '/' . Str::plural(class_basename($institution)) . '/' . $institution->name;
+            $path .= '/' . Str::plural(class_basename($fileable->getMorphClass())) . '/' . $fileable->title;
         }
 
         return $path;

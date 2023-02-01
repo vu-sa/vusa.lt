@@ -13,17 +13,18 @@
         alt=""
         :src="$page.props?.layout?.navBackground"
       /> -->
-      <div class="ml-[2vw] inline-flex items-center gap-2">
+      <!-- <div class="ml-[1.5vw] inline-flex items-center">
         <Link href="/">
           <NButton size="tiny" quaternary
             ><template #icon
-              ><NIcon :component="ArrowLeft24Regular"></NIcon></template
-          ></NButton>
+              ><NIcon
+                :size="12"
+                :component="ArrowLeft16Regular"
+              ></NIcon></template
+            >Į vusa.lt</NButton
+          >
         </Link>
-        <Link href="/" class="my-auto w-20">
-          <AppLogo class="w-full" />
-        </Link>
-      </div>
+      </div> -->
       <div class="invisible">
         <NButton secondary round @click="collapsed = !collapsed">Menu</NButton>
       </div>
@@ -52,7 +53,7 @@
     </nav>
     <NLayout class="mt-16" has-sider>
       <NLayoutSider
-        class="subtle-gray-gradient mb-4 mt-12 ml-4 h-fit rounded-md from-white shadow-md"
+        class="subtle-gray-gradient my-6 ml-4 h-fit rounded-md from-white shadow-md"
         collapse-mode="width"
         :collapsed-width="isMobile ? 0 : 69"
         :width="220"
@@ -61,8 +62,11 @@
         @collapse="collapsed = true"
         @expand="collapsed = false"
       >
-        <NScrollbar class="max-h-[calc(100vh-20rem)] px-1.5"
-          ><AdminMenu class="mt-2" :collapsed="collapsed"
+        <NScrollbar class="max-h-[calc(100vh-20rem)] px-1.5">
+          <Link class="h-fit w-fit" :href="route('dashboard')">
+            <AppLogo class="mx-auto w-full p-2" />
+          </Link>
+          <AdminMenu :collapsed="collapsed"
         /></NScrollbar>
         <NDivider />
 
@@ -118,12 +122,11 @@ import { computed, onMounted, watch } from "vue";
 import { ref } from "vue";
 import { useOnline, useStorage } from "@vueuse/core";
 
-import { ArrowLeft24Regular, Board24Regular } from "@vicons/fluent";
+import { Board24Regular } from "@vicons/fluent";
 import AdminMenu from "@/Components/Menus/AdminMenu.vue";
 import AppLogo from "@/Components/AppLogo.vue";
 import Changelog from "@/Components/Cards/ChangelogCard.vue";
 import DarkModeSwitch from "@/Components/Buttons/DarkModeSwitch.vue";
-import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
 import NotificationBell from "@/Features/Admin/Notifications/NotificationBell.vue";
 import TaskIndicatorButton from "../../Features/Admin/TaskManager/TaskIndicatorButton.vue";

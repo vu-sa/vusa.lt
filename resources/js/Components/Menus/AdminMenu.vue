@@ -74,10 +74,6 @@ const menuOptions = computed(() => [
     },
   },
   {
-    key: "divider",
-    type: "divider",
-  },
-  {
     label: "Atstovavimas",
     key: "representation",
     icon: () => {
