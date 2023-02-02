@@ -41,7 +41,7 @@ import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import "./posthog";
 import Layout from "@/Components/Layouts/AdminLayout.vue";
 
-// import "@/echo";
+import "@/echo";
 
 const isThemeDark = ref(isDarkMode());
 const mounted = ref(false);

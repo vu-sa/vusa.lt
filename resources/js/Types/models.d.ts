@@ -88,14 +88,12 @@ declare namespace App.Models {
     created_at: any;
     updated_at: any;
     deleted_at: any | null;
-    doables?: Array<App.Models.Pivots.Doable> | null;
     goals?: Array<App.Models.Goal> | null;
     matters?: Array<App.Models.Matter> | null;
     types?: Array<App.Models.Type> | null;
     users?: Array<App.Models.User> | null;
     institutions?: any | null;
     padaliniai?: any | null;
-    doables_count?: number | null;
     goals_count?: number | null;
     matters_count?: number | null;
     types_count?: number | null;
@@ -538,14 +536,10 @@ declare namespace App.Models.Pivots {
     title: string;
     start_time: number | null;
     outcome: string | null;
-  }
-
-  export interface Doable {
-    doable_type: string;
-    doable_id: string;
-    doing_id: string;
-    created_at: any;
-    updated_at: any;
+    matter?: App.Models.Matter | null;
+    meeting?: App.Models.Meeting | null;
+    institutions?: any | null;
+    padaliniai?: any | null;
   }
 
   export interface Dutiable {
