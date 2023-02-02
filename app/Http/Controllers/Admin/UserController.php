@@ -10,6 +10,7 @@ use Inertia\Inertia;
 use App\Models\Duty;
 use App\Http\Controllers\Controller as Controller;
 use App\Http\Controllers\ResourceController;
+use App\Models\Padalinys;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -126,15 +127,13 @@ class UserController extends ResourceController
         // user load duties with pivot
         $user->load(['duties' => function ($query) {
             $query->withPivot('start_date', 'end_date');
-        }]);
+        }])->load('roles');
 
         return Inertia::render('Admin/People/EditUser', [
-            'user' => fn () => [
-                ...$user->toArray(), 'roles' => $user->roles()->pluck('id')->toArray()
-            ],
+            'user' => $user,
             // get all roles
             'roles' => fn () => Role::all(),
-            'duties' => fn () => $this->getDutiesForForm()
+            'padaliniaiWithDuties' => fn () => $this->getDutiesForForm()
         ]);
     }
 
@@ -192,12 +191,17 @@ class UserController extends ResourceController
 
     private function getDutiesForForm()
     {
-        return Duty::with(['institution:id,padalinys_id', 'institution.padalinys:id,shortname'])
-        ->when(!auth()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) { 
-            $query->whereHas('institution', function ($query) {
-                $query->where('padalinys_id', User::find(Auth::id())->padalinys()?->id);
-            });
-        })->get();
+        // return Duty::with(['institution:id,name,padalinys_id', 'institution.padalinys:id,shortname'])
+        // ->when(!auth()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) { 
+        //     $query->whereHas('institution', function ($query) {
+        //         $query->where('padalinys_id', User::find(Auth::id())->padalinys()?->id);
+        //     });
+        // })->get();
+
+        return Padalinys::orderBy('shortname')->with('institutions:id,name,padalinys_id', 'institutions.duties:id,name,institution_id')
+            ->when(!auth()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
+                $query->whereIn('id', User::find(Auth::id())->padaliniai->pluck('id'));
+            })->get();
     }
 
     public function detachFromDuty(User $user, Duty $duty)

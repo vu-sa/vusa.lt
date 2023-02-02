@@ -89,7 +89,11 @@
         :form="form"
         :model-route="deleteModelRoute"
       />
-      <UpsertModelButton :form="form" :model-route="modelRoute" />
+      <UpsertModelButton
+        :route-parameters="[dutiable.duty_id, dutiable.dutiable_id]"
+        :form="form"
+        :model-route="modelRoute"
+      />
     </div>
   </NForm>
 </template>

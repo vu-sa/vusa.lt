@@ -1,10 +1,10 @@
 <template>
-  <PageContent :title="user.name" :back-url="route('users.index')">
+  <PageContent aside :title="user.name" :back-url="route('users.index')">
     <UpsertModelLayout :errors="$page.props.errors" :model="user">
       <UserForm
         :user="user"
         :roles="roles"
-        :duties="duties"
+        :padaliniai-with-duties="padaliniaiWithDuties"
         model-route="users.update"
         delete-model-route="users.destroy"
       />
@@ -35,9 +35,7 @@
                 circle
                 size="tiny"
                 @click.prevent="
-                  router.visit(
-                    route('dutiables.edit', { dutiable: duty.pivot.id })
-                  )
+                  router.visit(route('duties.users.edit', [duty.id, user.id]))
                 "
               >
                 <NIcon>
@@ -66,6 +64,6 @@ defineProps<{
   user: App.Entities.User;
   roles: App.Entities.Role[];
   // TODO: don't return all duties from the controller immediately
-  duties: App.Entities.Duty[];
+  padaliniaiWithDuties: App.Entities.Padalinys[];
 }>();
 </script>

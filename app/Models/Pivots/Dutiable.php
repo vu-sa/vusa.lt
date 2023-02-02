@@ -2,6 +2,9 @@
 
 namespace App\Models\Pivots;
 
+use App\Models\Contact;
+use App\Models\Duty;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
@@ -33,12 +36,12 @@ class Dutiable extends MorphPivot
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'dutiable_id');
     }
 
     public function contact()
     {
-        return $this->belongsTo(Contact::class);
+        return $this->belongsTo(Contact::class, 'dutiable_id');
     }
 
     public function padaliniai()

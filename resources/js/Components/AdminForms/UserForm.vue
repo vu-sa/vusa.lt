@@ -36,10 +36,9 @@
         <NTransfer
           ref="transfer"
           v-model:value="form.duties"
-          :options="dutyOptions"
+          :options="flattenDutyOptions"
+          :render-source-list="renderSourceList"
           source-filterable
-          source-filter-placeholder="Ieškoti pareigų..."
-          size="small"
         ></NTransfer>
       </NFormItemGi>
 
@@ -61,17 +60,24 @@
   </NForm>
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
+import { Eye16Regular } from "@vicons/fluent";
 import {
+  NButton,
   NForm,
   NFormItemGi,
   NGrid,
+  NIcon,
   NInput,
   NSelect,
   NTransfer,
+  NTree,
+  type TransferRenderSourceList,
+  type TreeOption,
 } from "naive-ui";
 import { useForm } from "@inertiajs/vue3";
 
+import { h } from "vue";
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import UploadImageButtons from "@/Components/Buttons/UploadImageButtons.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
@@ -79,17 +85,67 @@ import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 const props = defineProps<{
   user: App.Entities.User;
   roles: App.Entities.Role[];
-  duties: App.Entities.Duty[];
+  padaliniaiWithDuties: App.Entities.Padalinys[];
   modelRoute: string;
   deleteModelRoute?: string;
 }>();
 
 const form = useForm("user", props.user);
 
-const dutyOptions = props.duties.map((duty) => ({
-  label: `${duty.name} (${duty.institution?.padalinys?.shortname})`,
-  value: duty.id,
-}));
+const dutyOptions: TreeOption[] = props.padaliniaiWithDuties.map(
+  (padalinys) => ({
+    label: padalinys.shortname,
+    value: padalinys.id,
+    checkboxDisabled: true,
+    children: padalinys.institutions?.map((institution) => ({
+      label: institution.name,
+      value: institution.id,
+      checkboxDisabled: true,
+      children: institution.duties?.map((duty) => ({
+        label: duty.name,
+        value: duty.id,
+      })),
+    })),
+  })
+);
+
+const renderLabel = ({ option }: { option: TreeOption }) => {
+  // jsx element
+  // if value is integer then it's a padalinys and doesn't have additional button
+  if (typeof option.value === "number") {
+    return <span>{option.label}</span>;
+  }
+
+  // jsx element with button
+  // ! assumption that if checkbox is enabled then it's a duty
+  return (
+    <span class="inline-flex items-center gap-2">
+      {option.label}
+      <a
+        target="_blank"
+        href={
+          option.checkboxDisabled
+            ? route("institutions.edit", option.value)
+            : route("duties.edit", option.value)
+        }
+      >
+        <NButton size="tiny" text>
+          {{
+            icon: <NIcon component={Eye16Regular} />,
+          }}
+        </NButton>
+      </a>
+    </span>
+  );
+};
+
+const flattenDutyOptions = dutyOptions.flatMap((padalinys) =>
+  padalinys.children?.flatMap((institution) =>
+    institution.children?.map((duty) => duty)
+  )
+);
+
+console.log(dutyOptions);
 
 const rolesOptions = props.roles.map((role) => ({
   label: role.name,
@@ -97,4 +153,23 @@ const rolesOptions = props.roles.map((role) => ({
 }));
 
 form.duties = props.user.duties?.map((duty) => duty.id);
+
+// tsx render Ntree
+const renderSourceList: TransferRenderSourceList = ({ onCheck, pattern }) => {
+  return h(NTree, {
+    style: "margin: 0 4px;",
+    keyField: "value",
+    checkable: true,
+    selectable: false,
+    blockLine: true,
+    virtualScroll: true,
+    renderLabel: renderLabel,
+    data: dutyOptions,
+    pattern,
+    checkedKeys: form.duties,
+    onUpdateCheckedKeys: (checkedKeys: Array<string | number>) => {
+      onCheck(checkedKeys);
+    },
+  });
+};
 </script>

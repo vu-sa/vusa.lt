@@ -17,6 +17,7 @@ import { router } from "@inertiajs/vue3";
 const props = defineProps<{
   form: any;
   images?: UploadFileInfo[];
+  routeParameters?: string[];
   modelRoute: string;
 }>();
 
@@ -37,7 +38,7 @@ const upsertModel = () => {
     showSpin.value = true;
     props.form.submit(
       modelMethod.value,
-      route(props.modelRoute, props.form.id),
+      route(props.modelRoute, props.routeParameters ?? props.form.id),
       {
         onSuccess: () => {
           showSpin.value = false;
@@ -50,7 +51,7 @@ const upsertModel = () => {
   } else {
     showSpin.value = true;
     router.post(
-      route(props.modelRoute, props.form.id),
+      route(props.modelRoute, props.routeParameters ?? props.form.id),
       {
         ...props.form,
         images: props.images,

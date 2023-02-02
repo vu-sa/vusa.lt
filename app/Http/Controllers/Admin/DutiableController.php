@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
 use App\Http\Controllers\ResourceController;
+use App\Models\Duty;
 
 class DutiableController extends ResourceController
 {    
@@ -58,13 +59,16 @@ class DutiableController extends ResourceController
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Dutiable  $dutiable
+     * @param  \App\Models\Duty  $duty
+     * @param  string  $dutiable
      * @return \Illuminate\Http\Response
      */
-    public function edit(Dutiable $dutiable)
-    {
-        $this->authorize('update', [Dutiable::class, $dutiable, $this->authorizer]);
-        
+    public function edit(Duty $duty, $dutiable)
+    {     
+        $this->authorize('update', [Duty::class, $duty, $this->authorizer]);
+
+        $dutiable = Dutiable::with('user')->where('duty_id', $duty->id)->where('dutiable_id', $dutiable)->first();
+
         return Inertia::render('Admin/People/EditDutiable', [
             'dutiable' => $dutiable,
         ]);
@@ -72,14 +76,15 @@ class DutiableController extends ResourceController
 
     /**
      * Update the specified resource in storage.
+     * TODO: this will not work for contacts
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \App\Models\Dutiable  $dutiable
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Dutiable $dutiable)
+    public function update(Duty $duty, $dutiable, Request $request)
     {
-        $this->authorize('update', [Dutiable::class, $dutiable, $this->authorizer]);
+        $this->authorize('update', [Duty::class, $duty, $this->authorizer]);
         
         $validated = $request->validate([
             'start_date' => 'required|date',
@@ -87,8 +92,10 @@ class DutiableController extends ResourceController
             'extra_attributes' => 'nullable|array'
         ]);
 
-        $dutiable->update($validated);
-        
+        // dd($validated, $request->all());
+
+        $duty->users()->updateExistingPivot($dutiable, $validated);
+
         return back()->with('success', 'Pareigybė sėkmingai atnaujinta!');
     }
 

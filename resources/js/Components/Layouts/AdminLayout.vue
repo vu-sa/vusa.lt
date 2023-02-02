@@ -62,10 +62,10 @@
         @collapse="collapsed = true"
         @expand="collapsed = false"
       >
+        <Link class="h-fit w-fit" :href="route('dashboard')">
+          <AppLogo class="mx-auto w-full p-2" />
+        </Link>
         <NScrollbar class="max-h-[calc(100vh-20rem)] px-1.5">
-          <Link class="h-fit w-fit" :href="route('dashboard')">
-            <AppLogo class="mx-auto w-full p-2" />
-          </Link>
           <AdminMenu :collapsed="collapsed"
         /></NScrollbar>
         <NDivider />

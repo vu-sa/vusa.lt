@@ -193,7 +193,7 @@ class DutyController extends ResourceController
     private function getInstitutionsForForm(): Collection
     {
         return Institution::select('id', 'name', 'alias', 'padalinys_id')->when(!request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
-                $query->where('padalinys_id', auth()->user()->padalinys()->id);
+            $query->whereIn('padalinys_id', auth()->user()->padaliniai->pluck('id'));
         })->with('padalinys:id,shortname')->get();
     }
 }

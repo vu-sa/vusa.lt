@@ -1,12 +1,13 @@
 <template>
   <div class="max-w-2xl">
-    <!-- <NCollapse :default-expanded-names="['vusa.lt']">
-      <NCollapseItem
-        v-for="item in permissableItems"
-        :key="item.groupName"
-        :name="item.groupName"
-        :title="item.groupName"
-      > -->
+    <!-- <NTransfer
+          ref="transfer"
+          v-model:value="form.duties"
+          :options="dutyOptions"
+          source-filterable
+          source-filter-placeholder="Ieškoti pareigų..."
+          size="small"
+        ></NTransfer> -->
     <section v-for="entity in entities" :key="entity.key">
       <EntityDescription :title="entity.title" :icon="entity.icon">
         <component :is="entity.description"></component>
@@ -19,8 +20,6 @@
       ></PermissionTable>
       <NDivider />
     </section>
-    <!-- </NCollapseItem>
-    </NCollapse> -->
   </div>
 </template>
 

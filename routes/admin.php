@@ -46,7 +46,7 @@ Route::resource('saziningaiExamFlows', SaziningaiExamFlowsController::class);
 Route::resource('saziningaiExamObservers', SaziningaiExamObserversController::class);
 Route::resource('files', FilesController::class);
 Route::resource('duties', DutyController::class);
-Route::resource('dutiables', DutiableController::class);
+Route::resource('duties.users', DutiableController::class);
 Route::resource('institutions', InstitutionController::class);
 Route::post('institutions/reorderDuties', [InstitutionController::class, 'reorderDuties'])->name('institutions.reorderDuties');
 
