@@ -38,13 +38,18 @@ import { onMounted, ref } from "vue";
 
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 // import { usePage } from "@inertiajs/vue3";
-import "./posthog";
+// import "./posthog";
 import Layout from "@/Components/Layouts/AdminLayout.vue";
 
 import "@/echo";
+import { usePage } from "@inertiajs/vue3";
 
 const isThemeDark = ref(isDarkMode());
 const mounted = ref(false);
+
+if (usePage().props?.auth?.user) {
+  $posthog.identify(usePage().props.auth?.user.id);
+}
 
 // const NThemeEditor = defineAsyncComponent(
 //   () => import("naive-ui/lib/theme-editor/src/ThemeEditor")

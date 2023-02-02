@@ -5,7 +5,12 @@ export default {
     app.config.globalProperties.$posthog = posthog.init(
       import.meta.env.VITE_POSTHOG_API_KEY,
       {
-        api_host: "https://app.posthog.com",
+        api_host: "https://eu.posthog.com",
+        autocapture: {
+          dom_event_allowlist: ["click"],
+          element_allowlist: ["a", "button"],
+        },
+        persistence: "memory",
       }
     );
   },
