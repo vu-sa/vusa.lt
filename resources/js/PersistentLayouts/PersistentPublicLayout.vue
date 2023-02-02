@@ -27,7 +27,7 @@ import Layout from "@/Components/Public/Layouts/PublicLayout.vue";
 
 const isThemeDark = ref(isDarkMode());
 
-if (usePage().props?.auth?.user) {
+if (usePage().props?.auth?.user && typeof $posthog !== "undefined") {
   $posthog.identify(usePage().props.auth?.user.id);
 }
 

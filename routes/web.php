@@ -96,6 +96,9 @@ Route::middleware('main')->group(function () {
     });
     
     Route::get('/', [Public\MainController::class, 'home'])->name('home');
+
+    Route::redirect('/admin', '/mano', 301);
+
     Route::get('naujienos', [Public\NewsController::class, 'newsArchive'])->name('newsArchive');
     
     Route::redirect('naujiena/archyvas', 'naujienos', 301);

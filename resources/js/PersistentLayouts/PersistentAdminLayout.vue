@@ -47,7 +47,7 @@ import { usePage } from "@inertiajs/vue3";
 const isThemeDark = ref(isDarkMode());
 const mounted = ref(false);
 
-if (usePage().props?.auth?.user) {
+if (usePage().props?.auth?.user && typeof $posthog !== "undefined") {
   $posthog.identify(usePage().props.auth?.user.id);
 }
 
