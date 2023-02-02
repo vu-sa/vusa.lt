@@ -15,7 +15,7 @@
         <h2 class="flex flex-auto items-center gap-2 px-2 text-slate-900">
           <span>{{ contact.name }}</span>
           <NButton
-            v-if="$page.props.auth.user"
+            v-if="$page.props.auth?.user"
             secondary
             circle
             size="tiny"

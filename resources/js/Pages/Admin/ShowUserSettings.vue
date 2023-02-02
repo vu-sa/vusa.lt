@@ -1,5 +1,5 @@
 <template>
-  <PageContent :title="`${$page.props.auth.user?.name}`">
+  <PageContent :title="`${$page.props.auth?.user?.name}`">
     <NCard class="subtle-gray-gradient">
       <!-- <p>{{ salutation }}</p> -->
       <div class="mb-4">

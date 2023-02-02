@@ -27,7 +27,7 @@
         >
           <span>{{ contact.name }}</span>
           <NButton
-            v-if="$page.props.auth.user"
+            v-if="$page.props.auth?.user"
             secondary
             circle
             size="tiny"

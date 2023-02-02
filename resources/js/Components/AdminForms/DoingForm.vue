@@ -29,7 +29,7 @@
         />
       </NFormItemGi>
       <NFormItemGi label="Atsakingas (-a)" :span="2">
-        <UserPopover :user="$page.props.auth.user" show-name />
+        <UserPopover :user="$page.props.auth?.user" show-name />
       </NFormItemGi>
 
       <NFormItemGi :span="2" :show-label="false"
