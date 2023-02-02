@@ -88,10 +88,12 @@
               </NButton>
             </template>
           </NPopover>
+          <a
+            target="_blank"
+            href="https://github.com/vu-sa/vusa.lt/blob/main/CHANGELOG.md"
+            ><NButton size="tiny" quaternary> v0.4 </NButton></a
+          >
         </div>
-        <NModal v-model:show="showModal">
-          <Changelog />
-        </NModal>
       </NLayoutSider>
       <NLayoutContent :content-style="{ paddingLeft: '2rem' }">
         <NMessageProvider><slot /></NMessageProvider>

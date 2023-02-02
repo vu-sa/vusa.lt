@@ -36,12 +36,14 @@
             <AppLogo class="hidden w-96 invert sm:block" />
           </div>
           <div
-            class="subtle-gray-gradient m-auto mt-0 flex h-auto w-fit flex-col items-center gap-4 rounded-lg from-zinc-100 to-white p-4 text-zinc-700 shadow-xl transition-shadow duration-500 ease-in-out hover:shadow-zinc-900/90 sm:mt-auto sm:justify-center sm:p-12"
+            class="subtle-gray-gradient m-auto mt-0 flex h-auto flex-col items-center gap-4 rounded-lg from-zinc-100 to-white p-4 text-zinc-700 shadow-xl transition-shadow duration-500 ease-in-out hover:shadow-zinc-900/90 sm:mt-auto sm:justify-center sm:p-12"
           >
             <h1 class="font-bold text-zinc-700">Labas! 👋</h1>
             <AppLogo class="w-24 sm:hidden" />
 
-            <p class="text-center text-xs text-zinc-600 sm:text-left">
+            <p
+              class="max-w-xs text-center text-xs text-zinc-600 sm:text-center"
+            >
               <strong>vusa.lt/mano</strong> šiuo metu gali naudoti VU SA
               koordinatoriai ir studentų atstovai.
               <!-- <Link class="text-zinc-400 underline" :href="route('main.home')"
