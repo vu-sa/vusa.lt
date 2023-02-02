@@ -247,9 +247,9 @@ class MainController extends PublicController
 
 	public function contacts()
 	{
-		$alias = request()->alias;
+		$type = request()->alias;
 
-		if ($alias == 'studentu-atstovai') {
+		if ($type == 'studentu-atstovai') {
 			// get all student duty institutions that have type 'studentu-atstovu-organas' and is of the same padalinys as the current one
 			$institutions = Institution::with(['duties.users'])->where([['padalinys_id', '=', $this->padalinys->id]])->whereHas('type', function (Builder $query) {
 				$query->where('alias', 'studentu-atstovu-organas');
@@ -263,8 +263,10 @@ class MainController extends PublicController
 			]);
 		}
 
-		if (in_array($alias, [null, 'koordinatoriai', 'kuratoriai'])) {
-			$duty_type = Type::where('slug', '=', $alias ?? "koordinatoriai")->first();
+		if (in_array($type, [null, 'koordinatoriai', 'kuratoriai'])) {
+			
+			$duty_type = Type::where('slug', '=', $type ?? "koordinatoriai")->first();
+
 			$child_duty_types = Type::where('parent_id', '=', $duty_type->id)->get();
 
 			if ($this->padalinys->id === 16) {
@@ -282,7 +284,7 @@ class MainController extends PublicController
 
 			$alias_duties = $alias_duties->merge($institution->duties->where('type_id', '=', $duty_type->id)->sortBy('order')->values());
 		} else {
-			$institution = Institution::where('alias', '=', $alias)->first();
+			$institution = Institution::where('alias', '=', $this->alias)->first();
 
 			if (is_null($institution)) {
 				abort(404);
@@ -331,50 +333,6 @@ class MainController extends PublicController
 			'description' => strip_tags($this->padalinys->description),
 		]);
 	}
-
-	// public function searchContacts()
-	// {
-	// 	$search_contacts = null;
-
-	// 	if (request()->name) {
-	// 		$inputName = request()->name;
-	// 		$search_contacts = User::has('duties')->where('name', 'like', "%{$inputName}%")->get();
-	// 	}
-
-	// 	return Inertia::render('Public/Contacts/ContactsSearch', [
-
-	// 		'searchContacts' => is_null($search_contacts) ? [] : $search_contacts->map(function ($contact) {
-
-	// 			return [
-	// 				'id' => $contact->id,
-	// 				'name' => $contact->name,
-	// 				'email' => $contact->email,
-	// 				'phone' => $contact->phone,
-	// 				'duties' => $contact->duties->map(function ($duty) {
-	// 					return [
-	// 						'id' => $duty->id,
-	// 						'name' => $duty->name,
-	// 						'institution' => $duty->institution->name,
-	// 						'type' => $duty->type->name ?? $duty->type->short_name,
-	// 						'description' => $duty->description,
-	// 						'email' => $duty->email,
-	// 					];
-	// 				}),
-	// 				'profile_photo_path' => function () use ($contact) {
-	// 					if (substr($contact->profile_photo_path, 0, 4) == 'http') {
-	// 						return $contact->profile_photo_path;
-	// 					} else if (is_null($contact->profile_photo_path)) {
-	// 						return null;
-	// 					} else {
-	// 						return Storage::get(str_replace('uploads', 'public', $contact->profile_photo_path)) == null ? null : $contact->profile_photo_path;
-	// 					}
-	// 				}
-	// 			];
-	// 		}),
-	// 	])->withViewData([
-	// 		'title' => 'Kontaktų paieška'
-	// 	]);
-	// }
 
 	public function search()
 	{

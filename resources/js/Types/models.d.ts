@@ -552,6 +552,10 @@ declare namespace App.Models.Pivots {
     created_at: any;
     updated_at: any;
     dutiable?: any | null;
+    duty?: App.Models.Duty | null;
+    user?: App.Models.User | null;
+    contact?: App.Models.Contact | null;
+    padaliniai?: any | null;
   }
 
   export interface GoalMatter {
