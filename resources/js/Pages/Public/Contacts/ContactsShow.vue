@@ -57,7 +57,7 @@ const props = defineProps<{
 }>();
 
 const institutionName = computed(() => {
-  const locale = usePage().props.locale;
+  const locale = usePage().props.app.locale;
 
   if (locale === "en") {
     return (
@@ -69,7 +69,7 @@ const institutionName = computed(() => {
 });
 
 const institutionDescription = computed(() => {
-  const locale = usePage().props.locale;
+  const locale = usePage().props.app.locale;
 
   if (locale === "en") {
     return (

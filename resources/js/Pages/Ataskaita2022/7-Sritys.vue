@@ -45,7 +45,7 @@ import AtaskaitaLayout from "@/Components/Public/Layouts/AtaskaitaLayout.vue";
 const inertiaVisitOnClick = (permalink) => {
   router.visit(
     route("main.ataskaita2022", {
-      lang: usePage().props.locale,
+      lang: usePage().props.app.locale,
       permalink: permalink,
     })
   );

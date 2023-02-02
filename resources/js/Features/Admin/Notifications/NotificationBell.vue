@@ -124,7 +124,7 @@ window.Echo.private(
   const options: UseWebNotificationOptions = {
     title: notificationSent.text.replaceAll(/<\/?[^>]+(>|$)/gi, ""),
     dir: "auto",
-    lang: usePage().props.locale,
+    lang: usePage().props.app.locale,
     renotify: true,
     tag: "notification",
     icon: notificationSent.subject?.image ?? usePage().props.auth?.user,

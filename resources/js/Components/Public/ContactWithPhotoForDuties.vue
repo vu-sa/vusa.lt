@@ -100,7 +100,7 @@ const openEdit = (contact: App.Entities.User) => {
 };
 
 const dutyDescription = (duty) => {
-  const locale = usePage().props.locale;
+  const locale = usePage().props.app.locale;
 
   if (locale === "en") {
     return (
@@ -118,7 +118,7 @@ const showAdditionalInfo = (duty) => {
     return null;
   }
 
-  const locale = usePage().props.locale;
+  const locale = usePage().props.app.locale;
 
   if (locale === "en") {
     return duty.pivot.extra_attributes?.en?.study_program == null
@@ -152,7 +152,7 @@ const changeDutyNameEndings = (
   duty: App.Entities.Duty
 ) => {
   // check for english locale and just return english
-  let locale = usePage().props.locale;
+  let locale = usePage().props.app.locale;
 
   if (locale === "en" && duty.extra_attributes?.en?.name) {
     return duty.extra_attributes?.en?.name;

@@ -82,7 +82,7 @@ const props = defineProps<{
   news: PaginatedModels<App.Entities.News>;
 }>();
 
-const locale = ref(usePage().props.locale);
+const locale = ref(usePage().props.app.locale);
 
 const handlePageChange = (page) => {
   router.reload({

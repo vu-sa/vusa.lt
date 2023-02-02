@@ -223,7 +223,7 @@ import { ref } from "vue";
 
 // map padaliniai to options_padaliniai
 
-const locale = ref(usePage().props.locale);
+const locale = ref(usePage().props.app.locale);
 const locales = ["lt", "en"];
 const activeDrawer = ref(false);
 const toggleMenu = () => {

@@ -47,14 +47,14 @@ const goToLink = (link: string | null) => {
     }
     router.visit(
       route("main.page", {
-        lang: usePage().props.locale,
+        lang: usePage().props.app.locale,
         permalink: link,
       })
     );
   } else {
     router.visit(
       route("padalinys.page", {
-        lang: usePage().props.locale,
+        lang: usePage().props.app.locale,
         permalink: link,
         padalinys: padalinysAlias,
       })

@@ -138,13 +138,13 @@ const inertiaVisitOnClick = (alias: string) => {
   router.visit(
     route("main.contacts.alias", {
       alias: alias,
-      lang: usePage().props.locale,
+      lang: usePage().props.app.locale,
     })
   );
 };
 
 const institutionName = computed(() => {
-  const locale = usePage().props.locale;
+  const locale = usePage().props.app.locale;
 
   if (locale === "en") {
     return (
