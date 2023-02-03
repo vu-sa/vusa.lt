@@ -350,10 +350,6 @@ return new class extends Migration
             $table->char('typeable_id', 26)->change();
         });
 
-        Schema::table('types', function (Blueprint $table) {
-            $table->softDeletes();
-        });
-
         DB::table('dutiables')->where('dutiable_type', 'User')->update(['dutiable_type' => 'App\\Models\\User']);
 
         // invalidate all sessions

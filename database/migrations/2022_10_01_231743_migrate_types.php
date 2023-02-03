@@ -19,11 +19,15 @@ return new class extends Migration
     public function up()
     {
         
+        Schema::table('types', function (Blueprint $table) {
+            $table->softDeletes();
+        });
+        
         // migrate duties institutions types
         DB::table('duties_institutions_types')->get()->each(function ($type) {
             $new_type = Type::create([
                 'title' => $type->name,
-                'model_type' => 'App\Models\DutyInstitution',
+                'model_type' => 'App\Models\Institution',
                 'description' => $type->description,
                 'slug' => $type->alias,
                 'extra_attributes' => $type->attributes,
@@ -34,7 +38,7 @@ return new class extends Migration
                 DB::table('typeables')->insert([
                     'type_id' => $new_type->id,
                     'typeable_id' => $dutyInstitution->id,
-                    'typeable_type' => 'App\Models\DutyInstitution'
+                    'typeable_type' => 'App\Models\Institution'
                 ]);
             }
         });
