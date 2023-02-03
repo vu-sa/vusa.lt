@@ -1,26 +1,16 @@
 <template>
   <PageContent title="Nauja naujiena" :back-url="route('news.index')">
-    <UpsertModelLayout :errors="$attrs.errors" :model="news">
+    <UpsertModelLayout :errors="$page.props.errors" :model="news">
       <template #card-header> Puslapio informacija </template>
       <NewsForm :news="news" model-route="news.store" />
     </UpsertModelLayout>
   </PageContent>
 </template>
 
-<script lang="ts">
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
-
-export default {
-  layout: AdminLayout,
-};
-</script>
-
 <script setup lang="ts">
-import route from "ziggy-js";
-
-import NewsForm from "@/Components/Admin/Forms/NewsForm.vue";
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
-import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
+import NewsForm from "@/Components/AdminForms/NewsForm.vue";
+import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 const news = {
   title: "",

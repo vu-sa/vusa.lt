@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Laravel\Scout\Searchable;
 use Spatie\Image\Manipulations;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\MediaLibrary\MediaCollections\File;
@@ -13,8 +14,7 @@ use Spatie\MediaLibrary\MediaCollections\File;
 class Calendar extends Model implements HasMedia
 {
     
-    use HasFactory;
-    use InteractsWithMedia;
+    use HasFactory, InteractsWithMedia, Searchable;
 
     protected $table = 'calendar';
 
@@ -23,17 +23,12 @@ class Calendar extends Model implements HasMedia
     protected $casts = [
         'updated_at' => 'datetime:Y-m-d H:i:s',
         'created_at' => 'datetime:Y-m-d H:i:s',
-        'attributes' => 'array',
+        'extra_attributes' => 'array',
     ];
-
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id', 'id');
-    }
 
     public function padalinys()
     {
-        return $this->belongsTo(Padalinys::class, 'padalinys_id', 'id');
+        return $this->belongsTo(Padalinys::class, 'padalinys_id');
     }
 
     public function category()
@@ -53,6 +48,19 @@ class Calendar extends Model implements HasMedia
         ->acceptsMimeTypes(['image/jpeg', 'image/jpg', 'image/png'])
         ->useDisk('spatieMediaLibrary')
         ->withResponsiveImages();
+    }
+
+    public function toSearchableArray()
+    {
+        $array = $this->toArray();
+
+        // Customize array...
+        // return only title
+        $array = [
+            'title' => $this->title,
+        ];
+
+        return $array;
     }
     
 }

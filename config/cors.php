@@ -19,17 +19,13 @@ return [
 
     'allowed_methods' => ['*'],
 
-    // 'allowed_origins' => ['*.' . explode('://',
-    // config('app.url'))[1], 
-    // explode('://', config('app.url'))[1], 
-    // 'localhost', '*vusa.lt'],
     'allowed_origins' => ['*'],
 
     'allowed_origins_patterns' => [],
 
     'allowed_headers' => ['*'],
 
-    'exposed_headers' => ['*'],
+    'exposed_headers' => [],
 
     'max_age' => 0,
 

@@ -29,35 +29,26 @@
   </FadeTransition>
 </template>
 
-<script lang="ts">
-import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
-
-export default {
-  layout: PublicLayout,
-};
-</script>
-
 <script setup lang="ts">
-import { Head } from "@inertiajs/inertia-vue3";
-import { Inertia } from "@inertiajs/inertia";
-import { NInput, createDiscreteApi } from "naive-ui";
-import { debounce } from "lodash";
+import { Head, router } from "@inertiajs/vue3";
+import { createDiscreteApi } from "naive-ui";
 import { ref } from "vue";
+import { useDebounceFn } from "@vueuse/core";
 
 import ContactWithPhotoForUsers from "@/Components/Public/ContactWithPhotoForUsers.vue";
-import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 interface contactUserInterface
   extends Array<
     Pick<
-      App.Models.User,
+      App.Entities.User,
       "id" | "name" | "email" | "phone" | "profile_photo_path" | "duties"
     >
   > {
   // TODO: type only returns strings of institution and type. Need to fix interface
   duties: Array<
     Pick<
-      App.Models.Duty,
+      App.Entities.Duty,
       "id" | "name" | "email" | "description" | "institution" | "type"
     >
   >;
@@ -73,11 +64,11 @@ const loadingNameInput = ref(false);
 const { message } = createDiscreteApi(["message"]);
 
 // handleNameInput with half second delay and then update contacts with inertia request
-const handleNameInput = debounce((input: string) => {
+const handleNameInput = useDebounceFn((input: string) => {
   const name = input;
   if (name.length > 2) {
     loadingNameInput.value = true;
-    Inertia.reload({
+    router.reload({
       only: ["searchContacts"],
       data: { name: name },
       onSuccess: () => {

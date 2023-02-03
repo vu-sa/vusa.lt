@@ -6,14 +6,10 @@ use App\Models\SaziningaiExamObserver;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
+use App\Http\Controllers\ResourceController;
 
-class SaziningaiExamObserversController extends Controller
+class SaziningaiExamObserversController extends ResourceController
 {
-
-    public function __construct()
-    {
-        $this->authorizeResource(SaziningaiExamObserver::class, 'saziningaiExamObserver');
-    }
 
     /**
      * Display a listing of the resource.
@@ -22,6 +18,7 @@ class SaziningaiExamObserversController extends Controller
      */
     public function index()
     {
+        $this->authorize('viewAny', [SaziningaiExamObserver::class, $this->authorizer]);
         // $observers = SaziningaiExamObserver::all();
 
         // return Inertia::render('Admin/Saziningai/Observers/Index', [
@@ -36,7 +33,7 @@ class SaziningaiExamObserversController extends Controller
      */
     public function create()
     {
-        //
+        $this->authorize('create', [SaziningaiExamObserver::class, $this->authorizer]);
     }
 
     /**
@@ -47,7 +44,7 @@ class SaziningaiExamObserversController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $this->authorize('create', [SaziningaiExamObserver::class, $this->authorizer]);
     }
 
     /**
@@ -58,7 +55,7 @@ class SaziningaiExamObserversController extends Controller
      */
     public function show(SaziningaiExamObserver $saziningaiExamObserver)
     {
-        //
+        $this->authorize('view', [SaziningaiExamObserver::class, $saziningaiExamObserver, $this->authorizer]);
     }
 
     /**
@@ -69,7 +66,7 @@ class SaziningaiExamObserversController extends Controller
      */
     public function edit(SaziningaiExamObserver $saziningaiExamObserver)
     {
-        //
+        $this->authorize('update', [SaziningaiExamObserver::class, $saziningaiExamObserver, $this->authorizer]);
     }
 
     /**
@@ -81,7 +78,7 @@ class SaziningaiExamObserversController extends Controller
      */
     public function update(Request $request, SaziningaiExamObserver $saziningaiExamObserver)
     {
-        //
+        $this->authorize('update', [SaziningaiExamObserver::class, $saziningaiExamObserver, $this->authorizer]);
     }
 
     /**
@@ -92,6 +89,6 @@ class SaziningaiExamObserversController extends Controller
      */
     public function destroy(SaziningaiExamObserver $saziningaiExamObserver)
     {
-        //
+        $this->authorize('delete', [SaziningaiExamObserver::class, $saziningaiExamObserver, $this->authorizer]);
     }
 }

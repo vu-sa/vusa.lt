@@ -20,4 +20,9 @@ class SaziningaiExamFlow extends Model
     {
         return $this->hasMany(SaziningaiExamObserver::class, 'flow');
     }
+
+    public function padalinys()
+    {
+        return $this->belongsTo(Padalinys::class, 'padalinys_id');
+    }
 }

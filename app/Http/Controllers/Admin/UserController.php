@@ -9,17 +9,16 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Duty;
 use App\Http\Controllers\Controller as Controller;
+use App\Http\Controllers\ResourceController;
+use App\Models\Padalinys;
+use App\Providers\RouteServiceProvider;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
+use App\Services\ModelIndexer;
 
-class UserController extends Controller
+class UserController extends ResourceController
 {
-
-    public function __construct()
-    {
-        $this->authorizeResource(User::class, 'user');
-    }
-
     /**
      * Display a listing of the resource.
      *
@@ -27,22 +26,16 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        // For search
-        $name = request()->input('name');
+        $this->authorize('viewAny', [User::class, $this->authorizer]);
+        
+        $search = request()->input('text');
 
-        $users = User::
-        when(!is_null($name), function ($query) use ($name) {
-            $query->where('name', 'like', "%{$name}%")->orWhere('email', 'like', "%{$name}%");
-        })->
-            when(!$request->user()->hasRole('Super Admin'), function ($query) {
-                $query->whereHas('duties.institution', function ($query) {
-                    $query->where('padalinys_id', Auth::user()->padalinys()->id);
-                });
-        })->with(['duties:id,institution_id', 'duties.institution:id,padalinys_id','duties.institution.padalinys:id,shortname'])
-        ->paginate(20);
+        $indexer = new ModelIndexer();
+        $users = $indexer->execute(User::class, $search, 'name', $this->authorizer);
 
-        return Inertia::render('Admin/Contacts/IndexUsers', [
-            'users' => $users,
+        return Inertia::render('Admin/People/IndexUser', [
+            'users' => $users->with('duties:id,institution_id', 'duties.institution:id,padalinys_id','duties.institution.padalinys:id,shortname')
+            ->paginate(20),
         ]);
     }
 
@@ -53,7 +46,9 @@ class UserController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Admin/Contacts/CreateUser', [
+        $this->authorize('create', [User::class, $this->authorizer]);
+        
+        return Inertia::render('Admin/People/CreateUser', [
             'roles' => Role::all(),
             'duties' => $this->getDutiesForForm()
         ]);
@@ -67,6 +62,8 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', [User::class, $this->authorizer]);
+        
         $request->validate([
             'name' => 'required',
             'duties' => 'required',
@@ -74,21 +71,20 @@ class UserController extends Controller
         ]);
 
         DB::transaction(function () use ($request) {
-            $user = new User();
-
-            $user->name = $request->name;
-            $user->email = $request->email;
-            $user->phone = $request->phone;
-            $user->profile_photo_path = $request->profile_photo_path;
-
-            $user->save();
+            // create user
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'profile_photo_path' => $request->profile_photo_path,
+            ]);
 
             foreach ($request->duties as $duty) {
                 $user->duties()->attach($duty);
             }
 
             // check if user is super admin
-            if (auth()->user()->hasRole('Super Admin')) {
+            if (User::find(Auth::id())->hasRole(config('permission.super_admin_role_name'))) {
                 // check if user is super admin
                 if ($request->has('roles')) {
                     $user->syncRoles($request->roles);
@@ -109,7 +105,13 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        //
+        $this->authorize('view', [User::class, $user, $this->authorizer]);
+        
+        return Inertia::render('Admin/People/ShowUser', [
+            'user' => $user->load(['duties' => function ($query) {
+                $query->withPivot('start_date', 'end_date');
+            }])
+        ]);
     }
 
     /**
@@ -120,29 +122,18 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
+        $this->authorize('update', [User::class, $user, $this->authorizer]);
         
-        return Inertia::render('Admin/Contacts/EditUser', [
-            'contact' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'profile_photo_path' => $user->profile_photo_path,
-                'phone' => $user->phone,
-                'roles' => $user->getRoleNames(),
-                'duties' => $user->duties->map(function ($duty) {
-                    return [
-                        'id' => $duty->id,
-                        'email' => $duty->email,
-                        'name' => $duty->name,
-                        'institution' => $duty->institution,
-                        'pivot' => $duty->pivot,
-                        'type' => $duty->type,
-                    ];
-                }),
-            ],
+        // user load duties with pivot
+        $user->load(['duties' => function ($query) {
+            $query->withPivot('start_date', 'end_date');
+        }])->load('roles');
+
+        return Inertia::render('Admin/People/EditUser', [
+            'user' => $user,
             // get all roles
-            'roles' => Role::all(),
-            'duties' => $this->getDutiesForForm()
+            'roles' => fn () => Role::all(),
+            'padaliniaiWithDuties' => fn () => $this->getDutiesForForm()
         ]);
     }
 
@@ -155,27 +146,28 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        $this->authorize('update', [User::class, $user, $this->authorizer]);
+        
         $request->validate([
             'name' => 'required',
-            'email' => 'required',
-            'duties' => 'required',
+            'email' => 'required|email',
+            'roles' => 'array'
         ]);
 
         DB::transaction(function () use ($request, $user) {
 
             $user->update($request->only('name', 'email', 'phone', 'profile_photo_path'));
-            $user->duties()->sync($request->duties);
+            $user->duties()->syncWithPivotValues($request->duties, ['start_date' => Carbon::now()]);
 
             // check if user is super admin
-            if (auth()->user()->hasRole('Super Admin')) {
+            if (User::find(Auth::id())->hasRole(config('permission.super_admin_role_name'))) {
                 // check if user is super admin
                 if ($request->has('roles')) {
-                    $user->syncRoles($request->roles);
+                    $user->roles()->sync($request->roles);
                 } else {
-                    $user->syncRoles([]);
+                    $user->roles()->sync([]);
                 }
             }
-
         });
 
         return back()->with('success', 'Kontaktas sėkmingai atnaujintas!');
@@ -189,7 +181,8 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        //cuser 
+        $this->authorize('delete', [User::class, $user, $this->authorizer]);
+
         $user->duties()->detach();
         $user->delete();
 
@@ -198,12 +191,17 @@ class UserController extends Controller
 
     private function getDutiesForForm()
     {
-        return Duty::with(['institution:id,padalinys_id', 'institution.padalinys:id,shortname'])
-        ->when(!auth()->user()->hasRole('Super Admin'), function ($query) { 
-            $query->whereHas('institution', function ($query) {
-                $query->where('padalinys_id', Auth::user()->padalinys()?->id);
-            });
-        })->get();
+        // return Duty::with(['institution:id,name,padalinys_id', 'institution.padalinys:id,shortname'])
+        // ->when(!auth()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) { 
+        //     $query->whereHas('institution', function ($query) {
+        //         $query->where('padalinys_id', User::find(Auth::id())->padalinys()?->id);
+        //     });
+        // })->get();
+
+        return Padalinys::orderBy('shortname')->with('institutions:id,name,padalinys_id', 'institutions.duties:id,name,institution_id')
+            ->when(!auth()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
+                $query->whereIn('id', User::find(Auth::id())->padaliniai->pluck('id'));
+            })->get();
     }
 
     public function detachFromDuty(User $user, Duty $duty)
@@ -218,55 +216,68 @@ class UserController extends Controller
 
     public function storeFromMicrosoft()
     {
-        $microsoftUser = Socialite::driver('microsoft')->user();
+        $microsoftUser = Socialite::driver('microsoft')->stateless()->user();
 
-        // check if microsoft user mail contains 'vusa.lt'
-        if (strpos($microsoftUser->email, 'vusa.lt') == true) {
+        // pirmiausia ieškome per vartotoją, per paštą
+        $user = User::where('email', $microsoftUser->email)->first();
 
-            // pirmiausia ieškome per vartotoją, per paštą
-            $user = User::where('email', $microsoftUser->mail)->first();
+        if ($user) {
+            // jei randama per vartotojo paštą, prijungiam
 
-            if ($user) {
-                // jei randama per vartotojo paštą, prijungiam
+            // if user role is null, add role
+            $user->microsoft_token = $microsoftUser->token;
 
-                // if user role is null, add role
-                $user->microsoft_token = $microsoftUser->token;
-                $user->update([
-                    'email_verified_at' => now(),
-                    // 'image' => $microsoftUser->avatar,
-                ]);
-
-            } else {
-
-                // jei nerandama per vartotojo paštą, ieškome per pareigybės paštą
-                $duty = Duty::where('email', $microsoftUser->mail)->first();
-
-                if ($duty) {
-                    $user = $duty->users()->first();
-                    $user->microsoft_token = $microsoftUser->token;
-                    $user->update([
-                        'email_verified_at' => now(),
-                        // 'image' => $microsoftUser->avatar,
-                    ]);
-
-                } else {
-
-                    $user = new User;
-
-                    $user->microsoft_token = $microsoftUser->token;
-                    $user->name = $microsoftUser->displayName;
-                    $user->email = $microsoftUser->mail;
-                    $user->email_verified_at = now();
-                    $user->save();
-                }
-
+            if (Auth::login($user)) {
+                request()->session()->regenerate();
+                return redirect()->intended(RouteServiceProvider::HOME);
             }
 
-            Auth::login($user);
+            return redirect()->route('dashboard');
+
+        } 
+        
+        $duty = Duty::where('email', $microsoftUser->email)->first();
+
+        if ($duty) {
+            $user = $duty->users()->first();
+            $user->microsoft_token = $microsoftUser->token;
+            
+            if (Auth::login($user)) {
+                request()->session()->regenerate();
+                return redirect()->intended(RouteServiceProvider::HOME);
+            }
 
             return redirect()->route('dashboard');
         }
 
         return redirect()->route('home');
+    }
+
+    public function authenticate(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
+
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
+            return redirect()->intended(RouteServiceProvider::HOME);
+        }
+
+        return back()->withErrors([
+            'email' => __('auth.failed'),
+        ])->onlyInput('email');
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+    
+        $request->session()->invalidate();
+    
+        $request->session()->regenerateToken();
+    
+        return redirect()->route('main.home');
     }
 }

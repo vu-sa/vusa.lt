@@ -1,6 +1,6 @@
 <template>
   <nav
-    class="fixed top-0 z-50 flex max-h-24 w-full flex-row items-center justify-between bg-white/80 px-4 py-2 text-gray-800 shadow-sm backdrop-blur-sm dark:bg-zinc-800/60 dark:text-white lg:px-12 xl:px-24"
+    class="fixed top-0 z-50 flex max-h-24 w-screen flex-row items-center justify-between bg-white/80 py-2 text-gray-800 shadow-sm backdrop-blur-sm dark:bg-zinc-800/60 dark:text-white lg:px-12 xl:px-24"
   >
     <div
       class="flex flex-row items-center space-x-4"
@@ -15,39 +15,23 @@
         </NButton>
       </div>
       <Link :href="route('main.home', homeParams)" @click="resetPadalinys()">
-        <AppLogo class="w-36" />
+        <AppLogo :is-theme-dark="isThemeDark" class="w-36" />
       </Link>
-      <NScrollbar>
-        <NDropdown
-          :options="options_padaliniai"
-          placement="top-start"
-          size="small"
-          style="overflow: auto; max-height: 600px"
-          @select="handleSelectPadalinys"
-        >
-          <NButton
-            :disabled="route().current('*page')"
-            size="small"
-            style="border-radius: 0.5rem"
-          >
-            {{ $t(padalinys) }}
-            <NIcon class="ml-1" size="18">
-              <ChevronDown20Filled />
-            </NIcon>
-          </NButton>
-        </NDropdown>
-      </NScrollbar>
+      <PadalinysSelector
+        :padalinys="padalinys"
+        @select:padalinys="handleSelectPadalinys"
+      ></PadalinysSelector>
       <NButton
-        v-if="$page.props.user"
+        v-if="$page.props.auth?.user"
         quaternary
         circle
         size="small"
-        @click="Inertia.visit(route('dashboard'))"
+        @click="router.visit(route('dashboard'))"
         ><NIcon :size="16" :component="AnimalTurtle24Filled"></NIcon
       ></NButton>
     </div>
 
-    <div v-if="!isMobile" class="flex items-center gap-x-4">
+    <div v-if="!isMobile" class="flex items-center justify-center gap-x-4">
       <NMenu
         v-model:value="activeMenuKey"
         :icon-size="16"
@@ -116,13 +100,8 @@
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import {
-  AnimalTurtle24Filled,
-  ChevronDown20Filled,
-  Navigation24Filled,
-} from "@vicons/fluent";
-import { Inertia } from "@inertiajs/inertia";
-import { Link, usePage } from "@inertiajs/inertia-vue3";
+import { AnimalTurtle24Filled, Navigation24Filled } from "@vicons/fluent";
+import { Link, router, usePage } from "@inertiajs/vue3";
 import {
   NButton,
   NCollapse,
@@ -130,29 +109,31 @@ import {
   NDivider,
   NDrawer,
   NDrawerContent,
-  NDropdown,
   NIcon,
   NMenu,
-  NScrollbar,
   NTree,
 } from "naive-ui";
 import { computed, reactive, ref } from "vue";
-import { split } from "lodash";
-import route, { RouteParamsWithQueryOverload } from "ziggy-js";
+import type { RouteParamsWithQueryOverload } from "ziggy-js";
 
 import AppLogo from "@/Components/AppLogo.vue";
-import DarkModeSwitch from "@/Components/DarkModeSwitch.vue";
+import DarkModeSwitch from "@/Components/Buttons/DarkModeSwitch.vue";
 import FacebookButton from "../Nav/FacebookButton.vue";
 import InstagramButton from "../Nav/InstagramButton.vue";
 import LocaleButton from "../Nav/LocaleButton.vue";
+import PadalinysSelector from "../Nav/PadalinysSelector.vue";
 import SearchButton from "../Nav/SearchButton.vue";
 import StartFM from "@/Components/Public/Nav/StartFM.vue";
 
+defineProps<{
+  isThemeDark: boolean;
+}>();
+
 // map padaliniai to options_padaliniai
 
-const padaliniai = usePage().props.value.padaliniai;
-const mainNavigation = ref(usePage().props.value.mainNavigation);
-const locale = ref(usePage().props.value.locale);
+const padaliniai = usePage().props.padaliniai;
+const mainNavigation = ref(usePage().props.mainNavigation);
+const locale = ref(usePage().props.app.locale);
 const activeDrawer = ref(false);
 const toggleMenu = () => {
   activeDrawer.value = !activeDrawer.value;
@@ -162,14 +143,14 @@ const homeParams: RouteParamsWithQueryOverload = reactive({
   lang: locale.value,
 });
 
-const activeMenuKey = ref(usePage().props.value.navigationItemId);
+const activeMenuKey = ref(usePage().props.navigationItemId);
 
 const expandedKeys = ref([]);
 const selectedKeys = ref([]);
 
 const options_padaliniai = computed(() => {
   return padaliniai.map((padalinys) => ({
-    label: $t(split(padalinys.fullname, "atstovybė ")[1]),
+    label: $t(padalinys.fullname.split("atstovybė ")[1]),
     key: padalinys.alias,
   }));
 });
@@ -197,7 +178,7 @@ const navigation = computed(() =>
   parseNavigation(Object.entries(mainNavigation.value), 0)
 );
 
-const getPadalinys = (alias = usePage().props.value.alias) => {
+const getPadalinys = (alias = usePage().props.alias) => {
   for (const padalinys of padaliniai) {
     if (padalinys.alias == alias) {
       return padalinys.shortname.split(" ").pop();
@@ -217,7 +198,7 @@ const handleSelectPadalinys = (key) => {
     i = key[0];
   }
 
-  Inertia.reload({
+  router.reload({
     data: {
       padalinys: i,
     },
@@ -256,7 +237,7 @@ const handleSelectNavigation = (id: number) => {
       } else {
         url = item[1].url;
         // message.info("Navigating to " + url);
-        Inertia.visit(
+        router.visit(
           route("main.page", { lang: locale.value, permalink: url }),
           {
             preserveScroll: false,
@@ -275,7 +256,7 @@ const localeSelect = (lang: string) => {
     locale.value = "lt";
   }
   // update navigation
-  mainNavigation.value = usePage().props.value.mainNavigation;
+  mainNavigation.value = usePage().props.mainNavigation;
   // update app logo button
   homeParams.lang = locale.value;
   // reset padalinys value if home

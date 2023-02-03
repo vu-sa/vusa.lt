@@ -14,6 +14,7 @@ public/uploads
 
 ## Other
 .jshintrc
+public/vendor
 
 .DS_Store
 .vscode/settings.json

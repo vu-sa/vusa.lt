@@ -2,16 +2,16 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Calendar;
-use App\Models\Navigation;
-use Illuminate\Http\Request;
-use Inertia\Middleware;
 use App\Models\Padalinys;
-use Illuminate\Support\Facades\Auth;
-use App\Models\Page;
-use App\Models\SaziningaiExam;
 use App\Models\User;
-use Illuminate\Support\Facades\Route;
+use App\Enums\ModelEnum;
+use App\Models\Institution;
+use App\Services\ModelAuthorizer as Authorizer;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Cache;
+use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -44,52 +44,78 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request)
     {
-        $user = User::find(Auth::id());
+        $user = $this->getLoggedInUserForInertia();
 
-        if ($user) {
-            $user->padalinys = User::find(Auth::id())?->padalinys()?->shortname;
-            $user->isSuperAdmin = $user->hasRole('Super Admin');
-            $user->notifications = $user->unreadNotifications;
+        $isSuperAdmin = false;
+
+        if (!is_null ($user)) {
+            $isSuperAdmin = $user->hasRole(config('permission.super_admin_role_name'));
         }
 
         return array_merge(parent::share($request), [
             'app' => [
-                'env' => config('app.env'),
-                'url' => config('app.url'),
+                'env' => fn () => config('app.env'),
+                'locale' => fn () => app()->getLocale(),
+                'url' => fn () => config('app.url'),
+            ],
+            'auth' => is_null($user) ? null : [
+                'can' => fn () => [
+                    'index' => fn () => $this->getIndexPermissions($user),
+                    ],
+                'user' => fn () => [
+                    ...$user->toArray(), 
+                    'isSuperAdmin' => $isSuperAdmin,
+                    'padaliniai' => $user->padaliniai()->get(['padaliniai.id', 'padaliniai.shortname'])->unique(), 
+                    'unreadNotifications' => $user->unreadNotifications
+                ],
             ],
             // is used in the admin navigation to show only the allowed pages
-            'can' => is_null($request->user()) ? false : [
-                'content' => $request->user()->can('edit unit content'),
-                'users' => $request->user()->can('edit unit users'),
-                'navigation' => $request->user()->hasRole('Super Admin'),
-                'calendar' => $request->user()->can('edit unit calendar'),
-                'files' => true,
-                'saziningai' => $request->user()->can('edit saziningai content'),
-            ],
             'flash' => [
+                'data' => fn () => $request->session()->get('data'),
                 'info' => fn () => $request->session()->get('info'),
                 'success' => fn () => $request->session()->get('success'),
             ],
-            'locale' => function () {
-                return app()->getLocale();
-            },
+            // 'layout' => is_null($user) ? null : [
+            //     'navBackground' => null
+            // ],
             'misc' => $request->session()->get('misc') ?? "",
-            'padaliniai' => Padalinys::where('type', '=', 'padalinys')->orderBy('shortname_vu')->get()->map(function ($padalinys) {
-                return [
-                    'id' => $padalinys->id,
-                    'alias' => $padalinys->alias,
-                    'shortname' => $padalinys->shortname,
-                    'fullname' => $padalinys->fullname,
-                ];
-            }),
+            'padaliniai' => fn () => $this->getPadaliniaiForInertia(),
             'search' => [
                 'calendar' => $request->session()->get('search_calendar') ?? [],
                 'news' => $request->session()->get('search_news') ?? [],
                 'pages' => $request->session()->get('search_pages') ?? [],
                 'other' => $request->session()->get('search_other') ?? [],
             ],
-            // current user
-            'user' => $user,
         ]);
+    }
+
+    private function getLoggedInUserForInertia(): ?User
+        {
+            $user = User::withCount(['tasks' => function ($query) {
+                $query->whereNull('completed_at');
+            }])->with('roles', 'duties:id,name,institution_id', 'duties.roles', 'duties.institution:id,name')->find(Auth::id());
+
+            return $user;
+        }
+
+    private function getPadaliniaiForInertia(): Collection
+    {
+        $padaliniai = Cache::rememberForever('padaliniai-for-inertia', 
+            fn () => Padalinys::where('type', '=', 'padalinys')->orderBy('shortname_vu')->get(['id', 'alias', 'shortname', 'fullname'])
+        );
+
+        return $padaliniai;
+    }
+
+    private function getIndexPermissions(User $user) {
+    
+        return Cache::remember('index-permissions-' . $user->id, 3600, function () use ($user) {
+            $authorizer = new Authorizer();
+            
+            return collect(ModelEnum::toLabels())
+                ->mapWithKeys(function ($model) use ($user, $authorizer) {
+                    return [$model => $user->can('viewAny', ['App\\Models\\' . ucfirst($model), $authorizer])];
+                })->toArray();
+        });
     }
 }

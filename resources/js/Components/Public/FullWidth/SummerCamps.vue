@@ -27,7 +27,7 @@
   <div
     class="mx-8 mt-4 flex flex-col justify-center gap-4 lg:mx-16 lg:flex-row lg:items-center lg:px-16"
   >
-    <div class="prose-sm prose dark:prose-invert">
+    <div class="prose prose-sm dark:prose-invert">
       <p class="text-2xl font-bold lg:w-4/5">
         VU SA organizuojamos
         <span class="font-extrabold text-vusa-red">pirmakursių stovyklos</span>
@@ -45,7 +45,7 @@
         size="large"
         strong
         type="primary"
-        @click="Inertia.visit(route('pirmakursiuStovyklos'))"
+        @click="router.visit(route('pirmakursiuStovyklos'))"
         >Kas vyko?<template #icon
           ><NIcon :component="HatGraduation20Regular"></NIcon></template
       ></NButton>
@@ -54,7 +54,7 @@
         strong
         secondary
         @click="
-          Inertia.visit(
+          router.visit(
             route('main.contacts.category', {
               alias: 'padaliniai',
               lang: 'lt',
@@ -71,10 +71,8 @@
 
 <script setup lang="ts">
 import { HatGraduation20Regular, Person20Filled } from "@vicons/fluent";
-import { Head } from "@inertiajs/inertia-vue3";
-import { Inertia } from "@inertiajs/inertia";
+import { Head, router } from "@inertiajs/vue3";
 import { NButton, NDivider, NIcon } from "naive-ui";
-import route from "ziggy-js";
 
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 

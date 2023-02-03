@@ -14,7 +14,7 @@
         :padalinys-shortname="page.padalinys?.shortname"
       ></PreviewModelButton>
     </template>
-    <UpsertModelLayout :errors="$attrs.errors" :model="page">
+    <UpsertModelLayout :errors="$page.props.errors" :model="page">
       <template #card-header>
         <span>Puslapio informacija</span>
       </template>
@@ -28,24 +28,16 @@
   </PageContent>
 </template>
 
-<script lang="ts">
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
 
-export default {
-  layout: AdminLayout,
-};
-</script>
 
 <script setup lang="ts">
-import route from "ziggy-js";
-
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
-import PageForm from "@/Components/Admin/Forms/PageForm.vue";
-import PreviewModelButton from "@/Components/Admin/Buttons/PreviewModelButton.vue";
-import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
+import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import PageForm from "@/Components/AdminForms/PageForm.vue";
+import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
+import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 defineProps<{
-  page: App.Models.Page;
-  otherLangPages: App.Models.Page[];
+  page: App.Entities.Page;
+  otherLangPages: App.Entities.Page[];
 }>();
 </script>

@@ -3,21 +3,21 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Duty;
-use App\Models\DutyInstitution;
+use App\Models\Institution;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller as Controller;
-use App\Models\DutyType;
+use App\Http\Controllers\ResourceController;
+use App\Models\Role;
+use App\Models\Type;
+use App\Models\User;
+use App\Services\ModelIndexer;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 
-class DutyController extends Controller
+class DutyController extends ResourceController
 {
-
-    public function __construct()
-    {
-        $this->authorizeResource(Duty::class, 'duty');
-    }
 
     /**
      * Display a listing of the resource.
@@ -26,19 +26,14 @@ class DutyController extends Controller
      */
     public function index(Request $request)
     {
-        // For search
-        $title = $request->title;
+        $this->authorize('viewAny', [Duty::class, $this->authorizer]);
+        
+        $search = request()->input('text');
 
-        $duties = Duty::when(!is_null($title), function ($query) use ($title) {
-            $query->where('name', 'like', "%{$title}%")->orWhere('email', 'like', "%{$title}%");
-        })->when(!$request->user()->hasRole('Super Admin'), function ($query) {
-            $query->whereHas('institution', function ($query) {
-                $query->where('padalinys_id', auth()->user()->padalinys()->id);
-            });
-        })->with(['institution:id,name,short_name,padalinys_id','institution.padalinys:id,shortname', 'type:id,name'])->paginate(20);
+        $duties = $this->indexer->execute(Duty::class, $search, 'name', $this->authorizer, true);
 
-        return Inertia::render('Admin/Contacts/IndexDuties', [
-            'duties' => $duties,
+        return Inertia::render('Admin/People/IndexDuty', [
+            'duties' => $duties->with('institution')->paginate(20),
         ]);
     }
 
@@ -49,11 +44,13 @@ class DutyController extends Controller
      */
     public function create()
     {
-        $dutyInstitutions = $this->getDutyInstitutionsForForm();
+        $this->authorize('create', [Duty::class, $this->authorizer]);
         
-        return Inertia::render('Admin/Contacts/CreateDuty', [
-            'dutyTypes' => DutyType::all(),
-            'dutyInstitutions' => $dutyInstitutions,
+        $institutions = $this->getInstitutionsForForm();
+        
+        return Inertia::render('Admin/People/CreateDuty', [
+            'dutyTypes' => Type::where('model_type', Duty::class)->get(),
+            'institutions' => $institutions,
         ]);
     }
 
@@ -65,22 +62,26 @@ class DutyController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', [Duty::class, $this->authorizer]);
+        
         $request->validate([
             'name' => 'required',
             'institution' => 'required',
-            'type' => 'required',
+            'places_to_occupy' => 'required|numeric',
         ]);
 
-        $duty = new Duty();
+        $duty = Duty::create([
+            'name' => $request->name,
+            'places_to_occupy' => $request->places_to_occupy,
+            'email' => $request->email,
+            'description' => $request->description,
+            'institution_id' => $request->institution['id'],
+        ]);
 
-        $duty->name = $request->name;
-        $duty->email = $request->email;
-        $duty->description = $request->description;
-        $duty->attributes = $request->all()['attributes'];
-        $duty->institution()->associate($request->institution['id']);
-        // TODO: sutvarkyti
-        $duty->type_id = $request->type['id'];
+        $duty->extra_attributes = $request->extra_attributes;
         $duty->save();
+
+        $duty->types()->sync($request->type);
 
         return redirect()->route('duties.index')->with('success', 'Pareigybė sėkmingai sukurta!');
     }
@@ -93,7 +94,11 @@ class DutyController extends Controller
      */
     public function show(Duty $duty)
     {
-        //
+        $this->authorize('view', [Duty::class, $duty, $this->authorizer]);
+
+        return Inertia::render('Admin/People/ShowDuty', [
+            'duty' => $duty->load('institution', 'users', 'activities.causer'),
+        ]);
     }
 
     /**
@@ -104,22 +109,20 @@ class DutyController extends Controller
      */
     public function edit(Duty $duty)
     {
-        $dutyInstitutions = $this->getDutyInstitutionsForForm();
+        $this->authorize('update', [Duty::class, $duty, $this->authorizer]);
+        
+        $institutions = $this->getInstitutionsForForm();
 
-        return Inertia::render('Admin/Contacts/EditDuty', [
+        return Inertia::render('Admin/People/EditDuty', [
             'duty' => [
-                'id' => $duty->id,
-                'name' => $duty->name,
-                'description' => $duty->description,
-                'type' => $duty->type,
-                'institution' => $duty->institution,
-                'email' => $duty->email,
-                'attributes' => $duty->attributes,
-                'places_to_occupy' => $duty->places_to_occupy,
+                ...$duty->load('institution')->toArray(),
+                'types' => $duty->types->pluck('id'),
+                'roles' => $duty->roles()->pluck('id')->toArray()
             ],
             'users' => $duty->users,
-            'dutyTypes' => DutyType::all(),
-            'dutyInstitutions' => $dutyInstitutions
+            'roles' => Role::all(),
+            'dutyTypes' => Type::where('model_type', Duty::class)->get(),
+            'institutions' => $institutions
         ]);
     }
 
@@ -132,19 +135,41 @@ class DutyController extends Controller
      */
     public function update(Request $request, Duty $duty)
     {
+        $this->authorize('update', [Duty::class, $duty, $this->authorizer]);
+        
         $request->validate([
             'name' => 'required',
             'institution' => 'required',
-            'type' => 'required',
+            'places_to_occupy' => 'required|numeric',
         ]);
 
         DB::transaction(function () use ($request, $duty) {
-            $duty->update($request->only('name', 'description', 'email', 'attributes'));
+            $duty->update($request->only('name', 'description', 'email', 'places_to_occupy', 'extra_attributes'));
 
-            $duty->type_id = $request->type['id'];
             $duty->institution()->disassociate();
-            $duty->institution()->associate(DutyInstitution::find($request->institution['id']));
+            $duty->institution()->associate(Institution::find($request->institution['id']));
             $duty->save();
+
+            if (true) {
+                // check if user is super admin
+                if ($request->has('roles')) {
+
+                    $roles = Role::find($request->roles);
+
+                    // foreach check if super admin
+                    foreach ($roles as $role) {
+                        if ($role->name == config('permission.super_admin_role_name')) {
+                            abort(403, 'Negalima priskirti šios rolės pareigybėms! Bandykite iš naujo');
+                        }
+                    }
+                    
+                    $duty->syncRoles($roles);
+                } else {
+                    $duty->syncRoles([]);
+                }
+            }
+
+            $duty->types()->sync($request->types);
         });
 
         return back()->with('success', 'Pareigybė sėkmingai atnaujinta!');
@@ -158,15 +183,17 @@ class DutyController extends Controller
      */
     public function destroy(Duty $duty)
     {
+        $this->authorize('delete', [Duty::class, $duty, $this->authorizer]);
+        
         $duty->delete();
 
         return redirect()->route('duties.index')->with('info', 'Pareigybė sėkmingai ištrinta!');
     }
 
-    private function getDutyInstitutionsForForm(): Collection
+    private function getInstitutionsForForm(): Collection
     {
-        return DutyInstitution::select('id', 'name', 'alias', 'padalinys_id')->when(!request()->user()->hasRole('Super Admin'), function ($query) {
-                $query->where('padalinys_id', auth()->user()->padalinys()->id);
+        return Institution::select('id', 'name', 'alias', 'padalinys_id')->when(!request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
+            $query->whereIn('padalinys_id', auth()->user()->padaliniai->pluck('id'));
         })->with('padalinys:id,shortname')->get();
     }
 }

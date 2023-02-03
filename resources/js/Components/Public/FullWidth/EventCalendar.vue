@@ -13,9 +13,12 @@
     class="mx-auto mt-8 flex max-w-7xl flex-col-reverse gap-4 px-16 lg:mt-32 lg:flex-row lg:px-24 xl:px-40"
   >
     <div
-      class="prose-sm prose flex w-fit flex-col items-center justify-center dark:prose-invert lg:h-4/5 lg:w-1/2 lg:items-start 2xl:w-3/4"
+      class="prose prose-sm flex w-fit flex-col items-center justify-center dark:prose-invert lg:h-4/5 lg:w-1/2 lg:items-start 2xl:w-3/4"
     >
-      <p v-if="$page.props.locale === 'lt'" class="text-2xl font-bold lg:w-2/3">
+      <p
+        v-if="$page.props.app.locale === 'lt'"
+        class="text-2xl font-bold lg:w-2/3"
+      >
         <span class="font-extrabold">Naujiena!</span> Sek visus VU studentų
         renginius bei įvykius
         <span class="text-vusa-red">čia!</span>
@@ -25,7 +28,7 @@
         <span class="text-vusa-red">here!</span>
       </p>
 
-      <p v-if="$page.props.locale === 'lt'" class="w-4/5">
+      <p v-if="$page.props.app.locale === 'lt'" class="w-4/5">
         Arba nesuk galvos ir
         <!-- <em>patingėti</em> ir -->
         <span class="mx-1">
@@ -47,7 +50,7 @@
         <strong>this student calendar</strong> to „Google“ or „Outlook“ ..? 🗓
       </p>
 
-      <p v-if="$page.props.locale === 'lt'" class="w-4/5 text-sm">
+      <p v-if="$page.props.app.locale === 'lt'" class="w-4/5 text-sm">
         <strong>Ir dar</strong> - artėja VU SA ir VU SA PKP prisistatymai! Jeigu
         nenori jų laukti, prisijunk naudodamas
         <Link :href="route('main.memberRegistration', { lang: 'lt' })"
@@ -90,7 +93,7 @@
             class="z-20 shadow-xl"
             :attributes="calendarAttributes"
             color="red"
-            :locale="$page.props.locale"
+            :locale="$page.props.app.locale"
           >
             <template #day-popover="{ attributes, dayTitle, format, masks }">
               <div class="max-w-md">
@@ -110,7 +113,7 @@
                       :href="
                         route('main.calendar.event', {
                           calendar: attr.key,
-                          lang: $page.props.locale,
+                          lang: $page.props.app.locale,
                         })
                       "
                       >{{ attr.popover.label }}</a
@@ -140,24 +143,20 @@
       </div>
     </div>
   </div>
-  <NModal
+  <CardModal
     v-model:show="showModal"
-    class="prose-sm prose dark:prose-invert"
-    style="max-width: 500px"
     :title="$t('Kalendoriaus sinchronizavimo instrukcija')"
-    :bordered="false"
-    size="large"
-    role="card"
-    aria-modal="true"
-    preset="card"
+    @close="showModal = false"
   >
-    <p v-if="$page.props.locale === 'lt'">
+    <p v-if="$page.props.app.locale === 'lt'">
       <strong>Pirmiausia</strong>, nusikopijuok nuorodą!
     </p>
     <p v-else><strong>First</strong>, copy the link!</p>
 
     <div class="flex flex-col gap-1">
-      <p v-if="$page.props.locale === 'en'" class="font-bold">All events:</p>
+      <p v-if="$page.props.app.locale === 'en'" class="font-bold">
+        All events:
+      </p>
       <div class="flex gap-4">
         <div class="flex items-center rounded-2xl bg-zinc-100/50 px-4">
           <span>{{ route("calendar.ics") }}</span>
@@ -167,7 +166,7 @@
           {{ $t("Kopijuoti") }}</NButton
         >
       </div>
-      <template v-if="$page.props.locale === 'en'">
+      <template v-if="$page.props.app.locale === 'en'">
         <p class="font-bold">
           Events held in English or accessible for non-Lithuanian speakers:
         </p>
@@ -187,7 +186,7 @@
     <NDivider></NDivider>
     <NTabs animated
       ><NTabPane name="Google">
-        <ol v-if="$page.props.locale === 'lt'">
+        <ol v-if="$page.props.app.locale === 'lt'">
           <li>
             Nueik į savo
             <a
@@ -220,7 +219,7 @@
           </li>
         </ol> </NTabPane
       ><NTabPane name="Outlook (Office 365)">
-        <ol v-if="$page.props.locale === 'lt'">
+        <ol v-if="$page.props.app.locale === 'lt'">
           <li>
             Nueik į savo
             <a href="https://outlook.office.com/calendar/addcalendar"
@@ -254,7 +253,7 @@
       </NTabPane></NTabs
     >
     <template #footer>
-      <template v-if="$page.props.locale === 'lt'">
+      <template v-if="$page.props.app.locale === 'lt'">
         „Google“ ir „Outlook“ kartais atnaujina renginių informaciją tik
         <strong> kartą per dieną </strong>. Dėl naujausios informacijos
         apsilankyk vusa.lt
@@ -265,40 +264,32 @@
         vusa.lt
       </template>
     </template>
-  </NModal>
+  </CardModal>
   <!-- <NDivider /> -->
 </template>
-
-<script lang="ts">
-import { createDiscreteApi } from "naive-ui";
-const { message } = createDiscreteApi(["message"]);
-</script>
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
 import { Calendar, PopoverRow } from "v-calendar";
 import { Copy16Regular } from "@vicons/fluent";
 import { Google } from "@vicons/fa";
-import { Head } from "@inertiajs/inertia-vue3";
-import { Link } from "@inertiajs/inertia-vue3";
+import { Head, Link } from "@inertiajs/vue3";
 import {
   NButton,
-  NCard,
   NConfigProvider,
   NDivider,
   NIcon,
-  NModal,
   NTabPane,
   NTabs,
   darkTheme,
 } from "naive-ui";
 import { ref } from "vue";
-import route from "ziggy-js";
 
-import FadeTransition from "../Utils/FadeTransition.vue";
+import CardModal from "@/Components/Modals/CardModal.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 const props = defineProps<{
-  calendar: Array<App.Models.Calendar>;
+  calendar: Array<App.Entities.Calendar>;
   isThemeDark: boolean;
   showPhotos: boolean;
 }>();

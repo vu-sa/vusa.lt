@@ -27,7 +27,7 @@
     <div class="mt-4"><NewsElement :news="news" /></div>
   </FadeTransition>
 
-  <FadeTransition v-if="$page.props.locale === 'lt'" appear>
+  <FadeTransition v-if="$page.props.app.locale === 'lt'" appear>
     <div><SummerCamps :is-theme-dark="isThemeDark" /></div
   ></FadeTransition>
 
@@ -36,28 +36,20 @@
   </FadeTransition>
 </template>
 
-<script lang="ts">
-import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
-
-export default {
-  layout: PublicLayout,
-};
-</script>
-
 <script setup lang="ts">
-import { Head } from "@inertiajs/inertia-vue3";
+import { Head } from "@inertiajs/vue3";
 import { defineAsyncComponent } from "vue";
 import { onMounted, ref } from "vue";
 
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import EventCalendar from "@/Components/Public/FullWidth/EventCalendar.vue";
-import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 defineProps<{
-  news: Array<App.Models.News>;
-  banners: Array<App.Models.Banner>;
-  mainPage: Array<App.Models.MainPage>;
-  calendar: Array<App.Models.Calendar>;
+  news: Array<App.Entities.News>;
+  banners: Array<App.Entities.Banner>;
+  mainPage: Array<App.Entities.MainPage>;
+  calendar: Array<App.Entities.Calendar>;
 }>();
 
 const isThemeDark = ref(isDarkMode());

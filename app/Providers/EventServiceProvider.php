@@ -2,10 +2,10 @@
 
 namespace App\Providers;
 
-use Illuminate\Auth\Events\Registered;
-use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
+use App\Events\CommentPosted;
+use App\Events\FileableNameUpdated;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Event;
+use App\Listeners\NotifyUsersOfComment;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -15,12 +15,18 @@ class EventServiceProvider extends ServiceProvider
      * @var array
      */
     protected $listen = [
-        Registered::class => [
-            SendEmailVerificationNotification::class,
-        ],
         \SocialiteProviders\Manager\SocialiteWasCalled::class => [
-            // ... other providers
             \SocialiteProviders\Microsoft\MicrosoftExtendSocialite::class . '@handle',
+            // \SocialiteProviders\Google\GoogleExtendSocialite::class.'@handle',
+        ],
+        CommentPosted::class => [
+            NotifyUsersOfComment::class,
+        ],
+        FileableNameUpdated::class => [
+            \App\Listeners\UpdateSharepointFolder::class,
+        ],
+        \Spatie\ModelStates\Events\StateChanged::class => [
+            \App\Listeners\HandleDoingStateChange::class,
         ],
     ];
 

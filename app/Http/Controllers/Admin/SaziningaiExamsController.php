@@ -3,18 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller as Controller;
+use App\Http\Controllers\ResourceController;
 use App\Models\Padalinys;
 use App\Models\SaziningaiExam;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class SaziningaiExamsController extends Controller
+class SaziningaiExamsController extends ResourceController
 {
-
-    public function __construct()
-    {
-        $this->authorizeResource(SaziningaiExam::class, 'saziningaiExam');
-    }
 
     /**
      * Display a listing of the resource.
@@ -23,6 +19,8 @@ class SaziningaiExamsController extends Controller
      */
     public function index()
     {
+        $this->authorize('viewAny', [SaziningaiExam::class, $this->authorizer]);
+
         $exams = SaziningaiExam::with(['flows' => function ($query) {
             $query->select('id', 'exam_uuid', 'start_time')->orderBy('start_time', 'asc');
         }])->with(['padalinys'])->get();
@@ -42,6 +40,8 @@ class SaziningaiExamsController extends Controller
      */
     public function create()
     {
+        $this->authorize('create', [SaziningaiExam::class, $this->authorizer]);
+        
         return redirect()->route('saziningaiExamRegistration');
     }
 
@@ -53,6 +53,8 @@ class SaziningaiExamsController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', [SaziningaiExam::class, $this->authorizer]);
+        
         $request->validate([
             'email' => ['required', 'email'],
             'subject_name' => ['required'],
@@ -82,6 +84,7 @@ class SaziningaiExamsController extends Controller
      */
     public function show(SaziningaiExam $saziningaiExam)
     {
+        $this->authorize('view', [SaziningaiExam::class, $saziningaiExam, $this->authorizer]);
     }
 
     /**
@@ -92,6 +95,8 @@ class SaziningaiExamsController extends Controller
      */
     public function edit(SaziningaiExam $saziningaiExam)
     {
+
+        $this->authorize('update', [SaziningaiExam::class, $saziningaiExam, $this->authorizer]);
 
         return Inertia::render('Admin/Saziningai/EditSaziningaiExam', [
             'exam' => [
@@ -141,6 +146,8 @@ class SaziningaiExamsController extends Controller
      */
     public function update(Request $request, SaziningaiExam $saziningaiExam)
     {
+        $this->authorize('update', [SaziningaiExam::class, $saziningaiExam, $this->authorizer]);
+
         $request->validate([
             'email' => ['required', 'email'],
             'subject_name' => ['required'],
@@ -159,6 +166,8 @@ class SaziningaiExamsController extends Controller
      */
     public function destroy(SaziningaiExam $saziningaiExam)
     {
+        $this->authorize('delete', [SaziningaiExam::class, $saziningaiExam, $this->authorizer]);
+        
         $saziningaiExam->delete();
 
         return redirect()->route('saziningaiExams.index');

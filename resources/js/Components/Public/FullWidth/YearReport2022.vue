@@ -12,7 +12,7 @@
       <Link
         :href="
           route('main.ataskaita2022', {
-            lang: $page.props.locale,
+            lang: $page.props.app.locale,
             permalink: 'pradzia',
           })
         "
@@ -34,11 +34,11 @@
           style="text-decoration: none"
           :href="
             route('main.ataskaita2022', {
-              lang: $page.props.locale,
+              lang: $page.props.app.locale,
               permalink: 'pradzia',
             })
           "
-          ><template v-if="$page.props.locale === 'lt'"
+          ><template v-if="$page.props.app.locale === 'lt'"
             >Ką veikė VU SA 2021–2022 metais?</template
           ><template v-else>What did VU SR do in 2021–2022?</template>
 
@@ -51,7 +51,7 @@
         <p
           class="prose-sm prose mb-4 text-sm dark:prose-invert lg:max-w-[80ch] lg:text-base"
         >
-          <template v-if="$page.props.locale === 'lt'">
+          <template v-if="$page.props.app.locale === 'lt'">
             Ataskaitos knygutė – kiekvienais metais skelbiama VU SA nuveiktų
             darbų, atliktų projektų, įgyvendintų iniciatyvų ataskaita. Artėjant
             VU SA ataskaitinei-rinkiminei konferencijai dalinamės ir šių,
@@ -74,9 +74,9 @@
 
 <script setup lang="ts">
 import { ArrowCircleRight20Regular } from "@vicons/fluent";
-import { Link } from "@inertiajs/inertia-vue3";
+import { Link } from "@inertiajs/vue3";
 import { NIcon } from "naive-ui";
-import route from "ziggy-js";
+
 
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 

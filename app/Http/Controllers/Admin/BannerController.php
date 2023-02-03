@@ -6,15 +6,12 @@ use App\Models\Banner;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
+use App\Http\Controllers\ResourceController;
 use App\Models\Padalinys;
+use App\Services\ModelIndexer;
 
-class BannerController extends Controller
+class BannerController extends ResourceController
 {
-
-    public function __construct()
-    {
-        $this->authorizeResource(Banner::class, 'banner');
-    }
 
     /**
      * Display a listing of the resource.
@@ -23,24 +20,16 @@ class BannerController extends Controller
      */
     public function index(Request $request)
     {
-        $title = request()->input('title');
-        $padaliniai = request()->input('padaliniai');
+        
+        $this->authorize('viewAny', [Banner::class, $this->authorizer]);
+        
+        $search = request()->input('text');
 
-        $banners = Banner::
-            // check if admin, if not return only pages from current user padalinys
-            when(!$request->user()->hasRole('Super Admin'), function ($query) use ($request) {
-                $query->where('padalinys_id', '=', $request->user()->padalinys()->id);
-                // check request for padaliniai, if not empty return only pages from request padaliniai
-            })->when(!empty($padaliniai), function ($query) use ($padaliniai) {
-                $query->whereIn('padalinys_id', $padaliniai);
-            })->when(!is_null($title), function ($query) use ($title) {
-                $query->where('title', 'like', "%{$title}%");
-            })->with(['padalinys' => function ($query) {
-                $query->select('id', 'shortname', 'alias');
-            }])->orderByDesc('created_at')->paginate(20);
-
+        $indexer = new ModelIndexer();
+        $banners = $indexer->execute(Banner::class, $search, 'title', $this->authorizer, false);
+        
         return Inertia::render('Admin/Content/IndexBanners', [
-            'banners' => $banners
+            'banners' => $banners->paginate(20)
         ]);
     }
 
@@ -51,6 +40,8 @@ class BannerController extends Controller
      */
     public function create()
     {
+        $this->authorize('create', [Banner::class, $this->authorizer]);
+        
         return Inertia::render('Admin/Content/CreateBanner');
     }
 
@@ -62,6 +53,8 @@ class BannerController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', [Banner::class, $this->authorizer]);
+        
         $request->validate([
             'title' => 'required',
             'image_url' => 'required',
@@ -91,6 +84,7 @@ class BannerController extends Controller
     public function show(Banner $banner)
     {
         //
+        $this->authorize('view', [Banner::class, $banner, $this->authorizer]);
     }
 
     /**
@@ -101,6 +95,8 @@ class BannerController extends Controller
      */
     public function edit(Banner $banner)
     {
+        $this->authorize('update', [Banner::class, $banner, $this->authorizer]);
+        
         return Inertia::render('Admin/Content/EditBanner', [
             'banner' => $banner,
         ]);
@@ -115,6 +111,8 @@ class BannerController extends Controller
      */
     public function update(Request $request, Banner $banner)
     {
+        $this->authorize('update', [Banner::class, $banner, $this->authorizer]);
+        
         $banner->title = $request->title;
         $banner->is_active = $request->is_active;
         $banner->link_url = $request->link_url ?? "";
@@ -132,6 +130,8 @@ class BannerController extends Controller
      */
     public function destroy(Banner $banner)
     {
+        $this->authorize('delete', [Banner::class, $banner, $this->authorizer]);
+        
         $banner->delete();
 
         return redirect()->route('banners.index')->with('info', 'Baneris ištrintas!');

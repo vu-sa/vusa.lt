@@ -12,21 +12,15 @@
   </FadeTransition>
 </template>
 
-<script lang="ts">
-import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
 
-export default {
-  layout: PublicLayout,
-};
-</script>
 
 <script setup lang="ts">
-import { Head } from "@inertiajs/inertia-vue3";
+import { Head } from "@inertiajs/vue3";
 
 import CategoryCard from "@/Components/Public/CategoryCard.vue";
-import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 defineProps<{
-  institutions: App.Models.DutyInstitution[];
+  institutions: App.Entities.Institution[];
 }>();
 </script>

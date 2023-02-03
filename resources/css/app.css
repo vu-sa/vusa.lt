@@ -6,6 +6,95 @@
 
 @layer base {
 
+  /* Some preflight rules */
+
+  *,
+  ::before,
+  ::after {
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: theme('borderColor.DEFAULT');
+  }
+
+  ::before,
+  ::after {
+    --tw-content: '';
+  }
+
+  body {
+    margin: 0;
+    line-height: inherit;
+  }
+
+  hr {
+    height: 0; /* 1 */
+    color: inherit; /* 2 */
+    border-top-width: 1px; /* 3 */
+  }
+
+  blockquote,
+  dl,
+  dd,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  hr,
+  figure,
+  p,
+  pre {
+    @apply m-0;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-size: inherit;
+    font-weight: inherit;
+  }
+
+
+  b,
+  strong {
+    font-weight: bolder;
+  }
+
+  /* ol,
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  } */
+
+  img,
+  svg,
+  video,
+  canvas,
+  audio,
+  iframe,
+  embed,
+  object {
+    display: block;
+    vertical-align: middle;
+  }
+
+  img,
+  video {
+    max-width: 100%;
+    height: auto;
+  }
+
+  a {
+    @apply no-underline text-inherit;
+  }
+  
+  
   /* These two 'body' element selectors are used, because Naive UI disabled forms 
   ** have double, overlaping, placeholders.
   ? May be worth to report it.
@@ -14,28 +103,28 @@
     letter-spacing: -0.015em;
   } */
   h1 {
-    @apply text-2xl md:text-3xl font-black text-gray-900 dark:text-zinc-100 mb-2;
+    @apply text-2xl md:text-3xl font-black mb-2 text-gray-900 dark:text-zinc-100;
   }
 
   h2 {
-    @apply text-xl md:text-2xl font-bold text-gray-900 dark:text-zinc-100 mb-2;
+    @apply text-xl md:text-2xl font-bold mb-2 text-gray-900 dark:text-zinc-100;
   }
 
   h3 {
-    @apply text-lg md:text-xl font-bold text-gray-900 dark:text-zinc-100 mb-2;
+    @apply text-lg md:text-xl font-bold mb-2 text-gray-900 dark:text-zinc-100;
   }
 
   h4 {
-    @apply text-base md:text-lg font-bold text-gray-900 dark:text-zinc-100 mb-2;
+    @apply text-base md:text-lg font-bold mb-2 text-gray-900 dark:text-zinc-100;
   }
 
-  ul {
-	  @apply list-disc;
-  }
+  /* ul {
+	  @apply list-disc list-inside;
+  } */
 
-  ol {
-	  @apply list-decimal;
-  }
+  /* ol {
+	  @apply list-decimal list-inside;
+  } */
 
   a {
     @apply hover:text-vusa-red duration-200;
@@ -43,7 +132,7 @@
 }
 
 @layer components {
-	.main-card {
-		@apply from-zinc-50 to-zinc-100 bg-gradient-to-b p-4 rounded-md shadow-lg mb-6 max-w-7xl dark:from-zinc-900/90 dark:to-zinc-800/90 overflow-auto sm:max-h-[48rem]
-	}
+	.subtle-gray-gradient {
+    @apply from-zinc-50 to-white dark:from-zinc-900/80 dark:to-zinc-800/80 bg-gradient-to-t dark:bg-gradient-to-b
+  }
 }

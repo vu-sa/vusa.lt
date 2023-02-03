@@ -1,6 +1,6 @@
 <template>
   <PageContent :title="exam.subject_name + ' - ' + exam.created_at">
-    <UpsertModelLayout :errors="$attrs.errors" :model="exam">
+    <UpsertModelLayout :errors="$page.props.errors" :model="exam">
       <SaziningaiExamForm
         :exam="exam"
         :padaliniai="padaliniai"
@@ -8,7 +8,7 @@
         delete-model-route="saziningaiExams.destroy"
       ></SaziningaiExamForm>
 
-      <div class="main-card mt-4">
+      <NCard class="subtle-gray-gradient mt-4">
         <h3 class="flex items-center">
           Srautai
           <NButton text style="margin-left: 0.5em" @click="manageFlowModal()">
@@ -42,7 +42,7 @@
             </ul>
           </template>
         </ol>
-      </div>
+      </NCard>
       <NModal
         v-model:show="showFlowModal"
         preset="dialog"
@@ -60,29 +60,20 @@
   </PageContent>
 </template>
 
-<script lang="ts">
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
-
-export default {
-  layout: AdminLayout,
-};
-</script>
-
 <script setup lang="ts">
 import { AddCircle20Regular } from "@vicons/fluent";
-import { Inertia } from "@inertiajs/inertia";
-import { NButton, NDatePicker, NIcon, NModal, NPopover } from "naive-ui";
+import { router } from "@inertiajs/vue3";
+import { NButton, NCard, NDatePicker, NIcon, NModal, NPopover } from "naive-ui";
 import { reactive, ref } from "vue";
-import route from "ziggy-js";
 
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
-import SaziningaiExamForm from "@/Components/Admin/Forms/SaziningaiExamForm.vue";
-import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
+import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import SaziningaiExamForm from "@/Components/AdminForms/SaziningaiExamForm.vue";
+import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 const props = defineProps<{
-  exam: App.Models.SaziningaiExam;
-  padaliniai: Array<App.Models.Padalinys>;
-  flows: Array<App.Models.SaziningaiExamFlow>;
+  exam: App.Entities.SaziningaiExam;
+  padaliniai: Array<App.Entities.Padalinys>;
+  flows: Array<App.Entities.SaziningaiExamFlow>;
 }>();
 
 const exam = reactive(props.exam);
@@ -104,7 +95,7 @@ const manageFlowModal = (id = null, datetime = null) => {
 
 const submitFlow = (flow_id, timestamp) => {
   if (flow_id) {
-    Inertia.patch(
+    router.patch(
       route("saziningaiExamFlows.update", flow_id),
       {
         start_time: timestamp / 1000,
@@ -119,7 +110,7 @@ const submitFlow = (flow_id, timestamp) => {
       }
     );
   } else {
-    Inertia.post(
+    router.post(
       route("saziningaiExamFlows.store"),
       {
         exam_uuid: exam.uuid,

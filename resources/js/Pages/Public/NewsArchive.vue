@@ -1,5 +1,4 @@
 <template>
-  <Head title="Naujienų archyvas"></Head>
   <FadeTransition appear>
     <div>
       <h2 class="px-8 pt-8 text-gray-900 dark:text-zinc-50 lg:px-32">
@@ -70,34 +69,23 @@
   </FadeTransition>
 </template>
 
-<script lang="ts">
-import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
-
-export default {
-  layout: PublicLayout,
-};
-</script>
-
 <script setup lang="ts">
 import { Clock20Regular } from "@vicons/fluent";
-import { Head } from "@inertiajs/inertia-vue3";
-import { Inertia } from "@inertiajs/inertia";
-import { Link, usePage } from "@inertiajs/inertia-vue3";
+import { Head, Link, router, usePage } from "@inertiajs/vue3";
 import { NIcon, NPagination } from "naive-ui";
 import { ref } from "vue";
-import route from "ziggy-js";
 
-import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import HomeCard from "@/Components/Public/HomeCard.vue";
 
 const props = defineProps<{
-  news: PaginatedModels<App.Models.News>;
+  news: PaginatedModels<App.Entities.News>;
 }>();
 
-const locale = ref(usePage().props.value.locale);
+const locale = ref(usePage().props.app.locale);
 
 const handlePageChange = (page) => {
-  Inertia.reload({
+  router.reload({
     data: {
       page: page,
     },

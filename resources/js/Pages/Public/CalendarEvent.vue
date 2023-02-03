@@ -17,8 +17,8 @@
               class="flex items-center px-12 text-4xl font-extrabold text-gray-900 dark:text-zinc-50 lg:text-5xl"
             >
               <span>{{
-                $page.props.locale === "en"
-                  ? event.attributes?.en?.title ?? event.title
+                $page.props.app.locale === "en"
+                  ? event.extra_attributes?.en?.title ?? event.title
                   : event.title
               }}</span>
             </h1>
@@ -36,18 +36,18 @@
           <div
             class="prose dark:prose-invert sm:max-w-[70ch]"
             v-html="
-              $page.props.locale === 'en'
-                ? event.attributes?.en?.description ?? event.description
+              $page.props.app.locale === 'en'
+                ? event.extra_attributes?.en?.description ?? event.description
                 : event.description
             "
           ></div>
 
           <iframe
-            v-if="event.attributes?.video_url"
+            v-if="event.extra_attributes?.video_url"
             class="mb-8 mt-4 aspect-video h-auto w-full rounded-2xl"
             width="560"
             height="315"
-            :src="`https://www.youtube-nocookie.com/embed/${event.attributes?.video_url}`"
+            :src="`https://www.youtube-nocookie.com/embed/${event.extra_attributes?.video_url}`"
             title="YouTube video player"
             frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -76,18 +76,18 @@
           >
             <div class="absolute top-6 right-6">
               <NButton
-                v-if="event.attributes?.facebook_url"
+                v-if="event.extra_attributes?.facebook_url"
                 secondary
                 size="small"
                 circle
-                @click="windowOpen(event.attributes?.facebook_url)"
+                @click="windowOpen(event.extra_attributes?.facebook_url)"
                 ><NIcon :component="FacebookF"></NIcon
               ></NButton>
             </div>
             <p v-if="false" class="col-span-2 mb-4 flex w-4/5 text-lg">
               {{
-                $page.props.locale === "en"
-                  ? event.attributes?.en?.title ?? event.title
+                $page.props.app.locale === "en"
+                  ? event.extra_attributes?.en?.title ?? event.title
                   : event.title
               }}
             </p>
@@ -111,8 +111,8 @@
             <template v-if="event.location">
               <NIcon :component="Home32Regular"></NIcon>
               <span>{{
-                $page.props.locale === "en"
-                  ? event.attributes?.en?.location ?? event.location
+                $page.props.app.locale === "en"
+                  ? event.extra_attributes?.en?.location ?? event.location
                   : event.location
               }}</span>
             </template>
@@ -167,14 +167,6 @@
   </FadeTransition>
 </template>
 
-<script lang="ts">
-import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
-
-export default {
-  layout: PublicLayout,
-};
-</script>
-
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
 import {
@@ -185,7 +177,7 @@ import {
   PeopleTeam28Regular,
 } from "@vicons/fluent";
 import {
-  CountdownProps,
+  type CountdownProps,
   NButton,
   NCountdown,
   NDivider,
@@ -196,13 +188,13 @@ import {
   NSpace,
 } from "naive-ui";
 import { FacebookF, Google } from "@vicons/fa";
-import { Head } from "@inertiajs/inertia-vue3";
+import { Head } from "@inertiajs/vue3";
 import { computed, h } from "vue";
 
-import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 const props = defineProps<{
-  event: App.Models.Calendar;
+  event: App.Entities.Calendar;
   images: Record<string, any> | null;
   googleLink: string;
 }>();
@@ -213,7 +205,9 @@ const hasNoImage = computed(() => {
 });
 
 const eventOrganizer = computed((): string => {
-  return props.event.attributes?.organizer ?? props.event.padalinys.shortname;
+  return (
+    props.event.extra_attributes?.organizer ?? props.event.padalinys.shortname
+  );
 });
 
 const windowOpen = (url: string) => {

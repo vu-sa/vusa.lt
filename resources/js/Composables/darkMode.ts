@@ -9,7 +9,7 @@ export function isDarkMode() {
   return colorScheme === "dark";
 }
 
-export function updateDarkMode(ref: Ref<any>) {
+export function updateDarkMode(ref: Ref<boolean>) {
   const target = document.querySelector("html");
   const config = { attributes: true, childList: false, subtree: false };
   const callback = () => {

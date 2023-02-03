@@ -13,7 +13,6 @@ return [
     |
     */
 
-    'failed' => 'These credentials do not match our records.',
+    'failed' => 'Šie prisijungimo duomenys neatitinka mūsų įrašų.',
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
-
 ];

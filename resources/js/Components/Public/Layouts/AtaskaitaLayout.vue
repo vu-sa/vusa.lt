@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { Head } from "@inertiajs/inertia-vue3";
+import { Head } from "@inertiajs/vue3";
 import { NConfigProvider } from "naive-ui";
 import { onMounted, ref } from "vue";
 

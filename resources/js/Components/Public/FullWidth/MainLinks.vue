@@ -1,6 +1,7 @@
 <template>
   <div class="mx-8 mb-8 lg:mx-16 lg:px-16">
     <h2 class="mb-4">{{ $t("Pagrindinės nuorodos") }}:</h2>
+    <!-- TODO: In dev, buttons from other padalinys, don't return normal response from parent -->
     <div class="flex flex-wrap gap-2 overflow-x-auto">
       <NButton
         v-for="item in mainPage"
@@ -17,12 +18,10 @@
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import { Inertia } from "@inertiajs/inertia";
 import { NButton } from "naive-ui";
-import { usePage } from "@inertiajs/inertia-vue3";
-import route from "ziggy-js";
+import { router, usePage } from "@inertiajs/vue3";
 
-defineProps<{ mainPage: Array<App.Models.MainPage> }>();
+defineProps<{ mainPage: Array<App.Entities.MainPage> }>();
 
 const goToLink = (link: string | null) => {
   // if link is null, return nothing
@@ -31,7 +30,7 @@ const goToLink = (link: string | null) => {
   }
 
   // check if link is external
-  let padalinysAlias = usePage().props.value.alias;
+  let padalinysAlias = usePage().props.alias;
   if (link.includes("http")) {
     window.open(link, "_blank");
     return;
@@ -47,16 +46,16 @@ const goToLink = (link: string | null) => {
     if (link.charAt(0) === "/") {
       link = link.substring(1);
     }
-    Inertia.visit(
+    router.visit(
       route("main.page", {
-        lang: usePage().props.value.locale,
+        lang: usePage().props.app.locale,
         permalink: link,
       })
     );
   } else {
-    Inertia.visit(
+    router.visit(
       route("padalinys.page", {
-        lang: usePage().props.value.locale,
+        lang: usePage().props.app.locale,
         permalink: link,
         padalinys: padalinysAlias,
       })

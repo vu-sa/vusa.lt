@@ -6,19 +6,16 @@ use App\Models\Calendar;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
+use App\Http\Controllers\ResourceController;
 use App\Models\Category;
 use Illuminate\Support\Facades\DB;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use App\Models\User;
+use App\Services\ModelIndexer;
 use Illuminate\Support\Facades\Auth;
 
-class CalendarController extends Controller
+class CalendarController extends ResourceController
 {
-    public function __construct()
-    {
-        $this->authorizeResource(Calendar::class, 'calendar');
-    }
-
     /**
      * Display a listing of the resource.
      *
@@ -26,24 +23,15 @@ class CalendarController extends Controller
      */
     public function index(Request $request)
     {
-        $padaliniai = $request->padaliniai;
-        $title = $request->title;
+        $this->authorize('viewAny', [Calendar::class, $this->authorizer]);
+        
+        $search = request()->input('text');
 
-        $calendar = Calendar::
-            // check if admin, if not return only pages from current user padalinys
-            when(!$request->user()->hasRole('Super Admin'), function ($query) use ($request) {
-                $query->where('padalinys_id', '=', $request->user()->padalinys()->id);
-                // check request for padaliniai, if not empty return only pages from request padaliniai
-            })->when(!empty($padaliniai), function ($query) use ($padaliniai) {
-                $query->whereIn('padalinys_id', $padaliniai);
-            })->when(!is_null($title), function ($query) use ($title) {
-                $query->where('title', 'like', "%{$title}%");
-            })->with(['padalinys' => function ($query) {
-                $query->select('id', 'shortname', 'alias');
-            }])->with('category')->orderByDesc('date')->paginate(20);
+        $indexer = new ModelIndexer();
+        $calendar = $indexer->execute(Calendar::class, $search, 'title', $this->authorizer, null);
 
         return Inertia::render('Admin/Calendar/IndexCalendarEvents', [
-            'calendar' => $calendar,
+            'calendar' => $calendar->paginate(20),
         ]);
     }
 
@@ -54,6 +42,8 @@ class CalendarController extends Controller
      */
     public function create()
     {        
+        $this->authorize('create', [Calendar::class, $this->authorizer]);
+        
         return Inertia::render('Admin/Calendar/CreateCalendarEvent', [
             'categories' => Category::all()
         ]);
@@ -67,16 +57,18 @@ class CalendarController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', [Calendar::class, $this->authorizer]);
+        
         $request->validate([
             'date' => 'required|date',
             'title' => 'required',
             'description' => 'required',
         ]);
 
-        $padalinys_id = User::find(Auth::user()->id)->padalinys()?->id;
+        $padalinys_id = User::find(Auth::id())->padalinys()?->id;
 
         if (is_null($padalinys_id)) {
-            $padalinys_id = request()->user()->hasRole('Super Admin') ? 16 : null;
+            $padalinys_id = request()->user()->hasRole(config('permission.super_admin_role_name')) ? 16 : null;
         }
 
         Calendar::create([
@@ -88,7 +80,7 @@ class CalendarController extends Controller
             'location' => $request->location,
             'url' => $request->url,
             'category' => $request->category,
-            'attributes' => $request->all()['attributes']
+            'extra_attributes' => $request->extra_attributes
         ]);
 
         return redirect()->route('calendar.index')->with('success', 'Kalendoriaus įvykis sėkmingai sukurtas!');
@@ -102,7 +94,12 @@ class CalendarController extends Controller
      */
     public function show(Calendar $calendar)
     {
-        //
+        $this->authorize('view', [Calendar::class, $calendar, $this->authorizer]);
+        
+        return Inertia::render('Admin/Calendar/ShowCalendarEvent', [
+            'calendar' => $calendar,
+            'images' => $calendar->getMedia('images')
+        ]);
     }
 
     /**
@@ -113,6 +110,8 @@ class CalendarController extends Controller
      */
     public function edit(Calendar $calendar)
     {
+        $this->authorize('update', [Calendar::class, $calendar, $this->authorizer]);
+        
         return Inertia::render('Admin/Calendar/EditCalendarEvent', [
             'calendar' => $calendar,
             'categories' => Category::all(),
@@ -129,7 +128,7 @@ class CalendarController extends Controller
      */
     public function update(Request $request, Calendar $calendar)
     {
-        $request->all();
+        $this->authorize('update', [Calendar::class, $calendar, $this->authorizer]);
 
         $request->validate([
             'date' => 'required|date',
@@ -138,7 +137,7 @@ class CalendarController extends Controller
         ]);
 
         DB::transaction(function () use ($request, $calendar) {
-            $calendar->update($request->only(['date', 'end_date', 'title', 'description', 'location', 'url', 'category', 'attributes']));
+            $calendar->update($request->only(['date', 'end_date', 'title', 'description', 'location', 'url', 'category', 'extra_attributes']));
 
             // if request has files
             
@@ -165,12 +164,15 @@ class CalendarController extends Controller
      */
     public function destroy(Calendar $calendar)
     {
+        $this->authorize('delete', [Calendar::class, $calendar, $this->authorizer]);
+        
         $calendar->delete();
 
         return redirect()->route('calendar.index')->with('info', 'Kalendoriaus įvykis ištrintas!');
     }
-
+    // TODO: something with this???
     public function destroyMedia(Calendar $calendar, Media $media) {
+        
         $this->authorize('destroyMedia', $calendar);
         
         $calendar->getMedia('images')->where('id', '=', $media->id)->first()->delete();

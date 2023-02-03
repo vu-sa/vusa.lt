@@ -16,10 +16,10 @@
       :interval="2000"
       :show-dots="false"
     >
-      <NCarouselItem class="my-auto" v-for="banner in banners" :key="banner.id">
+      <NCarouselItem v-for="banner in banners" :key="banner.id" class="my-auto">
         <a target="_blank" :href="banner.link_url">
           <img
-            class="rounded-sm w-3/4 lg:max-h-32 object-contain"
+            class="w-3/4 rounded-sm object-contain lg:max-h-32"
             :src="banner.image_url"
           />
         </a>
@@ -33,7 +33,7 @@ import { NCarousel, NCarouselItem } from "naive-ui";
 import { onBeforeUnmount, ref } from "vue";
 
 defineProps<{
-  banners: Array<App.Models.Banner>;
+  banners: Array<App.Entities.Banner>;
 }>();
 
 const calculateBannerCount = (width) => {

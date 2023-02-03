@@ -1,23 +1,25 @@
 <template>
   <PageContent title="Failų tvarkyklė">
     <div>
-      <div id="folders" class="main-card">
+      <NCard id="folders" class="subtle-gray-gradient">
         <h2 class="text-2xl font-bold">
           Aplankai ({{ showedDirectories.length }})
         </h2>
         <div class="grid grid-cols-4 gap-3 lg:grid-cols-8 2xl:grid-cols-8">
-          <FolderButton
+          <button
             v-if="currentPath !== 'public/files'"
+            class="relative flex h-40 flex-col items-center justify-center rounded-xl border-2 p-2 duration-200 hover:bg-stone-100"
             @click="getAllFilesAndDirectories('../')"
           >
             <div class="mb-2">
               <NIcon size="32"><ArrowCircleLeft28Regular /></NIcon>
             </div>
             <div class="break-all text-center text-sm">Atgal</div>
-          </FolderButton>
-          <FolderButton
+          </button>
+          <button
             v-for="directory in showedDirectories"
             :key="directory.id"
+            class="relative flex h-40 flex-col items-center justify-center rounded-xl border-2 p-2 duration-200 hover:bg-stone-100"
             @click="getAllFilesAndDirectories(directory.folderPath)"
           >
             <div class="mb-2">
@@ -26,13 +28,13 @@
             <div class="break-all text-center text-sm">
               {{ directory.folderName }}
             </div>
-          </FolderButton>
+          </button>
         </div>
-      </div>
-      <div
+      </NCard>
+      <NCard
         v-if="showedFiles.length > 0"
         id="files"
-        class="main-card max-h-full transition-all"
+        class="subtle-gray-gradient max-h-full transition-all"
       >
         <h2 class="text-2xl font-bold">Failai ({{ showedFiles.length }})</h2>
         <transition-group
@@ -52,33 +54,28 @@
               </NUploadDragger>
             </NUpload>
           </div>
-          <FileButton
+          <button
             v-for="file in showedFiles"
             :key="file.id"
+            class="relative flex h-40 items-center justify-center rounded-xl border-2 p-2 duration-200 hover:bg-stone-100"
             @click="openFile(file.filePath)"
           >
-            <div class="mb-2">
-              <NIcon size="32"><Image48Regular /></NIcon>
+            <div class="flex flex-col items-center">
+              <div class="mb-2">
+                <NIcon size="32"><Image48Regular /></NIcon>
+              </div>
+              <div
+                class="overflow-hidden text-ellipsis whitespace-pre-line break-all text-center text-sm"
+              >
+                {{ file.fileName }}
+              </div>
             </div>
-            <div
-              class="overflow-hidden text-ellipsis whitespace-pre-line break-all text-center text-sm"
-            >
-              {{ file.fileName }}
-            </div>
-          </FileButton>
+          </button>
         </transition-group>
-      </div>
+      </NCard>
     </div>
   </PageContent>
 </template>
-
-<script lang="ts">
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
-
-export default {
-  layout: AdminLayout,
-};
-</script>
 
 <script setup lang="ts">
 import {
@@ -86,15 +83,11 @@ import {
   Folder48Regular,
   Image48Regular,
 } from "@vicons/fluent";
-import { Inertia } from "@inertiajs/inertia";
-import { NIcon, NUpload, NUploadDragger } from "naive-ui";
+import { NCard, NIcon, NUpload, NUploadDragger } from "naive-ui";
 import { computed } from "vue";
-import { slice, split } from "lodash";
+import { router } from "@inertiajs/vue3";
 
-import FileButton from "@/Components/Admin/FileButton.vue";
-import FolderButton from "@/Components/Admin/FolderButton.vue";
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
-import route from "ziggy-js";
+import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 
 // Declare props
 const props = defineProps<{
@@ -107,7 +100,7 @@ const props = defineProps<{
 const showedDirectories = computed(() => {
   const ar = [];
   props.directories.forEach((element, index) => {
-    const folderName = slice(split(element, "/"), -1)[0];
+    const folderName = element.split("/").slice(-1)[0];
     ar.push({ id: index, folderName: folderName, folderPath: element });
   });
   return ar;
@@ -117,7 +110,7 @@ const showedDirectories = computed(() => {
 const showedFiles = computed(() => {
   const ar = [];
   props.files.forEach((element, index) => {
-    const fileName = slice(split(element, "/"), -1)[0];
+    const fileName = element.split("/").slice(-1)[0];
     ar.push({ id: index, fileName: fileName, filePath: element });
   });
   return ar;
@@ -126,7 +119,7 @@ const showedFiles = computed(() => {
 // Generate next path from button click
 const getNextPath = (selectedDirectory) => {
   if (selectedDirectory === "../") {
-    const arrayPath = split(props.currentPath, "/");
+    const arrayPath = props.currentPath.split("/");
     let selectedDirectory = "";
     arrayPath.pop();
 
@@ -140,7 +133,7 @@ const getNextPath = (selectedDirectory) => {
 
 // On directory button click, get all files and directories
 const getAllFilesAndDirectories = async (selectedDirectory) => {
-  await Inertia.reload({
+  await router.reload({
     data: { currentPath: getNextPath(selectedDirectory) },
   });
 };
@@ -153,7 +146,7 @@ const openFile = (filePath) => {
 
 const uploadFile = (e) => {
   const file = e.file;
-  Inertia.post(
+  router.post(
     route("files.store"),
     { file, path: props.currentPath },
     {

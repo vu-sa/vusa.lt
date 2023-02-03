@@ -20,7 +20,7 @@
       </NBreadcrumb>
       <h1 class="col-span-3 col-start-1 inline-flex gap-4">
         <span class="text-gray-900 dark:text-white">{{ page.title }}</span>
-        <NButton v-if="$page.props.user" text @click="editPage"
+        <NButton v-if="$page.props.auth?.user" text @click="editPage"
           ><NIcon :size="32" :component="DocumentEdit20Regular"
         /></NButton>
       </h1>
@@ -33,30 +33,19 @@
   </FadeTransition>
 </template>
 
-<script lang="ts">
-import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
-
-export default {
-  layout: PublicLayout,
-};
-</script>
-
 <script setup lang="ts">
 import { DocumentEdit20Regular, HatGraduation20Filled } from "@vicons/fluent";
-import { Head } from "@inertiajs/inertia-vue3";
-import { Inertia } from "@inertiajs/inertia";
+import { Head, router, usePage } from "@inertiajs/vue3";
 import { NBreadcrumb, NBreadcrumbItem, NButton, NIcon } from "naive-ui";
-import { usePage } from "@inertiajs/inertia-vue3";
-import route from "ziggy-js";
 
-import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 const props = defineProps<{
   navigationItemId: number;
   page: Record<string, any>;
 }>();
 
-const mainNavigation = usePage().props.value.mainNavigation;
+const mainNavigation = usePage().props.mainNavigation;
 
 const getBreadcrumbTree = (navigationItemId: number) => {
   const breadcrumbTree = [];
@@ -74,7 +63,7 @@ const getBreadcrumbTree = (navigationItemId: number) => {
 const breadcrumbTree = getBreadcrumbTree(props.navigationItemId);
 
 const editPage = () => {
-  Inertia.visit(route("pages.edit", { id: props.page.id }));
+  router.visit(route("pages.edit", { id: props.page.id }));
 };
 </script>
 

@@ -18,7 +18,7 @@
       >
       <template #title
         >{{ article.title }}
-        <NButton v-if="$page.props.user" text @click="editNews"
+        <NButton v-if="$page.props.auth?.user" text @click="editNews"
           ><NIcon size="28" :component="DocumentEdit24Regular" /></NButton
       ></template>
       <template #image
@@ -44,32 +44,22 @@
   </FadeTransition>
 </template>
 
-<script lang="ts">
-import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
-
-export default {
-  layout: PublicLayout,
-};
-</script>
-
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
 import { DocumentEdit24Regular } from "@vicons/fluent";
-import { Head, usePage } from "@inertiajs/inertia-vue3";
-import { Inertia } from "@inertiajs/inertia";
+import { Head, router, usePage } from "@inertiajs/vue3";
 import { NBackTop, NButton, NIcon } from "naive-ui";
-import route from "ziggy-js";
 
-import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import NewsArticle from "@/Components/Public/NewsArticle.vue";
 
 const props = defineProps<{
-  article: App.Models.News;
-  otherLangNews: App.Models.News | null;
+  article: App.Entities.News;
+  otherLangNews: App.Entities.News | null;
 }>();
 
 const editNews = () => {
-  Inertia.visit(route("news.edit", { id: props.article.id }));
+  router.visit(route("news.edit", { id: props.article.id }));
 };
 
 const openAnotherLangNews = () => {
@@ -77,7 +67,7 @@ const openAnotherLangNews = () => {
     route("news", {
       lang: props.otherLangNews.lang,
       newsString: props.otherLangNews.lang === "lt" ? "naujiena" : "news",
-      padalinys: usePage().props.value.alias,
+      padalinys: usePage().props.alias,
       permalink: props.otherLangNews.permalink,
     }),
     "_blank"

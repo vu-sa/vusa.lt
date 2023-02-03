@@ -26,7 +26,7 @@
       <div
         class="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-4 pt-2 last:pb-2 lg:grid-cols-5 lg:px-16"
       >
-        <div class="prose-sm prose col-span-3 px-12 dark:prose-invert">
+        <div class="prose prose-sm col-span-3 px-12 dark:prose-invert">
           <h2>Labas! 👋</h2>
 
           <p class="font-bold">2022 m. pirmakursių stovyklos jau pasibaigė!</p>
@@ -116,31 +116,21 @@
   </FadeTransition>
 </template>
 
-<script lang="ts">
-import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
-
-export default {
-  layout: PublicLayout,
-};
-</script>
-
 <script setup lang="ts">
-import { Head } from "@inertiajs/inertia-vue3";
-import { Link } from "@inertiajs/inertia-vue3";
+import { Head, Link } from "@inertiajs/vue3";
 import { onMounted, ref } from "vue";
-import route from "ziggy-js";
 
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
-import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 
 defineProps<{
-  events: App.Models.News;
+  events: App.Entities.News;
 }>();
 
 const isThemeDark = ref(isDarkMode());
 
-const getFacultyName = (event: App.Models.Calendar) => {
+const getFacultyName = (event: App.Entities.Calendar) => {
   if (!event.padalinys) return "";
 
   // split string into two parts, separated by string "Vilniaus universiteto Studentų atstovybė"
@@ -170,7 +160,7 @@ const getFacultyName = (event: App.Models.Calendar) => {
   return facultyName;
 };
 
-const get5thResponsiveImage = (event: App.Models.Calendar) => {
+const get5thResponsiveImage = (event: App.Entities.Calendar) => {
   if (event.media.length === 0) return "";
 
   let mainUrl = event.media[0].original_url;

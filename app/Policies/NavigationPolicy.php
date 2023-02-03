@@ -2,23 +2,22 @@
 
 namespace App\Policies;
 
+use App\Enums\CRUDEnum;
 use App\Models\Navigation;
 use App\Models\User;
+
+use Illuminate\Support\Str;
+use App\Enums\ModelEnum;
+use App\Services\ModelAuthorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class NavigationPolicy
+class NavigationPolicy extends ModelPolicy
 {
     use HandlesAuthorization;
 
-    /**
-     * Determine whether the user can view any models.
-     *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function viewAny(User $user)
+    public function __construct()
     {
-        //
+        $this->pluralModelName = Str::plural(ModelEnum::NAVIGATION()->label);
     }
 
     /**
@@ -28,20 +27,15 @@ class NavigationPolicy
      * @param  \App\Models\Navigation  $navigation
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Navigation $navigation)
+    public function view(User $user, Navigation $navigation, ModelAuthorizer $authorizer)
     {
-        //
-    }
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $navigation, CRUDEnum::READ()->label, $this->pluralModelName)) {
+            return true;
+        }
 
-    /**
-     * Determine whether the user can create models.
-     *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function create(User $user)
-    {
-        //
+        return false;
     }
 
     /**
@@ -51,9 +45,15 @@ class NavigationPolicy
      * @param  \App\Models\Navigation  $navigation
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Navigation $navigation)
+    public function update(User $user, Navigation $navigation, ModelAuthorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $navigation, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -63,9 +63,15 @@ class NavigationPolicy
      * @param  \App\Models\Navigation  $navigation
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Navigation $navigation)
+    public function delete(User $user, Navigation $navigation, ModelAuthorizer $authorizer)
     {
-        //
+        $this->authorizer = $authorizer;
+        
+        if ($this->commonChecker($user, $navigation, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

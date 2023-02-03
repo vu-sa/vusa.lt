@@ -19,12 +19,12 @@
               ? 'md:col-span-3 2xl:col-span-2'
               : 'md:col-span-2'
           "
-          class="prose-sm prose my-auto dark:prose-invert"
+          class="prose prose-sm my-auto dark:prose-invert"
         >
           <h1>
-            {{ dutyInstitutionName }}
+            {{ institutionName }}
           </h1>
-          <div v-html="dutyInstitutionDescription"></div>
+          <div v-html="institutionDescription"></div>
         </div>
         <!-- <template v-for="duty in institution"> -->
         <ContactWithPhotoForDuties
@@ -41,43 +41,37 @@
   </FadeTransition>
 </template>
 
-<script lang="ts">
-import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
-
-export default {
-  layout: PublicLayout,
-};
-</script>
-
 <script setup lang="ts">
-import { Head, usePage } from "@inertiajs/inertia-vue3";
+import { Head, usePage } from "@inertiajs/vue3";
 import { computed } from "vue";
 
 import ContactWithPhotoForDuties from "@/Components/Public/ContactWithPhotoForDuties.vue";
-import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 
 const props = defineProps<{
-  contacts: Array<App.Models.User>;
-  institution: App.Models.DutyInstitution;
+  contacts: Array<App.Entities.User>;
+  institution: App.Entities.Institution;
 }>();
 
-const dutyInstitutionName = computed(() => {
-  const locale = usePage().props.value.locale;
+const institutionName = computed(() => {
+  const locale = usePage().props.app.locale;
 
   if (locale === "en") {
-    return props.institution.attributes?.en?.name ?? props.institution.name;
+    return (
+      props.institution.extra_attributes?.en?.name ?? props.institution.name
+    );
   }
 
   return props.institution.name ?? "";
 });
 
-const dutyInstitutionDescription = computed(() => {
-  const locale = usePage().props.value.locale;
+const institutionDescription = computed(() => {
+  const locale = usePage().props.app.locale;
 
   if (locale === "en") {
     return (
-      props.institution.attributes?.en?.description ??
+      props.institution.extra_attributes?.en?.description ??
       props.institution.description
     );
   }

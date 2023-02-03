@@ -1,41 +1,31 @@
 <template>
-  <PageContent title="Pradinis puslapis" :create-url="route('mainPage.create')">
-    <template #aside-header>
-      <AsideHeader></AsideHeader>
-    </template>
-    <div class="main-card">
-      <IndexSearchInput payload-name="text" />
-      <IndexDataTable
-        :model="mainPages"
-        :columns="columns"
-        edit-route="mainPage.edit"
-        destroy-route="mainPage.destroy"
-      />
-    </div>
-  </PageContent>
+  <IndexPageLayout
+    title="Pradinis puslapis"
+    model-name="mainPage"
+    :can-use-routes="canUseRoutes"
+    :columns="columns"
+    :paginated-models="mainPages"
+  >
+  </IndexPageLayout>
 </template>
 
-<script lang="ts">
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+<script setup lang="tsx">
+import type { DataTableColumns } from "naive-ui";
 
-export default {
-  layout: AdminLayout,
-};
-</script>
-
-<script setup lang="ts">
-import route from "ziggy-js";
-
-import AsideHeader from "@/Components/Admin/Headers/AsideHeaderContent.vue";
-import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
-import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
+import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
 defineProps<{
-  mainPages: PaginatedModels<App.Models.MainPage[]>;
+  mainPages: PaginatedModels<App.Entities.MainPage>;
 }>();
 
-const columns = [
+const canUseRoutes = {
+  create: true,
+  show: false,
+  edit: true,
+  destroy: true,
+};
+
+const columns: DataTableColumns<App.Entities.MainPage> = [
   {
     title: "Pavadinimas",
     key: "text",

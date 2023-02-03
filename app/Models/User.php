@@ -2,18 +2,20 @@
 
 namespace App\Models;
 
+use App\Models\Pivots\Dutiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use App\Models\DutyUser;
 use Spatie\Permission\Traits\HasRoles;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class User extends Authenticatable
 {
-    use Notifiable, HasFactory, HasRoles;
-
-    protected $table = 'users';
+    use Notifiable, HasFactory, HasRelationships, HasRoles, HasUlids, LogsActivity, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -34,22 +36,14 @@ class User extends Authenticatable
         'remember_token',
         'google_token',
         'email_verified_at',
-        'last_login',
+        'last_action',
         'microsoft_token',
-        'two_factor_recovery_codes',
-        'two_factor_secret',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array
-     */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-    ];
-
-    // Access banner with relationship
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()->logFillable()->logOnlyDirty();
+    }
 
     public function banners()
     {
@@ -61,31 +55,33 @@ class User extends Authenticatable
         return $this->hasMany(Calendar::class, 'user_id', 'id');
     }
 
-    public function duties()
+    public function doings()
     {
-        return $this->belongsToMany(Duty::class, 'duties_users', 'user_id', 'duty_id')->using(DutyUser::class)->withPivot(['id', 'attributes'])->withTimestamps();
+        return $this->belongsToMany(Doing::class);
     }
 
-    // TODO: more logical return of padalinys
-    public function padalinys()
+    public function duties()
     {
-        return $this->duties()->first()?->institution?->padalinys;
+        return $this->morphToMany(Duty::class, 'dutiable')
+            ->using(Dutiable::class)
+            ->withPivot(['extra_attributes'])
+            // TODO: when used in relations, this returns all...
+            // ->wherePivot('end_date', '>=', now())->orWherePivot('end_date', null)
+            ->withTimestamps();
     }
 
     public function padaliniai()
     {
-        $padaliniai = [];
-        
-        $this->load('duties.institution.padalinys');
-        foreach ($this->duties as $duty) {
-            if ($duty->institution->padalinys) {
-                $padaliniai[] = $duty->institution->padalinys;
-            }
-        }
+        return $this->hasManyDeepFromRelations($this->duties(), (new Duty())->institution(), (new Institution())->padalinys());
+    }
 
-        // collect unique padaliniai
-        $padaliniai = new Collection($padaliniai);
+    public function tasks()
+    {
+        return $this->belongsToMany(Task::class);
+    }
 
-        return $padaliniai->unique();
+    public function institutions()
+    {
+        return $this->hasManyDeepFromRelations($this->duties(), (new Duty())->institution());
     }
 }

@@ -208,8 +208,7 @@
 <script setup lang="ts">
 import { ChevronDown20Filled, Navigation24Filled } from "@vicons/fluent";
 import { FacebookF, Instagram } from "@vicons/fa";
-import { Inertia } from "@inertiajs/inertia";
-import { Link, usePage } from "@inertiajs/inertia-vue3";
+import { Link, router, usePage } from "@inertiajs/vue3";
 import {
   NButton,
   NDrawer,
@@ -221,11 +220,10 @@ import {
   NTree,
 } from "naive-ui";
 import { ref } from "vue";
-import route from "ziggy-js";
 
 // map padaliniai to options_padaliniai
 
-const locale = ref(usePage().props.value.locale);
+const locale = ref(usePage().props.app.locale);
 const locales = ["lt", "en"];
 const activeDrawer = ref(false);
 const toggleMenu = () => {
@@ -235,7 +233,7 @@ const toggleMenu = () => {
 // get permalink from url, last part after /
 const getPermalink = () => {
   const url = usePage().url;
-  const urlParts = url.value.split("/");
+  const urlParts = url.split("/");
   const permalink = urlParts[urlParts.length - 1];
   // also trim hashtags
   return permalink.split("#")[0];
@@ -348,7 +346,7 @@ const navigationTreeMobileEN = [
 ];
 
 const handleSelectKryptis = (url) => {
-  Inertia.visit(
+  router.visit(
     route("main.ataskaita2022", {
       lang: locale.value,
       permalink: url,
@@ -357,7 +355,7 @@ const handleSelectKryptis = (url) => {
 };
 
 const goToAtaskaitaHome = () => {
-  Inertia.visit(
+  router.visit(
     route("main.ataskaita2022", {
       lang: locale.value,
       permalink: "pradzia",
@@ -371,14 +369,14 @@ const handleSelectLanguage = (key) => {
   });
 
   if (key === "home") {
-    Inertia.visit(
+    router.visit(
       route("main.ataskaita2022", {
         lang: otherLocale[0],
         permalink: "pradzia",
       })
     );
   } else if (key === "page") {
-    Inertia.visit(
+    router.visit(
       route("main.ataskaita2022", {
         lang: otherLocale[0],
         permalink: permalink,

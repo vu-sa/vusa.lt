@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Scout\Searchable;
 use App\Models\Category;
 
 class Page extends Model
 {
-    use HasFactory;
+    use HasFactory, Searchable;
 
     protected $table = 'pages';
 
@@ -35,4 +36,18 @@ class Page extends Model
     {
         return $this->belongsTo(Category::class, 'category_id');
     }
+
+    public function toSearchableArray()
+    {
+        $array = $this->toArray();
+
+        // Customize array...
+        // return only title
+        $array = [
+            'title' => $this->title,
+        ];
+
+        return $array;
+    }
+
 }

@@ -1,23 +1,32 @@
 {
   "compilerOptions": {
     "outDir": "dist",
+    "module": "ES2020",
     "target": "ES2020",
-    "module": "ES2022",
     "strict": true,
     "moduleResolution": "Node",
+    "resolveJsonModule": true,
     "allowJs": false,
     "jsx": "preserve",
     "paths": {
-      "@/*": ["./resources/js/*"],
-      "ziggy": ["./vendor/tightenco/ziggy/dist"]
+      "@/*": ["./resources/js/*"]
     },
-    "types": ["vite/client"],
-    "skipLibCheck": true,
+    "types": ["vite/client", "unplugin-vue-define-options/macros-global", "@microsoft/microsoft-graph-types"],
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "baseUrl": ".",
-    "isolatedModules": true
+    "noImplicitAny": true,
+    "isolatedModules": true, // specified in vue.js docs
+    "lib": [
+      "esnext",
+      "dom"
+    ],
+    // For `<script setup>`
+    // See <https://devblogs.microsoft.com/typescript/announcing-typescript-4-5-beta/#preserve-value-imports>
+    "preserveValueImports": true,
+    // Enforce using `import type` instead of `import` for types
+    "importsNotUsedAsValues": "error"
   },
   "exclude": ["./node_modules/**/*", "./public/**/*", "**/*.stories.ts"]
 }

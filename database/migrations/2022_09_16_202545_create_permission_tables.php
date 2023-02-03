@@ -153,7 +153,7 @@ class CreatePermissionTables extends Migration
         $calendarEditor->syncPermissions($calendar_create, $calendar_edit, $calendar_delete);
         $saziningaiAdmin->syncPermissions($saziningai_create, $saziningai_edit, $saziningai_delete);
 
-        $users = User::all();
+        $users = User::withTrashed()->get();
 
         foreach ($users as $user) {
             $old_role = DB::table('old_roles')->where('id', $user->role_id)->first();

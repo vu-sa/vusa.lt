@@ -16,26 +16,26 @@
     <meta name="color-scheme" content="light dark">
     {{-- <meta name="theme-color" content="#bd2835" /> --}}
 
+    {{-- CSRF --}}
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     {{-- Atom Feed --}}
     @include('feed::links')
 
     {{-- Fonts --}}
     @googlefonts
 
-    <!-- Styles -->
-    @vite(['resources/css/app.css'])
-
-    {{-- Naive UI must be after, because Tailwind has preflight styles which, otherwise, reset Naive UI --}}
-    <meta name="naive-ui-style" />
+    {{-- CSS and JS --}}
+    @vite(['resources/js/app.ts'])
 
     {{-- Ziggy Routes --}}
     @routes
 
-    @vite(['resources/js/app.ts'])
     @inertiaHead
 </head>
 
-<body class="font-sans antialiased">
+{{-- TODO: something injects margin-bottom of 8px --}}
+<body class="font-sans antialiased" style="margin-bottom: 0px">
     @inertia
 </body>
 

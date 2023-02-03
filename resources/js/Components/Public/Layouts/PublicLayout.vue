@@ -9,7 +9,7 @@
       <div
         class="flex min-h-screen flex-col justify-between bg-neutral-50 antialiased dark:bg-zinc-900"
       >
-        <MainNavigation />
+        <MainNavigation :is-theme-dark="isThemeDark" />
         <main class="pt-24 pb-8">
           <slot></slot>
         </main>
@@ -34,15 +34,15 @@
 import { NConfigProvider, darkTheme } from "naive-ui";
 import { defineAsyncComponent, onMounted, ref } from "vue";
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
-import { usePage } from "@inertiajs/inertia-vue3";
+import { usePage } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 
-import FadeTransition from "../Utils/FadeTransition.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import Footer from "@/Components/Public/FullWidth/SiteFooter.vue";
 import MainNavigation from "@/Components/Public/Layouts/MainNavigation.vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
 
-const isThemeDark = ref(isDarkMode());
+const isThemeDark = ref<boolean>(isDarkMode());
 const mounted = ref(false);
 
 const themeOverrides = {
@@ -90,7 +90,7 @@ var Tawk_API = Tawk_API || {},
 
 onMounted(() => {
   // if page props app.env is local, then don't run Clarity
-  if (usePage().props.value.app.env !== "local") {
+  if (usePage().props.app.env !== "local") {
     (function (c, l, a, r, i, t, y) {
       c[a] =
         c[a] ||

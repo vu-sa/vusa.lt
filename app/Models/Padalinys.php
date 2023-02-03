@@ -8,6 +8,8 @@ class Padalinys extends Model
 {
     protected $table = 'padaliniai';
 
+    protected $guarded = [];
+
     public function banners()
     {
         return $this->hasMany(Banner::class, 'padalinys_id');
@@ -20,12 +22,12 @@ class Padalinys extends Model
 
     public function duties()
     {
-        return $this->hasManyThrough(Duty::class, DutyInstitution::class, 'padalinys_id', 'institution_id');
+        return $this->hasManyThrough(Duty::class, Institution::class, 'padalinys_id', 'institution_id');
     }
 
     public function institutions()
     {
-        return $this->hasMany(DutyInstitution::class, 'padalinys_id');
+        return $this->hasMany(Institution::class, 'padalinys_id');
     }    
 
     public function news()

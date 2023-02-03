@@ -201,20 +201,12 @@
   <!-- </PublicLayout> -->
 </template>
 
-<script lang="ts">
-import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
-
-export default {
-  layout: PublicLayout,
-};
-</script>
-
 <script setup lang="ts">
 import {
-  FormInst,
-  FormItemRule,
-  FormRules,
-  FormValidationError,
+  type FormInst,
+  type FormItemRule,
+  type FormRules,
+  type FormValidationError,
   NButton,
   NCheckbox,
   NDatePicker,
@@ -226,16 +218,13 @@ import {
   NSelect,
   createDiscreteApi,
 } from "naive-ui";
-import { Head } from "@inertiajs/inertia-vue3";
-import { Inertia } from "@inertiajs/inertia";
+import { Head, router, useForm } from "@inertiajs/vue3";
 import { computed, ref } from "vue";
-import { useForm } from "@inertiajs/inertia-vue3";
-import route from "ziggy-js";
 
-import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 const props = defineProps<{
-  padaliniaiOptions: Array<App.Models.Padalinys>;
+  padaliniaiOptions: Array<App.Entities.Padalinys>;
 }>();
 
 // formRefs are needed by Naive UI
@@ -342,7 +331,7 @@ const rules: FormRules = {
     // check if any item in array is empty
     validator(
       rule: unknown,
-      value: Array<Pick<App.Models.SaziningaiExamFlow, "start_time">>
+      value: Array<Pick<App.Entities.SaziningaiExamFlow, "start_time">>
     ) {
       if (!value || value.length === 0) {
         return new Error("Įveskite bent vieno atsiskaitymo atsiskaitymo laiką");
@@ -401,7 +390,7 @@ const handleValidateClick = (e: MouseEvent) => {
   e.preventDefault();
   formRef.value?.validate((errors: Array<FormValidationError> | undefined) => {
     if (!errors) {
-      Inertia.post(route("saziningaiExamRegistration.store"), formValue, {
+      router.post(route("saziningaiExamRegistration.store"), formValue, {
         onSuccess: () => {
           message.success(
             `Ačiū už atsiskaitymo „${formValue.subject_name}“ užregistravimą!`

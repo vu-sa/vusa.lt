@@ -77,4 +77,14 @@ return [
         public_path('uploads') => storage_path('app/public'),
     ],
 
+    'sharepoint' => [
+        'client_id' => env('SHAREPOINT_CLIENT_ID'),
+        'client_secret' => env('SHAREPOINT_CLIENT_SECRET'),
+        'list_id' => env('SHAREPOINT_LIST_ID'),
+        'main_term_set_id' => env('SHAREPOINT_MAIN_TERM_SET_ID'),
+        'redirect' => env('SHAREPOINT_REDIRECT_URI'),
+        'site_id' => env('SHAREPOINT_SITE_ID'),
+        'tenant_id' => env('SHAREPOINT_TENANT_ID'),
+    ],
+
 ];

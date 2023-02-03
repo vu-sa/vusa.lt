@@ -1,9 +1,6 @@
 <template>
   <PageContent title="Navigacija">
-    <!-- <template #aside-header>
-      <AsideHeader></AsideHeader>
-    </template> -->
-    <div class="main-card">
+    <NCard class="subtle-gray-gradient">
       <NTree
         block-line
         :data="data"
@@ -27,30 +24,20 @@
           Ar tikrai atnaujinti?
         </n-popconfirm>
       </div>
-    </div>
+    </NCard>
   </PageContent>
 </template>
 
-<script lang="ts">
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
-
-export default {
-  layout: AdminLayout,
-};
-</script>
-
 <script setup lang="ts">
 // import { Edit16Regular } from "@vicons/fluent";
-import { Inertia } from "@inertiajs/inertia";
-import { Link } from "@inertiajs/inertia-vue3";
-import { NButton, NPopconfirm, NSpin, NTree } from "naive-ui";
+import { Link, router } from "@inertiajs/vue3";
+import { NButton, NCard, NPopconfirm, NSpin, NTree } from "naive-ui";
 import { h, ref } from "vue";
-import route from "ziggy-js";
 
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
+import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 
 const props = defineProps<{
-  navigation: App.Models.Navigation;
+  navigation: App.Entities.Navigation;
 }>();
 
 const parseNavigation = (array, id) => {
@@ -154,7 +141,7 @@ const handleDrop = ({ node, dragNode, dropPosition }) => {
 
 const updateModel = () => {
   showSpin.value = !showSpin.value;
-  Inertia.post(route("navigation.store"), data, {
+  router.post(route("navigation.store"), data, {
     onSuccess: () => {
       showSpin.value = !showSpin.value;
       // message.success("Sėkmingai atnaujinta!");

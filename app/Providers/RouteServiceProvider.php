@@ -17,7 +17,7 @@ class RouteServiceProvider extends ServiceProvider
      *
      * @var string
      */
-    public const HOME = '/admin';
+    public const HOME = '/mano';
 
     /**
      * The controller namespace for the application.
@@ -26,7 +26,7 @@ class RouteServiceProvider extends ServiceProvider
      *
      * @var string|null
      */
-    // protected $namespace = 'App\\Http\\Controllers';
+    protected $namespace = 'App\\Http\\Controllers';
 
     /**
      * Define your route model bindings, pattern filters, etc.
@@ -40,12 +40,19 @@ class RouteServiceProvider extends ServiceProvider
         $this->routes(function () {
             Route::prefix('api')
                 ->middleware('api')
-                ->namespace($this->namespace)
+                ->name('api.')
+                ->namespace('App\\Http\\Controllers\\Api')
                 ->group(base_path('routes/api.php'));
+
+            Route::middleware(['web', 'auth'])
+                ->namespace('App\\Http\\Controllers\\Admin')
+                ->prefix('mano')
+                ->group(base_path('routes/admin.php'));
 
             Route::middleware('web')
                 ->namespace($this->namespace)
                 ->group(base_path('routes/web.php'));
+
         });
     }
 
@@ -56,9 +63,9 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected function configureRateLimiting()
     {
-        // RateLimiter::for('api', function (Request $request) {
-        //     return Limit::perMinute(60)->by(optional($request->user())->id ?: $request->ip());
-        // });
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(60)->by(optional($request->user())->id ?: $request->ip());
+        });
 
         RateLimiter::for('summerCamps', function (Request $request) {
             return $request->user()
@@ -70,6 +77,12 @@ class RouteServiceProvider extends ServiceProvider
             return $request->user()
                 ? Limit::perMinute(100)->by($request->user()->id)
                 : Limit::perHour(5)->by($request->ip());
+        });
+
+        RateLimiter::for('login', function (Request $request) {
+            $email = (string) $request->email;
+
+            return Limit::perMinute(5)->by($email.$request->ip());
         });
     }
 }

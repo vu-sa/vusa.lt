@@ -13,15 +13,14 @@
 
 <script setup lang="ts">
 import { ChevronDown20Filled } from "@vicons/fluent";
-import { Inertia } from "@inertiajs/inertia";
 import { NBadge, NButton, NDropdown, NIcon } from "naive-ui";
 import { computed } from "vue";
 import { loadLanguageAsync } from "laravel-vue-i18n";
-import { usePage } from "@inertiajs/inertia-vue3";
-import route from "ziggy-js";
+import { router, usePage } from "@inertiajs/vue3";
+import type { LocaleEnum } from "@/Types/enums";
 
 const props = defineProps<{
-  locale: string;
+  locale: LocaleEnum;
 }>();
 
 const emit = defineEmits<{
@@ -31,13 +30,13 @@ const emit = defineEmits<{
 const locales = ["lt", "en"];
 
 const otherLanguagePage = computed(() => {
-  if (usePage().props.value.otherLangPage) {
+  if (usePage().props.otherLangPage) {
     return {
-      lang: usePage().props.value.otherLangPage.lang,
+      lang: usePage().props.otherLangPage.lang,
       newsString:
-        usePage().props.value.otherLangPage.lang === "lt" ? "naujiena" : "news",
-      padalinys: usePage().props.value.alias,
-      permalink: usePage().props.value.otherLangPage.permalink,
+        usePage().props.otherLangPage.lang === "lt" ? "naujiena" : "news",
+      padalinys: usePage().props.alias,
+      permalink: usePage().props.otherLangPage.permalink,
     };
   }
 
@@ -90,7 +89,7 @@ const handleSelectLanguage = (key) => {
   });
 
   if (key === "home") {
-    Inertia.visit(
+    router.visit(
       route("main.home", {
         lang: newLang,
       }),
@@ -101,14 +100,12 @@ const handleSelectLanguage = (key) => {
         },
       }
     );
-    // Inertia.visit(route("main.page", { lang: "lt" }));
-    // message.info("Navigating to " + key);
   } else if (key === "page") {
-    Inertia.visit(
+    router.visit(
       route("main.page", {
         lang: newLang,
-        padalinys: usePage().props.value.alias,
-        permalink: usePage().props.value.otherLangPage.permalink,
+        padalinys: usePage().props.alias,
+        permalink: usePage().props.otherLangPage.permalink,
       }),
       {
         onSuccess: () => {

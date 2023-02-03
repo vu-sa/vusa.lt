@@ -6,16 +6,13 @@ use App\Models\News;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
+use App\Http\Controllers\ResourceController;
 use App\Models\User;
+use App\Services\ModelIndexer;
 use Illuminate\Support\Facades\Auth;
 
-class NewsController extends Controller
+class NewsController extends ResourceController
 {
-    public function __construct()
-    {
-        $this->authorizeResource(News::class, 'news');
-    }
-
     /**
      * Display a listing of the resource.
      *
@@ -23,24 +20,15 @@ class NewsController extends Controller
      */
     public function index(Request $request)
     {
-        $padaliniai = $request->padaliniai;
-        $title = $request->title;
+        $this->authorize('viewAny', [News::class, $this->authorizer]);
+        
+        $search = request()->input('text');
 
-        $news = News::
-            // check if admin, if not return only pages from current user padalinys
-            when(!$request->user()->hasRole('Super Admin'), function ($query) use ($request) {
-                $query->where('padalinys_id', '=', $request->user()->padalinys()->id);
-                // check request for padaliniai, if not empty return only pages from request padaliniai
-            })->when(!empty($padaliniai), function ($query) use ($padaliniai) {
-                $query->whereIn('padalinys_id', $padaliniai);
-            })->when(!is_null($title), function ($query) use ($title) {
-                $query->where('title', 'like', "%{$title}%");
-            })->with(['padalinys' => function ($query) {
-                $query->select('id', 'shortname', 'alias');
-            }])->orderByDesc('created_at')->paginate(20);
+        $indexer = new ModelIndexer();
+        $news = $indexer->execute(News::class, $search, 'title', $this->authorizer, null);
 
         return Inertia::render('Admin/Content/IndexNews', [
-            'news' => $news
+            'news' => $news->paginate(20)
         ]);
     }
 
@@ -51,6 +39,8 @@ class NewsController extends Controller
      */
     public function create()
     {    
+        $this->authorize('create', [News::class, $this->authorizer]);
+        
         return Inertia::render('Admin/Content/CreateNews');
     }
 
@@ -62,7 +52,7 @@ class NewsController extends Controller
      */
     public function store(Request $request)
     {
-        // dd(Auth::user(), $request);
+        $this->authorize('create', [News::class, $this->authorizer]);
 
         $request->validate([
             'title' => 'required',
@@ -73,10 +63,10 @@ class NewsController extends Controller
             'publish_time' => 'required',
         ]);
 
-        $padalinys_id = User::find(Auth::user()->id)->padalinys()?->id;
+        $padalinys_id = User::find(Auth::id())->padalinys()?->id;
 
         if (is_null($padalinys_id)) {
-            $padalinys_id = request()->user()->hasRole('Super Admin') ? 16 : null;
+            $padalinys_id = request()->user()->hasRole(config('permission.super_admin_role_name')) ? 16 : null;
         }
 
         $news = News::create([
@@ -105,6 +95,7 @@ class NewsController extends Controller
     public function show(News $news)
     {
         //
+        $this->authorize('view', [News::class, $news, $this->authorizer]);
     }
 
     /**
@@ -115,7 +106,9 @@ class NewsController extends Controller
      */
     public function edit(News $news)
     {
-        $other_lang_pages = News::with('padalinys:id,shortname')->when(!request()->user()->hasRole('Super Admin'), function ($query) {
+        $this->authorize('update', [News::class, $news, $this->authorizer]);
+    
+        $other_lang_pages = News::with('padalinys:id,shortname')->when(!request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
             $query->where('padalinys_id', request()->user()->padalinys()->id);  
         })->where('lang', '!=', $news->lang)->select('id', 'title', 'padalinys_id')->get();
         
@@ -149,6 +142,8 @@ class NewsController extends Controller
      */
     public function update(Request $request, News $news)
     {
+        $this->authorize('update', [News::class, $news, $this->authorizer]);
+        
         $other_lang_page = News::find($news->other_lang_id);
         
         $news->update($request->only('title', 'text', 'lang', 'other_lang_id', 'draft', 'short', 'image', 'image_author', 'publish_time'));
@@ -175,11 +170,13 @@ class NewsController extends Controller
      */
     public function destroy(News $news)
     {
+        $this->authorize('delete', [News::class, $news, $this->authorizer]);
+        
         $news->delete();
 
         return redirect()->route('news.index')->with('info', 'Naujiena sėkmingai ištrinta!');
     }
-
+    // TODO: ....
     public function searchForNews(Request $request)
 
     {

@@ -1,4 +1,4 @@
-// import { toRaw } from "vue";
+// TODO: remove
 
 export function checkForEmptyArray(attributes) {
   // check if attributes prototype is Object

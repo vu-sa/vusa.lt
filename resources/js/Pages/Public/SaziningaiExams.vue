@@ -8,7 +8,7 @@
         <p class="my-6 text-gray-800 dark:text-zinc-100">
           Registruotis reikia į kiekvieną srautą atskirai.
         </p>
-        <div class="main-card w-full rounded-md p-0">
+        <NCard class="subtle-gray-gradient w-full rounded-md p-0">
           <NDataTable
             size="small"
             :scroll-x="1200"
@@ -16,7 +16,7 @@
             :columns="columns"
           >
           </NDataTable>
-        </div>
+        </NCard>
       </div>
     </article>
   </FadeTransition>
@@ -91,18 +91,10 @@
   </NModal>
 </template>
 
-<script lang="ts">
-import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
-
-export default {
-  layout: PublicLayout,
-};
-</script>
-
 <script setup lang="ts">
 import {
-  FormInst,
-  FormValidationError,
+  type FormInst,
+  type FormValidationError,
   NButton,
   NCard,
   NCheckbox,
@@ -114,17 +106,14 @@ import {
   NSelect,
   createDiscreteApi,
 } from "naive-ui";
-import { Head } from "@inertiajs/inertia-vue3";
-import { Inertia } from "@inertiajs/inertia";
+import { Head, router, useForm } from "@inertiajs/vue3";
 import { h, ref } from "vue";
-import { useForm } from "@inertiajs/inertia-vue3";
-import route from "ziggy-js";
 
-import FadeTransition from "@/Components/Public/Utils/FadeTransition.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 const props = defineProps<{
-  padaliniaiOptions: App.Models.Padalinys[];
-  saziningaiExamFlows: App.Models.SaziningaiExamFlow[];
+  padaliniaiOptions: App.Entities.Padalinys[];
+  saziningaiExamFlows: App.Entities.SaziningaiExamFlow[];
 }>();
 
 const showModal = ref(false);
@@ -296,7 +285,7 @@ const handleValidateClick = (e: MouseEvent) => {
   e.preventDefault();
   formRef.value?.validate((errors: Array<FormValidationError> | undefined) => {
     if (!errors) {
-      Inertia.post(route("saziningaiExamObserver.store"), formValue, {
+      router.post(route("saziningaiExamObserver.store"), formValue, {
         onSuccess: () => {
           message.success(
             `Ačiū už užsiregistravimą stebėti „${formValue.exam_name}“ atsiskaitymą!`

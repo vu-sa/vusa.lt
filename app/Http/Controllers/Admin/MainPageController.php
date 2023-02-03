@@ -6,16 +6,12 @@ use App\Models\MainPage;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
+use App\Http\Controllers\ResourceController;
+use App\Services\ModelIndexer;
 use Illuminate\Support\Facades\DB;
 
-class MainPageController extends Controller
+class MainPageController extends ResourceController
 {
-
-    public function __construct()
-    {
-        $this->authorizeResource(MainPage::class, 'mainPage');
-    }
-
     /**
      * Display a listing of the resource.
      *
@@ -23,24 +19,15 @@ class MainPageController extends Controller
      */
     public function index(Request $request)
     {
-        $padaliniai = request()->input('padaliniai');
-        $text = request()->input('text');
+        $this->authorize('viewAny', [MainPage::class, $this->authorizer]);
+        
+        $search = request()->input('text');
 
-        $mainPages = MainPage::
-            // check if admin, if not return only pages from current user padalinys
-            when(!$request->user()->hasRole('Super Admin'), function ($query) use ($request) {
-                $query->where('padalinys_id', '=', $request->user()->padalinys()->id);
-                // check request for padaliniai, if not empty return only pages from request padaliniai
-            })->when(!empty($padaliniai), function ($query) use ($padaliniai) {
-                $query->whereIn('padalinys_id', $padaliniai);
-            })->when(!is_null($text), function ($query) use ($text) {
-                $query->where('text', 'like', "%{$text}%");
-            })->with(['padalinys' => function ($query) {
-                $query->select('id', 'shortname', 'alias');
-            }])->orderByDesc('created_at')->paginate(20);
+        $indexer = new ModelIndexer();
+        $mainPages = $indexer->execute(MainPage::class, $search, 'text', $this->authorizer, false);
 
         return Inertia::render('Admin/Content/IndexMainPages', [
-            'mainPages' => $mainPages,
+            'mainPages' => $mainPages->paginate(20),
         ]);
     }
 
@@ -51,6 +38,8 @@ class MainPageController extends Controller
      */
     public function create()
     {
+        $this->authorize('create', [MainPage::class, $this->authorizer]);
+        
         return Inertia::render('Admin/Content/CreateMainPage');
     }
 
@@ -62,6 +51,8 @@ class MainPageController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', [MainPage::class, $this->authorizer]);
+        
         $request->validate([
             'text' => 'required',
             'link' => 'required',
@@ -90,7 +81,7 @@ class MainPageController extends Controller
      */
     public function show(MainPage $mainPage)
     {
-        //
+        $this->authorize('view', [MainPage::class, $mainPage, $this->authorizer]);
     }
 
     /**
@@ -101,6 +92,8 @@ class MainPageController extends Controller
      */
     public function edit(MainPage $mainPage)
     {        
+        $this->authorize('update', [MainPage::class, $mainPage, $this->authorizer]);
+        
         return Inertia::render('Admin/Content/EditMainPage', [
             'mainPage' => $mainPage
         ]);
@@ -115,6 +108,8 @@ class MainPageController extends Controller
      */
     public function update(Request $request, MainPage $mainPage)
     {
+        $this->authorize('update', [MainPage::class, $mainPage, $this->authorizer]);
+        
         $request->validate([
             'text' => 'required',
             'link' => 'required',
@@ -135,6 +130,8 @@ class MainPageController extends Controller
      */
     public function destroy(MainPage $mainPage)
     {
+        $this->authorize('delete', [MainPage::class, $mainPage, $this->authorizer]);
+        
         $mainPage->delete();
 
         return redirect()->route('mainPage.index')->with('info', 'Sėkmingai ištrintas pradinio puslapio mygtukas!');

@@ -1,51 +1,42 @@
 <template>
-  <PageContent title="Baneriai" :create-url="route('banners.create')">
-    <template #aside-header>
-      <AsideHeader></AsideHeader>
-    </template>
-    <div class="main-card">
-      <IndexSearchInput payload-name="title" />
-      <IndexDataTable
-        edit-route="banners.edit"
-        :model="banners"
-        :columns="columns"
-      />
-    </div>
-  </PageContent>
+  <IndexPageLayout
+    title="Baneriai"
+    model-name="banners"
+    :can-use-routes="canUseRoutes"
+    :columns="columns"
+    :paginated-models="banners"
+  >
+  </IndexPageLayout>
 </template>
 
-<script lang="ts">
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
+<script setup lang="tsx">
+import { DataTableColumns } from "naive-ui";
 
-export default {
-  layout: AdminLayout,
-};
-</script>
-
-<script setup lang="ts">
-import { h } from "vue";
-import AsideHeader from "@/Components/Admin/Headers/AsideHeaderContent.vue";
-import IndexDataTable from "@/Components/Admin/IndexDataTable.vue";
-import IndexSearchInput from "@/Components/Admin/IndexSearchInput.vue";
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
-import route from "ziggy-js";
+import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
 defineProps<{
-  banners: PaginatedModels<App.Models.Banner[]>;
+  banners: PaginatedModels<App.Entities.Banner[]>;
 }>();
 
-const columns = [
+const canUseRoutes = {
+  create: true,
+  show: false,
+  edit: true,
+  destroy: true,
+};
+
+const columns: DataTableColumns<App.Entities.Banner> = [
   {
     title: "Pavadinimas",
     key: "title",
-    render(row: App.Models.Banner) {
-      return h(
-        "span",
-        {
-          class: row.is_active ? "text-green-700 font-bold" : "text-red-700",
-          href: route("banners.edit", { id: row.id }),
-        },
-        { default: () => row.title }
+    render(row) {
+      return (
+        <span
+          class={row.is_active ? "font-bold text-green-700" : "text-red-700"}
+          href={route("banners.edit", { id: row.id })}
+        >
+          {row.title}
+        </span>
       );
     },
   },

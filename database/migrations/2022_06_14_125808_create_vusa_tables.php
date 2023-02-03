@@ -56,12 +56,15 @@ class CreateVusaTables extends Migration
             $table->dateTime('date');
             $table->text('title');
             $table->text('description')->nullable();
+            $table->string('location')->nullable();
             $table->string('category')->nullable()->index('calendar_category_foreign');
             $table->mediumText('url')->nullable();
             $table->unsignedInteger('user_id')->nullable()->index('calendar_user_id_foreign');
             $table->unsignedInteger('padalinys_id')->default(16)->index('calendar_padalinys_id_foreign');
+            $table->json('attributes')->nullable();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrentOnUpdate()->useCurrent();
+            $table->foreignId('registration_form_id')->nullable();
         });
 
         Schema::create('categories', function (Blueprint $table) {
@@ -330,6 +333,43 @@ class CreateVusaTables extends Migration
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrentOnUpdate()->useCurrent();
         });
+
+        Schema::create('media', function (Blueprint $table) {
+            $table->bigIncrements('id');
+
+            $table->morphs('model');
+            $table->uuid('uuid')->nullable()->unique();
+            $table->string('collection_name');
+            $table->string('name');
+            $table->string('file_name');
+            $table->string('mime_type')->nullable();
+            $table->string('disk');
+            $table->string('conversions_disk')->nullable();
+            $table->unsignedBigInteger('size');
+            $table->json('manipulations');
+            $table->json('custom_properties');
+            $table->json('generated_conversions');
+            $table->json('responsive_images');
+            $table->unsignedInteger('order_column')->nullable()->index();
+
+            $table->nullableTimestamps();
+        });
+
+        Schema::create('registration_forms', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->nullable();
+            $table->json('data');
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+        });
+
+        Schema::create('registrations', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('registration_form_id');
+            $table->json('data');
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+        });
     }
 
     /**
@@ -388,5 +428,11 @@ class CreateVusaTables extends Migration
         Schema::dropIfExists('calendar');
 
         Schema::dropIfExists('banners');
+
+        Schema::dropIfExists('media');
+
+        Schema::dropIfExists('registration_forms');
+
+        Schema::dropIfExists('registrations');
     }
 }

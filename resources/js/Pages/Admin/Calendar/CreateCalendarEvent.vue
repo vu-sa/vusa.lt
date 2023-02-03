@@ -1,6 +1,6 @@
 <template>
   <PageContent title="Naujas įvykis">
-    <UpsertModelLayout :errors="$attrs.errors" :model="calendar">
+    <UpsertModelLayout :errors="$page.props.errors" :model="calendar">
       <CalendarForm
         model-route="calendar.store"
         :calendar="calendar"
@@ -10,21 +10,13 @@
   </PageContent>
 </template>
 
-<script lang="ts">
-import AdminLayout from "@/Components/Admin/Layouts/AdminLayout.vue";
-
-export default {
-  layout: AdminLayout,
-};
-</script>
-
 <script setup lang="ts">
-import CalendarForm from "@/Components/Admin/Forms/CalendarForm.vue";
-import PageContent from "@/Components/Admin/Layouts/PageContent.vue";
-import UpsertModelLayout from "@/Components/Admin/Layouts/UpsertModelLayout.vue";
+import CalendarForm from "@/Components/AdminForms/CalendarForm.vue";
+import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 defineProps<{
-  categories: App.Models.Category[];
+  categories: App.Entities.Category[];
 }>();
 
 const calendar = {
@@ -34,7 +26,7 @@ const calendar = {
   location: "",
   category: null,
   url: "",
-  attributes: {
+  extra_attributes: {
     en: {},
   },
 };
