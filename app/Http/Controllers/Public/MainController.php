@@ -27,6 +27,7 @@ use App\Mail\ConfirmMemberRegistration;
 use App\Mail\ConfirmObserverRegistration;
 use App\Mail\InformSaziningaiAboutObserverRegistration;
 use App\Mail\InformSaziningaiAboutRegistration;
+use App\Models\Duty;
 use App\Models\Type;
 use App\Notifications\MemberRegistered;
 use Spatie\CalendarLinks\Link;
@@ -266,50 +267,40 @@ class MainController extends PublicController
 		if (in_array($type, [null, 'koordinatoriai', 'kuratoriai'])) {
 			
 			$duty_type = Type::where('slug', '=', $type ?? "koordinatoriai")->first();
-
 			$child_duty_types = Type::where('parent_id', '=', $duty_type->id)->get();
+
+			// merge type collections
+			$duty_types = $child_duty_types->merge(collect([$duty_type]));
 
 			if ($this->padalinys->id === 16) {
 				$institution = Institution::where('alias', '=', 'centrinis-biuras')->first();
 			} else {
-				$institution = Institution::where('padalinys_id', '=', $this->padalinys->id)->first();
+				$padalinys = Padalinys::where('id', '=', $this->padalinys->id)->first();
+				$institution = Institution::where('alias', '=', $padalinys->alias)->first();
 			}
 
-			$alias_duties = collect([]);
+			$contacts = User::withWhereHas('duties', function ($query) use ($duty_types, $institution) {
+				$query->where('institution_id', '=', $institution->id)->whereHas('types', fn (Builder $query) => $query->whereIn('id', $duty_types->pluck('id')));
+			})->get();
 
-			foreach ($child_duty_types as $child_duty_type) {
-
-				$alias_duties = $alias_duties->merge($institution->duties->where('type_id', '=', $child_duty_type->id)->sortBy('order')->values());
-			}
-
-			$alias_duties = $alias_duties->merge($institution->duties->where('type_id', '=', $duty_type->id)->sortBy('order')->values());
 		} else {
+			
 			$institution = Institution::where('alias', '=', $this->alias)->first();
 
 			if (is_null($institution)) {
 				abort(404);
 			}
-
-			$alias_duties = $institution->duties->sortBy('order')->values();
+			
+			$contacts = User::withWhereHas('duties', function ($query) {
+				$query->whereHas('institution', function ($query) {
+					$query->where('alias', '=', $this->alias);
+				});
+			})->get();
 		}
-
-		$alias_contacts = [];
-
-		foreach ($alias_duties as $key => $duty) {
-			foreach ($duty->users as $key2 => $user) {
-				if ($user->has('duties')) {
-					array_push($alias_contacts, $user);
-				}
-			}
-		}
-
-		$alias_contact_collection = new EloquentCollection($alias_contacts);
-
-		$alias_contact_collection = $alias_contact_collection->unique();
 
 		return Inertia::render('Public/Contacts/ContactsShow', [
 			'institution' => $institution,
-			'contacts' => $alias_contact_collection->map(function ($contact) use ($institution) {
+			'contacts' => $contacts->map(function ($contact) use ($institution) {
 				return [
 					'id' => $contact->id,
 					'name' => $contact->name,

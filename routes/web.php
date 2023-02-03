@@ -57,7 +57,7 @@ Route::middleware('main')->group(function () {
         Route::name('main.')->group(function () {
             Route::domain(explode('://', config('app.url'))[1])->group(function () {
                 Route::get('/', [Public\MainController::class, 'home'])->name('home');
-                Route::get('naujienos', [Public\MainController::class, 'newsArchive'])->name('newsArchive');
+                Route::get('naujienos', [Public\NewsController::class, 'newsArchive'])->name('newsArchive');
                 Route::redirect('naujiena/archyvas', 'naujienos', 301);
 
                 Route::get('saziningai-registracija', [Public\MainController::class, 'saziningaiExamRegistration'])->name('saziningaiExamRegistration');
