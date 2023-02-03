@@ -11,7 +11,7 @@ interface User extends Omit<App.Entities.User, "padaliniai"> {
 
 interface InertiaPageProps {
   app: {
-    env: "local" | "production";
+    env: "local" | "production" | "testing";
     locale: LocaleEnum;
     url: string;
   };
