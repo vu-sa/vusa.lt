@@ -5,7 +5,7 @@
     <div>
       <p>{{ $t("Vilniaus universiteto Studentų atstovybė") }}</p>
       <p>{{ $t("Įmonės kodas") }}: 193077294</p>
-      <p>{{ $t("Juridinis asmuo nėra PVM mokėtojas") }}</p>
+      <p>{{ $t("PVM mokėtojo kodas:") }}: LT100015645710</p>
     </div>
     <div>
       <div
