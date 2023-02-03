@@ -89,6 +89,7 @@
             </template>
           </NPopover>
           <a
+            v-if="!collapsed"
             target="_blank"
             href="https://github.com/vu-sa/vusa.lt/blob/main/CHANGELOG.md"
             ><NButton size="tiny" quaternary> v0.4 </NButton></a
