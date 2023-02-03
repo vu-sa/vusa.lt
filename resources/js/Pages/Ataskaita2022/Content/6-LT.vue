@@ -12,7 +12,7 @@
         Darni universitetinė bendruomenė
       </h1>
     </div>
-    <p class="mx-auto max-w-[92ch]">
+    <p class="mx-auto max-w-[92ch] text-zinc-900">
       Bendruomeniškumo puoselėjimas bei studentų (-čių) integracija išlieka
       svarbiu Vilniaus universiteto Studentų atstovybės veiklos prioritetu. Jau
       kelerius metus iš eilės VU SA aktyviai rūpinasi socialinių-akademinių ir
@@ -1153,7 +1153,6 @@
 import { Link } from "@inertiajs/vue3";
 import { NCollapse, NCollapseItem } from "naive-ui";
 
-
 import Bendruomene from "../6-Bendruomene.vue";
 </script>
 
@@ -1181,5 +1180,12 @@ h4.mb-0 {
   display: block;
   height: 180px;
   margin-top: -180px;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  @apply text-zinc-900;
 }
 </style>

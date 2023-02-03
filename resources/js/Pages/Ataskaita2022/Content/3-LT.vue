@@ -4,9 +4,9 @@
       VU SA 2021–2022 metų veiklos strateginių gairių įgyvendinimas
     </h2>
     <NDivider></NDivider>
-    <h3 class="text-center mb-4">VU SA strateginiai tikslai</h3>
+    <h3 class="mb-4 text-center">VU SA strateginiai tikslai</h3>
     <NDivider></NDivider>
-    <h4 class="text-center font-bold text-2xl">
+    <h4 class="text-center text-2xl font-bold">
       1. Vilniaus universiteto bendruomenės nariai palaiko 60 kreditų
       atlaisvinimo idėją.
     </h4>
@@ -73,7 +73,7 @@
     <NDivider></NDivider>
     <!-- 2 -->
     <section>
-      <h4 class="text-center font-bold text-2xl">
+      <h4 class="text-center text-2xl font-bold">
         2. Vilniaus universiteto bendruomenė žino apie individualių poreikių
         turinčių asmenų patirtis ir poreikius bei geba juos atliepti.
       </h4>
@@ -138,7 +138,7 @@
     <h3 class="text-center">VU SA padaliniuose iškelti tikslai</h3>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         3. 2022 m. balandžio 1 d. yra atlikta I studijų pakopos dviejų
         (geografijos ir chemijos) studijų programų privalomųjų dalykų analizė.
       </h4>
@@ -178,7 +178,7 @@
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         4. Iki 2022 m. birželio 30 d. VU EVAF dėstytojai žino ir naudoja
         patogius ir studentus įtraukiančius metodus, todėl bent 70 proc.
         apklausas užpildžiusių studentų yra patenkinti dėstytojų naudojamais
@@ -226,7 +226,7 @@ naudojimo, nuotolinių atsiskaitymų organizavimo būdai. "
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         5. 2022 m. birželio 30 d. VU EVAF akademinė bendruomenė žino ir laikosi
         <em
           >VU EVAF Studentų rašto darbų rengimo, gynimo, vertinimo ir saugojimo
@@ -284,7 +284,7 @@ saugojimo tvarkos aprašo. "
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         6. Iki 2022 m. gegužės 1 d. yra paruoštas laboratorinių darbų
         atnaujinimo planas VU Fizikos fakultete.
       </h4>
@@ -324,7 +324,7 @@ saugojimo tvarkos aprašo. "
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         7. 2022 m. rugsėjo 1 d. yra pasiruošta VU FF antros pakopos pirmo kurso
         studentų, baigusių bakalauro studijas kituose VU padaliniuose /
         universitetuose, akademinės integracijos plano vykdymui.
@@ -379,7 +379,7 @@ planu."
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         8. Per 2021–2022 mokslo metus VU FLF yra informuota apie atviros ir
         saugios emocinės aplinkos svarbą, kurioje studentų ir dėstytojų
         santykiai yra paremti abipuse pagarba bei bendruomenės nariai žino, kur
@@ -419,7 +419,7 @@ bendruomenei. "
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         9. 2022 m. birželio 15 d. remiantis VU FLF priimtų tvarkaraščių sudarymo
         principus apibrėžiančiu dokumentu, yra parengti bent 20 proc. I ir II
         pakopos programų grupių tvarkaraščiai.
@@ -452,7 +452,7 @@ formavimo principus. "
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         10. Iki 2022 m. liepos 1 d. yra išsiaiškintos ir aprašytos VU FsF
         dėstytojų prastos komunikacijos su studentais priežastys.
       </h4>
@@ -498,7 +498,7 @@ komunikacijos su dėstytojais priežastis."
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         11. Iki 2022 m. rugsėjo 1 d. VU GMC bent dviejų I (bakalauro) pakopos
         programų studentų pasirenkamųjų dalykų (nesutampančių su ankstesniais
         semestrais) sąrašai padidėja bent 1 nauju arba jau dėstomu dalyku.
@@ -551,7 +551,7 @@ bakalauro pakopos studijų programų."
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         12. Iki 2022 m. liepos 1 d. atnaujintame Studijų įvado (Kultūros
         istorijos ir antropologijos bei Istorijos studijų programų) modulio
         (dalyko) apraše nurodytos temos yra detalizuotos, atitinka studijų
@@ -585,7 +585,7 @@ bakalauro pakopos studijų programų."
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         13. Iki 2022 m. liepos 1 d. specialybės užsienio dalykų mokymo(si)
         procesas studentui suteikia gebėjimus bendrauti raštu ir žodžiu
         akademinėje, socialinėje ir profesinėje veikloje.
@@ -626,7 +626,7 @@ nagrinėjimo tęstinumas naujos VU SA IF kadencijos metu."
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         14. Iki 2022 m. liepos 1 d. pagal VU SA KF ir VU KF studentų atstovų
         sukurtą sistemą ne mažiau 6-iose I ir II pakopų studijų programose yra
         parengtas ir bent 75 proc. įgyvendintas metų veiklos planas.
@@ -700,7 +700,7 @@ planai."
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         15. 2022 m. balandžio 30 d. daugiau nei 85 proc. VU KnF studentų
         rekomenduotų studijas VU.
       </h4>
@@ -773,7 +773,7 @@ planai."
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         16. 2022 m. liepos 1 d. VU SA KnF yra įgyvendinusi iniciatyvas,
         atliepiančias
         <em>žaliojo</em> Universiteto viziją.
@@ -823,7 +823,7 @@ planai."
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         17. 2022 m. liepos 1 d. VU MF užsienio studentai jaučiasi visaverčiais
         bendruomenės nariais bei žino ir laiku gauna aktualią informaciją.
       </h4>
@@ -876,7 +876,7 @@ kontaktine informacija."
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         18. 2022 m. birželio 30 d. yra sukurta elektronizuota internatūros
         registracijos ir internatūros metu įgytų praktinių įgūdžių vertinimo
         sistema.
@@ -920,7 +920,7 @@ atlikimą internatūros bazėse."
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         19. 2022 m. balandžio 30 d. įgyvendintos bent 3 naujos VU MIF
         bendruomenę jungiančios iniciatyvos.
       </h4>
@@ -984,7 +984,7 @@ atlikimą internatūros bazėse."
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         20. 2022 m. liepos 1 d. kiekviename VU MIF SPK studentų atstovai yra
         iškėlę problemas, aktualias jų SP tobulinimui, iš kurių SPK yra
         išsprendę bent 1.
@@ -1028,7 +1028,7 @@ atlikimą internatūros bazėse."
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         21. 2022 m. liepos 1 d. bent 1 VU ŠA I pakopos studijų programų
         profesinių praktikų ataskaitų apimtis yra pakoreguota, sumažinant
         kiekvienos užduoties apimtį.
@@ -1077,7 +1077,7 @@ klausimą dėl praktikų organizavimo tvarkos."
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         22. 2022 m. kovo 29 d. VU SA ŠA narių sąraše yra ne mažiau nei 27
         nariai.
       </h4>
@@ -1122,7 +1122,7 @@ klausimą dėl praktikų organizavimo tvarkos."
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         23. 2022 m. gegužės 2 d. VU TF yra suorganizuotos bent 5 akademinio
         raštingumo kultūrą ugdančios iniciatyvos.
       </h4>
@@ -1179,7 +1179,7 @@ raštingumo problemas."
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         24. 2022 m. balandžio 11 d. VU TF bent 10 dieninių teisės studijų I–VII
         semestrų dalykų aprašų vertinimo skiltys yra detalizuotos ir
         patvirtintos SPK.
@@ -1236,7 +1236,7 @@ išsakytas pastabas pakoreguoti rekomendacijas."
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         25. 2022 m. liepos 1 d. VU TSPMI magistro studentams yra suteikta
         galimybė pasirinkti papildomą užsienio kalbą NSPD (ne studijų programos
         dalyko) forma bei 70 proc. jų yra informuoti apie kitas esamas galimybes
@@ -1274,7 +1274,7 @@ užsienio kalbų Vilniaus universitete."
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         26. 2022 m. liepos 1 d. veikia bent 2 proaktyvios priemonės, skirtos
         gerinti psichosocialinę aplinką VU TSPMI, ir jomis pasinaudojo bent 15
         proc. VU TSPMI bendruomenės narių.
@@ -1324,7 +1324,7 @@ nariams."
     </section>
     <NDivider></NDivider>
     <section>
-      <h4 class="text-center font-bold text-xl">
+      <h4 class="text-center text-xl font-bold">
         27. 2022 m. rugsėjo 30 d. žiniasklaidoje bus paviešinti bent 3 VU VM
         studentų moksliniai straipsniai.
       </h4>
@@ -1403,5 +1403,10 @@ import Planas from "@/Pages/Ataskaita2022/3-Planas.vue";
 <style scoped>
 h4 {
   margin-bottom: 1.5em;
+}
+h2,
+h3,
+h4 {
+  @apply text-zinc-900;
 }
 </style>

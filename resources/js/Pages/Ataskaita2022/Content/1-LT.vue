@@ -1,12 +1,12 @@
 <template>
   <Sveikinimai>
     <h1
-      class="text-3xl text-center col-span-5 md:col-span-3 mt-4 mb-8 -order-2"
+      class="-order-2 col-span-5 mt-4 mb-8 text-center text-3xl md:col-span-3"
     >
       Sveikinimai
     </h1>
     <div
-      class="col-span-5 order-1 md:-order-1 md:col-span-3 col-start-1 prose max-w-full md:max-w-prose"
+      class="prose order-1 col-span-5 col-start-1 max-w-full md:-order-1 md:col-span-3 md:max-w-prose"
     >
       <NCarousel
         draggable
@@ -510,60 +510,60 @@
       </NCarousel>
     </div>
     <div
-      class="flex flex-wrap justify-center md:justify-start md:flex-col mb-8 gap-2 col-span-5 md:col-span-1 items-start"
+      class="col-span-5 mb-8 flex flex-wrap items-start justify-center gap-2 md:col-span-1 md:flex-col md:justify-start"
     >
       <NButton text="" @click="carouselIndex = 0">
         <img
-          class="w-20 h-20 object-cover rounded-lg hover:grayscale-0 duration-200"
+          class="h-20 w-20 rounded-lg object-cover duration-200 hover:grayscale-0"
           :class="{ grayscale: carouselIndex !== 0 }"
           src="/images/ataskaita2022/sveikinimai/MP portretas.jpg"
         />
       </NButton>
       <NButton text="" @click="carouselIndex = 1">
         <img
-          class="w-20 h-20 object-cover rounded-lg hover:grayscale-0 duration-200"
+          class="h-20 w-20 rounded-lg object-cover duration-200 hover:grayscale-0"
           :class="{ grayscale: carouselIndex !== 1 }"
           src="/images/ataskaita2022/sveikinimai/JurgitaSiugzdiniene.jpg"
         />
       </NButton>
       <NButton text="" @click="carouselIndex = 2">
         <img
-          class="w-20 h-20 object-cover rounded-lg hover:grayscale-0 duration-200"
+          class="h-20 w-20 rounded-lg object-cover duration-200 hover:grayscale-0"
           :class="{ grayscale: carouselIndex !== 2 }"
           src="/images/ataskaita2022/sveikinimai/Žukauskas.XIII-020-S20210121-O Posaškovos-0234.JPG"
         />
       </NButton>
       <NButton text="" @click="carouselIndex = 3">
         <img
-          class="w-20 h-20 object-cover rounded-lg hover:grayscale-0 duration-200"
+          class="h-20 w-20 rounded-lg object-cover duration-200 hover:grayscale-0"
           :class="{ grayscale: carouselIndex !== 3 }"
           src="/images/ataskaita2022/sveikinimai/rektorius.jpg"
         />
       </NButton>
       <NButton text="" @click="carouselIndex = 4">
         <img
-          class="w-20 h-20 object-cover rounded-lg hover:grayscale-0 duration-200"
+          class="h-20 w-20 rounded-lg object-cover duration-200 hover:grayscale-0"
           :class="{ grayscale: carouselIndex !== 4 }"
           src="/images/ataskaita2022/sveikinimai/senato pirmininke.jpg"
         />
       </NButton>
       <NButton text="" @click="carouselIndex = 5">
         <img
-          class="w-20 h-20 object-cover rounded-lg hover:grayscale-0 duration-200"
+          class="h-20 w-20 rounded-lg object-cover duration-200 hover:grayscale-0"
           :class="{ grayscale: carouselIndex !== 5 }"
           src="/images/ataskaita2022/sveikinimai/Radzeviciene.5M5A1668r_3.jpg"
         />
       </NButton>
       <NButton text="" @click="carouselIndex = 6">
         <img
-          class="w-20 h-20 object-cover rounded-lg hover:grayscale-0 duration-200"
+          class="h-20 w-20 rounded-lg object-cover duration-200 hover:grayscale-0"
           :class="{ grayscale: carouselIndex !== 6 }"
           src="/images/ataskaita2022/sveikinimai/Kriviene.biblioteka.jpg"
         />
       </NButton>
       <NButton text="" @click="carouselIndex = 7">
         <img
-          class="w-20 h-20 object-cover rounded-lg hover:grayscale-0 duration-200"
+          class="h-20 w-20 rounded-lg object-cover duration-200 hover:grayscale-0"
           style="object-position: 50% 10%"
           :class="{ grayscale: carouselIndex !== 7 }"
           src="/images/ataskaita2022/sveikinimai/dr. Loreta Tauginienė.MART1397B.jpg"
@@ -571,7 +571,7 @@
       </NButton>
       <NButton text="" @click="carouselIndex = 8">
         <img
-          class="w-20 h-20 object-cover rounded-lg hover:grayscale-0 duration-200"
+          class="h-20 w-20 rounded-lg object-cover duration-200 hover:grayscale-0"
           style="object-position: 50% 10%"
           :class="{ grayscale: carouselIndex !== 8 }"
           src="/images/ataskaita2022/sveikinimai/Simasius.jpeg"
@@ -579,14 +579,14 @@
       </NButton>
       <NButton text="" @click="carouselIndex = 9">
         <img
-          class="w-20 h-20 object-cover rounded-lg hover:grayscale-0 duration-200"
+          class="h-20 w-20 rounded-lg object-cover duration-200 hover:grayscale-0"
           :class="{ grayscale: carouselIndex !== 9 }"
           src="/images/ataskaita2022/sveikinimai/arminas_2021_profilis.jpg"
         />
       </NButton>
       <NButton text="" @click="carouselIndex = 10">
         <img
-          class="w-20 h-20 object-cover rounded-lg hover:grayscale-0 duration-200"
+          class="h-20 w-20 rounded-lg object-cover duration-200 hover:grayscale-0"
           :class="{ grayscale: carouselIndex !== 10 }"
           src="/images/ataskaita2022/sveikinimai/Romas-LMT-9.jpeg"
         />
@@ -618,6 +618,13 @@ const handleCarouselIndex = (index) => {
 </script>
 
 <style>
+h1,
+h2,
+h3,
+h4 {
+  @apply text-zinc-900;
+}
+
 .carousel-img {
   width: 100%;
   height: 280px;

@@ -2,18 +2,18 @@
   <Studijos>
     <div class="relative mb-4 h-1/2 w-full max-w-[110ch]">
       <img
-        class="rounded-lg w-full h-80 object-cover mx-auto brightness-50"
+        class="mx-auto h-80 w-full rounded-lg object-cover brightness-50"
         style="object-position: 0% 30%"
         src="/images/ataskaita2022/kitos-nuotraukos/IMG_8817.jpg"
       />
       <h1
-        class="absolute text-white font-bold text-3xl sm:text-4xl md:text-5xl w-full text-center bottom-8"
+        class="absolute bottom-8 w-full text-center text-3xl font-bold text-white sm:text-4xl md:text-5xl"
       >
         Kokybiškos studijos ir joms pritaikyta aplinka
       </h1>
     </div>
 
-    <NCollapse class="max-w-[92ch] mx-auto" arrow-placement="right">
+    <NCollapse class="mx-auto max-w-[92ch]" arrow-placement="right">
       <NCollapseItem>
         <template #header
           ><h2>Atstovavimas nacionalinėje erdvėje ir miesto savivaldoje</h2></template
@@ -22,7 +22,7 @@
         <NCollapse>
           <NCollapseItem>
             <template #header>LR Prezidentūra</template>
-            <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+            <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
               <em>Studentų atstovė – Neda Žutautaitė</em>
               <p>
                 Ataskaitiniu laikotarpiu dalyvauta LR Prezidentūros organizuotuose
@@ -50,7 +50,7 @@
 
           <NCollapseItem>
             <template #header>LR Seimo Švietimo ir mokslo komitetas</template>
-            <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+            <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
               <em>Studentų atstovė – Neda Žutautaitė</em>
               <p>
                 Dalyvauta Komiteto posėdžiuose svarstant visus su aukštuoju mokslu
@@ -91,7 +91,7 @@
 
           <NCollapseItem>
             <template #header>LR Seimo Sveikatos reikalų komitetas (SRK)</template>
-            <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+            <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
               <em>Studentų atstovės – Neda Žutautaitė, Kamilė Marcinkevičiūtė</em>
               <p>
                 Dalyvauta psichikos sveikatos pakomitečio posėdžiuose, dalintasi psichikos
@@ -110,7 +110,7 @@
 
           <NCollapseItem>
             <template #header>LR Vyriausybė</template>
-            <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+            <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
               <em>Studentų atstovė – Neda Žutautaitė</em>
               <p>
                 Ataskaitiniu laikotarpiu dalyvauta tarpinstituciniuose pasitarimuose ir
@@ -140,7 +140,7 @@
           <NCollapseItem>
             <template #header>LR Švietimo, mokslo ir sporto ministerija (ŠMSM)</template>
 
-            <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+            <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
               <em>Studentų atstovė – Neda Žutautaitė</em>
               <p>
                 Ataskaitiniu laikotarpiu prisidėta prie skirtingų klausimų kėlimo,
@@ -183,7 +183,7 @@
               >ŠMSM darbo grupė dėl AM finansavimo modelio atnaujinimo</template
             >
 
-            <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+            <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
               <em>Studentų atstovai – Justas Kvedaravičius, Neda Žutautaitė</em>
               <p>
                 Darbo grupė suburta siekiant aukštųjų mokyklų finansavimo modelio atnaujinimo bei jų veiklos tikslų išgryninimo. Taip pat mokslinių tyrimų ir eksperimentinės plėtros vertinimui, finansavimo modelio – valstybės finansuojamų vietų planavimo ir stojančiųjų priėmimo proceso tobulinimui, suvienodinant reikalavimus stojantiesiems į valstybės finansuojamas ir valstybės nefinansuojamas studijų vietas. Darbo grupėje kalbėta dėl studentų (-čių) priėmimo organizavimo įteisinimo per bendrą priėmimo sistemą taip numatant daugiau galimybių aukštosioms mokykloms atsirinkti studentus (-es).
@@ -202,7 +202,7 @@
               >ŠMSM darbo grupė dėl socialinės dimensijos plano rengimo</template
             >
 
-            <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+            <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
               <em
                 >Studentų atstovai – Justas Kvedaravičius, Ieva Budreikaitė, Neda
                 Žutautaitė</em
@@ -227,7 +227,7 @@
               >ŠMSM darbo grupė dėl 2022 Lietuvos universitetų metų</template
             >
 
-            <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+            <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
               <em>Studentų atstovė – Neda Žutautaitė</em>
               <p>
                 Lietuvos Respublikos Seimas 2022-uosius paskelbė Lietuvos universitetų
@@ -249,7 +249,7 @@
 
           <NCollapseItem>
             <template #header>LR Vidaus reikalų ministerija (VRM)</template>
-            <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+            <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
               <em>Studentų atstovė – Neda Žutautaitė</em>
               <p>
                 Vidaus reikalų ministerijai pateiktas pasiūlymas dėl užsieniečių teisinės
@@ -270,7 +270,7 @@
 
           <NCollapseItem>
             <template #header>LR Sveikatos apsaugos ministerija (SAM)</template>
-            <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+            <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
               <em>Studentų atstovė – Neda Žutautaitė, Kamilė Marcinkevičiūtė</em>
 
               <p>
@@ -306,7 +306,7 @@
               SAM nacionalinės sveikatos sistemos specialistų rengimo valstybinio užsakymo
               formavimo komitetas (VUK)
             </template>
-            <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+            <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
               <em
                 >Studentų atstovė LR Sveikatos apsaugos ministerijos (SAM) suformuotos
                 Valstybinio užsakymo komisijoje – Giedrė Mikulėnaitė.</em
@@ -327,7 +327,7 @@
 
           <NCollapseItem>
             <template #header>Psichikos sveikatos puoselėjimo taryba</template>
-            <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+            <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
               <em>Studentų atstovė – Neda Žutautaitė</em>
               <p>
                 Ataskaitiniu laikotarpiu dalyvauta Psichikos sveikatos puoselėjimo tarybos
@@ -344,7 +344,7 @@
           <NCollapseItem>
             <template #header>Studijų kokybės vertinimo centras (SKVC) </template>
 
-            <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+            <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
               <em>
                 Studentų atstovai – Neda Žutautaitė, Arnoldas Solovjovas, Justas
                 Kvedaravičius
@@ -370,7 +370,7 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
             <template #header
               >Lietuvos universitetų rektorių konferencija (LURK)
             </template>
-            <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+            <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
               <em>Studentų atstovė – Neda Žutautaitė</em>
               <p>
                 Įsitraukta į Susitarimo dėl psichikos sveikatos stiprinimo Lietuvos
@@ -387,7 +387,7 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
           </NCollapseItem>
           <NCollapseItem>
             <template #header>Lietuvos mokslo taryba (LMT)</template>
-            <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+            <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
               <em>Studentų atstovė – Neda Žutautaitė</em>
               <p>
                 Ataskaitiniu laikotarpiu kreiptasi į LMT dėl paramos studentų
@@ -401,7 +401,7 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
           </NCollapseItem>
           <NCollapseItem>
             <template #header>Vilniaus miesto savivaldybė ir Jaunimo reikalų Taryba</template>
-            <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+            <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
               <em>Studentų atstovė – Neda Žutautaitė, Aistė Rinkevičiūtė</em>
               <p>
                 Ataskaitiniu laikotarpiu pakartotinai kreiptasi į Vilniaus miesto savivaldybę dėl kalio jodido tablečių išdavimo jauniems asmenims, gyvenantiems Vilniuje, bet nebūtinai deklaravusiems gyvenamąją vietą šiame mieste.</p>
@@ -419,7 +419,7 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
         <NCollapse>
           <NCollapseItem>
             <template #header>VU Taryba</template>
-            <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+            <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
               <em>Studentų atstovai – Neda Žutautaitė, Justinas Kondratas</em>
 
               <p>
@@ -448,7 +448,7 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
           </NCollapseItem>
           <NCollapseItem>
             <template #header>VU Senatas</template>
-            <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+            <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
               <em>
                 Studentų atstovai:
                 <ul>
@@ -536,7 +536,7 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
           </NCollapseItem>
           <NCollapseItem>
             <template #header>VU Rektoratas</template>
-            <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+            <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
               <em>Studentų atstovė – Neda Žutautaitė</em>
 
               <p>
@@ -567,7 +567,7 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
             <template #header
               >Vilniaus universiteto Senato sudaromosios komisijos</template
             >
-            <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+            <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
               <h4>VU Centrinė ginčų nagrinėjimo komisija</h4>
 
               <em
@@ -692,7 +692,7 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
             <template #header
               >Vilniaus universiteto rektoriaus įsakymu sudaromos komisijos</template
             >
-            <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
+            <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
               <h4>VU Priėmimo komisija</h4>
 
               <em>Studentų atstovė – Neda Žutautaitė</em>
@@ -793,7 +793,7 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
               Vilniaus universiteto 2021–2025 m. strateginio plano įgyvendinimui sudarytos
               grupės ir komisijos
             </template>
-            <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
+            <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
               <h4>
                 VU 2021–2025 m. strateginio plano veiklos „Studentų pasirinkimo ir
                 daugiakryptiškumo galimybių didinimas“ įgyvendinimo darbo grupė
@@ -866,7 +866,7 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
           </NCollapseItem>
           <NCollapseItem>
             <template #header>Stipendijų komisijos ir darbo grupės</template>
-            <div class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4">
+            <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
               <h4>VU Stipendijų darbo grupė</h4>
 
               <em>Studentų atstovės – Lijana Savickienė, Neda Žutaitaitė</em>
@@ -984,7 +984,7 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
             <template #header
               >Nuolatiniai struktūriniai vienetai, komitetai ir komisijos</template
             >
-            <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
+            <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
               <h4>Trečiosios studijų pakopos (doktorantūros) studentų atstovavimas</h4>
               <p>
                 Ataskaitiniu laikotarpiu įvyko 2 susitikimai su doktorantais, VU
@@ -1078,7 +1078,7 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
           </NCollapseItem>
           <NCollapseItem>
             <template #header>Laikinosios darbo grupės</template>
-            <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
+            <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
               <h4>VU studentų paslaugų darbo grupė</h4>
               <em>Studentų atstovas – Arnoldas Solovjovas</em>
 
@@ -1152,7 +1152,7 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
         <NCollapse>
           <NCollapseItem>
           <template #header>Bendradarbiavimas su VU neakademiniais padaliniais ir kitomis organizacijomis</template>
-          <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
+          <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
           <h4>VU Biblioteka</h4>
           <p>Su biblioteka bendradarbiauti sekėsi sklandžiai. Visos idėjos, susijusios su pagalba neįgaliesiems ir infrastruktūros pritaikymą, buvo priimtos ir pradėta svarstyti jų įgyvendinimą. VU SA dalinosi bibliotekai svarbiais įvykiais ir apklausomis. Vyko kasmėnesiniai susitikimai, dauguma nuotoliu, porą kartų gyvai. Buvo atsižvelgiama į VU SA nuomonę renkant idėjas naujai strategijai bei ją formuluojant.</p>
           <h4>Universiteto LGBT+ grupė</h4>
@@ -1178,7 +1178,7 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
           </NCollapseItem>
           <NCollapseItem>
             <template #header>Tarptautinis bendradarbiavimas</template>
-            <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
+            <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
               <ul>
               <li>
                 VU SA prezidentė dalyvavo Europos aukštojo mokslo erdvės (EAME) Bolonijos proceso tolesnės veiklos grupės socialinei dimensijai (EHEA BFUG working group on Social dimension) susitikime atstovaudama Lietuvą. Grupės veikla yra skirta užtikrinti, jog Europos aukštojo mokslo erdvės susitarimai, skirti socialinės dimensijos plėtrai šalyse būtų įgyvendinti, grupėje dalyvauja kiekvienos EAME šalies narės atstovai.
@@ -1239,7 +1239,7 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
           </NCollapseItem>
           <NCollapseItem>
             <template #header>Dalyvavimas konferencijose</template>
-            <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
+            <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
 
 <h4>LiJOT konferencija „Jauno žmogaus psichikos sveikata: jo paties ar ir valstybės rūpestis“ </h4>
 <p>2021m. birželio 18 d. VU SA prezidentė Neda Žutautaitė dalyvavo konferencijoje, kurioje diskutuota, kas turi prisiimti atsakomybę už jaunų žmonių psichologinę būklę. Skaitytame pranešime N. Žutautaitė akcentavo, jog studentų (-čių) psichikos sveikata aukštojoje mokykloje nėra tik jų asmeninis rūpestis – turime suprasti, kad tai tiek akademinės bendruomenės tarpusavio ryšių, tiek studijų ir su jomis susijusios aplinkos klausimas. Taip pat pristatytos užsienio Universitetų taikomos praktikos, skirtos psichologinės aplinkos gerinimui, palaikančios bendruomenės kūrimui. </p>
@@ -1268,7 +1268,7 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
 
       <NCollapseItem>
         <template #header class="p-2"><h2>Raštai</h2></template>
-        <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
+        <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
           <NCollapse>
             <NCollapseItem>
               <template #header>
@@ -1406,7 +1406,7 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
 
       <NCollapseItem>
         <template #header><h2>Tyrimai</h2></template>
-        <div class="bg-white py-6 px-12 rounded-lg prose max-w-[80ch] mx-auto my-4">
+        <div class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12">
           <h3>
             Nuolatinių studentų iš užsienio studijų pradžios Vilniaus universitete (VU)
             bei Kauno technologijos universitete (KTU) patirtys
@@ -1612,8 +1612,8 @@ SKVC sudėtyje VU SA deleguotas studentų atstovas įtrauktas į Aukštųjų mok
 </template>
 
 <script setup lang=ts>
+import { NCollapse, NCollapseItem, NDivider } from "naive-ui";
 import Studijos from "../4-Studijos.vue";
-import { NDivider, NCollapse, NCollapseItem } from "naive-ui";
 </script>
 
 <style scoped>
@@ -1622,6 +1622,7 @@ h2 {
   font-weight: bold;
   /* text-align: center; */
   margin: 0em 0 0em 0;
+  @apply text-zinc-900;
 }
 h3,
 h4 {

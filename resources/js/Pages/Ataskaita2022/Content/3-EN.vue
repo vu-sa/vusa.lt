@@ -955,6 +955,13 @@ import Planas from "@/Pages/Ataskaita2022/3-Planas.vue";
 </script>
 
 <style scoped>
+h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  /* text-align: center; */
+  margin: 0em 0 0em 0;
+  @apply text-zinc-900;
+}
 h4 {
   margin-bottom: 1.5em;
 }

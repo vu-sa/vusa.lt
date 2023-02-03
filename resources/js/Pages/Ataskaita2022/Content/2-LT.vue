@@ -1,13 +1,13 @@
 <template>
   <NModal v-model:show="showTaryba">
-    <div class="w-2/3 md:w-1/2 bg-white/95 shadow-lg rounded-lg p-6">
-      <h2 class="text-center mb-4">VU SA Taryba</h2>
+    <div class="w-2/3 rounded-lg bg-white/95 p-6 shadow-lg md:w-1/2">
+      <h2 class="mb-4 text-center">VU SA Taryba</h2>
       <div
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 overflow-auto gap-4 duration-200"
+        class="grid grid-cols-1 gap-4 overflow-auto duration-200 md:grid-cols-2 lg:grid-cols-4"
       >
         <div>
           <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            class="w-full rounded-md object-cover shadow-sm md:h-40"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Ignas Mugenis_Pirmininkas_CHGF-2.jpg"
           />
           <p class="mt-1 text-sm">VU SA CHGF</p>
@@ -15,7 +15,7 @@
         </div>
         <div>
           <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            class="w-full rounded-md object-cover shadow-sm md:h-40"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Justinas Sacevičius_Pirmininkas_EVAF.jpg"
           />
           <p class="mt-1 text-sm">VU SA EVAF</p>
@@ -23,7 +23,7 @@
         </div>
         <div>
           <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            class="w-full rounded-md object-cover shadow-sm md:h-40"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Raimondas Šiškevičius_Pirminkas_FF.jpg"
           />
           <p class="mt-1 text-sm">VU SA FF</p>
@@ -31,7 +31,7 @@
         </div>
         <div>
           <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            class="w-full rounded-md object-cover shadow-sm md:h-40"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Elena Pranevičiūtė_Pirmininkė_FilF-2.jpg"
           />
           <p class="mt-1 text-sm">VU SA FilF</p>
@@ -39,7 +39,7 @@
         </div>
         <div>
           <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            class="w-full rounded-md object-cover shadow-sm md:h-40"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Martyna Vilutytė_Pirmininke_FsF-2.jpg"
           />
           <p class="mt-1 text-sm">VU SA FsF</p>
@@ -47,7 +47,7 @@
         </div>
         <div>
           <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            class="w-full rounded-md object-cover shadow-sm md:h-40"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Kornelija Buivydaitė_Pirmininkė_GMC-2.jpg"
           />
           <p class="mt-1 text-sm">VU SA GMC</p>
@@ -55,7 +55,7 @@
         </div>
         <div>
           <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            class="w-full rounded-md object-cover shadow-sm md:h-40"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Ieva Šiaudvytytė_Pirmininke_IF-2.jpg"
           />
           <p class="mt-1 text-sm">VU SA IF</p>
@@ -63,7 +63,7 @@
         </div>
         <div>
           <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            class="w-full rounded-md object-cover shadow-sm md:h-40"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Dominyka Goldbergaitė_pirmininkė_KF-2.jpg"
           />
           <p class="mt-1 text-sm">VU SA KF</p>
@@ -71,7 +71,7 @@
         </div>
         <div>
           <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            class="w-full rounded-md object-cover shadow-sm md:h-40"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Lijana Savickienė_Pirmininke_KnF.jpg"
           />
           <p class="mt-1 text-sm">VU SA KnF</p>
@@ -79,7 +79,7 @@
         </div>
         <div>
           <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            class="w-full rounded-md object-cover shadow-sm md:h-40"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Emilija Narušytė_Pirminnke_MF-2.jpg"
           />
           <p class="mt-1 text-sm">VU SA MF</p>
@@ -87,7 +87,7 @@
         </div>
         <div>
           <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            class="w-full rounded-md object-cover shadow-sm md:h-40"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Paulina Bilinskaitė_Pirminink_MIF-2.jpg"
           />
           <p class="mt-1 text-sm">VU SA MIF</p>
@@ -95,7 +95,7 @@
         </div>
         <div>
           <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            class="w-full rounded-md object-cover shadow-sm md:h-40"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Paulius-Ladukas_Pirmininkas_ŠA-2.jpg"
           />
           <p class="mt-1 text-sm">VU SA ŠA</p>
@@ -103,7 +103,7 @@
         </div>
         <div>
           <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            class="w-full rounded-md object-cover shadow-sm md:h-40"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Airina Mikulėnaitė_Pirmininke_TF.jpg"
           />
           <p class="mt-1 text-sm">VU SA TF</p>
@@ -111,7 +111,7 @@
         </div>
         <div>
           <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            class="w-full rounded-md object-cover shadow-sm md:h-40"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Ugnė Bičkauskaitė_Pirmininkė_TSPMI.jpg"
           />
           <p class="mt-1 text-sm">VU SA TSPMI</p>
@@ -119,7 +119,7 @@
         </div>
         <div>
           <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            class="w-full rounded-md object-cover shadow-sm md:h-40"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Justinas Brazaitis – VU SA VM Pirmininkas (iki 2021 gruodžio mėn.).jpg"
           />
           <p class="mt-1 text-sm">VU SA VM</p>
@@ -127,7 +127,7 @@
         </div>
         <div>
           <img
-            class="md:h-40 w-full object-cover rounded-md shadow-sm"
+            class="w-full rounded-md object-cover shadow-sm md:h-40"
             src="/images/ataskaita2022/koordinatoriu-nuotraukos/taryba/Edgaras Kodis_Pirmininkas_VM(nuo 2021-12).jpg"
           />
           <p class="mt-1 text-sm">VU SA VM</p>
@@ -177,25 +177,25 @@
     <!-- </div> -->
     <div class="relative mb-4 h-1/2 w-full">
       <img
-        class="max-w-[92ch] rounded-lg w-full h-60 object-cover mx-auto brightness-50"
+        class="mx-auto h-60 w-full max-w-[92ch] rounded-lg object-cover brightness-50"
         style="object-position: 0% 20%"
         src="/images/ataskaita2022/kitos-nuotraukos/IMG_8823.jpg"
       />
       <p
-        class="absolute text-white font-bold text-3xl sm:text-4xl md:text-5xl w-full text-center bottom-8"
+        class="absolute bottom-8 w-full text-center text-3xl font-bold text-white sm:text-4xl md:text-5xl"
       >
         VU SA
       </p>
     </div>
 
-    <div class="w-full mx-auto" style="align-self: end">
-      <NCollapse class="max-w-[92ch] mx-auto" arrow-placement="right">
+    <div class="mx-auto w-full" style="align-self: end">
+      <NCollapse class="mx-auto max-w-[92ch]" arrow-placement="right">
         <NCollapseItem>
           <template #header
             ><h2 id="apie-vu-sa" class="rounded-lg">Apie VU SA</h2></template
           >
           <div
-            class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4"
+            class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12"
           >
             <p>
               <strong>Vilniaus universiteto Studentų atstovybė (VU SA)</strong>
@@ -244,7 +244,7 @@
             </h2></template
           >
           <div
-            class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4"
+            class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12"
           >
             <p>
               <strong>Vizija</strong> – atvira aplinka savarankiškam studento
@@ -276,7 +276,7 @@
             ><h2 id="valdymo-schema">VU SA valdymo schema</h2></template
           >
           <div
-            class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4"
+            class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12"
           >
             <p>
               Vilniaus universiteto Studentų atstovybės valdymo struktūrą
@@ -306,17 +306,17 @@
           >
           <div class="relative">
             <img
-              class="max-w-[80ch] rounded-lg w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 mx-auto"
+              class="mx-auto h-full w-full max-w-[80ch] rounded-lg object-cover grayscale duration-500 ease-in-out hover:grayscale-0"
               src="/images/ataskaita2022/kitos-nuotraukos/Parlamentas.jpg"
             />
             <p
-              class="absolute text-white font-bold text-2xl sm:text-3xl md:text-4xl w-full text-center bottom-8"
+              class="absolute bottom-8 w-full text-center text-2xl font-bold text-white sm:text-3xl md:text-4xl"
             >
               Parlamentas
             </p>
           </div>
           <div
-            class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4"
+            class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12"
           >
             <p>
               <strong>VU SA Parlamentas</strong> – VU SA valdymo organas,
@@ -758,18 +758,18 @@
               @click="showTaryba = true"
             >
               <img
-                class="rounded-lg max-w-[80ch] w-full h-full object-cover ease-in-out grayscale hover:grayscale-0 duration-500 mx-auto"
+                class="mx-auto h-full w-full max-w-[80ch] rounded-lg object-cover grayscale duration-500 ease-in-out hover:grayscale-0"
                 src="/images/ataskaita2022/koordinatoriu-nuotraukos/bendros/Taryba-2.jpg"
               />
             </NButton>
             <p
-              class="absolute text-white font-bold text-2xl sm:text-3xl md:text-4xl w-full text-center bottom-8"
+              class="absolute bottom-8 w-full text-center text-2xl font-bold text-white sm:text-3xl md:text-4xl"
             >
               VU SA Taryba
             </p>
           </div>
           <div
-            class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4"
+            class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12"
           >
             <p>2021–2022 m. VU SA Tarybą sudarė:</p>
             <ul>
@@ -866,7 +866,7 @@
             ><h2 id="taryba">VU SA Revizijos komisija</h2></template
           >
           <div
-            class="bg-white py-6 px-12 rounded-lg max-w-[80ch] prose mx-auto my-4"
+            class="prose mx-auto my-4 max-w-[80ch] rounded-lg bg-white py-6 px-12"
           >
             <p>
               Revizijos komisija yra VU SA savivaldos institucijų, VU SA
@@ -941,7 +941,6 @@ import { Link } from "@inertiajs/vue3";
 import { NButton, NCollapse, NCollapseItem, NDivider, NModal } from "naive-ui";
 import { ref } from "vue";
 
-
 import VUSA from "../2-VU-SA.vue";
 
 const showTaryba = ref(false);
@@ -957,6 +956,11 @@ h2 {
 h3,
 h4 {
   margin: 1em 0 1em 0;
+}
+h2,
+h3,
+h4 {
+  @apply text-zinc-900;
 }
 h4.mb-0 {
   margin: 0em 0 0em 0;
