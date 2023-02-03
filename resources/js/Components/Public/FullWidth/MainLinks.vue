@@ -24,6 +24,9 @@ import { router, usePage } from "@inertiajs/vue3";
 defineProps<{ mainPage: Array<App.Entities.MainPage> }>();
 
 const goToLink = (link: string | null) => {
+  // get subdomain
+  let subdomain = window.location.hostname.split(".")[0];
+
   // if link is null, return nothing
   if (link === null) {
     return;
@@ -41,6 +44,9 @@ const goToLink = (link: string | null) => {
     link = link.replace("/lt/", "");
   }
 
+  // if subdomain different than padalinys alias, use window.location.href
+  // because inertiajs response is not normal
+
   if (padalinysAlias === "vusa") {
     // if first char is /, remove it
     if (link.charAt(0) === "/") {
@@ -53,6 +59,13 @@ const goToLink = (link: string | null) => {
       })
     );
   } else {
+    // if (subdomain !== padalinysAlias) {
+    //   window.location.href = route("padalinys.page", {
+    //     lang: usePage().props.app.locale,
+    //     padalinys: padalinysAlias,
+    //     permalink: link,
+    //   });
+    // } else {
     router.visit(
       route("padalinys.page", {
         lang: usePage().props.app.locale,
@@ -60,6 +73,7 @@ const goToLink = (link: string | null) => {
         padalinys: padalinysAlias,
       })
     );
+    // }
   }
 };
 </script>

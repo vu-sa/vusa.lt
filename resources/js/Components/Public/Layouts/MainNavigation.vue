@@ -14,9 +14,12 @@
           </NIcon>
         </NButton>
       </div>
-      <Link :href="route('main.home', homeParams)" @click="resetPadalinys()">
+      <a
+        :href="`${$page.props.app.url}/${$page.props.app.locale}`"
+        @click="resetPadalinys()"
+      >
         <AppLogo :is-theme-dark="isThemeDark" class="w-36" />
-      </Link>
+      </a>
       <PadalinysSelector
         :padalinys="padalinys"
         @select:padalinys="handleSelectPadalinys"
@@ -101,7 +104,6 @@
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
 import { AnimalTurtle24Filled, Navigation24Filled } from "@vicons/fluent";
-import { Link, router, usePage } from "@inertiajs/vue3";
 import {
   NButton,
   NCollapse,
@@ -114,6 +116,7 @@ import {
   NTree,
 } from "naive-ui";
 import { computed, reactive, ref } from "vue";
+import { router, usePage } from "@inertiajs/vue3";
 import type { RouteParamsWithQueryOverload } from "ziggy-js";
 
 import AppLogo from "@/Components/AppLogo.vue";
@@ -187,28 +190,41 @@ const getPadalinys = (alias = usePage().props.alias) => {
   return "Padaliniai";
 };
 
-const padalinys = ref("");
-padalinys.value = getPadalinys();
+const padalinys = ref(getPadalinys());
 
 const handleSelectPadalinys = (key) => {
-  let i = key;
+  console.log(key);
+
+  let padalinys_alias = key;
 
   // if padalinys is array, get first element (for mobile)
-  if (Array.isArray(i)) {
-    i = key[0];
+  // because tree component returns array of selected keys
+  if (Array.isArray(padalinys_alias)) {
+    padalinys_alias = key[0];
   }
 
-  router.reload({
-    data: {
-      padalinys: i,
-    },
-    preserveScroll: false,
-    preserveState: false,
-    onSuccess: () => {
-      padalinys.value = getPadalinys(i);
-      activeDrawer.value = false;
-    },
-  });
+  // get last two elements of host and join them with dot
+  const hostWithoutSubdomain = window.location.host
+    .split(".")
+    .slice(-2)
+    .join(".");
+
+  window.location.href = `${
+    window.location.protocol
+  }//${padalinys_alias}.${hostWithoutSubdomain}${usePage().url}`;
+
+  // if subdomain is different the same as padalinys_alias, reload page
+  // router.reload({
+  //   data: {
+  //     padalinys: padalinys_alias,
+  //   },
+  //   preserveScroll: false,
+  //   preserveState: false,
+  //   onSuccess: () => {
+  //     padalinys.value = getPadalinys(padalinys_alias);
+  //     activeDrawer.value = false;
+  //   },
+  // });
 };
 
 const resetPadalinys = () => {
