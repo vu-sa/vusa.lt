@@ -30,11 +30,10 @@ import {
   Tag24Filled,
   TaskListSquareLtr24Filled,
   TextBulletListSquare24Filled,
-  TextCaseTitle24Filled,
-  TextCaseTitle24Regular,
   TextField24Filled,
 } from "@vicons/fluent";
 import type { Component } from "vue";
+import type { FormEnum, OtherIconEnum } from "../otherEnums";
 import type { ModelEnum } from "../enums";
 
 const modelIcons: Record<keyof typeof ModelEnum, Component> = {
@@ -70,11 +69,15 @@ const modelIcons: Record<keyof typeof ModelEnum, Component> = {
   USER: Person24Filled,
 };
 
-const otherIcons: Record<string, Component> = {
-  HOME: Home24Filled,
+const formIcons: Record<keyof typeof FormEnum, Component> = {
   DATE: CalendarLtr24Filled,
-  NOTIFICATION: Alert24Filled,
+  SAVE: DocumentSave24Filled,
   TITLE: TextField24Filled,
 };
 
-export default { ...modelIcons, ...otherIcons };
+const otherIcons: Record<keyof typeof OtherIconEnum, Component> = {
+  HOME: Home24Filled,
+  NOTIFICATION: Alert24Filled,
+};
+
+export default { ...modelIcons, ...formIcons, ...otherIcons };

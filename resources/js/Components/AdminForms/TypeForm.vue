@@ -6,7 +6,13 @@
         <template #description
           >Pagrindinė informacija apie turinio tipą.</template
         >
-        <NFormItem required label="Pavadinimas">
+        <NFormItem required>
+          <template #label>
+            <span class="inline-flex items-center gap-1">
+              <NIcon :component="Icons.TITLE" />
+              Pavadinimas
+            </span>
+          </template>
           <NInput
             v-model:value="form.title"
             type="text"
@@ -24,7 +30,7 @@
       </FormElement>
       <FormElement>
         <template #title>Tipo parametrai</template>
-        <template #description>Informacija apie tipą</template>
+        <template #description>Parametrai</template>
         <NFormItem required label="Modelio tipas" :span="2">
           <NSelect
             v-model:value="form.model_type"
@@ -52,15 +58,22 @@
         >
         <FileManager
           :starting-path="sharepointPath"
-          :fileable="fileable"
+          :fileable="{ id: form.id, type: 'Type' }"
         ></FileManager>
       </FormElement>
       <FormElement no-divider>
         <template #title>Kiti nustatymai</template>
         <NFormItem label="Techninė žymė">
+          <template #label
+            ><span class="inline-flex items-center gap-1"
+              >Techninė žymė
+              <InfoPopover
+                >Keičiama tik išskirtiniais atvejais.</InfoPopover
+              ></span
+            ></template
+          >
           <NInput
             v-model:value="form.slug"
-            :disabled="modelRoute === 'types.update'"
             type="text"
             placeholder="pvz.: turinio-tipas"
           />
@@ -68,43 +81,33 @@
       </FormElement>
     </div>
     <div class="flex justify-end gap-2">
-      <DeleteModelButton
-        v-if="deleteModelRoute"
-        :form="form"
-        :model-route="deleteModelRoute"
-      />
-      <UpsertModelButton :form="form" :model-route="modelRoute" />
+      <NButton @click="handleSubmit">Naujinti</NButton>
     </div>
   </NForm>
 </template>
 
 <script setup lang="ts">
-import {
-  NDivider,
-  NForm,
-  NFormItem,
-  NFormItemGi,
-  NGi,
-  NInput,
-  NSelect,
-} from "naive-ui";
-import { computed } from "vue";
+import { NButton, NForm, NFormItem, NIcon, NInput, NSelect } from "naive-ui";
+import { computed, ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 
 import { modelTypes } from "@/Types/formOptions";
-import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import FileManager from "@/Features/Admin/SharepointFileManager/Viewer/FileManager.vue";
 import FormElement from "./FormElement.vue";
-import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
+import Icons from "@/Types/icons/filled";
+import InfoPopover from "../Buttons/InfoPopover.vue";
+
+const emit = defineEmits<{
+  (event: "submit:form", form: any): void;
+}>();
 
 const props = defineProps<{
   type: App.Entities.Type;
-  fileable: any;
   contentTypes: Record<string, any>[];
-  modelRoute: string;
-  deleteModelRoute?: string;
   sharepointPath: string;
 }>();
+
+const loading = ref(false);
 
 const form = useForm("type", props.type);
 
@@ -120,4 +123,9 @@ const parentTypeOptions = computed(() => {
     (type) => form.model_type === type.model_type && form.id !== type.id
   );
 });
+
+const handleSubmit = () => {
+  loading.value = true;
+  emit("submit:form", form);
+};
 </script>

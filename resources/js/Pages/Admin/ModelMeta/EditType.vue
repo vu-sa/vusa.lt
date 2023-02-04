@@ -5,8 +5,7 @@
         :content-types="contentTypes"
         :type="contentType"
         :sharepoint-path="sharepointPath"
-        :fileable="{ id: contentType.id, type: 'Type' }"
-        model-route="types.update"
+        @submit:form="handleSubmit"
       />
     </UpsertModelLayout>
   </PageContent>
@@ -17,9 +16,15 @@ import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import TypeForm from "@/Components/AdminForms/TypeForm.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
-defineProps<{
+const props = defineProps<{
   contentType: Record<string, any>;
   contentTypes: Record<string, any>[];
   sharepointPath: string;
 }>();
+
+const handleSubmit = (form: any) => {
+  form.patch(route("types.update", props.contentType.id), {
+    preserveScroll: true,
+  });
+};
 </script>
