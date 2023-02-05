@@ -128,7 +128,6 @@ import { useOnline, useStorage } from "@vueuse/core";
 import { Board24Regular } from "@vicons/fluent";
 import AdminMenu from "@/Components/Menus/AdminMenu.vue";
 import AppLogo from "@/Components/AppLogo.vue";
-import Changelog from "@/Components/Cards/ChangelogCard.vue";
 import DarkModeSwitch from "@/Components/Buttons/DarkModeSwitch.vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
 import NotificationBell from "@/Features/Admin/Notifications/NotificationBell.vue";
