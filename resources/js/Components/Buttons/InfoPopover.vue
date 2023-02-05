@@ -1,5 +1,9 @@
 <template>
-  <NPopover trigger="hover" :show-delay="500" :hide-delay="100"
+  <NPopover
+    :style="{ maxWidth: '600px' }"
+    trigger="hover"
+    :show-delay="500"
+    :hide-delay="100"
     ><template #trigger
       ><NButton text type="tertiary" size="tiny"
         ><template #icon><NIcon :component="Info24Regular"></NIcon></template

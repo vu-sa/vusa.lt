@@ -1,6 +1,6 @@
 <template>
   <NForm :model="form" label-placement="top">
-    <div class="grid gap-x-12 lg:grid-cols-6">
+    <div class="flex flex-col">
       <FormElement>
         <template #title>Pagrindinė informacija</template>
         <template #description

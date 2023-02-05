@@ -35,7 +35,7 @@ class CalendarPolicy extends ModelPolicy
     {
         $this->authorizer = $authorizer;
         
-        if ($this->commonChecker($user, $calendar, CRUDEnum::READ()->label, $this->pluralModelName)) {
+        if ($this->commonChecker($user, $calendar, CRUDEnum::READ()->label, $this->pluralModelName, false)) {
             return true;
         }
 
@@ -53,7 +53,7 @@ class CalendarPolicy extends ModelPolicy
     {
         $this->authorizer = $authorizer;
         
-        if ($this->commonChecker($user, $calendar, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
+        if ($this->commonChecker($user, $calendar, CRUDEnum::UPDATE()->label, $this->pluralModelName, false)) {
             return true;
         }
 
@@ -71,7 +71,7 @@ class CalendarPolicy extends ModelPolicy
     {
         $this->authorizer = $authorizer;
         
-        if ($this->commonChecker($user, $calendar, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
+        if ($this->commonChecker($user, $calendar, CRUDEnum::DELETE()->label, $this->pluralModelName, false)) {
             return true;
         }
 
