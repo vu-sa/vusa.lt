@@ -1,17 +1,29 @@
 <template>
-  <audio ref="startFM" preload="none" @canplay="changeLoading">
-    <source src="https://eteris.startfm.lt/startfm.mp3" />
-  </audio>
   <!-- No animation on Safari, if NButton has 'text' attribute -->
   <NPopover>
     <template #trigger>
       <NButton text :loading="loading" @click="toggleAudio">
-        <template v-if="!audioPlaying" #icon
-          ><NIcon :component="MusicNote2Play20Filled"></NIcon
+        <template #icon
+          ><NIcon
+            ><component
+              :is="audioPlaying ? Pause24Regular : MusicNote2Play20Filled"
+            ></component></NIcon
         ></template>
-        <template v-else #icon
-          ><NIcon :component="Pause24Regular"></NIcon
-        ></template>
+        <audio
+          v-show="false"
+          ref="startFM"
+          preload="none"
+          @canplay="changeLoading"
+        >
+          <source
+            src="https://eteris.startfm.lt/startfm.mp3"
+            type="audio/mpeg"
+          />
+          <source
+            src="https://eteris.startfm.lt/startfm.m4a"
+            type="audio/mp4"
+          />
+        </audio>
       </NButton>
     </template>
     {{ $t("Klausykis studentiško") }}
