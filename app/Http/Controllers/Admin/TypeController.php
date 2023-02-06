@@ -8,6 +8,7 @@ use App\Services\SharepointAppGraph;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Illuminate\Support\Str;
 
 class TypeController extends ResourceController
 {    
@@ -88,13 +89,15 @@ class TypeController extends ResourceController
     public function edit(Type $type)
     {
         $this->authorize('update', [Type::class, $type, $this->authorizer]);
-        
-        $sharepointFiles = [];
-        
+
+        $modelType = Str::of($type->model_type)->afterLast('\\')->lower()->plural()->toString();
+
         return Inertia::render('Admin/ModelMeta/EditType', [
-            'contentType' => $type->toArray() + ['sharepointFiles' => $sharepointFiles],
+            'contentType' => $type->load($modelType),
             'contentTypes' => Type::select('id', 'title', 'model_type')->get(),
             'sharepointPath' => $type->sharepoint_path(),
+            'allModelsFromModelType' => $type->allModelsFromModelType()->toArray(),
+            'modelType' => $modelType,
         ]);
     }
 
@@ -108,7 +111,7 @@ class TypeController extends ResourceController
     public function update(Request $request, Type $type)
     {
         $this->authorize('update', [Type::class, $type, $this->authorizer]);
-        
+
         $request->validate([
             'title' => 'required',
             'model_type' => 'required',
@@ -116,6 +119,10 @@ class TypeController extends ResourceController
         ]);
 
         $type->update($request->only('title', 'model_type', 'description', 'parent_id'));
+
+        $modelType = Str::of($request->model_type)->afterLast('\\')->lower()->plural()->toString();
+
+        $type->$modelType()->sync($request->input($modelType, []));
 
         return redirect()->route('types.index')->with('success', 'Turinio tipas sėkmingai atnaujintas!');
     }

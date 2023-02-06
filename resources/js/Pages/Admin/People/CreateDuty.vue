@@ -29,7 +29,7 @@ const duty = {
   name: "",
   description: "",
   email: null,
-  institution: {},
+  institution_id: null,
   places_to_occupy: null,
   types: [],
   roles: [],

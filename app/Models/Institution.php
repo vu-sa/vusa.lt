@@ -50,6 +50,11 @@ class Institution extends Model
         return $this->belongsTo(Padalinys::class, 'padalinys_id');
     }
 
+    public function padaliniai()
+    {
+        return $this->padalinys();
+    }
+
     public function matters()
     {
         return $this->belongsToMany(Matter::class, 'institutions_matters', 'institution_id', 'matter_id');

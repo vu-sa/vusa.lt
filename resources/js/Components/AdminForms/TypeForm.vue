@@ -61,6 +61,19 @@
           :fileable="{ id: form.id, type: 'Type' }"
         ></FileManager>
       </FormElement>
+      <FormElement>
+        <template #title>Tipą turintys modeliai</template>
+        <template #description>Modeliai, kurie priklauso šiam tipui.</template>
+        <NFormItem label="Modeliai" :span="6">
+          <NTransfer
+            v-model:value="form[props.modelType]"
+            source-filterable
+            :render-source-label="renderSourceLabel"
+            virtual-scroll
+            :options="modelOptions"
+          ></NTransfer>
+        </NFormItem>
+      </FormElement>
       <FormElement no-divider>
         <template #title>Kiti nustatymai</template>
         <NFormItem label="Techninė žymė">
@@ -86,11 +99,20 @@
   </NForm>
 </template>
 
-<script setup lang="ts">
-import { NButton, NForm, NFormItem, NIcon, NInput, NSelect } from "naive-ui";
+<script setup lang="tsx">
+import {
+  NButton,
+  NForm,
+  NFormItem,
+  NIcon,
+  NInput,
+  NSelect,
+  NTransfer,
+} from "naive-ui";
 import { computed, ref } from "vue";
-import { useForm } from "@inertiajs/vue3";
+import { router, useForm } from "@inertiajs/vue3";
 
+import { Edit16Filled, Edit16Regular } from "@vicons/fluent";
 import { modelTypes } from "@/Types/formOptions";
 import FileManager from "@/Features/Admin/SharepointFileManager/Viewer/FileManager.vue";
 import FormElement from "./FormElement.vue";
@@ -103,13 +125,17 @@ const emit = defineEmits<{
 
 const props = defineProps<{
   type: App.Entities.Type;
+  modelType: string;
   contentTypes: Record<string, any>[];
   sharepointPath: string;
+  allModelsFromModelType?: Record<string, any>[];
 }>();
 
 const loading = ref(false);
 
 const form = useForm("type", props.type);
+// map e.g. form.institutions to id only, so it's used in transfer values
+form[props.modelType] = props.type[props.modelType]?.map((model) => model.id);
 
 const modelDefaults = modelTypes.type.map((type) => {
   return {
@@ -118,11 +144,41 @@ const modelDefaults = modelTypes.type.map((type) => {
   };
 });
 
+const modelOptions = computed(() => {
+  return props.allModelsFromModelType?.map((model) => {
+    return {
+      value: model.id,
+      label: model.title ?? model.name,
+      model: model,
+    };
+  });
+});
+
 const parentTypeOptions = computed(() => {
   return props.contentTypes.filter(
     (type) => form.model_type === type.model_type && form.id !== type.id
   );
 });
+
+const renderSourceLabel = ({ option }) => {
+  return (
+    <>
+      <span>
+        {`${option.label} (${
+          option.model?.padaliniai?.[0]?.shortname ??
+          option.model?.padaliniai?.shortname
+        })`}
+      </span>
+      <a target="_blank" href={route(`${props.modelType}.edit`, option.value)}>
+        <NButton onClick={(e) => e.stopPropagation()} text size="tiny">
+          {{
+            icon: <NIcon class="ml-2 align-middle" component={Edit16Filled} />,
+          }}
+        </NButton>
+      </a>
+    </>
+  );
+};
 
 const handleSubmit = () => {
   loading.value = true;

@@ -26,14 +26,14 @@
           ></NInput>
         </NFormItem>
 
-        <NFormItem label="Pareigybinis el. paštas" :span="2">
+        <NFormItem label="Pareigybinis el. paštas">
           <NInput v-model:value="form.email" placeholder="vusa@vusa.lt" />
         </NFormItem>
 
         <div class="grid gap-4 lg:grid-cols-2">
-          <NFormItem label="Institucija" :span="4">
+          <NFormItem label="Institucija">
             <NSelect
-              v-model:value="form.institution.id"
+              v-model:value="form.institution_id"
               filterable
               placeholder="Pasirink instituciją pagal pavadinimą..."
               :options="institutionsFromDatabase"
@@ -163,6 +163,7 @@ const props = defineProps<{
 const locale = ref("lt");
 
 const form = useForm("institution", props.duty);
+
 form.roles = props.duty.roles?.map((role) => role.id);
 form.types = props.duty.types?.map((type) => type.id);
 form.users = props.duty.users?.map((user) => user.id);

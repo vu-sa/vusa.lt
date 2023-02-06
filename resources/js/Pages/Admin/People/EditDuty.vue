@@ -42,6 +42,4 @@ duty.value.extra_attributes = checkForEmptyArray(duty.value.extra_attributes);
 duty.value.extra_attributes.en = checkForEmptyArray(
   duty.value.extra_attributes.en
 );
-
-////////////////////////////////////////////////////////////////////////////////
 </script>

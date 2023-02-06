@@ -3,7 +3,9 @@
     <UpsertModelLayout :errors="$page.props.errors" :model="contentType">
       <TypeForm
         :content-types="contentTypes"
+        :all-models-from-model-type="allModelsFromModelType"
         :type="contentType"
+        :model-type="modelType"
         :sharepoint-path="sharepointPath"
         @submit:form="handleSubmit"
       />
@@ -20,6 +22,8 @@ const props = defineProps<{
   contentType: Record<string, any>;
   contentTypes: Record<string, any>[];
   sharepointPath: string;
+  allModelsFromModelType?: Record<string, any>[];
+  modelType: string;
 }>();
 
 const handleSubmit = (form: any) => {

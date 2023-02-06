@@ -141,7 +141,7 @@ class DutyController extends ResourceController
         $request->validate([
             'name' => 'required',
             'users' => 'required|array',
-            'institution' => 'required',
+            'institution_id' => 'required',
             'places_to_occupy' => 'required|numeric',
         ]);
 
@@ -151,7 +151,7 @@ class DutyController extends ResourceController
             $duty->users()->syncWithPivotValues($request->users, ['start_date' => now()]);
 
             $duty->institution()->disassociate();
-            $duty->institution()->associate(Institution::find($request->institution['id']));
+            $duty->institution()->associate($request->institution_id);
             $duty->save();
 
             if (true) {
