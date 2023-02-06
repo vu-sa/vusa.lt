@@ -6,6 +6,7 @@
         model-route="duties.store"
         :duty-types="dutyTypes"
         :institutions="institutions"
+        :roles="roles"
       />
     </UpsertModelLayout>
   </PageContent>
@@ -19,6 +20,7 @@ import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 defineProps<{
   dutyTypes: App.Entities.Type[];
   institutions: App.Entities.Institution[];
+  roles: App.Entities.Role[];
 }>();
 
 const duty = {

@@ -50,7 +50,7 @@ class UserController extends ResourceController
         
         return Inertia::render('Admin/People/CreateUser', [
             'roles' => Role::all(),
-            'duties' => $this->getDutiesForForm()
+            'padaliniaiWithDuties' => $this->getDutiesForForm()
         ]);
     }
 
@@ -157,7 +157,7 @@ class UserController extends ResourceController
         DB::transaction(function () use ($request, $user) {
 
             $user->update($request->only('name', 'email', 'phone', 'profile_photo_path'));
-            $user->duties()->syncWithPivotValues($request->duties, ['start_date' => Carbon::now()]);
+            $user->duties()->syncWithPivotValues($request->duties, ['start_date' => now()]);
 
             // check if user is super admin
             if (User::find(Auth::id())->hasRole(config('permission.super_admin_role_name'))) {

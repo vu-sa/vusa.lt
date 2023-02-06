@@ -56,6 +56,7 @@ Route::post('relationships/{relationship}/storeModelRelationship', [Relationship
 Route::delete('relationships/relationshipables/{relationshipable}', [RelationshipController::class, 'deleteModelRelationship'])->name('relationships.deleteModelRelationship');
 Route::resource('roles', RoleController::class);
 Route::patch('roles/{role}/attach/{model}/permissions', [RoleController::class, 'syncPermissionGroup'])->name('roles.syncPermissionGroup');
+Route::put('roles/{role}/sync/duties', [RoleController::class, 'syncDuties'])->name('roles.syncDuties');
 Route::resource('permissions', PermissionController::class);
 Route::resource('tasks', TaskController::class);
 Route::post('tasks/{task}/updateCompletionStatus', [TaskController::class, 'updateCompletionStatus'])->name('tasks.updateCompletionStatus');

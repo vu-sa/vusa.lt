@@ -51,6 +51,7 @@ class DutyController extends ResourceController
         return Inertia::render('Admin/People/CreateDuty', [
             'dutyTypes' => Type::where('model_type', Duty::class)->get(),
             'institutions' => $institutions,
+            'roles' => Role::all(),
         ]);
     }
 
