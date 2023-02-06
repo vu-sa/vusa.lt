@@ -88,32 +88,63 @@ const handleSelectLanguage = (key) => {
     return l !== props.locale;
   });
 
-  if (key === "home") {
-    router.visit(
-      route("main.home", {
-        lang: newLang,
-      }),
-      {
-        onSuccess: () => {
-          emit("changeLocale", newLang[0]);
-          loadLanguageAsync(newLang[0]);
-        },
-      }
-    );
-  } else if (key === "page") {
-    router.visit(
-      route("main.page", {
-        lang: newLang,
-        padalinys: usePage().props.alias,
-        permalink: usePage().props.otherLangPage.permalink,
-      }),
-      {
-        onSuccess: () => {
-          emit("changeLocale", newLang[0]);
-          loadLanguageAsync(newLang[0]);
-        },
-      }
-    );
+  if (usePage().props.alias === "vusa") {
+    if (key === "home") {
+      router.visit(
+        route("main.home", {
+          lang: newLang,
+        }),
+        {
+          onSuccess: () => {
+            emit("changeLocale", newLang[0]);
+            loadLanguageAsync(newLang[0]);
+          },
+        }
+      );
+    } else if (key === "page") {
+      router.visit(
+        route("main.page", {
+          lang: newLang,
+          padalinys: usePage().props.alias,
+          permalink: usePage().props.otherLangPage.permalink,
+        }),
+        {
+          onSuccess: () => {
+            emit("changeLocale", newLang[0]);
+            loadLanguageAsync(newLang[0]);
+          },
+        }
+      );
+    }
+  } else {
+    if (key === "home") {
+      router.visit(
+        route("padalinys.home", {
+          lang: newLang,
+          padalinys: usePage().props.alias,
+        }),
+        {
+          onSuccess: () => {
+            emit("changeLocale", newLang[0]);
+            loadLanguageAsync(newLang[0]);
+          },
+        }
+      );
+    } else if (key === "page") {
+      router.visit(
+        route("padalinys.page", {
+          lang: newLang,
+          padalinys: usePage().props.alias,
+          permalink: usePage().props.otherLangPage.permalink,
+        }),
+        {
+          onSuccess: () => {
+            emit("changeLocale", newLang[0]);
+            loadLanguageAsync(newLang[0]);
+          },
+        }
+      );
+    }
   }
 };
 </script>
