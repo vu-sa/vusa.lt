@@ -115,12 +115,12 @@ class InstitutionController extends ResourceController
     {
         $this->authorize('update', [Institution::class, $institution, $this->authorizer]);
 
+        $institution->load('types')->load(['duties' => function ($query) {
+            $query->with('users')->orderBy('order', 'asc');
+        }]);
+
         return Inertia::render('Admin/People/EditInstitution', [
-            'institution' => [
-                ...$institution->toArray(),
-                'types' => $institution->types->first()?->id,
-            ],
-            'duties' => $institution->duties->sortBy('order')->values(),
+            'institution' => $institution,
             'institutionTypes' => Type::where('model_type', Institution::class)->get(),
             'padaliniai' => InstitutionService::getPadaliniaiForUpserts($this->authorizer)
         ]);

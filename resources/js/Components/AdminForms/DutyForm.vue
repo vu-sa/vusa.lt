@@ -127,24 +127,21 @@
 </template>
 
 <script setup lang="tsx">
-import { Edit16Filled, LinkDismiss20Filled } from "@vicons/fluent";
-import { Link, router, useForm } from "@inertiajs/vue3";
+import { Edit16Filled } from "@vicons/fluent";
 import {
-  NAvatar,
   NButton,
-  NCard,
   NForm,
   NFormItem,
   NIcon,
   NInput,
   NInputNumber,
-  NPopconfirm,
   NSelect,
   NTransfer,
   type TransferRenderSourceLabel,
   type TransferRenderTargetLabel,
 } from "naive-ui";
 import { ref } from "vue";
+import { useForm } from "@inertiajs/vue3";
 
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import FormElement from "./FormElement.vue";
