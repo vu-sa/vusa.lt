@@ -1,6 +1,8 @@
 ## v0.4.1 (2023-02-03)
 
-* `institution.short_name` nebebūtina
+* `institution.short_name` nebebūtinas;
+* Standartizuotas vidinių formų UI;
+* Atnaujintos kalendoriaus, pareigybės, institucijos, naudotojo, tipo formos;
 
 ## v0.4 (2023-02-03)
 
