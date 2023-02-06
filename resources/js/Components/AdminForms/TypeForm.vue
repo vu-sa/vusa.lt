@@ -116,7 +116,7 @@ import { Edit16Filled, Edit16Regular } from "@vicons/fluent";
 import { modelTypes } from "@/Types/formOptions";
 import FileManager from "@/Features/Admin/SharepointFileManager/Viewer/FileManager.vue";
 import FormElement from "./FormElement.vue";
-import Icons from "@/Types/icons/filled";
+import Icons from "@/Types/Icons/filled";
 import InfoPopover from "../Buttons/InfoPopover.vue";
 
 const emit = defineEmits<{
