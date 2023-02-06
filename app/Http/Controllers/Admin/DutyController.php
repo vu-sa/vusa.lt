@@ -51,6 +51,9 @@ class DutyController extends ResourceController
         return Inertia::render('Admin/People/CreateDuty', [
             'dutyTypes' => Type::where('model_type', Duty::class)->get(),
             'institutions' => $institutions,
+            'roles' => Role::all(),
+            'assignableInstitutions' => $this->getInstitutionsForForm(),
+            'assignableUsers' => User::select('id', 'name', 'profile_photo_path')->orderBy('name')->get(),
         ]);
     }
 
@@ -82,6 +85,7 @@ class DutyController extends ResourceController
         $duty->save();
 
         $duty->types()->sync($request->type);
+        $duty->users()->syncWithPivotValues($request->users, ['start_date' => now()]);
 
         return redirect()->route('duties.index')->with('success', 'Pareigybė sėkmingai sukurta!');
     }
@@ -111,18 +115,15 @@ class DutyController extends ResourceController
     {
         $this->authorize('update', [Duty::class, $duty, $this->authorizer]);
         
-        $institutions = $this->getInstitutionsForForm();
+        $duty->load('institution', 'types', 'roles', 'users');
 
         return Inertia::render('Admin/People/EditDuty', [
-            'duty' => [
-                ...$duty->load('institution')->toArray(),
-                'types' => $duty->types->pluck('id'),
-                'roles' => $duty->roles()->pluck('id')->toArray()
-            ],
-            'users' => $duty->users,
+            'duty' => $duty,
             'roles' => Role::all(),
             'dutyTypes' => Type::where('model_type', Duty::class)->get(),
-            'institutions' => $institutions
+            'assignableInstitutions' => $this->getInstitutionsForForm(),
+            // TODO: shouldn't return all users?
+            'assignableUsers' => User::select('id', 'name', 'profile_photo_path')->orderBy('name')->get(),
         ]);
     }
 
@@ -136,18 +137,21 @@ class DutyController extends ResourceController
     public function update(Request $request, Duty $duty)
     {
         $this->authorize('update', [Duty::class, $duty, $this->authorizer]);
-        
+
         $request->validate([
             'name' => 'required',
-            'institution' => 'required',
+            'users' => 'required|array',
+            'institution_id' => 'required',
             'places_to_occupy' => 'required|numeric',
         ]);
 
         DB::transaction(function () use ($request, $duty) {
             $duty->update($request->only('name', 'description', 'email', 'places_to_occupy', 'extra_attributes'));
 
+            $duty->users()->syncWithPivotValues($request->users, ['start_date' => now()]);
+
             $duty->institution()->disassociate();
-            $duty->institution()->associate(Institution::find($request->institution['id']));
+            $duty->institution()->associate($request->institution_id);
             $duty->save();
 
             if (true) {

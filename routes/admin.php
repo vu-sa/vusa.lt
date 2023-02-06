@@ -22,7 +22,6 @@ Route::resource('banners', BannerController::class);
 Route::resource('navigation', NavigationController::class);
 Route::resource('users', UserController::class);
 Route::resource('users.comments', CommentController::class);
-Route::post('users/{user}/detach/{duty}', [UserController::class, 'detachFromDuty'])->name('users.detach');
 Route::post('notification/{id}/markAsRead', [UserNotificationsController::class, 'markAsRead'])->name('notifications.markAsRead');
 Route::post('notification/markAllAsRead', [UserNotificationsController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
 
@@ -56,6 +55,7 @@ Route::post('relationships/{relationship}/storeModelRelationship', [Relationship
 Route::delete('relationships/relationshipables/{relationshipable}', [RelationshipController::class, 'deleteModelRelationship'])->name('relationships.deleteModelRelationship');
 Route::resource('roles', RoleController::class);
 Route::patch('roles/{role}/attach/{model}/permissions', [RoleController::class, 'syncPermissionGroup'])->name('roles.syncPermissionGroup');
+Route::put('roles/{role}/sync/duties', [RoleController::class, 'syncDuties'])->name('roles.syncDuties');
 Route::resource('permissions', PermissionController::class);
 Route::resource('tasks', TaskController::class);
 Route::post('tasks/{task}/updateCompletionStatus', [TaskController::class, 'updateCompletionStatus'])->name('tasks.updateCompletionStatus');

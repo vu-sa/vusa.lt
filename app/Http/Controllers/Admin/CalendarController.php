@@ -65,7 +65,7 @@ class CalendarController extends ResourceController
             'description' => 'required',
         ]);
 
-        $padalinys_id = User::find(Auth::id())->padalinys()?->id;
+        $padalinys_id = $this->authorizer->permissableDuties?->first()->padaliniai->first()->id ?? null;
 
         if (is_null($padalinys_id)) {
             $padalinys_id = request()->user()->hasRole(config('permission.super_admin_role_name')) ? 16 : null;

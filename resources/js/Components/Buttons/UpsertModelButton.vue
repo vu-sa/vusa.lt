@@ -2,7 +2,7 @@
   <NPopconfirm @positive-click="upsertModel">
     <template #trigger>
       <NSpin :show="showSpin" size="small">
-        <NButton>{{ buttonText }}</NButton>
+        <NButton type="primary">{{ buttonText }}</NButton>
       </NSpin>
     </template>
     Ar tikrai {{ buttonText }}?

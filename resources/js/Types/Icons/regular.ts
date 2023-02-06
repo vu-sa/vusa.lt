@@ -34,6 +34,7 @@ import {
   TextField24Regular,
 } from "@vicons/fluent";
 import type { Component } from "vue";
+import type { FormEnum, OtherIconEnum } from "../otherEnums";
 import type { ModelEnum } from "../enums";
 
 const modelIcons: Record<keyof typeof ModelEnum, Component> = {
@@ -69,11 +70,15 @@ const modelIcons: Record<keyof typeof ModelEnum, Component> = {
   USER: Person24Regular,
 };
 
-const otherIcons: Record<string, Component> = {
-  HOME: Home24Regular,
+const formIcons: Record<keyof typeof FormEnum, Component> = {
   DATE: CalendarLtr24Regular,
-  NOTIFICATION: Alert24Regular,
+  SAVE: DocumentSave24Regular,
   TITLE: TextField24Regular,
 };
 
-export default { ...modelIcons, ...otherIcons };
+const otherIcons: Record<keyof typeof OtherIconEnum, Component> = {
+  HOME: Home24Regular,
+  NOTIFICATION: Alert24Regular,
+};
+
+export default { ...modelIcons, ...formIcons, ...otherIcons };

@@ -9,8 +9,11 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\ResourceController;
 use App\Models\Calendar;
+use App\Models\Padalinys;
 use App\Models\Permission;
+use App\Models\User;
 use Illuminate\Support\Benchmark;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
@@ -94,11 +97,17 @@ class RoleController extends ResourceController
             return back()->with('info', 'Negalima redaguoti šios rolės.');
         }
         
-        $role->load('permissions:id,name');
+        $role->load('permissions:id,name', 'duties:id,name');
+
+        $padaliniaiWithDuties = Padalinys::orderBy('shortname')->with('institutions:id,name,padalinys_id', 'institutions.duties:id,name,institution_id')
+            ->when(!auth()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
+                $query->whereIn('id', User::find(Auth::id())->padaliniai->pluck('id'));
+            })->get();
         
         // edit role
         return Inertia::render('Admin/Permissions/EditRole', [
             'role' => $role,
+            'padaliniaiWithDuties' => $padaliniaiWithDuties,
         ]);
     }
 
@@ -188,6 +197,21 @@ class RoleController extends ResourceController
         $this->clearCacheforRoleUsers($role);
 
         return back()->with('success', 'Rolės leidimai atnaujinti');
+    }
+
+    public function syncDuties(Role $role, Request $request) 
+    {
+        $this->authorize('update', [Role::class, $role, $this->authorizer]);
+        
+        $validated = $request->validate([
+            'duties' => 'array',
+        ]);
+
+        $role->duties()->sync($validated['duties']);
+
+        $this->clearCacheforRoleUsers($role);
+
+        return back()->with('success', 'Rolės pareigos atnaujintos');
     }
 
     protected function clearCacheforRoleUsers(Role $role) {

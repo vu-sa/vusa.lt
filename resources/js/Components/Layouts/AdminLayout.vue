@@ -89,9 +89,10 @@
             </template>
           </NPopover>
           <a
+            v-if="!collapsed"
             target="_blank"
             href="https://github.com/vu-sa/vusa.lt/blob/main/CHANGELOG.md"
-            ><NButton size="tiny" quaternary> v0.4 </NButton></a
+            ><NButton size="tiny" quaternary> v0.4.1 </NButton></a
           >
         </div>
       </NLayoutSider>
@@ -127,7 +128,6 @@ import { useOnline, useStorage } from "@vueuse/core";
 import { Board24Regular } from "@vicons/fluent";
 import AdminMenu from "@/Components/Menus/AdminMenu.vue";
 import AppLogo from "@/Components/AppLogo.vue";
-import Changelog from "@/Components/Cards/ChangelogCard.vue";
 import DarkModeSwitch from "@/Components/Buttons/DarkModeSwitch.vue";
 import MetaIcons from "@/Components/MetaIcons.vue";
 import NotificationBell from "@/Features/Admin/Notifications/NotificationBell.vue";

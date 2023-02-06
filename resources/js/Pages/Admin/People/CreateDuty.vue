@@ -3,9 +3,11 @@
     <UpsertModelLayout :errors="$page.props.errors" :model="duty">
       <DutyForm
         :duty="duty"
-        model-route="duties.store"
         :duty-types="dutyTypes"
-        :institutions="institutions"
+        :institutions="assignableInstitutions"
+        :assignable-users="assignableUsers"
+        :roles="roles"
+        model-route="duties.store"
       />
     </UpsertModelLayout>
   </PageContent>
@@ -18,16 +20,20 @@ import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 defineProps<{
   dutyTypes: App.Entities.Type[];
-  institutions: App.Entities.Institution[];
+  assignableInstitutions: App.Entities.Institution[];
+  assignableUsers: App.Entities.User[];
+  roles: App.Entities.Role[];
 }>();
 
 const duty = {
   name: "",
   description: "",
   email: null,
-  institution: {},
+  institution_id: null,
   places_to_occupy: null,
-  type: null,
+  types: [],
+  roles: [],
+  users: [],
   extra_attributes: {
     en: {
       name: "",

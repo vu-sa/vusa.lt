@@ -8,67 +8,19 @@
     <UpsertModelLayout :errors="$page.props.errors" :model="duty">
       <DutyForm
         :duty="duty"
-        :has-users="hasUsers"
         :roles="roles"
         :duty-types="dutyTypes"
-        :institutions="institutions"
+        :institutions="assignableInstitutions"
+        :assignable-users="assignableUsers"
         model-route="duties.update"
         delete-model-route="duties.destroy"
       />
     </UpsertModelLayout>
-    <template #aside-card>
-      <NCard v-if="hasUsers" class="subtle-gray-gradient h-fit w-fit max-w-lg">
-        <strong>Šiuo metu šias pareigas užima:</strong>
-        <ul class="mt-2 list-none">
-          <li v-for="user in users" :key="user.id" class="mb-1">
-            <Link
-              class="flex flex-row items-center gap-2"
-              :href="route('users.edit', { id: user.id })"
-              ><NAvatar
-                object-fit="cover"
-                round
-                size="small"
-                :src="user.profile_photo_path"
-              />{{ user.name }}
-              <NPopconfirm @positive-click="detachUserFromDuty(user)">
-                <template #trigger>
-                  <NButton
-                    type="error"
-                    tertiary
-                    size="tiny"
-                    circle
-                    @click.prevent
-                  >
-                    <NIcon>
-                      <LinkDismiss20Filled />
-                    </NIcon>
-                  </NButton>
-                </template>
-                Elementas bus atsietas, tačiau nebus ištrintas. Tęsti?
-              </NPopconfirm>
-            </Link>
-          </li>
-        </ul>
-      </NCard>
-      <NCard v-else class="subtle-gray-gradient h-fit w-fit">
-        Šių pareigų kolkas niekas neužima.
-      </NCard>
-    </template>
   </PageContent>
 </template>
 
 <script setup lang="ts">
-import { Link, router } from "@inertiajs/vue3";
-import { LinkDismiss20Filled } from "@vicons/fluent";
-import {
-  NAvatar,
-  NButton,
-  NCard,
-  NIcon,
-  NPopconfirm,
-  useMessage,
-} from "naive-ui";
-import { computed, ref } from "vue";
+import { ref } from "vue";
 
 import { checkForEmptyArray } from "@/Composables/checkAttributes";
 
@@ -78,15 +30,11 @@ import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 const props = defineProps<{
   duty: App.Entities.Duty;
-  users: App.Entities.User[];
   roles: App.Entities.Role[];
+  assignableInstitutions: App.Entities.Institution[];
+  assignableUsers: App.Entities.User[];
   dutyTypes: App.Entities.Type[];
-  institutions: App.Entities.Institution[];
 }>();
-
-const message = useMessage();
-
-const hasUsers = computed(() => props.users.length > 0);
 
 const duty = ref(props.duty);
 
@@ -94,23 +42,4 @@ duty.value.extra_attributes = checkForEmptyArray(duty.value.extra_attributes);
 duty.value.extra_attributes.en = checkForEmptyArray(
   duty.value.extra_attributes.en
 );
-
-////////////////////////////////////////////////////////////////////////////////
-
-const detachUserFromDuty = (user: App.Entities.User) => {
-  router.post(
-    route("users.detach", {
-      user: user.id,
-      duty: props.duty.id,
-    }),
-    {},
-    {
-      preserveScroll: true,
-      only: ["users"],
-      onError: () => {
-        message.error("Nepavyko atsieti!");
-      },
-    }
-  );
-};
 </script>

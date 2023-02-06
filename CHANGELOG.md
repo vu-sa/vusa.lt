@@ -1,4 +1,10 @@
-## v0.4 (2023-02-04)
+## v0.4.1 (2023-02-03)
+
+* `institution.short_name` nebebūtinas;
+* Standartizuotas vidinių formų UI;
+* Atnaujintos kalendoriaus, pareigybės, institucijos, naudotojo, tipo formos;
+
+## v0.4 (2023-02-03)
 
 * [VISAK](https://github.com/vu-sa/vusa.lt/pull/122)
 

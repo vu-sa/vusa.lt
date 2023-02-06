@@ -10,6 +10,7 @@ use Spatie\Activitylog\LogOptions;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Illuminate\Support\Str;
 
 class Type extends Model
 {
@@ -40,5 +41,16 @@ class Type extends Model
     public function doings()
     {
         return $this->morphedByMany(Doing::class, 'typeable');
+    }
+
+    public function allModelsFromModelType()
+    {        
+        if (Str::contains($this->model_type, 'Institution')) {
+            return $this->model_type::select('id', 'name', 'padalinys_id')->with('padaliniai')->orderBy('name')->get();
+        } elseif (Str::contains($this->model_type, 'Duty')) {
+            return $this->model_type::select('id', 'name', 'institution_id')->with('padaliniai')->orderBy('name')->get();
+        } elseif (Str::contains($this->model_type, 'Doing')) {
+            return $this->model_type::select('id', 'title', 'user_id')->with('padaliniai')->orderBy('title')->get();
+        }
     }
 }

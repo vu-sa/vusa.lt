@@ -68,7 +68,7 @@ import {
   PersonArrowLeft24Regular,
   PersonArrowRight24Regular,
 } from "@vicons/fluent";
-import { router } from "@inertiajs/core";
+import { router } from "@inertiajs/vue3";
 import InstitutionCard from "../Cards/InstitutionCard.vue";
 
 defineProps<{

@@ -3,26 +3,32 @@
     <UpsertModelLayout :errors="$page.props.errors" :model="contentType">
       <TypeForm
         :content-types="contentTypes"
+        :all-models-from-model-type="allModelsFromModelType"
         :type="contentType"
-        model-route="types.update"
+        :model-type="modelType"
+        :sharepoint-path="sharepointPath"
+        @submit:form="handleSubmit"
       />
     </UpsertModelLayout>
-    <FileManager
-      :starting-path="sharepointPath"
-      :fileable="{ id: contentType.id, type: 'Type' }"
-    ></FileManager>
   </PageContent>
 </template>
 
 <script setup lang="ts">
-import FileManager from "@/Features/Admin/SharepointFileManager/Viewer/FileManager.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import TypeForm from "@/Components/AdminForms/TypeForm.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
-defineProps<{
+const props = defineProps<{
   contentType: Record<string, any>;
   contentTypes: Record<string, any>[];
   sharepointPath: string;
+  allModelsFromModelType?: Record<string, any>[];
+  modelType: string;
 }>();
+
+const handleSubmit = (form: any) => {
+  form.patch(route("types.update", props.contentType.id), {
+    preserveScroll: true,
+  });
+};
 </script>

@@ -65,7 +65,6 @@ class InstitutionController extends ResourceController
         
         $request->validate([
             'name' => 'required',
-            'short_name' => 'required',
             'alias' => 'required|unique:institutions,alias',
             'padalinys_id' => 'required',
         ]);
@@ -116,12 +115,12 @@ class InstitutionController extends ResourceController
     {
         $this->authorize('update', [Institution::class, $institution, $this->authorizer]);
 
+        $institution->load('types')->load(['duties' => function ($query) {
+            $query->with('users')->orderBy('order', 'asc');
+        }]);
+
         return Inertia::render('Admin/People/EditInstitution', [
-            'institution' => [
-                ...$institution->toArray(),
-                'types' => $institution->types->first()?->id,
-            ],
-            'duties' => $institution->duties->sortBy('order')->values(),
+            'institution' => $institution,
             'institutionTypes' => Type::where('model_type', Institution::class)->get(),
             'padaliniai' => InstitutionService::getPadaliniaiForUpserts($this->authorizer)
         ]);
@@ -169,7 +168,14 @@ class InstitutionController extends ResourceController
         
         return back()->with('info', 'Institucijų šiuo metu negalima ištrinti...');
     }
-
+    
+    /**
+     * reorderDuties
+     * Duties are ordered in the frontend array by the user. The order is saved in the database
+     *
+     * @param  Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function reorderDuties(Request $request)
     {
         foreach ($request->duties as $duty) {

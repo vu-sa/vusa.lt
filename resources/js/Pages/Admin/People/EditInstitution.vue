@@ -1,6 +1,5 @@
 <template>
   <PageContent
-    aside
     :title="institution.name ?? institution.short_name"
     :back-url="route('institutions.index')"
   >
@@ -22,49 +21,13 @@
         :institution-types="institutionTypes"
       />
     </UpsertModelLayout>
-
-    <template #aside-card>
-      <NCard v-if="duties" class="subtle-gray-gradient">
-        <strong>Šiuo metu institucijai priklauso šios pareigos:</strong>
-        <TransitionGroup name="list" tag="ul" class="list-inside">
-          <li v-for="duty in duties" :key="duty.id" class="gap-4">
-            <Link :href="route('duties.edit', { id: duty.id })">{{
-              duty.name
-            }}</Link>
-            <div class="ml-2 inline-flex gap-1">
-              <NButton text @click="reorderDuties('up', duty)"
-                ><NIcon :component="ArrowCircleUp24Regular"
-              /></NButton>
-              <NButton text @click="reorderDuties('down', duty)"
-                ><NIcon :component="ArrowCircleDown24Regular"
-              /></NButton>
-            </div>
-          </li>
-        </TransitionGroup>
-        <FadeTransition>
-          <div v-if="dutiesWereReordered" class="mt-4">
-            <NButton @click="saveReorderedDuties">Atnaujinti</NButton>
-          </div>
-        </FadeTransition>
-      </NCard>
-      <NCard v-else class="subtle-gray-gradient col-span-3 h-fit">
-        Ši institucija <strong>neturi</strong> pareigų.
-      </NCard>
-    </template>
   </PageContent>
 </template>
 
 <script setup lang="ts">
-import {
-  ArrowCircleDown24Regular,
-  ArrowCircleUp24Regular,
-} from "@vicons/fluent";
-import { Link, router } from "@inertiajs/vue3";
-import { NButton, NCard, NIcon } from "naive-ui";
 import { ref } from "vue";
 
 import { checkForEmptyArray } from "@/Composables/checkAttributes";
-import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import InstitutionForm from "@/Components/AdminForms/InstitutionForm.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
@@ -73,7 +36,6 @@ import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 const props = defineProps<{
   institution: App.Entities.Institution;
   institutionTypes: Array<App.Entities.Type>;
-  duties: Array<App.Entities.Duty>;
   padaliniai: Array<App.Entities.Padalinys>;
 }>();
 
@@ -97,49 +59,6 @@ institution.value.extra_attributes.en = checkForEmptyArray(
 
 ////////////////////////////////////////////////////////////////////////////////
 // function to order duties on button press
-const duties = ref(props.duties);
-const dutiesWereReordered = ref(false);
-
-// this function only reorders the array, but does not change the order value of the duties
-// the order value is assigned in the backend, using the indexes of the array, which is the one manipulated here
-const reorderDuties = (direction: "up" | "down", duty: App.Entities.Duty) => {
-  const index = duties.value.indexOf(duty);
-  if (index === -1) {
-    return;
-  }
-  const newIndex = direction === "up" ? index - 1 : index + 1;
-  if (newIndex < 0 || newIndex >= duties.value.length) {
-    return;
-  }
-
-  const newDuties = [...duties.value];
-  const temp = newDuties[index];
-  newDuties[index] = newDuties[newIndex];
-  newDuties[newIndex] = temp;
-  duties.value = newDuties;
-
-  dutiesWereReordered.value = true;
-};
-
-const saveReorderedDuties = () => {
-  const newDuties = duties.value.map((duty, index) => {
-    duty.order = index;
-    return duty;
-  });
-  router.post(
-    route("institutions.reorderDuties"),
-    {
-      duties: newDuties,
-    },
-    {
-      preserveState: true,
-      preserveScroll: true,
-      onSuccess: () => {
-        dutiesWereReordered.value = false;
-      },
-    }
-  );
-};
 </script>
 
 <style>

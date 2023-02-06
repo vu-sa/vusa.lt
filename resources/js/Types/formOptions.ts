@@ -27,9 +27,9 @@ export const modelTypes = {
     "Veiklą reglamentuojantys dokumentai",
   ],
   type: [
-    uppercase(ModelEnum.INSTITUTION),
     uppercase(ModelEnum.DUTY),
     uppercase(ModelEnum.DOING),
+    uppercase(ModelEnum.INSTITUTION),
   ],
 };
 
