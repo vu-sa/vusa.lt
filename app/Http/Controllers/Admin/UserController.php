@@ -80,14 +80,14 @@ class UserController extends ResourceController
             ]);
 
             foreach ($request->duties as $duty) {
-                $user->duties()->attach($duty);
+                $user->duties()->attach($duty, ['start_date' => now()]);
             }
 
             // check if user is super admin
             if (User::find(Auth::id())->hasRole(config('permission.super_admin_role_name'))) {
                 // check if user is super admin
                 if ($request->has('roles')) {
-                    $user->syncRoles($request->roles);
+                    $user->roles()->sync($request->roles);
                 } else {
                     $user->syncRoles([]);
                 }
@@ -202,16 +202,6 @@ class UserController extends ResourceController
             ->when(!auth()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
                 $query->whereIn('id', User::find(Auth::id())->padaliniai->pluck('id'));
             })->get();
-    }
-
-    public function detachFromDuty(User $user, Duty $duty)
-    {
-        $this->authorize('detachFromDuty', [auth()->user(), $user]);
-
-        $user->duties()->detach($duty);
-        $user->save();
-
-        return back()->with('info', 'Kontaktas sėkmingai atjungtas nuo pareigos!');
     }
 
     public function storeFromMicrosoft()

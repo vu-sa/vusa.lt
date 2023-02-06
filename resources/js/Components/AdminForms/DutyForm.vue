@@ -1,25 +1,37 @@
 <template>
   <NForm :model="form" label-placement="top">
-    <NTabs animated type="card" pane-class="overflow-x-auto">
-      <NTabPane display-directive="show" name="lt" tab="🇱🇹">
-        <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
-          <NFormItemGi label="Pareigų pavadinimas" :span="2">
-            <NInput
-              v-model:value="form.name"
-              type="text"
-              placeholder="Prezidentė"
-            />
-          </NFormItemGi>
+    <div class="flex flex-col">
+      <FormElement>
+        <template #title>Pagrindinė informacija</template>
+        <NFormItem label="Pareigų pavadinimas" :span="2">
+          <NInput
+            v-if="locale === 'lt'"
+            v-model:value="form.name"
+            type="text"
+            placeholder="Prezidentė"
+            ><template #suffix
+              ><SimpleLocaleButton
+                v-model:locale="locale"
+              ></SimpleLocaleButton></template
+          ></NInput>
+          <NInput
+            v-else
+            v-model:value="form.extra_attributes.en.name"
+            type="text"
+            placeholder="President"
+            ><template #suffix
+              ><SimpleLocaleButton
+                v-model:locale="locale"
+              ></SimpleLocaleButton></template
+          ></NInput>
+        </NFormItem>
 
-          <NFormItemGi label="Pareigybinis el. paštas" :span="2">
-            <NInput v-model:value="form.email" placeholder="vusa@vusa.lt" />
-          </NFormItemGi>
+        <NFormItem label="Pareigybinis el. paštas" :span="2">
+          <NInput v-model:value="form.email" placeholder="vusa@vusa.lt" />
+        </NFormItem>
 
-          <NFormItemGi label="Pareigybę užimančių žmonių skaičius" :span="2"
-            ><NInputNumber v-model:value="form.places_to_occupy"></NInputNumber
-          ></NFormItemGi>
-
-          <NFormItemGi label="Institucija" :span="4">
+        <div class="grid gap-4 lg:grid-cols-2">
+          <NFormItem label="Institucija" :span="4">
             <NSelect
               v-model:value="form.institution.id"
               filterable
@@ -27,62 +39,85 @@
               :options="institutionsFromDatabase"
               clearable
             />
-          </NFormItemGi>
+          </NFormItem>
 
-          <NFormItemGi label="Pareigybės tipas" :span="2">
-            <NSelect
-              v-model:value="form.types"
-              multiple
-              :options="dutyTypes"
-              label-field="title"
-              value-field="id"
-              placeholder="Pasirinkti kategoriją..."
-              clearable
-            />
-          </NFormItemGi>
+          <NFormItem label="Pareigybę užimančių žmonių skaičius" :min="0"
+            ><NInputNumber v-model:value="form.places_to_occupy"></NInputNumber
+          ></NFormItem>
+        </div>
+      </FormElement>
+      <FormElement>
+        <template #title>Detalesnis aprašymas</template>
+        <template #description
+          >Aprašymas yra rodomas vusa.lt puslapyje prie pareigybės</template
+        >
+        <NFormItem label="Aprašymas" :span="6">
+          <template #label>
+            <div class="inline-flex items-center gap-2">
+              Aprašymas
+              <SimpleLocaleButton v-model:locale="locale"></SimpleLocaleButton>
+            </div>
+          </template>
+          <TipTap
+            v-if="locale === 'lt'"
+            v-model="form.description"
+            :search-files="$page.props.search.other"
+          />
+          <TipTap
+            v-else
+            v-model="form.extra_attributes.en.description"
+            :search-files="$page.props.search.other"
+          />
+        </NFormItem>
+      </FormElement>
+      <FormElement>
+        <template #title>Asmenys</template>
+        <template #description>Pareigybę gali užimti daug naudotojų.</template>
+        <NTransfer
+          ref="transfer"
+          v-model:value="form.users"
+          virtual-scroll
+          :options="userOptions"
+          :render-source-label="renderSourceLabel"
+          :render-target-label="renderTargetLabel"
+          source-filterable
+        ></NTransfer>
+      </FormElement>
+      <FormElement>
+        <template #title>Papildoma informacija</template>
+        <template #description
+          >Šiuo metu šie nustatymai tik rodomi, jų negalima keisti...</template
+        >
+        <NFormItem label="Pareigybės tipas" :span="2">
+          <NSelect
+            v-model:value="form.types"
+            :disabled="!$page.props.auth.user.isSuperAdmin"
+            multiple
+            :options="dutyTypes"
+            label-field="title"
+            value-field="id"
+            placeholder="Pasirinkti kategoriją..."
+            clearable
+          />
+        </NFormItem>
 
-          <NFormItemGi label="Administracinė vusa.lt rolė" :span="2">
-            <NSelect
-              v-model:value="form.roles"
-              :options="rolesOptions"
-              clearable
-              multiple
-              type="text"
-              placeholder="Be rolės..."
-            />
-          </NFormItemGi>
-
-          <NFormItemGi label="Aprašymas" :span="6">
-            <TipTap
-              v-model="form.description"
-              :search-files="$page.props.search.other"
-            />
-          </NFormItemGi>
-        </NGrid>
-      </NTabPane>
-      <NTabPane display-directive="show" name="en" tab="🇬🇧">
-        <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
-          <NFormItemGi label="Pareigų pavadinimas" :span="2">
-            <NInput
-              v-model:value="form.extra_attributes.en.name"
-              type="text"
-              placeholder="Prezidentė"
-            />
-          </NFormItemGi>
-
-          <NFormItemGi label="Aprašymas" :span="6">
-            <TipTap
-              v-model="form.extra_attributes.en.description"
-              :search-files="$page.props.search.other"
-            />
-          </NFormItemGi>
-        </NGrid>
-      </NTabPane>
-    </NTabs>
+        <NFormItem label="Administracinė vusa.lt rolė" :span="2">
+          <NSelect
+            v-model:value="form.roles"
+            :disabled="!$page.props.auth.user.isSuperAdmin"
+            :options="rolesOptions"
+            clearable
+            multiple
+            type="text"
+            placeholder="Be rolės..."
+          />
+        </NFormItem>
+      </FormElement>
+    </div>
     <div class="flex justify-end gap-2">
       <DeleteModelButton
         v-if="deleteModelRoute"
-        :disabled="hasUsers"
+        :disabled="duty.users && duty.users.length > 0"
         :form="form"
         :model-route="deleteModelRoute"
       ></DeleteModelButton>
@@ -91,34 +126,55 @@
   </NForm>
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
+import { Edit16Filled, LinkDismiss20Filled } from "@vicons/fluent";
+import { Link, router, useForm } from "@inertiajs/vue3";
 import {
+  NAvatar,
+  NButton,
+  NCard,
   NForm,
-  NFormItemGi,
-  NGrid,
+  NFormItem,
+  NIcon,
   NInput,
   NInputNumber,
+  NPopconfirm,
   NSelect,
-  NTabPane,
-  NTabs,
+  NTransfer,
+  type TransferRenderSourceLabel,
+  type TransferRenderTargetLabel,
 } from "naive-ui";
-import { useForm } from "@inertiajs/vue3";
+import { ref } from "vue";
 
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
+import FormElement from "./FormElement.vue";
+import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
 import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
+import UserAvatar from "../Avatars/UserAvatar.vue";
 
 const props = defineProps<{
   duty: App.Entities.Duty;
   dutyTypes: App.Entities.Type[];
+  assignableUsers: App.Entities.User[];
   roles: App.Entities.Role[];
   institutions: App.Entities.Institution[];
-  hasUsers?: boolean;
   modelRoute: string;
   deleteModelRoute?: string;
 }>();
 
+const locale = ref("lt");
+
 const form = useForm("institution", props.duty);
+form.roles = props.duty.roles?.map((role) => role.id);
+form.types = props.duty.types?.map((type) => type.id);
+form.users = props.duty.users?.map((user) => user.id);
+
+const userOptions = props.assignableUsers.map((user) => ({
+  label: user.name,
+  value: user.id,
+  user: user,
+}));
 
 const rolesOptions = props.roles.map((role) => ({
   label: role.name,
@@ -129,4 +185,26 @@ const institutionsFromDatabase = props.institutions.map((institution) => ({
   label: `${institution.name} (${institution.padalinys?.shortname})`,
   value: institution.id,
 }));
+
+const renderSourceLabel: TransferRenderSourceLabel = ({ option }) => {
+  return (
+    <div class="flex items-center gap-2">
+      <span>{option.label}</span>
+      <a target="_blank" href={route("users.edit", option.value)}>
+        <NButton text size="tiny">
+          {{ icon: <NIcon component={Edit16Filled}></NIcon> }}
+        </NButton>
+      </a>
+    </div>
+  );
+};
+
+const renderTargetLabel: TransferRenderTargetLabel = ({ option }) => {
+  return (
+    <div class="flex items-center gap-2">
+      <UserAvatar size={24} user={option.user}></UserAvatar>
+      <span>{option.label}</span>
+    </div>
+  );
+};
 </script>

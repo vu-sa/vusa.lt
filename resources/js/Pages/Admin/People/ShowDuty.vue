@@ -77,7 +77,7 @@
 <script setup lang="tsx">
 import { NDivider, NTable } from "naive-ui";
 import { computed } from "vue";
-import { router } from "@inertiajs/core";
+import { router } from "@inertiajs/vue3";
 
 import Icons from "@/Types/Icons/filled";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";

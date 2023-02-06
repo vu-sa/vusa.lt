@@ -104,11 +104,4 @@ class UserPolicy extends ModelPolicy
     {
         return true;
     }
-
-    public function detachFromDuty(User $user, User $model)
-    {
-        if ($user->can('edit unit users')) {
-            return $model->padaliniai()->contains($user->padaliniai()->first()->id) || (is_null($model->padaliniai()->first()));
-        }
-    }
 }

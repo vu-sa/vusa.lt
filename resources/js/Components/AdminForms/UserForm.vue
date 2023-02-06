@@ -189,6 +189,7 @@ const props = defineProps<{
 }>();
 
 const form = useForm("user", props.user);
+form.roles = props.user.roles?.map((role) => role.id);
 
 const dutyOptions: TreeOption[] = props.padaliniaiWithDuties.map(
   (padalinys) => ({

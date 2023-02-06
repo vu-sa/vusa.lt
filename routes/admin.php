@@ -22,7 +22,6 @@ Route::resource('banners', BannerController::class);
 Route::resource('navigation', NavigationController::class);
 Route::resource('users', UserController::class);
 Route::resource('users.comments', CommentController::class);
-Route::post('users/{user}/detach/{duty}', [UserController::class, 'detachFromDuty'])->name('users.detach');
 Route::post('notification/{id}/markAsRead', [UserNotificationsController::class, 'markAsRead'])->name('notifications.markAsRead');
 Route::post('notification/markAllAsRead', [UserNotificationsController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
 
