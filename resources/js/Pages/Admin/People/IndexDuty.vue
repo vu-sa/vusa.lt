@@ -10,8 +10,8 @@
 </template>
 
 <script setup lang="tsx">
-import { h } from "vue";
-
+import { NButton, NEllipsis, NIcon } from "naive-ui";
+import Icons from "@/Types/Icons/filled";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
 defineProps<{
@@ -22,7 +22,7 @@ const canUseRoutes = {
   create: true,
   show: true,
   edit: true,
-  destroy: true,
+  destroy: false,
 };
 
 const columns = [
@@ -30,6 +30,33 @@ const columns = [
     title: "Pavadinimas",
     key: "name",
     minWidth: 150,
+  },
+  {
+    title: "Institucija",
+    key: "institution.id",
+    minWidth: 100,
+    render(row: App.Entities.Duty) {
+      return row.institution ? (
+        <a
+          href={route("institutions.edit", {
+            id: row.institution.id,
+          })}
+          target="_blank"
+          class="transition hover:text-vusa-red"
+        >
+          <NButton round size="tiny" tertiary>
+            {{
+              default: (
+                <NEllipsis style="max-width: 150px">
+                  {row.institution?.short_name ?? row.institution?.name}
+                </NEllipsis>
+              ),
+              icon: <NIcon component={Icons.INSTITUTION}></NIcon>,
+            }}
+          </NButton>
+        </a>
+      ) : null;
+    },
   },
   {
     title: "Tipas",
@@ -46,29 +73,6 @@ const columns = [
           {row.email}
         </a>
       );
-    },
-  },
-  {
-    title: "Institucija",
-    key: "institution.id",
-    minWidth: 100,
-    render(row: App.Entities.Duty) {
-      return row.institution
-        ? h(
-            "a",
-            {
-              href: route("institutions.edit", {
-                id: row.institution.id,
-              }),
-              target: "_blank",
-              class: "hover:text-vusa-red transition",
-            },
-            {
-              default: () =>
-                row.institution?.short_name ?? row.institution?.name,
-            }
-          )
-        : null;
     },
   },
 ];

@@ -252,13 +252,19 @@ const handleSelectNavigation = (id: number) => {
         }
       } else {
         url = item[1].url;
-        // message.info("Navigating to " + url);
-        router.visit(
-          route("main.page", { lang: locale.value, permalink: url }),
-          {
-            preserveScroll: false,
-          }
-        );
+
+        if (padalinys.value === "Padaliniai") {
+          router.visit(
+            route("main.page", { lang: locale.value, permalink: url }),
+            {
+              preserveScroll: false,
+            }
+          );
+        } else {
+          window.location.href = `${usePage().props.app.url}/${
+            locale.value
+          }/${url}`;
+        }
       }
       selectedKeys.value = [];
     }

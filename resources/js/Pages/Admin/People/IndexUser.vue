@@ -31,6 +31,10 @@ const columns = [
   {
     title: "El. paštas",
     key: "email",
+    maxWidth: 200,
+    ellipsis: {
+      tooltip: true,
+    },
     render(row: App.Entities.User) {
       return (
         <a href={`mailto:${row.email}`} class="transition hover:text-vusa-red">
@@ -42,6 +46,10 @@ const columns = [
   {
     title: "Telefonas",
     key: "phone",
+    maxWidth: 200,
+    ellipsis: {
+      tooltip: true,
+    },
     render(row: App.Entities.User) {
       return (
         <a href={`mailto:${row.phone}`} class="transition hover:text-vusa-red">
@@ -49,6 +57,10 @@ const columns = [
         </a>
       );
     },
+  },
+  {
+    title: "Pareigų skaičius",
+    key: "duties_count",
   },
 ];
 </script>

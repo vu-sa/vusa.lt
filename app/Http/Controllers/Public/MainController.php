@@ -27,7 +27,6 @@ use App\Mail\ConfirmMemberRegistration;
 use App\Mail\ConfirmObserverRegistration;
 use App\Mail\InformSaziningaiAboutObserverRegistration;
 use App\Mail\InformSaziningaiAboutRegistration;
-use App\Models\Duty;
 use App\Models\Type;
 use App\Notifications\MemberRegistered;
 use Spatie\CalendarLinks\Link;
@@ -35,6 +34,7 @@ use Datetime;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Request;
 
 class MainController extends PublicController
 {
@@ -201,7 +201,7 @@ class MainController extends PublicController
 		]);
 	}
 
-	public function contactsCategory()
+	public function contactsCategory(Request $request)
 	{
 		// Special case for 'padaliniai' alias, since it's a special category, fetched from 'padaliniai' table
 
@@ -252,9 +252,9 @@ class MainController extends PublicController
 
 		if ($type == 'studentu-atstovai') {
 			// get all student duty institutions that have type 'studentu-atstovu-organas' and is of the same padalinys as the current one
-			$institutions = Institution::with(['duties.users'])->where([['padalinys_id', '=', $this->padalinys->id]])->whereHas('type', function (Builder $query) {
+			$institutions = Institution::with(['duties.users'])->orderBy('name')->where([['padalinys_id', '=', $this->padalinys->id]])->whereHas('types', function (Builder $query) {
 				$query->where('alias', 'studentu-atstovu-organas');
-			})->get()->sortBy('name')->values();
+			})->get();
 
 			return Inertia::render('Public/Contacts/StudentRepresentatives', [
 				'institutions' => $institutions

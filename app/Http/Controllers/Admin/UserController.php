@@ -34,7 +34,7 @@ class UserController extends ResourceController
         $users = $indexer->execute(User::class, $search, 'name', $this->authorizer);
 
         return Inertia::render('Admin/People/IndexUser', [
-            'users' => $users->with('duties:id,institution_id', 'duties.institution:id,padalinys_id','duties.institution.padalinys:id,shortname')
+            'users' => $users->with('duties:id,institution_id', 'duties.institution:id,padalinys_id','duties.institution.padalinys:id,shortname')->withCount('duties')
             ->paginate(20),
         ]);
     }
