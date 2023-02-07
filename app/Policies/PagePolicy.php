@@ -31,7 +31,7 @@ class PagePolicy extends ModelPolicy
     {
         $this->authorizer = $authorizer;
         
-        if ($this->commonChecker($user, $page, CRUDEnum::READ()->label, $this->pluralModelName)) {
+        if ($this->commonChecker($user, $page, CRUDEnum::READ()->label, $this->pluralModelName, false)) {
             return true;
         }
 
@@ -49,7 +49,7 @@ class PagePolicy extends ModelPolicy
     {
         $this->authorizer = $authorizer;
         
-        if ($this->commonChecker($user, $page, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
+        if ($this->commonChecker($user, $page, CRUDEnum::UPDATE()->label, $this->pluralModelName, false)) {
             return true;
         }
 
@@ -67,7 +67,7 @@ class PagePolicy extends ModelPolicy
     {
         $this->authorizer = $authorizer;
         
-        if ($this->commonChecker($user, $page, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
+        if ($this->commonChecker($user, $page, CRUDEnum::DELETE()->label, $this->pluralModelName, false)) {
             return true;
         }
 

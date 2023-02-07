@@ -108,8 +108,8 @@ class NewsController extends ResourceController
     {
         $this->authorize('update', [News::class, $news, $this->authorizer]);
     
-        $other_lang_pages = News::with('padalinys:id,shortname')->when(!request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
-            $query->where('padalinys_id', request()->user()->padalinys()->id);  
+        $other_lang_pages = News::with('padalinys:id,shortname')->when(!request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($news) {
+            $query->where('padalinys_id', $news->padalinys_id);  
         })->where('lang', '!=', $news->lang)->select('id', 'title', 'padalinys_id')->get();
         
         return Inertia::render('Admin/Content/EditNews', [

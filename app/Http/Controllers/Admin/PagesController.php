@@ -22,14 +22,13 @@ class PagesController extends ResourceController
     {
         $this->authorize('viewAny', [Page::class, $this->authorizer]);
 
-
         $search = request()->input('text');
 
         $indexer = new ModelIndexer();
-        $pages = $indexer->execute(Page::class, $search, 'title', $this->authorizer, null);
+        $pages = $indexer->execute(Page::class, $search, 'title', $this->authorizer, false);
 
         return Inertia::render('Admin/Content/IndexPages', [
-            'pages' => $pages->paginate(20),
+            'pages' => $pages->with('padalinys:id,shortname')->paginate(20),
         ]);
     }
 
@@ -102,7 +101,7 @@ class PagesController extends ResourceController
         $this->authorize('update', [Page::class, $page, $this->authorizer]);
         
         $other_lang_pages = Page::with('padalinys:id,shortname')->when(!request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($page) {
-            $query->where('padalinys_id', request()->user()->padalinys()->id);  
+            $query->where('padalinys_id', $page->padalinys_id);  
         })->where('lang', '!=', $page->lang)->select('id', 'title', 'padalinys_id')->get();
 
         return Inertia::render('Admin/Content/EditPage', [

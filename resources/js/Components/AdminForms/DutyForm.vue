@@ -72,16 +72,36 @@
       </FormElement>
       <FormElement>
         <template #title>Asmenys</template>
-        <template #description>Pareigybę gali užimti daug naudotojų.</template>
-        <NTransfer
-          ref="transfer"
-          v-model:value="form.users"
-          virtual-scroll
-          :options="userOptions"
-          :render-source-label="renderSourceLabel"
-          :render-target-label="renderTargetLabel"
-          source-filterable
-        ></NTransfer>
+        <template #description
+          ><p class="mb-4">Pareigybę gali užimti daug naudotojų.</p>
+          <p>
+            Jeigu sąraše nėra asmens, kuris užima pareigybę, šį asmenį reikia
+            sukurti.
+          </p></template
+        >
+        <NFormItem>
+          <template #label>
+            <div class="inline-flex items-center gap-2">
+              <span><strong>Pareigybės</strong></span
+              ><a target="_blank" :href="route('users.create')"
+                ><NButton text size="tiny"
+                  ><template #icon
+                    ><NIcon :component="Add24Filled"></NIcon></template
+                  >Sukurti naują asmenį?</NButton
+                ></a
+              >
+            </div>
+          </template>
+          <NTransfer
+            ref="transfer"
+            v-model:value="form.users"
+            virtual-scroll
+            :options="userOptions"
+            :render-source-label="renderSourceLabel"
+            :render-target-label="renderTargetLabel"
+            source-filterable
+          ></NTransfer>
+        </NFormItem>
       </FormElement>
       <FormElement>
         <template #title>Papildoma informacija</template>
@@ -127,7 +147,7 @@
 </template>
 
 <script setup lang="tsx">
-import { Edit16Filled } from "@vicons/fluent";
+import { Add24Filled, Edit16Filled } from "@vicons/fluent";
 import {
   NButton,
   NForm,

@@ -31,7 +31,7 @@ class NewsPolicy extends ModelPolicy
     {
         $this->authorizer = $modelAuthorizer;
 
-        if ($this->commonChecker($user, $news, CRUDEnum::READ()->label, $this->pluralModelName)) {
+        if ($this->commonChecker($user, $news, CRUDEnum::READ()->label, $this->pluralModelName, false)) {
             return true;
         }
 
@@ -49,7 +49,7 @@ class NewsPolicy extends ModelPolicy
     {
         $this->authorizer = $modelAuthorizer;
 
-        if ($this->commonChecker($user, $news, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
+        if ($this->commonChecker($user, $news, CRUDEnum::UPDATE()->label, $this->pluralModelName, false)) {
             return true;
         }
 
@@ -67,7 +67,7 @@ class NewsPolicy extends ModelPolicy
     {
         $this->authorizer = $modelAuthorizer;
 
-        if ($this->commonChecker($user, $news, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
+        if ($this->commonChecker($user, $news, CRUDEnum::DELETE()->label, $this->pluralModelName, false)) {
             return true;
         }
 
