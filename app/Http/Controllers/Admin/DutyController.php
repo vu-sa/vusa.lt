@@ -140,7 +140,7 @@ class DutyController extends ResourceController
 
         $request->validate([
             'name' => 'required',
-            'users' => 'required|array',
+            'users' => 'nullable|array',
             'institution_id' => 'required',
             'places_to_occupy' => 'required|numeric',
         ]);
