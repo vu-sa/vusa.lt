@@ -65,7 +65,7 @@ class InstitutionController extends ResourceController
         
         $request->validate([
             'name' => 'required',
-            'alias' => 'required|unique:institutions,alias',
+            'alias' => 'nullable|unique:institutions,alias',
             'padalinys_id' => 'required',
         ]);
 
