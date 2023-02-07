@@ -18,10 +18,10 @@
   ></FadeTransition>
 
   <!-- <FadeTransition v-if="$page.props.locale === 'lt'">
-    <div class="mt-8">
-      <BannerCarousel :banners="banners" />
-    </div>
-  </FadeTransition> -->
+        <div class="mt-8">
+          <BannerCarousel :banners="banners" />
+        </div>
+      </FadeTransition> -->
 
   <FadeTransition v-if="news.length > 0" appear>
     <div class="mt-4"><NewsElement :news="news" /></div>

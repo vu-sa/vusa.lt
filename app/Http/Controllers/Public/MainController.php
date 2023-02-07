@@ -64,9 +64,9 @@ class MainController extends PublicController
 		$news = News::where([['padalinys_id', '=', $this->padalinys->id],['lang', app()->getLocale()], ['draft', '=', 0]])->where('publish_time', '<=', date('Y-m-d H:i:s'))->orderBy('publish_time', 'desc')->take(4)->get();
 
 		if (app()->getLocale() === 'en') {
-            $calendar = Calendar::where('extra_attributes->en->shown', 'true')->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'extra_attributes', 'category')->take(400)->get();
+            $calendar = Calendar::where('extra_attributes->en->shown', 'true')->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'extra_attributes', 'category')->take(75)->get();
         } else {
-            $calendar = Calendar::orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'category')->take(400)->get();
+            $calendar = Calendar::orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'category')->take(75)->get();
         }
 
 		return Inertia::render('Public/HomePage', [

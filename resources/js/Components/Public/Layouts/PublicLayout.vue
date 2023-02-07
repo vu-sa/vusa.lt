@@ -1,37 +1,44 @@
 <template>
   <FadeTransition>
-    <NConfigProvider
-      v-show="mounted"
-      :theme="isThemeDark ? darkTheme : undefined"
-      :theme-overrides="themeOverrides"
-    >
-      <MetaIcons />
-      <div
-        class="flex min-h-screen flex-col justify-between bg-neutral-50 antialiased dark:bg-zinc-900"
+    <Suspense>
+      <NConfigProvider
+        v-show="mounted"
+        :theme="isThemeDark ? darkTheme : undefined"
+        :theme-overrides="themeOverrides"
       >
-        <MainNavigation :is-theme-dark="isThemeDark" />
-        <main class="pt-24 pb-8">
-          <slot></slot>
-        </main>
+        <MetaIcons />
+        <div
+          class="flex min-h-screen flex-col justify-between bg-neutral-50 antialiased dark:bg-zinc-900"
+        >
+          <MainNavigation :is-theme-dark="isThemeDark" />
+          <main class="pt-24 pb-8">
+            <slot></slot>
+          </main>
 
-        <FadeTransition appear>
-          <ConsentCard
-            v-if="!cookieConsent"
-            @okay-cookie-consent="cookieConsent = true"
-          />
-        </FadeTransition>
+          <FadeTransition appear>
+            <ConsentCard
+              v-if="!cookieConsent"
+              @okay-cookie-consent="cookieConsent = true"
+            />
+          </FadeTransition>
 
-        <Footer />
-      </div>
+          <Footer />
+        </div>
 
-      <!-- preconnect to tawk.to -->
-      <link rel="preconnect" href="https://embed.tawk.to" />
-    </NConfigProvider>
+        <!-- preconnect to tawk.to -->
+        <link rel="preconnect" href="https://embed.tawk.to" />
+      </NConfigProvider>
+      <template #fallback>
+        <div class="flex h-screen items-center justify-center">
+          <NSpin />
+        </div>
+      </template>
+    </Suspense>
   </FadeTransition>
 </template>
 
 <script setup lang="ts">
-import { NConfigProvider, darkTheme } from "naive-ui";
+import { NSpin, darkTheme } from "naive-ui";
 import { defineAsyncComponent, onMounted, ref } from "vue";
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import { usePage } from "@inertiajs/vue3";
@@ -58,6 +65,10 @@ const ConsentCard = defineAsyncComponent(
   () => import("@/Components/Public/ConsentCard.vue")
 );
 
+const NConfigProvider = defineAsyncComponent(() =>
+  import("naive-ui").then((m) => m.NConfigProvider)
+);
+
 const cookieConsent = useStorage("cookie-consent", false);
 
 updateDarkMode(isThemeDark);
@@ -75,35 +86,20 @@ updateDarkMode(isThemeDark);
 
 // TODO: add Tawk.to EN script
 
-var Tawk_API = Tawk_API || {},
-  Tawk_LoadStart = new Date();
-
-(function () {
-  let s1 = document.createElement("script"),
-    s0 = document.getElementsByTagName("script")[0];
-  s1.async = true;
-  s1.src = "https://embed.tawk.to/5f71b135f0e7167d00145612/default";
-  s1.charset = "UTF-8";
-  s1.setAttribute("crossorigin", "*");
-  s0.parentNode.insertBefore(s1, s0);
-})();
-
 onMounted(() => {
   // if page props app.env is local, then don't run Clarity
-  if (usePage().props.app.env !== "local") {
-    (function (c, l, a, r, i, t, y) {
-      c[a] =
-        c[a] ||
-        function () {
-          (c[a].q = c[a].q || []).push(arguments);
-        };
-      t = l.createElement(r);
-      t.async = 1;
-      t.src = "https://www.clarity.ms/tag/" + i;
-      y = l.getElementsByTagName(r)[0];
-      y.parentNode.insertBefore(t, y);
-    })(window, document, "clarity", "script", "bs7culn3gp");
-  }
+  var Tawk_API = Tawk_API || {},
+    Tawk_LoadStart = new Date();
+
+  (function () {
+    let s1 = document.createElement("script"),
+      s0 = document.getElementsByTagName("script")[0];
+    s1.async = true;
+    s1.src = "https://embed.tawk.to/5f71b135f0e7167d00145612/default";
+    s1.charset = "UTF-8";
+    s1.setAttribute("crossorigin", "*");
+    s0.parentNode.insertBefore(s1, s0);
+  })();
 
   mounted.value = true;
 });
