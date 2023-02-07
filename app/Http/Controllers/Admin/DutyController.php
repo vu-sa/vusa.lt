@@ -78,7 +78,7 @@ class DutyController extends ResourceController
             'places_to_occupy' => $request->places_to_occupy,
             'email' => $request->email,
             'description' => $request->description,
-            'institution_id' => $request->institution['id'],
+            'institution_id' => $request->institution_id,
         ]);
 
         $duty->extra_attributes = $request->extra_attributes;
