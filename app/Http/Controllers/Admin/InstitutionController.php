@@ -14,6 +14,7 @@ use App\Models\Doing;
 use App\Services\RelationshipService;
 use App\Services\ResourceServices\InstitutionService;
 use App\Services\ResourceServices\SharepointFileService;
+use Illuminate\Support\Str;
 
 class InstitutionController extends ResourceController
 {
@@ -68,6 +69,11 @@ class InstitutionController extends ResourceController
             'alias' => 'nullable|unique:institutions,alias',
             'padalinys_id' => 'required',
         ]);
+
+        // if request alias is null, create slug from name
+        if (!$request->alias) {
+            $request->merge(['alias' => Str::slug($request->name)]);
+        }
 
         $institution = Institution::create($request->only('name', 'short_name', 'alias', 'padalinys_id', 'image_url', 'extra_attributes'));
 
