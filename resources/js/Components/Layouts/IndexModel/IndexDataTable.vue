@@ -6,13 +6,13 @@
   <NDataTable
     remote
     size="small"
-    class="overflow-auto"
     :data="paginatedModels.data"
     :scroll-x="768"
-    :max-height="dataTableMaxHeight"
+    :style="{ height: `600px` }"
     :columns="columnsWithActions"
     :loading="loading"
     :pagination="pagination"
+    flex-height
     pagination-behavior-on-filter="first"
     @update:page="handlePageChange"
   >
@@ -108,22 +108,4 @@ const columnsWithActions = computed(() => {
     },
   ];
 });
-
-//----------------------------------------------
-// calculate and update the max height of datatable
-
-const dataTableMaxHeight = ref(window.innerHeight);
-
-const calculateDataTableMaxHeight = () => {
-  dataTableMaxHeight.value = window.innerHeight - 400;
-  // check if the height is less than 400px
-  if (dataTableMaxHeight.value < 425) {
-    dataTableMaxHeight.value = 425;
-  }
-};
-
-calculateDataTableMaxHeight();
-
-// update the height on window resize
-window.addEventListener("resize", calculateDataTableMaxHeight);
 </script>
