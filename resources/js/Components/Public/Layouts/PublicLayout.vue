@@ -30,7 +30,18 @@
       </NConfigProvider>
       <template #fallback>
         <div class="flex h-screen items-center justify-center">
-          <NSpin />
+          <NSpin>
+            <template #description>
+              <div class="mt-2 h-8 text-vusa-red">
+                <FadeTransition mode="out-in" appear>
+                  <span v-if="spinWarning">
+                    Pabandykite perkrauti puslapį arba grįžkite į
+                    <a class="underline" :href="$page.props.app.url">vusa.lt</a>
+                  </span>
+                </FadeTransition>
+              </div>
+            </template>
+          </NSpin>
         </div>
       </template>
     </Suspense>
@@ -41,7 +52,6 @@
 import { NSpin, darkTheme } from "naive-ui";
 import { defineAsyncComponent, onMounted, ref } from "vue";
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
-import { usePage } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
@@ -51,6 +61,7 @@ import MetaIcons from "@/Components/MetaIcons.vue";
 
 const isThemeDark = ref<boolean>(isDarkMode());
 const mounted = ref(false);
+const spinWarning = ref(false);
 
 const themeOverrides = {
   common: {
@@ -102,5 +113,10 @@ onMounted(() => {
   })();
 
   mounted.value = true;
+
+  // usetimeout to delay the spin description
+  setTimeout(() => {
+    spinWarning.value = true;
+  }, 5000);
 });
 </script>
