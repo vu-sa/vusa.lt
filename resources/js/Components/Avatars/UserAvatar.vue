@@ -10,8 +10,8 @@
       {{ userInitials(user.name) }}
     </span>
     <template #fallback>
-      <div class="flex h-full w-full items-center justify-center">
-        <div class="my-auto">{{ userInitials(user.name) }}</div>
+      <div class="flex w-full items-center justify-center">
+        {{ userInitials(user.name) }}
       </div>
     </template>
   </NAvatar>
