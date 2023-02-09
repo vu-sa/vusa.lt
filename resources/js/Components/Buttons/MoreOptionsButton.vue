@@ -21,14 +21,15 @@
     title="Ištrinti įrašą?"
     content="Šis įrašas bus ištrintas negrįžtamai..."
     type="warning"
-    positive-text="Ištrinti"
-    negative-text="Atšaukti"
+    :positive-text="$t('forms.delete')"
+    :negative-text="$t('forms.cancel')"
     @positive-click="$emit('deleteClick')"
     @negative-click="showDeleteModal = false"
   />
 </template>
 
 <script setup lang="tsx">
+import { trans as $t } from "laravel-vue-i18n";
 import {
   Delete24Filled,
   Edit24Filled,
@@ -57,7 +58,9 @@ const showDeleteModal = ref(false);
 
 const defaultOptions: DropdownOption[] = [
   {
-    label: "Redaguoti",
+    label() {
+      return $t("forms.edit");
+    },
     key: "edit",
     icon: () => {
       return <NIcon component={Edit24Filled}></NIcon>;
@@ -65,7 +68,9 @@ const defaultOptions: DropdownOption[] = [
     show: props.edit,
   },
   {
-    label: "Ištrinti",
+    label() {
+      return $t("forms.delete");
+    },
     key: "delete",
     icon: () => {
       return <NIcon color="#bd2835" component={Delete24Filled}></NIcon>;

@@ -29,5 +29,7 @@ return [
     'add' => 'Pridėti',
     'submit' => 'Pateikti',
     'cancel' => 'Atšaukti',
+    'delete' => 'Ištrinti',
+    'edit' => 'Redaguoti',
     'remove' => 'Pašalinti',
 ];

@@ -1,5 +1,5 @@
 <template>
-  <AdminContentPage title="Užduotys">
+  <AdminContentPage :title="$t('Užduotys')">
     <TaskManager :tasks="tasks" />
   </AdminContentPage>
 </template>
