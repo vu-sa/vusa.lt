@@ -3,7 +3,7 @@
     <NCard class="subtle-gray-gradient">
       <!-- <p>{{ salutation }}</p> -->
       <div class="mb-4">
-        <p>Tavo rolės:</p>
+        <p>{{ $t("Tavo rolės") }}:</p>
         <ul class="list-inside">
           <li v-for="(role, index) in user.roles" :key="role.id">
             <strong>{{ $t(role.name) }}</strong>
@@ -37,7 +37,7 @@
         href="https://github.com/vu-sa/vusa.lt/pull/122"
         ><NButton text
           ><template #icon><NIcon :component="Github"></NIcon></template
-          >Projekto puslapis</NButton
+          >{{ $t("Projekto puslapis") }}</NButton
         ></a
       >
     </p>

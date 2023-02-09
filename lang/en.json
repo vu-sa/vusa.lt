@@ -148,6 +148,7 @@
     "Ryšiai": "Relationships",
     "Rolės": "Roles",
     "Leidimai": "Permissions",
+    "Narių registracija": "Members registration",
     "Pradinis": "Home",
     "Greitieji veiksmai": "Quick actions",
     "Tavo institucijos": "Your institutions",
@@ -168,5 +169,7 @@
     "Neatliktos": "Not done",
     "Bakalauro laipsnis": "Bachelor's degree",
     "Magistro laipsnis": "Master's degree",
-    "Daktaro laipsnis": "Doctoral degree"
+    "Daktaro laipsnis": "Doctoral degree",
+    "Projekto puslapis": "Project page",
+    "Tavo rolės": "Your roles"
 }

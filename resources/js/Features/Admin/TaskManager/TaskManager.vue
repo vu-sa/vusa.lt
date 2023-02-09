@@ -35,7 +35,9 @@ const props = defineProps<{
   };
 }>();
 
-const buttonNames = [$t("Visos"), $t("Atliktos"), $t("Neatliktos")];
+const buttonNames = computed(() => {
+  return [$t("Visos"), $t("Atliktos"), $t("Neatliktos")];
+});
 
 const showCompletedTasks = ref<boolean | null>(null);
 
@@ -58,13 +60,13 @@ const shownTasks = computed(() => {
 
 const handleClick = (name: string | null) => {
   switch (name) {
-    case "Visos":
+    case $t("Visos"):
       showCompletedTasks.value = null;
       break;
-    case "Atliktos":
+    case $t("Atliktos"):
       showCompletedTasks.value = true;
       break;
-    case "Neatliktos":
+    case $t("Neatliktos"):
       showCompletedTasks.value = false;
       break;
   }
