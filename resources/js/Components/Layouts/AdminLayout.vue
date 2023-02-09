@@ -73,33 +73,23 @@
         <div
           class="mb-4 flex items-center justify-center gap-6 overflow-hidden"
         >
-          <div class="h-fit w-fit"><DarkModeSwitch class="mb-0.5" /></div>
-          <NPopover v-if="!collapsed">
-            <template #trigger>
-              <NButton text @click="changeLocale">
-                <template #icon>
-                  <NIcon :size="16"
-                    ><img
-                      v-if="locale === 'en'"
-                      class="opacity-40 transition hover:opacity-70"
-                      src="https://hatscripts.github.io/circle-flags/flags/gb.svg"
-                    />
-                    <img
-                      v-else
-                      class="opacity-40 transition hover:opacity-70"
-                      src="https://hatscripts.github.io/circle-flags/flags/lt.svg"
-                    />
-                  </NIcon>
-                </template>
-              </NButton>
+          <div class="h-fit w-fit"><DarkModeSwitch /></div>
+          <NButton v-if="!collapsed" text @click="changeLocale">
+            <template #icon>
+              <NIcon :size="16"
+                ><img
+                  v-if="locale === 'en'"
+                  class="opacity-40 transition hover:opacity-70"
+                  src="https://hatscripts.github.io/circle-flags/flags/gb.svg"
+                />
+                <img
+                  v-else
+                  class="opacity-40 transition hover:opacity-70"
+                  src="https://hatscripts.github.io/circle-flags/flags/lt.svg"
+                />
+              </NIcon>
             </template>
-          </NPopover>
-          <a
-            v-if="!collapsed"
-            target="_blank"
-            href="https://github.com/vu-sa/vusa.lt/blob/main/CHANGELOG.md"
-            ><NButton size="tiny" quaternary> v0.4.2 </NButton></a
-          >
+          </NButton>
         </div>
       </NLayoutSider>
       <NLayoutContent :content-style="{ paddingLeft: '2rem' }">

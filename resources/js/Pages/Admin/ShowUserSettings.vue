@@ -24,12 +24,15 @@
           </template>
         </ul>
       </div>
-      <p>
-        Jeigu kiltų klausimų, rašykite
-        <a href="mailto:it@vusa.lt">it@vusa.lt</a>
-      </p>
+    </NCard>
+    <p class="mt-4 flex items-center justify-center gap-2">
       <a
-        class="mt-4 flex items-center"
+        target="_blank"
+        href="https://github.com/vu-sa/vusa.lt/blob/main/CHANGELOG.md"
+        ><NButton text size="small" quaternary> v0.4.2 </NButton></a
+      >·
+      <a
+        class="inline-flex items-center"
         target="_blank"
         href="https://github.com/vu-sa/vusa.lt/pull/122"
         ><NButton text
@@ -37,7 +40,7 @@
           >Projekto puslapis</NButton
         ></a
       >
-    </NCard>
+    </p>
   </PageContent>
 </template>
 
