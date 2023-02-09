@@ -17,6 +17,11 @@ class Dutiable extends MorphPivot
 
     protected $guarded = [];
 
+    protected $dispatchesEvents = [
+        'saved' => \App\Events\DutiableChanged::class,
+        'deleted' => \App\Events\DutiableChanged::class,
+    ];
+
     protected $with = ['duty'];
 
     protected $casts = [
