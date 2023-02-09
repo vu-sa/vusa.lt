@@ -1,7 +1,7 @@
 <template>
   <NForm :model="form" label-placement="top">
     <NGrid :span="24" :x-gap="24">
-      <NFormItemGi label="Pavadinimas" :span="24">
+      <NFormItemGi :label="$t('forms.fields.title')" :span="24">
         <NDynamicInput v-model:value="customValue" :on-create="onCreate">
           <template #create-button-default> Add whatever you want </template>
           <template #default="{ value }">

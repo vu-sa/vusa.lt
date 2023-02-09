@@ -8,6 +8,7 @@
 </template>
 
 <script setup lang="tsx">
+import { trans as $t } from "laravel-vue-i18n";
 import { NTag } from "naive-ui";
 
 const props = defineProps<{
@@ -17,35 +18,35 @@ const props = defineProps<{
 const stateTypeMap: Record<string, Record<"tagType" | "text", string>> = {
   draft: {
     tagType: "default",
-    text: "Šablonas",
+    text: $t("Šablonas"),
   },
   pending_padalinys_approval: {
     tagType: "info",
-    text: "Laukia padalinio pritarimo",
+    text: $t("Laukia padalinio pritarimo"),
   },
   pending_final_approval: {
     tagType: "info",
-    text: "Laukia galutinio pritarimo",
+    text: $t("Laukia galutinio pritarimo"),
   },
   pending_changes: {
     tagType: "warning",
-    text: "Laukia pakeitimų",
+    text: $t("Laukia pakeitimų"),
   },
   approved: {
     tagType: "success",
-    text: "Patvirtintas",
+    text: $t("Patvirtintas"),
   },
   canceled: {
     tagType: "error",
-    text: "Atšauktas",
+    text: $t("Atšauktas"),
   },
   pending_completion: {
     tagType: "info",
-    text: "Laukia užbaigimo",
+    text: $t("Laukia užbaigimo"),
   },
   completed: {
     tagType: "success",
-    text: "Užbaigtas",
+    text: $t("Užbaigtas"),
   },
 };
 </script>

@@ -9,7 +9,7 @@
             SA padalinys, darbo grupė, VU studijų programos komitetas ir pan.
           </p>
         </template>
-        <NFormItem label="Pavadinimas" :span="2">
+        <NFormItem :label="$t('forms.fields.title')" :span="2">
           <NInput
             v-if="locale === 'lt'"
             v-model:value="form.name"

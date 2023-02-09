@@ -9,6 +9,7 @@
 </template>
 
 <script setup lang="ts">
+import { trans as $t } from "laravel-vue-i18n";
 import { Home24Filled } from "@vicons/fluent";
 import { NBreadcrumb } from "naive-ui";
 import { computed } from "vue";
@@ -38,7 +39,7 @@ const breadcrumbOptions = computed<BreadcrumbOption[]>(() => {
 
   // add Home item to beggining
   options.unshift({
-    label: "Pradinis",
+    label: $t("Pradinis"),
     icon: Home24Filled,
     routeOptions: { name: "dashboard" },
   });

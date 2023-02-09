@@ -68,7 +68,7 @@
           @click="router.visit(route('institutions.show', institution.id))"
         />
       </div>
-      <p v-else>Neturi tiesiogiai priskirtų institucijų.</p>
+      <p v-else>{{ $t("Neturi tiesiogiai priskirtų institucijų") }}.</p>
     </section>
     <section v-if="shownSections.includes('Posėdžiai')" class="relative mb-8">
       <h2 class="flex items-center gap-2">
@@ -86,7 +86,7 @@
             @click="router.visit(route('meetings.show', meeting.id))"
           ></MeetingCard>
         </template>
-        <p class="hidden first:block">Artėjančių posėdžių nėra</p>
+        <p class="hidden first:block">{{ $t("Artėjančių posėdžių nėra") }}.</p>
       </div>
     </section>
     <section v-if="shownSections.includes('Veiklos')" class="relative mb-8">
@@ -101,7 +101,7 @@
           :doing="doing"
           @click="router.visit(route('doings.show', doing.id))"
         ></DoingCard>
-        <p class="hidden first:block">Artėjančių veiksmų nėra</p>
+        <p class="hidden first:block">{{ $t("Neturi sukurtų veiklų") }}.</p>
       </div>
     </section>
     <section id="naudingos-nuorodos">

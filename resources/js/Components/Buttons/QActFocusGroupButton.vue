@@ -3,10 +3,10 @@
     <QuickActionButton
       :icon="PeopleCommunity24Regular"
       @click="showModal = true"
-      >Organizuoti <em>focus</em> grupę</QuickActionButton
+      >{{ $t("Organizuoti focus grupę") }}</QuickActionButton
     >
     <CardModal
-      :title="`Organizuoti focus grupę`"
+      :title="$t('Organizuoti focus grupę')"
       :show="showModal"
       @close="showModal = false"
     >
