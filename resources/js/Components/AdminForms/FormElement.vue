@@ -1,9 +1,9 @@
 <template>
   <div class="grid gap-x-12 lg:grid-cols-6">
     <div class="lg:col-span-2">
-      <h4 class="tracking-tighter"><slot name="title"></slot></h4>
+      <h4 class="tracking-tighter"><slot name="title" /></h4>
       <div class="mb-6 flex flex-col text-xs text-zinc-500 dark:text-zinc-400">
-        <slot name="description"></slot>
+        <slot name="description" />
       </div>
     </div>
     <div class="lg:col-span-4">
