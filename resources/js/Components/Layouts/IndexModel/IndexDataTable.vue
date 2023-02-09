@@ -6,10 +6,9 @@
   <NDataTable
     remote
     size="small"
-    flex-height
     :data="paginatedModels.data"
     :scroll-x="768"
-    :style="{ height: 'calc(100vh - 300px)' }"
+    max-height="calc(100vh - 350px)"
     :columns="columnsWithActions"
     :loading="loading"
     :pagination="pagination"
