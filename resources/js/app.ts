@@ -48,7 +48,7 @@ createInertiaApp({
         .use(plugin)
         // .use(PosthogPlugin)
         .use(i18nVue, {
-          fallbackLang: "lt",
+          fallbackLang: "en",
           resolve: async (lang: string) => {
             const langs = import.meta.glob("../../lang/*.json");
             return await langs[`../../lang/${lang}.json`]();

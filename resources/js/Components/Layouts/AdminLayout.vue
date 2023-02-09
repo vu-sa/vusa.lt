@@ -75,15 +75,21 @@
         >
           <div class="h-fit w-fit"><DarkModeSwitch class="mb-0.5" /></div>
           <NPopover v-if="!collapsed">
-            Funkcija kūriama...
             <template #trigger>
-              <NButton text>
+              <NButton text @click="changeLocale">
                 <template #icon>
                   <NIcon :size="16"
                     ><img
+                      v-if="locale === 'en'"
                       class="opacity-40 transition hover:opacity-70"
                       src="https://hatscripts.github.io/circle-flags/flags/gb.svg"
-                  /></NIcon>
+                    />
+                    <img
+                      v-else
+                      class="opacity-40 transition hover:opacity-70"
+                      src="https://hatscripts.github.io/circle-flags/flags/lt.svg"
+                    />
+                  </NIcon>
                 </template>
               </NButton>
             </template>
@@ -92,7 +98,7 @@
             v-if="!collapsed"
             target="_blank"
             href="https://github.com/vu-sa/vusa.lt/blob/main/CHANGELOG.md"
-            ><NButton size="tiny" quaternary> v0.4.1 </NButton></a
+            ><NButton size="tiny" quaternary> v0.4.2 </NButton></a
           >
         </div>
       </NLayoutSider>
@@ -104,7 +110,7 @@
 </template>
 
 <script setup lang="tsx">
-import { Head, Link, usePage } from "@inertiajs/vue3";
+import { Head, Link, router, usePage } from "@inertiajs/vue3";
 import {
   type MessageReactive,
   NButton,
@@ -114,18 +120,17 @@ import {
   NLayoutContent,
   NLayoutSider,
   NMessageProvider,
-  NModal,
   NNotificationProvider,
   NPopover,
   NScrollbar,
   useMessage,
-  // NThemeEditor,
 } from "naive-ui";
 import { computed, onMounted, watch } from "vue";
 import { ref } from "vue";
 import { useOnline, useStorage } from "@vueuse/core";
 
 import { Board24Regular } from "@vicons/fluent";
+import { loadLanguageAsync } from "laravel-vue-i18n";
 import AdminMenu from "@/Components/Menus/AdminMenu.vue";
 import AppLogo from "@/Components/AppLogo.vue";
 import DarkModeSwitch from "@/Components/Buttons/DarkModeSwitch.vue";
@@ -140,10 +145,15 @@ defineProps<{
   backUrl?: string | null;
 }>();
 
-const showModal = ref(false);
 const mounted = ref(false);
 const online = useOnline();
 const message = useMessage();
+const locale = useStorage("locale", usePage().props.app.locale);
+
+const changeLocale = () => {
+  locale.value = locale.value === "en" ? "lt" : "en";
+  router.reload({ data: { lang: locale.value } });
+};
 
 const successMessage = computed(() => usePage().props.flash.success);
 const infoMessage = computed(() => usePage().props.flash.info);
@@ -179,6 +189,11 @@ watch(infoMessage, (infoMessage) => {
     message.info(infoMessage);
     usePage().props.flash.info = null;
   }
+});
+
+watch(locale, (locale) => {
+  usePage().props.app.locale = locale;
+  loadLanguageAsync(locale);
 });
 
 watch(online, (online) => {
