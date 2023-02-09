@@ -10,6 +10,7 @@ use App\Models\Institution;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Services\MeetingService as MeetingService;
+use App\Services\ModelIndexer;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Services\SharepointAppGraph;
 use Illuminate\Support\Benchmark;
@@ -26,10 +27,13 @@ class MeetingController extends ResourceController
     {
         $this->authorize('viewAny', [Meeting::class, $this->authorizer]);
 
-        $meetings = Meeting::with('institutions')->paginate(20);
+        $search = request()->input('text');
+
+        $indexer = new ModelIndexer();
+        $meetings = $indexer->execute(Meeting::class, $search, 'title', $this->authorizer);
 
         return Inertia::render('Admin/Representation/IndexMeeting', [
-            'meetings' => $meetings,
+            'meetings' => $meetings->with('institutions', 'agendaItems')->paginate(20),
         ]);
     }
 

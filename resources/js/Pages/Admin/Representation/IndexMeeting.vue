@@ -28,16 +28,6 @@ const canUseRoutes = {
 
 const columns: DataTableColumns<App.Entities.Meeting> = [
   {
-    title: "Institucijos",
-    key: "institutions",
-    minWidth: 200,
-    render(row) {
-      return row.institutions.length === 0
-        ? "Neturi institucijos"
-        : row.institutions?.map((institution) => institution.name).join(", ");
-    },
-  },
-  {
     title: "Pradžios laikas",
     key: "start_time",
     minWidth: 200,
@@ -47,6 +37,25 @@ const columns: DataTableColumns<App.Entities.Meeting> = [
         month: "long",
         day: "2-digit",
       });
+    },
+  },
+  {
+    title: "Institucija",
+    key: "institutions",
+    minWidth: 200,
+    render(row) {
+      return row.institutions.length === 0
+        ? "Neturi institucijos"
+        : row.institutions?.map((institution) => institution.name).join(", ");
+    },
+  },
+  {
+    title: "Susitikimo darbotvarkė",
+    key: "agendaItems",
+    render(row) {
+      return row.agenda_items.length === 0
+        ? ""
+        : row.agenda_items?.map((agendaItem) => agendaItem.title).join(", ");
     },
   },
 ];
