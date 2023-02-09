@@ -15,4 +15,6 @@ return [
 
     'failed' => 'Šie prisijungimo duomenys neatitinka mūsų įrašų.',
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
+    'login' => 'Prisijungti',
+    'logout' => 'Atsijungti',
 ];

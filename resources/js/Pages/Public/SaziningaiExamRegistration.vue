@@ -26,7 +26,7 @@
           :rules="rules"
           size="medium"
         >
-          <NFormItem label="Vardas ir pavardė" path="name">
+          <NFormItem :label="$t('Vardas ir pavardė')" path="name">
             <NInput
               v-model:value="formValue.name"
               placeholder=""

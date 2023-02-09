@@ -6,14 +6,17 @@
           <NCheckbox
             disabled
             value="Greitieji veiksmai"
-            label="Greitieji veiksmai"
+            :label="$t('Greitieji veiksmai')"
           ></NCheckbox>
-          <NCheckbox value="Institucijos" label="Tavo institucijos"></NCheckbox>
-          <NCheckbox value="Posėdžiai" label="Artėjantys posėdžiai" />
-          <NCheckbox value="Veiklos" label="Tavo veiklos" />
+          <NCheckbox
+            value="Institucijos"
+            :label="$t('Tavo institucijos')"
+          ></NCheckbox>
+          <NCheckbox value="Posėdžiai" :label="$t('Artėjantys posėdžiai')" />
+          <NCheckbox value="Veiklos" :label="$t('Tavo veiklos')" />
           <NCheckbox
             value="Nuorodos"
-            label="Naudingos nuorodos"
+            :label="$t('Naudingos nuorodos')"
             disabled
           ></NCheckbox>
         </div>
@@ -36,7 +39,7 @@
           class="text-vusa-yellow"
           :component="LightbulbFilament24Filled"
         ></NIcon
-        ><span>Greitieji veiksmai</span>
+        ><span>{{ $t("Greitieji veiksmai") }}</span>
       </h2>
       <div class="flex items-center gap-4">
         <QActFocusGroupButton />
@@ -50,7 +53,7 @@
     >
       <h2 class="flex items-center gap-2">
         <NIcon :component="Icons.INSTITUTION"></NIcon
-        ><span>Tavo institucijos</span>
+        ><span>{{ $t("Tavo institucijos") }}</span>
       </h2>
       <div
         v-if="institutions.length > 0"
@@ -70,7 +73,7 @@
     <section v-if="shownSections.includes('Posėdžiai')" class="relative mb-8">
       <h2 class="flex items-center gap-2">
         <NIcon :component="Icons.MEETING"></NIcon
-        ><span>Artėjantys posėdžiai</span>
+        ><span>{{ $t("Artėjantys posėdžiai") }}</span>
       </h2>
       <div class="grid grid-cols-ramFill gap-x-4">
         <template v-for="institution in institutions">
@@ -88,7 +91,8 @@
     </section>
     <section v-if="shownSections.includes('Veiklos')" class="relative mb-8">
       <h2 class="flex items-center gap-2">
-        <NIcon :component="Icons.DOING"></NIcon><span>Tavo veiklos</span>
+        <NIcon :component="Icons.DOING"></NIcon
+        ><span>{{ $t("Tavo veiklos") }}</span>
       </h2>
       <div class="grid grid-cols-ramFill gap-x-4">
         <DoingCard
@@ -97,12 +101,13 @@
           :doing="doing"
           @click="router.visit(route('doings.show', doing.id))"
         ></DoingCard>
-        <p class="hidden first:block">Artėjančių posėdžių nėra</p>
+        <p class="hidden first:block">Artėjančių veiksmų nėra</p>
       </div>
     </section>
     <section id="naudingos-nuorodos">
       <h2 class="mb-4 flex items-center gap-2">
-        <NIcon :component="Link24Filled"></NIcon><span>Naudingos nuorodos</span>
+        <NIcon :component="Link24Filled"></NIcon
+        ><span>{{ $t("Naudingos nuorodos") }}</span>
       </h2>
       <div class="flex gap-2">
         <NButton

@@ -1,66 +1,47 @@
 <template>
-  <NForm
-    require-mark-placement="right-hanging"
-    :style="{
-      maxWidth: '640px',
-    }"
-    :model="form"
-  >
-    <NGrid cols="1" :x-gap="24">
-      <NFormItemGi label="Vardas ir pavardė" :span="1" required>
+  <NForm :model="form" label-placement="top">
+    <FormElement>
+      <template #title>{{ $t("forms.context.main_info") }}</template>
+      <NFormItem
+        :label="$t('forms.fields.name_and_surname')"
+        :span="1"
+        required
+      >
         <NInput
           v-model:value="form.name"
           type="text"
           placeholder="Vardenis Pavardenis"
         />
-      </NFormItemGi>
+      </NFormItem>
 
-      <NFormItemGi label="El. paštas" :span="1" required>
+      <NFormItem :label="$t('forms.fields.email')" :span="1" required>
         <NInput
           v-model:value="form.email"
           placeholder="vardas.pavarde@email.com"
         />
-      </NFormItemGi>
+      </NFormItem>
 
-      <NFormItemGi label="Tel. numeris" :span="1">
+      <NFormItem :label="$t('forms.fields.phone')" :span="1">
         <NInput v-model:value="form.phone" placeholder="+370 612 34 567" />
-      </NFormItemGi>
+      </NFormItem>
 
-      <NFormItemGi label="Mokslinis laipsnis" :span="1">
+      <NFormItem :label="$t('forms.fields.science_degree')" :span="1">
         <NSelect
           v-model:value="form.extra_attributes.degree"
           placeholder="Daktaro laipsnis"
           :options="degreeOptions"
         ></NSelect>
-      </NFormItemGi>
+      </NFormItem>
 
-      <NFormItemGi label="Pedagoginis vardas" :span="1">
+      <NFormItem :label="$t('forms.fields.pedagogical_name')" :span="1">
         <NSelect
           v-model:value="form.extra_attributes.pedagogical_name"
           :disabled="form.extra_attributes.degree !== 'daktaras'"
           placeholder="Docentas"
           :options="pedagogicalNameOptions"
         ></NSelect>
-      </NFormItemGi>
-
-      <!-- <NFormItemGi label="Pareigybės" :span="6">
-        <NTransfer
-          ref="transfer"
-          v-model:value="form.duties"
-          :options="dutyOptions"
-          source-filterable
-          source-filter-placeholder="Ieškoti pareigų..."
-          size="small"
-        ></NTransfer>
-      </NFormItemGi> -->
-
-      <!-- <NFormItemGi label="Nuotrauka" :span="2">
-        <UploadImageButtons
-          v-model="form.profile_photo_path"
-          :path="'contacts'"
-        ></UploadImageButtons>
-      </NFormItemGi> -->
-    </NGrid>
+      </NFormItem>
+    </FormElement>
 
     <div class="flex justify-end gap-2">
       <DeleteModelButton
@@ -74,11 +55,13 @@
 </template>
 
 <script setup lang="ts">
-import { NForm, NFormItemGi, NGrid, NInput, NSelect } from "naive-ui";
+import { trans as $t } from "laravel-vue-i18n";
+import { NForm, NFormItem, NInput, NSelect } from "naive-ui";
 import { useForm } from "@inertiajs/vue3";
 
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 // import UploadImageButtons from "@/Components/Buttons/UploadImageButtons.vue";
+import FormElement from "./FormElement.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{
@@ -91,7 +74,7 @@ const props = defineProps<{
 const form = useForm("contact", props.contact);
 
 const degreeOptions = [
-  { label: "Bakalauro laipsnis", value: "bakalauras" },
+  { label: $t("Bakalauro laipsnis"), value: "bakalauras" },
   { label: "Magistro laipsnis", value: "magistras" },
   { label: "Daktaro laipsnis", value: "daktaras" },
 ];

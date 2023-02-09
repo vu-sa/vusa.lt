@@ -154,7 +154,9 @@ const menuOptions = computed(() => [
       },
       {
         label: () => {
-          return <Link href={route("meetings.index")}>{$t("Posėdžiai")}</Link>;
+          return (
+            <Link href={route("meetings.index")}>{$t("Susitikimai")}</Link>
+          );
         },
         key: "meetings",
         icon: () => {

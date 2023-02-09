@@ -5,7 +5,7 @@
     size="medium"
     clearable
     round
-    placeholder="Ieškoti pagal pavadinimą..."
+    :placeholder="`${$t('Ieškoti pagal pavadinimą')}...`"
     :loading="loading"
     @input="handleSearchInput"
     ><template #prefix>
