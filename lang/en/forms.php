@@ -23,8 +23,8 @@ return [
         'additional_info' => 'Additional info',
     ],
     'actions' => [
-        'create_duty' => 'Create new duty?',
-        'create_user' => 'Create new person?',
+        'create_duty' => 'Create new duty',
+        'create_user' => 'Create new person',
     ],
     'add' => 'Add',
     'submit' => 'Submit',

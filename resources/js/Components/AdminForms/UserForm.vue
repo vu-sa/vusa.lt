@@ -39,8 +39,9 @@
               >
             </div>
           </template>
-          <NInput
+          <NAutoComplete
             v-model:value="form.email"
+            :options="emailOptions"
             placeholder="vardas.pavarde@padalinys.stud.vu.lt"
           />
         </NFormItem>
@@ -158,6 +159,7 @@
 import { Add24Filled, Eye16Regular } from "@vicons/fluent";
 import { Link, router } from "@inertiajs/vue3";
 import {
+  NAutoComplete,
   NButton,
   NCard,
   NForm,
@@ -172,7 +174,7 @@ import {
 } from "naive-ui";
 import { PersonEdit24Regular } from "@vicons/fluent";
 import { computed, h } from "vue";
-import { useForm } from "@inertiajs/vue3";
+import { useForm, usePage } from "@inertiajs/vue3";
 
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import FormElement from "./FormElement.vue";
@@ -253,6 +255,16 @@ const rolesOptions = props.roles.map((role) => ({
   label: role.name,
   value: role.id,
 }));
+
+const emailOptions = computed(() => {
+  return usePage().props.auth?.user.padaliniai.map((padalinys) => {
+    const prefix = form.email?.split("@")[0];
+    return {
+      label: `${prefix}@${padalinys.alias}.stud.vu.lt`,
+      value: `${prefix}@${padalinys.alias}.stud.vu.lt`,
+    };
+  });
+});
 
 form.duties = props.user.duties?.map((duty) => duty.id);
 
