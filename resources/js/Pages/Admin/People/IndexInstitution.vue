@@ -1,6 +1,6 @@
 <template>
   <IndexPageLayout
-    :title="$t('Institucijos')"
+    title="Institucijos"
     model-name="institutions"
     :can-use-routes="canUseRoutes"
     :columns="columns"
