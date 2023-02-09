@@ -84,21 +84,17 @@ const cookieConsent = useStorage("cookie-consent", false);
 
 updateDarkMode(isThemeDark);
 
-// Userway script
-
-(function (d) {
-  let s = d.createElement("script");
-  s.setAttribute("data-account", "5OC3pQZI6r");
-  s.setAttribute("src", "https://cdn.userway.org/widget.js");
-  (d.body || d.head).appendChild(s);
-})(document);
-
-// <!--Start of Tawk.to Script-->
-
-// TODO: add Tawk.to EN script
-
 onMounted(() => {
-  // if page props app.env is local, then don't run Clarity
+  mounted.value = true;
+
+  // UserWay
+  (function (d) {
+    let s = d.createElement("script");
+    s.setAttribute("data-account", "5OC3pQZI6r");
+    s.setAttribute("src", "https://cdn.userway.org/widget.js");
+    (d.body || d.head).appendChild(s);
+  })(document);
+
   var Tawk_API = Tawk_API || {},
     Tawk_LoadStart = new Date();
 
@@ -109,11 +105,8 @@ onMounted(() => {
     s1.src = "https://embed.tawk.to/5f71b135f0e7167d00145612/default";
     s1.charset = "UTF-8";
     s1.setAttribute("crossorigin", "*");
-    s0.parentNode.insertBefore(s1, s0);
+    s0.parentNode?.insertBefore(s1, s0);
   })();
-
-  mounted.value = true;
-
   // usetimeout to delay the spin description
   setTimeout(() => {
     spinWarning.value = true;
