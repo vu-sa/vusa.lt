@@ -1,4 +1,16 @@
-## v0.4.1 (2023-02-03)
+## v0.4.2 (2023-02-09)
+
+* Galimybė administravime perjungti kalbą, išverstas pagrindinis UI ir kai kurie formų laukeliai
+* Po pareigybių atnaujinimo, iškart galima matyti naujas vidines funkcijas
+* Susitikimų lentelėje rodomi darbotvarkės klausimai
+* El. paštų pasiūlymai, pildant naudotojų, pareigybių formas
+* Institucijos atnaujinimo lange kitaip matomos pareigybės ir jos nariai
+* Avatarų grupė leidžia matyti visus jos avatarus
+* Pridėtas paaiškinimas prie kalbą pakeičiančio mygtuko formoje
+* Duomenų lentelės, pagrindinio lango veikimo optimizacija
+* Labiau standartizuota kontaktų forma
+
+## v0.4.1 (2023-02-06)
 
 * `institution.short_name` nebebūtinas;
 * Standartizuotas vidinių formų UI;
