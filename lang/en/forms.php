@@ -8,6 +8,7 @@ return [
         'due_date' => 'Due date',
         'subject' => 'Subject',
         'email' => 'Email',
+        'password' => 'Password',
         'phone' => 'Phone',
         'description' => 'Description',
         'responsible_people' => 'Responsible people',

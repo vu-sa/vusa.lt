@@ -8,6 +8,7 @@ return [
         'due_date' => 'Atlikimo data',
         'subject' => 'Subjektas',
         'email' => 'El. paštas',
+        'password' => 'Slaptažodis',
         'phone' => 'Telefonas',
         'description' => 'Aprašymas',
         'responsible_people' => 'Atsakingi asmenys',

@@ -112,6 +112,7 @@ return [
         'last_name' => 'Pavardė',
         'name' => 'Vardas ir pavardė (arba pavadinimas)',
         'password' => 'Slaptažodis',
+        'phone' => 'Telefono numeris',
         'short_name' => 'Trumpas pavadinimas',
         'padalinys_id' => 'Padalinys',
         'alias' => 'Techninė žymė',
