@@ -6,7 +6,6 @@
         :theme="isThemeDark ? darkTheme : undefined"
         :theme-overrides="themeOverrides"
       >
-        <MetaIcons />
         <div
           class="flex min-h-screen flex-col justify-between bg-neutral-50 antialiased dark:bg-zinc-900"
         >
@@ -57,7 +56,6 @@ import { useStorage } from "@vueuse/core";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import Footer from "@/Components/Public/FullWidth/SiteFooter.vue";
 import MainNavigation from "@/Components/Public/Layouts/MainNavigation.vue";
-import MetaIcons from "@/Components/MetaIcons.vue";
 
 const isThemeDark = ref<boolean>(isDarkMode());
 const mounted = ref(false);

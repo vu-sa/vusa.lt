@@ -1,7 +1,6 @@
 <template>
   <NConfigProvider :theme-overrides="themeOverrides">
     <Head :title="title" />
-    <MetaIcons />
     <Transition name="fade"
       ><img
         v-if="animated"
@@ -27,7 +26,6 @@ import { NConfigProvider } from "naive-ui";
 import { onMounted, ref } from "vue";
 
 import AtaskaitaNavigation from "@/Components/Public/Layouts/AtaskaitaNavigation.vue";
-import MetaIcons from "@/Components/MetaIcons.vue";
 
 defineProps<{
   title: string;

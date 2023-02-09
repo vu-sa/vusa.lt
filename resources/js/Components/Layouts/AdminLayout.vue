@@ -1,6 +1,5 @@
 <template>
   <Head :title="title" />
-  <MetaIcons />
 
   <NLayout class="min-h-screen">
     <nav
@@ -124,7 +123,6 @@ import { loadLanguageAsync } from "laravel-vue-i18n";
 import AdminMenu from "@/Components/Menus/AdminMenu.vue";
 import AppLogo from "@/Components/AppLogo.vue";
 import DarkModeSwitch from "@/Components/Buttons/DarkModeSwitch.vue";
-import MetaIcons from "@/Components/MetaIcons.vue";
 import NotificationBell from "@/Features/Admin/Notifications/NotificationBell.vue";
 import TaskIndicatorButton from "../../Features/Admin/TaskManager/TaskIndicatorButton.vue";
 import UserAdminOptionsMenu from "@/Components/Menus/UserSettingsDropdown.vue";
