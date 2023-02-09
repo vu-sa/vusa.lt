@@ -19,7 +19,7 @@
             <li>Priskirk jam jo pareigybes</li>
           </ol>
         </template>
-        <NFormItem label="Vardas ir Pavardė" required>
+        <NFormItem :label="$t('forms.fields.name_and_surname')" required>
           <NInput
             v-model:value="form.name"
             :disabled="user.name !== ''"
@@ -31,7 +31,7 @@
         <NFormItem required>
           <template #label>
             <div class="inline-flex items-center gap-2">
-              <span><strong>Studentinis</strong> el. paštas</span
+              <span>Studentinis el. paštas</span
               ><InfoPopover v-if="isUserEmailMaybeDutyEmail"
                 >Jeigu <strong>{{ user.email }}</strong> yra pareigybinis el.
                 paštas (ir panašu, kad šiuo atveju taip ir yra 😊), jį reikėtų
@@ -46,11 +46,11 @@
           />
         </NFormItem>
 
-        <NFormItem label="Tel. numeris">
+        <NFormItem :label="$t('forms.fields.phone')">
           <NInput v-model:value="form.phone" placeholder="+370 612 34 567" />
         </NFormItem>
 
-        <NFormItem label="Nuotrauka">
+        <NFormItem :label="$t('forms.fields.picture')">
           <UploadImageButtons
             v-model="form.profile_photo_path"
             :path="'contacts'"
@@ -59,7 +59,7 @@
 
         <NFormItem
           v-if="$page.props.auth?.user?.isSuperAdmin"
-          label="Administracinė vusa.lt rolė"
+          :label="$t('forms.fields.admin_role')"
         >
           <NSelect
             v-model:value="form.roles"
@@ -73,7 +73,7 @@
       </FormElement>
 
       <FormElement>
-        <template #title>Platformos naudotojo pareigybės</template>
+        <template #title>{{ $t("forms.context.user_duties") }}</template>
         <template #description>
           <p>
             Kiekvienas asmuo gali turėti daugiau nei vieną pareigybę, pagal
@@ -85,12 +85,13 @@
             pareigybės nėra.
           </p>
         </template>
-        <NFormItem label="Pareigybės" :span="6">
+        <NFormItem>
           <template #label>
             <div class="inline-flex items-center gap-2">
-              <span><strong>Pareigybės</strong></span
+              <span
+                ><strong>{{ $t("Pareigybės") }}</strong></span
               ><a target="_blank" :href="route('duties.create')"
-                ><NButton text size="tiny"
+                ><NButton size="tiny" round secondary type="primary"
                   ><template #icon
                     ><NIcon :component="Add24Filled"></NIcon></template
                   >Sukurti naują pareigybę?</NButton

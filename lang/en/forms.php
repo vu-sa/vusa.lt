@@ -19,7 +19,7 @@ return [
     ],
     'context' => [
         'main_info' => 'Main information',
-        'user_duties' => 'User duties',
+        'user_duties' => 'Platform user duties',
         'additional_info' => 'Additional info',
     ],
     'actions' => [
