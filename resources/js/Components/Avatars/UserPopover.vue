@@ -9,7 +9,7 @@
       <UserAvatar v-if="!showName" :user="user" :size="size"></UserAvatar>
       <div v-else class="not-prose inline-flex items-center gap-2">
         <UserAvatar :user="user" :size="size"></UserAvatar>
-        <span>{{ user.name }}</span>
+        <span :class="[size ? 'text-base' : 'text-sm']"> {{ user.name }}</span>
       </div>
     </template>
     <img v-if="photo" class="w-full rounded-t-sm" :src="photo" alt="" />
