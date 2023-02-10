@@ -1,6 +1,7 @@
 ## v0.4.2 (2023-02-09)
 
 * Galimybė administravime perjungti kalbą, išverstas pagrindinis UI ir kai kurie formų laukeliai
+* Pridėtas pranešimo apie posėdį greitasis mygtukas
 * Po pareigybių atnaujinimo, iškart galima matyti naujas vidines funkcijas
 * Susitikimų lentelėje rodomi darbotvarkės klausimai
 * El. paštų pasiūlymai, pildant naudotojų, pareigybių formas
@@ -9,6 +10,7 @@
 * Pridėtas paaiškinimas prie kalbą pakeičiančio mygtuko formoje
 * Duomenų lentelės, pagrindinio lango veikimo optimizacija
 * Labiau standartizuota kontaktų forma
+* Meta spalvų pataisymai
 
 ## v0.4.1 (2023-02-06)
 

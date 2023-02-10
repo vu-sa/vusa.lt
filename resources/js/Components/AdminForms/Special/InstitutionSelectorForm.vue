@@ -14,7 +14,7 @@
         :placeholder="'Pasirinkite instituciją'"
       ></NSelect>
     </NFormItem>
-    <NButton @click="$emit('submit', institution_id)">Pasirinkti</NButton>
+    <NButton @click="$emit('submit', institution_id)">Pasirinkti...</NButton>
   </NForm>
 </template>
 

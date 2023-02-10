@@ -19,7 +19,7 @@
         :current="(current as number)"
         :status="currentStatus"
       >
-        <NStep class="overflow-visible" title="1. Pasirink instituciją">
+        <NStep title="1. Pasirink instituciją">
           <template #icon>
             <NIcon :component="IconsRegular.INSTITUTION"></NIcon>
           </template>
@@ -38,12 +38,12 @@
       <FadeTransition mode="out-in">
         <InstitutionSelectorForm
           v-if="current === 1"
-          class="w-full"
+          class="flex w-full flex-col items-start justify-center"
           @submit="handleInstitutionSelect"
         ></InstitutionSelectorForm>
         <MeetingForm
           v-else-if="current === 2"
-          class="w-full"
+          class="flex w-full flex-col items-start justify-center"
           :meeting="meetingTemplate"
           @submit="handleMeetingFormSubmit"
         ></MeetingForm>
@@ -71,7 +71,7 @@ import { ref } from "vue";
 import { useStorage } from "@vueuse/core";
 
 import { meetingTemplate } from "@/Types/formTemplates";
-import { useForm } from "@inertiajs/vue3";
+import { router, useForm } from "@inertiajs/vue3";
 import AgendaItemsForm from "@/Components/AdminForms/Special/AgendaItemsForm.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
@@ -142,6 +142,7 @@ const handleAgendaItemsFormSubmit = (agendaItems: Record<string, any>) => {
             },
             onFinish: () => {
               loading.value = false;
+              router.visit(route("meetings.show", id));
             },
           });
       },

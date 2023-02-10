@@ -16,7 +16,7 @@
         :actions="['confirm']"
       />
     </NFormItem>
-    <NButton type="primary" @click="handleSubmit">Toliau...</NButton>
+    <NButton @click="handleSubmit">Toliau...</NButton>
   </NForm>
 </template>
 
