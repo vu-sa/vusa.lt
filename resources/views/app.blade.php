@@ -14,7 +14,7 @@
     <meta name="image" content="{{ $image ?? '' }}">
     <meta name="og:image" content="{{ $image ?? '' }}">
     <meta name="color-scheme" content="light dark">
-    {{-- <meta name="theme-color" content="#bd2835" /> --}}
+    <meta name="theme-color" content="#212124" />
 
     @include('meta-icons')
 
