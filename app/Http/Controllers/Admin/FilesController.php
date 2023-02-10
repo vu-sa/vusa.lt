@@ -147,7 +147,7 @@ class FilesController extends Controller
         // filter images by search term
         $images = collect($allfiles)->filter(function ($file) use ($data) {
             // search str_contains with case insensitive img or png
-            return str_contains(strtolower($file), strtolower($data['search'])) && (str_contains(strtolower($file), '.png') || str_contains(strtolower($file), '.jpg'));
+            return str_contains(strtolower($file), strtolower($data['search'])) && (str_contains(strtolower($file), '.png') || str_contains(strtolower($file), '.jpg' || str_contains(strtolower($file), '.jpeg')));
         });
 
         // dd($images);
