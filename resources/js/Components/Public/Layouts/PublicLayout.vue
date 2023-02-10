@@ -9,7 +9,9 @@
         <div
           class="flex min-h-screen flex-col justify-between bg-neutral-50 antialiased dark:bg-zinc-900"
         >
-          <MainNavigation :is-theme-dark="isThemeDark" />
+          <FadeTransition appear
+            ><MainNavigation :is-theme-dark="isThemeDark"
+          /></FadeTransition>
           <main class="pt-24 pb-8">
             <slot></slot>
           </main>
@@ -32,11 +34,12 @@
           <NSpin>
             <template #description>
               <div class="mt-2 h-8 text-vusa-red">
-                <FadeTransition mode="out-in" appear>
+                <FadeTransition>
                   <span v-if="spinWarning">
                     Pabandykite perkrauti puslapį arba grįžkite į
                     <a class="underline" :href="$page.props.app.url">vusa.lt</a>
                   </span>
+                  <span v-else></span>
                 </FadeTransition>
               </div>
             </template>
@@ -54,8 +57,6 @@ import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import { useStorage } from "@vueuse/core";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
-import Footer from "@/Components/Public/FullWidth/SiteFooter.vue";
-import MainNavigation from "@/Components/Public/Layouts/MainNavigation.vue";
 
 const isThemeDark = ref<boolean>(isDarkMode());
 const mounted = ref(false);
@@ -76,6 +77,14 @@ const ConsentCard = defineAsyncComponent(
 
 const NConfigProvider = defineAsyncComponent(() =>
   import("naive-ui").then((m) => m.NConfigProvider)
+);
+
+const MainNavigation = defineAsyncComponent(
+  () => import("@/Components/Public/Layouts/MainNavigation.vue")
+);
+
+const Footer = defineAsyncComponent(
+  () => import("@/Components/Public/FullWidth/SiteFooter.vue")
 );
 
 const cookieConsent = useStorage("cookie-consent", false);
