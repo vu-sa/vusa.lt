@@ -59,10 +59,10 @@ const MainLinks = defineAsyncComponent(
   () => import("@/Components/Public/FullWidth/MainLinks.vue")
 );
 
-const BannerCarousel = defineAsyncComponent(
-  // eslint-disable-next-line no-secrets/no-secrets
-  () => import("@/Components/Public/FullWidth/BannerCarousel.vue")
-);
+// const BannerCarousel = defineAsyncComponent(
+// eslint-disable-next-line no-secrets/no-secrets
+//   () => import("@/Components/Public/FullWidth/BannerCarousel.vue")
+// );
 
 const NewsElement = defineAsyncComponent(
   () => import("@/Components/Public/NewsElement.vue")

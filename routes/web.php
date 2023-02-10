@@ -41,9 +41,8 @@ Route::middleware('main')->group(function () {
                 Route::get('ataskaita-2022/{permalink}', [Public\MainController::class, 'ataskaita2022'])->where('permalink', '.*')->name('ataskaita2022');
     
                 Route::get('kontaktai', [Public\MainController::class, 'contactsCategory'])->name('contacts');
-                Route::get('kontaktai/paieska', [Public\MainController::class, 'searchContacts'])->name('contacts.search');
                 Route::get('kontaktai/kategorija/{alias}', [Public\MainController::class, 'contactsCategory'])->name('contacts.category');
-                Route::get('kontaktai/{alias}', [Public\MainController::class, 'contacts'])->name('contacts.alias');
+                Route::get('kontaktai/{alias}', [Public\ContactController::class, 'contactsPage'])->name('contacts.alias');
     
                 Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('news_string', '(naujiena|news)')->name('news');
     
@@ -72,9 +71,8 @@ Route::middleware('main')->group(function () {
                 Route::get('ataskaita-2022/{permalink}', [Public\MainController::class, 'ataskaita2022'])->where('permalink', '.*')->name('ataskaita2022');
     
                 Route::get('kontaktai', [Public\MainController::class, 'contactsCategory'])->name('contacts');
-                Route::get('kontaktai/paieska', [Public\MainController::class, 'searchContacts'])->name('contacts.search');
                 Route::get('kontaktai/kategorija/{alias}', [Public\MainController::class, 'contactsCategory'])->name('contacts.category');
-                Route::get('kontaktai/{alias}', [Public\MainController::class, 'contacts'])->name('contacts.alias');
+                Route::get('kontaktai/{alias}', [Public\ContactController::class, 'contactsPage'])->name('contacts.alias');
     
                 Route::get('kalendorius/ics', [Public\MainController::class, 'publicAllEventCalendar'])->name('calendar.ics');
     
@@ -119,9 +117,8 @@ Route::middleware('main')->group(function () {
     Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('newsString', '(naujiena|news)')->name('news');
     
     Route::get('kontaktai', [Public\MainController::class, 'contactsCategory'])->name('contacts');
-    Route::get('kontaktai/paieska', [Public\MainController::class, 'searchContacts'])->name('contacts.search');
     Route::get('kontaktai/kategorija/{alias}', [Public\MainController::class, 'contactsCategory'])->name('contacts.category');
-    Route::get('kontaktai/{alias}', [Public\MainController::class, 'contacts'])->name('contacts.alias');
+    Route::get('kontaktai/{alias}', [Public\ContactController::class, 'contactsPage'])->name('contacts.alias');
     
     Route::get('pirmakursiu-stovyklos', [Public\MainController::class, 'summerCamps'])->name('pirmakursiuStovyklos');
     Route::get('kalendorius/renginys/{calendar}', [Public\MainController::class, 'calendarEvent'])->name('calendar.event');

@@ -9,9 +9,7 @@
           $t("Karščiausios universiteto naujienos tiesiai iš studentų lūpų")
         }}!
       </p>
-      <Link
-        v-if="$page.props.app.locale === 'lt'"
-        :href="route('main.newsArchive', { lang: 'lt' })"
+      <Link v-if="$page.props.app.locale === 'lt'" :href="route('newsArchive')"
         >Daugiau →</Link
       >
     </div>
