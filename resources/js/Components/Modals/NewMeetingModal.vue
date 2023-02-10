@@ -2,7 +2,6 @@
   <CardModal
     :show="showModal"
     display-directive="show"
-    class="prose prose-sm max-w-xl transition dark:prose-invert"
     :title="`${$t('Pranešti apie artėjantį posėdį')}`"
     @close="$emit('close')"
   >
@@ -12,33 +11,53 @@
             ><NIcon size="20" :component="PuzzlePiece20Regular" /></template
         ></NButton>
       </template> -->
-    <NSteps class="mb-8" :current="(current as number)" :status="currentStatus">
-      <NStep title="Nurodyk posėdžio datą">
-        <template #icon>
-          <NIcon :component="IconsRegular.MEETING"></NIcon>
-        </template>
-      </NStep>
-      <NStep title="Įrašyk klausimus">
-        <template #icon>
-          <NIcon :component="IconsRegular.AGENDA_ITEM"></NIcon>
-        </template>
-      </NStep>
-    </NSteps>
-    <FadeTransition mode="out-in">
-      <MeetingForm
-        v-if="current === 1"
-        :meeting="meetingTemplateWithId"
-        @submit="handleMeetingFormSubmit"
-      ></MeetingForm>
-      <AgendaItemsForm
-        v-else-if="current === 2"
-        :loading="loading"
-        @submit="handleAgendaItemsFormSubmit"
-      />
-    </FadeTransition>
+    <div class="mt-4 flex flex-col gap-8 md:flex-row">
+      <NSteps
+        vertical
+        class="h-fit w-fit border-zinc-600 p-4 pr-12 md:border-r"
+        size="small"
+        :current="(current as number)"
+        :status="currentStatus"
+      >
+        <NStep class="overflow-visible" title="1. Pasirink instituciją">
+          <template #icon>
+            <NIcon :component="IconsRegular.INSTITUTION"></NIcon>
+          </template>
+        </NStep>
+        <NStep title="2. Nurodyk posėdžio datą">
+          <template #icon>
+            <NIcon :component="IconsRegular.MEETING"></NIcon>
+          </template>
+        </NStep>
+        <NStep title="3. Įrašyk klausimus">
+          <template #icon>
+            <NIcon :component="IconsRegular.AGENDA_ITEM"></NIcon>
+          </template>
+        </NStep>
+      </NSteps>
+      <FadeTransition mode="out-in">
+        <InstitutionSelectorForm
+          v-if="current === 1"
+          class="w-full"
+          @submit="handleInstitutionSelect"
+        ></InstitutionSelectorForm>
+        <MeetingForm
+          v-else-if="current === 2"
+          class="w-full"
+          :meeting="meetingTemplate"
+          @submit="handleMeetingFormSubmit"
+        ></MeetingForm>
+        <AgendaItemsForm
+          v-else-if="current === 3"
+          class="w-full"
+          :loading="loading"
+          @submit="handleAgendaItemsFormSubmit"
+        />
+      </FadeTransition>
+    </div>
     <FadeTransition>
       <ModalHelperButton
-        v-if="!showAlert && current === 2"
+        v-if="!showAlert && current === 3"
         @click="showAlert = true"
       />
     </FadeTransition>
@@ -57,18 +76,20 @@ import AgendaItemsForm from "@/Components/AdminForms/Special/AgendaItemsForm.vue
 import CardModal from "@/Components/Modals/CardModal.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import IconsRegular from "@/Types/Icons/regular";
+import InstitutionSelectorForm from "../AdminForms/Special/InstitutionSelectorForm.vue";
 import MeetingForm from "@/Components/AdminForms/MeetingForm.vue";
 import ModalHelperButton from "../Buttons/ModalHelperButton.vue";
 
 const emit = defineEmits(["close"]);
 
 const props = defineProps<{
-  institution: App.Entities.Institution;
+  institution?: App.Entities.Institution;
   showModal: boolean;
 }>();
 
 const loading = ref(false);
-const current = ref(1);
+const institution_id = ref(props.institution?.id);
+const current = ref(institution_id.value ? 2 : 1);
 const currentStatus = ref<"process">("process");
 const showAlert = useStorage("new-meeting-button-alert", true);
 
@@ -77,15 +98,14 @@ const meetingAgendaForm = useForm({
   agendaItems: [],
 });
 
-// use meetingTemplate but change institution_id to props.institution.id
-const meetingTemplateWithId = {
-  ...meetingTemplate,
-  institution_id: props.institution.id,
+const handleInstitutionSelect = (id: string) => {
+  institution_id.value = id;
+  current.value += 1;
 };
 
 const handleMeetingFormSubmit = (meeting: Record<string, any>) => {
   meetingAgendaForm.meeting = meeting;
-  current.value = 2;
+  current.value += 1;
 };
 
 const handleAgendaItemsFormSubmit = (agendaItems: Record<string, any>) => {
@@ -97,7 +117,7 @@ const handleAgendaItemsFormSubmit = (agendaItems: Record<string, any>) => {
     .transform((data) => ({
       ...data.meeting,
       // add institution_id
-      institution_id: props.institution.id,
+      institution_id: institution_id.value,
     }))
     .post(route("meetings.store"), {
       // after success, submit agenda items

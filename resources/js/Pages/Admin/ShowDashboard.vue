@@ -44,6 +44,7 @@
       <div class="flex items-center gap-4">
         <QActFocusGroupButton />
         <QActSurveyButton />
+        <QActCreateMeeting />
       </div>
     </section>
     <section
@@ -56,14 +57,14 @@
         ><span>{{ $t("Tavo institucijos") }}</span>
       </h2>
       <div
-        v-if="institutions.length > 0"
+        v-if="currentUser.institutions.length > 0"
         class="relative mt-4 grid w-full grid-cols-ramFill items-start gap-4 overflow-hidden pb-4 transition-transform duration-300 ease-in-out"
       >
         <InstitutionCard
-          v-for="institution in institutions"
+          v-for="institution in currentUser.institutions"
           :key="institution.id"
           :institution="institution"
-          :duties="duties"
+          :duties="currentUser.duties"
           :is-padalinys="institution.alias === institution.padalinys?.alias"
           @click="router.visit(route('institutions.show', institution.id))"
         />
@@ -76,7 +77,7 @@
         ><span>{{ $t("Artėjantys posėdžiai") }}</span>
       </h2>
       <div class="grid grid-cols-ramFill gap-x-4">
-        <template v-for="institution in institutions">
+        <template v-for="institution in currentUser.institutions">
           <MeetingCard
             v-for="meeting in institution.meetings"
             :key="meeting.id"
@@ -96,7 +97,7 @@
       </h2>
       <div class="grid grid-cols-ramFill gap-x-4">
         <DoingCard
-          v-for="doing in doings"
+          v-for="doing in currentUser.doings"
           :key="doing.id"
           :doing="doing"
           @click="router.visit(route('doings.show', doing.id))"
@@ -174,13 +175,12 @@ import Icons from "@/Types/Icons/filled";
 import InstitutionCard from "@/Components/Cards/InstitutionCard.vue";
 import MeetingCard from "@/Components/Cards/MeetingCard.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import QActCreateMeeting from "@/Components/Buttons/QActCreateMeeting.vue";
 import QActFocusGroupButton from "@/Components/Buttons/QActFocusGroupButton.vue";
 import QActSurveyButton from "@/Components/Buttons/QActSurveyButton.vue";
 
 defineProps<{
-  institutions: App.Entities.Institution[];
-  duties: App.Entities.Duty[];
-  doings: App.Entities.Doing[];
+  currentUser: App.Entities.User;
 }>();
 
 const windowOpen = (url: string, target: string) => {
