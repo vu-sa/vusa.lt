@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
 use App\Http\Controllers\ResourceController;
+use App\Models\Padalinys;
 use App\Models\User;
 use App\Services\ModelIndexer;
 use Illuminate\Support\Facades\Auth;
@@ -63,10 +64,13 @@ class NewsController extends ResourceController
             'publish_time' => 'required',
         ]);
 
-        $padalinys_id = User::find(Auth::id())->padalinys()?->id;
+        $padalinys_id = null;
 
-        if (is_null($padalinys_id)) {
-            $padalinys_id = request()->user()->hasRole(config('permission.super_admin_role_name')) ? 16 : null;
+        // check if super admin, else set padalinys_id
+        if (request()->user()->hasRole(config('permission.super_admin_role_name'))) {
+            $padalinys_id = Padalinys::where('type', 'pagrindinis')->first()->id;
+        } else {
+            $padalinys_id = $this->authorizer->permissableDuties->first()->padaliniai->first()->id;
         }
 
         $news = News::create([
