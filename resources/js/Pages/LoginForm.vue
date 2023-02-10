@@ -104,7 +104,6 @@
                         round
                         placeholder="vusa@vusa.lt"
                         :input-props="{ type: 'email' }"
-                        class="mt-1 block w-full"
                         required
                         autofocus
                       />
@@ -121,7 +120,6 @@
                         v-model:value="form.password"
                         round
                         type="password"
-                        class="mt-1 block w-full"
                         placeholder="*********"
                         required
                         autocomplete="current-password"
