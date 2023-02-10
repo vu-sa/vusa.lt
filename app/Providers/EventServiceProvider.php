@@ -1,11 +1,7 @@
 <?php
 
 namespace App\Providers;
-
-use App\Events\CommentPosted;
-use App\Events\FileableNameUpdated;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use App\Listeners\NotifyUsersOfComment;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -19,14 +15,17 @@ class EventServiceProvider extends ServiceProvider
             \SocialiteProviders\Microsoft\MicrosoftExtendSocialite::class . '@handle',
             // \SocialiteProviders\Google\GoogleExtendSocialite::class.'@handle',
         ],
-        CommentPosted::class => [
-            NotifyUsersOfComment::class,
+        \App\Events\CommentPosted::class => [
+            \App\Listeners\NotifyUsersOfComment::class,
         ],
-        FileableNameUpdated::class => [
+        \App\Events\FileableNameUpdated::class => [
             \App\Listeners\UpdateSharepointFolder::class,
         ],
         \Spatie\ModelStates\Events\StateChanged::class => [
             \App\Listeners\HandleDoingStateChange::class,
+        ],
+        \App\Events\DutiableChanged::class => [
+            \App\Listeners\HandleDutiableChange::class,
         ],
     ];
 

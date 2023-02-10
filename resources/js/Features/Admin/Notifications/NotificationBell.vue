@@ -19,15 +19,17 @@
       </template>
       <template #header
         ><header class="flex justify-between gap-4">
-          <span class="text-lg font-bold text-zinc-900 dark:text-zinc-50"
-            >Pranešimai</span
+          <span class="text-lg font-bold text-zinc-900 dark:text-zinc-50">{{
+            $t("Pranešimai")
+          }}</span
           ><NButton
             :disabled="notifications.length === 0"
             size="tiny"
             :loading="loading"
             text
             @click="handleAllRead"
-            >Pažymėti visus<template #icon
+            >{{ $t("Pažymėti visus")
+            }}<template #icon
               ><NIcon :component="CheckmarkCircle24Regular"></NIcon></template
           ></NButton></header
       ></template>
@@ -42,10 +44,11 @@
           />
         </template>
       </div>
-      <div v-else><span class="text-xs">Naujų pranešimų nėra.</span></div>
+      <div v-else>
+        <span class="text-xs">{{ $t("Naujų pranešimų nėra") }}.</span>
+      </div>
     </NPopover>
   </NBadge>
-  <!-- <UseWebNotifications /> -->
 </template>
 
 <script setup lang="tsx">

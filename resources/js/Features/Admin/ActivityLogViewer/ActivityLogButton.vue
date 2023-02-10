@@ -11,6 +11,7 @@
   <CardModal
     v-model:show="showModal"
     :segmented="{ content: 'soft' }"
+    class="max-w-xl"
     title="Įrašo pokyčiai"
     @close="showModal = false"
   >
@@ -19,6 +20,9 @@
         <ActivityLogItem :activity="activity" />
         <NDivider class="last:hidden" />
       </div>
+    </div>
+    <div v-else>
+      <p class="text-zinc-500">Įrašo pokyčių nėra.</p>
     </div>
   </CardModal>
 </template>

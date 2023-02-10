@@ -38,14 +38,13 @@
           <div
             class="subtle-gray-gradient m-auto mt-0 flex h-auto flex-col items-center gap-4 rounded-lg from-zinc-100 to-white p-4 text-zinc-700 shadow-xl transition-shadow duration-500 ease-in-out hover:shadow-zinc-900/90 sm:mt-auto sm:justify-center sm:p-12"
           >
-            <h1 class="font-bold text-zinc-700">Labas! 👋</h1>
+            <h1 class="font-bold text-zinc-700">{{ $t("Labas") }}! 👋</h1>
             <AppLogo class="w-24 sm:hidden" />
 
             <p
               class="max-w-xs text-center text-xs text-zinc-600 sm:text-center"
             >
-              <strong>vusa.lt/mano</strong> šiuo metu gali naudoti VU SA
-              koordinatoriai ir studentų atstovai.
+              <strong>vusa.lt/mano</strong> {{ $t("auth.usage_status") }}.
               <!-- <Link class="text-zinc-400 underline" :href="route('main.home')"
                 >Kaip tapti?</Link
               > -->
@@ -57,7 +56,7 @@
                 class="mt-4 flex flex-col gap-4"
               >
                 <MicrosoftButton />
-                <NDivider>Arba</NDivider>
+                <NDivider>{{ $t("Arba") }}</NDivider>
                 <NButton
                   size="tiny"
                   text
@@ -65,7 +64,7 @@
                   @click="useSimpleRegistration = true"
                   ><template #icon
                     ><NIcon :component="Key24Filled"></NIcon></template
-                  >Naudoti kitą prisijungimą</NButton
+                  >{{ $t("auth.use_other_login") }}</NButton
                 >
               </div>
               <div
@@ -75,12 +74,10 @@
                 <div class="px-6 py-4">
                   <div v-if="hasErrors" class="mb-4">
                     <div class="font-medium text-vusa-red">
-                      Kažkas ne taip...
+                      {{ $t("Kažkas ne taip") }}...
                     </div>
 
-                    <ul
-                      class="mt-3 list-inside list-disc text-sm text-vusa-red"
-                    >
+                    <ul class="mt-3 text-sm text-vusa-red">
                       <li v-for="(error, key) in errors" :key="key">
                         {{ error }}
                       </li>
@@ -107,11 +104,14 @@
                         round
                         placeholder="vusa@vusa.lt"
                         :input-props="{ type: 'email' }"
-                        class="mt-1 block w-full"
                         required
                         autofocus
                       />
-                      <template #label><strong>El. paštas</strong></template>
+                      <template #label
+                        ><strong>{{
+                          $t("forms.fields.email")
+                        }}</strong></template
+                      >
                     </NFormItem>
 
                     <NFormItem class="mt-4" path="password">
@@ -120,12 +120,15 @@
                         v-model:value="form.password"
                         round
                         type="password"
-                        class="mt-1 block w-full"
                         placeholder="*********"
                         required
                         autocomplete="current-password"
                       />
-                      <template #label><strong>Slaptažodis</strong></template>
+                      <template #label
+                        ><strong>{{
+                          $t("forms.fields.password")
+                        }}</strong></template
+                      >
                     </NFormItem>
 
                     <div class="mt-4 flex items-center justify-between gap-4">
@@ -137,7 +140,7 @@
                           ><NIcon
                             :component="ArrowHookUpLeft24Regular"
                           ></NIcon></template
-                        >Grįžti</NButton
+                        >{{ $t("Grįžti") }}</NButton
                       >
                       <NButton
                         size="small"
@@ -145,7 +148,7 @@
                         :disabled="form.processing"
                         :loading="form.processing"
                       >
-                        Prisijungti
+                        {{ $t("auth.login") }}
                       </NButton>
                     </div>
                   </NForm>
@@ -160,8 +163,9 @@
 </template>
 
 <script setup lang="ts">
+import { trans as $t } from "laravel-vue-i18n";
 import { ArrowHookUpLeft24Regular, Key24Filled } from "@vicons/fluent";
-import { Head, Link, useForm, usePage } from "@inertiajs/vue3";
+import { Head, useForm, usePage } from "@inertiajs/vue3";
 import {
   NButton,
   NCarousel,
@@ -172,7 +176,7 @@ import {
   NIcon,
   NInput,
 } from "naive-ui";
-import { reactive, ref } from "vue";
+import { ref } from "vue";
 
 import AppLogo from "@/Components/AppLogo.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
@@ -197,33 +201,33 @@ const themeOverrides = {
   },
 };
 
-const form = reactive(
-  useForm({
-    email: "",
-    password: "",
-    remember: false,
-  })
-);
+const form = useForm({
+  email: "",
+  password: "",
+  remember: false,
+});
 
 const rules = {
   email: [
     {
       required: true,
-      message: "El. paštas yra privalomas",
+      message: $t("validation.required", { attribute: $t("El. paštas") }),
       trigger: "blur",
     },
   ],
   password: [
     {
       required: true,
-      message: "Slaptažodis yra privalomas",
+      message: $t("validation.required", {
+        attribute: $t("forms.fields.password"),
+      }),
       trigger: "blur",
     },
   ],
 };
 
 const submit = () => {
-  formRef.value.validate((formErrors) => {
+  formRef.value?.validate((formErrors) => {
     if (!formErrors)
       form.post(route("login"), {
         onFinish: () => {

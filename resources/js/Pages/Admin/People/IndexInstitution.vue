@@ -10,6 +10,7 @@
 </template>
 
 <script setup lang="tsx">
+import { trans as $t } from "laravel-vue-i18n";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
 import type { DataTableColumns } from "naive-ui";
@@ -27,7 +28,9 @@ const canUseRoutes = {
 
 const columns: DataTableColumns<App.Entities.Institution> = [
   {
-    title: "Pavadinimas",
+    title() {
+      return $t("forms.fields.title");
+    },
     key: "name",
     minWidth: 200,
   },
@@ -47,7 +50,9 @@ const columns: DataTableColumns<App.Entities.Institution> = [
     },
   },
   {
-    title: "Trumpas pavadinimas",
+    title() {
+      return $t("forms.fields.short_name");
+    },
     key: "short_name",
   },
   {

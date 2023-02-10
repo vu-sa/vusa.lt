@@ -12,7 +12,7 @@
       round
       size="small"
       ><NEllipsis class="py-1" style="max-width: 200px">{{
-        value || "Nepasirinkta"
+        $t(value ?? "") || "Nepasirinkta"
       }}</NEllipsis>
       <template #icon>
         <NIcon :component="ChevronDown24Regular"></NIcon>

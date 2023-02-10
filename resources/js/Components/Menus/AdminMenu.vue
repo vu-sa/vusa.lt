@@ -10,6 +10,7 @@
 </template>
 
 <script setup lang="tsx">
+import { trans as $t, getActiveLanguage } from "laravel-vue-i18n";
 import {
   Flowchart20Regular,
   Folder24Regular,
@@ -66,7 +67,7 @@ setActiveKey(route().current());
 const menuOptions = computed(() => [
   {
     label: () => {
-      return <Link href={route("dashboard")}>Pradinis</Link>;
+      return <Link href={route("dashboard")}>{$t("Pradinis")}</Link>;
     },
     key: "dashboard",
     icon: () => {
@@ -74,7 +75,9 @@ const menuOptions = computed(() => [
     },
   },
   {
-    label: "Atstovavimas",
+    label() {
+      return $t("Atstovavimas");
+    },
     key: "representation",
     icon: () => {
       return <NIcon component={HatGraduation24Regular}></NIcon>;
@@ -89,7 +92,7 @@ const menuOptions = computed(() => [
     children: [
       {
         label: () => {
-          return <Link href={route("goals.index")}>Tikslai</Link>;
+          return <Link href={route("goals.index")}>{$t("Tikslai")}</Link>;
         },
         key: "goals",
         icon: () => {
@@ -99,7 +102,9 @@ const menuOptions = computed(() => [
       },
       {
         label: () => {
-          return <Link href={route("goalGroups.index")}>Tikslų grupės</Link>;
+          return (
+            <Link href={route("goalGroups.index")}>{$t("Tikslų grupės")}</Link>
+          );
         },
         key: "goalGroups",
         icon: () => {
@@ -109,7 +114,7 @@ const menuOptions = computed(() => [
       },
       {
         label: () => {
-          return <Link href={route("doings.index")}>Veiksmai</Link>;
+          return <Link href={route("doings.index")}>{$t("Veiksmai")}</Link>;
         },
         key: "doings",
         icon: () => {
@@ -123,7 +128,9 @@ const menuOptions = computed(() => [
       },
       {
         label: () => {
-          return <Link href={route("institutions.index")}>Institucijos</Link>;
+          return (
+            <Link href={route("institutions.index")}>{$t("Institucijos")}</Link>
+          );
         },
         key: "institutions",
         icon: () => {
@@ -133,7 +140,11 @@ const menuOptions = computed(() => [
       },
       {
         label: () => {
-          return <Link href={route("matters.index")}>Svarstomi klausimai</Link>;
+          return (
+            <Link href={route("matters.index")}>
+              {$t("Svarstomi klausimai")}
+            </Link>
+          );
         },
         key: "matters",
         icon: () => {
@@ -143,7 +154,9 @@ const menuOptions = computed(() => [
       },
       {
         label: () => {
-          return <Link href={route("meetings.index")}>Posėdžiai</Link>;
+          return (
+            <Link href={route("meetings.index")}>{$t("Susitikimai")}</Link>
+          );
         },
         key: "meetings",
         icon: () => {
@@ -154,7 +167,9 @@ const menuOptions = computed(() => [
       {
         label: () => {
           return (
-            <Link href={route("institutionGraph")}>Institucijų grafa</Link>
+            <Link href={route("institutionGraph")}>
+              {$t("Institucijų grafa")}
+            </Link>
           );
         },
         key: "institutionsGraph",
@@ -166,7 +181,9 @@ const menuOptions = computed(() => [
     ],
   },
   {
-    label: "Žmonės",
+    label() {
+      return $t("Žmonės");
+    },
     key: "contacts",
     icon: () => {
       return <NIcon component={Icons.USER}></NIcon>;
@@ -176,7 +193,7 @@ const menuOptions = computed(() => [
     children: [
       {
         label: () => {
-          return <Link href={route("users.index")}>Nariai</Link>;
+          return <Link href={route("users.index")}>{$t("Nariai")}</Link>;
         },
         key: "users",
         show: auth?.can.index.user,
@@ -186,7 +203,7 @@ const menuOptions = computed(() => [
       },
       {
         label: () => {
-          return <Link href={route("duties.index")}>Pareigos</Link>;
+          return <Link href={route("duties.index")}>{$t("Pareigos")}</Link>;
         },
         key: "duties",
         icon: () => {
@@ -196,7 +213,9 @@ const menuOptions = computed(() => [
       },
       {
         label: () => {
-          return <Link href={route("contacts.index")}>Kiti kontaktai</Link>;
+          return (
+            <Link href={route("contacts.index")}>{$t("Kiti kontaktai")}</Link>
+          );
         },
         key: "contacts",
         icon: () => {
@@ -223,7 +242,7 @@ const menuOptions = computed(() => [
     children: [
       {
         label: () => {
-          return <Link href={route("pages.index")}>Puslapiai</Link>;
+          return <Link href={route("pages.index")}>{$t("Puslapiai")}</Link>;
         },
         key: "pages",
         show: auth?.can.index.page,
@@ -233,7 +252,7 @@ const menuOptions = computed(() => [
       },
       {
         label: () => {
-          return <Link href={route("news.index")}>Naujienos</Link>;
+          return <Link href={route("news.index")}>{$t("Naujienos")}</Link>;
         },
         key: "news",
         show: auth?.can.index.news,
@@ -243,7 +262,11 @@ const menuOptions = computed(() => [
       },
       {
         label: () => {
-          return <Link href={route("mainPage.index")}>Greitieji mygtukai</Link>;
+          return (
+            <Link href={route("mainPage.index")}>
+              {$t("Greitieji mygtukai")}
+            </Link>
+          );
         },
         key: "mainPage",
         show: auth?.can.index.mainPage,
@@ -253,7 +276,7 @@ const menuOptions = computed(() => [
       },
       {
         label: () => {
-          return <Link href={route("banners.index")}>Baneriai</Link>;
+          return <Link href={route("banners.index")}>{$t("Baneriai")}</Link>;
         },
         key: "banners",
         show: auth?.can.index.banner,
@@ -263,7 +286,9 @@ const menuOptions = computed(() => [
       },
       {
         label: () => {
-          return <Link href={route("navigation.index")}>Navigacija</Link>;
+          return (
+            <Link href={route("navigation.index")}>{$t("Navigacija")}</Link>
+          );
         },
         key: "navigation",
         show: auth?.can.index.navigation,
@@ -273,7 +298,9 @@ const menuOptions = computed(() => [
       },
       {
         label: () => {
-          return <Link href={route("calendar.index")}>Kalendorius</Link>;
+          return (
+            <Link href={route("calendar.index")}>{$t("Kalendorius")}</Link>
+          );
         },
         key: "calendar",
         show: auth?.can.index.calendar,
@@ -283,7 +310,7 @@ const menuOptions = computed(() => [
       },
       {
         label: () => {
-          return <Link href={route("files.index")}>Failai</Link>;
+          return <Link href={route("files.index")}>{$t("Failai")}</Link>;
         },
         key: "files",
         show: auth?.can.index.sharepointFile,
@@ -294,7 +321,9 @@ const menuOptions = computed(() => [
     ],
   },
   {
-    label: "Registracijos",
+    label() {
+      return $t("Registracijos");
+    },
     key: "registrations",
     icon: () => {
       return <NIcon component={Notebook24Regular}></NIcon>;
@@ -315,7 +344,7 @@ const menuOptions = computed(() => [
         label: () => {
           return (
             <Link href={route("registrationForms.show", 2)}>
-              Narių registracija
+              {$t("Narių registracija")}
             </Link>
           );
         },
@@ -329,7 +358,7 @@ const menuOptions = computed(() => [
   },
   {
     label: () => {
-      return <Link href={route("sharepointFiles.index")}>Failai</Link>;
+      return <Link href={route("sharepointFiles.index")}>{$t("Failai")}</Link>;
     },
     key: "files",
     show: auth?.can.index.sharepointFile,
@@ -338,7 +367,9 @@ const menuOptions = computed(() => [
     },
   },
   {
-    label: "Nustatymai",
+    label() {
+      return $t("Nustatymai");
+    },
     key: "settings",
     icon: () => {
       return <NIcon component={Settings24Regular}></NIcon>;
@@ -346,7 +377,7 @@ const menuOptions = computed(() => [
     children: [
       {
         label: () => {
-          return <Link href={route("types.index")}>Tipai</Link>;
+          return <Link href={route("types.index")}>{$t("Tipai")}</Link>;
         },
         key: "types",
         icon: () => {
@@ -356,7 +387,9 @@ const menuOptions = computed(() => [
       },
       {
         label: () => {
-          return <Link href={route("relationships.index")}>Ryšiai</Link>;
+          return (
+            <Link href={route("relationships.index")}>{$t("Ryšiai")}</Link>
+          );
         },
         key: "relationships",
         icon: () => {
@@ -367,7 +400,7 @@ const menuOptions = computed(() => [
       // role index
       {
         label: () => {
-          return <Link href={route("roles.index")}>Rolės</Link>;
+          return <Link href={route("roles.index")}>{$t("Rolės")}</Link>;
         },
         key: "roles",
         icon: () => {
@@ -377,7 +410,9 @@ const menuOptions = computed(() => [
       },
       {
         label: () => {
-          return <Link href={route("permissions.index")}>Leidimai</Link>;
+          return (
+            <Link href={route("permissions.index")}>{$t("Leidimai")}</Link>
+          );
         },
         key: "permissions",
         icon: () => {

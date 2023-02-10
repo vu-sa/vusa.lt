@@ -9,7 +9,7 @@
             SA padalinys, darbo grupė, VU studijų programos komitetas ir pan.
           </p>
         </template>
-        <NFormItem label="Pavadinimas" :span="2">
+        <NFormItem :label="$t('forms.fields.title')" :span="2">
           <NInput
             v-if="locale === 'lt'"
             v-model:value="form.name"
@@ -78,42 +78,49 @@
             konkrečios pareigybės istorija).
           </p>
           <p>Pareigas prie institucijos galima pridėti dviem būdais:</p>
-          <ul>
-            <li>
-              <a target="_blank" :href="route('duties.create')">
+          <div class="mt-2 flex flex-col gap-2">
+            <a target="_blank" :href="route('duties.create')">
+              <NButton size="tiny" tertiary>
                 Sukuriant naują pareigą
-                <NIcon class="align-middle" :component="Add16Filled"></NIcon>
-              </a>
-            </li>
-            <li>
-              <a target="_blank" :href="route('duties.index')">
+                <template #icon
+                  ><NIcon class="align-middle" :component="Add16Filled"></NIcon
+                ></template>
+              </NButton>
+            </a>
+            <a target="_blank" :href="route('duties.index')">
+              <NButton size="tiny" tertiary>
                 Surandant jau egzistuojančią pareigą, visų pareigų sąraše
-                <NIcon
-                  class="align-middle"
-                  :component="Search16Regular"
-                ></NIcon>
-              </a>
-            </li>
-          </ul>
+                <template #icon
+                  ><NIcon
+                    class="align-middle"
+                    :component="Search16Regular"
+                  ></NIcon
+                ></template>
+              </NButton>
+            </a>
+          </div>
         </template>
         <NCard v-if="institution.duties" class="subtle-gray-gradient">
-          <strong>Šiuo metu institucijai priklauso šios pareigos:</strong>
-          <TransitionGroup name="list" tag="ul" class="list-inside">
-            <li v-for="duty in form.duties" :key="duty.id" class="gap-4">
-              <a
-                target="_blank"
-                :href="route('duties.edit', { id: duty.id })"
-                >{{ duty.name }}</a
-              >
-              <div class="ml-2 inline-flex gap-1">
-                <NButton text @click="reorderDuties('up', duty)"
+          <strong
+            >Šiuo metu institucijai priklauso šios pareigos ir asmenys:</strong
+          >
+          <TransitionGroup name="list" tag="div">
+            <div v-for="duty in form.duties" :key="duty.id">
+              <NButtonGroup size="tiny" round class="my-1">
+                <NButton @click="handleDutyClick(duty)">{{
+                  duty?.name
+                }}</NButton>
+                <NButton secondary @click="reorderDuties('up', duty)"
                   ><NIcon :component="ArrowCircleUp24Regular"
                 /></NButton>
-                <NButton text @click="reorderDuties('down', duty)"
+                <NButton secondary @click="reorderDuties('down', duty)"
                   ><NIcon :component="ArrowCircleDown24Regular"
                 /></NButton>
+              </NButtonGroup>
+              <div v-for="user in duty.users" :key="user.id" class="my-1">
+                <UserPopover :user="user" show-name :size="24" />
               </div>
-            </li>
+            </div>
           </TransitionGroup>
           <FadeTransition>
             <div v-if="dutiesWereReordered" class="mt-4">
@@ -215,6 +222,7 @@ import {
 import { Link, router, useForm } from "@inertiajs/vue3";
 import {
   NButton,
+  NButtonGroup,
   NCard,
   NForm,
   NFormItem,
@@ -231,6 +239,7 @@ import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
 import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
 import UploadImageButtons from "@/Components/Buttons/UploadImageButtons.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
+import UserPopover from "../Avatars/UserPopover.vue";
 
 const props = defineProps<{
   institution: App.Entities.Institution;
@@ -270,6 +279,10 @@ const reorderDuties = (direction: "up" | "down", duty: App.Entities.Duty) => {
   form.duties = newDuties;
 
   dutiesWereReordered.value = true;
+};
+
+const handleDutyClick = (duty: App.Entities.Duty) => {
+  window.open(route("duties.edit", duty.id), "_blank");
 };
 
 const saveReorderedDuties = () => {

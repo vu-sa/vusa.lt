@@ -13,8 +13,10 @@
     <meta name="og:description" content="{{ $description ?? '' }}">
     <meta name="image" content="{{ $image ?? '' }}">
     <meta name="og:image" content="{{ $image ?? '' }}">
-    <meta name="color-scheme" content="light dark">
-    {{-- <meta name="theme-color" content="#bd2835" /> --}}
+    <meta name="color-scheme" content="dark light" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#212124" media="(prefers-color-scheme: dark)" />
+
+    @include('meta-icons')
 
     {{-- CSRF --}}
     <meta name="csrf-token" content="{{ csrf_token() }}">

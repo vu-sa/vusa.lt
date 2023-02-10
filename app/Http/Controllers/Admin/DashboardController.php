@@ -35,9 +35,11 @@ class DashboardController extends Controller
         }]);
 
         return Inertia::render('Admin/ShowDashboard', [
-            'institutions' => $institutions,
-            'duties' => $duties,
-            'doings' => $user->doings->sortBy('date'),
+            'currentUser' => [
+                ...$user->toArray(),
+                'institutions' => $institutions->values(),
+                'doings' => $user->doings->sortBy('date')->values(),
+            ],
         ]);
     }
 

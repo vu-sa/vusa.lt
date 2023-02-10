@@ -3,7 +3,7 @@
     <NCard class="subtle-gray-gradient">
       <!-- <p>{{ salutation }}</p> -->
       <div class="mb-4">
-        <p>Tavo rolės:</p>
+        <p>{{ $t("Tavo rolės") }}:</p>
         <ul class="list-inside">
           <li v-for="(role, index) in user.roles" :key="role.id">
             <strong>{{ $t(role.name) }}</strong>
@@ -24,20 +24,23 @@
           </template>
         </ul>
       </div>
-      <p>
-        Jeigu kiltų klausimų, rašykite
-        <a href="mailto:it@vusa.lt">it@vusa.lt</a>
-      </p>
+    </NCard>
+    <p class="mt-4 flex items-center justify-center gap-2">
       <a
-        class="mt-4 flex items-center"
+        target="_blank"
+        href="https://github.com/vu-sa/vusa.lt/blob/main/CHANGELOG.md"
+        ><NButton text size="small" quaternary> v0.4.2 </NButton></a
+      >·
+      <a
+        class="inline-flex items-center"
         target="_blank"
         href="https://github.com/vu-sa/vusa.lt/pull/122"
         ><NButton text
           ><template #icon><NIcon :component="Github"></NIcon></template
-          >Projekto puslapis</NButton
+          >{{ $t("Projekto puslapis") }}</NButton
         ></a
       >
-    </NCard>
+    </p>
   </PageContent>
 </template>
 

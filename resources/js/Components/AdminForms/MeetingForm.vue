@@ -1,28 +1,22 @@
 <template>
   <NForm ref="formRef" :rules="rules" :model="meetingForm">
-    <NGrid cols="2">
-      <NFormItemGi :span="2" path="start_time" required>
-        <template #label>
-          <span class="inline-flex items-center gap-1"
-            ><NIcon :component="Icons.DATE"></NIcon> <span>Data</span></span
-          >
-        </template>
-        <NDatePicker
-          v-model:value="meetingForm.start_time"
-          :first-day-of-week="0"
-          :format="'yyyy-MM-dd HH:mm'"
-          type="datetime"
-          placeholder="Kada vyksta posėdis?"
-          clearable
-          :actions="['confirm']"
-        />
-      </NFormItemGi>
-      <NFormItemGi :span="2" :show-label="false"
-        ><NButton type="primary" @click="handleSubmit"
-          >Toliau...</NButton
-        ></NFormItemGi
-      >
-    </NGrid>
+    <NFormItem path="start_time" required>
+      <template #label>
+        <span class="inline-flex items-center gap-1"
+          ><NIcon :component="Icons.DATE"></NIcon> <span>Data</span></span
+        >
+      </template>
+      <NDatePicker
+        v-model:value="meetingForm.start_time"
+        :first-day-of-week="0"
+        :format="'yyyy-MM-dd HH:mm'"
+        type="datetime"
+        placeholder="Kada vyksta posėdis?"
+        clearable
+        :actions="['confirm']"
+      />
+    </NFormItem>
+    <NButton @click="handleSubmit">Toliau...</NButton>
   </NForm>
 </template>
 
@@ -32,8 +26,7 @@ import {
   NButton,
   NDatePicker,
   NForm,
-  NFormItemGi,
-  NGrid,
+  NFormItem,
   NIcon,
 } from "naive-ui";
 import { ref } from "vue";
@@ -47,7 +40,6 @@ const emit = defineEmits<{
 
 const props = defineProps<{
   loading?: boolean;
-  institution?: App.Entities.Institution;
   meeting: App.Entities.Meeting;
   // meetingTypes?: any;
   modelRoute?: string;

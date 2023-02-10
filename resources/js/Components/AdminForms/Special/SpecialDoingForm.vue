@@ -9,7 +9,7 @@
       </SuggestionAlert>
     </FadeTransition>
     <NGrid :cols="1">
-      <NFormItemGi label="Pavadinimas" required path="name">
+      <NFormItemGi :label="$t('forms.fields.title')" required path="name">
         <NInput v-model:value="model.title" />
       </NFormItemGi>
       <NFormItemGi label="Preliminari data" required path="date">

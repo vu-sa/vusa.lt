@@ -3,7 +3,7 @@
     <div class="flex flex-col">
       <FormElement>
         <template #title>Pagrindinė informacija</template>
-        <NFormItem label="Pareigų pavadinimas" :span="2">
+        <NFormItem :label="$t('forms.fields.title')" :span="2">
           <NInput
             v-if="locale === 'lt'"
             v-model:value="form.name"
@@ -26,8 +26,12 @@
           ></NInput>
         </NFormItem>
 
-        <NFormItem label="Pareigybinis el. paštas">
-          <NInput v-model:value="form.email" placeholder="vusa@vusa.lt" />
+        <NFormItem :label="$t('forms.fields.email')">
+          <NAutoComplete
+            v-model:value="form.email"
+            :options="emailOptions"
+            placeholder="vusa@vusa.lt"
+          />
         </NFormItem>
 
         <div class="grid gap-4 lg:grid-cols-2">
@@ -41,13 +45,13 @@
             />
           </NFormItem>
 
-          <NFormItem label="Pareigybę užimančių žmonių skaičius" :min="0"
+          <NFormItem :label="$t('forms.fields.duty_people_count')" :min="0"
             ><NInputNumber v-model:value="form.places_to_occupy"></NInputNumber
           ></NFormItem>
         </div>
       </FormElement>
       <FormElement>
-        <template #title>Detalesnis aprašymas</template>
+        <template #title>{{ $t("forms.fields.description") }}</template>
         <template #description
           >Aprašymas yra rodomas vusa.lt puslapyje prie pareigybės</template
         >
@@ -82,12 +86,12 @@
         <NFormItem>
           <template #label>
             <div class="inline-flex items-center gap-2">
-              <span><strong>Pareigybės</strong></span
+              <strong>{{ $t("Pareigybės") }}</strong
               ><a target="_blank" :href="route('users.create')"
                 ><NButton text size="tiny"
                   ><template #icon
                     ><NIcon :component="Add24Filled"></NIcon></template
-                  >Sukurti naują asmenį?</NButton
+                  >{{ $t("forms.actions.create_user") }}?</NButton
                 ></a
               >
             </div>
@@ -149,6 +153,7 @@
 <script setup lang="tsx">
 import { Add24Filled, Edit16Filled } from "@vicons/fluent";
 import {
+  NAutoComplete,
   NButton,
   NForm,
   NFormItem,
@@ -160,8 +165,8 @@ import {
   type TransferRenderSourceLabel,
   type TransferRenderTargetLabel,
 } from "naive-ui";
-import { ref } from "vue";
-import { useForm } from "@inertiajs/vue3";
+import { computed, ref } from "vue";
+import { useForm, usePage } from "@inertiajs/vue3";
 
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import FormElement from "./FormElement.vue";
@@ -193,6 +198,16 @@ const userOptions = props.assignableUsers.map((user) => ({
   value: user.id,
   user: user,
 }));
+
+const emailOptions = computed(() => {
+  return usePage().props.auth?.user.padaliniai.map((padalinys) => {
+    const prefix = form.email?.split("@")[0];
+    return {
+      label: `${prefix}@${padalinys.alias}.vusa.lt`,
+      value: `${prefix}@${padalinys.alias}.vusa.lt`,
+    };
+  });
+});
 
 const rolesOptions = props.roles.map((role) => ({
   label: role.name,

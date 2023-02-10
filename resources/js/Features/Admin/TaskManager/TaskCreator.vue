@@ -11,7 +11,7 @@
         ><template #icon
           ><NIcon :component="TaskListSquareAdd24Regular"></NIcon
         ></template>
-        Pridėti
+        {{ $t("forms.add") }}
       </NButton>
     </template>
     <!-- Form title -->
@@ -29,7 +29,7 @@
         :rules="rules"
       >
         <NGrid cols="1">
-          <NFormItemGi label="Pavadinimas" required path="name">
+          <NFormItemGi :label="$t('forms.fields.title')" required path="name">
             <NInput
               v-model:value="model.name"
               :placeholder="getRandomTaskNamePlaceholder()"
@@ -73,6 +73,7 @@
 </template>
 
 <script setup lang="tsx">
+import { trans as $t } from "laravel-vue-i18n";
 import {
   type CascaderOption,
   type FormInst,

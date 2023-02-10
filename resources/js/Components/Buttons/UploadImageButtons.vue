@@ -7,10 +7,14 @@
         @change="uploadFile"
         @before-upload="beforeUpload"
       >
-        <NButton size="small">Įkelti paveiksliuką</NButton>
+        <NButton size="small">{{ $t("Įkelti paveiksliuką") }}</NButton>
       </NUpload>
-      <NButton v-if="modelValue" size="small" type="error" @click="removeLink"
-        >Pašalinti</NButton
+      <NButton
+        v-if="modelValue"
+        size="small"
+        type="error"
+        @click="removeLink"
+        >{{ $t("forms.delete") }}</NButton
       >
     </div>
   </div>

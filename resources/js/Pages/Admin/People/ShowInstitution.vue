@@ -11,7 +11,7 @@
       <span class="text-3xl">{{ institution.name }}</span>
     </template>
     <template #after-heading>
-      <InstitutionAvatarGroup :max="7" :users="institution.users" />
+      <InstitutionAvatarGroup :max="5" :users="institution.users" />
       <template v-if="institution.managers.length > 0">
         <NDivider v-if="institution.managers.length > 0" vertical />
         <span class="text-xs text-zinc-500">Admin:</span>

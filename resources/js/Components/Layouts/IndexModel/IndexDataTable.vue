@@ -6,10 +6,9 @@
   <NDataTable
     remote
     size="small"
-    class="overflow-auto"
     :data="paginatedModels.data"
     :scroll-x="768"
-    :max-height="dataTableMaxHeight"
+    max-height="calc(100vh - 350px)"
     :columns="columnsWithActions"
     :loading="loading"
     :pagination="pagination"
@@ -20,6 +19,7 @@
 </template>
 
 <script setup lang="tsx">
+import { trans as $t } from "laravel-vue-i18n";
 import { ArrowForward20Filled, Edit20Filled } from "@vicons/fluent";
 import { NButton, NButtonGroup, NDataTable, NIcon } from "naive-ui";
 import { computed, reactive, ref } from "vue";
@@ -75,7 +75,7 @@ const columnsWithActions = computed(() => {
   return [
     ...props.columns,
     {
-      title: props.editRoute || props.destroyRoute ? "Veiksmai" : null,
+      title: props.editRoute || props.destroyRoute ? $t("Veiksmai") : null,
       key: "actions",
       width: 175,
       render(row) {
@@ -108,22 +108,4 @@ const columnsWithActions = computed(() => {
     },
   ];
 });
-
-//----------------------------------------------
-// calculate and update the max height of datatable
-
-const dataTableMaxHeight = ref(window.innerHeight);
-
-const calculateDataTableMaxHeight = () => {
-  dataTableMaxHeight.value = window.innerHeight - 400;
-  // check if the height is less than 400px
-  if (dataTableMaxHeight.value < 425) {
-    dataTableMaxHeight.value = 425;
-  }
-};
-
-calculateDataTableMaxHeight();
-
-// update the height on window resize
-window.addEventListener("resize", calculateDataTableMaxHeight);
 </script>

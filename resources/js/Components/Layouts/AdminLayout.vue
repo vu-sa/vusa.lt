@@ -1,6 +1,5 @@
 <template>
   <Head :title="title" />
-  <MetaIcons />
 
   <NLayout class="min-h-screen">
     <nav
@@ -73,27 +72,23 @@
         <div
           class="mb-4 flex items-center justify-center gap-6 overflow-hidden"
         >
-          <div class="h-fit w-fit"><DarkModeSwitch class="mb-0.5" /></div>
-          <NPopover v-if="!collapsed">
-            Funkcija kūriama...
-            <template #trigger>
-              <NButton text>
-                <template #icon>
-                  <NIcon :size="16"
-                    ><img
-                      class="opacity-40 transition hover:opacity-70"
-                      src="https://hatscripts.github.io/circle-flags/flags/gb.svg"
-                  /></NIcon>
-                </template>
-              </NButton>
+          <div class="h-fit w-fit"><DarkModeSwitch /></div>
+          <NButton v-if="!collapsed" text @click="changeLocale">
+            <template #icon>
+              <NIcon :size="16"
+                ><img
+                  v-if="locale === 'en'"
+                  class="opacity-40 transition hover:opacity-70"
+                  src="https://hatscripts.github.io/circle-flags/flags/gb.svg"
+                />
+                <img
+                  v-else
+                  class="opacity-40 transition hover:opacity-70"
+                  src="https://hatscripts.github.io/circle-flags/flags/lt.svg"
+                />
+              </NIcon>
             </template>
-          </NPopover>
-          <a
-            v-if="!collapsed"
-            target="_blank"
-            href="https://github.com/vu-sa/vusa.lt/blob/main/CHANGELOG.md"
-            ><NButton size="tiny" quaternary> v0.4.1 </NButton></a
-          >
+          </NButton>
         </div>
       </NLayoutSider>
       <NLayoutContent :content-style="{ paddingLeft: '2rem' }">
@@ -104,7 +99,7 @@
 </template>
 
 <script setup lang="tsx">
-import { Head, Link, usePage } from "@inertiajs/vue3";
+import { Head, Link, router, usePage } from "@inertiajs/vue3";
 import {
   type MessageReactive,
   NButton,
@@ -114,22 +109,20 @@ import {
   NLayoutContent,
   NLayoutSider,
   NMessageProvider,
-  NModal,
   NNotificationProvider,
   NPopover,
   NScrollbar,
   useMessage,
-  // NThemeEditor,
 } from "naive-ui";
 import { computed, onMounted, watch } from "vue";
 import { ref } from "vue";
 import { useOnline, useStorage } from "@vueuse/core";
 
 import { Board24Regular } from "@vicons/fluent";
+import { loadLanguageAsync } from "laravel-vue-i18n";
 import AdminMenu from "@/Components/Menus/AdminMenu.vue";
 import AppLogo from "@/Components/AppLogo.vue";
 import DarkModeSwitch from "@/Components/Buttons/DarkModeSwitch.vue";
-import MetaIcons from "@/Components/MetaIcons.vue";
 import NotificationBell from "@/Features/Admin/Notifications/NotificationBell.vue";
 import TaskIndicatorButton from "../../Features/Admin/TaskManager/TaskIndicatorButton.vue";
 import UserAdminOptionsMenu from "@/Components/Menus/UserSettingsDropdown.vue";
@@ -140,10 +133,15 @@ defineProps<{
   backUrl?: string | null;
 }>();
 
-const showModal = ref(false);
 const mounted = ref(false);
 const online = useOnline();
 const message = useMessage();
+const locale = useStorage("locale", usePage().props.app.locale);
+
+const changeLocale = () => {
+  locale.value = locale.value === "en" ? "lt" : "en";
+  router.reload({ data: { lang: locale.value } });
+};
 
 const successMessage = computed(() => usePage().props.flash.success);
 const infoMessage = computed(() => usePage().props.flash.info);
@@ -179,6 +177,11 @@ watch(infoMessage, (infoMessage) => {
     message.info(infoMessage);
     usePage().props.flash.info = null;
   }
+});
+
+watch(locale, (locale) => {
+  usePage().props.app.locale = locale;
+  loadLanguageAsync(locale);
 });
 
 watch(online, (online) => {

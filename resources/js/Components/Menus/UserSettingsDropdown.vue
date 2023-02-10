@@ -7,6 +7,7 @@
 </template>
 
 <script setup lang="tsx">
+import { trans as $t } from "laravel-vue-i18n";
 import {
   DoorArrowRight28Regular,
   PersonSettings16Regular,
@@ -21,7 +22,9 @@ const loading = ref(false);
 
 const options: DropdownOption[] = [
   {
-    label: "Nustatymai",
+    label() {
+      return $t("Nustatymai");
+    },
     key: "user-settings",
     icon() {
       return <NIcon component={PersonSettings16Regular}></NIcon>;
@@ -33,7 +36,9 @@ const options: DropdownOption[] = [
     },
   },
   {
-    label: "Atsijungti",
+    label() {
+      return $t("auth.logout");
+    },
     key: "logout",
     icon() {
       return <NIcon component={DoorArrowRight28Regular}></NIcon>;

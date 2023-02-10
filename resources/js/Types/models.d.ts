@@ -177,6 +177,7 @@ declare namespace App.Models {
     duties?: Array<App.Models.Duty> | null;
     types?: Array<App.Models.Type> | null;
     padalinys?: App.Models.Padalinys | null;
+    padaliniai?: App.Models.Padalinys | null;
     matters?: Array<App.Models.Matter> | null;
     meetings?: Array<App.Models.Meeting> | null;
     users?: any | null;

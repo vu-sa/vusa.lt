@@ -1,5 +1,5 @@
 <template>
-  <NPopover
+  <NTooltip
     :style="{ maxWidth: '600px' }"
     trigger="hover"
     :show-delay="500"
@@ -9,10 +9,10 @@
         ><template #icon><NIcon :component="Info24Regular"></NIcon></template
       ></NButton> </template
     ><slot></slot
-  ></NPopover>
+  ></NTooltip>
 </template>
 
 <script setup lang="tsx">
 import { Info24Regular } from "@vicons/fluent";
-import { NButton, NIcon, NPopover } from "naive-ui";
+import { NButton, NIcon, NTooltip } from "naive-ui";
 </script>

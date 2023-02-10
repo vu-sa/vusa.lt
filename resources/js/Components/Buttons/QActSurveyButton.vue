@@ -3,10 +3,10 @@
     <QuickActionButton
       :icon="DocumentCheckmark24Regular"
       @click="showModal = true"
-      >Organizuoti el. apklausą</QuickActionButton
+      >{{ $t("Organizuoti el. apklausą") }}</QuickActionButton
     >
     <CardModal
-      :title="`Organizuoti el. apklausą`"
+      :title="$t('Organizuoti el. apklausą')"
       :show="showModal"
       @close="showModal = false"
     >

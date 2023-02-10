@@ -65,7 +65,7 @@ class HandleInertiaRequests extends Middleware
                 'user' => fn () => [
                     ...$user->toArray(), 
                     'isSuperAdmin' => $isSuperAdmin,
-                    'padaliniai' => $user->padaliniai()->get(['padaliniai.id', 'padaliniai.shortname'])->unique(), 
+                    'padaliniai' => $user->padaliniai()->get(['padaliniai.id', 'padaliniai.shortname', 'padaliniai.alias'])->unique(), 
                     'unreadNotifications' => $user->unreadNotifications
                 ],
             ],

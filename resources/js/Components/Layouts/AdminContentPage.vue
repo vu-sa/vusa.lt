@@ -1,6 +1,6 @@
 <template>
   <Head
-    ><title v-if="title">{{ title }}</title></Head
+    ><title v-if="title">{{ $t(title) }}</title></Head
   >
   <!-- Usually maybe for breadcrumb -->
   <div class="ml-4"><slot name="above-header" /></div>
@@ -22,7 +22,7 @@
       /></template>
     </NButton>
     <h1 class="mb-0 whitespace-nowrap">
-      <slot name="title">{{ title }}</slot>
+      <slot name="title">{{ $t(title) }}</slot>
     </h1>
     <Link v-if="isIndex && createUrl" :href="createUrl">
       <div class="flex">
@@ -58,6 +58,7 @@
 </template>
 
 <script setup lang="ts">
+import { trans as $t } from "laravel-vue-i18n";
 import { AddCircle32Regular, ChevronLeft24Filled } from "@vicons/fluent";
 import { Head, Link } from "@inertiajs/vue3";
 import { NButton, NDivider, NIcon, NScrollbar } from "naive-ui";

@@ -1,7 +1,8 @@
 <template>
   <NBreadcrumb>
+    <AdminBreadcrumbItem :option="homeOption" />
     <AdminBreadcrumbItem
-      v-for="(option, index) in breadcrumbOptions"
+      v-for="(option, index) in options"
       :key="index"
       :option="option"
     ></AdminBreadcrumbItem
@@ -9,40 +10,26 @@
 </template>
 
 <script setup lang="ts">
+import { trans as $t } from "laravel-vue-i18n";
 import { Home24Filled } from "@vicons/fluent";
 import { NBreadcrumb } from "naive-ui";
-import { computed } from "vue";
 
+import { computed } from "vue";
 import AdminBreadcrumbItem, {
   type BreadcrumbOptionInterface,
 } from "./AdminBreadcrumbItem.vue";
 
 export type BreadcrumbOption = BreadcrumbOptionInterface;
 
-const props = defineProps<{
+defineProps<{
   options: BreadcrumbOption[];
 }>();
 
-const breadcrumbOptions = computed<BreadcrumbOption[]>(() => {
-  let options = props.options;
-
-  // ? Pasiūlė Copilot
-  // if (options.length > 3) {
-  //   options = options.slice(0, 3);
-  //   options.push({
-  //     id: "ellipsis",
-  //     title: "...",
-  //     url: "#",
-  //   });
-  // }
-
-  // add Home item to beggining
-  options.unshift({
-    label: "Pradinis",
+const homeOption = computed(() => {
+  return {
+    label: $t("Pradinis"),
     icon: Home24Filled,
     routeOptions: { name: "dashboard" },
-  });
-
-  return options;
+  };
 });
 </script>

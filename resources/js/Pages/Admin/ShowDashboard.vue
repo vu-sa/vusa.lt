@@ -6,14 +6,17 @@
           <NCheckbox
             disabled
             value="Greitieji veiksmai"
-            label="Greitieji veiksmai"
+            :label="$t('Greitieji veiksmai')"
           ></NCheckbox>
-          <NCheckbox value="Institucijos" label="Tavo institucijos"></NCheckbox>
-          <NCheckbox value="Posėdžiai" label="Artėjantys posėdžiai" />
-          <NCheckbox value="Veiklos" label="Tavo veiklos" />
+          <NCheckbox
+            value="Institucijos"
+            :label="$t('Tavo institucijos')"
+          ></NCheckbox>
+          <NCheckbox value="Posėdžiai" :label="$t('Artėjantys posėdžiai')" />
+          <NCheckbox value="Veiklos" :label="$t('Tavo veiklos')" />
           <NCheckbox
             value="Nuorodos"
-            label="Naudingos nuorodos"
+            :label="$t('Naudingos nuorodos')"
             disabled
           ></NCheckbox>
         </div>
@@ -36,11 +39,12 @@
           class="text-vusa-yellow"
           :component="LightbulbFilament24Filled"
         ></NIcon
-        ><span>Greitieji veiksmai</span>
+        ><span>{{ $t("Greitieji veiksmai") }}</span>
       </h2>
       <div class="flex items-center gap-4">
         <QActFocusGroupButton />
         <QActSurveyButton />
+        <QActCreateMeeting />
       </div>
     </section>
     <section
@@ -50,30 +54,30 @@
     >
       <h2 class="flex items-center gap-2">
         <NIcon :component="Icons.INSTITUTION"></NIcon
-        ><span>Tavo institucijos</span>
+        ><span>{{ $t("Tavo institucijos") }}</span>
       </h2>
       <div
-        v-if="institutions.length > 0"
+        v-if="currentUser.institutions.length > 0"
         class="relative mt-4 grid w-full grid-cols-ramFill items-start gap-4 overflow-hidden pb-4 transition-transform duration-300 ease-in-out"
       >
         <InstitutionCard
-          v-for="institution in institutions"
+          v-for="institution in currentUser.institutions"
           :key="institution.id"
           :institution="institution"
-          :duties="duties"
+          :duties="currentUser.duties"
           :is-padalinys="institution.alias === institution.padalinys?.alias"
           @click="router.visit(route('institutions.show', institution.id))"
         />
       </div>
-      <p v-else>Neturi tiesiogiai priskirtų institucijų.</p>
+      <p v-else>{{ $t("Neturi tiesiogiai priskirtų institucijų") }}.</p>
     </section>
     <section v-if="shownSections.includes('Posėdžiai')" class="relative mb-8">
       <h2 class="flex items-center gap-2">
         <NIcon :component="Icons.MEETING"></NIcon
-        ><span>Artėjantys posėdžiai</span>
+        ><span>{{ $t("Artėjantys posėdžiai") }}</span>
       </h2>
       <div class="grid grid-cols-ramFill gap-x-4">
-        <template v-for="institution in institutions">
+        <template v-for="institution in currentUser.institutions">
           <MeetingCard
             v-for="meeting in institution.meetings"
             :key="meeting.id"
@@ -83,26 +87,28 @@
             @click="router.visit(route('meetings.show', meeting.id))"
           ></MeetingCard>
         </template>
-        <p class="hidden first:block">Artėjančių posėdžių nėra</p>
+        <p class="hidden first:block">{{ $t("Artėjančių posėdžių nėra") }}.</p>
       </div>
     </section>
     <section v-if="shownSections.includes('Veiklos')" class="relative mb-8">
       <h2 class="flex items-center gap-2">
-        <NIcon :component="Icons.DOING"></NIcon><span>Tavo veiklos</span>
+        <NIcon :component="Icons.DOING"></NIcon
+        ><span>{{ $t("Tavo veiklos") }}</span>
       </h2>
       <div class="grid grid-cols-ramFill gap-x-4">
         <DoingCard
-          v-for="doing in doings"
+          v-for="doing in currentUser.doings"
           :key="doing.id"
           :doing="doing"
           @click="router.visit(route('doings.show', doing.id))"
         ></DoingCard>
-        <p class="hidden first:block">Artėjančių posėdžių nėra</p>
+        <p class="hidden first:block">{{ $t("Neturi sukurtų veiklų") }}.</p>
       </div>
     </section>
     <section id="naudingos-nuorodos">
       <h2 class="mb-4 flex items-center gap-2">
-        <NIcon :component="Link24Filled"></NIcon><span>Naudingos nuorodos</span>
+        <NIcon :component="Link24Filled"></NIcon
+        ><span>{{ $t("Naudingos nuorodos") }}</span>
       </h2>
       <div class="flex gap-2">
         <NButton
@@ -169,13 +175,12 @@ import Icons from "@/Types/Icons/filled";
 import InstitutionCard from "@/Components/Cards/InstitutionCard.vue";
 import MeetingCard from "@/Components/Cards/MeetingCard.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
+import QActCreateMeeting from "@/Components/Buttons/QActCreateMeeting.vue";
 import QActFocusGroupButton from "@/Components/Buttons/QActFocusGroupButton.vue";
 import QActSurveyButton from "@/Components/Buttons/QActSurveyButton.vue";
 
 defineProps<{
-  institutions: App.Entities.Institution[];
-  duties: App.Entities.Duty[];
-  doings: App.Entities.Doing[];
+  currentUser: App.Entities.User;
 }>();
 
 const windowOpen = (url: string, target: string) => {

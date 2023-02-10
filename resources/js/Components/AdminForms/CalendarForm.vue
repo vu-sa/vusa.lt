@@ -19,7 +19,7 @@
             </li>
           </ul>
         </template>
-        <NFormItem label="Pavadinimas" required>
+        <NFormItem :label="$t('forms.fields.title')" required>
           <NInput
             v-if="locale === 'lt'"
             v-model:value="form.title"

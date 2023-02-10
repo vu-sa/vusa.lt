@@ -8,7 +8,7 @@
     <template #icon>
       <NIcon :component="MicrosoftIcon" />
     </template>
-    Tęsti su Microsoft
+    {{ $t("auth.continue_microsoft") }}
   </NButton>
 </template>
 

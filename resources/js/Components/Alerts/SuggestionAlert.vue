@@ -2,7 +2,7 @@
   <NAlert
     v-if="showAlert"
     style="background-color: rgba(244, 244, 245, 0.05)"
-    title="Įsidėmėk!"
+    :title="`${$t('Įsidėmėk')}!`"
     closable
     class="mb-4"
     type="default"

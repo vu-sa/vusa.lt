@@ -18,6 +18,7 @@
 </template>
 
 <script setup lang="tsx">
+import { trans as $t } from "laravel-vue-i18n";
 import { NCard, NSpin } from "naive-ui";
 import { computed, ref } from "vue";
 
@@ -34,7 +35,9 @@ const props = defineProps<{
   };
 }>();
 
-const buttonNames = ["Visos", "Atliktos", "Neatliktos"];
+const buttonNames = computed(() => {
+  return [$t("Visos"), $t("Atliktos"), $t("Neatliktos")];
+});
 
 const showCompletedTasks = ref<boolean | null>(null);
 
@@ -57,13 +60,13 @@ const shownTasks = computed(() => {
 
 const handleClick = (name: string | null) => {
   switch (name) {
-    case "Visos":
+    case $t("Visos"):
       showCompletedTasks.value = null;
       break;
-    case "Atliktos":
+    case $t("Atliktos"):
       showCompletedTasks.value = true;
       break;
-    case "Neatliktos":
+    case $t("Neatliktos"):
       showCompletedTasks.value = false;
       break;
   }

@@ -20,54 +20,52 @@
         </p>
       </SuggestionAlert>
     </FadeTransition>
-    <NGrid cols="1">
-      <NFormItemGi path="newAgendaTitles">
-        <template #label>
-          <span class="mb-2 inline-flex items-center gap-1"
-            ><NIcon :component="IconsFilled.AGENDA_ITEM"></NIcon>Darbotvarkės
-            klausimai</span
-          >
+    <NFormItem path="newAgendaTitles">
+      <template #label>
+        <span class="mb-2 inline-flex items-center gap-1"
+          ><NIcon :component="IconsFilled.AGENDA_ITEM"></NIcon>Darbotvarkės
+          klausimai</span
+        >
+      </template>
+      <NDynamicInput
+        v-model:value="agendaItemForm.agendaItemTitles"
+        show-sort-button
+      >
+        <template #create-button-default>Sukurti</template>
+        <template #default="{ index }">
+          <div class="flex grow items-center gap-1">
+            <span class="ml-1 w-7">{{ `${index + 1}.` }}</span>
+            <NInput
+              v-model:value="agendaItemForm.agendaItemTitles[index]"
+              :placeholder="`Darbotvarkės klausimas nr. ${index + 1}`"
+              @keydown.enter.prevent
+            ></NInput>
+          </div>
         </template>
-        <NDynamicInput
-          v-model:value="agendaItemForm.agendaItemTitles"
-          show-sort-button
+      </NDynamicInput>
+    </NFormItem>
+    <NFormItem>
+      <template #label>
+        <span class="inline-flex items-center gap-1"
+          ><NIcon :component="DocumentSettings20Filled"></NIcon>Papildoma
+          informacija</span
         >
-          <template #create-button-default>Sukurti</template>
-          <template #default="{ index, value }">
-            <div class="flex w-full items-center gap-1">
-              <span class="ml-1 w-7">{{ `${index + 1}.` }}</span>
-              <NInput
-                v-model:value="agendaItemForm.agendaItemTitles[index]"
-                :placeholder="`Darbotvarkės klausimas nr. ${index + 1}`"
-                @keydown.enter.prevent
-              ></NInput>
-            </div>
-          </template>
-        </NDynamicInput>
-      </NFormItemGi>
-      <NFormItemGi>
-        <template #label>
-          <span class="inline-flex items-center gap-1"
-            ><NIcon :component="DocumentSettings20Filled"></NIcon>Papildoma
-            informacija</span
-          >
-        </template>
-        <NCheckbox v-model:checked="agendaItemForm.moreAgendaItemsUndefined"
-          ><span class="whitespace-nowrap"
-            >Vėliau gali atsirasti papildomų klausimų</span
-          ></NCheckbox
-        >
-      </NFormItemGi>
-      <NFormItemGi :show-label="false">
-        <NButton
-          :loading="loading"
-          :disabled="agendaItemForm.agendaItemTitles.length === 0"
-          type="primary"
-          @click.prevent="$emit('submit', agendaItemForm)"
-          >Sukurti</NButton
-        >
-      </NFormItemGi>
-    </NGrid>
+      </template>
+      <NCheckbox v-model:checked="agendaItemForm.moreAgendaItemsUndefined"
+        ><span class="whitespace-nowrap"
+          >Vėliau gali atsirasti papildomų klausimų</span
+        ></NCheckbox
+      >
+    </NFormItem>
+    <NFormItem :show-label="false">
+      <NButton
+        :loading="loading"
+        :disabled="agendaItemForm.agendaItemTitles.length === 0"
+        type="primary"
+        @click.prevent="$emit('submit', agendaItemForm)"
+        >Sukurti</NButton
+      >
+    </NFormItem>
   </NForm>
 </template>
 
@@ -77,13 +75,9 @@ import {
   NCheckbox,
   NDynamicInput,
   NForm,
-  NFormItemGi,
-  NGrid,
+  NFormItem,
   NIcon,
   NInput,
-  NPopover,
-  NSelect,
-  NTag,
   //   type SelectGroupOption,
 } from "naive-ui";
 import { useForm } from "@inertiajs/vue3";

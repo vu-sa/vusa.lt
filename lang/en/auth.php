@@ -15,5 +15,9 @@ return [
 
     'failed' => 'These credentials do not match our records.',
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
-
+    'login' => 'Login',
+    'logout' => 'Logout',
+    'continue_microsoft' => 'Continue with Microsoft',
+    'use_other_login' => 'Use other account',
+    'usage_status' => 'right now can be used by VU SR coordinators and student representatives'
 ];

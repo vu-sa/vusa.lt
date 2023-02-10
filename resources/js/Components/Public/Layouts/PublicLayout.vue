@@ -6,11 +6,12 @@
         :theme="isThemeDark ? darkTheme : undefined"
         :theme-overrides="themeOverrides"
       >
-        <MetaIcons />
         <div
           class="flex min-h-screen flex-col justify-between bg-neutral-50 antialiased dark:bg-zinc-900"
         >
-          <MainNavigation :is-theme-dark="isThemeDark" />
+          <FadeTransition appear
+            ><MainNavigation :is-theme-dark="isThemeDark"
+          /></FadeTransition>
           <main class="pt-24 pb-8">
             <slot></slot>
           </main>
@@ -30,7 +31,19 @@
       </NConfigProvider>
       <template #fallback>
         <div class="flex h-screen items-center justify-center">
-          <NSpin />
+          <NSpin>
+            <template #description>
+              <div class="mt-2 h-8 text-vusa-red">
+                <FadeTransition>
+                  <span v-if="spinWarning">
+                    Pabandykite perkrauti puslapį arba grįžkite į
+                    <a class="underline" :href="$page.props.app.url">vusa.lt</a>
+                  </span>
+                  <span v-else></span>
+                </FadeTransition>
+              </div>
+            </template>
+          </NSpin>
         </div>
       </template>
     </Suspense>
@@ -41,16 +54,13 @@
 import { NSpin, darkTheme } from "naive-ui";
 import { defineAsyncComponent, onMounted, ref } from "vue";
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
-import { usePage } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
-import Footer from "@/Components/Public/FullWidth/SiteFooter.vue";
-import MainNavigation from "@/Components/Public/Layouts/MainNavigation.vue";
-import MetaIcons from "@/Components/MetaIcons.vue";
 
 const isThemeDark = ref<boolean>(isDarkMode());
 const mounted = ref(false);
+const spinWarning = ref(false);
 
 const themeOverrides = {
   common: {
@@ -69,25 +79,29 @@ const NConfigProvider = defineAsyncComponent(() =>
   import("naive-ui").then((m) => m.NConfigProvider)
 );
 
+const MainNavigation = defineAsyncComponent(
+  () => import("@/Components/Public/Layouts/MainNavigation.vue")
+);
+
+const Footer = defineAsyncComponent(
+  () => import("@/Components/Public/FullWidth/SiteFooter.vue")
+);
+
 const cookieConsent = useStorage("cookie-consent", false);
 
 updateDarkMode(isThemeDark);
 
-// Userway script
-
-(function (d) {
-  let s = d.createElement("script");
-  s.setAttribute("data-account", "5OC3pQZI6r");
-  s.setAttribute("src", "https://cdn.userway.org/widget.js");
-  (d.body || d.head).appendChild(s);
-})(document);
-
-// <!--Start of Tawk.to Script-->
-
-// TODO: add Tawk.to EN script
-
 onMounted(() => {
-  // if page props app.env is local, then don't run Clarity
+  mounted.value = true;
+
+  // UserWay
+  (function (d) {
+    let s = d.createElement("script");
+    s.setAttribute("data-account", "5OC3pQZI6r");
+    s.setAttribute("src", "https://cdn.userway.org/widget.js");
+    (d.body || d.head).appendChild(s);
+  })(document);
+
   var Tawk_API = Tawk_API || {},
     Tawk_LoadStart = new Date();
 
@@ -98,9 +112,11 @@ onMounted(() => {
     s1.src = "https://embed.tawk.to/5f71b135f0e7167d00145612/default";
     s1.charset = "UTF-8";
     s1.setAttribute("crossorigin", "*");
-    s0.parentNode.insertBefore(s1, s0);
+    s0.parentNode?.insertBefore(s1, s0);
   })();
-
-  mounted.value = true;
+  // usetimeout to delay the spin description
+  setTimeout(() => {
+    spinWarning.value = true;
+  }, 5000);
 });
 </script>

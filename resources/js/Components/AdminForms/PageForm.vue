@@ -1,7 +1,7 @@
 <template>
   <NForm :model="form" label-placement="top">
     <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
-      <NFormItemGi label="Pavadinimas" :span="2">
+      <NFormItemGi :label="$t('forms.fields.title')" :span="2">
         <NInput
           v-model:value="form.title"
           type="text"

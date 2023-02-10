@@ -27,7 +27,7 @@
           <RelatedModelButton
             v-for="related in relatedModels"
             :key="related.name"
-            :name="related.name"
+            :name="$t(related.name)"
             :icon="related.icon"
             :count="related.count"
             :disabled="related.disabled"

@@ -28,6 +28,7 @@ import {
 import { Link, router, usePage } from "@inertiajs/vue3";
 import { ref } from "vue";
 
+import { trans as $t } from "laravel-vue-i18n";
 import IconsFilled from "@/Types/Icons/filled";
 import IconsRegular from "@/Types/Icons/regular";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
@@ -69,7 +70,9 @@ const columns: () => DataTableColumns<App.Entities.Task> = () => [
     fixed: "left",
   },
   {
-    title: "Pavadinimas",
+    title() {
+      return $t("forms.fields.title");
+    },
     key: "name",
     fixed: "left",
     width: 150,
@@ -78,7 +81,9 @@ const columns: () => DataTableColumns<App.Entities.Task> = () => [
     },
   },
   {
-    title: "Subjektas",
+    title() {
+      return $t("forms.fields.subject");
+    },
     key: "subject",
     width: 150,
     render(row) {
@@ -103,7 +108,9 @@ const columns: () => DataTableColumns<App.Entities.Task> = () => [
     },
   },
   {
-    title: "Atsakingi žmonės",
+    title() {
+      return $t("forms.fields.responsible_people");
+    },
     key: "users",
     width: 150,
     render(row) {
@@ -111,7 +118,9 @@ const columns: () => DataTableColumns<App.Entities.Task> = () => [
     },
   },
   {
-    title: "Terminas",
+    title() {
+      return $t("forms.fields.due_date");
+    },
     key: "due_date",
     width: 150,
     sorter: "default",
