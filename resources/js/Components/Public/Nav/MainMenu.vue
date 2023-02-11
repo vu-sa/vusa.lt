@@ -30,8 +30,6 @@ const handleSelectNavigation = (id: number) => {
     return;
   }
 
-  console.log(props.padalinys);
-
   if (props.padalinys === "Padaliniai") {
     router.visit(
       route("main.page", {

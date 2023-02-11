@@ -44,7 +44,7 @@
         :padalinys="padalinys"
         @close:drawer="activeDrawer = false"
       ></MainMenu>
-      <div class="flex flex-wrap items-center gap-4">
+      <div class="flex items-center gap-4">
         <FacebookButton />
         <InstagramButton />
         <SearchButton />
@@ -83,7 +83,7 @@
 
 <script setup lang="ts">
 import { AnimalTurtle24Filled, Navigation24Filled } from "@vicons/fluent";
-import { NButton, NDrawer, NDrawerContent, NIcon } from "naive-ui";
+import { NButton, NDrawer, NDrawerContent, NIcon, NScrollbar } from "naive-ui";
 import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
 import { computed, reactive, ref } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
