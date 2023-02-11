@@ -1,26 +1,26 @@
 <template>
   <nav
-    class="fixed top-0 z-50 flex max-h-24 w-screen flex-row items-center justify-between bg-white/80 py-2 text-gray-800 shadow-sm backdrop-blur-sm dark:bg-zinc-800/60 dark:text-white lg:px-12 xl:px-24"
+    class="fixed top-0 z-50 flex h-20 w-screen flex-row items-center justify-between gap-4 bg-white/80 p-2 text-gray-800 shadow-sm backdrop-blur-sm dark:bg-zinc-800/90 dark:text-white md:px-6 lg:px-12 xl:px-24"
   >
-    <div
-      class="flex flex-row items-center space-x-4"
-      :class="{ 'mx-auto': isMobile }"
-    >
+    <div class="flex flex-row items-center space-x-4">
       <!-- Hamburger -->
-      <div v-if="isMobile" class="block">
-        <NButton style="border-radius: 0.5rem" @click="toggleMenu">
-          <NIcon>
-            <Navigation24Filled />
-          </NIcon>
+      <div class="block lg:hidden">
+        <NButton size="small" strong quaternary @click="toggleMenu">
+          <template #icon>
+            <NIcon>
+              <Navigation24Filled />
+            </NIcon>
+          </template>
         </NButton>
       </div>
       <a
         :href="`${$page.props.app.url}/${$page.props.app.locale}`"
         @click="resetPadalinys()"
       >
-        <AppLogo :is-theme-dark="isThemeDark" class="w-36" />
+        <AppLogo :is-theme-dark="isThemeDark" class="w-24 md:w-32" />
       </a>
       <PadalinysSelector
+        :size="smallerThanSm ? 'tiny' : 'small'"
         :padalinys="padalinys"
         @select:padalinys="handleSelectPadalinys"
       ></PadalinysSelector>
@@ -34,87 +34,57 @@
       ></NButton>
     </div>
 
-    <div v-if="!isMobile" class="flex items-center justify-center gap-x-4">
-      <NMenu
-        v-model:value="activeMenuKey"
-        :icon-size="16"
-        mode="horizontal"
+    <div class="hidden items-center justify-center gap-x-2 md:gap-x-4 lg:flex">
+      <MainMenu
         :options="navigation"
+        mode="horizontal"
+        class="grow"
         :dropdown-props="{ size: 'medium' }"
-        @update:value="handleSelectNavigation"
-      />
+        :flat-navigation="mainNavigation"
+        :padalinys="padalinys"
+        @close:drawer="activeDrawer = false"
+      ></MainMenu>
       <div class="flex flex-wrap items-center gap-4">
         <FacebookButton />
         <InstagramButton />
         <SearchButton />
         <StartFM />
-        <NDivider vertical></NDivider>
-        <DarkModeSwitch />
-        <LocaleButton :locale="locale" @change-locale="localeSelect" />
       </div>
+    </div>
+    <div class="flex items-center gap-4">
+      <DarkModeSwitch />
+      <LocaleButton :locale="locale" @change-locale="localeSelect" />
     </div>
     <NDrawer
       v-model:show="activeDrawer"
-      display-directive="show"
       :width="325"
       placement="left"
       :trap-focus="true"
     >
       <NDrawerContent closable>
         <template #header>
-          <span>{{
-            padalinys == "Padaliniai" ? $t("VU SA") : $t(padalinys)
-          }}</span>
-          <div class="mt-4 flex flex-row gap-4">
+          <div class="flex gap-4">
             <FacebookButton />
             <InstagramButton />
             <SearchButton />
             <StartFM />
-            <LocaleButton :locale="locale" @change-locale="localeSelect" />
-            <div class="flex items-center justify-center">
-              <DarkModeSwitch />
-            </div>
           </div>
         </template>
-        <template v-if="!route().current('*page')">
-          <NCollapse>
-            <NCollapseItem :title="$t('Padaliniai')">
-              <NTree
-                block-line
-                :data="options_padaliniai"
-                @update:selected-keys="handleSelectPadalinys"
-              >
-              </NTree>
-            </NCollapseItem>
-          </NCollapse>
-        </template>
-        <NDivider></NDivider>
-        <NTree
-          block-line
-          :data="navigation"
-          :expanded-keys="expandedKeys"
-          :selected-keys="selectedKeys"
-          @update:selected-keys="handleSelectNavigation"
-        />
+        <MainMenu
+          :options="navigation"
+          :flat-navigation="mainNavigation"
+          :padalinys="padalinys"
+          @close:drawer="activeDrawer = false"
+        ></MainMenu>
       </NDrawerContent>
     </NDrawer>
   </nav>
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from "laravel-vue-i18n";
 import { AnimalTurtle24Filled, Navigation24Filled } from "@vicons/fluent";
-import {
-  NButton,
-  NCollapse,
-  NCollapseItem,
-  NDivider,
-  NDrawer,
-  NDrawerContent,
-  NIcon,
-  NMenu,
-  NTree,
-} from "naive-ui";
+import { NButton, NDrawer, NDrawerContent, NIcon } from "naive-ui";
+import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
 import { computed, reactive, ref } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 import type { RouteParamsWithQueryOverload } from "ziggy-js";
@@ -124,6 +94,7 @@ import DarkModeSwitch from "@/Components/Buttons/DarkModeSwitch.vue";
 import FacebookButton from "../Nav/FacebookButton.vue";
 import InstagramButton from "../Nav/InstagramButton.vue";
 import LocaleButton from "../Nav/LocaleButton.vue";
+import MainMenu from "../Nav/MainMenu.vue";
 import PadalinysSelector from "../Nav/PadalinysSelector.vue";
 import SearchButton from "../Nav/SearchButton.vue";
 import StartFM from "@/Components/Public/Nav/StartFM.vue";
@@ -144,18 +115,6 @@ const toggleMenu = () => {
 
 const homeParams: RouteParamsWithQueryOverload = reactive({
   lang: locale.value,
-});
-
-const activeMenuKey = ref(usePage().props.navigationItemId);
-
-const expandedKeys = ref([]);
-const selectedKeys = ref([]);
-
-const options_padaliniai = computed(() => {
-  return padaliniai.map((padalinys) => ({
-    label: $t(padalinys.fullname.split("atstovybė ")[1]),
-    key: padalinys.alias,
-  }));
 });
 
 const parseNavigation = (array, id: number) => {
@@ -231,46 +190,6 @@ const resetPadalinys = () => {
   padalinys.value = "Padaliniai";
 };
 
-const handleSelectNavigation = (id: number) => {
-  // message.info("Navigating to " + key);
-  // get url from id from mainNavigation array
-  let url = "";
-  for (const item of Object.entries(mainNavigation.value)) {
-    if (item[1].id == id) {
-      // if url has https or http, use it
-      if (item[1].url.includes("https://") || item[1].url.includes("http://")) {
-        window.open(item[1].url, "_blank");
-      } else if (item[1].url === "#") {
-        // if url is #, add id to checked keys
-        // if id is in expandedKeys, remove it
-        if (expandedKeys.value.includes(item[1].id)) {
-          expandedKeys.value = expandedKeys.value.filter(
-            (key) => key !== item[1].id
-          );
-        } else {
-          expandedKeys.value.push(item[1].id);
-        }
-      } else {
-        url = item[1].url;
-
-        if (padalinys.value === "Padaliniai") {
-          router.visit(
-            route("main.page", { lang: locale.value, permalink: url }),
-            {
-              preserveScroll: false,
-            }
-          );
-        } else {
-          window.location.href = `${usePage().props.app.url}/${
-            locale.value
-          }/${url}`;
-        }
-      }
-      selectedKeys.value = [];
-    }
-  }
-};
-
 const localeSelect = (lang: string) => {
   if (lang !== "lt") {
     locale.value = "en";
@@ -285,16 +204,6 @@ const localeSelect = (lang: string) => {
   padalinys.value = getPadalinys();
 };
 
-// check if 1024px or less with resize
-const isMobile = ref(false);
-const handleResize = () => {
-  if (window.innerWidth <= 1024) {
-    isMobile.value = true;
-  } else {
-    isMobile.value = false;
-  }
-};
-
-window.addEventListener("resize", handleResize);
-handleResize();
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const smallerThanSm = breakpoints.smaller("sm");
 </script>
