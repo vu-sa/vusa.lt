@@ -1,3 +1,8 @@
+## v0.4.4 (2023-02-12)
+* Hamburger for admin menu
+* More responsive first page
+* Misc style updates
+
 ## v0.4.3 (2023-02-12)
 
 * Routing optimization and use of 'www' from now
