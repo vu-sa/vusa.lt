@@ -1,103 +1,104 @@
 <template>
-  <div
-    class="flex h-auto min-h-fit max-w-xl flex-col rounded-lg bg-white dark:bg-zinc-700 lg:flex-row"
+  <figure
+    class="relative flex h-auto min-h-fit max-w-md flex-col rounded-sm border dark:border-zinc-700 lg:flex-row"
   >
     <div
       v-if="getImageUrl(contact)"
-      :id="`contact-photo-${index}`"
-      class="relative h-60 w-auto flex-none lg:h-auto lg:w-40"
+      class="relative h-48 w-full lg:h-auto lg:w-48"
     >
-      <NImage
+      <img
         :src="getImageUrl(contact)"
-        lazy
-        :intersection-observer-options="{
-          root: `#contact-photo-${index}`,
-        }"
-        object-fit="cover"
-        :show-toolbar="false"
-        class="absolute inset-0 rounded-t-lg lg:rounded-t-none lg:rounded-l-lg"
+        class="h-full w-full object-cover"
+        loading="lazy"
         style="object-position: 50% 25%"
         :alt="contact.name"
       />
     </div>
-    <div class="flex flex-auto flex-col justify-between gap-4 p-4">
-      <div class="flex flex-col flex-wrap">
-        <h2
-          class="flex flex-auto items-center gap-2 px-2 text-gray-900 dark:text-zinc-50"
-        >
-          <span>{{ contact.name }}</span>
-          <NButton
-            v-if="$page.props.auth?.user"
-            secondary
-            circle
-            size="tiny"
-            @click="openEdit(contact)"
+    <div class="flex flex-col justify-between gap-4 p-4">
+      <div>
+        <div class="flex items-center gap-2">
+          <h2
+            class="text-lg leading-6 tracking-tight text-zinc-800 dark:text-zinc-50"
           >
-            <NIcon>
-              <PersonEdit24Regular />
-            </NIcon>
-          </NButton>
-        </h2>
+            {{ contact.name }}
+          </h2>
+        </div>
         <div
           v-if="contact.duties"
-          class="w-fit p-2 text-sm font-medium text-gray-600 dark:text-zinc-200"
+          class="w-fit text-xs font-medium text-zinc-600 dark:text-zinc-200"
         >
           <template v-for="duty in contact.duties" :key="duty.id">
-            <NPopover
-              v-if="duty.description"
-              trigger="hover"
-              :style="{ maxWidth: '250px' }"
-              ><template #trigger>
-                <p class="my-1 cursor-pointer">
-                  {{ changeDutyNameEndings(contact, duty) }}
-                  {{ showAdditionalInfo(duty) }}
-                </p>
-              </template>
-              <span v-html="dutyDescription(duty)"></span>
-            </NPopover>
-            <p v-else class="my-1">
+            <p class="my-1">
               {{ changeDutyNameEndings(contact, duty) }}
               {{ showAdditionalInfo(duty) }}
+              <span v-if="duty.description" class="align-middle">
+                <InfoPopover
+                  style="max-width: 400px"
+                  trigger="hover"
+                  color="gray"
+                >
+                  <span v-html="dutyDescription(duty)"></span>
+                </InfoPopover>
+              </span>
             </p>
           </template>
         </div>
       </div>
-      <div class="flex flex-col gap-2 text-sm text-gray-500 dark:text-zinc-200">
-        <div v-if="contact.phone" class="flex flex-row items-center">
-          <NIcon class="mr-2">
-            <Phone20Regular />
-          </NIcon>
+      <div class="flex flex-col gap-2 text-xs text-zinc-600 dark:text-zinc-200">
+        <p v-if="contact.phone" class="inline-flex items-center gap-2">
+          <NIcon :component="Phone20Regular" />
           <a :href="`tel:${contact.phone}`">{{ contact.phone }}</a>
-        </div>
+        </p>
         <template v-for="duty in contact.duties" :key="duty.id">
-          <div v-if="duty.email" class="flex flex-row items-center">
-            <NIcon class="mr-2"> <Mail20Regular /> </NIcon
-            ><a :href="`mailto:${duty.email}`">{{ duty.email }}</a>
-          </div>
-          <div v-else>
-            <NIcon class="mr-2"> <Mail20Regular /> </NIcon
-            ><a :href="`mailto:${contact.email}`">{{ contact.email }}</a>
-          </div>
+          <a v-if="duty.email" :href="`mailto:${duty.email}`">
+            <NEllipsis style="max-width: 250px">
+              <NIcon class="mr-2 align-middle" :component="Mail20Regular" />
+              <span class="align-middle">
+                {{ duty.email }}
+              </span>
+            </NEllipsis>
+          </a>
+          <a v-else :href="`mailto:${contact.email}`">
+            <NEllipsis style="max-width: 250px">
+              <NIcon class="mr-2 align-middle" :component="Mail20Regular" />
+              <span class="align-middle">
+                {{ contact.email }}
+              </span>
+            </NEllipsis>
+          </a>
         </template>
       </div>
     </div>
-  </div>
+    <Link
+      class="absolute -top-2 -right-2"
+      :href="route('users.edit', contact.id)"
+    >
+      <NButton
+        v-if="$page.props.auth?.user"
+        class="bg-zinc-100 shadow-sm dark:bg-zinc-800"
+        circle
+        size="tiny"
+      >
+        <template #icon>
+          <NIcon>
+            <PersonEdit24Regular />
+          </NIcon>
+        </template>
+      </NButton>
+    </Link>
+  </figure>
 </template>
 
 <script setup lang="ts">
+import { Link, usePage } from "@inertiajs/vue3";
 import { Mail20Regular, Phone20Regular } from "@vicons/fluent";
-import { NButton, NIcon, NImage, NPopover } from "naive-ui";
+import { NButton, NEllipsis, NIcon } from "naive-ui";
 import { PersonEdit24Regular } from "@vicons/fluent";
-import { usePage } from "@inertiajs/vue3";
+import InfoPopover from "../Buttons/InfoPopover.vue";
 
 defineProps<{
   contact: App.Entities.User;
-  index: string;
 }>();
-
-const openEdit = (contact: App.Entities.User) => {
-  window.open(route("users.edit", { user: contact.id }), "_blank");
-};
 
 const dutyDescription = (duty) => {
   const locale = usePage().props.app.locale;

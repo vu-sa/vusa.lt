@@ -1137,7 +1137,7 @@
       <Link
         class="text-lg font-bold duration-200 hover:text-red-600"
         :href="
-          route('main.ataskaita2022', {
+          route('ataskaita2022', {
             lang: $page.props.app.locale,
             permalink: 'sritys',
           })

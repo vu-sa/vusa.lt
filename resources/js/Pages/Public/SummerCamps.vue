@@ -100,7 +100,15 @@
             :key="event.id"
             class="group h-fit w-48 rounded-b-md bg-white/0"
           >
-            <Link :href="route('calendar.event', event.id)">
+            <Link
+              :href="
+                route('calendar.event', {
+                  calendar: event.id,
+                  lang: 'lt',
+                  padalinys: 'www',
+                })
+              "
+            >
               <img
                 class="h-full w-full rounded-xl object-cover shadow-md transition group-hover:shadow-xl"
                 :src="get5thResponsiveImage(event)"

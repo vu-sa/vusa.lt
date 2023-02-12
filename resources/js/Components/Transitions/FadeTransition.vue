@@ -1,6 +1,7 @@
 <template>
-  <!-- eslint-disable-next-line vue/require-toggle-inside-transition -->
-  <Transition name="fade"><slot></slot></Transition>
+  <Transition name="fade">
+    <slot />
+  </Transition>
 </template>
 
 <script setup lang="ts"></script>

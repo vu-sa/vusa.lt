@@ -43,6 +43,19 @@ class Type extends Model
         return $this->morphedByMany(Doing::class, 'typeable');
     }
 
+    public function descendants()
+    {
+        return $this->hasMany(Type::class, 'parent_id');
+    }
+
+    public function getDescendantsAndSelf()
+    {
+        $descedants = $this->descendants()->get();
+        $descedants->push($this);
+
+        return $descedants;
+    }
+
     public function allModelsFromModelType()
     {        
         if (Str::contains($this->model_type, 'Institution')) {

@@ -1,7 +1,7 @@
 <template>
   <NButton
     text
-    @click="openBlank('https://www.facebook.com/VUstudentuatstovybe')"
+    @click="openBlank('https://www.instagram.com/vustudentuatstovybe/')"
   >
     <NIcon size="18">
       <Instagram />

@@ -61,7 +61,11 @@ class MainController extends PublicController
 		// get last 4 news by publishing date
 		$banners = Padalinys::where('alias', 'vusa')->first()->banners()->inRandomOrder()->where('is_active', 1)->get();
 
-		$news = News::where([['padalinys_id', '=', $this->padalinys->id],['lang', app()->getLocale()], ['draft', '=', 0]])->where('publish_time', '<=', date('Y-m-d H:i:s'))->orderBy('publish_time', 'desc')->take(4)->get();
+		$news = News::with('padalinys')->where([['padalinys_id', '=', $this->padalinys->id],['lang', app()->getLocale()], ['draft', '=', 0]])
+			->where('publish_time', '<=', date('Y-m-d H:i:s'))
+			->orderBy('publish_time', 'desc')
+			->take(4)
+			->get();
 
 		if (app()->getLocale() === 'en') {
             $calendar = Calendar::where('extra_attributes->en->shown', 'true')->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'extra_attributes', 'category')->take(75)->get();
@@ -170,9 +174,14 @@ class MainController extends PublicController
 
 	public function page()
 	{
+		// TODO: this rewrite needs to be done in .htaccess
+		// if (request()->lang === null) {		
+		// 	return redirect('/' . config('app.locale') . '/' . request()->permalink, 301);
+        // }
+
 		$page = Page::where([['permalink', '=', request()->permalink], ['padalinys_id', '=', $this->padalinys->id]])->first();
 
-		if ($page == null) {
+		if ($page === null) {
 			abort(404);
 		}
 
@@ -198,130 +207,6 @@ class MainController extends PublicController
 			'title' => $page->title,
 			// truncate text to first sentence
 			'description' => Str::limit(strip_tags($page->text), 150),
-		]);
-	}
-
-	public function contactsCategory(Request $request)
-	{
-		// Special case for 'padaliniai' alias, since it's a special category, fetched from 'padaliniai' table
-
-		if (request()->alias == 'padaliniai') {
-			$padaliniai = Padalinys::where('type', '=', 'padalinys')->orderBy('shortname')->get();
-			$padaliniaiInstitutions = [];
-			foreach ($padaliniai as $key => $padalinys) {
-				$institution = Institution::where('alias', '=', $padalinys->alias)->first();
-				// add institution to array
-				array_push($padaliniaiInstitutions, $institution);
-			}
-
-			$duties_institutions = new EloquentCollection($padaliniaiInstitutions);
-		} else {
-			$duties_institutions = Institution::whereHas('duties')
-				// TODO: Čia reikia aiškesnės logikos
-				->when(
-					!request()->alias,
-					// If /kontaktai/{} or /kontaktai/kategorija/{}
-					function ($query) {
-						return $query->where([['padalinys_id', '=', $this->padalinys->id], ['alias', 'not like', '%studentu-atstovai%']]);
-					},
-					// If there's an alias in the url
-					function ($query) {
-						return $query->where('alias', '=', request()->alias);
-					}
-				)->get();
-		}
-
-		// check if institution array length is 1, then just return that one institution contacts.
-
-		if ($duties_institutions->count() == 1) {
-			// redirect to that one institution page
-			return redirect('kontaktai/' . $duties_institutions->first()->alias);
-		}
-
-		return Inertia::render('Public/Contacts/Category', [
-			'institutions' => $duties_institutions
-		])->withViewData([
-			'title' => 'Kontaktai',
-			'description' => 'VU SA kontaktai',
-		]);
-	}
-
-	public function contacts()
-	{
-		$type = request()->alias;
-
-		if ($type == 'studentu-atstovai') {
-			// get all student duty institutions that have type 'studentu-atstovu-organas' and is of the same padalinys as the current one
-			$institutions = Institution::with(['duties.users'])->orderBy('name')->where([['padalinys_id', '=', $this->padalinys->id]])->whereHas('types', function (Builder $query) {
-				$query->where('alias', 'studentu-atstovu-organas');
-			})->get();
-
-			return Inertia::render('Public/Contacts/StudentRepresentatives', [
-				'institutions' => $institutions
-			])->withViewData([
-				'title' => 'Studentų atstovai',
-				'description' => 'VU SA studentų atstovai',
-			]);
-		}
-
-		if (in_array($type, [null, 'koordinatoriai', 'kuratoriai'])) {
-			
-			$duty_type = Type::where('slug', '=', $type ?? "koordinatoriai")->first();
-			$child_duty_types = Type::where('parent_id', '=', $duty_type->id)->get();
-
-			// merge type collections
-			$duty_types = $child_duty_types->merge(collect([$duty_type]));
-
-			if ($this->padalinys->id === 16) {
-				$institution = Institution::where('alias', '=', 'centrinis-biuras')->first();
-			} else {
-				$padalinys = Padalinys::where('id', '=', $this->padalinys->id)->first();
-				$institution = Institution::where('alias', '=', $padalinys->alias)->first();
-			}
-
-			$contacts = User::withWhereHas('duties', function ($query) use ($duty_types, $institution) {
-				$query->where('institution_id', '=', $institution->id)->whereHas('types', fn (Builder $query) => $query->whereIn('id', $duty_types->pluck('id')));
-			})->get();
-
-		} else {
-			
-			$institution = Institution::where('alias', '=', $this->alias)->first();
-
-			if (is_null($institution)) {
-				abort(404);
-			}
-			
-			$contacts = User::withWhereHas('duties', function ($query) {
-				$query->whereHas('institution', function ($query) {
-					$query->where('alias', '=', $this->alias);
-				});
-			})->get();
-		}
-
-		return Inertia::render('Public/Contacts/ContactsShow', [
-			'institution' => $institution,
-			'contacts' => $contacts->map(function ($contact) use ($institution) {
-				return [
-					'id' => $contact->id,
-					'name' => $contact->name,
-					'email' => $contact->email,
-					'phone' => $contact->phone,
-					'duties' => $contact->duties->where('institution_id', '=', $institution->id),
-					'profile_photo_path' => function () use ($contact) {
-						if (substr($contact->profile_photo_path, 0, 4) == 'http') {
-							return $contact->profile_photo_path;
-						} else if (is_null($contact->profile_photo_path)) {
-							return null;
-						} else {
-							return Storage::get(str_replace('uploads', 'public', $contact->profile_photo_path)) == null ? null : $contact->profile_photo_path;
-						}
-					},
-				];
-			})
-		])->withViewData([
-			'title' => $this->padalinys->name . ' kontaktai',
-			// description html to plain text
-			'description' => strip_tags($this->padalinys->description),
 		]);
 	}
 

@@ -3,8 +3,8 @@
     <template #header>
       {{ page.title }}
       <PreviewModelButton
-        main-route="main.page"
-        padalinys-route="padalinys.page"
+        main-route="page"
+        padalinys-route="page"
         :main-props="{ lang: page.lang, permalink: page.permalink }"
         :padalinys-props="{
           lang: page.lang,
@@ -27,8 +27,6 @@
     </UpsertModelLayout>
   </PageContent>
 </template>
-
-
 
 <script setup lang="ts">
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";

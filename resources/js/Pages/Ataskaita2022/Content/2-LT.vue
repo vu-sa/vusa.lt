@@ -290,7 +290,7 @@
               Plačiau su VU SA struktūra galite susipažinti čia:
               <Link
                 :href="
-                  route('main.page', {
+                  route('page', {
                     lang: $page.props.app.locale,
                     permalink: 'vu-sa-struktura',
                   })
@@ -928,7 +928,7 @@
       <Link
         class="underline duration-200 hover:text-red-600"
         :href="
-          route('main.ataskaita2022', { lang: $page.props.app.locale, permalink: 'mvp' })
+          route('ataskaita2022', { lang: $page.props.app.locale, permalink: 'mvp' })
         "
         >Toliau: Metų veiklos planas >></Link
       >

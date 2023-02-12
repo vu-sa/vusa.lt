@@ -21,17 +21,14 @@
 </template>
 
 <script setup lang="ts">
-import {
-  ArrowCircleLeft28Regular,
-  ArrowCircleRight28Regular,
-} from "@vicons/fluent";
+import { ArrowCircleRight28Regular } from "@vicons/fluent";
 import { NButton, NIcon } from "naive-ui";
 import { router, usePage } from "@inertiajs/vue3";
 import AtaskaitaLayout from "@/Components/Public/Layouts/AtaskaitaLayout.vue";
 
 const inertiaVisitOnClick = (permalink) => {
   router.visit(
-    route("main.ataskaita2022", {
+    route("ataskaita2022", {
       lang: usePage().props.app.locale,
       permalink: permalink,
     })

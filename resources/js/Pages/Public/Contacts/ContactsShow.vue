@@ -1,40 +1,67 @@
 <template>
   <Head :title="`${institution.short_name ?? institution.name}`"></Head>
   <FadeTransition appear>
-    <div class="px-16 lg:px-32">
-      <div class="grid gap-8 pt-4 md:grid-cols-6">
-        <div
-          v-if="institution.image_url"
-          class="group relative my-4 md:col-span-4"
-        >
-          <img
-            :src="institution.image_url"
-            class="h-64 w-full rounded-md object-cover duration-200 hover:opacity-90 lg:h-96"
-            style="object-position: 0% 35%"
-          />
-        </div>
-        <div
-          :class="
-            !institution.image_url
-              ? 'md:col-span-3 2xl:col-span-2'
-              : 'md:col-span-2'
-          "
-          class="prose prose-sm my-auto dark:prose-invert"
-        >
-          <h1>
-            {{ institutionName }}
-          </h1>
-          <div v-html="institutionDescription"></div>
+    <div class="mx-auto max-w-7xl px-8">
+      <div class="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-6">
+        <div class="col-span-full">
+          <header
+            class="relative w-full"
+            :class="[institution.image_url ? 'h-64' : 'h-16']"
+          >
+            <img
+              v-if="institution.image_url"
+              :src="institution.image_url"
+              :alt="institution.name ?? ''"
+              class="h-full w-full rounded-sm object-cover duration-200"
+              @error="imageError = true"
+            />
+            <div
+              v-if="institution.image_url"
+              class="absolute top-0 h-full w-full bg-gradient-to-b from-transparent to-zinc-900/90"
+            ></div>
+            <h1
+              class="absolute bottom-0 flex gap-2 px-8 py-2"
+              :class="{ 'text-zinc-100': institution.image_url }"
+            >
+              <template v-if="$page.props.app.locale === 'en'">
+                {{ institution.extra_attributes?.en?.name ?? institution.name }}
+              </template>
+              <template v-else>
+                {{ institution.name ?? "" }}
+              </template>
+              <NPopover v-if="institutionDescription" style="max-width: 400px"
+                ><template #trigger>
+                  <NBadge dot processing :offset="[-3, 10]">
+                    <NButton size="large" text
+                      ><template #icon
+                        ><NIcon
+                          :class="[
+                            institution.image_url
+                              ? 'text-zinc-100 transition hover:text-vusa-red'
+                              : null,
+                          ]"
+                          :component="Info24Regular"
+                        ></NIcon></template
+                    ></NButton>
+                  </NBadge>
+                </template>
+                <p
+                  class="prose prose-sm dark:prose-invert"
+                  v-html="institutionDescription"
+              /></NPopover>
+            </h1>
+          </header>
+          <div>
+            <div></div>
+          </div>
         </div>
         <!-- <template v-for="duty in institution"> -->
-        <ContactWithPhotoForDuties
-          v-for="(contact, index) in contacts"
+        <ContactCard
+          v-for="contact in contacts"
           :key="contact.id"
-          class="md:col-span-3 2xl:col-span-2"
           :contact="contact"
-          :index="index"
         >
-        </ContactWithPhotoForDuties>
+        </ContactCard>
         <!-- </template> -->
       </div>
     </div>
@@ -43,33 +70,22 @@
 
 <script setup lang="ts">
 import { Head, usePage } from "@inertiajs/vue3";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
-import ContactWithPhotoForDuties from "@/Components/Public/ContactWithPhotoForDuties.vue";
+import { Info24Regular } from "@vicons/fluent";
+import { NBadge, NButton, NIcon, NPopover } from "naive-ui";
+import ContactCard from "@/Components/Public/ContactWithPhotoForDuties.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
-import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 
 const props = defineProps<{
   contacts: Array<App.Entities.User>;
   institution: App.Entities.Institution;
 }>();
 
-const institutionName = computed(() => {
-  const locale = usePage().props.app.locale;
-
-  if (locale === "en") {
-    return (
-      props.institution.extra_attributes?.en?.name ?? props.institution.name
-    );
-  }
-
-  return props.institution.name ?? "";
-});
+const imageError = ref(false);
 
 const institutionDescription = computed(() => {
-  const locale = usePage().props.app.locale;
-
-  if (locale === "en") {
+  if (usePage().props.app.locale === "en") {
     return (
       props.institution.extra_attributes?.en?.description ??
       props.institution.description
@@ -79,19 +95,3 @@ const institutionDescription = computed(() => {
   return props.institution.description ?? "";
 });
 </script>
-
-<style>
-.list-enter-active {
-  transition: all 0.3s ease-out;
-}
-
-.list-leave-active {
-  transition: all 0.3s cubic-bezier(1, 0.5, 0.8, 1);
-}
-
-.list-enter-from,
-.list-leave-to {
-  opacity: 0;
-  transform: translateX(30px);
-}
-</style>

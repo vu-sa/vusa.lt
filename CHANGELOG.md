@@ -1,3 +1,9 @@
+## v0.4.3 (2023-02-12)
+
+* Routing optimization and use of 'www' from now
+* Contact page style and backend update
+* Navigation bar optimization
+
 ## v0.4.2 (2023-02-09)
 
 * Galimybė administravime perjungti kalbą, išverstas pagrindinis UI ir kai kurie formų laukeliai

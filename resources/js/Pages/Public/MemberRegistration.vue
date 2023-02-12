@@ -203,14 +203,14 @@ const props = defineProps<{
 }>();
 
 const aboutLink = computed(() =>
-  route("main.page", {
+  route("page", {
     lang: usePage().props.app.locale,
     permalink: usePage().props.app.locale === "lt" ? "apie" : "about",
   })
 );
 
 const pkpLink = computed(() =>
-  route("main.page", {
+  route("page", {
     lang: usePage().props.app.locale,
     permalink:
       usePage().props.app.locale === "lt"
@@ -364,7 +364,7 @@ const handleValidateClick = (e: MouseEvent) => {
     if (!errors) {
       formValue.submit(
         Method.POST,
-        route("main.memberRegistration.store", {
+        route("memberRegistration.store", {
           lang: usePage().props.app.locale,
         }),
         {
