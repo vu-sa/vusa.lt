@@ -1,7 +1,9 @@
 <template>
   <PageContent
     :title="`${duty.name} (${
-      duty.institution?.short_name ?? 'Neturi institucijos'
+      duty.institution?.short_name ??
+      duty.institution?.name ??
+      'Neturi institucijos'
     })`"
     :back-url="route('duties.index')"
   >
