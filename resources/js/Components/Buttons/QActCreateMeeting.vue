@@ -1,6 +1,7 @@
 <template>
   <div>
     <QuickActionButton
+      strong
       :icon="PeopleTeamAdd24Filled"
       @click="showModal = true"
       >{{ $t("Pranešti apie posėdį") }}</QuickActionButton
