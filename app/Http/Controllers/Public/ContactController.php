@@ -72,10 +72,11 @@ class ContactController extends PublicController
 			}
 			
 			$contacts = User::withWhereHas('duties', function ($query) use ($slug) {
-				$query->whereHas('institution', function ($query) use ($slug) {
+				$query->orderBy('order')->whereHas('institution', function ($query) use ($slug) {
 					$query->where('alias', '=', $slug);
 				});
-			})->get();
+			})
+			->get();
 		}
 
 		return Inertia::render('Public/Contacts/ContactsShow', [
