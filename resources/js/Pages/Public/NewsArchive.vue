@@ -24,46 +24,38 @@
         @search="handleSearch"
       /> -->
       <div class="grid gap-8 px-8 pt-8 md:grid-cols-2 lg:grid-cols-4 lg:px-32">
-        <HomeCard
+        <Link
           v-for="item in props.news.data"
           :key="item.id"
-          :has-mini-content="false"
-          :has-below-card="true"
+          :href="
+            route('news', {
+              lang: item.lang,
+              newsString: 'naujiena',
+              padalinys:
+                $page.props.alias === 'vusa'
+                  ? 'www'
+                  : $page.props.alias ?? 'www',
+              permalink: item.permalink ?? '',
+            })
+          "
         >
-          <template #mini> </template>
-          <template #below-card>
-            <!-- <NIcon class="mr-2" size="20"> <CalendarLtr20Regular /> </NIcon>VU SA
-              ataskaitinė-rinkiminė konferencija -->
-            <NIcon class="mr-2" size="20"> <Clock20Regular /> </NIcon
-            >{{ item.publish_time }}
-          </template>
-          <template #image>
-            <Link
-              :href="
-                route('news', {
-                  lang: item.lang,
-                  newsString: 'naujiena',
-                  padalinys: item.alias,
-                  permalink: item.permalink,
-                })
-              "
-              ><img
+          <HomeCard :has-mini-content="false" :has-below-card="true">
+            <template #mini> </template>
+            <template #below-card>
+              <!-- <NIcon class="mr-2" size="20"> <CalendarLtr20Regular /> </NIcon>VU SA
+                ataskaitinė-rinkiminė konferencija -->
+              <NIcon class="mr-2" size="20"> <Clock20Regular /> </NIcon
+              >{{ item.publish_time }}
+            </template>
+            <template #image>
+              <img
                 :src="item.image"
                 class="mb-1 h-40 w-full rounded-sm object-cover shadow-md duration-200 hover:shadow-lg"
-            /></Link>
-          </template>
-          <Link
-            :href="
-              route('news', {
-                lang: item.lang,
-                newsString: 'naujiena',
-                padalinys: item.alias,
-                permalink: item.permalink,
-              })
-            "
-            >{{ item.title }}</Link
-          >
-        </HomeCard>
+              />
+            </template>
+            {{ item.title }}
+          </HomeCard>
+        </Link>
       </div>
     </div>
   </FadeTransition>
