@@ -42,6 +42,7 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
     
         Route::get('pirmakursiu-stovyklos', [Public\MainController::class, 'summerCamps'])->name('pirmakursiuStovyklos');
         Route::get('kalendorius/renginys/{calendar}', [Public\MainController::class, 'calendarEventMain'])->name('calendar.event');
+        Route::get('kalendorius/ics', [Public\MainController::class, 'publicAllEventCalendar'])->name('calendar.ics');
     });
 
     Route::domain('{padalinys?}.' . explode('.', config('app.url'), 2)[1])->group(function () {
@@ -53,17 +54,12 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('kontaktai/kategorija/{alias}', [Public\ContactController::class, 'contactsCategory'])->name('contacts.category');
         Route::get('kontaktai/{alias?}', [Public\ContactController::class, 'contactsPage'])->name('contacts.alias');
 
-        Route::get('kalendorius/ics', [Public\MainController::class, 'publicAllEventCalendar'])->name('calendar.ics');
-
         Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('news_string', '(naujiena|news)')->name('news');
 
         Route::post('search', [Public\MainController::class, 'search'])->name('search');
-
         Route::get('mainNews', [Public\MainController::class, 'getMainNews']);
         Route::get('{permalink}', [Public\MainController::class, 'page'])->where('permalink', '.*')->name('page');
     });
-    
-    Route::get('kalendorius/ics', [Public\MainController::class, 'publicAllEventCalendar'])->name('calendar.ics');
 });
 
-Route::get('{permalink}', [Public\MainController::class, 'page'])->where('permalink', '.*')->name('page');
+Route::get('{permalink}', [Public\MainController::class, 'page'])->where('permalink', '.*');

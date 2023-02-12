@@ -34,6 +34,7 @@ const handleSelectNavigation = (id: number) => {
     router.visit(
       route("page", {
         lang: usePage().props.app.locale,
+        padalinys: "www",
         permalink: navigationItem.url,
       }),
       {
