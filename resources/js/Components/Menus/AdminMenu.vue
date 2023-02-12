@@ -3,14 +3,13 @@
     v-model:value="activeKey"
     accordion
     :collapsed="collapsed"
-    :collapsed-width="56"
-    :collapsed-icon-size="26"
     :options="menuOptions"
+    @update:value="$emit('close:drawer')"
   />
 </template>
 
 <script setup lang="tsx">
-import { trans as $t, getActiveLanguage } from "laravel-vue-i18n";
+import { trans as $t } from "laravel-vue-i18n";
 import {
   Flowchart20Regular,
   Folder24Regular,
@@ -25,6 +24,10 @@ import { NIcon, NMenu } from "naive-ui";
 import { computed, ref } from "vue";
 
 import Icons from "@/Types/Icons/regular";
+
+defineEmits<{
+  (e: "close:drawer"): void;
+}>();
 
 defineProps<{
   collapsed: boolean;

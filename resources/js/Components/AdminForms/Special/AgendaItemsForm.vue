@@ -14,9 +14,15 @@
             darbotvarkės klausimų</ModelChip
           >
         </p>
-        <p class="my-0">
+        <p class="mb-4">
           Įrašyk arba įkopijuok visus klausimus, kurie šiuo metu yra numatomi
           posėdyje.
+        </p>
+        <p>
+          Jeigu žinai, kad posėdis vyks, bet
+          <strong>dar nėra klausimų</strong> (arba jų dar bus) –
+          <strong> pažymėk varnelę ties </strong>„Vėliau gali atsirasti
+          papildomų klausimų“
         </p>
       </SuggestionAlert>
     </FadeTransition>
@@ -60,7 +66,10 @@
     <NFormItem :show-label="false">
       <NButton
         :loading="loading"
-        :disabled="agendaItemForm.agendaItemTitles.length === 0"
+        :disabled="
+          agendaItemForm.agendaItemTitles.length === 0 &&
+          !agendaItemForm.moreAgendaItemsUndefined
+        "
         type="primary"
         @click.prevent="$emit('submit', agendaItemForm)"
         >Sukurti</NButton

@@ -17,15 +17,15 @@
         @submit:form="handleSubmitForm"
       >
         <template #suggestion-content>
-          <p class="mt-0">
+          <p class="mb-4">
             <strong> <i>Focus</i> grupės </strong> yra gyvi arba virtualūs
             susitikimai, kurie <i>fokusuoti</i> ties tam tikru klausimu.
           </p>
-          <p>
+          <p class="mb-4">
             Paspausk <strong>„Pradėti!“</strong> ir sukurtame veiksmo šablone
             rasi visą informaciją apie tai, kaip organizuoti focus grupę.
           </p>
-          <p class="mb-0">Važiuojam! ✊</p>
+          <p>Važiuojam! ✊</p>
         </template>
       </SpecialDoingForm>
       <ModalHelperButton v-if="!showAlert" @click="showAlert = true" />

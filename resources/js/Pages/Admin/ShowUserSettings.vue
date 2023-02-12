@@ -29,7 +29,7 @@
       <a
         target="_blank"
         href="https://github.com/vu-sa/vusa.lt/blob/main/CHANGELOG.md"
-        ><NButton text size="small" quaternary> v0.4.3 </NButton></a
+        ><NButton text size="small" quaternary> v0.4.4 </NButton></a
       >·
       <a
         class="inline-flex items-center"

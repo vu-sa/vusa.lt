@@ -11,10 +11,10 @@
             ><NIcon size="20" :component="PuzzlePiece20Regular" /></template
         ></NButton>
       </template> -->
-    <div class="mt-4 flex flex-col gap-8 md:flex-row">
+    <div class="flex flex-col gap-8 md:flex-row">
       <NSteps
         vertical
-        class="h-fit w-fit border-zinc-600 p-4 pr-12 md:border-r"
+        class="h-fit w-fit border-zinc-300 p-4 pr-12 dark:border-zinc-500 md:border-r"
         size="small"
         :current="(current as number)"
         :status="currentStatus"
