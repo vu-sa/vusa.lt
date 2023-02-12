@@ -42,9 +42,9 @@
         ><span>{{ $t("Greitieji veiksmai") }}</span>
       </h2>
       <div class="flex items-center gap-4">
-        <QActFocusGroupButton />
-        <QActSurveyButton />
         <QActCreateMeeting />
+        <QActSurveyButton />
+        <QActFocusGroupButton />
       </div>
     </section>
     <section
