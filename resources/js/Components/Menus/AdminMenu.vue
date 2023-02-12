@@ -3,9 +3,8 @@
     v-model:value="activeKey"
     accordion
     :collapsed="collapsed"
-    :collapsed-width="56"
-    :collapsed-icon-size="26"
     :options="menuOptions"
+    @update:value="$emit('close:drawer')"
   />
 </template>
 
@@ -25,6 +24,10 @@ import { NIcon, NMenu } from "naive-ui";
 import { computed, ref } from "vue";
 
 import Icons from "@/Types/Icons/regular";
+
+defineEmits<{
+  (e: "close:drawer"): void;
+}>();
 
 defineProps<{
   collapsed: boolean;
