@@ -7,11 +7,7 @@
       :render-label="renderPadalinysLabel"
       @select="$emit('select:padalinys', $event)"
     >
-      <NButton
-        :disabled="route().current('*page')"
-        :size="size"
-        style="border-radius: 0.5rem"
-      >
+      <NButton :size="size" style="border-radius: 0.5rem">
         {{ $t(padalinys) }}
         <NIcon class="ml-1" size="18">
           <ChevronDown20Filled />

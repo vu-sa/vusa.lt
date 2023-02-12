@@ -53,7 +53,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'https://vusa.lt'),
+    'url' => env('APP_URL', 'https://www.vusa.lt'),
 
     'asset_url' => env('ASSET_URL', null),
 
@@ -95,6 +95,9 @@ return [
     */
 
     'fallback_locale' => 'en',
+
+    // Locales
+    'locales' => ['lt', 'en'],
 
     /*
     |--------------------------------------------------------------------------

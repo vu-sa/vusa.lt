@@ -10,6 +10,7 @@ interface User extends Omit<App.Entities.User, "padaliniai"> {
 }
 
 interface InertiaPageProps {
+  alias?: string;
   app: {
     env: "local" | "production" | "testing";
     locale: LocaleEnum;
@@ -26,6 +27,7 @@ interface InertiaPageProps {
     info: string | null;
     success: string | null;
   };
+  mainNavigation?: App.Entities.Navigation[];
   misc: any;
   padaliniai: Pick<
     App.Entities.Padalinys,

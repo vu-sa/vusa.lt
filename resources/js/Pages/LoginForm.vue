@@ -45,7 +45,7 @@
               class="max-w-xs text-center text-xs text-zinc-600 sm:text-center"
             >
               <strong>vusa.lt/mano</strong> {{ $t("auth.usage_status") }}.
-              <!-- <Link class="text-zinc-400 underline" :href="route('main.home')"
+              <!-- <Link class="text-zinc-400 underline" :href="route('home')"
                 >Kaip tapti?</Link
               > -->
             </p>

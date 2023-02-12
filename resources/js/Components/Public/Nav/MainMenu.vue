@@ -32,7 +32,7 @@ const handleSelectNavigation = (id: number) => {
 
   if (props.padalinys === "Padaliniai") {
     router.visit(
-      route("main.page", {
+      route("page", {
         lang: usePage().props.app.locale,
         permalink: navigationItem.url,
       }),

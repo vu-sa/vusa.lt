@@ -1,18 +1,32 @@
 <template>
   <div
-    class="mx-8 mb-4 rounded-lg bg-white p-4 text-gray-800 shadow-lg dark:bg-zinc-800 dark:text-white lg:mx-16 lg:mb-8 lg:px-8"
+    class="mx-8 mb-4 rounded-lg bg-white p-4 shadow-lg dark:bg-zinc-800 lg:mx-16 lg:mb-8 lg:px-8"
   >
-    <h1 class="lg:mb-0">{{ $t("Naujienos") }}</h1>
-    <div class="mb-4 flex flex-wrap justify-between gap-1">
-      <p>
-        {{
-          $t("Karščiausios universiteto naujienos tiesiai iš studentų lūpų")
-        }}!
-      </p>
-      <Link v-if="$page.props.app.locale === 'lt'" :href="route('newsArchive')"
-        >Daugiau →</Link
-      >
-    </div>
+    <header class="mb-4 flex flex-wrap items-center justify-between gap-1">
+      <div>
+        <h1 class="lg:mb-0">{{ $t("Naujienos") }}</h1>
+        <p class="text-zinc-800 dark:text-zinc-50">
+          {{
+            $t("Karščiausios universiteto naujienos tiesiai iš studentų lūpų")
+          }}!
+        </p>
+      </div>
+      <Link
+        v-if="$page.props.app.locale === 'lt'"
+        :href="
+          route('newsArchive', {
+            padalinys:
+              $page.props.alias === 'vusa' ? 'www' : $page.props.alias ?? 'www',
+          })
+        "
+        ><NButton text icon-placement="right"
+          >Daugiau<template #icon
+            ><NIcon
+              :component="ArrowRight12Regular"
+            ></NIcon></template></NButton
+      ></Link>
+    </header>
+
     <div class="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
       <HomeCard
         v-for="item in news"
@@ -34,8 +48,8 @@
               route('news', {
                 lang: item.lang,
                 newsString: 'naujiena',
-                padalinys: item.alias,
-                permalink: item.permalink,
+                padalinys: item.alias === 'vusa' ? 'www' : item.alias,
+                permalink: item.permalink ?? '',
               })
             "
             ><img
@@ -49,8 +63,8 @@
             route('news', {
               lang: item.lang,
               newsString: 'naujiena',
-              padalinys: item.alias,
-              permalink: item.permalink,
+              padalinys: item.alias === 'vusa' ? 'www' : item.alias,
+              permalink: item.permalink ?? '',
             })
           "
           >{{ item.title }}</Link
@@ -62,9 +76,9 @@
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import { Clock20Regular } from "@vicons/fluent";
+import { ArrowRight12Regular, Clock20Regular } from "@vicons/fluent";
 import { Link } from "@inertiajs/vue3";
-import { NIcon } from "naive-ui";
+import { NButton, NIcon } from "naive-ui";
 
 import HomeCard from "@/Components/Public/HomeCard.vue";
 

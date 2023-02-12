@@ -61,7 +61,11 @@ class MainController extends PublicController
 		// get last 4 news by publishing date
 		$banners = Padalinys::where('alias', 'vusa')->first()->banners()->inRandomOrder()->where('is_active', 1)->get();
 
-		$news = News::where([['padalinys_id', '=', $this->padalinys->id],['lang', app()->getLocale()], ['draft', '=', 0]])->where('publish_time', '<=', date('Y-m-d H:i:s'))->orderBy('publish_time', 'desc')->take(4)->get();
+		$news = News::with('padalinys')->where([['padalinys_id', '=', $this->padalinys->id],['lang', app()->getLocale()], ['draft', '=', 0]])
+			->where('publish_time', '<=', date('Y-m-d H:i:s'))
+			->orderBy('publish_time', 'desc')
+			->take(4)
+			->get();
 
 		if (app()->getLocale() === 'en') {
             $calendar = Calendar::where('extra_attributes->en->shown', 'true')->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'extra_attributes', 'category')->take(75)->get();
@@ -170,9 +174,14 @@ class MainController extends PublicController
 
 	public function page()
 	{
+		// TODO: this rewrite needs to be done in .htaccess
+		// if (request()->lang === null) {		
+		// 	return redirect('/' . config('app.locale') . '/' . request()->permalink, 301);
+        // }
+
 		$page = Page::where([['permalink', '=', request()->permalink], ['padalinys_id', '=', $this->padalinys->id]])->first();
 
-		if ($page == null) {
+		if ($page === null) {
 			abort(404);
 		}
 
@@ -198,51 +207,6 @@ class MainController extends PublicController
 			'title' => $page->title,
 			// truncate text to first sentence
 			'description' => Str::limit(strip_tags($page->text), 150),
-		]);
-	}
-
-	public function contactsCategory(Request $request)
-	{
-		// Special case for 'padaliniai' alias, since it's a special category, fetched from 'padaliniai' table
-
-		if (request()->alias == 'padaliniai') {
-			$padaliniai = Padalinys::where('type', '=', 'padalinys')->orderBy('shortname')->get();
-			$padaliniaiInstitutions = [];
-			foreach ($padaliniai as $key => $padalinys) {
-				$institution = Institution::where('alias', '=', $padalinys->alias)->first();
-				// add institution to array
-				array_push($padaliniaiInstitutions, $institution);
-			}
-
-			$duties_institutions = new EloquentCollection($padaliniaiInstitutions);
-		} else {
-			$duties_institutions = Institution::whereHas('duties')
-				// TODO: Čia reikia aiškesnės logikos
-				->when(
-					!request()->alias,
-					// If /kontaktai/{} or /kontaktai/kategorija/{}
-					function ($query) {
-						return $query->where([['padalinys_id', '=', $this->padalinys->id], ['alias', 'not like', '%studentu-atstovai%']]);
-					},
-					// If there's an alias in the url
-					function ($query) {
-						return $query->where('alias', '=', request()->alias);
-					}
-				)->get();
-		}
-
-		// check if institution array length is 1, then just return that one institution contacts.
-
-		if ($duties_institutions->count() == 1) {
-			// redirect to that one institution page
-			return redirect('kontaktai/' . $duties_institutions->first()->alias);
-		}
-
-		return Inertia::render('Public/Contacts/Category', [
-			'institutions' => $duties_institutions
-		])->withViewData([
-			'title' => 'Kontaktai',
-			'description' => 'VU SA kontaktai',
 		]);
 	}
 

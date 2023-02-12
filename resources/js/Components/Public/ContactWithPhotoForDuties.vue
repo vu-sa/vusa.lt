@@ -1,6 +1,6 @@
 <template>
   <figure
-    class="relative flex h-auto min-h-fit max-w-xs flex-col rounded-sm border dark:border-zinc-700 lg:flex-row"
+    class="relative flex h-auto min-h-fit max-w-md flex-col rounded-sm border dark:border-zinc-700 lg:flex-row"
   >
     <div
       v-if="getImageUrl(contact)"
@@ -32,7 +32,11 @@
               {{ changeDutyNameEndings(contact, duty) }}
               {{ showAdditionalInfo(duty) }}
               <span v-if="duty.description" class="align-middle">
-                <InfoPopover trigger="hover" color="gray">
+                <InfoPopover
+                  style="max-width: 400px"
+                  trigger="hover"
+                  color="gray"
+                >
                   <span v-html="dutyDescription(duty)"></span>
                 </InfoPopover>
               </span>
@@ -46,14 +50,22 @@
           <a :href="`tel:${contact.phone}`">{{ contact.phone }}</a>
         </p>
         <template v-for="duty in contact.duties" :key="duty.id">
-          <div v-if="duty.email" class="flex flex-row items-center">
-            <NIcon class="mr-2"> <Mail20Regular /> </NIcon
-            ><a :href="`mailto:${duty.email}`">{{ duty.email }}</a>
-          </div>
-          <div v-else>
-            <NIcon class="mr-2"> <Mail20Regular /> </NIcon
-            ><a :href="`mailto:${contact.email}`">{{ contact.email }}</a>
-          </div>
+          <a v-if="duty.email" :href="`mailto:${duty.email}`">
+            <NEllipsis style="max-width: 250px">
+              <NIcon class="mr-2 align-middle" :component="Mail20Regular" />
+              <span class="align-middle">
+                {{ duty.email }}
+              </span>
+            </NEllipsis>
+          </a>
+          <a v-else :href="`mailto:${contact.email}`">
+            <NEllipsis style="max-width: 250px">
+              <NIcon class="mr-2 align-middle" :component="Mail20Regular" />
+              <span class="align-middle">
+                {{ contact.email }}
+              </span>
+            </NEllipsis>
+          </a>
         </template>
       </div>
     </div>
@@ -80,7 +92,7 @@
 <script setup lang="ts">
 import { Link, usePage } from "@inertiajs/vue3";
 import { Mail20Regular, Phone20Regular } from "@vicons/fluent";
-import { NButton, NIcon } from "naive-ui";
+import { NButton, NEllipsis, NIcon } from "naive-ui";
 import { PersonEdit24Regular } from "@vicons/fluent";
 import InfoPopover from "../Buttons/InfoPopover.vue";
 

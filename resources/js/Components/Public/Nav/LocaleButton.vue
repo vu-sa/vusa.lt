@@ -86,65 +86,43 @@ const icon = computed(() => {
 const handleSelectLanguage = (key) => {
   const newLang = locales.filter((l) => {
     return l !== props.locale;
-  });
+  })[0];
 
-  if (usePage().props.alias === "vusa") {
-    if (key === "home") {
-      router.visit(
-        route("main.home", {
-          lang: newLang,
-        }),
-        {
-          onSuccess: () => {
-            emit("changeLocale", newLang[0]);
-            loadLanguageAsync(newLang[0]);
-          },
-        }
-      );
-    } else if (key === "page") {
-      router.visit(
-        route("main.page", {
-          lang: newLang,
-          padalinys: usePage().props.alias,
-          permalink: usePage().props.otherLangPage.permalink,
-        }),
-        {
-          onSuccess: () => {
-            emit("changeLocale", newLang[0]);
-            loadLanguageAsync(newLang[0]);
-          },
-        }
-      );
-    }
-  } else {
-    if (key === "home") {
-      router.visit(
-        route("padalinys.home", {
-          lang: newLang,
-          padalinys: usePage().props.alias,
-        }),
-        {
-          onSuccess: () => {
-            emit("changeLocale", newLang[0]);
-            loadLanguageAsync(newLang[0]);
-          },
-        }
-      );
-    } else if (key === "page") {
-      router.visit(
-        route("padalinys.page", {
-          lang: newLang,
-          padalinys: usePage().props.alias,
-          permalink: usePage().props.otherLangPage.permalink,
-        }),
-        {
-          onSuccess: () => {
-            emit("changeLocale", newLang[0]);
-            loadLanguageAsync(newLang[0]);
-          },
-        }
-      );
-    }
+  if (key === "home") {
+    router.visit(
+      route("home", {
+        lang: newLang,
+        padalinys:
+          usePage().props.alias === "vusa"
+            ? "www"
+            : usePage().props.alias ?? "www",
+      }),
+      {
+        onSuccess: () => {
+          emit("changeLocale", newLang);
+          console.log("changeLocale", newLang);
+          loadLanguageAsync(newLang);
+        },
+      }
+    );
+  } else if (key === "page") {
+    router.visit(
+      route("page", {
+        lang: newLang,
+        padalinys:
+          usePage().props.alias === "vusa"
+            ? "www"
+            : usePage().props.alias ?? "www",
+        permalink: usePage().props?.otherLangPage?.permalink,
+      }),
+      {
+        onSuccess: () => {
+          emit("changeLocale", newLang);
+          // padalinysSelector needs to be updated in this way
+          loadLanguageAsync(newLang);
+        },
+      }
+    );
   }
 };
 </script>

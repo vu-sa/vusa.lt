@@ -268,6 +268,6 @@ class UserController extends ResourceController
     
         $request->session()->regenerateToken();
     
-        return redirect()->route('main.home');
+        return redirect()->route('home');
     }
 }

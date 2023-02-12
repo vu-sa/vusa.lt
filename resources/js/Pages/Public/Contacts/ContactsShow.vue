@@ -2,13 +2,18 @@
   <Head :title="`${institution.short_name ?? institution.name}`"></Head>
   <FadeTransition appear>
     <div class="mx-auto max-w-7xl px-8">
-      <div class="grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-6">
+      <div class="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-6">
         <div class="col-span-full">
-          <header class="relative h-64 w-full">
+          <header
+            class="relative w-full"
+            :class="[institution.image_url ? 'h-64' : 'h-16']"
+          >
             <img
               v-if="institution.image_url"
               :src="institution.image_url"
+              :alt="institution.name ?? ''"
               class="h-full w-full rounded-sm object-cover duration-200"
+              @error="imageError = true"
             />
             <div
               v-if="institution.image_url"
@@ -24,7 +29,7 @@
               <template v-else>
                 {{ institution.name ?? "" }}
               </template>
-              <NPopover v-if="institutionDescription"
+              <NPopover v-if="institutionDescription" style="max-width: 400px"
                 ><template #trigger>
                   <NBadge dot processing :offset="[-3, 10]">
                     <NButton size="large" text
@@ -65,7 +70,7 @@
 
 <script setup lang="ts">
 import { Head, usePage } from "@inertiajs/vue3";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import { Info24Regular } from "@vicons/fluent";
 import { NBadge, NButton, NIcon, NPopover } from "naive-ui";
@@ -76,6 +81,8 @@ const props = defineProps<{
   contacts: Array<App.Entities.User>;
   institution: App.Entities.Institution;
 }>();
+
+const imageError = ref(false);
 
 const institutionDescription = computed(() => {
   if (usePage().props.app.locale === "en") {

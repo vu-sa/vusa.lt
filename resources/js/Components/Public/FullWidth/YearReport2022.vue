@@ -11,7 +11,7 @@
       ></ShapeDivider1>
       <Link
         :href="
-          route('main.ataskaita2022', {
+          route('ataskaita2022', {
             lang: $page.props.app.locale,
             permalink: 'pradzia',
           })
@@ -19,6 +19,7 @@
       >
         <img
           src="/images/ataskaita2022/kitos-nuotraukos/VU SA.jpg"
+          loading="lazy"
           class="mt-2 h-32 w-full object-cover lg:my-1 lg:h-64"
           style="object-position: 0% 50%"
         />
@@ -29,11 +30,11 @@
       <h2
         class="my-4 text-2xl font-bold text-gray-900 duration-200 hover:text-vusa-red dark:text-zinc-50 lg:w-4/5 lg:text-3xl"
       >
-        <Link
+        <a
           class="flex w-fit flex-row items-center gap-2"
           style="text-decoration: none"
           :href="
-            route('main.ataskaita2022', {
+            route('ataskaita2022', {
               lang: $page.props.app.locale,
               permalink: 'pradzia',
             })
@@ -45,11 +46,11 @@
           <NIcon class="" style="font-size: 24pt">
             <ArrowCircleRight20Regular />
           </NIcon>
-        </Link>
+        </a>
       </h2>
       <div class="space-between flex flex-row">
         <p
-          class="prose-sm prose mb-4 text-sm dark:prose-invert lg:max-w-[80ch] lg:text-base"
+          class="prose prose-sm mb-4 text-sm dark:prose-invert lg:max-w-[80ch] lg:text-base"
         >
           <template v-if="$page.props.app.locale === 'lt'">
             Ataskaitos knygutė – kiekvienais metais skelbiama VU SA nuveiktų
@@ -77,8 +78,9 @@ import { ArrowCircleRight20Regular } from "@vicons/fluent";
 import { Link } from "@inertiajs/vue3";
 import { NIcon } from "naive-ui";
 
-
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
+
+defineOptions({ suspensible: false });
 
 defineProps<{
   isThemeDark: boolean;

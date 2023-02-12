@@ -1,62 +1,70 @@
 <template>
   <FadeTransition>
-    <Suspense>
-      <NConfigProvider
-        v-show="mounted"
-        :theme="isThemeDark ? darkTheme : undefined"
-        :theme-overrides="themeOverrides"
+    <!-- <Suspense> -->
+    <NConfigProvider
+      v-show="mounted"
+      :theme="isThemeDark ? darkTheme : undefined"
+      :theme-overrides="themeOverrides"
+    >
+      <div
+        class="flex min-h-screen flex-col justify-between bg-neutral-50 antialiased dark:bg-zinc-900"
       >
-        <div
-          class="flex min-h-screen flex-col justify-between bg-neutral-50 antialiased dark:bg-zinc-900"
-        >
-          <FadeTransition appear
-            ><MainNavigation :is-theme-dark="isThemeDark"
-          /></FadeTransition>
-          <main class="pt-24 pb-8">
-            <slot></slot>
-          </main>
-
-          <FadeTransition appear>
-            <ConsentCard
-              v-if="!cookieConsent"
-              @okay-cookie-consent="cookieConsent = true"
-            />
+        <FadeTransition appear
+          ><MainNavigation :is-theme-dark="isThemeDark"
+        /></FadeTransition>
+        <main class="pt-24 pb-8">
+          <FadeTransition mode="out-in">
+            <Suspense>
+              <slot />
+              <template #fallback>
+                <div class="flex h-screen items-center justify-center">
+                  <NSpin>
+                    <template #description>
+                      <div class="mt-2 h-8 text-vusa-red">
+                        <FadeTransition>
+                          <span v-if="spinWarning">
+                            Pabandykite perkrauti puslapį arba grįžkite į
+                            <a class="underline" :href="$page.props.app.url"
+                              >vusa.lt</a
+                            >
+                          </span>
+                          <span v-else></span>
+                        </FadeTransition>
+                      </div>
+                    </template>
+                  </NSpin>
+                </div>
+              </template>
+            </Suspense>
           </FadeTransition>
+        </main>
 
-          <Footer />
-        </div>
+        <FadeTransition appear>
+          <ConsentCard
+            v-if="!cookieConsent"
+            @okay-cookie-consent="cookieConsent = true"
+          />
+        </FadeTransition>
 
-        <!-- preconnect to tawk.to -->
-        <link rel="preconnect" href="https://embed.tawk.to" />
-      </NConfigProvider>
-      <template #fallback>
-        <div class="flex h-screen items-center justify-center">
-          <NSpin>
-            <template #description>
-              <div class="mt-2 h-8 text-vusa-red">
-                <FadeTransition>
-                  <span v-if="spinWarning">
-                    Pabandykite perkrauti puslapį arba grįžkite į
-                    <a class="underline" :href="$page.props.app.url">vusa.lt</a>
-                  </span>
-                  <span v-else></span>
-                </FadeTransition>
-              </div>
-            </template>
-          </NSpin>
-        </div>
-      </template>
-    </Suspense>
+        <Footer />
+      </div>
+
+      <!-- preconnect to tawk.to -->
+      <link rel="preconnect" href="https://embed.tawk.to" />
+    </NConfigProvider>
+
+    <!-- </Suspense> -->
   </FadeTransition>
 </template>
 
 <script setup lang="ts">
-import { NSpin, darkTheme } from "naive-ui";
+import { NConfigProvider, NSpin, darkTheme } from "naive-ui";
 import { defineAsyncComponent, onMounted, ref } from "vue";
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import { useStorage } from "@vueuse/core";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
+import MainNavigation from "@/Components/Public/Layouts/MainNavigation.vue";
 
 const isThemeDark = ref<boolean>(isDarkMode());
 const mounted = ref(false);
@@ -73,14 +81,6 @@ const themeOverrides = {
 
 const ConsentCard = defineAsyncComponent(
   () => import("@/Components/Public/ConsentCard.vue")
-);
-
-const NConfigProvider = defineAsyncComponent(() =>
-  import("naive-ui").then((m) => m.NConfigProvider)
-);
-
-const MainNavigation = defineAsyncComponent(
-  () => import("@/Components/Public/Layouts/MainNavigation.vue")
 );
 
 const Footer = defineAsyncComponent(

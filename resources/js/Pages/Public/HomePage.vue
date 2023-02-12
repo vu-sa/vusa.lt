@@ -3,37 +3,30 @@
     <title>Pagrindinis</title>
   </Head>
 
-  <FadeTransition appear>
-    <div>
-      <EventCalendar
-        :is-theme-dark="isThemeDark"
-        :show-photos="true"
-        :calendar="calendar"
-      /></div
-  ></FadeTransition>
+  <EventCalendar
+    :is-theme-dark="isThemeDark"
+    :show-photos="true"
+    :calendar="calendar"
+  />
 
-  <FadeTransition v-if="mainPage.length > 0" appear>
-    <div class="mt-8">
-      <MainLinks :main-page="mainPage" /></div
-  ></FadeTransition>
+  <div v-if="mainPage.length > 0" class="mt-8">
+    <MainLinks :main-page="mainPage" />
+  </div>
 
   <!-- <FadeTransition v-if="$page.props.locale === 'lt'">
-        <div class="mt-8">
-          <BannerCarousel :banners="banners" />
-        </div>
-      </FadeTransition> -->
+            <div class="mt-8">
+              <BannerCarousel :banners="banners" />
+            </div>
+          </FadeTransition> -->
 
-  <FadeTransition v-if="news.length > 0" appear>
-    <div class="mt-4"><NewsElement :news="news" /></div>
-  </FadeTransition>
+  <div v-if="news.length > 0" class="mt-4"><NewsElement :news="news" /></div>
 
-  <FadeTransition v-if="$page.props.app.locale === 'lt'" appear>
-    <div><SummerCamps :is-theme-dark="isThemeDark" /></div
-  ></FadeTransition>
+  <SummerCamps
+    v-if="$page.props.app.locale === 'lt'"
+    :is-theme-dark="isThemeDark"
+  />
 
-  <FadeTransition appear>
-    <div><YearReport2022 :is-theme-dark="isThemeDark" /></div>
-  </FadeTransition>
+  <YearReport2022 :is-theme-dark="isThemeDark" />
 </template>
 
 <script setup lang="ts">
@@ -42,8 +35,6 @@ import { defineAsyncComponent } from "vue";
 import { onMounted, ref } from "vue";
 
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
-import EventCalendar from "@/Components/Public/FullWidth/EventCalendar.vue";
-import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 defineProps<{
   news: Array<App.Entities.News>;
@@ -59,6 +50,11 @@ const MainLinks = defineAsyncComponent(
   () => import("@/Components/Public/FullWidth/MainLinks.vue")
 );
 
+const EventCalendar = defineAsyncComponent(
+  // eslint-disable-next-line no-secrets/no-secrets
+  () => import("@/Components/Public/FullWidth/EventCalendar.vue")
+);
+
 // const BannerCarousel = defineAsyncComponent(
 // eslint-disable-next-line no-secrets/no-secrets
 //   () => import("@/Components/Public/FullWidth/BannerCarousel.vue")
@@ -72,7 +68,7 @@ const SummerCamps = defineAsyncComponent(
   // eslint-disable-next-line no-secrets/no-secrets
   () => import("@/Components/Public/FullWidth/SummerCamps.vue")
 );
-
+// yearreport2022 make unsuspensible
 const YearReport2022 = defineAsyncComponent(
   // eslint-disable-next-line no-secrets/no-secrets
   () => import("@/Components/Public/FullWidth/YearReport2022.vue")

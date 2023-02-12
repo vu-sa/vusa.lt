@@ -53,7 +53,7 @@
       <p v-if="$page.props.app.locale === 'lt'" class="w-4/5 text-sm">
         <strong>Ir dar</strong> - artėja VU SA ir VU SA PKP prisistatymai! Jeigu
         nenori jų laukti, prisijunk naudodamas
-        <Link :href="route('main.memberRegistration', { lang: 'lt' })"
+        <Link :href="route('memberRegistration', { lang: 'lt' })"
           >šią registraciją</Link
         >.
       </p>
@@ -61,9 +61,7 @@
       <p v-else class="w-4/5 text-sm">
         <strong>And also</strong> - the presentations of VU SA and VU SA PKP are
         coming! If you don't want to wait, you can join through
-        <Link :href="route('main.memberRegistration', { lang: 'en' })"
-          >here</Link
-        >.
+        <Link :href="route('memberRegistration', { lang: 'en' })">here</Link>.
       </p>
     </div>
 
@@ -111,7 +109,7 @@
                     <a
                       target="_blank"
                       :href="
-                        route('main.calendar.event', {
+                        route('calendar.event', {
                           calendar: attr.key,
                           lang: $page.props.app.locale,
                         })
@@ -173,10 +171,10 @@
 
         <div class="flex gap-4">
           <div class="flex items-center rounded-2xl bg-zinc-100/50 px-4">
-            <span>{{ route("main.calendar.ics", { lang: "en" }) }}</span>
+            <span>{{ route("calendar.ics", { lang: "en" }) }}</span>
           </div>
           <NButton
-            @click="copyToClipboard(route('main.calendar.ics', { lang: 'en' }))"
+            @click="copyToClipboard(route('calendar.ics', { lang: 'en' }))"
             ><template #icon><NIcon :component="Copy16Regular" /></template>
             {{ $t("Kopijuoti") }}</NButton
           >

@@ -40,7 +40,7 @@
         mode="horizontal"
         class="grow"
         :dropdown-props="{ size: 'medium' }"
-        :flat-navigation="mainNavigation"
+        :flat-navigation="$page.props.mainNavigation"
         :padalinys="padalinys"
         @close:drawer="activeDrawer = false"
       ></MainMenu>
@@ -72,7 +72,7 @@
         </template>
         <MainMenu
           :options="navigation"
-          :flat-navigation="mainNavigation"
+          :flat-navigation="$page.props.mainNavigation"
           :padalinys="padalinys"
           @close:drawer="activeDrawer = false"
         ></MainMenu>
@@ -89,6 +89,7 @@ import { computed, reactive, ref } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 import type { RouteParamsWithQueryOverload } from "ziggy-js";
 
+import { LocaleEnum } from "@/Types/enums";
 import AppLogo from "@/Components/AppLogo.vue";
 import DarkModeSwitch from "@/Components/Buttons/DarkModeSwitch.vue";
 import FacebookButton from "../Nav/FacebookButton.vue";
@@ -106,7 +107,6 @@ defineProps<{
 // map padaliniai to options_padaliniai
 
 const padaliniai = usePage().props.padaliniai;
-const mainNavigation = ref(usePage().props.mainNavigation);
 const locale = ref(usePage().props.app.locale);
 const activeDrawer = ref(false);
 const toggleMenu = () => {
@@ -117,15 +117,15 @@ const homeParams: RouteParamsWithQueryOverload = reactive({
   lang: locale.value,
 });
 
-const parseNavigation = (array, id: number) => {
+const parseNavigation = (array: App.Entities.Navigation[], id: number) => {
   const result: Record<string, any>[] = [];
   array.forEach((item) => {
-    if (item[1].parent_id === id) {
+    if (item.parent_id === id) {
       result.push({
-        key: item[1].id,
-        label: item[1].name,
-        children: parseNavigation(array, item[1].id),
-        url: item[1].url.replace(/^\/|\/$/g, ""),
+        key: item.id,
+        label: item.name,
+        children: parseNavigation(array, item.id),
+        url: item.url.replace(/^\/|\/$/g, ""),
       });
       if (result[result.length - 1].children.length === 0) {
         delete result[result.length - 1].children;
@@ -136,9 +136,13 @@ const parseNavigation = (array, id: number) => {
   return result;
 };
 
-const navigation = computed(() =>
-  parseNavigation(Object.entries(mainNavigation.value), 0)
-);
+const navigation = computed(() => {
+  if (usePage().props.mainNavigation === undefined) {
+    return [];
+  }
+
+  return parseNavigation(usePage().props.mainNavigation, 0);
+});
 
 const getPadalinys = (alias = usePage().props.alias) => {
   for (const padalinys of padaliniai) {
@@ -190,14 +194,12 @@ const resetPadalinys = () => {
   padalinys.value = "Padaliniai";
 };
 
-const localeSelect = (lang: string) => {
+const localeSelect = (lang: LocaleEnum) => {
   if (lang !== "lt") {
-    locale.value = "en";
+    locale.value = LocaleEnum.EN;
   } else {
-    locale.value = "lt";
+    locale.value = LocaleEnum.LT;
   }
-  // update navigation
-  mainNavigation.value = usePage().props.mainNavigation;
   // update app logo button
   homeParams.lang = locale.value;
   // reset padalinys value if home

@@ -5,7 +5,7 @@
     <div class="flex flex-row items-center space-x-4">
       <NPopover>
         <template #trigger>
-          <Link :href="route('main.home', { lang: locale })" preserve-state>
+          <Link :href="route('home', { lang: locale })" preserve-state>
             <img
               class="min-w-[15vw] object-contain lg:min-w-[10vw]"
               src="/logos/vusa.lin.hor.svg"
@@ -16,7 +16,7 @@
       </NPopover>
       <!-- <Link
         class="text-gray-500 duration-200 hover:text-gray-900 hidden lg:block"
-        :href="route('main.home')"
+        :href="route('home')"
         >{{ $t("Grįžti į vusa.lt") }}</Link
       > -->
       <div>
@@ -52,7 +52,7 @@
       <Link
         v-if="permalink === 'sveikinimai'"
         :href="
-          route('main.ataskaita2022', {
+          route('ataskaita2022', {
             lang: locale,
             permalink: 'sveikinimai',
           })
@@ -66,7 +66,7 @@
         v-else
         class="duration-200 hover:text-vusa-red"
         :href="
-          route('main.ataskaita2022', {
+          route('ataskaita2022', {
             lang: locale,
             permalink: 'sveikinimai',
           })
@@ -77,7 +77,7 @@
       <Link
         class="duration-200 hover:text-vusa-red"
         :href="
-          route('main.ataskaita2022', { lang: locale, permalink: 'vu-sa' })
+          route('ataskaita2022', { lang: locale, permalink: 'vu-sa' })
         "
       >
         <NGradientText v-if="permalink === 'vu-sa'" type="error">{{
@@ -87,7 +87,7 @@
       >
       <Link
         class="duration-200 hover:text-vusa-red"
-        :href="route('main.ataskaita2022', { lang: locale, permalink: 'mvp' })"
+        :href="route('ataskaita2022', { lang: locale, permalink: 'mvp' })"
         ><NGradientText v-if="permalink === 'mvp'" type="error">{{
           $t("Metų veiklos planas")
         }}</NGradientText
@@ -106,7 +106,7 @@
       <Link
         class="duration-200 hover:text-vusa-red"
         :href="
-          route('main.ataskaita2022', { lang: locale, permalink: 'sritys' })
+          route('ataskaita2022', { lang: locale, permalink: 'sritys' })
         "
         ><NGradientText v-if="permalink === 'sritys'" type="error">{{
           $t("Bendruomenė")
@@ -116,7 +116,7 @@
       <Link
         class="duration-200 hover:text-vusa-red"
         :href="
-          route('main.ataskaita2022', { lang: locale, permalink: 'padeka' })
+          route('ataskaita2022', { lang: locale, permalink: 'padeka' })
         "
         ><NGradientText v-if="permalink === 'padeka'" type="error">{{
           $t("Padėka")
@@ -347,7 +347,7 @@ const navigationTreeMobileEN = [
 
 const handleSelectKryptis = (url) => {
   router.visit(
-    route("main.ataskaita2022", {
+    route("ataskaita2022", {
       lang: locale.value,
       permalink: url,
     })
@@ -356,7 +356,7 @@ const handleSelectKryptis = (url) => {
 
 const goToAtaskaitaHome = () => {
   router.visit(
-    route("main.ataskaita2022", {
+    route("ataskaita2022", {
       lang: locale.value,
       permalink: "pradzia",
     })
@@ -370,14 +370,14 @@ const handleSelectLanguage = (key) => {
 
   if (key === "home") {
     router.visit(
-      route("main.ataskaita2022", {
+      route("ataskaita2022", {
         lang: otherLocale[0],
         permalink: "pradzia",
       })
     );
   } else if (key === "page") {
     router.visit(
-      route("main.ataskaita2022", {
+      route("ataskaita2022", {
         lang: otherLocale[0],
         permalink: permalink,
       })

@@ -22,10 +22,13 @@ class PublicController extends Controller
 		} else {
 			$this->alias = "vusa";
 		}
-		
+
+		// TODO: ???
+
 		$requestPadalinys = request()->padalinys;
+
 		if ($requestPadalinys != null) {
-			$this->alias = in_array($requestPadalinys, ["Padaliniai", "naujas"]) ? "" : $requestPadalinys;
+			$this->alias = in_array($requestPadalinys, ["Padaliniai", "naujas"]) ? "" : $this->alias;
 		}
 
 		Inertia::share('alias', $this->alias);

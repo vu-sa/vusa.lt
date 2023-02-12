@@ -65,8 +65,8 @@ const columns: DataTableColumns<App.Entities.News> = [
     width: 55,
     render(row) {
       return h(PreviewModelButton, {
-        mainRoute: "main.news",
-        padalinysRoute: "padalinys.news",
+        mainRoute: "news",
+        padalinysRoute: "news",
         mainProps: {
           newsString: "naujiena",
           lang: row.lang,

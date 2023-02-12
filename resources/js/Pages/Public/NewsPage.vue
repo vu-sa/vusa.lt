@@ -37,7 +37,7 @@
         </span>
       </em>
       <div
-        class="prose col-span-4 first-letter:float-left first-letter:mr-3 first-letter:text-7xl first-letter:font-bold dark:prose-invert"
+        class="prose col-span-4 dark:prose-invert first-letter:float-left first-letter:mr-3 first-letter:text-7xl first-letter:font-bold"
         v-html="article.text"
       ></div>
     </NewsArticle>
@@ -45,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from "laravel-vue-i18n";
+import { trans as $t, loadLanguageAsync } from "laravel-vue-i18n";
 import { DocumentEdit24Regular } from "@vicons/fluent";
 import { Head, router, usePage } from "@inertiajs/vue3";
 import { NBackTop, NButton, NIcon } from "naive-ui";
@@ -63,14 +63,21 @@ const editNews = () => {
 };
 
 const openAnotherLangNews = () => {
-  window.open(
+  if (!props.otherLangNews) return;
+  if (!props.otherLangNews.permalink) return;
+
+  router.visit(
     route("news", {
-      lang: props.otherLangNews.lang,
+      lang: props.otherLangNews?.lang ?? "lt",
       newsString: props.otherLangNews.lang === "lt" ? "naujiena" : "news",
-      padalinys: usePage().props.alias,
+      padalinys: usePage().props.alias ?? "www",
       permalink: props.otherLangNews.permalink,
-    }),
-    "_blank"
-  );
+    })
+  ),
+    {
+      onSuccess: () => {
+        loadLanguageAsync(props.otherLangNews.lang);
+      },
+    };
 };
 </script>

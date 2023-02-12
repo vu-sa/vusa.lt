@@ -17,11 +17,11 @@
         </span>
       </p>
       <div class="flex gap-2">
-        <Link href="/privatumas">
+        <a :href="`${$page.props.app.url}/privatumas`" target="_blank">
           <NButton size="small" round secondary>{{
             $t("Privatumo politika")
           }}</NButton>
-        </Link>
+        </a>
 
         <NButton
           size="small"

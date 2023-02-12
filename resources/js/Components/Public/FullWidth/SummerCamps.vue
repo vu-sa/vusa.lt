@@ -19,6 +19,7 @@
     <div class="relative">
       <img
         src="/images/photos/stovykla.jpg"
+        loading="lazy"
         class="mt-2 h-32 w-full object-cover brightness-50 lg:my-1 lg:h-64"
         style="object-position: 0% 45%"
       />
@@ -40,30 +41,26 @@
       </p>
     </div>
     <div class="flex flex-wrap items-center gap-4 lg:justify-center">
-      <NButton
-        round
-        size="large"
-        strong
-        type="primary"
-        @click="router.visit(route('pirmakursiuStovyklos'))"
-        >Kas vyko?<template #icon
-          ><NIcon :component="HatGraduation20Regular"></NIcon></template
-      ></NButton>
-      <NButton
-        round
-        strong
-        secondary
-        @click="
-          router.visit(
-            route('main.contacts.category', {
-              alias: 'padaliniai',
-              lang: 'lt',
-            })
-          )
+      <a :href="route('pirmakursiuStovyklos')">
+        <NButton round size="large" strong type="primary"
+          >Kas vyko?<template #icon
+            ><NIcon :component="HatGraduation20Regular"></NIcon></template
+        ></NButton>
+      </a>
+      <a
+        :href="
+          route('contacts.category', {
+            alias: 'padaliniai',
+            lang: 'lt',
+            padalinys: 'www',
+          })
         "
-        >Tavo kuratorius tavęs dar laukia...<template #icon
-          ><NIcon :component="Person20Filled"></NIcon></template
-      ></NButton>
+      >
+        <NButton round strong secondary
+          >Tavo kuratorius tavęs dar laukia...<template #icon
+            ><NIcon :component="Person20Filled"></NIcon></template
+        ></NButton>
+      </a>
     </div>
   </div>
   <NDivider />

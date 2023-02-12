@@ -3,8 +3,8 @@
     <template #header>
       {{ news.title }}
       <PreviewModelButton
-        main-route="main.news"
-        padalinys-route="padalinys.news"
+        main-route="news"
+        padalinys-route="news"
         :main-props="{
           lang: news.lang,
           newsString: 'naujiena',
