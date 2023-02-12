@@ -42,8 +42,19 @@ const goToLink = (link: string | null) => {
   if (link.charAt(0) === "/") {
     link = link.substring(1);
   }
+
+  // if starts with lt or en, remove it
+  if (link.startsWith("lt") || link.startsWith("en")) {
+    link = link.substring(3);
+  }
+
   router.visit(
     route("page", {
+      lang: usePage().props.app.locale,
+      padalinys:
+        usePage().props.alias === "vusa"
+          ? "www"
+          : usePage().props.alias ?? "www",
       permalink: link,
     })
   );
