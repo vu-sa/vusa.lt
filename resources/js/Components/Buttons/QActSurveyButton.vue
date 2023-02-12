@@ -17,7 +17,7 @@
         @submit:form="handleSubmitForm"
       >
         <template #suggestion-content>
-          <p class="mt-0">
+          <p class="mb-4">
             <strong> Elektroninės apklausos </strong> yra puikus būdas įvertinti
             studentų nuomonę (kai tai daroma tinkamai).
           </p>
@@ -28,7 +28,7 @@
               procesu</strong
             >.
           </p>
-          <p class="mb-0">Pradėkime! ✊</p>
+          <p class="mt-4">Pradėkime! ✊</p>
         </template>
       </SpecialDoingForm>
       <ModalHelperButton v-if="!showAlert" @click="showAlert = true" />
