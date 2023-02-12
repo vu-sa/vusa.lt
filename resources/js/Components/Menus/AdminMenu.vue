@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t, getActiveLanguage } from "laravel-vue-i18n";
+import { trans as $t } from "laravel-vue-i18n";
 import {
   Flowchart20Regular,
   Folder24Regular,

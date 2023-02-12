@@ -5,15 +5,21 @@
     <nav
       class="fixed z-50 flex h-16 w-full flex-row items-center justify-between border-b py-2 px-8 shadow-sm backdrop-blur-lg dark:border-zinc-800 md:justify-end"
     >
-      <div class="block md:hidden">
+      <div class="flex items-center gap-2 md:hidden">
         <NButton size="small" strong quaternary @click="activeDrawer = true">
           <template #icon>
             <NIcon :component="Navigation24Filled" />
           </template>
         </NButton>
+        <Link class="h-fit w-fit" :href="route('dashboard')">
+          <AppLogo class="h-12" />
+        </Link>
       </div>
       <div class="mt-1 flex items-center gap-8">
-        <Link v-if="canSeeWorkspace" class="mt-2" :href="route('workspace')"
+        <Link
+          v-if="canSeeWorkspace"
+          class="mt-2 hidden md:inline"
+          :href="route('workspace')"
           ><NButton text
             ><template #icon
               ><NIcon
@@ -30,16 +36,9 @@
     </nav>
     <NDrawer v-model:show="activeDrawer" :width="325" placement="left">
       <NDrawerContent>
-        <Link class="h-fit w-fit" :href="route('dashboard')">
-          <AppLogo class="mx-auto w-full p-2" />
-        </Link>
-        <NScrollbar class="max-h-[calc(100vh-20rem)] px-1.5">
-          <AdminMenu :collapsed="false" @close:drawer="activeDrawer = false"
-        /></NScrollbar>
+        <AdminMenu :collapsed="false" @close:drawer="activeDrawer = false" />
         <NDivider />
-        <div
-          class="mb-4 flex items-center justify-center gap-6 overflow-hidden"
-        >
+        <div class="flex items-center justify-center gap-6 overflow-hidden">
           <div class="h-fit w-fit"><DarkModeSwitch /></div>
           <NButton text @click="changeLocale">
             <template #icon>
@@ -125,7 +124,6 @@ import {
   NLayoutSider,
   NMessageProvider,
   NNotificationProvider,
-  NPopover,
   NScrollbar,
   useMessage,
 } from "naive-ui";

@@ -41,7 +41,7 @@
         ></NIcon
         ><span>{{ $t("Greitieji veiksmai") }}</span>
       </h2>
-      <div class="flex items-center gap-4">
+      <div class="flex flex-wrap items-center gap-4">
         <QActCreateMeeting />
         <QActSurveyButton />
         <QActFocusGroupButton />
@@ -110,7 +110,7 @@
         <NIcon :component="Link24Filled"></NIcon
         ><span>{{ $t("Naudingos nuorodos") }}</span>
       </h2>
-      <div class="flex gap-2">
+      <div class="flex flex-wrap gap-2">
         <NButton
           type="warning"
           secondary
