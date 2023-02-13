@@ -8,6 +8,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
 use App\Http\Controllers\ResourceController;
 use App\Models\Category;
+use App\Models\Padalinys;
 use Illuminate\Support\Facades\DB;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use App\Models\User;
@@ -65,10 +66,13 @@ class CalendarController extends ResourceController
             'description' => 'required',
         ]);
 
-        $padalinys_id = $this->authorizer->permissableDuties?->first()->padaliniai->first()->id ?? null;
+        $padalinys_id = null;
 
-        if (is_null($padalinys_id)) {
-            $padalinys_id = request()->user()->hasRole(config('permission.super_admin_role_name')) ? 16 : null;
+        // check if super admin, else set padalinys_id
+        if (request()->user()->hasRole(config('permission.super_admin_role_name'))) {
+            $padalinys_id = Padalinys::where('type', 'pagrindinis')->first()->id;
+        } else {
+            $padalinys_id = $this->authorizer->permissableDuties->first()->padaliniai->first()->id;
         }
 
         Calendar::create([
