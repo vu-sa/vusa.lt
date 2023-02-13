@@ -63,7 +63,7 @@ class Type extends Model
         } elseif (Str::contains($this->model_type, 'Duty')) {
             return $this->model_type::select('id', 'name', 'institution_id')->with('padaliniai')->orderBy('name')->get();
         } elseif (Str::contains($this->model_type, 'Doing')) {
-            return $this->model_type::select('id', 'title', 'user_id')->with('padaliniai')->orderBy('title')->get();
+            return $this->model_type::select('id', 'title')->with('padaliniai')->orderBy('title')->get();
         }
     }
 }
