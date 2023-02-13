@@ -134,6 +134,7 @@
     "Tikslų grupės": "Goal groups",
     "Veiksmai": "Actions",
     "Institucijos": "Institutions",
+    "Institucija": "Institution",
     "Svarstomi klausimai": "Matters",
     "Susitikimai": "Meetings",
     "Darbotvarkės klausimai": "Agenda items",
@@ -208,5 +209,7 @@
     "Ieškoti": "Search",
     "Išvalyti": "Clear",
     "Visi tipai": "All types",
-    "Failų nėra": "No files"
+    "Failų nėra": "No files",
+    "Studentų el. apklausa": "Student online survey",
+    "Studentų focus grupė": "Student focus group"
 }

@@ -42,6 +42,7 @@
 </template>
 
 <script setup lang="tsx">
+import { trans as $t } from "laravel-vue-i18n";
 import { DocumentCheckmark24Regular } from "@vicons/fluent";
 import { ref } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
@@ -75,13 +76,12 @@ const institutionNameForTemplate = () => {
 };
 
 const doingTemplate = {
-  title: `Studentų el. apklausa (${institutionNameForTemplate()}, ${formatStaticTime(
-    timeIn7Days,
-    {
-      year: "numeric",
-      month: "long",
-    }
-  )})`,
+  title: `${$t(
+    "Studentų el. apklausa"
+  )} (${institutionNameForTemplate()}, ${formatStaticTime(timeIn7Days, {
+    year: "numeric",
+    month: "long",
+  })})`,
   date: timeIn7Days,
   type: "el-apklausa",
 };
