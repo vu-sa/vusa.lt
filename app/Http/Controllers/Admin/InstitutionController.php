@@ -158,7 +158,7 @@ class InstitutionController extends ResourceController
         }
 
         // get only types id
-        $institution->types()->sync(collect($request->types)->pluck('id'));
+        $institution->types()->sync($request->types);
 
         return back()->with('success', 'Institucija sėkmingai atnaujinta!');
     }
