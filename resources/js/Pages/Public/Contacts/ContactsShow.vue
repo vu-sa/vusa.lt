@@ -29,7 +29,11 @@
               <template v-else>
                 {{ institution.name ?? "" }}
               </template>
-              <NPopover v-if="institutionDescription" style="max-width: 400px"
+              <NPopover
+                v-if="institutionDescription"
+                :scrollable="true"
+                style="max-width: 70vw; max-height: 400px"
+                :arrow-point-to-center="true"
                 ><template #trigger>
                   <NBadge dot processing :offset="[-3, 10]">
                     <NButton size="large" text

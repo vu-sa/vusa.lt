@@ -57,6 +57,7 @@
     </div>
     <NDrawer
       v-model:show="activeDrawer"
+      display-directive="show"
       :width="325"
       placement="left"
       :trap-focus="true"
