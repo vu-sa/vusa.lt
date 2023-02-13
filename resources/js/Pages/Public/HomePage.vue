@@ -3,13 +3,11 @@
     <title>Pagrindinis</title>
   </Head>
 
-  <EventCalendar
-    :is-theme-dark="isThemeDark"
-    :show-photos="true"
-    :calendar="calendar"
-  />
+  <div v-if="news.length > 0" class="mx-auto mt-2 max-w-7xl">
+    <NewsElement :news="news" />
+  </div>
 
-  <div v-if="mainPage.length > 0" class="mt-8">
+  <div v-if="mainPage.length > 0" class="mx-auto mt-2 max-w-7xl">
     <MainLinks :main-page="mainPage" />
   </div>
 
@@ -19,7 +17,11 @@
             </div>
           </FadeTransition> -->
 
-  <div v-if="news.length > 0" class="mt-4"><NewsElement :news="news" /></div>
+  <EventCalendar
+    :is-theme-dark="isThemeDark"
+    :show-photos="true"
+    :calendar="calendar"
+  />
 
   <SummerCamps
     v-if="$page.props.app.locale === 'lt'"

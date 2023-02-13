@@ -1,15 +1,13 @@
 <template>
-  <div
-    class="mx-8 mb-4 rounded-lg bg-white p-4 shadow-lg dark:bg-zinc-800 lg:mx-16 lg:mb-8 lg:px-8"
-  >
+  <div class="mx-8 mb-4 rounded-lg p-4 lg:mx-16 lg:mb-8 lg:px-8">
     <header class="mb-4 flex flex-wrap items-center justify-between gap-1">
       <div>
         <h1 class="lg:mb-0">{{ $t("Naujienos") }}</h1>
-        <p class="text-zinc-800 dark:text-zinc-50">
+        <!-- <p class="text-zinc-800 dark:text-zinc-50">
           {{
             $t("Karščiausios universiteto naujienos tiesiai iš studentų lūpų")
           }}!
-        </p>
+        </p> -->
       </div>
       <Link
         v-if="$page.props.app.locale === 'lt'"
