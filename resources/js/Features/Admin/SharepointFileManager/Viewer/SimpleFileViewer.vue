@@ -1,12 +1,14 @@
 <template>
   <div>
-    <FileButtonSkeletonWrapper
-      v-for="file in data"
-      :key="file.id"
-      :file="file"
-      :small="true"
-      :show-thumbnail="true"
-    ></FileButtonSkeletonWrapper>
+    <div class="flex flex-wrap items-center gap-4">
+      <FileButtonSkeletonWrapper
+        v-for="file in data"
+        :key="file.id"
+        :file="file"
+        :small="true"
+        :show-thumbnail="true"
+      ></FileButtonSkeletonWrapper>
+    </div>
     <FileDrawer
       :file="selectedFile"
       @hide:drawer="selectedFile = null"
