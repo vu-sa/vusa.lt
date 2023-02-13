@@ -41,7 +41,7 @@ Iki susitikimų!
 
 Hello, {{ $user->name }}! 👋
 
-VU Studentų atstovybė is moving the representation process to [mano.vusa.lt](https://www.vusa.lt/login?lang=en) – so that YOU could easily, quickly and easily achieve your goals! 🚀
+VU Students' Representation is moving the representation process to [mano.vusa.lt](https://www.vusa.lt/login?lang=en) – so that YOU could easily, quickly and easily achieve your goals as a students' representative! 🚀
 
 ## How to log in?
 
