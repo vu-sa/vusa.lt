@@ -157,7 +157,7 @@ class InstitutionController extends ResourceController
             $institution->update($request->only('padalinys_id'));
         }
 
-        $institution->types()->sync($request->types);
+        $institution->types()->sync($request->types->pluck('id'));
 
         return back()->with('success', 'Institucija sėkmingai atnaujinta!');
     }
