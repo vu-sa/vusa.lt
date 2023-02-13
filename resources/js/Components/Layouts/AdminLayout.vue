@@ -103,7 +103,7 @@
           </NButton>
         </div>
       </NLayoutSider>
-      <NLayoutContent :content-style="{ paddingLeft: '1rem' }">
+      <NLayoutContent>
         <NMessageProvider><slot /></NMessageProvider>
       </NLayoutContent>
     </NLayout>

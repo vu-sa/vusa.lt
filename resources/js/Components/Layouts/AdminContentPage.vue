@@ -7,7 +7,7 @@
 
   <header
     v-if="title"
-    class="col-span-2 my-4 ml-4 flex max-w-6xl flex-row items-center gap-4 pr-8"
+    class="col-span-2 m-4 flex max-w-6xl flex-row items-center gap-4 pr-8"
     :class="{ 'pb-2': title }"
   >
     <NButton
@@ -46,7 +46,7 @@
     class="mt-0"
   />
 
-  <div class="ml-4 max-w-6xl pr-4" :class="{ 'col-span-2': !aside }">
+  <div class="ml-4 max-w-6xl" :class="{ 'col-span-2': !aside }">
     <FadeTransition appear
       ><div class="relative overflow-visible">
         <slot /></div
