@@ -268,6 +268,6 @@ class UserController extends ResourceController
     
         $request->session()->regenerateToken();
     
-        return redirect()->route('home');
+        return redirect()->route('home', ['padalinys' => 'www']);
     }
 }

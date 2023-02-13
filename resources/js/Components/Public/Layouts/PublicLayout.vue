@@ -117,6 +117,6 @@ onMounted(() => {
   // usetimeout to delay the spin description
   setTimeout(() => {
     spinWarning.value = true;
-  }, 5000);
+  }, 6900);
 });
 </script>

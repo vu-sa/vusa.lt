@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-8 mb-8 lg:mx-16 lg:px-16">
+  <div class="mx-8 mb-8 sm:mx-16 sm:px-16">
     <h2 class="mb-4">{{ $t("Pagrindinės nuorodos") }}:</h2>
     <!-- TODO: In dev, buttons from other padalinys, don't return normal response from parent -->
     <div class="flex flex-wrap gap-2 overflow-x-auto">

@@ -5,7 +5,9 @@
     @click="$emit('click')"
   >
     <template #icon><NIcon size="40" :component="icon"></NIcon></template>
-    <span class="text-center"><slot>Sukurti naują?</slot></span>
+    <span class="text-center"
+      ><slot>{{ $t("Sukurti naują") }}?</slot></span
+    >
   </NButton>
 </template>
 

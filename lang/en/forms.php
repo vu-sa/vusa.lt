@@ -5,6 +5,7 @@ return [
         'name_and_surname' => 'Name and surname',
         'title' => 'Title',
         'short_name' => 'Short name',
+        'date' => 'Date',
         'due_date' => 'Due date',
         'subject' => 'Subject',
         'email' => 'Email',

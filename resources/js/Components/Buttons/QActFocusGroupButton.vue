@@ -42,12 +42,13 @@
 </template>
 
 <script setup lang="tsx">
+import { trans as $t } from "laravel-vue-i18n";
 import { Info24Regular, PeopleCommunity24Regular } from "@vicons/fluent";
 import { NIcon } from "naive-ui";
 import { ref } from "vue";
+import { router, usePage } from "@inertiajs/vue3";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
-import { router, usePage } from "@inertiajs/vue3";
 import CardModal from "../Modals/CardModal.vue";
 import ModalHelperButton from "./ModalHelperButton.vue";
 import QuickActionButton from "./QuickActionButton.vue";
@@ -75,13 +76,12 @@ const institutionNameForTemplate = () => {
 };
 
 const doingTemplate = {
-  title: `Studentų focus grupė (${institutionNameForTemplate()}, ${formatStaticTime(
-    timeIn7Days,
-    {
-      year: "numeric",
-      month: "long",
-    }
-  )})`,
+  title: `${$t(
+    "Studentų focus grupė"
+  )} (${institutionNameForTemplate()}, ${formatStaticTime(timeIn7Days, {
+    year: "numeric",
+    month: "long",
+  })})`,
   date: timeIn7Days,
   type: "focus-grupe",
 };

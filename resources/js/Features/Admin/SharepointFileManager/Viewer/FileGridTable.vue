@@ -5,7 +5,7 @@
       class="flex flex-col items-center justify-center gap-2 text-zinc-400"
     >
       <NIcon :size="24" :component="Icons.SHAREPOINT_FILE"></NIcon>
-      <span>Failų nėra.</span>
+      <span>{{ $t("Failų nėra") }}.</span>
     </div>
     <TransitionGroup
       v-else-if="viewMode === 'grid'"

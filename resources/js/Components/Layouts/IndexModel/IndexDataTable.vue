@@ -7,8 +7,6 @@
     remote
     size="small"
     :data="paginatedModels.data"
-    :scroll-x="768"
-    max-height="calc(100vh - 350px)"
     :columns="columnsWithActions"
     :loading="loading"
     :pagination="pagination"

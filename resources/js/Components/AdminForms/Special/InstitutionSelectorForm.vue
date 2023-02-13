@@ -20,7 +20,7 @@
       <template #label>
         <span class="flex items-center gap-1">
           <NIcon :component="Icons.INSTITUTION"></NIcon>
-          Institucija
+          {{ $t("Institucija") }}
         </span>
       </template>
 
@@ -31,7 +31,11 @@
         :placeholder="'VU studijų programos komitetas...'"
       ></NSelect>
     </NFormItem>
-    <NButton @click="$emit('submit', institution_id)">Pasirinkti...</NButton>
+    <NButton
+      :disabled="!institution_id"
+      @click="$emit('submit', institution_id)"
+      >{{ $t("Toliau") }}...</NButton
+    >
   </NForm>
 </template>
 

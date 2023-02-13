@@ -10,6 +10,8 @@ Route::get('userTasks', [DashboardController::class, 'userTasks'])->name('userTa
 Route::get('workspace', [DashboardController::class, 'workspace'])->name('workspace');
 Route::get('institutionGraph', [DashboardController::class, 'institutionGraph'])->name('institutionGraph');
 
+Route::post('sendFeedback', [DashboardController::class, 'sendFeedback'])->name('sendFeedback');
+
 // Resources
 Route::resource('pages', PagesController::class);
 Route::post('pages/search', [PagesController::class, 'searchForPage'])->name('pages.search');

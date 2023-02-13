@@ -29,15 +29,15 @@
     <NFormItem path="newAgendaTitles">
       <template #label>
         <span class="mb-2 inline-flex items-center gap-1"
-          ><NIcon :component="IconsFilled.AGENDA_ITEM"></NIcon>Darbotvarkės
-          klausimai</span
-        >
+          ><NIcon :component="IconsFilled.AGENDA_ITEM"></NIcon>
+          {{ $t("Darbotvarkės klausimai") }}
+        </span>
       </template>
       <NDynamicInput
         v-model:value="agendaItemForm.agendaItemTitles"
         show-sort-button
       >
-        <template #create-button-default>Sukurti</template>
+        <template #create-button-default>{{ $t("forms.add") }}</template>
         <template #default="{ index }">
           <div class="flex grow items-center gap-1">
             <span class="ml-1 w-7">{{ `${index + 1}.` }}</span>
@@ -53,14 +53,14 @@
     <NFormItem>
       <template #label>
         <span class="inline-flex items-center gap-1"
-          ><NIcon :component="DocumentSettings20Filled"></NIcon>Papildoma
-          informacija</span
-        >
+          ><NIcon :component="DocumentSettings20Filled" />
+          {{ $t("forms.context.additional_info") }}
+        </span>
       </template>
       <NCheckbox v-model:checked="agendaItemForm.moreAgendaItemsUndefined"
-        ><span class="whitespace-nowrap"
-          >Vėliau gali atsirasti papildomų klausimų</span
-        ></NCheckbox
+        ><span class="whitespace-nowrap">{{
+          $t("Vėliau gali atsirasti papildomų darbotvarkės klausimų")
+        }}</span></NCheckbox
       >
     </NFormItem>
     <NFormItem :show-label="false">
@@ -72,7 +72,7 @@
         "
         type="primary"
         @click.prevent="$emit('submit', agendaItemForm)"
-        >Sukurti</NButton
+        >{{ $t("forms.submit") }}</NButton
       >
     </NFormItem>
   </NForm>

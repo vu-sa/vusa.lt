@@ -15,7 +15,7 @@
         <component :is="entity?.description"></component>
       </div>
     </SuggestionAlert>
-    <NCard class="subtle-gray-gradient">
+    <NCard class="subtle-gray-gradient w-full min-w-[768px]">
       <IndexDataTable
         :paginated-models="paginatedModels"
         :columns="columns"

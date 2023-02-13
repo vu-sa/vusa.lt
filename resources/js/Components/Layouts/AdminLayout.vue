@@ -16,8 +16,9 @@
         </Link>
       </div>
       <div class="mt-1 flex items-center gap-8">
+        <FeedbackModalButton />
         <Link
-          v-if="canSeeWorkspace"
+          v-if="canSeeWorkspace && false"
           class="mt-2 hidden md:inline"
           :href="route('workspace')"
           ><NButton text
@@ -45,12 +46,12 @@
               <NIcon :size="16"
                 ><img
                   v-if="locale === 'en'"
-                  class="opacity-40 transition hover:opacity-70"
+                  class="transition hover:opacity-70"
                   src="https://hatscripts.github.io/circle-flags/flags/gb.svg"
                 />
                 <img
                   v-else
-                  class="opacity-40 transition hover:opacity-70"
+                  class="transition hover:opacity-70"
                   src="https://hatscripts.github.io/circle-flags/flags/lt.svg"
                 />
               </NIcon>
@@ -90,12 +91,12 @@
               <NIcon :size="16"
                 ><img
                   v-if="locale === 'en'"
-                  class="opacity-40 transition hover:opacity-70"
+                  class="transition hover:opacity-70"
                   src="https://hatscripts.github.io/circle-flags/flags/gb.svg"
                 />
                 <img
                   v-else
-                  class="opacity-40 transition hover:opacity-70"
+                  class="transition hover:opacity-70"
                   src="https://hatscripts.github.io/circle-flags/flags/lt.svg"
                 />
               </NIcon>
@@ -103,7 +104,7 @@
           </NButton>
         </div>
       </NLayoutSider>
-      <NLayoutContent :content-style="{ paddingLeft: '1rem' }">
+      <NLayoutContent>
         <NMessageProvider><slot /></NMessageProvider>
       </NLayoutContent>
     </NLayout>
@@ -136,6 +137,7 @@ import { loadLanguageAsync } from "laravel-vue-i18n";
 import AdminMenu from "@/Components/Menus/AdminMenu.vue";
 import AppLogo from "@/Components/AppLogo.vue";
 import DarkModeSwitch from "@/Components/Buttons/DarkModeSwitch.vue";
+import FeedbackModalButton from "../Buttons/FeedbackModalButton.vue";
 import NotificationBell from "@/Features/Admin/Notifications/NotificationBell.vue";
 import TaskIndicatorButton from "../../Features/Admin/TaskManager/TaskIndicatorButton.vue";
 import UserAdminOptionsMenu from "@/Components/Menus/UserSettingsDropdown.vue";

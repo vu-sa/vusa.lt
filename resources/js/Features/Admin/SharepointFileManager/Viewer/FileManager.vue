@@ -46,7 +46,9 @@
         </div>
       </div>
       <div class="mt-4 flex items-center gap-2">
-        <span class="text-xs text-zinc-600 dark:text-zinc-400">Filtrai:</span>
+        <span class="text-xs text-zinc-600 dark:text-zinc-400"
+          >{{ $t("Filtrai") }}:</span
+        >
         <FilterPopselect
           :disabled="loading"
           :options="[

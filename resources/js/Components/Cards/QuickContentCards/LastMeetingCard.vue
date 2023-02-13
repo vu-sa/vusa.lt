@@ -32,7 +32,14 @@
         >
       </p>
     </template>
-    <p v-else>Nėra užfiksuoto jokio posėdžio. 😢</p>
+    <p v-else>
+      <template v-if="$page.props.app.locale === 'lt'">
+        Nėra įrašytų posėdių. Paspausk mygtuką žemiau, kad pridėtum pirmą! 🎉
+      </template>
+      <template v-if="$page.props.app.locale === 'en'">
+        No meeting has been recorded. Use the button below to add one! 🎉
+      </template>
+    </p>
     <template #action-button>
       <NewMeetingButton @click="showModal = true" />
       <NMessageProvider
