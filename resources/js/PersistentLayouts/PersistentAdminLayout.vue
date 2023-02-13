@@ -13,7 +13,7 @@
       <Layout>
         <!-- <FadeTransition> -->
         <main
-          class="mb-4 grid max-w-7xl grid-cols-[1fr_minmax(250px,_400px)] items-start py-4 pb-8"
+          class="mb-4 mr-4 grid max-w-7xl grid-cols-[1fr_minmax(250px,_400px)] items-start overflow-auto pl-4 pt-4 pb-8"
         >
           <slot />
         </main>
@@ -38,28 +38,17 @@
 </template>
 
 <script setup lang="tsx">
-import {
-  NConfigProvider,
-  NMessageProvider,
-  NScrollbar,
-  darkTheme,
-  enUS,
-} from "naive-ui";
+import { NConfigProvider, NMessageProvider, darkTheme, enUS } from "naive-ui";
 import { defineAsyncComponent, onMounted, ref } from "vue";
 
-import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 // import "./posthog";
+import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import Layout from "@/Components/Layouts/AdminLayout.vue";
 
 import "@/echo";
-import { usePage } from "@inertiajs/vue3";
 
 const isThemeDark = ref(isDarkMode());
 const mounted = ref(false);
-
-if (usePage().props?.auth?.user && typeof $posthog !== "undefined") {
-  $posthog.identify(usePage().props.auth?.user.id);
-}
 
 const NWatermark = defineAsyncComponent(
   () => import("naive-ui/lib/watermark/src/Watermark")

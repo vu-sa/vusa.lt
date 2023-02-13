@@ -21,15 +21,10 @@ import { NConfigProvider, NMessageProvider, darkTheme } from "naive-ui";
 import { ref } from "vue";
 
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
-import { usePage } from "@inertiajs/vue3";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import Layout from "@/Components/Public/Layouts/PublicLayout.vue";
 
 const isThemeDark = ref(isDarkMode());
-
-if (usePage().props?.auth?.user && typeof $posthog !== "undefined") {
-  $posthog.identify(usePage().props.auth?.user.id);
-}
 
 updateDarkMode(isThemeDark);
 
