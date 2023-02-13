@@ -1,6 +1,7 @@
 <template>
   <CardModal
     :show="showModal"
+    class="max-w-5xl"
     display-directive="show"
     :title="`${$t('Pranešti apie posėdį')}`"
     @close="$emit('close')"
