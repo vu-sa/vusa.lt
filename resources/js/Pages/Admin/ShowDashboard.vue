@@ -1,5 +1,7 @@
 <template>
   <PageContent>
+    <Head :title="$t('Pradinis')" />
+
     <NPopover>
       <NCheckboxGroup v-model:value="shownSections">
         <div class="flex flex-col gap-2">
@@ -161,13 +163,13 @@
 
 <script setup lang="tsx">
 import { ExternalLinkSquareAlt } from "@vicons/fa";
+import { Head, router } from "@inertiajs/vue3";
 import {
   LightbulbFilament24Filled,
   Link24Filled,
   Settings24Filled,
 } from "@vicons/fluent";
 import { NButton, NCheckbox, NCheckboxGroup, NIcon, NPopover } from "naive-ui";
-import { router } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 
 import DoingCard from "@/Components/Cards/DoingCard.vue";

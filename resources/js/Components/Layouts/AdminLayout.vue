@@ -17,7 +17,7 @@
       </div>
       <div class="mt-1 flex items-center gap-8">
         <Link
-          v-if="canSeeWorkspace"
+          v-if="canSeeWorkspace && false"
           class="mt-2 hidden md:inline"
           :href="route('workspace')"
           ><NButton text
