@@ -6,8 +6,7 @@ use App\Models\Page;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\ResourceController;
-use Illuminate\Support\Facades\Auth;
-use App\Models\User;
+use App\Models\Padalinys;
 use App\Services\ModelIndexer;
 
 class PagesController extends ResourceController
@@ -61,10 +60,13 @@ class PagesController extends ResourceController
             'permalink' => 'required|string|max:255|unique:pages',
         ]);
 
-        $padalinys_id = User::find(Auth::id())->padalinys()?->id;
+        $padalinys_id = null;
 
-        if (is_null($padalinys_id)) {
-            $padalinys_id = request()->user()->hasRole(config('permission.super_admin_role_name')) ? 16 : null;
+        // check if super admin, else set padalinys_id
+        if (request()->user()->hasRole(config('permission.super_admin_role_name'))) {
+            $padalinys_id = Padalinys::where('type', 'pagrindinis')->first()->id;
+        } else {
+            $padalinys_id = $this->authorizer->permissableDuties->first()->padaliniai->first()->id;
         }
 
         $page = Page::create([
