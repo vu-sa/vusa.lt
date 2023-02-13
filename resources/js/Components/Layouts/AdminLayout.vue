@@ -46,12 +46,12 @@
               <NIcon :size="16"
                 ><img
                   v-if="locale === 'en'"
-                  class="opacity-40 transition hover:opacity-70"
+                  class="transition hover:opacity-70"
                   src="https://hatscripts.github.io/circle-flags/flags/gb.svg"
                 />
                 <img
                   v-else
-                  class="opacity-40 transition hover:opacity-70"
+                  class="transition hover:opacity-70"
                   src="https://hatscripts.github.io/circle-flags/flags/lt.svg"
                 />
               </NIcon>
@@ -91,12 +91,12 @@
               <NIcon :size="16"
                 ><img
                   v-if="locale === 'en'"
-                  class="opacity-40 transition hover:opacity-70"
+                  class="transition hover:opacity-70"
                   src="https://hatscripts.github.io/circle-flags/flags/gb.svg"
                 />
                 <img
                   v-else
-                  class="opacity-40 transition hover:opacity-70"
+                  class="transition hover:opacity-70"
                   src="https://hatscripts.github.io/circle-flags/flags/lt.svg"
                 />
               </NIcon>
