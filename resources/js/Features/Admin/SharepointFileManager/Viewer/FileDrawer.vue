@@ -151,7 +151,6 @@ watch(
       );
       loadingPublicPermission.value = !isFinished;
       publicPermission.value = data.value;
-      console.log(data.value);
     }
   }
 );

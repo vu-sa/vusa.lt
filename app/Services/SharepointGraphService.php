@@ -221,7 +221,7 @@ class SharepointGraphService {
     {
         $permission = $this->graph->createRequest("POST", "/drives/{$this->driveId}/items/{$driveItemId}/createLink")
             ->attachBody([
-                'type' => 'edit',
+                'type' => 'view',
                 'scope' => 'anonymous'
             ])
             ->setReturnType(Model\Permission::class)
