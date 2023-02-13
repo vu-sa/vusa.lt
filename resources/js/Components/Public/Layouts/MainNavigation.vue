@@ -1,6 +1,6 @@
 <template>
   <nav
-    class="fixed top-0 z-50 flex h-20 w-screen flex-row items-center justify-between gap-4 bg-white/80 p-2 text-gray-800 shadow-sm backdrop-blur-sm dark:bg-zinc-800/90 dark:text-white md:px-6 lg:px-12 xl:px-24"
+    class="fixed top-0 z-50 flex h-20 w-screen flex-row items-center justify-between gap-4 overflow-x-auto bg-white/80 p-2 text-gray-800 shadow-sm backdrop-blur-sm dark:bg-zinc-800/90 dark:text-white md:px-6 lg:px-12 xl:px-24"
   >
     <div class="flex flex-row items-center space-x-4">
       <!-- Hamburger -->
