@@ -1,3 +1,9 @@
+## v0.4.5 (2023-02-13)
+* Grįžtamojo ryšio laukelis
+* Daugiau lokalizacijos
+* Pakeista viešo pradinio puslapio elementų tvarka
+* Admin layout optimization
+
 ## v0.4.4 (2023-02-12)
 * Hamburger for admin menu
 * More responsive first page
