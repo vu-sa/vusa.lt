@@ -3,7 +3,8 @@
     <NFormItem path="start_time" required>
       <template #label>
         <span class="inline-flex items-center gap-1"
-          ><NIcon :component="Icons.DATE"></NIcon> <span>Data</span></span
+          ><NIcon :component="Icons.DATE"></NIcon>
+          <span>{{ $t("forms.fields.date") }}</span></span
         >
       </template>
       <NDatePicker
@@ -11,16 +12,17 @@
         :first-day-of-week="0"
         :format="'yyyy-MM-dd HH:mm'"
         type="datetime"
-        placeholder="Kada vyksta posėdis?"
+        :placeholder="`${$t('Kada vyksta posėdis')}?`"
         clearable
         :actions="['confirm']"
       />
     </NFormItem>
-    <NButton @click="handleSubmit">Toliau...</NButton>
+    <NButton @click="handleSubmit">{{ $t("Toliau") }}...</NButton>
   </NForm>
 </template>
 
 <script setup lang="ts">
+import { trans as $t } from "laravel-vue-i18n";
 import {
   type FormInst,
   NButton,
@@ -29,7 +31,7 @@ import {
   NFormItem,
   NIcon,
 } from "naive-ui";
-import { ref } from "vue";
+import { reactive, ref } from "vue";
 
 import Icons from "@/Types/Icons/filled";
 
@@ -59,7 +61,7 @@ const meetingToForm = (meeting: App.Entities.Meeting) => ({
 const meetingForm = ref(meetingToForm(props.meeting));
 const formRef = ref<FormInst | null>(null);
 
-const rules = {
+const rules = reactive({
   // title: {
   //   required: true,
   //   trigger: ["blur"],
@@ -67,14 +69,14 @@ const rules = {
   start_time: {
     required: true,
     trigger: ["blur"],
-    message: "Posėdžio laikas yra privalomas",
+    message: $t("validation.required", { attribute: $t("Data") }),
     type: "number",
   },
   // type_id: {
   //   required: true,
   //   trigger: ["blur"],
   // },
-};
+});
 
 const handleSubmit = () => {
   formRef.value?.validate((errors) => {

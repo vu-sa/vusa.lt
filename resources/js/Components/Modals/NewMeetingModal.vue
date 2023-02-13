@@ -2,7 +2,7 @@
   <CardModal
     :show="showModal"
     display-directive="show"
-    :title="`${$t('Pranešti apie artėjantį posėdį')}`"
+    :title="`${$t('Pranešti apie posėdį')}`"
     @close="$emit('close')"
   >
     <!-- <template #header-extra>
@@ -19,17 +19,17 @@
         :current="(current as number)"
         :status="currentStatus"
       >
-        <NStep title="1. Pasirink instituciją">
+        <NStep :title="`1. ${$t('Pasirink instituciją')}`">
           <template #icon>
             <NIcon :component="IconsRegular.INSTITUTION"></NIcon>
           </template>
         </NStep>
-        <NStep title="2. Nurodyk posėdžio datą">
+        <NStep :title="`2. ${$t('Nurodyk posėdžio datą')}`">
           <template #icon>
             <NIcon :component="IconsRegular.MEETING"></NIcon>
           </template>
         </NStep>
-        <NStep title="3. Įrašyk klausimus">
+        <NStep :title="`3. ${$t('Įrašyk darbotvarkės klausimus')}`">
           <template #icon>
             <NIcon :component="IconsRegular.AGENDA_ITEM"></NIcon>
           </template>

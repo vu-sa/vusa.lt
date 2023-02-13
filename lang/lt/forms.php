@@ -5,6 +5,7 @@ return [
         'name_and_surname' => 'Vardas ir pavardė',
         'title' => 'Pavadinimas',
         'short_name' => 'Trumpas pavadinimas',
+        'date' => 'Data',
         'due_date' => 'Atlikimo data',
         'subject' => 'Subjektas',
         'email' => 'El. paštas',
