@@ -16,6 +16,7 @@
         </Link>
       </div>
       <div class="mt-1 flex items-center gap-8">
+        <FeedbackModalButton />
         <Link
           v-if="canSeeWorkspace && false"
           class="mt-2 hidden md:inline"
@@ -136,6 +137,7 @@ import { loadLanguageAsync } from "laravel-vue-i18n";
 import AdminMenu from "@/Components/Menus/AdminMenu.vue";
 import AppLogo from "@/Components/AppLogo.vue";
 import DarkModeSwitch from "@/Components/Buttons/DarkModeSwitch.vue";
+import FeedbackModalButton from "../Buttons/FeedbackModalButton.vue";
 import NotificationBell from "@/Features/Admin/Notifications/NotificationBell.vue";
 import TaskIndicatorButton from "../../Features/Admin/TaskManager/TaskIndicatorButton.vue";
 import UserAdminOptionsMenu from "@/Components/Menus/UserSettingsDropdown.vue";

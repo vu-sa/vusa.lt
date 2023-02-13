@@ -10,6 +10,7 @@ use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
@@ -92,6 +93,18 @@ class DashboardController extends Controller
                 })->with('users')->withCount('meetings')->get()
             ]
         );
+    }
+
+    public function sendFeedback(Request $request) {
+        $request->validate([
+            'feedback' => 'required|string',
+            'anonymous' => 'boolean',
+        ]);
+
+        // just send simple email to it@vusa.lt with feedback, conditional user name and with in a queue
+        Mail::to('it@vusa.lt')->queue(new \App\Mail\FeedbackMail($request->input('feedback'), $request->input('anonymous') ? null : auth()->user()));
+
+        return redirect()->back()->with('success', 'Ačiū už atsiliepimą!');
     }
 
     protected function getInstitutionForWorkspace(Request $request) {
