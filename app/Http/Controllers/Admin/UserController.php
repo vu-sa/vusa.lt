@@ -31,11 +31,17 @@ class UserController extends ResourceController
         $search = request()->input('text');
 
         $indexer = new ModelIndexer();
-        $users = $indexer->execute(User::class, $search, 'name', $this->authorizer);
+        $users = $indexer->execute(User::class, $search, 'name', $this->authorizer)->with('duties:id,institution_id', 'duties.institution:id,padalinys_id','duties.institution.padalinys:id,shortname')->withCount('duties')
+        ->get()->makeVisible(['last_action'])->paginate(20);
 
         return Inertia::render('Admin/People/IndexUser', [
-            'users' => $users->with('duties:id,institution_id', 'duties.institution:id,padalinys_id','duties.institution.padalinys:id,shortname')->withCount('duties')
-            ->get(20)->makeVisible(['last_action'])->paginate(20),
+            'users' => $users,
+            'usersCount' => fn () => $users->total(),
+            'usersLoggedInCount' => fn () => User::when(auth()->user()->hasRole(config('permission.super_admin_role_name')), fn ($query) => $query, function ($query) {
+                return $query->whereHas('padaliniai', function ($query) {
+                    $query->whereIn('padaliniai.id', $this->authorizer->getPadaliniai()->pluck('id'));
+                });
+            })->whereNotNull('last_action')->count(),
         ]);
     }
 

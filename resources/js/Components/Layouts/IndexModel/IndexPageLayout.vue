@@ -4,7 +4,7 @@
     :create-url="canUseRoutes.create ? route(`${modelName}.create`) : undefined"
   >
     <template #aside-header>
-      <slot name="aside-header"></slot>
+      <slot name="aside-header" />
     </template>
     <SuggestionAlert
       v-if="entity"
@@ -15,6 +15,7 @@
         <component :is="entity?.description"></component>
       </div>
     </SuggestionAlert>
+    <slot />
     <NCard class="subtle-gray-gradient w-full min-w-[768px]">
       <IndexDataTable
         :paginated-models="paginatedModels"

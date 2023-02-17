@@ -149,7 +149,9 @@
           {{ $t("forms.context.additional_info") }}
         </template>
         <template v-if="user.last_action">
-          <p>Paskutinį kartą prisijungė {{ user.last_action }}.</p>
+          <p>
+            Paskutinį kartą prisijungė {{ formatStaticTime(user.last_action) }}.
+          </p>
         </template>
         <template v-else>
           <p class="mb-2">Šis asmuo dar niekada neprisijungė prie sistemos.</p>
@@ -202,6 +204,7 @@ import { PersonEdit24Regular } from "@vicons/fluent";
 import { computed, h } from "vue";
 import { useForm, usePage } from "@inertiajs/vue3";
 
+import { formatStaticTime } from "@/Utils/IntlTime";
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import FormElement from "./FormElement.vue";
 import InfoPopover from "../Buttons/InfoPopover.vue";

@@ -6,6 +6,10 @@
     :columns="columns"
     :paginated-models="users"
   >
+    <p class="mb-4">
+      Bent kartą prisijungusių:
+      <strong>{{ usersLoggedInCount }}</strong> iš {{ usersCount }}
+    </p>
   </IndexPageLayout>
 </template>
 
@@ -15,6 +19,8 @@ import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue
 
 defineProps<{
   users: PaginatedModels<App.Entities.User>;
+  usersCount: number;
+  usersLoggedInCount: number;
 }>();
 
 const canUseRoutes = {
