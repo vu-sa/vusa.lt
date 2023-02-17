@@ -1,24 +1,34 @@
 <template>
-  <NInput
-    class="mb-4 md:col-span-4"
-    type="text"
-    size="medium"
-    clearable
-    round
-    :placeholder="`${$t('Ieškoti pagal pavadinimą')}...`"
-    :loading="loading"
-    @input="handleSearchInput"
-    ><template #prefix>
-      <NIcon class="mr-1" :component="Search24Filled" /> </template
-  ></NInput>
+  <div class="flex gap-2">
+    <NPopover>
+      Išvalyti paiešką...
+      <template #trigger>
+        <NButton round @click="sweepSearch"
+          ><template #icon><NIcon :component="Broom16Regular"></NIcon></template
+        ></NButton>
+      </template>
+    </NPopover>
+    <NInput
+      v-model:value="searchValue"
+      class="mb-4 md:col-span-4"
+      type="text"
+      size="medium"
+      clearable
+      round
+      :placeholder="`${$t('Įvesk pavadinimą ir spausk „Enter“')}...`"
+      :loading="loading"
+      @keyup.enter="handleSearchInput"
+      ><template #prefix>
+        <NIcon class="mr-1" :component="Search24Filled" /> </template
+    ></NInput>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { NIcon, NInput } from "naive-ui";
-import { Search24Filled } from "@vicons/fluent";
+import { Broom16Regular, Search24Filled } from "@vicons/fluent";
+import { NButton, NIcon, NInput, NPopover } from "naive-ui";
 import { ref } from "vue";
 import { router } from "@inertiajs/vue3";
-import { useDebounceFn } from "@vueuse/core";
 
 const props = defineProps<{
   // model?: string;
@@ -31,15 +41,21 @@ const emit = defineEmits<{
 }>();
 
 const loading = ref(false);
+const searchValue = ref("");
 
-const handleSearchInput = useDebounceFn((input) => {
+const handleSearchInput = () => {
   loading.value = true;
   router.reload({
-    data: { page: 1, [props.payloadName]: input },
+    data: { page: 1, [props.payloadName]: searchValue.value },
     onSuccess: () => {
       emit("completeSearch");
       loading.value = false;
     },
   });
-}, 500);
+};
+
+const sweepSearch = () => {
+  searchValue.value = "";
+  handleSearchInput();
+};
 </script>

@@ -1,6 +1,6 @@
 <template>
   <IndexPageLayout
-    title="Nariai"
+    :title="$t('Nariai')"
     model-name="users"
     :can-use-routes="canUseRoutes"
     :columns="columns"
