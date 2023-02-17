@@ -6,8 +6,8 @@
 .env.backup
 .phpunit.result.cache
 docker-compose.override.yml
-composer.lock
-package-lock.json
+# composer.lock
+# package-lock.json
 
 # VU SA specific
 public/uploads

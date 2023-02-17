@@ -491,9 +491,11 @@ declare namespace App.Models {
     institutions?: Array<App.Models.Institution> | null;
     duties?: Array<App.Models.Duty> | null;
     doings?: Array<App.Models.Doing> | null;
+    descendants?: Array<App.Models.Type> | null;
     institutions_count?: number | null;
     duties_count?: number | null;
     doings_count?: number | null;
+    descendants_count?: number | null;
   }
 
   export interface User {
