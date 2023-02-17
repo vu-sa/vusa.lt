@@ -6,17 +6,24 @@ use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\User;
 use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Mail;
 
 class SendWelcomeEmail {
-        
-        public static function execute() {
+                
+        /**
+         * execute
+         *
+         * @param  Collection<User> $users
+         * @return void
+         */
+        public static function execute(Collection $users) {
 
-            $users = User::withWhereHas('duties', function ($query) {
-                $query->with('institution')->whereHas('types', function ($query) {
-                    $query->where('slug', 'studentu-atstovai');
-                });
-            })->get();
+            // $users = User::withWhereHas('duties', function ($query) {
+            //     $query->with('institution')->whereHas('types', function ($query) {
+            //         $query->where('slug', 'studentu-atstovai');
+            //     });
+            // })->get();
 
             foreach ($users as $user) {
                 

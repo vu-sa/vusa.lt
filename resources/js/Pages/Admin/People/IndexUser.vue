@@ -10,6 +10,7 @@
 </template>
 
 <script setup lang="tsx">
+import { formatRelativeTime } from "@/Utils/IntlTime";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
 defineProps<{
@@ -55,6 +56,23 @@ const columns = [
         <a href={`mailto:${row.phone}`} class="transition hover:text-vusa-red">
           {row.phone}
         </a>
+      );
+    },
+  },
+  {
+    title: "Paskutinis prisijungimas",
+    key: "last_action",
+    maxWidth: 200,
+    ellipsis: {
+      tooltip: true,
+    },
+    render(row: App.Entities.User) {
+      return (
+        <span class={row.last_action ? "" : "text-vusa-red"}>
+          {row.last_action
+            ? formatRelativeTime(new Date(row.last_action))
+            : "Niekada"}
+        </span>
       );
     },
   },

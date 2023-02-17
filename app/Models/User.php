@@ -40,6 +40,10 @@ class User extends Authenticatable
         'microsoft_token',
     ];
 
+    protected $casts = [
+        'last_action' => 'datetime',
+    ];
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()->logFillable()->logOnlyDirty();

@@ -144,6 +144,30 @@
           </ul>
         </NCard>
       </FormElement>
+      <FormElement>
+        <template #title>
+          {{ $t("forms.context.additional_info") }}
+        </template>
+        <template v-if="user.last_action">
+          <p>Paskutinį kartą prisijungė {{ user.last_action }}.</p>
+        </template>
+        <template v-else>
+          <p class="mb-2">Šis asmuo dar niekada neprisijungė prie sistemos.</p>
+          <NPopconfirm
+            style="max-width: 400px"
+            @positive-click="sendWelcomeEmail"
+          >
+            <span
+              >Bus išsiųstas atstovo rolę supažindinantis laiškas apie
+              mano.vusa.lt, paštu&nbsp;
+              <span class="underline">{{ user.email }}</span>
+            </span>
+            <template #trigger
+              ><NButton>Siųsti laišką</NButton></template
+            ></NPopconfirm
+          >
+        </template>
+      </FormElement>
     </div>
     <div class="flex justify-end gap-2">
       <DeleteModelButton
@@ -167,6 +191,7 @@ import {
   NFormItem,
   NIcon,
   NInput,
+  NPopconfirm,
   NSelect,
   NTransfer,
   NTree,
@@ -286,5 +311,16 @@ const renderSourceList: TransferRenderSourceList = ({ onCheck, pattern }) => {
       onCheck(checkedKeys);
     },
   });
+};
+
+const sendWelcomeEmail = () => {
+  router.post(
+    route("users.sendWelcomeEmail", props.user.id),
+    {},
+    {
+      preserveState: true,
+      preserveScroll: true,
+    }
+  );
 };
 </script>
