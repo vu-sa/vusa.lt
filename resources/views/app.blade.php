@@ -7,14 +7,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title inertia>{{ config('app.name', 'VU SA') }}</title>
-    <meta name="og:title" content="VU SA | {{ $title ?? '' }}" />
+    <title inertia>{{ $title ?? 'VU SA' }} - VU SA</title>
+    <meta name="og:title" content="{{ $title ?? 'vusa.lt' }} - VU SA" />
     <meta name="description" content="{{ $description ?? '' }}">
     <meta name="og:description" content="{{ $description ?? '' }}">
     <meta name="image" content="{{ $image ?? '' }}">
     <meta name="og:image" content="{{ $image ?? '' }}">
     <meta name="color-scheme" content="dark light" media="(prefers-color-scheme: dark)">
-    <meta name="theme-color" content="#212124" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#252528" media="(prefers-color-scheme: dark)" />
 
     @include('meta-icons')
 
