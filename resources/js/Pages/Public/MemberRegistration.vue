@@ -193,7 +193,6 @@ import {
   createDiscreteApi,
 } from "naive-ui";
 import { Head, Link, useForm, usePage } from "@inertiajs/vue3";
-import { Method } from "@inertiajs/core";
 import { computed, ref } from "vue";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
@@ -363,7 +362,7 @@ const handleValidateClick = (e: MouseEvent) => {
   formRef.value?.validate((errors: Array<FormValidationError> | undefined) => {
     if (!errors) {
       formValue.submit(
-        Method.POST,
+        "post"
         route("memberRegistration.store", {
           lang: usePage().props.app.locale,
         }),
