@@ -79,6 +79,11 @@ class ContactController extends PublicController
 			->get();
 		}
 
+		// sort users by their duty smallest order
+		$contacts = $contacts->sortBy(function ($contact) {
+			return $contact->duties->min('order');
+		})->values();
+
 		return Inertia::render('Public/Contacts/ContactsShow', [
 			'institution' => $institution,
 			'contacts' => $contacts->map(function ($contact) use ($institution) {
