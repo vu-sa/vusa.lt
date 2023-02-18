@@ -36,8 +36,13 @@ class User extends Authenticatable
         'remember_token',
         'google_token',
         'email_verified_at',
+        'last_changelog_check',
         'last_action',
         'microsoft_token',
+    ];
+
+    protected $casts = [
+        'last_action' => 'datetime',
     ];
 
     public function getActivitylogOptions(): LogOptions

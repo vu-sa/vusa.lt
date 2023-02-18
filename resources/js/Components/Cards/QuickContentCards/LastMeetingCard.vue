@@ -34,7 +34,7 @@
     </template>
     <p v-else>
       <template v-if="$page.props.app.locale === 'lt'">
-        Nėra įrašytų posėdių. Paspausk mygtuką žemiau, kad pridėtum pirmą! 🎉
+        Nėra įrašytų posėdžių. Paspausk mygtuką žemiau, kad pridėtum pirmąjį! 🎉
       </template>
       <template v-if="$page.props.app.locale === 'en'">
         No meeting has been recorded. Use the button below to add one! 🎉

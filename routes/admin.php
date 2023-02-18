@@ -23,6 +23,7 @@ Route::resource('mainPage', MainPageController::class);
 Route::resource('banners', BannerController::class);
 Route::resource('navigation', NavigationController::class);
 Route::resource('users', UserController::class);
+Route::post('users/{user}/sendWelcomeEmail', [UserController::class, 'sendWelcomeEmail'])->name('users.sendWelcomeEmail');
 Route::resource('users.comments', CommentController::class);
 Route::post('notification/{id}/markAsRead', [UserNotificationsController::class, 'markAsRead'])->name('notifications.markAsRead');
 Route::post('notification/markAllAsRead', [UserNotificationsController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
@@ -61,6 +62,9 @@ Route::put('roles/{role}/sync/duties', [RoleController::class, 'syncDuties'])->n
 Route::resource('permissions', PermissionController::class);
 Route::resource('tasks', TaskController::class);
 Route::post('tasks/{task}/updateCompletionStatus', [TaskController::class, 'updateCompletionStatus'])->name('tasks.updateCompletionStatus');
+
+Route::resource('changelogItems', ChangelogItemController::class);
+Route::post('changelogItems/approveForUser', [ChangelogItemController::class, 'approveForUser'])->name('changelogItems.approve');
 
 Route::post('files/search', [FilesController::class, 'searchForFiles'])->name('files.search');
 Route::post('images/search', [FilesController::class, 'searchForImages'])->name('images.search');

@@ -15,7 +15,7 @@
         "guzzlehttp/guzzle": "^7.2",
         "inertiajs/inertia-laravel": "^0.6.3",
         "intervention/image": "^2.3",
-        "laravel/framework": "^9.19.0",
+        "laravel/framework": "^10.0",
         "laravel/scout": "^9.6",
         "laravel/telescope": "^4.6",
         "laravel/tinker": "^2.7",
@@ -34,22 +34,22 @@
         "spatie/laravel-medialibrary": "^10.0.0",
         "spatie/laravel-model-states": "^2.4",
         "spatie/laravel-permission": "^5.5",
+        "spatie/laravel-translatable": "*",
         "spatie/laravel-typescript-transformer": "^2.1",
-        "staudenmeir/eloquent-has-many-deep": "^1.7",
+        "staudenmeir/eloquent-has-many-deep": "^v1.18",
         "tightenco/ziggy": "^1.0"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.7",
-        "based/laravel-typescript": "^0.0.3",
         "beyondcode/laravel-query-detector": "^1.6",
         "fakerphp/faker": "^1.9.1",
-        "kitloong/laravel-migrations-generator": "^6.2",
+        "kitloong/laravel-migrations-generator": "^v6.8.0",
         "laravel/pint": "^1.2",
         "laravel/sail": "^1.12",
         "mockery/mockery": "^1.4.4",
         "pestphp/pest": "^1.22",
-        "phpunit/phpunit": "^9.5.10",
-        "spatie/laravel-ignition": "^1.0"
+        "phpunit/phpunit": "^9.6",
+        "spatie/laravel-ignition": "^2.0"
     },
     "autoload": {
         "psr-4": {
@@ -67,8 +67,7 @@
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi",
-            "@php artisan typescript:transform",
-            "@php artisan typescript:generate"
+            "@php artisan typescript:transform"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
@@ -90,9 +89,10 @@
         "preferred-install": "dist",
         "sort-packages": true,
         "allow-plugins": {
-            "pestphp/pest-plugin": true
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": true
         }
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "prefer-stable": true
 }

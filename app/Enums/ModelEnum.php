@@ -11,6 +11,7 @@ use Spatie\Enum\Laravel\Enum;
  * @method static self BANNER()
  * @method static self CALENDAR()
  * @method static self CATEGORY()
+ * @method static self CHANGELOG_ITEM()
  * @method static self COMMENT()
  * @method static self CONTACT()
  * @method static self DOING()

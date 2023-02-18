@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\Padalinys;
 use App\Models\User;
 use App\Enums\ModelEnum;
+use App\Models\ChangelogItem;
 use App\Models\Institution;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\Request;
@@ -62,6 +63,7 @@ class HandleInertiaRequests extends Middleware
                 'can' => fn () => [
                     'index' => fn () => $this->getIndexPermissions($user),
                     ],
+                'changes' => fn () => $this->getChangesForUser($user),
                 'user' => fn () => [
                     ...$user->toArray(), 
                     'isSuperAdmin' => $isSuperAdmin,
@@ -117,5 +119,18 @@ class HandleInertiaRequests extends Middleware
                     return [$model => $user->can('viewAny', ['App\\Models\\' . ucfirst($model), $authorizer])];
                 })->toArray();
         });
+    }
+
+    private function getChangesForUser(User $user) {
+        
+        $user->makeVisible('last_changelog_check');
+        
+        if (is_null($user->last_changelog_check)) {
+            return ChangelogItem::query()->orderBy('date', 'desc')->get();
+        }
+        
+        $changes = ChangelogItem::query()->whereDate('date', '>', $user->last_changelog_check)->get();
+
+        return $changes;
     }
 }

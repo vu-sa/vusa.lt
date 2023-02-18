@@ -20,6 +20,11 @@ interface InertiaPageProps {
     can: {
       index: { [str in ModelEnum]?: boolean };
     };
+    changes: Array<{
+      title: string;
+      description: string;
+      date: string;
+    }>;
     user: User;
   } | null;
   flash: {

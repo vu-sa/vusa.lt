@@ -2,20 +2,20 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\SendWelcomeEmail;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Duty;
-use App\Http\Controllers\Controller as Controller;
 use App\Http\Controllers\ResourceController;
 use App\Models\Padalinys;
 use App\Providers\RouteServiceProvider;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Models\Role;
 use App\Services\ModelIndexer;
+use Illuminate\Database\Eloquent\Collection;
 
 class UserController extends ResourceController
 {
@@ -31,11 +31,17 @@ class UserController extends ResourceController
         $search = request()->input('text');
 
         $indexer = new ModelIndexer();
-        $users = $indexer->execute(User::class, $search, 'name', $this->authorizer);
+        $users = $indexer->execute(User::class, $search, 'name', $this->authorizer)->with('duties:id,institution_id', 'duties.institution:id,padalinys_id','duties.institution.padalinys:id,shortname')->withCount('duties')
+        ->get()->makeVisible(['last_action'])->paginate(20);
 
         return Inertia::render('Admin/People/IndexUser', [
-            'users' => $users->with('duties:id,institution_id', 'duties.institution:id,padalinys_id','duties.institution.padalinys:id,shortname')->withCount('duties')
-            ->paginate(20),
+            'users' => $users,
+            'usersCount' => fn () => $users->total(),
+            'usersLoggedInCount' => fn () => User::when(auth()->user()->hasRole(config('permission.super_admin_role_name')), fn ($query) => $query, function ($query) {
+                return $query->whereHas('padaliniai', function ($query) {
+                    $query->whereIn('padaliniai.id', $this->authorizer->getPadaliniai()->pluck('id'));
+                });
+            })->whereNotNull('last_action')->count(),
         ]);
     }
 
@@ -130,11 +136,20 @@ class UserController extends ResourceController
         }])->load('roles');
 
         return Inertia::render('Admin/People/EditUser', [
-            'user' => $user,
+            'user' => $user->makeVisible(['last_action']),
             // get all roles
             'roles' => fn () => Role::all(),
             'padaliniaiWithDuties' => fn () => $this->getDutiesForForm()
         ]);
+    }
+
+    public function sendWelcomeEmail(User $user)
+    {
+        $this->authorize('update', [User::class, $user, $this->authorizer]);
+        
+        SendWelcomeEmail::execute((new Collection())->push($user));
+
+        return back()->with('success', 'Laiškas sėkmingai išsiųstas!');
     }
 
     /**

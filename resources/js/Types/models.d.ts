@@ -47,6 +47,13 @@ declare namespace App.Models {
     banners?: App.Models.Banner | null;
   }
 
+  export interface ChangelogItem {
+    id: number;
+    title: string | Record<"lt" | "en", string>;
+    description: string | Record<"lt" | "en", string>;
+    date: string | Date;
+  }
+
   export interface Comment {
     id: string;
     parent_id: string | null;
@@ -491,9 +498,11 @@ declare namespace App.Models {
     institutions?: Array<App.Models.Institution> | null;
     duties?: Array<App.Models.Duty> | null;
     doings?: Array<App.Models.Doing> | null;
+    descendants?: Array<App.Models.Type> | null;
     institutions_count?: number | null;
     duties_count?: number | null;
     doings_count?: number | null;
+    descendants_count?: number | null;
   }
 
   export interface User {

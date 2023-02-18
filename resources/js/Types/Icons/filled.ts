@@ -41,6 +41,7 @@ const modelIcons: Record<keyof typeof ModelEnum, Component> = {
   BANNER: ImageArrowBack24Filled,
   CALENDAR: CalendarLtr24Filled,
   CATEGORY: TextBulletListSquare24Filled,
+  CHANGELOG_ITEM: DocumentBulletList24Filled,
   COMMENT: Comment24Filled,
   CONTACT: BookContacts28Filled,
   DOING: Important24Filled,
