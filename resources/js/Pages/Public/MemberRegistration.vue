@@ -362,7 +362,7 @@ const handleValidateClick = (e: MouseEvent) => {
   formRef.value?.validate((errors: Array<FormValidationError> | undefined) => {
     if (!errors) {
       formValue.submit(
-        "post"
+        "post",
         route("memberRegistration.store", {
           lang: usePage().props.app.locale,
         }),
