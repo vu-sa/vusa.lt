@@ -423,12 +423,26 @@ const menuOptions = computed(() => [
         },
         show: auth?.can.index.permission,
       },
+      {
+        label: () => {
+          return (
+            <Link href={route("changelogItems.index")}>
+              {$t("Pasikeitimai")}
+            </Link>
+          );
+        },
+        icon: () => {
+          return <NIcon component={Icons.CHANGELOG_ITEM}></NIcon>;
+        },
+        show: auth?.can.index.changelogItem,
+      },
     ],
     show:
       auth?.can.index.type ||
       auth?.can.index.relationship ||
       auth?.can.index.role ||
-      auth?.can.index.permission,
+      auth?.can.index.permission ||
+      auth?.can.index.changelogItem,
   },
 ]);
 </script>

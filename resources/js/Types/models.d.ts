@@ -47,6 +47,13 @@ declare namespace App.Models {
     banners?: App.Models.Banner | null;
   }
 
+  export interface ChangelogItem {
+    id: number;
+    title: string | Record<"lt" | "en", string>;
+    description: string | Record<"lt" | "en", string>;
+    date: string | Date;
+  }
+
   export interface Comment {
     id: string;
     parent_id: string | null;

@@ -108,6 +108,28 @@
         <NMessageProvider><slot /></NMessageProvider>
       </NLayoutContent>
     </NLayout>
+    <CardModal
+      :title="`⭐️ ${$t('vusa.lt atsinaujino')}!`"
+      :show="showChanges"
+      @close="showChanges = false"
+    >
+      <div>
+        <template v-for="change in $page.props.auth.changes" :key="change.id">
+          <h4 class="mb-0 tracking-tight">
+            {{ formatStaticTime(new Date(change.date)) }}
+          </h4>
+          <small class="text-zinc-400">{{ change.title }}</small>
+          <div class="mt-4" v-html="change.description" />
+          <NDivider class="last:hidden" />
+        </template>
+      </div>
+      <NButton class="mt-8" type="primary" @click="approveChanges"
+        ><template #icon
+          ><NIcon :component="ThumbLike16Regular"></NIcon
+        ></template>
+        Liuks</NButton
+      >
+    </CardModal>
   </NLayout>
 </template>
 
@@ -130,12 +152,18 @@ import {
 } from "naive-ui";
 import { computed, onMounted, watch } from "vue";
 import { ref } from "vue";
-import { useOnline, useStorage } from "@vueuse/core";
+import { useOnline, useStorage, useTimeoutFn } from "@vueuse/core";
 
-import { Board24Regular, Navigation24Filled } from "@vicons/fluent";
+import {
+  Board24Regular,
+  Navigation24Filled,
+  ThumbLike16Regular,
+} from "@vicons/fluent";
+import { formatStaticTime } from "@/Utils/IntlTime";
 import { loadLanguageAsync } from "laravel-vue-i18n";
 import AdminMenu from "@/Components/Menus/AdminMenu.vue";
 import AppLogo from "@/Components/AppLogo.vue";
+import CardModal from "../Modals/CardModal.vue";
 import DarkModeSwitch from "@/Components/Buttons/DarkModeSwitch.vue";
 import FeedbackModalButton from "../Buttons/FeedbackModalButton.vue";
 import NotificationBell from "@/Features/Admin/Notifications/NotificationBell.vue";
@@ -149,6 +177,7 @@ defineProps<{
 }>();
 
 const mounted = ref(false);
+const showChanges = ref(false);
 const online = useOnline();
 const message = useMessage();
 const activeDrawer = ref(false);
@@ -233,7 +262,26 @@ window.addEventListener("resize", () => {
   isMobile.value = window.innerWidth < 768;
 });
 
+const approveChanges = () => {
+  router.post(
+    route("changelogItems.approve"),
+    {},
+    {
+      preserveState: true,
+      onStart() {
+        showChanges.value = false;
+      },
+    }
+  );
+};
+
 onMounted(() => {
   mounted.value = true;
+
+  if (usePage().props.auth?.changes.length > 0) {
+    useTimeoutFn(() => {
+      showChanges.value = true;
+    }, 1000);
+  }
 });
 </script>

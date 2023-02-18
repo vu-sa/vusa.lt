@@ -30,7 +30,6 @@ import {
   Tag24Regular,
   TaskListSquareLtr24Regular,
   TextBulletListSquare24Regular,
-  TextCaseTitle24Regular,
   TextField24Regular,
 } from "@vicons/fluent";
 import type { Component } from "vue";
@@ -42,6 +41,7 @@ const modelIcons: Record<keyof typeof ModelEnum, Component> = {
   BANNER: ImageArrowBack24Regular,
   CALENDAR: CalendarLtr24Regular,
   CATEGORY: TextBulletListSquare24Regular,
+  CHANGELOG_ITEM: DocumentBulletList24Regular,
   COMMENT: Comment24Regular,
   CONTACT: BookContacts28Regular,
   DOING: Important24Regular,

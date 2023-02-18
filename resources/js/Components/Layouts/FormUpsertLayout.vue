@@ -19,7 +19,6 @@ import { NAlert, NCard } from "naive-ui";
 import { computed } from "vue";
 
 const props = defineProps<{
-  model: Record<string, any>;
   errors?: Record<string, string>;
 }>();
 

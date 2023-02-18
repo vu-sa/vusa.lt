@@ -1,3 +1,18 @@
+export const changelogItemTemplate: Pick<
+  App.Entities.ChangelogItem,
+  "title" | "description" | "date"
+> = {
+  title: {
+    lt: "",
+    en: "",
+  },
+  description: {
+    lt: "",
+    en: "",
+  },
+  date: null,
+};
+
 export const contactTemplate: Pick<
   App.Entities.Contact,
   "name" | "email" | "phone" | "extra_attributes"

@@ -3,6 +3,7 @@ declare namespace App.Entities {
   export type Banner = App.Models.Banner;
   export type Calendar = App.Models.Calendar;
   export type Category = App.Models.Category;
+  export type ChangelogItem = App.Models.ChangelogItem;
   export type Comment = App.Models.Comment;
   export interface Contact extends App.Models.Contact {
     comments: Array<App.Models.Comment>;
