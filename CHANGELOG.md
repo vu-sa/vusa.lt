@@ -1,3 +1,15 @@
+# Changelog
+
+## v0.4.6 (2023-02-18)
+
+* Atnaujinta į Laravel 10
+* Chronologinė pakeitimų rodymo sistema
+* Administratoriai gali siųsti laiškus dar neprisijungusiems prie sistemos
+* Šiek tiek atnaujinta administratoriaus lentelės UI
+* Rodoma, kiek žmonių iš viso buvo prisijungusių prie sistemos bent kartą
+* SEO pataisymai
+* Pataisytas paskutinio susitikimo kortelės tekstas
+
 ## v0.4.5 (2023-02-13)
 
 * Grįžtamojo ryšio laukelis
