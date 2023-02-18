@@ -126,7 +126,10 @@ class InstitutionController extends ResourceController
         }]);
 
         return Inertia::render('Admin/People/EditInstitution', [
-            'institution' => $institution,
+            'institution' => [
+                ...$institution->toArray(),
+                'types' => $institution->types->pluck('id'),
+            ],
             'institutionTypes' => Type::where('model_type', Institution::class)->get(),
             'padaliniai' => InstitutionService::getPadaliniaiForUpserts($this->authorizer)
         ]);

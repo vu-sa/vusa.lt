@@ -173,6 +173,7 @@
             value-field="id"
             placeholder="Studentų atstovų organas"
             clearable
+            multiple
           />
         </NFormItem>
         <NFormItem label="Techninė žymė" :span="2">
