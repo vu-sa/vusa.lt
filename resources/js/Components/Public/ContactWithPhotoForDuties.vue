@@ -31,7 +31,10 @@
             <p class="my-1">
               {{ changeDutyNameEndings(contact, duty) }}
               {{ showAdditionalInfo(duty) }}
-              <span v-if="duty.description" class="align-middle">
+              <span
+                v-if="duty.description && duty.description !== '<p></p>'"
+                class="align-middle"
+              >
                 <InfoPopover
                   style="max-width: 400px"
                   trigger="hover"
