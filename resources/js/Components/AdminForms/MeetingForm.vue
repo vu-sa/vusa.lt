@@ -11,6 +11,9 @@
         v-model:value="meetingForm.start_time"
         :first-day-of-week="0"
         :format="'yyyy-MM-dd HH:mm'"
+        :time-picker-props="{
+          format: 'HH:mm',
+        }"
         type="datetime"
         :placeholder="`${$t('Kada vyksta posėdis')}?`"
         clearable
