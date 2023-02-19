@@ -27,7 +27,7 @@ class PagesController extends ResourceController
         $pages = $indexer->execute(Page::class, $search, 'title', $this->authorizer, false);
 
         return Inertia::render('Admin/Content/IndexPages', [
-            'pages' => $pages->with('padalinys:id,shortname')->paginate(20),
+            'pages' => $pages->with('padalinys:id,shortname,alias')->paginate(20),
         ]);
     }
 

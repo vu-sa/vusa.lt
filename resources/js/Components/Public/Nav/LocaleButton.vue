@@ -3,7 +3,11 @@
     <NButton text>
       <div class="flex gap-1">
         <NBadge dot processing :show="!!otherLanguagePage"
-          ><img :src="icon" width="16"
+          ><img
+            :src="`https://hatscripts.github.io/circle-flags/flags/${
+              locale === 'lt' ? 'lt' : 'gb'
+            }.svg`"
+            width="16"
         /></NBadge>
         <NIcon :component="ChevronDown20Filled" />
       </div>
@@ -12,6 +16,7 @@
 </template>
 
 <script setup lang="ts">
+import { trans as $t } from "laravel-vue-i18n";
 import { ChevronDown20Filled } from "@vicons/fluent";
 import { NBadge, NButton, NDropdown, NIcon } from "naive-ui";
 import { computed } from "vue";
@@ -42,38 +47,21 @@ const otherLanguagePage = computed(() => {
   return false;
 });
 
-const en_options = computed(() => [
-  {
-    label: "Change page language",
-    key: "page",
-    disabled: !otherLanguagePage.value,
-  },
-  {
-    label: "Go to main page",
-    key: "home",
-  },
-]);
-
-const lt_options = computed(() => [
-  {
-    label: "Pakeisti puslapio kalbą",
-    key: "page",
-    disabled: !otherLanguagePage.value,
-  },
-  {
-    label: "Eiti į pagrindinį",
-    key: "home",
-  },
-]);
+console.log(route().has("home"));
 
 const options = computed(() => {
-  return props.locale === "lt" ? lt_options.value : en_options.value;
-});
-
-const icon = computed(() => {
-  return `https://hatscripts.github.io/circle-flags/flags/${
-    props.locale === "lt" ? "lt" : "gb"
-  }.svg`;
+  return [
+    {
+      label: $t("Pakeisti puslapio kalbą"),
+      key: "page",
+      disabled: !otherLanguagePage.value,
+      show: !route().current("home"),
+    },
+    {
+      label: $t("Eiti į pagrindinį"),
+      key: "home",
+    },
+  ];
 });
 
 const handleSelectLanguage = (key: "home" | "page") => {

@@ -5,12 +5,13 @@
   >
     <template #after-heading>
       <PreviewModelButton
-        main-route="contacts.category"
-        padalinys-route="contacts.category"
-        :main-props="{ alias: institution.alias }"
-        :padalinys-props="{ alias: institution.alias }"
-        :padalinys-shortname="institution.padalinys?.shortname"
-      ></PreviewModelButton>
+        public-route="contacts.alias"
+        :route-props="{
+          alias: institution.alias,
+          lang: $page.props.locale,
+          padalinys: 'www',
+        }"
+      />
     </template>
     <UpsertModelLayout :errors="$page.props.errors" :model="institution">
       <InstitutionForm
