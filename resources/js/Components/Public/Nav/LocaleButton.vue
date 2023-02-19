@@ -1,5 +1,9 @@
 <template>
-  <NDropdown :options="options" @select="handleSelectLanguage">
+  <NDropdown
+    placement="top-end"
+    :options="options"
+    @select="handleSelectLanguage"
+  >
     <NButton text>
       <div class="flex gap-1">
         <NBadge dot processing :show="!!otherLanguagePage"
@@ -16,7 +20,6 @@
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from "laravel-vue-i18n";
 import { ChevronDown20Filled } from "@vicons/fluent";
 import { NBadge, NButton, NDropdown, NIcon } from "naive-ui";
 import { computed } from "vue";
@@ -47,27 +50,75 @@ const otherLanguagePage = computed(() => {
   return false;
 });
 
-console.log(route().has("home"));
-
 const options = computed(() => {
   return [
     {
-      label: $t("Pakeisti puslapio kalbą"),
+      label:
+        props.locale === LocaleEnum.LT
+          ? "Change page language"
+          : "Pakeisti puslapio kalbą",
       key: "page",
-      disabled: !otherLanguagePage.value,
-      show: !route().current("home"),
+      disabled: !hasChangeableLocale.value,
     },
     {
-      label: $t("Eiti į pagrindinį"),
+      label:
+        props.locale === LocaleEnum.LT
+          ? "Go to main page"
+          : "Eiti į pagrindinį",
       key: "home",
     },
   ];
 });
 
+const hasChangeableLocale = computed(() => {
+  if (otherLanguagePage.value) {
+    return true;
+  }
+
+  // check if current page url has /kontaktai or /contacts
+  if (
+    window.location.pathname.includes("kontaktai") ||
+    window.location.pathname.includes("contacts")
+  ) {
+    return true;
+  }
+
+  return false;
+});
+
+const routerMethod = (key: "home" | "page") => {
+  if (otherLanguagePage.value) {
+    return "visit";
+  }
+
+  if (key === "home") {
+    return "visit";
+  }
+
+  return "reload";
+};
+
 const handleSelectLanguage = (key: "home" | "page") => {
   const newLang = Object.values(LocaleEnum).filter((l) => {
     return l !== props.locale;
   })[0];
+
+  if (routerMethod(key) === "reload") {
+    // if first 3 chars of url are '/lt' or '/en', replace them with new lang and visit
+    let url = window.location.pathname.replace(
+      window.location.pathname.substr(0, 3),
+      `/${newLang}`
+    );
+
+    router.visit(url, {
+      onSuccess: () => {
+        emit("changeLocale", newLang);
+        loadLanguageAsync(newLang);
+      },
+    });
+
+    return;
+  }
 
   let alias = usePage().props.alias;
   let padalinys = alias === "vusa" ? "www" : alias ?? "www";
