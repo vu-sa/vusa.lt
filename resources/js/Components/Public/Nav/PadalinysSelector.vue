@@ -7,7 +7,11 @@
       :render-label="renderPadalinysLabel"
       @select="$emit('select:padalinys', $event)"
     >
-      <NButton :size="size" style="border-radius: 0.5rem">
+      <NButton
+        :disabled="isDisabled"
+        :size="size"
+        style="border-radius: 0.5rem"
+      >
         {{ $t(padalinys) }}
         <NIcon class="ml-1" size="18">
           <ChevronDown20Filled />
@@ -48,6 +52,23 @@ const options_padaliniai = computed<DropdownOption[]>(() => {
         : $t(padalinys.fullname.split("atstovybė ")[1]),
     key: padalinys.alias,
   }));
+});
+
+const isDisabled = computed(() => {
+  if (["lt", "en", "lt/naujienos"].includes(usePage().props.app.path)) {
+    return false;
+  }
+
+  // check if contains kontaktai or contacts
+  if (usePage().props.app.path.includes("kontaktai")) {
+    return false;
+  }
+
+  if (usePage().props.app.path.includes("contacts")) {
+    return false;
+  }
+
+  return true;
 });
 
 const renderPadalinysLabel = (option: DropdownOption) => {

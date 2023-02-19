@@ -57,6 +57,7 @@ class HandleInertiaRequests extends Middleware
             'app' => [
                 'env' => fn () => config('app.env'),
                 'locale' => fn () => app()->getLocale(),
+                'path' => fn () => $request->path(),
                 'url' => fn () => config('app.url'),
             ],
             'auth' => is_null($user) ? null : [
