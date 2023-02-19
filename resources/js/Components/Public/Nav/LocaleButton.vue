@@ -17,7 +17,8 @@ import { NBadge, NButton, NDropdown, NIcon } from "naive-ui";
 import { computed } from "vue";
 import { loadLanguageAsync } from "laravel-vue-i18n";
 import { router, usePage } from "@inertiajs/vue3";
-import type { LocaleEnum } from "@/Types/enums";
+
+import { LocaleEnum } from "@/Types/enums";
 
 const props = defineProps<{
   locale: LocaleEnum;
@@ -26,8 +27,6 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: "changeLocale", lang: string): void;
 }>();
-
-const locales = ["lt", "en"];
 
 const otherLanguagePage = computed(() => {
   if (usePage().props.otherLangPage) {
@@ -68,61 +67,38 @@ const lt_options = computed(() => [
 ]);
 
 const options = computed(() => {
-  if (props.locale !== "lt") {
-    return lt_options.value;
-  } else {
-    return en_options.value;
-  }
+  return props.locale === "lt" ? lt_options.value : en_options.value;
 });
 
 const icon = computed(() => {
-  if (props.locale !== "en") {
-    return "https://hatscripts.github.io/circle-flags/flags/lt.svg";
-  } else {
-    return "https://hatscripts.github.io/circle-flags/flags/gb.svg";
-  }
+  return `https://hatscripts.github.io/circle-flags/flags/${
+    props.locale === "lt" ? "lt" : "gb"
+  }.svg`;
 });
 
-const handleSelectLanguage = (key) => {
-  const newLang = locales.filter((l) => {
+const handleSelectLanguage = (key: "home" | "page") => {
+  const newLang = Object.values(LocaleEnum).filter((l) => {
     return l !== props.locale;
   })[0];
 
-  if (key === "home") {
-    router.visit(
-      route("home", {
-        lang: newLang,
-        padalinys:
-          usePage().props.alias === "vusa"
-            ? "www"
-            : usePage().props.alias ?? "www",
-      }),
-      {
-        onSuccess: () => {
-          emit("changeLocale", newLang);
-          console.log("changeLocale", newLang);
-          loadLanguageAsync(newLang);
-        },
-      }
-    );
-  } else if (key === "page") {
-    router.visit(
+  let alias = usePage().props.alias;
+  let padalinys = alias === "vusa" ? "www" : alias ?? "www";
+
+  const routes = {
+    home: () => route("home", { lang: newLang, padalinys }),
+    page: () =>
       route("page", {
         lang: newLang,
-        padalinys:
-          usePage().props.alias === "vusa"
-            ? "www"
-            : usePage().props.alias ?? "www",
+        padalinys,
         permalink: usePage().props?.otherLangPage?.permalink,
       }),
-      {
-        onSuccess: () => {
-          emit("changeLocale", newLang);
-          // padalinysSelector needs to be updated in this way
-          loadLanguageAsync(newLang);
-        },
-      }
-    );
-  }
+  };
+
+  router.visit(routes[key](), {
+    onSuccess: () => {
+      emit("changeLocale", newLang);
+      loadLanguageAsync(newLang);
+    },
+  });
 };
 </script>
