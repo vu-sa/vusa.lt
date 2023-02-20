@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\FileableNameUpdated;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasSharepointFiles;
@@ -57,5 +58,16 @@ class Meeting extends Model
     public function padaliniai()
     {
         return $this->hasManyDeepFromRelations($this->institutions(), (new Institution)->padalinys());
+    }
+
+    protected static function booted()
+    {
+        static::saved(function (Meeting $meeting) {
+            // check if institution name $institution->getChanges()['name'] has changed
+            if (array_key_exists('start_time', $meeting->getChanges())) {
+                // dispatch event FileableNameUpdated
+                FileableNameUpdated::dispatch($meeting);
+            }
+        });
     }
 }

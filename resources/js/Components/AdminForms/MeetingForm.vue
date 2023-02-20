@@ -28,29 +28,25 @@
 import { trans as $t } from "laravel-vue-i18n";
 import {
   type FormInst,
+  type FormRules,
   NButton,
   NDatePicker,
   NForm,
   NFormItem,
   NIcon,
 } from "naive-ui";
-import { reactive, ref } from "vue";
+import { ref } from "vue";
 
 import Icons from "@/Types/Icons/filled";
 
 const emit = defineEmits<{
   (event: "submit", form: any): void;
-  (event: "success", ...args: any[]): void;
 }>();
 
 const props = defineProps<{
   loading?: boolean;
   meeting: App.Entities.Meeting;
   // meetingTypes?: any;
-  modelRoute?: string;
-  matter?: App.Entities.Matter;
-  // This question form is from a quick action button, idk if it shouldn't be refactored
-  mattersForm?: Record<string, any>;
 }>();
 
 // check if meeting start_time is in string, then convert it to timestamp
@@ -64,7 +60,7 @@ const meetingToForm = (meeting: App.Entities.Meeting) => ({
 const meetingForm = ref(meetingToForm(props.meeting));
 const formRef = ref<FormInst | null>(null);
 
-const rules = reactive({
+const rules: FormRules = {
   // title: {
   //   required: true,
   //   trigger: ["blur"],
@@ -79,7 +75,7 @@ const rules = reactive({
   //   required: true,
   //   trigger: ["blur"],
   // },
-});
+};
 
 const handleSubmit = () => {
   formRef.value?.validate((errors) => {
