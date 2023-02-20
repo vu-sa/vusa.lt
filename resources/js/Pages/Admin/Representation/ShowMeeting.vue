@@ -29,7 +29,7 @@
       size="small"
       :segmented="{ footer: 'soft' }"
     >
-      <NDivider style="margin-top: 0rem">Darbotvarkė</NDivider>
+      <NDivider style="margin-top: 0rem">{{ $t("Darbotvarkė") }}</NDivider>
       <ol v-if="meeting.agenda_items?.length > 0" class="pl-4">
         <li
           v-for="(agenda_item, index) in meeting.agenda_items"
@@ -59,7 +59,7 @@
       </p>
       <template #footer>
         <NButton size="small" @click="showAgendaItemStoreModal = true"
-          >Pridėti?<template #icon
+          >{{ $t("forms.add") }}?<template #icon
             ><NIcon size="16" :component="Icons.AGENDA_ITEM" /></template
         ></NButton>
         <CardModal
