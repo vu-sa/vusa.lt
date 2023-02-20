@@ -1,5 +1,5 @@
 <template>
-  <NForm :rules="agendaItemRules" :model="agendaItemForm">
+  <NForm :rules="agendaItemRules" :model="agendaItemsForm">
     <FadeTransition>
       <SuggestionAlert
         :show-alert="showAlert"
@@ -34,7 +34,7 @@
         </span>
       </template>
       <NDynamicInput
-        v-model:value="agendaItemForm.agendaItemTitles"
+        v-model:value="agendaItemsForm.agendaItemTitles"
         show-sort-button
       >
         <template #create-button-default>{{ $t("forms.add") }}</template>
@@ -42,7 +42,7 @@
           <div class="flex grow items-center gap-1">
             <span class="ml-1 w-7">{{ `${index + 1}.` }}</span>
             <NInput
-              v-model:value="agendaItemForm.agendaItemTitles[index]"
+              v-model:value="agendaItemsForm.agendaItemTitles[index]"
               :placeholder="`Darbotvarkės klausimas nr. ${index + 1}`"
               @keydown.enter.prevent
             ></NInput>
@@ -57,7 +57,7 @@
           {{ $t("forms.context.additional_info") }}
         </span>
       </template>
-      <NCheckbox v-model:checked="agendaItemForm.moreAgendaItemsUndefined"
+      <NCheckbox v-model:checked="agendaItemsForm.moreAgendaItemsUndefined"
         ><span class="whitespace-nowrap">{{
           $t("Vėliau gali atsirasti papildomų darbotvarkės klausimų")
         }}</span></NCheckbox
@@ -67,11 +67,11 @@
       <NButton
         :loading="loading"
         :disabled="
-          agendaItemForm.agendaItemTitles.length === 0 &&
-          !agendaItemForm.moreAgendaItemsUndefined
+          agendaItemsForm.agendaItemTitles.length === 0 &&
+          !agendaItemsForm.moreAgendaItemsUndefined
         "
         type="primary"
-        @click.prevent="$emit('submit', agendaItemForm)"
+        @click.prevent="$emit('submit', agendaItemsForm)"
         >{{ $t("forms.submit") }}</NButton
       >
     </NFormItem>
@@ -110,7 +110,7 @@ defineProps<{
 
 const showAlert = useStorage("new-meeting-button-alert", true);
 
-const agendaItemForm = useForm({
+const agendaItemsForm = useForm({
   moreAgendaItemsUndefined: false,
   agendaItemTitles: [],
   //   newMatterDescription: "",

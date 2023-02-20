@@ -29,8 +29,8 @@
       size="small"
       :segmented="{ footer: 'soft' }"
     >
-      <NDivider style="margin-top: 1rem">Darbotvarkė</NDivider>
-      <ol class="pl-4">
+      <NDivider style="margin-top: 0rem">Darbotvarkė</NDivider>
+      <ol v-if="meeting.agenda_items?.length > 0" class="pl-4">
         <li
           v-for="(agenda_item, index) in meeting.agenda_items"
           :key="agenda_item.id"
@@ -45,25 +45,47 @@
             @click="handleAgendaClick(agenda_item)"
             ><template #icon><NIcon :component="Edit24Filled"></NIcon></template
           ></NButton>
+          <NButton
+            size="tiny"
+            class="invisible transition duration-200 group-hover:visible"
+            text
+            @click="handleAgendaItemDelete(agenda_item)"
+            ><template #icon><NIcon :component="Delete24Filled" /></template
+          ></NButton>
         </li>
       </ol>
+      <p v-else class="text-center text-sm text-zinc-500">
+        Darbotvarkės punktų nėra.
+      </p>
       <template #footer>
-        <NButton size="small"
-          >Pridėti<template #icon
+        <NButton size="small" @click="showAgendaItemStoreModal = true"
+          >Pridėti?<template #icon
             ><NIcon size="16" :component="Icons.AGENDA_ITEM" /></template
         ></NButton>
+        <CardModal
+          v-model:show="showAgendaItemStoreModal"
+          title="Pridėti darbotvarkės punktą"
+          class="max-w-md"
+          :segmented="{ content: 'soft' }"
+          @close="showAgendaItemStoreModal = false"
+        >
+          <AgendaItemForm
+            :agenda-item="{ title: null }"
+            @submit="handleAgendaItemStore"
+          />
+        </CardModal>
       </template>
     </NCard>
     <CardModal
-      v-model:show="showAgendaItemModal"
+      v-model:show="showAgendaItemUpdateModal"
       title="Redaguoti darbotvarkės punktą"
       :segmented="{ content: 'soft' }"
-      @close="showAgendaItemModal = false"
+      @close="showAgendaItemUpdateModal = false"
     >
       <AgendaItemForm
         v-if="selectedAgendaItem"
         :agenda-item="selectedAgendaItem"
-        @submit="handleAgendaItemSubmit"
+        @submit="handleAgendaItemUpdate"
       />
     </CardModal>
     <template #below>
@@ -82,7 +104,7 @@
 </template>
 
 <script setup lang="tsx">
-import { Edit24Filled } from "@vicons/fluent";
+import { Delete24Filled, Edit24Filled } from "@vicons/fluent";
 import { NButton, NCard, NDivider, NIcon } from "naive-ui";
 import { computed, ref } from "vue";
 import { router } from "@inertiajs/vue3";
@@ -106,14 +128,14 @@ const props = defineProps<{
 }>();
 
 const showMeetingModal = ref(false);
-const showAgendaItemModal = ref(false);
+const showAgendaItemStoreModal = ref(false);
+const showAgendaItemUpdateModal = ref(false);
 const currentTab = useStorage("show-meeting-tab", "Failai");
 
 const selectedAgendaItem = ref<App.Entities.AgendaItem | null>(null);
 
 const handleMeetingFormSubmit = (meeting: App.Entities.Meeting) => {
   router.patch(route("meetings.update", meeting.id), meeting, {
-    preserveState: true,
     onSuccess: () => {
       showMeetingModal.value = false;
     },
@@ -141,7 +163,11 @@ const sharepointFileTypeOptions = computed(() => {
 
 const handleAgendaClick = (agendaItem: App.Entities.AgendaItem) => {
   selectedAgendaItem.value = agendaItem;
-  showAgendaItemModal.value = true;
+  showAgendaItemUpdateModal.value = true;
+};
+
+const handleAgendaItemDelete = (agendaItem: App.Entities.AgendaItem) => {
+  router.delete(route("agendaItems.destroy", agendaItem.id));
 };
 
 const breadcrumbOptions: BreadcrumbOption[] = [
@@ -161,10 +187,22 @@ const breadcrumbOptions: BreadcrumbOption[] = [
   },
 ];
 
-const handleAgendaItemSubmit = (agendaItem: App.Entities.AgendaItem) => {
+const handleAgendaItemStore = (agendaItem: App.Entities.AgendaItem) => {
+  router.post(
+    route("agendaItems.store"),
+    { agendaItemTitles: [agendaItem.title], meeting_id: props.meeting.id },
+    {
+      onSuccess: () => {
+        showAgendaItemStoreModal.value = false;
+      },
+    }
+  );
+};
+
+const handleAgendaItemUpdate = (agendaItem: App.Entities.AgendaItem) => {
   router.patch(route("agendaItems.update", agendaItem.id), agendaItem, {
     onSuccess: () => {
-      showAgendaItemModal.value = false;
+      showAgendaItemUpdateModal.value = false;
     },
   });
 };
