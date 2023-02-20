@@ -29,7 +29,7 @@ class NewsController extends ResourceController
         $news = $indexer->execute(News::class, $search, 'title', $this->authorizer, null);
 
         return Inertia::render('Admin/Content/IndexNews', [
-            'news' => $news->paginate(20)
+            'news' => $news->with('padalinys:id,shortname,alias')->paginate(20)
         ]);
     }
 

@@ -61,20 +61,18 @@ const columns: DataTableColumns<App.Entities.News> = [
     // ellipsis: true,
     width: 55,
     render(row) {
-      return h(PreviewModelButton, {
-        mainRoute: "page",
-        padalinysRoute: "page",
-        mainProps: {
-          lang: row.lang,
-          permalink: row.permalink,
-        },
-        padalinysProps: {
-          lang: row.lang,
-          permalink: row.permalink,
-          padalinys: row.padalinys?.alias,
-        },
-        padalinysShortname: row.padalinys?.shortname,
-      });
+      return row.permalink ? (
+        <PreviewModelButton
+          publicRoute="page"
+          routeProps={{
+            lang: row.lang,
+            padalinys: row.padalinys?.alias ?? "www",
+            permalink: row.permalink,
+          }}
+        />
+      ) : (
+        ""
+      );
     },
   },
   {

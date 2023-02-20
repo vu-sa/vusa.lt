@@ -9,18 +9,15 @@ import { NButton, NIcon } from "naive-ui";
 import { PreviewLink20Filled } from "@vicons/fluent";
 
 const props = defineProps<{
-  mainRoute: string;
-  mainProps: Record<string, any>;
-  padalinysRoute: string;
-  padalinysProps: Record<string, any>;
-  padalinysShortname?: string | null;
+  publicRoute: string;
+  routeProps: Record<string, string>;
 }>();
 
 const handleClick = () => {
-  if (props.padalinysShortname == "VU SA") {
-    window.open(route(props.mainRoute, props.mainProps), "_blank");
-  } else {
-    window.open(route(props.padalinysRoute, props.padalinysProps), "_blank");
-  }
+  window.open(
+    route(props.publicRoute, props.routeProps),
+    "_blank",
+    "noopener,noreferrer"
+  );
 };
 </script>

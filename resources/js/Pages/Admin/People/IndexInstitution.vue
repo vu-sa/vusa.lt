@@ -40,11 +40,8 @@ const columns: DataTableColumns<App.Entities.Institution> = [
     render(row) {
       return (
         <PreviewModelButton
-          mainRoute="contacts.category"
-          padalinysRoute="contacts.category"
-          mainProps={{ alias: row.alias }}
-          padalinysProps={{ alias: row.alias }}
-          padalinysShortname={row.padalinys?.shortname}
+          publicRoute="contacts.alias"
+          routeProps={{ alias: row.alias, lang: "lt", padalinys: "www" }}
         />
       );
     },

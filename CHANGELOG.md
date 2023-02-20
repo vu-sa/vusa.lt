@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.4.7 (2023-02-20)
+
+* Galima redaguoti posėdžių laiką
+* Galima pridėti naujus darbotvarkės klausimus ir ištrinti
+* Posėdžių laiko pasirinkime neberodomos sekundės
+* Neberodomi kai kurie tušti kontaktų aprašymai
+* Optimizuotas viešas ir lokalus padalinių pakeitimas
+
 ## v0.4.6 (2023-02-18)
 
 * Atnaujinta į Laravel 10

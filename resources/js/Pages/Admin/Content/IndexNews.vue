@@ -9,7 +9,7 @@
   </IndexPageLayout>
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
 import { h, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 import type { DataTableColumns } from "naive-ui";
@@ -64,22 +64,19 @@ const columns: DataTableColumns<App.Entities.News> = [
     // ellipsis: true,
     width: 55,
     render(row) {
-      return h(PreviewModelButton, {
-        mainRoute: "news",
-        padalinysRoute: "news",
-        mainProps: {
-          newsString: "naujiena",
-          lang: row.lang,
-          permalink: row.permalink,
-        },
-        padalinysProps: {
-          newsString: "naujiena",
-          lang: row.lang,
-          permalink: row.permalink,
-          padalinys: row.padalinys?.alias,
-        },
-        padalinysShortname: row.padalinys?.shortname,
-      });
+      return row.permalink ? (
+        <PreviewModelButton
+          publicRoute="news"
+          routeProps={{
+            lang: row.lang,
+            newsString: "naujiena",
+            padalinys: row.padalinys?.alias ?? "www",
+            permalink: row.permalink,
+          }}
+        />
+      ) : (
+        ""
+      );
     },
   },
   {

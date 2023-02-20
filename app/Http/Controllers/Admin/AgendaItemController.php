@@ -50,7 +50,7 @@ class AgendaItemController extends ResourceController
                 ]);
             }
 
-            if ($request->safe()->moreAgendaItemsUndefined) {
+            if (isset($request->safe()->moreAgendaItemsUndefined)) {
                 $meeting = Meeting::find($request->safe()->meeting_id);
                 
                 $institution = $meeting->institutions->first();
@@ -124,5 +124,9 @@ class AgendaItemController extends ResourceController
     public function destroy(AgendaItem $agendaItem)
     {
         $this->authorize('delete', [AgendaItem::class, $agendaItem, $this->authorizer]);
+
+        $agendaItem->delete();
+
+        return back()->with(['success' => 'Darbotvarkės punktas ištrintas sėkmingai!']);
     }
 }

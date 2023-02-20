@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Route;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -48,7 +49,7 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
     Route::domain('{padalinys?}.' . explode('.', config('app.url'), 2)[1])->group(function () {
         Route::get('/', [Public\MainController::class, 'home'])->name('home');
         Route::get('naujienos', [Public\NewsController::class, 'newsArchive'])->name('newsArchive');
-        Route::redirect('naujiena/archyvas', 'naujienos', 301);
+        Route::redirect('/naujiena/archyvas', '/naujienos', 301);
         Route::redirect('/admin', '/mano', 301);
 
         Route::get('kontaktai/kategorija/{alias}', [Public\ContactController::class, 'contactsCategory'])->name('contacts.category');

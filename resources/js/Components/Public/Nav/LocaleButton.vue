@@ -1,9 +1,17 @@
 <template>
-  <NDropdown :options="options" @select="handleSelectLanguage">
+  <NDropdown
+    placement="top-end"
+    :options="options"
+    @select="handleSelectLanguage"
+  >
     <NButton text>
       <div class="flex gap-1">
         <NBadge dot processing :show="!!otherLanguagePage"
-          ><img :src="icon" width="16"
+          ><img
+            :src="`https://hatscripts.github.io/circle-flags/flags/${
+              locale === 'lt' ? 'lt' : 'gb'
+            }.svg`"
+            width="16"
         /></NBadge>
         <NIcon :component="ChevronDown20Filled" />
       </div>
@@ -17,7 +25,8 @@ import { NBadge, NButton, NDropdown, NIcon } from "naive-ui";
 import { computed } from "vue";
 import { loadLanguageAsync } from "laravel-vue-i18n";
 import { router, usePage } from "@inertiajs/vue3";
-import type { LocaleEnum } from "@/Types/enums";
+
+import { LocaleEnum } from "@/Types/enums";
 
 const props = defineProps<{
   locale: LocaleEnum;
@@ -26,8 +35,6 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: "changeLocale", lang: string): void;
 }>();
-
-const locales = ["lt", "en"];
 
 const otherLanguagePage = computed(() => {
   if (usePage().props.otherLangPage) {
@@ -43,86 +50,94 @@ const otherLanguagePage = computed(() => {
   return false;
 });
 
-const en_options = computed(() => [
-  {
-    label: "Change page language",
-    key: "page",
-    disabled: !otherLanguagePage.value,
-  },
-  {
-    label: "Go to main page",
-    key: "home",
-  },
-]);
-
-const lt_options = computed(() => [
-  {
-    label: "Pakeisti puslapio kalbą",
-    key: "page",
-    disabled: !otherLanguagePage.value,
-  },
-  {
-    label: "Eiti į pagrindinį",
-    key: "home",
-  },
-]);
-
 const options = computed(() => {
-  if (props.locale !== "lt") {
-    return lt_options.value;
-  } else {
-    return en_options.value;
-  }
+  return [
+    {
+      label:
+        props.locale === LocaleEnum.LT
+          ? "Change page language"
+          : "Pakeisti puslapio kalbą",
+      key: "page",
+      disabled: !hasChangeableLocale.value,
+    },
+    {
+      label:
+        props.locale === LocaleEnum.LT
+          ? "Go to main page"
+          : "Eiti į pagrindinį",
+      key: "home",
+    },
+  ];
 });
 
-const icon = computed(() => {
-  if (props.locale !== "en") {
-    return "https://hatscripts.github.io/circle-flags/flags/lt.svg";
-  } else {
-    return "https://hatscripts.github.io/circle-flags/flags/gb.svg";
+const hasChangeableLocale = computed(() => {
+  if (otherLanguagePage.value) {
+    return true;
   }
+
+  // check if current page url has /kontaktai or /contacts
+  if (
+    window.location.pathname.includes("kontaktai") ||
+    window.location.pathname.includes("contacts")
+  ) {
+    return true;
+  }
+
+  return false;
 });
 
-const handleSelectLanguage = (key) => {
-  const newLang = locales.filter((l) => {
+const routerMethod = (key: "home" | "page") => {
+  if (otherLanguagePage.value) {
+    return "visit";
+  }
+
+  if (key === "home") {
+    return "visit";
+  }
+
+  return "reload";
+};
+
+const handleSelectLanguage = (key: "home" | "page") => {
+  const newLang = Object.values(LocaleEnum).filter((l) => {
     return l !== props.locale;
   })[0];
 
-  if (key === "home") {
-    router.visit(
-      route("home", {
-        lang: newLang,
-        padalinys:
-          usePage().props.alias === "vusa"
-            ? "www"
-            : usePage().props.alias ?? "www",
-      }),
-      {
-        onSuccess: () => {
-          emit("changeLocale", newLang);
-          console.log("changeLocale", newLang);
-          loadLanguageAsync(newLang);
-        },
-      }
+  if (routerMethod(key) === "reload") {
+    // if first 3 chars of url are '/lt' or '/en', replace them with new lang and visit
+    let url = window.location.pathname.replace(
+      window.location.pathname.substr(0, 3),
+      `/${newLang}`
     );
-  } else if (key === "page") {
-    router.visit(
+
+    router.visit(url, {
+      onSuccess: () => {
+        emit("changeLocale", newLang);
+        loadLanguageAsync(newLang);
+      },
+    });
+
+    return;
+  }
+
+  let alias = usePage().props.alias;
+  let padalinys = alias === "vusa" ? "www" : alias ?? "www";
+
+  const routes = {
+    home: () => route("home", { lang: newLang, padalinys }),
+    page: () =>
       route("page", {
         lang: newLang,
-        padalinys:
-          usePage().props.alias === "vusa"
-            ? "www"
-            : usePage().props.alias ?? "www",
+        padalinys,
         permalink: usePage().props?.otherLangPage?.permalink,
       }),
-      {
-        onSuccess: () => {
-          emit("changeLocale", newLang);
-          // padalinysSelector needs to be updated in this way
-          loadLanguageAsync(newLang);
-        },
-      }
-    );
-  }
+  };
+
+  router.visit(routes[key](), {
+    onSuccess: () => {
+      emit("changeLocale", newLang);
+      loadLanguageAsync(newLang);
+    },
+  });
 };
 </script>

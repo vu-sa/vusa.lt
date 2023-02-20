@@ -10,23 +10,27 @@
     <template #more-options>
       <MoreOptionsButton
         edit
-        :more-options="additionalDropdownOptions"
-        @edit-click="showModal = true"
+        @edit-click="showMeetingModal = true"
       ></MoreOptionsButton>
       <CardModal
         v-model:show="showMeetingModal"
+        title="Redaguoti posėdžio datą"
         @close="showMeetingModal = false"
       >
         <MeetingForm
+          class="mt-2"
           :meeting="meeting"
-          :model-route="'meetings.update'"
-          @success="showModal = false"
+          @submit="handleMeetingFormSubmit"
         ></MeetingForm>
       </CardModal>
     </template>
-    <div>
-      <h3>Darbotvarkė</h3>
-      <ol class="list-inside">
+    <NCard
+      class="max-w-sm rounded-sm border bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-900"
+      size="small"
+      :segmented="{ footer: 'soft' }"
+    >
+      <NDivider style="margin-top: 0rem">{{ $t("Darbotvarkė") }}</NDivider>
+      <ol v-if="meeting.agenda_items?.length > 0" class="pl-4">
         <li
           v-for="(agenda_item, index) in meeting.agenda_items"
           :key="agenda_item.id"
@@ -41,17 +45,47 @@
             @click="handleAgendaClick(agenda_item)"
             ><template #icon><NIcon :component="Edit24Filled"></NIcon></template
           ></NButton>
+          <NButton
+            size="tiny"
+            class="invisible transition duration-200 group-hover:visible"
+            text
+            @click="handleAgendaItemDelete(agenda_item)"
+            ><template #icon><NIcon :component="Delete24Filled" /></template
+          ></NButton>
         </li>
       </ol>
-    </div>
+      <p v-else class="text-center text-sm text-zinc-500">
+        Darbotvarkės punktų nėra.
+      </p>
+      <template #footer>
+        <NButton size="small" @click="showAgendaItemStoreModal = true"
+          >{{ $t("forms.add") }}?<template #icon
+            ><NIcon size="16" :component="Icons.AGENDA_ITEM" /></template
+        ></NButton>
+        <CardModal
+          v-model:show="showAgendaItemStoreModal"
+          title="Pridėti darbotvarkės punktą"
+          class="max-w-md"
+          :segmented="{ content: 'soft' }"
+          @close="showAgendaItemStoreModal = false"
+        >
+          <AgendaItemForm
+            :agenda-item="{ title: null }"
+            @submit="handleAgendaItemStore"
+          />
+        </CardModal>
+      </template>
+    </NCard>
     <CardModal
-      v-model:show="showAgendaItemModal"
-      @close="showAgendaItemModal = false"
+      v-model:show="showAgendaItemUpdateModal"
+      title="Redaguoti darbotvarkės punktą"
+      :segmented="{ content: 'soft' }"
+      @close="showAgendaItemUpdateModal = false"
     >
       <AgendaItemForm
         v-if="selectedAgendaItem"
         :agenda-item="selectedAgendaItem"
-        @submit="handleAgendaItemSubmit"
+        @submit="handleAgendaItemUpdate"
       />
     </CardModal>
     <template #below>
@@ -70,15 +104,15 @@
 </template>
 
 <script setup lang="tsx">
-import { type DropdownOption, NButton, NIcon } from "naive-ui";
-import { Edit24Filled } from "@vicons/fluent";
+import { Delete24Filled, Edit24Filled } from "@vicons/fluent";
+import { NButton, NCard, NDivider, NIcon } from "naive-ui";
 import { computed, ref } from "vue";
+import { router } from "@inertiajs/vue3";
+import { useStorage } from "@vueuse/core";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
 import { genitivizeEveryWord } from "@/Utils/String";
 import { modelTypes } from "@/Types/formOptions";
-import { router } from "@inertiajs/vue3";
-import { useStorage } from "@vueuse/core";
 import AgendaItemForm from "@/Components/AdminForms/AgendaItemForm.vue";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import FileManager from "@/Features/Admin/SharepointFileManager/Viewer/FileManager.vue";
@@ -94,10 +128,19 @@ const props = defineProps<{
 }>();
 
 const showMeetingModal = ref(false);
-const showAgendaItemModal = ref(false);
+const showAgendaItemStoreModal = ref(false);
+const showAgendaItemUpdateModal = ref(false);
 const currentTab = useStorage("show-meeting-tab", "Failai");
 
 const selectedAgendaItem = ref<App.Entities.AgendaItem | null>(null);
+
+const handleMeetingFormSubmit = (meeting: App.Entities.Meeting) => {
+  router.patch(route("meetings.update", meeting.id), meeting, {
+    onSuccess: () => {
+      showMeetingModal.value = false;
+    },
+  });
+};
 
 const mainInstitution: App.Entities.Institution | string =
   props.meeting.institutions?.[0] ?? "Be institucijos";
@@ -120,7 +163,11 @@ const sharepointFileTypeOptions = computed(() => {
 
 const handleAgendaClick = (agendaItem: App.Entities.AgendaItem) => {
   selectedAgendaItem.value = agendaItem;
-  showAgendaItemModal.value = true;
+  showAgendaItemUpdateModal.value = true;
+};
+
+const handleAgendaItemDelete = (agendaItem: App.Entities.AgendaItem) => {
+  router.delete(route("agendaItems.destroy", agendaItem.id));
 };
 
 const breadcrumbOptions: BreadcrumbOption[] = [
@@ -140,21 +187,22 @@ const breadcrumbOptions: BreadcrumbOption[] = [
   },
 ];
 
-const additionalDropdownOptions: DropdownOption[] = [
-  {
-    label: "Pridėti darbotvarkės punktų",
-    key: "add-agenda-item",
-    icon: () => <NIcon component={Icons.AGENDA_ITEM} />,
-    // onClick: () => {
-    //   showModal.value = true;
-    // },
-  },
-];
+const handleAgendaItemStore = (agendaItem: App.Entities.AgendaItem) => {
+  router.post(
+    route("agendaItems.store"),
+    { agendaItemTitles: [agendaItem.title], meeting_id: props.meeting.id },
+    {
+      onSuccess: () => {
+        showAgendaItemStoreModal.value = false;
+      },
+    }
+  );
+};
 
-const handleAgendaItemSubmit = (agendaItem: App.Entities.AgendaItem) => {
+const handleAgendaItemUpdate = (agendaItem: App.Entities.AgendaItem) => {
   router.patch(route("agendaItems.update", agendaItem.id), agendaItem, {
     onSuccess: () => {
-      showAgendaItemModal.value = false;
+      showAgendaItemUpdateModal.value = false;
     },
   });
 };

@@ -14,6 +14,7 @@ interface InertiaPageProps {
   app: {
     env: "local" | "production" | "testing";
     locale: LocaleEnum;
+    path: string;
     url: string;
   };
   auth: {
