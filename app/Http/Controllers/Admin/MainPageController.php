@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
 use App\Http\Controllers\ResourceController;
+use App\Models\Padalinys;
 use App\Services\ModelIndexer;
 use Illuminate\Support\Facades\DB;
 
@@ -58,7 +59,13 @@ class MainPageController extends ResourceController
             'link' => 'required',
         ]);
 
-        DB::transaction(function () use ($request) {
+        if (request()->user()->hasRole(config('permission.super_admin_role_name'))) {
+            $padalinys_id = Padalinys::where('type', 'pagrindinis')->first()->id;
+        } else {
+            $padalinys_id = $this->authorizer->permissableDuties->first()->padaliniai->first()->id;
+        }
+
+        DB::transaction(function () use ($request, $padalinys_id) {
             
             $mainPage = new MainPage;
             
@@ -66,7 +73,7 @@ class MainPageController extends ResourceController
             $mainPage->link = $request->link;
             $mainPage->lang = $request->lang;
             $mainPage->position = '';
-            $mainPage->padalinys()->associate($request->user()->padalinys());
+            $mainPage->padalinys()->associate($padalinys_id);
             $mainPage->save();
         });
 
