@@ -77,7 +77,7 @@ class MainPageController extends ResourceController
             $mainPage->save();
         });
 
-        return redirect()->route('mainPages.index')->with('success', 'Sėkmingai pridėtas pradinio puslapio mygtukas!');
+        return redirect()->route('mainPage.index')->with('success', 'Sėkmingai pridėtas pradinio puslapio mygtukas!');
     }
 
     /**
