@@ -2,41 +2,76 @@
   <Head :title="page.title" />
 
   <FadeTransition appear>
-    <article class="grid grid-cols-3 gap-y-4 px-8 pt-8 last:pb-2 lg:px-40">
-      <NBreadcrumb
-        v-if="navigationItemId != null"
-        class="col-span-3 mb-4 flex w-full"
+    <section class="max-w-7xl px-8 pt-8 pr-20 last:pb-2 lg:pl-40">
+      <header>
+        <NBreadcrumb v-if="navigationItemId != null" class="mb-4 flex w-full">
+          <NBreadcrumbItem
+            v-for="breadcrumb in breadcrumbTree"
+            :key="breadcrumb.parent_id"
+            :clickable="false"
+          >
+            {{ breadcrumb.name }}
+            <template #separator>
+              <NIcon><HatGraduation20Filled /></NIcon>
+            </template>
+          </NBreadcrumbItem>
+        </NBreadcrumb>
+      </header>
+      <article
+        class="grid grid-cols-1 gap-x-12"
+        :class="{ 'lg:grid-cols-[1fr_250px]': anchorLinks }"
       >
-        <NBreadcrumbItem
-          v-for="breadcrumb in breadcrumbTree"
-          :key="breadcrumb.parent_id"
-          :clickable="false"
+        <h1 class="col-span-full col-start-1 inline-flex gap-4">
+          <span class="text-gray-900 dark:text-white">{{ page.title }}</span>
+          <NButton v-if="$page.props.auth?.user" text @click="editPage"
+            ><NIcon :size="32" :component="DocumentEdit20Regular"
+          /></NButton>
+        </h1>
+        <!-- eslint-disable-next-line vue/no-v-html -->
+        <div class="prose dark:prose-invert" v-html="text" />
+        <NAnchor
+          v-if="anchorLinks"
+          class="sticky top-48 hidden h-fit lg:block"
+          ignore-gap
+          :bound="120"
         >
-          {{ breadcrumb.name }}
-          <template #separator>
-            <NIcon><HatGraduation20Filled /></NIcon>
-          </template>
-        </NBreadcrumbItem>
-      </NBreadcrumb>
-      <h1 class="col-span-3 col-start-1 inline-flex gap-4">
-        <span class="text-gray-900 dark:text-white">{{ page.title }}</span>
-        <NButton v-if="$page.props.auth?.user" text @click="editPage"
-          ><NIcon :size="32" :component="DocumentEdit20Regular"
-        /></NButton>
-      </h1>
-      <!-- eslint-disable-next-line vue/no-v-html -->
-      <div
-        class="prose col-span-3 col-start-1 dark:prose-invert"
-        v-html="page.text"
-      ></div>
-    </article>
+          <NAnchorLink
+            v-for="link in anchorLinks"
+            :key="link.href"
+            :title="link.title"
+            :href="link.href"
+          ></NAnchorLink>
+          <!-- <NAnchorLink
+            title="Atsiskaitymai"
+            href="#atsiskaitymai"
+          ></NAnchorLink>
+          <NAnchorLink
+            title="Pagrindinis ir pratęstas egzaminų laikymo laikotarpis"
+            href="#laikotarpiai"
+          ></NAnchorLink>
+          <NAnchorLink
+            title="Skolos, akademinės skolos ir jų likvidavimas"
+            href="#skolos"
+          ></NAnchorLink>
+          <NAnchorLink title="Apeliacijos"></NAnchorLink>
+          <NAnchorLink title="Ginčai"></NAnchorLink> -->
+        </NAnchor>
+      </article>
+    </section>
   </FadeTransition>
 </template>
 
 <script setup lang="ts">
 import { DocumentEdit20Regular, HatGraduation20Filled } from "@vicons/fluent";
 import { Head, router, usePage } from "@inertiajs/vue3";
-import { NBreadcrumb, NBreadcrumbItem, NButton, NIcon } from "naive-ui";
+import {
+  NAnchor,
+  NAnchorLink,
+  NBreadcrumb,
+  NBreadcrumbItem,
+  NButton,
+  NIcon,
+} from "naive-ui";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
@@ -65,11 +100,42 @@ const breadcrumbTree = getBreadcrumbTree(props.navigationItemId);
 const editPage = () => {
   router.visit(route("pages.edit", { id: props.page.id }));
 };
+
+// TODO: should be added to backend
+
+const text = props.page.text.replace(/<h[1-6]>(.*?)<\/h[1-6]>/g, (match) => {
+  const headingElement = document.createElement("div");
+  headingElement.innerHTML = match;
+  const headingText = headingElement.textContent;
+  const headingId = headingText?.replace(/\s/g, "-").toLowerCase();
+  return match.replace(">", ` id="${headingId}">`);
+});
+
+const headings = props.page.text.match(/<h[1-6]>(.*?)<\/h[1-6]>/g);
+
+// find headings in page text and create a parsable object for NAnchor
+
+const anchorLinks = headings?.map((heading) => {
+  const headingElement = document.createElement("div");
+  headingElement.innerHTML = heading;
+  const headingText = headingElement.textContent;
+  const headingId = headingText?.replace(/\s/g, "-").toLowerCase();
+  return {
+    title: headingText,
+    href: `#${headingId}`,
+  };
+});
+
+// add ids to text
 </script>
 
 <style>
 .n-breadcrumb ul {
   display: flex;
   flex-wrap: wrap;
+}
+
+* {
+  scroll-margin: 100px 0 0 0;
 }
 </style>
