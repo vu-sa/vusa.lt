@@ -1,5 +1,5 @@
 <template>
-  <Head title="Kontaktų kategorija"></Head>
+  <Head title="Kontaktų kategorija" />
 
   <div class="mx-auto mt-16 flex max-w-7xl flex-col gap-4 px-8 lg:px-32">
     <template v-for="institution in institutions" :key="institution.id">
