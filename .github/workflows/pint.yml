@@ -1,0 +1,26 @@
+name: Laravel Linting with Pint
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore:
+      - 'dependabot/npm_and_yarn/*'
+
+jobs:
+  phplint:
+    runs-on: "ubuntu-latest"
+    name: Laravel Pint
+  # You may pin to the exact commit or the version.
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+      - name: "Pint it"
+        uses: aglipanci/laravel-pint-action@2.0.0
+        with:
+          preset: laravel
+          verboseMode: true
+      - name: "Commit changes"
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: PHP Linting (Pint)
+          skip_fetch: true
