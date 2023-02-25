@@ -19,8 +19,8 @@ jobs:
         with:
           preset: laravel
           verboseMode: true
-      - name: "Commit changes"
-        uses: stefanzweifel/git-auto-commit-action@v4
+      - name: Git Auto Commit
+        uses: stefanzweifel/git-auto-commit-action@v4.16.0
         with:
           commit_message: PHP Linting (Pint)
           skip_fetch: true
