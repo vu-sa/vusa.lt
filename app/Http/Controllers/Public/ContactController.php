@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class ContactController extends PublicController
-{    
+{
     /**
      * Right now, contactsPage can return user to two different pages:
 	 * 1. Contacts page for specific institution
@@ -29,14 +29,14 @@ class ContactController extends PublicController
 	{
 		// get last element of array, which is slug for this route
         $slug = end($rest);
-		
+
 		// check for the special page of studentu-atstovai (because they are in many institutions)
-        
+
         if ($slug === 'studentu-atstovai') {
 			$type = Type::where('slug', '=', 'studentu-atstovu-organas')->first();
 
 			return Inertia::render('Public/Contacts/StudentRepresentatives', [
-				'institutions' => UserContactService::getInstitutionBuilder($this->padalinys, $type)
+				'institutions' => UserContactService::getInstitutionsFromPadalinysAndType($this->padalinys, $type)
                     ->get(['id', 'name', 'alias', 'description'])
 			])->withViewData([
 				'title' => 'Studentų atstovai',
@@ -48,7 +48,7 @@ class ContactController extends PublicController
 
 		if (in_array($slug, [null, 'koordinatoriai', 'kuratoriai'])) {
 
-			$types = Type::where('slug', '=', $slug)->get()->first()->getDescendantsAndSelf();
+			$types = Type::query()->where('slug', '=', $slug)->get()->first()->getDescendantsAndSelf();
 
 			if ($this->padalinys->type === 'pagrindinis') {
 				$institution = Institution::where('alias', '=', 'centrinis-biuras')->first();
@@ -64,13 +64,13 @@ class ContactController extends PublicController
 
 			// if not found, try to find institution
 		} else {
-			
+
 			$institution = Institution::where('alias', '=', $slug)->first();
 
 			if (is_null($institution)) {
 				abort(404);
 			}
-			
+
 			$contacts = User::withWhereHas('duties', function ($query) use ($slug) {
 				$query->orderBy('order')->whereHas('institution', function ($query) use ($slug) {
 					$query->where('alias', '=', $slug);
@@ -111,7 +111,7 @@ class ContactController extends PublicController
 			'description' => strip_tags($this->padalinys->description),
 		]);
 	}
-	
+
 	/**
 	 * contactsCategory
 	 *
@@ -123,8 +123,6 @@ class ContactController extends PublicController
 	{
 		$slug = end($rest);
 
-		// dd($slug, $rest, 'category', request()->all());
-		
 		// Special case for 'padaliniai' alias, since it's a special category, fetched from 'padaliniai' table
 
 		if ($slug === 'padaliniai') {
@@ -162,5 +160,12 @@ class ContactController extends PublicController
 			'title' => 'Kontaktai',
 			'description' => 'VU SA kontaktai',
 		]);
+	}
+
+	public function contacts() {
+		// get padalinys alias
+		$alias = $this->padalinys->alias;
+
+		return redirect()->route('contacts.alias', ['alias' => $alias, 'padalinys' => $alias === 'vusa' ? 'www' : $alias]);
 	}
 }
