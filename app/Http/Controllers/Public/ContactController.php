@@ -31,11 +31,20 @@ class ContactController extends PublicController
         // check for the special page of studentu-atstovai (because they are in many institutions)
 
         if ($slug === 'studentu-atstovai') {
-            $type = Type::where('slug', '=', 'studentu-atstovu-organas')->first();
+            $type = Type::query()->where('slug', '=', 'studentu-atstovu-organas')->first();
+            $descendants = $type->getDescendantsAndSelf();
 
-            return Inertia::render('Public/Contacts/StudentRepresentatives', [
-                'institutions' => UserContactService::getInstitutionsFromPadalinysAndType($this->padalinys, $type)
-                    ->get(['id', 'name', 'alias', 'description']),
+            $descendants->load(['institutions' => function ($query) {
+                $query->with('duties.users', 'padalinys:id,alias')->where('padalinys_id', '=', $this->padalinys->id)->orderBy('name')->get(['id', 'name', 'alias', 'description']);
+            }]);
+
+            // remove descendants without institutions
+            $descendants = $descendants->filter(function ($descendant) {
+                return $descendant->institutions->count() > 0;
+            })->values();
+
+            return Inertia::render('Public/Contacts/ShowStudentReps', [
+                'types' => $descendants,
             ])->withViewData([
                 'title' => 'Studentų atstovai',
                 'description' => "{$this->padalinys->shortname} studentų atstovai",

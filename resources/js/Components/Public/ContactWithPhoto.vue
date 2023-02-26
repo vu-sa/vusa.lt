@@ -24,10 +24,10 @@
           </h2>
         </div>
         <div
-          v-if="contact.duties"
+          v-if="duties"
           class="w-fit text-xs font-medium text-zinc-600 dark:text-zinc-200"
         >
-          <template v-for="duty in contact.duties" :key="duty.id">
+          <template v-for="duty in duties" :key="duty.id">
             <p class="my-1">
               {{ changeDutyNameEndings(contact, duty) }}
               {{ showAdditionalInfo(duty) }}
@@ -52,7 +52,7 @@
           <NIcon :component="Phone20Regular" />
           <a :href="`tel:${contact.phone}`">{{ contact.phone }}</a>
         </p>
-        <template v-for="duty in contact.duties" :key="duty.id">
+        <template v-for="duty in duties" :key="duty.id">
           <a v-if="duty.email" :href="`mailto:${duty.email}`">
             <NEllipsis style="max-width: 250px">
               <NIcon class="mr-2 align-middle" :component="Mail20Regular" />
@@ -101,6 +101,7 @@ import InfoPopover from "../Buttons/InfoPopover.vue";
 
 defineProps<{
   contact: App.Entities.User;
+  duties: App.Entities.Duty[];
 }>();
 
 const dutyDescription = (duty) => {
@@ -163,7 +164,7 @@ const changeDutyNameEndings = (
   }
 
   // check if duty name should not be explicitly changed
-  if (duty.pivot.extra_attributes?.use_original_duty_name) return duty.name;
+  if (duty.pivot?.extra_attributes?.use_original_duty_name) return duty.name;
 
   // replace duty.name ending 'ius' with 'ė', but only on end of string
   let womanizedTitle = duty.name

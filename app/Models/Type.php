@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Illuminate\Database\Eloquent\Collection;
 
 class Type extends Model
 {
@@ -62,10 +63,10 @@ class Type extends Model
         return $this->parent()->with('recursiveParent');
     }
 
-    public function pushAndRecursiveDescendants($type, $flattened = null): \Illuminate\Support\Collection
+    public function pushAndRecursiveDescendants($type, $flattened = null): Collection
     {
         if (is_null($flattened)) {
-            $flattened = collect();
+            $flattened = new Collection();
         }
 
         foreach ($type->recursiveDescendants as $descendant) {
@@ -78,16 +79,16 @@ class Type extends Model
         return $flattened;
     }
 
-    public function getDescendantsAndSelf(): \Illuminate\Support\Collection
+    public function getDescendantsAndSelf(): Collection
     {
         // Because the descendants were pushed at the end, we need to reverse it
         return $this->pushAndRecursiveDescendants($this)->unique('id')->reverse()->values();
     }
 
-    public function pushAndRecursiveParents($type, $flattened = null): \Illuminate\Support\Collection
+    public function pushAndRecursiveParents($type, $flattened = null): Collection
     {
         if (is_null($flattened)) {
-            $flattened = collect();
+            $flattened = new Collection();
         }
 
         if ($parent = $type->recursiveParent) {
@@ -100,7 +101,7 @@ class Type extends Model
         return $flattened;
     }
 
-    public function getParentsAndSelf(): \Illuminate\Support\Collection
+    public function getParentsAndSelf(): Collection
     {
         // Because the parents were pushed at the end, we need to reverse it
         return $this->pushAndRecursiveParents($this)->unique('id')->reverse()->values();
