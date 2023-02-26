@@ -64,6 +64,7 @@ const handleFileDblClick = (file: MyDriveItem) => {
   if (file.folder) {
     return;
   } else {
+    // TODO: use created link, not weburl
     window.open(file.webUrl, "_blank");
   }
 };
