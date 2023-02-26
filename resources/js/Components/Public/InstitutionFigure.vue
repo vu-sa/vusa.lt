@@ -1,5 +1,5 @@
 <template>
-  <figure
+  <div
     class="grid grid-cols-1 gap-8"
     :class="{ 'md:grid-cols-[1fr_2fr]': institution.image_url }"
   >
@@ -11,8 +11,8 @@
       :class="[imageError ? 'hidden' : '']"
       @error="imageError = true"
     />
-    <header class="w-full" :class="[imageError ? 'col-span-full' : '']">
-      <figcaption>
+    <div class="w-full" :class="[imageError ? 'col-span-full' : '']">
+      <div>
         <a
           :href="
             route('contacts.alias', {
@@ -50,9 +50,9 @@
             <NButton round size="tiny">{{ $t(section.title) }}</NButton>
           </a>
         </div>
-      </figcaption>
-    </header>
-  </figure>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="tsx">

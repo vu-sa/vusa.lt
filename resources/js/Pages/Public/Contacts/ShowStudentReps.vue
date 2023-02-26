@@ -1,7 +1,7 @@
 <template>
   <div class="mx-auto mt-8 flex max-w-7xl flex-col gap-4 px-8 lg:px-32">
     <h1>Studentų atstovai</h1>
-    <NFormItem label="Tipas" class="max-w-sm"
+    <NFormItem :show-feedback="false" label="Tipas" class="max-w-sm"
       ><NSelect
         v-model:value="selectedTypeID"
         :label="$t('Tipas')"
@@ -10,15 +10,14 @@
         clearable
     /></NFormItem>
 
-    <div v-if="selectedType" class="mb-8">
-      <h2>{{ selectedType?.title }}</h2>
-      {{ selectedType?.description }}
+    <div v-if="selectedType" class="prose prose-sm mb-8">
+      {{ selectedType?.description ?? "Aprašymo nėra." }}
     </div>
 
     <section
       v-for="institutionType in filteredTypes"
       :key="institutionType.id"
-      class="mb-4"
+      class="my-4"
     >
       <div
         v-for="institution in institutionType.institutions"
@@ -36,13 +35,12 @@
           </ContactWithPhoto>
         </template>
       </div>
-      <NDivider />
     </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import { NDivider, NFormItem, NSelect } from "naive-ui";
+import { NFormItem, NSelect } from "naive-ui";
 import { computed, ref } from "vue";
 
 import ContactWithPhoto from "@/Components/Public/ContactWithPhoto.vue";

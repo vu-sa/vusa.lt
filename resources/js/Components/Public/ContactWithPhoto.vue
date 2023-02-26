@@ -16,16 +16,16 @@
     </div>
     <div class="flex flex-col justify-between gap-4 p-4">
       <div>
-        <div class="flex items-center gap-2">
-          <h2
-            class="text-lg leading-6 tracking-tight text-zinc-800 dark:text-zinc-50"
+        <div class="flex items-center">
+          <p
+            class="text-lg font-bold leading-5 tracking-tight text-zinc-800 dark:text-zinc-50"
           >
             {{ contact.name }}
-          </h2>
+          </p>
         </div>
         <div
           v-if="duties"
-          class="w-fit text-xs font-medium text-zinc-600 dark:text-zinc-200"
+          class="w-fit text-xs font-light text-zinc-600 dark:text-zinc-200"
         >
           <template v-for="duty in duties" :key="duty.id">
             <p class="my-1">
