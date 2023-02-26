@@ -175,6 +175,10 @@ class SharepointGraphService
         $driveItems = [];
 
         foreach ($batch_response['responses'] as $response) {
+            if ($response['status'] === 404) {
+                continue;
+            }
+
             // create DriveItem for each response
             // $response = new HttpResponse($response['body'], $response['status'], $response['headers']);
             collect($response['body']['value'])->each(function ($driveItem) use (&$driveItems) {

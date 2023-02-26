@@ -187,12 +187,13 @@ class SharepointFileController extends ResourceController
             return back()->with('info', 'Neteisinga užklausa. Praneškite administratoriui');
         }
 
-        $types = $fileable->types;
+        $types = $fileable->types->map(function ($type) {
+            return $type->getParentsAndSelf();
+        })->flatten()->unique('id')->values();
 
         // types array to string
-        $types_string = $types->map(function ($type) {
-            return $type->id;
-        })->implode(',');
+        // TODO: maybe use 'pluck' instead of 'map'?
+        $types_string = $types->pluck('id')->implode(',');
 
         $sharepointService = new SharepointGraphService();
 

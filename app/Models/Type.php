@@ -81,7 +81,7 @@ class Type extends Model
     public function getDescendantsAndSelf(): \Illuminate\Support\Collection
     {
         // Because the descendants were pushed at the end, we need to reverse it
-        return $this->pushAndRecursiveDescendants($this)->reverse()->values();
+        return $this->pushAndRecursiveDescendants($this)->unique('id')->reverse()->values();
     }
 
     public function pushAndRecursiveParents($type, $flattened = null): \Illuminate\Support\Collection
@@ -103,7 +103,7 @@ class Type extends Model
     public function getParentsAndSelf(): \Illuminate\Support\Collection
     {
         // Because the parents were pushed at the end, we need to reverse it
-        return $this->pushAndRecursiveParents($this)->reverse()->values();
+        return $this->pushAndRecursiveParents($this)->unique('id')->reverse()->values();
     }
 
     public function allModelsFromModelType()
