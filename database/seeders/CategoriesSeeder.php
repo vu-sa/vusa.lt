@@ -18,7 +18,7 @@ class CategoriesSeeder extends Seeder
             ['alias' => 'red', 'name' => 'Akademinės naujienos'],
             ['alias' => 'yellow', 'name' => 'Socialinės naujienos'],
             ['alias' => 'grey', 'name' => 'Kita informacija'],
-            ['alias' => 'freshmen-camps', 'name' => 'Pirmakursių stovykla']
+            ['alias' => 'freshmen-camps', 'name' => 'Pirmakursių stovykla'],
         ]);
     }
 }

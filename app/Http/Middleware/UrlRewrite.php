@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use Illuminate\Support\Facades\App;
 use Closure;
 
 class UrlRewrite
@@ -11,14 +10,14 @@ class UrlRewrite
      * Handle an incoming request.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
      * @return mixed
      */
     public function handle($request, Closure $next)
     {
-        if (substr(request()->path(), 0, 8) == "uploads/" && 
-        substr(request()->path(), 0, 13) != "uploads/files") {
-            $upload_path = '/uploads/files' . substr(request()->getPathInfo(), 8);
+        if (substr(request()->path(), 0, 8) == 'uploads/' &&
+        substr(request()->path(), 0, 13) != 'uploads/files') {
+            $upload_path = '/uploads/files'.substr(request()->getPathInfo(), 8);
+
             return redirect($upload_path)->send();
         }
 

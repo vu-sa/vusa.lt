@@ -2,21 +2,20 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Relationship;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
 use App\Http\Controllers\Controller as Controller;
 use App\Http\Controllers\ResourceController;
 use App\Models\Pivots\Relationshipable;
+use App\Models\Relationship;
 use App\Services\RelationshipService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 // Controller is used for the relationship object, which describes
 // content related relationships.
 
 class RelationshipController extends ResourceController
 {
-
     /**
      * Display a listing of the resource.
      *
@@ -39,20 +38,19 @@ class RelationshipController extends ResourceController
     public function create()
     {
         $this->authorize('create', [Relationship::class, $this->authorizer]);
-        
+
         return Inertia::render('Admin/ModelMeta/CreateRelationship');
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
         $this->authorize('create', [Relationship::class, $this->authorizer]);
-        
+
         $request->validate([
             'name' => 'required',
             'slug' => 'required|unique:relationships,slug',
@@ -67,7 +65,6 @@ class RelationshipController extends ResourceController
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Relationship  $relationship
      * @return \Illuminate\Http\Response
      */
     public function show(Relationship $relationship)
@@ -82,29 +79,28 @@ class RelationshipController extends ResourceController
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Relationship  $relationship
      * @return \Illuminate\Http\Response
      */
     public function edit(Relationship $relationship, Request $request)
     {
         $this->authorize('update', [Relationship::class, $relationship, $this->authorizer]);
-        
+
         $validated = $request->validate([
             'modelType' => 'nullable|string',
         ]);
-        
+
         // get model type from request
         $model_type = $validated['modelType'] ?? null;
         $related_models = [];
 
         // if model type is not null, get related models
         // TODO: use a way to check allowed models
-        if (!is_null($model_type)) {
+        if (! is_null($model_type)) {
             $related_models = RelationshipService::getModelsByClass($model_type);
         }
 
         $relationship->load('relationshipables', 'relationshipables.relationshipable', 'relationshipables.related_model');
-        
+
         return Inertia::render('Admin/ModelMeta/EditRelationship', [
             'relationship' => $relationship,
             'relatedModels' => Inertia::lazy(fn () => $related_models),
@@ -114,17 +110,15 @@ class RelationshipController extends ResourceController
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Relationship  $relationship
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Relationship $relationship)
     {
         $this->authorize('update', [Relationship::class, $relationship, $this->authorizer]);
-        
+
         $request->validate([
             'name' => 'required',
-            'slug' => 'required|unique:relationships,slug,' . $relationship->id,
+            'slug' => 'required|unique:relationships,slug,'.$relationship->id,
         ]);
 
         $relationship->update($request->only('name', 'slug', 'description'));
@@ -136,15 +130,13 @@ class RelationshipController extends ResourceController
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Relationship  $relationship
      * @return \Illuminate\Http\Response
      */
     public function destroy(Relationship $relationship)
     {
         $this->authorize('delete', [Relationship::class, $relationship, $this->authorizer]);
-        
+
         DB::transaction(function () use ($relationship) {
-            
             // remove all relationshipables
             DB::table('relationshipables')->where('relationship_id', $relationship->id);
             $relationship->delete();
@@ -157,7 +149,7 @@ class RelationshipController extends ResourceController
     public function storeModelRelationship(Request $request, Relationship $relationship)
     {
         $this->authorize('create', [Relationshipable::class, $relationship, $this->authorizer]);
-        
+
         $request->validate([
             'model_id' => 'required',
             'model_type' => 'required',
@@ -172,7 +164,8 @@ class RelationshipController extends ResourceController
             ->with('success', 'Ryšys sukurtas sėkmingai.');
     }
 
-    public function deleteModelRelationship(Relationshipable $relationshipable) { 
+    public function deleteModelRelationship(Relationshipable $relationshipable)
+    {
         $this->authorize('delete', [Relationshipable::class, $relationshipable, $this->authorizer]);
 
         $relationshipable->delete();

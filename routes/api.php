@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-/* 
+/*
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
@@ -22,6 +22,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::prefix('v1')->group(function () {
     // Route::middleware(['auth:api'])->group(function () {
-        Route::apiResource('goals', 'GoalController');
+    Route::apiResource('goals', 'GoalController');
     // });
 });

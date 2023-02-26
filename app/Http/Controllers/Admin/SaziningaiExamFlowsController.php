@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\ResourceController;
 use App\Models\SaziningaiExamFlow;
 use Illuminate\Http\Request;
@@ -10,7 +9,6 @@ use Inertia\Inertia;
 
 class SaziningaiExamFlowsController extends ResourceController
 {
-    
     /**
      * Display a listing of the resource.
      *
@@ -35,17 +33,16 @@ class SaziningaiExamFlowsController extends ResourceController
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
         $this->authorize('create', [SaziningaiExamFlow::class, $this->authorizer]);
-        
+
         // Store new flow
         $saziningaiExamFlow = new SaziningaiExamFlow();
         $saziningaiExamFlow->exam_uuid = $request->exam_uuid;
-        $saziningaiExamFlow->start_time =  date('Y-m-d H:i:s', $request->start_time);
+        $saziningaiExamFlow->start_time = date('Y-m-d H:i:s', $request->start_time);
         $saziningaiExamFlow->save();
 
         return back();
@@ -54,7 +51,6 @@ class SaziningaiExamFlowsController extends ResourceController
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\SaziningaiExamFlow  $saziningaiExamFlow
      * @return \Illuminate\Http\Response
      */
     public function show(SaziningaiExamFlow $saziningaiExamFlow)
@@ -65,7 +61,6 @@ class SaziningaiExamFlowsController extends ResourceController
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\SaziningaiExamFlow  $saziningaiExamFlow
      * @return \Illuminate\Http\Response
      */
     public function edit(SaziningaiExamFlow $saziningaiExamFlow)
@@ -80,14 +75,12 @@ class SaziningaiExamFlowsController extends ResourceController
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\SaziningaiExamFlow  $saziningaiExamFlow
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, SaziningaiExamFlow $saziningaiExamFlow)
     {
         $this->authorize('update', [SaziningaiExamFlow::class, $saziningaiExamFlow, $this->authorizer]);
-        
+
         // Update the flow time
         $saziningaiExamFlow->start_time = date('Y-m-d H:i:s', $request->start_time);
         $saziningaiExamFlow->save();
@@ -99,7 +92,6 @@ class SaziningaiExamFlowsController extends ResourceController
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\SaziningaiExamFlow  $saziningaiExamFlow
      * @return \Illuminate\Http\Response
      */
     public function destroy(SaziningaiExamFlow $saziningaiExamFlow)

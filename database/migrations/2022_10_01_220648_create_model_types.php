@@ -14,13 +14,12 @@ return new class extends Migration
      * @return void
      */
     public function up()
-    {        
+    {
         // check if duties_institutions_types table is empty
         if (DB::table('duties_institutions_types')->count() === 0) {
             Artisan::call('db:seed', [
                 '--class' => 'InstitutionTypesSeeder',
             ]);
-    
         }
 
         // check if duties_types table is empty
@@ -29,7 +28,7 @@ return new class extends Migration
                 '--class' => 'DutyTypesSeeder',
             ]);
         }
-        
+
         Schema::create('types', function (Blueprint $table) {
             $table->id();
             $table->foreignId('parent_id')->nullable()->constrained('types')->nullOnDelete();

@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Database\Seeders\ModelPermissionSeeder;
 
 class DeleteAndSeedPermissions extends Seeder
 {

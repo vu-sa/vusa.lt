@@ -12,7 +12,9 @@ class StateChangeNotification extends Notification implements ShouldQueue
     use Queueable;
 
     protected string $text;
+
     protected array $objectArray;
+
     protected array $subjectArray;
 
     /**

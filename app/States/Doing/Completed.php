@@ -11,22 +11,22 @@ class Completed extends DoingState
         return 'green';
     }
 
-    public function handleProgress (): void
+    public function handleProgress(): void
     {
         abort(403, 'Veikla jau yra užbaigta.');
     }
 
-    public function handleApprove (): void
+    public function handleApprove(): void
     {
         abort(403, 'Negalima patvirtinti jau užbaigtos veiklos.');
     }
 
-    public function handleReject (): void
+    public function handleReject(): void
     {
         abort(403, 'Negalima atmesti jau užbaigtos veiklos.');
     }
 
-    public function handleCancel (): void
+    public function handleCancel(): void
     {
         abort(403, 'Negalima atšaukti jau užbaigtos veiklos.');
     }

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller as Controller;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Intervention\Image\Facades\Image;
@@ -18,7 +18,6 @@ class FilesController extends Controller
      */
     public function index(Request $request)
     {
-
         $currentDirectory = $request->currentPath ?? 'public/files';
 
         $directories = Storage::directories($currentDirectory);
@@ -46,7 +45,6 @@ class FilesController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
@@ -96,7 +94,6 @@ class FilesController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
@@ -118,7 +115,6 @@ class FilesController extends Controller
 
     public function searchForFiles(Request $request)
     {
-
         $data = $request->collect()['data'];
 
         $currentDirectory = $request->currentPath ?? 'public';
@@ -157,7 +153,6 @@ class FilesController extends Controller
 
     public function uploadImage(Request $request)
     {
-
         // dd($request->file('file'));
 
         $image = Image::make($request->file('file')['file']);
@@ -172,20 +167,20 @@ class FilesController extends Controller
         $path = $request->input('path');
 
         // check if path exists
-        if (!Storage::exists('public/' . $path)) {
-            Storage::makeDirectory('public/' . $path);
+        if (! Storage::exists('public/'.$path)) {
+            Storage::makeDirectory('public/'.$path);
         }
 
         // save image to storage
         // check if image exists
-        if (Storage::exists('public/' . $path . '/' . $originalName)) {
-            $originalName = time() . '_' . $originalName;
+        if (Storage::exists('public/'.$path.'/'.$originalName)) {
+            $originalName = time().'_'.$originalName;
         }
 
-        $image->save(storage_path('app/public/' . $path . '/' . $originalName), 80);
+        $image->save(storage_path('app/public/'.$path.'/'.$originalName), 80);
 
-        // return back with image path 
+        // return back with image path
         // Inertia::share('misc', $path . '/' . $originalName);
-        return back()->with('misc', '/uploads/' . $path . '/' . $originalName);
+        return back()->with('misc', '/uploads/'.$path.'/'.$originalName);
     }
 }

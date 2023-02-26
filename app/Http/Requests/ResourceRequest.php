@@ -2,15 +2,15 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
 use App\Services\ModelAuthorizer as Authorizer;
+use Illuminate\Foundation\Http\FormRequest;
 
-class ResourceRequest extends FormRequest {
-
+class ResourceRequest extends FormRequest
+{
     protected Authorizer $authorizer;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->authorizer = new Authorizer();
     }
-
 }

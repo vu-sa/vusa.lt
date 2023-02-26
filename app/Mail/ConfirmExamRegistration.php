@@ -5,7 +5,6 @@ namespace App\Mail;
 use App\Models\SaziningaiExam;
 use App\Models\SaziningaiExamFlow;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
@@ -18,8 +17,8 @@ class ConfirmExamRegistration extends Mailable
      *
      * @var \App\Models\Saziningai
      */
-
     public $saziningai;
+
     public $saziningaiFlow;
 
     /**
@@ -40,6 +39,6 @@ class ConfirmExamRegistration extends Mailable
      */
     public function build()
     {
-        return $this->subject("📝 Sėkmingai užregistravote atsiskaitymą VU SA sistemoje")->replyTo('saziningai@vusa.lt')->markdown('emails.saziningai.confirmRegistration');
+        return $this->subject('📝 Sėkmingai užregistravote atsiskaitymą VU SA sistemoje')->replyTo('saziningai@vusa.lt')->markdown('emails.saziningai.confirmRegistration');
     }
 }

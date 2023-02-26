@@ -13,6 +13,7 @@ class MeetingNotFinishedNotification extends Notification implements ShouldQueue
     use Queueable;
 
     protected $meeting;
+
     protected $meetingName;
 
     /**
@@ -60,24 +61,24 @@ class MeetingNotFinishedNotification extends Notification implements ShouldQueue
     public function toArray($notifiable)
     {
         return [
-            'text' => $this->meetingName . ' susitikimas nebuvo užbaigtas. Kai galėsi, pateik posėdžio ataskaitą.',
+            'text' => $this->meetingName.' susitikimas nebuvo užbaigtas. Kai galėsi, pateik posėdžio ataskaitą.',
             'object' => [
                 'modelClass' => 'Meeting',
                 'name' => $this->meeting->name,
                 'url' => route('meetings.show', $this->meeting->id),
-            ]
+            ],
         ];
     }
 
     public function toBroadcast($notifiable)
     {
         return new BroadcastMessage([
-            'text' => $this->meetingName . 'susitikimas nebuvo užbaigtas. Kai galėsi, pateik posėdžio ataskaitą.',
+            'text' => $this->meetingName.'susitikimas nebuvo užbaigtas. Kai galėsi, pateik posėdžio ataskaitą.',
             'object' => [
                 'modelClass' => 'Meeting',
                 'name' => $this->meeting->name,
                 'url' => route('meetings.show', $this->meeting->id),
-            ]
+            ],
         ]);
     }
 }

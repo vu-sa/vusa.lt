@@ -3,12 +3,11 @@
 namespace App\Models\Traits;
 
 use App\Models\Task;
-use App\Models\User;
 use App\Services\TaskService;
 use Illuminate\Support\Collection;
 
-trait HasTasks {
-
+trait HasTasks
+{
     public function tasks()
     {
         return $this->morphMany(Task::class, 'taskable');

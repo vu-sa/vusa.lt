@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Type;
 use App\Http\Controllers\ResourceController;
-use App\Services\SharepointAppGraph;
+use App\Models\Type;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Inertia\Inertia;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class TypeController extends ResourceController
-{    
+{
     /**
      * Display a listing of the resource.
      *
@@ -34,7 +33,7 @@ class TypeController extends ResourceController
     public function create()
     {
         $this->authorize('create', [Type::class, $this->authorizer]);
-        
+
         return Inertia::render('Admin/ModelMeta/CreateType', [
             'contentTypes' => Type::select('id', 'title', 'model_type')->get(),
         ]);
@@ -43,7 +42,6 @@ class TypeController extends ResourceController
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
@@ -68,7 +66,6 @@ class TypeController extends ResourceController
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Type  $type
      * @return \Illuminate\Http\Response
      */
     public function show(Type $type)
@@ -83,7 +80,6 @@ class TypeController extends ResourceController
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Type  $type
      * @return \Illuminate\Http\Response
      */
     public function edit(Type $type)
@@ -104,8 +100,6 @@ class TypeController extends ResourceController
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Type  $type
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Type $type)
@@ -130,13 +124,12 @@ class TypeController extends ResourceController
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Type  $type
      * @return \Illuminate\Http\Response
      */
     public function destroy(Type $type)
     {
         $this->authorize('delete', [Type::class, $type, $this->authorizer]);
-        
+
         DB::transaction(function () use ($type) {
             // delete typeables
             DB::table('typeables')->where('type_id', $type->id)->delete();

@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Models\Doing;
-use App\Models\Meeting;
 
 class StoreDoingRequest extends ResourceRequest
 {
@@ -13,7 +12,7 @@ class StoreDoingRequest extends ResourceRequest
      * @return bool
      */
     public function authorize()
-    {     
+    {
         return $this->user()->can('create', [Doing::class, $this->authorizer]);
     }
 

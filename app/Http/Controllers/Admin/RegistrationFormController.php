@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\RegistrationForm;
 use App\Http\Controllers\Controller as Controller;
+use App\Models\RegistrationForm;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -33,7 +33,6 @@ class RegistrationFormController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
@@ -46,7 +45,6 @@ class RegistrationFormController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\RegistrationForm  $registrationForm
      * @return \Illuminate\Http\Response
      */
     public function show(RegistrationForm $registrationForm)
@@ -56,21 +54,20 @@ class RegistrationFormController extends Controller
         if (request()->user()->hasRole(config('permission.super_admin_role_name'))) {
             $registrations = $registrationForm->load('registrations')->registrations;
         } else {
-            $registrations = $registrationForm->load(['registrations' => function($query) {
+            $registrations = $registrationForm->load(['registrations' => function ($query) {
                 $query->whereIn('data->whereToRegister', request()->user()->padaliniai()->get(['padaliniai.id'])->pluck('id'));
             }])->registrations;
         }
-        
+
         // for now, is accustomed to show only member registration
         return Inertia::render('Admin/RegistrationForms/ShowRegistrationForm', [
-            'registrationForm' => $registrations->sortByDesc('created_at')->values()->paginate(20)
+            'registrationForm' => $registrations->sortByDesc('created_at')->values()->paginate(20),
         ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\RegistrationForm  $registrationForm
      * @return \Illuminate\Http\Response
      */
     public function edit(RegistrationForm $registrationForm)
@@ -81,8 +78,6 @@ class RegistrationFormController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\RegistrationForm  $registrationForm
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, RegistrationForm $registrationForm)
@@ -93,7 +88,6 @@ class RegistrationFormController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\RegistrationForm  $registrationForm
      * @return \Illuminate\Http\Response
      */
     public function destroy(RegistrationForm $registrationForm)

@@ -56,7 +56,7 @@ class MemberRegistered extends Notification implements ShouldQueue
     {
         return [
             'objectName' => $this->data['name'],
-            'actionUrl' => ["routeName" => 'registrationForms.show', "model" => 2]
+            'actionUrl' => ['routeName' => 'registrationForms.show', 'model' => 2],
         ];
     }
 }

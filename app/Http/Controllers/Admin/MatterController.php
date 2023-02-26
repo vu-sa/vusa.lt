@@ -2,19 +2,17 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller as Controller;
 use App\Http\Controllers\ResourceController;
-use App\Models\Matter;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
-use App\Models\Type;
 use App\Models\Doing;
 use App\Models\Goal;
+use App\Models\Matter;
+use App\Models\Type;
 use App\Services\ModelIndexer;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class MatterController extends ResourceController
 {
-    
     /**
      * Display a listing of the resource.
      *
@@ -47,13 +45,12 @@ class MatterController extends ResourceController
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
         $this->authorize('create', [Matter::class, $this->authorizer]);
-        
+
         $validated = $request->validate([
             'title' => 'required',
         ]);
@@ -71,57 +68,50 @@ class MatterController extends ResourceController
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Matter  $matter
      * @return \Illuminate\Http\Response
      */
     public function show(Matter $matter)
     {
         $this->authorize('view', [Matter::class, $matter, $this->authorizer]);
-        
+
         $matter = $matter->load('institutions', 'doings', 'goals', 'activities.causer');
 
         return Inertia::render('Admin/Representation/ShowMatter', [
             'matter' => $matter,
             'doingTypes' => Type::where('model_type', Doing::class)->get(['id', 'title']),
-            'goals' => Inertia::lazy(fn () => Goal::get(['id', 'title']))
+            'goals' => Inertia::lazy(fn () => Goal::get(['id', 'title'])),
         ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Matter  $matter
      * @return \Illuminate\Http\Response
      */
     public function edit(Matter $matter)
     {
         $this->authorize('update', [Matter::class, $matter, $this->authorizer]);
-        
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Matter  $matter
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Matter $matter)
     {
         $this->authorize('update', [Matter::class, $matter, $this->authorizer]);
-        
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Matter  $matter
      * @return \Illuminate\Http\Response
      */
     public function destroy(Matter $matter)
     {
         $this->authorize('delete', [Matter::class, $matter, $this->authorizer]);
-        
+
         // delete doing_matter records
         $matter->doings()->detach();
 
@@ -131,8 +121,8 @@ class MatterController extends ResourceController
         return redirect()->route('matters.index')->with('success', 'Klausimas sėkmingai ištrintas');
     }
 
-    public function attachGoal(Matter $matter, Request $request) {
-        
+    public function attachGoal(Matter $matter, Request $request)
+    {
         $this->authorize('update', [Matter::class, $matter, $this->authorizer]);
 
         $validated = $request->validate([

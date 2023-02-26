@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
-use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
+use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class GoalGroup extends Model
 {

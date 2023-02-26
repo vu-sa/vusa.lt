@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 return [
     'greeting' => 'Sveiki, :name!',

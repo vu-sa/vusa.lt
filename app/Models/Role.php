@@ -15,8 +15,9 @@ class Role extends SpatieRole
     {
         return $this->morphedByMany(Duty::class, 'model', 'model_has_roles');
     }
-    
-    public function usersThroughDuties() {  
+
+    public function usersThroughDuties()
+    {
         return $this->hasManyDeepFromRelations($this->duties(), (new Duty())->users());
     }
 }

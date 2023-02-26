@@ -8,8 +8,8 @@ use App\Models\User;
 use App\Services\RelationshipService;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
@@ -21,7 +21,7 @@ class DashboardController extends Controller
         $user = User::with('duties.institution.padalinys', 'duties.institution.users:users.id,users.name,profile_photo_path,phone')->with(['doings' => function (Builder $query) {
             $query->with('comments', 'tasks')->where('deleted_at', null)->orderBy('date', 'desc');
         }])->find(auth()->user()->id);
-        
+
         $duties = $user->duties;
 
         $institutions = $duties->pluck('institution')->flatten()->unique()->values();
@@ -48,12 +48,12 @@ class DashboardController extends Controller
     {
         $user = User::find(Auth::id());
 
-        $user->load('roles:id,name', 
-            'duties:id,name,institution_id', 
+        $user->load('roles:id,name',
+            'duties:id,name,institution_id',
             'duties.roles:id,name', 'duties.roles.permissions:id,name',
-            'duties.institution:id,padalinys_id', 
+            'duties.institution:id,padalinys_id',
             'duties.institution.padalinys:id,shortname');
-        
+
         return Inertia::render('Admin/ShowUserSettings', [
             'user' => $user->toArray(),
         ]);
@@ -71,8 +71,8 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function institutionGraph() {
-       
+    public function institutionGraph()
+    {
         // return institutions with user count
         $institutions = Institution::withCount('users')->get();
 
@@ -82,20 +82,21 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function workspace(Request $request) {
-        
-        return Inertia::render('Admin/ShowWorkspace', 
+    public function workspace(Request $request)
+    {
+        return Inertia::render('Admin/ShowWorkspace',
             [
                 'institution' => fn () => $this->getInstitutionForWorkspace($request),
                 // get all institutions where has relationship with auth user
                 'userInstitutions' => Institution::whereHas('users', function ($query) {
                     $query->where('users.id', auth()->user()->id);
-                })->with('users')->withCount('meetings')->get()
+                })->with('users')->withCount('meetings')->get(),
             ]
         );
     }
 
-    public function sendFeedback(Request $request) {
+    public function sendFeedback(Request $request)
+    {
         $request->validate([
             'feedback' => 'required|string',
             'anonymous' => 'boolean',
@@ -107,11 +108,12 @@ class DashboardController extends Controller
         return redirect()->back()->with('success', 'Ačiū už atsiliepimą!');
     }
 
-    protected function getInstitutionForWorkspace(Request $request) {
+    protected function getInstitutionForWorkspace(Request $request)
+    {
         $institution = null;
-        
+
         // check if institution has id
-        if (!is_null($request->input('institution_id'))) {
+        if (! is_null($request->input('institution_id'))) {
             $institution = Institution::with('meetings.comments', 'meetings.tasks', 'meetings.files', 'users')->find($request->input('institution_id'));
         }
 

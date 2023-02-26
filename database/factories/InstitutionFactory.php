@@ -22,7 +22,7 @@ class InstitutionFactory extends Factory
             'short_name' => $this->faker->companySuffix(),
             'alias' => $this->faker->companySuffix(),
             // html descriptioj
-            'description' => '<p>' . $this->faker->paragraph(1) . '</p><p>' . $this->faker->paragraph(1) . '</p>',
+            'description' => '<p>'.$this->faker->paragraph(1).'</p><p>'.$this->faker->paragraph(1).'</p>',
             'image_url' => $this->faker->imageUrl(640, 480, 'business', true),
             'padalinys_id' => Padalinys::inRandomOrder()->select('id')->first()->id,
         ];

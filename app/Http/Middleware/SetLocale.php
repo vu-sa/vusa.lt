@@ -15,7 +15,7 @@ class SetLocale
         if ($localeFromParam) {
             app()->setLocale($localeFromParam);
             session()->put('lang', $localeFromParam);
-        } else if (session()->has('lang')) {
+        } elseif (session()->has('lang')) {
             app()->setLocale($localeFromSession);
         } else {
             app()->setLocale(config('app.locale'));
@@ -23,11 +23,12 @@ class SetLocale
 
         if (in_array($segment, ['mano', 'auth', 'login', 'telescope'])) {
             return $next($request);
-        } 
-        
-        if (!in_array($segment, config('app.locales'))) {
+        }
+
+        if (! in_array($segment, config('app.locales'))) {
             $segments = $request->segments();
             array_unshift($segments, app()->getLocale());
+
             return redirect()->to(implode('/', $segments));
         }
 

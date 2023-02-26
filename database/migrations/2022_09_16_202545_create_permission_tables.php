@@ -1,13 +1,13 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
-use Spatie\Permission\PermissionRegistrar;
-use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class CreatePermissionTables extends Migration
 {
@@ -78,7 +78,6 @@ class CreatePermissionTables extends Migration
                 $table->primary([PermissionRegistrar::$pivotPermission, $columnNames['model_morph_key'], 'model_type'],
                     'model_has_permissions_permission_model_type_primary');
             }
-
         });
 
         Schema::create($tableNames['model_has_roles'], function (Blueprint $table) use ($tableNames, $columnNames, $teams) {
@@ -157,12 +156,12 @@ class CreatePermissionTables extends Migration
 
         foreach ($users as $user) {
             $old_role = DB::table('old_roles')->where('id', $user->role_id)->first();
-            if (!is_null($old_role)) {
-                switch ($old_role->alias)  {
+            if (! is_null($old_role)) {
+                switch ($old_role->alias) {
                     case 'admin':
                         $user->assignRole('Super Admin');
                         break;
-                    
+
                     case 'padaliniai-admin':
                         $user->assignRole('Content Editor');
                         break;
@@ -170,7 +169,7 @@ class CreatePermissionTables extends Migration
                     case 'kalendorius':
                         $user->assignRole('Calendar Editor');
                         break;
-                    
+
                     case 'saziningai':
                         $user->assignRole('Exam Admin');
                         break;
@@ -178,7 +177,6 @@ class CreatePermissionTables extends Migration
                     case 'naudotojai':
                         $user->assignRole('User');
                         break;
-
                 }
             }
         }

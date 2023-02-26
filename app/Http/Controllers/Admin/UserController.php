@@ -3,19 +3,19 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\SendWelcomeEmail;
-use App\Models\User;
-use Illuminate\Support\Facades\Auth;
-use Laravel\Socialite\Facades\Socialite;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
-use App\Models\Duty;
 use App\Http\Controllers\ResourceController;
+use App\Models\Duty;
 use App\Models\Padalinys;
-use App\Providers\RouteServiceProvider;
-use Illuminate\Support\Facades\DB;
 use App\Models\Role;
+use App\Models\User;
+use App\Providers\RouteServiceProvider;
 use App\Services\ModelIndexer;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
+use Laravel\Socialite\Facades\Socialite;
 
 class UserController extends ResourceController
 {
@@ -27,11 +27,11 @@ class UserController extends ResourceController
     public function index(Request $request)
     {
         $this->authorize('viewAny', [User::class, $this->authorizer]);
-        
+
         $search = request()->input('text');
 
         $indexer = new ModelIndexer();
-        $users = $indexer->execute(User::class, $search, 'name', $this->authorizer)->with('duties:id,institution_id', 'duties.institution:id,padalinys_id','duties.institution.padalinys:id,shortname')->withCount('duties')
+        $users = $indexer->execute(User::class, $search, 'name', $this->authorizer)->with('duties:id,institution_id', 'duties.institution:id,padalinys_id', 'duties.institution.padalinys:id,shortname')->withCount('duties')
         ->get()->makeVisible(['last_action'])->paginate(20);
 
         return Inertia::render('Admin/People/IndexUser', [
@@ -53,23 +53,22 @@ class UserController extends ResourceController
     public function create()
     {
         $this->authorize('create', [User::class, $this->authorizer]);
-        
+
         return Inertia::render('Admin/People/CreateUser', [
             'roles' => Role::all(),
-            'padaliniaiWithDuties' => $this->getDutiesForForm()
+            'padaliniaiWithDuties' => $this->getDutiesForForm(),
         ]);
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
         $this->authorize('create', [User::class, $this->authorizer]);
-        
+
         $request->validate([
             'name' => 'required',
             'email' => 'required|email|unique:users,email',
@@ -106,30 +105,28 @@ class UserController extends ResourceController
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
     public function show(User $user)
     {
         $this->authorize('view', [User::class, $user, $this->authorizer]);
-        
+
         return Inertia::render('Admin/People/ShowUser', [
             'user' => $user->load(['duties' => function ($query) {
                 $query->withPivot('start_date', 'end_date');
-            }])
+            }]),
         ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
     public function edit(User $user)
     {
         $this->authorize('update', [User::class, $user, $this->authorizer]);
-        
+
         // user load duties with pivot
         $user->load(['duties' => function ($query) {
             $query->withPivot('start_date', 'end_date');
@@ -139,14 +136,14 @@ class UserController extends ResourceController
             'user' => $user->makeVisible(['last_action']),
             // get all roles
             'roles' => fn () => Role::all(),
-            'padaliniaiWithDuties' => fn () => $this->getDutiesForForm()
+            'padaliniaiWithDuties' => fn () => $this->getDutiesForForm(),
         ]);
     }
 
     public function sendWelcomeEmail(User $user)
     {
         $this->authorize('update', [User::class, $user, $this->authorizer]);
-        
+
         SendWelcomeEmail::execute((new Collection())->push($user));
 
         return back()->with('success', 'Laiškas sėkmingai išsiųstas!');
@@ -155,22 +152,19 @@ class UserController extends ResourceController
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, User $user)
     {
         $this->authorize('update', [User::class, $user, $this->authorizer]);
-        
+
         $request->validate([
             'name' => 'required',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'roles' => 'array'
+            'email' => 'required|email|unique:users,email,'.$user->id,
+            'roles' => 'array',
         ]);
 
         DB::transaction(function () use ($request, $user) {
-
             $user->update($request->only('name', 'email', 'phone', 'profile_photo_path'));
             $user->duties()->syncWithPivotValues($request->duties, ['start_date' => now()]);
 
@@ -191,7 +185,6 @@ class UserController extends ResourceController
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\User $user
      * @return \Illuminate\Http\Response
      */
     public function destroy(User $user)
@@ -207,14 +200,14 @@ class UserController extends ResourceController
     private function getDutiesForForm()
     {
         // return Duty::with(['institution:id,name,padalinys_id', 'institution.padalinys:id,shortname'])
-        // ->when(!auth()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) { 
+        // ->when(!auth()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
         //     $query->whereHas('institution', function ($query) {
         //         $query->where('padalinys_id', User::find(Auth::id())->padalinys()?->id);
         //     });
         // })->get();
 
         return Padalinys::orderBy('shortname')->with('institutions:id,name,padalinys_id', 'institutions.duties:id,name,institution_id')
-            ->when(!auth()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
+            ->when(! auth()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
                 $query->whereIn('id', User::find(Auth::id())->padaliniai->pluck('id'));
             })->get();
     }
@@ -234,21 +227,22 @@ class UserController extends ResourceController
 
             if (Auth::login($user)) {
                 request()->session()->regenerate();
+
                 return redirect()->intended(RouteServiceProvider::HOME);
             }
 
             return redirect()->route('dashboard');
+        }
 
-        } 
-        
         $duty = Duty::where('email', $microsoftUser->email)->first();
 
         if ($duty) {
             $user = $duty->users()->first();
             $user->microsoft_token = $microsoftUser->token;
-            
+
             if (Auth::login($user)) {
                 request()->session()->regenerate();
+
                 return redirect()->intended(RouteServiceProvider::HOME);
             }
 
@@ -267,6 +261,7 @@ class UserController extends ResourceController
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
+
             return redirect()->intended(RouteServiceProvider::HOME);
         }
 
@@ -278,11 +273,11 @@ class UserController extends ResourceController
     public function logout(Request $request)
     {
         Auth::logout();
-    
+
         $request->session()->invalidate();
-    
+
         $request->session()->regenerateToken();
-    
+
         return redirect()->route('home', ['padalinys' => 'www']);
     }
 }

@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class SaziningaiExamObserver extends Model
 {
-
     use HasFactory;
 
     /**

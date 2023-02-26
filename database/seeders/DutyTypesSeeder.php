@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -17,13 +16,13 @@ class DutyTypesSeeder extends Seeder
     {
         DB::table('duties_types')->insert(
             [
-                ['name' => 'Pirmininkas', 'alias' => 'pirmininkas'], 
-                ['name' => 'Prezidentas', 'alias' => 'prezidentas'], 
+                ['name' => 'Pirmininkas', 'alias' => 'pirmininkas'],
+                ['name' => 'Prezidentas', 'alias' => 'prezidentas'],
                 ['name' => 'Koordinatorius', 'alias' => 'koordinatoriai'],
                 ['name' => 'Narys', 'alias' => 'narys'],
                 ['name' => 'Kuratorius', 'alias' => 'kuratoriai'],
                 ['name' => 'Vadovas', 'alias' => 'vadovas'],
-                ['name' => 'Studentų atstovas', 'alias' => 'studentu-atstovai']
+                ['name' => 'Studentų atstovas', 'alias' => 'studentu-atstovai'],
             ]
         );
     }

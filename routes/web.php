@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Route;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -28,8 +27,7 @@ Route::inertia('login', 'LoginForm')->middleware('guest')->name('login');
 Route::post('login', [Admin\UserController::class, 'authenticate'])->middleware('guest');
 
 Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware' => ['main']], function () {
-
-    Route::domain('www.' . explode('.', config('app.url'), 2)[1])->group(function () {
+    Route::domain('www.'.explode('.', config('app.url'), 2)[1])->group(function () {
         Route::get('ataskaita-2022', [Public\MainController::class, 'ataskaita2022']);
         Route::get('ataskaita-2022/{permalink}', [Public\MainController::class, 'ataskaita2022'])->where('permalink', '.*')->name('ataskaita2022');
 
@@ -46,7 +44,7 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('kalendorius/ics', [Public\MainController::class, 'publicAllEventCalendar'])->name('calendar.ics');
     });
 
-    Route::domain('{padalinys?}.' . explode('.', config('app.url'), 2)[1])->group(function () {
+    Route::domain('{padalinys?}.'.explode('.', config('app.url'), 2)[1])->group(function () {
         Route::get('/', [Public\MainController::class, 'home'])->name('home');
         Route::get('naujienos', [Public\NewsController::class, 'newsArchive'])->name('newsArchive');
         Route::redirect('/naujiena/archyvas', '/naujienos', 301);

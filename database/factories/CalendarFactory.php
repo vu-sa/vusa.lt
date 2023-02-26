@@ -3,8 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\Calendar;
-use Illuminate\Support\Arr;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Arr;
 
 class CalendarFactory extends Factory
 {
@@ -27,7 +27,7 @@ class CalendarFactory extends Factory
             'title' => $this->faker->paragraph(1),
             'description' => $this->faker->paragraph(2),
             'category' => Arr::random(['red', 'yellow', 'grey']),
-            'url' => NULL,
+            'url' => null,
             'padalinys_id' => 16,
         ];
     }

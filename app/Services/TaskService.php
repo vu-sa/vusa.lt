@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Doing;
 use App\Models\Meeting;
 use App\Models\Task;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 

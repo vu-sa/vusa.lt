@@ -11,22 +11,22 @@ class PendingPadalinysApproval extends DoingState
         return 'green';
     }
 
-    public function handleProgress (): void
+    public function handleProgress(): void
     {
         abort(403, 'Veikla jau yra pateikta padalinio tvirtinimui.');
     }
 
-    public function handleApprove (): void
+    public function handleApprove(): void
     {
         $this->transitionTo(PendingFinalApproval::class);
     }
 
-    public function handleReject (): void
+    public function handleReject(): void
     {
         $this->transitionTo(PendingChanges::class);
     }
 
-    public function handleCancel (): void
+    public function handleCancel(): void
     {
         $this->transitionTo(Cancelled::class);
     }

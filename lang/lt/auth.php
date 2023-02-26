@@ -19,5 +19,5 @@ return [
     'logout' => 'Atsijungti',
     'continue_microsoft' => 'Prisijungti su Microsoft',
     'use_other_login' => 'Naudoti kitą prisijungimą',
-    'usage_status' => 'šiuo metu gali naudoti VU SA koordinatoriai ir studentų atstovai'
+    'usage_status' => 'šiuo metu gali naudoti VU SA koordinatoriai ir studentų atstovai',
 ];

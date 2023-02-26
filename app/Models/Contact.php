@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Models\Traits\HasComments;
-use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,7 +18,7 @@ class Contact extends Model
         'name',
         'email',
         'phone',
-        'extra_attributes'
+        'extra_attributes',
     ];
 
     protected $casts = [

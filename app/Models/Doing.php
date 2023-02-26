@@ -3,21 +3,20 @@
 namespace App\Models;
 
 use App\Models\Traits\HasComments;
-use App\Models\Comment;
 use App\Models\Traits\HasDecisions;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTasks;
 use App\States\Doing\DoingState;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\ModelStates\HasStates;
-use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
+use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
-class Doing extends Model 
+class Doing extends Model
 {
     use HasFactory, HasStates, HasComments, HasDecisions, HasRelationships, HasSharepointFiles, HasTasks, HasUlids, LogsActivity, SoftDeletes;
 

@@ -32,7 +32,7 @@ return [
      * When something goes wrong fonts are loaded directly from Google.
      * With fallback disabled, this package will throw an exception.
      */
-    'fallback' => !env('APP_DEBUG'),
+    'fallback' => ! env('APP_DEBUG'),
 
     /*
      * This user agent will be used to request the stylesheet from Google Fonts.

@@ -8,8 +8,9 @@ use App\Services\ModelIndexer;
 class ResourceController extends Controller
 {
     protected $authorizer;
+
     protected $indexer;
-    
+
     public function __construct()
     {
         $this->authorizer = new Authorizer();

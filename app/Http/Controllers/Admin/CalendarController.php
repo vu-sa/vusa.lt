@@ -2,18 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Calendar;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
-use App\Http\Controllers\Controller as Controller;
 use App\Http\Controllers\ResourceController;
+use App\Models\Calendar;
 use App\Models\Category;
 use App\Models\Padalinys;
-use Illuminate\Support\Facades\DB;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
-use App\Models\User;
 use App\Services\ModelIndexer;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class CalendarController extends ResourceController
 {
@@ -25,7 +22,7 @@ class CalendarController extends ResourceController
     public function index(Request $request)
     {
         $this->authorize('viewAny', [Calendar::class, $this->authorizer]);
-        
+
         $search = request()->input('text');
 
         $indexer = new ModelIndexer();
@@ -42,24 +39,23 @@ class CalendarController extends ResourceController
      * @return \Illuminate\Http\Response
      */
     public function create()
-    {        
+    {
         $this->authorize('create', [Calendar::class, $this->authorizer]);
-        
+
         return Inertia::render('Admin/Calendar/CreateCalendarEvent', [
-            'categories' => Category::all()
+            'categories' => Category::all(),
         ]);
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
         $this->authorize('create', [Calendar::class, $this->authorizer]);
-        
+
         $request->validate([
             'date' => 'required|date',
             'title' => 'required',
@@ -84,7 +80,7 @@ class CalendarController extends ResourceController
             'location' => $request->location,
             'url' => $request->url,
             'category' => $request->category,
-            'extra_attributes' => $request->extra_attributes
+            'extra_attributes' => $request->extra_attributes,
         ]);
 
         return redirect()->route('calendar.index')->with('success', 'Kalendoriaus įvykis sėkmingai sukurtas!');
@@ -93,41 +89,37 @@ class CalendarController extends ResourceController
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Calendar  $calendar
      * @return \Illuminate\Http\Response
      */
     public function show(Calendar $calendar)
     {
         $this->authorize('view', [Calendar::class, $calendar, $this->authorizer]);
-        
+
         return Inertia::render('Admin/Calendar/ShowCalendarEvent', [
             'calendar' => $calendar,
-            'images' => $calendar->getMedia('images')
+            'images' => $calendar->getMedia('images'),
         ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Calendar  $calendar
      * @return \Illuminate\Http\Response
      */
     public function edit(Calendar $calendar)
     {
         $this->authorize('update', [Calendar::class, $calendar, $this->authorizer]);
-        
+
         return Inertia::render('Admin/Calendar/EditCalendarEvent', [
             'calendar' => $calendar,
             'categories' => Category::all(),
-            'images' => $calendar->getMedia('images')
+            'images' => $calendar->getMedia('images'),
         ]);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Calendar  $calendar
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Calendar $calendar)
@@ -144,7 +136,7 @@ class CalendarController extends ResourceController
             $calendar->update($request->only(['date', 'end_date', 'title', 'description', 'location', 'url', 'category', 'extra_attributes']));
 
             // if request has files
-            
+
             $images = $request->file('images');
 
             if ($images) {
@@ -155,7 +147,6 @@ class CalendarController extends ResourceController
 
             $calendar->save();
         });
-        
 
         return back()->with('success', 'Kalendoriaus įvykis sėkmingai atnaujintas!');
     }
@@ -163,22 +154,22 @@ class CalendarController extends ResourceController
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Calendar $calendar
      * @return \Illuminate\Http\Response
      */
     public function destroy(Calendar $calendar)
     {
         $this->authorize('delete', [Calendar::class, $calendar, $this->authorizer]);
-        
+
         $calendar->delete();
 
         return redirect()->route('calendar.index')->with('info', 'Kalendoriaus įvykis ištrintas!');
     }
+
     // TODO: something with this???
-    public function destroyMedia(Calendar $calendar, Media $media) {
-        
+    public function destroyMedia(Calendar $calendar, Media $media)
+    {
         $this->authorize('destroyMedia', $calendar);
-        
+
         $calendar->getMedia('images')->where('id', '=', $media->id)->first()->delete();
 
         return back()->with('info', 'Nuotrauka ištrinta!');

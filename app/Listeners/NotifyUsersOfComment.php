@@ -5,7 +5,6 @@ namespace App\Listeners;
 use App\Events\CommentPosted;
 use App\Notifications\ModelCommented;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 
@@ -24,7 +23,6 @@ class NotifyUsersOfComment implements ShouldQueue
     /**
      * Handle the event.
      *
-     * @param  \App\Events\CommentPosted  $event
      * @return void
      */
     public function handle(CommentPosted $event)
@@ -42,14 +40,14 @@ class NotifyUsersOfComment implements ShouldQueue
 
         $objectClassName = class_basename(get_class($commentable));
 
-        $routeName = Str::of($objectClassName)->lcfirst()->plural() . '.show';
+        $routeName = Str::of($objectClassName)->lcfirst()->plural().'.show';
 
         $object = [
             'modelClass' => $objectClassName,
             'name' => optional($commentable)->name ?: optional($commentable)->title ?: null,
             'url' => route($routeName, $commentable->id),
         ];
-        
+
         // TODO: not always title, sometimes name, sometimes something else
         $text = "<p><strong>{$user->name}</strong> paliko komentarą įraše: {$commentable->title}</p>";
 

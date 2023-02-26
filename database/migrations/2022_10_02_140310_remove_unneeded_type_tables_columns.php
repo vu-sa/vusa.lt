@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::table('doings', function (Blueprint $table) {
             $table->dropForeign(['doing_type_id']);
         });
-        
+
         Schema::table('doings', function (Blueprint $table) {
             $table->dropColumn('doing_type_id');
         });
@@ -32,7 +32,7 @@ return new class extends Migration
         Schema::table('duties_institutions', function (Blueprint $table) {
             $table->dropForeign(['type_id']);
         });
-        
+
         Schema::table('duties_institutions', function (Blueprint $table) {
             $table->dropColumn('type_id');
         });

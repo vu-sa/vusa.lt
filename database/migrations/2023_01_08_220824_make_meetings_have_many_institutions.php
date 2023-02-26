@@ -37,7 +37,7 @@ return new class extends Migration
         Schema::table('agenda_items', function (Blueprint $table) {
             $table->renameIndex('institution_meeting_matter_matter_id_foreign', 'agenda_items_matter_id_foreign');
             $table->renameIndex('institution_meeting_matter_meeting_id_foreign', 'agenda_items_meeting_id_foreign');
-        }); 
+        });
 
         Schema::table('goal_matter', function (Blueprint $table) {
             $table->renameIndex('goal_institution_matter_matter_id_foreign', 'goal_matter_matter_id_foreign');
@@ -74,7 +74,7 @@ return new class extends Migration
         Schema::table('institution_meeting_matter', function (Blueprint $table) {
             $table->renameIndex('agenda_items_matter_id_foreign', 'institution_meeting_matter_matter_id_foreign');
             $table->renameIndex('agenda_items_meeting_id_foreign', 'institution_meeting_matter_meeting_id_foreign');
-        }); 
+        });
 
         Schema::table('goal_institution_matter', function (Blueprint $table) {
             $table->renameIndex('goal_matter_matter_id_foreign', 'goal_institution_matter_matter_id_foreign');

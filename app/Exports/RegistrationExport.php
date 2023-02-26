@@ -35,10 +35,9 @@ class RegistrationExport implements FromArray, WithHeadings
         ];
     }
 
-    
     /**
-    * @return \Illuminate\Support\Collection
-    */
+     * @return \Illuminate\Support\Collection
+     */
     public function array(): array
     {
         // return all registrations and map data json to array
@@ -49,7 +48,7 @@ class RegistrationExport implements FromArray, WithHeadings
         foreach ($registrations as $registration) {
             // change birthdate from unix time to human readable date
             $data = $registration->data;
-            
+
             $birthdate = date('Y-m-d', $data['birthDate'] / 1000);
             $data['realBirthDate'] = $birthdate;
 
@@ -57,6 +56,5 @@ class RegistrationExport implements FromArray, WithHeadings
         }
 
         return $export;
-        
     }
 }

@@ -4,10 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Feed\Feedable;
-use Spatie\Feed\FeedItem;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\Searchable;
+use Spatie\Feed\Feedable;
+use Spatie\Feed\FeedItem;
 
 class News extends Model implements Feedable
 {
@@ -51,7 +51,7 @@ class News extends Model implements Feedable
             ->summary($this->short)
             ->updated(Carbon::parse($this->publish_time))
             ->image($this->image) // TODO: fix, as this doesn't show an image
-            ->link('naujiena/' . $this->permalink)
+            ->link('naujiena/'.$this->permalink)
             ->authorName($this->padalinys->shortname);
     }
 

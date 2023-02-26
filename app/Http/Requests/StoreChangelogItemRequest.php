@@ -13,7 +13,7 @@ class StoreChangelogItemRequest extends ResourceRequest
      * @return bool
      */
     public function authorize()
-    {     
+    {
         return $this->user()->can('create', [ChangelogItem::class, $this->authorizer]);
     }
 

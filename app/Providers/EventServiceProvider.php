@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Providers;
+
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -12,7 +13,7 @@ class EventServiceProvider extends ServiceProvider
      */
     protected $listen = [
         \SocialiteProviders\Manager\SocialiteWasCalled::class => [
-            \SocialiteProviders\Microsoft\MicrosoftExtendSocialite::class . '@handle',
+            \SocialiteProviders\Microsoft\MicrosoftExtendSocialite::class.'@handle',
             // \SocialiteProviders\Google\GoogleExtendSocialite::class.'@handle',
         ],
         \App\Events\CommentPosted::class => [

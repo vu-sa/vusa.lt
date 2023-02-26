@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Goal;
-use App\Http\Controllers\Controller as Controller;
 use App\Http\Controllers\ResourceController;
+use App\Models\Goal;
 use App\Services\ModelIndexer;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class GoalController extends ResourceController
-{    
+{
     /**
      * Display a listing of the resource.
      *
@@ -45,13 +44,12 @@ class GoalController extends ResourceController
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
         $this->authorize('create', [Goal::class, $this->authorizer]);
-        
+
         $validated = $request->validate([
             'title' => 'required',
         ]);
@@ -64,13 +62,12 @@ class GoalController extends ResourceController
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Goal  $goal
      * @return \Illuminate\Http\Response
      */
     public function show(Goal $goal)
     {
         $this->authorize('view', [Goal::class, $goal, $this->authorizer]);
-        
+
         $goal->load('matters.doings', 'matters.institutions:id,name', 'activities.causer', 'comments')->load(['tasks' => function ($query) {
             $query->with('users', 'taskable');
         }]);
@@ -86,7 +83,6 @@ class GoalController extends ResourceController
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Goal  $goal
      * @return \Illuminate\Http\Response
      */
     public function edit(Goal $goal)
@@ -101,14 +97,12 @@ class GoalController extends ResourceController
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Goal  $goal
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Goal $goal)
     {
         $this->authorize('update', [Goal::class, $goal, $this->authorizer]);
-        
+
         $validated = $request->validate(
             ['title' => 'required']
         );
@@ -121,13 +115,12 @@ class GoalController extends ResourceController
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Goal  $goal
      * @return \Illuminate\Http\Response
      */
     public function destroy(Goal $goal)
     {
         $this->authorize('delete', [Goal::class, $goal, $this->authorizer]);
-        
+
         $goal->delete();
 
         return redirect()->route('dashboard')->with('success', 'Klausimo grupė ištrinta.');

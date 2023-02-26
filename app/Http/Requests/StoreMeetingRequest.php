@@ -12,7 +12,7 @@ class StoreMeetingRequest extends ResourceRequest
      * @return bool
      */
     public function authorize()
-    {     
+    {
         return $this->user()->can('create', [Meeting::class, $this->authorizer]);
     }
 
@@ -32,7 +32,7 @@ class StoreMeetingRequest extends ResourceRequest
     {
         return [
             'start_time' => 'required|date:Y-m-d H:i',
-            'institution_id' => 'required|ulid'
+            'institution_id' => 'required|ulid',
         ];
     }
 }

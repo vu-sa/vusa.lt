@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\GoalGroup;
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\ResourceController;
+use App\Models\GoalGroup;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -41,7 +40,6 @@ class GoalGroupController extends ResourceController
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
@@ -64,7 +62,6 @@ class GoalGroupController extends ResourceController
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\GoalGroup  $goalGroup
      * @return \Illuminate\Http\Response
      */
     public function show(GoalGroup $goalGroup)
@@ -75,7 +72,6 @@ class GoalGroupController extends ResourceController
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\GoalGroup  $goalGroup
      * @return \Illuminate\Http\Response
      */
     public function edit(GoalGroup $goalGroup)
@@ -90,8 +86,6 @@ class GoalGroupController extends ResourceController
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\GoalGroup  $goalGroup
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, GoalGroup $goalGroup)
@@ -114,7 +108,6 @@ class GoalGroupController extends ResourceController
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\GoalGroup  $goalGroup
      * @return \Illuminate\Http\Response
      */
     public function destroy(GoalGroup $goalGroup)

@@ -6,7 +6,8 @@ use App\Events\FileableNameUpdated;
 use App\Models\SharepointFile;
 use App\Services\ResourceServices\SharepointFileService;
 
-trait HasSharepointFiles {
+trait HasSharepointFiles
+{
     public function files()
     {
         return $this->morphToMany(SharepointFile::class, 'fileable', 'sharepoint_fileables');

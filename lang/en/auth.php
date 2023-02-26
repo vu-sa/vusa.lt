@@ -19,5 +19,5 @@ return [
     'logout' => 'Logout',
     'continue_microsoft' => 'Continue with Microsoft',
     'use_other_login' => 'Use other account',
-    'usage_status' => 'right now can be used by VU SR coordinators and student representatives'
+    'usage_status' => 'right now can be used by VU SR coordinators and student representatives',
 ];

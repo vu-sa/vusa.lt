@@ -28,7 +28,7 @@ class Padalinys extends Model
     public function institutions()
     {
         return $this->hasMany(Institution::class, 'padalinys_id');
-    }    
+    }
 
     public function news()
     {

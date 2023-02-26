@@ -3,12 +3,11 @@
 namespace App\Policies;
 
 use App\Enums\CRUDEnum;
-use App\Models\User;
-
-use Illuminate\Support\Str;
 use App\Enums\ModelEnum;
+use App\Models\User;
 use App\Services\ModelAuthorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Support\Str;
 
 class UserPolicy extends ModelPolicy
 {
@@ -22,14 +21,12 @@ class UserPolicy extends ModelPolicy
     /**
      * Determine whether the user can view the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\User  $model
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function view(User $user, User $model, ModelAuthorizer $authorizer)
     {
         $this->authorizer = $authorizer;
-        
+
         if ($this->commonChecker($user, $model, CRUDEnum::READ()->label, $this->pluralModelName)) {
             return true;
         }
@@ -40,8 +37,6 @@ class UserPolicy extends ModelPolicy
     /**
      * Determine whether the user can update the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\User  $model
      * @return \Illuminate\Auth\Access\Response|bool
      */
 
@@ -49,7 +44,7 @@ class UserPolicy extends ModelPolicy
     public function update(User $user, User $model, ModelAuthorizer $authorizer)
     {
         $this->authorizer = $authorizer;
-        
+
         if ($this->commonChecker($user, $model, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
             return true;
         }
@@ -60,14 +55,12 @@ class UserPolicy extends ModelPolicy
     /**
      * Determine whether the user can delete the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\User  $model
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function delete(User $user, User $model, ModelAuthorizer $authorizer)
     {
         $this->authorizer = $authorizer;
-        
+
         if ($this->commonChecker($user, $model, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
             return true;
         }
@@ -78,25 +71,19 @@ class UserPolicy extends ModelPolicy
     /**
      * Determine whether the user can restore the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\User  $model
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function restore(User $user, User $model)
     {
-
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\User  $model
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function forceDelete(User $user, User $model)
     {
-        
     }
 
     // TODO: wild policies

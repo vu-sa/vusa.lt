@@ -11,24 +11,23 @@ class PendingCompletion extends DoingState
         return 'green';
     }
 
-    public function handleProgress (): void
+    public function handleProgress(): void
     {
         abort(403, 'Veikla jau yra pateikta užbaigimui.');
     }
 
-    public function handleApprove (): void
+    public function handleApprove(): void
     {
         $this->transitionTo(Completed::class);
     }
 
-    public function handleReject (): void
+    public function handleReject(): void
     {
         //
     }
 
-    public function handleCancel (): void
+    public function handleCancel(): void
     {
         //
     }
-
 }

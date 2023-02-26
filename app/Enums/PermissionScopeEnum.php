@@ -6,13 +6,13 @@ use Spatie\Enum\Laravel\Enum;
 
 /**
  * @typescript
+ *
  * @method static self OWN()
  * @method static self PADALINYS()
  * @method static self ALL()
  */
-
- class PermissionScopeEnum extends Enum {
-    
+class PermissionScopeEnum extends Enum
+{
     protected static function labels(): array
     {
         return [
@@ -21,4 +21,4 @@ use Spatie\Enum\Laravel\Enum;
             'ALL' => '*',
         ];
     }
- }
+}

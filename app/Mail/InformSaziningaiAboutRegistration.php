@@ -2,12 +2,12 @@
 
 namespace App\Mail;
 
+use App\Models\SaziningaiExam;
+use App\Models\SaziningaiExamFlow;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use App\Models\SaziningaiExam;
-use App\Models\SaziningaiExamFlow;
 
 class InformSaziningaiAboutRegistration extends Mailable // implements ShouldQueue
 {
@@ -19,6 +19,7 @@ class InformSaziningaiAboutRegistration extends Mailable // implements ShouldQue
      * @var \App\Models\Saziningai
      */
     public $saziningai;
+
     public $saziningaiFlow;
 
     /**
@@ -39,6 +40,6 @@ class InformSaziningaiAboutRegistration extends Mailable // implements ShouldQue
      */
     public function build()
     {
-        return $this->subject('Informacija apie užregistruotą atsiskaitymą (ID: ' . $this->saziningai->id . ')')->markdown('emails.saziningai.inform');
+        return $this->subject('Informacija apie užregistruotą atsiskaitymą (ID: '.$this->saziningai->id.')')->markdown('emails.saziningai.inform');
     }
 }

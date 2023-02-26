@@ -28,9 +28,9 @@ return new class extends Migration
         });
 
         Artisan::call('db:seed', [
-                  '--class' => 'ChangelogItemPermissionSeeder',
-                  '--force' => 'true',
-                ]);
+            '--class' => 'ChangelogItemPermissionSeeder',
+            '--force' => 'true',
+        ]);
     }
 
     /**

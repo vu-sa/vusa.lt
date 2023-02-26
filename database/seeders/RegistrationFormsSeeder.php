@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -16,7 +15,7 @@ class RegistrationFormsSeeder extends Seeder
     public function run()
     {
         DB::table('registration_forms')->insert([
-            ['data' => '{}'], ['data' => '{}']
+            ['data' => '{}'], ['data' => '{}'],
         ]);
     }
 }

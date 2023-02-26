@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class SharepointFileableService
 {
-    public function attachFileToFileable(SharepointFile $sharepointFile, Model $fileable) {
+    public function attachFileToFileable(SharepointFile $sharepointFile, Model $fileable)
+    {
         $fileable->files()->attach($sharepointFile->id);
 
         return $fileable;

@@ -13,24 +13,25 @@ use Microsoft\Graph\Model;
 
 /**
  * SharepointGraphService
- * 
+ *
  * This class is used to interact with Sharepoint API
  * It has common methods for all Sharepoint API calls in a specific drive
- * 
  */
-class SharepointGraphService {
-    
+class SharepointGraphService
+{
     protected $graph;
+
     protected $siteId;
+
     protected $driveId;
-        
+
     /**
      * __construct
      * Set for which sharepoint site and drive to interact with
      * If no siteId or driveId is provided, it will use the default values from config
      *
-     * @param  mixed $siteId
-     * @param  mixed $driveId
+     * @param  mixed  $siteId
+     * @param  mixed  $driveId
      * @return void
      */
     public function __construct(?string $siteId = null, ?string $driveId = null)
@@ -38,13 +39,13 @@ class SharepointGraphService {
         if (Cache::has('ms_application_token')) {
             $token = Crypt::decryptString(Cache::get('ms_application_token'));
         } else {
-            $url = 'https://login.microsoftonline.com/' . config('filesystems.sharepoint.tenant_id') . '/oauth2/v2.0/token';
+            $url = 'https://login.microsoftonline.com/'.config('filesystems.sharepoint.tenant_id').'/oauth2/v2.0/token';
 
             $token = json_decode(Http::asForm()->post($url, [
-                    'client_id' => config('filesystems.sharepoint.client_id'),
-                    'client_secret' => config('filesystems.sharepoint.client_secret'),
-                    'scope' => 'https://graph.microsoft.com/.default',
-                    'grant_type' => 'client_credentials',
+                'client_id' => config('filesystems.sharepoint.client_id'),
+                'client_secret' => config('filesystems.sharepoint.client_secret'),
+                'scope' => 'https://graph.microsoft.com/.default',
+                'grant_type' => 'client_credentials',
             ])->getBody()->getContents());
             $token = $token->access_token;
 
@@ -58,33 +59,33 @@ class SharepointGraphService {
         $this->driveId = $driveId ?? $this->getDrive()->getId();
     }
 
-    private function getSite() : Model\Site
+    private function getSite(): Model\Site
     {
-        return Cache::remember('ms_site_' . $this->siteId, 3600, function () {
-            $site = $this->graph->createRequest("GET", "/sites/{$this->siteId}")
+        return Cache::remember('ms_site_'.$this->siteId, 3600, function () {
+            $site = $this->graph->createRequest('GET', "/sites/{$this->siteId}")
             ->setReturnType(Model\Site::class)
             ->execute();
-            
+
             return $site;
         });
     }
 
-    private function getDrive() : Model\Drive
+    private function getDrive(): Model\Drive
     {
-        return Cache::remember('ms_drive_' . $this->siteId, 3600, function () {
-            $drive = $this->graph->createRequest("GET", "/sites/{$this->siteId}/drive")
+        return Cache::remember('ms_drive_'.$this->siteId, 3600, function () {
+            $drive = $this->graph->createRequest('GET', "/sites/{$this->siteId}/drive")
             ->setReturnType(Model\Drive::class)
             ->execute();
-            
+
             return $drive;
         });
     }
-    
+
     /**
      * getDriveItemByPath
      *
-     * @param  mixed $path
-     * @param  mixed $siteId
+     * @param  mixed  $path
+     * @param  mixed  $siteId
      * @return array<Model\DriveItem>
      */
     public function getDriveItemByPath(string $path, $getChildren = false): Collection
@@ -93,9 +94,10 @@ class SharepointGraphService {
         $path = rawurlencode($path);
         $childrenPath = $getChildren ? ':/children' : '';
 
-        try { $driveItems = $this->graph->createRequest("GET", "/drives/{$this->driveId}/root:/{$path}{$childrenPath}?\$expand=listItem,thumbnails")
-            ->setReturnType(Model\DriveItem::class)
-            ->execute();
+        try {
+            $driveItems = $this->graph->createRequest('GET', "/drives/{$this->driveId}/root:/{$path}{$childrenPath}?\$expand=listItem,thumbnails")
+                ->setReturnType(Model\DriveItem::class)
+                ->execute();
         } catch (ClientException $e) {
             if ($e->getCode() == 404) {
                 return collect([]);
@@ -105,27 +107,27 @@ class SharepointGraphService {
         }
 
         // wrap in array if not array
-        if (!is_array($driveItems)) {
+        if (! is_array($driveItems)) {
             $driveItems = [$driveItems];
         }
 
         return $this->parseDriveItems($driveItems);
     }
 
-    public function getDriveItemByIdWithListItem(string $driveItemId) : Model\DriveItem 
+    public function getDriveItemByIdWithListItem(string $driveItemId): Model\DriveItem
     {
-        $driveItem = $this->graph->createRequest("GET", "/drives/{$this->driveId}/items/{$driveItemId}?\$expand=listItem")
+        $driveItem = $this->graph->createRequest('GET', "/drives/{$this->driveId}/items/{$driveItemId}?\$expand=listItem")
             ->setReturnType(Model\DriveItem::class)
             ->execute();
 
         return $driveItem;
     }
 
-    public function updateDriveItemByPath(string $path, array $fields) : Model\DriveItem 
+    public function updateDriveItemByPath(string $path, array $fields): Model\DriveItem
     {
         $path = rawurlencode($path);
 
-        $updatedDriveItem = $this->graph->createRequest("PATCH", "/drives/{$this->driveId}/root:/{$path}")
+        $updatedDriveItem = $this->graph->createRequest('PATCH', "/drives/{$this->driveId}/root:/{$path}")
             ->attachBody(
                 $fields
             )
@@ -135,10 +137,10 @@ class SharepointGraphService {
         return $updatedDriveItem;
     }
 
-    public function updateListItem(string $listId, $listItemId, array $fields): Model\ListItem 
+    public function updateListItem(string $listId, $listItemId, array $fields): Model\ListItem
     {
-        $updatedListItem = 
-        $this->graph->createRequest("PATCH", "/sites/{$this->siteId}/lists/{$listId}/items/{$listItemId}/fields")
+        $updatedListItem =
+        $this->graph->createRequest('PATCH', "/sites/{$this->siteId}/lists/{$listId}/items/{$listItemId}/fields")
             ->attachBody(
                 $fields
             )
@@ -148,25 +150,25 @@ class SharepointGraphService {
         return $updatedListItem;
     }
 
-    public function getDriveItemsChildrenByPaths(array $paths) 
+    public function getDriveItemsChildrenByPaths(array $paths)
     {
         $pathCollection = collect($paths);
         $id = 0;
-        
-        $batch_request_body = ["requests" => $pathCollection->map(function($path) use (&$id) {          
-                $id++;
-            
-                $path = rawurlencode($path);
 
-                return [
-                    'id' => $id,
-                    'method' => 'GET',
-                    'url' => "/drives/{$this->driveId}/root:/{$path}:/children?\$expand=listItem,thumbnails"
-                ];
-            })->values()->toArray()
+        $batch_request_body = ['requests' => $pathCollection->map(function ($path) use (&$id) {
+            $id++;
+
+            $path = rawurlencode($path);
+
+            return [
+                'id' => $id,
+                'method' => 'GET',
+                'url' => "/drives/{$this->driveId}/root:/{$path}:/children?\$expand=listItem,thumbnails",
+            ];
+        })->values()->toArray(),
         ];
 
-        $batch_response = $this->graph->createRequest("POST", "/\$batch")
+        $batch_response = $this->graph->createRequest('POST', '/$batch')
             ->attachBody($batch_request_body)
             ->execute()->getBody();
 
@@ -175,7 +177,7 @@ class SharepointGraphService {
         foreach ($batch_response['responses'] as $response) {
             // create DriveItem for each response
             // $response = new HttpResponse($response['body'], $response['status'], $response['headers']);
-            collect($response['body']['value'])->each(function($driveItem) use (&$driveItems) {
+            collect($response['body']['value'])->each(function ($driveItem) use (&$driveItems) {
                 $driveItems[] = new Model\DriveItem($driveItem);
             });
         }
@@ -183,46 +185,46 @@ class SharepointGraphService {
         return $this->parseDriveItems($driveItems);
     }
 
-    protected function getDriveItemPermissions(string $driveItemId) : array
+    protected function getDriveItemPermissions(string $driveItemId): array
     {
-        $permissions = $this->graph->createRequest("GET", "/drives/{$this->driveId}/items/{$driveItemId}/permissions")
+        $permissions = $this->graph->createRequest('GET', "/drives/{$this->driveId}/items/{$driveItemId}/permissions")
             ->setReturnType(Model\Permission::class)
             ->execute();
 
         return $permissions;
     }
-    
+
     /**
      * parsePermissionsForPublicLink
      *
-     * @param  array<Model\Permission> $permissions
+     * @param  array<Model\Permission>  $permissions
      * @return ?Model\Permission
      */
-    protected function parsePermissionsForPublicLink(array $permissions) : ?Model\Permission
+    protected function parsePermissionsForPublicLink(array $permissions): ?Model\Permission
     {
         $permissions = collect($permissions);
-        
+
         // filter collection for public link. public permissions have a link property which has scope to anonymous
-        $publicLinkPermission = $permissions->filter(function($permission) {
+        $publicLinkPermission = $permissions->filter(function ($permission) {
             return $permission->getLink() && $permission->getLink()->getScope() == 'anonymous';
         })->first();
 
         return $publicLinkPermission;
     }
 
-    public function getDriveItemPublicLink(string $driveItemId) : ?Model\Permission
+    public function getDriveItemPublicLink(string $driveItemId): ?Model\Permission
     {
         $permissions = $this->getDriveItemPermissions($driveItemId);
 
         return $this->parsePermissionsForPublicLink($permissions);
     }
 
-    public function createPublicPermission(string $driveItemId) : ?Model\Permission
+    public function createPublicPermission(string $driveItemId): ?Model\Permission
     {
-        $permission = $this->graph->createRequest("POST", "/drives/{$this->driveId}/items/{$driveItemId}/createLink")
+        $permission = $this->graph->createRequest('POST', "/drives/{$this->driveId}/items/{$driveItemId}/createLink")
             ->attachBody([
                 'type' => 'view',
-                'scope' => 'anonymous'
+                'scope' => 'anonymous',
             ])
             ->setReturnType(Model\Permission::class)
             ->execute();
@@ -230,28 +232,28 @@ class SharepointGraphService {
         return $permission;
     }
 
-    public function uploadDriveItem(string $filePath, $content) : Model\DriveItem 
+    public function uploadDriveItem(string $filePath, $content): Model\DriveItem
     {
         // if file is more than 100 MB, unauthorized error is thrown
         abort_if(strlen($content) > 64000000, 403, 'Kolkas neleidžiama įkelti didesnių nei 64MB failų');
-        
+
         // check if file is more than 4MB
         if (strlen($content) > 4000000) {
-            $uploadSession = $this->graph->createRequest("POST", "/drives/{$this->driveId}/root:/{$filePath}:/createUploadSession")
+            $uploadSession = $this->graph->createRequest('POST', "/drives/{$this->driveId}/root:/{$filePath}:/createUploadSession")
                 ->attachBody([
                     'item' => [
-                        '@microsoft.graph.conflictBehavior' => 'rename'
-                    ]
+                        '@microsoft.graph.conflictBehavior' => 'rename',
+                    ],
                 ])
                 ->setReturnType(Model\UploadSession::class)
                 ->execute();
 
             $uploadUrl = $uploadSession->getUploadUrl($content);
-            
-            $uploadedDriveItem = $this->graph->createRequest("PUT", $uploadUrl)
+
+            $uploadedDriveItem = $this->graph->createRequest('PUT', $uploadUrl)
                 ->addHeaders(
-                    ['Content-Length' => strlen($content), 
-                    'Content-Range' => 'bytes 0-' . (strlen($content) - 1) . '/' . strlen($content)
+                    ['Content-Length' => strlen($content),
+                        'Content-Range' => 'bytes 0-'.(strlen($content) - 1).'/'.strlen($content),
                     ])
                 ->attachBody($content)
                 ->setReturnType(Model\DriveItem::class)
@@ -259,7 +261,7 @@ class SharepointGraphService {
 
             $uploadedDriveItem = $this->getDriveItemByIdWithListItem($uploadedDriveItem->getId());
         } else {
-            $uploadedDriveItem = $this->graph->createRequest("PUT", "/drives/{$this->driveId}/root:/{$filePath}:/content?expand=listItem")
+            $uploadedDriveItem = $this->graph->createRequest('PUT', "/drives/{$this->driveId}/root:/{$filePath}:/content?expand=listItem")
                 ->attachBody($content)
                 ->setReturnType(Model\DriveItem::class)
                 ->execute();
@@ -268,19 +270,20 @@ class SharepointGraphService {
         return $uploadedDriveItem;
     }
 
-    public function deleteDriveItem(string $driveItemId) : void
+    public function deleteDriveItem(string $driveItemId): void
     {
-        $this->graph->createRequest("DELETE", "/drives/{$this->driveId}/items/{$driveItemId}")
+        $this->graph->createRequest('DELETE', "/drives/{$this->driveId}/items/{$driveItemId}")
             ->execute();
     }
 
     /**
      * parseDriveItems
      *
-     * @param  array<Model\DriveItem> $driveItems
+     * @param  array<Model\DriveItem>  $driveItems
      * @return Collection
      */
-    private function parseDriveItems(array | Model\DriveItem $driveItems) {
+    private function parseDriveItems(array|Model\DriveItem $driveItems)
+    {
         $driveItems = collect($driveItems);
 
         // get all driveitem ids
@@ -292,7 +295,7 @@ class SharepointGraphService {
         // is in $driveItemIds
         $sharepointFiles = SharepointFile::whereIn('sharepoint_id', $driveItemIds)->with('fileables.fileable', 'comments')->get();
 
-        $parsedDriveItems = $driveItems->map(function ($driveItem) use ($sharepointFiles) { 
+        $parsedDriveItems = $driveItems->map(function ($driveItem) use ($sharepointFiles) {
             return [
                 'id' => $driveItem->getId(),
                 'sharepointFile' => $sharepointFiles->filter(function ($sharepointFile) use ($driveItem) {
@@ -318,7 +321,7 @@ class SharepointGraphService {
                             'url' => $thumbnail['large']['url'],
                         ],
                     ];
-                })
+                }),
             ];
         });
 

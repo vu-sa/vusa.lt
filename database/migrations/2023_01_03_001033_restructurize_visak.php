@@ -1,6 +1,5 @@
 <?php
 
-use Doctrine\DBAL\Schema\Schema as SchemaSchema;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -104,16 +103,16 @@ return new class extends Migration
         Schema::table('notifications', function (Blueprint $table) {
             $table->char('notifiable_id', 26)->change();
         });
-        
+
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn(['two_factor_recovery_codes', 'two_factor_secret']);
             $table->softDeletes();
-    
+
             DB::table('users')->orderBy('id')->chunkById(100, function ($users) {
                 foreach ($users as $user) {
                     // make ulid lowercase
                     $ulid = Str::lower(Str::ulid());
-                    
+
                     DB::table('users')
                         ->where('id', $user->id)
                         ->update(['id' => $ulid]);
@@ -145,7 +144,7 @@ return new class extends Migration
             $table->foreign('user_id')->references('id')->on('users');
             $table->softDeletes();
         });
-        
+
         // create contacts table for contacts that are not users
         Schema::create('contacts', function (Blueprint $table) {
             $table->ulid('id')->primary();
@@ -204,7 +203,7 @@ return new class extends Migration
         DB::table('institutions')->orderBy('id')->chunkById(100, function ($institutions) {
             foreach ($institutions as $institution) {
                 $ulid = Str::lower(Str::ulid());
-                
+
                 DB::table('institutions')
                     ->where('id', $institution->id)
                     ->update(['id' => $ulid]);
@@ -313,7 +312,7 @@ return new class extends Migration
         DB::table('duties')->orderBy('id')->chunkById(100, function ($duties) {
             foreach ($duties as $duty) {
                 $ulid = Str::lower(Str::ulid());
-                
+
                 DB::table('duties')
                     ->where('id', $duty->id)
                     ->update(['id' => $ulid]);
@@ -328,7 +327,7 @@ return new class extends Migration
             $table->foreign('duty_id')->references('id')->on('duties');
         });
 
-        Schema::table('sharepoint_documents', function(Blueprint $table) {
+        Schema::table('sharepoint_documents', function (Blueprint $table) {
             $table->char('documentable_id', 26)->change();
         });
 

@@ -7,21 +7,17 @@ use App\Models\Matter as Matter;
 use App\Models\Meeting as Meeting;
 
 class MeetingService
-{  
+{
     /**
-     * 
      * This function should take in a mattersForm, which is created in
-     * NewMeetingButton.vue component. 
-     * 
+     * NewMeetingButton.vue component.
+     *
      * mattersForm is a bit of a magical array, which needs refactoring
      *
-     * @param  array $mattersForm
-     * @param  Meeting $meeting
-     * @param  Institution $institution
-     * @return void
+     * @param  Institution  $institution
      */
     public static function storeAndAttachMattersToMeeting(array $mattersForm, Meeting $meeting): void
-    { 
+    {
         $existingMatterIds = (array) $mattersForm['idArray'];
         $newMatterTitles = (array) $mattersForm['newTitleArray'];
 

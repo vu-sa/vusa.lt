@@ -23,7 +23,6 @@ class UpdateSharepointFolder implements ShouldQueue
     /**
      * Handle the event.
      *
-     * @param  \App\Events\FileableNameUpdated  $event
      * @return void
      */
     public function handle(FileableNameUpdated $event)
@@ -31,10 +30,10 @@ class UpdateSharepointFolder implements ShouldQueue
         $fileable = $event->fileable;
 
         // Check if the "name" or "title" property exists in the $fileable object
-        if (!is_null($fileable->start_time)) {
+        if (! is_null($fileable->start_time)) {
             $fileable->start_time = $fileable->getOriginal()['start_time'];
             $newName = Carbon::parse($fileable->getChanges()['start_time'])->format('Y-m-d H.i');
-        } else if (!is_null($fileable->name)) {
+        } elseif (! is_null($fileable->name)) {
             $fileable->name = $fileable->getOriginal()['name'];
             $newName = $fileable->getChanges()['name'];
         } else {
@@ -47,11 +46,11 @@ class UpdateSharepointFolder implements ShouldQueue
         $path = $sharepointService->pathForFileableDriveItem($fileable);
 
         $sharepointGraph = new \App\Services\SharepointGraphService();
-        
+
         try {
             $driveItem = $sharepointGraph->updateDriveItemByPath($path, [
                 // the drive item name property in Sharepoint is always "name"
-                'name' => $newName
+                'name' => $newName,
             ]);
         } catch (ClientException $e) {
         }

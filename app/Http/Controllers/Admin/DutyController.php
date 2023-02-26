@@ -2,23 +2,19 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\ResourceController;
 use App\Models\Duty;
 use App\Models\Institution;
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller as Controller;
-use App\Http\Controllers\ResourceController;
 use App\Models\Role;
 use App\Models\Type;
 use App\Models\User;
-use App\Services\ModelIndexer;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class DutyController extends ResourceController
 {
-
     /**
      * Display a listing of the resource.
      *
@@ -27,7 +23,7 @@ class DutyController extends ResourceController
     public function index(Request $request)
     {
         $this->authorize('viewAny', [Duty::class, $this->authorizer]);
-        
+
         $search = request()->input('text');
 
         $duties = $this->indexer->execute(Duty::class, $search, 'name', $this->authorizer, true);
@@ -45,9 +41,9 @@ class DutyController extends ResourceController
     public function create()
     {
         $this->authorize('create', [Duty::class, $this->authorizer]);
-        
+
         $institutions = $this->getInstitutionsForForm();
-        
+
         return Inertia::render('Admin/People/CreateDuty', [
             'dutyTypes' => Type::where('model_type', Duty::class)->get(),
             'institutions' => $institutions,
@@ -60,13 +56,12 @@ class DutyController extends ResourceController
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
         $this->authorize('create', [Duty::class, $this->authorizer]);
-        
+
         $request->validate([
             'name' => 'required',
             'institution_id' => 'required',
@@ -93,7 +88,6 @@ class DutyController extends ResourceController
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Duty  $duty
      * @return \Illuminate\Http\Response
      */
     public function show(Duty $duty)
@@ -108,13 +102,12 @@ class DutyController extends ResourceController
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Duty  $duty
      * @return \Illuminate\Http\Response
      */
     public function edit(Duty $duty)
     {
         $this->authorize('update', [Duty::class, $duty, $this->authorizer]);
-        
+
         $duty->load('institution', 'types', 'roles', 'users');
 
         return Inertia::render('Admin/People/EditDuty', [
@@ -130,8 +123,6 @@ class DutyController extends ResourceController
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Duty  $duty
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Duty $duty)
@@ -157,7 +148,6 @@ class DutyController extends ResourceController
             if (true) {
                 // check if user is super admin
                 if ($request->has('roles')) {
-
                     $roles = Role::find($request->roles);
 
                     // foreach check if super admin
@@ -166,7 +156,7 @@ class DutyController extends ResourceController
                             abort(403, 'Negalima priskirti šios rolės pareigybėms! Bandykite iš naujo');
                         }
                     }
-                    
+
                     $duty->syncRoles($roles);
                 } else {
                     $duty->syncRoles([]);
@@ -182,13 +172,12 @@ class DutyController extends ResourceController
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Duty  $duty
      * @return \Illuminate\Http\Response
      */
     public function destroy(Duty $duty)
     {
         $this->authorize('delete', [Duty::class, $duty, $this->authorizer]);
-        
+
         $duty->delete();
 
         return redirect()->route('duties.index')->with('info', 'Pareigybė sėkmingai ištrinta!');
@@ -196,7 +185,7 @@ class DutyController extends ResourceController
 
     private function getInstitutionsForForm(): Collection
     {
-        return Institution::select('id', 'name', 'alias', 'padalinys_id')->when(!request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
+        return Institution::select('id', 'name', 'alias', 'padalinys_id')->when(! request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
             $query->whereIn('padalinys_id', auth()->user()->padaliniai->pluck('id'));
         })->with('padalinys:id,shortname')->get();
     }

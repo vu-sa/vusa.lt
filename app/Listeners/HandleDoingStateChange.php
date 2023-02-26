@@ -12,11 +12,10 @@ use App\States\Doing\PendingChanges;
 use App\States\Doing\PendingCompletion;
 use App\States\Doing\PendingFinalApproval;
 use App\States\Doing\PendingPadalinysApproval;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
-use Spatie\ModelStates\Events\StateChanged;
 use Illuminate\Support\Str;
+use Spatie\ModelStates\Events\StateChanged;
 
 class HandleDoingStateChange
 {
@@ -37,7 +36,7 @@ class HandleDoingStateChange
             'image' => $user->profile_photo_path,
         ];
 
-        $routeName = Str::of(class_basename(get_class($doing)))->lcfirst()->plural() . '.show';
+        $routeName = Str::of(class_basename(get_class($doing)))->lcfirst()->plural().'.show';
 
         $object = [
             'modelClass' => class_basename(get_class($doing)),
@@ -49,7 +48,6 @@ class HandleDoingStateChange
 
         // To PendingPadalinysApproval
         if (in_array($event->initialState::class, [Draft::class, PendingChanges::class]) && $event->finalState::class === PendingPadalinysApproval::class) {
-            
             $text = "<p><strong>{$user->name}</strong> pateikė tvirtinimui: {$doing->title}</p>";
             Notification::send($doing->users, new StateChangeNotification($text, $object, $subject));
         }

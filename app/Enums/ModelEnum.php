@@ -7,6 +7,7 @@ use Spatie\Enum\Laravel\Enum;
 
 /**
  * @typescript
+ *
  * @method static self AGENDA_ITEM()
  * @method static self BANNER()
  * @method static self CALENDAR()
@@ -40,7 +41,7 @@ use Spatie\Enum\Laravel\Enum;
  * @method static self TYPE()
  * @method static self USER()
  */
-
-final class ModelEnum extends Enum {
+final class ModelEnum extends Enum
+{
     use hasCamelCaseLabels;
 }

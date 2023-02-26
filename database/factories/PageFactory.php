@@ -20,24 +20,24 @@ class PageFactory extends Factory
      *
      * @return array
      */
-    
     public $inc = 0;
 
-    public function incrementAndReturn() {
+    public function incrementAndReturn()
+    {
         global $inc;
 
         $inc = $inc + 1;
+
         return strval($inc);
     }
-    
+
     public function definition()
     {
-        
         return [
             'title' => $this->faker->sentence(),
-            'permalink' => 'page' . $this->incrementAndReturn(),
-            'category_id' => $this->faker->numberBetween(1,3),
-            'text' => '<p>' . $this->faker->paragraph(3) . '</p><p>' . $this->faker->paragraph(3) . '</p>',
+            'permalink' => 'page'.$this->incrementAndReturn(),
+            'category_id' => $this->faker->numberBetween(1, 3),
+            'text' => '<p>'.$this->faker->paragraph(3).'</p><p>'.$this->faker->paragraph(3).'</p>',
             'padalinys_id' => Padalinys::inRandomOrder()->select('id')->first()->id,
         ];
     }
