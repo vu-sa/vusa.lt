@@ -6,7 +6,6 @@ use App\Enums\ModelEnum;
 use App\Models\ChangelogItem;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
-use Illuminate\Auth\Access\Response;
 use Illuminate\Support\Str;
 
 class ChangelogItemPolicy extends ModelPolicy
@@ -17,7 +16,7 @@ class ChangelogItemPolicy extends ModelPolicy
     {
         $this->pluralModelName = Str::plural(ModelEnum::ROLE()->label);
     }
-    
+
     /**
      * Determine whether the user can view the model.
      */

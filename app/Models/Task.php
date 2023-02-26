@@ -25,7 +25,7 @@ class Task extends Model
     }
 
     public function padaliniai()
-    {   
+    {
         return $this->hasManyDeepFromRelations($this->users(), (new User)->padaliniai());
     }
 }

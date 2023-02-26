@@ -1,13 +1,12 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use App\Models\Doing;
 use App\Models\Duty;
-use App\Models\DutyInstitution;
 use App\Models\Type;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -18,11 +17,10 @@ return new class extends Migration
      */
     public function up()
     {
-        
         Schema::table('types', function (Blueprint $table) {
             $table->softDeletes();
         });
-        
+
         // migrate duties institutions types
         DB::table('duties_institutions_types')->get()->each(function ($type) {
             $new_type = Type::create([
@@ -38,7 +36,7 @@ return new class extends Migration
                 DB::table('typeables')->insert([
                     'type_id' => $new_type->id,
                     'typeable_id' => $dutyInstitution->id,
-                    'typeable_type' => 'App\Models\Institution'
+                    'typeable_type' => 'App\Models\Institution',
                 ]);
             }
         });
@@ -55,7 +53,7 @@ return new class extends Migration
                 DB::table('typeables')->insert([
                     'type_id' => $new_type->id,
                     'typeable_id' => $duty->id,
-                    'typeable_type' => 'App\Models\Duty'
+                    'typeable_type' => 'App\Models\Duty',
                 ]);
             }
         });

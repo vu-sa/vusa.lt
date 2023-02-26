@@ -23,7 +23,7 @@ class SharepointFileController extends ResourceController
     public function index()
     {
         $this->authorize('viewAny', [SharepointFile::class, $this->authorizer]);
-        
+
         $path = request()->get('path');
 
         $path = $path ?? 'General';
@@ -46,46 +46,45 @@ class SharepointFileController extends ResourceController
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
         $this->authorize('create', [SharepointFile::class, $this->authorizer]);
-        
+
         $validated = $request->validate([
             'file' => 'required',
             'fileable' => 'required',
         ]);
 
-        $fileable_class = 'App\\Models\\' . $validated['fileable']['type'];
+        $fileable_class = 'App\\Models\\'.$validated['fileable']['type'];
 
         // check if fileable class exists
-        if (!class_exists($fileable_class)) {
+        if (! class_exists($fileable_class)) {
             return back()->with('error', 'Failas negali būti priskirtas objektui.');
         }
 
         // check if fileable exists
         $fileable = $fileable_class::find($validated['fileable']['id']);
-        if (!$fileable) {
+        if (! $fileable) {
             return back()->with('error', 'Susijęs objektas neegzistuoja.');
         }
 
         // check if fileable is allowed to have files
-        if (!method_exists($fileable, 'files')) {
+        if (! method_exists($fileable, 'files')) {
             return back()->with('error', 'Susijęs objektas negali turėti failų.');
         }
 
         $fileToUpload = $request->file('file')['uploadValue']['file'];
 
         $sharepointFileService = new SharepointFileService();
-        $sharepointFileableService  = new SharepointFileableService();
+        $sharepointFileableService = new SharepointFileableService();
 
         $listItemProperties = [
             'Type' => $validated['file']['typeValue'],
             'Description0' => $validated['file']['description0Value'],
             'Keywords' => $validated['file']['keywordsValue'] ?? [],
-            'Keywords@odata.type' => "Collection(Edm.String)",
+            'Keywords@odata.type' => 'Collection(Edm.String)',
             'Date' => date('Y-m-d', intval($validated['file']['datetimeValue'] / 1000)),
         ];
 
@@ -99,7 +98,6 @@ class SharepointFileController extends ResourceController
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\SharepointFile  $sharepointFile
      * @return \Illuminate\Http\Response
      */
     public function show(SharepointFile $sharepointFile)
@@ -110,7 +108,6 @@ class SharepointFileController extends ResourceController
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\SharepointFile  $sharepointFile
      * @return \Illuminate\Http\Response
      */
     public function edit(SharepointFile $sharepointFile)
@@ -121,8 +118,6 @@ class SharepointFileController extends ResourceController
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\SharepointFile  $sharepointFile
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, SharepointFile $sharepointFile)
@@ -133,7 +128,6 @@ class SharepointFileController extends ResourceController
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\SharepointFile  $sharepointFile
      * @return \Illuminate\Http\Response
      */
     public function destroy(SharepointFile $sharepointFile)
@@ -179,26 +173,27 @@ class SharepointFileController extends ResourceController
         //     'fileable' => 'required',
         // ]);
 
-        $fileable_class = 'App\\Models\\' . $type;
+        $fileable_class = 'App\\Models\\'.$type;
 
         // check if fileable class exists
-        if (!class_exists($fileable_class)) {
+        if (! class_exists($fileable_class)) {
             return back()->with('info', 'Neteisinga užklausa. Praneškite administratoriui');
         }
 
         // check if fileable exists
         $fileable = $fileable_class::find($id);
 
-        if (!$fileable) {
+        if (! $fileable) {
             return back()->with('info', 'Neteisinga užklausa. Praneškite administratoriui');
         }
 
-        $types = $fileable->types;
+        $types = $fileable->types->map(function ($type) {
+            return $type->getParentsAndSelf();
+        })->flatten()->unique('id')->values();
 
         // types array to string
-        $types_string = $types->map(function ($type) {
-            return $type->id;
-        })->implode(',');
+        // TODO: maybe use 'pluck' instead of 'map'?
+        $types_string = $types->pluck('id')->implode(',');
 
         $sharepointService = new SharepointGraphService();
 
@@ -211,7 +206,7 @@ class SharepointFileController extends ResourceController
             return;
         }
 
-        $driveItems = Cache::remember('sharepoint_drive_items_' . $types_string, 3600, function () use ($sharepointService, $paths) {
+        $driveItems = Cache::remember('sharepoint_drive_items_'.$types_string, 3600, function () use ($sharepointService, $paths) {
             return $sharepointService->getDriveItemsChildrenByPaths($paths);
         });
 
@@ -230,7 +225,7 @@ class SharepointFileController extends ResourceController
     public function createPublicPermission(Request $request, string $driveItemId)
     {
         // $this->authorize('update', [SharepointFile::class, $this->authorizer]);
-        
+
         $sharepointService = new SharepointGraphService();
 
         $permission = $sharepointService->createPublicPermission($driveItemId);

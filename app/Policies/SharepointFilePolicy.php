@@ -22,8 +22,6 @@ class SharepointFilePolicy extends ModelPolicy
     /**
      * Determine whether the user can view the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\SharepointFile  $sharepointFile
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function view(User $user, SharepointFile $sharepointFile, ModelAuthorizer $modelAuthorizer)
@@ -40,8 +38,6 @@ class SharepointFilePolicy extends ModelPolicy
     /**
      * Determine whether the user can update the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\SharepointFile  $sharepointFile
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function update(User $user, SharepointFile $sharepointFile, ModelAuthorizer $modelAuthorizer)
@@ -58,8 +54,6 @@ class SharepointFilePolicy extends ModelPolicy
     /**
      * Determine whether the user can delete the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\SharepointFile  $sharepointFile
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function delete(User $user, SharepointFile $sharepointFile, ModelAuthorizer $modelAuthorizer)
@@ -76,8 +70,6 @@ class SharepointFilePolicy extends ModelPolicy
     /**
      * Determine whether the user can restore the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\SharepointFile  $sharepointFile
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function restore(User $user, SharepointFile $sharepointFile)
@@ -88,8 +80,6 @@ class SharepointFilePolicy extends ModelPolicy
     /**
      * Determine whether the user can permanently delete the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\SharepointFile  $sharepointFile
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function forceDelete(User $user, SharepointFile $sharepointFile)

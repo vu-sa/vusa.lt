@@ -3,14 +3,12 @@
 namespace App\Policies;
 
 use App\Enums\CRUDEnum;
-use App\Models\Doing;
-use App\Models\Matter as Matter;
-use App\Models\User;
-
-use Illuminate\Support\Str;
 use App\Enums\ModelEnum;
+use App\Models\Doing;
+use App\Models\User;
 use App\Services\ModelAuthorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Support\Str;
 
 class DoingPolicy extends ModelPolicy
 {
@@ -24,14 +22,12 @@ class DoingPolicy extends ModelPolicy
     /**
      * Determine whether the user can view the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Doing  $doing
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function view(User $user, Doing $doing, ModelAuthorizer $authorizer)
     {
         $this->authorizer = $authorizer;
-        
+
         if ($this->commonChecker($user, $doing, CRUDEnum::READ()->label, $this->pluralModelName)) {
             return true;
         }
@@ -42,14 +38,12 @@ class DoingPolicy extends ModelPolicy
     /**
      * Determine whether the user can update the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Doing  $doing
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function update(User $user, Doing $doing, ModelAuthorizer $authorizer)
     {
         $this->authorizer = $authorizer;
-        
+
         if ($this->commonChecker($user, $doing, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
             return true;
         }
@@ -60,14 +54,12 @@ class DoingPolicy extends ModelPolicy
     /**
      * Determine whether the user can delete the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Doing  $doing
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function delete(User $user, Doing $doing, ModelAuthorizer $authorizer)
     {
         $this->authorizer = $authorizer;
-        
+
         if ($this->commonChecker($user, $doing, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
             return true;
         }
@@ -78,8 +70,6 @@ class DoingPolicy extends ModelPolicy
     /**
      * Determine whether the user can restore the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Doing  $doing
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function restore(User $user, Doing $doing)
@@ -90,8 +80,6 @@ class DoingPolicy extends ModelPolicy
     /**
      * Determine whether the user can permanently delete the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Doing  $doing
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function forceDelete(User $user, Doing $doing)

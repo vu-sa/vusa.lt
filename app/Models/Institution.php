@@ -8,7 +8,6 @@ use App\Models\Traits\HasComments;
 use App\Models\Traits\HasContentRelationships;
 use App\Models\Traits\HasSharepointFiles;
 use App\Services\RelationshipService;
-use App\Services\ResourceServices\SharepointFileService;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,7 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
-use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
+use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Institution extends Model
 {
@@ -45,7 +44,7 @@ class Institution extends Model
         return $this->morphToMany(Type::class, 'typeable');
     }
 
-    public function padalinys() 
+    public function padalinys()
     {
         return $this->belongsTo(Padalinys::class, 'padalinys_id');
     }
@@ -65,14 +64,14 @@ class Institution extends Model
         return $this->belongsToMany(Meeting::class);
     }
 
-    public function lastMeeting() : ?Meeting
+    public function lastMeeting(): ?Meeting
     {
         // get earliest in the future, or if none, latest in past meeting
-        return $this->meetings()->where('start_time', '>=', now())->orderBy('start_time', 'asc')->first() 
+        return $this->meetings()->where('start_time', '>=', now())->orderBy('start_time', 'asc')->first()
             ?? $this->meetings()->where('start_time', '<', now())->orderBy('start_time', 'desc')->first();
     }
 
-    public function users() 
+    public function users()
     {
         return $this->hasManyDeepFromRelations($this->duties(), (new Duty)->users());
     }

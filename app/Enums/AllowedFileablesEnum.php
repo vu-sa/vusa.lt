@@ -7,6 +7,7 @@ use Spatie\Enum\Laravel\Enum;
 
 /**
  * @typescript
+ *
  * @method static self DOING()
  * @method static self DUTY()
  * @method static self GOAL()
@@ -15,6 +16,7 @@ use Spatie\Enum\Laravel\Enum;
  * @method static self TYPE()
  * @method static self USER()
  */
-final class AllowedFileablesEnum extends Enum {
+final class AllowedFileablesEnum extends Enum
+{
     use hasCamelCaseLabels;
 }

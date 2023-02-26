@@ -6,7 +6,6 @@ use App\Models\Pivots\Doable;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTasks;
-use App\Services\ResourceServices\SharepointFileService;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

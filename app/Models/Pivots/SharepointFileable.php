@@ -3,14 +3,13 @@
 namespace App\Models\Pivots;
 
 use App\Models\Institution;
-use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class SharepointFileable extends MorphPivot
 {
     use HasRelationships;
-    
+
     protected $table = 'sharepoint_fileables';
 
     protected $guarded = [];
@@ -20,7 +19,7 @@ class SharepointFileable extends MorphPivot
     {
         return $this->morphTo();
     }
-    
+
     public function meeting()
     {
         return $this->belongsTo(Meeting::class);

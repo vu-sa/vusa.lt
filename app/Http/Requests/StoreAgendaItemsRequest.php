@@ -12,7 +12,7 @@ class StoreAgendaItemsRequest extends ResourceRequest
      * @return bool
      */
     public function authorize()
-    {     
+    {
         return $this->user()->can('create', [AgendaItem::class, $this->authorizer]);
     }
 
@@ -26,7 +26,7 @@ class StoreAgendaItemsRequest extends ResourceRequest
         return [
             'moreAgendaItemsUndefined' => 'nullable|boolean',
             'agendaItemTitles' => 'nullable|array',
-            'meeting_id' => 'required|ulid|exists:meetings,id'
+            'meeting_id' => 'required|ulid|exists:meetings,id',
         ];
     }
 }

@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Registration;
+use App\Exports\RegistrationExport;
 use App\Http\Controllers\Controller as Controller;
+use App\Models\Registration;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\RegistrationExport;
 
 class RegistrationController extends Controller
 {
@@ -18,6 +18,7 @@ class RegistrationController extends Controller
     public function index()
     {
         $this->authorize('viewAny', [Institution::class, $this->authorizer]);
+
         return Excel::download(new RegistrationExport, 'registration.xlsx');
     }
 
@@ -34,7 +35,6 @@ class RegistrationController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
@@ -45,7 +45,6 @@ class RegistrationController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Registration  $registration
      * @return \Illuminate\Http\Response
      */
     public function show(Registration $registration)
@@ -56,7 +55,6 @@ class RegistrationController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Registration  $registration
      * @return \Illuminate\Http\Response
      */
     public function edit(Registration $registration)
@@ -67,8 +65,6 @@ class RegistrationController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Registration  $registration
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Registration $registration)
@@ -79,7 +75,6 @@ class RegistrationController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Registration  $registration
      * @return \Illuminate\Http\Response
      */
     public function destroy(Registration $registration)

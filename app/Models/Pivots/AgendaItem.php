@@ -5,7 +5,6 @@ namespace App\Models\Pivots;
 use App\Models\Institution;
 use App\Models\Matter;
 use App\Models\Meeting;
-use App\Models\Padalinys;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Spatie\Activitylog\LogOptions;
@@ -21,7 +20,7 @@ class AgendaItem extends Pivot
     protected $touches = ['meeting'];
 
     public $incrementing = true;
-    
+
     protected $guarded = [];
 
     public function getActivitylogOptions(): LogOptions
@@ -38,6 +37,7 @@ class AgendaItem extends Pivot
     {
         return $this->belongsTo(Meeting::class);
     }
+
     // TODO: it's from the meeting side, although agendaItems can be accessed from matters also,
     // but it's less logical that way
     public function institutions()

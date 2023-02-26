@@ -2,15 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\ResourceController;
 use App\Models\SaziningaiExamObserver;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Http\Controllers\Controller as Controller;
-use App\Http\Controllers\ResourceController;
 
 class SaziningaiExamObserversController extends ResourceController
 {
-
     /**
      * Display a listing of the resource.
      *
@@ -39,7 +37,6 @@ class SaziningaiExamObserversController extends ResourceController
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
@@ -50,7 +47,6 @@ class SaziningaiExamObserversController extends ResourceController
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\SaziningaiExamObserver  $saziningaiExamObserver
      * @return \Illuminate\Http\Response
      */
     public function show(SaziningaiExamObserver $saziningaiExamObserver)
@@ -61,7 +57,6 @@ class SaziningaiExamObserversController extends ResourceController
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\SaziningaiExamObserver  $saziningaiExamObserver
      * @return \Illuminate\Http\Response
      */
     public function edit(SaziningaiExamObserver $saziningaiExamObserver)
@@ -72,8 +67,6 @@ class SaziningaiExamObserversController extends ResourceController
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\SaziningaiExamObserver  $saziningaiExamObserver
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, SaziningaiExamObserver $saziningaiExamObserver)
@@ -84,7 +77,6 @@ class SaziningaiExamObserversController extends ResourceController
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\SaziningaiExamObserver  $saziningaiExamObserver
      * @return \Illuminate\Http\Response
      */
     public function destroy(SaziningaiExamObserver $saziningaiExamObserver)

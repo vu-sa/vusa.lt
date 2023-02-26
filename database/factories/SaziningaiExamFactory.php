@@ -31,7 +31,7 @@ class SaziningaiExamFactory extends Factory
             'exam_type' => Arr::random(['egzaminas', 'koliokviumas']),
             'padalinys_id' => Padalinys::inRandomOrder()->select('id')->first()->id,
             'place' => $this->faker->city(),
-            'duration' => $this->faker->numberBetween(30, 90) . 'min',
+            'duration' => $this->faker->numberBetween(30, 90).'min',
             'subject_name' => $this->faker->word(),
             'exam_holders' => rand(30, 150),
             'students_need' => rand(1, 3),

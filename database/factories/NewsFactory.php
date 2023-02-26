@@ -22,19 +22,20 @@ class NewsFactory extends Factory
      *
      * @return array
      */
-    
     public $inc = 0;
 
-    private function incrementAndReturn() {
+    private function incrementAndReturn()
+    {
         global $inc;
 
         $inc = $inc + 1;
+
         return strval($inc);
     }
-    
+
     public function definition()
     {
-        $editor = rand(1,4);
+        $editor = rand(1, 4);
         switch ($editor) {
             case 1:
                 $publisher = 1;
@@ -49,13 +50,13 @@ class NewsFactory extends Factory
 
         return [
             'title' => $this->faker->sentence(),
-            'permalink' => 'news' . $this->incrementAndReturn(),
+            'permalink' => 'news'.$this->incrementAndReturn(),
             'category_id' => Category::inRandomOrder()->select('id')->first()->id,
             'short' => $this->faker->paragraph(1),
-            'image' => '/images/placeholders/foto' . rand(1,5) . '.jpg',
-            'important' => rand(0,1),
+            'image' => '/images/placeholders/foto'.rand(1, 5).'.jpg',
+            'important' => rand(0, 1),
             'publish_time' => $this->faker->dateTimeBetween('-10 weeks'),
-            'text' => '<p>' . $this->faker->paragraph(3) . '</p><p>' . $this->faker->paragraph(3) . '</p>',
+            'text' => '<p>'.$this->faker->paragraph(3).'</p><p>'.$this->faker->paragraph(3).'</p>',
             'padalinys_id' => Padalinys::inRandomOrder()->select('id')->first()->id,
             'lang' => Arr::random(['lt', 'en']),
         ];

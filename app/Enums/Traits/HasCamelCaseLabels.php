@@ -6,7 +6,7 @@ use Closure;
 
 trait HasCamelCaseLabels
 {
-    // 
+    //
     protected static function labels(): Closure
     {
         return function (string $name) {

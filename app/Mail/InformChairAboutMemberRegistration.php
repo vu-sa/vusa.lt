@@ -16,6 +16,7 @@ class InformChairAboutMemberRegistration extends Mailable // implements ShouldQu
      * @var \App\Models\Saziningai
      */
     public $registration;
+
     public $registerLocation;
 
     /**
@@ -36,6 +37,6 @@ class InformChairAboutMemberRegistration extends Mailable // implements ShouldQu
      */
     public function build()
     {
-        return $this->subject('Informacija apie užregistravusį žmogų (' . $this->registration['name'] . ')')->markdown('emails.memberRegistration.inform');
+        return $this->subject('Informacija apie užregistravusį žmogų ('.$this->registration['name'].')')->markdown('emails.memberRegistration.inform');
     }
 }

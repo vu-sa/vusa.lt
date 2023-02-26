@@ -13,6 +13,7 @@ class TaskReminderNotification extends Notification implements ShouldQueue
     use Queueable;
 
     protected $task;
+
     protected $daysLeft;
 
     /**
@@ -65,7 +66,7 @@ class TaskReminderNotification extends Notification implements ShouldQueue
                 'modelClass' => 'Task',
                 'name' => $this->task->name,
                 'url' => route('userTasks'),
-            ]
+            ],
         ];
     }
 }

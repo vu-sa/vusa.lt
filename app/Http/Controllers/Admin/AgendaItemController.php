@@ -3,11 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetInstitutionManagers;
-use App\Models\Pivots\AgendaItem;
 use App\Http\Controllers\ResourceController;
 use App\Http\Requests\StoreAgendaItemsRequest;
 use App\Models\Meeting;
-use App\Services\TaskCreator;
+use App\Models\Pivots\AgendaItem;
 use App\Services\TaskService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -52,9 +51,9 @@ class AgendaItemController extends ResourceController
 
             if (isset($request->safe()->moreAgendaItemsUndefined)) {
                 $meeting = Meeting::find($request->safe()->meeting_id);
-                
+
                 $institution = $meeting->institutions->first();
-                
+
                 $institutionManagers = GetInstitutionManagers::execute($institution);
                 // get institution users and merge with institution managers
                 $institutionUsers = $institution->users;
@@ -98,7 +97,6 @@ class AgendaItemController extends ResourceController
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  \App\Models\AgendaItem  $agendaItem
      * @return \Illuminate\Http\Response
      */

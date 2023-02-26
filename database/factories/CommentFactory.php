@@ -19,7 +19,7 @@ class CommentFactory extends Factory
     public function definition()
     {
         $commentable = $this->commentable();
-        
+
         return [
             'comment' => $this->faker->paragraph(),
             'user_id' => User::factory(),

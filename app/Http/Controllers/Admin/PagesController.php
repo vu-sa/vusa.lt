@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Page;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
 use App\Http\Controllers\ResourceController;
 use App\Models\Padalinys;
+use App\Models\Page;
 use App\Services\ModelIndexer;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class PagesController extends ResourceController
 {
-
     /**
      * Display a listing of the resource.
      *
@@ -39,20 +38,19 @@ class PagesController extends ResourceController
     public function create()
     {
         $this->authorize('create', [Page::class, $this->authorizer]);
-        
+
         return Inertia::render('Admin/Content/CreatePage');
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
         $this->authorize('create', [Page::class, $this->authorizer]);
-        
+
         $request->validate([
             'title' => 'required|string|max:255',
             'text' => 'required|string',
@@ -75,7 +73,7 @@ class PagesController extends ResourceController
             'lang' => $request->lang,
             'text' => $request->text,
             'other_lang_id' => $request->other_lang_id,
-            'padalinys_id' => $padalinys_id
+            'padalinys_id' => $padalinys_id,
         ]);
 
         return redirect()->route('pages.index')->with('success', 'Puslapis sėkmingai sukurtas!');
@@ -84,7 +82,6 @@ class PagesController extends ResourceController
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Page  $page
      * @return \Illuminate\Http\Response
      */
     public function show(Page $page)
@@ -95,15 +92,14 @@ class PagesController extends ResourceController
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Page  $page
      * @return \Illuminate\Http\Response
      */
     public function edit(Page $page)
     {
         $this->authorize('update', [Page::class, $page, $this->authorizer]);
-        
-        $other_lang_pages = Page::with('padalinys:id,shortname')->when(!request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($page) {
-            $query->where('padalinys_id', $page->padalinys_id);  
+
+        $other_lang_pages = Page::with('padalinys:id,shortname')->when(! request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($page) {
+            $query->where('padalinys_id', $page->padalinys_id);
         })->where('lang', '!=', $page->lang)->select('id', 'title', 'padalinys_id')->get();
 
         return Inertia::render('Admin/Content/EditPage', [
@@ -126,14 +122,12 @@ class PagesController extends ResourceController
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Page  $page
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Page $page)
     {
         $this->authorize('update', [Page::class, $page, $this->authorizer]);
-        
+
         $other_lang_page = Page::find($page->other_lang_id);
 
         $page->update($request->only('title', 'text', 'lang', 'other_lang_id'));
@@ -144,7 +138,7 @@ class PagesController extends ResourceController
             $other_lang_page = Page::find($request->other_lang_id);
             $other_lang_page->other_lang_id = $page->id;
             $other_lang_page->save();
-        } else if (is_null($request->other_lang_id) && !is_null($other_lang_page)) {
+        } elseif (is_null($request->other_lang_id) && ! is_null($other_lang_page)) {
             $other_lang_page->other_lang_id = null;
             $other_lang_page->save();
         }
@@ -155,20 +149,18 @@ class PagesController extends ResourceController
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Page $page
      * @return \Illuminate\Http\Response
      */
     public function destroy(Page $page)
     {
         $this->authorize('delete', [Page::class, $page, $this->authorizer]);
-        
+
         $page->delete();
 
         return redirect()->route('pages.index')->with('info', 'Puslapis ištrintas');
     }
 
     public function searchForPage(Request $request)
-
     {
         $data = $request->collect()['data'];
 

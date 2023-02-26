@@ -13,6 +13,7 @@ class MeetingSoonNotification extends Notification implements ShouldQueue
     use Queueable;
 
     protected $meeting;
+
     protected $meetingName;
 
     /**
@@ -60,24 +61,24 @@ class MeetingSoonNotification extends Notification implements ShouldQueue
     public function toArray($notifiable)
     {
         return [
-            'text' => $this->meetingName . ' susitikimas prasidės už 2 dienų.',
+            'text' => $this->meetingName.' susitikimas prasidės už 2 dienų.',
             'object' => [
                 'modelClass' => 'Meeting',
                 'name' => $this->meeting->name,
                 'url' => route('meetings.show', $this->meeting->id),
-            ]
+            ],
         ];
     }
 
     public function toBroadcast($notifiable)
     {
         return new BroadcastMessage([
-            'text' => $this->meetingName . 'susitikimas prasidės už 2 dienų.',
+            'text' => $this->meetingName.'susitikimas prasidės už 2 dienų.',
             'object' => [
                 'modelClass' => 'Meeting',
                 'name' => $this->meeting->name,
                 'url' => route('meetings.show', $this->meeting->id),
-            ]
+            ],
         ]);
     }
 }

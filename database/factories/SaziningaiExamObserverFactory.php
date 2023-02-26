@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use Illuminate\Support\Facades\DB;
 use App\Models\SaziningaiExamObserver;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\DB;
 
 class SaziningaiExamObserverFactory extends Factory
 {

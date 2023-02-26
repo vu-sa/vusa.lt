@@ -9,29 +9,30 @@ use Inertia\Inertia;
 class PublicController extends Controller
 {
     protected $alias;
+
     protected $padalinys;
-    
+
     public function __construct()
     {
         // get subdomain if exists
-		$host = Request::server('HTTP_HOST');
+        $host = Request::server('HTTP_HOST');
 
-		if ($host !== 'localhost') {
-			$subdomain = explode('.', $host)[0];
-			$this->alias = in_array($subdomain, ["naujas", "www", "static"]) ? "vusa" : $subdomain;
-		} else {
-			$this->alias = "vusa";
-		}
+        if ($host !== 'localhost') {
+            $subdomain = explode('.', $host)[0];
+            $this->alias = in_array($subdomain, ['naujas', 'www', 'static']) ? 'vusa' : $subdomain;
+        } else {
+            $this->alias = 'vusa';
+        }
 
-		// TODO: ???
+        // TODO: ???
 
-		$requestPadalinys = request()->padalinys;
+        $requestPadalinys = request()->padalinys;
 
-		if ($requestPadalinys != null) {
-			$this->alias = in_array($requestPadalinys, ["Padaliniai", "naujas"]) ? "" : $this->alias;
-		}
+        if ($requestPadalinys != null) {
+            $this->alias = in_array($requestPadalinys, ['Padaliniai', 'naujas']) ? '' : $this->alias;
+        }
 
-		Inertia::share('alias', $this->alias);
+        Inertia::share('alias', $this->alias);
 
         // get padalinys
         $this->padalinys = Padalinys::where('alias', $this->alias)->first();

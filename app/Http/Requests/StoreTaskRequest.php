@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Models\Task;
-use Illuminate\Foundation\Http\FormRequest;
 
 class StoreTaskRequest extends ResourceRequest
 {
@@ -18,7 +17,7 @@ class StoreTaskRequest extends ResourceRequest
     }
 
     protected function prepareForValidation()
-    {        
+    {
         $this->merge([
             'taskable_id' => $this->input('taskable_id') ?? auth()->id(),
             'taskable_type' => $this->input('taskable_type') ?? 'App\\Models\\User',

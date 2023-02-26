@@ -29,33 +29,16 @@
         </h1>
         <!-- eslint-disable-next-line vue/no-v-html -->
         <div class="prose dark:prose-invert" v-html="text" />
-        <NAnchor
-          v-if="anchorLinks"
-          class="sticky top-48 hidden h-fit lg:block"
-          ignore-gap
-          :bound="120"
-        >
-          <NAnchorLink
-            v-for="link in anchorLinks"
-            :key="link.href"
-            :title="link.title"
-            :href="link.href"
-          ></NAnchorLink>
-          <!-- <NAnchorLink
-            title="Atsiskaitymai"
-            href="#atsiskaitymai"
-          ></NAnchorLink>
-          <NAnchorLink
-            title="Pagrindinis ir pratęstas egzaminų laikymo laikotarpis"
-            href="#laikotarpiai"
-          ></NAnchorLink>
-          <NAnchorLink
-            title="Skolos, akademinės skolos ir jų likvidavimas"
-            href="#skolos"
-          ></NAnchorLink>
-          <NAnchorLink title="Apeliacijos"></NAnchorLink>
-          <NAnchorLink title="Ginčai"></NAnchorLink> -->
-        </NAnchor>
+        <aside v-if="anchorLinks" class="sticky top-48 hidden h-fit lg:block">
+          <NAnchor ignore-gap :bound="120">
+            <NAnchorLink
+              v-for="link in anchorLinks"
+              :key="link.href"
+              :title="link.title"
+              :href="link.href"
+            ></NAnchorLink>
+          </NAnchor>
+        </aside>
       </article>
     </section>
   </FadeTransition>

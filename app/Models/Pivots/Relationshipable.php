@@ -17,13 +17,14 @@ class Relationshipable extends MorphPivot
     }
 
     // Ryšio gavėjas
-    public function related_model() {
+    public function related_model()
+    {
         return $this->morphTo('related_model', 'relationshipable_type');
     }
 
     // Ryšys
-    public function relationship() {
+    public function relationship()
+    {
         return $this->belongsTo(Relationship::class);
     }
-
 }

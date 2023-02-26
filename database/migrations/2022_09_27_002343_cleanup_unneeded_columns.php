@@ -34,7 +34,6 @@ return new class extends Migration
         // remove personal_access_tokens table
         Schema::dropIfExists('personal_access_tokens');
 
-
         // remove table page_views
         Schema::dropIfExists('page_views');
 

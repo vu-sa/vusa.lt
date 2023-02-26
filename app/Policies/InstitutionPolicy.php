@@ -2,12 +2,12 @@
 
 namespace App\Policies;
 
+use App\Enums\ModelEnum;
 use App\Models\Institution;
 use App\Models\User;
-use Illuminate\Support\Str;
-use App\Enums\ModelEnum;
-use Illuminate\Auth\Access\HandlesAuthorization;
 use App\Services\ModelAuthorizer as Authorizer;
+use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Support\Str;
 
 class InstitutionPolicy extends ModelPolicy
 {
@@ -21,8 +21,6 @@ class InstitutionPolicy extends ModelPolicy
     /**
      * Determine whether the user can view the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Institution  $institution
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function view(User $user, Institution $institution, Authorizer $authorizer)
@@ -39,14 +37,12 @@ class InstitutionPolicy extends ModelPolicy
     /**
      * Determine whether the user can update the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Institution  $institution
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function update(User $user, Institution $institution, Authorizer $authorizer)
     {
         $this->authorizer = $authorizer;
-        
+
         if ($this->commonChecker($user, $institution, 'update', 'institution', false)) {
             return true;
         }
@@ -57,8 +53,6 @@ class InstitutionPolicy extends ModelPolicy
     /**
      * Determine whether the user can delete the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Institution  $institution
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function delete(User $user, Institution $institution, Authorizer $authorizer)
@@ -74,8 +68,6 @@ class InstitutionPolicy extends ModelPolicy
     /**
      * Determine whether the user can restore the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Institution  $institution
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function restore(User $user, Institution $institution)
@@ -86,8 +78,6 @@ class InstitutionPolicy extends ModelPolicy
     /**
      * Determine whether the user can permanently delete the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Institution  $institution
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function forceDelete(User $user, Institution $institution)

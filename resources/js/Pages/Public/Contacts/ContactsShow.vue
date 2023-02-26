@@ -64,6 +64,7 @@
           v-for="contact in contacts"
           :key="contact.id"
           :contact="contact"
+          :duties="contact.duties"
         >
         </ContactCard>
         <!-- </template> -->
@@ -78,7 +79,7 @@ import { computed, ref } from "vue";
 
 import { Info24Regular } from "@vicons/fluent";
 import { NBadge, NButton, NIcon, NPopover } from "naive-ui";
-import ContactCard from "@/Components/Public/ContactWithPhotoForDuties.vue";
+import ContactCard from "@/Components/Public/ContactWithPhoto.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 const props = defineProps<{

@@ -11,22 +11,22 @@ class Cancelled extends DoingState
         return 'red';
     }
 
-    public function handleProgress (): void
+    public function handleProgress(): void
     {
         // do nothing
     }
 
-    public function handleApprove (): void
+    public function handleApprove(): void
     {
         // do nothing
     }
 
-    public function handleReject (): void
+    public function handleReject(): void
     {
         // do nothing
     }
 
-    public function handleCancel (): void
+    public function handleCancel(): void
     {
         // do nothing
     }

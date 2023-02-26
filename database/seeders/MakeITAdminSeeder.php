@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Duty;
 use App\Models\User;
-use Faker\Factory;
 use Illuminate\Database\Seeder;
 
 class MakeITAdminSeeder extends Seeder

@@ -2,7 +2,6 @@
 
 namespace App\Mail;
 
-use App\Models\SaziningaiExam;
 use App\Models\SaziningaiExamFlow;
 use App\Models\SaziningaiExamObserver;
 use Illuminate\Bus\Queueable;
@@ -14,6 +13,7 @@ class InformSaziningaiAboutObserverRegistration extends Mailable
     use Queueable, SerializesModels;
 
     public $saziningai_people;
+
     public $saziningaiFlow;
 
     /**
@@ -34,6 +34,6 @@ class InformSaziningaiAboutObserverRegistration extends Mailable
      */
     public function build()
     {
-        return $this->subject('Stebėtojas užsiregistravo į atsiskaitymą (ID: ' . $this->saziningaiFlow->exam->id . ')')->markdown('emails.saziningai_people.inform');
+        return $this->subject('Stebėtojas užsiregistravo į atsiskaitymą (ID: '.$this->saziningaiFlow->exam->id.')')->markdown('emails.saziningai_people.inform');
     }
 }

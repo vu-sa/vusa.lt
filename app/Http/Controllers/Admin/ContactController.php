@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Contact;
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\ResourceController;
+use App\Models\Contact;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -35,7 +34,7 @@ class ContactController extends ResourceController
     public function create()
     {
         $this->authorize('create', [Contact::class, $this->authorizer]);
-        
+
         // TODO: implement duties later
         return Inertia::render('Admin/People/CreateContact', [
             // 'duties' => $this->getDutiesForForm()
@@ -45,7 +44,6 @@ class ContactController extends ResourceController
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
@@ -56,7 +54,7 @@ class ContactController extends ResourceController
             'name' => 'required|string|max:255',
             'email' => 'nullable|string|email|max:255|unique:contacts|unique:users',
             'phone' => 'nullable|string|max:255',
-            'extra_attributes' => 'array'
+            'extra_attributes' => 'array',
         ]);
 
         $contact = Contact::create($validated);
@@ -67,7 +65,6 @@ class ContactController extends ResourceController
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Contact  $contact
      * @return \Illuminate\Http\Response
      */
     public function show(Contact $contact)
@@ -82,13 +79,12 @@ class ContactController extends ResourceController
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Contact  $contact
      * @return \Illuminate\Http\Response
      */
     public function edit(Contact $contact)
     {
         $this->authorize('update', [Contact::class, $contact, $this->authorizer]);
-        
+
         return Inertia::render('Admin/People/EditContact', [
             'contact' => $contact,
         ]);
@@ -97,8 +93,6 @@ class ContactController extends ResourceController
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Contact  $contact
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Contact $contact)
@@ -109,7 +103,7 @@ class ContactController extends ResourceController
             'name' => 'required|string|max:255',
             'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('contacts')->ignore($contact->id)],
             'phone' => 'nullable|string|max:255',
-            'extra_attributes' => 'array'
+            'extra_attributes' => 'array',
         ]);
 
         $contact->update($validated);
@@ -120,7 +114,6 @@ class ContactController extends ResourceController
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Contact  $contact
      * @return \Illuminate\Http\Response
      */
     public function destroy(Contact $contact)

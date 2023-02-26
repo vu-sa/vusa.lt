@@ -49,7 +49,7 @@ class Kernel extends HttpKernel
 
         'main' => [
             \App\Http\Middleware\GetNavigationForPublic::class,
-        ]
+        ],
     ];
 
     /**

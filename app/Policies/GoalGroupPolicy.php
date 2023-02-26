@@ -3,13 +3,12 @@
 namespace App\Policies;
 
 use App\Enums\CRUDEnum;
+use App\Enums\ModelEnum;
 use App\Models\GoalGroup;
 use App\Models\User;
-
-use Illuminate\Support\Str;
-use App\Enums\ModelEnum;
 use App\Services\ModelAuthorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Support\Str;
 
 class GoalGroupPolicy extends ModelPolicy
 {
@@ -20,19 +19,15 @@ class GoalGroupPolicy extends ModelPolicy
         $this->pluralModelName = Str::plural(ModelEnum::GOAL_GROUP()->label);
     }
 
-    
-
     /**
      * Determine whether the user can view the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\GoalGroup  $goalGroup
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function view(User $user, GoalGroup $goalGroup, ModelAuthorizer $authorizer)
     {
         $this->authorizer = $authorizer;
-        
+
         if ($this->commonChecker($user, $goalGroup, CRUDEnum::READ()->label, $this->pluralModelName)) {
             return true;
         }
@@ -43,14 +38,12 @@ class GoalGroupPolicy extends ModelPolicy
     /**
      * Determine whether the user can update the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\GoalGroup  $goalGroup
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function update(User $user, GoalGroup $goalGroup, ModelAuthorizer $authorizer)
     {
         $this->authorizer = $authorizer;
-        
+
         if ($this->commonChecker($user, $goalGroup, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
             return true;
         }
@@ -61,26 +54,22 @@ class GoalGroupPolicy extends ModelPolicy
     /**
      * Determine whether the user can delete the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\GoalGroup  $goalGroup
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function delete(User $user, GoalGroup $goalGroup, ModelAuthorizer $authorizer)
     {
         $this->authorizer = $authorizer;
-        
+
         if ($this->commonChecker($user, $goalGroup, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
             return true;
         }
 
         return false;
     }
-    
+
     /**
      * Determine whether the user can restore the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\GoalGroup  $goalGroup
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function restore(User $user, GoalGroup $goalGroup)
@@ -91,8 +80,6 @@ class GoalGroupPolicy extends ModelPolicy
     /**
      * Determine whether the user can permanently delete the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\GoalGroup  $goalGroup
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function forceDelete(User $user, GoalGroup $goalGroup)

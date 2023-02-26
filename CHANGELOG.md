@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.4.8 (2023-02-26)
+
+* Šoninė juosta turinio puslapiuose
+* *Recursive* tipai
+* Laravel Pint *workflow*
+* Funkcionalesnis studentų atstovų puslapis
+* Maži kontaktų stilistiniai pataisymai
+
 ## v0.4.7 (2023-02-20)
 
 * Galima redaguoti posėdžių laiką
@@ -120,8 +128,8 @@
   * Pridėtas VU SA logotipas anglų kalba
 * 🐛 Geriau matoma dabartinė data kalendoriuje
 * 🌟 Pakeistas kitos kalbos mygtuko rodymas (pridėta rodyklė, intuityviau rodoma kalba, labiau atskirta nuo kitų elementų)
-* 🌟 Kitoks puslapio _scroll_ efektas
-* 🐛 Administravime _avatar_ nuotrauka rodoma geriau
+* 🌟 Kitoks puslapio *scroll* efektas
+* 🐛 Administravime *avatar* nuotrauka rodoma geriau
 
 ## v0.3.1 (2022-08-28)
 
@@ -131,7 +139,7 @@
   * Rodo visus įvykius, patalpintus sistemoje
   * Pasiekiamas tik iš pagrindinio puslapio (kolkas)
   * Galima išsaugoti kalendoriaus vieną įvykį Google kalendoriuje (tiek iš kalendoriaus, tiek iš renginio puslapio)
-  * Galima sinchronizuoti renginius naudojant nuorodą. Sinchronizuoti galima visus įvykius arba tik tuos, kurie pažymėti, kad yra _accessible_ lietuviškai nekalbantiems studentams. Instrukcijos - pagrindiniame puslapyje.
+  * Galima sinchronizuoti renginius naudojant nuorodą. Sinchronizuoti galima visus įvykius arba tik tuos, kurie pažymėti, kad yra *accessible* lietuviškai nekalbantiems studentams. Instrukcijos - pagrindiniame puslapyje.
 * 🪄 Pagrindinio puslapio elementų pertvarka
 * 🐛 Perėjus iš naujienos į turinio puslapį, anksčiau nebuvo rodoma galimybė pakeisti kalbą
 
@@ -186,7 +194,7 @@ Didžiausias atnaujinimas po vusa.lt atnaujinimo. Daugiausiai dėmesio skirta pl
 * 🌟 Šiek tiek pakeistas breadcrumbs stilius
 * 🛡 Visi masiniai modeliai dabar yra puslapiuoti (nerodomi viename puslapyje)
 * 🛡 Generuojant nuorodą, lietuviškos raidės konvertuojamos į lotyniškas
-* 🛡 Sukurti _preview_, _update_ ir _destroy_ veiksmai beveik visiems duomenų modeliams. Jie pasiekiami ir iš lentelės puslapio.
+* 🛡 Sukurti *preview*, *update* ir *destroy* veiksmai beveik visiems duomenų modeliams. Jie pasiekiami ir iš lentelės puslapio.
 * 🛡 Kai kur pridėtos papildomos modelių tikrinimo taisyklės
 * 🛡 Atnaujintas dizainas (kortelės, spalvos)
 * 🛡 Institucijos padarytos pagrindiniu kontaktų puslapiu
@@ -196,7 +204,7 @@ Didžiausias atnaujinimas po vusa.lt atnaujinimo. Daugiausiai dėmesio skirta pl
 
 * 🔧 Šis atnaujinimas labiausiai skirtas puslapio vidui ir kūrimo procesui atnaujinti.
 * 🛡 Administracinių ikonų suvienodinimas.
-* 🌟 Pridėta galimybė įsidėti VU SA naujienų _feed_ į Atom tipo naršyklę.
+* 🌟 Pridėta galimybė įsidėti VU SA naujienų *feed* į Atom tipo naršyklę.
 
 ## v0.1.1 (2022-06-12)
 

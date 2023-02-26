@@ -2,15 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\ResourceController;
 use App\Models\Permission;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use App\Http\Controllers\ResourceController;
 use Inertia\Inertia;
 
 class PermissionController extends ResourceController
 {
-    
     /**
      * Display a listing of the resource.
      *
@@ -38,7 +36,6 @@ class PermissionController extends ResourceController
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
@@ -49,7 +46,6 @@ class PermissionController extends ResourceController
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Permission  $permission
      * @return \Illuminate\Http\Response
      */
     public function show(Permission $permission)
@@ -60,7 +56,6 @@ class PermissionController extends ResourceController
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Permission  $permission
      * @return \Illuminate\Http\Response
      */
     public function edit(Permission $permission)
@@ -71,8 +66,6 @@ class PermissionController extends ResourceController
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Permission  $permission
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Permission $permission)
@@ -83,7 +76,6 @@ class PermissionController extends ResourceController
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Permission  $permission
      * @return \Illuminate\Http\Response
      */
     public function destroy(Permission $permission)

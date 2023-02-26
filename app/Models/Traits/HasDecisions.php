@@ -9,16 +9,17 @@ use Illuminate\Support\Str;
 trait HasDecisions
 {
     private ModelAuthorizer $authorizer;
+
     private string $modelName;
-    
+
     public function decision($decision, ModelAuthorizer $authorizer)
-    {        
+    {
         $this->modelName = Str::of(class_basename($this))->camel()->plural();
-        
+
         $this->authorizer = $authorizer;
 
         // based on the decision, call the appropriate method
-        $method = 'decisionTo' . Str::ucfirst(Str::camel($decision));
+        $method = 'decisionTo'.Str::ucfirst(Str::camel($decision));
 
         return $this->$method();
     }
@@ -30,19 +31,19 @@ trait HasDecisions
 
     public function decisionToApprove()
     {
-        $this->authorizer->forUser(auth()->user())->check($this->modelName . '.update.padalinys');
-        
+        $this->authorizer->forUser(auth()->user())->check($this->modelName.'.update.padalinys');
+
         $this->finalApprovalCheck();
-        
+
         return $this->state->handleApprove();
     }
 
     public function decisionToReject()
     {
-        $this->authorizer->forUser(auth()->user())->check($this->modelName . '.update.padalinys');
-        
+        $this->authorizer->forUser(auth()->user())->check($this->modelName.'.update.padalinys');
+
         $this->finalApprovalCheck();
-        
+
         return $this->state->handleReject();
     }
 

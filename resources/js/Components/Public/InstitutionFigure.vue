@@ -1,26 +1,32 @@
 <template>
-  <figure class="grid grid-cols-[1fr_2fr] gap-8">
+  <div
+    class="grid grid-cols-1 gap-8"
+    :class="{ 'md:grid-cols-[1fr_2fr]': institution.image_url }"
+  >
     <img
+      v-if="institution.image_url && !imageError"
       :src="institution.image_url"
       alt="institution image"
       class="h-36 w-full rounded-md object-cover shadow-sm"
       :class="[imageError ? 'hidden' : '']"
       @error="imageError = true"
     />
-    <header class="w-full" :class="[imageError ? 'col-span-full' : '']">
-      <figcaption>
+    <div class="w-full" :class="[imageError ? 'col-span-full' : '']">
+      <div>
         <a
           :href="
             route('contacts.alias', {
               alias: institution.alias,
-              padalinys: institution.alias,
+              padalinys: institution.padalinys?.alias ?? institution.alias,
               lang: $page.props.app.locale,
             })
           "
         >
-          <h2 class="mb-0 font-black transition-colors hover:text-vusa-red">
+          <p
+            class="mb-0 text-xl font-black leading-5 text-zinc-800 transition-colors hover:text-vusa-red dark:text-zinc-100"
+          >
             {{ institutionName }}
-          </h2>
+          </p>
         </a>
         <small
           v-for="institutionType in institution.types"
@@ -29,7 +35,7 @@
         >
           {{ institutionType.title }}
         </small>
-        <div class="mt-3 flex flex-wrap gap-2">
+        <div v-if="isPadalinys" class="mt-3 flex flex-wrap gap-2">
           <a
             v-for="section in padaliniaiSections"
             :key="section.alias"
@@ -44,18 +50,19 @@
             <NButton round size="tiny">{{ $t(section.title) }}</NButton>
           </a>
         </div>
-      </figcaption>
-    </header>
-  </figure>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="tsx">
-import { Link, usePage } from "@inertiajs/vue3";
 import { NButton } from "naive-ui";
 import { computed, ref } from "vue";
+import { usePage } from "@inertiajs/vue3";
 
 const props = defineProps<{
   institution: App.Entities.Institution;
+  isPadalinys?: boolean;
 }>();
 
 const imageError = ref(false);
@@ -72,7 +79,7 @@ const institutionName = computed(() => {
     );
   }
 
-  return props.institution.short_name ?? "";
+  return props.institution.short_name ?? props.institution.name ?? "";
 });
 
 const padaliniaiSections = [

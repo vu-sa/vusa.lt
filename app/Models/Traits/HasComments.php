@@ -11,13 +11,13 @@ trait HasComments
     {
         return $this->morphTo();
     }
-    
+
     public function comments()
     {
         return $this->morphMany(Comment::class, 'commentable');
     }
 
-    public function comment(string $body, ?string $decision) : Comment
+    public function comment(string $body, ?string $decision): Comment
     {
         $comment = $this->comments()->create([
             'comment' => $body,

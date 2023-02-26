@@ -2,15 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\ResourceController;
 use App\Models\News;
+use App\Models\Padalinys;
+use App\Services\ModelIndexer;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Http\Controllers\Controller as Controller;
-use App\Http\Controllers\ResourceController;
-use App\Models\Padalinys;
-use App\Models\User;
-use App\Services\ModelIndexer;
-use Illuminate\Support\Facades\Auth;
 
 class NewsController extends ResourceController
 {
@@ -22,14 +19,14 @@ class NewsController extends ResourceController
     public function index(Request $request)
     {
         $this->authorize('viewAny', [News::class, $this->authorizer]);
-        
+
         $search = request()->input('text');
 
         $indexer = new ModelIndexer();
         $news = $indexer->execute(News::class, $search, 'title', $this->authorizer, null);
 
         return Inertia::render('Admin/Content/IndexNews', [
-            'news' => $news->with('padalinys:id,shortname,alias')->paginate(20)
+            'news' => $news->with('padalinys:id,shortname,alias')->paginate(20),
         ]);
     }
 
@@ -39,16 +36,15 @@ class NewsController extends ResourceController
      * @return \Illuminate\Http\Response
      */
     public function create()
-    {    
+    {
         $this->authorize('create', [News::class, $this->authorizer]);
-        
+
         return Inertia::render('Admin/Content/CreateNews');
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
@@ -84,7 +80,7 @@ class NewsController extends ResourceController
             'image_author' => $request->image_author,
             'publish_time' => $request->publish_time,
             'draft' => $request->draft ?? 0,
-            'padalinys_id' => $padalinys_id
+            'padalinys_id' => $padalinys_id,
         ]);
 
         return redirect()->route('news.index')->with('success', 'Naujiena sėkmingai sukurta!');
@@ -93,7 +89,6 @@ class NewsController extends ResourceController
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\News  $news
      * @return \Illuminate\Http\Response
      */
     public function show(News $news)
@@ -105,17 +100,16 @@ class NewsController extends ResourceController
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\News  $news
      * @return \Illuminate\Http\Response
      */
     public function edit(News $news)
     {
         $this->authorize('update', [News::class, $news, $this->authorizer]);
-    
-        $other_lang_pages = News::with('padalinys:id,shortname')->when(!request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($news) {
-            $query->where('padalinys_id', $news->padalinys_id);  
+
+        $other_lang_pages = News::with('padalinys:id,shortname')->when(! request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($news) {
+            $query->where('padalinys_id', $news->padalinys_id);
         })->where('lang', '!=', $news->lang)->select('id', 'title', 'padalinys_id')->get();
-        
+
         return Inertia::render('Admin/Content/EditNews', [
             'news' => [
                 'id' => $news->id,
@@ -140,16 +134,14 @@ class NewsController extends ResourceController
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\News  $news
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, News $news)
     {
         $this->authorize('update', [News::class, $news, $this->authorizer]);
-        
+
         $other_lang_page = News::find($news->other_lang_id);
-        
+
         $news->update($request->only('title', 'text', 'lang', 'other_lang_id', 'draft', 'short', 'image', 'image_author', 'publish_time'));
 
         // update other lang id page
@@ -158,7 +150,7 @@ class NewsController extends ResourceController
             $other_lang_page = News::find($request->other_lang_id);
             $other_lang_page->other_lang_id = $news->id;
             $other_lang_page->save();
-        } else if (is_null($request->other_lang_id) && !is_null($other_lang_page)) {
+        } elseif (is_null($request->other_lang_id) && ! is_null($other_lang_page)) {
             $other_lang_page->other_lang_id = null;
             $other_lang_page->save();
         }
@@ -169,20 +161,19 @@ class NewsController extends ResourceController
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\News $news
      * @return \Illuminate\Http\Response
      */
     public function destroy(News $news)
     {
         $this->authorize('delete', [News::class, $news, $this->authorizer]);
-        
+
         $news->delete();
 
         return redirect()->route('news.index')->with('info', 'Naujiena sėkmingai ištrinta!');
     }
+
     // TODO: ....
     public function searchForNews(Request $request)
-
     {
         $data = $request->collect()['data'];
 

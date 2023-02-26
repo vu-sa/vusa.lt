@@ -21,7 +21,8 @@ class Relationship extends Model
     ];
 
     // Is it safe?
-    public function models($model) {
+    public function models($model)
+    {
         return $this->morphedByMany($model, 'relationshipable');
     }
 

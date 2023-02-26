@@ -1,7 +1,7 @@
 export {};
 
 import { LocaleEnum, ModelEnum } from "./enums";
-import type { Page } from "@inertiajs/core";
+import type { Page, PageProps } from "@inertiajs/core";
 
 interface User extends Omit<App.Entities.User, "padaliniai"> {
   padaliniai: Pick<App.Entities.Padalinys, "id" | "shortname">;
@@ -9,7 +9,7 @@ interface User extends Omit<App.Entities.User, "padaliniai"> {
   unreadNotifications: Record<string, any>[] | null;
 }
 
-interface InertiaPageProps {
+interface InertiaPageProps extends PageProps {
   alias?: string;
   app: {
     env: "local" | "production" | "testing";
@@ -67,12 +67,13 @@ interface InertiaPageProps {
 }
 
 declare module "@inertiajs/vue3" {
-  export function usePage<T = InertiaPageProps>(): Page<T>;
+  export function usePage<T extends PageProps = InertiaPageProps>(): Page<T>;
 }
+
+// TODO: something not working here
 
 declare module "@vue/runtime-core" {
   type PageProps = InertiaPageProps;
-
   interface ComponentCustomProperties {
     $page: Page<PageProps>;
   }

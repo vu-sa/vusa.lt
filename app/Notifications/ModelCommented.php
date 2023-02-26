@@ -13,7 +13,9 @@ class ModelCommented extends Notification implements ShouldQueue
     use Queueable;
 
     protected string $text;
+
     protected array $objectArray;
+
     protected array $subjectArray;
 
     /**
@@ -59,7 +61,7 @@ class ModelCommented extends Notification implements ShouldQueue
         return new BroadcastMessage([
             'text' => $this->text,
             'object' => $this->objectArray,
-            'subject' => $this->subjectArray
+            'subject' => $this->subjectArray,
         ]);
     }
 

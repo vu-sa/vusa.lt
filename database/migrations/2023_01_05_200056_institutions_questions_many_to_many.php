@@ -15,7 +15,7 @@ return new class extends Migration
     public function up()
     {
         Schema::rename('institution_matters', 'matters');
-        
+
         Schema::create('institutions_matters', function (Blueprint $table) {
             $table->foreignUlid('institution_id')->constrained()->cascadeOnDelete();
             $table->foreignUlid('matter_id')->constrained()->cascadeOnDelete();

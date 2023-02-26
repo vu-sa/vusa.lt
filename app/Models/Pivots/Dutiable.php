@@ -12,7 +12,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 class Dutiable extends MorphPivot
 {
     use HasRelationships;
-    
+
     protected $table = 'dutiables';
 
     protected $guarded = [];
@@ -33,7 +33,7 @@ class Dutiable extends MorphPivot
     {
         return $this->morphTo();
     }
-    
+
     public function duty()
     {
         return $this->belongsTo(Duty::class);

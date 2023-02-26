@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller as Controller;
 use App\Http\Controllers\ResourceController;
 use App\Models\Padalinys;
 use App\Models\SaziningaiExam;
@@ -11,7 +10,6 @@ use Inertia\Inertia;
 
 class SaziningaiExamsController extends ResourceController
 {
-
     /**
      * Display a listing of the resource.
      *
@@ -41,20 +39,19 @@ class SaziningaiExamsController extends ResourceController
     public function create()
     {
         $this->authorize('create', [SaziningaiExam::class, $this->authorizer]);
-        
+
         return redirect()->route('saziningaiExamRegistration');
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
         $this->authorize('create', [SaziningaiExam::class, $this->authorizer]);
-        
+
         $request->validate([
             'email' => ['required', 'email'],
             'subject_name' => ['required'],
@@ -79,7 +76,6 @@ class SaziningaiExamsController extends ResourceController
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\SaziningaiExam  $saziningaiExam
      * @return \Illuminate\Http\Response
      */
     public function show(SaziningaiExam $saziningaiExam)
@@ -95,7 +91,6 @@ class SaziningaiExamsController extends ResourceController
      */
     public function edit(SaziningaiExam $saziningaiExam)
     {
-
         $this->authorize('update', [SaziningaiExam::class, $saziningaiExam, $this->authorizer]);
 
         return Inertia::render('Admin/Saziningai/EditSaziningaiExam', [
@@ -140,8 +135,6 @@ class SaziningaiExamsController extends ResourceController
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\SaziningaiExam  $saziningaiExam
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, SaziningaiExam $saziningaiExam)
@@ -155,19 +148,19 @@ class SaziningaiExamsController extends ResourceController
         ]);
 
         $saziningaiExam->update($request->only('name', 'phone', 'email', 'exam_type', 'padalinys_id', 'place', 'duration', 'subject_name', 'exam_holders', 'students_need'));
+
         return back();
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\SaziningaiExam  $saziningaiExam
      * @return \Illuminate\Http\Response
      */
     public function destroy(SaziningaiExam $saziningaiExam)
     {
         $this->authorize('delete', [SaziningaiExam::class, $saziningaiExam, $this->authorizer]);
-        
+
         $saziningaiExam->delete();
 
         return redirect()->route('saziningaiExams.index');

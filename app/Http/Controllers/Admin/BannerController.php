@@ -2,17 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Banner;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
-use App\Http\Controllers\Controller as Controller;
 use App\Http\Controllers\ResourceController;
+use App\Models\Banner;
 use App\Models\Padalinys;
 use App\Services\ModelIndexer;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class BannerController extends ResourceController
 {
-
     /**
      * Display a listing of the resource.
      *
@@ -20,16 +18,15 @@ class BannerController extends ResourceController
      */
     public function index(Request $request)
     {
-        
         $this->authorize('viewAny', [Banner::class, $this->authorizer]);
-        
+
         $search = request()->input('text');
 
         $indexer = new ModelIndexer();
         $banners = $indexer->execute(Banner::class, $search, 'title', $this->authorizer, false);
-        
+
         return Inertia::render('Admin/Content/IndexBanners', [
-            'banners' => $banners->paginate(20)
+            'banners' => $banners->paginate(20),
         ]);
     }
 
@@ -41,30 +38,29 @@ class BannerController extends ResourceController
     public function create()
     {
         $this->authorize('create', [Banner::class, $this->authorizer]);
-        
+
         return Inertia::render('Admin/Content/CreateBanner');
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
         $this->authorize('create', [Banner::class, $this->authorizer]);
-        
+
         $request->validate([
             'title' => 'required',
             'image_url' => 'required',
         ]);
-        
+
         $banner = new Banner();
         // $banner->text = $request->text;
         $banner->title = $request->title;
         $banner->is_active = $request->is_active ?? 0;
-        $banner->link_url = $request->link_url ?? "";
+        $banner->link_url = $request->link_url ?? '';
         // add random banner order for now
         $banner->order = rand(1, 10);
         $banner->image_url = $request->image_url;
@@ -78,7 +74,6 @@ class BannerController extends ResourceController
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Banner  $banner
      * @return \Illuminate\Http\Response
      */
     public function show(Banner $banner)
@@ -90,13 +85,12 @@ class BannerController extends ResourceController
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Banner  $banner
      * @return \Illuminate\Http\Response
      */
     public function edit(Banner $banner)
     {
         $this->authorize('update', [Banner::class, $banner, $this->authorizer]);
-        
+
         return Inertia::render('Admin/Content/EditBanner', [
             'banner' => $banner,
         ]);
@@ -105,17 +99,15 @@ class BannerController extends ResourceController
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Banner  $banner
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Banner $banner)
     {
         $this->authorize('update', [Banner::class, $banner, $this->authorizer]);
-        
+
         $banner->title = $request->title;
         $banner->is_active = $request->is_active;
-        $banner->link_url = $request->link_url ?? "";
+        $banner->link_url = $request->link_url ?? '';
         $banner->image_url = $request->image_url;
         $banner->save();
 
@@ -125,13 +117,12 @@ class BannerController extends ResourceController
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Banner $banner
      * @return \Illuminate\Http\Response
      */
     public function destroy(Banner $banner)
     {
         $this->authorize('delete', [Banner::class, $banner, $this->authorizer]);
-        
+
         $banner->delete();
 
         return redirect()->route('banners.index')->with('info', 'Baneris ištrintas!');

@@ -34,7 +34,7 @@ return new class extends Migration
         Schema::table('role_has_permissions', function (Blueprint $table) {
             $table->dropForeign('role_has_permissions_role_id_foreign');
         });
-        
+
         // change all ids to char(26)
         Schema::table('roles', function (Blueprint $table) {
             $table->char('id', 26)->change();
@@ -91,6 +91,5 @@ return new class extends Migration
      */
     public function down()
     {
-       
     }
 };

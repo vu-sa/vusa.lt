@@ -4,7 +4,6 @@ namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
-use Inertia\Inertia;
 
 class Handler extends ExceptionHandler
 {
@@ -42,7 +41,6 @@ class Handler extends ExceptionHandler
     /**
      * Prepare exception for rendering.
      *
-     * @param  \Throwable  $e
      * @return \Throwable
      */
     public function render($request, Throwable $e)
@@ -53,7 +51,7 @@ class Handler extends ExceptionHandler
             return back()->with([
                 'info' => $e->getMessage() ?? 'Neturite teisių atlikti šiam veiksmui.',
             ]);
-        } 
+        }
 
         return $response;
     }

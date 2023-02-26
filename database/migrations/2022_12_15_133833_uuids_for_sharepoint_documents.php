@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('sharepoint_documents', function(Blueprint $table) {
+        Schema::table('sharepoint_documents', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->dropPrimary('sharepoint_id');
         });

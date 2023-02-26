@@ -2,7 +2,6 @@
 
 namespace App\Mail;
 
-use App\Models\Registration;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
@@ -16,10 +15,12 @@ class ConfirmMemberRegistration extends Mailable
      *
      * @var \App\Models\Saziningai
      */
-
     public $registration;
+
     public $registerLocation;
+
     public $chairPerson;
+
     public $chairEmail;
 
     /**
@@ -42,7 +43,7 @@ class ConfirmMemberRegistration extends Mailable
      */
     public function build()
     {
-        return $this->subject("📝 " . __('mail.confirmRegistrationTitle') . " " . $this->registerLocation)
+        return $this->subject('📝 '.__('mail.confirmRegistrationTitle').' '.$this->registerLocation)
             ->replyTo($this->chairEmail)
             ->markdown('emails.memberRegistration.confirm');
     }

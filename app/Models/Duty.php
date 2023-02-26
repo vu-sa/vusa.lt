@@ -3,23 +3,23 @@
 namespace App\Models;
 
 use App\Models\Pivots\Dutiable;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
-use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Duty extends Model implements AuthorizableContract
 {
     use HasFactory, Authorizable, HasRoles, HasRelationships, LogsActivity, HasUlids, SoftDeletes;
-    
+
     protected $with = ['types'];
-    
+
     protected $casts = [
         'extra_attributes' => 'array',
     ];
@@ -96,5 +96,4 @@ class Duty extends Model implements AuthorizableContract
     }
 
     // add "duty" relation which points to self
-    
 }

@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Task;
 use App\Http\Controllers\ResourceController;
 use App\Http\Requests\StoreTaskRequest;
+use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
 class TaskController extends ResourceController
-{    
+{
     /**
      * Display a listing of the resource.
      *
@@ -56,7 +56,6 @@ class TaskController extends ResourceController
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Task  $task
      * @return \Illuminate\Http\Response
      */
     public function show(Task $task)
@@ -67,7 +66,6 @@ class TaskController extends ResourceController
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Task  $task
      * @return \Illuminate\Http\Response
      */
     public function edit(Task $task)
@@ -78,8 +76,6 @@ class TaskController extends ResourceController
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Task  $task
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Task $task)
@@ -102,22 +98,21 @@ class TaskController extends ResourceController
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Task  $task
      * @return \Illuminate\Http\Response
      */
     public function destroy(Task $task)
     {
         $this->authorize('delete', [Task::class, $task, $this->authorizer]);
-        
+
         $task->delete();
 
         return back()->with('success', 'Užduotis sėkmingai ištrinta');
     }
 
     public function updateCompletionStatus(Request $request, Task $task)
-    {      
+    {
         $this->authorize('update', [Task::class, $task, $this->authorizer]);
-        
+
         if ($request->completed == true) {
             $task->completed_at = now();
         } else {

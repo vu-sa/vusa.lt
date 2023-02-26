@@ -2,19 +2,16 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Actions\GetInstitutionManagers;
-use App\Services\ModelIndexer;
-use App\Models\Institution;
-use App\Models\Duty;
-use Illuminate\Http\Request;
 use App\Http\Controllers\ResourceController;
-use Inertia\Inertia;
-use App\Models\Type;
 use App\Models\Doing;
-use App\Services\RelationshipService;
+use App\Models\Duty;
+use App\Models\Institution;
+use App\Models\Type;
+use App\Services\ModelIndexer;
 use App\Services\ResourceServices\InstitutionService;
-use App\Services\ResourceServices\SharepointFileService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class InstitutionController extends ResourceController
 {
@@ -43,7 +40,7 @@ class InstitutionController extends ResourceController
      * @return \Illuminate\Http\Response
      */
     public function create()
-    {       
+    {
         $this->authorize('create', [Institution::class, $this->authorizer]);
 
         $padaliniai = InstitutionService::getPadaliniaiForUpserts($this->authorizer);
@@ -57,13 +54,12 @@ class InstitutionController extends ResourceController
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
         $this->authorize('create', [Institution::class, $this->authorizer]);
-        
+
         $request->validate([
             'name' => 'required',
             'alias' => 'nullable|unique:institutions,alias',
@@ -71,7 +67,7 @@ class InstitutionController extends ResourceController
         ]);
 
         // if request alias is null, create slug from name
-        if (!$request->alias) {
+        if (! $request->alias) {
             $request->merge(['alias' => Str::slug($request->name)]);
         }
 
@@ -85,16 +81,15 @@ class InstitutionController extends ResourceController
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Institution  $institution
      * @return \Illuminate\Http\Response
      */
     public function show(Institution $institution)
     {
         $this->authorize('view', [Institution::class, $institution, $this->authorizer]);
-        
+
         $institution->load('padalinys', 'users', 'matters')->load(['meetings' => function ($query) {
             $query->with('tasks', 'comments', 'files')->orderBy('start_time', 'asc');
-        }])->load('activities.causer');      
+        }])->load('activities.causer');
 
         // Inertia::share('layout.navBackground', $institution->image_url ?? null);
 
@@ -114,7 +109,6 @@ class InstitutionController extends ResourceController
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Institution  $institution
      * @return \Illuminate\Http\Response
      */
     public function edit(Institution $institution)
@@ -131,27 +125,25 @@ class InstitutionController extends ResourceController
                 'types' => $institution->types->pluck('id'),
             ],
             'institutionTypes' => Type::where('model_type', Institution::class)->get(),
-            'padaliniai' => InstitutionService::getPadaliniaiForUpserts($this->authorizer)
+            'padaliniai' => InstitutionService::getPadaliniaiForUpserts($this->authorizer),
         ]);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Institution  $institution
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Institution $institution)
     {
         $this->authorize('update', [Institution::class, $institution, $this->authorizer]);
-        
+
         // validate
         $request->validate([
             'name' => 'required',
             'padalinys_id' => 'required',
         ]);
-        
+
         // TODO: short_name and shortname are used as columns in some tables. Need to make the same name.
         $institution->fill($request->only('name', 'short_name', 'description', 'image_url', 'extra_attributes'))->save();
 
@@ -169,21 +161,19 @@ class InstitutionController extends ResourceController
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Institution  $institution
      * @return \Illuminate\Http\Response
      */
     public function destroy(Institution $institution)
     {
         $this->authorize('delete', [Institution::class, $institution, $this->authorizer]);
-        
+
         return back()->with('info', 'Institucijų šiuo metu negalima ištrinti...');
     }
-    
+
     /**
      * reorderDuties
      * Duties are ordered in the frontend array by the user. The order is saved in the database
      *
-     * @param  Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function reorderDuties(Request $request)

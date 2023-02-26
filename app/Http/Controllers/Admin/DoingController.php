@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Doing;
 use App\Http\Controllers\ResourceController;
 use App\Http\Requests\StoreDoingRequest;
+use App\Models\Doing;
 use App\Services\ModelIndexer;
 use App\Services\ResourceServices\SharepointFileService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Inertia\Inertia;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class DoingController extends ResourceController
-{    
+{
     /**
      * Display a listing of the resource.
      *
@@ -53,7 +53,7 @@ class DoingController extends ResourceController
      * @return \Illuminate\Http\Response
      */
     public function store(StoreDoingRequest $request)
-    { 
+    {
         $doing = new Doing();
 
         // fill doing instead of create
@@ -68,24 +68,24 @@ class DoingController extends ResourceController
             $type = \App\Models\Type::where('slug', $request->safe()->only('type')['type'])->firstOrFail();
             $doing->types()->sync($type->id);
         }
-        
+
         $doing->users()->sync(Auth::id());
 
         $taskDueDate = $request->safe()->only('date')['date'];
 
-        $doingCreationTasks = [['name' => 'Išgryninti veiklos tikslą su koordinatoriumi', 'due_date' => $taskDueDate], 
-            ['name' => 'Įkelti reikalingus dokumentus į failų skiltį', 'due_date' => $taskDueDate], 
-            ['name' => 'Pateikti peržiūrai', 'due_date' => $taskDueDate]
+        $doingCreationTasks = [['name' => 'Išgryninti veiklos tikslą su koordinatoriumi', 'due_date' => $taskDueDate],
+            ['name' => 'Įkelti reikalingus dokumentus į failų skiltį', 'due_date' => $taskDueDate],
+            ['name' => 'Pateikti peržiūrai', 'due_date' => $taskDueDate],
         ];
 
         $doing->storeTasks($doingCreationTasks, $doing->users);
 
         return redirect()->route('doings.show', $doing)->with('success', 'Veiksmas sukurtas!');
     }
+
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Doing  $doing
      * @return \Illuminate\Http\Response
      */
     public function show(Doing $doing)
@@ -106,7 +106,7 @@ class DoingController extends ResourceController
         return Inertia::render('Admin/Representation/ShowDoing', [
             'doing' => [
                 ...$doing->toArray(),
-                'approvable' => $this->authorizer->forUser(auth()->user())->check($modelName . '.update.padalinys'),
+                'approvable' => $this->authorizer->forUser(auth()->user())->check($modelName.'.update.padalinys'),
                 'sharepointPath' => $doing->users->first() ? SharepointFileService::pathForFileableDriveItem($doing) : null,
             ],
             'taskableInstitutions' => Inertia::lazy(fn () => $doing->institutions->load('users')),
@@ -116,7 +116,6 @@ class DoingController extends ResourceController
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Doing  $doing
      * @return \Illuminate\Http\Response
      */
     public function edit(Doing $doing)
@@ -131,18 +130,16 @@ class DoingController extends ResourceController
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Doing  $doing
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Doing $doing)
     {
         $this->authorize('update', [Doing::class, $doing, $this->authorizer]);
-        
+
         $request->validate([
             'title' => 'required',
             'user_id' => 'required',
-            'date' => 'required'
+            'date' => 'required',
         ]);
 
         // update doing with model events, so without update()
@@ -156,7 +153,6 @@ class DoingController extends ResourceController
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Doing  $doing
      * @return \Illuminate\Http\Response
      */
     public function destroy(Doing $doing)
@@ -164,7 +160,7 @@ class DoingController extends ResourceController
         $this->authorize('delete', [Doing::class, $doing, $this->authorizer]);
 
         // check if doing state is draft
-        if (!($doing->state instanceof \App\States\Doing\Draft)) {
+        if (! ($doing->state instanceof \App\States\Doing\Draft)) {
             return back()->with('info', 'Jau tvirtinama / tvirtinta veikla gali būti tik atšaukiama!');
         }
 
