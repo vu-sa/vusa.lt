@@ -8,8 +8,8 @@ use App\Models\Type;
 use Illuminate\Database\Eloquent\Builder;
 
 class UserContactService {
-    
-    public static function getInstitutionBuilder(Padalinys $padalinys, Type $type) {
+
+    public static function getInstitutionsFromPadalinysAndType(Padalinys $padalinys, Type $type): Builder {
         $institutionBuilder = Institution::with(['duties.users'])
                 ->orderBy('name')
                 ->where([['padalinys_id', '=', $padalinys->id]])
