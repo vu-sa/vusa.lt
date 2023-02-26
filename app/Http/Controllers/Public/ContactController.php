@@ -7,7 +7,6 @@ use App\Models\Institution;
 use App\Models\Padalinys;
 use App\Models\Type;
 use App\Models\User;
-use App\Services\UserContactService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
