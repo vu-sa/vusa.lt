@@ -23,7 +23,7 @@ const props = defineProps<{
   contentTypes: Record<string, any>[];
   sharepointPath: string;
   allModelsFromModelType?: Record<string, any>[];
-  modelType: string;
+  modelType?: string;
 }>();
 
 const handleSubmit = (form: any) => {

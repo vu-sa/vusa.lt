@@ -4,7 +4,7 @@
       <TypeForm
         :content-types="contentTypes"
         :type="typeTemplate"
-        model-route="types.store"
+        @submit:form="handleSubmit"
       />
     </UpsertModelLayout>
   </PageContent>
@@ -19,4 +19,8 @@ import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 defineProps<{
   contentTypes: Record<string, any>[];
 }>();
+
+const handleSubmit = (form: any) => {
+  form.post(route("types.store"));
+};
 </script>

@@ -50,7 +50,7 @@
           />
         </NFormItem>
       </FormElement>
-      <FormElement>
+      <FormElement v-if="sharepointPath">
         <template #title>Failai</template>
         <template #description
           >Failai, susiję su šiuo tipu. Šie failai rodomi atitinkamose vietose
@@ -125,17 +125,21 @@ const emit = defineEmits<{
 
 const props = defineProps<{
   type: App.Entities.Type;
-  modelType: string;
+  modelType?: string;
   contentTypes: Record<string, any>[];
-  sharepointPath: string;
+  sharepointPath?: string;
   allModelsFromModelType?: Record<string, any>[];
 }>();
 
 const loading = ref(false);
 
 const form = useForm("type", props.type);
+
 // map e.g. form.institutions to id only, so it's used in transfer values
-form[props.modelType] = props.type[props.modelType]?.map((model) => model.id);
+
+if (props.modelType) {
+  form[props.modelType] = props.type[props.modelType]?.map((model) => model.id);
+}
 
 const modelDefaults = modelTypes.type.map((type) => {
   return {
