@@ -7,7 +7,7 @@
 
   <header
     v-if="title"
-    class="col-span-2 m-4 flex max-w-6xl flex-row items-center gap-4 pr-8"
+    class="z-10 col-span-2 m-4 flex max-w-6xl flex-row items-center gap-4 pr-8"
     :class="{ 'pb-2': title }"
   >
     <NButton
