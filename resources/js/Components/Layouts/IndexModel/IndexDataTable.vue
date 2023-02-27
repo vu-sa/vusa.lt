@@ -24,6 +24,7 @@ import { computed, reactive, ref } from "vue";
 import { router } from "@inertiajs/vue3";
 import type { DataTableColumns } from "naive-ui";
 
+import { Link } from "@inertiajs/vue3";
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import IndexSearchInput from "./IndexSearchInput.vue";
 
@@ -80,22 +81,20 @@ const columnsWithActions = computed(() => {
         return (
           <NButtonGroup size="small">
             {props.showRoute ? (
-              <NButton
-                quaternary
-                onClick={() => router.visit(route(props.showRoute, row.id))}
-              >
-                {{
-                  icon: () => <NIcon component={ArrowForward20Filled} />,
-                }}
-              </NButton>
+              <Link href={route(props.showRoute, row.id)}>
+                <NButton quaternary>
+                  {{
+                    icon: () => <NIcon component={ArrowForward20Filled} />,
+                  }}
+                </NButton>
+              </Link>
             ) : null}
             {props.editRoute ? (
-              <NButton
-                quaternary
-                onClick={() => router.visit(route(props.editRoute, row.id))}
-              >
-                {{ icon: () => <NIcon component={Edit20Filled} /> }}
-              </NButton>
+              <Link href={route(props.editRoute, row.id)}>
+                <NButton quaternary>
+                  {{ icon: () => <NIcon component={Edit20Filled} /> }}
+                </NButton>
+              </Link>
             ) : null}
             {props.destroyRoute ? (
               <DeleteModelButton form={row} modelRoute={props.destroyRoute} />
