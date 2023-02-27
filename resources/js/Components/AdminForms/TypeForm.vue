@@ -21,10 +21,10 @@
         </NFormItem>
 
         <NFormItem label="Aprašymas" :span="6">
-          <NInput
-            v-model:value="form.description"
-            type="textarea"
+          <OriginalTipTap
+            v-model="form.description"
             placeholder="Ilgas aprašymas..."
+            :search-files="$page.props.search.other"
           />
         </NFormItem>
       </FormElement>
@@ -118,6 +118,7 @@ import FileManager from "@/Features/Admin/SharepointFileManager/Viewer/FileManag
 import FormElement from "./FormElement.vue";
 import Icons from "@/Types/Icons/filled";
 import InfoPopover from "../Buttons/InfoPopover.vue";
+import OriginalTipTap from "../TipTap/OriginalTipTap.vue";
 
 const emit = defineEmits<{
   (event: "submit:form", form: any): void;
