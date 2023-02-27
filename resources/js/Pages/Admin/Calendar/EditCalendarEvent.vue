@@ -1,5 +1,9 @@
 <template>
-  <PageContent :title="calendar.title">
+  <PageContent
+    :title="calendar.title"
+    :back-url="route('calendar.index')"
+    :heading-icon="Icons.CALENDAR"
+  >
     <UpsertModelLayout :errors="$page.props.errors" :model="calendar">
       <CalendarForm
         model-route="calendar.update"
@@ -17,6 +21,7 @@ import { ref } from "vue";
 
 import { checkForEmptyArray } from "@/Composables/checkAttributes";
 import CalendarForm from "@/Components/AdminForms/CalendarForm.vue";
+import Icons from "@/Types/Icons/regular";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 

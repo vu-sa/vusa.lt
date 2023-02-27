@@ -1,6 +1,7 @@
 <template>
   <PageContent
     :title="title"
+    :heading-icon="icon"
     :create-url="canUseRoutes.create ? route(`${modelName}.create`) : undefined"
   >
     <template #aside-header>
@@ -33,8 +34,9 @@
 
 <script setup lang="tsx">
 import { type DataTableColumns, NCard } from "naive-ui";
-
 import { useStorage } from "@vueuse/core";
+import type { Component } from "vue";
+
 import IndexDataTable from "@/Components/Layouts/IndexModel/IndexDataTable.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import SuggestionAlert from "@/Components/Alerts/SuggestionAlert.vue";
@@ -51,6 +53,7 @@ const props = defineProps<{
     edit: boolean;
     destroy: boolean;
   };
+  icon?: Component;
 }>();
 
 // check for entity in the entity array by model name as key

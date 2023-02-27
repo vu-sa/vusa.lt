@@ -2,6 +2,7 @@
   <PageContent
     :title="institution.name ?? institution.short_name"
     :back-url="route('institutions.index')"
+    :heading-icon="Icons.INSTITUTION"
   >
     <template #after-heading>
       <PreviewModelButton
@@ -29,6 +30,7 @@
 import { ref } from "vue";
 
 import { checkForEmptyArray } from "@/Composables/checkAttributes";
+import Icons from "@/Types/Icons/regular";
 import InstitutionForm from "@/Components/AdminForms/InstitutionForm.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";

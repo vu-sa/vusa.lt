@@ -1,5 +1,9 @@
 <template>
-  <PageContent :title="contact.name" :back-url="route('contacts.index')">
+  <PageContent
+    :title="contact.name"
+    :back-url="route('contacts.index')"
+    :heading-icon="Icons.CONTACT"
+  >
     <UpsertModelLayout :errors="$page.props.errors" :model="contact">
       <ContactForm
         :contact="contact"
@@ -12,6 +16,7 @@
 
 <script setup lang="tsx">
 import ContactForm from "@/Components/AdminForms/ContactForm.vue";
+import Icons from "@/Types/Icons/regular";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 

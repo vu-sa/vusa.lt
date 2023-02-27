@@ -21,8 +21,11 @@
         <NIcon size="28" :component="ChevronLeft24Filled"
       /></template>
     </NButton>
-    <h1 class="mb-0 whitespace-nowrap">
-      <slot name="title">{{ $t(title) }}</slot>
+    <h1 class="mb-0 inline-flex items-center gap-3 whitespace-nowrap">
+      <NIcon v-if="headingIcon" :component="headingIcon" />
+      <slot name="title"
+        ><NEllipsis style="max-width: 60rem">{{ $t(title) }}</NEllipsis></slot
+      >
     </h1>
     <Link v-if="isIndex && createUrl" :href="createUrl">
       <div class="flex">
@@ -61,7 +64,7 @@
 import { trans as $t } from "laravel-vue-i18n";
 import { AddCircle32Regular, ChevronLeft24Filled } from "@vicons/fluent";
 import { Head, Link } from "@inertiajs/vue3";
-import { NButton, NDivider, NIcon, NScrollbar } from "naive-ui";
+import { NButton, NDivider, NEllipsis, NIcon, NScrollbar } from "naive-ui";
 import { computed } from "vue";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
@@ -72,6 +75,7 @@ defineProps<{
   backUrl?: string;
   createUrl?: string;
   headerDivider?: boolean;
+  headingIcon?: any;
   title?: string;
 }>();
 

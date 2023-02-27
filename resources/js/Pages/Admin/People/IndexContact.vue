@@ -5,11 +5,13 @@
     :can-use-routes="canUseRoutes"
     :columns="columns"
     :paginated-models="contacts"
+    :icon="Icons.CONTACT"
   >
   </IndexPageLayout>
 </template>
 
 <script setup lang="tsx">
+import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
 defineProps<{

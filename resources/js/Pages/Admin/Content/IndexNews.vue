@@ -5,6 +5,7 @@
     :can-use-routes="canUseRoutes"
     :columns="columns"
     :paginated-models="news"
+    :icon="Icons.NEWS"
   >
   </IndexPageLayout>
 </template>
@@ -14,6 +15,7 @@ import { h, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 import type { DataTableColumns } from "naive-ui";
 
+import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
 

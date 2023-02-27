@@ -5,15 +5,18 @@
     :can-use-routes="canUseRoutes"
     :columns="columns"
     :paginated-models="institutions"
+    :icon="Icons.INSTITUTION"
   >
   </IndexPageLayout>
 </template>
 
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
+import type { DataTableColumns } from "naive-ui";
+
+import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
-import type { DataTableColumns } from "naive-ui";
 
 defineProps<{
   institutions: PaginatedModels<App.Entities.Institution[]>;
