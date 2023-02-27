@@ -21,25 +21,12 @@
       </Layout>
     </NMessageProvider>
     <!-- </component> -->
-    <NWatermark
-      v-if="$page.props.app.env === 'testing'"
-      content="mano.vusa.lt testavimo zona."
-      cross
-      fullscreen
-      :font-size="16"
-      :line-height="16"
-      :width="384"
-      :height="384"
-      :x-offset="12"
-      :y-offset="80"
-      :rotate="-15"
-    />
   </NConfigProvider>
 </template>
 
 <script setup lang="tsx">
 import { NConfigProvider, NMessageProvider, darkTheme, enUS } from "naive-ui";
-import { defineAsyncComponent, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 
 // import "./posthog";
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
@@ -49,10 +36,6 @@ import "@/echo";
 
 const isThemeDark = ref(isDarkMode());
 const mounted = ref(false);
-
-const NWatermark = defineAsyncComponent(
-  () => import("naive-ui/lib/watermark/src/Watermark")
-);
 
 updateDarkMode(isThemeDark);
 
