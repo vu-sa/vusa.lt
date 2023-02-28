@@ -5,6 +5,7 @@
     :can-use-routes="canUseRoutes"
     :columns="columns"
     :paginated-models="doings"
+    :icon="Icons.DOING"
   >
   </IndexPageLayout>
 </template>
@@ -13,6 +14,7 @@
 import { type DataTableColumns, NTag } from "naive-ui";
 
 import DoingStateTag from "@/Components/Tag/DoingStateTag.vue";
+import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
 defineProps<{

@@ -4,7 +4,7 @@
   >
     <div
       v-if="getImageUrl(contact)"
-      class="relative h-48 w-full lg:h-auto lg:max-w-[40%]"
+      class="relative h-48 w-full lg:max-w-[40%]"
     >
       <img
         :src="getImageUrl(contact)"

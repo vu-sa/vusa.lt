@@ -1,5 +1,5 @@
 <template>
-  <PageContent title="Naujas studentas">
+  <PageContent title="Naujas studentas" :heading-icon="Icons.USER">
     <UpsertModelLayout :errors="$page.props.errors" :model="user">
       <UserForm
         :user="user"
@@ -12,6 +12,7 @@
 </template>
 
 <script setup lang="tsx">
+import Icons from "@/Types/Icons/regular";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 import UserForm from "@/Components/AdminForms/UserForm.vue";

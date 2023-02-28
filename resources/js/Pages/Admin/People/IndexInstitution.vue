@@ -5,15 +5,21 @@
     :can-use-routes="canUseRoutes"
     :columns="columns"
     :paginated-models="institutions"
+    :icon="Icons.INSTITUTION"
+    @search:complete="handleCompletedSearch"
   >
   </IndexPageLayout>
 </template>
 
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
+import { ref } from "vue";
+import { usePage } from "@inertiajs/vue3";
+import type { DataTableColumns } from "naive-ui";
+
+import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
-import type { DataTableColumns } from "naive-ui";
 
 defineProps<{
   institutions: PaginatedModels<App.Entities.Institution[]>;
@@ -24,6 +30,13 @@ const canUseRoutes = {
   show: true,
   edit: true,
   destroy: true,
+};
+
+const filterOptionValues = ref([]);
+
+const handleCompletedSearch = (search: any) => {
+  console.log("search", search);
+  filterOptionValues.value = search["padalinys.id"];
 };
 
 const columns: DataTableColumns<App.Entities.Institution> = [
@@ -54,7 +67,18 @@ const columns: DataTableColumns<App.Entities.Institution> = [
   },
   {
     title: "Padalinys",
-    key: "padalinys.shortname",
+    key: "padalinys.id",
+    filter: true,
+    filterOptionValues: [],
+    filterOptions: usePage().props.padaliniai.map((padalinys) => {
+      return {
+        label: padalinys.shortname,
+        value: padalinys.id,
+      };
+    }),
+    render(row) {
+      return row.padalinys?.shortname;
+    },
   },
 ];
 </script>

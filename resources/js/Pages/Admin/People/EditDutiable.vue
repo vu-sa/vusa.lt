@@ -2,6 +2,7 @@
   <PageContent
     :title="`${dutiable.duty.name} (${dutiable.user.name})`"
     :back-url="route('users.edit', dutiable.user.id)"
+    :heading-icon="Icons.DUTY"
   >
     <UpsertModelLayout :errors="$page.props.errors" :model="dutiable">
       <DutiableForm :dutiable="dutiable" model-route="duties.users.update" />
@@ -11,6 +12,7 @@
 
 <script setup lang="ts">
 import DutiableForm from "@/Components/AdminForms/DutiableForm.vue";
+import Icons from "@/Types/Icons/regular";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 

@@ -17,7 +17,7 @@
           :href="
             route('contacts.alias', {
               alias: institution.alias,
-              padalinys: institution.padalinys?.alias ?? institution.alias,
+              padalinys: institution.padalinys?.alias ?? 'www',
               lang: $page.props.app.locale,
             })
           "
@@ -72,14 +72,14 @@ const institutionName = computed(() => {
 
   if (locale === "en") {
     return (
-      props.institution.extra_attributes?.en?.short_name ??
       props.institution.extra_attributes?.en?.name ??
-      props.institution.short_name ??
-      props.institution.name
+      props.institution.extra_attributes?.en?.short_name ??
+      props.institution.name ??
+      props.institution.short_name
     );
   }
 
-  return props.institution.short_name ?? props.institution.name ?? "";
+  return props.institution.name ?? props.institution.short_name ?? "";
 });
 
 const padaliniaiSections = [

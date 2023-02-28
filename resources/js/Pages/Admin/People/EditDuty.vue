@@ -6,6 +6,7 @@
       'Neturi institucijos'
     })`"
     :back-url="route('duties.index')"
+    :heading-icon="Icons.DUTY"
   >
     <UpsertModelLayout :errors="$page.props.errors" :model="duty">
       <DutyForm
@@ -25,8 +26,8 @@
 import { ref } from "vue";
 
 import { checkForEmptyArray } from "@/Composables/checkAttributes";
-
 import DutyForm from "@/Components/AdminForms/DutyForm.vue";
+import Icons from "@/Types/Icons/regular";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 

@@ -5,11 +5,13 @@
     :can-use-routes="canUseRoutes"
     :columns="columns"
     :paginated-models="goalGroups"
+    :icon="Icons.GOAL_GROUP"
   >
   </IndexPageLayout>
 </template>
 
 <script setup lang="tsx">
+import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
 defineProps<{

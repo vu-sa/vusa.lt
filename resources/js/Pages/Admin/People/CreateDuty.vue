@@ -1,5 +1,5 @@
 <template>
-  <PageContent title="Nauja pareiga">
+  <PageContent title="Nauja pareiga" :heading-icon="Icons.DUTY">
     <UpsertModelLayout :errors="$page.props.errors" :model="duty">
       <DutyForm
         :duty="duty"
@@ -15,6 +15,7 @@
 
 <script setup lang="tsx">
 import DutyForm from "@/Components/AdminForms/DutyForm.vue";
+import Icons from "@/Types/Icons/regular";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 

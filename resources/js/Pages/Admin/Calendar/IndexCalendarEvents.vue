@@ -5,12 +5,15 @@
     :can-use-routes="canUseRoutes"
     :columns="columns"
     :paginated-models="calendar"
+    :icon="Icons.CALENDAR"
   >
   </IndexPageLayout>
 </template>
 
 <script setup lang="tsx">
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
+
+import Icons from "@/Types/Icons/regular";
 
 defineProps<{
   calendar: PaginatedModels<App.Entities.Calendar>;

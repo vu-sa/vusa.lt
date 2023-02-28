@@ -1,5 +1,9 @@
 <template>
-  <PageContent :title="page.title" :back-url="route('pages.index')">
+  <PageContent
+    :title="page.title"
+    :back-url="route('pages.index')"
+    :heading-icon="Icons.PAGE"
+  >
     <template #header>
       {{ page.title }}
       <PreviewModelButton
@@ -29,6 +33,7 @@
 </template>
 
 <script setup lang="ts">
+import Icons from "@/Types/Icons/regular";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import PageForm from "@/Components/AdminForms/PageForm.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";

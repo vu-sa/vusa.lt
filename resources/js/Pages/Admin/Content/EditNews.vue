@@ -1,5 +1,9 @@
 <template>
-  <PageContent :title="news.title" :back-url="route('news.index')">
+  <PageContent
+    :title="news.title"
+    :back-url="route('news.index')"
+    :heading-icon="Icons.NEWS"
+  >
     <template #header>
       {{ news.title }}
       <PreviewModelButton
@@ -39,6 +43,7 @@
 
 <script setup lang="ts">
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
+import Icons from "@/Types/Icons/regular";
 import NewsForm from "@/Components/AdminForms/NewsForm.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";

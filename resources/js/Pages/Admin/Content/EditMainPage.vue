@@ -1,5 +1,9 @@
 <template>
-  <PageContent :title="mainPage.text" :back-url="route('mainPage.index')">
+  <PageContent
+    :title="mainPage.text"
+    :back-url="route('mainPage.index')"
+    :heading-icon="Icons.MAIN_PAGE"
+  >
     <UpsertModelLayout :errors="$page.props.errors" :model="mainPage">
       <MainPageForm
         :main-page="mainPage"
@@ -11,6 +15,7 @@
 </template>
 
 <script setup lang="ts">
+import Icons from "@/Types/Icons/regular";
 import MainPageForm from "@/Components/AdminForms/MainPageForm.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";

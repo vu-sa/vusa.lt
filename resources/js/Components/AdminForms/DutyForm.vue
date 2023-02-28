@@ -151,7 +151,7 @@
 </template>
 
 <script setup lang="tsx">
-import { Add24Filled, Edit16Filled } from "@vicons/fluent";
+import { Add24Filled, Edit16Filled, Eye16Regular } from "@vicons/fluent";
 import {
   NAutoComplete,
   NButton,
@@ -236,7 +236,17 @@ const renderTargetLabel: TransferRenderTargetLabel = ({ option }) => {
   return (
     <div class="flex items-center gap-2">
       <UserAvatar size={24} user={option.user}></UserAvatar>
-      <span>{option.label}</span>
+      <span class="inline-flex gap-2">
+        {option.label}
+
+        <a target="_blank" href={route("users.edit", option.value)}>
+          <NButton size="tiny" text>
+            {{
+              icon: <NIcon component={Eye16Regular} />,
+            }}
+          </NButton>
+        </a>
+      </span>
     </div>
   );
 };

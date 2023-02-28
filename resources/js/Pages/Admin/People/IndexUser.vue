@@ -5,6 +5,7 @@
     :can-use-routes="canUseRoutes"
     :columns="columns"
     :paginated-models="users"
+    :icon="Icons.USER"
   >
     <p class="mb-4">
       Bent kartą prisijungusių:
@@ -15,6 +16,8 @@
 
 <script setup lang="tsx">
 import { formatRelativeTime } from "@/Utils/IntlTime";
+
+import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
 defineProps<{

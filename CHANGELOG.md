@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.4.9 (2023-02-28)
+
+* Tipo aprašymai naudoja HTML
+* Pridėtos modelių ikonos, formų ir indeksų puslapiuose
+* Pridėtas padalinio filtras institucijų indekse
+* Smulkūs kategorijų puslapių pataisymai
+* Pataisyta paieška
+
 ## v0.4.8 (2023-02-26)
 
 * Šoninė juosta turinio puslapiuose

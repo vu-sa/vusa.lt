@@ -24,13 +24,21 @@ class InstitutionController extends ResourceController
     {
         $this->authorize('viewAny', [Institution::class, $this->authorizer]);
 
+        // base64 json encoded filters decode
+        $filters = json_decode(base64_decode(request()->input('filters')), true);
         $search = request()->input('text');
 
         $indexer = new ModelIndexer();
         $institutions = $indexer->execute(Institution::class, $search, 'name', $this->authorizer, null);
 
+        // also check if empty array
         return Inertia::render('Admin/People/IndexInstitution', [
-            'institutions' => $institutions->paginate(20),
+            'institutions' => $institutions->when(isset(
+                $filters['padalinys.id']
+            ) && $filters['padalinys.id'] !== [], function ($query) use ($filters) {
+                $query->whereIn('padalinys_id', $filters['padalinys.id']);
+            }
+            )->paginate(20),
         ]);
     }
 
