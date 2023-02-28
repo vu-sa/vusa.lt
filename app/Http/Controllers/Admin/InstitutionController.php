@@ -35,10 +35,9 @@ class InstitutionController extends ResourceController
         return Inertia::render('Admin/People/IndexInstitution', [
             'institutions' => $institutions->when(isset(
                 $filters['padalinys.id']
-            ) && $filters['padalinys.id'] !== []
-            , function ($query) use ($filters) {
-                $query->whereIn('padalinys_id', $filters['padalinys.id']);
-            }
+            ) && $filters['padalinys.id'] !== [], function ($query) use ($filters) {
+                    $query->whereIn('padalinys_id', $filters['padalinys.id']);
+                }
             )->paginate(20),
         ]);
     }
