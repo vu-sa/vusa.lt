@@ -87,15 +87,22 @@
         </template>
         <NFormItem>
           <template #label>
-            <div class="inline-flex items-center gap-2">
+            <div class="flex items-center gap-2">
               <span
                 ><strong>{{ $t("Pareigybės") }}</strong></span
               ><a target="_blank" :href="route('duties.create')"
-                ><NButton size="tiny" round secondary type="primary"
+                ><NButton size="tiny" round secondary
                   ><template #icon
                     ><NIcon :component="Add24Filled"></NIcon></template
                   >Sukurti naują pareigybę?</NButton
                 ></a
+              >
+              <NButton
+                class="ml-auto"
+                size="tiny"
+                round
+                @click="handleChangeDutyShowMode"
+                >Pakeisti rodymo būdą</NButton
               >
             </div>
           </template>
@@ -103,7 +110,10 @@
             ref="transfer"
             v-model:value="form.duties"
             :options="flattenDutyOptions"
-            :render-source-list="renderSourceList"
+            :render-source-list="
+              dutyShowMode === 'tree' ? renderSourceList : undefined
+            "
+            :render-target-label="renderTargetLabel"
             source-filterable
           ></NTransfer>
         </NFormItem>
@@ -201,7 +211,7 @@ import {
   type TreeOption,
 } from "naive-ui";
 import { PersonEdit24Regular } from "@vicons/fluent";
-import { computed, h } from "vue";
+import { computed, h, ref } from "vue";
 import { useForm, usePage } from "@inertiajs/vue3";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
@@ -218,6 +228,11 @@ const props = defineProps<{
   modelRoute: string;
   deleteModelRoute?: string;
 }>();
+
+const dutyShowMode = ref<"tree" | "transfer">("tree");
+const handleChangeDutyShowMode = () => {
+  dutyShowMode.value = dutyShowMode.value === "tree" ? "transfer" : "tree";
+};
 
 const form = useForm("user", props.user);
 form.roles = props.user.roles?.map((role) => role.id);
@@ -274,11 +289,44 @@ const renderLabel = ({ option }: { option: TreeOption }) => {
   );
 };
 
-const flattenDutyOptions = dutyOptions.flatMap((padalinys) =>
-  padalinys.children?.flatMap((institution) =>
-    institution.children?.map((duty) => duty)
-  )
-);
+const renderTargetLabel = ({ option }: { option: TreeOption }) => {
+  // jsx element
+  // if value is integer then it's a padalinys and doesn't have additional button
+  if (typeof option.value === "number") {
+    return <span>{option.label}</span>;
+  }
+
+  // jsx element with button
+  // ! assumption that if checkbox is enabled then it's a duty
+  return (
+    <span class="inline-flex items-center gap-2">
+      {option.label}
+      <a target="_blank" href={route("duties.edit", option.value)}>
+        <NButton size="tiny" text>
+          {{
+            icon: <NIcon component={Eye16Regular} />,
+          }}
+        </NButton>
+      </a>
+    </span>
+  );
+};
+
+const flattenDutyOptions = computed(() => {
+  return dutyOptions.flatMap((padalinys) =>
+    padalinys.children?.flatMap((institution) =>
+      institution.children?.map((duty) => {
+        return {
+          label:
+            dutyShowMode.value === "tree"
+              ? duty.label
+              : `${duty.label} (${institution.label})`,
+          value: duty.value,
+        };
+      })
+    )
+  );
+});
 
 const rolesOptions = props.roles.map((role) => ({
   label: role.name,
