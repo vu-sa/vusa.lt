@@ -37,6 +37,12 @@ class MainController extends PublicController
 {
     private function getCalendarGoogleLink($calendarEvent, $en = false)
     {
+        // check if event date is after end date, if so, return null
+        // TODO: check in frontend
+        if ($calendarEvent->end_date && $calendarEvent->date > $calendarEvent->end_date) {
+            return null;
+        }
+
         $googleLink = Link::create($en ? ($calendarEvent?->extra_attributes['en']['title'] ?? $calendarEvent->title) : $calendarEvent->title,
             DateTime::createFromFormat('Y-m-d H:i:s', $calendarEvent->date),
             $calendarEvent->end_date
