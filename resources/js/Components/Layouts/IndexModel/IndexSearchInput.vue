@@ -30,14 +30,15 @@ import { NButton, NIcon, NInput, NPopover } from "naive-ui";
 import { ref } from "vue";
 import { router } from "@inertiajs/vue3";
 
-const props = defineProps<{
-  // model?: string;
-  payloadName: string;
-}>();
-
 // TODO: fix this event
 const emit = defineEmits<{
   (event: "completeSearch"): void;
+  (event: "sweep"): void;
+}>();
+
+const props = defineProps<{
+  // model?: string;
+  payloadName: string;
 }>();
 
 const loading = ref(false);
@@ -57,5 +58,6 @@ const handleSearchInput = () => {
 const sweepSearch = () => {
   searchValue.value = "";
   handleSearchInput();
+  emit("sweep");
 };
 </script>
