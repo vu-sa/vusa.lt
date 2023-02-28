@@ -25,15 +25,17 @@
         class="mb-8 flex flex-col gap-4"
       >
         <InstitutionFigure :institution="institution" />
-        <template v-for="duty in institution.duties">
-          <ContactWithPhoto
-            v-for="contact in duty.users"
-            :key="contact.id"
-            :contact="contact"
-            :duties="[duty]"
-          >
-          </ContactWithPhoto>
-        </template>
+        <div class="grid grid-cols-ramFill gap-4">
+          <template v-for="duty in institution.duties">
+            <ContactWithPhoto
+              v-for="contact in duty.users"
+              :key="contact.id"
+              :contact="contact"
+              :duties="[duty]"
+            >
+            </ContactWithPhoto>
+          </template>
+        </div>
       </div>
     </section>
   </div>
