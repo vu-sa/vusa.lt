@@ -72,10 +72,10 @@ const institutionName = computed(() => {
 
   if (locale === "en") {
     return (
-      props.institution.extra_attributes?.en?.short_name ??
       props.institution.extra_attributes?.en?.name ??
-      props.institution.short_name ??
-      props.institution.name
+      props.institution.extra_attributes?.en?.short_name ??
+      props.institution.name ??
+      props.institution.short_name
     );
   }
 
