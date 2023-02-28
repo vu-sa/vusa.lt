@@ -36,8 +36,8 @@ class InstitutionController extends ResourceController
             'institutions' => $institutions->when(isset(
                 $filters['padalinys.id']
             ) && $filters['padalinys.id'] !== [], function ($query) use ($filters) {
-                    $query->whereIn('padalinys_id', $filters['padalinys.id']);
-                }
+                $query->whereIn('padalinys_id', $filters['padalinys.id']);
+            }
             )->paginate(20),
         ]);
     }
