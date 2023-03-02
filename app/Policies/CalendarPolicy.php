@@ -86,12 +86,4 @@ class CalendarPolicy extends ModelPolicy
     {
         //
     }
-
-    // TODO: wild policy
-    public function destroyMedia(User $user, Calendar $calendar)
-    {
-        if ($user->can('delete unit calendar')) {
-            return $user->padalinys()->id == $calendar->padalinys->id;
-        }
-    }
 }

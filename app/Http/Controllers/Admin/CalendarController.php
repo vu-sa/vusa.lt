@@ -168,7 +168,7 @@ class CalendarController extends ResourceController
     // TODO: something with this???
     public function destroyMedia(Calendar $calendar, Media $media)
     {
-        $this->authorize('destroyMedia', $calendar);
+        $this->authorize('update', [Calendar::class, $calendar, $this->authorizer]);
 
         $calendar->getMedia('images')->where('id', '=', $media->id)->first()->delete();
 
