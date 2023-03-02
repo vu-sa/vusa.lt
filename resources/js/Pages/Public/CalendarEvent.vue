@@ -15,6 +15,7 @@
           <div class="h-fit self-end">
             <h1
               class="flex items-center px-12 text-4xl font-extrabold text-gray-900 dark:text-zinc-50 lg:text-5xl"
+              :class="{ 'text-zinc-50': !hasNoImage }"
             >
               <span>{{
                 $page.props.app.locale === "en"
