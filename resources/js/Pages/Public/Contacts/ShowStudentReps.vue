@@ -10,9 +10,11 @@
         clearable
     /></NFormItem>
 
-    <div v-if="selectedType" class="prose prose-sm mb-8">
-      {{ selectedType?.description ?? "Aprašymo nėra." }}
-    </div>
+    <div
+      v-if="selectedType"
+      class="prose prose-sm mb-8 dark:text-zinc-50"
+      v-html="selectedType?.description"
+    />
 
     <section
       v-for="institutionType in filteredTypes"
