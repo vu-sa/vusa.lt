@@ -158,7 +158,7 @@ circles.on("dblclick", function (d) {
   const id = d3.select(this).attr("id");
 
   // open
-  window.open(`/admin/institutions/${id}`, "_blank");
+  window.open(route("institutions.edit", id), "_blank");
 });
 
 const graph = ref(null);
