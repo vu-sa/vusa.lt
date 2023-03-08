@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller as Controller;
+use App\Http\Controllers\ResourceController;
 use App\Models\RegistrationForm;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class RegistrationFormController extends Controller
+class RegistrationFormController extends ResourceController
 {
     /**
      * Display a listing of the resource.
@@ -40,6 +40,8 @@ class RegistrationFormController extends Controller
         $registrationForm = new RegistrationForm();
         $registrationForm->data = $request->data;
         $registrationForm->save();
+
+        return redirect()->back();
     }
 
     /**

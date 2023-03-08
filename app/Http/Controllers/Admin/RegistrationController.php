@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Exports\RegistrationExport;
 use App\Http\Controllers\Controller as Controller;
 use App\Models\Registration;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
 
 class RegistrationController extends Controller
 {
@@ -17,9 +15,7 @@ class RegistrationController extends Controller
      */
     public function index()
     {
-        $this->authorize('viewAny', [Institution::class, $this->authorizer]);
-
-        return Excel::download(new RegistrationExport, 'registration.xlsx');
+        //
     }
 
     /**
@@ -80,11 +76,5 @@ class RegistrationController extends Controller
     public function destroy(Registration $registration)
     {
         //
-    }
-
-    // export all registrations for now
-
-    public function export()
-    {
     }
 }
