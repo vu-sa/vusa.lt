@@ -54,7 +54,10 @@
     </div>
     <div class="flex items-center gap-4">
       <DarkModeSwitch />
-      <LocaleButton :locale="locale" @change-locale="localeSelect" />
+      <LocaleButton
+        :locale="$page.props.app.locale"
+        @change-locale="localeSelect"
+      />
     </div>
     <NDrawer
       v-model:show="activeDrawer"
