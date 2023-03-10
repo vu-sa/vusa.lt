@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.4.10 (2023-03-10)
+
+* Pataisytas darbotvarkės punktų rodymas, kai jų yra daug
+* Prisijungusių studentų atstovų statistika
+* Pataisytas kalbos pakeitimas naujienose - perjungiami visi elementai
+
 ## v0.4.9 (2023-02-28)
 
 * Tipo aprašymai naudoja HTML
