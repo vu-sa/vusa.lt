@@ -17,12 +17,10 @@
               $page.props.alias === 'vusa' ? 'www' : $page.props.alias ?? 'www',
           })
         "
-        ><NButton text icon-placement="right"
-          >Daugiau<template #icon
-            ><NIcon
-              :component="ArrowRight12Regular"
-            ></NIcon></template></NButton
-      ></Link>
+        ><div class="inline-flex gap-1">
+          <span>Daugiau</span><NIcon :component="ArrowRight16Regular"></NIcon>
+        </div>
+      </Link>
     </header>
 
     <div class="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
@@ -74,7 +72,11 @@
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import { ArrowRight12Regular, Clock20Regular } from "@vicons/fluent";
+import {
+  ArrowRight12Regular,
+  ArrowRight16Regular,
+  Clock20Regular,
+} from "@vicons/fluent";
 import { Link } from "@inertiajs/vue3";
 import { NButton, NIcon } from "naive-ui";
 

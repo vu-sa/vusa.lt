@@ -39,7 +39,6 @@
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
 import { Cookies24Regular } from "@vicons/fluent";
-import { Link } from "@inertiajs/vue3";
 import { NButton, NIcon } from "naive-ui";
 
 defineEmits(["okayCookieConsent"]);

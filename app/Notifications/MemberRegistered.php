@@ -11,6 +11,12 @@ class MemberRegistered extends Notification implements ShouldQueue
 {
     use Queueable;
 
+    protected $data;
+
+    protected $registerLocation;
+
+    protected $email;
+
     /**
      * Create a new notification instance.
      *

@@ -75,12 +75,12 @@ const openAnotherLangNews = () => {
           ? "www"
           : usePage().props.alias ?? "www",
       permalink: props.otherLangNews.permalink,
-    })
-  ),
+    }),
     {
       onSuccess: () => {
         loadLanguageAsync(props.otherLangNews?.lang ?? "lt");
       },
-    };
+    }
+  );
 };
 </script>

@@ -86,7 +86,7 @@
         <NFormItem>
           <template #label>
             <div class="inline-flex items-center gap-2">
-              <strong>{{ $t("Pareigybės") }}</strong
+              <strong>{{ $t("Nariai") }}</strong
               ><a target="_blank" :href="route('users.create')"
                 ><NButton text size="tiny"
                   ><template #icon

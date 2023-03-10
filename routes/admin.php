@@ -9,6 +9,7 @@ Route::get('profile', [DashboardController::class, 'userSettings'])->name('profi
 Route::get('userTasks', [DashboardController::class, 'userTasks'])->name('userTasks');
 Route::get('workspace', [DashboardController::class, 'workspace'])->name('workspace');
 Route::get('institutionGraph', [DashboardController::class, 'institutionGraph'])->name('institutionGraph');
+Route::get('stats/representatives', [StatsController::class, 'representativesInPadalinys'])->name('stats.representativesInPadalinys');
 
 Route::post('sendFeedback', [DashboardController::class, 'sendFeedback'])->name('sendFeedback');
 
