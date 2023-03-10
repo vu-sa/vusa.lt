@@ -20,7 +20,7 @@
     <template #title>
       <slot name="title" />
     </template>
-    <div class="grid grid-rows-[minmax(300px,_50vh)_minmax(450px,_auto)]">
+    <div class="grid grid-rows-[minmax(300px,_50vh)_minmax(450px,_auto)] gap-4">
       <div><slot /></div>
       <div>
         <div v-if="relatedModels" class="flex-items mb-6 flex gap-4">

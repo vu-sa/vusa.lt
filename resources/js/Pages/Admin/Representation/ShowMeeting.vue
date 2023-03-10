@@ -29,34 +29,39 @@
       size="small"
       :segmented="{ footer: 'soft' }"
     >
-      <NDivider style="margin-top: 0rem">{{ $t("Darbotvarkė") }}</NDivider>
-      <ol v-if="meeting.agenda_items?.length > 0" class="pl-4">
-        <li
-          v-for="(agenda_item, index) in meeting.agenda_items"
-          :key="agenda_item.id"
-          class="group flex gap-2"
-        >
-          <span>{{ index + 1 }}. {{ agenda_item.title }}</span>
-          <NButton
-            size="tiny"
-            class="invisible transition duration-200 group-hover:visible"
-            strong
-            text
-            @click="handleAgendaClick(agenda_item)"
-            ><template #icon><NIcon :component="Edit24Filled"></NIcon></template
-          ></NButton>
-          <NButton
-            size="tiny"
-            class="invisible transition duration-200 group-hover:visible"
-            text
-            @click="handleAgendaItemDelete(agenda_item)"
-            ><template #icon><NIcon :component="Delete24Filled" /></template
-          ></NButton>
-        </li>
-      </ol>
-      <p v-else class="text-center text-sm text-zinc-500">
-        Darbotvarkės punktų nėra.
-      </p>
+      <NDivider style="margin-top: 0rem; margin-bottom: 0rem">{{
+        $t("Darbotvarkė")
+      }}</NDivider>
+      <NScrollbar style="max-height: 35vh" trigger="none">
+        <ol v-if="meeting.agenda_items?.length > 0" class="pl-4">
+          <li
+            v-for="(agenda_item, index) in meeting.agenda_items"
+            :key="agenda_item.id"
+            class="group flex gap-2"
+          >
+            <span>{{ index + 1 }}. {{ agenda_item.title }}</span>
+            <NButton
+              size="tiny"
+              class="invisible transition duration-200 group-hover:visible"
+              strong
+              text
+              @click="handleAgendaClick(agenda_item)"
+              ><template #icon
+                ><NIcon :component="Edit24Filled"></NIcon></template
+            ></NButton>
+            <NButton
+              size="tiny"
+              class="invisible transition duration-200 group-hover:visible"
+              text
+              @click="handleAgendaItemDelete(agenda_item)"
+              ><template #icon><NIcon :component="Delete24Filled" /></template
+            ></NButton>
+          </li>
+        </ol>
+        <p v-else class="text-center text-sm text-zinc-500">
+          Darbotvarkės punktų nėra.
+        </p>
+      </NScrollbar>
       <template #footer>
         <NButton size="small" @click="showAgendaItemStoreModal = true"
           >{{ $t("forms.add") }}?<template #icon
@@ -105,7 +110,7 @@
 
 <script setup lang="tsx">
 import { Delete24Filled, Edit24Filled } from "@vicons/fluent";
-import { NButton, NCard, NDivider, NIcon } from "naive-ui";
+import { NButton, NCard, NDivider, NIcon, NScrollbar } from "naive-ui";
 import { computed, ref } from "vue";
 import { router } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
