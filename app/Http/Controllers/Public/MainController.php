@@ -415,7 +415,9 @@ class MainController extends PublicController
         if (is_int($data['whereToRegister'])) {
             $registerPadalinys = Padalinys::find($data['whereToRegister']);
             $registerLocation = __($registerPadalinys->fullname);
-            $chairDuty = $registerPadalinys->duties->where('type_id', '1')->first();
+            $chairDuty = $registerPadalinys->duties()->whereHas('types', function ($query) {
+                $query->where('slug', 'pirmininkas');
+            })->first();
             $chairPerson = $chairDuty->users->first();
             $chairEmail = $chairDuty->email;
         } else {
@@ -426,7 +428,7 @@ class MainController extends PublicController
                     break;
 
                 case 'jek':
-                    $registerLocation = 'VU'.__('Jaunųjų energetikų klubas');
+                    $registerLocation = 'VU '.__('Jaunųjų energetikų klubas');
                     $chairEmail = 'vujek@jek.lt';
                     break;
 
