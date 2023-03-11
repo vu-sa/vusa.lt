@@ -36,12 +36,6 @@ class UserController extends ResourceController
 
         return Inertia::render('Admin/People/IndexUser', [
             'users' => $users,
-            'usersCount' => fn () => $users->total(),
-            'usersLoggedInCount' => fn () => User::when(auth()->user()->hasRole(config('permission.super_admin_role_name')), fn ($query) => $query, function ($query) {
-                return $query->whereHas('padaliniai', function ($query) {
-                    $query->whereIn('padaliniai.id', $this->authorizer->getPadaliniai()->pluck('id'));
-                });
-            })->whereNotNull('last_action')->count(),
         ]);
     }
 
