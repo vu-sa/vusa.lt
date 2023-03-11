@@ -59,7 +59,7 @@
             <NImageGroup :show-toolbar="false">
               <NSpace>
                 <NImage
-                  v-for="image in images"
+                  v-for="image in event.images"
                   :key="image.id"
                   width="150"
                   :src="image.original_url"
@@ -89,13 +89,12 @@ import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 const props = defineProps<{
   event: App.Entities.Calendar;
-  images: Record<string, any> | null;
   googleLink: string;
 }>();
 
 // check if image array is empty
 const hasNoImage = computed(() => {
-  return props.images === null || props.images.length === 0;
+  return props.event.images === null || props.event.images.length === 0;
 });
 
 const headerImageStyle = computed(() => {
@@ -105,7 +104,7 @@ const headerImageStyle = computed(() => {
 
   return {
     "background-image": `linear-gradient(0deg, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.3)), url(${
-      props.images?.length > 0 ? props.images[0].original_url : ""
+      props.event.images?.length > 0 ? props.event.images[0].original_url : ""
     })`,
   };
 });
@@ -116,11 +115,5 @@ const headerImageStyle = computed(() => {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-}
-
-.carousel-img {
-  width: 100%;
-  height: 240px;
-  object-fit: cover;
 }
 </style>

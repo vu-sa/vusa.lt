@@ -39,4 +39,6 @@ calendar.value.extra_attributes = checkForEmptyArray(
 calendar.value.extra_attributes.en = checkForEmptyArray(
   calendar.value.extra_attributes.en
 );
+
+calendar.value.date = new Date(calendar.value.date).getTime();
 </script>

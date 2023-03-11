@@ -298,7 +298,7 @@ const isSameDay = (date1: string, date2: string) => {
     return true;
   }
 
-  let parsedDate1 = new Date(date1.replace(/-/g, "/"));
+  let parsedDate1 = new Date(date1);
   let parsedDate2 = new Date(date2.replace(/-/g, "/"));
 
   return (
@@ -327,10 +327,10 @@ const calendarAttributes = props.calendar.map((event) => {
   let calendarAttrObject = {
     dates: event.end_date
       ? {
-          start: new Date(event.date.replace(/-/g, "/")),
+          start: new Date(event.date),
           end: new Date(event.end_date.replace(/-/g, "/")),
         }
-      : new Date(event.date.replace(/-/g, "/")),
+      : new Date(event.date),
     [isSameDay(event.date, event.end_date) ? "dot" : "highlight"]: eventColor,
     popover: {
       label: event.title,

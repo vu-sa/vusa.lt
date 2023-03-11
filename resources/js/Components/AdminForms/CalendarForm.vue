@@ -132,7 +132,7 @@
         <div class="grid gap-4 lg:grid-cols-3">
           <NFormItem label="Renginio pradžia" required>
             <NDatePicker
-              v-model:formatted-value="form.date"
+              v-model:value="form.date"
               default-time="12:00:00"
               placeholder="Pasirinkti pradžios laiką..."
               value-format="yyyy-MM-dd HH:mm:ss"
@@ -343,11 +343,10 @@ const form = useForm("calendar", props.calendar);
 // create disabled end date if start date is not set
 
 if (props.modelRoute === "calendar.update") {
-  const date = new Date(form.date.replace(/-/g, "/"));
-
-  const disabledEndDate = (ts) => {
-    return !ts || date > ts + 1000 * 60 * 60 * 24;
-  };
+  // const date = new Date(form.date);
+  // const disabledEndDate = (ts) => {
+  //   return !ts || date > ts + 1000 * 60 * 60 * 24;
+  // };
 }
 
 // convert date_range array of string to number

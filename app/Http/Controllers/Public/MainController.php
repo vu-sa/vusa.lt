@@ -373,8 +373,13 @@ class MainController extends PublicController
     {
         $calendar->load('padalinys:id,alias,fullname,shortname');
 
-        return Inertia::render('Public/CalendarEvent',
-            ['event' => $calendar, 'images' => $calendar->getMedia('images'), 'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale() === 'en')])->withViewData([
+        return Inertia::render('Public/CalendarEvent', [
+            'event' => [
+                ...$calendar->toArray(),
+                'images' => $calendar->getMedia('images')
+            ],
+            'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale() === 'en')])
+                ->withViewData([
                 'title' => $calendar->title,
                 'description' => strip_tags($calendar->description),
             ]);
