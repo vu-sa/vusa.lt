@@ -2,7 +2,7 @@
   <IndexSearchInput
     payload-name="text"
     @complete-search="handleCompletedSearch"
-    @sweep="tableFilters = undefined"
+    @sweep="sweepSearch"
   />
   <NDataTable
     remote
@@ -12,7 +12,8 @@
     :loading="loading"
     :pagination="pagination"
     pagination-behavior-on-filter="first"
-    @update:page="handlePageChange"
+    @update:sorter="handleSorterChange"
+    @update:page="handleChange"
     @update:filters="handleFiltersChange"
   >
   </NDataTable>
@@ -21,18 +22,21 @@
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
 import { ArrowForward20Filled, Edit20Filled } from "@vicons/fluent";
-import { NButton, NButtonGroup, NDataTable, NIcon } from "naive-ui";
-import { computed, ref } from "vue";
+import {
+  type DataTableFilterState,
+  type DataTableSortState,
+  NButton,
+  NButtonGroup,
+  NDataTable,
+  NIcon,
+} from "naive-ui";
+import { computed, inject, ref } from "vue";
 import { router } from "@inertiajs/vue3";
 import type { DataTableColumns } from "naive-ui";
 
 import { Link } from "@inertiajs/vue3";
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import IndexSearchInput from "./IndexSearchInput.vue";
-
-const emit = defineEmits<{
-  (event: "search:complete", ...args: any[]): void;
-}>();
 
 const props = defineProps<{
   columns: DataTableColumns<Record<string, any>>;
@@ -44,7 +48,8 @@ const props = defineProps<{
 }>();
 
 const loading = ref(false);
-const tableFilters = ref(undefined);
+const { sorters, updateSorters } = inject("sorters", {});
+const { filters, updateFilters } = inject("filters", {});
 
 const pagination = ref({
   itemCount: props.paginatedModels.total,
@@ -54,8 +59,15 @@ const pagination = ref({
   showQuickJumper: true,
 });
 
-const handleFiltersChange = (filters: any) => {
-  tableFilters.value = filters;
+const handleFiltersChange = (state: DataTableFilterState) => {
+  console.log("handleFiltersChange", state, filters);
+  filters.value = updateFilters(filters, state);
+  console.log("handleFiltersChange2", filters);
+  handleChange(1);
+};
+
+const handleSorterChange = (state: DataTableSortState) => {
+  sorters.value = updateSorters(sorters, state);
   handleChange(1);
 };
 
@@ -63,30 +75,45 @@ const handleChange = (page: number) => {
   // base64 encode the filters
 
   let encodedFilters = undefined;
-  if (tableFilters.value) {
-    encodedFilters = btoa(JSON.stringify(tableFilters.value));
+  let encodedSorters = undefined;
+
+  if (filters && filters.value) {
+    encodedFilters = btoa(JSON.stringify(filters.value));
+  }
+
+  if (sorters && sorters.value) {
+    encodedSorters = btoa(JSON.stringify(sorters.value));
   }
 
   loading.value = true;
   router.reload({
-    data: { page: page, filters: encodedFilters },
+    data: { page: page, filters: encodedFilters, sorters: encodedSorters },
     only: [props.modelName],
     onSuccess: () => {
       pagination.value.page = page;
       pagination.value.itemCount = props.paginatedModels.total;
       pagination.value.pageCount = props.paginatedModels.last_page;
       loading.value = false;
-      emit("search:complete", tableFilters.value);
     },
   });
 };
 
-const handlePageChange = (page: number) => {
-  handleChange(page);
-};
+const handleCompletedSearch = () => handleChange(1);
 
-const handleCompletedSearch = () => {
-  handleChange(1);
+const sweepSearch = () => {
+  updateFilters(filters, undefined);
+  updateSorters(sorters, undefined);
+
+  router.reload({
+    data: { page: 1, filters: undefined, sorters: undefined, text: undefined },
+    only: [props.modelName],
+    onSuccess: () => {
+      pagination.value.page = 1;
+      pagination.value.itemCount = props.paginatedModels.total;
+      pagination.value.pageCount = props.paginatedModels.last_page;
+      loading.value = false;
+    },
+  });
 };
 
 // Append the column array with an actions columns

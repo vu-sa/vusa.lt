@@ -11,14 +11,23 @@
 </template>
 
 <script setup lang="tsx">
-import { formatRelativeTime } from "@/Utils/IntlTime";
+import { computed, provide, ref } from "vue";
+import type { DataTableSortState } from "naive-ui";
 
+import { formatRelativeTime } from "@/Utils/IntlTime";
+import { updateSorters } from "@/Utils/DataTable";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
 defineProps<{
   users: PaginatedModels<App.Entities.User>;
 }>();
+
+const sorters = ref<Record<string, DataTableSortState["order"]>>({
+  name: false,
+});
+
+provide("sorters", { sorters, updateSorters });
 
 const canUseRoutes = {
   create: true,
@@ -27,61 +36,71 @@ const canUseRoutes = {
   destroy: true,
 };
 
-const columns = [
-  {
-    title: "Vardas",
-    key: "name",
-  },
-  {
-    title: "El. paštas",
-    key: "email",
-    maxWidth: 200,
-    ellipsis: {
-      tooltip: true,
+const columns = computed(() => {
+  return [
+    {
+      title: "Vardas",
+      key: "name",
+      sorter: true,
+      sortOrder: sorters.value.name,
     },
-    render(row: App.Entities.User) {
-      return (
-        <a href={`mailto:${row.email}`} class="transition hover:text-vusa-red">
-          {row.email}
-        </a>
-      );
+    {
+      title: "El. paštas",
+      key: "email",
+      maxWidth: 200,
+      ellipsis: {
+        tooltip: true,
+      },
+      render(row: App.Entities.User) {
+        return (
+          <a
+            href={`mailto:${row.email}`}
+            class="transition hover:text-vusa-red"
+          >
+            {row.email}
+          </a>
+        );
+      },
     },
-  },
-  {
-    title: "Telefonas",
-    key: "phone",
-    maxWidth: 200,
-    ellipsis: {
-      tooltip: true,
+    {
+      title: "Telefonas",
+      key: "phone",
+      maxWidth: 200,
+      ellipsis: {
+        tooltip: true,
+      },
+      render(row: App.Entities.User) {
+        return (
+          <a
+            href={`mailto:${row.phone}`}
+            class="transition hover:text-vusa-red"
+          >
+            {row.phone}
+          </a>
+        );
+      },
     },
-    render(row: App.Entities.User) {
-      return (
-        <a href={`mailto:${row.phone}`} class="transition hover:text-vusa-red">
-          {row.phone}
-        </a>
-      );
+    {
+      title: "Paskutinis prisijungimas",
+      key: "last_action",
+      maxWidth: 200,
+      ellipsis: {
+        tooltip: true,
+      },
+      render(row: App.Entities.User) {
+        return (
+          <span class={row.last_action ? "" : "text-vusa-red"}>
+            {row.last_action
+              ? formatRelativeTime(new Date(row.last_action))
+              : "Niekada"}
+          </span>
+        );
+      },
     },
-  },
-  {
-    title: "Paskutinis prisijungimas",
-    key: "last_action",
-    maxWidth: 200,
-    ellipsis: {
-      tooltip: true,
+    {
+      title: "Pareigų skaičius",
+      key: "duties_count",
     },
-    render(row: App.Entities.User) {
-      return (
-        <span class={row.last_action ? "" : "text-vusa-red"}>
-          {row.last_action
-            ? formatRelativeTime(new Date(row.last_action))
-            : "Niekada"}
-        </span>
-      );
-    },
-  },
-  {
-    title: "Pareigų skaičius",
-    key: "duties_count",
-  },
-];
+  ];
+});
 </script>

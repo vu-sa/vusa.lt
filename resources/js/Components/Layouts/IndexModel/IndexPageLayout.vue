@@ -27,7 +27,6 @@
         :destroy-route="
           canUseRoutes.destroy ? `${modelName}.destroy` : undefined
         "
-        @search:complete="$emit('search:complete', $event)"
       />
     </NCard>
   </PageContent>
@@ -42,10 +41,6 @@ import IndexDataTable from "@/Components/Layouts/IndexModel/IndexDataTable.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import SuggestionAlert from "@/Components/Alerts/SuggestionAlert.vue";
 import entities from "@/Types/EntityDescriptions/entities";
-
-defineEmits<{
-  (event: "search:complete", ...args: any[]): void;
-}>();
 
 const props = defineProps<{
   paginatedModels: PaginatedModels<Record<string, any>>;

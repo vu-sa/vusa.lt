@@ -29,13 +29,18 @@ class UserController extends ResourceController
         $this->authorize('viewAny', [User::class, $this->authorizer]);
 
         $search = request()->input('text');
+        $sorters = json_decode(base64_decode(request()->input('sorters')), true);
 
         $indexer = new ModelIndexer();
-        $users = $indexer->execute(User::class, $search, 'name', $this->authorizer)->with('duties:id,institution_id', 'duties.institution:id,padalinys_id', 'duties.institution.padalinys:id,shortname')->withCount('duties')
-        ->get()->makeVisible(['last_action'])->paginate(20);
+        $users = $indexer->execute(User::class, $search, 'name', $this->authorizer)->with('duties:id,institution_id', 'duties.institution:id,padalinys_id', 'duties.institution.padalinys:id,shortname')->withCount('duties');
 
         return Inertia::render('Admin/People/IndexUser', [
-            'users' => $users,
+            'users' => $users->when(
+                isset($sorters['name']),
+                function ($query) use ($sorters) {
+                    $query->orderBy('name', $sorters['name'] === 'descend' ? 'desc' : 'asc');
+                }
+            )->get()->makeVisible(['last_action'])->paginate(20),
         ]);
     }
 

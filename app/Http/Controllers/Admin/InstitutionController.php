@@ -26,6 +26,7 @@ class InstitutionController extends ResourceController
 
         // base64 json encoded filters decode
         $filters = json_decode(base64_decode(request()->input('filters')), true);
+        $sorters = json_decode(base64_decode(request()->input('sorters')), true);
         $search = request()->input('text');
 
         $indexer = new ModelIndexer();
@@ -38,6 +39,11 @@ class InstitutionController extends ResourceController
             ) && $filters['padalinys.id'] !== [], function ($query) use ($filters) {
                 $query->whereIn('padalinys_id', $filters['padalinys.id']);
             }
+            )->when(
+                isset($sorters['name']),
+                function ($query) use ($sorters) {
+                    $query->orderBy('name', $sorters['name'] === 'descend' ? 'desc' : 'asc');
+                }
             )->paginate(20),
         ]);
     }
