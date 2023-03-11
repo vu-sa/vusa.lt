@@ -71,97 +71,7 @@
           </div>
         </div>
         <div class="-order-1 mx-8 flex lg:order-1">
-          <div
-            style="grid-template-columns: 16px auto"
-            class="sticky top-40 grid h-fit w-full max-w-lg grid-cols-2 flex-col items-center gap-2 rounded-2xl border-vusa-red p-4 text-gray-900 dark:text-zinc-100 lg:w-80 lg:border-2 lg:p-6 lg:shadow-md"
-          >
-            <div class="absolute top-6 right-6">
-              <NButton
-                v-if="event.extra_attributes?.facebook_url"
-                secondary
-                size="small"
-                circle
-                @click="windowOpen(event.extra_attributes?.facebook_url)"
-                ><NIcon :component="FacebookF"></NIcon
-              ></NButton>
-            </div>
-            <p v-if="false" class="col-span-2 mb-4 flex w-4/5 text-lg">
-              {{
-                $page.props.app.locale === "en"
-                  ? event.extra_attributes?.en?.title ?? event.title
-                  : event.title
-              }}
-            </p>
-
-            <NIcon :component="PeopleTeam28Regular"></NIcon>
-            <span>
-              {{ $t("Organizuoja") }}:
-              <strong>{{ eventOrganizer }}</strong>
-            </span>
-
-            <NIcon :component="CalendarLtr24Regular"></NIcon>
-            <span>
-              {{ event.date }}
-            </span>
-            <template v-if="event.end_date">
-              <NIcon :component="CalendarLtr24Filled"></NIcon>
-              <span>
-                {{ event.end_date }}
-              </span>
-            </template>
-            <template v-if="event.location">
-              <NIcon :component="Home32Regular"></NIcon>
-              <span>{{
-                $page.props.app.locale === "en"
-                  ? event.extra_attributes?.en?.location ?? event.location
-                  : event.location
-              }}</span>
-            </template>
-
-            <NDivider v-if="event.url" class="col-span-2"></NDivider>
-            <div class="col-span-2 flex flex-col justify-center">
-              <p v-if="timeTillEvent.days >= 0" class="text-center">
-                {{ $t("Iki renginio liko") }}:
-              </p>
-
-              <NGradientText
-                v-if="timeTillEvent.days >= 0"
-                type="error"
-                class="mb-2 w-full text-center"
-              >
-                {{ `${timeTillEvent.days} ${$t("d.")}` }}
-                <NCountdown
-                  :render="renderCountdown"
-                  :active="true"
-                  :duration="timeTillEvent.ms"
-                ></NCountdown>
-              </NGradientText>
-
-              <NButton
-                v-if="event.url"
-                strong
-                round
-                type="primary"
-                size="large"
-                @click="windowOpen(event.url)"
-                ><template #icon>
-                  <NIcon :component="HatGraduation20Regular"></NIcon>
-                </template>
-                {{ $t("Dalyvauk") }}!
-              </NButton>
-              <div class="mt-4 w-fit lg:mx-auto">
-                <NButton
-                  size="small"
-                  secondary
-                  round
-                  @click="windowOpen(googleLink)"
-                >
-                  <template #icon><NIcon :component="Google" /></template>
-                  {{ $t("Įsidėk į Google kalendorių") }}</NButton
-                >
-              </div>
-            </div>
-          </div>
+          <CalendarCard :calendar-event="event" :google-link="googleLink" />
         </div>
       </section>
     </article>
@@ -170,28 +80,11 @@
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import {
-  CalendarLtr24Filled,
-  CalendarLtr24Regular,
-  HatGraduation20Regular,
-  Home32Regular,
-  PeopleTeam28Regular,
-} from "@vicons/fluent";
-import {
-  type CountdownProps,
-  NButton,
-  NCountdown,
-  NDivider,
-  NGradientText,
-  NIcon,
-  NImage,
-  NImageGroup,
-  NSpace,
-} from "naive-ui";
-import { FacebookF, Google } from "@vicons/fa";
 import { Head } from "@inertiajs/vue3";
-import { computed, h } from "vue";
+import { NImage, NImageGroup, NSpace } from "naive-ui";
+import { computed } from "vue";
 
+import CalendarCard from "@/Components/Calendar/CalendarCard.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 const props = defineProps<{
@@ -205,16 +98,6 @@ const hasNoImage = computed(() => {
   return props.images === null || props.images.length === 0;
 });
 
-const eventOrganizer = computed((): string => {
-  return (
-    props.event.extra_attributes?.organizer ?? props.event.padalinys.shortname
-  );
-});
-
-const windowOpen = (url: string) => {
-  window.open(url, "_blank");
-};
-
 const headerImageStyle = computed(() => {
   if (hasNoImage.value) {
     return null;
@@ -226,37 +109,6 @@ const headerImageStyle = computed(() => {
     })`,
   };
 });
-
-const timeTillEvent = computed(() => {
-  const date = new Date(props.event.date.replace(/-/g, "/"));
-  const now = new Date();
-  // get full days till event
-  const daysTillEvent = Math.floor(
-    (date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-  );
-  // get ms till event minus full days
-  const msTillEvent =
-    date.getTime() - now.getTime() - daysTillEvent * 1000 * 60 * 60 * 24;
-  return {
-    days: daysTillEvent,
-    ms: msTillEvent,
-  };
-});
-
-const renderCountdown: CountdownProps["render"] = ({
-  hours,
-  minutes,
-  seconds,
-}) => {
-  return h("span", {}, [
-    h("span", hours),
-    ` ${$t("val.")} `,
-    h("span", minutes),
-    ` ${$t("min.")} `,
-    h("span", seconds),
-    ` ${$t("sek.")}`,
-  ]);
-};
 </script>
 
 <style scoped>
