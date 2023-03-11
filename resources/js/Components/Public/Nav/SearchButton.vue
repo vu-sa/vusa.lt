@@ -1,8 +1,6 @@
 <template>
-  <NButton text @click="changeShowSearch">
-    <NIcon size="22">
-      <Search20Filled />
-    </NIcon>
+  <NButton :title="$t('Paieška')" text @click="changeShowSearch">
+    <template #icon><NIcon size="22" :component="Search20Filled" /></template>
   </NButton>
   <NModal v-model:show="showSearch">
     <div
