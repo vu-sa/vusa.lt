@@ -36,7 +36,7 @@ use Spatie\CalendarLinks\Link;
 
 class MainController extends PublicController
 {
-    private function getCalendarGoogleLink($calendarEvent, $en = false)
+    private function getCalendarGoogleLink($calendarEvent, $locale = 'lt')
     {
         // check if event date is after end date, if so, return null
         // TODO: check in frontend
@@ -44,12 +44,12 @@ class MainController extends PublicController
             return null;
         }
 
-        $googleLink = Link::create($en ? ($calendarEvent?->extra_attributes['en']['title'] ?? $calendarEvent->title) : $calendarEvent->title,
+        $googleLink = Link::create($locale === 'en' ? ($calendarEvent?->extra_attributes['en']['title'] ?? $calendarEvent->title) : $calendarEvent->title,
             DateTime::createFromFormat('Y-m-d H:i:s', $calendarEvent->date),
             $calendarEvent->end_date
                 ? DateTime::createFromFormat('Y-m-d H:i:s', $calendarEvent->end_date)
                 : Carbon::parse($calendarEvent->date)->addHour()->toDateTime())
-            ->description($en
+            ->description($locale === 'en'
             ? (strip_tags(
                 ($calendarEvent?->extra_attributes['en']['description'] ?? $calendarEvent->description)
                 ?? $calendarEvent->description))
@@ -75,7 +75,7 @@ class MainController extends PublicController
     public function home()
     {
         // get last 4 news by publishing date
-        $banners = Padalinys::where('alias', 'vusa')->first()->banners()->inRandomOrder()->where('is_active', 1)->get();
+        // $banners = Padalinys::where('alias', 'vusa')->first()->banners()->inRandomOrder()->where('is_active', 1)->get();
 
         $news = News::with('padalinys')->where([['padalinys_id', '=', $this->padalinys->id], ['lang', app()->getLocale()], ['draft', '=', 0]])
             ->where('publish_time', '<=', date('Y-m-d H:i:s'))
@@ -84,6 +84,13 @@ class MainController extends PublicController
             ->get();
 
         $calendar = $this->getEventsForCalendar();
+
+        // get 4 upcoming events by end_date if it exists, otherwise by date
+        $upcoming4Events = $calendar->filter(function ($event) {
+            return $event->end_date ? $event->end_date > date('Y-m-d H:i:s') : $event->date > date('Y-m-d H:i:s');
+        })->sortBy(function ($event) {
+            return $event->date;
+        }, SORT_DESC)->take(4)->values();
 
         return Inertia::render('Public/HomePage', [
             'news' => $news->map(function ($news) {
@@ -112,11 +119,12 @@ class MainController extends PublicController
                     'end_date' => $calendar->end_date,
                     'title' => app()->getLocale() === 'en' ? ($calendar->extra_attributes['en']['title'] ?? $calendar->title) : $calendar->title,
                     'category' => $calendar->category,
-                    'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale() === 'en'),
+                    'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale()),
                 ];
             }),
+            'upcoming4Events' => $upcoming4Events,
             'mainPage' => MainPage::where([['padalinys_id', $this->padalinys->id], ['lang', app()->getLocale()]])->get(),
-            'banners' => $banners,
+            // 'banners' => $banners,
         ])->withViewData([
             'description' => 'Vilniaus universiteto Studentų atstovybė (VU SA) – seniausia ir didžiausia Lietuvoje visuomeninė, ne pelno siekianti, nepolitinė, ekspertinė švietimo organizacija',
         ]);
@@ -388,7 +396,7 @@ class MainController extends PublicController
                 'images' => $calendar->getMedia('images')
             ],
             'calendar' => $this->getEventsForCalendar(),
-            'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale() === 'en')])
+            'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale())])
                 ->withViewData([
                 'title' => $calendar->title,
                 'description' => strip_tags($calendar->description),

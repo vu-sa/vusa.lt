@@ -1,16 +1,16 @@
 <template>
   <NCard
-    class="h-fit rounded-2xl text-gray-900 shadow-md dark:text-zinc-100 lg:border-2"
+    class="subtle-gray-gradient h-fit rounded-2xl text-gray-900 shadow-md dark:text-zinc-100 lg:border-2"
     hoverable
     :segmented="{ footer: 'soft' }"
   >
     <template #cover>
-      <img
-        v-if="calendarEvent.images.length > 0"
+      <!-- <img
+        v-if="calendarEvent.images && calendarEvent.images?.length > 0"
         style="height: 100px"
         class="rounded-t-2xl object-cover object-center"
         :src="calendarEvent.images[0].original_url"
-      />
+      /> -->
     </template>
     <template #header
       ><strong class="line-clamp-2">{{ calendarEvent.title }}</strong></template
@@ -65,7 +65,14 @@
     </div>
 
     <template #footer>
-      <div class="flex flex-col justify-center">
+      <div
+        v-if="
+          googleLink ||
+          calendarEvent.url ||
+          calendarEvent.extra_attributes?.facebook_url
+        "
+        class="flex flex-col justify-center"
+      >
         <p v-if="timeTillEvent.days >= 0" class="text-center">
           {{ $t("Iki renginio liko") }}:
         </p>
@@ -107,7 +114,7 @@
             circle
             ><NIcon size="18" :component="FacebookF"></NIcon
           ></NButton>
-          <NPopover>
+          <NPopover v-if="googleLink">
             {{ $t("Įsidėk į Google kalendorių") }}
             <template #trigger>
               <NButton
@@ -116,6 +123,7 @@
                 tag="a"
                 target="_blank"
                 :href="googleLink"
+                @click.stop
               >
                 <template #icon><NIcon :component="Google" /></template>
               </NButton>
@@ -151,13 +159,13 @@ import { formatStaticTime } from "@/Utils/IntlTime";
 
 const props = defineProps<{
   calendarEvent: App.Entities.Calendar;
-  googleLink: string;
+  googleLink?: string;
 }>();
 
 const eventOrganizer = computed((): string => {
   return (
     props.calendarEvent.extra_attributes?.organizer ??
-    props.calendarEvent.padalinys.shortname
+    props.calendarEvent.padalinys?.shortname
   );
 });
 

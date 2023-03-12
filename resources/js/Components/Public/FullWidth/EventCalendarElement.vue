@@ -19,8 +19,7 @@
         v-if="$page.props.app.locale === 'lt'"
         class="text-2xl font-bold lg:w-2/3"
       >
-        <span class="font-extrabold">Naujiena!</span> Sek visus VU studentų
-        renginius bei įvykius
+        Sek visus VU studentų renginius bei įvykius
         <span class="text-vusa-red">čia!</span>
       </p>
       <p v-else class="text-2xl font-bold lg:w-2/3">
@@ -49,22 +48,13 @@
         </span>
         <strong>this student calendar</strong> to „Google“ or „Outlook“ ..? 🗓
       </p>
-
-      <p v-if="$page.props.app.locale === 'lt'" class="w-4/5 text-sm">
-        <strong>Ir dar</strong> - artėja VU SA ir VU SA PKP prisistatymai! Jeigu
-        nenori jų laukti, prisijunk naudodamas
-        <Link :href="route('memberRegistration', { lang: 'lt' })"
-          >šią registraciją</Link
-        >.
-      </p>
-
-      <p v-else class="w-4/5 text-sm">
-        <strong>And also</strong> - the presentations of VU SA and VU SA PKP are
-        coming! If you don't want to wait, you can join through
-        <Link :href="route('memberRegistration', { lang: 'en' })">here</Link>.
-      </p>
     </div>
-
+    <NMessageProvider>
+      <CalendarSyncModal
+        v-model:show-modal="showModal"
+        @close="showModal = false"
+      />
+    </NMessageProvider>
     <div class="relative mx-auto">
       <div class="relative flex w-fit items-center justify-center lg:top-4">
         <template v-if="showPhotos">
@@ -96,139 +86,36 @@
       </div>
     </div>
   </div>
-  <CardModal
-    v-model:show="showModal"
-    :title="$t('Kalendoriaus sinchronizavimo instrukcija')"
-    @close="showModal = false"
+  <div
+    v-if="upcoming4Events.length > 0"
+    class="mx-auto my-8 max-w-7xl px-16 lg:px-24 xl:px-40"
   >
-    <p v-if="$page.props.app.locale === 'lt'">
-      <strong>Pirmiausia</strong>, nusikopijuok nuorodą!
-    </p>
-    <p v-else><strong>First</strong>, copy the link!</p>
-
-    <div class="flex flex-col gap-1">
-      <p v-if="$page.props.app.locale === 'en'" class="font-bold">
-        All events:
-      </p>
-      <div class="flex gap-4">
-        <div class="flex items-center rounded-2xl bg-zinc-100/50 px-4">
-          <span>{{ route("calendar.ics") }}</span>
-        </div>
-        <NButton @click="copyToClipboard(route('calendar.ics'))"
-          ><template #icon><NIcon :component="Copy16Regular" /></template>
-          {{ $t("Kopijuoti") }}</NButton
-        >
-      </div>
-      <template v-if="$page.props.app.locale === 'en'">
-        <p class="font-bold">
-          Events held in English or accessible for non-Lithuanian speakers:
-        </p>
-
-        <div class="flex gap-4">
-          <div class="flex items-center rounded-2xl bg-zinc-100/50 px-4">
-            <span>{{ route("calendar.ics", { lang: "en" }) }}</span>
-          </div>
-          <NButton
-            @click="copyToClipboard(route('calendar.ics', { lang: 'en' }))"
-            ><template #icon><NIcon :component="Copy16Regular" /></template>
-            {{ $t("Kopijuoti") }}</NButton
-          >
-        </div>
-      </template>
+    <h3 class="text-center">Artėjantys renginiai:</h3>
+    <div class="my-8 mx-auto flex w-fit flex-wrap justify-center gap-4">
+      <Link
+        v-for="event in upcoming4Events"
+        :key="event.id"
+        class="w-fit"
+        :href="
+          route('calendar.event', {
+            calendar: event.id,
+            lang: $page.props.app.locale,
+          })
+        "
+      >
+        <CalendarCard :calendar-event="event" />
+      </Link>
     </div>
-    <NDivider />
-    <NTabs animated
-      ><NTabPane name="Google">
-        <ol v-if="$page.props.app.locale === 'lt'">
-          <li>
-            Nueik į savo
-            <a
-              target="_blank"
-              href="https://calendar.google.com/calendar/u/0/r/settings/addbyurl"
-            >
-              Google kalendorių (per naršyklę kompiuteryje)</a
-            >
-          </li>
-          <li>Įkelk VU SA studentiško kalendoriaus nuorodą</li>
-          <li>
-            Paspausk <strong>„Pridėti kalendorių“</strong> („Add calendar“)
-          </li>
-          <li>✅ (Gali užtrukti iki kelių minučių, kol renginiai atsiras)</li>
-        </ol>
-        <ol v-else>
-          <li>
-            Go to your
-            <a
-              target="_blank"
-              href="https://calendar.google.com/calendar/u/0/r/settings/addbyurl"
-            >
-              Google Calendar (using a browser on a PC)</a
-            >
-          </li>
-          <li>Paste the VU SR student activity calendar link</li>
-          <li>Press <strong>„Add calendar“</strong></li>
-          <li>
-            ✅ (You may need to wait a minute or two for the events to pop in)
-          </li>
-        </ol> </NTabPane
-      ><NTabPane name="Outlook (Office 365)">
-        <ol v-if="$page.props.app.locale === 'lt'">
-          <li>
-            Nueik į savo
-            <a href="https://outlook.office.com/calendar/addcalendar"
-              >Outlook kalendorių</a
-            >
-          </li>
-          <li>
-            Pasirink
-            <strong>„Prenumeruoti iš žiniatinklio“</strong> („Subscribe from
-            web“) sekciją
-          </li>
-          <li>Įkelk VU SA studentiško kalendoriaus nuorodą</li>
-          <li>Paspausk <strong>„Importuoti“</strong> („Import“)</li>
-          <li>✅</li>
-        </ol>
-        <ol v-else>
-          <li>
-            Go to your
-            <a href="https://outlook.office.com/calendar/addcalendar"
-              >Outlook calendar</a
-            >
-          </li>
-          <li>
-            Go to
-            <strong>„Subscribe from web“</strong> section
-          </li>
-          <li>Paste the VU SR student activity calendar link</li>
-          <li>Press <strong>„Import“</strong></li>
-          <li>✅</li>
-        </ol>
-      </NTabPane></NTabs
-    >
-    <template #footer>
-      <template v-if="$page.props.app.locale === 'lt'">
-        „Google“ ir „Outlook“ kartais atnaujina renginių informaciją tik
-        <strong> kartą per dieną </strong>. Dėl naujausios informacijos
-        apsilankyk vusa.lt
-      </template>
-      <template v-else>
-        Google and Outlook sometimes refresh these calendars only
-        <strong>once per day</strong>. For the latest events, always visit
-        vusa.lt
-      </template>
-    </template>
-  </CardModal>
-  <!-- <NDivider /> -->
+  </div>
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from "laravel-vue-i18n";
-import { Copy16Regular } from "@vicons/fluent";
 import { Head, Link } from "@inertiajs/vue3";
-import { NButton, NDivider, NIcon, NTabPane, NTabs } from "naive-ui";
+import { NButton, NMessageProvider } from "naive-ui";
 import { ref } from "vue";
 
-import CardModal from "@/Components/Modals/CardModal.vue";
+import CalendarCard from "@/Components/Calendar/CalendarCard.vue";
+import CalendarSyncModal from "@/Components/Modals/CalendarSyncModal.vue";
 import EventCalendar from "@/Components/Calendar/EventCalendar.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
@@ -236,17 +123,8 @@ defineProps<{
   calendar: Array<App.Entities.Calendar>;
   isThemeDark: boolean;
   showPhotos: boolean;
+  upcoming4Events: Array<App.Entities.Calendar>;
 }>();
 
 const showModal = ref(false);
-
-// copy link to clipboard using navigator.clipboard
-const copyToClipboard = async (text: string) => {
-  if (navigator.clipboard) {
-    await navigator.clipboard.writeText(text);
-    message.success("Nuoroda nukopijuota!");
-  } else {
-    message.error("Nepavyko nukopijuoti nuorodos...");
-  }
-};
 </script>

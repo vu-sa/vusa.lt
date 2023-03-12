@@ -98,7 +98,7 @@ import CalendarCard from "@/Components/Calendar/CalendarCard.vue";
 import EventCalendar from "@/Components/Calendar/EventCalendar.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
-import { isDarkMode } from "@/Composables/darkMode";
+import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 
 const props = defineProps<{
   event: App.Entities.Calendar;
@@ -124,6 +124,8 @@ const headerImageStyle = computed(() => {
     })`,
   };
 });
+
+updateDarkMode(isThemeDark);
 </script>
 
 <style scoped>

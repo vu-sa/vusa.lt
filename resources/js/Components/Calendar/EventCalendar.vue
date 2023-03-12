@@ -127,6 +127,6 @@ calendarAttributes.push({
 }
 
 .vc-container.vc-is-dark {
-  background-color: rgb(39, 39, 43);
+  background-color: rgb(55, 55, 62);
 }
 </style>
