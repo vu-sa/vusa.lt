@@ -21,6 +21,7 @@
     :is-theme-dark="isThemeDark"
     :show-photos="true"
     :calendar="calendar"
+    :upcoming4-events="upcoming4Events"
   />
 
   <SummerCamps
@@ -43,6 +44,7 @@ defineProps<{
   banners: Array<App.Entities.Banner>;
   mainPage: Array<App.Entities.MainPage>;
   calendar: Array<App.Entities.Calendar>;
+  upcoming4Events: Array<App.Entities.Calendar>;
 }>();
 
 const isThemeDark = ref(isDarkMode());
@@ -54,7 +56,7 @@ const MainLinks = defineAsyncComponent(
 
 const EventCalendar = defineAsyncComponent(
   // eslint-disable-next-line no-secrets/no-secrets
-  () => import("@/Components/Public/FullWidth/EventCalendar.vue")
+  () => import("@/Components/Public/FullWidth/EventCalendarElement.vue")
 );
 
 // const BannerCarousel = defineAsyncComponent(

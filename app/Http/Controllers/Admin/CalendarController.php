@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Padalinys;
 use App\Services\ModelIndexer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -56,13 +57,20 @@ class CalendarController extends ResourceController
     {
         $this->authorize('create', [Calendar::class, $this->authorizer]);
 
-        $request->validate([
-            'date' => 'required|date',
+        $validated = $request->validate([
+            'date' => 'required|integer',
+            'end_date' => 'nullable|date',
             'title' => 'required',
             'description' => 'required',
+            'location' => 'nullable',
+            'url' => 'nullable',
+            'category' => 'nullable',
+            'extra_attributes' => 'nullable',
         ]);
 
         $padalinys_id = null;
+
+        $validated['date'] = Carbon::createFromTimestamp($request->date / 1000)->toDateTime();
 
         // check if super admin, else set padalinys_id
         if (request()->user()->hasRole(config('permission.super_admin_role_name'))) {
@@ -71,17 +79,7 @@ class CalendarController extends ResourceController
             $padalinys_id = $this->authorizer->permissableDuties->first()->padaliniai->first()->id;
         }
 
-        Calendar::create([
-            'date' => $request->date,
-            'end_date' => $request->end_date,
-            'title' => $request->title,
-            'description' => $request->description,
-            'padalinys_id' => $padalinys_id,
-            'location' => $request->location,
-            'url' => $request->url,
-            'category' => $request->category,
-            'extra_attributes' => $request->extra_attributes,
-        ]);
+        Calendar::create($validated + ['padalinys_id' => $padalinys_id]);
 
         return redirect()->route('calendar.index')->with('success', 'Kalendoriaus įvykis sėkmingai sukurtas!');
     }
@@ -126,14 +124,21 @@ class CalendarController extends ResourceController
     {
         $this->authorize('update', [Calendar::class, $calendar, $this->authorizer]);
 
-        $request->validate([
-            'date' => 'required|date',
+        $validated = $request->validate([
+            'date' => 'required|integer',
+            'end_date' => 'date|nullable',
             'title' => 'required',
             'description' => 'required',
+            'location' => 'string|nullable',
+            'url' => 'string|nullable',
+            'category' => 'string|nullable',
+            'extra_attributes' => 'array|nullable',
         ]);
 
-        DB::transaction(function () use ($request, $calendar) {
-            $calendar->update($request->only(['date', 'end_date', 'title', 'description', 'location', 'url', 'category', 'extra_attributes']));
+        $validated['date'] = Carbon::createFromTimestamp($request->date / 1000)->toDateTime();
+
+        DB::transaction(function () use ($request, $calendar, $validated) {
+            $calendar->update($validated);
 
             // if request has files
 

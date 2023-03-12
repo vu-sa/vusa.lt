@@ -25,6 +25,7 @@ use App\Services\IcalendarService;
 use Datetime;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Request;
@@ -35,7 +36,7 @@ use Spatie\CalendarLinks\Link;
 
 class MainController extends PublicController
 {
-    private function getCalendarGoogleLink($calendarEvent, $en = false)
+    private function getCalendarGoogleLink($calendarEvent, $locale = 'lt')
     {
         // check if event date is after end date, if so, return null
         // TODO: check in frontend
@@ -43,12 +44,12 @@ class MainController extends PublicController
             return null;
         }
 
-        $googleLink = Link::create($en ? ($calendarEvent?->extra_attributes['en']['title'] ?? $calendarEvent->title) : $calendarEvent->title,
+        $googleLink = Link::create($locale === 'en' ? ($calendarEvent?->extra_attributes['en']['title'] ?? $calendarEvent->title) : $calendarEvent->title,
             DateTime::createFromFormat('Y-m-d H:i:s', $calendarEvent->date),
             $calendarEvent->end_date
                 ? DateTime::createFromFormat('Y-m-d H:i:s', $calendarEvent->end_date)
                 : Carbon::parse($calendarEvent->date)->addHour()->toDateTime())
-            ->description($en
+            ->description($locale === 'en'
             ? (strip_tags(
                 ($calendarEvent?->extra_attributes['en']['description'] ?? $calendarEvent->description)
                 ?? $calendarEvent->description))
@@ -59,10 +60,23 @@ class MainController extends PublicController
         return $googleLink;
     }
 
+    protected function getEventsForCalendar()
+    {
+        if (app()->getLocale() === 'en') {
+            return Cache::remember('calendar_en', 60 * 30, function () {
+                return Calendar::where('extra_attributes->en->shown', 'true')->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'category')->take(200)->get();
+            });
+        } else {
+            return Cache::remember('calendar_lt', 60 * 30, function () {
+                return Calendar::orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'category')->take(200)->get();
+            });
+        }
+    }
+
     public function home()
     {
         // get last 4 news by publishing date
-        $banners = Padalinys::where('alias', 'vusa')->first()->banners()->inRandomOrder()->where('is_active', 1)->get();
+        // $banners = Padalinys::where('alias', 'vusa')->first()->banners()->inRandomOrder()->where('is_active', 1)->get();
 
         $news = News::with('padalinys')->where([['padalinys_id', '=', $this->padalinys->id], ['lang', app()->getLocale()], ['draft', '=', 0]])
             ->where('publish_time', '<=', date('Y-m-d H:i:s'))
@@ -70,11 +84,14 @@ class MainController extends PublicController
             ->take(4)
             ->get();
 
-        if (app()->getLocale() === 'en') {
-            $calendar = Calendar::where('extra_attributes->en->shown', 'true')->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'extra_attributes', 'category')->take(75)->get();
-        } else {
-            $calendar = Calendar::orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'category')->take(75)->get();
-        }
+        $calendar = $this->getEventsForCalendar();
+
+        // get 4 upcoming events by end_date if it exists, otherwise by date
+        $upcoming4Events = $calendar->filter(function ($event) {
+            return $event->end_date ? $event->end_date > date('Y-m-d H:i:s') : $event->date > date('Y-m-d H:i:s');
+        })->sortBy(function ($event) {
+            return $event->date;
+        }, SORT_DESC)->take(4)->values();
 
         return Inertia::render('Public/HomePage', [
             'news' => $news->map(function ($news) {
@@ -103,11 +120,12 @@ class MainController extends PublicController
                     'end_date' => $calendar->end_date,
                     'title' => app()->getLocale() === 'en' ? ($calendar->extra_attributes['en']['title'] ?? $calendar->title) : $calendar->title,
                     'category' => $calendar->category,
-                    'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale() === 'en'),
+                    'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale()),
                 ];
             }),
+            'upcoming4Events' => $upcoming4Events,
             'mainPage' => MainPage::where([['padalinys_id', $this->padalinys->id], ['lang', app()->getLocale()]])->get(),
-            'banners' => $banners,
+            // 'banners' => $banners,
         ])->withViewData([
             'description' => 'Vilniaus universiteto Studentų atstovybė (VU SA) – seniausia ir didžiausia Lietuvoje visuomeninė, ne pelno siekianti, nepolitinė, ekspertinė švietimo organizacija',
         ]);
@@ -373,11 +391,17 @@ class MainController extends PublicController
     {
         $calendar->load('padalinys:id,alias,fullname,shortname');
 
-        return Inertia::render('Public/CalendarEvent',
-            ['event' => $calendar, 'images' => $calendar->getMedia('images'), 'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale() === 'en')])->withViewData([
-                'title' => $calendar->title,
-                'description' => strip_tags($calendar->description),
-            ]);
+        return Inertia::render('Public/CalendarEvent', [
+            'event' => [
+                ...$calendar->toArray(),
+                'images' => $calendar->getMedia('images'),
+            ],
+            'calendar' => $this->getEventsForCalendar(),
+            'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale())])
+                ->withViewData([
+                    'title' => $calendar->title,
+                    'description' => strip_tags($calendar->description),
+                ]);
     }
 
     public function publicAllEventCalendar()
@@ -415,7 +439,9 @@ class MainController extends PublicController
         if (is_int($data['whereToRegister'])) {
             $registerPadalinys = Padalinys::find($data['whereToRegister']);
             $registerLocation = __($registerPadalinys->fullname);
-            $chairDuty = $registerPadalinys->duties->where('type_id', '1')->first();
+            $chairDuty = $registerPadalinys->duties()->whereHas('types', function ($query) {
+                $query->where('slug', 'pirmininkas');
+            })->first();
             $chairPerson = $chairDuty->users->first();
             $chairEmail = $chairDuty->email;
         } else {
@@ -426,7 +452,7 @@ class MainController extends PublicController
                     break;
 
                 case 'jek':
-                    $registerLocation = 'VU'.__('Jaunųjų energetikų klubas');
+                    $registerLocation = 'VU '.__('Jaunųjų energetikų klubas');
                     $chairEmail = 'vujek@jek.lt';
                     break;
 

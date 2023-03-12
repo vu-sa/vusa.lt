@@ -23,12 +23,17 @@ class MeetingController extends ResourceController
         $this->authorize('viewAny', [Meeting::class, $this->authorizer]);
 
         $search = request()->input('text');
+        $sorters = json_decode(base64_decode(request()->input('sorters')), true);
+
+        $sorters['start_time'] = $sorters['start_time'] ?? 'descend';
 
         $indexer = new ModelIndexer();
         $meetings = $indexer->execute(Meeting::class, $search, 'title', $this->authorizer);
 
         return Inertia::render('Admin/Representation/IndexMeeting', [
-            'meetings' => $meetings->with('institutions', 'agendaItems')->paginate(20),
+            'meetings' => $meetings->with('institutions', 'agendaItems')->with('padaliniai')
+            ->orderBy('start_time', $sorters['start_time'] === 'descend' ? 'desc' : 'asc')
+            ->paginate(20),
         ]);
     }
 

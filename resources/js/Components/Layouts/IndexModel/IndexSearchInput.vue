@@ -57,7 +57,6 @@ const handleSearchInput = () => {
 
 const sweepSearch = () => {
   searchValue.value = "";
-  handleSearchInput();
   emit("sweep");
 };
 </script>

@@ -1,11 +1,10 @@
 <template>
   <NButton
+    title="Instagram"
     text
     @click="openBlank('https://www.instagram.com/vustudentuatstovybe/')"
   >
-    <NIcon size="18">
-      <Instagram />
-    </NIcon>
+    <template #icon><NIcon size="18" :component="Instagram" /></template>
   </NButton>
 </template>
 

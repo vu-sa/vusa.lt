@@ -1,11 +1,10 @@
 <template>
   <NButton
     text
+    title="Facebook"
     @click="openBlank('https://www.facebook.com/VUstudentuatstovybe')"
   >
-    <NIcon size="18">
-      <FacebookF />
-    </NIcon>
+    <template #icon><NIcon size="18" :component="FacebookF" /></template>
   </NButton>
 </template>
 
