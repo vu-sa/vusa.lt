@@ -64,11 +64,11 @@ class MainController extends PublicController
     {
         if (app()->getLocale() === 'en') {
             return Cache::remember('calendar_en', 60 * 30, function () {
-                return Calendar::where('extra_attributes->en->shown', 'true')->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'category')->take(200)->get();
+                return Calendar::where('extra_attributes->en->shown', 'true')->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'category', 'extra_attributes')->take(200)->get();
             });
         } else {
             return Cache::remember('calendar_lt', 60 * 30, function () {
-                return Calendar::orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'category')->take(200)->get();
+                return Calendar::orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'category', 'extra_attributes')->take(200)->get();
             });
         }
     }
