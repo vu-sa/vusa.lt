@@ -60,7 +60,8 @@ class MainController extends PublicController
         return $googleLink;
     }
 
-    protected function getEventsForCalendar() {
+    protected function getEventsForCalendar()
+    {
         if (app()->getLocale() === 'en') {
             return Cache::remember('calendar_en', 60 * 30, function () {
                 return Calendar::where('extra_attributes->en->shown', 'true')->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'category')->take(200)->get();
@@ -393,13 +394,13 @@ class MainController extends PublicController
         return Inertia::render('Public/CalendarEvent', [
             'event' => [
                 ...$calendar->toArray(),
-                'images' => $calendar->getMedia('images')
+                'images' => $calendar->getMedia('images'),
             ],
             'calendar' => $this->getEventsForCalendar(),
             'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale())])
                 ->withViewData([
-                'title' => $calendar->title,
-                'description' => strip_tags($calendar->description),
+                    'title' => $calendar->title,
+                    'description' => strip_tags($calendar->description),
                 ]);
     }
 
