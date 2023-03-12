@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.4.11 (2023-03-12)
+
+* Rodomi ateinantys renginiai pradiniame puslapyje
+* Atnaujintas renginių kortelių stilius
+* Renginių kalendorius rodomas ir renginiuose
+* Pataisyta narių registracija
+
 ## v0.4.10 (2023-03-10)
 
 * Pataisytas darbotvarkės punktų rodymas, kai jų yra daug
