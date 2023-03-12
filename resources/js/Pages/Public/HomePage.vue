@@ -54,7 +54,7 @@ const MainLinks = defineAsyncComponent(
 
 const EventCalendar = defineAsyncComponent(
   // eslint-disable-next-line no-secrets/no-secrets
-  () => import("@/Components/Public/FullWidth/EventCalendar.vue")
+  () => import("@/Components/Public/FullWidth/EventCalendarElement.vue")
 );
 
 // const BannerCarousel = defineAsyncComponent(

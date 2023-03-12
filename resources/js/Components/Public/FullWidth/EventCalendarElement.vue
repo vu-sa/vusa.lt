@@ -86,57 +86,13 @@
           src="/images/photos/pirmakursiu_stovykla_kaune.jpg"
         /> -->
         <FadeTransition>
-          <Calendar
-            :is-dark="isThemeDark"
+          <EventCalendar
             class="z-20 shadow-xl"
             :attributes="calendarAttributes"
             color="red"
             :locale="$page.props.app.locale"
-          >
-            <template #day-popover="{ attributes, dayTitle, format, masks }">
-              <div class="max-w-md">
-                <div
-                  class="mb-1 text-center text-xs font-semibold text-gray-300 dark:text-zinc-700"
-                >
-                  {{ dayTitle }}
-                </div>
-                <PopoverRow
-                  v-for="attr in attributes"
-                  :key="attr.key"
-                  :attribute="attr"
-                >
-                  <div class="inline-flex items-center gap-2">
-                    <a
-                      target="_blank"
-                      :href="
-                        route('calendar.event', {
-                          calendar: attr.key,
-                          lang: $page.props.app.locale,
-                        })
-                      "
-                      >{{ attr.popover.label }}</a
-                    >
-                    <NConfigProvider
-                      class="flex h-fit items-center justify-center"
-                      :theme="isThemeDark ? undefined : darkTheme"
-                    >
-                      <div class="my-auto flex items-center justify-center">
-                        <NButton
-                          text
-                          tag="a"
-                          target="_blank"
-                          :href="attr.customData.googleLink"
-                          color="rgb(189, 40, 53)"
-                          size="tiny"
-                          ><NIcon :component="Google"
-                        /></NButton>
-                      </div>
-                    </NConfigProvider>
-                  </div>
-                </PopoverRow>
-              </div>
-            </template>
-          </Calendar>
+            :is-theme-dark="isThemeDark"
+          />
         </FadeTransition>
       </div>
     </div>
@@ -268,22 +224,13 @@
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import { Calendar, PopoverRow } from "v-calendar";
 import { Copy16Regular } from "@vicons/fluent";
-import { Google } from "@vicons/fa";
 import { Head, Link } from "@inertiajs/vue3";
-import {
-  NButton,
-  NConfigProvider,
-  NDivider,
-  NIcon,
-  NTabPane,
-  NTabs,
-  darkTheme,
-} from "naive-ui";
+import { NButton, NDivider, NIcon, NTabPane, NTabs } from "naive-ui";
 import { ref } from "vue";
 
 import CardModal from "@/Components/Modals/CardModal.vue";
+import EventCalendar from "@/Components/Calendar/EventCalendar.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 const props = defineProps<{
@@ -348,10 +295,6 @@ calendarAttributes.push({
   highlight: { color: "red", fillMode: "outline" },
   order: 1,
 });
-
-const windowOpen = (url: string) => {
-  window.open(url, "_blank");
-};
 
 const showModal = ref(false);
 
