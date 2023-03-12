@@ -1,5 +1,5 @@
 <template>
-  <NForm :rules="agendaItemRules" :model="agendaItemsForm">
+  <NForm ref="form" :rules="agendaItemRules" :model="agendaItemsForm">
     <FadeTransition>
       <SuggestionAlert
         :show-alert="showAlert"
@@ -26,7 +26,7 @@
         </p>
       </SuggestionAlert>
     </FadeTransition>
-    <NFormItem path="newAgendaTitles">
+    <NFormItem path="agendaItemTitles">
       <template #label>
         <span class="mb-2 inline-flex items-center gap-1"
           ><NIcon :component="IconsFilled.AGENDA_ITEM"></NIcon>
@@ -71,7 +71,7 @@
           !agendaItemsForm.moreAgendaItemsUndefined
         "
         type="primary"
-        @click.prevent="$emit('submit', agendaItemsForm)"
+        @click.prevent="submitForm"
         >{{ $t("forms.submit") }}</NButton
       >
     </NFormItem>
@@ -80,6 +80,8 @@
 
 <script setup lang="tsx">
 import {
+  type FormInst,
+  type FormRules,
   NButton,
   NCheckbox,
   NDynamicInput,
@@ -89,6 +91,7 @@ import {
   NInput,
   //   type SelectGroupOption,
 } from "naive-ui";
+import { ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 
@@ -99,7 +102,7 @@ import IconsRegular from "@/Types/Icons/regular";
 import ModelChip from "@/Components/Chips/ModelChip.vue";
 import SuggestionAlert from "@/Components/Alerts/SuggestionAlert.vue";
 
-defineEmits<{
+const emit = defineEmits<{
   (e: "submit", data: Record<string, any>): void;
 }>();
 
@@ -110,6 +113,8 @@ defineProps<{
 
 const showAlert = useStorage("new-meeting-button-alert", true);
 
+const form = ref<FormInst | null>(null);
+
 const agendaItemsForm = useForm({
   moreAgendaItemsUndefined: false,
   agendaItemTitles: [],
@@ -117,12 +122,36 @@ const agendaItemsForm = useForm({
   //   institution_id: props.institution.id,
 });
 
-const agendaItemRules = {
+const agendaItemRules: FormRules = {
   titlesOrIds: {
     required: true,
     type: "array",
     message: "Pasirink (arba įrašyk) bent vieną klausimą",
     trigger: ["blur"],
   },
+  agendaItemTitles: {
+    required: true,
+    trigger: ["blur"],
+    validator: (rule: unknown, value) => {
+      if (value.some((title: string) => [null, ""].includes(title))) {
+        return new Error("Klausimas negali būti tuščias");
+      }
+      if (agendaItemsForm.moreAgendaItemsUndefined) {
+        return true;
+      }
+      if (value.length === 0) {
+        return new Error("Pasirink (arba įrašyk) bent vieną klausimą");
+      }
+      return true;
+    },
+  },
+};
+
+const submitForm = () => {
+  form.value?.validate((errors) => {
+    if (!errors) {
+      emit("submit", agendaItemsForm);
+    }
+  });
 };
 </script>
