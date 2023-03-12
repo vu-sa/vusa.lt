@@ -87,9 +87,8 @@
         /> -->
         <FadeTransition>
           <EventCalendar
-            class="z-20 shadow-xl"
-            :attributes="calendarAttributes"
-            color="red"
+            class="z-20"
+            :calendar-events="calendar"
             :locale="$page.props.app.locale"
             :is-theme-dark="isThemeDark"
           />
@@ -137,7 +136,7 @@
         </div>
       </template>
     </div>
-    <NDivider></NDivider>
+    <NDivider />
     <NTabs animated
       ><NTabPane name="Google">
         <ol v-if="$page.props.app.locale === 'lt'">
@@ -233,68 +232,11 @@ import CardModal from "@/Components/Modals/CardModal.vue";
 import EventCalendar from "@/Components/Calendar/EventCalendar.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
-const props = defineProps<{
+defineProps<{
   calendar: Array<App.Entities.Calendar>;
   isThemeDark: boolean;
   showPhotos: boolean;
 }>();
-
-// check if event date and end date is on the same day
-const isSameDay = (date1: string, date2: string) => {
-  if (date2 === null) {
-    return true;
-  }
-
-  let parsedDate1 = new Date(date1);
-  let parsedDate2 = new Date(date2.replace(/-/g, "/"));
-
-  return (
-    parsedDate1.getFullYear() === parsedDate2.getFullYear() &&
-    parsedDate1.getMonth() === parsedDate2.getMonth() &&
-    parsedDate1.getDate() === parsedDate2.getDate()
-  );
-};
-
-const calendarAttributes = props.calendar.map((event) => {
-  let eventColor = event.category;
-
-  switch (event.category) {
-    case "freshmen-camps":
-      eventColor = "orange";
-      break;
-
-    case "grey":
-      eventColor = "gray";
-      break;
-
-    default:
-      break;
-  }
-
-  let calendarAttrObject = {
-    dates: event.end_date
-      ? {
-          start: new Date(event.date),
-          end: new Date(event.end_date.replace(/-/g, "/")),
-        }
-      : new Date(event.date),
-    [isSameDay(event.date, event.end_date) ? "dot" : "highlight"]: eventColor,
-    popover: {
-      label: event.title,
-      isInteractive: true,
-    },
-    key: event.id,
-    customData: { googleLink: event.googleLink },
-  };
-  return calendarAttrObject;
-});
-
-// add today to the calendar
-calendarAttributes.push({
-  dates: new Date(),
-  highlight: { color: "red", fillMode: "outline" },
-  order: 1,
-});
 
 const showModal = ref(false);
 
@@ -308,14 +250,3 @@ const copyToClipboard = async (text: string) => {
   }
 };
 </script>
-
-<style scoped>
-.vc-container {
-  font-family: "Inter", sans-serif !important;
-  border: 0 !important;
-}
-
-.vc-container.vc-is-dark {
-  background-color: rgb(63, 63, 70);
-}
-</style>

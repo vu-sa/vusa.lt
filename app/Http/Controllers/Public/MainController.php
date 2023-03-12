@@ -25,6 +25,7 @@ use App\Services\IcalendarService;
 use Datetime;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Request;
@@ -59,6 +60,18 @@ class MainController extends PublicController
         return $googleLink;
     }
 
+    protected function getEventsForCalendar() {
+        if (app()->getLocale() === 'en') {
+            return Cache::remember('calendar_en', 60 * 30, function () {
+                return Calendar::where('extra_attributes->en->shown', 'true')->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'category')->take(200)->get();
+            });
+        } else {
+            return Cache::remember('calendar_lt', 60 * 30, function () {
+                return Calendar::orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'category')->take(200)->get();
+            });
+        }
+    }
+
     public function home()
     {
         // get last 4 news by publishing date
@@ -70,11 +83,7 @@ class MainController extends PublicController
             ->take(4)
             ->get();
 
-        if (app()->getLocale() === 'en') {
-            $calendar = Calendar::where('extra_attributes->en->shown', 'true')->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'extra_attributes', 'category')->take(75)->get();
-        } else {
-            $calendar = Calendar::orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'category')->take(75)->get();
-        }
+        $calendar = $this->getEventsForCalendar();
 
         return Inertia::render('Public/HomePage', [
             'news' => $news->map(function ($news) {
@@ -378,11 +387,12 @@ class MainController extends PublicController
                 ...$calendar->toArray(),
                 'images' => $calendar->getMedia('images')
             ],
+            'calendar' => $this->getEventsForCalendar(),
             'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale() === 'en')])
                 ->withViewData([
                 'title' => $calendar->title,
                 'description' => strip_tags($calendar->description),
-            ]);
+                ]);
     }
 
     public function publicAllEventCalendar()

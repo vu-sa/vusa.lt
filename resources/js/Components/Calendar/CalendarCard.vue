@@ -42,7 +42,7 @@
         </span>
       </div>
       <div v-if="calendarEvent.location" class="inline-flex items-center gap-2">
-        <NIcon :component="Home32Regular" />
+        <NIcon :component="Location24Regular" />
         <a
           class="underline"
           target="_blank"
@@ -132,7 +132,7 @@ import { trans as $t } from "laravel-vue-i18n";
 import {
   CalendarLtr24Regular,
   HatGraduation20Regular,
-  Home32Regular,
+  Location24Regular,
   PeopleTeam28Regular,
   Timer16Regular,
 } from "@vicons/fluent";

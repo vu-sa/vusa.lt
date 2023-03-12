@@ -70,9 +70,19 @@
             </NImageGroup>
           </div>
         </div>
-        <div class="-order-1 mx-8 flex lg:order-1">
-          <CalendarCard :calendar-event="event" :google-link="googleLink" />
-        </div>
+        <aside class="-order-1 mx-8 flex lg:order-1">
+          <div class="sticky top-32 flex h-fit flex-col items-center gap-6">
+            <CalendarCard :calendar-event="event" :google-link="googleLink" />
+            <div class="hidden flex-col items-center gap-2 lg:flex">
+              <NDivider />
+              <EventCalendar
+                :calendar-events="calendar"
+                :is-theme-dark="isThemeDark"
+                :locale="$page.props.app.locale"
+              />
+            </div>
+          </div>
+        </aside>
       </section>
     </article>
   </FadeTransition>
@@ -81,16 +91,22 @@
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
 import { Head } from "@inertiajs/vue3";
-import { NImage, NImageGroup, NSpace } from "naive-ui";
-import { computed } from "vue";
+import { NDivider, NImage, NImageGroup, NSpace } from "naive-ui";
+import { computed, ref } from "vue";
 
 import CalendarCard from "@/Components/Calendar/CalendarCard.vue";
+import EventCalendar from "@/Components/Calendar/EventCalendar.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
+
+import { isDarkMode } from "@/Composables/darkMode";
 
 const props = defineProps<{
   event: App.Entities.Calendar;
+  calendar: App.Entities.Calendar[];
   googleLink: string;
 }>();
+
+const isThemeDark = ref(isDarkMode());
 
 // check if image array is empty
 const hasNoImage = computed(() => {
