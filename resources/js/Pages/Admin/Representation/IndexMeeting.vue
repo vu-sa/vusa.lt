@@ -55,7 +55,7 @@ const columns = computed<DataTableColumns<App.Entities.Meeting>>(() => {
     {
       title: "Padalinys",
       key: "padaliniai",
-      minWidth: 150,
+      resizable: true,
       render(row) {
         return row.padaliniai.length === 0
           ? "Neturi padalinio"
@@ -66,6 +66,7 @@ const columns = computed<DataTableColumns<App.Entities.Meeting>>(() => {
       title: "Institucija",
       key: "institutions",
       minWidth: 200,
+      resizable: true,
       render(row) {
         return row.institutions.length === 0
           ? "Neturi institucijos"
@@ -75,6 +76,11 @@ const columns = computed<DataTableColumns<App.Entities.Meeting>>(() => {
     {
       title: "Susitikimo darbotvarkė",
       key: "agendaItems",
+      maxWidth: 500,
+      resizable: true,
+      ellipsis: {
+        tooltip: true,
+      },
       render(row) {
         return row.agenda_items.length === 0
           ? ""
