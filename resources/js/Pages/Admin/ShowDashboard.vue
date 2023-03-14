@@ -119,7 +119,9 @@
           :bordered="false"
           size="tiny"
           round
-          @click="windowOpen('https://atstovavimas.vusa.lt', '_blank')"
+          tag="a"
+          target="_blank"
+          href="https://atstovavimas.vusa.lt"
           ><template #icon
             ><div class="ml-2 mr-1">
               <NIcon :size="10" :component="ExternalLinkSquareAlt"></NIcon></div
@@ -133,21 +135,25 @@
           :bordered="false"
           size="tiny"
           round
-          @click="windowOpen('https://apklausa.vusa.lt', '_blank')"
+          tag="a"
+          target="_blank"
+          href="https://archyvas.vusa.lt"
           ><template #icon
             ><div class="ml-2 mr-1">
               <NIcon :size="10" :component="ExternalLinkSquareAlt"></NIcon></div
           ></template>
           <span class="text-zinc-900/70 dark:text-zinc-100/80"
-            >apklausa.vusa.lt</span
-          ></NButton
-        >
+            >archyvas.vusa.lt (slaptažodis: {{ archyvasPassword }})</span
+          >
+        </NButton>
         <NButton
           secondary
           :bordered="false"
           size="tiny"
           round
-          @click="windowOpen('https://office.com', '_blank')"
+          tag="a"
+          target="_blank"
+          href="https://office.com"
           ><template #icon
             ><div class="ml-2 mr-1">
               <NIcon :size="10" :component="ExternalLinkSquareAlt"></NIcon></div
@@ -185,15 +191,13 @@ defineProps<{
   currentUser: App.Entities.User;
 }>();
 
-const windowOpen = (url: string, target: string) => {
-  window.open(url, target);
-};
-
 const shownSections = useStorage("dashboard-sections", [
   "Greitieji veiksmai",
   "Institucijos",
   "Nuorodos",
 ]);
+
+const archyvasPassword = import.meta.env.VITE_ARCHYVAS_PASSWORD ?? "";
 </script>
 
 <style scoped>
