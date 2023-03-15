@@ -64,11 +64,12 @@ class MainController extends PublicController
     {
         if (app()->getLocale() === 'en') {
             return Cache::remember('calendar_en', 60 * 30, function () {
-                return Calendar::where('extra_attributes->en->shown', 'true')->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'category', 'extra_attributes')->take(200)->get();
+                return Calendar::where('extra_attributes->en->shown', 'true')
+                    ->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'category', 'extra_attributes', 'padalinys_id')->take(200)->get();
             });
         } else {
             return Cache::remember('calendar_lt', 60 * 30, function () {
-                return Calendar::orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'category', 'extra_attributes')->take(200)->get();
+                return Calendar::orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'category', 'extra_attributes', 'padalinys_id')->take(200)->get();
             });
         }
     }
@@ -91,7 +92,7 @@ class MainController extends PublicController
             return $event->end_date ? $event->end_date > date('Y-m-d H:i:s') : $event->date > date('Y-m-d H:i:s');
         })->sortBy(function ($event) {
             return $event->date;
-        }, SORT_DESC)->take(4)->values();
+        }, SORT_DESC)->take(4)->values()->load('padalinys:id,alias,fullname,shortname');
 
         return Inertia::render('Public/HomePage', [
             'news' => $news->map(function ($news) {
@@ -123,7 +124,12 @@ class MainController extends PublicController
                     'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale()),
                 ];
             }),
-            'upcoming4Events' => $upcoming4Events,
+            'upcoming4Events' => $upcoming4Events->map(function ($calendar) {
+                return [
+                    ...$calendar->toArray(),
+                    'images' => $calendar->getMedia('images'),
+                ];
+            }),
             'mainPage' => MainPage::where([['padalinys_id', $this->padalinys->id], ['lang', app()->getLocale()]])->get(),
             // 'banners' => $banners,
         ])->withViewData([

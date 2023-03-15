@@ -120,7 +120,7 @@ const headerImageStyle = computed(() => {
 
   return {
     "background-image": `linear-gradient(0deg, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.3)), url(${
-      props.event.images?.length > 0 ? props.event.images[0].original_url : ""
+      props.event?.images?.length > 0 ? props.event.images[0].original_url : ""
     })`,
   };
 });
