@@ -4,11 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\ResourceController;
 use App\Models\Duty;
-use App\Models\Institution;
 use App\Models\Role;
 use App\Models\Type;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Collection;
+use App\Services\ResourceServices\DutyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -42,13 +41,10 @@ class DutyController extends ResourceController
     {
         $this->authorize('create', [Duty::class, $this->authorizer]);
 
-        $institutions = $this->getInstitutionsForForm();
-
         return Inertia::render('Admin/People/CreateDuty', [
             'dutyTypes' => Type::where('model_type', Duty::class)->get(),
-            'institutions' => $institutions,
             'roles' => Role::all(),
-            'assignableInstitutions' => $this->getInstitutionsForForm(),
+            'assignableInstitutions' => DutyService::getInstitutionsForUpserts($this->authorizer),
             'assignableUsers' => User::select('id', 'name', 'profile_photo_path')->orderBy('name')->get(),
         ]);
     }
@@ -114,7 +110,7 @@ class DutyController extends ResourceController
             'duty' => $duty,
             'roles' => Role::all(),
             'dutyTypes' => Type::where('model_type', Duty::class)->get(),
-            'assignableInstitutions' => $this->getInstitutionsForForm(),
+            'assignableInstitutions' => DutyService::getInstitutionsForUpserts($this->authorizer),
             // TODO: shouldn't return all users?
             'assignableUsers' => User::select('id', 'name', 'profile_photo_path')->orderBy('name')->get(),
         ]);
@@ -181,12 +177,5 @@ class DutyController extends ResourceController
         $duty->delete();
 
         return redirect()->route('duties.index')->with('info', 'Pareigybė sėkmingai ištrinta!');
-    }
-
-    private function getInstitutionsForForm(): Collection
-    {
-        return Institution::select('id', 'name', 'alias', 'padalinys_id')->when(! request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
-            $query->whereIn('padalinys_id', auth()->user()->padaliniai->pluck('id'));
-        })->with('padalinys:id,shortname')->get();
     }
 }

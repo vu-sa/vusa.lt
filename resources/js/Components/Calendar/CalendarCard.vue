@@ -1,21 +1,24 @@
 <template>
   <NCard
-    class="subtle-gray-gradient h-fit max-w-sm rounded-2xl text-gray-900 shadow-md dark:text-zinc-100 lg:border-2"
+    size="small"
+    class="subtle-gray-gradient h-fit max-w-sm rounded-md text-gray-900 shadow-md dark:text-zinc-100 lg:border-2"
     hoverable
     :segmented="{ footer: 'soft' }"
   >
     <template #cover>
-      <!-- <img
+      <img
         v-if="calendarEvent.images && calendarEvent.images?.length > 0"
         style="height: 100px"
-        class="rounded-t-2xl object-cover object-center"
+        class="rounded-t-md object-cover object-center"
         :src="calendarEvent.images[0].original_url"
-      /> -->
+      />
     </template>
     <template #header
-      ><strong class="line-clamp-2">{{ calendarEvent.title }}</strong></template
+      ><strong class="font-black line-clamp-2">{{
+        calendarEvent.title
+      }}</strong></template
     >
-    <div class="flex flex-col gap-2">
+    <div class="flex flex-col gap-1 text-sm">
       <div class="inline-flex items-center gap-2">
         <NIcon :component="CalendarLtr24Regular" />
         <strong>
@@ -67,28 +70,31 @@
     <template #footer>
       <div
         v-if="
+          timeTillEvent.days >= 0 ||
           googleLink ||
           calendarEvent.url ||
           calendarEvent.extra_attributes?.facebook_url
         "
         class="flex flex-col justify-center"
       >
-        <p v-if="timeTillEvent.days >= 0" class="text-center">
-          {{ $t("Iki renginio liko") }}:
-        </p>
+        <div class="flex flex-col justify-center text-xs leading-4">
+          <p v-if="timeTillEvent.days >= 0" class="text-center">
+            {{ $t("Iki renginio liko") }}:
+          </p>
 
-        <NGradientText
-          v-if="timeTillEvent.days >= 0"
-          type="error"
-          class="mb-2 w-full text-center"
-        >
-          {{ `${timeTillEvent.days} ${$t("d.")}` }}
-          <NCountdown
-            :render="renderCountdown"
-            :active="true"
-            :duration="timeTillEvent.ms"
-          ></NCountdown>
-        </NGradientText>
+          <NGradientText
+            v-if="timeTillEvent.days >= 0"
+            type="error"
+            class="mb-2 w-full text-center"
+          >
+            {{ `${timeTillEvent.days} ${$t("d.")}` }}
+            <NCountdown
+              :render="renderCountdown"
+              :active="true"
+              :duration="timeTillEvent.ms"
+            ></NCountdown>
+          </NGradientText>
+        </div>
 
         <NButton
           v-if="calendarEvent.url"
@@ -96,7 +102,6 @@
           tag="a"
           round
           type="primary"
-          size="large"
           target="_blank"
           :href="calendarEvent.url"
           ><template #icon>
@@ -104,7 +109,10 @@
           </template>
           {{ $t("Dalyvauk") }}!
         </NButton>
-        <div class="mt-4 flex justify-center gap-2">
+        <div
+          v-if="calendarEvent.extra_attributes?.facebook_url || googleLink"
+          class="mt-2 flex justify-center gap-2"
+        >
           <NButton
             v-if="calendarEvent.extra_attributes?.facebook_url"
             secondary
@@ -112,7 +120,8 @@
             target="_blank"
             :href="calendarEvent.extra_attributes?.facebook_url"
             circle
-            ><NIcon size="18" :component="FacebookF"></NIcon
+            size="small"
+            ><NIcon size="14" :component="FacebookF"></NIcon
           ></NButton>
           <NPopover v-if="googleLink">
             {{ $t("Įsidėk į Google kalendorių") }}
@@ -120,6 +129,7 @@
               <NButton
                 secondary
                 circle
+                size="small"
                 tag="a"
                 target="_blank"
                 :href="googleLink"
@@ -170,7 +180,7 @@ const eventOrganizer = computed((): string => {
 });
 
 const timeTillEvent = computed(() => {
-  const date = new Date(props.calendarEvent.date.replace(/-/g, "/"));
+  const date = new Date(props.calendarEvent.date);
   const now = new Date();
   // get full days till event
   const daysTillEvent = Math.floor(

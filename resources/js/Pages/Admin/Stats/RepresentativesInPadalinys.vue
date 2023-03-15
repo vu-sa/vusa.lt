@@ -1,5 +1,5 @@
 <template>
-  <PageContent>
+  <PageContent title="Stud. atstovavimo statistika">
     <NDataTable :data="padaliniai" :columns="columns" />
   </PageContent>
 </template>
@@ -18,7 +18,7 @@ const columns = [
     title: "Padalinys",
   },
   {
-    key: "count_all",
+    key: "count_all_users",
     title: "Bent kartą prisijungę / visi studentų atstovai (%)",
     render(row: any) {
       let active = row.users.filter(
@@ -27,6 +27,15 @@ const columns = [
       let all = row.users.length;
 
       return `${active} / ${all} (${Math.round((active / all) * 100)}%)`;
+    },
+  },
+  {
+    key: "count_all_meetings",
+    title: "Susitikimų skaičius",
+    render(row: any) {
+      return row.institutions.reduce((acc: number, institution: any) => {
+        return acc + institution.meetings_count;
+      }, 0);
     },
   },
 ];

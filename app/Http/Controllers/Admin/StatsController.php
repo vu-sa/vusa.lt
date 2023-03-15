@@ -15,7 +15,7 @@ class StatsController extends Controller
 
         // get all padaliniai
         $padaliniai = Padalinys::with(['institutions' => function ($query) {
-            $query->select('id', 'padalinys_id')->with(['duties' => function ($query) {
+            $query->select('id', 'padalinys_id')->withCount('meetings')->with(['duties' => function ($query) {
                 $query->select('id', 'institution_id')->whereHas('types', function ($query) {
                     $query->where('slug', 'studentu-atstovai');
                 })->with('users');

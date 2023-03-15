@@ -103,6 +103,7 @@ class HandleInertiaRequests extends Middleware
 
     private function getPadaliniaiForInertia(): Collection
     {
+        // TODO: maybe should return all 'padaliniai', even pagrindinis
         $padaliniai = Cache::rememberForever('padaliniai-for-inertia',
             fn () => Padalinys::where('type', '=', 'padalinys')->orderBy('shortname_vu')->get(['id', 'alias', 'shortname', 'fullname'])
         );

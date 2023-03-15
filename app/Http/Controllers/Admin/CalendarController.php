@@ -9,6 +9,7 @@ use App\Models\Padalinys;
 use App\Services\ModelIndexer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -81,6 +82,9 @@ class CalendarController extends ResourceController
 
         Calendar::create($validated + ['padalinys_id' => $padalinys_id]);
 
+        Cache::forget('calendar_lt');
+        Cache::forget('calendar_en');
+
         return redirect()->route('calendar.index')->with('success', 'Kalendoriaus įvykis sėkmingai sukurtas!');
     }
 
@@ -152,6 +156,9 @@ class CalendarController extends ResourceController
 
             $calendar->save();
         });
+
+        Cache::forget('calendar_lt');
+        Cache::forget('calendar_en');
 
         return back()->with('success', 'Kalendoriaus įvykis sėkmingai atnaujintas!');
     }

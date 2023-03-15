@@ -90,12 +90,12 @@
     v-if="upcoming4Events.length > 0"
     class="mx-auto my-8 max-w-7xl px-16 lg:px-24 xl:px-40"
   >
-    <h3 class="text-center">Artėjantys renginiai:</h3>
-    <div class="my-8 mx-auto flex w-fit flex-wrap justify-center gap-4">
+    <h2 class="text-center lg:text-start">Artėjantys renginiai</h2>
+    <div class="my-8 mx-auto flex w-fit flex-wrap gap-4 lg:mx-0">
       <Link
         v-for="event in upcoming4Events"
         :key="event.id"
-        class="w-fit"
+        class="h-fit w-fit"
         :href="
           route('calendar.event', {
             calendar: event.id,

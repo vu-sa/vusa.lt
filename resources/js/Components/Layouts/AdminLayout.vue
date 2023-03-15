@@ -16,6 +16,12 @@
         </Link>
       </div>
       <div class="mt-1 flex items-center gap-8">
+        <Link
+          v-if="$page.props.auth.can.index.user"
+          :href="route('stats.representativesInPadalinys')"
+        >
+          <NIcon :size="24" :component="ChartMultiple20Regular" />
+        </Link>
         <FeedbackModalButton />
         <Link
           v-if="canSeeWorkspace && false"
@@ -156,6 +162,7 @@ import { useOnline, useStorage, useTimeoutFn } from "@vueuse/core";
 
 import {
   Board24Regular,
+  ChartMultiple20Regular,
   Navigation24Filled,
   ThumbLike16Regular,
 } from "@vicons/fluent";

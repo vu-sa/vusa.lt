@@ -12,13 +12,11 @@ class InstitutionService
     public static function getPadaliniaiForUpserts(ModelAuthorizer $authorizer)
     {
         // TODO: should be create or update
-        if ($authorizer->forUser(Auth::user())->checkAllRoleables('create.institution.*')) {
-            $padaliniai = Padalinys::orderBy('shortname_vu')->get(['id', 'shortname']);
+        // ! must be already authorized for this action
+        if (! $authorizer->forUser(Auth::user())->checkAllRoleables('institutions.create.all')) {
+            return User::with('padaliniai:padaliniai.id,shortname')->find(Auth::user()->id)->padaliniai->unique();
         } else {
-            // TODO: bet nepatikrina, ar tuose padaliniuose turi institution.padalinys teises
-            $padaliniai = User::with('padaliniai:padaliniai.id,shortname')->find(Auth::user()->id)->padaliniai->unique();
+            return Padalinys::orderBy('shortname_vu')->get(['id', 'shortname']);
         }
-
-        return $padaliniai;
     }
 }
