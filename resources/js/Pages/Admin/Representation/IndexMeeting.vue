@@ -15,7 +15,8 @@ import { computed, provide, ref } from "vue";
 import type { DataTableColumns, DataTableSortState } from "naive-ui";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
-import { updateSorters } from "@/Utils/DataTable";
+import { updateFilters, updateSorters } from "@/Utils/DataTable";
+import { usePage } from "@inertiajs/vue3";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
@@ -35,6 +36,12 @@ const sorters = ref<Record<string, DataTableSortState["order"]>>({
 });
 
 provide("sorters", { sorters, updateSorters });
+
+const filters = ref<Record<string, any>>({
+  padaliniai: [],
+});
+
+provide("filters", { filters, updateFilters });
 
 const columns = computed<DataTableColumns<App.Entities.Meeting>>(() => {
   return [
@@ -56,6 +63,14 @@ const columns = computed<DataTableColumns<App.Entities.Meeting>>(() => {
       title: "Padalinys",
       key: "padaliniai",
       resizable: true,
+      filter: true,
+      filterOptionValues: filters.value["padaliniai"],
+      filterOptions: usePage().props.padaliniai.map((padalinys) => {
+        return {
+          label: padalinys.shortname,
+          value: padalinys.id,
+        };
+      }),
       render(row) {
         return row.padaliniai.length === 0
           ? "Neturi padalinio"

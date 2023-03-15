@@ -8,6 +8,7 @@ use App\Models\Meeting as Meeting;
 use App\Services\ModelIndexer;
 use App\Services\ResourceServices\SharepointFileService;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -24,6 +25,7 @@ class MeetingController extends ResourceController
 
         $search = request()->input('text');
         $sorters = json_decode(base64_decode(request()->input('sorters')), true);
+        $filters = json_decode(base64_decode(request()->input('filters')), true);
 
         $sorters['start_time'] = $sorters['start_time'] ?? 'descend';
 
@@ -31,7 +33,15 @@ class MeetingController extends ResourceController
         $meetings = $indexer->execute(Meeting::class, $search, 'title', $this->authorizer);
 
         return Inertia::render('Admin/Representation/IndexMeeting', [
-            'meetings' => $meetings->with('institutions', 'agendaItems')->with('padaliniai')
+            'meetings' => $meetings->with('institutions', 'agendaItems')
+                ->withWhereHas('padaliniai', function ($query) use ($filters) {
+                    $query->when(isset(
+                        $filters['padaliniai']
+                    ) && $filters['padaliniai'] !== [], function ($query) use ($filters) {
+                        $query->whereIn('padaliniai.id', $filters['padaliniai']);
+                    }
+                );
+            })
             ->orderBy('start_time', $sorters['start_time'] === 'descend' ? 'desc' : 'asc')
             ->paginate(20),
         ]);
