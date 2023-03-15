@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.4.12 (2023-03-15)
+
+* Atnaujintos renginių kortelės
+* Papildomas patikrinimas dėl posėdžių klausimų įrašymo
+* Duomenų lentelių stulpelių dydžių patobulinimas
+* Filtravimas pagal padalinius posėdžiuose
+* Teisingai rodomi institucijų ir padalinių pasirinkimai jų kūrimo puslapyje
+* Prie statistikos pridėta apie sukurtų posėdžių skaičių
+
 ## v0.4.11 (2023-03-12)
 
 * Rodomi ateinantys renginiai pradiniame puslapyje
