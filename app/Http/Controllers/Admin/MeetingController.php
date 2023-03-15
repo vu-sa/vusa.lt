@@ -8,7 +8,6 @@ use App\Models\Meeting as Meeting;
 use App\Services\ModelIndexer;
 use App\Services\ResourceServices\SharepointFileService;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -40,8 +39,8 @@ class MeetingController extends ResourceController
                     ) && $filters['padaliniai'] !== [], function ($query) use ($filters) {
                         $query->whereIn('padaliniai.id', $filters['padaliniai']);
                     }
-                );
-            })
+                    );
+                })
             ->orderBy('start_time', $sorters['start_time'] === 'descend' ? 'desc' : 'asc')
             ->paginate(20),
         ]);

@@ -13,7 +13,7 @@ class InstitutionService
     {
         // TODO: should be create or update
         // ! must be already authorized for this action
-        if (!$authorizer->forUser(Auth::user())->checkAllRoleables('institutions.create.all')) {
+        if (! $authorizer->forUser(Auth::user())->checkAllRoleables('institutions.create.all')) {
             return User::with('padaliniai:padaliniai.id,shortname')->find(Auth::user()->id)->padaliniai->unique();
         } else {
             return Padalinys::orderBy('shortname_vu')->get(['id', 'shortname']);
