@@ -88,7 +88,7 @@
   </div>
   <div
     v-if="upcoming4Events.length > 0"
-    class="mx-auto my-8 max-w-7xl px-16 lg:px-24 xl:px-40"
+    class="mx-auto my-8 max-w-7xl px-16 lg:px-24 xl:px-32"
   >
     <h2 class="text-center lg:text-start">Artėjantys renginiai</h2>
     <div class="my-8 mx-auto flex w-fit flex-wrap gap-4 lg:mx-0">

@@ -1,7 +1,7 @@
 <template>
   <NCard
     size="small"
-    class="subtle-gray-gradient h-fit max-w-sm rounded-md text-gray-900 shadow-md dark:text-zinc-100 lg:border-2"
+    class="subtle-gray-gradient h-fit w-72 rounded-md text-gray-900 shadow-md dark:text-zinc-100 lg:border-2"
     hoverable
     :segmented="{ footer: 'soft' }"
   >
@@ -14,7 +14,7 @@
       />
     </template>
     <template #header
-      ><strong class="font-black line-clamp-2">{{
+      ><strong class="text-center font-extrabold line-clamp-2">{{
         calendarEvent.title
       }}</strong></template
     >
