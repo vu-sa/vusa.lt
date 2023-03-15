@@ -57,10 +57,8 @@ class InstitutionController extends ResourceController
     {
         $this->authorize('create', [Institution::class, $this->authorizer]);
 
-        $padaliniai = InstitutionService::getPadaliniaiForUpserts($this->authorizer);
-
         return Inertia::render('Admin/People/CreateInstitution', [
-            'padaliniai' => $padaliniai,
+            'padaliniai' => InstitutionService::getPadaliniaiForUpserts($this->authorizer),
             'institutionTypes' => Type::where('model_type', Institution::class)->get(),
         ]);
     }
