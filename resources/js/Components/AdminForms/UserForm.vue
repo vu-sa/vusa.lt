@@ -161,6 +161,18 @@
               ><NButton>Siųsti laišką</NButton></template
             ></NPopconfirm
           >
+          <NButton
+            tag="a"
+            size="tiny"
+            text
+            :href="route('users.renderWelcomeEmail', user.id)"
+            target="_blank"
+            class="ml-2 align-middle"
+          >
+            <template #icon>
+              <NIcon :component="Eye16Regular"></NIcon>
+            </template>
+          </NButton>
         </template>
       </FormElement>
     </div>
