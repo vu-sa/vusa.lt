@@ -5,7 +5,15 @@
     <div class="flex flex-row items-center space-x-4">
       <NPopover>
         <template #trigger>
-          <Link :href="route('home', { lang: locale })" preserve-state>
+          <Link
+            :href="
+              route('home', {
+                lang: locale,
+                padalinys: 'www',
+              })
+            "
+            preserve-state
+          >
             <img
               class="min-w-[15vw] object-contain lg:min-w-[10vw]"
               src="/logos/vusa.lin.hor.svg"
@@ -76,9 +84,7 @@
 
       <Link
         class="duration-200 hover:text-vusa-red"
-        :href="
-          route('ataskaita2022', { lang: locale, permalink: 'vu-sa' })
-        "
+        :href="route('ataskaita2022', { lang: locale, permalink: 'vu-sa' })"
       >
         <NGradientText v-if="permalink === 'vu-sa'" type="error">{{
           $t("VU SA")
@@ -105,9 +111,7 @@
       ></NDropdown>
       <Link
         class="duration-200 hover:text-vusa-red"
-        :href="
-          route('ataskaita2022', { lang: locale, permalink: 'sritys' })
-        "
+        :href="route('ataskaita2022', { lang: locale, permalink: 'sritys' })"
         ><NGradientText v-if="permalink === 'sritys'" type="error">{{
           $t("Bendruomenė")
         }}</NGradientText
@@ -115,9 +119,7 @@
       >
       <Link
         class="duration-200 hover:text-vusa-red"
-        :href="
-          route('ataskaita2022', { lang: locale, permalink: 'padeka' })
-        "
+        :href="route('ataskaita2022', { lang: locale, permalink: 'padeka' })"
         ><NGradientText v-if="permalink === 'padeka'" type="error">{{
           $t("Padėka")
         }}</NGradientText
