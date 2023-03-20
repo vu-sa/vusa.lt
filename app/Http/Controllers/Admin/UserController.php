@@ -128,11 +128,7 @@ class UserController extends ResourceController
         $this->authorize('update', [User::class, $user, $this->authorizer]);
 
         // user load duties with pivot
-        $user->load(['duties' => function ($query) {
-            $query->withPivot('start_date', 'end_date');
-        }])->load('roles')->load(['previous_duties' => function ($query) {
-            $query->withPivot('start_date', 'end_date');
-        }]);
+        $user->load('duties', 'previous_duties', 'roles');
 
         return Inertia::render('Admin/People/EditUser', [
             'user' => $user->makeVisible(['last_action']),
@@ -149,6 +145,13 @@ class UserController extends ResourceController
         SendWelcomeEmail::execute((new Collection())->push($user));
 
         return back()->with('success', 'Laiškas sėkmingai išsiųstas!');
+    }
+
+    public function renderWelcomeEmail(User $user)
+    {
+        $this->authorize('update', [User::class, $user, $this->authorizer]);
+
+        return new \App\Mail\WelcomeEmail($user);
     }
 
     /**

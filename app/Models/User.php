@@ -69,9 +69,9 @@ class User extends Authenticatable
     {
         return $this->morphToMany(Duty::class, 'dutiable')
             ->using(Dutiable::class)
-            ->withPivot(['extra_attributes'])
+            ->withPivot(['extra_attributes', 'start_date', 'end_date'])
             // TODO: when used in relations, this returns all...
-            ->wherePivot('end_date', '>=', now())->orWherePivot('end_date', null)
+            ->wherePivot('end_date', null)->wherePivot('end_date', '>=', now(), 'or')
             ->withTimestamps();
     }
 
@@ -79,7 +79,7 @@ class User extends Authenticatable
     {
         return $this->morphToMany(Duty::class, 'dutiable')
             ->using(Dutiable::class)
-            ->withPivot(['extra_attributes'])
+            ->withPivot(['extra_attributes', 'start_date', 'end_date'])
             ->wherePivot('end_date', '<', now())
             ->withTimestamps();
     }
