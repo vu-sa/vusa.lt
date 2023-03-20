@@ -203,7 +203,6 @@ class UserController extends ResourceController
             $user->duties()->updateExistingPivot($duty, ['end_date' => now()]);
         }
 
-        return;
     }
 
     /**
