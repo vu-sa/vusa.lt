@@ -71,7 +71,16 @@ class User extends Authenticatable
             ->using(Dutiable::class)
             ->withPivot(['extra_attributes'])
             // TODO: when used in relations, this returns all...
-            // ->wherePivot('end_date', '>=', now())->orWherePivot('end_date', null)
+            ->wherePivot('end_date', '>=', now())->orWherePivot('end_date', null)
+            ->withTimestamps();
+    }
+
+    public function previous_duties()
+    {
+        return $this->morphToMany(Duty::class, 'dutiable')
+            ->using(Dutiable::class)
+            ->withPivot(['extra_attributes'])
+            ->wherePivot('end_date', '<', now())
             ->withTimestamps();
     }
 

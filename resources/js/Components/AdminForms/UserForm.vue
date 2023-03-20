@@ -117,42 +117,25 @@
             source-filterable
           ></NTransfer>
         </NFormItem>
-        <NCard
-          v-if="user.duties && user.duties.length > 0"
-          class="subtle-gray-gradient h-fit"
-        >
-          <strong>Šiuo metu {{ user.name }} užima šias pareigas:</strong>
-          <ul class="list-inside">
-            <li
-              v-for="duty in user.duties"
-              :key="duty.id"
-              class="flex-inline gap-2"
-            >
-              <Link :href="route('duties.edit', { id: duty.id })"
-                >{{ duty.name }}
-                {{
-                  `(nuo ${duty.pivot.start_date} iki ${
-                    duty.pivot.end_date ?? "dabar"
-                  })`
-                }}
-                {{ duty.email ? ` (${duty.email})` : "" }}
-
-                <NButton
-                  secondary
-                  circle
-                  size="tiny"
-                  @click.prevent="
-                    router.visit(route('duties.users.edit', [duty.id, user.id]))
-                  "
-                >
-                  <NIcon>
-                    <PersonEdit24Regular />
-                  </NIcon>
-                </NButton>
-              </Link>
-            </li>
-          </ul>
-        </NCard>
+        <NCard class="subtle-gray-gradient mb-4">
+          <h4>Užimamos pareigos</h4>
+          <NDataTable
+            :data="user.duties"
+            :columns="existingDutyColumns"
+            :bordered="false"
+            size="small"
+        /></NCard>
+        <NCard class="mb-4">
+          <h4>Buvusios pareigos</h4>
+          <NDataTable
+            :data="user.previous_duties"
+            :columns="existingDutyColumns"
+            :bordered="false"
+            size="small"
+        /></NCard>
+        <!-- <template v-if="users.previous_duties.length > 0">
+          <p>Praėjusios pareigos:</p>
+        </template> -->
       </FormElement>
       <FormElement>
         <template #title>
@@ -194,11 +177,12 @@
 
 <script setup lang="tsx">
 import { Add24Filled, Eye16Regular } from "@vicons/fluent";
-import { Link, router } from "@inertiajs/vue3";
 import {
+  type DataTableColumns,
   NAutoComplete,
   NButton,
   NCard,
+  NDataTable,
   NForm,
   NFormItem,
   NIcon,
@@ -210,6 +194,7 @@ import {
   type TransferRenderSourceList,
   type TreeOption,
 } from "naive-ui";
+import { Link, router } from "@inertiajs/vue3";
 import { PersonEdit24Regular } from "@vicons/fluent";
 import { computed, h, ref } from "vue";
 import { useForm, usePage } from "@inertiajs/vue3";
@@ -258,6 +243,50 @@ const dutyOptions: TreeOption[] = props.padaliniaiWithDuties.map(
 const isUserEmailMaybeDutyEmail = computed(() => {
   return props.user.email.includes("vusa.lt");
 });
+
+const existingDutyColumns: DataTableColumns = [
+  {
+    title: "Pavadinimas",
+    key: "name",
+    render(row) {
+      return (
+        <a
+          target="_blank"
+          href={route("duties.edit", { id: row.id })}
+          class="flex-inline gap-2"
+        >
+          {row.name}
+        </a>
+      );
+    },
+  },
+  {
+    title: "Pradžia",
+    key: "pivot.start_date",
+  },
+  {
+    title: "Pabaiga",
+    key: "pivot.end_date",
+  },
+  {
+    key: "actions",
+    render(row) {
+      return (
+        <NButton
+          secondary
+          size="tiny"
+          tag="a"
+          href={route("duties.users.edit", [row.id, props.user.id])}
+          target="_blank"
+        >
+          {{
+            icon: () => <NIcon component={PersonEdit24Regular} />,
+          }}
+        </NButton>
+      );
+    },
+  },
+];
 
 const renderLabel = ({ option }: { option: TreeOption }) => {
   // jsx element

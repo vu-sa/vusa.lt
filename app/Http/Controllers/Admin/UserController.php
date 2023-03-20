@@ -12,6 +12,7 @@ use App\Providers\RouteServiceProvider;
 use App\Services\ModelIndexer;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -129,7 +130,9 @@ class UserController extends ResourceController
         // user load duties with pivot
         $user->load(['duties' => function ($query) {
             $query->withPivot('start_date', 'end_date');
-        }])->load('roles');
+        }])->load('roles')->load(['previous_duties' => function ($query) {
+            $query->withPivot('start_date', 'end_date');
+        }]);
 
         return Inertia::render('Admin/People/EditUser', [
             'user' => $user->makeVisible(['last_action']),
@@ -163,9 +166,12 @@ class UserController extends ResourceController
             'roles' => 'array',
         ]);
 
+        $this->handleDutiesUpdate((new SupportCollection($request->duties)), $user->duties->pluck('id'), $user);
+
         DB::transaction(function () use ($request, $user) {
             $user->update($request->only('name', 'email', 'phone', 'profile_photo_path'));
-            $user->duties()->syncWithPivotValues($request->duties, ['start_date' => now()]);
+
+            // handle duties update
 
             // check if user is super admin
             if (User::find(Auth::id())->hasRole(config('permission.super_admin_role_name'))) {
@@ -179,6 +185,25 @@ class UserController extends ResourceController
         });
 
         return back()->with('success', 'Kontaktas sėkmingai atnaujintas!');
+    }
+
+    private function handleDutiesUpdate(SupportCollection $existing_duties, SupportCollection $user_duties, User $user)
+    {
+        $new = $existing_duties->diff($user_duties)->values();
+        $deleted = $user_duties->diff($existing_duties)->values();
+
+        // attach new duties
+
+        foreach ($new as $duty) {
+            $user->duties()->attach($duty, ['start_date' => now()]);
+        }
+
+        // update duty end date of deleted duties
+        foreach ($deleted as $duty) {
+            $user->duties()->updateExistingPivot($duty, ['end_date' => now()]);
+        }
+
+        return;
     }
 
     /**
