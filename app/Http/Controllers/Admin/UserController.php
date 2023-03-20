@@ -202,7 +202,6 @@ class UserController extends ResourceController
         foreach ($deleted as $duty) {
             $user->duties()->updateExistingPivot($duty, ['end_date' => now()]);
         }
-
     }
 
     /**
