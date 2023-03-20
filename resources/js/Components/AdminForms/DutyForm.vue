@@ -59,7 +59,7 @@
           <template #label>
             <div class="inline-flex items-center gap-2">
               Aprašymas
-              <SimpleLocaleButton v-model:locale="locale"></SimpleLocaleButton>
+              <SimpleLocaleButton v-model:locale="locale" />
             </div>
           </template>
           <TipTap
