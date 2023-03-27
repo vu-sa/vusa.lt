@@ -55,7 +55,7 @@ class UserController extends ResourceController
 
         return Inertia::render('Admin/People/CreateUser', [
             'roles' => Role::all(),
-            'padaliniaiWithDuties' => $this->getDutiesForForm(),
+            'padaliniaiWithDuties' => $this->getDutiesForForm($this->authorizer),
         ]);
     }
 
@@ -135,7 +135,7 @@ class UserController extends ResourceController
             'user' => $user->makeVisible(['last_action']),
             // get all roles
             'roles' => fn () => Role::all(),
-            'padaliniaiWithDuties' => fn () => $this->getDutiesForForm(),
+            'padaliniaiWithDuties' => fn () => $this->getDutiesForForm($this->authorizer),
         ]);
     }
 
@@ -196,7 +196,7 @@ class UserController extends ResourceController
         return redirect()->route('users.index')->with('info', 'Kontaktas sėkmingai ištrintas!');
     }
 
-    private function getDutiesForForm()
+    private function getDutiesForForm($authorizer)
     {
         // return Duty::with(['institution:id,name,padalinys_id', 'institution.padalinys:id,shortname'])
         // ->when(!auth()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
@@ -205,10 +205,12 @@ class UserController extends ResourceController
         //     });
         // })->get();
 
-        return Padalinys::orderBy('shortname')->with('institutions:id,name,padalinys_id', 'institutions.duties:id,name,institution_id')
-            ->when(! auth()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
-                $query->whereIn('id', User::find(Auth::id())->padaliniai->pluck('id'));
-            })->get();
+        if (! $authorizer->forUser(Auth::user())->checkAllRoleables('users.create.all')) {
+            return Padalinys::orderBy('shortname')->with('institutions:id,name,padalinys_id', 'institutions.duties:id,name,institution_id')
+                ->whereIn('id', User::find(Auth::id())->padaliniai->pluck('id'))->get();
+        } else {
+            return Padalinys::orderBy('shortname')->with('institutions:id,name,padalinys_id', 'institutions.duties:id,name,institution_id')->get();
+        }
     }
 
     public function storeFromMicrosoft()
