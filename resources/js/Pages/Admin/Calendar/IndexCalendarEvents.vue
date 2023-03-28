@@ -13,6 +13,7 @@
 <script setup lang="tsx">
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
+import { formatStaticTime } from "@/Utils/IntlTime";
 import Icons from "@/Types/Icons/regular";
 
 defineProps<{
@@ -30,10 +31,23 @@ const columns = [
   {
     title: "Pavadinimas",
     key: "title",
+    maxWidth: 200,
+    ellipsis: {
+      tooltip: true,
+    },
   },
   {
     title: "Data",
     key: "date",
+    render(row) {
+      return formatStaticTime(row.date, {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+      });
+    },
   },
   {
     title: "Padalinys",
