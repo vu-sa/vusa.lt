@@ -2,8 +2,6 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
-@import 'v-calendar/dist/style.css';
-
 @layer base {
 
   /* Some preflight rules */
@@ -90,16 +88,21 @@
     height: auto;
   }
 
+  button,[type=button],[type=reset],[type=submit] {
+    -webkit-appearance: button;
+    background-color: transparent;
+    background-image: none
+  }
+
   a {
     @apply no-underline text-inherit;
   }
-  
-  
-  /* These two 'body' element selectors are used, because Naive UI disabled forms 
+
+  /* These two 'body' element selectors are used, because Naive UI disabled forms
   ** have double, overlaping, placeholders.
   ? May be worth to report it.
   */
-  /* body span, body input { 
+  /* body span, body input {
     letter-spacing: -0.015em;
   } */
   h1 {

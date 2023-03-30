@@ -1,4 +1,6 @@
 import "../css/app.css";
+import "v-calendar/style.css";
+
 import { type DefineComponent, createApp, h } from "vue";
 import { ZiggyVue } from "../../vendor/tightenco/ziggy/src/js/vue.js";
 import { createInertiaApp } from "@inertiajs/vue3";
@@ -20,6 +22,11 @@ const metaTitle =
 
 // get title from appTitle by removing the suffix
 const pageTitle = metaTitle.replace(" - VU SA", "");
+
+const meta = document.createElement("meta");
+meta.name = "naive-ui-style";
+document.head.appendChild(meta);
+
 createInertiaApp({
   title: (title) => {
     return title ? `${title} - VU SA` : pageTitle;
