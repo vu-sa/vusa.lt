@@ -29,7 +29,6 @@
   },
   "devDependencies": {
     "@microsoft/microsoft-graph-types": "^2.25.0",
-    "@tailwindcss/line-clamp": "^0.4.0",
     "@tailwindcss/typography": "^0.5.0",
     "@types/d3": "^7.4.0",
     "@types/latinize": "^0.2.15",
