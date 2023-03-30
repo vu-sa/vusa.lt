@@ -6,7 +6,6 @@ use App\Actions\GetPadaliniaiForUpserts;
 use App\Http\Controllers\ResourceController;
 use App\Models\Calendar;
 use App\Models\Category;
-use App\Models\Padalinys;
 use App\Services\ModelIndexer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
