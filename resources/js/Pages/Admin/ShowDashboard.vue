@@ -24,7 +24,7 @@
         </div>
       </NCheckboxGroup>
       <template #trigger>
-        <div class="absolute top-0 right-0">
+        <div class="absolute right-0 top-0">
           <NButton circle quaternary
             ><template #icon
               ><NIcon
@@ -137,7 +137,7 @@
           round
           tag="a"
           target="_blank"
-          href="https://archyvas.vusa.lt"
+          href="https://atstovai.vusa.lt"
           ><template #icon
             ><div class="ml-2 mr-1">
               <NIcon :size="10" :component="ExternalLinkSquareAlt"></NIcon></div
