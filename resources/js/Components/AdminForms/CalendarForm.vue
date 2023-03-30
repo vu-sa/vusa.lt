@@ -116,6 +116,17 @@
             >
           </div>
         </NFormItem>
+        <NFormItem label="Padalinys">
+          <NSelect
+            v-model:value="form.padalinys_id"
+            :options="padaliniai"
+            label-field="shortname"
+            value-field="id"
+            placeholder="VU SA ..."
+            :default-value="padaliniai[0].id ?? ''"
+          >
+          </NSelect>
+        </NFormItem>
       </FormElement>
       <FormElement>
         <template #title>Laiko informacija</template>
@@ -334,6 +345,7 @@ const props = defineProps<{
   images?: any;
   modelRoute: string;
   deleteModelRoute?: string;
+  padaliniai: App.Entities.Padalinys[];
 }>();
 
 const locale = ref("lt");
