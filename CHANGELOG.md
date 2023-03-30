@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.4.13 (2023-03-30)
+
+* Galima patogiau redaguoti pareigybių laikotarpius (ir tai tiesiog veikia)
+* Pridėtas atstovų archyvo slaptažodis
+* Pridėta galimybė pridėti klausimus iš sąrašo
+* Galima pasirinkti padalinį prie renginių
+* Pataisyta vidinė visų renginių puslapių lentelė
+* Atnaujintas pareigybės laikotarpio formos stilius
+* Pataisytas senos ataskaitos mygtukas
+* Atnaujintos *deps*
+
 ## v0.4.12 (2023-03-15)
 
 * Atnaujintos renginių kortelės
