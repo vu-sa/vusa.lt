@@ -76,12 +76,14 @@
           src="/images/photos/pirmakursiu_stovykla_kaune.jpg"
         /> -->
         <FadeTransition>
-          <EventCalendar
-            class="relative z-[5]"
-            :calendar-events="calendar"
-            :locale="$page.props.app.locale"
-            :is-theme-dark="isThemeDark"
-          />
+          <div class="my-calendar">
+            <EventCalendar
+              class="relative z-[5]"
+              :calendar-events="calendar"
+              :locale="$page.props.app.locale"
+              :is-theme-dark="isThemeDark"
+            />
+          </div>
         </FadeTransition>
       </div>
     </div>
@@ -128,3 +130,9 @@ defineProps<{
 
 const showModal = ref(false);
 </script>
+
+<style scoped>
+.my-calendar :deep(.vc-container.vc-dark) {
+  background-color: #29292e;
+}
+</style>

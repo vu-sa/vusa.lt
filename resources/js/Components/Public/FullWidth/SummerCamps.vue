@@ -10,11 +10,11 @@
 
     <ShapeDivider1
       :is-theme-dark="isThemeDark"
-      class="absolute -top-1 z-10"
+      class="absolute -top-1 z-[1]"
     ></ShapeDivider1>
     <ShapeDivider1
       :is-theme-dark="isThemeDark"
-      class="absolute -bottom-2 z-10 rotate-180 lg:-bottom-1"
+      class="absolute -bottom-2 z-[1] rotate-180 lg:-bottom-1"
     ></ShapeDivider1>
     <div class="relative">
       <img
