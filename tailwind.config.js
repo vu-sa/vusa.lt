@@ -8,9 +8,6 @@ module.exports = {
     "./resources/js/**/*.vue",
   ],
   darkMode: ["class", '[color-scheme="dark"]'],
-  corePlugins: {
-    preflight: false,
-  },
   theme: {
     extend: {
       colors: {
