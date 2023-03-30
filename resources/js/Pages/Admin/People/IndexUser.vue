@@ -71,10 +71,7 @@ const columns = computed(() => {
       },
       render(row: App.Entities.User) {
         return (
-          <a
-            href={`mailto:${row.phone}`}
-            class="transition hover:text-vusa-red"
-          >
+          <a href={`tel:${row.phone}`} class="transition hover:text-vusa-red">
             {row.phone}
           </a>
         );

@@ -5,7 +5,11 @@
     :heading-icon="Icons.DUTY"
   >
     <UpsertModelLayout :errors="$page.props.errors" :model="dutiable">
-      <DutiableForm :dutiable="dutiable" model-route="duties.users.update" />
+      <DutiableForm
+        :dutiable="dutiable"
+        model-route="duties.users.update"
+        delete-model-route="duties.users.destroy"
+      />
     </UpsertModelLayout>
   </PageContent>
 </template>

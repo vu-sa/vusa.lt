@@ -1,94 +1,121 @@
 <template>
   <NForm :model="form" label-placement="top">
-    <NTabs animated type="card" pane-class="overflow-x-auto">
-      <NTabPane display-directive="show" name="lt" tab="🇱🇹">
-        <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
-          <NFormItemGi :span="2">
-            <template #label>
-              <div class="flex gap-1">
-                <span> Papildoma informacija </span>
-              </div>
-            </template>
-            <NInput
-              v-model:value="form.extra_attributes.study_program"
-              type="text"
-              placeholder="Įrašyti tekstą..."
-            />
-          </NFormItemGi>
-          <NFormItemGi label="Pareigų ėjimo pradžia" required :span="2"
-            ><NDatePicker
-              v-model:formatted-value="form.start_date"
-              value-format="yyyy-MM-dd"
-              type="date"
-              clearable
-          /></NFormItemGi>
-          <NFormItemGi label="Pareigų ėjimo pabaiga" required :span="2"
-            ><NDatePicker
-              v-model:formatted-value="form.end_date"
-              value-format="yyyy-MM-dd"
-              type="date"
-              clearable
-          /></NFormItemGi>
-          <NFormItemGi label="Aprašymas" :span="6">
-            <TipTap
-              v-model="form.extra_attributes.info_text"
-              :search-files="$page.props.search.other"
-            />
-          </NFormItemGi>
-          <NFormItemGi :span="2">
-            <template #label>
-              <div class="flex gap-1">
-                <span>Papildoma nuotrauka</span>
-              </div></template
-            >
-            <UploadImageButtons
-              v-model="form.extra_attributes.additional_photo"
-              :path="'contacts'"
-            />
-          </NFormItemGi>
-          <NFormItemGi :span="2">
-            <template #label>
-              <div class="flex gap-1">
-                <span>
-                  <strong>Negiminizuoti</strong> kontakto pareigos galūnės
-                </span>
-                <HelpTextHover
-                  >Išjungia automatinį šios kontakto pareigybės giminizavimą
-                  pagal vardą ir pavardę. Bus naudojamas originalus pareigybės
-                  pavadinimas.
-                </HelpTextHover>
-              </div>
-            </template>
-            <NSwitch
-              v-model:value="form.extra_attributes.use_original_duty_name"
-            ></NSwitch>
-          </NFormItemGi>
-        </NGrid>
-      </NTabPane>
-      <NTabPane display-directive="show" name="en" tab="🇬🇧">
-        <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
-          <NFormItemGi label="Studijų programa" :span="2">
-            <NInput
-              v-model:value="form.extra_attributes.en.study_program"
-              type="text"
-              placeholder="Įrašyti tekstą..."
-            />
-          </NFormItemGi>
-          <NFormItemGi label="Aprašymas" :span="6">
-            <TipTap
-              v-model="form.extra_attributes.en.info_text"
-              :search-files="$page.props.search.other"
-            />
-          </NFormItemGi>
-        </NGrid>
-      </NTabPane>
-    </NTabs>
+    <div class="flex flex-col">
+      <FormElement>
+        <template #title>Pareigybės ėjimo laikotarpis</template>
+        <template #description>
+          Šioje vietoje nustatomas pareigybės ėjimo laikotarpis. Kai žymima
+          pareigybės laikotarpio ėjimo pabaiga, pareigybės pavadinimas bus
+          giminizuotas pagal vardą ir pavardę.
+        </template>
+        <NFormItem label="Pareigų ėjimo pradžia" required
+          ><NDatePicker
+            v-model:formatted-value="form.start_date"
+            value-format="yyyy-MM-dd"
+            type="date"
+        /></NFormItem>
+        <NFormItem label="Pareigų ėjimo pabaiga" required
+          ><NDatePicker
+            v-model:formatted-value="form.end_date"
+            clearable
+            value-format="yyyy-MM-dd"
+            type="date"
+        /></NFormItem>
+      </FormElement>
+      <FormElement>
+        <template #title>Papildoma informacija</template>
+        <NFormItem>
+          <template #label>
+            <span class="inline-flex gap-1">
+              <span> Papildomas tekstas </span>
+              <InfoPopover
+                >Šalia pareigybės skliausteliuose atsiranda šis papildomas
+                tekstas.</InfoPopover
+              >
+            </span>
+          </template>
+          <NInput
+            v-if="locale === 'lt'"
+            v-model:value="form.extra_attributes.study_program"
+            type="text"
+            placeholder="Įrašyti tekstą..."
+          >
+            <template #suffix
+              ><SimpleLocaleButton v-model:locale="locale"></SimpleLocaleButton
+            ></template>
+          </NInput>
+          <NInput
+            v-else-if="locale === 'en'"
+            v-model:value="form.extra_attributes.en.study_program"
+            type="text"
+            placeholder="Add text..."
+          >
+            <template #suffix
+              ><SimpleLocaleButton v-model:locale="locale"></SimpleLocaleButton
+            ></template>
+          </NInput>
+        </NFormItem>
+        <NFormItem>
+          <template #label>
+            <div class="inline-flex gap-1">
+              <span>Papildoma nuotrauka</span>
+              <InfoPopover
+                >Ši nuotrauka leidžia vienam asmeniui turėti daugiau negu vieną
+                nuotrauką, kuri rodoma, kai puslapyje asmuo vaizduojamas su šia
+                pareigybe.</InfoPopover
+              >
+            </div>
+          </template>
+          <UploadImageButtons
+            v-model="form.extra_attributes.additional_photo"
+            :path="'contacts'"
+          />
+        </NFormItem>
+        <NFormItem>
+          <template #label>
+            <div class="inline-flex items-center gap-2">
+              Aprašymas
+              <SimpleLocaleButton v-model:locale="locale" />
+            </div>
+          </template>
+          <TipTap
+            v-if="locale === 'lt'"
+            v-model="form.extra_attributes.info_text"
+            :search-files="$page.props.search.other"
+          />
+          <TipTap
+            v-else-if="locale === 'en'"
+            v-model="form.extra_attributes.en.info_text"
+            :search-files="$page.props.search.other"
+          />
+        </NFormItem>
+        <NFormItem>
+          <template #label>
+            <span class="inline-flex gap-1">
+              <span>
+                Pareigos pavadinimo galūnės
+                <strong>negiminizavimas</strong>
+              </span>
+              <InfoPopover
+                >Išjungia automatinį šios kontakto pareigybės giminizavimą pagal
+                vardą ir pavardę. Bus naudojamas originalus pareigybės
+                pavadinimas.</InfoPopover
+              >
+            </span>
+          </template>
+          <NSwitch
+            v-model:value="form.extra_attributes.use_original_duty_name"
+          ></NSwitch>
+        </NFormItem>
+      </FormElement>
+    </div>
     <div class="flex justify-end gap-2">
-      <DeleteModelButton
+      <!-- TODO: add ability to remove dutiable -->
+      <!-- <DeleteModelButton
         v-if="deleteModelRoute"
         :form="form"
         :model-route="deleteModelRoute"
-      />
+      /> -->
       <UpsertModelButton
         :route-parameters="[dutiable.duty_id, dutiable.dutiable_id]"
         :form="form"
@@ -99,20 +126,15 @@
 </template>
 
 <script setup lang="ts">
-import {
-  NDatePicker,
-  NForm,
-  NFormItemGi,
-  NGrid,
-  NInput,
-  NSwitch,
-  NTabPane,
-  NTabs,
-} from "naive-ui";
+import { NDatePicker, NForm, NFormItem, NInput, NSwitch } from "naive-ui";
+import { ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
 
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
+import FormElement from "./FormElement.vue";
+import InfoPopover from "../Buttons/InfoPopover.vue";
+import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
 import UploadImageButtons from "@/Components/Buttons/UploadImageButtons.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
@@ -123,6 +145,8 @@ const props = defineProps<{
 }>();
 
 const form = useForm("dutiable", props.dutiable);
+
+const locale = ref("lt");
 
 if (!form.extra_attributes || form.extra_attributes.length === 0) {
   form.extra_attributes = {};

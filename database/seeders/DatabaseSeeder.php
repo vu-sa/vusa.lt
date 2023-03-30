@@ -30,7 +30,8 @@ class DatabaseSeeder extends Seeder
 
         Institution::factory(10)->create();
 
-        User::factory()->has(Duty::factory()->count(3))->count(10)->create();
+        User::factory()->hasAttached(Duty::factory()->count(3), ['start_date' => now()]
+        )->count(10)->create();
 
         $this->call(MenuSeeder::class);
 

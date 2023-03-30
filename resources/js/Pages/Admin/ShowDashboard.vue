@@ -143,6 +143,22 @@
               <NIcon :size="10" :component="ExternalLinkSquareAlt"></NIcon></div
           ></template>
           <span class="text-zinc-900/70 dark:text-zinc-100/80"
+            >atstovai.vusa.lt (slaptažodis: {{ atstovaiPassword }})</span
+          >
+        </NButton>
+        <NButton
+          secondary
+          :bordered="false"
+          size="tiny"
+          round
+          tag="a"
+          target="_blank"
+          href="https://archyvas.vusa.lt"
+          ><template #icon
+            ><div class="ml-2 mr-1">
+              <NIcon :size="10" :component="ExternalLinkSquareAlt"></NIcon></div
+          ></template>
+          <span class="text-zinc-900/70 dark:text-zinc-100/80"
             >archyvas.vusa.lt (slaptažodis: {{ archyvasPassword }})</span
           >
         </NButton>
@@ -197,6 +213,7 @@ const shownSections = useStorage("dashboard-sections", [
   "Nuorodos",
 ]);
 
+const atstovaiPassword = import.meta.env.VITE_ATSTOVAI_PASSWORD ?? "";
 const archyvasPassword = import.meta.env.VITE_ARCHYVAS_PASSWORD ?? "";
 </script>
 

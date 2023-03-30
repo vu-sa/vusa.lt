@@ -125,8 +125,4 @@ calendarAttributes.push({
   font-family: "Inter", sans-serif !important;
   border: 0 !important;
 }
-
-.vc-container.vc-is-dark {
-  background-color: rgb(55, 55, 62);
-}
 </style>

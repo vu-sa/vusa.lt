@@ -11,6 +11,7 @@
         :calendar="calendar"
         :categories="categories"
         :images="images"
+        :padaliniai="padaliniai"
       />
     </UpsertModelLayout>
   </PageContent>
@@ -27,8 +28,9 @@ import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 const props = defineProps<{
   calendar: App.Entities.Calendar;
-  images: any;
   categories: App.Entities.Category[];
+  images: any;
+  padaliniai: App.Entities.Padalinys[];
 }>();
 
 const calendar = ref(props.calendar);

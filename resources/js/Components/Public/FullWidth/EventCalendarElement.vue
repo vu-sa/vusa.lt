@@ -59,15 +59,15 @@
       <div class="relative flex w-fit items-center justify-center lg:top-4">
         <template v-if="showPhotos">
           <img
-            class="absolute top-8 -left-32 max-w-[12rem] rounded-lg object-cover shadow-xl blur brightness-50 lg:-top-24 lg:max-w-[16rem]"
+            class="absolute -left-32 top-8 max-w-[12rem] rounded-lg object-cover shadow-xl blur brightness-50 lg:-top-24 lg:max-w-[16rem]"
             src="/images/photos/vu.jpg"
           />
           <img
-            class="absolute top-12 -left-16 z-10 max-w-[12rem] rounded-lg object-cover shadow-xl blur-sm brightness-75 lg:-top-12 lg:max-w-[16rem]"
+            class="absolute -left-16 top-12 z-[1] max-w-[12rem] rounded-lg object-cover shadow-xl blur-sm brightness-75 lg:-top-12 lg:max-w-[16rem]"
             src="/images/photos/stovykla.jpg"
           />
           <img
-            class="absolute top-14 left-12 z-10 rounded-lg object-cover shadow-2xl brightness-125 contrast-100 sm:left-24 md:left-32 lg:left-48 lg:max-w-[16rem]"
+            class="absolute left-12 top-14 z-[1] rounded-lg object-cover shadow-2xl brightness-125 contrast-100 sm:left-24 md:left-32 lg:left-48 lg:max-w-[16rem]"
             src="/images/photos/pirmakursiu_stovykla_kaune.jpg"
           />
         </template>
@@ -76,12 +76,14 @@
           src="/images/photos/pirmakursiu_stovykla_kaune.jpg"
         /> -->
         <FadeTransition>
-          <EventCalendar
-            class="z-20"
-            :calendar-events="calendar"
-            :locale="$page.props.app.locale"
-            :is-theme-dark="isThemeDark"
-          />
+          <div class="my-calendar">
+            <EventCalendar
+              class="relative z-[5]"
+              :calendar-events="calendar"
+              :locale="$page.props.app.locale"
+              :is-theme-dark="isThemeDark"
+            />
+          </div>
         </FadeTransition>
       </div>
     </div>
@@ -91,7 +93,7 @@
     class="mx-auto my-8 max-w-7xl px-16 lg:px-24 xl:px-32"
   >
     <h2 class="text-center lg:text-start">Artėjantys renginiai</h2>
-    <div class="my-8 mx-auto flex w-fit flex-wrap gap-4 lg:mx-0">
+    <div class="mx-auto my-8 flex w-fit flex-wrap gap-4 lg:mx-0">
       <Link
         v-for="event in upcoming4Events"
         :key="event.id"
@@ -128,3 +130,9 @@ defineProps<{
 
 const showModal = ref(false);
 </script>
+
+<style scoped>
+.my-calendar :deep(.vc-container.vc-dark) {
+  background-color: #29292e;
+}
+</style>

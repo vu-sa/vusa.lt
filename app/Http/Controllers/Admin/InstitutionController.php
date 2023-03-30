@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\GetPadaliniaiForUpserts;
 use App\Http\Controllers\ResourceController;
 use App\Models\Doing;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Type;
 use App\Services\ModelIndexer;
-use App\Services\ResourceServices\InstitutionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -58,7 +58,7 @@ class InstitutionController extends ResourceController
         $this->authorize('create', [Institution::class, $this->authorizer]);
 
         return Inertia::render('Admin/People/CreateInstitution', [
-            'padaliniai' => InstitutionService::getPadaliniaiForUpserts($this->authorizer),
+            'padaliniai' => GetPadaliniaiForUpserts::execute('institutions.create.all', $this->authorizer),
             'institutionTypes' => Type::where('model_type', Institution::class)->get(),
         ]);
     }
@@ -137,7 +137,7 @@ class InstitutionController extends ResourceController
                 'types' => $institution->types->pluck('id'),
             ],
             'institutionTypes' => Type::where('model_type', Institution::class)->get(),
-            'padaliniai' => InstitutionService::getPadaliniaiForUpserts($this->authorizer),
+            'padaliniai' => GetPadaliniaiForUpserts::execute('institutions.update.all', $this->authorizer),
         ]);
     }
 

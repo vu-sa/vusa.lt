@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\GetPadaliniaiForUpserts;
 use App\Http\Controllers\ResourceController;
 use App\Models\Calendar;
 use App\Models\Category;
-use App\Models\Padalinys;
 use App\Services\ModelIndexer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -31,7 +31,7 @@ class CalendarController extends ResourceController
         $calendar = $indexer->execute(Calendar::class, $search, 'title', $this->authorizer, null);
 
         return Inertia::render('Admin/Calendar/IndexCalendarEvents', [
-            'calendar' => $calendar->paginate(20),
+            'calendar' => $calendar->with('category')->orderBy('date', 'desc')->paginate(20),
         ]);
     }
 
@@ -45,6 +45,7 @@ class CalendarController extends ResourceController
         $this->authorize('create', [Calendar::class, $this->authorizer]);
 
         return Inertia::render('Admin/Calendar/CreateCalendarEvent', [
+            'padaliniai' => GetPadaliniaiForUpserts::execute('calendar.create.all', $this->authorizer),
             'categories' => Category::all(),
         ]);
     }
@@ -60,6 +61,7 @@ class CalendarController extends ResourceController
 
         $validated = $request->validate([
             'date' => 'required|integer',
+            'padalinys_id' => 'required|integer',
             'end_date' => 'nullable|date',
             'title' => 'required',
             'description' => 'required',
@@ -72,13 +74,6 @@ class CalendarController extends ResourceController
         $padalinys_id = null;
 
         $validated['date'] = Carbon::createFromTimestamp($request->date / 1000)->toDateTime();
-
-        // check if super admin, else set padalinys_id
-        if (request()->user()->hasRole(config('permission.super_admin_role_name'))) {
-            $padalinys_id = Padalinys::where('type', 'pagrindinis')->first()->id;
-        } else {
-            $padalinys_id = $this->authorizer->permissableDuties->first()->padaliniai->first()->id;
-        }
 
         Calendar::create($validated + ['padalinys_id' => $padalinys_id]);
 
@@ -116,6 +111,7 @@ class CalendarController extends ResourceController
             'calendar' => $calendar,
             'categories' => Category::all(),
             'images' => $calendar->getMedia('images'),
+            'padaliniai' => GetPadaliniaiForUpserts::execute('calendar.update.all', $this->authorizer),
         ]);
     }
 
@@ -130,6 +126,7 @@ class CalendarController extends ResourceController
 
         $validated = $request->validate([
             'date' => 'required|integer',
+            'padalinys_id' => 'required|integer',
             'end_date' => 'date|nullable',
             'title' => 'required',
             'description' => 'required',

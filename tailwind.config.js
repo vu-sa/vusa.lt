@@ -8,9 +8,6 @@ module.exports = {
     "./resources/js/**/*.vue",
   ],
   darkMode: ["class", '[color-scheme="dark"]'],
-  corePlugins: {
-    preflight: false,
-  },
   theme: {
     extend: {
       colors: {
@@ -32,8 +29,5 @@ module.exports = {
     },
   },
 
-  plugins: [
-    require("@tailwindcss/typography"),
-    require("@tailwindcss/line-clamp"),
-  ],
+  plugins: [require("@tailwindcss/typography")],
 };
