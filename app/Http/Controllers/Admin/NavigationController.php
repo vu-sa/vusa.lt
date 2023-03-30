@@ -32,9 +32,11 @@ class NavigationController extends ResourceController
     /**
      * Display a listing of the resource.
      *
+     * @param  \Illuminate\Http\Request  $_request  TODO: $request variable unused and possibly can be removed.
+     *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index(Request $_request)
     {
         $this->authorize('viewAny', [Navigation::class, $this->authorizer]);
 
@@ -76,7 +78,11 @@ class NavigationController extends ResourceController
      */
     public function show(Navigation $navigation)
     {
-        $this->authorize('view', [Navigation::class, $navigation, $this->authorizer]);
+        return $this->authorize('view', [
+            Navigation::class,
+            $navigation,
+            $this->authorizer
+        ]);
     }
 
     /**

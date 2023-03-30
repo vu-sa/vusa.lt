@@ -84,7 +84,11 @@ class MainPageController extends ResourceController
      */
     public function show(MainPage $mainPage)
     {
-        $this->authorize('view', [MainPage::class, $mainPage, $this->authorizer]);
+        return $this->authorize('view', [
+            MainPage::class,
+            $mainPage,
+            $this->authorizer
+        ]);
     }
 
     /**

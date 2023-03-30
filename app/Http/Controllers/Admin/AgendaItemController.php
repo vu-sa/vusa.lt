@@ -20,7 +20,7 @@ class AgendaItemController extends ResourceController
      */
     public function index()
     {
-        $this->authorize('viewAny', [AgendaItem::class, $this->authorizer]);
+        return $this->authorize('viewAny', [AgendaItem::class, $this->authorizer]);
     }
 
     /**
@@ -30,7 +30,7 @@ class AgendaItemController extends ResourceController
      */
     public function create()
     {
-        $this->authorize('create', [AgendaItem::class, $this->authorizer]);
+        return $this->authorize('create', [AgendaItem::class, $this->authorizer]);
     }
 
     /**
@@ -91,7 +91,11 @@ class AgendaItemController extends ResourceController
      */
     public function edit(AgendaItem $agendaItem)
     {
-        $this->authorize('update', [AgendaItem::class, $agendaItem, $this->authorizer]);
+        return $this->authorize('update', [
+            AgendaItem::class,
+            $agendaItem,
+            $this->authorizer
+        ]);
     }
 
     /**

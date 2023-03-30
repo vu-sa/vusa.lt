@@ -16,8 +16,10 @@ class RegistrationFormController extends ResourceController
      */
     public function index()
     {
-        $this->authorize('viewAny', [Institution::class, $this->authorizer]);
-        //
+        return $this->authorize('viewAny', [
+            Institution::class,
+            $this->authorizer
+        ]);
     }
 
     /**
@@ -27,7 +29,7 @@ class RegistrationFormController extends ResourceController
      */
     public function create()
     {
-        //
+        // TODO: Implement function or just remove it entirely.
     }
 
     /**
@@ -74,7 +76,7 @@ class RegistrationFormController extends ResourceController
      */
     public function edit(RegistrationForm $registrationForm)
     {
-        //
+        // TODO: Implement function or just remove it entirely.
     }
 
     /**
@@ -84,7 +86,7 @@ class RegistrationFormController extends ResourceController
      */
     public function update(Request $request, RegistrationForm $registrationForm)
     {
-        //
+        // TODO: Implement function or just remove it entirely.
     }
 
     /**
@@ -94,6 +96,6 @@ class RegistrationFormController extends ResourceController
      */
     public function destroy(RegistrationForm $registrationForm)
     {
-        //
+        // TODO: Implement function or just remove it entirely.
     }
 }

@@ -80,7 +80,11 @@ class SaziningaiExamsController extends ResourceController
      */
     public function show(SaziningaiExam $saziningaiExam)
     {
-        $this->authorize('view', [SaziningaiExam::class, $saziningaiExam, $this->authorizer]);
+        return $this->authorize('view', [
+            SaziningaiExam::class,
+            $saziningaiExam,
+            $this->authorizer
+        ]);
     }
 
     /**

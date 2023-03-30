@@ -78,8 +78,11 @@ class BannerController extends ResourceController
      */
     public function show(Banner $banner)
     {
-        //
-        $this->authorize('view', [Banner::class, $banner, $this->authorizer]);
+        return $this->authorize('view', [
+            Banner::class,
+            $banner,
+            $this->authorizer
+        ]);
     }
 
     /**

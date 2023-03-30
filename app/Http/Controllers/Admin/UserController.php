@@ -252,6 +252,9 @@ class UserController extends ResourceController
             // if user role is null, add role
             $user->microsoft_token = $microsoftUser->token;
 
+            // The docs say that Auth::login method returns "void"
+            // https://laravel.com/api/master/Illuminate/Support/Facades/Auth.html#method_login
+            // FIX: change the logic of the code block below
             if (Auth::login($user)) {
                 request()->session()->regenerate();
 
