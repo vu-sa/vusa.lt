@@ -1,81 +1,108 @@
 <template>
-  <NForm ref="form" :rules="agendaItemRules" :model="agendaItemsForm">
-    <FadeTransition>
-      <SuggestionAlert
-        :show-alert="showAlert"
-        @alert-closed="showAlert = false"
-      >
-        <p class="mt-0">
-          <span>Kiekvienas posėdis turi</span>
-          <ModelChip>
-            <template #icon
-              ><NIcon :component="IconsRegular.AGENDA_ITEM"></NIcon
-            ></template>
-            darbotvarkės klausimų</ModelChip
-          >
-        </p>
-        <p class="mb-4">
-          Įrašyk arba įkopijuok visus klausimus, kurie šiuo metu yra numatomi
-          posėdyje.
-        </p>
-        <p>
-          Jeigu žinai, kad posėdis vyks, bet
-          <strong>dar nėra klausimų</strong> (arba jų dar bus) –
-          <strong> pažymėk varnelę ties </strong>„Vėliau gali atsirasti
-          papildomų klausimų“
-        </p>
-      </SuggestionAlert>
-    </FadeTransition>
-    <NFormItem path="agendaItemTitles">
-      <template #label>
-        <span class="mb-2 inline-flex items-center gap-1"
-          ><NIcon :component="IconsFilled.AGENDA_ITEM"></NIcon>
-          {{ $t("Darbotvarkės klausimai") }}
-        </span>
-      </template>
-      <NDynamicInput
-        v-model:value="agendaItemsForm.agendaItemTitles"
-        show-sort-button
-      >
-        <template #create-button-default>{{ $t("forms.add") }}</template>
-        <template #default="{ index }">
-          <div class="flex grow items-center gap-1">
-            <span class="ml-1 w-7">{{ `${index + 1}.` }}</span>
-            <NInput
-              v-model:value="agendaItemsForm.agendaItemTitles[index]"
-              :placeholder="`Darbotvarkės klausimas nr. ${index + 1}`"
-              @keydown.enter.prevent
-            ></NInput>
-          </div>
+  <div v-if="!showQuestionInputInTextArea">
+    <NForm ref="form" :rules="agendaItemRules" :model="agendaItemsForm">
+      <FadeTransition>
+        <SuggestionAlert
+          :show-alert="showAlert"
+          @alert-closed="showAlert = false"
+        >
+          <p class="mt-0">
+            <span>Kiekvienas posėdis turi</span>
+            <ModelChip>
+              <template #icon
+                ><NIcon :component="IconsRegular.AGENDA_ITEM"></NIcon
+              ></template>
+              darbotvarkės klausimų</ModelChip
+            >
+          </p>
+          <p class="mb-4">
+            Įrašyk arba įkopijuok visus klausimus, kurie šiuo metu yra numatomi
+            posėdyje.
+          </p>
+          <p>
+            Jeigu žinai, kad posėdis vyks, bet
+            <strong>dar nėra klausimų</strong> (arba jų dar bus) –
+            <strong> pažymėk varnelę ties </strong>„Vėliau gali atsirasti
+            papildomų klausimų“
+          </p>
+        </SuggestionAlert>
+      </FadeTransition>
+      <NFormItem path="agendaItemTitles">
+        <template #label>
+          <span class="mb-2 inline-flex items-center gap-1"
+            ><NIcon :component="IconsFilled.AGENDA_ITEM"></NIcon>
+            {{ $t("Darbotvarkės klausimai") }}
+          </span>
         </template>
-      </NDynamicInput>
-    </NFormItem>
-    <NFormItem>
-      <template #label>
-        <span class="inline-flex items-center gap-1"
-          ><NIcon :component="DocumentSettings20Filled" />
-          {{ $t("forms.context.additional_info") }}
-        </span>
-      </template>
-      <NCheckbox v-model:checked="agendaItemsForm.moreAgendaItemsUndefined"
-        ><span class="whitespace-nowrap">{{
-          $t("Vėliau gali atsirasti papildomų darbotvarkės klausimų")
-        }}</span></NCheckbox
-      >
-    </NFormItem>
-    <NFormItem :show-label="false">
-      <NButton
-        :loading="loading"
-        :disabled="
-          agendaItemsForm.agendaItemTitles.length === 0 &&
-          !agendaItemsForm.moreAgendaItemsUndefined
-        "
-        type="primary"
-        @click.prevent="submitForm"
-        >{{ $t("forms.submit") }}</NButton
-      >
-    </NFormItem>
-  </NForm>
+        <div class="flex grow flex-col gap-2">
+          <NDynamicInput
+            v-model:value="agendaItemsForm.agendaItemTitles"
+            show-sort-button
+          >
+            <template #create-button-default
+              >{{ $t("forms.add") }} po vieną</template
+            >
+            <template #default="{ index }">
+              <div class="flex grow items-center gap-1">
+                <span class="ml-1 w-7">{{ `${index + 1}.` }}</span>
+                <NInput
+                  v-model:value="agendaItemsForm.agendaItemTitles[index]"
+                  :placeholder="`Darbotvarkės klausimas nr. ${index + 1}`"
+                  @keydown.enter.prevent
+                ></NInput>
+              </div>
+            </template>
+          </NDynamicInput>
+          <NButton
+            v-if="
+              agendaItemsForm.agendaItemTitles.length === 0 &&
+              !showQuestionInputInTextArea
+            "
+            @click="showQuestionInputInTextArea = true"
+            ><template #icon
+              ><NIcon :component="DocumentQueueAdd20Regular"></NIcon
+            ></template>
+            Pridėti iš teksto</NButton
+          >
+        </div>
+      </NFormItem>
+      <NFormItem>
+        <template #label>
+          <span class="inline-flex items-center gap-1"
+            ><NIcon :component="DocumentSettings20Filled" />
+            {{ $t("forms.context.additional_info") }}
+          </span>
+        </template>
+        <NCheckbox v-model:checked="agendaItemsForm.moreAgendaItemsUndefined"
+          ><span class="whitespace-nowrap">{{
+            $t("Vėliau gali atsirasti papildomų darbotvarkės klausimų")
+          }}</span></NCheckbox
+        >
+      </NFormItem>
+      <NFormItem :show-label="false">
+        <NButton
+          :loading="loading"
+          :disabled="
+            agendaItemsForm.agendaItemTitles.length === 0 &&
+            !agendaItemsForm.moreAgendaItemsUndefined
+          "
+          type="primary"
+          @click.prevent="submitForm"
+          >{{ $t("forms.submit") }}</NButton
+        >
+      </NFormItem>
+    </NForm>
+  </div>
+  <div v-else class="flex flex-col items-start gap-2">
+    <NInput
+      v-model:value="questionInputInTextArea"
+      type="textarea"
+      class="w-full"
+      rows="5"
+      :placeholder="'Kiekvienas klausimas turi būti iš naujos eilutės, pvz.:\n\n Klausimas nr. 1\n Klausimas nr. 2'"
+    ></NInput>
+    <NButton @click="handleQuestionsFromTextArea">Įkelti</NButton>
+  </div>
 </template>
 
 <script setup lang="tsx">
@@ -95,7 +122,10 @@ import { ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 
-import { DocumentSettings20Filled } from "@vicons/fluent";
+import {
+  DocumentQueueAdd20Regular,
+  DocumentSettings20Filled,
+} from "@vicons/fluent";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import IconsFilled from "@/Types/Icons/filled";
 import IconsRegular from "@/Types/Icons/regular";
@@ -112,6 +142,15 @@ defineProps<{
 }>();
 
 const showAlert = useStorage("new-meeting-button-alert", true);
+const showQuestionInputInTextArea = ref(false);
+const questionInputInTextArea = ref("");
+
+const handleQuestionsFromTextArea = () => {
+  // split question by new line and put them into agendaItemsForm.agendaItemTitles
+  const questions = questionInputInTextArea.value.split("\n");
+  agendaItemsForm.agendaItemTitles = questions;
+  showQuestionInputInTextArea.value = false;
+};
 
 const form = ref<FormInst | null>(null);
 
