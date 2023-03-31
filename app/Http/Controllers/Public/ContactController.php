@@ -88,7 +88,7 @@ class ContactController extends PublicController
                     $query->where('alias', '=', $slug);
                 })->whereHas('dutiables', function (Builder $query) {
                     $query->where('end_date', '>=', now())->where('end_date', '=', null, 'or');
-                });;
+                });
             })
             ->get();
         }
