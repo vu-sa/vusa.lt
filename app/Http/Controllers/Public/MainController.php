@@ -92,7 +92,7 @@ class MainController extends PublicController
             return $event->end_date ? $event->end_date > date('Y-m-d H:i:s') : $event->date > date('Y-m-d H:i:s');
         })->sortBy(function ($event) {
             return $event->date;
-        }, SORT_DESC)->take(4)->values()->load('padalinys:id,alias,fullname,shortname');
+        }, SORT_DESC)->take(3)->values()->load('padalinys:id,alias,fullname,shortname');
 
         return Inertia::render('Public/HomePage', [
             'news' => $news->map(function ($news) {
