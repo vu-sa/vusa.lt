@@ -72,31 +72,13 @@
         </template>
       </div>
     </div>
-    <Link
-      class="absolute -top-2 -right-2"
-      :href="route('users.edit', contact.id)"
-    >
-      <NButton
-        v-if="$page.props.auth?.user"
-        class="bg-zinc-100 shadow-sm dark:bg-zinc-800"
-        circle
-        size="tiny"
-      >
-        <template #icon>
-          <NIcon>
-            <PersonEdit24Regular />
-          </NIcon>
-        </template>
-      </NButton>
-    </Link>
   </figure>
 </template>
 
 <script setup lang="ts">
-import { Link, usePage } from "@inertiajs/vue3";
 import { Mail20Regular, Phone20Regular } from "@vicons/fluent";
-import { NButton, NEllipsis, NIcon } from "naive-ui";
-import { PersonEdit24Regular } from "@vicons/fluent";
+import { NEllipsis, NIcon } from "naive-ui";
+import { usePage } from "@inertiajs/vue3";
 import InfoPopover from "../Buttons/InfoPopover.vue";
 
 defineProps<{
