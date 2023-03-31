@@ -34,7 +34,7 @@ class ContactController extends PublicController
             $descendants = $type->getDescendantsAndSelf();
 
             $descendants->load(['institutions' => function ($query) {
-                $query->with('duties.users', 'padalinys:id,alias')->where('padalinys_id', '=', $this->padalinys->id)->orderBy('name')->get(['id', 'name', 'alias', 'description']);
+                $query->with('duties.current_users')->with('padalinys:id,alias')->where('padalinys_id', '=', $this->padalinys->id)->orderBy('name')->get(['id', 'name', 'alias', 'description']);
             }]);
 
             // remove descendants without institutions

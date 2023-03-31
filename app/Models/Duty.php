@@ -48,7 +48,7 @@ class Duty extends Model implements AuthorizableContract
     public function current_users()
     {
         return $this->users()
-            ->wherePivot('end_date', null)->wherePivot('end_date', '>=', now())
+            ->wherePivot('end_date', null)->orWherePivot('end_date', '>=', now())
             ->withTimestamps();
     }
 
