@@ -135,4 +135,8 @@ const showModal = ref(false);
 .my-calendar :deep(.vc-container.vc-dark) {
   background-color: #29292e;
 }
+
+.my-calendar :deep(button.vc-arrow) {
+  background-color: transparent;
+}
 </style>
