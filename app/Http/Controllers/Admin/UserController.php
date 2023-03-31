@@ -128,7 +128,7 @@ class UserController extends ResourceController
         $this->authorize('update', [User::class, $user, $this->authorizer]);
 
         // user load duties with pivot
-        $user->load('duties', 'previous_duties', 'roles');
+        $user->load('current_duties', 'previous_duties', 'roles');
 
         return Inertia::render('Admin/People/EditUser', [
             'user' => $user->makeVisible(['last_action']),
@@ -169,7 +169,7 @@ class UserController extends ResourceController
             'roles' => 'array',
         ]);
 
-        $this->handleDutiesUpdate((new SupportCollection($request->duties)), $user->duties->pluck('id'), $user);
+        $this->handleDutiesUpdate((new SupportCollection($request->current_duties)), $user->current_duties->pluck('id'), $user);
 
         DB::transaction(function () use ($request, $user) {
             $user->update($request->only('name', 'email', 'phone', 'profile_photo_path'));

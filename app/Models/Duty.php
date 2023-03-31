@@ -42,16 +42,19 @@ class Duty extends Model implements AuthorizableContract
     {
         return $this->morphedByMany(User::class, 'dutiable')
             ->using(Dutiable::class)
-            ->withPivot(['extra_attributes', 'start_date', 'end_date'])
-            ->wherePivot('end_date', null)->wherePivot('end_date', '>=', now(), 'or')
+            ->withPivot(['extra_attributes', 'start_date', 'end_date']);
+    }
+
+    public function current_users()
+    {
+        return $this->users()
+            ->wherePivot('end_date', null)->wherePivot('end_date', '>=', now())
             ->withTimestamps();
     }
 
     public function previous_users()
     {
-        return $this->morphedByMany(User::class, 'dutiable')
-            ->using(Dutiable::class)
-            ->withPivot(['extra_attributes', 'start_date', 'end_date'])
+        return $this->users()
             ->wherePivot('end_date', '<', now())
             ->withTimestamps();
     }

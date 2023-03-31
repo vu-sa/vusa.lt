@@ -22,8 +22,6 @@ class Dutiable extends MorphPivot
         'deleted' => \App\Events\DutiableChanged::class,
     ];
 
-    protected $with = ['duty'];
-
     protected $casts = [
         'extra_attributes' => AsArrayObject::class,
     ];

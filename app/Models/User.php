@@ -69,19 +69,28 @@ class User extends Authenticatable
     {
         return $this->morphToMany(Duty::class, 'dutiable')
             ->using(Dutiable::class)
-            ->withPivot(['extra_attributes', 'start_date', 'end_date'])
-            // TODO: when used in relations, this returns all...
-            ->wherePivot('end_date', null)->wherePivot('end_date', '>=', now(), 'or')
-            ->withTimestamps();
+            ->withPivot(['extra_attributes', 'start_date', 'end_date']);
     }
 
     public function previous_duties()
     {
-        return $this->morphToMany(Duty::class, 'dutiable')
-            ->using(Dutiable::class)
-            ->withPivot(['extra_attributes', 'start_date', 'end_date'])
+        return $this->duties()
             ->wherePivot('end_date', '<', now())
             ->withTimestamps();
+    }
+
+    // this needs more debugging. don't use with withWhereHas
+
+    public function current_duties()
+    {
+        return $this->duties()
+            ->wherePivotNull('end_date')->orWherePivot('end_date', '>=', now())
+            ->withTimestamps();
+    }
+
+    public function dutiables()
+    {
+        return $this->morphMany(Dutiable::class, 'dutiable');
     }
 
     public function padaliniai()

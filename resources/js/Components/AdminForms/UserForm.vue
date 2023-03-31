@@ -108,7 +108,7 @@
           </template>
           <NTransfer
             ref="transfer"
-            v-model:value="form.duties"
+            v-model:value="form.current_duties"
             :options="flattenDutyOptions"
             :render-source-list="
               dutyShowMode === 'tree' ? renderSourceList : undefined
@@ -120,7 +120,7 @@
         <NCard class="subtle-gray-gradient mb-4">
           <h4>Užimamos pareigos</h4>
           <NDataTable
-            :data="user.duties"
+            :data="user.current_duties"
             :columns="existingDutyColumns"
             :bordered="false"
             size="small"
@@ -384,7 +384,7 @@ const emailOptions = computed(() => {
   });
 });
 
-form.duties = props.user.duties?.map((duty) => duty.id);
+form.current_duties = props.user.current_duties?.map((duty) => duty.id);
 
 // tsx render Ntree
 const renderSourceList: TransferRenderSourceList = ({ onCheck, pattern }) => {
@@ -398,7 +398,7 @@ const renderSourceList: TransferRenderSourceList = ({ onCheck, pattern }) => {
     renderLabel: renderLabel,
     data: dutyOptions,
     pattern,
-    checkedKeys: form.duties,
+    checkedKeys: form.current_duties,
     onUpdateCheckedKeys: (checkedKeys: Array<string | number>) => {
       onCheck(checkedKeys);
     },

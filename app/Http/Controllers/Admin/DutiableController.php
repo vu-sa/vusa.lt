@@ -62,7 +62,9 @@ class DutiableController extends ResourceController
     {
         $this->authorize('update', [Duty::class, $duty, $this->authorizer]);
 
-        $dutiable = Dutiable::with('user')->where('duty_id', $duty->id)->where('dutiable_id', $dutiable)->first();
+        $dutiable = Dutiable::with('user', 'duty')
+            ->where('duty_id', $duty->id)
+            ->where('dutiable_id', $dutiable)->first();
 
         return Inertia::render('Admin/People/EditDutiable', [
             'dutiable' => $dutiable,
@@ -85,8 +87,6 @@ class DutiableController extends ResourceController
             'end_date' => 'nullable|date|after:start_date',
             'extra_attributes' => 'nullable|array',
         ]);
-
-        // dd($validated, $request->all());
 
         $duty->users()->updateExistingPivot($dutiable, $validated);
 

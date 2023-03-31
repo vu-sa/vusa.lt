@@ -101,7 +101,7 @@ class ModelAuthorizer
     protected function getDuties(): Collection
     {
         if ($this->duties->count() === 0) {
-            $this->duties = $this->user->load('duties:id,name,institution_id', 'duties.institution:id', 'duties.roles.permissions')->duties;
+            $this->duties = $this->user->load('current_duties:id,name,institution_id', 'current_duties.institution:id', 'current_duties.roles.permissions')->current_duties;
         }
 
         return $this->duties;

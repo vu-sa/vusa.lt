@@ -64,7 +64,10 @@ class ContactController extends PublicController
             $contacts = User::withWhereHas('duties', function ($query) use ($types, $institution) {
                 $query->where('institution_id', '=', $institution->id)
                     ->whereHas('types', fn (Builder $query) => $query->whereIn('id', $types->pluck('id'))
-                    );
+                    )
+                    ->whereHas('dutiables', function (Builder $query) {
+                        $query->where('end_date', '>=', now())->where('end_date', '=', null, 'or');
+                    });
             })->get();
 
         // if not found, try to find institution
