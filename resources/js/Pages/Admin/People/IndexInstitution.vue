@@ -7,14 +7,26 @@
     :paginated-models="institutions"
     :icon="Icons.INSTITUTION"
   >
+    <template #aside-header>
+      <NButton tag="a" text :href="route('institutionGraph')" target="_blank"
+        ><template #icon><NIcon :component="Flowchart20Regular" /></template
+        >{{ $t("Institucijų grafa") }}</NButton
+      >
+    </template>
   </IndexPageLayout>
 </template>
 
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
+import {
+  type DataTableColumns,
+  type DataTableSortState,
+  NButton,
+  NIcon,
+} from "naive-ui";
+import { Flowchart20Regular } from "@vicons/fluent";
 import { computed, provide, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
-import type { DataTableColumns, DataTableSortState } from "naive-ui";
 
 import { updateFilters, updateSorters } from "@/Utils/DataTable";
 import Icons from "@/Types/Icons/regular";

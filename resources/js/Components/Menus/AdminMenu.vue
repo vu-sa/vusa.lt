@@ -12,8 +12,8 @@
 import { trans as $t } from "laravel-vue-i18n";
 import {
   BuildingHome24Regular,
-  Flowchart20Regular,
   Folder24Regular,
+  GridKanban20Regular,
   HatGraduation24Regular,
   Home24Regular,
   Notebook24Regular,
@@ -80,6 +80,40 @@ const menuOptions = computed(() => [
   },
   {
     label() {
+      return $t("Žmonės");
+    },
+    key: "people",
+    icon: () => {
+      return <NIcon component={Icons.USER}></NIcon>;
+    },
+    show: auth?.can.index.user || auth?.can.index.contact,
+    children: [
+      {
+        label: () => {
+          return <Link href={route("users.index")}>{$t("Nariai")}</Link>;
+        },
+        key: "users",
+        show: auth?.can.index.user,
+        icon: () => {
+          return <NIcon component={Icons.USER}></NIcon>;
+        },
+      },
+      {
+        label: () => {
+          return (
+            <Link href={route("contacts.index")}>{$t("Kiti kontaktai")}</Link>
+          );
+        },
+        key: "contacts",
+        icon: () => {
+          return <NIcon component={Icons.CONTACT}></NIcon>;
+        },
+        show: auth?.can.index.contact,
+      },
+    ],
+  },
+  {
+    label() {
       return $t("Atstovavimas");
     },
     key: "representation",
@@ -87,48 +121,19 @@ const menuOptions = computed(() => [
       return <NIcon component={HatGraduation24Regular}></NIcon>;
     },
     show:
-      auth?.can.index.goal ||
-      auth?.can.index.goalGroup ||
       auth?.can.index.doing ||
       auth?.can.index.institution ||
-      auth?.can.index.matter ||
       auth?.can.index.meeting,
     children: [
       {
         label: () => {
-          return <Link href={route("goals.index")}>{$t("Tikslai")}</Link>;
+          return <Link href={route("duties.index")}>{$t("Pareigos")}</Link>;
         },
-        key: "goals",
+        key: "duties",
         icon: () => {
-          return <NIcon component={Icons.GOAL}></NIcon>;
+          return <NIcon component={Icons.DUTY}></NIcon>;
         },
-        show: auth?.can.index.goal,
-      },
-      {
-        label: () => {
-          return (
-            <Link href={route("goalGroups.index")}>{$t("Tikslų grupės")}</Link>
-          );
-        },
-        key: "goalGroups",
-        icon: () => {
-          return <NIcon component={Icons.GOAL_GROUP}></NIcon>;
-        },
-        show: auth?.can.index.goalGroup,
-      },
-      {
-        label: () => {
-          return <Link href={route("doings.index")}>{$t("Veiksmai")}</Link>;
-        },
-        key: "doings",
-        icon: () => {
-          return <NIcon component={Icons.DOING}></NIcon>;
-        },
-        show: auth?.can.index.doing,
-      },
-      {
-        key: "divider",
-        type: "divider",
+        show: auth?.can.index.duty,
       },
       {
         label: () => {
@@ -145,20 +150,6 @@ const menuOptions = computed(() => [
       {
         label: () => {
           return (
-            <Link href={route("matters.index")}>
-              {$t("Svarstomi klausimai")}
-            </Link>
-          );
-        },
-        key: "matters",
-        icon: () => {
-          return <NIcon component={Icons.MATTER}></NIcon>;
-        },
-        show: auth?.can.index.matter,
-      },
-      {
-        label: () => {
-          return (
             <Link href={route("meetings.index")}>{$t("Susitikimai")}</Link>
           );
         },
@@ -169,63 +160,67 @@ const menuOptions = computed(() => [
         show: auth?.can.index.meeting,
       },
       {
+        key: "divider",
+        type: "divider",
+      },
+      {
         label: () => {
-          return (
-            <Link href={route("institutionGraph")}>
-              {$t("Institucijų grafa")}
-            </Link>
-          );
+          return <Link href={route("doings.index")}>{$t("Veiksmai")}</Link>;
         },
-        key: "institutionsGraph",
+        key: "doings",
         icon: () => {
-          return <NIcon component={Flowchart20Regular}></NIcon>;
+          return <NIcon component={Icons.DOING}></NIcon>;
         },
-        show: auth?.can.index.institution,
+        show: auth?.can.index.doing,
       },
     ],
   },
   {
-    label() {
-      return $t("Žmonės");
-    },
-    key: "contacts",
+    label: "Universitetas",
+    key: "university",
     icon: () => {
-      return <NIcon component={Icons.USER}></NIcon>;
+      return <NIcon component={BuildingHome24Regular}></NIcon>;
     },
     show:
-      auth?.can.index.user || auth?.can.index.duty || auth?.can.index.contact,
+      auth?.can.index.calendar ||
+      auth?.can.index.initiative ||
+      auth?.can.index.organization,
     children: [
       {
         label: () => {
-          return <Link href={route("users.index")}>{$t("Nariai")}</Link>;
+          return <Link href={route("calendar.index")}>{$t("Renginiai")}</Link>;
         },
-        key: "users",
-        show: auth?.can.index.user,
+        key: "calendar",
+        show: auth?.can.index.calendar,
         icon: () => {
-          return <NIcon component={Icons.USER}></NIcon>;
+          return <NIcon component={Icons.CALENDAR}></NIcon>;
         },
-      },
-      {
-        label: () => {
-          return <Link href={route("duties.index")}>{$t("Pareigos")}</Link>;
-        },
-        key: "duties",
-        icon: () => {
-          return <NIcon component={Icons.DUTY}></NIcon>;
-        },
-        show: auth?.can.index.duty,
       },
       {
         label: () => {
           return (
-            <Link href={route("contacts.index")}>{$t("Kiti kontaktai")}</Link>
+            <Link href={route("initiatives.index")}>{$t("Iniciatyvos")}</Link>
           );
         },
-        key: "contacts",
+        key: "initiatives",
+        show: auth?.can.index.initiative,
         icon: () => {
-          return <NIcon component={Icons.CONTACT}></NIcon>;
+          return <NIcon component={Icons.INITIATIVE}></NIcon>;
         },
-        show: auth?.can.index.contact,
+      },
+      {
+        label: () => {
+          return (
+            <Link href={route("organizations.index")}>
+              {$t("Organizacijos")}
+            </Link>
+          );
+        },
+        key: "organizations",
+        show: auth?.can.index.organization,
+        icon: () => {
+          return <NIcon component={Icons.ORGANIZATION}></NIcon>;
+        },
       },
     ],
   },
@@ -312,51 +307,51 @@ const menuOptions = computed(() => [
     ],
   },
   {
-    label: "Universitetas",
-    key: "university",
+    label: "Planas",
+    key: "plan",
     icon: () => {
-      return <NIcon component={BuildingHome24Regular}></NIcon>;
+      return <NIcon component={GridKanban20Regular}></NIcon>;
     },
     show:
-      auth?.can.index.calendar ||
-      auth?.can.index.initiative ||
-      auth?.can.index.organization,
+      auth?.can.index.matter ||
+      auth?.can.index.goalGroup ||
+      auth?.can.index.goal,
     children: [
       {
         label: () => {
-          return <Link href={route("calendar.index")}>{$t("Renginiai")}</Link>;
+          return <Link href={route("goals.index")}>{$t("Tikslai")}</Link>;
         },
-        key: "calendar",
-        show: auth?.can.index.calendar,
+        key: "goals",
         icon: () => {
-          return <NIcon component={Icons.CALENDAR}></NIcon>;
+          return <NIcon component={Icons.GOAL}></NIcon>;
         },
+        show: auth?.can.index.goal,
       },
       {
         label: () => {
           return (
-            <Link href={route("initiatives.index")}>{$t("Iniciatyvos")}</Link>
+            <Link href={route("goalGroups.index")}>{$t("Tikslų grupės")}</Link>
           );
         },
-        key: "initiatives",
-        show: auth?.can.index.initiative,
+        key: "goalGroups",
         icon: () => {
-          return <NIcon component={Icons.INITIATIVE}></NIcon>;
+          return <NIcon component={Icons.GOAL_GROUP}></NIcon>;
         },
+        show: auth?.can.index.goalGroup,
       },
       {
         label: () => {
           return (
-            <Link href={route("organizations.index")}>
-              {$t("Organizacijos")}
+            <Link href={route("matters.index")}>
+              {$t("Svarstomi klausimai")}
             </Link>
           );
         },
-        key: "organizations",
-        show: auth?.can.index.organization,
+        key: "matters",
         icon: () => {
-          return <NIcon component={Icons.ORGANIZATION}></NIcon>;
+          return <NIcon component={Icons.MATTER}></NIcon>;
         },
+        show: auth?.can.index.matter,
       },
     ],
   },
