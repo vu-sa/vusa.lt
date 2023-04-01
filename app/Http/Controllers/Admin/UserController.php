@@ -252,16 +252,10 @@ class UserController extends ResourceController
             // if user role is null, add role
             $user->microsoft_token = $microsoftUser->token;
 
-            // The docs say that Auth::login method returns "void"
-            // https://laravel.com/api/master/Illuminate/Support/Facades/Auth.html#method_login
-            // FIX: change the logic of the code block below
-            if (Auth::login($user)) {
-                request()->session()->regenerate();
+            Auth::login($user);
+            request()->session()->regenerate();
 
-                return redirect()->intended(RouteServiceProvider::HOME);
-            }
-
-            return redirect()->route('dashboard');
+            return redirect()->intended(RouteServiceProvider::HOME);
         }
 
         $duty = Duty::where('email', $microsoftUser->email)->first();
@@ -270,13 +264,10 @@ class UserController extends ResourceController
             $user = $duty->users()->first();
             $user->microsoft_token = $microsoftUser->token;
 
-            if (Auth::login($user)) {
-                request()->session()->regenerate();
+            Auth::login($user);
 
-                return redirect()->intended(RouteServiceProvider::HOME);
-            }
-
-            return redirect()->route('dashboard');
+            request()->session()->regenerate();
+            return redirect()->intended(RouteServiceProvider::HOME);
         }
 
         return redirect()->route('home');
