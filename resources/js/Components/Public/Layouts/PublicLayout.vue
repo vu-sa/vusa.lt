@@ -12,7 +12,7 @@
         <FadeTransition appear
           ><MainNavigation :is-theme-dark="isThemeDark"
         /></FadeTransition>
-        <main class="pt-24 pb-8">
+        <main class="pb-8 pt-24">
           <FadeTransition mode="out-in">
             <Suspense>
               <slot />

@@ -9,6 +9,7 @@ use App\Mail\ConfirmObserverRegistration;
 use App\Mail\InformSaziningaiAboutObserverRegistration;
 use App\Mail\InformSaziningaiAboutRegistration;
 use App\Models\Calendar;
+use App\Models\Initiative;
 use App\Models\MainPage;
 use App\Models\Navigation;
 use App\Models\News;
@@ -479,6 +480,15 @@ class MainController extends PublicController
         $registration->data = request()->all();
         $registration->registration_form_id = $registrationForm->id;
         $registration->save();
+    }
+
+    public function initiatives() {
+        $initiatives = Initiative::with('padalinys:id,alias,fullname')->orderBy('title->lt')->get();
+
+        return Inertia::render('Public/Initiatives', ['initiatives' => $initiatives])->withViewData([
+            'title' => 'Iniciatyvos',
+            'description' => 'VU SA iniciatyvos',
+        ]);
     }
 
     public function ataskaita2022()
