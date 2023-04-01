@@ -7,8 +7,8 @@ use App\Http\Requests\StoreInitiativeRequest;
 use App\Http\Requests\UpdateInitiativeRequest;
 use App\Models\Initiative;
 use App\Services\ModelIndexer;
-use Inertia\Inertia;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class InitiativeController extends ResourceController
 {
