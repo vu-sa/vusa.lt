@@ -482,7 +482,8 @@ class MainController extends PublicController
         $registration->save();
     }
 
-    public function initiatives() {
+    public function initiatives()
+    {
         $initiatives = Initiative::with('padalinys:id,alias,fullname')->orderBy('title->lt')->get();
 
         return Inertia::render('Public/Initiatives', ['initiatives' => $initiatives])->withViewData([
