@@ -7,10 +7,10 @@ use App\Enums\PermissionScopeEnum;
 use App\Models\Permission;
 use Illuminate\Support\Str;
 
-class CreateModelPermissions {
-
-    public static function execute(array $modelLabels) {
-
+class CreateModelPermissions
+{
+    public static function execute(array $modelLabels)
+    {
         // foreach (ModelEnum::toLabels() as $model) {
         foreach ($modelLabels as $model) {
             $pluralizedModel = Str::plural($model);
@@ -29,5 +29,4 @@ class CreateModelPermissions {
             ]);
         }
     }
-
 }
