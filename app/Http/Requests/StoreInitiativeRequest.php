@@ -22,7 +22,17 @@ class StoreInitiativeRequest extends ResourceRequest
     public function rules(): array
     {
         return [
-            //
+            'title.lt' => 'required|string',
+            'title.en' => 'nullable|string',
+            'description' => 'required|array|min:1',
+            'padalinys_id' => 'nullable|id|exists:padaliniai,id',
+            'participation_url' => 'nullable|url',
+            'email' => 'nullable|email',
+            'phone' => 'nullable|string',
+            'logo' => 'nullable|string',
+            'cover' => 'nullable|string',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after:start_date',
         ];
     }
 }

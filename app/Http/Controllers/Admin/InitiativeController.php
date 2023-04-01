@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateInitiativeRequest;
 use App\Models\Initiative;
 use App\Services\ModelIndexer;
 use Inertia\Inertia;
+use Illuminate\Support\Str;
 
 class InitiativeController extends ResourceController
 {
@@ -33,7 +34,9 @@ class InitiativeController extends ResourceController
      */
     public function create()
     {
-        //
+        $this->authorize('create', [Initiative::class, $this->authorizer]);
+
+        return Inertia::render('Admin/Calendar/CreateInitiative');
     }
 
     /**
@@ -41,7 +44,17 @@ class InitiativeController extends ResourceController
      */
     public function store(StoreInitiativeRequest $request)
     {
-        //
+        $validated = $request->validated();
+
+        $initiative = new Initiative();
+
+        // create slug
+        $slug = Str::slug($validated['title']['lt'], '-', 'lt');
+
+        $initiative->fill($validated + ['slug' => $slug]);
+        $initiative->save();
+
+        return redirect()->route('initiatives.index')->with('success', 'Iniciatyva sėkmingai sukurta!');
     }
 
     /**
@@ -57,7 +70,11 @@ class InitiativeController extends ResourceController
      */
     public function edit(Initiative $initiative)
     {
-        //
+        $this->authorize('update', [Initiative::class, $this->authorizer]);
+
+        return Inertia::render('Admin/Calendar/EditInitiative', [
+            'initiative' => array_merge($initiative->toArray(), $initiative->getTranslations()),
+        ]);
     }
 
     /**
@@ -65,7 +82,13 @@ class InitiativeController extends ResourceController
      */
     public function update(UpdateInitiativeRequest $request, Initiative $initiative)
     {
-        //
+        $validated = $request->validated();
+
+        // create slug
+        $initiative->fill($validated);
+        $initiative->save();
+
+        return redirect()->back()->with('success', 'Iniciatyva sėkmingai atnaujinta!');
     }
 
     /**

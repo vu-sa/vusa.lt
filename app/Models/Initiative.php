@@ -14,6 +14,8 @@ class Initiative extends Model
 
     public $translatable = ['title', 'description'];
 
+    protected $guarded = [];
+
     public function organization()
     {
         return $this->belongsToMany(Organization::class);
