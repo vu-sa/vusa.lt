@@ -36,7 +36,7 @@ class NavigationController extends ResourceController
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $_request)
+    public function index()
     {
         $this->authorize('viewAny', [Navigation::class, $this->authorizer]);
 
