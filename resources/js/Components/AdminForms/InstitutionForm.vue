@@ -137,10 +137,10 @@
         <template #description
           >Ši informacija rodoma viešai, vusa.lt tinklapyje</template
         >
-        <NFormItem label="Nuotrauka" :span="6">
+        <NFormItem label="Nuotrauka">
           <UploadImageButtons v-model="form.image_url" :path="'institutions'" />
         </NFormItem>
-        <NFormItem :span="6">
+        <NFormItem>
           <template #label
             ><div class="inline-flex items-center gap-2">
               Aprašymas
