@@ -68,8 +68,8 @@ class NewsController extends ResourceController
         } else {
             $padalinys_id = $this->authorizer->permissableDuties->first()->padaliniai->first()->id;
         }
-
-        $news = News::create([
+        
+        News::create([
             'title' => $request->title,
             'permalink' => $request->permalink,
             'text' => $request->text,
@@ -93,8 +93,11 @@ class NewsController extends ResourceController
      */
     public function show(News $news)
     {
-        //
-        $this->authorize('view', [News::class, $news, $this->authorizer]);
+        return $this->authorize('view', [
+            News::class,
+            $news,
+            $this->authorizer
+        ]);
     }
 
     /**
