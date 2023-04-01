@@ -3,8 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Initiative;
-use App\Models\Type;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class InitiativeSeeder extends Seeder

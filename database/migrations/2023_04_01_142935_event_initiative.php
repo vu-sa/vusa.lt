@@ -17,7 +17,6 @@ return new class extends Migration
             $table->foreign('event_id')->references('id')->on('calendar');
             $table->foreignUlid('initiative_id')->constrained();
         });
-
     }
 
     /**

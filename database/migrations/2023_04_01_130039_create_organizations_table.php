@@ -33,7 +33,7 @@ return new class extends Migration
         // check if permissions table has organizations
         if (Schema::hasTable('permissions')) {
             // check if exists permission with name = 'organizations.read.padalinys'
-            if (!DB::table('permissions')->where('name', 'organizations.read.padalinys')->exists()) {
+            if (! DB::table('permissions')->where('name', 'organizations.read.padalinys')->exists()) {
                 // seed permissions
                 CreateModelPermissions::execute(['organization']);
             }

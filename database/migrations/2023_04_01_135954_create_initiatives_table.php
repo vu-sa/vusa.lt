@@ -37,7 +37,7 @@ return new class extends Migration
         // check if permissions table has initiatives
         if (Schema::hasTable('permissions')) {
             // check if exists permission with name = 'initiatives.read.padalinys'
-            if (!DB::table('permissions')->where('name', 'initiatives.read.padalinys')->exists()) {
+            if (! DB::table('permissions')->where('name', 'initiatives.read.padalinys')->exists()) {
                 // seed permissions
                 CreateModelPermissions::execute(['initiative']);
             }
@@ -70,7 +70,7 @@ return new class extends Migration
                     'title' => 'Darbo grupės',
                     'model_type' => Initiative::class,
                     'slug' => 'darbo-grupe',
-                ]
+                ],
             ]);
         }
     }

@@ -8,7 +8,6 @@ use App\Models\Initiative;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
-use Illuminate\Auth\Access\Response;
 use Illuminate\Support\Str;
 
 class InitiativePolicy extends ModelPolicy
