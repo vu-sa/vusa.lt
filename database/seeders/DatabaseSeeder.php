@@ -4,9 +4,12 @@ namespace Database\Seeders;
 
 use App\Models\Calendar;
 use App\Models\Duty;
+use App\Models\Initiative;
 use App\Models\Institution;
 use App\Models\MainPage;
 use App\Models\News;
+use App\Models\Organization;
+use App\Models\Padalinys;
 use App\Models\Page;
 use App\Models\SaziningaiExam;
 use App\Models\SaziningaiExamFlow;
@@ -36,5 +39,7 @@ class DatabaseSeeder extends Seeder
         SaziningaiExam::factory()->count(15)->create();
         SaziningaiExamFlow::factory()->count(20)->create();
         SaziningaiExamObserver::factory()->count(10)->create();
+
+        Initiative::factory()->has(Organization::factory())->recycle(Padalinys::all())->count(10)->create();
     }
 }

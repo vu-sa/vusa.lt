@@ -34,6 +34,10 @@ Route::resource('contacts', ContactController::class);
 
 Route::resource('calendar', CalendarController::class);
 Route::post('calendar/{calendar}/media/{media}', [CalendarController::class, 'destroyMedia'])->name('calendar.destroyMedia');
+
+Route::resource('initiatives', InitiativeController::class);
+Route::resource('organizations', OrganizationController::class);
+
 Route::resource('registrationForms', RegistrationFormController::class);
 Route::resource('registrations', RegistrationController::class);
 

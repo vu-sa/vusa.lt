@@ -11,6 +11,7 @@
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
 import {
+  BuildingHome24Regular,
   Flowchart20Regular,
   Folder24Regular,
   HatGraduation24Regular,
@@ -240,8 +241,7 @@ const menuOptions = computed(() => [
       auth?.can.index.mainPage ||
       auth?.can.index.navigation ||
       auth?.can.index.banner ||
-      auth?.can.index.sharepointFile ||
-      auth?.can.index.calendar,
+      auth?.can.index.sharepointFile,
     children: [
       {
         label: () => {
@@ -301,9 +301,30 @@ const menuOptions = computed(() => [
       },
       {
         label: () => {
-          return (
-            <Link href={route("calendar.index")}>{$t("Kalendorius")}</Link>
-          );
+          return <Link href={route("files.index")}>{$t("Failai")}</Link>;
+        },
+        key: "files",
+        show: auth?.can.index.sharepointFile,
+        icon: () => {
+          return <NIcon component={Folder24Regular}></NIcon>;
+        },
+      },
+    ],
+  },
+  {
+    label: "Universitetas",
+    key: "university",
+    icon: () => {
+      return <NIcon component={BuildingHome24Regular}></NIcon>;
+    },
+    show:
+      auth?.can.index.calendar ||
+      auth?.can.index.initiative ||
+      auth?.can.index.organization,
+    children: [
+      {
+        label: () => {
+          return <Link href={route("calendar.index")}>{$t("Renginiai")}</Link>;
         },
         key: "calendar",
         show: auth?.can.index.calendar,
@@ -313,12 +334,28 @@ const menuOptions = computed(() => [
       },
       {
         label: () => {
-          return <Link href={route("files.index")}>{$t("Failai")}</Link>;
+          return (
+            <Link href={route("initiatives.index")}>{$t("Iniciatyvos")}</Link>
+          );
         },
-        key: "files",
-        show: auth?.can.index.sharepointFile,
+        key: "initiatives",
+        show: auth?.can.index.initiative,
         icon: () => {
-          return <NIcon component={Folder24Regular}></NIcon>;
+          return <NIcon component={Icons.INITIATIVE}></NIcon>;
+        },
+      },
+      {
+        label: () => {
+          return (
+            <Link href={route("organizations.index")}>
+              {$t("Organizacijos")}
+            </Link>
+          );
+        },
+        key: "organizations",
+        show: auth?.can.index.organization,
+        icon: () => {
+          return <NIcon component={Icons.ORGANIZATION}></NIcon>;
         },
       },
     ],
