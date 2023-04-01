@@ -23,17 +23,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        $this->call(CategoriesSeeder::class);
-        $this->call(RegistrationFormsSeeder::class);
         $this->call(AdminSeeder::class);
-        $this->call(PadaliniaiSeeder::class);
 
         Institution::factory(10)->create();
 
-        User::factory()->hasAttached(Duty::factory()->count(3), ['start_date' => now()]
-        )->count(10)->create();
-
-        $this->call(MenuSeeder::class);
+        User::factory()->hasAttached(Duty::factory()->count(3), ['start_date' => now()])->count(10)->create();
 
         Calendar::factory()->count(50)->create();
         MainPage::factory()->count(30)->create();
