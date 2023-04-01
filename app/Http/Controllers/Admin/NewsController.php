@@ -68,9 +68,8 @@ class NewsController extends ResourceController
         } else {
             $padalinys_id = $this->authorizer->permissableDuties->first()->padaliniai->first()->id;
         }
-
-        // FIX: variable below unused. Either delete or check git history for purpose.
-        $_news = News::create([
+        
+        News::create([
             'title' => $request->title,
             'permalink' => $request->permalink,
             'text' => $request->text,
