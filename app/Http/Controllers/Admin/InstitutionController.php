@@ -34,17 +34,21 @@ class InstitutionController extends ResourceController
 
         // also check if empty array
         return Inertia::render('Admin/People/IndexInstitution', [
-            'institutions' => $institutions->when(isset(
-                $filters['padalinys.id']
-            ) && $filters['padalinys.id'] !== [], function ($query) use ($filters) {
-                $query->whereIn('padalinys_id', $filters['padalinys.id']);
-            }
-            )->when(
-                isset($sorters['name']),
-                function ($query) use ($sorters) {
-                    $query->orderBy('name', $sorters['name'] === 'descend' ? 'desc' : 'asc');
-                }
-            )->paginate(20),
+            'institutions' => $institutions
+                ->when(isset(
+                    $filters['padalinys.id']
+                ) && $filters['padalinys.id'] !== [], function ($query) use ($filters) {
+                    $query->whereIn('padalinys_id', $filters['padalinys.id']);
+                })
+                ->when(
+                    isset($sorters['name']),
+                    function ($query) use ($sorters) {
+                        $query->orderBy('name', $sorters['name'] === 'descend' ? 'desc' : 'asc');
+                    }
+                )->with(['meetings' => function ($query) {
+                    $query->orderBy('start_time');
+                }])
+                ->paginate(20),
         ]);
     }
 

@@ -87,7 +87,7 @@ class MainPageController extends ResourceController
         return $this->authorize('view', [
             MainPage::class,
             $mainPage,
-            $this->authorizer
+            $this->authorizer,
         ]);
     }
 

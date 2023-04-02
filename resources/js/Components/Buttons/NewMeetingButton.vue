@@ -2,7 +2,7 @@
   <NButton size="small"
     ><template #icon
       ><NIcon :component="PeopleTeamAdd24Filled"></NIcon></template
-    >{{ $t("Pranešti") }}?</NButton
+    >{{ $t("Pranešti") }}</NButton
   >
 </template>
 

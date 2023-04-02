@@ -89,7 +89,7 @@ class PagesController extends ResourceController
         return $this->authorize('view', [
             Page::class,
             $page,
-            $this->authorizer
+            $this->authorizer,
         ]);
     }
 
@@ -102,7 +102,7 @@ class PagesController extends ResourceController
     {
         $this->authorize('update', [Page::class, $page, $this->authorizer]);
 
-        $other_lang_pages = Page::with('padalinys:id,shortname')->when(!request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($page) {
+        $other_lang_pages = Page::with('padalinys:id,shortname')->when(! request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($page) {
             $query->where('padalinys_id', $page->padalinys_id);
         })->where('lang', '!=', $page->lang)->select('id', 'title', 'padalinys_id')->get();
 
@@ -142,7 +142,7 @@ class PagesController extends ResourceController
             $other_lang_page = Page::find($request->other_lang_id);
             $other_lang_page->other_lang_id = $page->id;
             $other_lang_page->save();
-        } elseif (is_null($request->other_lang_id) && !is_null($other_lang_page)) {
+        } elseif (is_null($request->other_lang_id) && ! is_null($other_lang_page)) {
             $other_lang_page->other_lang_id = null;
             $other_lang_page->save();
         }

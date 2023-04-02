@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.4.14 (2023-04-03)
+
+* Rodomi tik dabartiniai studentų atstovai
+* Atnaujintas dokumento atidarymo mygtukas
+* Kalendorius atsidaro tame mėnesyje, kuris dabar yra
+* Susitikimai rodomi institucijų indekse
+
 ## v0.4.13 (2023-03-30)
 
 * Galima patogiau redaguoti pareigybių laikotarpius (ir tai tiesiog veikia)

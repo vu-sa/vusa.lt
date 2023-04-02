@@ -94,7 +94,7 @@ class AgendaItemController extends ResourceController
         return $this->authorize('update', [
             AgendaItem::class,
             $agendaItem,
-            $this->authorizer
+            $this->authorizer,
         ]);
     }
 

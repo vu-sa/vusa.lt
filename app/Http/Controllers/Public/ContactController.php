@@ -34,7 +34,7 @@ class ContactController extends PublicController
             $descendants = $type->getDescendantsAndSelf();
 
             $descendants->load(['institutions' => function ($query) {
-                $query->with('duties.users', 'padalinys:id,alias')->where('padalinys_id', '=', $this->padalinys->id)->orderBy('name')->get(['id', 'name', 'alias', 'description']);
+                $query->with('duties.current_users')->with('padalinys:id,alias')->where('padalinys_id', '=', $this->padalinys->id)->orderBy('name')->get(['id', 'name', 'alias', 'description']);
             }]);
 
             // remove descendants without institutions
@@ -61,6 +61,9 @@ class ContactController extends PublicController
                 $institution = Institution::where('alias', '=', $this->padalinys->alias)->first();
             }
 
+            // ! using user.current_duties is dangerous, somehow it returns all users, needs proper testing
+            // TODO: this doesn't check for a specific dutiable, only for an existence of one...
+
             $contacts = User::withWhereHas('duties', function ($query) use ($types, $institution) {
                 $query->where('institution_id', '=', $institution->id)
                     ->whereHas('types', fn (Builder $query) => $query->whereIn('id', $types->pluck('id'))
@@ -78,9 +81,13 @@ class ContactController extends PublicController
                 abort(404);
             }
 
+            // TODO: the same as above
+
             $contacts = User::withWhereHas('duties', function ($query) use ($slug) {
                 $query->orderBy('order')->whereHas('institution', function ($query) use ($slug) {
                     $query->where('alias', '=', $slug);
+                })->whereHas('dutiables', function (Builder $query) {
+                    $query->where('end_date', '>=', now())->where('end_date', '=', null, 'or');
                 });
             })
             ->get();

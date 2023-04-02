@@ -32,7 +32,7 @@ const canUseRoutes = {
 };
 
 const sorters = ref<Record<string, DataTableSortState["order"]>>({
-  start_time: false,
+  start_time: "descend",
 });
 
 provide("sorters", { sorters, updateSorters });

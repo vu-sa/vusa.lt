@@ -267,6 +267,7 @@ class UserController extends ResourceController
             Auth::login($user);
 
             request()->session()->regenerate();
+
             return redirect()->intended(RouteServiceProvider::HOME);
         }
 
