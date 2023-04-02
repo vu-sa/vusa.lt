@@ -17,10 +17,9 @@
         <div class="flex items-center rounded-2xl bg-zinc-100/50 px-4">
           <span>{{ route("calendar.ics") }}</span>
         </div>
-        <NButton @click="copyToClipboard(route('calendar.ics'))"
-          ><template #icon><NIcon :component="Copy16Regular" /></template>
-          {{ $t("Kopijuoti") }}</NButton
-        >
+        <NMessageProvider>
+          <CopyToClipboardButton :text-to-copy="route('calendar.ics')" />
+        </NMessageProvider>
       </div>
       <template v-if="$page.props.app.locale === 'en'">
         <p class="font-bold">
@@ -31,11 +30,11 @@
           <div class="flex items-center rounded-2xl bg-zinc-100/50 px-4">
             <span>{{ route("calendar.ics", { lang: "en" }) }}</span>
           </div>
-          <NButton
-            @click="copyToClipboard(route('calendar.ics', { lang: 'en' }))"
-            ><template #icon><NIcon :component="Copy16Regular" /></template>
-            {{ $t("Kopijuoti") }}</NButton
-          >
+          <NMessageProvider>
+            <CopyToClipboardButton
+              :text-to-copy="route('calendar.ics', { lang: 'en' })"
+            />
+          </NMessageProvider>
         </div>
       </template>
     </div>
@@ -125,31 +124,13 @@
 
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
-import { Copy16Regular } from "@vicons/fluent";
-import {
-  NButton,
-  NDivider,
-  NIcon,
-  NTabPane,
-  NTabs,
-  useMessage,
-} from "naive-ui";
+import { NDivider, NMessageProvider, NTabPane, NTabs } from "naive-ui";
 import CardModal from "@/Components/Modals/CardModal.vue";
+import CopyToClipboardButton from "../Buttons/CopyToClipboardButton.vue";
 
 defineEmits(["close"]);
 
 defineProps<{
   showModal: boolean;
 }>();
-
-const message = useMessage();
-
-const copyToClipboard = async (text: string) => {
-  if (navigator.clipboard) {
-    await navigator.clipboard.writeText(text);
-    message.success("Nuoroda nukopijuota!");
-  } else {
-    message.error("Nepavyko nukopijuoti nuorodos...");
-  }
-};
 </script>

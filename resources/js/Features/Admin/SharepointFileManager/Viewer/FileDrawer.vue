@@ -20,7 +20,41 @@
             file?.name
           }}</span>
           <div class="flex gap-2">
-            <NButton size="small" @click="handleOpen">Atidaryti</NButton>
+            <NSpin
+              size="small"
+              :stroke-width="12"
+              :show="loadingPublicPermission"
+            >
+              <div v-if="publicPermission?.link?.webUrl" class="flex gap-2">
+                <NButtonGroup size="small">
+                  <NButton
+                    type="primary"
+                    tag="a"
+                    target="_blank"
+                    :href="publicPermission?.link?.webUrl"
+                  >
+                    <template #icon
+                      ><NIcon :component="Open24Regular"
+                    /></template>
+                    Atidaryti</NButton
+                  >
+                  <NMessageProvider>
+                    <CopyToClipboardButton
+                      :text-to-copy="publicPermission?.link?.webUrl"
+                    ></CopyToClipboardButton>
+                  </NMessageProvider>
+                </NButtonGroup>
+              </div>
+              <NButton
+                v-else-if="!loadingPublicPermission"
+                size="small"
+                @click="createPublicPermission"
+                >Sukurti viešą nuorodą
+                <template #icon
+                  ><NIcon :component="DocumentLink24Regular"></NIcon
+                ></template>
+              </NButton>
+            </NSpin>
             <!-- <NButton
               :loading="loadingDelete"
               type="error"
@@ -59,31 +93,6 @@
                   {{ file?.listItem?.fields?.properties?.Description0 }}
                 </td>
               </tr>
-              <tr class="h-12">
-                <td class="font-bold">Vieša nuoroda</td>
-                <td>
-                  <NSpin
-                    size="small"
-                    :stroke-width="12"
-                    :show="loadingPublicPermission"
-                  >
-                    <a
-                      v-if="publicPermission?.link?.webUrl"
-                      target="_blank"
-                      :href="publicPermission?.link?.webUrl"
-                      class="line-clamp-1"
-                    >
-                      {{ publicPermission?.link?.webUrl }}
-                    </a>
-                    <NButton
-                      v-else-if="!loadingPublicPermission"
-                      size="tiny"
-                      @click="createPublicPermission"
-                      >Sukurti</NButton
-                    >
-                  </NSpin>
-                </td>
-              </tr>
             </tbody>
           </NTable>
           <CommentPart
@@ -101,10 +110,12 @@
 import { File, FilePdf, FileWord } from "@vicons/fa";
 import {
   NButton,
+  NButtonGroup,
   NDrawer,
   NDrawerContent,
   NEllipsis,
   NIcon,
+  NMessageProvider,
   NSpin,
   NTable,
   NTag,
@@ -115,9 +126,15 @@ import { useStorage } from "@vueuse/core";
 import type { Permission } from "@microsoft/microsoft-graph-types";
 // import { router } from "@inertiajs/vue3";
 
+import {
+  ClipboardLink24Regular,
+  DocumentLink24Regular,
+  Open24Regular,
+} from "@vicons/fluent";
 import { fileSize } from "@/Utils/Calc";
 import { formatStaticTime } from "@/Utils/IntlTime";
 import CommentPart from "@/Features/Admin/CommentViewer/CommentViewer.vue";
+import CopyToClipboardButton from "@/Components/Buttons/CopyToClipboardButton.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 // define emit for close
@@ -182,10 +199,6 @@ const fileIcon = computed(() => {
     return File;
   }
 });
-
-const handleOpen = () => {
-  if (props.file?.webUrl) window.open(props.file?.webUrl, "_blank");
-};
 
 // const handleDelete = (id) => {
 //   loadingDelete.value = true;
