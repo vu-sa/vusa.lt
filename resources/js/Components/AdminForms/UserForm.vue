@@ -146,7 +146,7 @@
             Paskutinį kartą prisijungė {{ formatStaticTime(user.last_action) }}.
           </p>
         </template>
-        <template v-else>
+        <template v-else-if="modelRoute === 'users.update'">
           <p class="mb-2">Šis asmuo dar niekada neprisijungė prie sistemos.</p>
           <NPopconfirm
             style="max-width: 400px"

@@ -72,7 +72,7 @@ class UserController extends ResourceController
         $request->validate([
             'name' => 'required',
             'email' => 'required|email|unique:users,email',
-            'duties' => 'required',
+            'current_duties' => 'required',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -84,7 +84,7 @@ class UserController extends ResourceController
                 'profile_photo_path' => $request->profile_photo_path,
             ]);
 
-            foreach ($request->duties as $duty) {
+            foreach ($request->current_duties as $duty) {
                 $user->duties()->attach($duty, ['start_date' => now()]);
             }
 
