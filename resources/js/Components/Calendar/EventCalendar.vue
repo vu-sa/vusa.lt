@@ -1,5 +1,6 @@
 <template>
   <Calendar
+    :initial-page="currentDay"
     :is-dark="isThemeDark"
     :attributes="calendarAttributes"
     color="red"
@@ -55,11 +56,18 @@
 import { Calendar, PopoverRow } from "v-calendar";
 import { Google } from "@vicons/fa";
 import { NButton, NConfigProvider, NIcon, darkTheme } from "naive-ui";
+import type { PageAddress } from "v-calendar/dist/types/src/utils/page";
 
 const props = defineProps<{
   isThemeDark: boolean;
   calendarEvents: App.Entities.Calendar[];
 }>();
+
+const currentDay: PageAddress = {
+  year: new Date().getFullYear(),
+  month: new Date().getMonth() + 1,
+  day: new Date().getDate(),
+};
 
 // check if event date and end date is on the same day
 const isSameDay = (date1: string, date2: string) => {
