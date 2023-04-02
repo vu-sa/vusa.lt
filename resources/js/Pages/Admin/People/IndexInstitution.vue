@@ -12,13 +12,19 @@
 
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
+import {
+  type DataTableColumns,
+  type DataTableSortState,
+  NIcon,
+} from "naive-ui";
 import { computed, provide, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
-import type { DataTableColumns, DataTableSortState } from "naive-ui";
 
+import { formatStaticTime } from "@/Utils/IntlTime";
 import { updateFilters, updateSorters } from "@/Utils/DataTable";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
+import ModelChip from "@/Components/Chips/ModelChip.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
 
 defineProps<{
@@ -56,6 +62,29 @@ const columns = computed<DataTableColumns<App.Entities.Institution>>(() => {
       maxWidth: 300,
       ellipsis: {
         tooltip: true,
+      },
+    },
+    {
+      type: "expand",
+      expandable: (rowData) => rowData.meetings.length > 0,
+      renderExpand: (rowData) => {
+        return (
+          <div class="flex flex-wrap items-center gap-2">
+            <ModelChip>
+              {{
+                default: () => "Susitikimai",
+                icon: <NIcon component={Icons.MEETING}></NIcon>,
+              }}
+            </ModelChip>
+            {rowData.meetings?.map((meeting) => {
+              return (
+                <a target="_blank" href={route("meetings.show", meeting.id)}>
+                  {formatStaticTime(new Date(meeting.start_time))}
+                </a>
+              );
+            })}
+          </div>
+        );
       },
     },
     {

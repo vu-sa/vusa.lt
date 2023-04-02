@@ -12,6 +12,7 @@
     :loading="loading"
     :pagination="pagination"
     pagination-behavior-on-filter="first"
+    default-expand-all
     @update:sorter="handleSorterChange"
     @update:page="handleChange"
     @update:filters="handleFiltersChange"
@@ -60,9 +61,7 @@ const pagination = ref({
 });
 
 const handleFiltersChange = (state: DataTableFilterState) => {
-  console.log("handleFiltersChange", state, filters);
   filters.value = updateFilters(filters, state);
-  console.log("handleFiltersChange2", filters);
   handleChange(1);
 };
 
