@@ -33,7 +33,6 @@ class NavigationController extends ResourceController
      * Display a listing of the resource.
      *
      * @param  \Illuminate\Http\Request  $_request  TODO: $request variable unused and possibly can be removed.
-     *
      * @return \Illuminate\Http\Response
      */
     public function index()
@@ -81,7 +80,7 @@ class NavigationController extends ResourceController
         return $this->authorize('view', [
             Navigation::class,
             $navigation,
-            $this->authorizer
+            $this->authorizer,
         ]);
     }
 

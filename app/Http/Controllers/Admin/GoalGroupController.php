@@ -69,7 +69,7 @@ class GoalGroupController extends ResourceController
         return $this->authorize('view', [
             GoalGroup::class,
             $goalGroup,
-            $this->authorizer
+            $this->authorizer,
         ]);
     }
 
