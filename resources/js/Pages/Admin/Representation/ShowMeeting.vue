@@ -58,13 +58,14 @@
             ></NButton>
           </li>
         </ol>
-        <p v-else class="text-center text-sm text-zinc-500">
+        <p v-else class="my-8 text-center text-sm text-zinc-500">
           Darbotvarkės punktų nėra.
         </p>
       </NScrollbar>
       <template #footer>
         <NButton size="small" @click="showAgendaItemStoreModal = true"
-          >{{ $t("forms.add") }}?<template #icon
+          >{{ $t("forms.add")
+          }}<template #icon
             ><NIcon size="16" :component="Icons.AGENDA_ITEM" /></template
         ></NButton>
         <CardModal
