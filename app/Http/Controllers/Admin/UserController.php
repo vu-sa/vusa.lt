@@ -72,7 +72,7 @@ class UserController extends ResourceController
         $request->validate([
             'name' => 'required',
             'email' => 'required|email|unique:users,email',
-            'duties' => 'required',
+            'current_duties' => 'required',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -84,7 +84,7 @@ class UserController extends ResourceController
                 'profile_photo_path' => $request->profile_photo_path,
             ]);
 
-            foreach ($request->duties as $duty) {
+            foreach ($request->current_duties as $duty) {
                 $user->duties()->attach($duty, ['start_date' => now()]);
             }
 
@@ -252,13 +252,10 @@ class UserController extends ResourceController
             // if user role is null, add role
             $user->microsoft_token = $microsoftUser->token;
 
-            if (Auth::login($user)) {
-                request()->session()->regenerate();
+            Auth::login($user);
+            request()->session()->regenerate();
 
-                return redirect()->intended(RouteServiceProvider::HOME);
-            }
-
-            return redirect()->route('dashboard');
+            return redirect()->intended(RouteServiceProvider::HOME);
         }
 
         $duty = Duty::where('email', $microsoftUser->email)->first();
@@ -267,13 +264,10 @@ class UserController extends ResourceController
             $user = $duty->users()->first();
             $user->microsoft_token = $microsoftUser->token;
 
-            if (Auth::login($user)) {
-                request()->session()->regenerate();
+            Auth::login($user);
 
-                return redirect()->intended(RouteServiceProvider::HOME);
-            }
-
-            return redirect()->route('dashboard');
+            request()->session()->regenerate();
+            return redirect()->intended(RouteServiceProvider::HOME);
         }
 
         return redirect()->route('home');

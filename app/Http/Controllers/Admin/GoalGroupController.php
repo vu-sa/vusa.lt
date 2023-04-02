@@ -51,7 +51,7 @@ class GoalGroupController extends ResourceController
             'description' => 'required|string|max:255',
         ]);
 
-        $goalGroup = GoalGroup::create([
+        GoalGroup::create([
             'name' => $request->name,
             'description' => $request->description,
         ]);
@@ -66,7 +66,11 @@ class GoalGroupController extends ResourceController
      */
     public function show(GoalGroup $goalGroup)
     {
-        $this->authorize('view', [GoalGroup::class, $goalGroup, $this->authorizer]);
+        return $this->authorize('view', [
+            GoalGroup::class,
+            $goalGroup,
+            $this->authorizer
+        ]);
     }
 
     /**

@@ -26,7 +26,7 @@ const user = {
   name: "",
   email: "",
   phone: null,
-  duties: [],
+  current_duties: [],
   roles: [],
   profile_photo_path: null,
 };
