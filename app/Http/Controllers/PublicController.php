@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Padalinys;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Request;
 use Inertia\Inertia;
 
@@ -36,5 +37,21 @@ class PublicController extends Controller
 
         // get padalinys
         $this->padalinys = Padalinys::where('alias', $this->alias)->first();
+    }
+
+    protected function getBanners()
+    {
+        $banners = Cache::remember('banners-' . $this->padalinys->id, 60 * 30, function () {
+
+            $banners = Padalinys::where('alias', 'vusa')->first()->banners()->inRandomOrder()->where('is_active', 1)->get();
+
+            if ($this->padalinys->type !== 'pagrindinis') {
+                $banners = $this->padalinys->banners()->inRandomOrder()->where('is_active', 1)->get()->merge($banners);
+            }
+
+            return $banners;
+        });
+
+        Inertia::share('banners', $banners);
     }
 }

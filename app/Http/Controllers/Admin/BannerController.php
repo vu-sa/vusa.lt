@@ -7,6 +7,7 @@ use App\Models\Banner;
 use App\Models\Padalinys;
 use App\Services\ModelIndexer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 class BannerController extends ResourceController
@@ -68,6 +69,8 @@ class BannerController extends ResourceController
         $banner->user_id = $request->user()->id;
         $banner->save();
 
+        Cache::forget('banners-' . $banner->padalinys_id);
+
         return redirect()->route('banners.index')->with('success', 'Baneris sėkmingai sukurtas!');
     }
 
@@ -113,6 +116,8 @@ class BannerController extends ResourceController
         $banner->link_url = $request->link_url ?? '';
         $banner->image_url = $request->image_url;
         $banner->save();
+
+        Cache::forget('banners-' . $banner?->padalinys_id);
 
         return back()->with('success', 'Baneris atnaujintas!');
     }

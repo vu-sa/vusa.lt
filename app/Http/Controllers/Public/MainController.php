@@ -76,9 +76,9 @@ class MainController extends PublicController
 
     public function home()
     {
-        // get last 4 news by publishing date
-        // $banners = Padalinys::where('alias', 'vusa')->first()->banners()->inRandomOrder()->where('is_active', 1)->get();
+        $this->getBanners();
 
+        // get last 4 news by publishing date
         $news = News::with('padalinys')->where([['padalinys_id', '=', $this->padalinys->id], ['lang', app()->getLocale()], ['draft', '=', 0]])
             ->where('publish_time', '<=', date('Y-m-d H:i:s'))
             ->orderBy('publish_time', 'desc')
@@ -131,7 +131,6 @@ class MainController extends PublicController
                 ];
             }),
             'mainPage' => MainPage::where([['padalinys_id', $this->padalinys->id], ['lang', app()->getLocale()]])->get(),
-            // 'banners' => $banners,
         ])->withViewData([
             'description' => 'Vilniaus universiteto Studentų atstovybė (VU SA) – seniausia ir didžiausia Lietuvoje visuomeninė, ne pelno siekianti, nepolitinė, ekspertinė švietimo organizacija',
         ]);
@@ -156,6 +155,8 @@ class MainController extends PublicController
 
         Inertia::share('alias', $news->padalinys->alias);
         Inertia::share('sharedOtherLangPage', $other_lang_news);
+
+        $this->getBanners();
 
         return Inertia::render('Public/NewsPage', [
             'article' => [
@@ -202,10 +203,7 @@ class MainController extends PublicController
 
     public function page()
     {
-        // TODO: this rewrite needs to be done in .htaccess
-        // if (request()->lang === null) {
-        // 	return redirect('/' . config('app.locale') . '/' . request()->permalink, 301);
-        // }
+        $this->getBanners();
 
         $page = Page::where([['permalink', '=', request()->permalink], ['padalinys_id', '=', $this->padalinys->id]])->first();
 
@@ -217,6 +215,8 @@ class MainController extends PublicController
         $other_lang_page = $page->other_lang_id == null ? null : Page::where('id', '=', $page->other_lang_id)->select('id', 'lang', 'permalink')->first();
 
         Inertia::share('sharedOtherLangPage', $other_lang_page);
+
+        $this->getBanners();
 
         return Inertia::render('Public/ContentPage', [
             'navigationItemId' => $navigation_item?->id,

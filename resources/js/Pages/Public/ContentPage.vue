@@ -2,45 +2,50 @@
   <Head :title="page.title" />
 
   <FadeTransition appear>
-    <section class="max-w-7xl px-8 pt-8 pr-20 last:pb-2 lg:pl-40">
-      <header>
-        <NBreadcrumb v-if="navigationItemId != null" class="mb-4 flex w-full">
-          <NBreadcrumbItem
-            v-for="breadcrumb in breadcrumbTree"
-            :key="breadcrumb.parent_id"
-            :clickable="false"
-          >
-            {{ breadcrumb.name }}
-            <template #separator>
-              <NIcon><HatGraduation20Filled /></NIcon>
-            </template>
-          </NBreadcrumbItem>
-        </NBreadcrumb>
-      </header>
-      <article
-        class="grid grid-cols-1 gap-x-12"
-        :class="{ 'lg:grid-cols-[1fr_250px]': anchorLinks }"
-      >
-        <h1 class="col-span-full col-start-1 inline-flex gap-4">
-          <span class="text-gray-900 dark:text-white">{{ page.title }}</span>
-          <NButton v-if="$page.props.auth?.user" text @click="editPage"
-            ><NIcon :size="32" :component="DocumentEdit20Regular"
-          /></NButton>
-        </h1>
-        <!-- eslint-disable-next-line vue/no-v-html -->
-        <div class="prose dark:prose-invert" v-html="text" />
-        <aside v-if="anchorLinks" class="sticky top-48 hidden h-fit lg:block">
-          <NAnchor ignore-gap :bound="120">
-            <NAnchorLink
-              v-for="link in anchorLinks"
-              :key="link.href"
-              :title="link.title"
-              :href="link.href"
-            ></NAnchorLink>
-          </NAnchor>
-        </aside>
-      </article>
-    </section>
+    <div>
+      <section class="max-w-7xl px-8 pr-20 pt-8 last:pb-2 lg:pl-40">
+        <header>
+          <NBreadcrumb v-if="navigationItemId != null" class="mb-4 flex w-full">
+            <NBreadcrumbItem
+              v-for="breadcrumb in breadcrumbTree"
+              :key="breadcrumb.parent_id"
+              :clickable="false"
+            >
+              {{ breadcrumb.name }}
+              <template #separator>
+                <NIcon><HatGraduation20Filled /></NIcon>
+              </template>
+            </NBreadcrumbItem>
+          </NBreadcrumb>
+        </header>
+        <article
+          class="grid grid-cols-1 gap-x-12"
+          :class="{ 'lg:grid-cols-[1fr_250px]': anchorLinks }"
+        >
+          <h1 class="col-span-full col-start-1 inline-flex gap-4">
+            <span class="text-gray-900 dark:text-white">{{ page.title }}</span>
+            <NButton v-if="$page.props.auth?.user" text @click="editPage"
+              ><NIcon :size="32" :component="DocumentEdit20Regular"
+            /></NButton>
+          </h1>
+          <!-- eslint-disable-next-line vue/no-v-html -->
+          <div class="prose dark:prose-invert" v-html="text" />
+          <aside v-if="anchorLinks" class="sticky top-48 hidden h-fit lg:block">
+            <NAnchor ignore-gap :bound="120">
+              <NAnchorLink
+                v-for="link in anchorLinks"
+                :key="link.href"
+                :title="link.title"
+                :href="link.href"
+              ></NAnchorLink>
+            </NAnchor>
+          </aside>
+        </article>
+      </section>
+      <div v-if="$page.props.banners" class="mx-auto mt-8 max-w-7xl">
+        <BannerCarousel :banners="$page.props.banners" />
+      </div>
+    </div>
   </FadeTransition>
 </template>
 
@@ -56,6 +61,7 @@ import {
   NIcon,
 } from "naive-ui";
 
+import BannerCarousel from "@/Components/Public/FullWidth/BannerCarousel.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 const props = defineProps<{

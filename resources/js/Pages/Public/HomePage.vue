@@ -11,12 +11,6 @@
     <MainLinks :main-page="mainPage" />
   </div>
 
-  <!-- <FadeTransition v-if="$page.props.locale === 'lt'">
-            <div class="mt-8">
-              <BannerCarousel :banners="banners" />
-            </div>
-          </FadeTransition> -->
-
   <EventCalendar
     :is-theme-dark="isThemeDark"
     :show-photos="true"
@@ -30,18 +24,21 @@
   />
 
   <YearReport2022 :is-theme-dark="isThemeDark" />
+
+  <div v-if="$page.props.banners" class="mx-auto mt-8 max-w-7xl">
+    <BannerCarousel :banners="$page.props.banners" />
+  </div>
 </template>
 
 <script setup lang="ts">
 import { Head } from "@inertiajs/vue3";
 import { defineAsyncComponent } from "vue";
-import { onMounted, ref } from "vue";
+import { ref } from "vue";
 
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 
 defineProps<{
   news: Array<App.Entities.News>;
-  banners: Array<App.Entities.Banner>;
   mainPage: Array<App.Entities.MainPage>;
   calendar: Array<App.Entities.Calendar>;
   upcoming4Events: Array<App.Entities.Calendar>;
@@ -59,10 +56,10 @@ const EventCalendar = defineAsyncComponent(
   () => import("@/Components/Public/FullWidth/EventCalendarElement.vue")
 );
 
-// const BannerCarousel = defineAsyncComponent(
-// eslint-disable-next-line no-secrets/no-secrets
-//   () => import("@/Components/Public/FullWidth/BannerCarousel.vue")
-// );
+const BannerCarousel = defineAsyncComponent(
+  // eslint-disable-next-line no-secrets/no-secrets
+  () => import("@/Components/Public/FullWidth/BannerCarousel.vue")
+);
 
 const NewsElement = defineAsyncComponent(
   () => import("@/Components/Public/NewsElement.vue")
@@ -79,8 +76,4 @@ const YearReport2022 = defineAsyncComponent(
 );
 
 updateDarkMode(isThemeDark);
-
-onMounted(() => {
-  // updateDarkMode(isThemeDark);
-});
 </script>
