@@ -94,6 +94,7 @@ const calendarAttributes = props.calendarEvents.map((event) => {
 
   switch (event.category) {
     case "freshmen-camps":
+    case "vu-sa-conferences":
       eventColor = "orange";
       break;
 
