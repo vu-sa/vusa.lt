@@ -1,5 +1,4 @@
 import "../css/app.css";
-import "v-calendar/style.css";
 
 import { type DefineComponent, createApp, h } from "vue";
 import { ZiggyVue } from "../../vendor/tightenco/ziggy/src/js/vue.js";

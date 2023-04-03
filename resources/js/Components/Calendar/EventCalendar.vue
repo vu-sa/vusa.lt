@@ -1,58 +1,61 @@
 <template>
-  <Calendar
-    :initial-page="currentDay"
-    :is-dark="isThemeDark"
-    :attributes="calendarAttributes"
-    color="red"
-    class="shadow-xl"
-  >
-    <template #day-popover="{ attributes, dayTitle }">
-      <div class="max-w-md">
-        <div
-          class="mb-1 text-center text-xs font-semibold text-gray-300 dark:text-zinc-700"
-        >
-          {{ dayTitle }}
-        </div>
-        <PopoverRow
-          v-for="attr in attributes"
-          :key="attr.key"
-          :attribute="attr"
-        >
-          <div class="inline-flex items-center gap-2">
-            <a
-              target="_blank"
-              :href="
-                route('calendar.event', {
-                  calendar: attr.key,
-                  lang: $page.props.app.locale,
-                })
-              "
-              >{{ attr.popover.label }}</a
-            >
-            <NConfigProvider
-              class="flex h-fit items-center justify-center"
-              :theme="isThemeDark ? undefined : darkTheme"
-            >
-              <div class="my-auto flex items-center justify-center">
-                <NButton
-                  text
-                  tag="a"
-                  target="_blank"
-                  :href="attr.customData.googleLink"
-                  color="rgb(189, 40, 53)"
-                  size="tiny"
-                  ><NIcon :component="Google"
-                /></NButton>
-              </div>
-            </NConfigProvider>
+  <div class="my-calendar">
+    <Calendar
+      :initial-page="currentDay"
+      :is-dark="isThemeDark"
+      :attributes="calendarAttributes"
+      color="red"
+      class="shadow-xl"
+    >
+      <template #day-popover="{ attributes, dayTitle }">
+        <div class="max-w-md">
+          <div
+            class="mb-1 text-center text-xs font-semibold text-gray-300 dark:text-zinc-700"
+          >
+            {{ dayTitle }}
           </div>
-        </PopoverRow>
-      </div>
-    </template>
-  </Calendar>
+          <PopoverRow
+            v-for="attr in attributes"
+            :key="attr.key"
+            :attribute="attr"
+          >
+            <div class="inline-flex items-center gap-2">
+              <a
+                target="_blank"
+                :href="
+                  route('calendar.event', {
+                    calendar: attr.key,
+                    lang: $page.props.app.locale,
+                  })
+                "
+                >{{ attr.popover.label }}</a
+              >
+              <NConfigProvider
+                class="flex h-fit items-center justify-center"
+                :theme="isThemeDark ? undefined : darkTheme"
+              >
+                <div class="my-auto flex items-center justify-center">
+                  <NButton
+                    text
+                    tag="a"
+                    target="_blank"
+                    :href="attr.customData.googleLink"
+                    color="rgb(189, 40, 53)"
+                    size="tiny"
+                    ><NIcon :component="Google"
+                  /></NButton>
+                </div>
+              </NConfigProvider>
+            </div>
+          </PopoverRow>
+        </div>
+      </template>
+    </Calendar>
+  </div>
 </template>
 
 <script setup lang="tsx">
+import "v-calendar/style.css";
 import { Calendar, PopoverRow } from "v-calendar";
 import { Google } from "@vicons/fa";
 import { NButton, NConfigProvider, NIcon, darkTheme } from "naive-ui";
@@ -61,6 +64,7 @@ import type { PageAddress } from "v-calendar/dist/types/src/utils/page";
 const props = defineProps<{
   isThemeDark: boolean;
   calendarEvents: App.Entities.Calendar[];
+  locale: string;
 }>();
 
 const currentDay: PageAddress = {
@@ -129,6 +133,14 @@ calendarAttributes.push({
 </script>
 
 <style scoped>
+.my-calendar :deep(.vc-container.vc-dark) {
+  background-color: #29292e;
+}
+
+.my-calendar :deep(button.vc-arrow) {
+  background-color: transparent;
+}
+
 .vc-container {
   font-family: "Inter", sans-serif !important;
   border: 0 !important;
