@@ -90,12 +90,12 @@ const isSameDay = (date1: string, date2: string) => {
 };
 
 const calendarAttributes = props.calendarEvents.map((event) => {
-  let eventColor = event.category;
+  let eventColor: string | { class: string };
 
   switch (event.category) {
     case "freshmen-camps":
     case "vu-sa-conferences":
-      eventColor = "orange";
+      eventColor = "yellow";
       break;
 
     case "grey":
