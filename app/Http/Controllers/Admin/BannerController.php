@@ -69,7 +69,7 @@ class BannerController extends ResourceController
         $banner->user_id = $request->user()->id;
         $banner->save();
 
-        Cache::forget('banners-' . $banner->padalinys_id);
+        Cache::forget('banners-'.$banner->padalinys_id);
 
         return redirect()->route('banners.index')->with('success', 'Baneris sėkmingai sukurtas!');
     }
@@ -117,7 +117,7 @@ class BannerController extends ResourceController
         $banner->image_url = $request->image_url;
         $banner->save();
 
-        Cache::forget('banners-' . $banner?->padalinys_id);
+        Cache::forget('banners-'.$banner?->padalinys_id);
 
         return back()->with('success', 'Baneris atnaujintas!');
     }

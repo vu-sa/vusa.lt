@@ -7,7 +7,8 @@ use Illuminate\Support\Carbon;
 
 class CuratorRegistrationService
 {
-    public function getRegistrationMetadata() {
+    public function getRegistrationMetadata()
+    {
         return collect([
             'chgf' => [
                 'registration_url' => 'https://docs.google.com',
@@ -72,7 +73,8 @@ class CuratorRegistrationService
         ]);
     }
 
-    public function getRegistrationPadaliniaiWithData() {
+    public function getRegistrationPadaliniaiWithData()
+    {
         return Padalinys::query()->select('id', 'fullname', 'alias', 'type')->orderBy('fullname')->where('type', 'padalinys')->get()->map(function ($padalinys) {
             return [
                 'id' => $padalinys->id,
