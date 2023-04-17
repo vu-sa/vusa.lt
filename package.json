@@ -16,7 +16,7 @@
     "@tiptap/extension-underline": "^2.0.1",
     "@tiptap/extension-youtube": "^2.0.1",
     "@tiptap/starter-kit": "^2.0.1",
-    "@tiptap/vue-3": "^2.0.1",
+    "@tiptap/vue-3": "^2.0.3",
     "@vueuse/core": "^9.2.0",
     "@vueuse/integrations": "^9.9.0",
     "axios": "^1.2.3",
