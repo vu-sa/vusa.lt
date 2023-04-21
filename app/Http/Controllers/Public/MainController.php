@@ -413,10 +413,10 @@ class MainController extends PublicController
             ],
             'calendar' => $this->getEventsForCalendar(),
             'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale())])
-                ->withViewData([
-                    'title' => $calendar->title,
-                    'description' => strip_tags($calendar->description),
-                ]);
+            ->withViewData([
+                'title' => $calendar->title,
+                'description' => strip_tags($calendar->description),
+            ]);
     }
 
     public function publicAllEventCalendar()

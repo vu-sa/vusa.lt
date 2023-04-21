@@ -47,9 +47,9 @@ class MeetingSoonNotification extends Notification implements ShouldQueue
     public function toMail($notifiable)
     {
         return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Žiūrėti susitikimą', route('meetings.show', $this->meeting->id))
-                    ->line('Thank you for using our application!');
+            ->line('The introduction to the notification.')
+            ->action('Žiūrėti susitikimą', route('meetings.show', $this->meeting->id))
+            ->line('Thank you for using our application!');
     }
 
     /**

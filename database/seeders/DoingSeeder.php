@@ -20,7 +20,7 @@ class DoingSeeder extends Seeder
         Goal::factory()
             ->has(Matter::factory()
                 ->has(Doing::factory()->count(10))
-            ->count(10))
-        ->count(3)->create();
+                ->count(10))
+            ->count(3)->create();
     }
 }

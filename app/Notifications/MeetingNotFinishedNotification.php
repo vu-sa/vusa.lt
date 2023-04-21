@@ -47,9 +47,9 @@ class MeetingNotFinishedNotification extends Notification implements ShouldQueue
     public function toMail($notifiable)
     {
         return (new MailMessage)
-                    ->line('Trūksta informacijos posėdžio "užbaigimui".')
-                    ->action('Žiūrėti susitikimą', route('meetings.show', $this->meeting->id))
-                    ->line('Thank you for using our application!');
+            ->line('Trūksta informacijos posėdžio "užbaigimui".')
+            ->action('Žiūrėti susitikimą', route('meetings.show', $this->meeting->id))
+            ->line('Thank you for using our application!');
     }
 
     /**

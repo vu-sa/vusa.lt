@@ -90,7 +90,7 @@ class ContactController extends PublicController
                     $query->where('end_date', '>=', now())->where('end_date', '=', null, 'or');
                 });
             })
-            ->get();
+                ->get();
         }
 
         // sort users by their duty smallest order

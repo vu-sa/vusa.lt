@@ -71,8 +71,8 @@ class IcalendarService
         $calendarArray = $this->parseCalendarEventsForICS($calendars, $lang === 'en');
 
         $calendar = Calendar::create($lang === 'en' ? 'Student activity calendar (VU SA)' : 'Studentiškas kalendorius (VU SA)')->description($lang === 'en' ? 'Calendar of student activities at Vilnius University. Curated by VU Students\' Representation 🔬' : 'Studentiškų veiklų kalendorius Vilniaus universitete. Kuruojamas VU Studentų atstovybės 🔬')->refreshInterval(5)
-        ->event($calendarArray)
-        ->get();
+            ->event($calendarArray)
+            ->get();
 
         return $calendar;
     }

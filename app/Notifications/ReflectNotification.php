@@ -44,9 +44,9 @@ class ReflectNotification extends Notification implements ShouldQueue
     public function toMail($notifiable)
     {
         return (new MailMessage)
-                    ->line('Atėjo laikas pareflektuoti!')
-                    ->action('Pasižiūrėk čia', url('/'))
-                    ->line('Refleksija yra svarbu.');
+            ->line('Atėjo laikas pareflektuoti!')
+            ->action('Pasižiūrėk čia', url('/'))
+            ->line('Refleksija yra svarbu.');
     }
 
     /**
