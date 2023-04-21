@@ -12,7 +12,7 @@
       <img
         :src="imageSrc"
         class="mt-2 h-32 w-full object-cover brightness-50 lg:my-1 lg:h-48"
-        style="object-position: 0% 45%"
+        :style="`object-position: ${objectPosition ?? '0% 45%'}`"
       />
       <h1 class="relative bottom-16 text-center text-zinc-100 lg:bottom-24">
         <slot />
@@ -26,5 +26,6 @@ import ShapeDivider1 from "../Public/ShapeDivider1.vue";
 defineProps<{
   isThemeDark: boolean;
   imageSrc: string;
+  objectPosition?: string;
 }>();
 </script>
