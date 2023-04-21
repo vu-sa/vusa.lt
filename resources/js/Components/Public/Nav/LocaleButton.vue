@@ -78,7 +78,8 @@ const hasChangeableLocale = computed(() => {
   // check if current page url has /kontaktai or /contacts
   if (
     window.location.pathname.includes("kontaktai") ||
-    window.location.pathname.includes("contacts")
+    window.location.pathname.includes("contacts") ||
+    window.location.pathname.includes("kuratoriu-registracija")
   ) {
     return true;
   }

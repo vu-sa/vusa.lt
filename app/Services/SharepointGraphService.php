@@ -63,8 +63,8 @@ class SharepointGraphService
     {
         return Cache::remember('ms_site_'.$this->siteId, 3600, function () {
             $site = $this->graph->createRequest('GET', "/sites/{$this->siteId}")
-            ->setReturnType(Model\Site::class)
-            ->execute();
+                ->setReturnType(Model\Site::class)
+                ->execute();
 
             return $site;
         });
@@ -74,8 +74,8 @@ class SharepointGraphService
     {
         return Cache::remember('ms_drive_'.$this->siteId, 3600, function () {
             $drive = $this->graph->createRequest('GET', "/sites/{$this->siteId}/drive")
-            ->setReturnType(Model\Drive::class)
-            ->execute();
+                ->setReturnType(Model\Drive::class)
+                ->execute();
 
             return $drive;
         });

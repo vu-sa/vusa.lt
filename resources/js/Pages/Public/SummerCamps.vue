@@ -3,26 +3,12 @@
 
   <FadeTransition appear>
     <div>
-      <div class="group relative">
-        <ShapeDivider1
-          :is-theme-dark="isThemeDark"
-          class="absolute -top-1 z-10"
-        ></ShapeDivider1>
-        <ShapeDivider1
-          :is-theme-dark="isThemeDark"
-          class="absolute bottom-5 z-10 rotate-180 lg:-bottom-1"
-        ></ShapeDivider1>
-        <div class="relative">
-          <img
-            src="/images/photos/stovykla.jpg"
-            class="mt-2 h-32 w-full object-cover brightness-50 lg:my-1 lg:h-48"
-            style="object-position: 0% 45%"
-          />
-          <h1 class="relative bottom-16 text-center text-zinc-100 lg:bottom-24">
-            Pirmakursių stovyklos
-          </h1>
-        </div>
-      </div>
+      <HeaderWithShapeDivider1
+        :is-theme-dark="isThemeDark"
+        image-src="/images/photos/stovykla.jpg"
+        >Pirmakursių stovyklos
+      </HeaderWithShapeDivider1>
+
       <div
         class="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-4 pt-2 last:pb-2 lg:grid-cols-5 lg:px-16"
       >
@@ -114,7 +100,7 @@
                 :src="get5thResponsiveImage(event)"
               />
               <h3 class="p-2 text-center text-lg font-extrabold leading-tight">
-                {{ "VU" + getFacultyName(event) }}
+                {{ "VU" + getFacultyName(event.padalinys) }}
               </h3>
             </Link>
           </section>
@@ -128,45 +114,16 @@
 import { Head, Link } from "@inertiajs/vue3";
 import { onMounted, ref } from "vue";
 
+import { getFacultyName } from "@/Utils/String";
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
-import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
+import HeaderWithShapeDivider1 from "@/Components/Headers/HeaderWithShapeDivider1.vue";
 
 defineProps<{
   events: App.Entities.News;
 }>();
 
 const isThemeDark = ref(isDarkMode());
-
-const getFacultyName = (event: App.Entities.Calendar) => {
-  if (!event.padalinys) return "";
-
-  // split string into two parts, separated by string "Vilniaus universiteto Studentų atstovybė"
-  let facultyName = event.padalinys.fullname.split(
-    "Vilniaus universiteto Studentų atstovybė"
-  )[1];
-
-  // change faculty name only at the string ending from "ete" to "etas"
-  if (facultyName.endsWith("ete")) {
-    facultyName = facultyName.replace("ete", "etas");
-  }
-  // also apply this to "tre" to "tas"
-  if (facultyName.endsWith("tre")) {
-    facultyName = facultyName.replace("tre", "tras");
-  }
-
-  // also if ends with "ykloje", change to "ykla"
-  if (facultyName.endsWith("ykloje")) {
-    facultyName = facultyName.replace("ykloje", "ykla");
-  }
-
-  // change "ute" to "utas"
-  if (facultyName.endsWith("ute")) {
-    facultyName = facultyName.replace("ute", "utas");
-  }
-
-  return facultyName;
-};
 
 const get5thResponsiveImage = (event: App.Entities.Calendar) => {
   if (event.media.length === 0) return "";

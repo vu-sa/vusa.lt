@@ -41,7 +41,7 @@ class PublicController extends Controller
 
     protected function getBanners()
     {
-        $banners = Cache::remember('banners-' . $this->padalinys->id, 60 * 30, function () {
+        $banners = Cache::remember('banners-'.$this->padalinys->id, 60 * 30, function () {
 
             $banners = Padalinys::where('alias', 'vusa')->first()->banners()->inRandomOrder()->where('is_active', 1)->get();
 

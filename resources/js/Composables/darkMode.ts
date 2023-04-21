@@ -11,6 +11,7 @@ export function isDarkMode() {
 
 export function updateDarkMode(ref: Ref<boolean>) {
   const target = document.querySelector("html");
+  if (!target) return;
   const config = { attributes: true, childList: false, subtree: false };
   const callback = () => {
     ref.value = isDarkMode();

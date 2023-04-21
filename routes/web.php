@@ -39,6 +39,8 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('nariu-registracija', [Public\MainController::class, 'memberRegistration'])->name('memberRegistration');
         Route::post('nariu-registracija', [Public\MainController::class, 'storeMemberRegistration'])->name('memberRegistration.store');
 
+        Route::get('kuratoriu-registracija', [Public\MainController::class, 'curatorRegistration'])->name('curatorRegistration');
+
         Route::get('pirmakursiu-stovyklos', [Public\MainController::class, 'summerCamps'])->name('pirmakursiuStovyklos');
         Route::get('kalendorius/renginys/{calendar}', [Public\MainController::class, 'calendarEventMain'])->name('calendar.event');
         Route::get('kalendorius/ics', [Public\MainController::class, 'publicAllEventCalendar'])->name('calendar.ics');

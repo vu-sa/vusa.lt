@@ -84,7 +84,7 @@ class ModelPolicy
         if ($this->authorizer->forUser($user)->check($this->pluralModelName.'.'.$ability.'.'.PermissionScopeEnum::PADALINYS()->label)) {
             $permissablePadaliniai = $user->padaliniai()
                 ->whereIn('duties.id', $this->authorizer->getPermissableDuties()
-                ->pluck('id'))
+                    ->pluck('id'))
                 ->get();
 
             $modelPadaliniai = $model->load($padalinysRelation)->$padalinysRelation;

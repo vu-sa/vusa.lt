@@ -41,10 +41,10 @@ class Calendar extends Model implements HasMedia
     public function registerMediaCollections(): void
     {
         $this
-        ->addMediaCollection('images')
-        ->acceptsMimeTypes(['image/jpeg', 'image/jpg', 'image/png'])
-        ->useDisk('spatieMediaLibrary')
-        ->withResponsiveImages();
+            ->addMediaCollection('images')
+            ->acceptsMimeTypes(['image/jpeg', 'image/jpg', 'image/png'])
+            ->useDisk('spatieMediaLibrary')
+            ->withResponsiveImages();
     }
 
     public function toSearchableArray()

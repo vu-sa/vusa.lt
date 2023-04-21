@@ -21,6 +21,7 @@ use App\Models\SaziningaiExamFlow;
 use App\Models\SaziningaiExamObserver;
 use App\Models\User;
 use App\Notifications\MemberRegistered;
+use App\Services\CuratorRegistrationService;
 use App\Services\IcalendarService;
 use Datetime;
 use Illuminate\Database\Eloquent\Builder;
@@ -28,7 +29,6 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -199,6 +199,15 @@ class MainController extends PublicController
 
         return response()->json($mainNews, 200, ['Content-type' => 'application/json; charset=utf-8'], JSON_UNESCAPED_UNICODE);
         //
+    }
+
+    public function curatorRegistration()
+    {
+        $this->getBanners();
+
+        return Inertia::render('Public/CuratorRegistration', [
+            'curatorPadaliniai' => (new CuratorRegistrationService)->getRegistrationPadaliniaiWithData(),
+        ]);
     }
 
     public function page()
@@ -404,10 +413,10 @@ class MainController extends PublicController
             ],
             'calendar' => $this->getEventsForCalendar(),
             'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale())])
-                ->withViewData([
-                    'title' => $calendar->title,
-                    'description' => strip_tags($calendar->description),
-                ]);
+            ->withViewData([
+                'title' => $calendar->title,
+                'description' => strip_tags($calendar->description),
+            ]);
     }
 
     public function publicAllEventCalendar()

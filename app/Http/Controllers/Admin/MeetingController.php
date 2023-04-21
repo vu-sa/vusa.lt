@@ -41,8 +41,8 @@ class MeetingController extends ResourceController
                     }
                     );
                 })
-            ->orderBy('start_time', $sorters['start_time'] === 'descend' ? 'desc' : 'asc')
-            ->paginate(20),
+                ->orderBy('start_time', $sorters['start_time'] === 'descend' ? 'desc' : 'asc')
+                ->paginate(20),
         ]);
     }
 
