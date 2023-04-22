@@ -218,7 +218,7 @@ import {
   NSelect,
   createDiscreteApi,
 } from "naive-ui";
-import { Head, router, useForm } from "@inertiajs/vue3";
+import { Head, router, useForm, usePage } from "@inertiajs/vue3";
 import { computed, ref } from "vue";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
@@ -390,14 +390,20 @@ const handleValidateClick = (e: MouseEvent) => {
   e.preventDefault();
   formRef.value?.validate((errors: Array<FormValidationError> | undefined) => {
     if (!errors) {
-      router.post(route("saziningaiExamRegistration.store"), formValue, {
-        onSuccess: () => {
-          message.success(
-            `Ačiū už atsiskaitymo „${formValue.subject_name}“ užregistravimą!`
-          );
-          formValue.reset();
-        },
-      });
+      router.post(
+        route("saziningaiExamRegistration.store", {
+          lang: usePage().props.app.locale,
+        }),
+        formValue,
+        {
+          onSuccess: () => {
+            message.success(
+              `Ačiū už atsiskaitymo „${formValue.subject_name}“ užregistravimą!`
+            );
+            formValue.reset();
+          },
+        }
+      );
     } else {
       message.error("Užpildykite visus laukelius.");
     }
