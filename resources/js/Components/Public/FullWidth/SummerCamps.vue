@@ -1,11 +1,7 @@
 <template>
   <div class="group relative">
     <Head>
-      <link
-        rel="preload"
-        href="/images/ataskaita2022/kitos-nuotraukos/VU SA.jpg"
-        as="image"
-      />
+      <link rel="preload" href="/images/photos/VU SA.jpg" as="image" />
     </Head>
 
     <ShapeDivider1
