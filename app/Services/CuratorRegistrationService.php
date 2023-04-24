@@ -67,8 +67,8 @@ class CuratorRegistrationService
                 'registration_launch_time' => Carbon::create(2023, 4, 27, 9, 0, 0, 'Europe/Vilnius'),
             ],
             'vm' => [
-                'registration_url' => null,
-                'registration_launch_time' => Carbon::create(2023, 5, 8, 9, 0, 0, 'Europe/Vilnius'),
+                'registration_url' => 'https://forms.gle/qGxyHvNwA4GDn38y6',
+                'registration_launch_time' => Carbon::create(2023, 5, 1, 9, 0, 0, 'Europe/Vilnius'),
             ],
         ]);
     }
