@@ -11,7 +11,7 @@ class CuratorRegistrationService
     {
         return collect([
             'chgf' => [
-                'registration_url' => null,
+                'registration_url' => 'https://forms.gle/pQwZjUeKFAGUvxic9',
                 'registration_launch_time' => Carbon::create(2023, 5, 1, 9, 0, 0, 'Europe/Vilnius'),
             ],
             'evaf' => [
@@ -63,7 +63,7 @@ class CuratorRegistrationService
                 'registration_launch_time' => null,
             ],
             'tspmi' => [
-                'registration_url' => null,
+                'registration_url' => 'https://forms.gle/Lq1DNMzvWRFfyiA89',
                 'registration_launch_time' => Carbon::create(2023, 4, 27, 9, 0, 0, 'Europe/Vilnius'),
             ],
             'vm' => [
