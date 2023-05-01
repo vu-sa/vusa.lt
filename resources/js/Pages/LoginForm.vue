@@ -15,7 +15,7 @@
           class="bg-black-800 h-full w-full"
         >
           <img
-            src="/images/ataskaita2022/kitos-nuotraukos/VU SA.jpg"
+            src="/images/photos/VU SA.jpg"
             class="h-full w-full object-cover"
           />
           <img

@@ -9,21 +9,14 @@
         :is-theme-dark="isThemeDark"
         class="absolute -bottom-2 z-10 rotate-180 lg:-bottom-1"
       ></ShapeDivider1>
-      <Link
-        :href="
-          route('ataskaita2022', {
-            lang: $page.props.app.locale,
-            permalink: 'pradzia',
-          })
-        "
-      >
+      <a href="/ataskaita-2022" target="_blank">
         <img
-          src="/images/ataskaita2022/kitos-nuotraukos/VU SA.jpg"
+          src="/images/photos/VU SA.jpg"
           loading="lazy"
           class="mt-2 h-32 w-full object-cover lg:my-1 lg:h-64"
           style="object-position: 0% 50%"
         />
-      </Link>
+      </a>
     </div>
 
     <div class="prose-sm mx-8 dark:prose-invert lg:mx-32 lg:px-32">
@@ -33,12 +26,8 @@
         <a
           class="flex w-fit flex-row items-center gap-2"
           style="text-decoration: none"
-          :href="
-            route('ataskaita2022', {
-              lang: $page.props.app.locale,
-              permalink: 'pradzia',
-            })
-          "
+          href="https://www.vusa.lt/ataskaita-2022"
+          target="_blank"
           ><template v-if="$page.props.app.locale === 'lt'"
             >Ką veikė VU SA 2021–2022 metais?</template
           ><template v-else>What did VU SR do in 2021–2022?</template>

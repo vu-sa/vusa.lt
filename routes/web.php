@@ -28,8 +28,6 @@ Route::post('login', [Admin\UserController::class, 'authenticate'])->middleware(
 
 Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware' => ['main']], function () {
     Route::domain('www.'.explode('.', config('app.url'), 2)[1])->group(function () {
-        Route::get('ataskaita-2022', [Public\MainController::class, 'ataskaita2022']);
-        Route::get('ataskaita-2022/{permalink}', [Public\MainController::class, 'ataskaita2022'])->where('permalink', '.*')->name('ataskaita2022');
 
         Route::get('saziningai-registracija', [Public\MainController::class, 'saziningaiExamRegistration'])->name('saziningaiExamRegistration');
         Route::post('saziningai-registracija', [Public\MainController::class, 'storeSaziningaiExamRegistration'])->name('saziningaiExamRegistration.store');
