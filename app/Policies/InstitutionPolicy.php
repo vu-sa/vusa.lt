@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
 use App\Models\Institution;
 use App\Models\User;
@@ -27,7 +28,7 @@ class InstitutionPolicy extends ModelPolicy
     {
         $this->authorizer = $authorizer;
 
-        if ($this->commonChecker($user, $institution, 'read', 'institution', false)) {
+        if ($this->commonChecker($user, $institution, CRUDEnum::READ()->label, 'institution', false)) {
             return true;
         }
 
@@ -43,7 +44,7 @@ class InstitutionPolicy extends ModelPolicy
     {
         $this->authorizer = $authorizer;
 
-        if ($this->commonChecker($user, $institution, 'update', 'institution', false)) {
+        if ($this->commonChecker($user, $institution, CRUDEnum::UPDATE()->label, 'institution', false)) {
             return true;
         }
 
@@ -57,8 +58,10 @@ class InstitutionPolicy extends ModelPolicy
      */
     public function delete(User $user, Institution $institution, Authorizer $authorizer)
     {
+        $this->authorizer = $authorizer;
+
         // Doesn't make sense to delete own institution
-        if ($this->commonChecker($user, $institution, 'delete', 'institution', false)) {
+        if ($this->commonChecker($user, $institution, CRUDEnum::DELETE()->label, 'institution', false)) {
             return true;
         }
 
