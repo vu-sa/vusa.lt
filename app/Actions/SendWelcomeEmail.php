@@ -18,9 +18,9 @@ class SendWelcomeEmail
     public static function execute(Collection $users)
     {
         // $users = User::withWhereHas('duties', function ($query) {
-            //     $query->with('institution')->whereHas('types', function ($query) {
-            //         $query->where('slug', 'studentu-atstovai');
-            //     });
+        //     $query->with('institution')->whereHas('types', function ($query) {
+        //         $query->where('slug', 'studentu-atstovai');
+        //     });
         // })->get();
 
         foreach ($users as $user) {
