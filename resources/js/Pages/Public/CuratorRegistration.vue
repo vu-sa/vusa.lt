@@ -167,25 +167,41 @@
             </p>
             <ul>
               <li
-                v-for="padalinys in curatorActiveRegistrationMap"
+                v-for="padalinys in arrayOfPadaliniaiWithStatus.active"
                 :key="padalinys.id"
               >
                 <p>
                   {{ "VU" + getFacultyName(padalinys) }}
-                  <NButton
-                    tag="a"
-                    :href="padalinys.registration_url"
-                    target="_blank"
-                    text
-                    class="align-center"
-                  >
-                    <template #icon
-                      ><NIcon
+                  <NPopover>
+                    <template #trigger>
+                      <NButton
+                        tag="a"
+                        :href="padalinys.registration_url"
+                        target="_blank"
+                        text
                         class="align-center"
-                        :component="Link24Regular"
-                      ></NIcon
-                    ></template>
-                  </NButton>
+                      >
+                        <template #icon
+                          ><NIcon
+                            class="align-center"
+                            :component="Link24Regular"
+                          ></NIcon
+                        ></template>
+                      </NButton>
+                    </template>
+                    <!-- Tell when the registration will end -->
+                    <p>
+                      {{ $t("Registracija baigsis") }}
+                      <strong>
+                        {{
+                          formatStaticTime(padalinys.registration_end_time, {
+                            month: "long",
+                            day: "numeric",
+                          })
+                        }}
+                      </strong>
+                    </p>
+                  </NPopover>
                 </p>
               </li>
             </ul>
@@ -196,7 +212,7 @@
             </p>
             <ul>
               <li
-                v-for="padalinys in curatorUpcomingRegistrationMap"
+                v-for="padalinys in arrayOfPadaliniaiWithStatus.upcoming"
                 :key="padalinys.id"
               >
                 {{ "VU" + getFacultyName(padalinys) }}
@@ -212,6 +228,20 @@
               </li>
             </ul>
           </section>
+          <!-- Section for ended registrations -->
+          <section>
+            <p class="mt-4 text-lg font-bold">
+              📅 {{ $t("Registracijos jau baigėsi") }}:
+            </p>
+            <ul>
+              <li
+                v-for="padalinys in arrayOfPadaliniaiWithStatus.ended"
+                :key="padalinys.id"
+              >
+                {{ "VU" + getFacultyName(padalinys) }}
+              </li>
+            </ul>
+          </section>
         </aside>
       </div>
     </div>
@@ -223,7 +253,14 @@ import { Head } from "@inertiajs/vue3";
 import { onMounted, ref } from "vue";
 
 import { Link20Regular, Link24Regular } from "@vicons/fluent";
-import { NButton, NIcon, NImage, NImageGroup, NSpace } from "naive-ui";
+import {
+  NButton,
+  NIcon,
+  NImage,
+  NImageGroup,
+  NPopover,
+  NSpace,
+} from "naive-ui";
 import { formatStaticTime } from "@/Utils/IntlTime";
 import { getFacultyName } from "@/Utils/String";
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
@@ -236,33 +273,65 @@ const props = defineProps<{
     fullname: string;
     registration_url: string;
     registration_launch_time: string;
+    registration_end_time: string;
   }[];
 }>();
 
-const curatorPadaliniaiMap = props.curatorPadaliniai.map((padalinys) => {
-  return {
-    ...padalinys,
-    registration_launch_time:
-      padalinys.registration_launch_time !== null
-        ? new Date(padalinys.registration_launch_time)
-        : null,
-  };
-});
+// reduce curatorPadaliniai prop to 3 arrays: active, upcoming and ended
 
-const curatorActiveRegistrationMap = curatorPadaliniaiMap.filter(
-  (padalinys) =>
-    padalinys.registration_launch_time !== null &&
-    padalinys.registration_launch_time.getTime() <= new Date().getTime() &&
-    padalinys.registration_url !== null
+const arrayOfPadaliniaiWithStatus = props.curatorPadaliniai.reduce(
+  (acc, curr) => {
+    const registration_launch_time = new Date(curr.registration_launch_time);
+    const registration_end_time = new Date(curr.registration_end_time);
+    const now = new Date();
+
+    if (
+      registration_launch_time.getTime() <= now.getTime() &&
+      registration_end_time.getTime() >= now.getTime() &&
+      curr.registration_url !== null
+    ) {
+      acc.active.push(curr);
+    } else if (
+      registration_launch_time.getTime() > now.getTime() ||
+      curr.registration_url === null
+    ) {
+      acc.upcoming.push(curr);
+    } else if (registration_end_time.getTime() < now.getTime()) {
+      acc.ended.push(curr);
+    }
+    return acc;
+  }, // initial value
+  {
+    active: [],
+    upcoming: [],
+    ended: [],
+  }
 );
 
-// get unused padaliniai, that are not in the active registration map
-const curatorUpcomingRegistrationMap = curatorPadaliniaiMap.filter(
-  (padalinys) =>
-    !curatorActiveRegistrationMap.some(
-      (activePadalinys) => activePadalinys.id === padalinys.id
-    )
-);
+// const curatorPadaliniaiMap = props.curatorPadaliniai.map((padalinys) => {
+//   return {
+//     ...padalinys,
+//     registration_launch_time:
+//       padalinys.registration_launch_time !== null
+//         ? new Date(padalinys.registration_launch_time)
+//         : null,
+//   };
+// });
+
+// const curatorActiveRegistrationMap = curatorPadaliniaiMap.filter(
+//   (padalinys) =>
+//     padalinys.registration_launch_time !== null &&
+//     padalinys.registration_launch_time.getTime() <= new Date().getTime() &&
+//     padalinys.registration_url !== null
+// );
+
+// // get unused padaliniai, that are not in the active registration map
+// const curatorUpcomingRegistrationMap = curatorPadaliniaiMap.filter(
+//   (padalinys) =>
+//     !curatorActiveRegistrationMap.some(
+//       (activePadalinys) => activePadalinys.id === padalinys.id
+//     )
+// );
 
 const isThemeDark = ref(isDarkMode());
 
