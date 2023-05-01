@@ -252,7 +252,7 @@ const curatorPadaliniaiMap = props.curatorPadaliniai.map((padalinys) => {
 const curatorActiveRegistrationMap = curatorPadaliniaiMap.filter(
   (padalinys) =>
     padalinys.registration_launch_time !== null &&
-    padalinys.registration_launch_time.getDate() <= new Date().getDate() &&
+    padalinys.registration_launch_time.getTime() <= new Date().getTime() &&
     padalinys.registration_url !== null
 );
 
