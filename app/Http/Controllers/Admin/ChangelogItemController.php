@@ -7,7 +7,6 @@ use App\Http\Requests\StoreChangelogItemRequest;
 use App\Models\ChangelogItem;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Response as InertiaResponse;
 
 class ChangelogItemController extends ResourceController
@@ -43,30 +42,6 @@ class ChangelogItemController extends ResourceController
         ]));
 
         return back()->with('success', 'Pasikeitimas sukurtas.');
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(ChangelogItem $changelogItem): InertiaResponse
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, ChangelogItem $changelogItem): RedirectResponse
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(ChangelogItem $changelogItem): RedirectResponse
-    {
-        //
     }
 
     public function approveForUser(): RedirectResponse

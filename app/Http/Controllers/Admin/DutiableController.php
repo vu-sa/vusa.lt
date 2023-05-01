@@ -17,8 +17,7 @@ class DutiableController extends ResourceController
      */
     public function index()
     {
-        $this->authorize('viewAny', [Dutiable::class, $this->authorizer]);
-        //
+        return $this->authorize('viewAny', [Dutiable::class, $this->authorizer]);
     }
 
     /**
@@ -28,7 +27,7 @@ class DutiableController extends ResourceController
      */
     public function create()
     {
-        $this->authorize('create', [Dutiable::class, $this->authorizer]);
+        return $this->authorize('create', [Dutiable::class, $this->authorizer]);
     }
 
     /**
@@ -36,7 +35,7 @@ class DutiableController extends ResourceController
      *
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store()
     {
         $this->authorize('create', [Dutiable::class, $this->authorizer]);
     }
