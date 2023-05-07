@@ -46,7 +46,7 @@ class CuratorRegistrationService
                 'registration_end_time' => Carbon::create(2023, 5, 17, 9, 0, 0, 'Europe/Vilnius'),
             ],
             'kf' => [
-                'registration_url' => 'https://forms.gle/XtgT45ejjY5euKmp7',
+                'registration_url' => 'https://forms.gle/7f3EfG4GaUmvcsc5A',
                 'registration_launch_time' => Carbon::create(2023, 5, 1, 9, 0, 0, 'Europe/Vilnius'),
                 'registration_end_time' => Carbon::create(2023, 5, 15, 9, 0, 0, 'Europe/Vilnius'),
             ],
