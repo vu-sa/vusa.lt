@@ -16,9 +16,9 @@ class CuratorRegistrationService
                 'registration_end_time' => Carbon::create(2023, 5, 17, 9, 0, 0, 'Europe/Vilnius'),
             ],
             'evaf' => [
-                'registration_url' => null,
-                'registration_launch_time' => null,
-                'registration_end_time' => null,
+                'registration_url' => 'https://forms.gle/ADUXCvpYHnf17UwDA',
+                'registration_launch_time' => Carbon::create(2023, 5, 8, 9, 0, 0, 'Europe/Vilnius'),
+                'registration_end_time' => Carbon::create(2023, 5, 18, 9, 0, 0, 'Europe/Vilnius'),
             ],
             'ff' => [
                 'registration_url' => 'https://forms.gle/H1dYaxt5uy4rUA388',
@@ -66,9 +66,9 @@ class CuratorRegistrationService
                 'registration_end_time' => Carbon::create(2023, 5, 7, 9, 0, 0, 'Europe/Vilnius'),
             ],
             'sa' => [
-                'registration_url' => null,
+                'registration_url' => 'https://forms.gle/MePJ3Dw21ZCS94wNA',
                 'registration_launch_time' => Carbon::create(2023, 5, 2, 9, 0, 0, 'Europe/Vilnius'),
-                'registration_end_time' => Carbon::create(2023, 5, 15, 9, 0, 0, 'Europe/Vilnius'),
+                'registration_end_time' => Carbon::create(2023, 5, 20, 9, 0, 0, 'Europe/Vilnius'),
             ],
             'tf' => [
                 'registration_url' => null,
