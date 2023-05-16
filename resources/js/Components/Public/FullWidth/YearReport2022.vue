@@ -11,9 +11,9 @@
       ></ShapeDivider1>
       <a href="/ataskaita-2022" target="_blank">
         <img
-          src="/images/photos/VU SA.jpg"
+          src="/images/photos/VU SA 2023.jpg"
           loading="lazy"
-          class="mt-2 h-32 w-full object-cover lg:my-1 lg:h-64"
+          class="mt-2 h-48 w-full object-cover lg:my-1 lg:h-64"
           style="object-position: 0% 50%"
         />
       </a>
@@ -26,11 +26,11 @@
         <a
           class="flex w-fit flex-row items-center gap-2"
           style="text-decoration: none"
-          href="https://www.vusa.lt/ataskaita-2022"
+          href="https://www.vusa.lt/ataskaita-2023"
           target="_blank"
           ><template v-if="$page.props.app.locale === 'lt'"
-            >Ką veikė VU SA 2021–2022 metais?</template
-          ><template v-else>What did VU SR do in 2021–2022?</template>
+            >Ką veikė VU SA 2022–2023 metais?</template
+          ><template v-else>What did VU SR do in 2022–2023?</template>
 
           <NIcon class="" style="font-size: 24pt">
             <ArrowCircleRight20Regular />
@@ -45,7 +45,7 @@
             Ataskaitos knygutė – kiekvienais metais skelbiama VU SA nuveiktų
             darbų, atliktų projektų, įgyvendintų iniciatyvų ataskaita. Artėjant
             VU SA ataskaitinei-rinkiminei konferencijai dalinamės ir šių,
-            2021–2022 metų nuveiktų darbų pilna knygute. Ji papildyta ir VU SA
+            2022–2023 metų nuveiktų darbų pilna knygute. Ji papildyta ir VU SA
             bendruomenės narių veidais bei smagiomis akimirkomis. Kviečiame
             skaityti!
           </template>
@@ -53,7 +53,7 @@
             >Report booklet – every year, a report on the work done, projects
             completed, and initiatives implemented at VU SR is published. As the
             VU SR Annual Convention approaches, we share a book full of these
-            works done in 2021–2022. It is also filled with faces and fun
+            works done in 2022–2023. It is also filled with faces and fun
             moments of the VU SR community members. Feel free to read!</template
           >
         </p>
@@ -64,7 +64,6 @@
 
 <script setup lang="ts">
 import { ArrowCircleRight20Regular } from "@vicons/fluent";
-import { Link } from "@inertiajs/vue3";
 import { NIcon } from "naive-ui";
 
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";

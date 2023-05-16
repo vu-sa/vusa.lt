@@ -3,6 +3,8 @@
     <title>Pagrindinis</title>
   </Head>
 
+  <YearReport2022 :is-theme-dark="isThemeDark" />
+
   <div v-if="news.length > 0" class="mx-auto mt-2 max-w-7xl">
     <NewsElement :news="news" />
   </div>
@@ -22,8 +24,6 @@
     v-if="$page.props.app.locale === 'lt'"
     :is-theme-dark="isThemeDark"
   />
-
-  <YearReport2022 :is-theme-dark="isThemeDark" />
 
   <div v-if="$page.props.banners" class="mx-auto mt-8 max-w-7xl">
     <BannerCarousel :banners="$page.props.banners" />
