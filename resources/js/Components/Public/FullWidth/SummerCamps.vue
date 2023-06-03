@@ -26,12 +26,13 @@
   >
     <div class="prose prose-sm dark:prose-invert">
       <p class="text-2xl font-bold lg:w-4/5">
-        VU SA organizuojamos
+        VU SA
         <span class="font-extrabold text-vusa-red">pirmakursių stovyklos</span>
-        jau pasibaigė!
+        jau artėja!
       </p>
       <p class="w-4/5">
-        Tačiau integracijos renginiai dar tik prasideda! Sek naujienas mūsų
+        Daugiau informacijos apie tavo padalinio stovyklą – jau greitai. Sek
+        naujienas mūsų
         <a href="https://www.facebook.com/VUstudentuatstovybe">Facebook</a>
         puslapyje 🔍
       </p>
@@ -39,7 +40,7 @@
     <div class="flex flex-wrap items-center gap-4 lg:justify-center">
       <a :href="route('pirmakursiuStovyklos')">
         <NButton round size="large" strong type="primary"
-          >Kas vyko?<template #icon
+          >Kas vyko 2022 m.?<template #icon
             ><NIcon :component="HatGraduation20Regular"></NIcon></template
         ></NButton>
       </a>
@@ -53,7 +54,7 @@
         "
       >
         <NButton round strong secondary
-          >Tavo kuratorius tavęs dar laukia...<template #icon
+          >VU SA kontaktai tavo fakultete<template #icon
             ><NIcon :component="Person20Filled"></NIcon></template
         ></NButton>
       </a>
