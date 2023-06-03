@@ -1,7 +1,9 @@
 <template>
-  <Head
+  <!-- Needs inertia-vue@1.08 -->
+  <!-- <Head
     ><title v-if="title">{{ $t(title) }}</title></Head
-  >
+  > -->
+
   <!-- Usually maybe for breadcrumb -->
   <div class="ml-4"><slot name="above-header" /></div>
 

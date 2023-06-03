@@ -53,20 +53,23 @@ createInertiaApp({
     return page;
   },
   setup({ App, props, el, plugin }) {
-    return (
-      createApp({ render: () => h(App, props) })
-        .use(plugin)
-        // .use(PosthogPlugin)
-        .use(i18nVue, {
-          fallbackLang: "en",
-          resolve: async (lang: string) => {
-            const langs = import.meta.glob("../../lang/*.json");
-            return await langs[`../../lang/${lang}.json`]();
-          },
-        })
-        .use(ZiggyVue)
-        .mount(el)
-    );
+    // https://github.com/inertiajs/inertia/discussions/372#discussioncomment-6052940
+    const application = createApp({ render: () => h(App, props) })
+      .use(plugin)
+      // .use(PosthogPlugin)
+      .use(i18nVue, {
+        fallbackLang: "en",
+        resolve: async (lang: string) => {
+          const langs = import.meta.glob("../../lang/*.json");
+          return await langs[`../../lang/${lang}.json`]();
+        },
+      })
+      .use(ZiggyVue)
+      .mount(el);
+
+    delete el.dataset.page;
+
+    return application;
   },
   progress: {
     // The delay after which the progress bar will
