@@ -6,7 +6,6 @@ use App\Enums\ModelEnum;
 use App\Http\Controllers\ResourceController;
 use App\Models\Comment;
 use App\Models\Traits\HasDecisions;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Spatie\Enum\Laravel\Rules\EnumRule;
@@ -18,27 +17,17 @@ class CommentController extends ResourceController
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(User $user)
+    public function index()
     {
-        $this->authorize('viewAny', [Comment::class, $this->authorizer]);
+        return $this->authorize('viewAny', [Comment::class, $this->authorizer]);
     }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    // public function create(User $user)
-    // {
-    //     $this->authorize('create', [Comment::class, $this->authorizer]);
-    // }
 
     /**
      * Store a newly created resource in storage.
      *
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request, User $user)
+    public function store(Request $request)
     {
         $this->authorize('create', [Comment::class, $this->authorizer]);
 
@@ -72,9 +61,9 @@ class CommentController extends ResourceController
      *
      * @return \Illuminate\Http\Response
      */
-    public function show(User $user, Comment $comment)
+    public function show(Comment $comment)
     {
-        $this->authorize('view', [Comment::class, $comment, $this->authorizer]);
+        return $this->authorize('view', [Comment::class, $comment, $this->authorizer]);
     }
 
     /**
@@ -82,7 +71,7 @@ class CommentController extends ResourceController
      *
      * @return \Illuminate\Http\Response
      */
-    public function edit(User $user, Comment $comment)
+    public function edit(Comment $comment)
     {
         $this->authorize('update', [Comment::class, $comment, $this->authorizer]);
     }
@@ -92,7 +81,7 @@ class CommentController extends ResourceController
      *
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, User $user, Comment $comment)
+    public function update(Request $request, Comment $comment)
     {
         $this->authorize('update', [Comment::class, $comment, $this->authorizer]);
 
@@ -105,7 +94,7 @@ class CommentController extends ResourceController
      *
      * @return \Illuminate\Http\Response
      */
-    public function destroy(User $user, Comment $comment)
+    public function destroy(Comment $comment)
     {
         $this->authorize('delete', [Comment::class, $comment, $this->authorizer]);
 
