@@ -17,7 +17,9 @@ class DashboardController extends Controller
 {
     public function dashboard()
     {
+
         // load user duty institutions
+        // TODO: need to make it current duty institutions.
         $user = User::with('duties.institution.padalinys', 'duties.institution.users:users.id,users.name,profile_photo_path,phone')->with(['doings' => function (Builder $query) {
             $query->with('comments', 'tasks')->where('deleted_at', null)->orderBy('date', 'desc');
         }])->find(auth()->user()->id);

@@ -28,6 +28,7 @@ class ContactController extends PublicController
         $slug = end($rest);
 
         // check for the special page of studentu-atstovai (because they are in many institutions)
+        // TODO: check for 'current_duties'
 
         if ($slug === 'studentu-atstovai') {
             $type = Type::query()->where('slug', '=', 'studentu-atstovu-organas')->first();
