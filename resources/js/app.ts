@@ -6,7 +6,6 @@ import { createInertiaApp } from "@inertiajs/vue3";
 import { defineAsyncComponent } from "vue";
 import { i18nVue } from "laravel-vue-i18n";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
-// import PosthogPlugin from "./Plugins/posthog";
 
 const AdminLayout = defineAsyncComponent(
   () => import("./PersistentLayouts/PersistentAdminLayout.vue")
@@ -15,6 +14,18 @@ const AdminLayout = defineAsyncComponent(
 const PublicLayout = defineAsyncComponent(
   () => import("./PersistentLayouts/PersistentPublicLayout.vue")
 );
+
+const getPosthog = async () => {
+  let PosthogPlugin = null;
+
+  if (import.meta.env.PROD) {
+    PosthogPlugin = await import("./Plugins/posthog");
+  }
+
+  return PosthogPlugin;
+};
+
+console.log(import.meta.env.PROD);
 
 const metaTitle =
   window.document.getElementsByTagName("title")[0]?.innerText || "VU SA";
@@ -64,8 +75,18 @@ createInertiaApp({
           return await langs[`../../lang/${lang}.json`]();
         },
       })
-      .use(ZiggyVue)
-      .mount(el);
+      .use(ZiggyVue);
+    // .mount(el);
+
+    const PosthogPlugin = getPosthog();
+
+    PosthogPlugin.then((module) => {
+      if (module) {
+        application.use(module.default);
+      }
+    });
+
+    application.mount(el);
 
     delete el.dataset.page;
 
