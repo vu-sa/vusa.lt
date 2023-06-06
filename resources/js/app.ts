@@ -25,8 +25,6 @@ const getPosthog = async () => {
   return PosthogPlugin;
 };
 
-console.log(import.meta.env.PROD);
-
 const metaTitle =
   window.document.getElementsByTagName("title")[0]?.innerText || "VU SA";
 

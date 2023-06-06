@@ -51,10 +51,12 @@
         </NFormItem>
 
         <NFormItem :label="$t('forms.fields.picture')">
-          <UploadImageButtons
-            v-model="form.profile_photo_path"
-            :path="'contacts'"
-          ></UploadImageButtons>
+          <NMessageProvider>
+            <UploadImageWithCropper
+              v-model:url="form.profile_photo_path"
+              folder="contacts"
+            />
+          </NMessageProvider>
         </NFormItem>
 
         <NFormItem
@@ -199,6 +201,7 @@ import {
   NFormItem,
   NIcon,
   NInput,
+  NMessageProvider,
   NPopconfirm,
   NSelect,
   NTransfer,
@@ -216,6 +219,7 @@ import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import FormElement from "./FormElement.vue";
 import InfoPopover from "../Buttons/InfoPopover.vue";
 import UploadImageButtons from "@/Components/Buttons/UploadImageButtons.vue";
+import UploadImageWithCropper from "../Buttons/UploadImageWithCropper.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{
