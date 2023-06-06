@@ -168,21 +168,21 @@ class FilesController extends Controller
         $path = (string) $request->input('path');
 
         // check if path exists
-        if (!Storage::exists('public/' . $path)) {
-            Storage::makeDirectory('public/' . $path);
+        if (! Storage::exists('public/'.$path)) {
+            Storage::makeDirectory('public/'.$path);
         }
 
         // save image to storage
         // check if image exists
-        if (Storage::exists('public/' . $path . '/' . $originalName)) {
-            $originalName = time() . '_' . $originalName;
+        if (Storage::exists('public/'.$path.'/'.$originalName)) {
+            $originalName = time().'_'.$originalName;
         }
 
-        $image->save(storage_path('app/public/' . $path . '/' . $originalName), 80);
+        $image->save(storage_path('app/public/'.$path.'/'.$originalName), 80);
 
         // return xhr response with image path
         return response()->json([
-            'url' => '/uploads/' . $path . '/' . $originalName,
+            'url' => '/uploads/'.$path.'/'.$originalName,
         ]);
     }
 }
