@@ -209,16 +209,15 @@ import {
   type TransferRenderSourceList,
   type TreeOption,
 } from "naive-ui";
-import { Link, router } from "@inertiajs/vue3";
 import { PersonEdit24Regular } from "@vicons/fluent";
 import { computed, h, ref } from "vue";
+import { router } from "@inertiajs/vue3";
 import { useForm, usePage } from "@inertiajs/vue3";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import FormElement from "./FormElement.vue";
 import InfoPopover from "../Buttons/InfoPopover.vue";
-import UploadImageButtons from "@/Components/Buttons/UploadImageButtons.vue";
 import UploadImageWithCropper from "../Buttons/UploadImageWithCropper.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 

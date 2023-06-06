@@ -26,7 +26,12 @@
       </NFormItemGi>
 
       <NFormItemGi label="Logotipas" :span="2">
-        <UploadImageButtons v-model="form.image_url" :path="'banners'" />
+        <NMessageProvider>
+          <UploadImageWithCropper
+            v-model:url="form.image_url"
+            folder="banners"
+          />
+        </NMessageProvider>
       </NFormItemGi>
     </NGrid>
     <div class="flex justify-end gap-2">
@@ -41,11 +46,18 @@
 </template>
 
 <script setup lang="ts">
-import { NForm, NFormItemGi, NGrid, NInput, NSwitch } from "naive-ui";
+import {
+  NForm,
+  NFormItemGi,
+  NGrid,
+  NInput,
+  NMessageProvider,
+  NSwitch,
+} from "naive-ui";
 import { useForm } from "@inertiajs/vue3";
 
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
-import UploadImageButtons from "@/Components/Buttons/UploadImageButtons.vue";
+import UploadImageWithCropper from "../Buttons/UploadImageWithCropper.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{

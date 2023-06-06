@@ -138,7 +138,12 @@
           >Ši informacija rodoma viešai, vusa.lt tinklapyje</template
         >
         <NFormItem label="Nuotrauka" :span="6">
-          <UploadImageButtons v-model="form.image_url" :path="'institutions'" />
+          <NMessageProvider>
+            <UploadImageWithCropper
+              v-model:url="form.image_url"
+              folder="institutions"
+            />
+          </NMessageProvider>
         </NFormItem>
         <NFormItem :span="6">
           <template #label
@@ -220,7 +225,6 @@ import {
   ArrowCircleUp24Regular,
   Search16Regular,
 } from "@vicons/fluent";
-import { Link, router, useForm } from "@inertiajs/vue3";
 import {
   NButton,
   NButtonGroup,
@@ -229,16 +233,18 @@ import {
   NFormItem,
   NIcon,
   NInput,
+  NMessageProvider,
   NSelect,
 } from "naive-ui";
 import { ref } from "vue";
+import { router, useForm } from "@inertiajs/vue3";
 
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import FadeTransition from "../Transitions/FadeTransition.vue";
 import FormElement from "./FormElement.vue";
 import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
 import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
-import UploadImageButtons from "@/Components/Buttons/UploadImageButtons.vue";
+import UploadImageWithCropper from "../Buttons/UploadImageWithCropper.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 import UserPopover from "../Avatars/UserPopover.vue";
 
