@@ -153,18 +153,19 @@ class FilesController extends Controller
 
     public function uploadImage(Request $request)
     {
-        // dd($request->file('file'));
+        // Images can be uploaded as 1. files or as 2. data urls
 
-        $image = Image::make($request->file('file')['file']);
+        $data = $request->file()['file'] ?? $request->image;
+        $originalName = isset($request->file()['file']) ? $request->file()['file']->getClientOriginalName() : $request->name;
+
+        $image = Image::make($data)->orientate();
 
         $image->resize(1200, null, function ($constraint) {
             $constraint->aspectRatio();
             $constraint->upsize();
         });
 
-        // get image original name
-        $originalName = $request->file('file')['file']->getClientOriginalName();
-        $path = $request->input('path');
+        $path = (string) $request->input('path');
 
         // check if path exists
         if (! Storage::exists('public/'.$path)) {
@@ -179,8 +180,9 @@ class FilesController extends Controller
 
         $image->save(storage_path('app/public/'.$path.'/'.$originalName), 80);
 
-        // return back with image path
-        // Inertia::share('misc', $path . '/' . $originalName);
-        return back()->with('misc', '/uploads/'.$path.'/'.$originalName);
+        // return xhr response with image path
+        return response()->json([
+            'url' => '/uploads/'.$path.'/'.$originalName,
+        ]);
     }
 }

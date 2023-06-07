@@ -1,0 +1,153 @@
+<template>
+  <div class="mb-4 flex items-center gap-2">
+    <NButtonGroup>
+      <NButton @click="zoomImage(0.1)"
+        ><template #icon><NIcon :component="ZoomIn16Regular" /></template
+        >Priartinti</NButton
+      >
+      <NButton @click="zoomImage(-0.1)"
+        ><template #icon><NIcon :component="ZoomOut16Regular" /></template
+        >Nutolinti</NButton
+      >
+    </NButtonGroup>
+    <NButton @click="centerImage"
+      ><template #icon
+        ><NIcon :component="AlignCenterVertical16Regular" /></template
+      >Centruoti</NButton
+    >
+    <NButton @click="rotateImage90"
+      ><template #icon
+        ><NIcon :component="ArrowRotateClockwise16Regular" /></template
+      >Pasukti 90°</NButton
+    >
+    <NButton type="primary" @click="handleImageCrop"
+      ><template #icon><NIcon :component="CheckmarkCircle16Filled" /></template
+      >Apkirpti</NButton
+    >
+  </div>
+
+  <cropper-canvas ref="canvas" v-bind="$attrs">
+    <cropper-image ref="image" :src="src" alt="Picture"></cropper-image>
+    <cropper-shade hidden></cropper-shade>
+    <cropper-handle action="select" plain></cropper-handle>
+    <cropper-selection
+      ref="selection"
+      initial-coverage="0.5"
+      movable
+      resizable
+      zoomable
+    >
+      <cropper-grid role="grid" covered></cropper-grid>
+      <cropper-crosshair centered></cropper-crosshair>
+      <cropper-handle
+        action="move"
+        theme-color="rgba(255, 255, 255, 0.35)"
+      ></cropper-handle>
+      <cropper-handle action="n-resize"></cropper-handle>
+      <cropper-handle action="e-resize"></cropper-handle>
+      <cropper-handle action="s-resize"></cropper-handle>
+      <cropper-handle action="w-resize"></cropper-handle>
+      <cropper-handle action="ne-resize"></cropper-handle>
+      <cropper-handle action="nw-resize"></cropper-handle>
+      <cropper-handle action="se-resize"></cropper-handle>
+      <cropper-handle action="sw-resize"></cropper-handle>
+    </cropper-selection>
+  </cropper-canvas>
+</template>
+
+<script setup lang="ts">
+import "cropperjs";
+import {
+  AlignCenterVertical16Regular,
+  ArrowRotateClockwise16Regular,
+  CheckmarkCircle16Filled,
+  ZoomIn16Regular,
+  ZoomOut16Regular,
+} from "@vicons/fluent";
+import { NButton, NButtonGroup, NIcon } from "naive-ui";
+import { computed, ref } from "vue";
+import { useAxios } from "@vueuse/integrations/useAxios";
+import type { CropperCanvas, CropperImage, CropperSelection } from "cropperjs";
+
+const props = defineProps<{
+  path: string;
+}>();
+
+const emit = defineEmits<{
+  finish: [url: string];
+}>();
+
+const src = defineModel<string>("src");
+
+const canvas = ref<CropperCanvas | null>(null);
+const image = ref<CropperImage | null>(null);
+const selection = ref<CropperSelection | null>(null);
+
+const fileName = computed(() => {
+  let name = src.value?.split("/").pop();
+
+  // split by _ and check if first part is a number
+  if (name?.split("_")[0].match(/^\d+$/)) {
+    name = name?.split("_").slice(1).join("_");
+  }
+
+  return name;
+});
+
+const centerImage = () => {
+  if (!canvas.value || !image.value) return;
+
+  image.value.$center();
+  selection.value?.$center();
+};
+
+const zoomImage = (value: number) => {
+  if (!canvas.value || !image.value) return;
+
+  image.value.$zoom(value);
+};
+
+const rotateImage90 = () => {
+  if (!canvas.value || !image.value) return;
+
+  image.value.$rotate("90deg");
+};
+
+const handleImageCrop = async () => {
+  let dataUrl = await cropImage();
+
+  const { data } = await useAxios(route("files.uploadImage"), {
+    method: "post",
+    data: {
+      image: dataUrl,
+      path: props.path,
+      name: fileName.value,
+    },
+  });
+
+  src.value = data.value.url;
+
+  centerImage();
+  image.value?.$scale(1);
+  image.value?.$rotate(0);
+
+  emit("finish", data.value.url);
+};
+
+const cropImage = async () => {
+  if (!canvas.value || !image.value) return;
+
+  let dataUrl = await selection.value
+    ?.$toCanvas()
+    .then((resultCanvas) => {
+      return resultCanvas.toDataURL("image/jpg");
+    })
+    .catch((err) => {
+      console.log(err);
+
+      return undefined;
+    });
+
+  return dataUrl;
+};
+</script>

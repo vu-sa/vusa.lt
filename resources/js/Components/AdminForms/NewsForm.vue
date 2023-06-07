@@ -60,10 +60,9 @@
       </NFormItemGi>
 
       <NFormItemGi label="Nuotrauka" :span="2">
-        <UploadImageButtons
-          v-model="form.image"
-          :path="'news'"
-        ></UploadImageButtons>
+        <NMessageProvider>
+          <UploadImageWithCropper v-model:url="form.image" folder="news" />
+        </NMessageProvider>
       </NFormItemGi>
 
       <NFormItemGi label="Nuotraukos autorius" :span="2">
@@ -106,6 +105,7 @@ import {
   NFormItemGi,
   NGrid,
   NInput,
+  NMessageProvider,
   NSelect,
   NSwitch,
 } from "naive-ui";
@@ -115,7 +115,7 @@ import latinize from "latinize";
 
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
-import UploadImageButtons from "@/Components/Buttons/UploadImageButtons.vue";
+import UploadImageWithCropper from "../Buttons/UploadImageWithCropper.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{

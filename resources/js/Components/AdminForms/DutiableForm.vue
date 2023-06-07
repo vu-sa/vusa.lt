@@ -66,10 +66,12 @@
               >
             </div>
           </template>
-          <UploadImageButtons
-            v-model="form.extra_attributes.additional_photo"
-            :path="'contacts'"
-          />
+          <NMessageProvider>
+            <UploadImageWithCropper
+              v-model:url="form.extra_attributes.additional_photo"
+              folder="contacts"
+            />
+          </NMessageProvider>
         </NFormItem>
         <NFormItem>
           <template #label>
@@ -126,7 +128,14 @@
 </template>
 
 <script setup lang="ts">
-import { NDatePicker, NForm, NFormItem, NInput, NSwitch } from "naive-ui";
+import {
+  NDatePicker,
+  NForm,
+  NFormItem,
+  NInput,
+  NMessageProvider,
+  NSwitch,
+} from "naive-ui";
 import { ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
@@ -135,7 +144,7 @@ import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import FormElement from "./FormElement.vue";
 import InfoPopover from "../Buttons/InfoPopover.vue";
 import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
-import UploadImageButtons from "@/Components/Buttons/UploadImageButtons.vue";
+import UploadImageWithCropper from "../Buttons/UploadImageWithCropper.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{
