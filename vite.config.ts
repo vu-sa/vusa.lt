@@ -1,7 +1,6 @@
 import { defineConfig } from "vite";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import DefineOptions from "unplugin-vue-define-options/vite";
 import i18n from "laravel-vue-i18n/vite";
 import laravel from "laravel-vite-plugin";
 import vue from "@vitejs/plugin-vue";
@@ -29,7 +28,6 @@ export default defineConfig({
     vueJsx({
       // options are passed on to @vue/babel-plugin-jsx
     }),
-    DefineOptions(),
   ],
 
   resolve: {
