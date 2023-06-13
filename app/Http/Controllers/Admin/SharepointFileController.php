@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\LaravelResourceController;
 use App\Models\Institution;
 use App\Models\SharepointFile;
 use App\Models\Type;
@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
-class SharepointFileController extends ResourceController
+class SharepointFileController extends LaravelResourceController
 {
     /**
      * Display a listing of the resource.

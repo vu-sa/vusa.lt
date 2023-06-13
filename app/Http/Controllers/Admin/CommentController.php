@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\ModelEnum;
-use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\LaravelResourceController;
 use App\Models\Comment;
 use App\Models\Traits\HasDecisions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Spatie\Enum\Laravel\Rules\EnumRule;
 
-class CommentController extends ResourceController
+class CommentController extends LaravelResourceController
 {
     /**
      * Display a listing of the resource.

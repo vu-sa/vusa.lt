@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetPadaliniaiForUpserts;
-use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\LaravelResourceController;
 use App\Models\Calendar;
 use App\Models\Category;
 use App\Services\ModelIndexer;
@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class CalendarController extends ResourceController
+class CalendarController extends LaravelResourceController
 {
     /**
      * Display a listing of the resource.

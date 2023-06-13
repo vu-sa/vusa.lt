@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\LaravelResourceController;
 use App\Models\MainPage;
 use App\Models\Padalinys;
 use App\Services\ModelIndexer;
@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
-class MainPageController extends ResourceController
+class MainPageController extends LaravelResourceController
 {
     /**
      * Display a listing of the resource.

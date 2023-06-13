@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetPadaliniaiForUpserts;
-use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\LaravelResourceController;
 use App\Models\Doing;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
-class InstitutionController extends ResourceController
+class InstitutionController extends LaravelResourceController
 {
     /**
      * Display a listing of the resource.

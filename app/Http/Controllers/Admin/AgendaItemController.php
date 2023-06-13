@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetInstitutionManagers;
-use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\LaravelResourceController;
 use App\Http\Requests\StoreAgendaItemsRequest;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
@@ -11,7 +11,7 @@ use App\Services\TaskService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class AgendaItemController extends ResourceController
+class AgendaItemController extends LaravelResourceController
 {
     /**
      * Display a listing of the resource.

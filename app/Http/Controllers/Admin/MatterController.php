@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\LaravelResourceController;
 use App\Models\Doing;
 use App\Models\Goal;
 use App\Models\Matter;
@@ -11,7 +11,7 @@ use App\Services\ModelIndexer;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class MatterController extends ResourceController
+class MatterController extends LaravelResourceController
 {
     /**
      * Display a listing of the resource.

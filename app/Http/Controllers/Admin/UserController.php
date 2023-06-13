@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\SendWelcomeEmail;
-use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\LaravelResourceController;
 use App\Models\Duty;
 use App\Models\Padalinys;
 use App\Models\Role;
@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Laravel\Socialite\Facades\Socialite;
 
-class UserController extends ResourceController
+class UserController extends LaravelResourceController
 {
     /**
      * Display a listing of the resource.

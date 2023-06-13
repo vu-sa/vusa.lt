@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\LaravelResourceController;
 use App\Models\RegistrationForm;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class RegistrationFormController extends ResourceController
+class RegistrationFormController extends LaravelResourceController
 {
     /**
      * Display a listing of the resource.

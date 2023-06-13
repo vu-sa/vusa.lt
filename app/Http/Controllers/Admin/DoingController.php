@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\LaravelResourceController;
 use App\Http\Requests\StoreDoingRequest;
 use App\Models\Doing;
 use App\Services\ModelIndexer;
@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
-class DoingController extends ResourceController
+class DoingController extends LaravelResourceController
 {
     /**
      * Display a listing of the resource.

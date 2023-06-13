@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\LaravelResourceController;
 use App\Models\Navigation;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class NavigationController extends ResourceController
+class NavigationController extends LaravelResourceController
 {
     public function __construct()
     {

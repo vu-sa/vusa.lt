@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\LaravelResourceController;
 use App\Models\Padalinys;
 use App\Models\Permission;
 use App\Models\Role;
@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
-class RoleController extends ResourceController
+class RoleController extends LaravelResourceController
 {
     /**
      * Display a listing of the resource.

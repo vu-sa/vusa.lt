@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\LaravelResourceController;
 use App\Models\GoalGroup;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class GoalGroupController extends ResourceController
+class GoalGroupController extends LaravelResourceController
 {
     /**
      * Display a listing of the resource.

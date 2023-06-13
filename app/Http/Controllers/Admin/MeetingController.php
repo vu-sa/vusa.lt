@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\LaravelResourceController;
 use App\Http\Requests\StoreMeetingRequest;
 use App\Models\Meeting as Meeting;
 use App\Services\ModelIndexer;
@@ -11,7 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class MeetingController extends ResourceController
+class MeetingController extends LaravelResourceController
 {
     /**
      * Display a listing of the resource.

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\LaravelResourceController;
 use App\Models\Duty;
 use App\Models\Role;
 use App\Models\Type;
@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
-class DutyController extends ResourceController
+class DutyController extends LaravelResourceController
 {
     /**
      * Display a listing of the resource.
