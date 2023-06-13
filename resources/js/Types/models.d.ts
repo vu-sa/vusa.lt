@@ -122,6 +122,7 @@ declare namespace App.Models {
     dutiables?: Array<App.Models.Pivots.Dutiable> | null;
     users?: Array<App.Models.User> | null;
     current_users?: Array<App.Models.User> | null;
+    previous_users?: Array<App.Models.User> | null;
     contacts?: Array<App.Models.Contact> | null;
     matters?: any | null;
     types?: Array<App.Models.Type> | null;
@@ -134,6 +135,7 @@ declare namespace App.Models {
     dutiables_count?: number | null;
     users_count?: number | null;
     current_users_count?: number | null;
+    previous_users_count?: number | null;
     contacts_count?: number | null;
     types_count?: number | null;
   }
@@ -379,6 +381,55 @@ declare namespace App.Models {
     types_count?: number | null;
   }
 
+  export interface Reservation {
+    id: string;
+    name: string;
+    description: string | null;
+    start_time: string;
+    end_time: string;
+    completed_at: string | null;
+    created_at: any;
+    updated_at: any;
+    deleted_at: any | null;
+    resources?: Array<App.Models.Resource> | null;
+    users?: Array<App.Models.User> | null;
+    padaliniai?: any | null;
+    resources_count?: number | null;
+    users_count?: number | null;
+  }
+
+  export interface ReservationResource {
+    id: number;
+    reservation_id: string;
+    resource_id: string;
+    start_time: string | null;
+    end_time: string | null;
+    quantity: number;
+    state: string;
+    returned_at: string | null;
+    created_at: any;
+    updated_at: any;
+    deleted_at: any | null;
+    reservation?: App.Models.Reservation | null;
+    resource?: App.Models.Resource | null;
+  }
+
+  export interface Resource {
+    id: string;
+    name: string;
+    description: string | null;
+    location: string | null;
+    capacity: number;
+    padalinys_id: number;
+    is_reservable: boolean;
+    created_at: any;
+    updated_at: any;
+    deleted_at: any | null;
+    reservations?: Array<App.Models.Reservation> | null;
+    padalinys?: App.Models.Padalinys | null;
+    reservations_count?: number | null;
+  }
+
   export interface Role {
     id: string;
     name: string;
@@ -499,10 +550,14 @@ declare namespace App.Models {
     duties?: Array<App.Models.Duty> | null;
     doings?: Array<App.Models.Doing> | null;
     descendants?: Array<App.Models.Type> | null;
+    recursive_descendants?: Array<App.Models.Type> | null;
+    parent?: App.Models.Type | null;
+    recursive_parent?: App.Models.Type | null;
     institutions_count?: number | null;
     duties_count?: number | null;
     doings_count?: number | null;
     descendants_count?: number | null;
+    recursive_descendants_count?: number | null;
   }
 
   export interface User {
@@ -515,6 +570,7 @@ declare namespace App.Models {
     email_verified_at: any | null;
     remember_token: string | null;
     last_action: any | null;
+
     microsoft_token: string | null;
     google_token: string | null;
     updated_at: any | null;
@@ -525,6 +581,9 @@ declare namespace App.Models {
     calendar?: Array<App.Models.Calendar> | null;
     doings?: Array<App.Models.Doing> | null;
     duties?: Array<App.Models.Duty> | null;
+    previous_duties?: Array<App.Models.Duty> | null;
+    current_duties?: Array<App.Models.Duty> | null;
+    dutiables?: Array<App.Models.Pivots.Dutiable> | null;
     padaliniai?: any | null;
     tasks?: Array<App.Models.Task> | null;
     institutions?: any | null;
@@ -532,6 +591,9 @@ declare namespace App.Models {
     calendar_count?: number | null;
     doings_count?: number | null;
     duties_count?: number | null;
+    previous_duties_count?: number | null;
+    current_duties_count?: number | null;
+    dutiables_count?: number | null;
     tasks_count?: number | null;
   }
 }

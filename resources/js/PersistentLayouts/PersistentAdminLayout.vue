@@ -12,7 +12,7 @@
       <Layout>
         <!-- <FadeTransition> -->
         <main
-          class="mb-4 mr-4 grid max-w-7xl grid-cols-[1fr_minmax(250px,_400px)] items-start overflow-auto pl-4 pt-4 pb-8"
+          class="mb-4 mr-4 grid max-w-7xl grid-cols-[1fr_minmax(250px,_400px)] items-start overflow-auto pb-8 pl-4 pt-4"
         >
           <slot />
         </main>
@@ -31,7 +31,7 @@ import { ref } from "vue";
 import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import Layout from "@/Components/Layouts/AdminLayout.vue";
 
-import "@/echo";
+// import "@/echo";
 
 const isThemeDark = ref(isDarkMode());
 

@@ -34,7 +34,6 @@ interface InertiaPageProps extends PageProps {
     success: string | null;
   };
   mainNavigation?: App.Entities.Navigation[];
-  misc: any;
   padaliniai: Pick<
     App.Entities.Padalinys,
     "id" | "alias" | "shortname" | "fullname"

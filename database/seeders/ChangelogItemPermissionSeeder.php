@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Enums\CRUDEnum;
 use App\Enums\PermissionScopeEnum;
 use App\Models\Permission;
+use App\Services\PermissionService;
 use Illuminate\Database\Seeder;
 
 class ChangelogItemPermissionSeeder extends Seeder
@@ -14,20 +15,8 @@ class ChangelogItemPermissionSeeder extends Seeder
      */
     public function run(): void
     {
-        $pluralizedModel = 'changelogItems';
-        $permissionsToCreate = [];
+        $permissions = PermissionService::getPermissionsToCreate(['changelogItems']);
 
-        foreach (CRUDEnum::toLabels() as $crud) {
-            foreach (PermissionScopeEnum::toLabels() as $scope) {
-                $permissionsToCreate[] = $pluralizedModel.'.'.$crud.'.'.$scope;
-            }
-        }
-
-        foreach ($permissionsToCreate as $permission) {
-            Permission::create([
-                'name' => $permission,
-                'guard_name' => 'web',
-            ]);
-        }
+        PermissionService::createPermissionsForModel($permissions);
     }
 }

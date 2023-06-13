@@ -10,8 +10,6 @@ class Page extends Model
 {
     use HasFactory, Searchable;
 
-    protected $table = 'pages';
-
     protected $guarded = [];
 
     protected $casts = [

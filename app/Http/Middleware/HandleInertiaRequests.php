@@ -81,7 +81,6 @@ class HandleInertiaRequests extends Middleware
             // 'layout' => is_null($user) ? null : [
             //     'navBackground' => null
             // ],
-            'misc' => $request->session()->get('misc') ?? '',
             'padaliniai' => fn () => $this->getPadaliniaiForInertia(),
             'search' => [
                 'calendar' => $request->session()->get('search_calendar') ?? [],

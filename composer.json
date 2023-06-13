@@ -41,6 +41,7 @@
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.7",
+        "based/laravel-typescript": "dev-master",
         "beyondcode/laravel-query-detector": "^1.6",
         "fakerphp/faker": "^1.9.1",
         "kitloong/laravel-migrations-generator": "^v6.8.0",
