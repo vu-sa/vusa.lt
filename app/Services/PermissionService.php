@@ -15,7 +15,7 @@ class PermissionService
         foreach ($pluralizedModels as $pluralizedModel) {
             foreach (CRUDEnum::toLabels() as $crud) {
                 foreach (PermissionScopeEnum::toLabels() as $scope) {
-                    $permissionsToCreate[] = $pluralizedModel . '.' . $crud . '.' . $scope;
+                    $permissionsToCreate[] = $pluralizedModel.'.'.$crud.'.'.$scope;
                 }
             }
         }

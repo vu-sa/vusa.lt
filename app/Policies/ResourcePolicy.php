@@ -8,7 +8,6 @@ use App\Models\Resource;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
-use Illuminate\Auth\Access\Response;
 use Illuminate\Support\Str;
 
 class ResourcePolicy extends ModelPolicy

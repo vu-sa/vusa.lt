@@ -2,9 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Enums\CRUDEnum;
-use App\Enums\PermissionScopeEnum;
-use App\Models\Permission;
 use App\Services\PermissionService;
 use Illuminate\Database\Seeder;
 

@@ -8,7 +8,6 @@ use App\Models\Reservation;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
-use Illuminate\Auth\Access\Response;
 use Illuminate\Support\Str;
 
 class ReservationPolicy extends ModelPolicy

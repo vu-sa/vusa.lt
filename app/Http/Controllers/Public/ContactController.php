@@ -74,7 +74,7 @@ class ContactController extends PublicController
                     });
             })->get();
 
-        // if not found, try to find institution
+            // if not found, try to find institution
         } else {
             $institution = Institution::where('alias', '=', $slug)->first();
 
