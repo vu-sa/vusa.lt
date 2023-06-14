@@ -57,7 +57,9 @@ declare namespace App.Entities {
   export type Relationship = App.Models.Relationship;
   export type Relationshipable = App.Models.Pivots.Relationshipable;
   export type Reservation = App.Models.Reservation;
-  export type Resource = App.Models.Resource;
+  export interface Resource extends Omit<App.Models.Resource, "is_reserved"> {
+    is_reserved: 0 | 1;
+  }
   export type Role = App.Models.Role;
   export type SaziningaiExam = App.Models.SaziningaiExam;
   export type SaziningaiExamFlow = App.Models.SaziningaiExamFlow;

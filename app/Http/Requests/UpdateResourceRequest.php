@@ -11,7 +11,7 @@ class UpdateResourceRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return $this->user()->can('update', [Resource::class, $this->authorizer]);
     }
 
     /**
@@ -22,7 +22,12 @@ class UpdateResourceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name.lt' => 'required|string',
+            'description.lt' => 'required|string',
+            'location' => 'required|string',
+            'padalinys_id' => 'required|integer|exists:padaliniai,id',
+            'capacity' => 'required|integer|min:1',
+            'is_reservable' => 'required|boolean',
         ];
     }
 }

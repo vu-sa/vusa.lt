@@ -72,7 +72,12 @@ class ResourceController extends LaravelResourceController
      */
     public function edit(Resource $resource)
     {
-        //
+        $this->authorize('update', [Resource::class, $this->authorizer]);
+
+        return Inertia::render('Admin/Reservations/EditResource', [
+            'resource' => $resource->toFullArray(),
+            'padaliniai' => GetPadaliniaiForUpserts::execute('resources.update.all', $this->authorizer)
+        ]);
     }
 
     /**
@@ -80,7 +85,10 @@ class ResourceController extends LaravelResourceController
      */
     public function update(UpdateResourceRequest $request, Resource $resource)
     {
-        //
+        $resource->fill($request->validated());
+        $resource->save();
+
+        return back()->with('success', 'Sėkmingai atnaujintas išteklius.');
     }
 
     /**
@@ -88,6 +96,10 @@ class ResourceController extends LaravelResourceController
      */
     public function destroy(Resource $resource)
     {
-        //
+        $this->authorize('delete', [Resource::class, $this->authorizer]);
+
+        $resource->delete();
+
+        return redirect()->route('resources.index')->with('success', 'Sėkmingai ištrintas išteklius.');
     }
 }

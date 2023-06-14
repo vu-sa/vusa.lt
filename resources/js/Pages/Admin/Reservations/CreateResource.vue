@@ -22,6 +22,7 @@ export type ResourceCreationTemplate = Omit<
   App.Entities.Resource,
   "created_at" | "updated_at" | "deleted_at" | "id" | "name" | "description"
 > & {
+  id: undefined;
   name: {
     lt: string;
     en: string;
@@ -50,6 +51,6 @@ const resource: ResourceCreationTemplate = {
   capacity: 1,
   // If padalinys_id is zero, then the form will be disabled (set in form).
   padalinys_id: usePage().props.auth?.user.padaliniai[0]?.id ?? 0,
-  is_reservable: true,
+  is_reservable: 1,
 };
 </script>

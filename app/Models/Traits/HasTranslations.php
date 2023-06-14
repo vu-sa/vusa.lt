@@ -17,4 +17,17 @@ trait HasTranslations
 
         return $attributes;
     }
+
+    // get full model
+    public function toFullArray()
+    {
+        $attributes = parent::toArray();
+        foreach ($this->getTranslatableAttributes() as $field) {
+            $attributes[$field] = $this->getTranslations($field);
+        }
+
+        return $attributes;
+    }
+
+
 }

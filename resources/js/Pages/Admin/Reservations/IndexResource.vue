@@ -2,6 +2,7 @@
   <IndexPageLayout
     title="Ištekliai"
     model-name="resources"
+    :icon="Icons.RESOURCE"
     :can-use-routes="canUseRoutes"
     :columns="columns"
     :paginated-models="resources"
@@ -12,6 +13,7 @@
 <script setup lang="tsx">
 import type { DataTableColumns } from "naive-ui";
 
+import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
 defineProps<{
@@ -21,8 +23,8 @@ defineProps<{
 const canUseRoutes = {
   create: true,
   show: false,
-  edit: false,
-  destroy: false,
+  edit: true,
+  destroy: true,
 };
 
 // add columns
