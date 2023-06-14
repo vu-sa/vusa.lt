@@ -7,6 +7,7 @@ use App\Http\Controllers\LaravelResourceController;
 use App\Http\Requests\StoreResourceRequest;
 use App\Http\Requests\UpdateResourceRequest;
 use App\Models\Resource;
+use App\Services\ModelIndexer;
 use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
 use Inertia\Inertia;
 
@@ -26,13 +27,18 @@ class ResourceController extends LaravelResourceController
     {
         $this->authorize('viewAny', [Resource::class, $this->authorizer]);
 
-        $search = request()->input('text');
+        $resources = Resource::search(request()->input('text'));
 
-        $resources = $this->indexer->execute(Resource::class, $search, 'name', $this->authorizer, false);
+        // ! filter, sort by other where
+
+        // ...
+
+        // ! filter by padalinys
+
+        $resources = ModelIndexer::filterByAuthorized($resources, $this->authorizer, false);
 
         return Inertia::render('Admin/Reservations/IndexResource', [
             'resources' => $resources->paginate(20),
-            'padaliniai' => GetPadaliniaiForUpserts::execute('resources.create.all', $this->authorizer),
         ]);
     }
 
@@ -43,7 +49,9 @@ class ResourceController extends LaravelResourceController
     {
         $this->authorize('create', [Resource::class, $this->authorizer]);
 
-        return Inertia::render('Admin/Reservations/CreateResource');
+        return Inertia::render('Admin/Reservations/CreateResource', [
+            'assignablePadaliniai' => GetPadaliniaiForUpserts::execute('resources.create.all', $this->authorizer)
+        ]);
     }
 
     /**
@@ -76,7 +84,7 @@ class ResourceController extends LaravelResourceController
 
         return Inertia::render('Admin/Reservations/EditResource', [
             'resource' => $resource->toFullArray(),
-            'padaliniai' => GetPadaliniaiForUpserts::execute('resources.update.all', $this->authorizer)
+            'assignablePadaliniai' => GetPadaliniaiForUpserts::execute('resources.update.all', $this->authorizer)
         ]);
     }
 

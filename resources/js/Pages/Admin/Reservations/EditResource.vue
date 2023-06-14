@@ -7,7 +7,7 @@
     <UpsertModelLayout :errors="$page.props.errors" :model="resource">
       <ResourceForm
         :resource="resource"
-        :padaliniai="padaliniai"
+        :padaliniai="assignablePadaliniai"
         model-route="resources.update"
       />
     </UpsertModelLayout>
@@ -38,7 +38,7 @@ export type ResourceEditType = Omit<
 
 const props = defineProps<{
   resource: ResourceEditType;
-  padaliniai: Array<App.Entities.Padalinys>;
+  assignablePadaliniai: Array<App.Entities.Padalinys>;
 }>();
 
 const title = computed(() => {

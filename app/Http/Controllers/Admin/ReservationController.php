@@ -6,15 +6,33 @@ use App\Http\Controllers\LaravelResourceController;
 use App\Http\Requests\StoreReservationRequest;
 use App\Http\Requests\UpdateReservationRequest;
 use App\Models\Reservation;
+use App\Services\ModelIndexer;
+use Inertia\Inertia;
 
 class ReservationController extends LaravelResourceController
 {
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->middleware([HandlePrecognitiveRequests::class])->only(['store', 'update']);
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+        $this->authorize('viewAny', [Resource::class, $this->authorizer]);
+
+        $reservations = Reservation::search(request()->input('text'));
+
+        $reservations = ModelIndexer::filterByAuthorized($reservations, $this->authorizer);
+
+        return Inertia::render('Admin/Reservations/IndexReservation', [
+            'reservations' => $reservations->paginate(20),
+        ]);
     }
 
     /**

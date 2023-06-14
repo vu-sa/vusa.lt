@@ -2,7 +2,7 @@
   <PageContent title="Naujas daiktas" :heading-icon="Icons.RESOURCE">
     <UpsertModelLayout :errors="$page.props.errors" :model="resource">
       <ResourceForm
-        :padaliniai="padaliniai"
+        :padaliniai="assignablePadaliniai"
         :resource="resource"
         model-route="resources.store"
       />
@@ -35,10 +35,11 @@ export type ResourceCreationTemplate = Omit<
 };
 
 defineProps<{
-  padaliniai: Array<App.Entities.Padalinys>;
+  assignablePadaliniai: Array<App.Entities.Padalinys>;
 }>();
 
 const resource: ResourceCreationTemplate = {
+  id: undefined,
   name: {
     lt: "",
     en: "",

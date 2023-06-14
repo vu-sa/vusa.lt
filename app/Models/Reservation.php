@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\ModelStates\HasStates;
@@ -15,7 +16,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Reservation extends Model
 {
-    use HasFactory, HasStates, HasComments, HasTranslations, HasRelationships, HasUlids, LogsActivity, SoftDeletes;
+    use HasFactory, HasStates, HasComments, HasTranslations, HasRelationships, HasUlids, LogsActivity, Searchable, SoftDeletes;
 
     protected $guarded = [];
 
@@ -44,5 +45,13 @@ class Reservation extends Model
     public function padaliniai()
     {
         return $this->hasManyDeepFromRelations($this->users(), (new User)->padaliniai());
+    }
+
+    public function toSearchableArray()
+    {
+        return [
+            'name->'.app()->getLocale() => $this->getTranslation('name', 'lt'),
+            'description->'.app()->getLocale() => $this->getTranslation('description', 'lt'),
+        ];
     }
 }

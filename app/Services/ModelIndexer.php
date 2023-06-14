@@ -35,4 +35,21 @@ class ModelIndexer
 
         return $modelsBuilder;
     }
+
+    public static function filterByAuthorized($builder, Authorizer $authorizer, bool|null $hasManyPadalinys = true) {
+        $user = User::find((Auth::id()));
+
+        $padalinysRelationString = $hasManyPadalinys ? 'padaliniai' : 'padalinys';
+
+        // first need to check if has permission to view all models
+
+        // TODO: get only needed data for index
+        if ($authorizer->isAllScope || $user->hasRole(config('permission.super_admin_role_name'))) {
+            return $builder->query(fn (Builder $query) => $query->with($padalinysRelationString));
+        }
+
+        return $builder->query(fn (Builder $query) => $query->whereHas($padalinysRelationString, function (Builder $query) use ($authorizer, $hasManyPadalinys) {
+            $query->whereIn(optional($hasManyPadalinys, fn () => 'padaliniai.').'id', $authorizer->getPadaliniai()->pluck('id'));
+        }));
+    }
 }
