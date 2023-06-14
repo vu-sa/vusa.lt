@@ -2,9 +2,8 @@ export {};
 
 import { LocaleEnum, ModelEnum } from "./enums";
 
-
 interface User extends Omit<App.Entities.User, "padaliniai"> {
-  padaliniai: Pick<App.Entities.Padalinys, "id" | "shortname">;
+  padaliniai: Pick<App.Entities.Padalinys, "id" | "shortname">[];
   isSuperAdmin: boolean;
   unreadNotifications: Record<string, any>[] | null;
 }

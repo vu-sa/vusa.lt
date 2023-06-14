@@ -8,7 +8,6 @@ declare namespace App.Entities {
   export interface Contact extends App.Models.Contact {
     comments: Array<App.Models.Comment>;
   }
-  export type Doable = App.Models.Pivots.Doable;
   export interface Doing extends Omit<App.Models.Doing, "state"> {
     state:
       | "draft"

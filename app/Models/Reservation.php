@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Traits\HasComments;
+use App\Models\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,7 +15,11 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Reservation extends Model
 {
-    use HasFactory, HasStates, HasComments, HasRelationships, HasUlids, LogsActivity, SoftDeletes;
+    use HasFactory, HasStates, HasComments, HasTranslations, HasRelationships, HasUlids, LogsActivity, SoftDeletes;
+
+    protected $guarded = [];
+
+    public $translatable = ['name', 'description'];
 
     public function getActivitylogOptions(): LogOptions
     {

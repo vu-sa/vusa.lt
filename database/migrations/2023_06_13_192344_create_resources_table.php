@@ -15,8 +15,8 @@ return new class extends Migration
     {
         Schema::create('resources', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->string('name');
-            $table->text('description')->nullable();
+            $table->json('name');
+            $table->json('description')->nullable();
             $table->string('location')->nullable();
             $table->unsignedInteger('capacity')->default(1);
             $table->unsignedInteger('padalinys_id');

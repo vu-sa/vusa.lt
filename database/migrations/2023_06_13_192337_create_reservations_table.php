@@ -15,8 +15,8 @@ return new class extends Migration
     {
         Schema::create('reservations', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->string('name');
-            $table->text('description')->nullable();
+            $table->json('name');
+            $table->json('description')->nullable();
             $table->dateTime('start_time');
             $table->dateTime('end_time');
             $table->dateTime('completed_at')->nullable();

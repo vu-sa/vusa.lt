@@ -331,7 +331,11 @@ const menuOptions = computed(() => [
     icon: () => {
       return <NIcon component={Notebook24Regular}></NIcon>;
     },
-    show: auth?.can.index.institution || auth?.can.index.saziningaiExam,
+    show:
+      auth?.can.index.institution ||
+      auth?.can.index.saziningaiExam ||
+      auth?.can.index.reservation ||
+      auth?.can.index.resource,
     children: [
       {
         label: () => {
@@ -356,6 +360,28 @@ const menuOptions = computed(() => [
           return <NIcon component={Icons.USER}></NIcon>;
         },
         show: auth?.can.index.institution,
+      },
+      {
+        label: () => {
+          return (
+            <Link href={route("reservations.index")}>{$t("Rezervacijos")}</Link>
+          );
+        },
+        key: "reservations",
+        icon: () => {
+          return <NIcon component={Icons.RESERVATION}></NIcon>;
+        },
+        show: auth?.can.index.reservation,
+      },
+      {
+        label: () => {
+          return <Link href={route("resources.index")}>{$t("Ištekliai")}</Link>;
+        },
+        key: "resources",
+        icon: () => {
+          return <NIcon component={Icons.RESOURCE}></NIcon>;
+        },
+        show: auth?.can.index.resource,
       },
     ],
   },
