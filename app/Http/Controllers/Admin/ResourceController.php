@@ -32,7 +32,7 @@ class ResourceController extends LaravelResourceController
 
         return Inertia::render('Admin/Reservations/IndexResource', [
             'resources' => $resources->paginate(20),
-            'padaliniai' => GetPadaliniaiForUpserts::execute('resources.create.all', $this->authorizer)
+            'padaliniai' => GetPadaliniaiForUpserts::execute('resources.create.all', $this->authorizer),
         ]);
     }
 
