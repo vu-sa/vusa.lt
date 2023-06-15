@@ -25,15 +25,9 @@ export type ResourceEditType = Omit<
   App.Entities.Resource,
   "created_at" | "updated_at" | "deleted_at" | "name" | "description"
 > & {
-  name: {
-    lt: string;
-    en: string;
-  };
-} & {
-  description: {
-    lt: string;
-    en: string;
-  };
+  name: Record<"lt" | "en", string>;
+  description: Record<"lt" | "en", string>;
+  left_capacity: number;
 };
 
 const props = defineProps<{

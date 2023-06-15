@@ -83,7 +83,7 @@ class ResourceController extends LaravelResourceController
         $this->authorize('update', [Resource::class, $this->authorizer]);
 
         return Inertia::render('Admin/Reservations/EditResource', [
-            'resource' => $resource->toFullArray(),
+            'resource' => $resource->toFullArray() + ['left_capacity' => $resource->leftCapacity()],
             'assignablePadaliniai' => GetPadaliniaiForUpserts::execute('resources.update.all', $this->authorizer)
         ]);
     }

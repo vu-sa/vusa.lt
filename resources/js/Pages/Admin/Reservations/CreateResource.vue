@@ -23,15 +23,9 @@ export type ResourceCreationTemplate = Omit<
   "created_at" | "updated_at" | "deleted_at" | "id" | "name" | "description"
 > & {
   id: undefined;
-  name: {
-    lt: string;
-    en: string;
-  };
-} & {
-  description: {
-    lt: string;
-    en: string;
-  };
+  name: Record<"lt" | "en", string>;
+  description: Record<"lt" | "en", string>;
+  left_capacity: undefined;
 };
 
 defineProps<{
@@ -50,6 +44,7 @@ const resource: ResourceCreationTemplate = {
   },
   location: "",
   capacity: 1,
+  left_capacity: undefined,
   // If padalinys_id is zero, then the form will be disabled (set in form).
   padalinys_id: usePage().props.auth?.user.padaliniai[0]?.id ?? 0,
   is_reservable: 1,

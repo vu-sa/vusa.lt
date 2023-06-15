@@ -17,6 +17,25 @@
       <FormElement>
         <template #title>Rezervuojami daiktai</template>
         <template #description> Daiktus galima rasti čia.</template>
+        <NFormItem label="Pasirinkti daiktai">
+          <NDynamicInput v-model:value="form.resources" :on-create="onCreate">
+            <template #default="{ value }">
+              <div class="flex w-full gap-2">
+                <NSelect
+                  v-model:value="value.id"
+                  filterable
+                  :options="allResourceOptions"
+                />
+                <NInputNumber
+                  v-model:value="value.quantity"
+                  :min="1"
+                  :max="getleftCapacity(value.id)"
+                  :default-value="1"
+                ></NInputNumber>
+              </div>
+            </template>
+          </NDynamicInput>
+        </NFormItem>
       </FormElement>
       <FormElement>
         <template #title>Papildoma informacija</template>
@@ -41,16 +60,17 @@
   </NForm>
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
 import {
+  type DataTableColumns,
   NButton,
+  NDataTable,
   NDatePicker,
+  NDynamicInput,
   NForm,
   NFormItem,
-  NInput,
   NInputNumber,
   NSelect,
-  NSwitch,
 } from "naive-ui";
 import { computed, ref, watch } from "vue";
 import { useForm } from "laravel-precognition-vue-inertia";
@@ -61,11 +81,18 @@ import MultiLocaleInput from "../SimpleAugment/MultiLocaleInput.vue";
 import type { ReservationCreationTemplate } from "@/Pages/Admin/Reservations/CreateReservation.vue";
 // import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
+const emit = defineEmits<{
+  (event: "update:value", value: number | null): void;
+}>();
+
 const props = defineProps<{
   reservation: ReservationCreationTemplate | App.Entities.Resource;
+  allResources: App.Entities.Resource[];
   modelRoute: string;
   deleteModelRoute?: string;
 }>();
+
+const inputLang = ref(usePage().props.app.locale);
 
 const routeToSubmit = computed(() => {
   return props.reservation?.id
@@ -83,17 +110,44 @@ watch(date, (newVal) => {
   form.end_date = newVal[1];
 });
 
+const onCreate = (value: number) => {
+  return {
+    id: undefined,
+    quantity: 1,
+  };
+};
+
+const getleftCapacity = (id: string) => {
+  return props.allResources.find((resource) => resource.id === id)
+    ?.leftCapacity;
+};
+
 const form = useForm(
   props.reservation?.id ? "patch" : "post",
   routeToSubmit.value,
   props.reservation
 );
 
+const allResourceOptions = computed(() => {
+  let selectedResources = form.resources.map((resource) => resource.id);
+
+  let allResources = props.allResources.map((resource) => ({
+    label: `${resource.name} (likutis: ${resource.capacity})`,
+    value: resource.id,
+    disabled:
+      resource.leftCapacity === 0 || selectedResources.includes(resource.id),
+  }));
+
+  // filter by selected resources in form
+
+  return allResources.filter((resource) => {
+    return !selectedResources.includes(resource.label);
+  });
+});
+
 const submit = () => {
   form.submit({
     preserveScroll: true,
   });
 };
-
-const inputLang = ref(usePage().props.app.locale);
 </script>

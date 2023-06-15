@@ -22,12 +22,18 @@ class Resource extends Model
 
     public function reservations()
     {
-        return $this->belongsToMany(Reservation::class)->using(ReservationResource::class);
+        return $this->belongsToMany(Reservation::class)->using(ReservationResource::class)->withPivot(['state']);
     }
 
     public function padalinys()
     {
         return $this->belongsTo(Padalinys::class);
+    }
+
+    public function leftCapacity()
+    {
+        // where pivot state is reserved or lent
+        return $this->capacity - $this->reservations()->wherePivotIn('state', ['reserved', 'lent'])->count();
     }
 
     public function toSearchableArray()

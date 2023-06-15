@@ -35,6 +35,9 @@
         </NFormItem>
         <NFormItem label="Vnt. skaičius" required>
           <NInputNumber v-model:value="form.capacity" :min="1" type="number" />
+          <span v-if="modelRoute === 'resources.update'" class="ml-2"
+            >Dabartinis likutis: {{ resource?.left_capacity }}</span
+          >
         </NFormItem>
         <NFormItem label="Ar šiuo metu rezervuojamas?" required>
           <NSwitch

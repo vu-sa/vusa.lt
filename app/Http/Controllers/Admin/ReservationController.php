@@ -6,6 +6,7 @@ use App\Http\Controllers\LaravelResourceController;
 use App\Http\Requests\StoreReservationRequest;
 use App\Http\Requests\UpdateReservationRequest;
 use App\Models\Reservation;
+use App\Models\Resource;
 use App\Services\ModelIndexer;
 use Inertia\Inertia;
 
@@ -44,6 +45,12 @@ class ReservationController extends LaravelResourceController
 
         return Inertia::render('Admin/Reservations/CreateReservation', [
             // 'assignablePadaliniai' => GetPadaliniaiForUpserts::execute('resources.create.all', $this->authorizer)
+            'resources' => Resource::select('id', 'name', 'capacity')->get()->map(function ($resource) {
+                return [
+                    ...$resource->toArray(),
+                    'leftCapacity' => $resource->leftCapacity(),
+                ];
+            })
         ]);
     }
 

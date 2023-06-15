@@ -4,6 +4,7 @@
       <ReservationForm
         model-route="reservations.store"
         :reservation="reservation"
+        :all-resources="resources"
       />
     </UpsertModelLayout>
   </PageContent>
@@ -28,17 +29,15 @@ export type ReservationCreationTemplate = Omit<
   | "end_time"
 > & {
   id: undefined;
-  name: {
-    lt: string;
-    en: string;
-  };
-  description: {
-    lt: string;
-    en: string;
-  };
+  name: Record<"lt" | "en", string>;
+  description: Record<"lt" | "en", string>;
   start_time: Date;
   end_time: Date;
 };
+
+defineProps<{
+  resources: Array<App.Entities.Resource>;
+}>();
 
 const reservation: ReservationCreationTemplate = {
   id: undefined,
@@ -52,5 +51,6 @@ const reservation: ReservationCreationTemplate = {
   },
   start_time: new Date(),
   end_time: new Date(),
+  resources: [],
 };
 </script>

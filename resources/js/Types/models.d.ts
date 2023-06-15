@@ -49,9 +49,9 @@ declare namespace App.Models {
 
   export interface ChangelogItem {
     id: number;
-    title: string | Record<"lt" | "en", string>;
-    description: string | Record<"lt" | "en", string>;
-    date: string | Date;
+    title: string;
+    date: string;
+    description: string;
   }
 
   export interface Comment {
@@ -398,22 +398,6 @@ declare namespace App.Models {
     users_count?: number | null;
   }
 
-  export interface ReservationResource {
-    id: number;
-    reservation_id: string;
-    resource_id: string;
-    start_time: string | null;
-    end_time: string | null;
-    quantity: number;
-    state: string;
-    returned_at: string | null;
-    created_at: any;
-    updated_at: any;
-    deleted_at: any | null;
-    reservation?: App.Models.Reservation | null;
-    resource?: App.Models.Resource | null;
-  }
-
   export interface Resource {
     id: string;
     name: string;
@@ -570,7 +554,7 @@ declare namespace App.Models {
     email_verified_at: any | null;
     remember_token: string | null;
     last_action: any | null;
-
+    last_changelog_check: string | null;
     microsoft_token: string | null;
     google_token: string | null;
     updated_at: any | null;
@@ -648,6 +632,20 @@ declare namespace App.Models.Pivots {
     relationshipable?: any | null;
     related_model?: any | null;
     relationship?: App.Models.Relationship | null;
+  }
+
+  export interface ReservationResource {
+    id: number;
+    reservation_id: string;
+    resource_id: string;
+    start_time: string | null;
+    end_time: string | null;
+    quantity: number;
+    state: string;
+    returned_at: string | null;
+    created_at: any;
+    updated_at: any;
+    deleted_at: any | null;
   }
 
   export interface SharepointFileable {
