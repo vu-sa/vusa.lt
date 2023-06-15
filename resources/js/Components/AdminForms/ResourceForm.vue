@@ -75,9 +75,10 @@ import FormElement from "./FormElement.vue";
 import MultiLocaleInput from "../SimpleAugment/MultiLocaleInput.vue";
 // import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 import type { ResourceCreationTemplate } from "@/Pages/Admin/Reservations/CreateResource.vue";
+import type { ResourceEditType } from "@/Pages/Admin/Reservations/EditResource.vue";
 
 const props = defineProps<{
-  resource: ResourceCreationTemplate | App.Entities.Resource;
+  resource: ResourceCreationTemplate | ResourceEditType;
   padaliniai: App.Entities.Padalinys[];
   modelRoute: string;
   deleteModelRoute?: string;

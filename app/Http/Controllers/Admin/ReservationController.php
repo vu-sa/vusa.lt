@@ -24,7 +24,7 @@ class ReservationController extends LaravelResourceController
      */
     public function index()
     {
-        $this->authorize('viewAny', [Resource::class, $this->authorizer]);
+        $this->authorize('viewAny', [Reservation::class, $this->authorizer]);
 
         $reservations = Reservation::search(request()->input('text'));
 
@@ -40,7 +40,11 @@ class ReservationController extends LaravelResourceController
      */
     public function create()
     {
-        //
+        $this->authorize('create', [Reservation::class, $this->authorizer]);
+
+        return Inertia::render('Admin/Reservations/CreateReservation', [
+            // 'assignablePadaliniai' => GetPadaliniaiForUpserts::execute('resources.create.all', $this->authorizer)
+        ]);
     }
 
     /**

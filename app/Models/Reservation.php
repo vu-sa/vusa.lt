@@ -51,7 +51,7 @@ class Reservation extends Model
     {
         return [
             'name->'.app()->getLocale() => $this->getTranslation('name', 'lt'),
-            'description->'.app()->getLocale() => $this->getTranslation('description', 'lt'),
+            // 'description->'.app()->getLocale() => $this->getTranslation('description', 'lt'),
         ];
     }
 }
