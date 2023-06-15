@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateReservationRequest;
 use App\Models\Reservation;
 use App\Models\Resource;
 use App\Services\ModelIndexer;
+use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
 use Inertia\Inertia;
 
 class ReservationController extends LaravelResourceController
@@ -59,7 +60,25 @@ class ReservationController extends LaravelResourceController
      */
     public function store(StoreReservationRequest $request)
     {
-        //
+        $this->authorize('create', [Reservation::class, $this->authorizer]);
+
+        $reservation = new Reservation();
+
+        $reservation->fill($request->safe()->only(['name', 'description', 'start_time', 'end_time']));
+        $reservation->save();
+
+        foreach ($request->validated('resources') as $resource) {
+            $reservation->resources()->attach(
+                $resource['id'], [
+                    'quantity' => $resource['quantity'],
+                    'start_time' => $reservation->start_time,
+                    'end_time' => $reservation->end_time,
+                    'state' => 'created'
+                ]
+            );
+        }
+
+        return redirect()->route('reservations.index')->with('success', 'Rezervacija sukurta.');
     }
 
     /**

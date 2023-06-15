@@ -31,8 +31,8 @@ export type ReservationCreationTemplate = Omit<
   id: undefined;
   name: Record<"lt" | "en", string>;
   description: Record<"lt" | "en", string>;
-  start_time: Date;
-  end_time: Date;
+  start_time: number;
+  end_time: number;
 };
 
 defineProps<{
@@ -49,8 +49,8 @@ const reservation: ReservationCreationTemplate = {
     lt: "",
     en: "",
   },
-  start_time: new Date(),
-  end_time: new Date(),
+  start_time: new Date().getTime(),
+  end_time: new Date().getTime() + 3600 * 1000 * 24 * 7,
   resources: [],
 };
 </script>

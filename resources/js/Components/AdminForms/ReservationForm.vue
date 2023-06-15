@@ -100,14 +100,17 @@ const routeToSubmit = computed(() => {
     : route(props.modelRoute);
 });
 
-const date = ref<[number, number]>([
-  new Date().getTime(),
-  new Date().getTime() + 3600 * 1000 * 24,
-]);
+const form = useForm(
+  props.reservation?.id ? "patch" : "post",
+  routeToSubmit.value,
+  props.reservation
+);
+
+const date = ref<[number, number]>([form.start_time, form.end_time]);
 
 watch(date, (newVal) => {
-  form.start_date = newVal[0];
-  form.end_date = newVal[1];
+  form.start_time = newVal[0];
+  form.end_time = newVal[1];
 });
 
 const onCreate = (value: number) => {
@@ -121,12 +124,6 @@ const getleftCapacity = (id: string) => {
   return props.allResources.find((resource) => resource.id === id)
     ?.leftCapacity;
 };
-
-const form = useForm(
-  props.reservation?.id ? "patch" : "post",
-  routeToSubmit.value,
-  props.reservation
-);
 
 const allResourceOptions = computed(() => {
   let selectedResources = form.resources.map((resource) => resource.id);
@@ -146,6 +143,8 @@ const allResourceOptions = computed(() => {
 });
 
 const submit = () => {
+  console.log(form);
+
   form.submit({
     preserveScroll: true,
   });

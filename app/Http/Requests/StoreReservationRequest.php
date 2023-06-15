@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Reservation;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Carbon;
 
 class StoreReservationRequest extends FormRequest
 {
@@ -11,7 +13,14 @@ class StoreReservationRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return $this->user()->can('create', [Reservation::class, $this->authorizer]);
+    }
+
+    protected function prepareForValidation() {
+        $this->merge([
+            'start_time' => Carbon::createFromTimestampMs($this->input('start_time')),
+            'end_time' => Carbon::createFromTimestampMs($this->input('end_time')),
+        ]);
     }
 
     /**
@@ -22,7 +31,13 @@ class StoreReservationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name.lt' => 'required|string',
+            'description.lt' => 'string',
+            'resources' => 'required|array',
+            'resources.*.id' => 'required|string|exists:resources,id',
+            'resources.*.quantity' => 'required|integer|min:1',
+            'start_time' => 'required|date',
+            'end_time' => 'required|date|after:start_time',
         ];
     }
 }
