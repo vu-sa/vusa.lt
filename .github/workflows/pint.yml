@@ -1,9 +1,10 @@
 name: Laravel Linting with Pint
 on:
   workflow_dispatch:
-  push:
+  pull_request:
     branches-ignore:
       - 'dependabot/npm_and_yarn/*'
+      - 'dependabot/composer/*'
 
 jobs:
   phplint:
