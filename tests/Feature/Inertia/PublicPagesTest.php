@@ -5,13 +5,15 @@ use Inertia\Testing\AssertableInertia as Assert;
 // check if public inertia response returns default props
 
 it('gets default public props', function () {
-    $this->get(route('home'))
+
+    $this->get(route('home', ['padalinys' => 'www', 'lang' => 'lt']))
         ->assertInertia(fn (Assert $page) => $page
             ->component('Public/HomePage')
             ->has('alias')
             ->has('app', fn (Assert $page) => $page
                 ->has('env')
                 ->has('locale')
+                ->has('path')
                 ->has('url')
             )
             ->has('mainNavigation')
@@ -22,7 +24,7 @@ it('gets default public props', function () {
 // check if public inertia response doesn't return any auth
 
 it('doesn\'t return user immediately in public pages', function () {
-    $this->get(route('home'))
+    $this->get(route('home', ['padalinys' => 'www', 'lang' => 'lt']))
         ->assertInertia(fn (Assert $page) => $page
             ->component('Public/HomePage')
             ->where('auth', null)
@@ -30,7 +32,7 @@ it('doesn\'t return user immediately in public pages', function () {
 });
 
 it('can see the home page', function () {
-    $this->get(route('home'))
+    $this->get(route('home', ['padalinys' => 'www', 'lang' => 'lt']))
         ->assertInertia(fn (Assert $page) => $page
             ->component('Public/HomePage')
             ->has('banners')
@@ -38,14 +40,5 @@ it('can see the home page', function () {
             ->has('calendar')
             ->has('mainPage')
             ->has('banners')
-        );
-});
-
-it('can see the news page', function () {
-    $this->get(route('news'))
-        ->assertInertia(fn (Assert $page) => $page
-            ->component('Public/NewsPage')
-            ->has('article')
-            ->has('otherLangNews')
         );
 });

@@ -40,7 +40,11 @@ jobs:
         CREATE DATABASE vusa;
         exit
     - name: Migrate Database
-      run: php artisan migrate
+      run: php artisan migrate:fresh --seed
+    - name: NPM Install
+      run: npm install
+    - name: NPM Build
+      run: npm run build
     - name: Execute tests (Unit and Feature tests) via PHPUnit
       env:
         DB_CONNECTION: sqlite

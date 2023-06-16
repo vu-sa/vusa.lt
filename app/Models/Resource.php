@@ -33,7 +33,7 @@ class Resource extends Model
     public function leftCapacity()
     {
         // where pivot state is reserved or lent
-        return $this->capacity - $this->reservations()->wherePivotIn('state', ['reserved', 'lent'])->count();
+        return $this->capacity - $this->reservations()->wherePivotIn('state', ['created', 'reserved', 'lent'])->sum('quantity');
     }
 
     public function toSearchableArray()

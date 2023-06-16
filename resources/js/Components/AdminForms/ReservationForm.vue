@@ -3,7 +3,13 @@
     <div class="flex flex-col">
       <FormElement>
         <template #title>Rezervacija</template>
-        <template #description> Rezervacijos aprašymas</template>
+        <template #description>
+          <span>
+            Rezervacijos aprašymas. Daiktų rezervacijos laikas yra nuo jų
+            <strong>atsiėmimo laiko</strong> iki
+            <strong>grąžinimo laiko</strong>.
+          </span></template
+        >
         <NFormItem label="Pavadinimas" required>
           <MultiLocaleInput
             v-model:input="form.name"
@@ -129,7 +135,7 @@ const allResourceOptions = computed(() => {
   let selectedResources = form.resources.map((resource) => resource.id);
 
   let allResources = props.allResources.map((resource) => ({
-    label: `${resource.name} (likutis: ${resource.capacity})`,
+    label: `${resource.name} (likutis: ${resource.leftCapacity})`,
     value: resource.id,
     disabled:
       resource.leftCapacity === 0 || selectedResources.includes(resource.id),
@@ -143,8 +149,6 @@ const allResourceOptions = computed(() => {
 });
 
 const submit = () => {
-  console.log(form);
-
   form.submit({
     preserveScroll: true,
   });
