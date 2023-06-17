@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import i18n from "laravel-vue-i18n/vite";
@@ -29,7 +29,10 @@ export default defineConfig({
       // options are passed on to @vue/babel-plugin-jsx
     }),
   ],
-
+  test: {
+    globals: true,
+    environment: "happy-dom",
+  },
   resolve: {
     alias: {
       "@": "/resources/js",

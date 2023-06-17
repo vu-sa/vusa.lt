@@ -11,7 +11,7 @@
     "paths": {
       "@/*": ["./resources/js/*"]
     },
-    "types": ["vite/client", "unplugin-vue-define-options/macros-global", "@microsoft/microsoft-graph-types"],
+    "types": ["vite/client", "unplugin-vue-define-options/macros-global", "@microsoft/microsoft-graph-types", "vitest/globals"],
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
