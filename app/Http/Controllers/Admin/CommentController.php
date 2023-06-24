@@ -76,11 +76,13 @@ class CommentController extends LaravelResourceController
      */
     public function edit(Comment $comment)
     {
-        $this->authorize('update', [Comment::class, $comment, $this->authorizer]);
+        return $this->authorize('update', [Comment::class, $comment, $this->authorizer]);
     }
 
     /**
      * Update the specified resource in storage.
+     *
+     * FIX: Change the method flow to return Response object.
      *
      * @return \Illuminate\Http\Response
      */
@@ -94,6 +96,8 @@ class CommentController extends LaravelResourceController
 
     /**
      * Remove the specified resource from storage.
+     *
+     * FIX: Change the method flow to return Response object.
      *
      * @return \Illuminate\Http\Response
      */

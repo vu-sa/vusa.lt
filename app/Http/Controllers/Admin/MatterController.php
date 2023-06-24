@@ -39,7 +39,7 @@ class MatterController extends LaravelResourceController
      */
     public function create()
     {
-        $this->authorize('create', [Matter::class, $this->authorizer]);
+        return $this->authorize('create', [Matter::class, $this->authorizer]);
     }
 
     /**
@@ -90,17 +90,19 @@ class MatterController extends LaravelResourceController
      */
     public function edit(Matter $matter)
     {
-        $this->authorize('update', [Matter::class, $matter, $this->authorizer]);
+        return $this->authorize('update', [Matter::class, $matter, $this->authorizer]);
     }
 
     /**
      * Update the specified resource in storage.
      *
+     * @param \Illuminate\Http\Request $request can it be removed?
+     *
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Matter $matter)
     {
-        $this->authorize('update', [Matter::class, $matter, $this->authorizer]);
+        return $this->authorize('update', [Matter::class, $matter, $this->authorizer]);
     }
 
     /**

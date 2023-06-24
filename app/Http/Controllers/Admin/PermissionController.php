@@ -30,17 +30,19 @@ class PermissionController extends LaravelResourceController
      */
     public function create()
     {
-        $this->authorize('create', [Permission::class, $this->authorizer]);
+        return $this->authorize('create', [Permission::class, $this->authorizer]);
     }
 
     /**
      * Store a newly created resource in storage.
      *
+     * @param \Illuminate\Http\Request $request could be removed safely?
+     *
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
-        $this->authorize('create', [Permission::class, $this->authorizer]);
+        return $this->authorize('create', [Permission::class, $this->authorizer]);
     }
 
     /**
@@ -50,7 +52,7 @@ class PermissionController extends LaravelResourceController
      */
     public function show(Permission $permission)
     {
-        $this->authorize('view', [Permission::class, $permission, $this->authorizer]);
+        return $this->authorize('view', [Permission::class, $permission, $this->authorizer]);
     }
 
     /**
@@ -60,17 +62,19 @@ class PermissionController extends LaravelResourceController
      */
     public function edit(Permission $permission)
     {
-        $this->authorize('update', [Permission::class, $permission, $this->authorizer]);
+        return $this->authorize('update', [Permission::class, $permission, $this->authorizer]);
     }
 
     /**
      * Update the specified resource in storage.
      *
+     * @param \Illuminate\Http\Request $request could be removed safely?
+     *
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Permission $permission)
     {
-        $this->authorize('update', [Permission::class, $permission, $this->authorizer]);
+        return $this->authorize('update', [Permission::class, $permission, $this->authorizer]);
     }
 
     /**
@@ -80,6 +84,6 @@ class PermissionController extends LaravelResourceController
      */
     public function destroy(Permission $permission)
     {
-        $this->authorize('delete', [Permission::class, $permission, $this->authorizer]);
+        return $this->authorize('delete', [Permission::class, $permission, $this->authorizer]);
     }
 }

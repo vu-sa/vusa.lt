@@ -37,7 +37,7 @@ class DutiableController extends LaravelResourceController
      */
     public function store()
     {
-        $this->authorize('create', [Dutiable::class, $this->authorizer]);
+        return $this->authorize('create', [Dutiable::class, $this->authorizer]);
     }
 
     /**
@@ -48,7 +48,7 @@ class DutiableController extends LaravelResourceController
      */
     public function show(Dutiable $dutiable)
     {
-        $this->authorize('view', [Dutiable::class, $dutiable, $this->authorizer]);
+        return $this->authorize('view', [Dutiable::class, $dutiable, $this->authorizer]);
     }
 
     /**
