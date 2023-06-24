@@ -14,6 +14,11 @@ const props = defineProps<{
 }>();
 
 const handleClick = () => {
+  // fix for permalinks when main org is vusa
+  if(props.routeProps['padalinys'] == "vusa"){
+    props.routeProps['padalinys'] = 'www';
+  } 
+
   window.open(
     route(props.publicRoute, props.routeProps),
     "_blank",
