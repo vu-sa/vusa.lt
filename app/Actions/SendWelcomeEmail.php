@@ -2,7 +2,6 @@
 
 namespace App\Actions;
 
-use App\Models\Institution;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Mail;

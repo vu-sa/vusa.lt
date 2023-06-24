@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Enums\AllowedRelationshipablesEnum;
 use App\Models\Institution;
 use App\Models\Pivots\Relationshipable;
-use App\Models\Relationship;
 use App\Models\Type;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Schema;
