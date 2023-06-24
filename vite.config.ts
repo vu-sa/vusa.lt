@@ -29,7 +29,6 @@ export default defineConfig({
       // options are passed on to @vue/babel-plugin-jsx
     }),
   ],
-
   resolve: {
     alias: {
       "@": "/resources/js",
@@ -37,11 +36,11 @@ export default defineConfig({
       ziggy: "/vendor/tightenco/ziggy/dist/vue",
     },
   },
-  // server: {
-  //   watch: {
-  //     usePolling: true,
-  //   },
-  // },
+   server: {
+     hmr: {
+       host: 'localhost',
+     },
+   },
   build: {
     // sourcemap: true,
   },

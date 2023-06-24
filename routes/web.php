@@ -51,6 +51,7 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('naujienos', [Public\NewsController::class, 'newsArchive'])->name('newsArchive');
         Route::redirect('/naujiena/archyvas', '/naujienos', 301);
         Route::redirect('/admin', '/mano', 301);
+        Route::redirect('/apgyvendinimas', '/bendrabuciai', 301);
 
         Route::get('kontaktai', [Public\ContactController::class, 'contacts'])->name('contacts');
         Route::get('kontaktai/kategorija/{alias}', [Public\ContactController::class, 'contactsCategory'])->name('contacts.category');
