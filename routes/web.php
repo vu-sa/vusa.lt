@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Route;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -51,7 +52,10 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('naujienos', [Public\NewsController::class, 'newsArchive'])->name('newsArchive');
         Route::redirect('/naujiena/archyvas', '/naujienos', 301);
         Route::redirect('/admin', '/mano', 301);
-        Route::redirect('/apgyvendinimas', config('app.url') . 'lt/bendrabuciai', 301);
+
+        Route::get('/apgyvendinimas', function () {
+            return Redirect::to(config('app.url') . '/lt/bendrabuciai', 301);
+        });
 
         Route::get('kontaktai', [Public\ContactController::class, 'contacts'])->name('contacts');
         Route::get('kontaktai/kategorija/{alias}', [Public\ContactController::class, 'contactsCategory'])->name('contacts.category');
