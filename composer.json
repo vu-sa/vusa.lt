@@ -48,7 +48,6 @@
         "laravel/pint": "^1.2",
         "laravel/sail": "^1.12",
         "mockery/mockery": "^1.4.4",
-        "pestphp/pest": "^1.22",
         "phpunit/phpunit": "^9.6",
         "spatie/laravel-ignition": "^2.0",
         "phpstan/phpstan": "*"
@@ -91,7 +90,6 @@
         "preferred-install": "dist",
         "sort-packages": true,
         "allow-plugins": {
-            "pestphp/pest-plugin": true,
             "php-http/discovery": true
         }
     },
