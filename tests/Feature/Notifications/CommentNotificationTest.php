@@ -6,21 +6,29 @@ use App\Models\Doing;
 use App\Models\User;
 use App\Notifications\ModelCommented;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
-it('asserts that a comment notification is sent when an user comments on a doing', function () {
-    $doing = Doing::factory()->has(User::factory()->count(1))->create();
+class CommentNotificationTest extends TestCase
+{
+    use RefreshDatabase;
 
-    // get user from doing
-    $user = $doing->users->first();
+    public function test_asserts_that_a_comment_notification_is_sent_when_an_user_comments_on_a_doing()
+    {
+        $doing = Doing::factory()->has(User::factory()->count(1))->create();
 
-    $comment = Comment::factory()->for($user)->for($doing, 'commentable')->create();
+        // get user from doing
+        $user = $doing->users->first();
 
-    Notification::fake();
+        $comment = Comment::factory()->for($user)->for($doing, 'commentable')->create();
 
-    CommentPosted::dispatch($comment);
+        Notification::fake();
 
-    Notification::assertSentTo(
-        [$user],
-        ModelCommented::class
-    );
-});
+        CommentPosted::dispatch($comment);
+
+        Notification::assertSentTo(
+            [$user],
+            ModelCommented::class
+        );
+    }
+}
