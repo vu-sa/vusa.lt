@@ -15,12 +15,14 @@ docker run --rm \
 ./vendor/bin/sail up -d &&
 ./vendor/bin/sail composer install &&
 ./vendor/bin/sail artisan key:generate &&
-./vendor/bin/sail npm install
+./vendor/bin/sail npm ci
 
 # check if public/storage is linked
 if [ ! -L public/storage ]; then
     ./vendor/bin/sail artisan storage:link
 fi
+
+touch database/database.sqlite &&
 
 ./vendor/bin/sail artisan migrate:fresh --seed &&
 ./vendor/bin/sail npm run dev
