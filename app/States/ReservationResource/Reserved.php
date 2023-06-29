@@ -18,7 +18,7 @@ class Reserved extends ReservationResourceState
 
     public function handleApprove(): void
     {
-        abort(403, 'Užrezervuoto ištekliaus jau nebereikia patvirtinti.')
+        abort(403, 'Užrezervuoto ištekliaus jau nebereikia patvirtinti.');
     }
 
     public function handleReject(): void

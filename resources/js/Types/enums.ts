@@ -45,6 +45,7 @@ export enum ModelEnum {
   "RELATIONSHIP" = "relationship",
   "RELATIONSHIPABLE" = "relationshipable",
   "RESERVATION" = "reservation",
+  "RESERVATION_RESOURCE" = "reservationResource",
   "RESOURCE" = "resource",
   "ROLE" = "role",
   "SAZININGAI_EXAM" = "saziningaiExam",

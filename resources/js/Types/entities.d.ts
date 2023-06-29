@@ -56,9 +56,26 @@ declare namespace App.Entities {
   export type RegistrationForm = App.Models.RegistrationForm;
   export type Relationship = App.Models.Relationship;
   export type Relationshipable = App.Models.Pivots.Relationshipable;
-  export type Reservation = App.Models.Reservation;
+  export interface Reservation
+    extends Omit<App.Models.Reservation, "resources"> {
+    comments?: Array<App.Models.Comment> | null;
+    resources?: Array<App.Entities.Resource> | null;
+  }
   export interface Resource extends Omit<App.Models.Resource, "is_reservable"> {
     is_reservable: 0 | 1;
+    pivot?: App.Entities.ReservationResource | null;
+  }
+  export interface ReservationResource
+    extends Omit<App.Models.Pivots.ReservationResource, "state"> {
+    state:
+      | "created"
+      | "reserved"
+      | "lent"
+      | "returned"
+      | "updated"
+      | "rejected"
+      | "cancelled";
+    comments?: Array<App.Models.Comment> | [];
   }
   export type Role = App.Models.Role;
   export type SaziningaiExam = App.Models.SaziningaiExam;

@@ -10,6 +10,7 @@ use App\Models\Resource;
 use App\Services\ModelIndexer;
 use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
 use Inertia\Inertia;
+use Illuminate\Support\Str;
 
 class ReservationController extends LaravelResourceController
 {
@@ -86,7 +87,16 @@ class ReservationController extends LaravelResourceController
      */
     public function show(Reservation $reservation)
     {
-        //
+        $this->authorize('view', [Reservation::class, $this->authorizer]);
+
+        $modelName = Str::of(class_basename($reservation))->camel()->plural();
+
+        return Inertia::render('Admin/Reservations/ShowReservation', [
+            'reservation' => [
+                // load pivot relationship comments
+                ...$reservation->load('resources.pivot.comments', 'comments', 'activities.causer')->toArray()
+            ]
+        ]);
     }
 
     /**

@@ -47,6 +47,7 @@ Route::resource('meetings', MeetingController::class);
 
 Route::resource('resources', ResourceController::class);
 Route::resource('reservations', ReservationController::class);
+Route::resource('reservationResources', ReservationResourceController::class);
 
 Route::resource('saziningaiExams', SaziningaiExamsController::class);
 Route::resource('saziningaiExamFlows', SaziningaiExamFlowsController::class);

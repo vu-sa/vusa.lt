@@ -646,6 +646,7 @@ declare namespace App.Models.Pivots {
     created_at: any;
     updated_at: any;
     deleted_at: any | null;
+    reservation?: App.Models.Reservation | null;
   }
 
   export interface SharepointFileable {

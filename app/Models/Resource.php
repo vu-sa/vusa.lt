@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use AjCastro\EagerLoadPivotRelations\EagerLoadPivotTrait;
 use App\Models\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,7 +12,7 @@ use Laravel\Scout\Searchable;
 
 class Resource extends Model
 {
-    use HasFactory, HasUlids, HasTranslations, Searchable, SoftDeletes;
+    use HasFactory, HasUlids, HasTranslations, Searchable, SoftDeletes, EagerLoadPivotTrait;
 
     protected $guarded = [];
 

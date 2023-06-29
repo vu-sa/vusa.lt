@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Pivots\ReservationResource;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -31,8 +32,8 @@ class Reservation extends Model
 
     public function resources()
     {
-        return $this->belongsToMany(Resource::class)
-            ->withPivot(['start_time', 'end_time', 'quantity', 'state', 'returned_at'])
+        return $this->belongsToMany(Resource::class)->using(ReservationResource::class)
+            ->withPivot(['id', 'start_time', 'end_time', 'quantity', 'state', 'returned_at'])
             ->withTimestamps();
     }
 

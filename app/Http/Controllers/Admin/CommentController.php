@@ -33,7 +33,7 @@ class CommentController extends LaravelResourceController
 
         $validated = $request->validate([
             'commentable_type' => [new EnumRule(ModelEnum::class), 'required'],
-            'commentable_id' => 'required|string', // TODO: sometimes ulid|uuid?
+            'commentable_id' => 'required',
             'comment' => 'required|string',
             'decision' => 'nullable|string',
             'route' => 'nullable|string',
@@ -42,7 +42,12 @@ class CommentController extends LaravelResourceController
         // convert to camelCase
         $formatted = Str::ucfirst(Str::camel($validated['commentable_type']));
 
-        $modelClass = 'App\\Models\\'.$formatted;
+        if ($formatted === "ReservationResource") {
+            $modelClass = 'App\\Models\\Pivots\\ReservationResource';
+        } else {
+            $modelClass = 'App\\Models\\'.$formatted;
+        }
+
         $model = $modelClass::find($request->commentable_id);
 
         // TODO: Add authorization
