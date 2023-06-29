@@ -85,6 +85,7 @@ import { usePage } from "@inertiajs/vue3";
 import FormElement from "./FormElement.vue";
 import MultiLocaleInput from "../SimpleAugment/MultiLocaleInput.vue";
 import type { ReservationCreationTemplate } from "@/Pages/Admin/Reservations/CreateReservation.vue";
+import type { ReservationEditType } from "@/Pages/Admin/Reservations/EditReservation.vue";
 // import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
 const emit = defineEmits<{
@@ -92,7 +93,7 @@ const emit = defineEmits<{
 }>();
 
 const props = defineProps<{
-  reservation: ReservationCreationTemplate | App.Entities.Resource;
+  reservation: ReservationCreationTemplate | ReservationEditType;
   allResources: App.Entities.Resource[];
   modelRoute: string;
   deleteModelRoute?: string;

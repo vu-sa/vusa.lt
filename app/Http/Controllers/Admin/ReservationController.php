@@ -94,7 +94,27 @@ class ReservationController extends LaravelResourceController
      */
     public function edit(Reservation $reservation)
     {
-        //
+        $this->authorize('update', [Resource::class, $this->authorizer]);
+
+        return Inertia::render('Admin/Reservations/EditReservation', [
+            'reservation' => $reservation->mergeCasts([
+                'start_time' => 'timestamp',
+                'end_time' => 'timestamp',
+            ])->toFullArray() + [
+                'resources' => $reservation->resources->map(function ($resource) {
+                    return [
+                        ...$resource->toArray(),
+                        'leftCapacity' => $resource->leftCapacity(),
+                    ];
+                })
+            ],
+            'allResources' => Resource::select('id', 'name', 'capacity')->get()->map(function ($resource) {
+                return [
+                    ...$resource->toArray(),
+                    'leftCapacity' => $resource->leftCapacity(),
+                ];
+            })
+        ]);
     }
 
     /**
