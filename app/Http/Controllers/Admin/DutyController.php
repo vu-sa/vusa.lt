@@ -179,7 +179,8 @@ class DutyController extends ResourceController
         return redirect()->route('duties.index')->with('info', 'Pareigybė sėkmingai ištrinta!');
     }
 
-    public function setAsStudentRepresentatives(Request $request) {
+    public function setAsStudentRepresentatives(Request $request)
+    {
         $this->authorize('update', [Duty::class, $this->authorizer]);
 
         $request->validate([
