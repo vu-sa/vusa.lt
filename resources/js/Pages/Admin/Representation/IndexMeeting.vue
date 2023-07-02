@@ -35,13 +35,13 @@ const sorters = ref<Record<string, DataTableSortState["order"]>>({
   start_time: "descend",
 });
 
-provide("sorters", { sorters, updateSorters });
+provide("sorters", sorters);
 
 const filters = ref<Record<string, any>>({
   padaliniai: [],
 });
 
-provide("filters", { filters, updateFilters });
+provide("filters", filters);
 
 const columns = computed<DataTableColumns<App.Entities.Meeting>>(() => {
   return [
