@@ -89,7 +89,6 @@ const checkedRowKeys = inject<Ref<DataTableRowKey[]>>("checkedRowKeys", ref([]))
 
 const handleCheckedRowKeysChange = (rowKeys: DataTableRowKey[]) => {
   checkedRowKeys.value = rowKeys;
-  console.log(checkedRowKeys.value);
 };
 
 const handleChange = (page: number) => {
