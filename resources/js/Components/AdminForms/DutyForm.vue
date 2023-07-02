@@ -110,7 +110,14 @@
       <FormElement>
         <template #title>Papildoma informacija</template>
         <template #description
-          >Šiuo metu šie nustatymai tik rodomi, jų negalima keisti...</template
+          ><p>
+            <strong>Pareigybės tipas</strong> reikalingas tam, kad tam tikrais atvejais, nariai būtų rodomi
+            viešame studentų atstovybės puslapyje. Pavyzdžiui, studentų
+            atstovo tipui priklausantys asmenys rodomi prie institucijos kontaktų.
+          </p>
+          <p><strong>Administracinė vusa.lt rolė</strong>leidžia registruotiems naudotojams atlikti jiems priskirtus veiksmus
+          vidiniame mano.vusa.lt tinklalapyje</p>
+          </template
         >
         <NFormItem label="Pareigybės tipas" :span="2">
           <NSelect
