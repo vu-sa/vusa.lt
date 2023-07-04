@@ -45,7 +45,7 @@
 </template>
 
 <script setup lang="tsx">
-import { computed, ref } from "vue";
+import { ref, toRaw } from "vue";
 import { useStorage } from "@vueuse/core";
 
 import { type MenuOption, NIcon } from "naive-ui";
@@ -104,10 +104,12 @@ const handleMoreOptionClick = (key: string) => {
 };
 
 const getAllComments = () => {
-  let comments = props.reservation.comments ?? [];
+  // ! Not using toRaw() here causes a bug: Uncaught DOMException: Failed to execute 'replaceState' on 'History': #<Object> could not be cloned
+  let comments = toRaw(props.reservation.comments) ?? [];
+  let resources = toRaw(props.reservation.resources) ?? [];
 
-  if (props.reservation.resources) {
-    props.reservation.resources.forEach((resource) => {
+  if (resources.length > 0) {
+    resources.forEach((resource) => {
       // for each comment in resource.pivot.comments, prepend the resource name
       resource.pivot?.comments?.forEach((comment) => {
         comments.push({
