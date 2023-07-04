@@ -24,9 +24,13 @@
       title="Pridėti išteklių prie rezervacijos"
       @close="showReservationResourceCreateModal = false"
     >
-      <ReservationResourceForm
-        :reservation-resource-form="reservationResourceForm"
-      />
+      <Suspense>
+        <ReservationResourceForm
+          :reservation-resource-form="reservationResourceForm"
+          :all-resources="allResources"
+          @success="showReservationResourceCreateModal = false"
+        />
+      </Suspense>
     </CardModal>
     <template #below>
       <div v-if="currentTab === 'Komentarai'">
@@ -62,6 +66,7 @@ import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumb
 
 const props = defineProps<{
   reservation: App.Entities.Reservation;
+  allResources?: App.Entities.Resource[];
 }>();
 
 const currentTab = useStorage("show-reservation-tab", "Komentarai");

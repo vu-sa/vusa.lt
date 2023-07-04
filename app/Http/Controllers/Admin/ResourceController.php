@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateResourceRequest;
 use App\Models\Resource;
 use App\Services\ModelIndexer;
 use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
+use Illuminate\Support\Facades\Request;
 use Inertia\Inertia;
 
 class ResourceController extends LaravelResourceController
@@ -115,17 +116,5 @@ class ResourceController extends LaravelResourceController
         return redirect()->route('resources.index')->with('success', 'Sėkmingai ištrintas išteklius.');
     }
 
-    public function getResourceCapacityAtDateTimeRange(Resource $resource)
-    {
-        $this->authorize('view', [Resource::class, $this->authorizer]);
 
-        $start = request()->input('start_time');
-        $end = request()->input('end_time');
-
-        $capacity = $resource->getCapacityAtDateTimeRange($start, $end);
-
-        return response()->json([
-            'capacity' => $capacity,
-        ]);
-    }
 }

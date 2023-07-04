@@ -106,11 +106,23 @@ class ReservationController extends LaravelResourceController
 
         $modelName = Str::of(class_basename($reservation))->camel()->plural();
 
+        // TODO: this may need to be refactored to account for null
+        $dateTimeRange = request()->input('dateTimeRange');
+
         return Inertia::render('Admin/Reservations/ShowReservation', [
             'reservation' => [
                 // load pivot relationship comments
                 ...$reservation->load('resources.pivot.comments', 'comments', 'activities.causer')->toArray()
-            ]
+            ],
+            'allResources' => Inertia::lazy(fn () => Resource::all()->map(function ($resource) use ($dateTimeRange) {
+                $capacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($dateTimeRange['start'], $dateTimeRange['end']);
+                return [
+                    'id' => $resource->id,
+                    'name' => $resource->name,
+                    'capacityAtDateTimeRange' => $capacityAtDateTimeRange,
+                    'lowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($capacityAtDateTimeRange),
+                ];
+            })),
         ]);
     }
 
