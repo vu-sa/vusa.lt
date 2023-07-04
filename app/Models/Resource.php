@@ -85,10 +85,6 @@ class Resource extends Model
         $leftCapacity = [];
         $reservations = $this->active_reservations()->wherePivot('start_time', '<=', $to)->wherePivot('end_time', '>=', $from)->get();
 
-        // get left capacity at start and end of time period
-        $leftCapacity[strval(Carbon::parse($from)->getTimestampMs())] = $this->leftCapacityAtTimeArray($from);
-        $leftCapacity[strval(Carbon::parse($to)->getTimestampMs())] = $this->leftCapacityAtTimeArray($to);
-
         // get left capacity at start and end of each reservation
         $reservations->each(function($reservation) use (&$leftCapacity, $from, $to) {
             $start = Carbon::parse($reservation->pivot->start_time) > Carbon::parse($from) ? $reservation->pivot->start_time : $from;
@@ -99,6 +95,10 @@ class Resource extends Model
             $leftCapacity[strval(Carbon::parse($end)->getTimestampMs())] = $this->leftCapacityAtTimeArray($end)
                 + ['reservation' => $reservation->toArray(), 'end' => true];
         });
+
+        // get left capacity at start and end of time period
+        $leftCapacity[strval(Carbon::parse($from)->getTimestampMs())] = $this->leftCapacityAtTimeArray($from);
+        $leftCapacity[strval(Carbon::parse($to)->getTimestampMs())] = $this->leftCapacityAtTimeArray($to);
 
         ksort($leftCapacity);
         return $leftCapacity;
