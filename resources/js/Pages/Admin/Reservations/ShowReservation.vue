@@ -10,13 +10,24 @@
     <template #more-options>
       <MoreOptionsButton
         edit
+        :more-options="moreOptions"
         @edit-click="showEditModal = true"
+        @more-option-click="handleMoreOptionClick"
       ></MoreOptionsButton>
     </template>
     <ReservationResourceTable
       v-model:selectedReservationResource="selectedReservationResource"
       :reservation="reservation"
     />
+    <CardModal
+      :show="showReservationResourceCreateModal"
+      title="Pridėti išteklių prie rezervacijos"
+      @close="showReservationResourceCreateModal = false"
+    >
+      <ReservationResourceForm
+        :reservation-resource-form="reservationResourceForm"
+      />
+    </CardModal>
     <template #below>
       <div v-if="currentTab === 'Komentarai'">
         <InfoText class="mb-4"
@@ -37,10 +48,14 @@
 import { computed, ref } from "vue";
 import { useStorage } from "@vueuse/core";
 
+import { type MenuOption, NIcon } from "naive-ui";
+import { useForm } from "@inertiajs/vue3";
+import CardModal from "@/Components/Modals/CardModal.vue";
 import CommentViewer from "@/Features/Admin/CommentViewer/CommentViewer.vue";
 import Icons from "@/Types/Icons/filled";
 import InfoText from "@/Components/SmallElements/InfoText.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
+import ReservationResourceForm from "@/Components/AdminForms/ReservationResourceForm.vue";
 import ReservationResourceTable from "@/Components/Tables/ReservationResourceTable.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
 import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
@@ -54,6 +69,14 @@ const selectedReservationResource =
   ref<App.Entities.ReservationResource | null>(null);
 
 const showEditModal = ref(false);
+const showReservationResourceCreateModal = ref(false);
+const reservationResourceForm = useForm({
+  resource_id: null,
+  reservation_id: props.reservation.id,
+  quantity: 1,
+  start_time: new Date(props.reservation.start_time).getTime(),
+  end_time: new Date(props.reservation.end_time).getTime(),
+});
 
 const breadcrumbOptions: BreadcrumbOption[] = [
   {
@@ -61,6 +84,24 @@ const breadcrumbOptions: BreadcrumbOption[] = [
     icon: Icons.RESERVATION,
   },
 ];
+
+const moreOptions: MenuOption[] = [
+  {
+    label: "Pridėti rezervacijos išteklių",
+    icon() {
+      return <NIcon component={Icons.RESOURCE}></NIcon>;
+    },
+    key: "add-resource",
+  },
+];
+
+const handleMoreOptionClick = (key: string) => {
+  switch (key) {
+    case "add-resource":
+      showReservationResourceCreateModal.value = true;
+      break;
+  }
+};
 
 const getAllComments = () => {
   let comments = props.reservation.comments ?? [];

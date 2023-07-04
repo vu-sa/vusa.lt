@@ -44,7 +44,11 @@ import {
 } from "naive-ui";
 import { computed, ref } from "vue";
 
-const emit = defineEmits(["editClick", "deleteClick"]);
+const emit = defineEmits<{
+  (event: "editClick"): void;
+  (event: "deleteClick"): void;
+  (event: "moreOptionClick", key: string): void;
+}>();
 
 const props = defineProps<{
   disabled?: boolean;
@@ -94,6 +98,7 @@ const handleSelect = (key: string) => {
       showDeleteModal.value = true;
       break;
     default:
+      emit("moreOptionClick", key);
       break;
   }
 };

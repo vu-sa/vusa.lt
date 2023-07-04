@@ -35,8 +35,9 @@ export type ReservationCreationTemplate = Omit<
   end_time: number;
 };
 
-defineProps<{
+const props = defineProps<{
   resources: Array<App.Entities.Resource>;
+  dateTimeRange: { start: number; end: number };
 }>();
 
 const reservation: ReservationCreationTemplate = {
@@ -49,8 +50,8 @@ const reservation: ReservationCreationTemplate = {
     lt: "",
     en: "",
   },
-  start_time: new Date().getTime(),
-  end_time: new Date().getTime() + 3600 * 1000 * 24 * 7,
+  start_time: props.dateTimeRange.start,
+  end_time: props.dateTimeRange.end,
   resources: [],
 };
 </script>

@@ -40,6 +40,11 @@ class ReservationResource extends Pivot
 
     public function approvable()
     {
+        // if user null, return false
+        if (!auth()->user()) {
+            return false;
+        }
+
         $authorizer = new ModelAuthorizer();
 
         return $authorizer->forUser(auth()->user())->check('resources.update.padalinys');

@@ -45,6 +45,7 @@ Route::resource('doings', DoingController::class);
 Route::resource('agendaItems', AgendaItemController::class);
 Route::resource('meetings', MeetingController::class);
 
+Route::post('resources/{resource}/get-resource-capacity', [ResourceController::class, 'getResourceCapacityAtDateTimeRange'])->name('resources.get-resource-capacity');
 Route::resource('resources', ResourceController::class);
 Route::resource('reservations', ReservationController::class);
 Route::resource('reservationResources', ReservationResourceController::class);

@@ -17,7 +17,18 @@
           />
         </NFormItem>
         <NFormItem required label="Skolinimosi laikotarpis">
-          <NDatePicker v-model:value="date" type="daterange" />
+          <NDatePicker
+            v-model:value="date"
+            :loading="resourceLoading"
+            type="datetimerange"
+            :first-day-of-week="0"
+            format="yyyy-MM-dd HH:mm"
+            :time-picker-props="{
+              format: 'HH:mm',
+              minutes: 15,
+            }"
+            @update:value="onDateChange"
+          />
         </NFormItem>
       </FormElement>
       <FormElement>
@@ -79,8 +90,8 @@ import {
   NSelect,
 } from "naive-ui";
 import { computed, ref, watch } from "vue";
+import { router, usePage } from "@inertiajs/vue3";
 import { useForm } from "laravel-precognition-vue-inertia";
-import { usePage } from "@inertiajs/vue3";
 
 import FormElement from "./FormElement.vue";
 import MultiLocaleInput from "../SimpleAugment/MultiLocaleInput.vue";
@@ -100,6 +111,7 @@ const props = defineProps<{
 }>();
 
 const inputLang = ref(usePage().props.app.locale);
+const resourceLoading = ref(false);
 
 const routeToSubmit = computed(() => {
   return props.reservation?.id
@@ -120,26 +132,41 @@ watch(date, (newVal) => {
   form.end_time = newVal[1];
 });
 
-const onCreate = (value: number) => {
+const onCreate = () => {
   return {
     id: undefined,
     quantity: 1,
   };
 };
 
+const onDateChange = (value: [number, number]) => {
+  form.resources = [];
+  router.reload({
+    data: {
+      dateTimeRange: { start: value[0], end: value[1] },
+    },
+    preserveScroll: true,
+    only: ["resources"],
+    onSuccess: () => {
+      resourceLoading.value = false;
+    },
+  });
+};
+
 const getleftCapacity = (id: string) => {
   return props.allResources.find((resource) => resource.id === id)
-    ?.leftCapacity;
+    ?.lowestCapacityAtDateTimeRange;
 };
 
 const allResourceOptions = computed(() => {
   let selectedResources = form.resources.map((resource) => resource.id);
 
   let allResources = props.allResources.map((resource) => ({
-    label: `${resource.name} (likutis: ${resource.leftCapacity})`,
+    label: `${resource.name} (likutis: ${resource.lowestCapacityAtDateTimeRange})`,
     value: resource.id,
     disabled:
-      resource.leftCapacity === 0 || selectedResources.includes(resource.id),
+      resource.lowestCapacityAtDateTimeRange === 0 ||
+      selectedResources.includes(resource.id),
   }));
 
   // filter by selected resources in form

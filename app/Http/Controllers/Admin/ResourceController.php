@@ -59,6 +59,8 @@ class ResourceController extends LaravelResourceController
      */
     public function store(StoreResourceRequest $request)
     {
+        $this->authorize('create', [Resource::class, $this->authorizer]);
+
         $resource = new Resource();
 
         $resource->fill($request->validated());
@@ -93,6 +95,8 @@ class ResourceController extends LaravelResourceController
      */
     public function update(UpdateResourceRequest $request, Resource $resource)
     {
+        $this->authorize('update', [Resource::class, $this->authorizer]);
+
         $resource->fill($request->validated());
         $resource->save();
 
@@ -109,5 +113,19 @@ class ResourceController extends LaravelResourceController
         $resource->delete();
 
         return redirect()->route('resources.index')->with('success', 'Sėkmingai ištrintas išteklius.');
+    }
+
+    public function getResourceCapacityAtDateTimeRange(Resource $resource)
+    {
+        $this->authorize('view', [Resource::class, $this->authorizer]);
+
+        $start = request()->input('start_time');
+        $end = request()->input('end_time');
+
+        $capacity = $resource->getCapacityAtDateTimeRange($start, $end);
+
+        return response()->json([
+            'capacity' => $capacity,
+        ]);
     }
 }
