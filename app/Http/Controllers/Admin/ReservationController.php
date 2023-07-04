@@ -121,6 +121,17 @@ class ReservationController extends LaravelResourceController
     {
         $this->authorize('update', [Resource::class, $this->authorizer]);
 
+        $dateTimeRange = request()->input('dateTimeRange') ?? [
+            'start' => now()->setTimeFromTimeString('09:00')->addDay()->format('Uv'),
+            'end' => now()->setTimeFromTimeString('17:00')->addDays(5)->format('Uv'),
+        ];
+
+        // dateTimeRange to numeric
+        $dateTimeRange = [
+            'start' => intval($dateTimeRange['start']),
+            'end' => intval($dateTimeRange['end']),
+        ];
+
         return Inertia::render('Admin/Reservations/EditReservation', [
             'reservation' => $reservation->mergeCasts([
                 'start_time' => 'timestamp',
@@ -133,12 +144,16 @@ class ReservationController extends LaravelResourceController
                     ];
                 })
             ],
-            'allResources' => Resource::select('id', 'name', 'capacity')->get()->map(function ($resource) {
+            'allResources' => Resource::select('id', 'name', 'capacity')->get()->map(function ($resource) use ($dateTimeRange) {
+                $capacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($dateTimeRange['start'], $dateTimeRange['end']);
+
                 return [
                     ...$resource->toArray(),
-                    'leftCapacity' => $resource->leftCapacity(),
+                    'capacityAtDateTimeRange' => $capacityAtDateTimeRange,
+                    'lowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($capacityAtDateTimeRange),
                 ];
-            })
+            }),
+            'dateTimeRange' => $dateTimeRange,
         ]);
     }
 
