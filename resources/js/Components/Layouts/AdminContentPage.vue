@@ -29,8 +29,12 @@
     </h1>
     <Link v-if="isIndex && createUrl" :href="createUrl">
       <div class="flex">
-        <NIcon size="28" :component="AddCircle32Regular" /></div
-    ></Link>
+        <NButton round size="tiny" :theme-overrides="{ border: '1.2px solid' }"
+          ><template #icon><NIcon :component="Add24Filled" /></template
+          >Pridėti</NButton
+        >
+      </div></Link
+    >
     <aside class="w-full">
       <NScrollbar x-scrollable>
         <div class="flex flex-row items-center justify-between gap-2">
@@ -62,7 +66,11 @@
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import { AddCircle32Regular, ChevronLeft24Filled } from "@vicons/fluent";
+import {
+  Add24Filled,
+  AddCircle32Regular,
+  ChevronLeft24Filled,
+} from "@vicons/fluent";
 import { Head, Link } from "@inertiajs/vue3";
 import { NButton, NDivider, NEllipsis, NIcon, NScrollbar } from "naive-ui";
 import { computed } from "vue";
