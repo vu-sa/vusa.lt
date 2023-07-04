@@ -29,16 +29,17 @@
 </template>
 
 <script setup lang="tsx">
-import { NButton, NDataTable } from "naive-ui";
+import { NButton, NDataTable, NIcon } from "naive-ui";
 import { ref } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 
+import { Delete16Regular } from "@vicons/fluent";
 import CardModal from "../Modals/CardModal.vue";
 import CommentTipTap from "@/Features/Admin/CommentViewer/CommentTipTap.vue";
 import InfoPopover from "../Buttons/InfoPopover.vue";
 import InfoText from "../SmallElements/InfoText.vue";
 
-const props = defineProps<{
+defineProps<{
   reservation: App.Entities.Reservation & { approvable: boolean };
 }>();
 
@@ -91,6 +92,15 @@ const dataTableColumns = [
           >
             Keisti būseną
           </NButton>
+          {["cancelled", "rejected"].includes(row.pivot.state) ? (
+            <NButton
+              size="small"
+              type="error"
+              onClick={() => handlePivotDelete(row)}
+            >
+              {{ icon: () => <NIcon component={Delete16Regular} /> }}
+            </NButton>
+          ) : null}
         </div>
       );
     },
@@ -186,5 +196,19 @@ const doingStateDescriptions: Record<
     title: "Atšauktas",
     description: <span>Daikto rezervacija atšaukta.</span>,
   },
+};
+
+const handlePivotDelete = (row: App.Entities.Resource) => {
+  router.delete(
+    route("reservationResources.destroy", {
+      reservationResource: row.pivot.id,
+    }),
+    {
+      preserveScroll: true,
+      onSuccess: () => {
+        selectedReservationResource.value = null;
+      },
+    }
+  );
 };
 </script>

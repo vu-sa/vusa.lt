@@ -15,4 +15,12 @@ class ReservationResourceController extends LaravelResourceController
             'reservationResource' => $reservationResource->load('resource', 'reservation'),
         ]);
     }
+
+    public function destroy(ReservationResource $reservationResource) {
+        $this->authorize('delete', [$reservationResource, $this->authorizer]);
+
+        $reservationResource->delete();
+
+        return back()->with('success', 'Išteklius rezervacijoje sėkmingai ištrintas.');
+    }
 }
