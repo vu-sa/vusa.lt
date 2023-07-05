@@ -45,7 +45,7 @@ class ResourceController extends LaravelResourceController
         // dd($resources, $resources_1->get());
 
         return Inertia::render('Admin/Reservations/IndexResource', [
-            'resources' => $resources->paginate(20),
+            'resources' => $resources->get()->load('media')->paginate(15)
         ]);
     }
 

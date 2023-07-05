@@ -22,8 +22,8 @@ declare namespace App.Entities {
   export type Dutiable = App.Models.Pivots.Dutiable;
 
   export interface Duty extends App.Models.Duty {
-    roles?: Array<App.Models.Role> | null; // manually added
-    roles_count?: number | null; // manually added
+    roles?: Array<App.Models.Role> | null;
+    roles_count?: number | null;
   }
 
   export type Goal = App.Models.Goal;
@@ -32,6 +32,9 @@ declare namespace App.Entities {
   export type Institution = App.Models.Institution;
   export type MainPage = App.Models.MainPage;
   export type Matter = App.Models.Matter;
+  export interface Media extends App.Models.Media {
+    original_url?: string;
+  }
 
   export type Meeting = App.Models.Meeting;
 
@@ -64,6 +67,7 @@ declare namespace App.Entities {
   export interface Resource extends Omit<App.Models.Resource, "is_reservable"> {
     is_reservable: 0 | 1;
     pivot?: App.Entities.ReservationResource | null;
+    media?: App.Entities.Media[] | null;
   }
   export interface ReservationResource
     extends Omit<App.Models.Pivots.ReservationResource, "state"> {
@@ -88,9 +92,9 @@ declare namespace App.Entities {
   export type Type = App.Models.Type;
 
   export interface User extends Omit<App.Models.User, "padaliniai"> {
-    padaliniai?: Array<App.Models.Padalinys> | null; // manually added
-    roles?: Array<App.Models.Role> | null; // manually added
-    roles_count?: number | null; // manually added
-    pivot?: App.Models.Pivots.Dutiable | null; // manually added
+    padaliniai?: Array<App.Models.Padalinys> | null;
+    roles?: Array<App.Models.Role> | null;
+    roles_count?: number | null;
+    pivot?: App.Models.Pivots.Dutiable | null;
   }
 }

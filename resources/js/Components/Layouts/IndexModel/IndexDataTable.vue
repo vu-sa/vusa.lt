@@ -11,8 +11,8 @@
     :columns="columnsWithActions"
     :loading="loading"
     :pagination="pagination"
+    :row-key="(row) => row.id"
     pagination-behavior-on-filter="first"
-    default-expand-all
     @update:sorter="handleSorterChange"
     @update:page="handleChange"
     @update:filters="handleFiltersChange"
