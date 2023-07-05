@@ -34,6 +34,7 @@ import { ref } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 
 import { Delete16Regular } from "@vicons/fluent";
+import { formatStaticTime } from "@/Utils/IntlTime";
 import CardModal from "../Modals/CardModal.vue";
 import CommentTipTap from "@/Features/Admin/CommentViewer/CommentTipTap.vue";
 import InfoText from "../SmallElements/InfoText.vue";
@@ -54,16 +55,34 @@ const dataTableColumns = [
     key: "name",
   },
   {
+    title: "Kiekis",
+    key: "pivot.quantity",
+  },
+  {
     title: "Rezervacijos pradžia",
     key: "pivot.start_time",
+    render(row) {
+      return formatStaticTime(new Date(row.pivot.start_time), {
+        weekday: "long",
+        day: "2-digit",
+        month: "long",
+        hour: "numeric",
+        minute: "numeric",
+      });
+    },
   },
   {
     title: "Rezervacijos pabaiga",
     key: "pivot.end_time",
-  },
-  {
-    title: "Kiekis",
-    key: "pivot.quantity",
+    render(row) {
+      return formatStaticTime(new Date(row.pivot.end_time), {
+        weekday: "long",
+        day: "2-digit",
+        month: "long",
+        hour: "numeric",
+        minute: "numeric",
+      });
+    },
   },
   {
     title: "Būsena",

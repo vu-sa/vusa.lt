@@ -21,6 +21,8 @@ class ReservationResource extends Pivot
 
     protected $casts = [
         'state' => ReservationResourceState::class,
+        'start_time' => 'datetime',
+        'end_time' => 'datetime',
     ];
 
     public function reservation()
@@ -50,7 +52,7 @@ class ReservationResource extends Pivot
         return $authorizer->forUser(auth()->user())->check('resources.update.padalinys');
     }
 
-    public function getApprovableAttribute()
+    public function getApprovableAttribute(): bool
     {
         return $this->approvable();
     }
