@@ -19,10 +19,12 @@
         rounded-top
         :loading="loading"
         :enable-approve="selectedReservationResource?.approvable"
+        submit-text="Palikti komentarą"
+        :approve-text="approveText"
+        reject-text="... ir atmesti"
         :disabled="false"
         @submit:comment="submitComment"
       >
-        <template #submit-text>Pateikti</template>
       </CommentTipTap>
     </div>
   </CardModal>
@@ -30,7 +32,7 @@
 
 <script setup lang="tsx">
 import { NButton, NDataTable, NIcon } from "naive-ui";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 
 import { Delete16Regular } from "@vicons/fluent";
@@ -57,6 +59,10 @@ const dataTableColumns = [
   {
     title: "Kiekis",
     key: "pivot.quantity",
+  },
+  {
+    title: "Padalinys",
+    key: "padalinys.shortname",
   },
   {
     title: "Rezervacijos pradžia",
@@ -101,13 +107,15 @@ const dataTableColumns = [
     render(row) {
       return (
         <div class="flex items-center space-x-2">
-          <NButton
-            size="small"
-            type="warning"
-            onClick={() => handleStateChange(row)}
-          >
-            Keisti būseną
-          </NButton>
+          {["created", "reserved", "lent"].includes(row.pivot.state) ? (
+            <NButton
+              size="small"
+              type="warning"
+              onClick={() => handleStateChange(row)}
+            >
+              Keisti būseną
+            </NButton>
+          ) : null}
           {["cancelled", "rejected"].includes(row.pivot.state) ? (
             <NButton
               size="small"
@@ -131,6 +139,18 @@ const handleStateChange = (row: any) => {
   selectedReservationResource.value = row.pivot;
   showStateChangeModal.value = true;
 };
+
+const approveText = computed(() => {
+  if (selectedReservationResource.value?.state === "reserved") {
+    return "... ir pažymėti, kaip paskolintą.";
+  }
+
+  if (selectedReservationResource.value?.state === "lent") {
+    return "... ir pažymėti, kaip grąžintą.";
+  }
+
+  return "... ir patvirtinti.";
+});
 
 const submitComment = (decision?: "approve" | "reject") => {
   // add decision attribute

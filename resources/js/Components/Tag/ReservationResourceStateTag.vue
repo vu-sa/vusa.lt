@@ -34,7 +34,7 @@ const doingStateDescriptions: Record<
     title: "Rezervuotas",
   },
   lent: {
-    title: "Atsiimtas",
+    title: "Paskolintas",
   },
   returned: {
     title: "Grąžintas",

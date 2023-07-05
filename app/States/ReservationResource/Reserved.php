@@ -18,7 +18,7 @@ class Reserved extends ReservationResourceState
 
     public function handleApprove(): void
     {
-        abort(403, 'Užrezervuoto ištekliaus jau nebereikia patvirtinti.');
+        $this->transitionTo(Lent::class);
     }
 
     public function handleReject(): void

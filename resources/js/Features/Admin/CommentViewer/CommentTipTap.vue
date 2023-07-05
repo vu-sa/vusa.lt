@@ -56,8 +56,8 @@
           icon-placement="right"
           @click="$emit('submit:comment')"
           ><template #icon><NIcon :component="Send20Filled"></NIcon></template
-          ><slot name="submit-text"></slot
-        ></NButton>
+          >{{ submitText ?? "Pateikti" }}</NButton
+        >
         <NPopover
           v-if="enableApprove"
           trigger="click"
@@ -74,7 +74,7 @@
                 ><template #icon
                   ><NIcon :component="CommentCheckmark24Regular"> </NIcon
                 ></template>
-                ... ir patvirtinti</NButton
+                {{ approveText ?? "... ir patvirtinti" }}</NButton
               >
               <NButton
                 type="warning"
@@ -83,7 +83,7 @@
                 @click="$emit('submit:comment', 'reject')"
                 ><template #icon
                   ><NIcon :component="CommentError24Regular"> </NIcon></template
-                >... ir grąžinti peržiūrai</NButton
+                >{{ rejectText ?? "... ir atmesti" }}</NButton
               >
             </NButtonGroup>
           </div>
@@ -127,6 +127,9 @@ const props = defineProps<{
   loading: boolean;
   roundedTop?: boolean;
   enableApprove?: boolean;
+  submitText?: string;
+  approveText?: string;
+  rejectText?: string;
 }>();
 
 const emit = defineEmits(["update:text", "submit:comment"]);

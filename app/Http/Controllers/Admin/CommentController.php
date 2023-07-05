@@ -50,7 +50,7 @@ class CommentController extends LaravelResourceController
 
         $model = $modelClass::find($request->commentable_id);
 
-        if ($validated['decision'] && class_uses($model, MakesDecisions::class)) {
+        if (isset($validated['decision']) && class_uses($model, MakesDecisions::class)) {
             $model->decision($validated['decision'], $this->authorizer);
         }
 

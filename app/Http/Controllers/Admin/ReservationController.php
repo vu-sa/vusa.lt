@@ -116,7 +116,7 @@ class ReservationController extends LaravelResourceController
         return Inertia::render('Admin/Reservations/ShowReservation', [
             'reservation' => [
                 // load pivot relationship comments
-                ...$reservation->load('resources.pivot.comments', 'comments', 'activities.causer', 'users')->toArray()
+                ...$reservation->load('resources.pivot.comments', 'resources.padalinys', 'comments', 'activities.causer', 'users')->toArray()
             ],
             'allResources' => Inertia::lazy(fn () => Resource::all()->map(function ($resource) use ($dateTimeRange) {
                 $capacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($dateTimeRange['start'], $dateTimeRange['end']);
