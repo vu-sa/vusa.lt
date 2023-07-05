@@ -23,6 +23,7 @@
             type="datetimerange"
             :first-day-of-week="0"
             format="yyyy-MM-dd HH:mm"
+            default-time="13:00:00"
             :time-picker-props="{
               format: 'HH:mm',
               minutes: 15,
@@ -79,9 +80,7 @@
 
 <script setup lang="tsx">
 import {
-  type DataTableColumns,
   NButton,
-  NDataTable,
   NDatePicker,
   NDynamicInput,
   NForm,
@@ -99,7 +98,7 @@ import type { ReservationCreationTemplate } from "@/Pages/Admin/Reservations/Cre
 import type { ReservationEditType } from "@/Pages/Admin/Reservations/EditReservation.vue";
 // import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
-const emit = defineEmits<{
+defineEmits<{
   (event: "update:value", value: number | null): void;
 }>();
 

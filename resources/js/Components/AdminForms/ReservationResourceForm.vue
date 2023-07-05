@@ -6,6 +6,7 @@
         type="datetimerange"
         :first-day-of-week="0"
         format="yyyy-MM-dd HH:mm"
+        default-time="13:00:00"
         :time-picker-props="{
           format: 'HH:mm',
           minutes: 15,
