@@ -36,8 +36,8 @@ import { router, usePage } from "@inertiajs/vue3";
 import { Delete16Regular } from "@vicons/fluent";
 import CardModal from "../Modals/CardModal.vue";
 import CommentTipTap from "@/Features/Admin/CommentViewer/CommentTipTap.vue";
-import InfoPopover from "../Buttons/InfoPopover.vue";
 import InfoText from "../SmallElements/InfoText.vue";
+import ReservationResourceStateTag from "../Tag/ReservationResourceStateTag.vue";
 
 defineProps<{
   reservation: App.Entities.Reservation & { approvable: boolean };
@@ -70,12 +70,9 @@ const dataTableColumns = [
     key: "pivot.state",
     render(row) {
       return (
-        <div class="inline-flex gap-1">
-          <span>{doingStateDescriptions[row.pivot.state].title}</span>
-          <InfoPopover>
-            {doingStateDescriptions[row.pivot.state].description}
-          </InfoPopover>
-        </div>
+        <ReservationResourceStateTag
+          reservationResource={row.pivot}
+        ></ReservationResourceStateTag>
       );
     },
   },
@@ -137,65 +134,6 @@ const submitComment = (decision?: "approve" | "reject") => {
       },
     }
   );
-};
-
-const doingStateDescriptions: Record<
-  App.Entities.Reservation["state"],
-  Record<"title" | "description", any>
-> = {
-  created: {
-    title: "Sukurtas",
-    description: (
-      <span>
-        Daikto rezervacijos užklausa yra sukurta! Laukiama, kol administratorius
-        patvirtins rezervaciją.
-      </span>
-    ),
-  },
-  updated: {
-    title: "Atnaujintas",
-    description: (
-      <span>
-        <strong>Rezervacija atnaujinta!</strong> Laukiama, kol administratorius
-        patvirtins rezervaciją.
-      </span>
-    ),
-  },
-  reserved: {
-    title: "Rezervuotas",
-    description: (
-      <span>
-        <strong>Daiktas rezervuotas!</strong> Rezervuotą daiktą galima atsiimti
-        nurodytu laiku.
-      </span>
-    ),
-  },
-  lent: {
-    title: "Atsiimtas",
-    description: (
-      <span>
-        <strong>Daiktas paimtas!</strong> Daiktas sėkmingai paimtas rezervacijos
-        organizatorių ir įpareigotas grąžinti nurodytu laiku.
-      </span>
-    ),
-  },
-  returned: {
-    title: "Grąžintas",
-    description: (
-      <span>
-        <strong>Daiktas grąžintas!</strong> Daiktas sėkmingai grąžintas
-        rezervacijos organizatorių.
-      </span>
-    ),
-  },
-  rejected: {
-    title: "Atmestas",
-    description: <span>Daikto rezervacija atmesta.</span>,
-  },
-  cancelled: {
-    title: "Atšauktas",
-    description: <span>Daikto rezervacija atšaukta.</span>,
-  },
 };
 
 const handlePivotDelete = (row: App.Entities.Resource) => {

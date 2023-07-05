@@ -69,7 +69,7 @@
           class="mt-auto h-min"
           :commentable_type="'reservation'"
           :model="reservation"
-          :comments="allComments"
+          :comments="getAllComments()"
         />
       </div>
     </template>
@@ -119,6 +119,7 @@ const reservationResourceForm = useForm({
   start_time: new Date(props.reservation.start_time).getTime(),
   end_time: new Date(props.reservation.end_time).getTime(),
 });
+
 const reservationUserForm = useForm({
   users: null,
 });
@@ -200,8 +201,6 @@ const getAllComments = () => {
 
   return comments;
 };
-
-const allComments = getAllComments();
 
 const relatedModels = [
   {
