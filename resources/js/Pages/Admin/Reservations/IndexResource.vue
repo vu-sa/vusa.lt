@@ -34,6 +34,14 @@ const columns: DataTableColumns<App.Entities.Resource> = [
     key: "name",
   },
   {
+    title: "Kiekis",
+    key: "capacity",
+  },
+  {
+    title: "Padalinys",
+    key: "padalinys.shortname",
+  },
+  {
     title: "Sukurtas",
     key: "created_at",
     render(row) {
