@@ -199,6 +199,13 @@ const getAllComments = () => {
     return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
   });
 
+  // filter by unique id
+  // ! They should be unique already, but they're not..? Maybe optimize
+  comments = comments.filter(
+    (comment, index, self) =>
+      index === self.findIndex((c) => c.id === comment.id)
+  );
+
   return comments;
 };
 
