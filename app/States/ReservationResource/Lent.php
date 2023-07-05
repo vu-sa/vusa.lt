@@ -6,14 +6,15 @@ class Lent extends ReservationResourceState
 {
     public static $name = 'lent';
 
-    public function color(): string
+    public function tagType(): string
     {
-        return 'orange';
+        return 'warning';
     }
 
-    public function handleProgress(): void
+    public function description(): string
     {
-        abort(403, 'Paskolintas daiktas gali būti tik grąžintas.');
+        return 'Daiktas sėkmingai paskolintas išteklio
+        savininkų ir įpareigotas grąžinti nurodytu laiku.';
     }
 
     public function handleApprove(): void

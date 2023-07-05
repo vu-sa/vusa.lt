@@ -6,14 +6,15 @@ class Created extends ReservationResourceState
 {
     public static $name = 'created';
 
-    public function color(): string
+    public function tagType(): string
     {
-        return 'yellow';
+        return 'info';
     }
 
-    public function handleProgress(): void
+    public function description(): string
     {
-        $this->transitionTo(Updated::class);
+        return 'Daikto rezervacijos užklausa yra sukurta! Laukiama, kol išteklių
+        administratoriai patvirtins rezervaciją.';
     }
 
     public function handleApprove(): void

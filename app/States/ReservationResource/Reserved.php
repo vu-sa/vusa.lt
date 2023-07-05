@@ -6,14 +6,14 @@ class Reserved extends ReservationResourceState
 {
     public static $name = 'reserved';
 
-    public function color(): string
+    public function tagType(): string
     {
-        return 'green';
+        return 'success';
     }
 
-    public function handleProgress(): void
+    public function description(): string
     {
-        $this->transitionTo(Lent::class);
+        return 'Išteklius rezervuotas! Rezervuotą daiktą galima atsiimti nurodytu laiku.';
     }
 
     public function handleApprove(): void

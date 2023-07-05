@@ -6,14 +6,14 @@ class Returned extends ReservationResourceState
 {
     public static $name = 'returned';
 
-    public function color(): string
+    public function tagType(): string
     {
-        return 'green';
+        return 'success';
     }
 
-    public function handleProgress(): void
+    public function description(): string
     {
-        // do nothing
+        return 'Daiktas sėkmingai grąžintas rezervacijos organizatorių.';
     }
 
     public function handleApprove(): void

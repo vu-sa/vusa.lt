@@ -107,4 +107,9 @@ class User extends Authenticatable
     {
         return $this->hasManyDeepFromRelations($this->duties(), (new Duty())->institution());
     }
+
+    public function reservations()
+    {
+        return $this->hasMany(Reservation::class);
+    }
 }

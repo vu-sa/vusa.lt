@@ -2,22 +2,24 @@
 
 namespace App\Models\Pivots;
 
+use App\Models\Interfaces\Decidable;
 use App\Models\Reservation;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasDecisions;
+use App\Models\Traits\MakesDecisions;
 use App\Services\ModelAuthorizer;
 use App\States\ReservationResource\ReservationResourceState;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class ReservationResource extends Pivot
+class ReservationResource extends Pivot implements Decidable
 {
-    use HasDecisions, HasComments;
+    use MakesDecisions, HasComments;
 
     protected $guarded = [];
 
     protected $with = ['comments'];
 
-    protected $appends = ['approvable'];
+    protected $appends = ['approvable', 'state_properties'];
 
     protected $casts = [
         'state' => ReservationResourceState::class,
@@ -55,5 +57,49 @@ class ReservationResource extends Pivot
     public function getApprovableAttribute(): bool
     {
         return $this->approvable();
+    }
+
+    public function getStatePropertiesAttribute()
+    {
+        return [
+            'tagType' => $this->state->tagType(),
+            'description' => $this->state->description(),
+        ];
+    }
+
+    public function decisionToProgress()
+    {
+        abort('Negalima priimti tokio sprendimo.', 403);
+    }
+
+    public function decisionToApprove()
+    {
+        if(!$this->authorizer->forUser(auth()->user())->check('reservations.update.padalinys')) {
+            // throw authorization exception if user is not authorized
+            abort('Neturite teisių patvirtinti rezervacijos veiksmams.', 403);
+        }
+
+        $this->state->handleApprove();
+    }
+
+    public function decisionToReject()
+    {
+        if(!$this->authorizer->forUser(auth()->user())->check('reservations.update.padalinys')) {
+            // throw authorization exception if user is not authorized
+            abort('Neturite teisių atmesti rezervacijos veiksmams.', 403);
+        }
+
+        $this->state->handleReject();
+    }
+
+    public function decisionToCancel()
+    {
+        if ($this->reservation()->users()->where('users.id', auth()->id())->exists()) {
+
+            $this->state->handleCancel();
+            return;
+        }
+
+        abort('Negalite atšaukti rezervacijos veiksmų.', 403);
     }
 }

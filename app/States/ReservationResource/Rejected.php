@@ -6,14 +6,14 @@ class Rejected extends ReservationResourceState
 {
     public static $name = 'rejected';
 
-    public function color(): string
+    public function tagType(): string
     {
-        return 'red';
+        return 'error';
     }
 
-    public function handleProgress(): void
+    public function description(): string
     {
-        // do nothing
+        return 'Rezervacija atmesta';
     }
 
     public function handleApprove(): void

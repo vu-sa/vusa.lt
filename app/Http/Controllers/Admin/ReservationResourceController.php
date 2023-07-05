@@ -10,7 +10,7 @@ use Inertia\Inertia;
 class ReservationResourceController extends LaravelResourceController
 {
     public function store(StoreReservationResourceRequest $request) {
-        $this->authorize('create', [ReservationResource::class, $this->authorizer]);
+        $this->authorize('create', [Reservation::class, $this->authorizer]);
 
         $reservationResource = new ReservationResource();
 
@@ -20,16 +20,8 @@ class ReservationResourceController extends LaravelResourceController
         return back()->with('success', 'Išteklius rezervacijoje sėkmingai pridėtas.');
     }
 
-    public function show(ReservationResource $reservationResource) {
-        $this->authorize('view', [$reservationResource, $this->authorizer]);
-
-        return Inertia::render('Admin/ReservationResource/Show', [
-            'reservationResource' => $reservationResource->load('resource', 'reservation'),
-        ]);
-    }
-
     public function destroy(ReservationResource $reservationResource) {
-        $this->authorize('delete', [$reservationResource, $this->authorizer]);
+        $this->authorize('delete', [Reservation::class, $reservationResource->reservation, $this->authorizer]);
 
         $reservationResource->delete();
 

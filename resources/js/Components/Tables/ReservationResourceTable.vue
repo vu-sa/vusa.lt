@@ -141,7 +141,7 @@ const submitComment = (decision?: "approve" | "reject") => {
       commentable_type: "reservation_resource",
       commentable_id: selectedReservationResource.value?.id,
       comment: commentText.value,
-      decision: decision ?? "progress",
+      decision: decision ?? undefined,
     },
     {
       preserveScroll: true,

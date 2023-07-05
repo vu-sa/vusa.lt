@@ -76,7 +76,6 @@ declare namespace App.Entities {
       | "reserved"
       | "lent"
       | "returned"
-      | "updated"
       | "rejected"
       | "cancelled";
     comments?: Array<App.Models.Comment> | [];

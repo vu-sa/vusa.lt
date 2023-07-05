@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\ModelEnum;
 use App\Http\Controllers\LaravelResourceController;
 use App\Models\Comment;
-use App\Models\Traits\HasDecisions;
+use App\Models\Traits\MakesDecisions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Spatie\Enum\Laravel\Rules\EnumRule;
@@ -50,15 +50,13 @@ class CommentController extends LaravelResourceController
 
         $model = $modelClass::find($request->commentable_id);
 
-        // TODO: Add authorization
-        if ($request->decision && class_uses($model, HasDecisions::class)) {
-            $this->authorize('update', [$model::class, $model, $this->authorizer]);
-            $model->decision($request->decision, $this->authorizer);
+        if ($validated['decision'] && class_uses($model, MakesDecisions::class)) {
+            $model->decision($validated['decision'], $this->authorizer);
         }
 
         $model->comment($request->comment, $request->decision);
 
-        return redirect()->back()->with('success', 'Komentaras pridėtas.');
+        return back()->with('success', 'Komentaras pridėtas.');
     }
 
     /**

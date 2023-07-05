@@ -595,6 +595,7 @@ declare namespace App.Models {
     padaliniai?: any | null;
     tasks?: Array<App.Models.Task> | null;
     institutions?: any | null;
+    reservations?: Array<App.Models.Reservation> | null;
     banners_count?: number | null;
     calendar_count?: number | null;
     doings_count?: number | null;
@@ -603,6 +604,7 @@ declare namespace App.Models {
     current_duties_count?: number | null;
     dutiables_count?: number | null;
     tasks_count?: number | null;
+    reservations_count?: number | null;
   }
 }
 
@@ -672,6 +674,7 @@ declare namespace App.Models.Pivots {
     deleted_at: any | null;
     reservation?: App.Models.Reservation | null;
     readonly approvable?: boolean;
+    readonly state_properties?: any;
   }
 
   export interface SharepointFileable {

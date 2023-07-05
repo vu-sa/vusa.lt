@@ -6,14 +6,14 @@ class Cancelled extends ReservationResourceState
 {
     public static $name = 'cancelled';
 
-    public function color(): string
+    public function tagType(): string
     {
-        return 'red';
+        return 'error';
     }
 
-    public function handleProgress(): void
+    public function description(): string
     {
-        // do nothing
+        return 'Daikto rezervacija atšaukta';
     }
 
     public function handleApprove(): void
