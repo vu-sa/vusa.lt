@@ -4,16 +4,30 @@
       <FormElement>
         <template #title>Rezervacija</template>
         <template #description>
-          <span>
+          <p>
             Rezervacijos aprašymas. Daiktų rezervacijos laikas yra nuo jų
             <strong>atsiėmimo laiko</strong> iki
             <strong>grąžinimo laiko</strong>.
-          </span></template
-        >
+          </p>
+          <p class="mt-2">
+            Skolinimosi laikas galioja visiems rezervuojamiems daiktams. Norint
+            individualiai pakeisti skolintino daikto laiką, pridėk daiktą jau
+            sukūrus rezervaciją.
+          </p>
+        </template>
         <NFormItem label="Pavadinimas" required>
           <MultiLocaleInput
             v-model:input="form.name"
             v-model:lang="inputLang"
+            placeholder="Renginys „VU SA dienos“"
+          />
+        </NFormItem>
+        <NFormItem label="Aprašymas" required>
+          <MultiLocaleInput
+            v-model:input="form.description"
+            v-model:lang="inputLang"
+            placeholder="Visi ištekliai bus naudojami šiam renginiui. Jeigu reikia, galima būtų išteklių A grąžinti anksčiau..."
+            input-type="textarea"
           />
         </NFormItem>
         <NFormItem required label="Skolinimosi laikotarpis">
@@ -35,7 +49,13 @@
       <FormElement>
         <template #title>Rezervuojami daiktai</template>
         <template #description> Daiktus galima rasti čia.</template>
-        <NFormItem label="Pasirinkti daiktai">
+        <NFormItem>
+          <template #label>
+            <span class="mb-2 inline-flex items-center gap-1"
+              ><NIcon :component="Icons.RESOURCE" />
+              {{ $t("Pasirinkti ištekliai") }}
+            </span>
+          </template>
           <NDynamicInput v-model:value="form.resources" :on-create="onCreate">
             <template #default="{ value }">
               <div class="flex w-full gap-2">
@@ -43,6 +63,7 @@
                   v-model:value="value.id"
                   filterable
                   :options="allResourceOptions"
+                  placeholder="Pasirinkite išteklių..."
                 />
                 <NInputNumber
                   v-model:value="value.quantity"
@@ -53,16 +74,6 @@
               </div>
             </template>
           </NDynamicInput>
-        </NFormItem>
-      </FormElement>
-      <FormElement>
-        <template #title>Papildoma informacija</template>
-        <NFormItem label="Aprašymas" required>
-          <MultiLocaleInput
-            v-model:input="form.description"
-            v-model:lang="inputLang"
-            input-type="textarea"
-          />
         </NFormItem>
       </FormElement>
     </div>
@@ -85,6 +96,7 @@ import {
   NDynamicInput,
   NForm,
   NFormItem,
+  NIcon,
   NInputNumber,
   NSelect,
 } from "naive-ui";
@@ -93,6 +105,7 @@ import { router, usePage } from "@inertiajs/vue3";
 import { useForm } from "laravel-precognition-vue-inertia";
 
 import FormElement from "./FormElement.vue";
+import Icons from "@/Types/Icons/regular.ts";
 import MultiLocaleInput from "../SimpleAugment/MultiLocaleInput.vue";
 import type { ReservationCreationTemplate } from "@/Pages/Admin/Reservations/CreateReservation.vue";
 import type { ReservationEditType } from "@/Pages/Admin/Reservations/EditReservation.vue";

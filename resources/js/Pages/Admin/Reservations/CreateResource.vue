@@ -1,5 +1,5 @@
 <template>
-  <PageContent title="Naujas daiktas" :heading-icon="Icons.RESOURCE">
+  <PageContent title="Naujas išteklius" :heading-icon="Icons.RESOURCE">
     <UpsertModelLayout :errors="$page.props.errors" :model="resource">
       <ResourceForm
         :padaliniai="assignablePadaliniai"

@@ -2,12 +2,12 @@
   <NForm :model="form" label-placement="top" :disabled="formDisabled">
     <div class="flex flex-col">
       <FormElement>
-        <template #title>Rezervuojamas išteklius</template>
-        <template #description> Išteklio aprašymas</template>
+        <template #title>Pagrindinė informacija</template>
         <NFormItem label="Pavadinimas" required>
           <MultiLocaleInput
             v-model:input="form.name"
             v-model:lang="inputLang"
+            placeholder="JBL kolonėlė (įkraunama)"
           />
         </NFormItem>
         <NFormItem label="Aprašymas" required>
@@ -15,6 +15,7 @@
             v-model:input="form.description"
             v-model:lang="inputLang"
             input-type="textarea"
+            placeholder="Tikslus modelis: ABC123. Nuoroda internete? Naudoti tik perskaičius instrukciją..."
           />
         </NFormItem>
         <NFormItem label="Padalinys, kuriam priklauso daiktas" :span="2">
@@ -47,8 +48,11 @@
       </FormElement>
       <FormElement>
         <template #title>Papildoma informacija</template>
-        <NFormItem label="Vieta" required>
-          <NInput v-model:value="form.location" />
+        <NFormItem label="Adresas, vieta..." required>
+          <NInput
+            v-model:value="form.location"
+            placeholder="Naugarduko g. X (VU P), 2 sandėliukas"
+          />
         </NFormItem>
         <NFormItem label="Vnt. skaičius" required>
           <NInputNumber v-model:value="form.capacity" :min="1" type="number" />
