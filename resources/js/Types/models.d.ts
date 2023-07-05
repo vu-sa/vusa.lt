@@ -410,8 +410,10 @@ declare namespace App.Models {
     updated_at: any;
     deleted_at: any | null;
     reservations?: Array<App.Models.Reservation> | null;
+    active_reservations?: Array<App.Models.Reservation> | null;
     padalinys?: App.Models.Padalinys | null;
     reservations_count?: number | null;
+    active_reservations_count?: number | null;
   }
 
   export interface Role {
@@ -647,6 +649,7 @@ declare namespace App.Models.Pivots {
     updated_at: any;
     deleted_at: any | null;
     reservation?: App.Models.Reservation | null;
+    readonly approvable?: boolean;
   }
 
   export interface SharepointFileable {

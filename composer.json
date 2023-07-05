@@ -21,7 +21,6 @@
         "laravel/tinker": "^2.7",
         "maatwebsite/excel": "^3.1",
         "microsoft/microsoft-graph": "^1.86.0",
-        "psr/simple-cache": "^2.0",
         "pusher/pusher-php-server": "^7.2",
         "socialiteproviders/microsoft": "^4.1",
         "spatie/calendar-links": "^1.8",
@@ -48,7 +47,7 @@
         "laravel/pint": "^1.2",
         "laravel/sail": "^1.12",
         "mockery/mockery": "^1.4.4",
-        "phpunit/phpunit": "^9.6",
+        "phpunit/phpunit": "^10.2",
         "spatie/laravel-ignition": "^2.0",
         "phpstan/phpstan": "*"
     },
