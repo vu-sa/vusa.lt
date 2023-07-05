@@ -7,8 +7,10 @@ use App\Http\Requests\StoreReservationRequest;
 use App\Http\Requests\UpdateReservationRequest;
 use App\Models\Reservation;
 use App\Models\Resource;
+use App\Models\User;
 use App\Services\ModelIndexer;
 use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
 
@@ -94,6 +96,8 @@ class ReservationController extends LaravelResourceController
             );
         }
 
+        $reservation->users()->attach(auth()->user()->id);
+
         return redirect()->route('reservations.index')->with('success', 'Rezervacija sukurta.');
     }
 
@@ -112,7 +116,7 @@ class ReservationController extends LaravelResourceController
         return Inertia::render('Admin/Reservations/ShowReservation', [
             'reservation' => [
                 // load pivot relationship comments
-                ...$reservation->load('resources.pivot.comments', 'comments', 'activities.causer')->toArray()
+                ...$reservation->load('resources.pivot.comments', 'comments', 'activities.causer', 'users')->toArray()
             ],
             'allResources' => Inertia::lazy(fn () => Resource::all()->map(function ($resource) use ($dateTimeRange) {
                 $capacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($dateTimeRange['start'], $dateTimeRange['end']);
@@ -123,6 +127,7 @@ class ReservationController extends LaravelResourceController
                     'lowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($capacityAtDateTimeRange),
                 ];
             })),
+            'allUsers' => Inertia::lazy(fn () => User::select('id', 'name')->orderBy('name')->get()),
         ]);
     }
 
@@ -183,5 +188,14 @@ class ReservationController extends LaravelResourceController
     public function destroy(Reservation $reservation)
     {
         //
+    }
+
+    public function addUsers(Reservation $reservation, Request $request)
+    {
+        $this->authorize('update', [Reservation::class, $this->authorizer]);
+
+        $reservation->users()->syncWithoutDetaching($request->input('users'));
+
+        return back()->with('success', 'Rezervacijos valdytojai pridėti.');
     }
 }

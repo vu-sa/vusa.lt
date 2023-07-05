@@ -7,11 +7,15 @@
     :current-tab="currentTab"
     @change:tab="currentTab = $event"
   >
+    <template #after-heading>
+      <UsersAvatarGroup
+        v-if="reservation.users && reservation.users.length > 0"
+        :users="reservation.users"
+      />
+    </template>
     <template #more-options>
       <MoreOptionsButton
-        edit
         :more-options="moreOptions"
-        @edit-click="showEditModal = true"
         @more-option-click="handleMoreOptionClick"
       ></MoreOptionsButton>
     </template>
@@ -19,6 +23,7 @@
       v-model:selectedReservationResource="selectedReservationResource"
       :reservation="reservation"
     />
+
     <CardModal
       :show="showReservationResourceCreateModal"
       title="Pridėti išteklių prie rezervacijos"
@@ -31,6 +36,29 @@
           @success="showReservationResourceCreateModal = false"
         />
       </Suspense>
+    </CardModal>
+    <CardModal
+      :show="showReservationAddUserModal"
+      title="Pridėti valdytoją prie rezervacijos"
+      @close="showReservationAddUserModal = false"
+    >
+      <NForm :model="reservationUserForm">
+        <NFormItem label="Naudotojai">
+          <NSelect
+            v-model:value="reservationUserForm.users"
+            label-field="name"
+            value-field="id"
+            filterable
+            multiple
+            :options="allUsers"
+          ></NSelect>
+        </NFormItem>
+        <NFormItem>
+          <NButton type="primary" @click="handleSubmitUserForm"
+            >Pridėti</NButton
+          >
+        </NFormItem>
+      </NForm>
     </CardModal>
     <template #below>
       <div v-if="currentTab === 'Komentarai'">
@@ -52,8 +80,15 @@
 import { ref, toRaw } from "vue";
 import { useStorage } from "@vueuse/core";
 
-import { type MenuOption, NIcon } from "naive-ui";
-import { useForm } from "@inertiajs/vue3";
+import {
+  type MenuOption,
+  NButton,
+  NForm,
+  NFormItem,
+  NIcon,
+  NSelect,
+} from "naive-ui";
+import { router, useForm } from "@inertiajs/vue3";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import CommentViewer from "@/Features/Admin/CommentViewer/CommentViewer.vue";
 import Icons from "@/Types/Icons/filled";
@@ -62,25 +97,30 @@ import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ReservationResourceForm from "@/Components/AdminForms/ReservationResourceForm.vue";
 import ReservationResourceTable from "@/Components/Tables/ReservationResourceTable.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
+import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 
 const props = defineProps<{
   reservation: App.Entities.Reservation;
   allResources?: App.Entities.Resource[];
+  allUsers?: App.Entities.User[];
 }>();
 
 const currentTab = useStorage("show-reservation-tab", "Komentarai");
 const selectedReservationResource =
   ref<App.Entities.ReservationResource | null>(null);
 
-const showEditModal = ref(false);
 const showReservationResourceCreateModal = ref(false);
+const showReservationAddUserModal = ref(false);
 const reservationResourceForm = useForm({
   resource_id: null,
   reservation_id: props.reservation.id,
   quantity: 1,
   start_time: new Date(props.reservation.start_time).getTime(),
   end_time: new Date(props.reservation.end_time).getTime(),
+});
+const reservationUserForm = useForm({
+  users: null,
 });
 
 const breadcrumbOptions: BreadcrumbOption[] = [
@@ -98,6 +138,13 @@ const moreOptions: MenuOption[] = [
     },
     key: "add-resource",
   },
+  {
+    label: "Pridėti rezervacijos valdytoją",
+    icon() {
+      return <NIcon component={Icons.USER}></NIcon>;
+    },
+    key: "add-user",
+  },
 ];
 
 const handleMoreOptionClick = (key: string) => {
@@ -105,7 +152,28 @@ const handleMoreOptionClick = (key: string) => {
     case "add-resource":
       showReservationResourceCreateModal.value = true;
       break;
+    case "add-user":
+      router.reload({
+        only: ["allUsers"],
+      });
+      showReservationAddUserModal.value = true;
+      break;
+    default:
+      break;
   }
+};
+
+const handleSubmitUserForm = () => {
+  reservationUserForm.put(
+    route("reservations.add-users", {
+      reservation: props.reservation.id,
+    }),
+    {
+      onSuccess: () => {
+        showReservationAddUserModal.value = false;
+      },
+    }
+  );
 };
 
 const getAllComments = () => {
