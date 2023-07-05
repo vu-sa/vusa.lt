@@ -6,9 +6,9 @@
     style="max-width: 200px"
   >
     <template #trigger>
-      <UserAvatar v-if="!showName" :user="user" :size="size"></UserAvatar>
+      <UserAvatar v-if="!showName" :user="user" :size="size" />
       <div v-else class="not-prose inline-flex items-center gap-2">
-        <UserAvatar :user="user" :size="size"></UserAvatar>
+        <UserAvatar :user="user" :size="size" />
         <span :class="[size ? 'text-base' : 'text-sm']"> {{ user.name }}</span>
       </div>
     </template>
