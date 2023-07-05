@@ -230,6 +230,28 @@ declare namespace App.Models {
     goals_count?: number | null;
   }
 
+  export interface Media {
+    id: number;
+    model_type: string;
+    model_id: string;
+    uuid: string | null;
+    collection_name: string;
+    name: string;
+    file_name: string;
+    mime_type: string | null;
+    disk: string;
+    conversions_disk: string | null;
+    size: number;
+    manipulations: string;
+    custom_properties: string;
+    generated_conversions: string;
+    responsive_images: string;
+    order_column: number | null;
+    created_at: any | null;
+    updated_at: any | null;
+    model?: any | null;
+  }
+
   export interface Meeting {
     id: string;
     title: string;

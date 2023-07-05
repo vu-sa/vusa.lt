@@ -9,7 +9,7 @@ use App\Http\Requests\UpdateResourceRequest;
 use App\Models\Resource;
 use App\Services\ModelIndexer;
 use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
-use Illuminate\Support\Facades\Request;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class ResourceController extends LaravelResourceController
@@ -18,7 +18,8 @@ class ResourceController extends LaravelResourceController
     {
         parent::__construct();
 
-        $this->middleware([HandlePrecognitiveRequests::class])->only(['store', 'update']);
+        // TODO: precognition may not work well with file uploads, also when array is made of simple object and file upload
+        // $this->middleware([HandlePrecognitiveRequests::class])->only(['store', 'update']);
     }
 
     /**
@@ -64,8 +65,14 @@ class ResourceController extends LaravelResourceController
 
         $resource = new Resource();
 
-        $resource->fill($request->validated());
+        $resource->fill($request->safe()->except('media'));
         $resource->save();
+
+        $resource = $resource->fresh();
+
+        foreach ($request->validated('media') as $image) {
+            $resource->addMedia($image['file'])->toMediaCollection('images');
+        }
 
         return redirect()->route('resources.index')->with('success', 'Sėkmingai sukurtas išteklius.');
     }
@@ -86,7 +93,16 @@ class ResourceController extends LaravelResourceController
         $this->authorize('update', [Resource::class, $this->authorizer]);
 
         return Inertia::render('Admin/Reservations/EditResource', [
-            'resource' => $resource->toFullArray() + ['left_capacity' => $resource->leftCapacity()],
+            'resource' => $resource->toFullArray()
+                + ['left_capacity' => $resource->leftCapacity()]
+                + ['media' => $resource->getMedia('images')->map(fn ($image) => [
+                        'id' => $image->id,
+                        'name' => $image->name,
+                        'type' => $image->mime_type,
+                        'status' => 'finished',
+                        'url' => $image->getUrl(),
+                    ])
+                ],
             'assignablePadaliniai' => GetPadaliniaiForUpserts::execute('resources.update.all', $this->authorizer)
         ]);
     }
@@ -98,8 +114,20 @@ class ResourceController extends LaravelResourceController
     {
         $this->authorize('update', [Resource::class, $this->authorizer]);
 
-        $resource->fill($request->validated());
+        $resource->fill($request->safe()->except('media'));
         $resource->save();
+
+        // first, intersect existing media with id from request, delete one's that didn't match
+        $resource->getMedia('images')
+            ->filter(fn ($image) => !in_array($image->id, array_column($request->validated('media'), 'id')))
+            ->each(fn ($image) => $image->delete());
+
+        // then add new media
+        foreach ($request->validated('media') as $image) {
+            if ($image['status'] === 'pending' && $image['file']) {
+                $resource->addMedia($image['file'])->toMediaCollection('images');
+            }
+        }
 
         return back()->with('success', 'Sėkmingai atnaujintas išteklius.');
     }

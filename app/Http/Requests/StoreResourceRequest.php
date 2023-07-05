@@ -29,6 +29,8 @@ class StoreResourceRequest extends FormRequest
             'padalinys_id' => 'required|integer|exists:padaliniai,id',
             'capacity' => 'required|integer|min:1',
             'is_reservable' => 'required|boolean',
+            'media' => 'array|nullable',
+            'media.*.file' => 'file|mimes:jpg,jpeg,png|max:10240',
         ];
     }
 }

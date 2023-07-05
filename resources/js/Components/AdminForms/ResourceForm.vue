@@ -29,6 +29,23 @@
         </NFormItem>
       </FormElement>
       <FormElement>
+        <template #title>Nuotraukos</template>
+        <template #description
+          >Rekomenduojama, kad kiekvienas išteklius turėtų nuotraukų. Jas gali
+          matyti ir rezervaciją kuriantys asmenys.</template
+        >
+        <NUpload
+          ref="upload"
+          :file-list="form.media"
+          accept="image/jpg, image/jpeg, image/png"
+          list-type="image-card"
+          multiple
+          @change="handleChange"
+        >
+          Įkelti paveikslėlius
+        </NUpload>
+      </FormElement>
+      <FormElement>
         <template #title>Papildoma informacija</template>
         <NFormItem label="Vieta" required>
           <NInput v-model:value="form.location" />
@@ -69,10 +86,11 @@ import {
   NInputNumber,
   NSelect,
   NSwitch,
+  NUpload,
+  type UploadFileInfo,
 } from "naive-ui";
 import { computed, ref } from "vue";
-import { useForm } from "laravel-precognition-vue-inertia";
-import { usePage } from "@inertiajs/vue3";
+import { router, useForm, usePage } from "@inertiajs/vue3";
 
 import FormElement from "./FormElement.vue";
 import MultiLocaleInput from "../SimpleAugment/MultiLocaleInput.vue";
@@ -93,11 +111,7 @@ const routeToSubmit = computed(() => {
     : route(props.modelRoute);
 });
 
-const form = useForm(
-  props.resource?.id ? "patch" : "post",
-  routeToSubmit.value,
-  props.resource
-);
+const form = useForm(props.resource);
 
 // padalinys_id is set to 0 if it's not found. Shouldn't happen for authenticated users.
 const formDisabled = computed(() => {
@@ -105,9 +119,22 @@ const formDisabled = computed(() => {
 });
 
 const submit = () => {
-  form.submit({
-    preserveScroll: true,
-  });
+  // add _method: "patch" if it's an update, to the data of the request
+  // because formdata doesn't support patch, it's needed
+  router.post(
+    routeToSubmit.value,
+    {
+      ...form,
+      _method: props.resource?.id ? "patch" : "post",
+    },
+    {
+      preserveScroll: true,
+    }
+  );
+};
+
+const handleChange = ({ fileList }: { fileList: Array<UploadFileInfo> }) => {
+  form.media = fileList;
 };
 
 const inputLang = ref(usePage().props.app.locale);

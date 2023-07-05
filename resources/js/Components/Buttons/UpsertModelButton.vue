@@ -50,6 +50,7 @@ const upsertModel = () => {
     );
   } else {
     showSpin.value = true;
+    // because formdata doesn't support patch, _method is needed to spoof it
     router.post(
       route(props.modelRoute, props.routeParameters ?? props.form.id),
       {

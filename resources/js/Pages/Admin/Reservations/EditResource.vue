@@ -28,6 +28,7 @@ export type ResourceEditType = Omit<
   name: Record<"lt" | "en", string>;
   description: Record<"lt" | "en", string>;
   left_capacity: number;
+  media: App.Models.Media[];
 };
 
 const props = defineProps<{

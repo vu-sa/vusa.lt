@@ -11,17 +11,25 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Scout\Searchable;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Resource extends Model
+class Resource extends Model implements HasMedia
 {
-    use HasFactory, HasUlids, HasTranslations, Searchable, SoftDeletes, EagerLoadPivotTrait;
+    use HasFactory, HasUlids, HasTranslations, Searchable, SoftDeletes, EagerLoadPivotTrait, InteractsWithMedia;
 
     protected $guarded = [];
 
     public $translatable = ['name', 'description'];
 
-    // TODO: resource manager method
-    // ....
+    public function registerMediaCollections(): void
+    {
+        $this
+            ->addMediaCollection('images')
+            ->acceptsMimeTypes(['image/jpeg', 'image/jpg', 'image/png'])
+            ->useDisk('spatieMediaLibrary');
+    }
 
     public function toSearchableArray()
     {
