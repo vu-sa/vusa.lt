@@ -26,9 +26,6 @@ return new class extends Migration
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
             $table->softDeletes();
         });
-
-        $permissions = PermissionService::getPermissionsToCreate(['resources']);
-        PermissionService::createPermissionsForModel($permissions);
     }
 
     /**
@@ -37,8 +34,5 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('resources');
-
-        $permissions = PermissionService::getPermissionsToCreate(['resources']);
-        Permission::whereIn('name', $permissions)->delete();
     }
 };
