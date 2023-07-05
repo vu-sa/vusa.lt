@@ -42,6 +42,6 @@ class ModelPermissionSeeder extends Seeder
             ];
         }, $permissionsToCreate);
 
-        Permission::create($permissionsToCreate);
+        Permission::upsert($permissionsToCreate, ['name', 'guard_name']);
     }
 }
