@@ -15,6 +15,7 @@
             :label="$t('Tavo institucijos')"
           ></NCheckbox>
           <NCheckbox value="Posėdžiai" :label="$t('Artėjantys posėdžiai')" />
+          <NCheckbox value="Rezervacijos" :label="$t('Tavo rezervacijos')" />
           <NCheckbox value="Veiklos" :label="$t('Tavo veiklos')" />
           <NCheckbox
             value="Nuorodos"
@@ -91,6 +92,23 @@
         </template>
         <p class="hidden first:block">{{ $t("Artėjančių posėdžių nėra") }}.</p>
       </div>
+    </section>
+    <section
+      v-if="shownSections.includes('Rezervacijos')"
+      class="relative mb-8"
+    >
+      <h2 class="flex items-center gap-2">
+        <NIcon :component="Icons.RESERVATION"></NIcon
+        ><span>{{ $t("Tavo rezervacijos") }}</span>
+      </h2>
+      <template
+        v-for="reservation in currentUser.reservations"
+        :key="reservation.id"
+      >
+        <Link :href="route('reservations.show', reservation.id)">{{
+          reservation.name
+        }}</Link>
+      </template>
     </section>
     <section v-if="shownSections.includes('Veiklos')" class="relative mb-8">
       <h2 class="flex items-center gap-2">
@@ -185,7 +203,7 @@
 
 <script setup lang="tsx">
 import { ExternalLinkSquareAlt } from "@vicons/fa";
-import { Head, router } from "@inertiajs/vue3";
+import { Head, Link, router } from "@inertiajs/vue3";
 import {
   LightbulbFilament24Filled,
   Link24Filled,

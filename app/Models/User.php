@@ -110,6 +110,6 @@ class User extends Authenticatable
 
     public function reservations()
     {
-        return $this->hasMany(Reservation::class);
+        return $this->belongsToMany(Reservation::class)->withTimestamps();
     }
 }
