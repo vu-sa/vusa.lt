@@ -66,10 +66,16 @@ const dataTableColumns = [
   {
     title: "Padalinys",
     key: "padalinys.shortname",
-    render(row) {
+    render(row: App.Entities.Resource) {
       return (
         <div class="inline-flex items-center gap-2">
-          <span>{row.padalinys.shortname}</span>
+          <span
+            class={
+              row.pivot?.state === "created" ? "font-bold text-vusa-red" : ""
+            }
+          >
+            {row.padalinys?.shortname}
+          </span>
           <UsersAvatarGroup
             users={row.managers}
             class="ml-2"
@@ -83,27 +89,41 @@ const dataTableColumns = [
   {
     title: "Rezervacijos pradžia",
     key: "pivot.start_time",
-    render(row) {
-      return formatStaticTime(new Date(row.pivot.start_time), {
-        weekday: "short",
-        day: "2-digit",
-        month: "narrow",
-        hour: "numeric",
-        minute: "numeric",
-      });
+    render(row: App.Entities.Resource) {
+      return (
+        <span
+          class={
+            row.pivot.state === "reserved" ? "font-bold text-vusa-red" : ""
+          }
+        >
+          {formatStaticTime(new Date(row.pivot.start_time), {
+            weekday: "short",
+            day: "2-digit",
+            month: "narrow",
+            hour: "numeric",
+            minute: "numeric",
+          })}
+        </span>
+      );
     },
   },
   {
     title: "Rezervacijos pabaiga",
     key: "pivot.end_time",
-    render(row) {
-      return formatStaticTime(new Date(row.pivot.end_time), {
-        weekday: "short",
-        day: "2-digit",
-        month: "narrow",
-        hour: "numeric",
-        minute: "numeric",
-      });
+    render(row: App.Entities.Resource) {
+      return (
+        <span
+          class={row.pivot.state === "lent" ? "font-bold text-vusa-red" : ""}
+        >
+          {formatStaticTime(new Date(row.pivot.end_time), {
+            weekday: "short",
+            day: "2-digit",
+            month: "narrow",
+            hour: "numeric",
+            minute: "numeric",
+          })}
+        </span>
+      );
     },
   },
   {
@@ -163,14 +183,14 @@ const handleStateChange = (row: any) => {
 
 const approveText = computed(() => {
   if (selectedReservationResource.value?.state === "reserved") {
-    return "... ir pažymėti, kaip paskolintą.";
+    return "... ir pažymėti, kaip paskolintą";
   }
 
   if (selectedReservationResource.value?.state === "lent") {
-    return "... ir pažymėti, kaip grąžintą.";
+    return "... ir pažymėti, kaip grąžintą";
   }
 
-  return "... ir patvirtinti.";
+  return "... ir patvirtinti";
 });
 
 const submitComment = (decision?: "approve" | "reject") => {
@@ -188,6 +208,12 @@ const submitComment = (decision?: "approve" | "reject") => {
       preserveScroll: true,
       onSuccess: () => {
         loading.value = false;
+
+        if (usePage().props.flash.statusCode !== 403) {
+          showStateChangeModal.value = false;
+          selectedReservationResource.value = null;
+          commentText.value = "";
+        }
       },
       onError: () => {
         loading.value = false;
