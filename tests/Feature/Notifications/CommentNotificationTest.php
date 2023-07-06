@@ -9,8 +9,10 @@ use App\Models\User;
 use App\Notifications\ModelCommented;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use Tests\TestCase;
 
+#[CoversNothing]
 class CommentNotificationTest extends TestCase
 {
     use RefreshDatabase;

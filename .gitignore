@@ -33,3 +33,5 @@ public/vendor/telescope/mix-manifest.json
 public/hot
 lang/php_en.json
 lang/php_lt.json
+
+.phpunit.cache

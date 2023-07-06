@@ -14,8 +14,10 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Testing\AssertableInertia as Assert;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use Tests\TestCase;
 
+#[CoversNothing]
 class PermissionTest extends TestCase {
 
     use RefreshDatabase;
