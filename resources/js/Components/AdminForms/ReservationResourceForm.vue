@@ -107,7 +107,8 @@ const allResourceOptions = computed(() => {
   return props.allResources?.map((resource) => ({
     label: `${resource.name} (likutis: ${resource.lowestCapacityAtDateTimeRange})`,
     value: resource.id,
-    disabled: resource.lowestCapacityAtDateTimeRange === 0,
+    disabled:
+      resource.lowestCapacityAtDateTimeRange === 0 || !resource.is_reservable,
   }));
 });
 

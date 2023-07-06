@@ -47,8 +47,11 @@
         </NFormItem>
       </FormElement>
       <FormElement>
-        <template #title>Rezervuojami daiktai</template>
-        <template #description> Daiktus galima rasti čia.</template>
+        <template #title>Rezervuojami ištekliai</template>
+        <template #description
+          >Pakeitus rezervacijos laiką, pasirinkti ištekliai bus išvalyti.
+          Rodomas išteklių kiekis nurodytu rezervacijos laikotarpiu.
+        </template>
         <NFormItem>
           <template #label>
             <span class="mb-2 inline-flex items-center gap-1"
@@ -105,7 +108,7 @@ import { router, usePage } from "@inertiajs/vue3";
 import { useForm } from "laravel-precognition-vue-inertia";
 
 import FormElement from "./FormElement.vue";
-import Icons from "@/Types/Icons/regular.ts";
+import Icons from "@/Types/Icons/regular";
 import MultiLocaleInput from "../SimpleAugment/MultiLocaleInput.vue";
 import type { ReservationCreationTemplate } from "@/Pages/Admin/Reservations/CreateReservation.vue";
 import type { ReservationEditType } from "@/Pages/Admin/Reservations/EditReservation.vue";
@@ -178,7 +181,8 @@ const allResourceOptions = computed(() => {
     value: resource.id,
     disabled:
       resource.lowestCapacityAtDateTimeRange === 0 ||
-      selectedResources.includes(resource.id),
+      selectedResources.includes(resource.id) ||
+      !resource.is_reservable,
   }));
 
   // filter by selected resources in form

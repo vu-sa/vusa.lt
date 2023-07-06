@@ -7,7 +7,7 @@
 
   <CardModal
     v-model:show="showStateChangeModal"
-    title="Naujinti būseną"
+    title="Palikti komentarą arba naujinti būseną"
     @close="showStateChangeModal = false"
   >
     <div class="not-prose relative w-full">
@@ -125,11 +125,17 @@ const dataTableColumns = [
         <div class="flex items-center space-x-2">
           {["created", "reserved", "lent"].includes(row.pivot.state) ? (
             <NButton
-              size="small"
-              type="warning"
+              size="tiny"
+              type={row.pivot.approvable ? "primary" : "info"}
               onClick={() => handleStateChange(row)}
             >
-              Keisti būseną
+              {{
+                default: () => (
+                  <span>
+                    {row.pivot.approvable ? "Keisti būseną" : "Komentuoti"}
+                  </span>
+                ),
+              }}
             </NButton>
           ) : null}
           {["cancelled", "rejected"].includes(row.pivot.state) ? (
