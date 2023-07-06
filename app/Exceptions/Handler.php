@@ -50,6 +50,10 @@ class Handler extends ExceptionHandler
         // TODO: Maybe make errors work something like this: https://inertiajs.com/error-handling
 
         if (in_array($response->status(), [403])) {
+            // check if inertia request
+            if (!$response->headers->get('x-inertia')) {
+                return $response;
+            }
             return back()->with([
                 'info' => $e->getMessage() ?? 'Neturite teisių atlikti šiam veiksmui.',
             ]);
