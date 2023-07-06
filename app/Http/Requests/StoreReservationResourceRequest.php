@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Pivots\ReservationResource;
+use App\Models\Resource;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
 
@@ -13,7 +13,7 @@ class StoreReservationResourceRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()->can('create', [ReservationResource::class, $this->authorizer]);
+        return $this->user()->can('create', [Resource::class, $this->authorizer]);
     }
 
     protected function prepareForValidation() {

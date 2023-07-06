@@ -106,7 +106,7 @@ class ReservationController extends LaravelResourceController
      */
     public function show(Reservation $reservation)
     {
-        $this->authorize('view', [Reservation::class, $this->authorizer]);
+        $this->authorize('view', [Reservation::class, $reservation, $this->authorizer]);
 
         $modelName = Str::of(class_basename($reservation))->camel()->plural();
 
@@ -136,7 +136,7 @@ class ReservationController extends LaravelResourceController
      */
     public function edit(Reservation $reservation)
     {
-        $this->authorize('update', [Resource::class, $this->authorizer]);
+        $this->authorize('update', [Reservation::class, $reservation, $this->authorizer]);
 
         $dateTimeRange = request()->input('dateTimeRange') ?? [
             'start' => now()->setTimeFromTimeString('09:00')->addDay()->format('Uv'),
@@ -192,7 +192,7 @@ class ReservationController extends LaravelResourceController
 
     public function addUsers(Reservation $reservation, Request $request)
     {
-        $this->authorize('update', [Reservation::class, $this->authorizer]);
+        $this->authorize('update', [Reservation::class, $reservation, $this->authorizer]);
 
         $reservation->users()->syncWithoutDetaching($request->input('users'));
 

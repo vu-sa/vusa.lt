@@ -115,7 +115,13 @@ class HandleInertiaRequests extends Middleware
         return Cache::remember('index-permissions-'.$user->id, 3600, function () use ($user) {
             $authorizer = new Authorizer();
 
-            return collect(ModelEnum::toLabels())
+            $labels = ModelEnum::toLabels();
+
+            // remove where value is reservationResource
+            // TODO: maybe needs better solution
+            unset($labels[array_search('reservationResource', $labels)]);
+
+            return collect($labels)
                 ->mapWithKeys(function ($model) use ($user, $authorizer) {
                     return [$model => $user->can('viewAny', ['App\\Models\\'.ucfirst($model), $authorizer])];
                 })->toArray();
