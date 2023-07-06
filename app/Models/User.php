@@ -12,10 +12,12 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
+use Octopy\Impersonate\Concerns\Impersonate;
+use Octopy\Impersonate\ImpersonateAuthorization;
 
 class User extends Authenticatable
 {
-    use Notifiable, HasFactory, HasRelationships, HasRoles, HasUlids, LogsActivity, SoftDeletes;
+    use Notifiable, HasFactory, HasRelationships, HasRoles, HasUlids, LogsActivity, SoftDeletes, Impersonate;
 
     /**
      * The attributes that are mass assignable.
@@ -48,6 +50,13 @@ class User extends Authenticatable
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()->logFillable()->logOnlyDirty();
+    }
+
+    public function impersonatable(ImpersonateAuthorization $authorization): void
+    {
+        $authorization->impersonator(fn (User $user) => $user->hasRole(config('permission.super_admin_role_name')));
+
+        $authorization->impersonated(fn (User $user) => !$user->hasRole(config('permission.super_admin_role_name')));
     }
 
     public function banners()
