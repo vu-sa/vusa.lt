@@ -60,7 +60,7 @@ class ReservationController extends LaravelResourceController
 
         return Inertia::render('Admin/Reservations/CreateReservation', [
             // 'assignablePadaliniai' => GetPadaliniaiForUpserts::execute('resources.create.all', $this->authorizer)
-            'resources' => Resource::select('id', 'name', 'capacity')->get()->map(function ($resource) use ($dateTimeRange) {
+            'resources' => Resource::select('id', 'name', 'capacity', 'is_reservable')->get()->map(function ($resource) use ($dateTimeRange) {
                 $capacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($dateTimeRange['start'], $dateTimeRange['end']);
 
                 return [
