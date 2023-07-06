@@ -56,7 +56,7 @@ class ReservationResource extends Pivot implements Decidable
             return $authorizer->getPadaliniai()->contains($this->padalinys);
         }
 
-        return $authorizer->forUser(auth()->user())->check('resources.update.padalinys');
+        return false;
     }
 
     public function getApprovableAttribute(): bool

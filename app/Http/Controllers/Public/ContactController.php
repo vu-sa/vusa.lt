@@ -62,16 +62,10 @@ class ContactController extends PublicController
                 $institution = Institution::where('alias', '=', $this->padalinys->alias)->first();
             }
 
-            // ! using user.current_duties is dangerous, somehow it returns all users, needs proper testing
-            // TODO: this doesn't check for a specific dutiable, only for an existence of one...
-
-            $contacts = User::withWhereHas('duties', function ($query) use ($types, $institution) {
+            $contacts = User::withWhereHas('current_duties', function ($query) use ($types, $institution) {
                 $query->where('institution_id', '=', $institution->id)
                     ->whereHas('types', fn (Builder $query) => $query->whereIn('id', $types->pluck('id'))
-                    )
-                    ->whereHas('dutiables', function (Builder $query) {
-                        $query->where('end_date', '>=', now())->where('end_date', '=', null, 'or');
-                    });
+                    );
             })->get();
 
             // if not found, try to find institution

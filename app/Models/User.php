@@ -84,7 +84,10 @@ class User extends Authenticatable
     public function previous_duties()
     {
         return $this->duties()
-            ->wherePivot('end_date', '<', now())
+            ->where(function ($query) {
+                $query->whereNotNull('dutiables.end_date')
+                      ->where('dutiables.end_date', '<', now());
+            })
             ->withTimestamps();
     }
 
@@ -93,8 +96,12 @@ class User extends Authenticatable
     public function current_duties()
     {
         return $this->duties()
-            ->wherePivotNull('end_date')->orWherePivot('end_date', '>=', now())
+            ->where(function ($query) {
+                $query->whereNull('dutiables.end_date')
+                      ->orWhere('dutiables.end_date', '>=', now());
+            })
             ->withTimestamps();
+
     }
 
     public function dutiables()

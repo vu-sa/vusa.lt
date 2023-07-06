@@ -190,6 +190,7 @@ class UserController extends LaravelResourceController
         return back()->with('success', 'Kontaktas sėkmingai atnaujintas!');
     }
 
+    // TODO: doesn't account for duties with the same name
     private function handleDutiesUpdate(SupportCollection $existing_duties, SupportCollection $user_duties, User $user)
     {
         $new = $existing_duties->diff($user_duties)->values();
