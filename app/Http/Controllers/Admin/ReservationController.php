@@ -85,6 +85,8 @@ class ReservationController extends LaravelResourceController
         $reservation->fill($request->safe()->only(['name', 'description', 'start_time', 'end_time']));
         $reservation->save();
 
+        $reservation->fresh();
+
         foreach ($request->validated('resources') as $resource) {
             $reservation->resources()->attach(
                 $resource['id'], [
@@ -98,7 +100,7 @@ class ReservationController extends LaravelResourceController
 
         $reservation->users()->attach(auth()->user()->id);
 
-        return redirect()->route('reservations.index')->with('success', 'Rezervacija sukurta.');
+        return redirect()->route('reservations.show', $reservation->id)->with('success', 'Rezervacija sukurta.');
     }
 
     /**
