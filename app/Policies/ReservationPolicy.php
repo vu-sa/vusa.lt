@@ -39,6 +39,17 @@ class ReservationPolicy extends ModelPolicy
             return true;
         }
 
+        // foreach resource with unique padalinys_id, check
+        // if user has permission to view it
+
+        foreach ($reservation->resources as $resource) {
+            $check = $this->commonChecker($user, $resource, CRUDEnum::UPDATE()->label, 'resources');
+
+            if ($check) {
+                return true;
+            }
+        }
+
         if ($this->commonChecker($user, $reservation, CRUDEnum::READ()->label, $this->pluralModelName)) {
             return true;
         }

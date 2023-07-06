@@ -106,5 +106,15 @@ class Duty extends Model implements AuthorizableContract
         return $this->hasManyDeepFromRelations($this->users(), (new User())->tasks());
     }
 
+    public function reservations()
+    {
+        return $this->hasManyDeepFromRelations($this->users(), (new User())->reservations());
+    }
+
+    public function resources()
+    {
+        return $this->hasManyDeepFromRelations($this->padaliniai(), (new Padalinys())->resources());
+    }
+
     // add "duty" relation which points to self
 }

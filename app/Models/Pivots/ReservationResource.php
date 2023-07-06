@@ -4,6 +4,7 @@ namespace App\Models\Pivots;
 
 use App\Models\Interfaces\Decidable;
 use App\Models\Reservation;
+use App\Models\Resource;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasDecisions;
 use App\Models\Traits\MakesDecisions;
@@ -19,7 +20,7 @@ class ReservationResource extends Pivot implements Decidable
 
     protected $with = ['comments'];
 
-    protected $appends = ['approvable', 'state_properties'];
+    protected $appends = ['state_properties'];
 
     protected $casts = [
         'state' => ReservationResourceState::class,
@@ -37,11 +38,6 @@ class ReservationResource extends Pivot implements Decidable
         return $this->belongsTo(Resource::class);
     }
 
-    public function padaliniai()
-    {
-        return $this->hasManyDeepFromRelations($this->reservation(), (new Reservation)->padaliniai());
-    }
-
     public function approvable()
     {
         // if user null, return false
@@ -51,9 +47,9 @@ class ReservationResource extends Pivot implements Decidable
 
         $authorizer = new ModelAuthorizer();
 
-        if ($authorizer->forUser(auth()->user())->check('reservations.update.padalinys')) {
+        if ($authorizer->forUser(auth()->user())->check('resources.update.padalinys')) {
             // check if authorizer->getPadaliniai() contains $this->padalinys
-            return $authorizer->getPadaliniai()->contains($this->padalinys);
+            return $authorizer->getPadaliniai()->contains($this->resource->padalinys);
         }
 
         return false;

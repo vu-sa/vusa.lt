@@ -95,7 +95,7 @@ class ResourceController extends LaravelResourceController
      */
     public function edit(Resource $resource)
     {
-        $this->authorize('update', [Resource::class, $this->authorizer]);
+        $this->authorize('update', [Resource::class, $resource, $this->authorizer]);
 
         return Inertia::render('Admin/Reservations/EditResource', [
             'resource' => $resource->toFullArray()
@@ -117,7 +117,7 @@ class ResourceController extends LaravelResourceController
      */
     public function update(UpdateResourceRequest $request, Resource $resource)
     {
-        $this->authorize('update', [Resource::class, $this->authorizer]);
+        $this->authorize('update', [Resource::class, $resource, $this->authorizer]);
 
         $resource->fill($request->safe()->except('media'));
         $resource->save();
@@ -142,12 +142,10 @@ class ResourceController extends LaravelResourceController
      */
     public function destroy(Resource $resource)
     {
-        $this->authorize('delete', [Resource::class, $this->authorizer]);
+        $this->authorize('delete', [Resource::class, $resource, $this->authorizer]);
 
         $resource->delete();
 
         return redirect()->route('resources.index')->with('success', 'Sėkmingai ištrintas išteklius.');
     }
-
-
 }

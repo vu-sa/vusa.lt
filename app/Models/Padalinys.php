@@ -44,4 +44,9 @@ class Padalinys extends Model
     {
         return $this->hasMany(User::class, 'padalinys_id');
     }
+
+    public function resources()
+    {
+        return $this->hasMany(Resource::class, 'padalinys_id');
+    }
 }

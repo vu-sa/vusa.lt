@@ -120,9 +120,11 @@ class ReservationController extends LaravelResourceController
                 'resources' => $reservation->resources->map(function ($resource) use ($dateTimeRange) {
                     return [
                         ...$resource->toArray(),
-                        'managers' => $resource->managers()
+                        'managers' => $resource->managers(),
+                        'pivot' => $resource->pivot->append('approvable')->toArray(),
                     ];
                 }),
+
             ],
             'allResources' => Inertia::lazy(fn () => Resource::all()->map(function ($resource) use ($dateTimeRange) {
                 $capacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($dateTimeRange['start'], $dateTimeRange['end']);
