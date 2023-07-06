@@ -17,6 +17,8 @@ docker run --rm \
 ./vendor/bin/sail artisan key:generate &&
 ./vendor/bin/sail npm ci
 
+./vendor/bin/sail artisan vendor:publish --provider="Octopy\Impersonate\ImpersonateServiceProvider"
+
 # check if public/storage is linked
 if [ ! -L public/storage ]; then
     ./vendor/bin/sail artisan storage:link
