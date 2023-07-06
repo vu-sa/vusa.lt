@@ -45,7 +45,7 @@ class PermissionTest extends TestCase {
         ))->hasAttached($this->resourceManagerUser, ['start_date' => now()->subDays(1), 'end_date' => now()->addDays(1)])->create();
 
         $resourceManagerRole = Role::factory()->create();
-        $resourceManagerRole->givePermissionTo(['reservations.read.*', 'resources.update.padalinys']);
+        $resourceManagerRole->givePermissionTo(['reservations.read.*', config('permission.resource_managership_indicating_permission')]);
 
         $resourceManagerDuty->assignRole($resourceManagerRole);
     }

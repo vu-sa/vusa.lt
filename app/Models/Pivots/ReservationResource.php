@@ -47,7 +47,7 @@ class ReservationResource extends Pivot implements Decidable
 
         $authorizer = new ModelAuthorizer();
 
-        if ($authorizer->forUser(auth()->user())->check('resources.update.padalinys')) {
+        if ($authorizer->forUser(auth()->user())->check(config('permission.resource_managership_indicating_permission'))) {
             // check if authorizer->getPadaliniai() contains $this->padalinys
             return $authorizer->getPadaliniai()->contains($this->resource->padalinys);
         }
@@ -75,7 +75,7 @@ class ReservationResource extends Pivot implements Decidable
 
     public function decisionToApprove()
     {
-        if(!$this->authorizer->forUser(auth()->user())->check('reservations.update.padalinys')) {
+        if(!$this->authorizer->forUser(auth()->user())->check(config('permission.resource_managership_indicating_permission'))) {
             // throw authorization exception if user is not authorized
             abort(403, 'Neturite teisių patvirtinti rezervacijos veiksmams.');
         }
@@ -85,7 +85,7 @@ class ReservationResource extends Pivot implements Decidable
 
     public function decisionToReject()
     {
-        if(!$this->authorizer->forUser(auth()->user())->check('reservations.update.padalinys')) {
+        if(!$this->authorizer->forUser(auth()->user())->check(config('permission.resource_managership_indicating_permission'))) {
             // throw authorization exception if user is not authorized
             abort(403, 'Neturite teisių atmesti rezervacijos veiksmams.');
         }
