@@ -133,6 +133,7 @@ class ReservationController extends LaravelResourceController
                 return [
                     'id' => $resource->id,
                     'name' => $resource->name,
+                    'is_reservable' => $resource->is_reservable,
                     'capacityAtDateTimeRange' => $capacityAtDateTimeRange,
                     'lowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($capacityAtDateTimeRange),
                 ];
