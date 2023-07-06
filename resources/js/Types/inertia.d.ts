@@ -32,6 +32,7 @@ declare module "@inertiajs/core" {
       data: any;
       info: string | null;
       success: string | null;
+      statusCode: number | null;
     };
     mainNavigation?: App.Entities.Navigation[];
     padaliniai: Pick<

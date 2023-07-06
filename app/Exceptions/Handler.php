@@ -51,11 +51,12 @@ class Handler extends ExceptionHandler
 
         if (in_array($response->getStatusCode(), [403])) {
             // check if inertia request
-            if (!$response->headers->get('x-inertia')) {
+            if (!$response->headers->get('x-inertia') === 'true') {
                 return $response;
             }
             return back()->with([
                 'info' => $e->getMessage() ?? 'Neturite teisių atlikti šiam veiksmui.',
+                'statusCode' => $response->getStatusCode(),
             ]);
         }
 
