@@ -47,9 +47,10 @@
         "laravel/pint": "^1.2",
         "laravel/sail": "^1.12",
         "mockery/mockery": "^1.4.4",
+        "nunomaduro/collision": "^7.0",
         "phpunit/phpunit": "^10.2",
-        "spatie/laravel-ignition": "^2.0",
-        "phpstan/phpstan": "*"
+        "phpstan/phpstan": "*",
+        "spatie/laravel-ignition": "^2.0"
     },
     "autoload": {
         "psr-4": {
@@ -89,6 +90,7 @@
         "preferred-install": "dist",
         "sort-packages": true,
         "allow-plugins": {
+            "pestphp/pest-plugin": true,
             "php-http/discovery": true
         }
     },
