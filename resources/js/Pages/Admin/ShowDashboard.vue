@@ -48,6 +48,11 @@
         <QActCreateMeeting />
         <QActSurveyButton />
         <QActFocusGroupButton />
+        <Link :href="route('reservations.create')">
+          <QuickActionButton :icon="Icons.RESERVATION"
+            >Kurti rezervaciją</QuickActionButton
+          >
+        </Link>
       </div>
     </section>
     <section
@@ -227,6 +232,7 @@ import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import QActCreateMeeting from "@/Components/Buttons/QActCreateMeeting.vue";
 import QActFocusGroupButton from "@/Components/Buttons/QActFocusGroupButton.vue";
 import QActSurveyButton from "@/Components/Buttons/QActSurveyButton.vue";
+import QuickActionButton from "@/Components/Buttons/QuickActionButton.vue";
 
 defineProps<{
   currentUser: App.Entities.User;
