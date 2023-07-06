@@ -52,6 +52,8 @@ const selectedReservationResource =
     "selectedReservationResource"
   );
 
+const showStateChangeModal = ref(false);
+
 const dataTableColumns = [
   {
     title: "Pavadinimas",
