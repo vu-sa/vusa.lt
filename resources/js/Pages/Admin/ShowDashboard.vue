@@ -100,6 +100,12 @@
       <h2 class="flex items-center gap-2">
         <NIcon :component="Icons.RESERVATION"></NIcon
         ><span>{{ $t("Tavo rezervacijos") }}</span>
+        <Link :href="route('reservations.create')">
+          <NIcon
+            class="mb-1 ml-1 align-middle"
+            :component="AddCircle24Filled"
+          />
+        </Link>
       </h2>
       <template
         v-for="reservation in currentUser.reservations"
@@ -202,13 +208,14 @@
 </template>
 
 <script setup lang="tsx">
-import { ExternalLinkSquareAlt } from "@vicons/fa";
-import { Head, Link, router } from "@inertiajs/vue3";
 import {
+  AddCircle24Filled,
   LightbulbFilament24Filled,
   Link24Filled,
   Settings24Filled,
 } from "@vicons/fluent";
+import { ExternalLinkSquareAlt } from "@vicons/fa";
+import { Head, Link, router } from "@inertiajs/vue3";
 import { NButton, NCheckbox, NCheckboxGroup, NIcon, NPopover } from "naive-ui";
 import { useStorage } from "@vueuse/core";
 
