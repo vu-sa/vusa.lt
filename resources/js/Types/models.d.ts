@@ -132,6 +132,8 @@ declare namespace App.Models {
     meetings?: any | null;
     agenda_items?: any | null;
     tasks?: any | null;
+    reservations?: any | null;
+    resources?: any | null;
     dutiables_count?: number | null;
     users_count?: number | null;
     current_users_count?: number | null;
@@ -329,6 +331,7 @@ declare namespace App.Models {
     news?: Array<App.Models.News> | null;
     pages?: Array<App.Models.Page> | null;
     users?: Array<App.Models.User> | null;
+    resources?: Array<App.Models.Resource> | null;
     banners_count?: number | null;
     calendar_count?: number | null;
     duties_count?: number | null;
@@ -336,6 +339,7 @@ declare namespace App.Models {
     news_count?: number | null;
     pages_count?: number | null;
     users_count?: number | null;
+    resources_count?: number | null;
   }
 
   export interface Page {
@@ -605,6 +609,7 @@ declare namespace App.Models {
     dutiables_count?: number | null;
     tasks_count?: number | null;
     reservations_count?: number | null;
+    readonly impersonate?: any;
   }
 }
 
@@ -673,6 +678,7 @@ declare namespace App.Models.Pivots {
     updated_at: any;
     deleted_at: any | null;
     reservation?: App.Models.Reservation | null;
+    resource?: App.Models.Resource | null;
     readonly approvable?: boolean;
     readonly state_properties?: any;
   }
