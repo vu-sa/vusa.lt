@@ -1,5 +1,7 @@
 <?php
 
+namespace Tests\Feature\Notifications;
+
 use App\Events\CommentPosted;
 use App\Models\Comment;
 use App\Models\Doing;

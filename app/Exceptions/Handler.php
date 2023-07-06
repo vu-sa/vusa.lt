@@ -47,6 +47,8 @@ class Handler extends ExceptionHandler
     {
         $response = parent::render($request, $e);
 
+        // TODO: Maybe make errors work something like this: https://inertiajs.com/error-handling
+
         if (in_array($response->status(), [403])) {
             return back()->with([
                 'info' => $e->getMessage() ?? 'Neturite teisių atlikti šiam veiksmui.',

@@ -192,7 +192,7 @@ class ReservationController extends LaravelResourceController
 
     public function addUsers(Reservation $reservation, Request $request)
     {
-        $this->authorize('update', [Reservation::class, $reservation, $this->authorizer]);
+        $this->authorize('addUsers', [Reservation::class, $reservation, $this->authorizer]);
 
         $reservation->users()->syncWithoutDetaching($request->input('users'));
 

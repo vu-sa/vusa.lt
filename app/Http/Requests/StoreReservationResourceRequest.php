@@ -6,7 +6,7 @@ use App\Models\Resource;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
 
-class StoreReservationResourceRequest extends FormRequest
+class StoreReservationResourceRequest extends ResourceRequest
 {
     /**
      * Determine if the user is authorized to make this request.

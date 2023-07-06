@@ -1,5 +1,7 @@
 <?php
 
+namespace Tests\Feature\Inertia;
+
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;

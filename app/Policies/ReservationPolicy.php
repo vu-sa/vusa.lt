@@ -19,12 +19,25 @@ class ReservationPolicy extends ModelPolicy
         $this->pluralModelName = Str::plural(ModelEnum::RESERVATION()->label);
     }
 
+    // Override create method to check if user can create reservation
+    // ! Every user can create reservation
+    public function create(User $user, ModelAuthorizer $authorizer): bool
+    {
+        $this->authorizer = $authorizer;
+
+        return true;
+    }
+
     /**
      * Determine whether the user can view the model.
      */
     public function view(User $user, Reservation $reservation, ModelAuthorizer $authorizer): bool
     {
         $this->authorizer = $authorizer;
+
+        if ($reservation->users->contains($user)) {
+            return true;
+        }
 
         if ($this->commonChecker($user, $reservation, CRUDEnum::READ()->label, $this->pluralModelName)) {
             return true;
@@ -74,6 +87,25 @@ class ReservationPolicy extends ModelPolicy
      */
     public function forceDelete(User $user, Reservation $reservation): bool
     {
+        return false;
+    }
+
+    /**
+     * Determine whether the user can add users to the model.
+     */
+
+    public function addUsers(User $user, Reservation $reservation, ModelAuthorizer $authorizer): bool
+    {
+        $this->authorizer = $authorizer;
+
+        if ($reservation->users->contains($user)) {
+            return true;
+        }
+
+        if ($this->commonChecker($user, $reservation, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
+            return true;
+        }
+
         return false;
     }
 }

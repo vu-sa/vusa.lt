@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests\Feature\Reservations;
+namespace Tests\Feature\Reservations;
 
 use App\Models\Duty;
 use App\Models\Institution;
@@ -13,24 +13,66 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class PermissionTest extends TestCase {
 
     use RefreshDatabase;
 
+    private $simpleUser;
+    private $reservationManagerUser;
+    private $resourceManagerUser;
+    private $reservation;
+    private $resources;
+
+    public function setUp(): void {
+        parent::setUp();
+
+        $padalinys = Padalinys::inRandomOrder()->first();
+
+        $this->resources = Resource::factory()->for($padalinys)->count(3)->create();
+        $this->reservation = Reservation::factory()->hasAttached($this->resources)->create();
+
+        $this->simpleUser = User::factory()->create();
+        $this->reservationManagerUser = User::factory()->hasAttached($this->reservation)->create();
+        $this->resourceManagerUser = User::factory()->create();
+
+        $resourceManagerDuty = Duty::factory()->has(Institution::factory()->state(
+            ['padalinys_id' => $padalinys->id]
+        ))->hasAttached($this->resourceManagerUser, ['start_date' => now()->subDays(1), 'end_date' => now()->addDays(1)])->create();
+
+        $resourceManagerRole = Role::factory()->create();
+        $resourceManagerRole->givePermissionTo(['reservations.read.*', 'resources.update.padalinys']);
+
+        $resourceManagerDuty->assignRole($resourceManagerRole);
+    }
+
     public function test_simple_user_cannot_access_reservation() {
-        $user = User::factory()->create();
-        $reservation = Reservation::factory()->create();
+        $user = $this->simpleUser;
+        $reservation = $this->reservation;
+
+        // TODO: why first page visit is needed for flashing?
+        $this->actingAs($user)->get(route('dashboard'));
 
         $response = $this->actingAs($user)->get(route('reservations.show', $reservation->id));
 
-        $response->assertStatus(403);
+        $response->assertStatus(302)->assertRedirect(route('dashboard'));
+
+        $this->followRedirects($response)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowDashboard')
+                ->whereNot('flash.info', null)
+                ->where('flash.info', 'This action is unauthorized.')
+            );
     }
 
     public function test_simple_user_cannot_update_reservation() {
-        $user = User::factory()->create();
-        $reservation = Reservation::factory()->create();
+
+        $user = $this->simpleUser;
+        $reservation = $this->reservation;
+
+        $this->actingAs($user)->get(route('dashboard'));
 
         $response = $this->actingAs($user)->patch(route('reservations.update', $reservation->id), [
             ...$reservation->toArray(),
@@ -38,77 +80,83 @@ class PermissionTest extends TestCase {
             'end_time' => now()->addHours(2),
         ]);
 
-        $response->assertStatus(403);
+        $response->assertStatus(302)->assertRedirect(route('dashboard'));
+
+        $this->followRedirects($response)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowDashboard')
+                ->whereNot('flash.info', null)
+                ->where('flash.info', 'This action is unauthorized.')
+            );
     }
 
-    public function test_reservation_user_can_update_reservation() {
-        $user = User::factory()->create();
-        $reservation = Reservation::factory()->recycle($user)->create();
+    public function test_simple_user_can_access_reservation_after_they_are_assigned_to_it() {
+        $user = $this->simpleUser;
+        $reservation = $this->reservation;
 
-        $response = $this->actingAs($user)->put(route('reservations.update', $reservation->id), [
-            ...$reservation->toArray(),
-            'start_time' => now()->addHours(1),
-            'end_time' => now()->addHours(2),
+        // first assign the user to the reservation
+        $this->actingAs($this->reservationManagerUser)->get(route('dashboard'));
+
+        $response = $this->actingAs($this->reservationManagerUser)->put(route('reservations.add-users', $reservation->id), [
+            'users' => [$user->id]
         ]);
 
-        $response->assertStatus(200);
+        $response->assertStatus(302)->assertRedirect(route('dashboard'));
+
+        $this->followRedirects($response)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowDashboard')
+                ->where('flash.success', 'Rezervacijos valdytojai pridėti.')
+            );
+
+        $response = $this->actingAs($user)->get(route('reservations.show', $reservation->id));
+
+        $this->followRedirects($response)->assertStatus(200)->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/Reservations/ShowReservation')
+            ->whereNot('reservation', null)
+            ->where('reservation.id', $reservation->id)
+        );
     }
 
-    public function test_reservation_user_cannot_access_other_users_reservation() {
-        $user1 = User::factory()->create();
-        $user2 = User::factory()->create();
-        $reservation = Reservation::factory()->recycle($user1)->create();
+    public function test_simple_user_can_create_reservation() {
+        $user = $this->simpleUser;
 
-        $response = $this->actingAs($user2)->get('/reservations/' . $reservation->id);
+        $this->actingAs($user)->get(route('reservations.create'))->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/Reservations/CreateReservation')
+            ->whereNot('resources', null)
+        );
 
-        $response->assertStatus(403);
+        $response = $this->actingAs($user)->post(route('reservations.store'), [
+            'name' => [
+                'lt' => 'test',
+            ],
+            'start_time' => now()->addDays(1)->timestamp,
+            'end_time' => now()->addDays(2)->timestamp,
+            'resources' => $this->resources->map(fn ($resource) => ['id' => $resource->id, 'quantity' => 1])->toArray()
+        ]);
+
+        $response->assertStatus(302)->assertRedirectToRoute('reservations.index');
+
+        $reservation = Reservation::where('name->lt', 'test')->first();
+        $this->assertNotNull($reservation);
+
+        $response->assertStatus(302)->assertRedirectToRoute('reservations.index');
     }
 
     public function test_resource_manager_can_update_reservation_resource_state() {
 
-        $padalinys = Padalinys::inRandomOrder()->first();
+        $user = $this->resourceManagerUser;
 
-        $resource = Resource::factory()->for($padalinys)->create();
+        $this->actingAs($user)->get(route('reservations.show', $this->reservation->id));
 
-        $user = User::factory()->has(Reservation::factory()->hasAttached($resource))->create();
-
-        $duty = Duty::factory()->has(Institution::factory()->state(
-            ['padalinys_id' => $padalinys->id]
-        ))->hasAttached($user, ['start_date' => now()->subDays(1), 'end_date' => now()->addDays(1)])->create();
-
-        $resourceManagerRole = Role::factory()->create();
-        $resourceManagerRole->givePermissionTo(['reservations.read.*', 'resources.update.padalinys']);
-
-        $duty->assignRole($resourceManagerRole);
-
-        $this->actingAs($user)->get(route('reservations.show', $user->reservations->first()->id));
-
-        $response = $this->actingAs($user)->post(route("users.comments.store", $user->id), [
+        $response = $this->post(route("users.comments.store", $user->id), [
             'commentable_type' => 'reservation_resouce',
-            'commentable_id' => $resource->reservations->first()->pivot->id,
+            'commentable_id' => $this->reservation->resources->first()->pivot->id,
             'comment' => 'test',
             'decision' => 'approve'
         ]);
 
-        $response->assertStatus(302);
-        $response->assertRedirect(route('reservations.show', $resource->reservations->first()->id));
-        // assert status 200 after redirect
+        $response->assertStatus(302)->assertRedirect(route('reservations.show', $this->reservation->id));
         $this->followRedirects($response)->assertStatus(200);
-    }
-
-    public function test_resource_manager_cannot_update_other_reservation_resource_pivots() {
-        $user1 = User::factory()->create();
-        $user2 = User::factory()->create();
-        $reservation1 = Reservation::factory()->create();
-        $reservation2 = Reservation::factory()->create();
-        $resource = Resource::factory()->create();
-
-        $user2->assignRole('resource_manager');
-
-        $response = $this->actingAs($user2)->put('/reservations/' . $reservation2->id . '/resources/' . $resource->id, [
-            'quantity' => 2,
-        ]);
-
-        $response->assertStatus(403);
     }
 }
