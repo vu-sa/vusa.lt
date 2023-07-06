@@ -29,7 +29,7 @@ class CommentController extends LaravelResourceController
      */
     public function store(Request $request)
     {
-        $this->authorize('create', [Comment::class, $this->authorizer]);
+        // $this->authorize('create', [Comment::class, $this->authorizer]);
 
         $validated = $request->validate([
             'commentable_type' => [new EnumRule(ModelEnum::class), 'required'],
