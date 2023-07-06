@@ -53,16 +53,17 @@
           $t("Siųsti anonimiškai")
         }}</NCheckbox></NFormItem
       >
+      <NFormItem :show-feedback="false">
+        <NButton
+          :loading="loading"
+          type="primary"
+          :disabled="!form.feedback"
+          @click="handleSend"
+          ><template #icon><NIcon :component="Send20Filled"></NIcon></template
+          >{{ $t("forms.submit") }}
+        </NButton>
+      </NFormItem>
     </NForm>
-    <NButton
-      :loading="loading"
-      type="primary"
-      class="mt-4"
-      :disabled="!form.feedback"
-      @click="handleSend"
-      ><template #icon><NIcon :component="Send20Filled"></NIcon></template
-      >{{ $t("forms.submit") }}
-    </NButton>
   </CardModal>
 </template>
 
