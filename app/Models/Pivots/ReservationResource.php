@@ -70,14 +70,14 @@ class ReservationResource extends Pivot implements Decidable
 
     public function decisionToProgress()
     {
-        abort('Negalima priimti tokio sprendimo.', 403);
+        abort(403, 'Negalima priimti tokio sprendimo.');
     }
 
     public function decisionToApprove()
     {
         if(!$this->authorizer->forUser(auth()->user())->check('reservations.update.padalinys')) {
             // throw authorization exception if user is not authorized
-            abort('Neturite teisių patvirtinti rezervacijos veiksmams.', 403);
+            abort(403, 'Neturite teisių patvirtinti rezervacijos veiksmams.');
         }
 
         $this->state->handleApprove();
@@ -87,7 +87,7 @@ class ReservationResource extends Pivot implements Decidable
     {
         if(!$this->authorizer->forUser(auth()->user())->check('reservations.update.padalinys')) {
             // throw authorization exception if user is not authorized
-            abort('Neturite teisių atmesti rezervacijos veiksmams.', 403);
+            abort(403, 'Neturite teisių atmesti rezervacijos veiksmams.');
         }
 
         $this->state->handleReject();
@@ -101,6 +101,6 @@ class ReservationResource extends Pivot implements Decidable
             return;
         }
 
-        abort('Negalite atšaukti rezervacijos veiksmų.', 403);
+        abort(403, 'Negalite atšaukti rezervacijos veiksmų.');
     }
 }

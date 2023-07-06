@@ -93,7 +93,7 @@ class Doing extends Model implements Decidable
     {
         if(!$this->authorizer->forUser(auth()->user())->check($this->modelName.'.update.padalinys')) {
             // throw authorization exception if user is not authorized
-            abort('Neturite teisių patvirtinti veiklai.', 403);
+            abort(403, 'Neturite teisių patvirtinti veiklai.');
         }
 
         if ($this->state instanceof PendingFinalApproval) {
@@ -107,7 +107,7 @@ class Doing extends Model implements Decidable
     {
         if(!$this->authorizer->forUser(auth()->user())->check($this->modelName.'.update.padalinys')) {
             // throw authorization exception if user is not authorized
-            abort('Neturite teisių atmesti veiklai.', 403);
+            abort(403, 'Neturite teisių atmesti veiklai.');
         }
 
         if ($this->state instanceof PendingFinalApproval) {
