@@ -51,6 +51,11 @@ class ReservationResource extends Pivot implements Decidable
 
         $authorizer = new ModelAuthorizer();
 
+        if ($authorizer->forUser(auth()->user())->check('reservations.update.padalinys')) {
+            // check if authorizer->getPadaliniai() contains $this->padalinys
+            return $authorizer->getPadaliniai()->contains($this->padalinys);
+        }
+
         return $authorizer->forUser(auth()->user())->check('resources.update.padalinys');
     }
 

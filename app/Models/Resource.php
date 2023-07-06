@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use AjCastro\EagerLoadPivotRelations\EagerLoadPivotTrait;
+use App\Actions\GetResourceManagers;
 use App\Models\Pivots\ReservationResource;
 use App\Models\Traits\HasTranslations;
 use Carbon\Carbon;
@@ -47,6 +48,11 @@ class Resource extends Model implements HasMedia
     public function active_reservations()
     {
         return $this->reservations()->wherePivotIn('state', ['created', 'updated', 'reserved', 'lent']);
+    }
+
+    public function managers()
+    {
+        return GetResourceManagers::execute($this);
     }
 
     public function padalinys()

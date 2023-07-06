@@ -41,6 +41,7 @@ import CardModal from "../Modals/CardModal.vue";
 import CommentTipTap from "@/Features/Admin/CommentViewer/CommentTipTap.vue";
 import InfoText from "../SmallElements/InfoText.vue";
 import ReservationResourceStateTag from "../Tag/ReservationResourceStateTag.vue";
+import UsersAvatarGroup from "../Avatars/UsersAvatarGroup.vue";
 
 defineProps<{
   reservation: App.Entities.Reservation & { approvable: boolean };
@@ -63,15 +64,28 @@ const dataTableColumns = [
   {
     title: "Padalinys",
     key: "padalinys.shortname",
+    render(row) {
+      return (
+        <div class="inline-flex items-center gap-2">
+          <span>{row.padalinys.shortname}</span>
+          <UsersAvatarGroup
+            users={row.managers}
+            class="ml-2"
+            size={24}
+            max={2}
+          />
+        </div>
+      );
+    },
   },
   {
     title: "Rezervacijos pradžia",
     key: "pivot.start_time",
     render(row) {
       return formatStaticTime(new Date(row.pivot.start_time), {
-        weekday: "long",
+        weekday: "short",
         day: "2-digit",
-        month: "long",
+        month: "narrow",
         hour: "numeric",
         minute: "numeric",
       });
@@ -82,9 +96,9 @@ const dataTableColumns = [
     key: "pivot.end_time",
     render(row) {
       return formatStaticTime(new Date(row.pivot.end_time), {
-        weekday: "long",
+        weekday: "short",
         day: "2-digit",
-        month: "long",
+        month: "narrow",
         hour: "numeric",
         minute: "numeric",
       });
@@ -131,7 +145,6 @@ const dataTableColumns = [
   },
 ];
 
-const showStateChangeModal = ref(false);
 const commentText = ref("");
 const loading = ref(false);
 

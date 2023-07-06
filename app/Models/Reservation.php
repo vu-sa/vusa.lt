@@ -12,12 +12,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\ModelStates\HasStates;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Reservation extends Model
 {
-    use HasFactory, HasStates, HasComments, HasTranslations, HasRelationships, HasUlids, LogsActivity, Searchable, SoftDeletes;
+    use HasFactory, HasComments, HasTranslations, HasRelationships, HasUlids, LogsActivity, Searchable, SoftDeletes;
 
     protected $guarded = [];
 
@@ -28,7 +27,13 @@ class Reservation extends Model
         return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
     }
 
-    // reservation state is calculated from the pivot
+    public function toSearchableArray()
+    {
+        return [
+            'name->'.app()->getLocale() => $this->getTranslation('name', 'lt'),
+            // 'description->'.app()->getLocale() => $this->getTranslation('description', 'lt'),
+        ];
+    }
 
     public function resources()
     {
@@ -46,13 +51,5 @@ class Reservation extends Model
     public function padaliniai()
     {
         return $this->hasManyDeepFromRelations($this->users(), (new User)->padaliniai());
-    }
-
-    public function toSearchableArray()
-    {
-        return [
-            'name->'.app()->getLocale() => $this->getTranslation('name', 'lt'),
-            // 'description->'.app()->getLocale() => $this->getTranslation('description', 'lt'),
-        ];
     }
 }
