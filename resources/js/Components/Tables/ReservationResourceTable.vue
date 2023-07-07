@@ -132,7 +132,7 @@ const dataTableColumns = [
     render(row) {
       return (
         <ReservationResourceStateTag
-          reservationResource={row.pivot}
+          state={row.pivot.state} state_properties={row.pivot.state_properties}
         ></ReservationResourceStateTag>
       );
     },

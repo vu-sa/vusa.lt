@@ -22,8 +22,8 @@ abstract class ReservationResourceState extends State
     {
         return parent::config()
             ->default(Created::class)
-            ->allowTransition(Created::class, Reserved::class)
             ->allowTransitions([
+                [Created::class, Reserved::class],
                 [Reserved::class, Lent::class],
                 [Lent::class, Returned::class],
             ])

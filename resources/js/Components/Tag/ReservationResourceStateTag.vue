@@ -2,12 +2,12 @@
   <NTag
     :bordered="false"
     size="small"
-    :type="reservationResource.state_properties.tagType"
+    :type="state_properties.tagType"
   >
     <div class="inline-flex items-center gap-1">
-      <span>{{ doingStateDescriptions[reservationResource.state].title }}</span>
-      <InfoPopover>
-        {{ reservationResource.state_properties.description }}
+      <span>{{ $t(`state.${state}`) }}</span>
+      <InfoPopover v-if="state_properties">
+        {{ state_properties.description }}
       </InfoPopover>
     </div>
   </NTag>
@@ -18,32 +18,7 @@ import { NTag } from "naive-ui";
 import InfoPopover from "../Buttons/InfoPopover.vue";
 
 defineProps<{
-  reservationResource: App.Entities.ReservationResource;
+  state: App.Entities.ReservationResource["state"];
+  state_properties?: App.Entities.ReservationResource["state_properties"];
 }>();
-
-const doingStateDescriptions: Record<
-  App.Entities.ReservationResource["state"],
-  Partial<{
-    title: string;
-  }>
-> = {
-  created: {
-    title: "Sukurtas",
-  },
-  reserved: {
-    title: "Rezervuotas",
-  },
-  lent: {
-    title: "Paskolintas",
-  },
-  returned: {
-    title: "Grąžintas",
-  },
-  rejected: {
-    title: "Atmestas",
-  },
-  cancelled: {
-    title: "Atšauktas",
-  },
-};
 </script>

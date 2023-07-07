@@ -14,10 +14,32 @@
       />
     </template>
     <template #more-options>
+      <NButton size="small" text @click="showReservationHelpModal = true">
+        <template #icon><NIcon :component="QuestionCircle16Regular" /></template>
+        <CardModal
+          title="Kaip veikia rezervacija?"
+          :show="showReservationHelpModal"
+          @close="showReservationHelpModal = false"
+        >
+        <p>Kiekviena rezervacija gali turėti 6 skirtingus statusus: sukurta, rezervuota, paskolinta, grąžinta, atmesta, atšaukta.</p>
+        <p class="my-4"><strong>Įprastas rezervacijos veiksmų tvirtinimo procesas</strong></p>
+        <NTimeline horizontal>
+          <NTimelineItem type="info" :title="$t('state.created')" />
+          <NTimelineItem type="success" :title="$t('state.reserved')" />
+          <NTimelineItem type="warning" :title="$t('state.lent')" />
+          <NTimelineItem type="success" :title="$t('state.returned')" />
+        </NTimeline>
+
+        Sukūrus išteklio rezervacijos užklausą, ją galima atmesti. Rezervacijos kūrėjai taip pat gali
+        atšaukti išteklio rezervaciją, iki daikto pasiskolinimo.
+        </CardModal>
+
+      </NButton>
       <MoreOptionsButton
         :more-options="moreOptions"
         @more-option-click="handleMoreOptionClick"
       ></MoreOptionsButton>
+
     </template>
     <ReservationResourceTable
       v-model:selectedReservationResource="selectedReservationResource"
@@ -94,6 +116,8 @@ type SelectRenderLabel,
 type SelectRenderTag,
 NTag,
 type SelectOption,
+NTimelineItem,
+NTimeline,
 } from "naive-ui";
 import { router, useForm } from "@inertiajs/vue3";
 import CardModal from "@/Components/Modals/CardModal.vue";
@@ -103,10 +127,12 @@ import InfoText from "@/Components/SmallElements/InfoText.vue";
 import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ReservationResourceForm from "@/Components/AdminForms/ReservationResourceForm.vue";
 import ReservationResourceTable from "@/Components/Tables/ReservationResourceTable.vue";
+import ReservationResourceStateTag from "@/Components/Tag/ReservationResourceStateTag.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
 import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
+import { QuestionCircle16Regular } from "@vicons/fluent";
 
 const props = defineProps<{
   reservation: App.Entities.Reservation;
@@ -120,6 +146,8 @@ const selectedReservationResource =
 
 const showReservationResourceCreateModal = ref(false);
 const showReservationAddUserModal = ref(false);
+const showReservationHelpModal = ref(false);
+
 const reservationResourceForm = useForm({
   resource_id: null,
   reservation_id: props.reservation.id,
