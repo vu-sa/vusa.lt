@@ -44,12 +44,15 @@
     >
       <NForm :model="reservationUserForm">
         <NFormItem label="Naudotojai">
-          <NSelect
+          <NSelect placeholder="Pasirink rezervacijos valdytojus..."
             v-model:value="reservationUserForm.users"
+            filterable
+            clearable
             label-field="name"
             value-field="id"
-            filterable
             multiple
+            :render-label="renderUserFormLabel"
+            :render-tag="renderUserFormTag"
             :options="allUsers"
           ></NSelect>
         </NFormItem>
@@ -87,6 +90,10 @@ import {
   NFormItem,
   NIcon,
   NSelect,
+type SelectRenderLabel,
+type SelectRenderTag,
+NTag,
+type SelectOption,
 } from "naive-ui";
 import { router, useForm } from "@inertiajs/vue3";
 import CardModal from "@/Components/Modals/CardModal.vue";
@@ -99,6 +106,7 @@ import ReservationResourceTable from "@/Components/Tables/ReservationResourceTab
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
 import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
+import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
 
 const props = defineProps<{
   reservation: App.Entities.Reservation;
@@ -207,6 +215,31 @@ const getAllComments = () => {
   );
 
   return comments;
+};
+
+const renderUserFormLabel: SelectRenderLabel = (option, selected) => {
+  return (
+    <div class="inline-flex items-center gap-2">
+      <UserAvatar user={option} size={20} />
+      <span>{option.name}</span>
+    </div>
+  )
+}
+
+const renderUserFormTag: SelectRenderTag = ({ option, handleClose } : { option: App.Entities.User, handleClose: () => void }) => {
+  return (
+    <NTag round closable onClose={
+      (e) => {
+        e.stopPropagation();
+        handleClose();
+      }
+    }>
+      <div class="inline-flex items-center gap-2 align-middle">
+        <UserAvatar user={option} size={18} />
+        <span>{option.name}</span>
+      </div>
+    </NTag>
+  )
 };
 
 const relatedModels = [

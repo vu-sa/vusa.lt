@@ -138,7 +138,7 @@ class ReservationController extends LaravelResourceController
                     'lowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($capacityAtDateTimeRange),
                 ];
             })),
-            'allUsers' => Inertia::lazy(fn () => User::select('id', 'name')->orderBy('name')->get()),
+            'allUsers' => Inertia::lazy(fn () => User::select('id', 'name', 'profile_photo_path')->orderBy('name')->get()),
         ]);
     }
 
