@@ -49,17 +49,17 @@ class Handler extends ExceptionHandler
 
         // TODO: Maybe make errors work something like this: https://inertiajs.com/error-handling
 
-        if (in_array($response->getStatusCode(), [403])) {
-            // check if inertia request
-            if (!$response->headers->get('x-inertia') === 'true') {
-                return $response;
-            }
-            return back()->with([
-                'info' => $e->getMessage() ?? 'Neturite teisių atlikti šiam veiksmui.',
-                'statusCode' => $response->getStatusCode(),
-            ]);
+        // Resolve 403 errors with a flash message
+        // But only if the request is an Inertia request, otherwise it results in a redirect loop
+        if (!in_array($response->getStatusCode(), [403])
+            || !$response->headers->get('x-inertia') === 'true')
+        {
+            return $response;
         }
 
-        return $response;
+        return back()->with([
+            'info' => $e->getMessage() ?? 'Neturite teisių atlikti šiam veiksmui.',
+            'statusCode' => $response->getStatusCode(),
+        ]);
     }
 }
