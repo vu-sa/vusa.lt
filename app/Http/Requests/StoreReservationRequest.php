@@ -18,8 +18,9 @@ class StoreReservationRequest extends ResourceRequest
     protected function prepareForValidation()
     {
         $this->merge([
-            'start_time' => Carbon::createFromTimestampMs($this->input('start_time')),
-            'end_time' => Carbon::createFromTimestampMs($this->input('end_time')),
+            // check if int, if not, use input
+            'start_time' => is_int($this->input('start_time')) ? Carbon::createFromTimestampMs($this->input('start_time')) : $this->input('start_time'),
+            'end_time' => is_int($this->input('end_time')) ? Carbon::createFromTimestampMs($this->input('end_time')) : $this->input('end_time'),
         ]);
     }
 

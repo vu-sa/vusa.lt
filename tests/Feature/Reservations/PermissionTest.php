@@ -138,14 +138,12 @@ class PermissionTest extends TestCase
             'name' => [
                 'lt' => 'test',
             ],
-            'start_time' => now()->addDays(1)->timestamp,
-            'end_time' => now()->addDays(2)->timestamp,
             'resources' => $this->resources->map(fn ($resource) => ['id' => $resource->id, 'quantity' => 1])->toArray(),
         ]);
 
-        $response = $this->actingAs($user)->post(route('reservations.store'), [
-            ...$reservation->toFullArray(),
-        ]);
+        $response = $this->actingAs($user)->post(route('reservations.store'),
+            $reservation->toFullArray()
+        );
 
         $response->assertStatus(302);
 
@@ -159,7 +157,6 @@ class PermissionTest extends TestCase
 
     public function test_resource_manager_can_update_reservation_resource_state()
     {
-
         $user = $this->resourceManagerUser;
 
         $this->actingAs($user)->get(route('reservations.show', $this->reservation->id));
