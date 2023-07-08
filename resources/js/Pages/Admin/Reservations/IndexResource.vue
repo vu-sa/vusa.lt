@@ -11,12 +11,18 @@
 </template>
 
 <script setup lang="tsx">
-import { type DataTableColumns, NImage, NImageGroup, NSpace, type DataTableSortState } from "naive-ui";
+import {
+  type DataTableColumns,
+  type DataTableSortState,
+  NImage,
+  NImageGroup,
+  NSpace,
+} from "naive-ui";
+import { computed, provide, ref } from "vue";
+import { usePage } from "@inertiajs/vue3";
 
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
-import { computed, provide, ref } from "vue";
-import { usePage } from "@inertiajs/vue3";
 
 defineProps<{
   resources: PaginatedModels<App.Entities.Resource>;
@@ -36,7 +42,7 @@ const sorters = ref<Record<string, DataTableSortState["order"]>>({
 provide("sorters", sorters);
 
 const filters = ref<Record<string, any>>({
-  "padalinys_id": [],
+  padalinys_id: [],
 });
 
 provide("filters", filters);
@@ -90,20 +96,6 @@ const columns = computed<DataTableColumns<App.Entities.Resource>>(() => [
     }),
     render(row) {
       return row.padalinys?.shortname;
-    },
-  },
-  {
-    title: "Sukurtas",
-    key: "created_at",
-    render(row) {
-      return new Date(row.created_at).toLocaleString("lt-LT");
-    },
-  },
-  {
-    title: "Atnaujintas",
-    key: "updated_at",
-    render(row) {
-      return new Date(row.updated_at).toLocaleString("lt-LT");
     },
   },
 ]);
