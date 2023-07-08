@@ -21,7 +21,6 @@ import { computed, provide, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
-import { updateFilters, updateSorters } from "@/Utils/DataTable";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 import ModelChip from "@/Components/Chips/ModelChip.vue";
@@ -42,13 +41,13 @@ const sorters = ref<Record<string, DataTableSortState["order"]>>({
   name: false,
 });
 
-provide("sorters", { sorters, updateSorters });
+provide("sorters", sorters);
 
 const filters = ref<Record<string, any>>({
   "padalinys.id": [],
 });
 
-provide("filters", { filters, updateFilters });
+provide("filters", filters);
 
 const columns = computed<DataTableColumns<App.Entities.Institution>>(() => {
   return [

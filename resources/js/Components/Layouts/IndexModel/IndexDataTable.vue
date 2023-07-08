@@ -11,11 +11,12 @@
     :columns="columnsWithActions"
     :loading="loading"
     :pagination="pagination"
-    :row-key="(row) => row.id"
+    :row-key="rowKey"
     pagination-behavior-on-filter="first"
     @update:sorter="handleSorterChange"
     @update:page="handleChange"
     @update:filters="handleFiltersChange"
+    @update-checked-row-keys="handleCheckedRowKeysChange"
   >
   </NDataTable>
 </template>
@@ -31,13 +32,15 @@ import {
   NDataTable,
   NIcon,
 } from "naive-ui";
-import { computed, inject, ref } from "vue";
+import { computed, inject, ref, type Ref } from "vue";
 import { router } from "@inertiajs/vue3";
-import type { DataTableColumns } from "naive-ui";
+import type { DataTableColumns, DataTableRowKey } from "naive-ui";
 
+import { updateFilters, updateSorters } from "@/Utils/DataTable";
 import { Link } from "@inertiajs/vue3";
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import IndexSearchInput from "./IndexSearchInput.vue";
+import type { SortOrder } from "naive-ui/es/data-table/src/interface";
 
 const props = defineProps<{
   columns: DataTableColumns<Record<string, any>>;
@@ -49,8 +52,9 @@ const props = defineProps<{
 }>();
 
 const loading = ref(false);
-const { sorters, updateSorters } = inject("sorters", {});
-const { filters, updateFilters } = inject("filters", {});
+
+const sorters = inject<Ref<Record<string, SortOrder>> | undefined>("sorters", undefined);
+const filters = inject<Ref<Record<string, any>> | undefined>("filters", undefined);
 
 const pagination = ref({
   itemCount: props.paginatedModels.total,
@@ -60,14 +64,30 @@ const pagination = ref({
   showQuickJumper: true,
 });
 
-const handleFiltersChange = (state: DataTableFilterState) => {
-  filters.value = updateFilters(filters, state);
+const handleSorterChange = (state: DataTableSortState) => {
+
+  if (sorters !== undefined) {
+    sorters.value = updateSorters(sorters, state);
+  }
+
   handleChange(1);
 };
 
-const handleSorterChange = (state: DataTableSortState) => {
-  sorters.value = updateSorters(sorters, state);
+const handleFiltersChange = (state: DataTableFilterState) => {
+
+  if (filters !== undefined) {
+    filters.value = updateFilters(filters, state);
+  }
+
   handleChange(1);
+};
+
+const rowKey = (row: Record<string, any>) => row.id;
+
+const checkedRowKeys = inject<Ref<DataTableRowKey[]>>("checkedRowKeys", ref([]));
+
+const handleCheckedRowKeysChange = (rowKeys: DataTableRowKey[]) => {
+  checkedRowKeys.value = rowKeys;
 };
 
 const handleChange = (page: number) => {
@@ -100,8 +120,16 @@ const handleChange = (page: number) => {
 const handleCompletedSearch = () => handleChange(1);
 
 const sweepSearch = () => {
-  updateFilters(filters, undefined);
-  updateSorters(sorters, undefined);
+
+  if (filters !== undefined) {
+    filters.value = updateFilters(filters, undefined);
+  }
+
+  if (sorters !== undefined) {
+    sorters.value = updateSorters(sorters, undefined);
+  }
+
+  handleCheckedRowKeysChange([]);
 
   router.reload({
     data: { page: 1, filters: undefined, sorters: undefined, text: undefined },

@@ -39,7 +39,7 @@ class Comment extends Model
         return $this->belongsTo(User::class);
     }
 
-        // create a nested comment
+    // create a nested comment
     // TODO: rename this function, or move it to a service
     public function comment(string $comment)
     {
