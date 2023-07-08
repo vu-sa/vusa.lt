@@ -6,7 +6,6 @@ use App\Models\Interfaces\Decidable;
 use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\Traits\HasComments;
-use App\Models\Traits\HasDecisions;
 use App\Models\Traits\MakesDecisions;
 use App\Services\ModelAuthorizer;
 use App\States\ReservationResource\ReservationResourceState;
@@ -41,7 +40,7 @@ class ReservationResource extends Pivot implements Decidable
     public function approvable()
     {
         // if user null, return false
-        if (!auth()->user()) {
+        if (! auth()->user()) {
             return false;
         }
 
@@ -75,7 +74,7 @@ class ReservationResource extends Pivot implements Decidable
 
     public function decisionToApprove()
     {
-        if(!$this->authorizer->forUser(auth()->user())->check(config('permission.resource_managership_indicating_permission'))) {
+        if (! $this->authorizer->forUser(auth()->user())->check(config('permission.resource_managership_indicating_permission'))) {
             // throw authorization exception if user is not authorized
             abort(403, 'Neturite teisių patvirtinti rezervacijos veiksmams.');
         }
@@ -85,7 +84,7 @@ class ReservationResource extends Pivot implements Decidable
 
     public function decisionToReject()
     {
-        if(!$this->authorizer->forUser(auth()->user())->check(config('permission.resource_managership_indicating_permission'))) {
+        if (! $this->authorizer->forUser(auth()->user())->check(config('permission.resource_managership_indicating_permission'))) {
             // throw authorization exception if user is not authorized
             abort(403, 'Neturite teisių atmesti rezervacijos veiksmams.');
         }
@@ -98,6 +97,7 @@ class ReservationResource extends Pivot implements Decidable
         if ($this->reservation->users()->where('users.id', auth()->id())->exists()) {
 
             $this->state->handleCancel();
+
             return;
         }
 

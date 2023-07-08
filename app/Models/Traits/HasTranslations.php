@@ -28,6 +28,4 @@ trait HasTranslations
 
         return $attributes;
     }
-
-
 }

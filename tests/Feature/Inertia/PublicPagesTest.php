@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Inertia;
 
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use PHPUnit\Framework\Attributes\CoversNothing;
@@ -15,7 +14,8 @@ class PublicPagesTest extends TestCase
     use RefreshDatabase;
 
     // check if public inertia response returns default props
-    public function test_gets_default_public_props(): void {
+    public function test_gets_default_public_props(): void
+    {
 
         $this->get(route('home', ['padalinys' => 'www', 'lang' => 'lt']))
             ->assertInertia(fn (Assert $page) => $page
@@ -34,7 +34,8 @@ class PublicPagesTest extends TestCase
 
     // check if public inertia response doesn't return any auth
 
-    public function test_does_not_return_user_immediately_in_public_pages(): void {
+    public function test_does_not_return_user_immediately_in_public_pages(): void
+    {
         $this->get(route('home', ['padalinys' => 'www', 'lang' => 'lt']))
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Public/HomePage')
@@ -42,7 +43,8 @@ class PublicPagesTest extends TestCase
             );
     }
 
-    public function test_can_see_the_home_page (): void {
+    public function test_can_see_the_home_page(): void
+    {
         $this->get(route('home', ['padalinys' => 'www', 'lang' => 'lt']))
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Public/HomePage')

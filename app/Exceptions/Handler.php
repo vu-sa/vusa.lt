@@ -51,9 +51,8 @@ class Handler extends ExceptionHandler
 
         // Resolve 403 errors with a flash message
         // But only if the request is an Inertia request, otherwise it results in a redirect loop
-        if (!in_array($response->getStatusCode(), [403])
-            || !$response->headers->get('x-inertia') === 'true')
-        {
+        if (! in_array($response->getStatusCode(), [403])
+            || ! $response->headers->get('x-inertia') === 'true') {
             return $response;
         }
 

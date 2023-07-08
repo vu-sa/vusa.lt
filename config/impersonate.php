@@ -17,7 +17,7 @@ return [
     | You can provide an array of URI's that must be ignored (eg. 'api/*')
     |
     */
-    'except'  => [
+    'except' => [
         'telescope*', 'horizon*', 'api/*',
     ],
 
@@ -32,7 +32,7 @@ return [
     | This must be an Eloquent Model instance.
     |
     */
-    'model'   => config('auth.providers.users.model'),
+    'model' => config('auth.providers.users.model'),
 
     /*
     |--------------------------------------------------------------------------
@@ -59,7 +59,7 @@ return [
     | mechanisms used by this application to persist your user's data.
     |
     */
-    'guard'   => config('auth.defaults.guard'),
+    'guard' => config('auth.defaults.guard'),
 
     'interface' => [
         /*
@@ -84,7 +84,7 @@ return [
             'name',
         ],
 
-        'separator'  => ' - ',
+        'separator' => ' - ',
 
         /*
         |--------------------------------------------------------------------------
@@ -109,7 +109,7 @@ return [
         | This is very useful for avoiding hard wraps on the interface.
         |
         */
-        'width'      => env('IMPERSONATE_WIDTH', '350px'),
+        'width' => env('IMPERSONATE_WIDTH', '350px'),
 
         /*
         |--------------------------------------------------------------------------
@@ -123,7 +123,7 @@ return [
         | to wait after a user has stopped typing before sending the request
         |
         */
-        'delay'      => env('IMPERSONATE_SEARCH_DELAY', 500),
+        'delay' => env('IMPERSONATE_SEARCH_DELAY', 500),
 
         /*
         |--------------------------------------------------------------------------
@@ -135,6 +135,6 @@ return [
         | Be careful, this might make your application crash if there is a lot of user data.
         |
         */
-        'limit'      => env('IMPERSONATE_MAX_DISPLAY', 20),
+        'limit' => env('IMPERSONATE_MAX_DISPLAY', 20),
     ],
 ];

@@ -17,7 +17,6 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\ModelStates\HasStates;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
-use Illuminate\Auth\Access\AuthorizationException;
 
 class Doing extends Model implements Decidable
 {
@@ -91,7 +90,7 @@ class Doing extends Model implements Decidable
 
     public function decisionToApprove()
     {
-        if(!$this->authorizer->forUser(auth()->user())->check($this->modelName.'.update.padalinys')) {
+        if (! $this->authorizer->forUser(auth()->user())->check($this->modelName.'.update.padalinys')) {
             // throw authorization exception if user is not authorized
             abort(403, 'Neturite teisių patvirtinti veiklai.');
         }
@@ -105,7 +104,7 @@ class Doing extends Model implements Decidable
 
     public function decisionToReject()
     {
-        if(!$this->authorizer->forUser(auth()->user())->check($this->modelName.'.update.padalinys')) {
+        if (! $this->authorizer->forUser(auth()->user())->check($this->modelName.'.update.padalinys')) {
             // throw authorization exception if user is not authorized
             abort(403, 'Neturite teisių atmesti veiklai.');
         }

@@ -8,9 +8,7 @@ use App\Http\Requests\StoreResourceRequest;
 use App\Http\Requests\UpdateResourceRequest;
 use App\Models\Resource;
 use App\Services\ModelIndexer;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class ResourceController extends LaravelResourceController
@@ -59,7 +57,7 @@ class ResourceController extends LaravelResourceController
         $this->authorize('create', [Resource::class, $this->authorizer]);
 
         return Inertia::render('Admin/Reservations/CreateResource', [
-            'assignablePadaliniai' => GetPadaliniaiForUpserts::execute('resources.create.all', $this->authorizer)
+            'assignablePadaliniai' => GetPadaliniaiForUpserts::execute('resources.create.all', $this->authorizer),
         ]);
     }
 
@@ -103,14 +101,14 @@ class ResourceController extends LaravelResourceController
             'resource' => $resource->toFullArray()
                 + ['left_capacity' => $resource->leftCapacity()]
                 + ['media' => $resource->getMedia('images')->map(fn ($image) => [
-                        'id' => $image->id,
-                        'name' => $image->name,
-                        'type' => $image->mime_type,
-                        'status' => 'finished',
-                        'url' => $image->getUrl(),
-                    ])
+                    'id' => $image->id,
+                    'name' => $image->name,
+                    'type' => $image->mime_type,
+                    'status' => 'finished',
+                    'url' => $image->getUrl(),
+                ]),
                 ],
-            'assignablePadaliniai' => GetPadaliniaiForUpserts::execute('resources.update.all', $this->authorizer)
+            'assignablePadaliniai' => GetPadaliniaiForUpserts::execute('resources.update.all', $this->authorizer),
         ]);
     }
 
@@ -126,7 +124,7 @@ class ResourceController extends LaravelResourceController
 
         // first, intersect existing media with id from request, delete one's that didn't match
         $resource->getMedia('images')
-            ->filter(fn ($image) => !in_array($image->id, array_column($request->validated('media'), 'id')))
+            ->filter(fn ($image) => ! in_array($image->id, array_column($request->validated('media'), 'id')))
             ->each(fn ($image) => $image->delete());
 
         // then add new media

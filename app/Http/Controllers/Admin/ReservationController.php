@@ -11,12 +11,11 @@ use App\Models\User;
 use App\Services\ModelIndexer;
 use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class ReservationController extends LaravelResourceController
 {
-
     public function __construct()
     {
         parent::__construct();
@@ -93,7 +92,7 @@ class ReservationController extends LaravelResourceController
                     'quantity' => $resource['quantity'],
                     'start_time' => $reservation->start_time,
                     'end_time' => $reservation->end_time,
-                    'state' => 'created'
+                    'state' => 'created',
                 ]
             );
         }
@@ -119,7 +118,7 @@ class ReservationController extends LaravelResourceController
             'reservation' => [
                 // load pivot relationship comments
                 ...$reservation->load('resources.pivot.comments', 'resources.padalinys', 'comments', 'activities.causer', 'users')->toArray(),
-                'resources' => $reservation->resources->map(function ($resource) use ($dateTimeRange) {
+                'resources' => $reservation->resources->map(function ($resource) {
                     return [
                         ...$resource->toArray(),
                         'managers' => $resource->managers(),
@@ -130,6 +129,7 @@ class ReservationController extends LaravelResourceController
             ],
             'allResources' => Inertia::lazy(fn () => Resource::with('padalinys')->select('id', 'name', 'is_reservable', 'capacity', 'padalinys_id')->get()->map(function ($resource) use ($dateTimeRange) {
                 $capacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($dateTimeRange['start'], $dateTimeRange['end']);
+
                 return [
                     ...$resource->toArray(),
                     'capacityAtDateTimeRange' => $capacityAtDateTimeRange,
@@ -168,7 +168,7 @@ class ReservationController extends LaravelResourceController
                         ...$resource->toArray(),
                         'leftCapacity' => $resource->leftCapacity(),
                     ];
-                })
+                }),
             ],
             'allResources' => Resource::select('id', 'name', 'capacity')->get()->map(function ($resource) use ($dateTimeRange) {
                 $capacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($dateTimeRange['start'], $dateTimeRange['end']);

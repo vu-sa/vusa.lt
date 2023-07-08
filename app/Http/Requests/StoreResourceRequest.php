@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Models\Resource;
-use Illuminate\Foundation\Http\FormRequest;
 
 class StoreResourceRequest extends ResourceRequest
 {

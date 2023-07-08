@@ -108,7 +108,6 @@ class ReservationPolicy extends ModelPolicy
     /**
      * Determine whether the user can add users to the model.
      */
-
     public function addUsers(User $user, Reservation $reservation, ModelAuthorizer $authorizer): bool
     {
         $this->authorizer = $authorizer;

@@ -14,7 +14,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Scout\Searchable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class Resource extends Model implements HasMedia
 {
@@ -85,7 +84,8 @@ class Resource extends Model implements HasMedia
 
     // $resource = Resource::find("01h2y03by254dm8f3p9nkpfxn9");
     // $resource->leftCapacityAtTimePeriod("2023-05-01 00:00:00", "2023-07-10 23:59:59");
-    public function getCapacityAtDateTimeRange($from, $to): array {
+    public function getCapacityAtDateTimeRange($from, $to): array
+    {
 
         // if $from and $to are numbers (timestamps), convert them to Carbon
         if (is_numeric($from)) {
@@ -100,7 +100,7 @@ class Resource extends Model implements HasMedia
         $reservations = $this->active_reservations()->wherePivot('start_time', '<=', $to)->wherePivot('end_time', '>=', $from)->get();
 
         // get left capacity at start and end of each reservation
-        $reservations->each(function($reservation) use (&$leftCapacity, $from, $to) {
+        $reservations->each(function ($reservation) use (&$leftCapacity, $from, $to) {
             $start = Carbon::parse($reservation->pivot->start_time) > Carbon::parse($from) ? $reservation->pivot->start_time : $from;
             $end = Carbon::parse($reservation->pivot->end_time) < Carbon::parse($to) ? $reservation->pivot->end_time : $to;
 
@@ -115,16 +115,19 @@ class Resource extends Model implements HasMedia
         $leftCapacity[strval(Carbon::parse($to)->getTimestampMs())] = $this->leftCapacityAtTimeArray($to);
 
         ksort($leftCapacity);
+
         return $leftCapacity;
     }
 
-    public function lowestCapacityAtDateTimeRange(array $leftCapacity): int {
+    public function lowestCapacityAtDateTimeRange(array $leftCapacity): int
+    {
         $lowestCapacity = $this->capacity;
         foreach ($leftCapacity as $capacity) {
             if ($capacity['after'] < $lowestCapacity) {
                 $lowestCapacity = $capacity['after'];
             }
         }
+
         return $lowestCapacity;
     }
 }

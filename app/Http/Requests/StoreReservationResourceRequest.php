@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Resource;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
 
 class StoreReservationResourceRequest extends ResourceRequest
@@ -16,7 +14,8 @@ class StoreReservationResourceRequest extends ResourceRequest
         return $this->user()->can('create', [Reservation::class, $this->authorizer]);
     }
 
-    protected function prepareForValidation() {
+    protected function prepareForValidation()
+    {
         $this->merge([
             'start_time' => Carbon::createFromTimestampMs($this->input('start_time')),
             'end_time' => Carbon::createFromTimestampMs($this->input('end_time')),

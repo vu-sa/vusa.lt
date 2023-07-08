@@ -42,7 +42,7 @@ class CommentController extends LaravelResourceController
         // convert to camelCase
         $formatted = Str::ucfirst(Str::camel($validated['commentable_type']));
 
-        if ($formatted === "ReservationResource") {
+        if ($formatted === 'ReservationResource') {
             $modelClass = 'App\\Models\\Pivots\\ReservationResource';
         } else {
             $modelClass = 'App\\Models\\'.$formatted;

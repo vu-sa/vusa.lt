@@ -5,30 +5,32 @@ namespace Tests\Feature\Reservations;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Padalinys;
-use App\Models\Pivots\ReservationResource as PivotsReservationResource;
 use App\Models\Reservation;
-use App\Models\ReservationResource;
 use App\Models\Resource;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Testing\AssertableInertia as Assert;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use Tests\TestCase;
 
 #[CoversNothing]
-class PermissionTest extends TestCase {
-
+class PermissionTest extends TestCase
+{
     use RefreshDatabase;
 
     private $simpleUser;
+
     private $reservationManagerUser;
+
     private $resourceManagerUser;
+
     private $reservation;
+
     private $resources;
 
-    public function setUp(): void {
+    public function setUp(): void
+    {
         parent::setUp();
 
         $padalinys = Padalinys::inRandomOrder()->first();
@@ -50,7 +52,8 @@ class PermissionTest extends TestCase {
         $resourceManagerDuty->assignRole($resourceManagerRole);
     }
 
-    public function test_simple_user_cannot_access_reservation() {
+    public function test_simple_user_cannot_access_reservation()
+    {
         $user = $this->simpleUser;
         $reservation = $this->reservation;
 
@@ -69,7 +72,8 @@ class PermissionTest extends TestCase {
             );
     }
 
-    public function test_simple_user_cannot_update_reservation() {
+    public function test_simple_user_cannot_update_reservation()
+    {
 
         $user = $this->simpleUser;
         $reservation = $this->reservation;
@@ -92,7 +96,8 @@ class PermissionTest extends TestCase {
             );
     }
 
-    public function test_simple_user_can_access_reservation_after_they_are_assigned_to_it() {
+    public function test_simple_user_can_access_reservation_after_they_are_assigned_to_it()
+    {
         $user = $this->simpleUser;
         $reservation = $this->reservation;
 
@@ -100,7 +105,7 @@ class PermissionTest extends TestCase {
         $this->actingAs($this->reservationManagerUser)->get(route('dashboard'));
 
         $response = $this->actingAs($this->reservationManagerUser)->put(route('reservations.add-users', $reservation->id), [
-            'users' => [$user->id]
+            'users' => [$user->id],
         ]);
 
         $response->assertStatus(302)->assertRedirect(route('dashboard'));
@@ -120,7 +125,8 @@ class PermissionTest extends TestCase {
         );
     }
 
-    public function test_simple_user_can_create_reservation() {
+    public function test_simple_user_can_create_reservation()
+    {
         $user = $this->simpleUser;
 
         $this->actingAs($user)->get(route('reservations.create'))->assertInertia(fn (Assert $page) => $page
@@ -134,7 +140,7 @@ class PermissionTest extends TestCase {
             ],
             'start_time' => now()->addDays(1)->timestamp,
             'end_time' => now()->addDays(2)->timestamp,
-            'resources' => $this->resources->map(fn ($resource) => ['id' => $resource->id, 'quantity' => 1])->toArray()
+            'resources' => $this->resources->map(fn ($resource) => ['id' => $resource->id, 'quantity' => 1])->toArray(),
         ]);
 
         $response = $this->actingAs($user)->post(route('reservations.store'), [
@@ -148,20 +154,21 @@ class PermissionTest extends TestCase {
             ->component('Admin/Reservations/ShowReservation')
             ->whereNot('reservation', null)
             ->where('reservation.name', $reservation->name)
-        );
+            );
     }
 
-    public function test_resource_manager_can_update_reservation_resource_state() {
+    public function test_resource_manager_can_update_reservation_resource_state()
+    {
 
         $user = $this->resourceManagerUser;
 
         $this->actingAs($user)->get(route('reservations.show', $this->reservation->id));
 
-        $response = $this->post(route("users.comments.store", $user->id), [
+        $response = $this->post(route('users.comments.store', $user->id), [
             'commentable_type' => 'reservation_resouce',
             'commentable_id' => $this->reservation->resources->first()->pivot->id,
             'comment' => 'test',
-            'decision' => 'approve'
+            'decision' => 'approve',
         ]);
 
         $response->assertStatus(302)->assertRedirect(route('reservations.show', $this->reservation->id));

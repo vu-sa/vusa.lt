@@ -7,8 +7,8 @@ use App\Models\Comment;
 use App\Models\Doing;
 use App\Models\User;
 use App\Notifications\ModelCommented;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use Tests\TestCase;
 

@@ -3,7 +3,6 @@
 namespace App\Models\Traits;
 
 use App\Services\ModelAuthorizer;
-use App\States\Doing\PendingFinalApproval;
 use Illuminate\Support\Str;
 
 trait MakesDecisions

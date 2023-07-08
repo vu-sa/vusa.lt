@@ -8,12 +8,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Octopy\Impersonate\Concerns\Impersonate;
+use Octopy\Impersonate\ImpersonateAuthorization;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
-use Octopy\Impersonate\Concerns\Impersonate;
-use Octopy\Impersonate\ImpersonateAuthorization;
 
 class User extends Authenticatable
 {
@@ -56,7 +56,7 @@ class User extends Authenticatable
     {
         $authorization->impersonator(fn (User $user) => $user->hasRole(config('permission.super_admin_role_name')));
 
-        $authorization->impersonated(fn (User $user) => !$user->hasRole(config('permission.super_admin_role_name')));
+        $authorization->impersonated(fn (User $user) => ! $user->hasRole(config('permission.super_admin_role_name')));
     }
 
     public function banners()
@@ -86,7 +86,7 @@ class User extends Authenticatable
         return $this->duties()
             ->where(function ($query) {
                 $query->whereNotNull('dutiables.end_date')
-                      ->where('dutiables.end_date', '<', now());
+                    ->where('dutiables.end_date', '<', now());
             })
             ->withTimestamps();
     }
@@ -98,7 +98,7 @@ class User extends Authenticatable
         return $this->duties()
             ->where(function ($query) {
                 $query->whereNull('dutiables.end_date')
-                      ->orWhere('dutiables.end_date', '>=', now());
+                    ->orWhere('dutiables.end_date', '>=', now());
             })
             ->withTimestamps();
 
