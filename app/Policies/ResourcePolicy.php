@@ -19,6 +19,11 @@ class ResourcePolicy extends ModelPolicy
         $this->pluralModelName = Str::plural(ModelEnum::RESOURCE()->label);
     }
 
+    public function viewAny(User $user, ModelAuthorizer $authorizer): bool
+    {
+        return true;
+    }
+
     /**
      * Determine whether the user can view the model.
      */

@@ -46,16 +46,8 @@ class ResourceController extends LaravelResourceController
             }
         );
 
-        // ! filter by padalinys
-
-        $resources = ModelIndexer::filterByAuthorized($resources, $this->authorizer, false);
-        // copy by value
-        // $resources_1 = clone $resources;
-        // $resources_1 = $resources_1->query(fn (Builder $query) => $query->with('padalinys', 'reservations', 'media'));
-        // dd($resources, $resources_1->get());
-
         return Inertia::render('Admin/Reservations/IndexResource', [
-            'resources' => $resources->get()->load('media')->paginate(15),
+            'resources' => $resources->get()->load('media', 'padalinys')->paginate(15),
         ]);
     }
 
