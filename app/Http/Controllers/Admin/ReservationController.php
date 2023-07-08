@@ -60,7 +60,7 @@ class ReservationController extends LaravelResourceController
 
         return Inertia::render('Admin/Reservations/CreateReservation', [
             // 'assignablePadaliniai' => GetPadaliniaiForUpserts::execute('resources.create.all', $this->authorizer)
-            'resources' => Resource::select('id', 'name', 'capacity', 'is_reservable')->get()->map(function ($resource) use ($dateTimeRange) {
+            'resources' => Resource::with('padalinys')->select('id', 'name', 'capacity', 'is_reservable', 'padalinys_id')->get()->map(function ($resource) use ($dateTimeRange) {
                 $capacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($dateTimeRange['start'], $dateTimeRange['end']);
 
                 return [
@@ -128,12 +128,10 @@ class ReservationController extends LaravelResourceController
                 }),
 
             ],
-            'allResources' => Inertia::lazy(fn () => Resource::all()->map(function ($resource) use ($dateTimeRange) {
+            'allResources' => Inertia::lazy(fn () => Resource::with('padalinys')->select('id', 'name', 'is_reservable', 'capacity', 'padalinys_id')->get()->map(function ($resource) use ($dateTimeRange) {
                 $capacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($dateTimeRange['start'], $dateTimeRange['end']);
                 return [
-                    'id' => $resource->id,
-                    'name' => $resource->name,
-                    'is_reservable' => $resource->is_reservable,
+                    ...$resource->toArray(),
                     'capacityAtDateTimeRange' => $capacityAtDateTimeRange,
                     'lowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($capacityAtDateTimeRange),
                 ];

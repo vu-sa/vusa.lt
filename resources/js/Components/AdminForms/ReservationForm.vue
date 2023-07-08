@@ -48,9 +48,17 @@
       </FormElement>
       <FormElement>
         <template #title>Rezervuojami ištekliai</template>
-        <template #description
-          >Pakeitus rezervacijos laiką, pasirinkti ištekliai bus išvalyti.
-          Rodomas išteklių kiekis nurodytu rezervacijos laikotarpiu.
+        <template #description>
+          <p class="mb-4">
+            Pakeitus rezervacijos laiką, pasirinkti ištekliai bus išvalyti.
+            Rodomas išteklių kiekis nurodytu rezervacijos laikotarpiu.
+          </p>
+          <Link class="w-fit" :href="route('resources.index')">
+            <div class="inline-flex items-center gap-2">
+              <NIcon :component="Icons.RESOURCE" class="align-center" />
+              <strong>Daiktų sąrašas</strong>
+            </div>
+          </Link>
         </template>
         <NFormItem>
           <template #label>
@@ -65,8 +73,14 @@
                 <NSelect
                   v-model:value="value.id"
                   filterable
+                  clearable
+                  value-field="id"
+                  label-field="name"
                   :options="allResourceOptions"
                   placeholder="Pasirinkite išteklių..."
+                  :render-label="handleRenderResourceLabel"
+                  :render-tag="handleRenderResourceTag"
+                  @update:value="value.quantity = 1"
                 />
                 <NInputNumber
                   v-model:value="value.quantity"
@@ -79,6 +93,15 @@
           </NDynamicInput>
         </NFormItem>
       </FormElement>
+      <FormElement>
+        <template #title>Papildoma informacija</template>
+        <NFormItem :show-label="false">
+          <NCheckbox v-model:checked="conditionAcquaintance">
+            Sutinku įdėmiai sekti rezervacijos informaciją, išteklius pasiimti
+            ir grąžinti laiku.
+          </NCheckbox>
+        </NFormItem>
+      </FormElement>
     </div>
     <div class="flex justify-end gap-2">
       <!-- <DeleteModelButton
@@ -87,14 +110,18 @@
         :model-route="deleteModelRoute"
       /> -->
       <!-- <UpsertModelButton :form="form" :model-route="modelRoute" /> -->
-      <NButton @click="submit">Pateikti</NButton>
+      <NButton :disabled="!conditionAcquaintance" @click="submit"
+        >Pateikti</NButton
+      >
     </div>
   </NForm>
 </template>
 
 <script setup lang="tsx">
+import { Link, router, usePage } from "@inertiajs/vue3";
 import {
   NButton,
+  NCheckbox,
   NDatePicker,
   NDynamicInput,
   NForm,
@@ -102,11 +129,16 @@ import {
   NIcon,
   NInputNumber,
   NSelect,
+  NTag,
+  type SelectOption,
 } from "naive-ui";
 import { computed, ref, watch } from "vue";
-import { router, usePage } from "@inertiajs/vue3";
 import { useForm } from "laravel-precognition-vue-inertia";
 
+import {
+  renderResourceLabel,
+  renderResourceTag,
+} from "@/Features/Admin/Reservations/Helpers";
 import FormElement from "./FormElement.vue";
 import Icons from "@/Types/Icons/regular";
 import MultiLocaleInput from "../SimpleAugment/MultiLocaleInput.vue";
@@ -127,6 +159,7 @@ const props = defineProps<{
 
 const inputLang = ref(usePage().props.app.locale);
 const resourceLoading = ref(false);
+const conditionAcquaintance = ref(false);
 
 const routeToSubmit = computed(() => {
   return props.reservation?.id
@@ -173,23 +206,24 @@ const getleftCapacity = (id: string) => {
     ?.lowestCapacityAtDateTimeRange;
 };
 
+const handleRenderResourceLabel = (option: SelectOption, selected: boolean) => {
+  return renderResourceLabel(option, selected, getleftCapacity(option.id));
+};
+
+const handleRenderResourceTag = ({ option }: { option: SelectOption }) => {
+  return renderResourceTag(option, props.allResources);
+};
+
 const allResourceOptions = computed(() => {
   let selectedResources = form.resources.map((resource) => resource.id);
 
-  let allResources = props.allResources.map((resource) => ({
-    label: `${resource.name} (likutis: ${resource.lowestCapacityAtDateTimeRange})`,
-    value: resource.id,
+  return props.allResources.map((resource) => ({
+    ...resource,
     disabled:
       resource.lowestCapacityAtDateTimeRange === 0 ||
       selectedResources.includes(resource.id) ||
       !resource.is_reservable,
   }));
-
-  // filter by selected resources in form
-
-  return allResources.filter((resource) => {
-    return !selectedResources.includes(resource.label);
-  });
 });
 
 const submit = () => {

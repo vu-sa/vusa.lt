@@ -19,7 +19,12 @@
         v-model:value="reservationResourceForm.resource_id"
         placeholder="Pasirinkite išteklio pavadinimą"
         clearable
+        value-field="id"
+        label-field="name"
         :options="allResourceOptions"
+        :render-label="handleRenderResourceLabel"
+        :render-tag="handleRenderResourceTag"
+        remote
       >
       </NSelect>
     </NFormItem>
@@ -52,8 +57,13 @@ import {
   NFormItem,
   NInputNumber,
   NSelect,
+  type SelectOption,
 } from "naive-ui";
 import { computed, ref, watch } from "vue";
+import {
+  renderResourceLabel,
+  renderResourceTag,
+} from "@/Features/Admin/Reservations/Helpers";
 
 const props = defineProps<{
   reservationResourceForm: InertiaForm<{
@@ -105,8 +115,7 @@ const onDateChange = (value: string[]) => {
 
 const allResourceOptions = computed(() => {
   return props.allResources?.map((resource) => ({
-    label: `${resource.name} (likutis: ${resource.lowestCapacityAtDateTimeRange})`,
-    value: resource.id,
+    ...resource,
     disabled:
       resource.lowestCapacityAtDateTimeRange === 0 || !resource.is_reservable,
   }));
@@ -119,6 +128,20 @@ const capacityMax = computed(() => {
     )?.lowestCapacityAtDateTimeRange ?? 1
   );
 });
+
+const getleftCapacity = (id: string) => {
+  return props.allResources?.find((resource) => resource.id === id)
+    ?.lowestCapacityAtDateTimeRange;
+};
+
+const handleRenderResourceLabel = (option: SelectOption, selected: boolean) => {
+  console.log(option, selected);
+  return renderResourceLabel(option, selected, getleftCapacity(option.id));
+};
+
+const handleRenderResourceTag = ({ option }: { option: SelectOption }) => {
+  return renderResourceTag(option, props.allResources);
+};
 
 const handleSubmit = () => {
   reservationResourceForm.post(route("reservationResources.store"), {
