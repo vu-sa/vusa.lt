@@ -60,9 +60,10 @@ declare namespace App.Entities {
   export type Relationship = App.Models.Relationship;
   export type Relationshipable = App.Models.Pivots.Relationshipable;
   export interface Reservation
-    extends Omit<App.Models.Reservation, "resources"> {
+    extends Omit<App.Models.Reservation, "resources" | "users"> {
     comments?: Array<App.Models.Comment> | null;
     resources?: Array<App.Entities.Resource> | null;
+    users?: Array<App.Entities.User> | null;
   }
   export interface Resource extends Omit<App.Models.Resource, "is_reservable"> {
     is_reservable: 0 | 1;

@@ -215,6 +215,7 @@ const handleSubmitUserForm = () => {
     }),
     {
       onSuccess: () => {
+        reservationUserForm.reset();
         showReservationAddUserModal.value = false;
       },
     }

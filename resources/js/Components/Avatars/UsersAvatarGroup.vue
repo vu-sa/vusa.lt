@@ -24,6 +24,7 @@
 
 <script setup lang="tsx">
 import { NAvatar, NAvatarGroup, NPopover } from "naive-ui";
+import { computed } from "vue";
 import UserPopover from "./UserPopover.vue";
 
 const props = defineProps<{
@@ -32,12 +33,14 @@ const props = defineProps<{
   size?: number;
 }>();
 
-const options = props.users.map((user: App.Entities.User) => {
-  // return rest and map src and name
-  return {
-    ...user,
-    name: user.name,
-    src: user.profile_photo_path,
-  };
+const options = computed(() => {
+  return props.users.map((user: App.Entities.User) => {
+    // return rest and map src and name
+    return {
+      ...user,
+      name: user.name,
+      src: user.profile_photo_path,
+    };
+  });
 });
 </script>

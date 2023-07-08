@@ -18,6 +18,7 @@ import { computed, provide, ref } from "vue";
 import { formatRelativeTime, formatStaticTime } from "@/Utils/IntlTime";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
+import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 
 defineProps<{
   reservations: PaginatedModels<App.Entities.Reservation>;
@@ -39,57 +40,66 @@ const sorters = ref<Record<string, DataTableSortState["order"]>>({
 provide("sorters", sorters);
 
 // add columns
-const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => [
-  {
-    title: "Pavadinimas",
-    key: "name",
-    sorter: true,
-    sortOrder: sorters.value.name,
-    maxWidth: 300,
-    ellipsis: {
-      tooltip: true,
+const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => {
+  return [
+    {
+      title: "Pavadinimas",
+      key: "name",
+      sorter: true,
+      sortOrder: sorters.value.name,
+      maxWidth: 300,
+      ellipsis: {
+        tooltip: true,
+      },
     },
-  },
-  {
-    title: "Rezervacijos kūrėjai",
-    key: "users",
-  },
-  {
-    title: "Rezervacijos pradžia",
-    key: "start_time",
-    sorter: true,
-    sortOrder: sorters.value.start_time,
-    ellipsis: {
-      tooltip: true,
+    {
+      title: "Rezervacijos kūrėjai",
+      key: "users",
+      render(row) {
+        return row.users && row.users?.length > 0 ? (
+          <UsersAvatarGroup class="align-middle" size={30} users={row.users} />
+        ) : (
+          "Nėra"
+        );
+      },
     },
-    render(row) {
-      return formatStaticTime(
-        new Date(row.start_time),
-        RESERVATION_DATE_TIME_FORMAT
-      );
+    {
+      title: "Rezervacijos pradžia",
+      key: "start_time",
+      sorter: true,
+      sortOrder: sorters.value.start_time,
+      ellipsis: {
+        tooltip: true,
+      },
+      render(row) {
+        return formatStaticTime(
+          new Date(row.start_time),
+          RESERVATION_DATE_TIME_FORMAT
+        );
+      },
     },
-  },
-  {
-    title: "Rezervacijos pabaiga",
-    key: "end_time",
-    sorter: true,
-    sortOrder: sorters.value.end_time,
-    ellipsis: {
-      tooltip: true,
+    {
+      title: "Rezervacijos pabaiga",
+      key: "end_time",
+      sorter: true,
+      sortOrder: sorters.value.end_time,
+      ellipsis: {
+        tooltip: true,
+      },
+      render(row) {
+        return formatStaticTime(
+          new Date(row.end_time),
+          RESERVATION_DATE_TIME_FORMAT
+        );
+      },
     },
-    render(row) {
-      return formatStaticTime(
-        new Date(row.end_time),
-        RESERVATION_DATE_TIME_FORMAT
-      );
+    {
+      title: "Sukurta",
+      key: "created_at",
+      render(row) {
+        return formatRelativeTime(new Date(row.created_at));
+      },
     },
-  },
-  {
-    title: "Sukurta",
-    key: "created_at",
-    render(row) {
-      return formatRelativeTime(new Date(row.created_at));
-    },
-  },
-]);
+  ];
+});
 </script>
