@@ -25,3 +25,7 @@ jobs:
         with:
           commit_message: PHP Linting (Pint)
           skip_fetch: true
+          repository: .
+          branch: ${{ github.head_ref }}
+          status_options: '--porcelain'
+          file_pattern: '*.php'
