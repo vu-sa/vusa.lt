@@ -59,12 +59,6 @@ class Resource extends Model implements HasMedia
         return $this->belongsTo(Padalinys::class);
     }
 
-    public function leftCapacity()
-    {
-        // where pivot state is reserved or lent
-        return $this->capacity - $this->active_reservations()->sum('quantity');
-    }
-
     public function leftCapacityAtTime($datetime, $symbol_start = '<', $symbol_end = '>=')
     {
         // where pivot state is reserved or lent

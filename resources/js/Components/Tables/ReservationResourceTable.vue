@@ -31,9 +31,9 @@
 </template>
 
 <script setup lang="tsx">
+import { Link, router, usePage } from "@inertiajs/vue3";
 import { NButton, NDataTable, NIcon, NPopover } from "naive-ui";
 import { computed, ref } from "vue";
-import { router, usePage } from "@inertiajs/vue3";
 
 import { Delete16Regular, DismissCircle24Regular } from "@vicons/fluent";
 import { RESERVATION_DATE_TIME_FORMAT } from "@/Constants/DateTimeFormats";
@@ -59,6 +59,9 @@ const dataTableColumns = [
   {
     title: "Pavadinimas",
     key: "name",
+    render(row) {
+      return <Link href={route("resources.edit", row.id)}>{row.name}</Link>;
+    },
   },
   {
     title: "Kiekis",

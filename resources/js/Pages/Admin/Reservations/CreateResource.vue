@@ -25,7 +25,6 @@ export type ResourceCreationTemplate = Omit<
   id: undefined;
   name: Record<"lt" | "en", string>;
   description: Record<"lt" | "en", string>;
-  left_capacity: undefined;
   media: App.Models.Media[] | [];
 };
 
@@ -45,7 +44,6 @@ const resource: ResourceCreationTemplate = {
   },
   location: "",
   capacity: 1,
-  left_capacity: undefined,
   // If padalinys_id is zero, then the form will be disabled (set in form).
   padalinys_id: usePage().props.auth?.user.padaliniai[0]?.id ?? 0,
   is_reservable: 1,

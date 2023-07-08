@@ -13,6 +13,7 @@
 <script setup lang="tsx">
 import { type DataTableColumns, type DataTableSortState, NTag } from "naive-ui";
 
+import { Link } from "@inertiajs/vue3";
 import { RESERVATION_DATE_TIME_FORMAT } from "@/Constants/DateTimeFormats";
 import { computed, provide, ref } from "vue";
 import { formatRelativeTime, formatStaticTime } from "@/Utils/IntlTime";
@@ -53,16 +54,20 @@ const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => {
             </div>
             <div>
               <strong>Rezervuoti ištekliai</strong>
-              <ul class="list-inside list-disc">
+              <ul class="list-disc">
                 {/* add quantity and padalinys.shortname */}
                 {row.resources?.map((resource) => (
                   <li>
-                    {resource.name}{" "}
-                    <NTag size="tiny" round>
-                      <span class="text-xs text-gray-500">
-                        {resource.padalinys?.shortname}
-                      </span>
-                    </NTag>
+                    <div class="inline-flex items-center gap-2">
+                      <Link href={route("resources.edit", resource.id)}>
+                        {resource.name}
+                      </Link>
+                      <NTag size="tiny" round>
+                        <span class="ml-1 text-xs text-gray-500">
+                          {resource.padalinys?.shortname}
+                        </span>
+                      </NTag>
+                    </div>
                   </li>
                 ))}
               </ul>

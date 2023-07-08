@@ -1,9 +1,5 @@
 <template>
-  <NTag
-    :bordered="false"
-    size="small"
-    :type="state_properties.tagType"
-  >
+  <NTag :bordered="false" size="small" :type="state_properties.tagType">
     <div class="inline-flex items-center gap-1">
       <span>{{ $t(`state.${state}`) }}</span>
       <InfoPopover v-if="state_properties">
