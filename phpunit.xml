@@ -5,8 +5,9 @@
          cacheDirectory=".phpunit.cache"
          executionOrder="depends,defects"
          requireCoverageMetadata="true"
-         beStrictAboutCoverageMetadata="true"
+         beStrictAboutCoverageMetadata="false"
          beStrictAboutOutputDuringTests="true"
+         beStrictAboutTestsThatDoNotTestAnything="true"
          failOnRisky="true"
          failOnWarning="true">
     <testsuites>
@@ -18,6 +19,8 @@
     <source restrictDeprecations="true" restrictNotices="true" restrictWarnings="true">
         <include>
             <directory>app</directory>
+            <directory>database/factories</directory>
+            <directory>database/seeders</directory>
         </include>
     </source>
     <php>

@@ -128,7 +128,7 @@ class PermissionTest extends TestCase {
             ->whereNot('resources', null)
         );
 
-        $response = $this->actingAs($user)->post(route('reservations.store'), [
+        $reservation = Reservation::factory()->make([
             'name' => [
                 'lt' => 'test',
             ],
@@ -137,12 +137,18 @@ class PermissionTest extends TestCase {
             'resources' => $this->resources->map(fn ($resource) => ['id' => $resource->id, 'quantity' => 1])->toArray()
         ]);
 
-        $response->assertStatus(302)->assertRedirectToRoute('reservations.index');
+        $response = $this->actingAs($user)->post(route('reservations.store'), [
+            ...$reservation->toFullArray(),
+        ]);
 
-        $reservation = Reservation::where('name->lt', 'test')->first();
-        $this->assertNotNull($reservation);
+        $response->assertStatus(302);
 
-        $response->assertStatus(302)->assertRedirectToRoute('reservations.index');
+        $this->followRedirects($response)
+            ->assertStatus(200)->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/Reservations/ShowReservation')
+            ->whereNot('reservation', null)
+            ->where('reservation.name', $reservation->name)
+        );
     }
 
     public function test_resource_manager_can_update_reservation_resource_state() {
