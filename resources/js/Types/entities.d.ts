@@ -90,8 +90,10 @@ declare namespace App.Entities {
   export type Task = App.Models.Task;
   export type Type = App.Models.Type;
 
-  export interface User extends Omit<App.Models.User, "padaliniai"> {
+  export interface User
+    extends Omit<App.Models.User, "padaliniai" | "reservations"> {
     padaliniai?: Array<App.Models.Padalinys> | null;
+    reservations?: Array<App.Entities.Reservation> | null;
     roles?: Array<App.Models.Role> | null;
     roles_count?: number | null;
     pivot?: App.Models.Pivots.Dutiable | null;

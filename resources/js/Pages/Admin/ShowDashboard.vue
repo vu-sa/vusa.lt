@@ -112,14 +112,16 @@
           />
         </Link>
       </h2>
-      <template
-        v-for="reservation in currentUser.reservations"
-        :key="reservation.id"
+      <div
+        v-if="currentUser.institutions.length > 0"
+        class="relative mt-4 grid w-full grid-cols-ramFill items-start gap-4 overflow-hidden pb-4 transition-transform duration-300 ease-in-out"
       >
-        <Link :href="route('reservations.show', reservation.id)">{{
-          reservation.name
-        }}</Link>
-      </template>
+        <ReservationCard
+          v-for="reservation in currentUser.reservations"
+          :key="reservation.id"
+          :reservation="reservation"
+        ></ReservationCard>
+      </div>
     </section>
     <section v-if="shownSections.includes('Veiklos')" class="relative mb-8">
       <h2 class="flex items-center gap-2">
@@ -233,6 +235,7 @@ import QActCreateMeeting from "@/Components/Buttons/QActCreateMeeting.vue";
 import QActFocusGroupButton from "@/Components/Buttons/QActFocusGroupButton.vue";
 import QActSurveyButton from "@/Components/Buttons/QActSurveyButton.vue";
 import QuickActionButton from "@/Components/Buttons/QuickActionButton.vue";
+import ReservationCard from "@/Components/Cards/ReservationCard.vue";
 
 defineProps<{
   currentUser: App.Entities.User;
