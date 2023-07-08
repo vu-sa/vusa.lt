@@ -113,7 +113,7 @@
         </Link>
       </h2>
       <div
-        v-if="currentUser.institutions.length > 0"
+        v-if="currentUser.reservations && currentUser.reservations.length > 0"
         class="relative mt-4 grid w-full grid-cols-ramFill items-start gap-4 overflow-hidden pb-4 transition-transform duration-300 ease-in-out"
       >
         <ReservationCard
@@ -122,6 +122,7 @@
           :reservation="reservation"
         ></ReservationCard>
       </div>
+      <p v-else>{{ $t("Neturi sukurtų rezervacijų") }}.</p>
     </section>
     <section v-if="shownSections.includes('Veiklos')" class="relative mb-8">
       <h2 class="flex items-center gap-2">
