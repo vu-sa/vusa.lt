@@ -32,12 +32,12 @@ import {
   NDataTable,
   NIcon,
 } from "naive-ui";
-import { computed, inject, ref, type Ref } from "vue";
+import { type Ref, computed, inject, ref } from "vue";
 import { router } from "@inertiajs/vue3";
 import type { DataTableColumns, DataTableRowKey } from "naive-ui";
 
-import { updateFilters, updateSorters } from "@/Utils/DataTable";
 import { Link } from "@inertiajs/vue3";
+import { updateFilters, updateSorters } from "@/Utils/DataTable";
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import IndexSearchInput from "./IndexSearchInput.vue";
 import type { SortOrder } from "naive-ui/es/data-table/src/interface";
@@ -53,8 +53,14 @@ const props = defineProps<{
 
 const loading = ref(false);
 
-const sorters = inject<Ref<Record<string, SortOrder>> | undefined>("sorters", undefined);
-const filters = inject<Ref<Record<string, any>> | undefined>("filters", undefined);
+const sorters = inject<Ref<Record<string, SortOrder>> | undefined>(
+  "sorters",
+  undefined
+);
+const filters = inject<Ref<Record<string, any>> | undefined>(
+  "filters",
+  undefined
+);
 
 const pagination = ref({
   itemCount: props.paginatedModels.total,
@@ -65,7 +71,6 @@ const pagination = ref({
 });
 
 const handleSorterChange = (state: DataTableSortState) => {
-
   if (sorters !== undefined) {
     sorters.value = updateSorters(sorters, state);
   }
@@ -74,7 +79,6 @@ const handleSorterChange = (state: DataTableSortState) => {
 };
 
 const handleFiltersChange = (state: DataTableFilterState) => {
-
   if (filters !== undefined) {
     filters.value = updateFilters(filters, state);
   }
@@ -84,7 +88,10 @@ const handleFiltersChange = (state: DataTableFilterState) => {
 
 const rowKey = (row: Record<string, any>) => row.id;
 
-const checkedRowKeys = inject<Ref<DataTableRowKey[]>>("checkedRowKeys", ref([]));
+const checkedRowKeys = inject<Ref<DataTableRowKey[]>>(
+  "checkedRowKeys",
+  ref([])
+);
 
 const handleCheckedRowKeysChange = (rowKeys: DataTableRowKey[]) => {
   checkedRowKeys.value = rowKeys;
@@ -120,7 +127,6 @@ const handleChange = (page: number) => {
 const handleCompletedSearch = () => handleChange(1);
 
 const sweepSearch = () => {
-
   if (filters !== undefined) {
     filters.value = updateFilters(filters, undefined);
   }
@@ -148,7 +154,10 @@ const columnsWithActions = computed(() => {
   return [
     ...props.columns,
     {
-      title: props.editRoute || props.destroyRoute ? $t("Veiksmai") : null,
+      title:
+        props.showRoute || props.editRoute || props.destroyRoute
+          ? $t("Veiksmai")
+          : null,
       key: "actions",
       width: 175,
       render(row) {

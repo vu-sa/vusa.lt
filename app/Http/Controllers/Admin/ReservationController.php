@@ -32,10 +32,24 @@ class ReservationController extends LaravelResourceController
 
         $reservations = Reservation::search(request()->input('text'));
 
+        $sorters = json_decode(base64_decode(request()->input('sorters')), true);
+
+        $reservations = $reservations
+        ->when(
+            isset($sorters['name']) && $sorters['name'],
+            function ($query) use ($sorters) {
+                $query->orderBy('name', $sorters['name'] === 'descend' ? 'desc' : 'asc');
+            })
+        ->when(isset($sorters['start_time']) && $sorters['start_time'], function ($query) use ($sorters) {
+            $query->orderBy('start_time', $sorters['start_time'] === 'descend' ? 'desc' : 'asc');
+        })->when(isset($sorters['end_time']) && $sorters['end_time'], function ($query) use ($sorters) {
+            $query->orderBy('end_time', $sorters['end_time'] === 'descend' ? 'desc' : 'asc');
+        });
+
         $reservations = ModelIndexer::filterByAuthorized($reservations, $this->authorizer);
 
         return Inertia::render('Admin/Reservations/IndexReservation', [
-            'reservations' => $reservations->paginate(20),
+            'reservations' => $reservations->get()->load('resources')->paginate(15)
         ]);
     }
 
