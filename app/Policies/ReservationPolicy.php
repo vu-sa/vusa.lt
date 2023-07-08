@@ -78,6 +78,10 @@ class ReservationPolicy extends ModelPolicy
     {
         $this->authorizer = $authorizer;
 
+        if ($reservation->users->contains($user)) {
+            return true;
+        }
+
         if ($this->commonChecker($user, $reservation, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
             return true;
         }

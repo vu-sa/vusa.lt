@@ -31,11 +31,11 @@
 </template>
 
 <script setup lang="tsx">
-import { NButton, NDataTable, NIcon } from "naive-ui";
+import { NButton, NDataTable, NIcon, NPopover } from "naive-ui";
 import { computed, ref } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 
-import { Delete16Regular } from "@vicons/fluent";
+import { Delete16Regular, DismissCircle24Regular } from "@vicons/fluent";
 import { formatStaticTime } from "@/Utils/IntlTime";
 import CardModal from "../Modals/CardModal.vue";
 import CommentTipTap from "@/Features/Admin/CommentViewer/CommentTipTap.vue";
@@ -129,10 +129,10 @@ const dataTableColumns = [
   {
     title: "Būsena",
     key: "pivot.state",
-    render(row) {
+    render(row: App.Entities.Resource) {
       return (
         <ReservationResourceStateTag
-          state={row.pivot.state} state_properties={row.pivot.state_properties}
+          state={row.pivot?.state} state_properties={row.pivot?.state_properties}
         ></ReservationResourceStateTag>
       );
     },
@@ -140,7 +140,7 @@ const dataTableColumns = [
   {
     title: "Veiksmai",
     key: "pivot.actions",
-    render(row) {
+    render(row: App.Entities.Resource) {
       return (
         <div class="flex items-center space-x-2">
           {["created", "reserved", "lent"].includes(row.pivot.state) ? (
@@ -166,6 +166,20 @@ const dataTableColumns = [
             >
               {{ icon: () => <NIcon component={Delete16Regular} /> }}
             </NButton>
+          ) : null}
+          {["created", "reserved"].includes(row.pivot.state) ? (
+            <NPopover>
+              {{
+                trigger: () => (
+                    <NButton type="primary" quaternary circle size="small" onClick={() => handleReservationResourceCancel(row)}>
+                      {{
+                        icon: () => <NIcon component={DismissCircle24Regular} />,
+                      }}
+                    </NButton>
+                ),
+                default: () => "Atšaukti rezervaciją",
+              }}
+            </NPopover>
           ) : null}
         </div>
       );
@@ -193,7 +207,16 @@ const approveText = computed(() => {
   return "... ir patvirtinti";
 });
 
-const submitComment = (decision?: "approve" | "reject") => {
+const setSelectedReservationResource = async (value: App.Entities.ReservationResource) => {
+  selectedReservationResource.value = value;
+}
+
+const handleReservationResourceCancel = async (row: App.Entities.Resource) => {
+  await setSelectedReservationResource(row.pivot);
+  submitComment("cancel", "<p>Atšaukiu išteklio rezervaciją</p>");
+};
+
+const submitComment = (decision?: "approve" | "reject" | "cancel", comment = commentText.value) => {
   // add decision attribute
   loading.value = true;
   router.post(
@@ -201,7 +224,7 @@ const submitComment = (decision?: "approve" | "reject") => {
     {
       commentable_type: "reservation_resource",
       commentable_id: selectedReservationResource.value?.id,
-      comment: commentText.value,
+      comment: comment,
       decision: decision ?? undefined,
     },
     {

@@ -13,7 +13,7 @@ class StoreReservationResourceRequest extends ResourceRequest
      */
     public function authorize(): bool
     {
-        return $this->user()->can('create', [Resource::class, $this->authorizer]);
+        return $this->user()->can('create', [Reservation::class, $this->authorizer]);
     }
 
     protected function prepareForValidation() {

@@ -95,7 +95,7 @@ class ReservationResource extends Pivot implements Decidable
 
     public function decisionToCancel()
     {
-        if ($this->reservation()->users()->where('users.id', auth()->id())->exists()) {
+        if ($this->reservation->users()->where('users.id', auth()->id())->exists()) {
 
             $this->state->handleCancel();
             return;

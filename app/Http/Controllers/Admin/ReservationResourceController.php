@@ -10,7 +10,6 @@ use Inertia\Inertia;
 class ReservationResourceController extends LaravelResourceController
 {
     public function store(StoreReservationResourceRequest $request) {
-        $this->authorize('create', [Reservation::class, $this->authorizer]);
 
         $reservationResource = new ReservationResource();
 

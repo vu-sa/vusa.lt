@@ -47,7 +47,7 @@ class Resource extends Model implements HasMedia
 
     public function active_reservations()
     {
-        return $this->reservations()->wherePivotIn('state', ['created', 'updated', 'reserved', 'lent']);
+        return $this->reservations()->wherePivotIn('state', ['created', 'reserved', 'lent']);
     }
 
     public function managers()
