@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="tsx">
-import type { DataTableColumns, DataTableSortState } from "naive-ui";
+import { type DataTableColumns, type DataTableSortState, NTag } from "naive-ui";
 
 import { RESERVATION_DATE_TIME_FORMAT } from "@/Constants/DateTimeFormats";
 import { computed, provide, ref } from "vue";
@@ -42,6 +42,35 @@ provide("sorters", sorters);
 // add columns
 const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => {
   return [
+    {
+      type: "expand",
+      renderExpand(row) {
+        return (
+          <section class="flex flex-col gap-2 p-2">
+            <div>
+              <strong>Aprašymas</strong>
+              <p>{row.description}</p>
+            </div>
+            <div>
+              <strong>Rezervuoti ištekliai</strong>
+              <ul class="list-inside list-disc">
+                {/* add quantity and padalinys.shortname */}
+                {row.resources?.map((resource) => (
+                  <li>
+                    {resource.name}{" "}
+                    <NTag size="tiny" round>
+                      <span class="text-xs text-gray-500">
+                        {resource.padalinys?.shortname}
+                      </span>
+                    </NTag>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        );
+      },
+    },
     {
       title: "Pavadinimas",
       key: "name",

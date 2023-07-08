@@ -49,7 +49,7 @@ class ReservationController extends LaravelResourceController
         $reservations = ModelIndexer::filterByAuthorized($reservations, $this->authorizer);
 
         return Inertia::render('Admin/Reservations/IndexReservation', [
-            'reservations' => $reservations->get()->load('resources', 'users')->paginate(15)
+            'reservations' => $reservations->get()->load('resources', 'users', 'resources.padalinys')->paginate(15)
         ]);
     }
 
