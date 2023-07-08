@@ -36,8 +36,8 @@ class ModelIndexer
         return $modelsBuilder;
     }
 
-    public static function filterByAuthorized($builder, Authorizer $authorizer, bool|null $hasManyPadalinys = true) {
-        $user = User::find((Auth::id()));
+    public static function filterByAuthorized(\Laravel\Scout\Builder $builder, Authorizer $authorizer, bool|null $hasManyPadalinys = true) {
+        $user = User::query()->find((Auth::id()));
 
         $padalinysRelationString = $hasManyPadalinys ? 'padaliniai' : 'padalinys';
 
@@ -51,5 +51,13 @@ class ModelIndexer
         return $builder->query(fn (Builder $query) => $query->whereHas($padalinysRelationString, function (Builder $query) use ($authorizer, $hasManyPadalinys) {
             $query->whereIn(optional($hasManyPadalinys, fn () => 'padaliniai.').'id', $authorizer->getPadaliniai()->pluck('id'));
         }));
+    }
+
+    public static function filterByColumn(\Laravel\Scout\Builder $builder, string $column, ?array $filters): \Laravel\Scout\Builder {
+        return $builder->when(isset(
+            $filters[$column]
+        ) && $filters[$column] !== [], function ($query) use ($filters, $column) {
+            $query->whereIn($column, $filters[$column]);
+        });
     }
 }

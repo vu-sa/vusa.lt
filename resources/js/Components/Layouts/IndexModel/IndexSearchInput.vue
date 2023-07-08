@@ -67,6 +67,7 @@ const handleSearchInput = () => {
 
 const sweepSearch = () => {
   searchValue.value = "";
+  searchIsDirty.value = false;
   emit("sweep");
 };
 </script>

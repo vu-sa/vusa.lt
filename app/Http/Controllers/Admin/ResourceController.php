@@ -32,9 +32,19 @@ class ResourceController extends LaravelResourceController
 
         $resources = Resource::search(request()->input('text'));
 
-        // ! filter, sort by other where
+        $filters = json_decode(base64_decode(request()->input('filters')), true);
+        $sorters = json_decode(base64_decode(request()->input('sorters')), true);
 
-        // ...
+        $resources = ModelIndexer::filterByColumn($resources, 'padalinys_id', $filters);
+
+        // sort
+
+        $resources = $resources->when(
+            isset($sorters['name']),
+            function ($query) use ($sorters) {
+                $query->orderBy('name', $sorters['name'] === 'descend' ? 'desc' : 'asc');
+            }
+        );
 
         // ! filter by padalinys
 
@@ -45,7 +55,7 @@ class ResourceController extends LaravelResourceController
         // dd($resources, $resources_1->get());
 
         return Inertia::render('Admin/Reservations/IndexResource', [
-            'resources' => $resources->get()->load('media')->paginate(15)
+            'resources' => $resources->get()->load('media')->paginate(15),
         ]);
     }
 

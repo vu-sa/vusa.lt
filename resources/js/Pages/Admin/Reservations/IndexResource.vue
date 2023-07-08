@@ -11,10 +11,12 @@
 </template>
 
 <script setup lang="tsx">
-import { type DataTableColumns, NImage, NImageGroup, NSpace } from "naive-ui";
+import { type DataTableColumns, NImage, NImageGroup, NSpace, type DataTableSortState } from "naive-ui";
 
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
+import { computed, provide, ref } from "vue";
+import { usePage } from "@inertiajs/vue3";
 
 defineProps<{
   resources: PaginatedModels<App.Entities.Resource>;
@@ -27,8 +29,20 @@ const canUseRoutes = {
   destroy: true,
 };
 
+const sorters = ref<Record<string, DataTableSortState["order"]>>({
+  name: false,
+});
+
+provide("sorters", sorters);
+
+const filters = ref<Record<string, any>>({
+  "padalinys_id": [],
+});
+
+provide("filters", filters);
+
 // add columns
-const columns: DataTableColumns<App.Entities.Resource> = [
+const columns = computed<DataTableColumns<App.Entities.Resource>>(() => [
   {
     type: "expand",
     renderExpand(row) {
@@ -52,6 +66,12 @@ const columns: DataTableColumns<App.Entities.Resource> = [
   {
     title: "Pavadinimas",
     key: "name",
+    sorter: true,
+    sortOrder: sorters.value.name,
+    maxWidth: 300,
+    ellipsis: {
+      tooltip: true,
+    },
   },
   {
     title: "Kiekis",
@@ -59,7 +79,18 @@ const columns: DataTableColumns<App.Entities.Resource> = [
   },
   {
     title: "Padalinys",
-    key: "padalinys.shortname",
+    key: "padalinys_id",
+    filter: true,
+    filterOptionValues: filters.value["padalinys_id"],
+    filterOptions: usePage().props.padaliniai.map((padalinys) => {
+      return {
+        label: padalinys.shortname,
+        value: padalinys.id,
+      };
+    }),
+    render(row) {
+      return row.padalinys?.shortname;
+    },
   },
   {
     title: "Sukurtas",
@@ -75,5 +106,5 @@ const columns: DataTableColumns<App.Entities.Resource> = [
       return new Date(row.updated_at).toLocaleString("lt-LT");
     },
   },
-];
+]);
 </script>
