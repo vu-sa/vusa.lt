@@ -8,20 +8,7 @@ on:
 
 jobs:
   laravel-tests:
-
     runs-on: ubuntu-latest
-
-    services:
-      mysql:
-        image: mariadb:10.6
-        env:
-          MYSQL_DATABASE: vusa
-          MYSQL_USER: root
-          MYSQL_PASSWORD: root
-          MYSQL_ROOT_PASSWORD: root
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
     - uses: actions/checkout@v3
@@ -33,16 +20,12 @@ jobs:
       run: php artisan key:generate
     - name: Directory Permissions
       run: chmod -R 777 storage bootstrap/cache
-      # run migrations
     - name: Create Database
-      run: |
-        mysql -u root -h
-        CREATE DATABASE vusa;
-        exit
+      run: touch database/database.sqlite
     - name: Migrate Database
       run: php artisan migrate:fresh --seed
     - name: NPM Install
-      run: npm install
+      run: npm ci
     - name: NPM Build
       run: npm run build
     - name: Execute tests (Unit and Feature tests) via PHPUnit
