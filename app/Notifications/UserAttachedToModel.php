@@ -2,7 +2,6 @@
 
 namespace App\Notifications;
 
-use App\Models\Reservation;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -18,13 +17,11 @@ class UserAttachedToModel extends Notification implements ShouldQueue
     /**
      * The model instance.
      */
-
     public Model $model;
 
     /**
      * The user instance.
      */
-
     public User $attacher;
 
     /**
@@ -32,7 +29,6 @@ class UserAttachedToModel extends Notification implements ShouldQueue
      *
      * @var string
      */
-
     public array $subject;
 
     /**
@@ -40,7 +36,6 @@ class UserAttachedToModel extends Notification implements ShouldQueue
      *
      * @var string
      */
-
     public array $object;
 
     /**
@@ -81,12 +76,12 @@ class UserAttachedToModel extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)->subject('Buvote priskirti prie ' . $this->object['name'])
-                    ->markdown('emails.user-attached-to-model', [
-                        'attacher' => $this->attacher,
-                        'subject' => $this->subject,
-                        'object' => $this->object,
-                    ]);
+        return (new MailMessage)->subject('Buvote priskirti prie '.$this->object['name'])
+            ->markdown('emails.user-attached-to-model', [
+                'attacher' => $this->attacher,
+                'subject' => $this->subject,
+                'object' => $this->object,
+            ]);
     }
 
     /**
@@ -97,7 +92,7 @@ class UserAttachedToModel extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'text' => $this->attacher->name . ' priskyrė jus prie ' . $this->model->name,
+            'text' => $this->attacher->name.' priskyrė jus prie '.$this->model->name,
             'subject' => $this->subject,
             'object' => $this->object,
         ];

@@ -72,6 +72,6 @@ class ModelCommented extends Notification implements ShouldQueue
                 'text' => $this->text,
                 'object' => $this->objectArray,
                 'subject' => $this->subjectArray,
-            ])->subject('New Comment on ' . $this->objectArray['name']);
+            ])->subject('New Comment on '.$this->objectArray['name']);
     }
 }
