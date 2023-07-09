@@ -8,9 +8,11 @@ use App\Http\Requests\UpdateReservationRequest;
 use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\User;
+use App\Notifications\UserAttachedToModel;
 use App\Services\ModelIndexer;
 use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
@@ -132,7 +134,7 @@ class ReservationController extends LaravelResourceController
             'reservation' => [
                 // load pivot relationship comments
                 ...$reservation->load('resources.pivot.comments', 'resources.padalinys', 'comments', 'activities.causer', 'users')->toArray(),
-                'resources' => $reservation->resources->map(function ($resource) {
+                'resources' => $reservation->load('resources.media')->resources->map(function ($resource) {
                     return [
                         ...$resource->toArray(),
                         'managers' => $resource->managers(),
@@ -217,7 +219,11 @@ class ReservationController extends LaravelResourceController
     {
         $this->authorize('addUsers', [Reservation::class, $reservation, $this->authorizer]);
 
+        $old_users = $reservation->users;
+
         $reservation->users()->syncWithoutDetaching($request->input('users'));
+
+        Notification::send($reservation->refresh()->users->diff($old_users), new UserAttachedToModel($reservation, auth()->user()));
 
         return back()->with('success', 'Rezervacijos valdytojai pridėti.');
     }
