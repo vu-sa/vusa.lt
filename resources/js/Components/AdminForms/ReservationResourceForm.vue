@@ -17,7 +17,7 @@
     <NFormItem label="Išteklio pavadinimas" path="resource_id">
       <NSelect
         v-model:value="reservationResourceForm.resource_id"
-        placeholder="Pasirinkite išteklio pavadinimą"
+        placeholder="Pasirinkite išteklių..."
         clearable
         value-field="id"
         label-field="name"
@@ -25,6 +25,7 @@
         :render-label="handleRenderResourceLabel"
         :render-tag="handleRenderResourceTag"
         remote
+        @update:value="reservationResourceForm.quantity = 1"
       >
       </NSelect>
     </NFormItem>
@@ -135,7 +136,6 @@ const getleftCapacity = (id: string) => {
 };
 
 const handleRenderResourceLabel = (option: SelectOption, selected: boolean) => {
-  console.log(option, selected);
   return renderResourceLabel(option, selected, getleftCapacity(option.id));
 };
 

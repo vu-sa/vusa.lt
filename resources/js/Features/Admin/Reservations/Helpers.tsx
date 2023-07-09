@@ -27,6 +27,8 @@ export const renderResourceLabel = (
 };
 
 export const renderResourceTag = (option, resources) => {
+  if (!resources) return null;
+
   const resource = resources.find((resource) => resource.id === option.id);
 
   return (

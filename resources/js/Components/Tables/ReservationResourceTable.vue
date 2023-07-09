@@ -2,6 +2,7 @@
   <NDataTable
     :data="reservation?.resources"
     :columns="dataTableColumns"
+    :row-key="rowKey"
     size="small"
   ></NDataTable>
 
@@ -32,7 +33,15 @@
 
 <script setup lang="tsx">
 import { Link, router, usePage } from "@inertiajs/vue3";
-import { NButton, NDataTable, NIcon, NPopover } from "naive-ui";
+import {
+  NButton,
+  NDataTable,
+  NIcon,
+  NImage,
+  NImageGroup,
+  NPopover,
+  NSpace,
+} from "naive-ui";
 import { computed, ref } from "vue";
 
 import { Delete16Regular, DismissCircle24Regular } from "@vicons/fluent";
@@ -54,8 +63,29 @@ const selectedReservationResource =
   );
 
 const showStateChangeModal = ref(false);
+const rowKey = (row: App.Entities.Resource) => row.pivot?.id;
 
 const dataTableColumns = [
+  {
+    type: "expand",
+    renderExpand(row) {
+      return (
+        <section class="flex flex-col gap-2 p-2">
+          <NImageGroup>
+            <NSpace>
+              {row.media?.map((image) => (
+                <NImage width="150" src={image.original_url} alt={image.name} />
+              ))}
+            </NSpace>
+          </NImageGroup>
+          <div>
+            <strong>Aprašymas</strong>
+            <p>{row.description}</p>
+          </div>
+        </section>
+      );
+    },
+  },
   {
     title: "Pavadinimas",
     key: "name",
