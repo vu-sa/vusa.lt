@@ -45,6 +45,7 @@ class Duty extends Model implements AuthorizableContract
             ->withPivot(['extra_attributes', 'start_date', 'end_date']);
     }
 
+    // TODO: use current_duties as an example for current_users
     public function current_users()
     {
         return $this->users()

@@ -36,6 +36,7 @@ class ModelIndexer
         return $modelsBuilder;
     }
 
+    // TODO: implement this method in all models (and make ModelIndexer non static)
     public static function filterByAuthorized(\Laravel\Scout\Builder $builder, Authorizer $authorizer, bool|null $hasManyPadalinys = true)
     {
         $user = User::query()->find((Auth::id()));

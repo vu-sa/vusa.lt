@@ -47,6 +47,7 @@ class Reservation extends Model
             ->withTimestamps();
     }
 
+    // TODO: maybe users can have roles inside the reservation (they already have a pivot table)
     public function users()
     {
         return $this->belongsToMany(User::class)

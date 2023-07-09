@@ -92,7 +92,7 @@ class User extends Authenticatable
     }
 
     // this needs more debugging. don't use with withWhereHas
-
+    // TODO: implement current_duties where appropriate
     public function current_duties()
     {
         return $this->duties()
