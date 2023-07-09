@@ -39,17 +39,27 @@ class NotifyUsersOfComment implements ShouldQueue
         ];
 
         $objectClassName = class_basename(get_class($commentable));
+        $objectName = optional($commentable)->name ?: optional($commentable)->title ?: null;
+
+        // if class name is reservation_resource, then we need to get the name from the reservation
+        if ($objectClassName === class_basename(ReservationResource::class)) {
+            $objectName = $commentable->reservation->name;
+        }
 
         $routeName = Str::of($objectClassName)->lcfirst()->plural().'.show';
 
         $object = [
             'modelClass' => $objectClassName,
-            'name' => optional($commentable)->name ?: optional($commentable)->title ?: null,
+            'name' => $objectName,
             'url' => route($routeName, $commentable->id),
         ];
 
-        // TODO: not always title, sometimes name, sometimes something else
-        $text = "<p><strong>{$user->name}</strong> paliko komentarą įraše: {$commentable->title}</p>";
+        // check if comment decision is null or not
+        if ($event->comment->decision) {
+            $text = "<p><strong>{$user->name}</strong> pakeitė statusą įraše <strong>{$objectName}</strong></p>";
+        } else {
+            $text = "<p><strong>{$user->name}</strong> paliko komentarą įraše <strong>{$objectName}</strong></p>";
+        }
 
         // TODO: send notification to all users that have access to the commentable, e.g. file doesn't work
         Notification::send($commentable->users?->unique(), new ModelCommented($text, $object, $subject));

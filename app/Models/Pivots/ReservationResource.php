@@ -37,6 +37,12 @@ class ReservationResource extends Pivot implements Decidable
         return $this->belongsTo(Resource::class);
     }
 
+    // Used for notification purposes, but maybe will need to be refactored
+    public function users()
+    {
+        return $this->reservation->users();
+    }
+
     public function approvable()
     {
         // if user null, return false

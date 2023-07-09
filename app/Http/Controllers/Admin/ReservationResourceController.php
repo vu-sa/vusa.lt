@@ -8,9 +8,13 @@ use App\Models\Pivots\ReservationResource;
 
 class ReservationResourceController extends LaravelResourceController
 {
+    public function show(ReservationResource $reservationResource)
+    {
+        return redirect()->route('reservations.show', $reservationResource->reservation);
+    }
+
     public function store(StoreReservationResourceRequest $request)
     {
-
         $reservationResource = new ReservationResource();
 
         $reservationResource->fill($request->validated());

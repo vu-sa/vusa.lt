@@ -17,6 +17,7 @@ class CommentNotificationTest extends TestCase
 {
     use RefreshDatabase;
 
+    // TODO: actually test the notification
     public function test_asserts_that_a_comment_notification_is_sent_when_an_user_comments_on_a_doing()
     {
         $doing = Doing::factory()->has(User::factory()->count(1))->create();

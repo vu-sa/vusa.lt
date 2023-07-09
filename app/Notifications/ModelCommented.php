@@ -67,8 +67,11 @@ class ModelCommented extends Notification implements ShouldQueue
 
     public function toMail($notifiable)
     {
-        return (new MailMessage)->greeting('Hello!')
-            ->subject('New comment')
-            ->line($this->text);
+        return (new MailMessage)
+            ->markdown('emails.model-commented', [
+                'text' => $this->text,
+                'object' => $this->objectArray,
+                'subject' => $this->subjectArray,
+            ])->subject('New Comment on ' . $this->objectArray['name']);
     }
 }
