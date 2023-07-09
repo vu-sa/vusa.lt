@@ -2,64 +2,20 @@
 
 namespace Tests\Feature\Reservations;
 
-use App\Models\Duty;
-use App\Models\Institution;
-use App\Models\Padalinys;
 use App\Models\Reservation;
 use App\Models\Resource;
-use App\Models\Role;
-use App\Models\User;
 use App\States\ReservationResource\Cancelled;
 use App\States\ReservationResource\Created;
 use App\States\ReservationResource\Lent;
 use App\States\ReservationResource\Rejected;
 use App\States\ReservationResource\Reserved;
 use App\States\ReservationResource\Returned;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use PHPUnit\Framework\Attributes\CoversNothing;
-use Tests\TestCase;
 
 #[CoversNothing]
-class PermissionTest extends TestCase
+class PermissionTest extends ReservationTestCase
 {
-    use RefreshDatabase;
-
-    private $simpleUser;
-
-    private $reservationManagerUser;
-
-    private $resourcePadalinys;
-
-    private $resourceManagerUser;
-
-    private $reservation;
-
-    private $resources;
-
-    public function setUp(): void
-    {
-        parent::setUp();
-
-        $this->resourcePadalinys = Padalinys::inRandomOrder()->first();
-
-        $this->resources = Resource::factory()->for($this->resourcePadalinys)->count(3)->create();
-        $this->reservation = Reservation::factory()->hasAttached($this->resources)->create();
-
-        $this->simpleUser = User::factory()->create();
-        $this->reservationManagerUser = User::factory()->hasAttached($this->reservation)->create();
-        $this->resourceManagerUser = User::factory()->create();
-
-        $resourceManagerDuty = Duty::factory()->has(Institution::factory()->state(
-            ['padalinys_id' => $this->resourcePadalinys->id]
-        ))->hasAttached($this->resourceManagerUser, ['start_date' => now()->subDays(1), 'end_date' => now()->addDays(1)])->create();
-
-        $resourceManagerRole = Role::factory()->create();
-        $resourceManagerRole->givePermissionTo(['reservations.read.*', config('permission.resource_managership_indicating_permission')]);
-
-        $resourceManagerDuty->assignRole($resourceManagerRole);
-    }
-
     public function test_simple_user_cannot_access_reservation()
     {
         $user = $this->simpleUser;
