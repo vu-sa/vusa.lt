@@ -133,8 +133,8 @@ class ReservationController extends LaravelResourceController
         return Inertia::render('Admin/Reservations/ShowReservation', [
             'reservation' => [
                 // load pivot relationship comments
-                ...$reservation->load('resources.pivot.comments', 'resources.padalinys', 'comments', 'activities.causer', 'users')->toArray(),
-                'resources' => $reservation->load('resources.media')->resources->map(function ($resource) {
+                ...$reservation->load('comments', 'activities.causer', 'users')->toArray(),
+                'resources' => $reservation->load('resources.media', 'resources.pivot.comments', 'resources.padalinys')->resources->map(function ($resource) {
                     return [
                         ...$resource->toArray(),
                         'managers' => $resource->managers(),

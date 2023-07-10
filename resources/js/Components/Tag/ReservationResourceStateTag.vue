@@ -1,7 +1,7 @@
 <template>
   <NTag :bordered="false" size="small" :type="state_properties.tagType">
     <div class="inline-flex items-center gap-1">
-      <span>{{ $t(`state.${state}`) }}</span>
+      <span>{{ capitalize($t(`state.status.${state}`)) }}</span>
       <InfoPopover v-if="state_properties">
         {{ state_properties.description }}
       </InfoPopover>
@@ -11,6 +11,8 @@
 
 <script setup lang="tsx">
 import { NTag } from "naive-ui";
+
+import { capitalize } from "@/Utils/String";
 import InfoPopover from "../Buttons/InfoPopover.vue";
 
 defineProps<{

@@ -41,10 +41,10 @@
         <strong>Įprastas rezervacijos veiksmų tvirtinimo procesas</strong>
       </p>
       <NTimeline horizontal>
-        <NTimelineItem type="info" :title="$t('state.created')" />
-        <NTimelineItem type="success" :title="$t('state.reserved')" />
-        <NTimelineItem type="warning" :title="$t('state.lent')" />
-        <NTimelineItem type="success" :title="$t('state.returned')" />
+        <NTimelineItem type="info" :title="$t('state.status.created')" />
+        <NTimelineItem type="success" :title="$t('state.status.reserved')" />
+        <NTimelineItem type="warning" :title="$t('state.status.lent')" />
+        <NTimelineItem type="success" :title="$t('state.status.returned')" />
       </NTimeline>
       <p class="mt-4">
         Sukūrus išteklio rezervacijos užklausą, ją galima atmesti. Rezervacijos

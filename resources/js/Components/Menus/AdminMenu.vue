@@ -209,7 +209,7 @@ const menuOptions = computed(() => [
         label: () => {
           return (
             <Link href={route("duties.index")}>
-              {capitalize($tChoice("entities.resource.duty", 2))}
+              {capitalize($tChoice("entities.duty.model", 2))}
             </Link>
           );
         },

@@ -1,10 +1,24 @@
 <?php
 
 return [
-    'created' => 'Sukurta',
-    'reserved' => 'Reservuota',
-    'lent' => 'Paskolinta',
-    'returned' => 'Grąžinta',
-    'rejected' => 'Atmesta',
-    'cancelled' => 'Atšaukta',
+    'status' => [
+        'created' => 'sukurta',
+        'reserved' => 'reservuota',
+        'lent' => 'paskolinta',
+        'returned' => 'grąžinta',
+        'rejected' => 'atmesta',
+        'cancelled' => 'atšaukta'
+    ],
+    'decision' => [
+        'approve' => 'patvirtinti',
+        'reject' => 'atmesti',
+        'cancel' => 'atšaukti'
+    ],
+    'comment' => [
+        'lent' => 'pažymėti, kaip paskolintą',
+        'returned' => 'pažymėti, kaip grąžintą',
+    ],
+    'other' => [
+        'and_decision' => 'ir :decision',
+    ]
 ];

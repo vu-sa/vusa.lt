@@ -33,7 +33,11 @@
                   class="mr-2 text-xs text-gray-500"
                 >
                   <span>{{
-                    formatRelativeTime(new Date(comment.created_at))
+                    formatRelativeTime(
+                      new Date(comment.created_at),
+                      { numeric: "auto" },
+                      $page.props.app.locale
+                    )
                   }}</span>
                 </span>
               </div>

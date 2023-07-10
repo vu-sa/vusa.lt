@@ -1,6 +1,6 @@
 <template>
   <IndexPageLayout
-    title="Ištekliai"
+    :title="$tChoice('entities.resource.model', 2)"
     model-name="resources"
     :icon="Icons.RESOURCE"
     :can-use-routes="canUseRoutes"

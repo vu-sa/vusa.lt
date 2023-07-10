@@ -20,7 +20,7 @@
         rounded-top
         :loading="loading"
         :enable-approve="selectedReservationResource?.approvable"
-        submit-text="Palikti komentarą"
+        :submit-text="$t('Komentuoti')"
         :approve-text="approveText"
         reject-text="... ir atmesti"
         :disabled="false"
@@ -32,6 +32,7 @@
 </template>
 
 <script setup lang="tsx">
+import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
 import { Link, router, usePage } from "@inertiajs/vue3";
 import {
   NButton,
@@ -46,6 +47,7 @@ import { computed, ref } from "vue";
 
 import { Delete16Regular, DismissCircle24Regular } from "@vicons/fluent";
 import { RESERVATION_DATE_TIME_FORMAT } from "@/Constants/DateTimeFormats";
+import { capitalize } from "@/Utils/String";
 import { formatStaticTime } from "@/Utils/IntlTime";
 import CardModal from "../Modals/CardModal.vue";
 import CommentTipTap from "@/Features/Admin/CommentViewer/CommentTipTap.vue";
@@ -87,18 +89,24 @@ const dataTableColumns = [
     },
   },
   {
-    title: "Pavadinimas",
+    title() {
+      return $t("forms.fields.title");
+    },
     key: "name",
     render(row) {
       return <Link href={route("resources.edit", row.id)}>{row.name}</Link>;
     },
   },
   {
-    title: "Kiekis",
+    title() {
+      return $t("forms.fields.quantity");
+    },
     key: "pivot.quantity",
   },
   {
-    title: "Padalinys",
+    title() {
+      return capitalize($tChoice("entities.padalinys.model", 1));
+    },
     key: "padalinys.shortname",
     render(row: App.Entities.Resource) {
       return (
@@ -108,7 +116,7 @@ const dataTableColumns = [
               row.pivot?.state === "created" ? "font-bold text-vusa-red" : ""
             }
           >
-            {row.padalinys?.shortname}
+            {$t(row.padalinys?.shortname)}
           </span>
           <UsersAvatarGroup
             users={row.managers}
@@ -121,7 +129,9 @@ const dataTableColumns = [
     },
   },
   {
-    title: "Rezervacijos pradžia",
+    title() {
+      return capitalize($t("entities.reservation.start_time"));
+    },
     key: "pivot.start_time",
     render(row: App.Entities.Resource) {
       return (
@@ -132,14 +142,17 @@ const dataTableColumns = [
         >
           {formatStaticTime(
             new Date(row.pivot.start_time),
-            RESERVATION_DATE_TIME_FORMAT
+            RESERVATION_DATE_TIME_FORMAT,
+            usePage().props.app.locale
           )}
         </span>
       );
     },
   },
   {
-    title: "Rezervacijos pabaiga",
+    title() {
+      return capitalize($t("entities.reservation.end_time"));
+    },
     key: "pivot.end_time",
     render(row: App.Entities.Resource) {
       return (
@@ -148,14 +161,17 @@ const dataTableColumns = [
         >
           {formatStaticTime(
             new Date(row.pivot.end_time),
-            RESERVATION_DATE_TIME_FORMAT
+            RESERVATION_DATE_TIME_FORMAT,
+            usePage().props.app.locale
           )}
         </span>
       );
     },
   },
   {
-    title: "Būsena",
+    title() {
+      return $t("forms.fields.state");
+    },
     key: "pivot.state",
     render(row: App.Entities.Resource) {
       return (
@@ -167,7 +183,9 @@ const dataTableColumns = [
     },
   },
   {
-    title: "Veiksmai",
+    title() {
+      return $t("Veiksmai");
+    },
     key: "pivot.actions",
     render(row: App.Entities.Resource) {
       return (
@@ -181,7 +199,9 @@ const dataTableColumns = [
               {{
                 default: () => (
                   <span>
-                    {row.pivot?.approvable ? "Keisti būseną" : "Komentuoti"}
+                    {row.pivot?.approvable
+                      ? $t("Keisti būseną")
+                      : $t("Komentuoti")}
                   </span>
                 ),
               }}
@@ -233,14 +253,20 @@ const handleStateChange = (row: any) => {
 
 const approveText = computed(() => {
   if (selectedReservationResource.value?.state === "reserved") {
-    return "... ir pažymėti, kaip paskolintą";
+    return `... ${$t("state.other.and_decision", {
+      decision: $t("state.lent"),
+    })}`;
   }
 
   if (selectedReservationResource.value?.state === "lent") {
-    return "... ir pažymėti, kaip grąžintą";
+    return `... ${$t("state.other.and_decision", {
+      decision: $t("state.return"),
+    })}`;
   }
 
-  return "... ir patvirtinti";
+  return `... ${$t("state.other.and_decision", {
+    decision: $t("state.approve"),
+  })}`;
 });
 
 const setSelectedReservationResource = async (
