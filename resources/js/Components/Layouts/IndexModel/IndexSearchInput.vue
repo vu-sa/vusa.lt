@@ -15,7 +15,7 @@
         type="text"
         clearable
         round
-        :placeholder="`${$t('Įvesk pavadinimą ir spausk „Enter“')}...`"
+        :placeholder="`${$t('Ieškoti')}...`"
         @update:value="searchIsDirty = true"
         @keyup.enter="handleSearchInput"
         ><template #prefix>

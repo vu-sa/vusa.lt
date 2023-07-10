@@ -22,6 +22,7 @@ return [
         'quantity' => 'Quantity',
         'location' => 'Location',
         'media' => 'Pictures',
+        'state' => 'State',
     ],
     'context' => [
         'main_info' => 'Main information',

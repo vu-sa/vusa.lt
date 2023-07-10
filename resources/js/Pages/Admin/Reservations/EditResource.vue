@@ -1,6 +1,6 @@
 <template>
   <PageContent
-    :title="title"
+    :title="resource.name[$page.props.app.locale]"
     :back-url="route('resources.index')"
     :heading-icon="Icons.RESOURCE"
   >
@@ -15,17 +15,22 @@
       title="Rezervacijų istorija"
       class="subtle-gray-gradient mt-4 min-w-[450px]"
     >
-      <NDataTable :data="resource.reservations" :columns="columns"></NDataTable>
+      <NDataTable
+        size="small"
+        :data="resource.reservations"
+        :columns="columns"
+      ></NDataTable>
     </NCard>
   </PageContent>
 </template>
 
 <script setup lang="tsx">
-import { NCard, NDataTable, NTag } from "naive-ui";
-import { computed } from "vue";
+import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
+import { Link, usePage } from "@inertiajs/vue3";
+import { NCard, NDataTable } from "naive-ui";
 
-import { Link } from "@inertiajs/vue3";
 import { RESERVATION_DATE_TIME_FORMAT } from "@/Constants/DateTimeFormats";
+import { capitalize } from "@/Utils/String";
 import { formatRelativeTime, formatStaticTime } from "@/Utils/IntlTime";
 import Icons from "@/Types/Icons/regular";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
@@ -48,30 +53,26 @@ const props = defineProps<{
   assignablePadaliniai: Array<App.Entities.Padalinys>;
 }>();
 
-const title = computed(() => {
-  if (props.resource.name.lt) {
-    return props.resource.name.lt;
-  } else if (props.resource.name.en) {
-    return props.resource.name.en;
-  } else {
-    return "Išteklio redagavimas";
-  }
-});
-
 const columns = [
   {
-    title: "Pavadinimas",
+    title() {
+      return $t("forms.fields.title");
+    },
     key: "name",
     render(row) {
       return <Link href={route("reservations.show", row.id)}>{row.name}</Link>;
     },
   },
   {
-    title: "Kiekis",
+    title() {
+      return $t("forms.fields.quantity");
+    },
     key: "pivot.quantity",
   },
   {
-    title: "Rezervacijos kūrėjai",
+    title() {
+      return capitalize($tChoice("entities.reservation.managers", 2));
+    },
     key: "users",
     render(row) {
       return row.users && row.users?.length > 0 ? (
@@ -82,7 +83,9 @@ const columns = [
     },
   },
   {
-    title: "Statusas",
+    title() {
+      return $t("forms.fields.state");
+    },
     key: "state",
     render(row) {
       return (
@@ -95,19 +98,24 @@ const columns = [
     },
   },
   {
-    title: "Rezervacijos pradžia",
+    title() {
+      return capitalize($t("entities.reservation.start_time"));
+    },
     key: "start_time",
     sorter: (a, b) =>
       new Date(a.start_time).getTime() - new Date(b.start_time).getTime(),
     render(row) {
       return formatStaticTime(
         new Date(row.start_time),
-        RESERVATION_DATE_TIME_FORMAT
+        RESERVATION_DATE_TIME_FORMAT,
+        usePage().props.app.locale
       );
     },
   },
   {
-    title: "Rezervacijos pabaiga",
+    title() {
+      return capitalize($t("entities.reservation.end_time"));
+    },
     key: "end_time",
     sorter: (a, b) =>
       new Date(a.end_time).getTime() - new Date(b.end_time).getTime(),
@@ -115,15 +123,24 @@ const columns = [
     render(row) {
       return formatStaticTime(
         new Date(row.end_time),
-        RESERVATION_DATE_TIME_FORMAT
+        RESERVATION_DATE_TIME_FORMAT,
+        usePage().props.app.locale
       );
     },
   },
   {
-    title: "Sukurta",
+    title() {
+      return $t("forms.fields.created_at");
+    },
     key: "created_at",
     render(row) {
-      return formatRelativeTime(new Date(row.created_at));
+      return formatRelativeTime(
+        new Date(row.created_at),
+        {
+          numeric: "auto",
+        },
+        usePage().props.app.locale
+      );
     },
   },
 ];
