@@ -55,8 +55,8 @@
           :loading="loading"
           icon-placement="right"
           @click="$emit('submit:comment')"
-          ><template #icon><NIcon :component="Send20Filled"></NIcon></template
-          >{{ submitText ?? "Pateikti" }}</NButton
+          ><template #icon><NIcon :component="Send20Filled" /></template
+          >{{ submitText ?? $t("Pateikti") }}</NButton
         >
         <NPopover
           v-if="enableApprove"
@@ -72,9 +72,12 @@
                 secondary
                 @click="$emit('submit:comment', 'approve')"
                 ><template #icon
-                  ><NIcon :component="CommentCheckmark24Regular"> </NIcon
-                ></template>
-                {{ approveText ?? "... ir patvirtinti" }}</NButton
+                  ><NIcon :component="CommentCheckmark24Regular" />
+                </template>
+                {{
+                  approveText ??
+                  `... ${$t("states.other.and_more", { decision: "approve" })}`
+                }}</NButton
               >
               <NButton
                 type="warning"
@@ -82,15 +85,18 @@
                 ghost
                 @click="$emit('submit:comment', 'reject')"
                 ><template #icon
-                  ><NIcon :component="CommentError24Regular"> </NIcon></template
-                >{{ rejectText ?? "... ir atmesti" }}</NButton
+                  ><NIcon :component="CommentError24Regular" /></template
+                >{{
+                  rejectText ??
+                  `... ${$t("states.other.and_more", { decision: "reject" })}`
+                }}</NButton
               >
             </NButtonGroup>
           </div>
           <template #trigger>
             <NButton type="primary" secondary
               ><template #icon
-                ><NIcon :component="CaretDown24Filled"></NIcon></template
+                ><NIcon :component="CaretDown24Filled" /></template
             ></NButton>
           </template>
         </NPopover>

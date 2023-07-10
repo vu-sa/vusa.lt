@@ -29,28 +29,38 @@
       :reservation="reservation"
     />
     <CardModal
-      title="Kaip veikia rezervacija?"
+      :title="
+        $t('entities.meta.help', {
+          model: $tChoice('entities.reservation.model', 2),
+        })
+      "
       :show="showReservationHelpModal"
       @close="showReservationHelpModal = false"
     >
-      <p>
-        Kiekviena rezervacija gali turėti 6 skirtingus statusus: sukurta,
-        rezervuota, paskolinta, grąžinta, atmesta, atšaukta.
-      </p>
-      <p class="my-4">
+      <p class="mb-4">
         <strong>Įprastas rezervacijos veiksmų tvirtinimo procesas</strong>
       </p>
-      <NTimeline horizontal>
-        <NTimelineItem type="info" :title="$t('state.status.created')" />
-        <NTimelineItem type="success" :title="$t('state.status.reserved')" />
-        <NTimelineItem type="warning" :title="$t('state.status.lent')" />
-        <NTimelineItem type="success" :title="$t('state.status.returned')" />
+      <NTimeline class="mb-4" horizontal>
+        <NTimelineItem
+          type="info"
+          :title="capitalize($t('state.status.created'))"
+        />
+        <NTimelineItem
+          type="success"
+          :title="capitalize($t('state.status.reserved'))"
+        />
+        <NTimelineItem
+          type="warning"
+          :title="capitalize($t('state.status.lent'))"
+        />
+        <NTimelineItem
+          type="success"
+          :title="capitalize($t('state.status.returned'))"
+        />
       </NTimeline>
-      <p class="mt-4">
-        Sukūrus išteklio rezervacijos užklausą, ją galima atmesti. Rezervacijos
-        kūrėjai taip pat gali atšaukti išteklio rezervaciją, iki daikto
-        pasiskolinimo.
-      </p>
+      <component
+        :is="RESERVATION_DESCRIPTIONS.help[$page.props.app.locale]"
+      ></component>
     </CardModal>
     <CardModal
       :show="showReservationResourceCreateModal"
@@ -112,9 +122,7 @@
 </template>
 
 <script setup lang="tsx">
-import { ref, toRaw } from "vue";
-import { useStorage } from "@vueuse/core";
-
+import { trans as $t } from "laravel-vue-i18n";
 import {
   type MenuOption,
   NButton,
@@ -129,7 +137,12 @@ import {
   type SelectRenderTag,
 } from "naive-ui";
 import { QuestionCircle16Regular } from "@vicons/fluent";
+import { ref, toRaw } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
+import { useStorage } from "@vueuse/core";
+
+import { RESERVATION_DESCRIPTIONS } from "@/Constants/I18n/Descriptions";
+import { capitalize } from "@/Utils/String";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import CommentViewer from "@/Features/Admin/CommentViewer/CommentViewer.vue";
 import Icons from "@/Types/Icons/filled";
@@ -177,14 +190,18 @@ const breadcrumbOptions: BreadcrumbOption[] = [
 
 const moreOptions: MenuOption[] = [
   {
-    label: "Pridėti rezervacijos išteklių",
+    label() {
+      return $t("Pridėti rezervacijos išteklių");
+    },
     icon() {
       return <NIcon component={Icons.RESOURCE}></NIcon>;
     },
     key: "add-resource",
   },
   {
-    label: "Pridėti rezervacijos valdytoją",
+    label() {
+      return $t("Pridėti rezervacijos valdytoją");
+    },
     icon() {
       return <NIcon component={Icons.USER}></NIcon>;
     },

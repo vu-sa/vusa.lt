@@ -81,7 +81,7 @@ const dataTableColumns = [
             </NSpace>
           </NImageGroup>
           <div>
-            <strong>Aprašymas</strong>
+            <strong>{$t("forms.fields.description")}</strong>
             <p>{row.description}</p>
           </div>
         </section>

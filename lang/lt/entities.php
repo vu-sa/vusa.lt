@@ -21,5 +21,6 @@ return [
     ],
     'meta' => [
         'model_list' => ':model sąrašas',
+        'help' => 'Kaip veikia :model?'
     ],
 ];
