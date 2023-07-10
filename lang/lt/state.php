@@ -7,12 +7,12 @@ return [
         'lent' => 'paskolinta',
         'returned' => 'grąžinta',
         'rejected' => 'atmesta',
-        'cancelled' => 'atšaukta'
+        'cancelled' => 'atšaukta',
     ],
     'decision' => [
         'approve' => 'patvirtinti',
         'reject' => 'atmesti',
-        'cancel' => 'atšaukti'
+        'cancel' => 'atšaukti',
     ],
     'comment' => [
         'lent' => 'pažymėti, kaip paskolintą',
@@ -20,5 +20,5 @@ return [
     ],
     'other' => [
         'and_decision' => 'ir :decision',
-    ]
+    ],
 ];

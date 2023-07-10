@@ -7,12 +7,12 @@ return [
         'lent' => 'lent',
         'returned' => 'returned',
         'rejected' => 'rejected',
-        'cancelled' => 'cancelled'
+        'cancelled' => 'cancelled',
     ],
     'decision' => [
         'approve' => 'approve',
         'reject' => 'reject',
-        'cancel' => 'cancel'
+        'cancel' => 'cancel',
     ],
     'comment' => [
         'lent' => 'mark as lent',
@@ -20,5 +20,5 @@ return [
     ],
     'other' => [
         'and_decision' => 'and :decision',
-    ]
+    ],
 ];

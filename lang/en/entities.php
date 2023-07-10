@@ -21,6 +21,6 @@ return [
     ],
     'meta' => [
         'model_list' => ':model list',
-        'help' => 'How :model work?'
+        'help' => 'How :model work?',
     ],
 ];

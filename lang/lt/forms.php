@@ -22,7 +22,7 @@ return [
         'quantity' => 'Kiekis',
         'location' => 'Vieta',
         'media' => 'Nuotraukos',
-        'state' => 'Būsena'
+        'state' => 'Būsena',
     ],
     'context' => [
         'main_info' => 'Pagrindinė informacija',
