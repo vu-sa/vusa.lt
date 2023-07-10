@@ -11,6 +11,7 @@
 </template>
 
 <script setup lang="tsx">
+import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
 import {
   type DataTableColumns,
   type DataTableSortState,
@@ -21,6 +22,7 @@ import {
 import { computed, provide, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 
+import { capitalize } from "@/Utils/String";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
@@ -62,7 +64,7 @@ const columns = computed<DataTableColumns<App.Entities.Resource>>(() => [
             </NSpace>
           </NImageGroup>
           <div>
-            <strong>Aprašymas</strong>
+            <strong>{$t("forms.fields.description")}</strong>
             <p>{row.description}</p>
           </div>
         </section>
@@ -70,7 +72,9 @@ const columns = computed<DataTableColumns<App.Entities.Resource>>(() => [
     },
   },
   {
-    title: "Pavadinimas",
+    title() {
+      return $t("forms.fields.title");
+    },
     key: "name",
     sorter: true,
     sortOrder: sorters.value.name,
@@ -80,22 +84,26 @@ const columns = computed<DataTableColumns<App.Entities.Resource>>(() => [
     },
   },
   {
-    title: "Kiekis",
+    title() {
+      return $t("forms.fields.quantity");
+    },
     key: "capacity",
   },
   {
-    title: "Padalinys",
+    title() {
+      return capitalize($tChoice("entities.padalinys.model", 1));
+    },
     key: "padalinys_id",
     filter: true,
     filterOptionValues: filters.value["padalinys_id"],
     filterOptions: usePage().props.padaliniai.map((padalinys) => {
       return {
-        label: padalinys.shortname,
+        label: $t(padalinys.shortname),
         value: padalinys.id,
       };
     }),
     render(row) {
-      return row.padalinys?.shortname;
+      return $t(row.padalinys?.shortname);
     },
   },
 ]);

@@ -4,6 +4,9 @@ return [
     'duty' => [
         'model' => '{1} duty|[2,*] duties',
     ],
+    'padalinys' => [
+        'model' => '{1} unit|[2,*] units',
+    ],
     'reservation' => [
         'model' => '{1} reservation|[2,*] reservations',
         'managers' => '{1} reservation manager|[2,*] reservation managers',

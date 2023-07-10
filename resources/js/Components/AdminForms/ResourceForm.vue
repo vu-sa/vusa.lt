@@ -122,6 +122,8 @@ const formDisabled = computed(() => {
 const submit = () => {
   // add _method: "patch" if it's an update, to the data of the request
   // because formdata doesn't support patch, it's needed
+  console.log(form);
+
   router.post(
     routeToSubmit.value,
     {

@@ -24,6 +24,8 @@ class StoreResourceRequest extends ResourceRequest
         return [
             'name.lt' => 'required|string',
             'description.lt' => 'required|string',
+            'name.en' => 'nullable|string',
+            'description.en' => 'nullable|string',
             'location' => 'required|string',
             'padalinys_id' => 'required|integer|exists:padaliniai,id',
             'capacity' => 'required|integer|min:1',

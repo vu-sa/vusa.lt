@@ -19,6 +19,7 @@ return [
         'admin_role' => 'Administravimo rolė',
         'picture' => 'Nuotrauka',
         'created_at' => 'Sukurta',
+        'quantity' => 'Kiekis',
     ],
     'context' => [
         'main_info' => 'Pagrindinė informacija',

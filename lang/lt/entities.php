@@ -4,6 +4,9 @@ return [
     'duty' => [
         'model' => '{1} pareiga|[2,9] pareigos|[10,*] pareigų',
     ],
+    'padalinys' => [
+        'model' => '{1} padalinys|[2,9] padaliniai|[10,*] padalinių',
+    ],
     'reservation' => [
         'model' => '{1} rezervacija|[2,9] rezervacijos|[10,*] rezervacijų',
         'managers' => '{1} rezervacijos valdytojas|[2,9] rezervacijos valdytojai|[10,*] rezervacijos valdytojų',
