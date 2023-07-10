@@ -18,6 +18,7 @@ return [
         'duty_people_count' => 'Pareigos asmenų kiekis',
         'admin_role' => 'Administravimo rolė',
         'picture' => 'Nuotrauka',
+        'created_at' => 'Sukurta',
     ],
     'context' => [
         'main_info' => 'Pagrindinė informacija',

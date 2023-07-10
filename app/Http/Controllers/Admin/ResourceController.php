@@ -79,7 +79,7 @@ class ResourceController extends LaravelResourceController
             $resource->addMedia($image['file'])->toMediaCollection('images');
         }
 
-        return redirect()->route('resources.index')->with('success', 'Sėkmingai sukurtas išteklius.');
+        return redirect()->route('resources.index')->with('success', trans_choice('messages.created', 1, ['model' => trans_choice('entities.resource.model', 1)]));
     }
 
     /**
@@ -133,7 +133,8 @@ class ResourceController extends LaravelResourceController
             }
         }
 
-        return back()->with('success', 'Sėkmingai atnaujintas išteklius.');
+        return back()
+            ->with('success', trans_choice('messages.updated', 1, ['model' => trans_choice('entities.resource.model', 1)]));
     }
 
     /**
@@ -145,6 +146,7 @@ class ResourceController extends LaravelResourceController
 
         $resource->delete();
 
-        return redirect()->route('resources.index')->with('success', 'Sėkmingai ištrintas išteklius.');
+        return redirect()->route('resources.index')
+            ->with('info', trans_choice('messages.deleted', 1, ['model' => trans_choice('entities.resource.model', 1)]));
     }
 }

@@ -11,11 +11,13 @@
 </template>
 
 <script setup lang="tsx">
+import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
 import { type DataTableColumns, type DataTableSortState, NTag } from "naive-ui";
-
-import { Link } from "@inertiajs/vue3";
-import { RESERVATION_DATE_TIME_FORMAT } from "@/Constants/DateTimeFormats";
+import { Link, usePage } from "@inertiajs/vue3";
 import { computed, provide, ref } from "vue";
+
+import { RESERVATION_DATE_TIME_FORMAT } from "@/Constants/DateTimeFormats";
+import { capitalize } from "vue";
 import { formatRelativeTime, formatStaticTime } from "@/Utils/IntlTime";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
@@ -49,11 +51,13 @@ const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => {
         return (
           <section class="flex flex-col gap-2 p-2">
             <div>
-              <strong>Aprašymas</strong>
+              <strong>{$t("forms.fields.description")}</strong>
               <p>{row.description}</p>
             </div>
             <div>
-              <strong>Rezervuoti ištekliai</strong>
+              <strong>
+                {capitalize($t("entities.reservation.resources"))}
+              </strong>
               <ul class="list-disc">
                 {/* add quantity and padalinys.shortname */}
                 {row.resources?.map((resource) => (
@@ -64,7 +68,7 @@ const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => {
                       </Link>
                       <NTag size="tiny" round>
                         <span class="ml-1 text-xs text-gray-500">
-                          {resource.padalinys?.shortname}
+                          {$t(resource.padalinys?.shortname)}
                         </span>
                       </NTag>
                     </div>
@@ -77,7 +81,9 @@ const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => {
       },
     },
     {
-      title: "Pavadinimas",
+      title() {
+        return $t("forms.fields.title");
+      },
       key: "name",
       sorter: true,
       sortOrder: sorters.value.name,
@@ -87,8 +93,10 @@ const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => {
       },
     },
     {
-      title: "Rezervacijos kūrėjai",
-      key: "users",
+      title() {
+        return capitalize($tChoice("entities.reservation.managers", 2));
+      },
+      key: "managers",
       render(row) {
         return row.users && row.users?.length > 0 ? (
           <UsersAvatarGroup class="align-middle" size={30} users={row.users} />
@@ -98,7 +106,9 @@ const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => {
       },
     },
     {
-      title: "Rezervacijos pradžia",
+      title() {
+        return capitalize($tChoice("entities.reservation.start_time", 2));
+      },
       key: "start_time",
       sorter: true,
       sortOrder: sorters.value.start_time,
@@ -108,12 +118,15 @@ const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => {
       render(row) {
         return formatStaticTime(
           new Date(row.start_time),
-          RESERVATION_DATE_TIME_FORMAT
+          RESERVATION_DATE_TIME_FORMAT,
+          usePage().props.app.locale
         );
       },
     },
     {
-      title: "Rezervacijos pabaiga",
+      title() {
+        return capitalize($tChoice("entities.reservation.end_time", 2));
+      },
       key: "end_time",
       sorter: true,
       sortOrder: sorters.value.end_time,
@@ -123,15 +136,24 @@ const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => {
       render(row) {
         return formatStaticTime(
           new Date(row.end_time),
-          RESERVATION_DATE_TIME_FORMAT
+          RESERVATION_DATE_TIME_FORMAT,
+          usePage().props.app.locale
         );
       },
     },
     {
-      title: "Sukurta",
+      title() {
+        return $t("forms.fields.created_at");
+      },
       key: "created_at",
       render(row) {
-        return formatRelativeTime(new Date(row.created_at));
+        return formatRelativeTime(
+          new Date(row.created_at),
+          {
+            numeric: "auto",
+          },
+          usePage().props.app.locale
+        );
       },
     },
   ];

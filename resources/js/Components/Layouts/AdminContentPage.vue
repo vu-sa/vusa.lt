@@ -31,7 +31,7 @@
       <div class="flex">
         <NButton round size="tiny" :theme-overrides="{ border: '1.2px solid' }"
           ><template #icon><NIcon :component="Add24Filled" /></template
-          >Pridėti</NButton
+          >{{ $t("forms.add") }}</NButton
         >
       </div></Link
     >

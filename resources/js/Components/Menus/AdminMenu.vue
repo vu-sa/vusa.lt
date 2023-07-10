@@ -209,7 +209,7 @@ const menuOptions = computed(() => [
         label: () => {
           return (
             <Link href={route("duties.index")}>
-              {capitalize($tChoice("models.duty", 2))}
+              {capitalize($tChoice("entities.resource.duty", 2))}
             </Link>
           );
         },
@@ -369,7 +369,9 @@ const menuOptions = computed(() => [
       {
         label: () => {
           return (
-            <Link href={route("reservations.index")}>{$t("Rezervacijos")}</Link>
+            <Link href={route("reservations.index")}>
+              {capitalize($tChoice("entities.resource.reservation", 2))}
+            </Link>
           );
         },
         key: "reservations",
@@ -380,7 +382,11 @@ const menuOptions = computed(() => [
       },
       {
         label: () => {
-          return <Link href={route("resources.index")}>{$t("Ištekliai")}</Link>;
+          return (
+            <Link href={route("resources.index")}>
+              {capitalize($tChoice("entities.resource.model", 2))}
+            </Link>
+          );
         },
         key: "resources",
         icon: () => {

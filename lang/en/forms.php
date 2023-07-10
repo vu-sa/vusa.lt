@@ -18,6 +18,7 @@ return [
         'duty_people_count' => 'Amount of people in duty',
         'admin_role' => 'Admin role',
         'picture' => 'Picture',
+        'created_at' => 'Created at'
     ],
     'context' => [
         'main_info' => 'Main information',

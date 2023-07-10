@@ -78,7 +78,7 @@ class DutyController extends LaravelResourceController
         $duty->types()->sync($request->type);
         $duty->users()->syncWithPivotValues($request->users, ['start_date' => now()]);
 
-        return redirect()->route('duties.index')->with('success', trans_choice('messages.created', 0, ['model' => trans_choice('models.duty', 1)]));
+        return redirect()->route('duties.index')->with('success', trans_choice('messages.created', 0, ['model' => trans_choice('entities.duty.model', 1)]));
     }
 
     /**
@@ -162,7 +162,7 @@ class DutyController extends LaravelResourceController
             $duty->types()->sync($request->types);
         });
 
-        return back()->with('success', trans_choice('messages.updated', 0, ['model' => trans_choice('models.duty', 1)]));
+        return back()->with('success', trans_choice('messages.updated', 0, ['model' => trans_choice('entities.duty.model', 1)]));
     }
 
     /**
@@ -176,7 +176,7 @@ class DutyController extends LaravelResourceController
 
         $duty->delete();
 
-        return redirect()->route('duties.index')->with('info', trans_choice('messages.deleted', 0, ['model' => trans_choice('models.duty', 1)]));
+        return redirect()->route('duties.index')->with('info', trans_choice('messages.deleted', 0, ['model' => trans_choice('entities.duty.model', 1)]));
     }
 
     public function setAsStudentRepresentatives(Request $request)
