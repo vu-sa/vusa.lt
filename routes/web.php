@@ -54,7 +54,7 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::redirect('/admin', '/mano', 301);
 
         Route::get('/apgyvendinimas', function () {
-            return Redirect::to(config('app.url') . '/lt/bendrabuciai', 301);
+            return Redirect::to(config('app.url').'/lt/bendrabuciai', 301);
         });
 
         Route::get('kontaktai', [Public\ContactController::class, 'contacts'])->name('contacts');

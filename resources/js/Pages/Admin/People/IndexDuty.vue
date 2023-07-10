@@ -11,10 +11,12 @@
 </template>
 
 <script setup lang="tsx">
-import { NButton, NEllipsis, NIcon } from "naive-ui";
+import { NButton, NEllipsis, NIcon, type DataTableRowKey, type DataTableColumns } from "naive-ui";
 
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
+import { provide, ref } from "vue";
+import { router } from "@inertiajs/vue3";
 
 defineProps<{
   duties: PaginatedModels<App.Entities.Duty>;
@@ -27,7 +29,28 @@ const canUseRoutes = {
   destroy: false,
 };
 
-const columns = [
+const checkedRowKeys = ref<DataTableRowKey[]>([])
+
+provide("checkedRowKeys", checkedRowKeys);
+
+const columns: DataTableColumns<App.Entities.Duty> = [
+  {
+    type: 'selection',
+    options: [
+          'all',
+          'none',
+          {
+            label: 'Set as student representatives',
+            key: 'set-as-student-representatives',
+            onSelect: (rows) => {
+              router.put(route('duties.setAsStudentRepresentatives'), {
+                duties: checkedRowKeys.value
+              })
+            }
+          }
+        ],
+    width: 50,
+  },
   {
     title: "Pavadinimas",
     key: "name",

@@ -110,9 +110,19 @@
       <FormElement>
         <template #title>Papildoma informacija</template>
         <template #description
-          >Šiuo metu šie nustatymai tik rodomi, jų negalima keisti...</template
+          >
+          <div class="flex flex-col gap-2">
+            <p>
+              <strong>Pareigybės tipas</strong> reikalingas tam, kad tam tikrais atvejais, nariai būtų rodomi
+              viešame studentų atstovybės puslapyje. Pavyzdžiui, studentų
+              atstovo tipui priklausantys asmenys rodomi prie institucijos kontaktų.
+            </p>
+            <p><strong>Administracinė vusa.lt rolė </strong> leidžia registruotiems naudotojams atlikti jiems priskirtus veiksmus
+            vidiniame mano.vusa.lt tinklalapyje</p>
+          </div>
+          </template
         >
-        <NFormItem label="Pareigybės tipas" :span="2">
+        <NFormItem label="Pareigybės tipas">
           <NSelect
             v-model:value="form.types"
             :disabled="!$page.props.auth.user.isSuperAdmin"
@@ -125,7 +135,7 @@
           />
         </NFormItem>
 
-        <NFormItem label="Administracinė vusa.lt rolė" :span="2">
+        <NFormItem label="Administracinė vusa.lt rolė">
           <NSelect
             v-model:value="form.roles"
             :disabled="!$page.props.auth.user.isSuperAdmin"

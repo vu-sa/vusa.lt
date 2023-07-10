@@ -178,4 +178,23 @@ class DutyController extends ResourceController
 
         return redirect()->route('duties.index')->with('info', 'Pareigybė sėkmingai ištrinta!');
     }
+
+    public function setAsStudentRepresentatives(Request $request)
+    {
+        $this->authorize('update', [Duty::class, $this->authorizer]);
+
+        $request->validate([
+            'duties' => 'required|array',
+        ]);
+
+        $duties = Duty::find($request->duties);
+
+        // attach student representative type and role to duties, but without duplication errors
+        foreach ($duties as $duty) {
+            $duty->types()->syncWithoutDetaching(Type::where('title', 'Studentų atstovas')->first());
+            $duty->roles()->syncWithoutDetaching(Role::where('name', 'Studentų atstovas')->first());
+        }
+
+        return back()->with('success', 'Pareigybės sėkmingai atnaujintos!');
+    }
 }

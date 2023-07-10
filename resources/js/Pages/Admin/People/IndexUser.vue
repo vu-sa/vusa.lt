@@ -27,7 +27,7 @@ const sorters = ref<Record<string, DataTableSortState["order"]>>({
   name: false,
 });
 
-provide("sorters", { sorters, updateSorters });
+provide("sorters", sorters);
 
 const canUseRoutes = {
   create: true,

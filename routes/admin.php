@@ -49,10 +49,12 @@ Route::resource('saziningaiExams', SaziningaiExamsController::class);
 Route::resource('saziningaiExamFlows', SaziningaiExamFlowsController::class);
 Route::resource('saziningaiExamObservers', SaziningaiExamObserversController::class);
 Route::resource('files', FilesController::class);
+
+Route::put('duties/setAsStudentRepresentatives', [DutyController::class, 'setAsStudentRepresentatives'])->name('duties.setAsStudentRepresentatives');
 Route::resource('duties', DutyController::class);
 Route::resource('duties.users', DutiableController::class);
-Route::resource('institutions', InstitutionController::class);
 Route::post('institutions/reorderDuties', [InstitutionController::class, 'reorderDuties'])->name('institutions.reorderDuties');
+Route::resource('institutions', InstitutionController::class);
 
 Route::resource('types', TypeController::class);
 Route::resource('relationships', RelationshipController::class);
