@@ -13,8 +13,13 @@ return [
         'start_time' => 'pradžia',
         'end_time' => 'pabaiga',
         'resources' => 'rezervuoti ištekliai',
+        'is_reservable' => 'ar rezervuojamas?',
+        'period' => 'rezervacijos laikotarpis',
     ],
     'resource' => [
         'model' => '{1} išteklius|[2,9] ištekliai|[10,*] išteklių',
+    ],
+    'meta' => [
+        'model_list' => ':model sąrašas'
     ],
 ];

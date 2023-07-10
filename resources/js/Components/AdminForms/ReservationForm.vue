@@ -2,35 +2,31 @@
   <NForm :model="form" label-placement="top">
     <div class="flex flex-col">
       <FormElement>
-        <template #title>Rezervacija</template>
+        <template #title>{{ $t("forms.context.main_info") }}</template>
         <template #description>
-          <p>
-            Rezervacijos aprašymas. Daiktų rezervacijos laikas yra nuo jų
-            <strong>atsiėmimo laiko</strong> iki
-            <strong>grąžinimo laiko</strong>.
-          </p>
-          <p class="mt-2">
-            Skolinimosi laikas galioja visiems rezervuojamiems daiktams. Norint
-            individualiai pakeisti skolintino daikto laiką, pridėk daiktą jau
-            sukūrus rezervaciją.
-          </p>
+          <component
+            :is="RESERVATION_DESCRIPTIONS.main_info[$page.props.app.locale]"
+          />
         </template>
-        <NFormItem label="Pavadinimas" required>
+        <NFormItem :label="$t('forms.fields.title')" required>
           <MultiLocaleInput
             v-model:input="form.name"
             v-model:lang="inputLang"
-            placeholder="Renginys „VU SA dienos“"
+            :placeholder="RESERVATION_PLACEHOLDERS.name"
           />
         </NFormItem>
-        <NFormItem label="Aprašymas" required>
+        <NFormItem :label="$t('forms.fields.description')" required>
           <MultiLocaleInput
             v-model:input="form.description"
             v-model:lang="inputLang"
-            placeholder="Visi ištekliai bus naudojami šiam renginiui. Jeigu reikia, galima būtų išteklių A grąžinti anksčiau..."
+            :placeholder="RESERVATION_PLACEHOLDERS.description"
             input-type="textarea"
           />
         </NFormItem>
-        <NFormItem required label="Skolinimosi laikotarpis">
+        <NFormItem
+          required
+          :label="capitalize($t('entities.reservation.period'))"
+        >
           <NDatePicker
             v-model:value="date"
             :loading="resourceLoading"
@@ -46,17 +42,22 @@
           />
         </NFormItem>
       </FormElement>
-      <FormElement>
-        <template #title>Rezervuojami ištekliai</template>
+      <FormElement :icon="Icons.RESOURCE">
+        <template #title>{{
+          capitalize($tChoice("entities.resource.model", 2))
+        }}</template>
         <template #description>
-          <p class="mb-4">
-            Pakeitus rezervacijos laiką, pasirinkti ištekliai bus išvalyti.
-            Rodomas išteklių kiekis nurodytu rezervacijos laikotarpiu.
-          </p>
+          <component
+            :is="RESERVATION_DESCRIPTIONS.resources[$page.props.app.locale]"
+          />
           <Link class="w-fit" :href="route('resources.index')">
             <div class="inline-flex items-center gap-2">
               <NIcon :component="Icons.RESOURCE" class="align-center" />
-              <strong>Daiktų sąrašas</strong>
+              <strong class="underline">{{
+                $t("entities.meta.model_list", {
+                  model: capitalize($tChoice("entities.resource.model", 11)),
+                })
+              }}</strong>
             </div>
           </Link>
         </template>
@@ -94,11 +95,17 @@
         </NFormItem>
       </FormElement>
       <FormElement>
-        <template #title>Papildoma informacija</template>
+        <template #title>{{ $t("forms.fields.additional_info") }}</template>
         <NFormItem :show-label="false">
           <NCheckbox v-model:checked="conditionAcquaintance">
-            Sutinku įdėmiai sekti rezervacijos informaciją, išteklius pasiimti
-            ir grąžinti laiku.
+            <template v-if="$page.props.app.locale">
+              Sutinku įdėmiai sekti rezervacijos informaciją, išteklius pasiimti
+              ir grąžinti laiku.
+            </template>
+            <template v-else>
+              I agree to carefully follow the reservation information, take and
+              return the resources on time.
+            </template>
           </NCheckbox>
         </NFormItem>
       </FormElement>
@@ -129,12 +136,14 @@ import {
   NIcon,
   NInputNumber,
   NSelect,
-  NTag,
   type SelectOption,
 } from "naive-ui";
 import { computed, ref, watch } from "vue";
 import { useForm } from "laravel-precognition-vue-inertia";
 
+import { RESERVATION_DESCRIPTIONS } from "@/Constants/I18n/Descriptions";
+import { RESERVATION_PLACEHOLDERS } from "@/Constants/I18n/Placeholders";
+import { capitalize } from "@/Utils/String";
 import {
   renderResourceLabel,
   renderResourceTag,

@@ -2,23 +2,26 @@
   <NForm :model="form" label-placement="top" :disabled="formDisabled">
     <div class="flex flex-col">
       <FormElement>
-        <template #title>Pagrindinė informacija</template>
-        <NFormItem label="Pavadinimas" required>
+        <template #title>{{ $t("forms.context.main_info") }} </template>
+        <NFormItem :label="$t('forms.fields.title')" required>
           <MultiLocaleInput
             v-model:input="form.name"
             v-model:lang="inputLang"
-            placeholder="JBL kolonėlė (įkraunama)"
+            :placeholder="RESOURCE_PLACEHOLDERS.title"
           />
         </NFormItem>
-        <NFormItem label="Aprašymas" required>
+        <NFormItem :label="$t('forms.fields.description')" required>
           <MultiLocaleInput
             v-model:input="form.description"
             v-model:lang="inputLang"
             input-type="textarea"
-            placeholder="Tikslus modelis: ABC123. Nuoroda internete? Naudoti tik perskaičius instrukciją..."
+            :placeholder="RESOURCE_PLACEHOLDERS.description"
           />
         </NFormItem>
-        <NFormItem label="Padalinys, kuriam priklauso daiktas" :span="2">
+        <NFormItem
+          :label="capitalize($tChoice('entities.padalinys.model', 1))"
+          required
+        >
           <NSelect
             v-model:value="form.padalinys_id"
             :options="padaliniai"
@@ -29,12 +32,13 @@
           />
         </NFormItem>
       </FormElement>
-      <FormElement>
-        <template #title>Nuotraukos</template>
-        <template #description
-          >Rekomenduojama, kad kiekvienas išteklius turėtų nuotraukų. Jas gali
-          matyti ir rezervaciją kuriantys asmenys.</template
-        >
+      <FormElement :icon="Icons.IMAGE">
+        <template #title>{{ $t("forms.fields.media") }}</template>
+        <template #description>
+          <component
+            :is="RESOURCE_DESCRIPTIONS.media[$page.props.app.locale]"
+          />
+        </template>
         <NUpload
           ref="upload"
           :file-list="form.media"
@@ -43,21 +47,24 @@
           multiple
           @change="handleChange"
         >
-          Įkelti paveikslėlius
+          {{ $t("forms.context.upload_media") }}
         </NUpload>
       </FormElement>
       <FormElement>
-        <template #title>Papildoma informacija</template>
-        <NFormItem label="Adresas, vieta..." required>
+        <template #title>{{ $t("forms.context.additional_info") }}</template>
+        <NFormItem :label="$t('forms.fields.location')" required>
           <NInput
             v-model:value="form.location"
-            placeholder="Naugarduko g. X (VU P), 2 sandėliukas"
+            placeholder="Naugarduko g. X (VU P), 010 kab."
           />
         </NFormItem>
-        <NFormItem label="Vnt. skaičius" required>
+        <NFormItem :label="$t('forms.fields.quantity')" required>
           <NInputNumber v-model:value="form.capacity" :min="1" type="number" />
         </NFormItem>
-        <NFormItem label="Ar šiuo metu rezervuojamas?" required>
+        <NFormItem
+          :label="capitalize($t('entities.reservation.is_reservable'))"
+          required
+        >
           <NSwitch
             v-model:value="form.is_reservable"
             :checked-value="1"
@@ -73,7 +80,7 @@
         :model-route="deleteModelRoute"
       /> -->
       <!-- <UpsertModelButton :form="form" :model-route="modelRoute" /> -->
-      <NButton @click="submit">Pateikti</NButton>
+      <NButton type="primary" @click="submit">{{ $t("forms.submit") }}</NButton>
     </div>
   </NForm>
 </template>
@@ -90,12 +97,15 @@ import {
   NUpload,
   type UploadFileInfo,
 } from "naive-ui";
-import { computed, ref } from "vue";
+import { capitalize, computed, ref } from "vue";
 import { router, useForm, usePage } from "@inertiajs/vue3";
 
 import FormElement from "./FormElement.vue";
+import Icons from "@/Types/Icons/regular";
 import MultiLocaleInput from "../SimpleAugment/MultiLocaleInput.vue";
 // import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
+import { RESOURCE_DESCRIPTIONS } from "@/Constants/I18n/Descriptions";
+import { RESOURCE_PLACEHOLDERS } from "@/Constants/I18n/Placeholders";
 import type { ResourceCreationTemplate } from "@/Pages/Admin/Reservations/CreateResource.vue";
 import type { ResourceEditType } from "@/Pages/Admin/Reservations/EditResource.vue";
 

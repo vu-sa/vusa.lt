@@ -2,7 +2,7 @@
   <NForm :model="form" label-placement="top">
     <div class="flex flex-col">
       <FormElement>
-        <template #title>Pagrindinė informacija</template>
+        <template #title>{{ $t("forms.context.main_info") }} </template>
         <template #description></template>
         <NFormItem label="Pavadinimas" :required="true">
           <NInput v-if="locale === 'lt'" v-model:value="form.title.lt">

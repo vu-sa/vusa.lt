@@ -1,5 +1,12 @@
 <template>
-  <PageContent title="Naujas išteklius" :heading-icon="Icons.RESOURCE">
+  <PageContent
+    :title="
+      $tChoice('forms.new_model', 1, {
+        model: $tChoice('entities.resource.model', 1),
+      })
+    "
+    :heading-icon="Icons.RESOURCE"
+  >
     <UpsertModelLayout :errors="$page.props.errors" :model="resource">
       <ResourceForm
         :padaliniai="assignablePadaliniai"

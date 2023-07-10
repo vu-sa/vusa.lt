@@ -20,15 +20,14 @@ return [
         'picture' => 'Nuotrauka',
         'created_at' => 'Sukurta',
         'quantity' => 'Kiekis',
+        'location' => 'Vieta',
+        'media' => 'Nuotraukos'
     ],
     'context' => [
         'main_info' => 'Pagrindinė informacija',
         'user_duties' => 'Asmens pareigos',
         'additional_info' => 'Papildoma informacija',
-    ],
-    'actions' => [
-        'create_duty' => 'Sukurti naują pareigybę?',
-        'create_user' => 'Sukurti naują asmenį?',
+        'upload_media' => 'Įkelti nuotraukas',
     ],
     'add' => 'Pridėti',
     'submit' => 'Pateikti',
@@ -36,4 +35,5 @@ return [
     'delete' => 'Ištrinti',
     'edit' => 'Redaguoti',
     'remove' => 'Pašalinti',
+    'new_model' => '{0} Nauja :model|{1} Naujas :model',
 ];

@@ -2,7 +2,7 @@
   <NForm :model="form" label-placement="top">
     <div class="flex flex-col">
       <FormElement>
-        <template #title>Pagrindinė informacija</template>
+        <template #title>{{ $t("forms.context.main_info") }} </template>
         <template #description
           >Pagrindinė informacija apie turinio tipą.</template
         >

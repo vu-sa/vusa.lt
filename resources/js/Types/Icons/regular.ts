@@ -16,6 +16,7 @@ import {
   FlowchartCircle24Regular,
   Grid24Regular,
   Home24Regular,
+  Image24Regular,
   ImageArrowBack24Regular,
   Important24Regular,
   Navigation24Regular,
@@ -83,6 +84,7 @@ const formIcons: Record<keyof typeof FormEnum, Component> = {
 
 const otherIcons: Record<keyof typeof OtherIconEnum, Component> = {
   HOME: Home24Regular,
+  IMAGE: Image24Regular,
   NOTIFICATION: Alert24Regular,
 };
 

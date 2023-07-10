@@ -13,8 +13,13 @@ return [
         'start_time' => 'start time',
         'end_time' => 'end time',
         'resources' => 'reserved resources',
+        'is_reservable' => 'is reservable?',
+        'period' => 'reservation period',
     ],
     'resource' => [
         'model' => '{1} resource|[2,*] resources',
+    ],
+    'meta' => [
+        'model_list' => ':model list',
     ],
 ];

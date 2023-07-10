@@ -3,7 +3,7 @@
     v-if="inputLang === 'lt'"
     v-model:value="input.lt"
     :type="inputType"
-    :placeholder="placeholder"
+    :placeholder="placeholders.lt"
   >
     <template #suffix
       ><SimpleLocaleButton v-model:locale="inputLang"></SimpleLocaleButton
@@ -12,7 +12,7 @@
   <NInput
     v-else-if="inputLang === 'en'"
     v-model:value="input.en"
-    :placeholder="placeholder"
+    :placeholder="placeholders.en"
     :type="inputType"
   >
     <template #suffix
@@ -23,11 +23,13 @@
 
 <script setup lang="ts">
 import { NInput } from "naive-ui";
+import { computed } from "vue";
+
 import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
 
-defineProps<{
+const props = defineProps<{
   inputType?: "text" | "textarea";
-  placeholder?: string;
+  placeholder?: string | { lt: string; en: string };
 }>();
 
 const inputLang = defineModel<"lt" | "en">("lang", {
@@ -36,5 +38,15 @@ const inputLang = defineModel<"lt" | "en">("lang", {
 
 const input = defineModel<{ lt: string; en: string }>("input", {
   default: { lt: "", en: "" },
+});
+
+const placeholders = computed(() => {
+  if (!props.placeholder) {
+    return { lt: "", en: "" };
+  }
+
+  return typeof props.placeholder === "string"
+    ? { lt: props.placeholder, en: props.placeholder }
+    : props.placeholder;
 });
 </script>

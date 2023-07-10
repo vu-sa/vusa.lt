@@ -1,5 +1,12 @@
 <template>
-  <PageContent title="Nauja rezervacija" :heading-icon="Icons.RESERVATION">
+  <PageContent
+    :title="
+      $tChoice('forms.new_model', 0, {
+        model: $tChoice('entities.reservation.model', 1),
+      })
+    "
+    :heading-icon="Icons.RESERVATION"
+  >
     <UpsertModelLayout :errors="$page.props.errors" :model="reservation">
       <ReservationForm
         model-route="reservations.store"
