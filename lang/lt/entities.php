@@ -20,6 +20,6 @@ return [
         'model' => '{1} išteklius|[2,9] ištekliai|[10,*] išteklių',
     ],
     'meta' => [
-        'model_list' => ':model sąrašas'
+        'model_list' => ':model sąrašas',
     ],
 ];

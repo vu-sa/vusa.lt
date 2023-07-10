@@ -21,7 +21,7 @@ return [
         'created_at' => 'Sukurta',
         'quantity' => 'Kiekis',
         'location' => 'Vieta',
-        'media' => 'Nuotraukos'
+        'media' => 'Nuotraukos',
     ],
     'context' => [
         'main_info' => 'Pagrindinė informacija',
