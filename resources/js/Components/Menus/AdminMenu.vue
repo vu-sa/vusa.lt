@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t } from "laravel-vue-i18n";
+import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
 import {
   Flowchart20Regular,
   Folder24Regular,
@@ -23,6 +23,7 @@ import { Link, usePage } from "@inertiajs/vue3";
 import { NIcon, NMenu } from "naive-ui";
 import { computed, ref } from "vue";
 
+import { capitalize } from "@/Utils/String";
 import Icons from "@/Types/Icons/regular";
 
 defineEmits<{
@@ -206,7 +207,11 @@ const menuOptions = computed(() => [
       },
       {
         label: () => {
-          return <Link href={route("duties.index")}>{$t("Pareigos")}</Link>;
+          return (
+            <Link href={route("duties.index")}>
+              {capitalize($tChoice("models.duty", 2))}
+            </Link>
+          );
         },
         key: "duties",
         icon: () => {
