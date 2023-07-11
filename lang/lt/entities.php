@@ -19,6 +19,9 @@ return [
     'resource' => [
         'model' => '{1} išteklius|[2,9] ištekliai|[10,*] išteklių',
     ],
+    'reservation_resource' => [
+        'model' => '{1} rezervacijos išteklius|[2,9] rezervacijos ištekliai|[10,*] rezervacijos išteklių',
+    ],
     'meta' => [
         'model_list' => ':model sąrašas',
         'help' => 'Kaip veikia :model?',

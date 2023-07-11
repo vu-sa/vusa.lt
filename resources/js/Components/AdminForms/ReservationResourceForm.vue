@@ -1,6 +1,6 @@
 <template>
   <NForm :model="reservationResourceForm">
-    <NFormItem required label="Skolinimosi laikotarpis">
+    <NFormItem required :label="capitalize($t('entities.reservation.period'))">
       <NDatePicker
         v-model:value="date"
         type="datetimerange"
@@ -14,10 +14,10 @@
         @update:value="onDateChange"
       />
     </NFormItem>
-    <NFormItem label="Išteklio pavadinimas" path="resource_id">
+    <NFormItem :label="$t('forms.fields.title')" path="resource_id">
       <NSelect
         v-model:value="reservationResourceForm.resource_id"
-        placeholder="Pasirinkite išteklių..."
+        :placeholder="`${$t('Pasirinkite')}...`"
         clearable
         value-field="id"
         label-field="name"
@@ -29,21 +29,21 @@
       >
       </NSelect>
     </NFormItem>
-    <NFormItem label="Kiekis" path="quantity">
+    <NFormItem :label="$t('forms.fields.quantity')" path="quantity">
       <NInputNumber
         v-model:value="reservationResourceForm.quantity"
         :disabled="reservationResourceForm.resource_id === null"
         min="1"
         :max="capacityMax"
-        placeholder="Įveskite išteklio kiekį"
-      ></NInputNumber>
+        placeholder=""
+      />
     </NFormItem>
     <NFormItem :show-label="false">
       <NButton
         :disabled="reservationResourceForm.resource_id === null"
         type="primary"
         @click="handleSubmit"
-        >Pridėti</NButton
+        >{{ $t("forms.submit") }}</NButton
       >
     </NFormItem>
   </NForm>
@@ -60,6 +60,7 @@ import {
   NSelect,
   type SelectOption,
 } from "naive-ui";
+import { capitalize } from "@/Utils/String";
 import { computed, ref, watch } from "vue";
 import {
   renderResourceLabel,

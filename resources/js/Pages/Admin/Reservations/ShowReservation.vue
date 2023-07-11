@@ -78,14 +78,18 @@
     </CardModal>
     <CardModal
       :show="showReservationAddUserModal"
-      title="Pridėti valdytoją prie rezervacijos"
+      :title="
+        RESERVATION_CARD_MODAL_TITLES.attach_user_to_reservation[
+          $page.props.app.locale
+        ]
+      "
       @close="showReservationAddUserModal = false"
     >
       <NForm :model="reservationUserForm">
-        <NFormItem label="Naudotojai">
+        <NFormItem :label="$t('Naudotojai')">
           <NSelect
             v-model:value="reservationUserForm.users"
-            placeholder="Pasirink rezervacijos valdytojus..."
+            :placeholder="`${$t('Pasirinkite')}...`"
             filterable
             clearable
             label-field="name"
@@ -97,9 +101,9 @@
           ></NSelect>
         </NFormItem>
         <NFormItem>
-          <NButton type="primary" @click="handleSubmitUserForm"
-            >Pridėti</NButton
-          >
+          <NButton type="primary" @click="handleSubmitUserForm">
+            {{ $t("forms.submit") }}
+          </NButton>
         </NFormItem>
       </NForm>
     </CardModal>

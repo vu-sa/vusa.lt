@@ -19,6 +19,9 @@ return [
     'resource' => [
         'model' => '{1} resource|[2,*] resources',
     ],
+    'reservation_resource' => [
+        'model' => '{1} reservation resource|[2,*] reservation resources',
+    ],
     'meta' => [
         'model_list' => ':model list',
         'help' => 'How :model work?',

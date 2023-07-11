@@ -20,7 +20,7 @@ class ReservationResourceController extends LaravelResourceController
         $reservationResource->fill($request->validated());
         $reservationResource->save();
 
-        return back()->with('success', 'Išteklius rezervacijoje sėkmingai pridėtas.');
+        return back()->with('success', trans_choice('messages.created', 1, ['model' => trans_choice('entities.reservation_resource.model', 1)]));
     }
 
     public function destroy(ReservationResource $reservationResource)
@@ -29,6 +29,6 @@ class ReservationResourceController extends LaravelResourceController
 
         $reservationResource->delete();
 
-        return back()->with('success', 'Išteklius rezervacijoje sėkmingai ištrintas.');
+        return back()->with('info', trans_choice('messages.deleted', 1, ['model' => trans_choice('entities.reservation_resource.model', 1)]));
     }
 }

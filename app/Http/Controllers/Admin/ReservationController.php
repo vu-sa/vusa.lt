@@ -148,6 +148,10 @@ class ReservationController extends LaravelResourceController
 
                 return [
                     ...$resource->toArray(),
+                    'padalinys' => [
+                        'id' => $resource->padalinys->id,
+                        'shortname' => __($resource->padalinys->shortname),
+                    ],
                     'capacityAtDateTimeRange' => $capacityAtDateTimeRange,
                     'lowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($capacityAtDateTimeRange),
                 ];
@@ -225,6 +229,6 @@ class ReservationController extends LaravelResourceController
 
         Notification::send($reservation->refresh()->users->diff($old_users), new UserAttachedToModel($reservation, auth()->user()));
 
-        return back()->with('success', 'Rezervacijos valdytojai pridėti.');
+        return back()->with('success', __('messages.users_attached_to_reservation'));
     }
 }

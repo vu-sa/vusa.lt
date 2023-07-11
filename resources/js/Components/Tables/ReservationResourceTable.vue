@@ -3,6 +3,7 @@
     :data="reservation?.resources"
     :columns="dataTableColumns"
     :row-key="rowKey"
+    :scroll-x="650"
     size="small"
   ></NDataTable>
 
@@ -93,6 +94,8 @@ const dataTableColumns = [
       return $t("forms.fields.title");
     },
     key: "name",
+    fixed: "left",
+    minWidth: 75,
     render(row) {
       return <Link href={route("resources.edit", row.id)}>{row.name}</Link>;
     },
@@ -108,6 +111,9 @@ const dataTableColumns = [
       return capitalize($tChoice("entities.padalinys.model", 1));
     },
     key: "padalinys.shortname",
+    maxWidth: 150,
+    width: 150,
+    resizable: true,
     render(row: App.Entities.Resource) {
       return (
         <div class="inline-flex items-center gap-2">
@@ -187,6 +193,7 @@ const dataTableColumns = [
       return $t("Veiksmai");
     },
     key: "pivot.actions",
+    fixed: "right",
     render(row: App.Entities.Resource) {
       return (
         <div class="flex items-center space-x-2">
