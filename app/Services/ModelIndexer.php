@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 class ModelIndexer
 {
     // check argument to be class of model
-    public function execute(string $modelClass, string|null $search, string $searchable, Authorizer $authorizer, bool|null $hasManyPadalinys = true): Builder
+    public function execute(string $modelClass, ?string $search, string $searchable, Authorizer $authorizer, ?bool $hasManyPadalinys = true): Builder
     {
         if (! class_exists($modelClass)) {
             // return exception that the class doesn't exist
@@ -37,7 +37,7 @@ class ModelIndexer
     }
 
     // TODO: implement this method in all models (and make ModelIndexer non static)
-    public static function filterByAuthorized(\Laravel\Scout\Builder $builder, Authorizer $authorizer, bool|null $hasManyPadalinys = true)
+    public static function filterByAuthorized(\Laravel\Scout\Builder $builder, Authorizer $authorizer, ?bool $hasManyPadalinys = true)
     {
         $user = User::query()->find((Auth::id()));
 
