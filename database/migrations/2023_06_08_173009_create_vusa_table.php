@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -14,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        if (!Schema::hasTable('activity_log')) {
+        if (! Schema::hasTable('activity_log')) {
             Schema::create('activity_log', function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->string('log_name')->nullable()->index();
@@ -33,7 +32,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('agenda_items')) {
+        if (! Schema::hasTable('agenda_items')) {
             Schema::create('agenda_items', function (Blueprint $table) {
                 $table->char('id', 26)->primary();
                 $table->char('meeting_id', 26)->index('agenda_items_meeting_id_foreign');
@@ -46,7 +45,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('banners')) {
+        if (! Schema::hasTable('banners')) {
             Schema::create('banners', function (Blueprint $table) {
                 $table->increments('id');
                 $table->string('title', 100);
@@ -63,7 +62,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('calendar')) {
+        if (! Schema::hasTable('calendar')) {
             Schema::create('calendar', function (Blueprint $table) {
                 $table->increments('id');
                 $table->dateTime('date');
@@ -81,7 +80,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('categories')) {
+        if (! Schema::hasTable('categories')) {
             Schema::create('categories', function (Blueprint $table) {
                 $table->increments('id');
                 $table->string('alias', 255)->nullable()->unique();
@@ -92,7 +91,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('changelog_items')) {
+        if (! Schema::hasTable('changelog_items')) {
             Schema::create('changelog_items', function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->json('title');
@@ -102,7 +101,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('comments')) {
+        if (! Schema::hasTable('comments')) {
             Schema::create('comments', function (Blueprint $table) {
                 $table->char('id', 26)->primary();
                 $table->char('parent_id', 26)->nullable();
@@ -119,7 +118,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('contacts')) {
+        if (! Schema::hasTable('contacts')) {
             Schema::create('contacts', function (Blueprint $table) {
                 $table->char('id', 26)->primary();
                 $table->string('name');
@@ -133,7 +132,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('doables')) {
+        if (! Schema::hasTable('doables')) {
             Schema::create('doables', function (Blueprint $table) {
                 $table->string('doable_type');
                 $table->char('doable_id', 26);
@@ -145,7 +144,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('doing_user')) {
+        if (! Schema::hasTable('doing_user')) {
             Schema::create('doing_user', function (Blueprint $table) {
                 $table->char('doing_id', 26);
                 $table->char('user_id', 26)->index('doing_user_user_id_foreign');
@@ -156,7 +155,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('doings')) {
+        if (! Schema::hasTable('doings')) {
             Schema::create('doings', function (Blueprint $table) {
                 $table->char('id', 26)->primary();
                 $table->string('title');
@@ -170,7 +169,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('dutiables')) {
+        if (! Schema::hasTable('dutiables')) {
             Schema::create('dutiables', function (Blueprint $table) {
                 $table->char('duty_id', 26)->index('duties_users_duty_id_foreign');
                 $table->char('dutiable_id', 26)->index('duties_users_user_id_foreign');
@@ -185,7 +184,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('duties')) {
+        if (! Schema::hasTable('duties')) {
             Schema::create('duties', function (Blueprint $table) {
                 $table->char('id', 26)->primary();
                 $table->string('name', 255);
@@ -203,7 +202,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('failed_jobs')) {
+        if (! Schema::hasTable('failed_jobs')) {
             Schema::create('failed_jobs', function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->string('uuid', 255)->unique();
@@ -215,7 +214,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('goal_groups')) {
+        if (! Schema::hasTable('goal_groups')) {
             Schema::create('goal_groups', function (Blueprint $table) {
                 $table->char('id', 26)->primary();
                 $table->string('title');
@@ -226,7 +225,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('goal_matter')) {
+        if (! Schema::hasTable('goal_matter')) {
             Schema::create('goal_matter', function (Blueprint $table) {
                 $table->char('goal_id', 26);
                 $table->char('matter_id', 26)->index('goal_matter_matter_id_foreign');
@@ -237,7 +236,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('goals')) {
+        if (! Schema::hasTable('goals')) {
             Schema::create('goals', function (Blueprint $table) {
                 $table->char('id', 26)->primary();
                 $table->char('group_id', 26)->nullable()->index('goals_group_id_foreign');
@@ -254,7 +253,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('institution_meeting')) {
+        if (! Schema::hasTable('institution_meeting')) {
             Schema::create('institution_meeting', function (Blueprint $table) {
                 $table->char('institution_id', 26);
                 $table->char('meeting_id', 26)->index('institution_meeting_meeting_id_foreign');
@@ -265,7 +264,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('institutions')) {
+        if (! Schema::hasTable('institutions')) {
             Schema::create('institutions', function (Blueprint $table) {
                 $table->char('id', 26)->primary();
                 $table->char('parent_id', 26)->nullable();
@@ -285,7 +284,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('institutions_matters')) {
+        if (! Schema::hasTable('institutions_matters')) {
             Schema::create('institutions_matters', function (Blueprint $table) {
                 $table->char('institution_id', 26);
                 $table->char('matter_id', 26)->index('institutions_matters_matter_id_foreign');
@@ -296,7 +295,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('jobs')) {
+        if (! Schema::hasTable('jobs')) {
             Schema::create('jobs', function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->string('queue')->index();
@@ -308,7 +307,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('main_page')) {
+        if (! Schema::hasTable('main_page')) {
             Schema::create('main_page', function (Blueprint $table) {
                 $table->increments('id');
                 $table->string('link', 255)->nullable();
@@ -325,7 +324,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('matters')) {
+        if (! Schema::hasTable('matters')) {
             Schema::create('matters', function (Blueprint $table) {
                 $table->char('id', 26)->primary();
                 $table->string('title');
@@ -336,7 +335,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('media')) {
+        if (! Schema::hasTable('media')) {
             Schema::create('media', function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->string('model_type', 255);
@@ -360,7 +359,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('meetings')) {
+        if (! Schema::hasTable('meetings')) {
             Schema::create('meetings', function (Blueprint $table) {
                 $table->char('id', 26)->primary();
                 $table->string('title');
@@ -373,7 +372,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('model_has_permissions')) {
+        if (! Schema::hasTable('model_has_permissions')) {
             Schema::create('model_has_permissions', function (Blueprint $table) {
                 $table->char('permission_id', 26);
                 $table->string('model_type');
@@ -384,7 +383,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('model_has_roles')) {
+        if (! Schema::hasTable('model_has_roles')) {
             Schema::create('model_has_roles', function (Blueprint $table) {
                 $table->char('role_id', 26);
                 $table->string('model_type');
@@ -395,7 +394,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('navigation')) {
+        if (! Schema::hasTable('navigation')) {
             Schema::create('navigation', function (Blueprint $table) {
                 $table->increments('id');
                 $table->integer('parent_id')->default(0);
@@ -410,7 +409,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('news')) {
+        if (! Schema::hasTable('news')) {
             Schema::create('news', function (Blueprint $table) {
                 $table->increments('id');
                 $table->string('title', 200);
@@ -436,7 +435,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('notifications')) {
+        if (! Schema::hasTable('notifications')) {
             Schema::create('notifications', function (Blueprint $table) {
                 $table->char('id', 36)->primary();
                 $table->string('type');
@@ -450,7 +449,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('padaliniai')) {
+        if (! Schema::hasTable('padaliniai')) {
             Schema::create('padaliniai', function (Blueprint $table) {
                 $table->increments('id');
                 $table->string('type', 255)->nullable()->default('padalinys');
@@ -465,7 +464,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('pages')) {
+        if (! Schema::hasTable('pages')) {
             Schema::create('pages', function (Blueprint $table) {
                 $table->increments('id');
                 $table->string('title', 200);
@@ -484,7 +483,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('permissions')) {
+        if (! Schema::hasTable('permissions')) {
             Schema::create('permissions', function (Blueprint $table) {
                 $table->char('id', 26)->primary();
                 $table->string('name');
@@ -495,7 +494,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('posts_tags')) {
+        if (! Schema::hasTable('posts_tags')) {
             Schema::create('posts_tags', function (Blueprint $table) {
                 $table->increments('id');
                 $table->unsignedInteger('page_id')->nullable();
@@ -508,7 +507,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('registration_forms')) {
+        if (! Schema::hasTable('registration_forms')) {
             Schema::create('registration_forms', function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->unsignedBigInteger('user_id')->nullable();
@@ -518,7 +517,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('registrations')) {
+        if (! Schema::hasTable('registrations')) {
             Schema::create('registrations', function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->unsignedBigInteger('registration_form_id');
@@ -528,7 +527,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('relationshipables')) {
+        if (! Schema::hasTable('relationshipables')) {
             Schema::create('relationshipables', function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->unsignedBigInteger('relationship_id')->index('relationshipables_relationship_id_foreign');
@@ -542,7 +541,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('relationships')) {
+        if (! Schema::hasTable('relationships')) {
             Schema::create('relationships', function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->string('name');
@@ -554,7 +553,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('role_has_permissions')) {
+        if (! Schema::hasTable('role_has_permissions')) {
             Schema::create('role_has_permissions', function (Blueprint $table) {
                 $table->char('permission_id', 26)->index('role_has_permissions_permission_id_foreign');
                 $table->char('role_id', 26)->index('role_has_permissions_role_id_foreign');
@@ -563,7 +562,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('roles')) {
+        if (! Schema::hasTable('roles')) {
             Schema::create('roles', function (Blueprint $table) {
                 $table->char('id', 26)->primary();
                 $table->string('name');
@@ -574,7 +573,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('saziningai_exam_flows')) {
+        if (! Schema::hasTable('saziningai_exam_flows')) {
             Schema::create('saziningai_exam_flows', function (Blueprint $table) {
                 $table->increments('id');
                 $table->string('exam_uuid', 30)->index('saziningai_exam_flows_exam_uuid_foreign');
@@ -584,7 +583,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('saziningai_exams')) {
+        if (! Schema::hasTable('saziningai_exams')) {
             Schema::create('saziningai_exams', function (Blueprint $table) {
                 $table->increments('id');
                 $table->string('uuid', 30)->unique('uuid uniq');
@@ -603,7 +602,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('saziningai_observers')) {
+        if (! Schema::hasTable('saziningai_observers')) {
             Schema::create('saziningai_observers', function (Blueprint $table) {
                 $table->integer('id', true);
                 $table->string('exam_uuid', 30)->index('saziningai_observers_exam_uuid_foreign');
@@ -619,7 +618,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('sessions')) {
+        if (! Schema::hasTable('sessions')) {
             Schema::create('sessions', function (Blueprint $table) {
                 $table->string('id', 255)->unique();
                 $table->char('user_id', 26)->nullable();
@@ -630,7 +629,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('sharepoint_fileables')) {
+        if (! Schema::hasTable('sharepoint_fileables')) {
             Schema::create('sharepoint_fileables', function (Blueprint $table) {
                 $table->char('sharepoint_file_id', 36);
                 $table->string('fileable_type');
@@ -643,14 +642,14 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('sharepoint_files')) {
+        if (! Schema::hasTable('sharepoint_files')) {
             Schema::create('sharepoint_files', function (Blueprint $table) {
                 $table->string('sharepoint_id');
                 $table->char('id', 36)->primary();
             });
         }
 
-        if (!Schema::hasTable('tags')) {
+        if (! Schema::hasTable('tags')) {
             Schema::create('tags', function (Blueprint $table) {
                 $table->increments('id');
                 $table->string('alias', 255)->nullable();
@@ -661,7 +660,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('task_user')) {
+        if (! Schema::hasTable('task_user')) {
             Schema::create('task_user', function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->char('task_id', 26)->index('task_user_task_id_foreign');
@@ -671,7 +670,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('tasks')) {
+        if (! Schema::hasTable('tasks')) {
             Schema::create('tasks', function (Blueprint $table) {
                 $table->char('id', 26)->primary();
                 $table->string('name');
@@ -688,7 +687,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('telescope_entries')) {
+        if (! Schema::hasTable('telescope_entries')) {
             Schema::create('telescope_entries', function (Blueprint $table) {
                 $table->bigIncrements('sequence');
                 $table->char('uuid', 36)->unique();
@@ -703,7 +702,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('telescope_entries_tags')) {
+        if (! Schema::hasTable('telescope_entries_tags')) {
             Schema::create('telescope_entries_tags', function (Blueprint $table) {
                 $table->char('entry_uuid', 36);
                 $table->string('tag', 255)->index();
@@ -712,13 +711,13 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('telescope_monitoring')) {
+        if (! Schema::hasTable('telescope_monitoring')) {
             Schema::create('telescope_monitoring', function (Blueprint $table) {
                 $table->string('tag', 255);
             });
         }
 
-        if (!Schema::hasTable('typeables')) {
+        if (! Schema::hasTable('typeables')) {
             Schema::create('typeables', function (Blueprint $table) {
                 $table->unsignedBigInteger('type_id');
                 $table->string('typeable_type');
@@ -729,7 +728,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('types')) {
+        if (! Schema::hasTable('types')) {
             Schema::create('types', function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->unsignedBigInteger('parent_id')->nullable()->index('types_parent_id_foreign');
@@ -746,7 +745,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('users')) {
+        if (! Schema::hasTable('users')) {
             Schema::create('users', function (Blueprint $table) {
                 $table->char('id', 26)->primary();
                 $table->string('email', 255)->unique();
@@ -767,7 +766,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('websockets_statistics_entries')) {
+        if (! Schema::hasTable('websockets_statistics_entries')) {
             Schema::create('websockets_statistics_entries', function (Blueprint $table) {
                 $table->increments('id');
                 $table->string('app_id');
