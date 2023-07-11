@@ -76,7 +76,7 @@ class PermissionTest extends ReservationTestCase
         $this->followRedirects($response)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ShowDashboard')
-                ->where('flash.success', 'Rezervacijos valdytojai pridėti.')
+                ->where('flash.success', __('messages.users_attached_to_reservation'))
             );
 
         $response = $this->actingAs($user)->get(route('reservations.show', $reservation->id));
