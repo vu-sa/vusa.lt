@@ -37,9 +37,6 @@
       :show="showReservationHelpModal"
       @close="showReservationHelpModal = false"
     >
-      <p class="mb-4">
-        <strong>Įprastas rezervacijos veiksmų tvirtinimo procesas</strong>
-      </p>
       <NTimeline class="mb-4" horizontal>
         <NTimelineItem
           type="info"
@@ -64,7 +61,11 @@
     </CardModal>
     <CardModal
       :show="showReservationResourceCreateModal"
-      title="Pridėti išteklių prie rezervacijos"
+      :title="
+        RESERVATION_CARD_MODAL_TITLES.create_reservation_resource[
+          $page.props.app.locale
+        ]
+      "
       @close="showReservationResourceCreateModal = false"
     >
       <Suspense>
@@ -104,9 +105,9 @@
     </CardModal>
     <template #below>
       <div v-if="currentTab === 'Komentarai'">
-        <InfoText class="mb-4"
-          >Rodomi ir komentarai ties konkrečiais išteklių užsakymais.</InfoText
-        >
+        <InfoText class="mb-4">{{
+          RESERVATION_HELP_TEXTS.comments[$page.props.app.locale]
+        }}</InfoText>
         <CommentViewer
           class="mt-auto h-min"
           :commentable_type="'reservation'"
@@ -141,7 +142,9 @@ import { ref, toRaw } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 
+import { RESERVATION_CARD_MODAL_TITLES } from "@/Constants/I18n/CardModalTitles";
 import { RESERVATION_DESCRIPTIONS } from "@/Constants/I18n/Descriptions";
+import { RESERVATION_HELP_TEXTS } from "@/Constants/I18n/HelpTexts";
 import { capitalize } from "@/Utils/String";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import CommentViewer from "@/Features/Admin/CommentViewer/CommentViewer.vue";

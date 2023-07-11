@@ -13,8 +13,7 @@ class Created extends ReservationResourceState
 
     public function description(): string
     {
-        return 'Daikto rezervacijos užklausa yra sukurta! Laukiama, kol išteklių
-        administratoriai patvirtins rezervaciją.';
+        return __('state.description.reservation_resource.created');
     }
 
     public function handleApprove(): void

@@ -13,7 +13,7 @@ class Returned extends ReservationResourceState
 
     public function description(): string
     {
-        return 'Daiktas sėkmingai grąžintas rezervacijos organizatorių.';
+        return __('state.description.reservation_resource.returned');
     }
 
     public function handleApprove(): void

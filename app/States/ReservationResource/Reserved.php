@@ -13,7 +13,7 @@ class Reserved extends ReservationResourceState
 
     public function description(): string
     {
-        return 'Išteklius rezervuotas! Rezervuotą daiktą galima atsiimti nurodytu laiku.';
+        return __('state.description.reservation_resource.reserved');
     }
 
     public function handleApprove(): void

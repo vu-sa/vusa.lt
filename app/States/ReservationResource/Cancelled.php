@@ -13,7 +13,7 @@ class Cancelled extends ReservationResourceState
 
     public function description(): string
     {
-        return 'Daikto rezervacija atšaukta';
+        return __('state.description.reservation_resource.cancelled');
     }
 
     public function handleApprove(): void

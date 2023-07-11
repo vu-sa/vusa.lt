@@ -13,8 +13,7 @@ class Lent extends ReservationResourceState
 
     public function description(): string
     {
-        return 'Daiktas sėkmingai paskolintas išteklio
-        savininkų ir įpareigotas grąžinti nurodytu laiku.';
+        return __('state.description.reservation_resource.lent');
     }
 
     public function handleApprove(): void

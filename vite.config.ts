@@ -40,11 +40,11 @@ export default defineConfig({
       ziggy: "/vendor/tightenco/ziggy/dist/vue",
     },
   },
-   server: {
-     hmr: {
-       host: 'localhost',
-     },
-   },
+  server: {
+    hmr: {
+      host: "localhost",
+    },
+  },
   build: {
     // sourcemap: true,
   },

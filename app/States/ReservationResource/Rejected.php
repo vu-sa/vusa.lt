@@ -13,7 +13,7 @@ class Rejected extends ReservationResourceState
 
     public function description(): string
     {
-        return 'Rezervacija atmesta';
+        return __('state.description.reservation_resource.rejected');
     }
 
     public function handleApprove(): void

@@ -14,6 +14,16 @@ return [
         'reject' => 'atmesti',
         'cancel' => 'atšaukti',
     ],
+    'description' => [
+        'reservation_resource' => [
+            'created' => 'Daikto rezervacijos užklausa yra sukurta! Laukiama, kol išteklių administratoriai patvirtins rezervaciją.',
+            'cancelled' => 'Išteklio rezervacija atšaukta.',
+            'lent' => 'Daiktas sėkmingai paskolintas išteklio savininkų ir įpareigotas grąžinti nurodytu laiku.',
+            'rejected' => 'Išteklio rezervacija atmesta. Dėl atmetimo priežasčių pasižiūrėkite komentarų skiltį arba susisiekite su išteklio administratoriais.',
+            'reserved' => 'Išteklius rezervuotas! Rezervuotą išteklių atsiimkite nurodytu laiku.',
+            'returned' => 'Išteklio grąžinimas sėkmingas.',
+        ],
+    ],
     'comment' => [
         'lent' => 'pažymėti, kaip paskolintą',
         'returned' => 'pažymėti, kaip grąžintą',
