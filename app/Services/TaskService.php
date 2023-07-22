@@ -10,7 +10,7 @@ class TaskService
 {
     // * Create tasks for users, when creating a doing with meeting type
 
-    public static function storeTask(string $name, Model $model, Collection $users, ?string $due_date = null)
+    public static function storeTask(string $name, Model $model, Collection $users, string $due_date = null)
     {
         $task = Task::create([
             'name' => $name,
