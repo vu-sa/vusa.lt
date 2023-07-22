@@ -34,7 +34,7 @@ class SharepointGraphService
      * @param  mixed  $driveId
      * @return void
      */
-    public function __construct(?string $siteId = null, ?string $driveId = null)
+    public function __construct(string $siteId = null, string $driveId = null)
     {
         if (Cache::has('ms_application_token')) {
             $token = Crypt::decryptString(Cache::get('ms_application_token'));
