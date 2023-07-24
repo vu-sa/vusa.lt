@@ -1,18 +1,33 @@
 <template>
   <IndexPageLayout
-    title="Rezervacijos"
+    :title="capitalize($tChoice('entities.reservation.model', 2))"
     model-name="reservations"
     :icon="Icons.RESERVATION"
     :can-use-routes="canUseRoutes"
     :columns="columns"
     :paginated-models="reservations"
   >
+    <NCard class="subtle-gray-gradient mb-4">
+      <template #header>Reservations with unit resources</template>
+      <NDataTable
+        :columns="columns"
+        :data="activeReservations"
+        size="small"
+        :row-key="(row) => row.id"
+      ></NDataTable>
+    </NCard>
   </IndexPageLayout>
 </template>
 
 <script setup lang="tsx">
 import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import { type DataTableColumns, type DataTableSortState, NTag } from "naive-ui";
+import {
+  type DataTableColumns,
+  type DataTableSortState,
+  NCard,
+  NDataTable,
+  NTag,
+} from "naive-ui";
 import { Link, usePage } from "@inertiajs/vue3";
 import { computed, provide, ref } from "vue";
 
@@ -25,6 +40,7 @@ import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 
 defineProps<{
   reservations: PaginatedModels<App.Entities.Reservation>;
+  activeReservations: Array<App.Entities.Reservation>;
 }>();
 
 const canUseRoutes = {

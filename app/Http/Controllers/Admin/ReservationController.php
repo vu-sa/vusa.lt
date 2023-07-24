@@ -30,6 +30,8 @@ class ReservationController extends LaravelResourceController
      */
     public function index()
     {
+        // TODO: also return reservations with resources for this padalinys
+
         $this->authorize('viewAny', [Reservation::class, $this->authorizer]);
 
         $reservations = Reservation::search(request()->input('text'));
@@ -50,8 +52,13 @@ class ReservationController extends LaravelResourceController
 
         $reservations = ModelIndexer::filterByAuthorized($reservations, $this->authorizer);
 
+        $resources = Resource::withWhereHas('padalinys', function ($query) {
+            $query->whereIn('id', $this->authorizer->getPadaliniai()->pluck('id'));
+        });
+
         return Inertia::render('Admin/Reservations/IndexReservation', [
             'reservations' => $reservations->get()->load('resources', 'users', 'resources.padalinys')->paginate(15),
+            'activeReservations' => $resources->with('reservations.resources.padalinys', 'reservations.users')->get()->pluck('reservations')->flatten()->unique('id')->values(),
         ]);
     }
 
