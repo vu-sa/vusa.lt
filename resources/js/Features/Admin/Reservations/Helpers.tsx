@@ -1,3 +1,4 @@
+import { trans as $t } from "laravel-vue-i18n";
 import { NIcon, NTag, type SelectOption } from "naive-ui";
 import Icons from "@/Types/Icons/regular";
 
@@ -15,7 +16,7 @@ export const renderResourceLabel = (
       ></NIcon>
       <span>{option.name}</span>
       <span class="text-gray-400">
-        {leftCapacity} iš {option.capacity}
+        {leftCapacity} {$t("iš")} {option.capacity}
       </span>
       <NTag size="tiny" round>
         <span class="text-xs text-gray-400">
@@ -40,7 +41,8 @@ export const renderResourceTag = (option, resources) => {
       ></NIcon>
       <span>{resource.name}</span>
       <span class="text-gray-400">
-        {resource?.lowestCapacityAtDateTimeRange} iš {resource.capacity}
+        {resource?.lowestCapacityAtDateTimeRange} {$t("iš")}
+        {resource.capacity}
       </span>
       <NTag size="tiny" round>
         <span class="text-xs text-gray-400">

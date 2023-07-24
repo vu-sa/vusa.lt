@@ -12,7 +12,7 @@
       />
     </UpsertModelLayout>
     <NCard
-      title="Rezervacijų istorija"
+      :title="$t('Rezervacijų istorija')"
       class="subtle-gray-gradient mt-4 min-w-[450px]"
     >
       <NDataTable
