@@ -9,11 +9,20 @@
 
   <CardModal
     v-model:show="showStateChangeModal"
-    title="Palikti komentarą arba naujinti būseną"
+    :title="
+      $page.props.app.locale === 'lt'
+        ? 'Palikti komentarą arba naujinti būseną'
+        : 'Leave a comment or update state'
+    "
     @close="showStateChangeModal = false"
   >
     <div class="not-prose relative w-full">
-      <InfoText>Palik trumpą komentarą</InfoText>
+      <InfoText>
+        <template v-if="$page.props.app.locale === 'lt'"
+          >Palik trumpą komentarą</template
+        >
+        <template v-else>Leave a short comment</template>
+      </InfoText>
 
       <CommentTipTap
         v-model:text="commentText"
