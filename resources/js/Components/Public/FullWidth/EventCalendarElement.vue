@@ -92,7 +92,7 @@
   >
     <h2 class="text-center lg:text-start">Artėjantys renginiai</h2>
     <div class="mx-auto my-8 flex w-fit flex-wrap gap-4 lg:mx-0">
-      <Link
+      <a
         v-for="event in upcoming4Events"
         :key="event.id"
         class="h-fit w-fit"
@@ -104,13 +104,13 @@
         "
       >
         <CalendarCard :calendar-event="event" />
-      </Link>
+      </a>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Head, Link } from "@inertiajs/vue3";
+import { Head } from "@inertiajs/vue3";
 import { NButton, NMessageProvider } from "naive-ui";
 import { ref } from "vue";
 
