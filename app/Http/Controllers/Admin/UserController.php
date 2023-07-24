@@ -161,6 +161,7 @@ class UserController extends LaravelResourceController
      */
     public function update(Request $request, User $user)
     {
+        // TODO: make duty attach / detach work properly
         $this->authorize('update', [User::class, $user, $this->authorizer]);
 
         $request->validate([

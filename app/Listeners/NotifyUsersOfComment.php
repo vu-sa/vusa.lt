@@ -62,6 +62,7 @@ class NotifyUsersOfComment implements ShouldQueue
         }
 
         // TODO: send notification to all users that have access to the commentable, e.g. file doesn't work
+        // TODO: also send to duty emails, maybe make duties Notifiable (???). Also, this should be done for other notifications
         Notification::send($commentable->users?->unique(), new ModelCommented($text, $object, $subject));
     }
 }

@@ -51,6 +51,7 @@ class ModelAuthorizer
     {
         $this->permissableDuties = new Collection();
 
+        // TODO: if super admin, it needs to still return the duties, which may be applicable
         if ($this->user->hasRole(config('permission.super_admin_role_name'))) {
             $this->isAllScope = true;
 
