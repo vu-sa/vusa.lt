@@ -78,7 +78,9 @@
                   value-field="id"
                   label-field="name"
                   :options="allResourceOptions"
-                  placeholder="Pasirinkite išteklių..."
+                  :placeholder="
+                    RESERVATION_PLACEHOLDERS.resource[$page.props.app.locale]
+                  "
                   :render-label="handleRenderResourceLabel"
                   :render-tag="handleRenderResourceTag"
                   @update:value="value.quantity = 1"
@@ -95,10 +97,10 @@
         </NFormItem>
       </FormElement>
       <FormElement>
-        <template #title>{{ $t("forms.fields.additional_info") }}</template>
+        <template #title>{{ $t("forms.context.additional_info") }}</template>
         <NFormItem :show-label="false">
           <NCheckbox v-model:checked="conditionAcquaintance">
-            <template v-if="$page.props.app.locale">
+            <template v-if="$page.props.app.locale === 'lt'">
               Sutinku įdėmiai sekti rezervacijos informaciją, išteklius pasiimti
               ir grąžinti laiku.
             </template>
