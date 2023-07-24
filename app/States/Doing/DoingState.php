@@ -9,13 +9,33 @@ abstract class DoingState extends State
 {
     abstract public function color(): string;
 
-    abstract public function handleProgress(): void;
+    /**
+     * Defaul implementation is empty (does nothing)
+     */
+    public function handleProgress(): void
+    {
+    }
 
-    abstract public function handleApprove(): void;
+    /**
+     * Defaul implementation is empty (does nothing)
+     */
+    public function handleApprove(): void
+    {
+    }
 
-    abstract public function handleReject(): void;
+    /**
+     * Defaul implementation is empty (does nothing)
+     */
+    public function handleReject(): void
+    {
+    }
 
-    abstract public function handleCancel(): void;
+    /**
+     * Defaul implementation is empty (does nothing)
+     */
+    public function handleCancel(): void
+    {
+    }
 
     // transition events are handled in the listener
     public static function config(): StateConfig
