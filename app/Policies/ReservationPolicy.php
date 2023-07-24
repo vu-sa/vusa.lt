@@ -43,7 +43,7 @@ class ReservationPolicy extends ModelPolicy
         // if user has permission to view it
 
         foreach ($reservation->resources as $resource) {
-            $check = $this->commonChecker($user, $resource, CRUDEnum::UPDATE()->label, 'resources');
+            $check = $this->commonChecker($user, $resource, CRUDEnum::UPDATE()->label, 'resources', false);
 
             if ($check) {
                 return true;
