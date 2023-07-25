@@ -21,6 +21,10 @@ class ReservationResource extends Pivot implements Decidable
 
     protected $appends = ['state_properties'];
 
+    protected $dispatchesEvents = [
+        'created' => \App\Events\ReservationResourceCreated::class,
+    ];
+
     protected $casts = [
         'state' => ReservationResourceState::class,
         'start_time' => 'datetime',
