@@ -61,8 +61,14 @@ class NotifyUsersOfComment implements ShouldQueue
             $text = "<p><strong>{$user->name}</strong> paliko komentarą įraše <strong>{$objectName}</strong></p>";
         }
 
+        $notifiables = $commentable->users?->unique();
+
+        // if notifiable users have duties with emails, also send notification to those emails
+        // TODO: right now, there's no mechanism to send an email to an appropriate duty, if that's the case, the duty needs to be kept throughout the whole process
+        $notifiables = $notifiables->merge($commentable->users?->unique()->load('duties')->pluck('duties')->flatten()->unique('id')->values());
+
         // TODO: send notification to all users that have access to the commentable, e.g. file doesn't work
         // TODO: also send to duty emails, maybe make duties Notifiable (???). Also, this should be done for other notifications
-        Notification::send($commentable->users?->unique(), new ModelCommented($text, $object, $subject));
+        Notification::send($notifiables, new ModelCommented($text, $object, $subject));
     }
 }

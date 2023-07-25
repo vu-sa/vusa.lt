@@ -38,7 +38,15 @@ class ModelCommented extends Notification implements ShouldQueue
      */
     public function via($notifiable)
     {
-        return ['database', 'broadcast', 'mail'];
+        // if notifiable class is user, then send notification via database, broadcast and mail
+        if (class_basename(get_class($notifiable)) === 'User') {
+            return ['database', 'broadcast', 'mail'];
+        }
+
+        // if notifiable class is duty, then send notification via mail
+        if (class_basename(get_class($notifiable)) === 'Duty') {
+            return ['mail'];
+        }
     }
 
     /**
