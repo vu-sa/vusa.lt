@@ -26,7 +26,7 @@ return [
     ],
     'comment' => [
         'lent' => 'pažymėti, kaip paskolintą',
-        'returned' => 'pažymėti, kaip grąžintą',
+        'return' => 'pažymėti, kaip grąžintą',
     ],
     'other' => [
         'and_decision' => 'ir :decision',

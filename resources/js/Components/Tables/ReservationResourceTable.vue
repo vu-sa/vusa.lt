@@ -32,8 +32,8 @@
         :enable-approve="selectedReservationResource?.approvable"
         :submit-text="$t('Komentuoti')"
         :approve-text="approveText"
-        :reject-text="`${$t('state.status.other.and_decision', {
-          decision: $t('state.status.reject'),
+        :reject-text="`... ${$t('state.other.and_decision', {
+          decision: $t('state.decision.reject'),
         })}`"
         :disabled="false"
         @submit:comment="submitComment"
@@ -271,19 +271,19 @@ const handleStateChange = (row: any) => {
 
 const approveText = computed(() => {
   if (selectedReservationResource.value?.state === "reserved") {
-    return `... ${$t("state.status.other.and_decision", {
-      decision: $t("state.status.lent"),
+    return `... ${$t("state.other.and_decision", {
+      decision: $t("state.comment.lent"),
     })}`;
   }
 
   if (selectedReservationResource.value?.state === "lent") {
-    return `... ${$t("state.status.other.and_decision", {
-      decision: $t("state.status.return"),
+    return `... ${$t("state.other.and_decision", {
+      decision: $t("state.comment.return"),
     })}`;
   }
 
-  return `... ${$t("state.status.other.and_decision", {
-    decision: $t("state.status.approve"),
+  return `... ${$t("state.other.and_decision", {
+    decision: $t("state.decision.approve"),
   })}`;
 });
 

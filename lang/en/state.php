@@ -26,7 +26,7 @@ return [
     ],
     'comment' => [
         'lent' => 'mark as lent',
-        'returned' => 'mark as returned',
+        'return' => 'mark as returned',
     ],
     'other' => [
         'and_decision' => 'and :decision',
