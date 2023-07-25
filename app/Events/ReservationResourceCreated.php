@@ -3,7 +3,6 @@
 namespace App\Events;
 
 use App\Models\Pivots\ReservationResource;
-use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 

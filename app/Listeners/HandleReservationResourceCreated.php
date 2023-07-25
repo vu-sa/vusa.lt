@@ -5,7 +5,6 @@ namespace App\Listeners;
 use App\Events\ReservationResourceCreated;
 use App\Models\Pivots\ReservationResource;
 use App\Services\TaskService;
-use Illuminate\Support\Facades\Auth;
 
 class HandleReservationResourceCreated
 {
