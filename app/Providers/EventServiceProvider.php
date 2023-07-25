@@ -24,7 +24,7 @@ class EventServiceProvider extends ServiceProvider
         ],
         \Spatie\ModelStates\Events\StateChanged::class => [
             \App\Listeners\HandleDoingStateChange::class,
-            \App\Listeners\HandleReservationResourceStateChange::class,
+            \App\Listeners\HandleReservationResourceCreated::class,
         ],
         \App\Events\DutiableChanged::class => [
             \App\Listeners\HandleDutiableChange::class,
