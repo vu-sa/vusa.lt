@@ -4,6 +4,7 @@
       :initial-page="currentDay"
       :is-dark="isThemeDark"
       :attributes="calendarAttributes"
+      :locale="{ id: 'lt', firstDayOfWeek: 2, masks: { weekdays: 'WW' } }"
       color="red"
       class="shadow-xl"
     >

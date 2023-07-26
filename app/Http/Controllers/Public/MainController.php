@@ -384,14 +384,27 @@ class MainController extends PublicController
     }
 
     // TODO: pakeisti seno puslapio nuorodą
-    public function summerCamps()
+    public function summerCamps2022()
+    {
+        // get events with category of freshmen camps
+        $events = Calendar::whereHas('category', function (Builder $query) {
+            $query->where('name', '=', 'freshmen-camps-2022');
+        })->with('padalinys:id,alias,fullname')->with(['media'])->get()->sortBy('padalinys.alias');
+
+        return Inertia::render('Public/SummerCamps', ['events' => $events->makeHidden(['description', 'location', 'category', 'url', 'user_id', 'extra_attributes'])->values()->all()])->withViewData([
+            'title' => 'Pirmakursių stovyklos',
+            'description' => 'Universiteto tvarka niekada su ja nesusidūrusiam žmogui gali pasirodyti labai sudėtinga ir būtent dėl to jau prieš septyniolika metų Vilniaus universiteto Studentų atstovybė (VU SA) surengė pirmąją pirmakursių stovyklą.',
+        ]);
+    }
+
+    public function summerCamps2023()
     {
         // get events with category of freshmen camps
         $events = Calendar::whereHas('category', function (Builder $query) {
             $query->where('name', '=', 'Pirmakursių stovykla');
         })->with('padalinys:id,alias,fullname')->with(['media'])->get()->sortBy('padalinys.alias');
 
-        return Inertia::render('Public/SummerCamps', ['events' => $events->makeHidden(['description', 'location', 'category', 'url', 'user_id', 'extra_attributes'])->values()->all()])->withViewData([
+        return Inertia::render('Public/SummerCamps2023', ['events' => $events->makeHidden(['description', 'location', 'category', 'url', 'user_id', 'extra_attributes'])->values()->all()])->withViewData([
             'title' => 'Pirmakursių stovyklos',
             'description' => 'Universiteto tvarka niekada su ja nesusidūrusiam žmogui gali pasirodyti labai sudėtinga ir būtent dėl to jau prieš septyniolika metų Vilniaus universiteto Studentų atstovybė (VU SA) surengė pirmąją pirmakursių stovyklą.',
         ]);
