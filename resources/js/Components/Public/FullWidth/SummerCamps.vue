@@ -47,6 +47,12 @@
       <a :href="route('pirmakursiuStovyklos2022')">
         <NButton round size="large" strong type="secondary"
           >Kas vyko 2022 m.?<template #icon
+            ><NIcon :component="Balloon20Regular"></NIcon></template
+        ></NButton>
+      </a>
+      <a :href="route('pirmakursiuStovyklos2022')">
+        <NButton round size="large" strong type="secondary"
+          >Kas vyko 2022 m.?<template #icon
             ><NIcon :component="HatGraduation20Regular"></NIcon></template
         ></NButton>
       </a>
