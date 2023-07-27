@@ -105,7 +105,7 @@ class PermissionTest extends ReservationTestCase
         ]);
 
         $response = $this->actingAs($user)->post(route('reservations.store'),
-            $reservation->toFullArray()
+            $reservation->toArray()
         );
 
         $response->assertStatus(302);
