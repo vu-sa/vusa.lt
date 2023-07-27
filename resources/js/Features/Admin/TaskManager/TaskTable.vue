@@ -58,7 +58,7 @@ const columns: () => DataTableColumns<App.Entities.Task> = () => [
           size="large"
           disabled={
             !row.users?.find(
-              (user) => user.id === usePage().props.auth?.user?.id
+              (user) => user.id === usePage().props.auth?.user?.id,
             )
           }
           onUpdate:checked={() => updateTaskCompletion(row)}
@@ -79,6 +79,7 @@ const columns: () => DataTableColumns<App.Entities.Task> = () => [
     ellipsis: {
       tooltip: true,
     },
+    resizable: true,
   },
   {
     title() {
@@ -149,6 +150,8 @@ const iconComponent = (row: App.Entities.Task) => {
       return IconsFilled.MEETING;
     case "App\\Models\\User":
       return IconsFilled.USER;
+    case "App\\Models\\Reservation":
+      return IconsFilled.RESERVATION;
     default:
       return IconsFilled.HOME;
   }
@@ -167,7 +170,7 @@ const updateTaskCompletion = (task: App.Entities.Task) => {
       onSuccess: () => {
         loading.value = false;
       },
-    }
+    },
   );
 };
 
@@ -182,11 +185,3 @@ const handleDelete = async (task: App.Entities.Task) => {
   });
 };
 </script>
-
-<style scoped>
-div.n-data-table {
-  /* --n-merged-th-color: transparent; */
-  /* --n-merged-td-color: transparent; */
-  --n-merged-border-color: transparent;
-}
-</style>

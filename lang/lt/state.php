@@ -3,7 +3,7 @@
 return [
     'status' => [
         'created' => 'sukurta',
-        'reserved' => 'reservuota',
+        'reserved' => 'rezervuota',
         'lent' => 'paskolinta',
         'returned' => 'grąžinta',
         'rejected' => 'atmesta',

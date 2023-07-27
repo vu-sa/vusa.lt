@@ -44,6 +44,10 @@ class TaskPolicy extends ModelPolicy
     {
         $this->authorizer = $authorizer;
 
+        if ($task->users->contains($user)) {
+            return true;
+        }
+
         if ($this->commonChecker($user, $task, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
             return true;
         }
