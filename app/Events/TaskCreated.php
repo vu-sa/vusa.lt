@@ -2,7 +2,6 @@
 
 namespace App\Events;
 
-use App\Models\Pivots\ReservationResource;
 use App\Models\Task;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
