@@ -74,7 +74,6 @@ const columns: () => DataTableColumns<App.Entities.Task> = () => [
       return $t("forms.fields.title");
     },
     key: "name",
-    fixed: "left",
     width: 150,
     ellipsis: {
       tooltip: true,
@@ -86,7 +85,6 @@ const columns: () => DataTableColumns<App.Entities.Task> = () => [
       return $t("forms.fields.subject");
     },
     key: "subject",
-    width: 150,
     render(row) {
       let modelType = row.taskable_type.split("\\").pop() + "s";
 
@@ -113,7 +111,7 @@ const columns: () => DataTableColumns<App.Entities.Task> = () => [
       return $t("forms.fields.responsible_people");
     },
     key: "users",
-    width: 150,
+    minWidth: 150,
     render(row) {
       return <UsersAvatarGroup size={32} users={row.users}></UsersAvatarGroup>;
     },
@@ -123,7 +121,7 @@ const columns: () => DataTableColumns<App.Entities.Task> = () => [
       return $t("forms.fields.due_date");
     },
     key: "due_date",
-    width: 150,
+    minWidth: 150,
     sorter: "default",
   },
   {

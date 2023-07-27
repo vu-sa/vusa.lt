@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Pivots\ReservationResource;
 use App\Models\Traits\HasComments;
+use App\Models\Traits\HasTasks;
 use App\Models\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,7 +17,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Reservation extends Model
 {
-    use HasFactory, HasComments, HasTranslations, HasRelationships, HasUlids, LogsActivity, Searchable, SoftDeletes;
+    use HasFactory, HasComments, HasTranslations, HasTasks, HasRelationships, HasUlids, LogsActivity, Searchable, SoftDeletes;
 
     protected $guarded = [];
 

@@ -238,5 +238,8 @@
     "Turi naują užduotį": "You have a new task",
     "Kurti rezervaciją": "Create reservation",
     "Tavo rezervacijos": "Your reservations",
-    "Pasižiūrėti": "View"
+    "Pasižiūrėti": "View",
+    "Atsiimti išteklių": "Take the resource",
+    "Grąžinti išteklių": "Return the resource",
+    "iki": "until"
 }

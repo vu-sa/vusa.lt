@@ -10,7 +10,7 @@
     <NCard class="subtle-gray-gradient mb-4">
       <template #header>Reservations with unit resources</template>
       <NDataTable
-        :columns="columns"
+        :columns="columnsWithActions"
         :data="activeReservations"
         size="small"
         :row-key="(row) => row.id"
@@ -24,13 +24,16 @@ import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
 import {
   type DataTableColumns,
   type DataTableSortState,
+  NButton,
   NCard,
   NDataTable,
+  NIcon,
   NTag,
 } from "naive-ui";
 import { Link, usePage } from "@inertiajs/vue3";
 import { computed, provide, ref } from "vue";
 
+import { ArrowForward20Filled } from "@vicons/fluent";
 import { RESERVATION_DATE_TIME_FORMAT } from "@/Constants/DateTimeFormats";
 import { capitalize } from "vue";
 import { formatRelativeTime, formatStaticTime } from "@/Utils/IntlTime";
@@ -135,7 +138,7 @@ const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => {
         return formatStaticTime(
           new Date(row.start_time),
           RESERVATION_DATE_TIME_FORMAT,
-          usePage().props.app.locale
+          usePage().props.app.locale,
         );
       },
     },
@@ -153,7 +156,7 @@ const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => {
         return formatStaticTime(
           new Date(row.end_time),
           RESERVATION_DATE_TIME_FORMAT,
-          usePage().props.app.locale
+          usePage().props.app.locale,
         );
       },
     },
@@ -168,7 +171,38 @@ const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => {
           {
             numeric: "auto",
           },
-          usePage().props.app.locale
+          usePage().props.app.locale,
+        );
+      },
+    },
+  ];
+});
+
+const columnsWithActions = computed(() => {
+  return [
+    ...columns.value,
+    {
+      title() {
+        return $t("Veiksmai");
+      },
+      key: "actions",
+      width: 100,
+      render(row) {
+        return (
+          <div class="flex justify-center">
+            <NButton
+              quaternary
+              class="text-gray-500 hover:text-gray-700"
+              size="small"
+              onClick={() => {
+                route("reservations.show", row.id);
+              }}
+            >
+              <NIcon>
+                <ArrowForward20Filled />
+              </NIcon>
+            </NButton>
+          </div>
         );
       },
     },

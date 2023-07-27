@@ -24,12 +24,14 @@ class EventServiceProvider extends ServiceProvider
         ],
         \Spatie\ModelStates\Events\StateChanged::class => [
             \App\Listeners\HandleDoingStateChange::class,
+            \App\Listeners\ReservationResource\HandleReservationResourceReserved::class,
+            \App\Listeners\ReservationResource\HandleReservationResourceLent::class,
         ],
         \App\Events\DutiableChanged::class => [
             \App\Listeners\HandleDutiableChange::class,
         ],
         \App\Events\ReservationResourceCreated::class => [
-            \App\Listeners\HandleReservationResourceCreated::class,
+            \App\Listeners\ReservationResource\HandleReservationResourceCreated::class,
         ],
         \App\Events\TaskCreated::class => [
             \App\Listeners\HandleTaskCreated::class,

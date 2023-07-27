@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Listeners;
+namespace App\Listeners\ReservationResource;
 
 use App\Events\ReservationResourceCreated;
 use App\Models\Pivots\ReservationResource;
