@@ -5,7 +5,7 @@ import Icons from "@/Types/Icons/regular";
 export const renderResourceLabel = (
   option: SelectOption,
   selected: boolean,
-  leftCapacity: number
+  leftCapacity: number,
 ) => {
   return (
     <div class="my-2 flex items-center gap-2">
@@ -41,8 +41,7 @@ export const renderResourceTag = (option, resources) => {
       ></NIcon>
       <span>{resource.name}</span>
       <span class="text-gray-400">
-        {resource?.lowestCapacityAtDateTimeRange} {$t("iš")}
-        {resource.capacity}
+        {resource?.lowestCapacityAtDateTimeRange} {$t("iš")} {resource.capacity}
       </span>
       <NTag size="tiny" round>
         <span class="text-xs text-gray-400">

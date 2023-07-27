@@ -49,9 +49,9 @@
         <QActSurveyButton />
         <QActFocusGroupButton />
         <Link :href="route('reservations.create')">
-          <QuickActionButton :icon="Icons.RESERVATION"
-            >Kurti rezervaciją</QuickActionButton
-          >
+          <QuickActionButton :icon="Icons.RESERVATION">{{
+            $t("Kurti rezervaciją")
+          }}</QuickActionButton>
         </Link>
       </div>
     </section>
