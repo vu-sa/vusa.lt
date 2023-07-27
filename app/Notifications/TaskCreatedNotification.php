@@ -36,7 +36,7 @@ class TaskCreatedNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)->subject("☑️ " . __('Nauja užduotis').'!')
+        return (new MailMessage)->subject('☑️ '.__('Nauja užduotis').'!')
             ->line(__('Turi naują užduotį').'!')
             ->line(__('Užduotis: :task', ['task' => $this->task->name]))
             ->action(__('Pasižiūrėti'), route('userTasks'));
