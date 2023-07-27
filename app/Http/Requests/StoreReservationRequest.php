@@ -32,8 +32,8 @@ class StoreReservationRequest extends ResourceRequest
     public function rules(): array
     {
         return [
-            'name.lt' => 'required|string',
-            'description.lt' => 'string',
+            'name' => 'required|string',
+            'description' => 'required|string',
             'resources' => 'required|array',
             'resources.*.id' => 'required|string|exists:resources,id',
             'resources.*.quantity' => 'required|integer|min:1',

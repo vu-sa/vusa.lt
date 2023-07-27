@@ -17,11 +17,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Reservation extends Model
 {
-    use HasFactory, HasComments, HasTranslations, HasTasks, HasRelationships, HasUlids, LogsActivity, Searchable, SoftDeletes;
+    use HasFactory, HasComments, HasTasks, HasRelationships, HasUlids, LogsActivity, Searchable, SoftDeletes;
 
     protected $guarded = [];
-
-    public $translatable = ['name', 'description'];
 
     protected $casts = [
         'start_time' => 'datetime',
@@ -35,9 +33,14 @@ class Reservation extends Model
 
     public function toSearchableArray()
     {
+        // return [
+        //     'name->'.app()->getLocale() => $this->getTranslation('name', 'lt'),
+        //     'description->'.app()->getLocale() => $this->getTranslation('description', 'lt'),
+        // ];
+
         return [
-            'name->'.app()->getLocale() => $this->getTranslation('name', 'lt'),
-            // 'description->'.app()->getLocale() => $this->getTranslation('description', 'lt'),
+            'name' => $this->name,
+            'description' => $this->description,
         ];
     }
 

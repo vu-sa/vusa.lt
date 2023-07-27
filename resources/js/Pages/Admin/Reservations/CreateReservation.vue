@@ -29,15 +29,11 @@ export type ReservationCreationTemplate = Omit<
   | "updated_at"
   | "deleted_at"
   | "id"
-  | "name"
-  | "description"
   | "completed_at"
   | "start_time"
   | "end_time"
 > & {
   id: undefined;
-  name: Record<"lt" | "en", string>;
-  description: Record<"lt" | "en", string>;
   start_time: number;
   end_time: number;
 };
@@ -49,14 +45,8 @@ const props = defineProps<{
 
 const reservation: ReservationCreationTemplate = {
   id: undefined,
-  name: {
-    lt: "",
-    en: "",
-  },
-  description: {
-    lt: "",
-    en: "",
-  },
+  name: "",
+  description: "",
   start_time: props.dateTimeRange.start,
   end_time: props.dateTimeRange.end,
   resources: [],

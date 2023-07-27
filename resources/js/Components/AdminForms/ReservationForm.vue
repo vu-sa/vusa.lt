@@ -9,17 +9,17 @@
           />
         </template>
         <NFormItem :label="$t('forms.fields.title')" required>
-          <MultiLocaleInput
-            v-model:input="form.name"
-            v-model:lang="inputLang"
-            :placeholder="RESERVATION_PLACEHOLDERS.name"
+          <NInput
+            v-model:value="form.name"
+            :placeholder="RESERVATION_PLACEHOLDERS.name[$page.props.app.locale]"
           />
         </NFormItem>
         <NFormItem :label="$t('forms.fields.description')" required>
-          <MultiLocaleInput
-            v-model:input="form.description"
-            v-model:lang="inputLang"
-            :placeholder="RESERVATION_PLACEHOLDERS.description"
+          <NInput
+            v-model:value="form.description"
+            :placeholder="
+              RESERVATION_PLACEHOLDERS.description[$page.props.app.locale]
+            "
             input-type="textarea"
           />
         </NFormItem>
@@ -127,7 +127,7 @@
 </template>
 
 <script setup lang="tsx">
-import { Link, router, usePage } from "@inertiajs/vue3";
+import { Link, router } from "@inertiajs/vue3";
 import {
   NButton,
   NCheckbox,
@@ -136,6 +136,7 @@ import {
   NForm,
   NFormItem,
   NIcon,
+  NInput,
   NInputNumber,
   NSelect,
   type SelectOption,
@@ -152,7 +153,6 @@ import {
 } from "@/Features/Admin/Reservations/Helpers";
 import FormElement from "./FormElement.vue";
 import Icons from "@/Types/Icons/regular";
-import MultiLocaleInput from "../SimpleAugment/MultiLocaleInput.vue";
 import type { ReservationCreationTemplate } from "@/Pages/Admin/Reservations/CreateReservation.vue";
 import type { ReservationEditType } from "@/Pages/Admin/Reservations/EditReservation.vue";
 // import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
@@ -168,7 +168,6 @@ const props = defineProps<{
   deleteModelRoute?: string;
 }>();
 
-const inputLang = ref(usePage().props.app.locale);
 const resourceLoading = ref(false);
 const conditionAcquaintance = ref(false);
 
@@ -181,7 +180,7 @@ const routeToSubmit = computed(() => {
 const form = useForm(
   props.reservation?.id ? "patch" : "post",
   routeToSubmit.value,
-  props.reservation
+  props.reservation,
 );
 
 const date = ref<[number, number]>([form.start_time, form.end_time]);
