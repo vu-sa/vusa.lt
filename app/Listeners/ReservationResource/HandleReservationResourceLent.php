@@ -15,6 +15,6 @@ class HandleReservationResourceLent
 
         $reservationResource = $event->model;
 
-        $reservationResource->reservation->storeTask(__('Grąžinti išteklių'). ' ' . $reservationResource->resource->name . ' ' . __('iki') . " " . $reservationResource->end_time, $reservationResource->reservation->users, $reservationResource->end_time);
+        $reservationResource->reservation->storeTask(__('Grąžinti išteklių').' '.$reservationResource->resource->name.' '.__('iki').' '.$reservationResource->end_time, $reservationResource->reservation->users, $reservationResource->end_time);
     }
 }

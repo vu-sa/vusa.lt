@@ -2,9 +2,6 @@
 
 namespace App\Listeners\ReservationResource;
 
-use App\Events\ReservationResourceCreated;
-use App\Models\Pivots\ReservationResource;
-use App\Services\TaskService;
 use App\States\ReservationResource\Reserved;
 use Spatie\ModelStates\Events\StateChanged;
 
@@ -18,6 +15,6 @@ class HandleReservationResourceReserved
 
         $reservationResource = $event->model;
 
-        $reservationResource->reservation->storeTask(__('Atsiimti išteklių'). ' ' . $reservationResource->resource->name, $reservationResource->reservation->users, $reservationResource->start_time);
+        $reservationResource->reservation->storeTask(__('Atsiimti išteklių').' '.$reservationResource->resource->name, $reservationResource->reservation->users, $reservationResource->start_time);
     }
 }
