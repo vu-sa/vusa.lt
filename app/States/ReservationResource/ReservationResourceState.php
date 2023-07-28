@@ -11,26 +11,11 @@ abstract class ReservationResourceState extends State
 
     abstract public function description(): string;
 
-    /**
-     * Defaul implementation is empty (does nothing)
-     */
-    public function handleApprove(): void
-    {
-    }
+    abstract public function handleApprove(): void;
 
-    /**
-     * Defaul implementation is empty (does nothing)
-     */
-    public function handleReject(): void
-    {
-    }
+    abstract public function handleReject(): void;
 
-    /**
-     * Defaul implementation is empty (does nothing)
-     */
-    public function handleCancel(): void
-    {
-    }
+    abstract public function handleCancel(): void;
 
     // transition events are handled in the listener
     public static function config(): StateConfig

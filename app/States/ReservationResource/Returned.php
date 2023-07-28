@@ -15,4 +15,19 @@ class Returned extends ReservationResourceState
     {
         return __('state.description.reservation_resource.returned');
     }
+
+    public function handleApprove(): void
+    {
+        // do nothing
+    }
+
+    public function handleReject(): void
+    {
+        // do nothing
+    }
+
+    public function handleCancel(): void
+    {
+        // do nothing
+    }
 }

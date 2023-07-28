@@ -15,4 +15,19 @@ class Rejected extends ReservationResourceState
     {
         return __('state.description.reservation_resource.rejected');
     }
+
+    public function handleApprove(): void
+    {
+        // do nothing
+    }
+
+    public function handleReject(): void
+    {
+        // do nothing
+    }
+
+    public function handleCancel(): void
+    {
+        // do nothing
+    }
 }
