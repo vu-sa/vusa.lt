@@ -22,15 +22,15 @@ class GetPadaliniaiForUpserts
                     ];
                 }
             );
-        } else {
-            return Padalinys::orderBy('shortname_vu')->get(['id', 'shortname'])->map(
-                function ($padalinys) {
-                    return [
-                        'id' => $padalinys->id,
-                        'shortname' => __($padalinys->shortname),
-                    ];
-                }
-            );
         }
+
+        return Padalinys::orderBy('shortname_vu')->get(['id', 'shortname'])->map(
+            function ($padalinys) {
+                return [
+                    'id' => $padalinys->id,
+                    'shortname' => __($padalinys->shortname),
+                ];
+            }
+        );
     }
 }
