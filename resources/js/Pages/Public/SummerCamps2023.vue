@@ -15,7 +15,9 @@
         <div class="prose prose-sm col-span-3 px-12 dark:prose-invert">
           <h2>Labas! 👋</h2>
 
-          <p class="font-bold">2023 m. pirmakursių stovyklų maratonas jau prasideda!</p>
+          <p class="font-bold">
+            2023 m. pirmakursių stovyklų maratonas jau netrukus!
+          </p>
 
           <p>
             Egzaminai išlaikyti, pakvietimai studijuoti jau išsiųsti, studijų
@@ -95,13 +97,24 @@
                 })
               "
             >
-              <img
-                class="h-full w-full rounded-xl object-cover shadow-md transition group-hover:shadow-xl"
-                :src="get5thResponsiveImage(event)"
-              />
-              <h3 class="p-2 text-center text-lg font-extrabold leading-tight">
-                {{ "VU" + getFacultyName(event.padalinys) }}
-              </h3>
+              <div v-if="get5thResponsiveImage(event)">
+                <img
+                  class="h-full w-full rounded-xl object-cover shadow-md transition group-hover:shadow-xl"
+                  :src="get5thResponsiveImage(event)"
+                />
+                <h3
+                  class="p-2 text-center text-lg font-extrabold leading-tight"
+                >
+                  {{ "VU" + getFacultyName(event.padalinys) }}
+                </h3>
+              </div>
+              <div v-else>
+                <h3
+                  class="p-2 text-center text-4xl font-extrabold leading-tight"
+                >
+                  {{ "VU" + getFacultyName(event.padalinys) }}
+                </h3>
+              </div>
             </Link>
           </section>
         </div>
@@ -133,6 +146,7 @@ const get5thResponsiveImage = (event: App.Entities.Calendar) => {
 
   // strsplit main url by filename
   let mainUrlParts = mainUrl.split(fileName);
+
   // add /responsive_images/ and event.media[0].responsive_images.media_library_original.urls[5] to main url
   let responsiveUrl =
     mainUrlParts[0] +
@@ -140,6 +154,7 @@ const get5thResponsiveImage = (event: App.Entities.Calendar) => {
     event.media[0].responsive_images.media_library_original.urls[
       event.media[0].responsive_images.media_library_original.urls.length - 3
     ];
+
   return responsiveUrl;
 };
 

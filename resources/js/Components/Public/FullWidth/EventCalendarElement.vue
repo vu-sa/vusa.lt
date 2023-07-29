@@ -86,16 +86,21 @@
       </div>
     </div>
   </div>
-  <div
-    v-if="upcoming4Events.length > 0"
-    class="mx-auto my-8 max-w-7xl px-16 lg:px-24 xl:px-32"
-  >
-    <h2 class="text-center lg:text-start">Artėjantys renginiai</h2>
-    <div class="mx-auto my-8 flex w-fit flex-wrap gap-4 lg:mx-0">
+  <div v-if="upcoming4Events.length > 0" class="lg:px-4 mx-auto my-8 max-w-7xl">
+    <template v-if="$page.props.app.locale === 'lt'"
+      ><h2 class="text-center lg:text-start">Artėjantys renginiai</h2></template
+    ><template v-else
+      ><h2 class="text-center lg:text-start">Upcoming events</h2></template
+    >
+    <div
+      class="my-8 px-4 lg:px-0 mx-auto flex lg:w-full h-fit w-fit flex-wrap gap-4 place-content-around md:items-stretch"
+    >
       <a
         v-for="event in upcoming4Events"
         :key="event.id"
-        class="h-fit w-fit"
+        :class="
+          upcoming4Events.length > 1 ? 'basis-1/2 md:basis-1/5 flex-grow' : ''
+        "
         :href="
           route('calendar.event', {
             calendar: event.id,

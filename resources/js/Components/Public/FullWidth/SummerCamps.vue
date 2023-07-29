@@ -45,13 +45,7 @@
         ></NButton>
       </a>
       <a :href="route('pirmakursiuStovyklos2022')">
-        <NButton round size="large" strong type="secondary"
-          >Kas vyko 2022 m.?<template #icon
-            ><NIcon :component="Balloon20Regular"></NIcon></template
-        ></NButton>
-      </a>
-      <a :href="route('pirmakursiuStovyklos2022')">
-        <NButton round size="large" strong type="secondary"
+        <NButton round size="large" strong secondary
           >Kas vyko 2022 m.?<template #icon
             ><NIcon :component="HatGraduation20Regular"></NIcon></template
         ></NButton>
@@ -76,7 +70,11 @@
 </template>
 
 <script setup lang="ts">
-import { HatGraduation20Regular, Person20Filled, Balloon20Regular } from "@vicons/fluent";
+import {
+  HatGraduation20Regular,
+  Person20Filled,
+  Balloon20Regular,
+} from "@vicons/fluent";
 import { Head, router } from "@inertiajs/vue3";
 import { NButton, NDivider, NIcon } from "naive-ui";
 
