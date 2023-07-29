@@ -110,7 +110,7 @@
               </div>
               <div v-else>
                 <h3
-                  class="p-2 text-center text-4xl font-extrabold leading-tight"
+                  class="p-2 text-center text-xl font-extrabold leading-tight"
                 >
                   {{ "VU" + getFacultyName(event.padalinys) }}
                 </h3>
