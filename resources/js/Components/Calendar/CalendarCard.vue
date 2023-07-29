@@ -97,7 +97,7 @@
         </div>
 
         <NButton
-          v-if="calendarEvent.url && calendarEvent.id === 53"
+          v-if="calendarEvent.url && calendarEvent.id === 2670"
           strong
           tag="a"
           round
@@ -109,7 +109,7 @@
           {{ $t("Dalyvauk") }}!
         </NButton>
         <NButton
-          v-if="calendarEvent.url && calendarEvent.id != 53"
+          v-if="calendarEvent.url && calendarEvent.id != 2670"
           strong
           tag="a"
           round
