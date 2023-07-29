@@ -46,6 +46,7 @@
               target="_blank"
               :href="
                 route('contacts.category', {
+                  padalinys: 'www',
                   alias: 'padaliniai',
                   lang: 'lt',
                 })
