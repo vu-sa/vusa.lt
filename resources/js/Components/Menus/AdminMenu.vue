@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t } from "laravel-vue-i18n";
+import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
 import {
   Flowchart20Regular,
   Folder24Regular,
@@ -23,6 +23,7 @@ import { Link, usePage } from "@inertiajs/vue3";
 import { NIcon, NMenu } from "naive-ui";
 import { computed, ref } from "vue";
 
+import { capitalize } from "@/Utils/String";
 import Icons from "@/Types/Icons/regular";
 
 defineEmits<{
@@ -206,7 +207,11 @@ const menuOptions = computed(() => [
       },
       {
         label: () => {
-          return <Link href={route("duties.index")}>{$t("Pareigos")}</Link>;
+          return (
+            <Link href={route("duties.index")}>
+              {capitalize($tChoice("entities.duty.model", 2))}
+            </Link>
+          );
         },
         key: "duties",
         icon: () => {
@@ -331,7 +336,11 @@ const menuOptions = computed(() => [
     icon: () => {
       return <NIcon component={Notebook24Regular}></NIcon>;
     },
-    show: auth?.can.index.institution || auth?.can.index.saziningaiExam,
+    show:
+      auth?.can.index.institution ||
+      auth?.can.index.saziningaiExam ||
+      auth?.can.index.reservation ||
+      auth?.can.index.resource,
     children: [
       {
         label: () => {
@@ -356,6 +365,34 @@ const menuOptions = computed(() => [
           return <NIcon component={Icons.USER}></NIcon>;
         },
         show: auth?.can.index.institution,
+      },
+      {
+        label: () => {
+          return (
+            <Link href={route("reservations.index")}>
+              {capitalize($tChoice("entities.reservation.model", 2))}
+            </Link>
+          );
+        },
+        key: "reservations",
+        icon: () => {
+          return <NIcon component={Icons.RESERVATION}></NIcon>;
+        },
+        show: auth?.can.index.reservation,
+      },
+      {
+        label: () => {
+          return (
+            <Link href={route("resources.index")}>
+              {capitalize($tChoice("entities.resource.model", 2))}
+            </Link>
+          );
+        },
+        key: "resources",
+        icon: () => {
+          return <NIcon component={Icons.RESOURCE}></NIcon>;
+        },
+        show: auth?.can.index.resource,
       },
     ],
   },

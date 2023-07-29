@@ -15,6 +15,7 @@
             :label="$t('Tavo institucijos')"
           ></NCheckbox>
           <NCheckbox value="Posėdžiai" :label="$t('Artėjantys posėdžiai')" />
+          <NCheckbox value="Rezervacijos" :label="$t('Tavo rezervacijos')" />
           <NCheckbox value="Veiklos" :label="$t('Tavo veiklos')" />
           <NCheckbox
             value="Nuorodos"
@@ -47,6 +48,11 @@
         <QActCreateMeeting />
         <QActSurveyButton />
         <QActFocusGroupButton />
+        <Link :href="route('reservations.create')">
+          <QuickActionButton :icon="Icons.RESERVATION">{{
+            $t("Kurti rezervaciją")
+          }}</QuickActionButton>
+        </Link>
       </div>
     </section>
     <section
@@ -91,6 +97,32 @@
         </template>
         <p class="hidden first:block">{{ $t("Artėjančių posėdžių nėra") }}.</p>
       </div>
+    </section>
+    <section
+      v-if="shownSections.includes('Rezervacijos')"
+      class="relative mb-8"
+    >
+      <h2 class="flex items-center gap-2">
+        <NIcon :component="Icons.RESERVATION"></NIcon
+        ><span>{{ $t("Tavo rezervacijos") }}</span>
+        <Link :href="route('reservations.create')">
+          <NIcon
+            class="mb-1 ml-1 align-middle"
+            :component="AddCircle24Filled"
+          />
+        </Link>
+      </h2>
+      <div
+        v-if="currentUser.reservations && currentUser.reservations.length > 0"
+        class="relative mt-4 grid w-full grid-cols-ramFill items-start gap-4 overflow-hidden pb-4 transition-transform duration-300 ease-in-out"
+      >
+        <ReservationCard
+          v-for="reservation in currentUser.reservations"
+          :key="reservation.id"
+          :reservation="reservation"
+        ></ReservationCard>
+      </div>
+      <p v-else>{{ $t("Neturi sukurtų rezervacijų") }}.</p>
     </section>
     <section v-if="shownSections.includes('Veiklos')" class="relative mb-8">
       <h2 class="flex items-center gap-2">
@@ -184,13 +216,14 @@
 </template>
 
 <script setup lang="tsx">
-import { ExternalLinkSquareAlt } from "@vicons/fa";
-import { Head, router } from "@inertiajs/vue3";
 import {
+  AddCircle24Filled,
   LightbulbFilament24Filled,
   Link24Filled,
   Settings24Filled,
 } from "@vicons/fluent";
+import { ExternalLinkSquareAlt } from "@vicons/fa";
+import { Head, Link, router } from "@inertiajs/vue3";
 import { NButton, NCheckbox, NCheckboxGroup, NIcon, NPopover } from "naive-ui";
 import { useStorage } from "@vueuse/core";
 
@@ -202,6 +235,8 @@ import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import QActCreateMeeting from "@/Components/Buttons/QActCreateMeeting.vue";
 import QActFocusGroupButton from "@/Components/Buttons/QActFocusGroupButton.vue";
 import QActSurveyButton from "@/Components/Buttons/QActSurveyButton.vue";
+import QuickActionButton from "@/Components/Buttons/QuickActionButton.vue";
+import ReservationCard from "@/Components/Cards/ReservationCard.vue";
 
 defineProps<{
   currentUser: App.Entities.User;

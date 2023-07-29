@@ -3,8 +3,10 @@ import {
   Alert24Filled,
   BookContacts28Filled,
   BookQuestionMark24Filled,
+  Bookmark24Filled,
   CalendarLtr24Filled,
   Comment24Filled,
+  Cube24Filled,
   DeviceMeetingRoomRemote24Filled,
   DocumentBulletList24Filled,
   DocumentMultiple24Filled,
@@ -14,6 +16,7 @@ import {
   FlowchartCircle24Filled,
   Grid24Filled,
   Home24Filled,
+  Image24Filled,
   ImageArrowBack24Filled,
   Important24Filled,
   Navigation24Filled,
@@ -59,11 +62,14 @@ const modelIcons: Record<keyof typeof ModelEnum, Component> = {
   PERMISSION: ShieldKeyhole24Filled,
   RELATIONSHIP: Flow20Filled,
   RELATIONSHIPABLE: FlowchartCircle24Filled,
+  RESERVATION: Bookmark24Filled,
+  RESOURCE: Cube24Filled,
   ROLE: PersonBoard24Filled,
   SAZININGAI_EXAM: PeopleSearch24Filled,
   SAZININGAI_EXAM_FLOW: PeopleSearch24Filled,
   SAZININGAI_EXAM_OBSERVER: PeopleSearch24Filled,
   SHAREPOINT_FILE: DocumentMultiple24Filled,
+  SHAREPOINT_FILEABLE: DocumentMultiple24Filled,
   TAG: Tag24Filled,
   TASK: TaskListSquareLtr24Filled,
   TYPE: DocumentSettings20Filled,
@@ -78,6 +84,7 @@ const formIcons: Record<keyof typeof FormEnum, Component> = {
 
 const otherIcons: Record<keyof typeof OtherIconEnum, Component> = {
   HOME: Home24Filled,
+  IMAGE: Image24Filled,
   NOTIFICATION: Alert24Filled,
 };
 

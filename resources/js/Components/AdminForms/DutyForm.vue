@@ -2,7 +2,7 @@
   <NForm :model="form" label-placement="top">
     <div class="flex flex-col">
       <FormElement>
-        <template #title>Pagrindinė informacija</template>
+        <template #title>{{ $t("forms.context.main_info") }} </template>
         <NFormItem :label="$t('forms.fields.title')" :span="2">
           <NInput
             v-if="locale === 'lt'"
@@ -91,7 +91,7 @@
                 ><NButton text size="tiny"
                   ><template #icon
                     ><NIcon :component="Add24Filled"></NIcon></template
-                  >{{ $t("forms.actions.create_user") }}?</NButton
+                  >Sukurti naują asmenį</NButton
                 ></a
               >
             </div>
@@ -109,19 +109,21 @@
       </FormElement>
       <FormElement>
         <template #title>Papildoma informacija</template>
-        <template #description
-          >
+        <template #description>
           <div class="flex flex-col gap-2">
             <p>
-              <strong>Pareigybės tipas</strong> reikalingas tam, kad tam tikrais atvejais, nariai būtų rodomi
-              viešame studentų atstovybės puslapyje. Pavyzdžiui, studentų
-              atstovo tipui priklausantys asmenys rodomi prie institucijos kontaktų.
+              <strong>Pareigybės tipas</strong> reikalingas tam, kad tam tikrais
+              atvejais, nariai būtų rodomi viešame studentų atstovybės
+              puslapyje. Pavyzdžiui, studentų atstovo tipui priklausantys
+              asmenys rodomi prie institucijos kontaktų.
             </p>
-            <p><strong>Administracinė vusa.lt rolė </strong> leidžia registruotiems naudotojams atlikti jiems priskirtus veiksmus
-            vidiniame mano.vusa.lt tinklalapyje</p>
+            <p>
+              <strong>Administracinė vusa.lt rolė </strong> leidžia
+              registruotiems naudotojams atlikti jiems priskirtus veiksmus
+              vidiniame mano.vusa.lt tinklalapyje
+            </p>
           </div>
-          </template
-        >
+        </template>
         <NFormItem label="Pareigybės tipas">
           <NSelect
             v-model:value="form.types"

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller as Controller;
-use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\LaravelResourceController;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Relationship;
 use App\Services\RelationshipService;
@@ -14,7 +14,7 @@ use Inertia\Inertia;
 // Controller is used for the relationship object, which describes
 // content related relationships.
 
-class RelationshipController extends ResourceController
+class RelationshipController extends LaravelResourceController
 {
     /**
      * Display a listing of the resource.

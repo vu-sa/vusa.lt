@@ -4,17 +4,13 @@
       class="relative flex rounded-t-md border border-b-0 border-zinc-300 px-2 pt-2 dark:border-zinc-700"
     >
       <NScrollbar
-        v-if="model?.comments && model.comments.length > 0"
+        v-if="comments && comments.length > 0"
         ref="scrollContainer"
         style="max-height: 24rem"
         class="px-4"
       >
         <div ref="commentContainer">
-          <div
-            v-for="comment in model?.comments"
-            :key="comment.id"
-            :comment="comment"
-          >
+          <div v-for="comment in comments" :key="comment.id" :comment="comment">
             <div
               class="mb-4 grid grid-cols-[40px_1fr] gap-x-4 gap-y-2 first:pt-4 last:pb-4"
             >
@@ -37,7 +33,11 @@
                   class="mr-2 text-xs text-gray-500"
                 >
                   <span>{{
-                    formatRelativeTime(new Date(comment.created_at))
+                    formatRelativeTime(
+                      new Date(comment.created_at),
+                      { numeric: "auto" },
+                      $page.props.app.locale
+                    )
                   }}</span>
                 </span>
               </div>
@@ -62,8 +62,8 @@
 
 <script setup lang="tsx">
 import { NScrollbar, NTag, type ScrollbarInst } from "naive-ui";
+import { computed, onUpdated, ref } from "vue";
 import { formatRelativeTime } from "@/Utils/IntlTime";
-import { onUpdated, ref } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 import CommentTipTap from "./CommentTipTap.vue";
 import UserPopover from "@/Components/Avatars/UserPopover.vue";
@@ -73,14 +73,21 @@ defineEmits<{
 }>();
 
 const props = defineProps<{
-  model?: Record<string, any> | null;
+  model: Record<string, any> | null;
   commentable_type: string;
+  comments?: App.Entities.Comment[];
 }>();
 
 const loading = ref(false);
 const text = ref<string | null>(null);
 const commentContainer = ref<HTMLElement | null>(null);
 const scrollContainer = ref<ScrollbarInst | null>(null);
+
+const comments = computed(() => {
+  if (props.comments) return props.comments;
+  if (props.model?.comments) return props.model.comments;
+  return [];
+});
 
 const submitComment = (decision?: "approve" | "reject") => {
   loading.value = true;

@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\LaravelResourceController;
 use App\Models\Type;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
-class TypeController extends ResourceController
+class TypeController extends LaravelResourceController
 {
     /**
      * Display a listing of the resource.

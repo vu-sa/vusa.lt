@@ -1,7 +1,7 @@
-export const changelogItemTemplate: Pick<
-  App.Entities.ChangelogItem,
-  "title" | "description" | "date"
-> = {
+export const changelogItemTemplate: Pick<App.Entities.ChangelogItem, "date"> & {
+  title: Record<"lt" | "en", string>;
+  description: Record<"lt" | "en", string>;
+} = {
   title: {
     lt: "",
     en: "",

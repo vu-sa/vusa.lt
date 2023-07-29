@@ -21,7 +21,7 @@ class SetLocale
             app()->setLocale(config('app.locale'));
         }
 
-        if (in_array($segment, ['mano', 'auth', 'login', 'telescope'])) {
+        if (in_array($segment, ['mano', 'auth', 'login', 'telescope', 'impersonate'])) {
             return $next($request);
         }
 

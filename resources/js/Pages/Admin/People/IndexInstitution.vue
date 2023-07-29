@@ -49,6 +49,7 @@ const filters = ref<Record<string, any>>({
 
 provide("filters", filters);
 
+// ! Don't forget that columns must be computed for the filters to update
 const columns = computed<DataTableColumns<App.Entities.Institution>>(() => {
   return [
     {

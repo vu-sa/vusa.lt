@@ -2,8 +2,10 @@
 
 namespace Tests\Unit;
 
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 
+#[CoversNothing]
 class ExampleTest extends TestCase
 {
     /**
@@ -11,7 +13,7 @@ class ExampleTest extends TestCase
      *
      * @return void
      */
-    public function testBasicTest()
+    public function test_true_is_true()
     {
         $this->assertTrue(true);
     }

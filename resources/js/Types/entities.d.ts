@@ -8,7 +8,6 @@ declare namespace App.Entities {
   export interface Contact extends App.Models.Contact {
     comments: Array<App.Models.Comment>;
   }
-  export type Doable = App.Models.Pivots.Doable;
   export interface Doing extends Omit<App.Models.Doing, "state"> {
     state:
       | "draft"
@@ -23,8 +22,8 @@ declare namespace App.Entities {
   export type Dutiable = App.Models.Pivots.Dutiable;
 
   export interface Duty extends App.Models.Duty {
-    roles?: Array<App.Models.Role> | null; // manually added
-    roles_count?: number | null; // manually added
+    roles?: Array<App.Models.Role> | null;
+    roles_count?: number | null;
   }
 
   export type Goal = App.Models.Goal;
@@ -33,6 +32,9 @@ declare namespace App.Entities {
   export type Institution = App.Models.Institution;
   export type MainPage = App.Models.MainPage;
   export type Matter = App.Models.Matter;
+  export interface Media extends App.Models.Media {
+    original_url?: string;
+  }
 
   export type Meeting = App.Models.Meeting;
 
@@ -57,6 +59,28 @@ declare namespace App.Entities {
   export type RegistrationForm = App.Models.RegistrationForm;
   export type Relationship = App.Models.Relationship;
   export type Relationshipable = App.Models.Pivots.Relationshipable;
+  export interface Reservation
+    extends Omit<App.Models.Reservation, "resources" | "users"> {
+    comments?: Array<App.Models.Comment> | null;
+    resources?: Array<App.Entities.Resource> | null;
+    users?: Array<App.Entities.User> | null;
+  }
+  export interface Resource extends Omit<App.Models.Resource, "is_reservable"> {
+    is_reservable: 0 | 1;
+    pivot?: App.Entities.ReservationResource | null;
+    media?: App.Entities.Media[] | null;
+  }
+  export interface ReservationResource
+    extends Omit<App.Models.Pivots.ReservationResource, "state"> {
+    state:
+      | "created"
+      | "reserved"
+      | "lent"
+      | "returned"
+      | "rejected"
+      | "cancelled";
+    comments?: Array<App.Models.Comment> | [];
+  }
   export type Role = App.Models.Role;
   export type SaziningaiExam = App.Models.SaziningaiExam;
   export type SaziningaiExamFlow = App.Models.SaziningaiExamFlow;
@@ -67,10 +91,12 @@ declare namespace App.Entities {
   export type Task = App.Models.Task;
   export type Type = App.Models.Type;
 
-  export interface User extends Omit<App.Models.User, "padaliniai"> {
-    padaliniai?: Array<App.Models.Padalinys> | null; // manually added
-    roles?: Array<App.Models.Role> | null; // manually added
-    roles_count?: number | null; // manually added
-    pivot?: App.Models.Pivots.Dutiable | null; // manually added
+  export interface User
+    extends Omit<App.Models.User, "padaliniai" | "reservations"> {
+    padaliniai?: Array<App.Models.Padalinys> | null;
+    reservations?: Array<App.Entities.Reservation> | null;
+    roles?: Array<App.Models.Role> | null;
+    roles_count?: number | null;
+    pivot?: App.Models.Pivots.Dutiable | null;
   }
 }

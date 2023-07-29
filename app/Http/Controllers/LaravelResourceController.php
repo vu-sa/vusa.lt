@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 
-class ResourceController extends Controller
+class LaravelResourceController extends Controller
 {
     protected $authorizer;
 

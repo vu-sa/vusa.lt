@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\LaravelResourceController;
 use App\Models\Padalinys;
 use App\Models\SaziningaiExam;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class SaziningaiExamsController extends ResourceController
+class SaziningaiExamsController extends LaravelResourceController
 {
     /**
      * Display a listing of the resource.

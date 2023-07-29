@@ -58,7 +58,7 @@ const columns: () => DataTableColumns<App.Entities.Task> = () => [
           size="large"
           disabled={
             !row.users?.find(
-              (user) => user.id === usePage().props.auth?.user?.id
+              (user) => user.id === usePage().props.auth?.user?.id,
             )
           }
           onUpdate:checked={() => updateTaskCompletion(row)}
@@ -74,18 +74,17 @@ const columns: () => DataTableColumns<App.Entities.Task> = () => [
       return $t("forms.fields.title");
     },
     key: "name",
-    fixed: "left",
     width: 150,
     ellipsis: {
       tooltip: true,
     },
+    resizable: true,
   },
   {
     title() {
       return $t("forms.fields.subject");
     },
     key: "subject",
-    width: 150,
     render(row) {
       let modelType = row.taskable_type.split("\\").pop() + "s";
 
@@ -112,7 +111,7 @@ const columns: () => DataTableColumns<App.Entities.Task> = () => [
       return $t("forms.fields.responsible_people");
     },
     key: "users",
-    width: 150,
+    minWidth: 150,
     render(row) {
       return <UsersAvatarGroup size={32} users={row.users}></UsersAvatarGroup>;
     },
@@ -122,7 +121,7 @@ const columns: () => DataTableColumns<App.Entities.Task> = () => [
       return $t("forms.fields.due_date");
     },
     key: "due_date",
-    width: 150,
+    minWidth: 150,
     sorter: "default",
   },
   {
@@ -149,6 +148,8 @@ const iconComponent = (row: App.Entities.Task) => {
       return IconsFilled.MEETING;
     case "App\\Models\\User":
       return IconsFilled.USER;
+    case "App\\Models\\Reservation":
+      return IconsFilled.RESERVATION;
     default:
       return IconsFilled.HOME;
   }
@@ -167,7 +168,7 @@ const updateTaskCompletion = (task: App.Entities.Task) => {
       onSuccess: () => {
         loading.value = false;
       },
-    }
+    },
   );
 };
 
@@ -182,11 +183,3 @@ const handleDelete = async (task: App.Entities.Task) => {
   });
 };
 </script>
-
-<style scoped>
-div.n-data-table {
-  /* --n-merged-th-color: transparent; */
-  /* --n-merged-td-color: transparent; */
-  --n-merged-border-color: transparent;
-}
-</style>

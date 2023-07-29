@@ -38,7 +38,15 @@ class ModelCommented extends Notification implements ShouldQueue
      */
     public function via($notifiable)
     {
-        return ['database', 'broadcast', 'mail'];
+        // if notifiable class is user, then send notification via database, broadcast and mail
+        if (class_basename(get_class($notifiable)) === 'User') {
+            return ['database', 'broadcast', 'mail'];
+        }
+
+        // if notifiable class is duty, then send notification via mail
+        if (class_basename(get_class($notifiable)) === 'Duty') {
+            return ['mail'];
+        }
     }
 
     /**
@@ -67,8 +75,11 @@ class ModelCommented extends Notification implements ShouldQueue
 
     public function toMail($notifiable)
     {
-        return (new MailMessage)->greeting('Hello!')
-            ->subject('New comment')
-            ->line($this->text);
+        return (new MailMessage)
+            ->markdown('emails.model-commented', [
+                'text' => $this->text,
+                'object' => $this->objectArray,
+                'subject' => $this->subjectArray,
+            ])->subject('💬 '.__('New Comment on').' '.$this->objectArray['name']);
     }
 }

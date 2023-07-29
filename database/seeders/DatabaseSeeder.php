@@ -34,6 +34,7 @@ class DatabaseSeeder extends Seeder
         )->count(10)->create();
 
         $this->call(MenuSeeder::class);
+        $this->call(DeleteAndSeedPermissions::class);
 
         Calendar::factory()->count(50)->create();
         MainPage::factory()->count(30)->create();

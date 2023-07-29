@@ -2,7 +2,7 @@
   <NTooltip
     :style="{ maxWidth: '600px' }"
     trigger="hover"
-    :arrow="false"
+    :show-arrow="false"
     :show-delay="500"
     :hide-delay="100"
     ><template #trigger

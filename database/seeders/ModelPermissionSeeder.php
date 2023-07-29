@@ -23,6 +23,11 @@ class ModelPermissionSeeder extends Seeder
         foreach (ModelEnum::toLabels() as $model) {
             $pluralizedModel = Str::plural($model);
 
+            // if model is reservationResource, skip
+            if ($pluralizedModel === 'reservationResources') {
+                continue;
+            }
+
             foreach (CRUDEnum::toLabels() as $crud) {
                 foreach (PermissionScopeEnum::toLabels() as $scope) {
                     $permissionsToCreate[] = $pluralizedModel.'.'.$crud.'.'.$scope;
@@ -30,11 +35,13 @@ class ModelPermissionSeeder extends Seeder
             }
         }
 
-        foreach ($permissionsToCreate as $permission) {
-            Permission::create([
+        $permissionsToCreate = array_map(function ($permission) {
+            return [
                 'name' => $permission,
                 'guard_name' => 'web',
-            ]);
-        }
+            ];
+        }, $permissionsToCreate);
+
+        Permission::upsert($permissionsToCreate, ['name', 'guard_name']);
     }
 }

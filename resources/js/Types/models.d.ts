@@ -49,9 +49,9 @@ declare namespace App.Models {
 
   export interface ChangelogItem {
     id: number;
-    title: string | Record<"lt" | "en", string>;
-    description: string | Record<"lt" | "en", string>;
-    date: string | Date;
+    title: string;
+    date: string;
+    description: string;
   }
 
   export interface Comment {
@@ -122,6 +122,7 @@ declare namespace App.Models {
     dutiables?: Array<App.Models.Pivots.Dutiable> | null;
     users?: Array<App.Models.User> | null;
     current_users?: Array<App.Models.User> | null;
+    previous_users?: Array<App.Models.User> | null;
     contacts?: Array<App.Models.Contact> | null;
     matters?: any | null;
     types?: Array<App.Models.Type> | null;
@@ -131,9 +132,12 @@ declare namespace App.Models {
     meetings?: any | null;
     agenda_items?: any | null;
     tasks?: any | null;
+    reservations?: any | null;
+    resources?: any | null;
     dutiables_count?: number | null;
     users_count?: number | null;
     current_users_count?: number | null;
+    previous_users_count?: number | null;
     contacts_count?: number | null;
     types_count?: number | null;
   }
@@ -228,6 +232,28 @@ declare namespace App.Models {
     goals_count?: number | null;
   }
 
+  export interface Media {
+    id: number;
+    model_type: string;
+    model_id: string;
+    uuid: string | null;
+    collection_name: string;
+    name: string;
+    file_name: string;
+    mime_type: string | null;
+    disk: string;
+    conversions_disk: string | null;
+    size: number;
+    manipulations: string;
+    custom_properties: string;
+    generated_conversions: string;
+    responsive_images: string;
+    order_column: number | null;
+    created_at: any | null;
+    updated_at: any | null;
+    model?: any | null;
+  }
+
   export interface Meeting {
     id: string;
     title: string;
@@ -305,6 +331,7 @@ declare namespace App.Models {
     news?: Array<App.Models.News> | null;
     pages?: Array<App.Models.Page> | null;
     users?: Array<App.Models.User> | null;
+    resources?: Array<App.Models.Resource> | null;
     banners_count?: number | null;
     calendar_count?: number | null;
     duties_count?: number | null;
@@ -312,6 +339,7 @@ declare namespace App.Models {
     news_count?: number | null;
     pages_count?: number | null;
     users_count?: number | null;
+    resources_count?: number | null;
   }
 
   export interface Page {
@@ -377,6 +405,41 @@ declare namespace App.Models {
     institutions_count?: number | null;
     relationshipables_count?: number | null;
     types_count?: number | null;
+  }
+
+  export interface Reservation {
+    id: string;
+    name: string;
+    description: string | null;
+    start_time: string;
+    end_time: string;
+    completed_at: string | null;
+    created_at: any;
+    updated_at: any;
+    deleted_at: any | null;
+    resources?: Array<App.Models.Resource> | null;
+    users?: Array<App.Models.User> | null;
+    padaliniai?: any | null;
+    resources_count?: number | null;
+    users_count?: number | null;
+  }
+
+  export interface Resource {
+    id: string;
+    name: string;
+    description: string | null;
+    location: string | null;
+    capacity: number;
+    padalinys_id: number;
+    is_reservable: boolean;
+    created_at: any;
+    updated_at: any;
+    deleted_at: any | null;
+    reservations?: Array<App.Models.Reservation> | null;
+    active_reservations?: Array<App.Models.Reservation> | null;
+    padalinys?: App.Models.Padalinys | null;
+    reservations_count?: number | null;
+    active_reservations_count?: number | null;
   }
 
   export interface Role {
@@ -499,10 +562,14 @@ declare namespace App.Models {
     duties?: Array<App.Models.Duty> | null;
     doings?: Array<App.Models.Doing> | null;
     descendants?: Array<App.Models.Type> | null;
+    recursive_descendants?: Array<App.Models.Type> | null;
+    parent?: App.Models.Type | null;
+    recursive_parent?: App.Models.Type | null;
     institutions_count?: number | null;
     duties_count?: number | null;
     doings_count?: number | null;
     descendants_count?: number | null;
+    recursive_descendants_count?: number | null;
   }
 
   export interface User {
@@ -515,6 +582,7 @@ declare namespace App.Models {
     email_verified_at: any | null;
     remember_token: string | null;
     last_action: any | null;
+    last_changelog_check: string | null;
     microsoft_token: string | null;
     google_token: string | null;
     updated_at: any | null;
@@ -525,14 +593,23 @@ declare namespace App.Models {
     calendar?: Array<App.Models.Calendar> | null;
     doings?: Array<App.Models.Doing> | null;
     duties?: Array<App.Models.Duty> | null;
+    previous_duties?: Array<App.Models.Duty> | null;
+    current_duties?: Array<App.Models.Duty> | null;
+    dutiables?: Array<App.Models.Pivots.Dutiable> | null;
     padaliniai?: any | null;
     tasks?: Array<App.Models.Task> | null;
     institutions?: any | null;
+    reservations?: Array<App.Models.Reservation> | null;
     banners_count?: number | null;
     calendar_count?: number | null;
     doings_count?: number | null;
     duties_count?: number | null;
+    previous_duties_count?: number | null;
+    current_duties_count?: number | null;
+    dutiables_count?: number | null;
     tasks_count?: number | null;
+    reservations_count?: number | null;
+    readonly impersonate?: any;
   }
 }
 
@@ -586,6 +663,24 @@ declare namespace App.Models.Pivots {
     relationshipable?: any | null;
     related_model?: any | null;
     relationship?: App.Models.Relationship | null;
+  }
+
+  export interface ReservationResource {
+    id: number;
+    reservation_id: string;
+    resource_id: string;
+    start_time: string | null;
+    end_time: string | null;
+    quantity: number;
+    state: string;
+    returned_at: string | null;
+    created_at: any;
+    updated_at: any;
+    deleted_at: any | null;
+    reservation?: App.Models.Reservation | null;
+    resource?: App.Models.Resource | null;
+    readonly approvable?: boolean;
+    readonly state_properties?: any;
   }
 
   export interface SharepointFileable {

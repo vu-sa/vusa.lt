@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\LaravelResourceController;
 use App\Http\Requests\StoreChangelogItemRequest;
 use App\Models\ChangelogItem;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Response as InertiaResponse;
 
-class ChangelogItemController extends ResourceController
+class ChangelogItemController extends LaravelResourceController
 {
     /**
      * Display a listing of the resource.

@@ -18,7 +18,7 @@ class PublicController extends Controller
         // get subdomain if exists
         $host = Request::server('HTTP_HOST');
 
-        if ($host !== 'localhost') {
+        if ($host !== 'localhost' && $host !== 'host.docker.internal:80') {
             $subdomain = explode('.', $host)[0];
             $this->alias = in_array($subdomain, ['naujas', 'www', 'static']) ? 'vusa' : $subdomain;
         } else {

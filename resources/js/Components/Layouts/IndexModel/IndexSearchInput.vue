@@ -8,25 +8,33 @@
         ></NButton>
       </template>
     </NPopover>
-    <NInput
-      v-model:value="searchValue"
-      class="mb-4 md:col-span-4"
-      type="text"
-      size="medium"
-      clearable
-      round
-      :placeholder="`${$t('Įvesk pavadinimą ir spausk „Enter“')}...`"
-      :loading="loading"
-      @keyup.enter="handleSearchInput"
-      ><template #prefix>
-        <NIcon class="mr-1" :component="Search24Filled" /> </template
-    ></NInput>
+    <NInputGroup>
+      <NInput
+        v-model:value="searchValue"
+        class="mb-4 md:col-span-4"
+        type="text"
+        clearable
+        round
+        :placeholder="`${$t('Ieškoti')}...`"
+        @update:value="searchIsDirty = true"
+        @keyup.enter="handleSearchInput"
+        ><template #prefix>
+          <NIcon class="mr-1" :component="Search24Filled" /> </template
+      ></NInput>
+      <NButton
+        round
+        :loading="loading"
+        :type="searchIsDirty ? 'primary' : 'default'"
+        @click="handleSearchInput"
+        ><template #icon> <NIcon :component="Search24Filled" /> </template
+      ></NButton>
+    </NInputGroup>
   </div>
 </template>
 
 <script setup lang="ts">
 import { Broom16Regular, Search24Filled } from "@vicons/fluent";
-import { NButton, NIcon, NInput, NPopover } from "naive-ui";
+import { NButton, NIcon, NInput, NInputGroup, NPopover } from "naive-ui";
 import { ref } from "vue";
 import { router } from "@inertiajs/vue3";
 
@@ -42,6 +50,7 @@ const props = defineProps<{
 }>();
 
 const loading = ref(false);
+const searchIsDirty = ref(false);
 const searchValue = ref("");
 
 const handleSearchInput = () => {
@@ -51,12 +60,14 @@ const handleSearchInput = () => {
     onSuccess: () => {
       emit("completeSearch");
       loading.value = false;
+      searchIsDirty.value = false;
     },
   });
 };
 
 const sweepSearch = () => {
   searchValue.value = "";
+  searchIsDirty.value = false;
   emit("sweep");
 };
 </script>

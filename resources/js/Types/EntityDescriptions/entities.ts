@@ -102,6 +102,18 @@ export default [
     description: Descriptions.ContactDescription,
   },
   {
+    title: "Rezervacijos",
+    icon: Icons.RESERVATION,
+    key: pluralizeModels(ModelEnum.RESERVATION),
+    description: Descriptions.ReservationDescription,
+  },
+  {
+    title: "Ištekliai",
+    icon: Icons.RESOURCE,
+    key: pluralizeModels(ModelEnum.RESOURCE),
+    description: Descriptions.ResourceDescription,
+  },
+  {
     title: "Komentarai",
     icon: Icons.COMMENT,
     key: "comments",

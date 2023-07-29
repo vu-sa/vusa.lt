@@ -18,15 +18,17 @@ return [
         'duty_people_count' => 'Amount of people in duty',
         'admin_role' => 'Admin role',
         'picture' => 'Picture',
+        'created_at' => 'Created at',
+        'quantity' => 'Quantity',
+        'location' => 'Location',
+        'media' => 'Pictures',
+        'state' => 'State',
     ],
     'context' => [
         'main_info' => 'Main information',
         'user_duties' => 'Platform user duties',
         'additional_info' => 'Additional info',
-    ],
-    'actions' => [
-        'create_duty' => 'Create new duty',
-        'create_user' => 'Create new person',
+        'upload_media' => 'Upload pictures',
     ],
     'add' => 'Add',
     'submit' => 'Submit',
@@ -34,4 +36,5 @@ return [
     'delete' => 'Delete',
     'edit' => 'Edit',
     'remove' => 'Remove',
+    'new_model' => '{0} New :model|{1} New :model',
 ];

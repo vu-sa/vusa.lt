@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\LaravelResourceController;
 use App\Models\Duty;
 use App\Models\Role;
 use App\Models\Type;
@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
-class DutyController extends ResourceController
+class DutyController extends LaravelResourceController
 {
     /**
      * Display a listing of the resource.
@@ -78,7 +78,7 @@ class DutyController extends ResourceController
         $duty->types()->sync($request->type);
         $duty->users()->syncWithPivotValues($request->users, ['start_date' => now()]);
 
-        return redirect()->route('duties.index')->with('success', 'Pareigybė sėkmingai sukurta!');
+        return redirect()->route('duties.index')->with('success', trans_choice('messages.created', 0, ['model' => trans_choice('entities.duty.model', 1)]));
     }
 
     /**
@@ -162,7 +162,7 @@ class DutyController extends ResourceController
             $duty->types()->sync($request->types);
         });
 
-        return back()->with('success', 'Pareigybė sėkmingai atnaujinta!');
+        return back()->with('success', trans_choice('messages.updated', 0, ['model' => trans_choice('entities.duty.model', 1)]));
     }
 
     /**
@@ -176,7 +176,7 @@ class DutyController extends ResourceController
 
         $duty->delete();
 
-        return redirect()->route('duties.index')->with('info', 'Pareigybė sėkmingai ištrinta!');
+        return redirect()->route('duties.index')->with('info', trans_choice('messages.deleted', 0, ['model' => trans_choice('entities.duty.model', 1)]));
     }
 
     public function setAsStudentRepresentatives(Request $request)

@@ -14,9 +14,23 @@ class GetPadaliniaiForUpserts
     {
         // ! must be already authorized for this action
         if (! $authorizer->forUser(Auth::user())->checkAllRoleables($permission)) {
-            return User::with('padaliniai:padaliniai.id,shortname')->find(Auth::user()->id)->padaliniai->unique();
-        } else {
-            return Padalinys::orderBy('shortname_vu')->get(['id', 'shortname']);
+            return User::with('padaliniai:padaliniai.id,shortname')->find(Auth::user()->id)->padaliniai->unique()->map(
+                function ($padalinys) {
+                    return [
+                        'id' => $padalinys->id,
+                        'shortname' => __($padalinys->shortname),
+                    ];
+                }
+            );
         }
+
+        return Padalinys::orderBy('shortname_vu')->get(['id', 'shortname'])->map(
+            function ($padalinys) {
+                return [
+                    'id' => $padalinys->id,
+                    'shortname' => __($padalinys->shortname),
+                ];
+            }
+        );
     }
 }

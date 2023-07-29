@@ -45,6 +45,11 @@ Route::resource('doings', DoingController::class);
 Route::resource('agendaItems', AgendaItemController::class);
 Route::resource('meetings', MeetingController::class);
 
+Route::resource('resources', ResourceController::class);
+Route::put('reservations/{reservation}/add-users', [ReservationController::class, 'addUsers'])->name('reservations.add-users');
+Route::resource('reservations', ReservationController::class);
+Route::resource('reservationResources', ReservationResourceController::class);
+
 Route::resource('saziningaiExams', SaziningaiExamsController::class);
 Route::resource('saziningaiExamFlows', SaziningaiExamFlowsController::class);
 Route::resource('saziningaiExamObservers', SaziningaiExamObserversController::class);

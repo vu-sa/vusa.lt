@@ -77,11 +77,12 @@ class HandleInertiaRequests extends Middleware
                 'data' => fn () => $request->session()->get('data'),
                 'info' => fn () => $request->session()->get('info'),
                 'success' => fn () => $request->session()->get('success'),
+                // since inertia responses cannot have a 40X status code, we have to pass it in the flash data
+                'statusCode' => fn () => $request->session()->get('statusCode'),
             ],
             // 'layout' => is_null($user) ? null : [
             //     'navBackground' => null
             // ],
-            'misc' => $request->session()->get('misc') ?? '',
             'padaliniai' => fn () => $this->getPadaliniaiForInertia(),
             'search' => [
                 'calendar' => $request->session()->get('search_calendar') ?? [],
@@ -116,7 +117,13 @@ class HandleInertiaRequests extends Middleware
         return Cache::remember('index-permissions-'.$user->id, 3600, function () use ($user) {
             $authorizer = new Authorizer();
 
-            return collect(ModelEnum::toLabels())
+            $labels = ModelEnum::toLabels();
+
+            // remove where value is reservationResource
+            // TODO: maybe needs better solution
+            unset($labels[array_search('reservationResource', $labels)]);
+
+            return collect($labels)
                 ->mapWithKeys(function ($model) use ($user, $authorizer) {
                     return [$model => $user->can('viewAny', ['App\\Models\\'.ucfirst($model), $authorizer])];
                 })->toArray();

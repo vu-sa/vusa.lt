@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\Access\Authorizable;
+use Illuminate\Notifications\Notifiable;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
@@ -16,7 +17,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Duty extends Model implements AuthorizableContract
 {
-    use HasFactory, Authorizable, HasRoles, HasRelationships, LogsActivity, HasUlids, SoftDeletes;
+    use HasFactory, Notifiable, Authorizable, HasRoles, HasRelationships, LogsActivity, HasUlids, SoftDeletes;
 
     protected $with = ['types'];
 
@@ -45,6 +46,7 @@ class Duty extends Model implements AuthorizableContract
             ->withPivot(['extra_attributes', 'start_date', 'end_date']);
     }
 
+    // TODO: use current_duties as an example for current_users
     public function current_users()
     {
         return $this->users()
@@ -104,6 +106,16 @@ class Duty extends Model implements AuthorizableContract
     public function tasks()
     {
         return $this->hasManyDeepFromRelations($this->users(), (new User())->tasks());
+    }
+
+    public function reservations()
+    {
+        return $this->hasManyDeepFromRelations($this->users(), (new User())->reservations());
+    }
+
+    public function resources()
+    {
+        return $this->hasManyDeepFromRelations($this->padaliniai(), (new Padalinys())->resources());
     }
 
     // add "duty" relation which points to self

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\SendWelcomeEmail;
-use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\LaravelResourceController;
 use App\Models\Duty;
 use App\Models\Padalinys;
 use App\Models\Role;
@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Laravel\Socialite\Facades\Socialite;
 
-class UserController extends ResourceController
+class UserController extends LaravelResourceController
 {
     /**
      * Display a listing of the resource.
@@ -161,6 +161,7 @@ class UserController extends ResourceController
      */
     public function update(Request $request, User $user)
     {
+        // TODO: make duty attach / detach work properly
         $this->authorize('update', [User::class, $user, $this->authorizer]);
 
         $request->validate([
@@ -190,6 +191,7 @@ class UserController extends ResourceController
         return back()->with('success', 'Kontaktas sėkmingai atnaujintas!');
     }
 
+    // TODO: doesn't account for duties with the same name
     private function handleDutiesUpdate(SupportCollection $existing_duties, SupportCollection $user_duties, User $user)
     {
         $new = $existing_duties->diff($user_duties)->values();

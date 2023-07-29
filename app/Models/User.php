@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Octopy\Impersonate\Concerns\Impersonate;
+use Octopy\Impersonate\ImpersonateAuthorization;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
@@ -15,7 +17,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class User extends Authenticatable
 {
-    use Notifiable, HasFactory, HasRelationships, HasRoles, HasUlids, LogsActivity, SoftDeletes;
+    use Notifiable, HasFactory, HasRelationships, HasRoles, HasUlids, LogsActivity, SoftDeletes, Impersonate;
 
     /**
      * The attributes that are mass assignable.
@@ -50,6 +52,13 @@ class User extends Authenticatable
         return LogOptions::defaults()->logFillable()->logOnlyDirty();
     }
 
+    public function impersonatable(ImpersonateAuthorization $authorization): void
+    {
+        $authorization->impersonator(fn (User $user) => $user->hasRole(config('permission.super_admin_role_name')));
+
+        $authorization->impersonated(fn (User $user) => ! $user->hasRole(config('permission.super_admin_role_name')));
+    }
+
     public function banners()
     {
         return $this->hasMany(Banner::class, 'user_id', 'id');
@@ -75,17 +84,24 @@ class User extends Authenticatable
     public function previous_duties()
     {
         return $this->duties()
-            ->wherePivot('end_date', '<', now())
+            ->where(function ($query) {
+                $query->whereNotNull('dutiables.end_date')
+                    ->where('dutiables.end_date', '<', now());
+            })
             ->withTimestamps();
     }
 
     // this needs more debugging. don't use with withWhereHas
-
+    // TODO: implement current_duties where appropriate
     public function current_duties()
     {
         return $this->duties()
-            ->wherePivotNull('end_date')->orWherePivot('end_date', '>=', now())
+            ->where(function ($query) {
+                $query->whereNull('dutiables.end_date')
+                    ->orWhere('dutiables.end_date', '>=', now());
+            })
             ->withTimestamps();
+
     }
 
     public function dutiables()
@@ -106,5 +122,10 @@ class User extends Authenticatable
     public function institutions()
     {
         return $this->hasManyDeepFromRelations($this->duties(), (new Duty())->institution());
+    }
+
+    public function reservations()
+    {
+        return $this->belongsToMany(Reservation::class)->withTimestamps();
     }
 }
