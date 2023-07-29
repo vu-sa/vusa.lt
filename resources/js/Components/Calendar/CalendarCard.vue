@@ -1,7 +1,7 @@
 <template>
   <NCard
     size="small"
-    class="subtle-gray-gradient h-fit w-72 rounded-md text-gray-900 shadow-md dark:text-zinc-100 lg:border-2"
+    class="subtle-gray-gradient h-fit w-72 rounded-md h-full text-gray-900 shadow-md dark:text-zinc-100 lg:border-2"
     hoverable
     :segmented="{ footer: 'soft' }"
   >

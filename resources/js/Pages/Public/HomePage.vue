@@ -13,6 +13,8 @@
     <MainLinks :main-page="mainPage" />
   </div>
 
+  <IndividualStudies :is-theme-dark="isThemeDark" />
+
   <EventCalendar
     :is-theme-dark="isThemeDark"
     :show-photos="true"
@@ -69,6 +71,12 @@ const SummerCamps = defineAsyncComponent(
   // eslint-disable-next-line no-secrets/no-secrets
   () => import("@/Components/Public/FullWidth/SummerCamps.vue")
 );
+
+const IndividualStudies = defineAsyncComponent(
+  // eslint-disable-next-line no-secrets/no-secrets
+  () => import("@/Components/Public/FullWidth/IndividualStudies.vue")
+);
+
 // yearreport2022 make unsuspensible
 const YearReport2022 = defineAsyncComponent(
   // eslint-disable-next-line no-secrets/no-secrets
