@@ -53,7 +53,7 @@
           </template>
           <template v-else
             ><p>
-              From 2023 onwards, every bachelor's and master's degree student
+              From 2023 onwards, every bachelor and integrated studies student
               will have the ability to tailor their studies with the use of
               individual studies, resulting in an opportunity to acquire desired
               competencies and knowledge beyond their chosen study programme.
