@@ -457,9 +457,16 @@ class MainController extends PublicController
         // store registration
         // 1 registration is to MIF camp, 2 is for VU SA and PKP members
 
-        $this->storeRegistration(RegistrationForm::find(2));
-
         $data = request()->all();
+        if($data['registrationForm'] == 1) 
+        {
+            $this->storeRegistration(RegistrationForm::find(1)); 
+            return;
+        }
+
+        else 
+        {
+        $this->storeRegistration(RegistrationForm::find(2));
         $registerLocation = new Padalinys();
         $chairPerson = new User();
 
@@ -493,6 +500,7 @@ class MainController extends PublicController
         // send mail to the registered person
         Mail::to($data['email'])->send(new ConfirmMemberRegistration($data, $registerLocation, $chairPerson, $chairEmail));
         Notification::send($chairPerson, new MemberRegistered($data, $registerLocation, $chairEmail));
+        }
     }
 
     public function storeRegistration(RegistrationForm $registrationForm)

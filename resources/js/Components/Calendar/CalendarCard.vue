@@ -97,7 +97,19 @@
         </div>
 
         <NButton
-          v-if="calendarEvent.url"
+          v-if="calendarEvent.url && calendarEvent.id === 53"
+          strong
+          tag="a"
+          round
+          type="primary"
+          @click="showModal = true"
+          ><template #icon>
+            <NIcon :component="HatGraduation20Regular"></NIcon>
+          </template>
+          {{ $t("Dalyvauk") }}!
+        </NButton>
+        <NButton
+          v-if="calendarEvent.url && calendarEvent.id != 53"
           strong
           tag="a"
           round
@@ -109,6 +121,18 @@
           </template>
           {{ $t("Dalyvauk") }}!
         </NButton>
+        <NModal v-model:show="showModal">
+          <NCard
+            style="width: 600px"
+            :bordered="true"
+            :embedded="true"
+            size="small"
+            role="dialog"
+            aria-modal="true"
+          >
+            <MIFRegistrationVue></MIFRegistrationVue>
+          </NCard>
+        </NModal>
         <div
           v-if="calendarEvent.extra_attributes?.facebook_url || googleLink"
           class="mt-2 flex justify-center gap-2"
@@ -162,9 +186,11 @@ import {
   NGradientText,
   NIcon,
   NPopover,
+  NModal,
 } from "naive-ui";
+import MIFRegistrationVue from "@/Pages/Public/MIFRegistration.vue";
 import { FacebookF, Google } from "@vicons/fa";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { formatStaticTime } from "@/Utils/IntlTime";
 
 const props = defineProps<{
@@ -178,6 +204,8 @@ const eventOrganizer = computed((): string => {
     props.calendarEvent.padalinys?.shortname
   );
 });
+
+const showModal = ref(false);
 
 const timeTillEvent = computed(() => {
   const date = new Date(props.calendarEvent.date);
