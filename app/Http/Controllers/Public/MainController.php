@@ -458,48 +458,45 @@ class MainController extends PublicController
         // 1 registration is to MIF camp, 2 is for VU SA and PKP members
 
         $data = request()->all();
-        if($data['registrationForm'] == 1) 
-        {
-            $this->storeRegistration(RegistrationForm::find(1)); 
+        if ($data['registrationForm'] == 1) {
+            $this->storeRegistration(RegistrationForm::find(1));
+
             return;
-        }
-
-        else 
-        {
-        $this->storeRegistration(RegistrationForm::find(2));
-        $registerLocation = new Padalinys();
-        $chairPerson = new User();
-
-        // if whereToRegister is int, then it is a padalinys id
-        if (is_int($data['whereToRegister'])) {
-            $registerPadalinys = Padalinys::find($data['whereToRegister']);
-            $registerLocation = __($registerPadalinys->fullname);
-            $chairDuty = $registerPadalinys->duties()->whereHas('types', function ($query) {
-                $query->where('slug', 'pirmininkas');
-            })->first();
-            $chairPerson = $chairDuty->users->first();
-            $chairEmail = $chairDuty->email;
         } else {
-            switch ($data['whereToRegister']) {
-                case 'hema':
-                    $registerLocation = 'HEMA ('.__('Istorinių Europos kovos menų klubas').')';
-                    $chairEmail = 'hema@vusa.lt';
-                    break;
+            $this->storeRegistration(RegistrationForm::find(2));
+            $registerLocation = new Padalinys();
+            $chairPerson = new User();
 
-                case 'jek':
-                    $registerLocation = 'VU '.__('Jaunųjų energetikų klubas');
-                    $chairEmail = 'vujek@jek.lt';
-                    break;
+            // if whereToRegister is int, then it is a padalinys id
+            if (is_int($data['whereToRegister'])) {
+                $registerPadalinys = Padalinys::find($data['whereToRegister']);
+                $registerLocation = __($registerPadalinys->fullname);
+                $chairDuty = $registerPadalinys->duties()->whereHas('types', function ($query) {
+                    $query->where('slug', 'pirmininkas');
+                })->first();
+                $chairPerson = $chairDuty->users->first();
+                $chairEmail = $chairDuty->email;
+            } else {
+                switch ($data['whereToRegister']) {
+                    case 'hema':
+                        $registerLocation = 'HEMA ('.__('Istorinių Europos kovos menų klubas').')';
+                        $chairEmail = 'hema@vusa.lt';
+                        break;
 
-                default:
-                    abort(500);
-                    break;
+                    case 'jek':
+                        $registerLocation = 'VU '.__('Jaunųjų energetikų klubas');
+                        $chairEmail = 'vujek@jek.lt';
+                        break;
+
+                    default:
+                        abort(500);
+                        break;
+                }
             }
-        }
 
-        // send mail to the registered person
-        Mail::to($data['email'])->send(new ConfirmMemberRegistration($data, $registerLocation, $chairPerson, $chairEmail));
-        Notification::send($chairPerson, new MemberRegistered($data, $registerLocation, $chairEmail));
+            // send mail to the registered person
+            Mail::to($data['email'])->send(new ConfirmMemberRegistration($data, $registerLocation, $chairPerson, $chairEmail));
+            Notification::send($chairPerson, new MemberRegistered($data, $registerLocation, $chairEmail));
         }
     }
 
