@@ -39,7 +39,7 @@
     "@types/latinize": "^0.2.15",
     "@types/ziggy-js": "^1.3.2",
     "@typescript-eslint/eslint-plugin": "^6.2.0",
-    "@typescript-eslint/parser": "^6.2.0",
+    "@typescript-eslint/parser": "^6.2.1",
     "@vicons/fa": "^0.12.0",
     "@vicons/fluent": "^0.12.0",
     "@vitejs/plugin-vue": "^4.0.0",
