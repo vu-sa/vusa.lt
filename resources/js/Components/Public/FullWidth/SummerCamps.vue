@@ -66,14 +66,13 @@
       </a>
     </div>
   </div>
-  <NDivider />
 </template>
 
 <script setup lang="ts">
 import {
+  Balloon20Regular,
   HatGraduation20Regular,
   Person20Filled,
-  Balloon20Regular,
 } from "@vicons/fluent";
 import { Head, router } from "@inertiajs/vue3";
 import { NButton, NDivider, NIcon } from "naive-ui";
