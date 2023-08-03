@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Exports;
 
 use App\Models\Registration;
@@ -35,10 +36,9 @@ class MIFRegistrationExport implements FromArray, WithHeadings
         ];
     }
 
-
     /**
-    * @return \Illuminate\Support\Collection
-    */
+     * @return \Illuminate\Support\Collection
+     */
     public function array(): array
     {
         // return all registrations and map data json to array
