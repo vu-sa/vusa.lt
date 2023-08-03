@@ -503,7 +503,7 @@ class MainController extends PublicController
     public function storeRegistration(RegistrationForm $registrationForm)
     {
         $registration = new Registration;
-        $registration->data = request()->all();
+        $registration->data = request()->except('registrationForm', 'padalinys');
         $registration->registration_form_id = $registrationForm->id;
         $registration->save();
     }

@@ -2,7 +2,7 @@
 
 namespace App\Exports;
 
-use App\Models\Registration;
+use App\Models\RegistrationForm;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
@@ -42,7 +42,7 @@ class MIFRegistrationExport implements FromArray, WithHeadings
     public function array(): array
     {
         // return all registrations and map data json to array
-        $registrations = Registration::all();
+        $registrations = RegistrationForm::find(3)->registrations;
 
         $export = [];
 
