@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\MIFRegistrationExport;
 use App\Http\Controllers\LaravelResourceController;
 use App\Models\RegistrationForm;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Maatwebsite\Excel\Facades\Excel;
 
 class RegistrationFormController extends LaravelResourceController
 {
@@ -16,10 +18,12 @@ class RegistrationFormController extends LaravelResourceController
      */
     public function index()
     {
-        return $this->authorize('viewAny', [
+        $this->authorize('viewAny', [
             Institution::class,
             $this->authorizer,
         ]);
+
+        return Excel::download(new MIFRegistrationExport, 'registration.xlsx');
     }
 
     /**

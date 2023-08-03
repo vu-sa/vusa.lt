@@ -94,11 +94,10 @@ import { Head } from "@inertiajs/vue3";
 import { NDivider, NImage, NImageGroup, NSpace } from "naive-ui";
 import { computed, ref } from "vue";
 
+import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import CalendarCard from "@/Components/Calendar/CalendarCard.vue";
 import EventCalendar from "@/Components/Calendar/EventCalendar.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
-
-import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 
 const props = defineProps<{
   event: App.Entities.Calendar;
