@@ -35,7 +35,14 @@ class RegistrationController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $registration = new Registration();
+        $registration->registration_form_id = $request->registrationForm;
+
+        // all data except for the registration form id
+        $registration->data = $request->except('registrationForm');
+        $registration->save();
+
+        return back()->with('success');
     }
 
     /**

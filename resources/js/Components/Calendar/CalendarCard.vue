@@ -1,7 +1,7 @@
 <template>
   <NCard
     size="small"
-    class="subtle-gray-gradient h-fit w-72 rounded-md h-full text-gray-900 shadow-md dark:text-zinc-100 lg:border-2"
+    class="subtle-gray-gradient h-full w-72 rounded-md text-gray-900 shadow-md dark:text-zinc-100 lg:border-2"
     hoverable
     :segmented="{ footer: 'soft' }"
   >
@@ -14,7 +14,7 @@
       />
     </template>
     <template #header
-      ><strong class="text-center font-extrabold line-clamp-2">{{
+      ><strong class="line-clamp-2 text-center font-extrabold">{{
         calendarEvent.title
       }}</strong></template
     >
@@ -33,7 +33,7 @@
                 hour: "numeric",
                 minute: "numeric",
               },
-              $page.props.app.locale
+              $page.props.app.locale,
             )
           }}
         </strong>
@@ -97,7 +97,10 @@
         </div>
 
         <NButton
-          v-if="calendarEvent.url && calendarEvent.id === 2670"
+          v-if="
+            calendarEvent.padalinys?.alias === 'mif' &&
+            calendarEvent.category === 'freshmen-camps'
+          "
           strong
           tag="a"
           round
@@ -109,7 +112,7 @@
           {{ $t("Dalyvauk") }}!
         </NButton>
         <NButton
-          v-if="calendarEvent.url && calendarEvent.id != 2670"
+          v-else
           strong
           tag="a"
           round
@@ -121,17 +124,21 @@
           </template>
           {{ $t("Dalyvauk") }}!
         </NButton>
-        <NModal v-model:show="showModal">
-          <NCard
-            style="width: 600px"
-            :bordered="true"
-            :embedded="true"
-            size="small"
-            role="dialog"
-            aria-modal="true"
-          >
-            <MIFRegistrationVue></MIFRegistrationVue>
-          </NCard>
+        <NModal
+          v-if="
+            calendarEvent.padalinys?.alias === 'mif' &&
+            calendarEvent.category === 'freshmen-camps'
+          "
+          v-model:show="showModal"
+          class="max-w-xl"
+          display-directive="show"
+          preset="card"
+          title="VU MIF pirmakursių stovyklos registracija"
+          :bordered="false"
+        >
+          <NScrollbar style="max-height: 600px"
+            ><NMessageProvider><MIFCampRegistration /></NMessageProvider
+          ></NScrollbar>
         </NModal>
         <div
           v-if="calendarEvent.extra_attributes?.facebook_url || googleLink"
@@ -185,13 +192,16 @@ import {
   NCountdown,
   NGradientText,
   NIcon,
-  NPopover,
+  NMessageProvider,
   NModal,
+  NPopover,
+  NScrollbar,
 } from "naive-ui";
-import MIFRegistrationVue from "@/Pages/Public/MIFRegistration.vue";
 import { FacebookF, Google } from "@vicons/fa";
 import { computed, ref } from "vue";
+
 import { formatStaticTime } from "@/Utils/IntlTime";
+import MIFCampRegistration from "@/Components/Temp/MIFCampRegistration.vue";
 
 const props = defineProps<{
   calendarEvent: App.Entities.Calendar;
@@ -212,7 +222,7 @@ const timeTillEvent = computed(() => {
   const now = new Date();
   // get full days till event
   const daysTillEvent = Math.floor(
-    (date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+    (date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
   );
   // get ms till event minus full days
   const msTillEvent =
@@ -254,7 +264,7 @@ const renderCountdown: CountdownProps["render"] = ({
 }) => {
   return (
     <span>{`${hours} ${$t("val.")} ${minutes} ${$t("min.")} ${seconds} ${$t(
-      "sek."
+      "sek.",
     )}`}</span>
   );
 };
