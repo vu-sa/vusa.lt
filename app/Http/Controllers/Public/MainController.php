@@ -458,8 +458,8 @@ class MainController extends PublicController
         // 1 registration is to MIF camp, 2 is for VU SA and PKP members
 
         $data = request()->all();
-        if ($data['registrationForm'] == 1) {
-            $this->storeRegistration(RegistrationForm::find(1));
+        if ($data['registrationForm'] == 3) {
+            $this->storeRegistration(RegistrationForm::find(3));
 
             return;
         } else {

@@ -35,8 +35,8 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('saziningai-uzregistruoti-egzaminai', [Public\MainController::class, 'saziningaiExams'])->name('saziningaiExams.registered');
         Route::post('saziningai-uzregistruoti-egzaminai', [Public\MainController::class, 'storeSaziningaiExamObserver'])->name('saziningaiExamObserver.store');
 
-        Route::get('nariu-registracija', [Public\MainController::class, 'memberRegistration'])->name('memberRegistration');
         Route::post('nariu-registracija', [Public\MainController::class, 'storeMemberRegistration'])->name('memberRegistration.store');
+        Route::get('nariu-registracija', [Public\MainController::class, 'memberRegistration'])->name('memberRegistration');
 
         Route::get('kuratoriu-registracija', [Public\MainController::class, 'curatorRegistration'])->name('curatorRegistration');
 

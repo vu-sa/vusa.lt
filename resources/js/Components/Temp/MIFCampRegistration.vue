@@ -435,7 +435,11 @@ const handleValidateClick = (e: MouseEvent) => {
     if (!errors) {
       formValue.submit(
         "post",
-        route("registrations.store", { registrationForm: 3 }),
+        route("memberRegistration.store", {
+          registrationForm: 3,
+          padalinys: "www",
+          lang: "lt",
+        }),
         {
           onSuccess: () => {
             formValue.reset();
