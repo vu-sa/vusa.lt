@@ -20,7 +20,6 @@ class PublicPagesTest extends TestCase
         $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']))
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Public/HomePage')
-                ->has('alias')
                 ->has('app', fn (Assert $page) => $page
                     ->has('env')
                     ->has('locale')
@@ -29,6 +28,7 @@ class PublicPagesTest extends TestCase
                 )
                 ->has('mainNavigation')
                 ->has('padaliniai')
+                ->has('padalinys')
             );
     }
 
