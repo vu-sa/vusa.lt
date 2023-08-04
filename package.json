@@ -3,8 +3,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "test": "vitest --dom",
-    "test:run": "vitest run --dom",
+    "test": "vitest",
+    "test:dom": "vitest --dom",
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
