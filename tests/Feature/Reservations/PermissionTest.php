@@ -98,9 +98,7 @@ class PermissionTest extends ReservationTestCase
         );
 
         $reservation = Reservation::factory()->make([
-            'name' => [
-                'lt' => 'test',
-            ],
+            'name' => 'test',
             'resources' => $this->resources->map(fn ($resource) => ['id' => $resource->id, 'quantity' => 1])->toArray(),
         ]);
 
@@ -109,6 +107,7 @@ class PermissionTest extends ReservationTestCase
         );
 
         $response->assertStatus(302);
+
 
         $this->followRedirects($response)
             ->assertStatus(200)->assertInertia(fn (Assert $page) => $page
