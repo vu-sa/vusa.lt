@@ -4,6 +4,7 @@
     "dev": "vite",
     "build": "vite build",
     "test": "vitest --dom",
+    "test:run": "vitest run --dom",
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
