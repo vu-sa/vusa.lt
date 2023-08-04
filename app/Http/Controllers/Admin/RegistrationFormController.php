@@ -61,7 +61,7 @@ class RegistrationFormController extends LaravelResourceController
 
         $registrations = $registrationForm->load('registrations')->registrations;
 
-        if ($registrationForm->id === 2 && !request()->user()->hasRole(config('permission.super_admin_role_name'))) {
+        if ($registrationForm->id === 2 && ! request()->user()->hasRole(config('permission.super_admin_role_name'))) {
             $registrations = $registrationForm->load(['registrations' => function ($query) {
                 $query->whereIn('data->whereToRegister', request()->user()->padaliniai()->get(['padaliniai.id'])->pluck('id'));
             }])->registrations;
