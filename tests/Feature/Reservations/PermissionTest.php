@@ -108,7 +108,6 @@ class PermissionTest extends ReservationTestCase
 
         $response->assertStatus(302);
 
-
         $this->followRedirects($response)
             ->assertStatus(200)->assertInertia(fn (Assert $page) => $page
             ->component('Admin/Reservations/ShowReservation')
