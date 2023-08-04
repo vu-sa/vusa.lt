@@ -19,7 +19,6 @@ class RewriteUploadsUrl
          * .../files/... part. This middleware redirects those links to the
          * correct location.
          */
-
         if (substr(request()->path(), 0, 8) == 'uploads/' &&
         substr(request()->path(), 0, 13) != 'uploads/files') {
             $upload_path = '/uploads/files'.substr(request()->getPathInfo(), 8);

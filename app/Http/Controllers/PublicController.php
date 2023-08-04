@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Actions\GetAliasSubdomainForPublic;
 use App\Models\Padalinys;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Request;
 use Inertia\Inertia;
 
 class PublicController extends Controller
@@ -18,7 +17,6 @@ class PublicController extends Controller
          * Every public page requires an 'alias', which is basically the shortname of a padalinys.
          * Alias may decide in the controller, what kind of information is displayed.
          *  */
-
         [$alias, $subdomain] = GetAliasSubdomainForPublic::execute();
 
         // When we have the final alias, get the padalinys that will be used in all of the public controllers
