@@ -1,4 +1,4 @@
-name: Application Tests
+name: PHPUnit Tests
 
 on:
   push:
@@ -29,20 +29,8 @@ jobs:
       run: npm ci
     - name: NPM Build
       run: npm run build
-
-  phpunit:
-    runs-on: ubuntu-latest
-    needs: setup
-    steps:
-      - name: Execute tests (Unit and Feature tests) via PHPUnit
-        env:
-          DB_CONNECTION: sqlite
-          DB_DATABASE: database/database.sqlite
-        run: php artisan test
-
-  vitest:
-    runs-on: ubuntu-latest
-    needs: setup
-    steps:
-    - name: Execute tests (Browser tests) via Vitest
-      run: npm run test:run
+    - name: Execute tests (Unit and Feature tests) via PHPUnit
+      env:
+        DB_CONNECTION: sqlite
+        DB_DATABASE: database/database.sqlite
+      run: php artisan test
