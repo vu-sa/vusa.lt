@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\GetAliasSubdomainForPublic;
 use App\Models\Padalinys;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Request;
@@ -9,34 +10,22 @@ use Inertia\Inertia;
 
 class PublicController extends Controller
 {
-    protected $alias;
-
     protected $padalinys;
 
     public function __construct()
     {
-        // get subdomain if exists
-        $host = Request::server('HTTP_HOST');
+        /**
+         * Every public page requires an 'alias', which is basically the shortname of a padalinys.
+         * Alias may decide in the controller, what kind of information is displayed.
+         *  */
 
-        if ($host !== 'localhost' && $host !== 'host.docker.internal:80') {
-            $subdomain = explode('.', $host)[0];
-            $this->alias = in_array($subdomain, ['naujas', 'www', 'static']) ? 'vusa' : $subdomain;
-        } else {
-            $this->alias = 'vusa';
-        }
+        [$alias, $subdomain] = GetAliasSubdomainForPublic::execute();
 
-        // TODO: ???
+        // When we have the final alias, get the padalinys that will be used in all of the public controllers
+        $this->padalinys = Padalinys::where('alias', $alias)->first();
 
-        $requestPadalinys = request()->padalinys;
-
-        if ($requestPadalinys != null) {
-            $this->alias = in_array($requestPadalinys, ['Padaliniai', 'naujas']) ? '' : $this->alias;
-        }
-
-        Inertia::share('alias', $this->alias);
-
-        // get padalinys
-        $this->padalinys = Padalinys::where('alias', $this->alias)->first();
+        // Subdomain and alias won't be different, except when alias = 'vusa', then subdomain = 'www'
+        Inertia::share('padalinys', $this->padalinys->only(['id', 'shortname', 'alias', 'type']) + ['subdomain' => $subdomain]);
     }
 
     protected function getBanners()
