@@ -18,7 +18,7 @@
           newsString: 'naujiena',
           lang: news.lang,
           permalink: news.permalink,
-          padalinys: news.padalinys?.alias,
+          subdomain: news.padalinys?.alias,
         }"
         :padalinys-shortname="news.padalinys?.shortname"
       ></PreviewModelButton>

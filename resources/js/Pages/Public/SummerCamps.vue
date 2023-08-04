@@ -91,7 +91,7 @@
                 route('calendar.event', {
                   calendar: event.id,
                   lang: 'lt',
-                  padalinys: 'www',
+                  subdomain: 'www',
                 })
               "
             >

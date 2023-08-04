@@ -10,7 +10,7 @@
         :route-props="{
           alias: institution.alias,
           lang: $page.props.app.locale,
-          padalinys: institution.padalinys?.alias ?? 'vusa',
+          subdomain: institution.padalinys?.alias ?? 'www',
         }"
       />
     </template>

@@ -13,8 +13,7 @@
         v-if="$page.props.app.locale === 'lt'"
         :href="
           route('newsArchive', {
-            padalinys:
-              $page.props.alias === 'vusa' ? 'www' : $page.props.alias ?? 'www',
+            subdomain: $page.props.padalinys?.subdomain === 'www',
           })
         "
         ><div class="inline-flex gap-1">
@@ -44,7 +43,7 @@
               route('news', {
                 lang: item.lang,
                 newsString: 'naujiena',
-                padalinys: item.alias === 'vusa' ? 'www' : item.alias,
+                subdomain: item.alias === 'vusa' ? 'www' : item.alias,
                 permalink: item.permalink ?? '',
               })
             "
@@ -59,7 +58,7 @@
             route('news', {
               lang: item.lang,
               newsString: 'naujiena',
-              padalinys: item.alias === 'vusa' ? 'www' : item.alias,
+              subdomain: item.alias === 'vusa' ? 'www' : item.alias,
               permalink: item.permalink ?? '',
             })
           "
@@ -72,13 +71,9 @@
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import {
-  ArrowRight12Regular,
-  ArrowRight16Regular,
-  Clock20Regular,
-} from "@vicons/fluent";
+import { ArrowRight16Regular, Clock20Regular } from "@vicons/fluent";
 import { Link } from "@inertiajs/vue3";
-import { NButton, NIcon } from "naive-ui";
+import { NIcon } from "naive-ui";
 
 import HomeCard from "@/Components/Public/HomeCard.vue";
 

@@ -46,7 +46,7 @@
               target="_blank"
               :href="
                 route('contacts.category', {
-                  padalinys: 'www',
+                  subdomain: 'www',
                   alias: 'padaliniai',
                   lang: 'lt',
                 })
@@ -94,7 +94,7 @@
                 route('calendar.event', {
                   calendar: event.id,
                   lang: 'lt',
-                  padalinys: 'www',
+                  subdomain: 'www',
                 })
               "
             >

@@ -51,12 +51,9 @@ const goToLink = (link: string | null) => {
   router.visit(
     route("page", {
       lang: usePage().props.app.locale,
-      padalinys:
-        usePage().props.alias === "vusa"
-          ? "www"
-          : usePage().props.alias ?? "www",
+      subdomain: usePage().props.padalinys?.subdomain ?? "www",
       permalink: link,
-    })
+    }),
   );
 };
 </script>

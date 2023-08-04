@@ -48,7 +48,7 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::post('search', [Public\MainController::class, 'search'])->name('search');
     });
 
-    Route::domain('{padalinys}.'.explode('.', config('app.url'), 2)[1])->group(function () {
+    Route::domain('{subdomain}.'.explode('.', config('app.url'), 2)[1])->group(function () {
         Route::get('/', [Public\MainController::class, 'home'])->name('home');
         Route::get('naujienos', [Public\NewsController::class, 'newsArchive'])->name('newsArchive');
         Route::redirect('/naujiena/archyvas', '/naujienos', 301);
