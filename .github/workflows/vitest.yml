@@ -22,5 +22,5 @@ jobs:
       run: npm ci
     - name: NPM Build
       run: npm run build
-    - name: Execute tests (Browser tests) via Vitest
-      run: npm run test
+    - name: Execute tests via Vitest
+      run: LARAVEL_BYPASS_ENV_CHECK=1 npm run test
