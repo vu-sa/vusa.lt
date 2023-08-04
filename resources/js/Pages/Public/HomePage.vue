@@ -3,15 +3,11 @@
     <title>Pagrindinis</title>
   </Head>
 
-  <SummerCamps
-    v-if="$page.props.app.locale === 'lt'"
-    :is-theme-dark="isThemeDark"
-  />
+  <SummerCamps v-if="$page.props.app.locale === 'lt'" />
 
-  <IndividualStudies :is-theme-dark="isThemeDark" />
+  <IndividualStudies />
 
   <EventCalendar
-    :is-theme-dark="isThemeDark"
     :show-photos="true"
     :calendar="calendar"
     :upcoming4-events="upcoming4Events"
@@ -25,7 +21,7 @@
     <NewsElement :news="news" />
   </div>
 
-  <YearReport2022 :is-theme-dark="isThemeDark" />
+  <YearReport2022 />
 
   <div v-if="$page.props.banners" class="mx-auto mt-8 max-w-7xl">
     <BannerCarousel :banners="$page.props.banners" />
@@ -35,9 +31,6 @@
 <script setup lang="ts">
 import { Head } from "@inertiajs/vue3";
 import { defineAsyncComponent } from "vue";
-import { ref } from "vue";
-
-import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 
 defineProps<{
   news: Array<App.Entities.News>;
@@ -45,8 +38,6 @@ defineProps<{
   calendar: Array<App.Entities.Calendar>;
   upcoming4Events: Array<App.Entities.Calendar>;
 }>();
-
-const isThemeDark = ref(isDarkMode());
 
 const MainLinks = defineAsyncComponent(
   // eslint-disable-next-line no-secrets/no-secrets
@@ -82,6 +73,4 @@ const YearReport2022 = defineAsyncComponent(
   // eslint-disable-next-line no-secrets/no-secrets
   () => import("@/Components/Public/FullWidth/YearReport2022.vue"),
 );
-
-updateDarkMode(isThemeDark);
 </script>

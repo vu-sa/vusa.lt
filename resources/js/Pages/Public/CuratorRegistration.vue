@@ -4,7 +4,6 @@
   <FadeTransition appear>
     <div>
       <HeaderWithShapeDivider1
-        :is-theme-dark="isThemeDark"
         image-src="/images/curatorRegistration/curator3.jpg"
         object-position="0% 45%"
         >{{ $t("Registracija į kuratorių programą") }}
@@ -250,9 +249,8 @@
 
 <script setup lang="ts">
 import { Head } from "@inertiajs/vue3";
-import { onMounted, ref } from "vue";
 
-import { Link20Regular, Link24Regular } from "@vicons/fluent";
+import { Link24Regular } from "@vicons/fluent";
 import {
   NButton,
   NIcon,
@@ -263,7 +261,6 @@ import {
 } from "naive-ui";
 import { formatStaticTime } from "@/Utils/IntlTime";
 import { getFacultyName } from "@/Utils/String";
-import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import HeaderWithShapeDivider1 from "@/Components/Headers/HeaderWithShapeDivider1.vue";
 
@@ -305,7 +302,7 @@ const arrayOfPadaliniaiWithStatus = props.curatorPadaliniai.reduce(
     active: [],
     upcoming: [],
     ended: [],
-  }
+  },
 );
 
 // const curatorPadaliniaiMap = props.curatorPadaliniai.map((padalinys) => {
@@ -333,8 +330,6 @@ const arrayOfPadaliniaiWithStatus = props.curatorPadaliniai.reduce(
 //     )
 // );
 
-const isThemeDark = ref(isDarkMode());
-
 // create array of urls to curator images where the path is /images/curators/curator{range1-6}.jpg
 const curatorImages = [
   "/images/curatorRegistration/curator1.jpg",
@@ -343,8 +338,4 @@ const curatorImages = [
   "/images/curatorRegistration/curator5.jpg",
   "/images/curatorRegistration/curator6.jpg",
 ];
-
-onMounted(() => {
-  updateDarkMode(isThemeDark);
-});
 </script>

@@ -4,12 +4,8 @@
       <link rel="preload" href="/images/photos/VU SA.jpg" as="image" />
     </Head>
 
+    <ShapeDivider1 class="absolute -top-1 z-[1]"></ShapeDivider1>
     <ShapeDivider1
-      :is-theme-dark="isThemeDark"
-      class="absolute -top-1 z-[1]"
-    ></ShapeDivider1>
-    <ShapeDivider1
-      :is-theme-dark="isThemeDark"
       class="absolute -bottom-2 z-[1] rotate-180 lg:-bottom-1"
     ></ShapeDivider1>
     <div class="relative">
@@ -74,12 +70,8 @@ import {
   HatGraduation20Regular,
   Person20Filled,
 } from "@vicons/fluent";
-import { Head, router } from "@inertiajs/vue3";
-import { NButton, NDivider, NIcon } from "naive-ui";
+import { Head } from "@inertiajs/vue3";
+import { NButton, NIcon } from "naive-ui";
 
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
-
-defineProps<{
-  isThemeDark: boolean;
-}>();
 </script>

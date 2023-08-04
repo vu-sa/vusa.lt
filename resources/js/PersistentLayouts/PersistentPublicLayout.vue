@@ -1,8 +1,8 @@
 <template>
   <!-- v-show="mounted" -->
   <NConfigProvider
-    :theme="isThemeDark ? darkTheme : undefined"
-    :theme-overrides="isThemeDark ? darkThemeOverrides : themeOverrides"
+    :theme="isDark ? darkTheme : undefined"
+    :theme-overrides="isDark ? darkThemeOverrides : themeOverrides"
   >
     <NMessageProvider>
       <Layout>
@@ -18,15 +18,12 @@
 
 <script setup lang="tsx">
 import { NConfigProvider, NMessageProvider, darkTheme } from "naive-ui";
-import { ref } from "vue";
+import { useDark } from "@vueuse/core";
 
-import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import Layout from "@/Components/Public/Layouts/PublicLayout.vue";
 
-const isThemeDark = ref(isDarkMode());
-
-updateDarkMode(isThemeDark);
+const isDark = useDark();
 
 const themeOverrides = {
   common: {
