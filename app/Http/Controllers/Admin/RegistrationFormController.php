@@ -69,7 +69,7 @@ class RegistrationFormController extends LaravelResourceController
 
         // for now, is accustomed to show only member registration
         return Inertia::render('Admin/RegistrationForms/ShowRegistrationForm', [
-            'registrations' => $registrations->paginate(35),
+            'registrations' => $registrations->orderBy('created_at', 'desc')->paginate(30),
         ]);
     }
 
