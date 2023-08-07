@@ -17,7 +17,7 @@ class RegistrationFactory extends Factory
     public function definition(): array
     {
         return [
-            'data' => ["data_1" => "data", "data_2" => "data", "data_3" => "data"],
+            'data' => ['data_1' => 'data', 'data_2' => 'data', 'data_3' => 'data'],
         ];
     }
 }
