@@ -4,7 +4,7 @@
     model-name="registrations"
     :can-use-routes="canUseRoutes"
     :columns="columns"
-    :paginated-models="registrationForm"
+    :paginated-models="registrations"
   >
   </IndexPageLayout>
 </template>
@@ -16,7 +16,7 @@ import type { DataTableColumns } from "naive-ui";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
 const props = defineProps<{
-  registrationForm: PaginatedModels<any>;
+  registrations: PaginatedModels<any>;
 }>();
 
 const canUseRoutes = {
@@ -36,14 +36,14 @@ const renderObjects = (object: Record<string, any>) => {
           h("span", { class: "font-bold" }, key),
           h("span", value),
         ],
-      }
+      },
     );
   });
 };
 
 const columns: DataTableColumns<any> = [
   // generate columns from row.data
-  ...Object.keys(props.registrationForm.data[0].data).map((key) => ({
+  ...Object.keys(props.registrations.data[0].data).map((key) => ({
     title: key,
     key: `data.${key}`,
     minWidth: 150,
