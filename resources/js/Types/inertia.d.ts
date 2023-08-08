@@ -37,7 +37,7 @@ declare module "@inertiajs/core" {
     mainNavigation?: App.Entities.Navigation[];
     padaliniai: Pick<
       App.Entities.Padalinys,
-      "id" | "alias" | "shortname" | "fullname"
+      "id" | "alias" | "shortname" | "fullname" | "type"
     >[];
     search: {
       calendar: Array<{
