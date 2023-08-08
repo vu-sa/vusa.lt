@@ -6,17 +6,20 @@ use App\Models\Model;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
-use Laravel\Scout\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Laravel\Scout\Builder;
 
 class ModelIndexer
 {
     public Builder $builder;
 
     private Model $indexable;
+
     private ?string $search;
+
     private ?array $sorters;
+
     public ?array $filters;
 
     private array $callbacksArray = [];
@@ -41,14 +44,16 @@ class ModelIndexer
         $this->takeCareOfRelationFilters();
     }
 
-    public function search() {
+    public function search()
+    {
         $this->builder = $this->indexable::search($this->search);
 
         return $this;
     }
 
     // This is needed because Laravel\Scout\Builder can support only one query
-    public function setEloquentQuery($callbacks = [], $authorize = true) {
+    public function setEloquentQuery($callbacks = [], $authorize = true)
+    {
 
         $eloquentQueryClosure = function (EloquentBuilder $query) use ($callbacks, $authorize) {
 
@@ -72,7 +77,8 @@ class ModelIndexer
         return $this;
     }
 
-    public function takeCareOfRelationFilters() {
+    public function takeCareOfRelationFilters()
+    {
         // check if filters keys have dots, get them and remove from filters
 
         if (! $this->filters) {
@@ -97,16 +103,16 @@ class ModelIndexer
         return $this;
     }
 
-    private function authorizerClosure() {
+    private function authorizerClosure()
+    {
         $user = User::query()->find((Auth::id()));
 
         return fn (EloquentBuilder $query) => $query->when(
             ! $this->authorizer->isAllScope && ! $user->hasRole(config('permission.super_admin_role_name')),
-            fn (EloquentBuilder $query) =>
-            $query->whereHas(
+            fn (EloquentBuilder $query) => $query->whereHas(
                 $this->padalinysRelationString, fn (EloquentBuilder $query) => $query->whereIn(
-                // Optional, because this is how relationship is queried in query builder
-                optional($this->padalinysRelationString === 'padaliniai', fn () => 'padaliniai.id'), $this->authorizer->getPadaliniai()->pluck('id')->toArray())
+                    // Optional, because this is how relationship is queried in query builder
+                    optional($this->padalinysRelationString === 'padaliniai', fn () => 'padaliniai.id'), $this->authorizer->getPadaliniai()->pluck('id')->toArray())
             )
         );
     }
