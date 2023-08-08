@@ -1,6 +1,6 @@
 <template>
   <IndexPageLayout
-    title="Pareigos"
+    :title="capitalize($tChoice('entities.duty.model', 2))"
     model-name="duties"
     :can-use-routes="canUseRoutes"
     :columns="columns"
@@ -11,12 +11,21 @@
 </template>
 
 <script setup lang="tsx">
-import { NButton, NEllipsis, NIcon, type DataTableRowKey, type DataTableColumns } from "naive-ui";
+import {
+  type DataTableColumns,
+  type DataTableRowKey,
+  type DataTableSortState,
+  NButton,
+  NEllipsis,
+  NIcon,
+  NTag,
+} from "naive-ui";
+import { computed, provide, ref } from "vue";
+import { router } from "@inertiajs/vue3";
 
+import { capitalize } from "@/Utils/String";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
-import { provide, ref } from "vue";
-import { router } from "@inertiajs/vue3";
 
 defineProps<{
   duties: PaginatedModels<App.Entities.Duty>;
@@ -29,32 +38,52 @@ const canUseRoutes = {
   destroy: false,
 };
 
-const checkedRowKeys = ref<DataTableRowKey[]>([])
+const checkedRowKeys = ref<DataTableRowKey[]>([]);
 
 provide("checkedRowKeys", checkedRowKeys);
 
-const columns: DataTableColumns<App.Entities.Duty> = [
+const sorters = ref<Record<string, DataTableSortState["order"]>>({
+  name: false,
+});
+
+provide("sorters", sorters);
+
+const columns = computed<DataTableColumns<App.Entities.Duty>>(() => [
   {
-    type: 'selection',
+    type: "selection",
     options: [
-          'all',
-          'none',
-          {
-            label: 'Set as student representatives',
-            key: 'set-as-student-representatives',
-            onSelect: (rows) => {
-              router.put(route('duties.setAsStudentRepresentatives'), {
-                duties: checkedRowKeys.value
-              })
-            }
-          }
-        ],
+      "all",
+      "none",
+      {
+        label: "Set as student representatives",
+        key: "set-as-student-representatives",
+        onSelect: (rows) => {
+          router.put(route("duties.setAsStudentRepresentatives"), {
+            duties: checkedRowKeys.value,
+          });
+        },
+      },
+    ],
     width: 50,
   },
   {
     title: "Pavadinimas",
     key: "name",
+    sorter: true,
+    sortOrder: sorters.value.name,
     minWidth: 150,
+  },
+  {
+    title: "El. paštas",
+    key: "email",
+    minWidth: 150,
+    render(row) {
+      return (
+        <a href={`mailto:${row.email}`} class="transition hover:text-vusa-red">
+          {row.email}
+        </a>
+      );
+    },
   },
   {
     title: "Institucija",
@@ -84,21 +113,15 @@ const columns: DataTableColumns<App.Entities.Duty> = [
     },
   },
   {
-    title: "Tipas",
-    key: "type.name",
-    width: 150,
-  },
-  {
-    title: "El. paštas",
-    key: "email",
-    minWidth: 150,
-    render(row) {
-      return (
-        <a href={`mailto:${row.email}`} class="transition hover:text-vusa-red">
-          {row.email}
-        </a>
-      );
+    title: "Tipai",
+    key: "types",
+    render(row: App.Entities.Duty) {
+      return row.types?.map((type) => (
+        <NTag class="mr-2 last:mr-0" size="tiny" round>
+          {type.title}
+        </NTag>
+      ));
     },
   },
-];
+]);
 </script>
