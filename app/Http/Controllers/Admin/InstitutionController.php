@@ -27,12 +27,10 @@ class InstitutionController extends LaravelResourceController
 
         $indexer = new ModelIndexer(new Institution(), request(), $this->authorizer);
 
-        $indexer = $indexer
+        $institutions = $indexer
             ->setEloquentQuery([
                 fn (Builder $query) => $query->with(['meetings' => fn ($query) => $query->orderBy('start_time'),
-                ])]);
-
-        $institutions = $indexer
+                ])])
             ->filterAllColumns()
             ->sortAllColumns()
             ->builder->paginate(15);

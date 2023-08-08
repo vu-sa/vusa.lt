@@ -94,6 +94,7 @@ class Institution extends Model
         // return only title
         $array = [
             'name' => $this->name,
+            'short_name' => $this->short_name,
         ];
 
         return $array;
