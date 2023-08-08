@@ -27,7 +27,7 @@ class MatterController extends LaravelResourceController
 
         $matters = $indexer
             ->setEloquentQuery([
-                fn (Builder $query) => $query->with(['institutions:id,name,short_name'])
+                fn (Builder $query) => $query->with(['institutions:id,name,short_name']),
             ])
             ->filterAllColumns()
             ->sortAllColumns()

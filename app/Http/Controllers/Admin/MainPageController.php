@@ -6,7 +6,6 @@ use App\Http\Controllers\LaravelResourceController;
 use App\Models\MainPage;
 use App\Models\Padalinys;
 use App\Services\ModelIndexer;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;

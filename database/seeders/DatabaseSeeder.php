@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Banner;
 use App\Models\Calendar;
-use App\Models\Comment;
 use App\Models\Doing;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -38,7 +37,7 @@ class DatabaseSeeder extends Seeder
 
         User::factory(10)
             ->has(Doing::factory(5))->hasAttached(Duty::factory(3), ['start_date' => now()]
-        )->create();
+            )->create();
 
         $this->call(MenuSeeder::class);
         $this->call(DeleteAndSeedPermissions::class);
