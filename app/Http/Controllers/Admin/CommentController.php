@@ -12,15 +12,6 @@ use Spatie\Enum\Laravel\Rules\EnumRule;
 
 class CommentController extends LaravelResourceController
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        return $this->authorize('viewAny', [Comment::class, $this->authorizer]);
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -57,39 +48,6 @@ class CommentController extends LaravelResourceController
         $model->comment($request->comment, $request->decision);
 
         return back()->with('success', 'Komentaras pridėtas.');
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Comment $comment)
-    {
-        return $this->authorize('view', [Comment::class, $comment, $this->authorizer]);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Comment $comment)
-    {
-        $this->authorize('update', [Comment::class, $comment, $this->authorizer]);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Comment $comment)
-    {
-        $this->authorize('update', [Comment::class, $comment, $this->authorizer]);
-
-        // update comment
-        $comment->update($request->all());
     }
 
     /**
