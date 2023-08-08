@@ -6,7 +6,6 @@ use App\Http\Controllers\LaravelResourceController;
 use App\Models\Banner;
 use App\Models\Padalinys;
 use App\Services\ModelIndexer;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
@@ -31,7 +30,7 @@ class BannerController extends LaravelResourceController
             ->builder->paginate(20);
 
         return Inertia::render('Admin/Content/IndexBanner', [
-            'banners' => $banners
+            'banners' => $banners,
         ]);
     }
 
