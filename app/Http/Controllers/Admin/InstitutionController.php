@@ -29,8 +29,7 @@ class InstitutionController extends LaravelResourceController
 
         $indexer = $indexer
             ->setEloquentQuery([
-                fn (Builder $query) =>
-                    $query->with(['meetings' => fn ($query) => $query->orderBy('start_time')
+                fn (Builder $query) => $query->with(['meetings' => fn ($query) => $query->orderBy('start_time'),
                 ])]);
 
         $institutions = $indexer
@@ -40,7 +39,7 @@ class InstitutionController extends LaravelResourceController
 
         // also check if empty array
         return Inertia::render('Admin/People/IndexInstitution', [
-            'institutions' => $institutions
+            'institutions' => $institutions,
         ]);
     }
 

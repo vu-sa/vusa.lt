@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\ModelIndexer;
 
 class LaravelResourceController extends Controller
 {
