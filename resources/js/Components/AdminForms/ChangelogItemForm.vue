@@ -3,18 +3,11 @@
     <div class="flex flex-col">
       <FormElement>
         <template #title>{{ $t("forms.context.main_info") }} </template>
-        <template #description></template>
+        <template #description>
+          Pasikeitimai rodomi visiems lankytojams nuo nurodytos datos.
+        </template>
         <NFormItem label="Pavadinimas" :required="true">
-          <NInput v-if="locale === 'lt'" v-model:value="form.title.lt">
-            <template #suffix
-              ><SimpleLocaleButton v-model:locale="locale"></SimpleLocaleButton
-            ></template>
-          </NInput>
-          <NInput v-if="locale === 'en'" v-model:value="form.title.en">
-            <template #suffix
-              ><SimpleLocaleButton v-model:locale="locale"></SimpleLocaleButton
-            ></template>
-          </NInput>
+          <MultiLocaleInput v-model:input="form.title" v-model:lang="locale" />
         </NFormItem>
         <NFormItem label="Aprašymas">
           <OriginalTipTap
@@ -42,13 +35,13 @@
 </template>
 
 <script setup lang="tsx">
-import { NDatePicker, NFormItem, NInput } from "naive-ui";
-import { ref } from "vue";
+import { NDatePicker, NForm, NFormItem } from "naive-ui";
+import { ref, watch } from "vue";
 import { useForm } from "@inertiajs/vue3";
 
 import FormElement from "./FormElement.vue";
+import MultiLocaleInput from "../SimpleAugment/MultiLocaleInput.vue";
 import OriginalTipTap from "../TipTap/OriginalTipTap.vue";
-import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
 import UpsertModelButton from "../Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{
@@ -56,7 +49,7 @@ const props = defineProps<{
   modelRoute: string;
 }>();
 
-const locale = ref("lt");
+const locale = ref<"lt" | "en">("lt");
 
 const form = useForm("changelogItem", props.changelogItem);
 </script>
