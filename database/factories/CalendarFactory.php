@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Calendar;
+use App\Models\Padalinys;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Arr;
 
@@ -23,12 +24,12 @@ class CalendarFactory extends Factory
     public function definition()
     {
         return [
-            'date' => $this->faker->dateTimeBetween('-10 weeks'),
-            'title' => $this->faker->paragraph(1),
-            'description' => $this->faker->paragraph(2),
+            'date' => fake()->dateTimeBetween('-1 years', '+1 years'),
+            'title' => fake()->sentence,
+            'description' => fake()->paragraph,
             'category' => Arr::random(['red', 'yellow', 'grey']),
-            'url' => null,
-            'padalinys_id' => 16,
+            'url' => fake()->url,
+            'padalinys_id' => Padalinys::query()->inRandomOrder()->first()->id,
         ];
     }
 }
