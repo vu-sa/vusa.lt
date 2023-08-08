@@ -35,7 +35,7 @@ class CalendarController extends LaravelResourceController
 
         return Inertia::render('Admin/Calendar/IndexCalendarEvents', [
             'calendar' => $calendar,
-            'allCategories' => Category::all(['id', 'alias', 'name', 'description'])
+            'allCategories' => Category::all(['id', 'alias', 'name', 'description']),
         ]);
     }
 

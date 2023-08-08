@@ -95,8 +95,8 @@ class ModelIndexer
 
             $relationFilterCallback = function (EloquentBuilder $query) use ($relationFilterKeyArray, $relationFilterValue) {
                 $query->when($relationFilterValue !== [],
-                fn (EloquentBuilder $query) => $query->whereHas($relationFilterKeyArray[0],
-                fn (EloquentBuilder $query) => $query->whereIn($relationFilterKeyArray[1], $relationFilterValue)));
+                    fn (EloquentBuilder $query) => $query->whereHas($relationFilterKeyArray[0],
+                        fn (EloquentBuilder $query) => $query->whereIn($relationFilterKeyArray[1], $relationFilterValue)));
             };
 
             array_push($this->callbacksArray, $relationFilterCallback);
