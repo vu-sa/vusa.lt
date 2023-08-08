@@ -22,6 +22,7 @@
       <PadalinysSelector
         :size="smallerThanSm ? 'tiny' : 'small'"
         :padalinys="padalinys"
+        :all-padaliniai="padaliniai"
         @select:padalinys="handleSelectPadalinys"
       ></PadalinysSelector>
       <NButton
@@ -108,8 +109,6 @@ import StartFM from "@/Components/Public/Nav/StartFM.vue";
 defineProps<{
   isThemeDark: boolean;
 }>();
-
-// map padaliniai to options_padaliniai
 
 const padaliniai = usePage().props.padaliniai.filter(
   (padalinys) => padalinys.type === "padalinys",
