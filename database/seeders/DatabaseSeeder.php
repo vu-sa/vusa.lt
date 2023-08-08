@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Banner;
 use App\Models\Calendar;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -36,6 +37,7 @@ class DatabaseSeeder extends Seeder
         $this->call(MenuSeeder::class);
         $this->call(DeleteAndSeedPermissions::class);
 
+        Banner::factory()->count(10)->create();
         Calendar::factory()->count(50)->create();
         MainPage::factory()->count(30)->create();
         News::factory()->count(75)->create();
@@ -43,5 +45,8 @@ class DatabaseSeeder extends Seeder
         SaziningaiExam::factory()->count(15)->create();
         SaziningaiExamFlow::factory()->count(20)->create();
         SaziningaiExamObserver::factory()->count(10)->create();
+
+        $this->call(RoleStudentRepresentativeSeeder::class);
+        $this->call(RoleStudentRepresentativeCoordinatorSeeder::class);
     }
 }
