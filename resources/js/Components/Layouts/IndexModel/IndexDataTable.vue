@@ -37,7 +37,7 @@ import { router } from "@inertiajs/vue3";
 import type { DataTableColumns, DataTableRowKey } from "naive-ui";
 
 import { Link } from "@inertiajs/vue3";
-import { updateFilters, updateSorters } from "@/Utils/DataTable";
+import { updateSorters } from "@/Utils/DataTable";
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import IndexSearchInput from "./IndexSearchInput.vue";
 import type { SortOrder } from "naive-ui/es/data-table/src/interface";
@@ -55,11 +55,11 @@ const loading = ref(false);
 
 const sorters = inject<Ref<Record<string, SortOrder>> | undefined>(
   "sorters",
-  undefined
+  undefined,
 );
 const filters = inject<Ref<Record<string, any>> | undefined>(
   "filters",
-  undefined
+  undefined,
 );
 
 const pagination = ref({
@@ -80,7 +80,7 @@ const handleSorterChange = (state: DataTableSortState) => {
 
 const handleFiltersChange = (state: DataTableFilterState) => {
   if (filters !== undefined) {
-    filters.value = updateFilters(filters, state);
+    filters.value = state;
   }
 
   handleChange(1);
@@ -90,7 +90,7 @@ const rowKey = (row: Record<string, any>) => row.id;
 
 const checkedRowKeys = inject<Ref<DataTableRowKey[]>>(
   "checkedRowKeys",
-  ref([])
+  ref([]),
 );
 
 const handleCheckedRowKeysChange = (rowKeys: DataTableRowKey[]) => {
@@ -128,7 +128,9 @@ const handleCompletedSearch = () => handleChange(1);
 
 const sweepSearch = () => {
   if (filters !== undefined) {
-    filters.value = updateFilters(filters, undefined);
+    Object.keys(filters.value).forEach((key) => {
+      filters.value[key] = [];
+    });
   }
 
   if (sorters !== undefined) {
