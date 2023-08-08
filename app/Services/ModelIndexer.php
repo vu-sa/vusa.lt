@@ -94,7 +94,9 @@ class ModelIndexer
             $relationFilterKeyArray = explode('.', $relationFilterKey);
 
             $relationFilterCallback = function (EloquentBuilder $query) use ($relationFilterKeyArray, $relationFilterValue) {
-                $query->when($relationFilterValue !== [], fn (EloquentBuilder $query) => $query->whereHas($relationFilterKeyArray[0], fn (EloquentBuilder $query) => $query->whereIn($relationFilterKeyArray[1], $relationFilterValue)));
+                $query->when($relationFilterValue !== [],
+                fn (EloquentBuilder $query) => $query->whereHas($relationFilterKeyArray[0],
+                fn (EloquentBuilder $query) => $query->whereIn($relationFilterKeyArray[1], $relationFilterValue)));
             };
 
             array_push($this->callbacksArray, $relationFilterCallback);
@@ -124,7 +126,7 @@ class ModelIndexer
         }
 
         foreach ($this->filters as $name => $value) {
-            $this->builder->when($value !== [], function ($query) use ($name, $value) {
+            $this->builder->when($value !== [], function (Builder $query) use ($name, $value) {
                 $query->whereIn($name, $value);
             });
         }
@@ -139,7 +141,7 @@ class ModelIndexer
         }
 
         foreach ($this->sorters as $name => $value) {
-            $this->builder->when($value !== [], function ($query) use ($name, $value) {
+            $this->builder->when($value, function (Builder $query) use ($name, $value) {
                 $query->orderBy($name, $value === 'descend' ? 'desc' : 'asc');
             });
         }

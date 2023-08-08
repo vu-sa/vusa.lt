@@ -10,7 +10,6 @@ class Model extends EloquentModel
     // * This returns the method name for the unit relation
     public function whichUnitRelation()
     {
-
         // check for padalinys relation
         if (method_exists($this, 'padalinys')) {
             return 'padalinys';

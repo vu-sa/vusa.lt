@@ -41,39 +41,37 @@ const filters = ref<Record<string, any>>({
 
 provide("filters", filters);
 
-const columns = computed<DataTableColumns<App.Entities.Banner>>(() => {
-  return [
-    {
-      title: "Pavadinimas",
-      key: "title",
-      sorter: true,
-      sortOrder: sorters.value.name,
-      render(row) {
-        return (
-          <span
-            class={row.is_active ? "font-bold text-green-700" : "text-red-700"}
-            href={route("banners.edit", { id: row.id })}
-          >
-            {row.title}
-          </span>
-        );
-      },
+const columns = computed<DataTableColumns<App.Entities.Banner>>(() => [
+  {
+    title: "Pavadinimas",
+    key: "title",
+    sorter: true,
+    sortOrder: sorters.value.name,
+    render(row: App.Entities.Banner) {
+      return (
+        <a
+          class={row.is_active ? "font-bold text-green-700" : "text-red-700"}
+          href={route("banners.edit", { id: row.id })}
+        >
+          {row.title}
+        </a>
+      );
     },
-    {
-      title: "Padalinys",
-      key: "padalinys.id",
-      filter: true,
-      filterOptionValues: filters.value["padalinys.id"],
-      filterOptions: usePage().props.padaliniai.map((padalinys) => {
-        return {
-          label: padalinys.shortname,
-          value: padalinys.id,
-        };
-      }),
-      render(row) {
-        return row.padalinys?.shortname;
-      },
+  },
+  {
+    title: "Padalinys",
+    key: "padalinys.id",
+    filter: true,
+    filterOptionValues: filters.value["padalinys.id"],
+    filterOptions: usePage().props.padaliniai.map((padalinys) => {
+      return {
+        label: padalinys.shortname,
+        value: padalinys.id,
+      };
+    }),
+    render(row) {
+      return row.padalinys?.shortname;
     },
-  ];
-});
+  },
+]);
 </script>
