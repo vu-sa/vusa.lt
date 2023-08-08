@@ -66,7 +66,7 @@ const pagination = ref({
   itemCount: props.paginatedModels.total,
   page: props.paginatedModels.current_page,
   pageCount: props.paginatedModels.last_page,
-  pageSize: 20,
+  pageSize: props.paginatedModels.per_page,
   showQuickJumper: true,
 });
 

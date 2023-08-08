@@ -11,8 +11,8 @@ use App\States\Doing\DoingState;
 use App\States\Doing\PendingFinalApproval;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\ModelStates\HasStates;
@@ -20,7 +20,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Doing extends Model implements Decidable
 {
-    use HasFactory, HasStates, HasComments, MakesDecisions, HasRelationships, HasSharepointFiles, HasTasks, HasUlids, LogsActivity, SoftDeletes;
+    use HasFactory, HasStates, HasComments, MakesDecisions, HasRelationships, HasSharepointFiles, HasTasks, HasUlids, LogsActivity, SoftDeletes, Searchable;
 
     protected $with = ['types'];
 
@@ -33,6 +33,13 @@ class Doing extends Model implements Decidable
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()->logUnguarded()->logOnlyDirty();
+    }
+
+    public function toSearchableArray()
+    {
+        return [
+            'title' => $this->title,
+        ];
     }
 
     // public function doables()

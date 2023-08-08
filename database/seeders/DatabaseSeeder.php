@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use App\Models\Banner;
 use App\Models\Calendar;
+use App\Models\Comment;
+use App\Models\Doing;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\MainPage;
@@ -31,7 +33,7 @@ class DatabaseSeeder extends Seeder
 
         Institution::factory(10)->create();
 
-        User::factory()->hasAttached(Duty::factory()->count(3), ['start_date' => now()]
+        User::factory()->has(Doing::factory()->count(5))->hasAttached(Duty::factory()->count(3), ['start_date' => now()]
         )->count(10)->create();
 
         $this->call(MenuSeeder::class);
