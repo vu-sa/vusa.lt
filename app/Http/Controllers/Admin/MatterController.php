@@ -8,6 +8,7 @@ use App\Models\Goal;
 use App\Models\Matter;
 use App\Models\Type;
 use App\Services\ModelIndexer;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -22,13 +23,18 @@ class MatterController extends LaravelResourceController
     {
         $this->authorize('viewAny', [Matter::class, $this->authorizer]);
 
-        $search = request()->input('text');
+        $indexer = new ModelIndexer(new Matter(), request(), $this->authorizer);
 
-        $matters = new ModelIndexer();
-        $matters = $matters->execute(Matter::class, $search, 'title', $this->authorizer);
+        $matters = $indexer
+            ->setEloquentQuery([
+                fn (Builder $query) => $query->with(['institutions:id,name,short_name'])
+            ])
+            ->filterAllColumns()
+            ->sortAllColumns()
+            ->builder->paginate(15);
 
         return Inertia::render('Admin/Representation/IndexMatter', [
-            'matters' => $matters->paginate(20),
+            'matters' => $matters,
         ]);
     }
 
