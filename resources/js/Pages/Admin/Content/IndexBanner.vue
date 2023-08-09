@@ -12,9 +12,11 @@
 
 <script setup lang="tsx">
 import { computed, provide, ref } from "vue";
+import { usePage } from "@inertiajs/vue3";
 import type { DataTableColumns, DataTableSortState } from "naive-ui";
 
-import { usePage } from "@inertiajs/vue3";
+import { trans as $t } from "laravel-vue-i18n";
+import { padalinysColumn } from "@/Composables/dataTableColumns";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
@@ -59,18 +61,9 @@ const columns = computed<DataTableColumns<App.Entities.Banner>>(() => [
     },
   },
   {
-    title: "Padalinys",
-    key: "padalinys.id",
-    filter: true,
-    filterOptionValues: filters.value["padalinys.id"],
-    filterOptions: usePage().props.padaliniai.map((padalinys) => {
-      return {
-        label: padalinys.shortname,
-        value: padalinys.id,
-      };
-    }),
+    ...padalinysColumn(filters, usePage().props.padaliniai),
     render(row) {
-      return row.padalinys?.shortname;
+      return $t(row.padalinys?.shortname);
     },
   },
 ]);

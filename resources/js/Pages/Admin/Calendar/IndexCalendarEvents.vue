@@ -11,13 +11,15 @@
 </template>
 
 <script setup lang="tsx">
+import { trans as $t } from "laravel-vue-i18n";
 import { computed, provide, ref, watch } from "vue";
 import { usePage } from "@inertiajs/vue3";
-import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 import type { DataTableSortState } from "naive-ui";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
+import { padalinysColumn } from "@/Composables/dataTableColumns";
 import Icons from "@/Types/Icons/regular";
+import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
 const props = defineProps<{
   calendar: PaginatedModels<App.Entities.Calendar[]>;
@@ -93,18 +95,9 @@ const columns = computed(() => {
       },
     },
     {
-      title: "Padalinys",
-      key: "padalinys.id",
-      filter: true,
-      filterOptionValues: filters.value["padalinys.id"],
-      filterOptions: usePage().props.padaliniai.map((padalinys) => {
-        return {
-          label: padalinys.shortname,
-          value: padalinys.id,
-        };
-      }),
+      ...padalinysColumn(filters, usePage().props.padaliniai),
       render(row: App.Entities.Calendar) {
-        return row.padalinys?.shortname;
+        return $t(row.padalinys?.shortname ?? "");
       },
     },
   ];
