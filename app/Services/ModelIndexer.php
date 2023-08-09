@@ -91,12 +91,19 @@ class ModelIndexer
 
         // foreach relation filters, create a callback that is added to callbacksArray
         foreach ($relationFilters as $relationFilterKey => $relationFilterValue) {
+
             $relationFilterKeyArray = explode('.', $relationFilterKey);
 
-            $relationFilterCallback = function (EloquentBuilder $query) use ($relationFilterKeyArray, $relationFilterValue) {
+            $relationFilterCallback = function (EloquentBuilder $query) use ($relationFilterKeyArray, $relationFilterValue, $relationFilterKey) {
                 $query->when($relationFilterValue !== [],
-                    fn (EloquentBuilder $query) => $query->whereHas($relationFilterKeyArray[0],
-                        fn (EloquentBuilder $query) => $query->whereIn($relationFilterKeyArray[1], $relationFilterValue)));
+                    fn (EloquentBuilder $query) => $query->whereHas(
+                        $relationFilterKeyArray[0], fn (EloquentBuilder $query) => $query->whereIn(
+                            // Sometimes some variables may be described as ambiguous, so we need to specify, which id we want to use
+                            // TODO: use it the same way as in authorizer
+                            $relationFilterKey !== 'padaliniai.id' ? $relationFilterKeyArray[1] : $relationFilterKey
+                            , $relationFilterValue)
+                    )
+                );
             };
 
             array_push($this->callbacksArray, $relationFilterCallback);
@@ -134,8 +141,12 @@ class ModelIndexer
         return $this;
     }
 
-    public function sortAllColumns()
+    public function sortAllColumns(array $default = null)
     {
+        if ($default && ! $this->sorters) {
+            $this->sorters = $default;
+        }
+
         if (! $this->sorters) {
             return $this;
         }

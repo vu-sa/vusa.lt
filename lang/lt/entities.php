@@ -4,6 +4,9 @@ return [
     'duty' => [
         'model' => '{1} pareiga|[2,9] pareigos|[10,*] pareigų',
     ],
+    'meeting' => [
+        'model' => '{1} susitikimas|[2,9] susitikimai|[10,*] susitikimų',
+    ],
     'padalinys' => [
         'model' => '{1} padalinys|[2,9] padaliniai|[10,*] padalinių',
     ],

@@ -1,6 +1,6 @@
 <template>
   <IndexPageLayout
-    title="Institucijų posėdžiai"
+    :title="capitalize($tChoice('entities.meeting.model', 2))"
     model-name="meetings"
     :can-use-routes="canUseRoutes"
     :columns="columns"
@@ -12,11 +12,11 @@
 
 <script setup lang="tsx">
 import { computed, provide, ref } from "vue";
+import { usePage } from "@inertiajs/vue3";
 import type { DataTableColumns, DataTableSortState } from "naive-ui";
 
+import { capitalize } from "@/Utils/String";
 import { formatStaticTime } from "@/Utils/IntlTime";
-import { updateFilters, updateSorters } from "@/Utils/DataTable";
-import { usePage } from "@inertiajs/vue3";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
@@ -38,7 +38,7 @@ const sorters = ref<Record<string, DataTableSortState["order"]>>({
 provide("sorters", sorters);
 
 const filters = ref<Record<string, any>>({
-  padaliniai: [],
+  "padaliniai.id": [],
 });
 
 provide("filters", filters);
@@ -61,10 +61,10 @@ const columns = computed<DataTableColumns<App.Entities.Meeting>>(() => {
     },
     {
       title: "Padalinys",
-      key: "padaliniai",
+      key: "padaliniai.id",
       resizable: true,
       filter: true,
-      filterOptionValues: filters.value["padaliniai"],
+      filterOptionValues: filters.value["padaliniai.id"],
       filterOptions: usePage().props.padaliniai.map((padalinys) => {
         return {
           label: padalinys.shortname,
@@ -83,7 +83,7 @@ const columns = computed<DataTableColumns<App.Entities.Meeting>>(() => {
       minWidth: 200,
       resizable: true,
       render(row) {
-        return row.institutions.length === 0
+        return row.institutions?.length === 0
           ? "Neturi institucijos"
           : row.institutions?.map((institution) => institution.name).join(", ");
       },
@@ -97,7 +97,7 @@ const columns = computed<DataTableColumns<App.Entities.Meeting>>(() => {
         tooltip: true,
       },
       render(row) {
-        return row.agenda_items.length === 0
+        return row.agenda_items?.length === 0
           ? ""
           : row.agenda_items?.map((agendaItem) => agendaItem.title).join(", ");
       },

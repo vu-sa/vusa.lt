@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\LaravelResourceController;
 use App\Http\Requests\StoreMeetingRequest;
+use App\Models\Institution;
 use App\Models\Meeting as Meeting;
 use App\Services\ModelIndexer;
 use App\Services\ResourceServices\SharepointFileService;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -22,27 +24,16 @@ class MeetingController extends LaravelResourceController
     {
         $this->authorize('viewAny', [Meeting::class, $this->authorizer]);
 
-        $search = request()->input('text');
-        $sorters = json_decode(base64_decode(request()->input('sorters')), true);
-        $filters = json_decode(base64_decode(request()->input('filters')), true);
+        $indexer = new ModelIndexer(new Meeting(), request(), $this->authorizer);
 
-        $sorters['start_time'] = $sorters['start_time'] ?? 'descend';
-
-        $indexer = new ModelIndexer();
-        $meetings = $indexer->execute(Meeting::class, $search, 'title', $this->authorizer);
+        $meetings = $indexer
+            ->setEloquentQuery([fn (Builder $query) => $query->with(['institutions', 'agendaItems'])])
+            ->filterAllColumns()
+            ->sortAllColumns(['start_time' => 'descend'])
+            ->builder->paginate(20);
 
         return Inertia::render('Admin/Representation/IndexMeeting', [
-            'meetings' => $meetings->with('institutions', 'agendaItems')
-                ->withWhereHas('padaliniai', function ($query) use ($filters) {
-                    $query->when(isset(
-                        $filters['padaliniai']
-                    ) && $filters['padaliniai'] !== [], function ($query) use ($filters) {
-                        $query->whereIn('padaliniai.id', $filters['padaliniai']);
-                    }
-                    );
-                })
-                ->orderBy('start_time', $sorters['start_time'] === 'descend' ? 'desc' : 'asc')
-                ->paginate(20),
+            'meetings' => $meetings,
         ]);
     }
 

@@ -9,8 +9,10 @@ use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\MainPage;
 use App\Models\Matter;
+use App\Models\Meeting;
 use App\Models\News;
 use App\Models\Page;
+use App\Models\Pivots\AgendaItem;
 use App\Models\SaziningaiExam;
 use App\Models\SaziningaiExamFlow;
 use App\Models\SaziningaiExamObserver;
@@ -32,7 +34,8 @@ class DatabaseSeeder extends Seeder
         $this->call(PadaliniaiSeeder::class);
 
         Institution::factory(10)
-            ->has(Matter::factory()->count(3))
+            ->has(Matter::factory(3))
+            ->has(Meeting::factory(3)->has(AgendaItem::factory(3)))
             ->create();
 
         User::factory(10)
