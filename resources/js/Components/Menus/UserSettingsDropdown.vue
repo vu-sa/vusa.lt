@@ -46,7 +46,7 @@ const options: DropdownOption[] = [
     props: {
       onClick: () => {
         loading.value = true;
-        router.post(route("logout"));
+        window.location.href = route("logout");
       },
     },
   },
