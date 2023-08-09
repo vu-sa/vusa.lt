@@ -37,14 +37,14 @@ class UserController extends LaravelResourceController
                 fn (Builder $query) => $query->with([
                     'duties:id,institution_id',
                     'duties.institution:id,padalinys_id',
-                    'duties.institution.padalinys:id,shortname'
-                    ])->withCount('duties')])
+                    'duties.institution.padalinys:id,shortname',
+                ])->withCount('duties')])
             ->filterAllColumns()
             ->sortAllColumns()
             ->builder->paginate(20);
 
         return Inertia::render('Admin/People/IndexUser', [
-            'users' => $users
+            'users' => $users,
         ]);
     }
 
