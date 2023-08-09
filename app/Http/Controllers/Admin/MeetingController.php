@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\LaravelResourceController;
 use App\Http\Requests\StoreMeetingRequest;
-use App\Models\Institution;
 use App\Models\Meeting as Meeting;
 use App\Services\ModelIndexer;
 use App\Services\ResourceServices\SharepointFileService;

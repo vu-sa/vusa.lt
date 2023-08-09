@@ -100,8 +100,7 @@ class ModelIndexer
                         $relationFilterKeyArray[0], fn (EloquentBuilder $query) => $query->whereIn(
                             // Sometimes some variables may be described as ambiguous, so we need to specify, which id we want to use
                             // TODO: use it the same way as in authorizer
-                            $relationFilterKey !== 'padaliniai.id' ? $relationFilterKeyArray[1] : $relationFilterKey
-                            , $relationFilterValue)
+                            $relationFilterKey !== 'padaliniai.id' ? $relationFilterKeyArray[1] : $relationFilterKey, $relationFilterValue)
                     )
                 );
             };

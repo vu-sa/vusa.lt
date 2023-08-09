@@ -6,7 +6,6 @@ use App\Http\Controllers\LaravelResourceController;
 use App\Models\News;
 use App\Models\Padalinys;
 use App\Services\ModelIndexer;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -30,7 +29,7 @@ class NewsController extends LaravelResourceController
             ->builder->paginate(20);
 
         return Inertia::render('Admin/Content/IndexNews', [
-            'news' => $news
+            'news' => $news,
         ]);
     }
 
