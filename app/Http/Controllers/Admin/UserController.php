@@ -10,6 +10,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use App\Services\ModelIndexer;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection as SupportCollection;
@@ -29,19 +30,21 @@ class UserController extends LaravelResourceController
     {
         $this->authorize('viewAny', [User::class, $this->authorizer]);
 
-        $search = request()->input('text');
-        $sorters = json_decode(base64_decode(request()->input('sorters')), true);
+        $indexer = new ModelIndexer(new User(), request(), $this->authorizer);
 
-        $indexer = new ModelIndexer();
-        $users = $indexer->execute(User::class, $search, 'name', $this->authorizer)->with('duties:id,institution_id', 'duties.institution:id,padalinys_id', 'duties.institution.padalinys:id,shortname')->withCount('duties');
+        $users = $indexer
+            ->setEloquentQuery([
+                fn (Builder $query) => $query->with([
+                    'duties:id,institution_id',
+                    'duties.institution:id,padalinys_id',
+                    'duties.institution.padalinys:id,shortname'
+                    ])->withCount('duties')])
+            ->filterAllColumns()
+            ->sortAllColumns()
+            ->builder->paginate(20);
 
         return Inertia::render('Admin/People/IndexUser', [
-            'users' => $users->when(
-                isset($sorters['name']),
-                function ($query) use ($sorters) {
-                    $query->orderBy('name', $sorters['name'] === 'descend' ? 'desc' : 'asc');
-                }
-            )->get()->makeVisible(['last_action'])->paginate(20),
+            'users' => $users
         ]);
     }
 

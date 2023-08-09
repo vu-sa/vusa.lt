@@ -14,7 +14,8 @@ class ModelIndexer
 {
     public Builder $builder;
 
-    private Model $indexable;
+    // Usually using Model::class
+    private $indexable;
 
     private ?string $search;
 
