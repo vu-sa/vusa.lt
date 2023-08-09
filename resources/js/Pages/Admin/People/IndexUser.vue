@@ -14,8 +14,6 @@
 import { computed, provide, ref } from "vue";
 import type { DataTableSortState } from "naive-ui";
 
-import { formatRelativeTime } from "@/Utils/IntlTime";
-import { updateSorters } from "@/Utils/DataTable";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
