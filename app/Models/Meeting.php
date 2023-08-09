@@ -25,6 +25,13 @@ class Meeting extends Model
         'start_time' => 'datetime',
     ];
 
+    public function toSearchableArray()
+    {
+        return [
+            'title' => $this->title,
+        ];
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()->logUnguarded()->logOnlyDirty();

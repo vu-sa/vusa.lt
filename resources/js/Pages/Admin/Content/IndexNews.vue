@@ -11,10 +11,11 @@
 </template>
 
 <script setup lang="tsx">
-import { h, ref } from "vue";
+import { computed, provide, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
-import type { DataTableColumns } from "naive-ui";
+import type { DataTableColumns, DataTableSortState } from "naive-ui";
 
+import { langColumn, padalinysColumn } from "@/Composables/dataTableColumns";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
@@ -30,35 +31,35 @@ const canUseRoutes = {
   destroy: true,
 };
 
-const padaliniaiFilterOptions = ref(
-  usePage().props.padaliniai.map((padalinys) => {
-    return {
-      label: padalinys.shortname,
-      value: padalinys.id,
-    };
-  })
-);
-
-const padaliniaiFilterOptionValues = ref<number[] | null>([]);
-
-padaliniaiFilterOptions.value.unshift({
-  label: "VU SA",
-  value: 16,
+const sorters = ref<Record<string, DataTableSortState["order"]>>({
+  publish_time: "descend",
+  title: false,
 });
 
-const columns: DataTableColumns<App.Entities.News> = [
+provide("sorters", sorters);
+
+const filters = ref<Record<string, any>>({
+  lang: [],
+  "padalinys.id": [],
+});
+
+provide("filters", filters);
+
+const columns = computed<DataTableColumns<App.Entities.News>>(() => [
   {
     title: "ID",
     key: "id",
-    width: 60,
+    width: 40,
   },
   {
     title: "Pavadinimas",
     key: "title",
-    minWidth: 200,
-    ellipsis: {
-      tooltip: true,
-    },
+    className: "text-wrap",
+    sorter: true,
+    sortOrder: sorters.value.title,
+    minWidth: 150,
+    width: 200,
+    resizable: true,
   },
   {
     // title: "Nuoroda",
@@ -82,9 +83,7 @@ const columns: DataTableColumns<App.Entities.News> = [
     },
   },
   {
-    key: "lang",
-    title: "Kalba",
-    width: 100,
+    ...langColumn(filters),
     render(row) {
       return row.lang === "lt" ? "🇱🇹" : "🇬🇧";
     },
@@ -92,31 +91,24 @@ const columns: DataTableColumns<App.Entities.News> = [
   {
     key: "other_lang_id",
     title: "Kitos kalbos puslapis",
-    width: 150,
+    width: 110,
     render(row) {
-      return row.other_lang_id
-        ? h(
-            "a",
-            {
-              href: route("news.edit", { id: row.other_lang_id }),
-              target: "_blank",
-            },
-            row.other_lang_id
-          )
-        : "";
+      {
+        row.other_lang_id ? (
+          <a
+            href={route("news.edit", { id: row.other_lang_id })}
+            target="_blank"
+          >
+            {row.other_lang_id}
+          </a>
+        ) : (
+          ""
+        );
+      }
     },
   },
   {
-    title: "Padalinys",
-    key: "padalinys.id",
-    width: 150,
-    ellipsis: {
-      tooltip: true,
-    },
-    filter: true,
-    filterMultiple: true,
-    filterOptionValues: padaliniaiFilterOptionValues,
-    filterOptions: padaliniaiFilterOptions,
+    ...padalinysColumn(filters, usePage().props.padaliniai),
     render(row) {
       return row.padalinys?.shortname;
     },
@@ -125,9 +117,15 @@ const columns: DataTableColumns<App.Entities.News> = [
     title: "Paskelbimo data",
     key: "publish_time",
     width: 150,
+    sorter: (a, b) => {
+      return (
+        new Date(a.publish_time).getTime() - new Date(b.publish_time).getTime()
+      );
+    },
+    sortOrder: sorters.value.publish_time,
     ellipsis: {
       tooltip: true,
     },
   },
-];
+]);
 </script>
