@@ -250,7 +250,6 @@ import {
   type FormValidationError,
   NButton,
   NCheckbox,
-  NDatePicker,
   NForm,
   NFormItem,
   NInput,
@@ -260,8 +259,12 @@ import {
   NSpace,
   useMessage,
 } from "naive-ui";
-import { onBeforeUnmount, ref } from "vue";
-import { router, useForm } from "@inertiajs/vue3";
+import { defineAsyncComponent, ref } from "vue";
+import { useForm } from "@inertiajs/vue3";
+
+const NDatePicker = defineAsyncComponent(() =>
+  import("naive-ui/es/date-picker").then((module) => module.NDatePicker),
+);
 
 const formRef = ref<FormInst | null>(null);
 
