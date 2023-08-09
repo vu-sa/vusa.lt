@@ -14,8 +14,8 @@ Route::get('stats/representatives', [StatsController::class, 'representativesInP
 Route::post('sendFeedback', [DashboardController::class, 'sendFeedback'])->name('sendFeedback');
 
 // Resources
-Route::resource('pages', PagesController::class);
-Route::post('pages/search', [PagesController::class, 'searchForPage'])->name('pages.search');
+Route::resource('pages', PageController::class);
+Route::post('pages/search', [PageController::class, 'searchForPage'])->name('pages.search');
 
 Route::resource('news', NewsController::class);
 Route::post('news/search', [NewsController::class, 'searchForNews'])->name('news.search');
