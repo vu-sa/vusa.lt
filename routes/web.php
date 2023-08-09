@@ -24,7 +24,7 @@ Route::get('/auth/redirect', function () {
 
 Route::get('/auth/microsoft/callback', [Admin\UserController::class, 'storeFromMicrosoft'])->name('microsoft.callback');
 
-Route::inertia('login', 'Public/LoginForm')->middleware('guest')->name('login');
+Route::inertia('login', 'Admin/LoginForm')->middleware('guest')->name('login');
 Route::post('login', [Admin\UserController::class, 'authenticate'])->middleware('guest');
 
 Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware' => ['main']], function () {

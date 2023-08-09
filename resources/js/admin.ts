@@ -46,7 +46,7 @@ createInertiaApp({
         return import("./Pages/NotFound.vue");
       }
 
-      if (name.startsWith("Admin/")) {
+      if (name.startsWith("Admin/") && name !== "Admin/LoginForm") {
         module.default.layout = AdminLayout;
       }
     });

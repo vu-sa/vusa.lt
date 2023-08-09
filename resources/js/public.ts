@@ -46,7 +46,7 @@ createInertiaApp({
         return import("./Pages/NotFound.vue");
       }
 
-      if (name.startsWith("Public/") && name !== "Public/LoginForm") {
+      if (name.startsWith("Public/")) {
         module.default.layout = PublicLayout;
       }
     });
