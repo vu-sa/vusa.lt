@@ -13,6 +13,8 @@ use App\Models\Meeting;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Pivots\AgendaItem;
+use App\Models\Reservation;
+use App\Models\Resource;
 use App\Models\SaziningaiExam;
 use App\Models\SaziningaiExamFlow;
 use App\Models\SaziningaiExamObserver;
@@ -38,9 +40,9 @@ class DatabaseSeeder extends Seeder
             ->has(Meeting::factory(3)->has(AgendaItem::factory(3)))
             ->create();
 
-        User::factory(10)
-            ->has(Doing::factory(5))->hasAttached(Duty::factory(3), ['start_date' => now()]
-            )->create();
+        $users = User::factory(25)
+            ->has(Doing::factory(5))->hasAttached(Duty::factory(3), ['start_date' => now()])
+            ->create();
 
         $this->call(MenuSeeder::class);
         $this->call(DeleteAndSeedPermissions::class);
@@ -50,6 +52,8 @@ class DatabaseSeeder extends Seeder
         MainPage::factory(50)->create();
         News::factory(75)->create();
         Page::factory(75)->create();
+
+        Resource::factory(50)->has(Reservation::factory()->hasAttached($users->random(3)))->create();
         SaziningaiExam::factory(15)->create();
         SaziningaiExamFlow::factory(20)->create();
         SaziningaiExamObserver::factory(10)->create();

@@ -1,12 +1,17 @@
+import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
+import { capitalize } from "@/Utils/String";
+
 export const padalinysColumn = (filters, padaliniai) => {
   return {
     key: "padalinys.id",
-    title: "Padalinys",
+    title() {
+      return capitalize($tChoice("entities.padalinys.model", 1));
+    },
     filter: true,
     filterOptionValues: filters.value["padalinys.id"],
     filterOptions: padaliniai.map((padalinys) => {
       return {
-        label: padalinys.shortname,
+        label: $t(padalinys.shortname),
         value: padalinys.id,
       };
     }),

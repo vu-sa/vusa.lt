@@ -23,6 +23,7 @@ import { computed, provide, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 
 import { capitalize } from "@/Utils/String";
+import { padalinysColumn } from "@/Composables/dataTableColumns";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
@@ -88,20 +89,10 @@ const columns = computed<DataTableColumns<App.Entities.Resource>>(() => [
       return $t("forms.fields.quantity");
     },
     key: "capacity",
+    width: 75,
   },
   {
-    title() {
-      return capitalize($tChoice("entities.padalinys.model", 1));
-    },
-    key: "padalinys_id",
-    filter: true,
-    filterOptionValues: filters.value["padalinys_id"],
-    filterOptions: usePage().props.padaliniai.map((padalinys) => {
-      return {
-        label: $t(padalinys.shortname),
-        value: padalinys.id,
-      };
-    }),
+    ...padalinysColumn(filters, usePage().props.padaliniai),
     render(row) {
       return $t(row.padalinys?.shortname);
     },

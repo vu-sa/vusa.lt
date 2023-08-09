@@ -11,10 +11,12 @@
 </template>
 
 <script setup lang="tsx">
+import { trans as $t } from "laravel-vue-i18n";
 import { computed, provide, ref } from "vue";
+import { usePage } from "@inertiajs/vue3";
 import type { DataTableColumns, DataTableSortState } from "naive-ui";
 
-import { usePage } from "@inertiajs/vue3";
+import { langColumn, padalinysColumn } from "@/Composables/dataTableColumns";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
@@ -54,36 +56,13 @@ const columns = computed<DataTableColumns<App.Entities.MainPage>>(() => [
     maxWidth: 300,
   },
   {
-    title: "Padalinys",
-    key: "padalinys.id",
-    filter: true,
-    filterOptionValues: filters.value["padalinys.id"],
-    filterOptions: usePage().props.padaliniai.map((padalinys) => {
-      return {
-        label: padalinys.shortname,
-        value: padalinys.id,
-      };
-    }),
+    ...padalinysColumn(filters, usePage().props.padaliniai),
     render(row) {
-      return row.padalinys?.shortname;
+      return $t(row.padalinys?.shortname);
     },
   },
   {
-    key: "lang",
-    title: "Kalba",
-    width: 100,
-    filter: true,
-    filterOptionValues: filters.value["lang"],
-    filterOptions: [
-      {
-        label: "Lietuvių",
-        value: "lt",
-      },
-      {
-        label: "Anglų",
-        value: "en",
-      },
-    ],
+    ...langColumn(filters),
     render(row) {
       return row.lang === "lt" ? "🇱🇹" : "🇬🇧";
     },
