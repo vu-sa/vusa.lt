@@ -45,6 +45,8 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('kalendorius/renginys/{calendar}', [Public\MainController::class, 'calendarEventMain'])->name('calendar.event');
         Route::get('kalendorius/ics', [Public\MainController::class, 'publicAllEventCalendar'])->name('calendar.ics');
 
+        Route::get('individualios-studijos', [Public\MainController::class, 'individualStudies']);
+
         Route::post('search', [Public\MainController::class, 'search'])->name('search');
     });
 

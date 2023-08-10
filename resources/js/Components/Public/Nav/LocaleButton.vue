@@ -80,7 +80,8 @@ const hasChangeableLocale = computed(() => {
   if (
     window.location.pathname.includes("kontaktai") ||
     window.location.pathname.includes("contacts") ||
-    window.location.pathname.includes("kuratoriu-registracija")
+    window.location.pathname.includes("kuratoriu-registracija") ||
+    window.location.pathname.includes("individualios-studijos")
   ) {
     return true;
   }
