@@ -36,7 +36,7 @@ const padaliniaiFilterOptions = ref(
       label: padalinys.shortname,
       value: padalinys.id,
     };
-  })
+  }),
 );
 
 const padaliniaiFilterOptionValues = ref<number[] | null>([]);
@@ -68,7 +68,7 @@ const columns: DataTableColumns<App.Entities.News> = [
           publicRoute="page"
           routeProps={{
             lang: row.lang,
-            padalinys: row.padalinys?.alias ?? "www",
+            subdomain: row.padalinys?.alias ?? "www",
             permalink: row.permalink,
           }}
         />
@@ -95,7 +95,7 @@ const columns: DataTableColumns<App.Entities.News> = [
               href: route("pages.edit", { id: row.other_lang_id }),
               target: "_blank",
             },
-            row.other_lang_id
+            row.other_lang_id,
           )
         : "";
     },

@@ -32,18 +32,19 @@ const props = defineProps<{
   locale: LocaleEnum;
 }>();
 
+const pageProps = usePage().props;
+
 const emit = defineEmits<{
   (e: "changeLocale", lang: string): void;
 }>();
 
 const otherLanguagePage = computed(() => {
-  if (usePage().props.otherLangPage) {
+  if (pageProps.otherLangPage) {
     return {
-      lang: usePage().props.otherLangPage.lang,
-      newsString:
-        usePage().props.otherLangPage.lang === "lt" ? "naujiena" : "news",
-      padalinys: usePage().props.alias,
-      permalink: usePage().props.otherLangPage.permalink,
+      lang: pageProps.otherLangPage.lang,
+      newsString: pageProps.otherLangPage.lang === "lt" ? "naujiena" : "news",
+      subdomain: pageProps.padalinys?.subdomain ?? "www",
+      permalink: pageProps.otherLangPage.permalink,
     };
   }
 
@@ -108,7 +109,7 @@ const handleSelectLanguage = (key: "home" | "page") => {
     // if first 3 chars of url are '/lt' or '/en', replace them with new lang and visit
     let url = window.location.pathname.replace(
       window.location.pathname.substr(0, 3),
-      `/${newLang}`
+      `/${newLang}`,
     );
 
     router.visit(url, {
@@ -121,16 +122,15 @@ const handleSelectLanguage = (key: "home" | "page") => {
     return;
   }
 
-  let alias = usePage().props.alias;
-  let padalinys = alias === "vusa" ? "www" : alias ?? "www";
+  let subdomain = pageProps.padalinys?.subdomain ?? "www";
 
   const routes = {
-    home: () => route("home", { lang: newLang, padalinys }),
+    home: () => route("home", { lang: newLang, subdomain }),
     page: () =>
       route("page", {
         lang: newLang,
-        padalinys,
-        permalink: usePage().props?.otherLangPage?.permalink,
+        subdomain,
+        permalink: pageProps?.otherLangPage?.permalink,
       }),
   };
 

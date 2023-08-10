@@ -1,15 +1,16 @@
-name: Laravel
+name: PHPUnit Tests
 
 on:
+  push:
+    branches: ['main']
   pull_request:
     branches-ignore:
       - 'dependabot/npm_and_yarn/*'
       - 'dependabot/composer/*'
 
 jobs:
-  laravel-tests:
+  setup:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
     - name: Copy .env

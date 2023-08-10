@@ -76,17 +76,14 @@ const openAnotherLangNews = () => {
     route("news", {
       lang: props.otherLangNews?.lang ?? "lt",
       newsString: props.otherLangNews.lang === "lt" ? "naujiena" : "news",
-      padalinys:
-        usePage().props.alias === "vusa"
-          ? "www"
-          : usePage().props.alias ?? "www",
+      subdomain: usePage().props.padalinys?.subdomain ?? "www",
       permalink: props.otherLangNews.permalink,
     }),
     {
       onSuccess: () => {
         loadLanguageAsync(props.otherLangNews?.lang ?? "lt");
       },
-    }
+    },
   );
 };
 </script>

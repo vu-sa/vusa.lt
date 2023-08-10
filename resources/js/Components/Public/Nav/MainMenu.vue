@@ -34,7 +34,7 @@ const handleSelectNavigation = (id: number) => {
     router.visit(
       route("page", {
         lang: usePage().props.app.locale,
-        padalinys: "www",
+        subdomain: "www",
         permalink: navigationItem.url,
       }),
       {
@@ -42,7 +42,7 @@ const handleSelectNavigation = (id: number) => {
         onSuccess: () => {
           emit("close:drawer");
         },
-      }
+      },
     );
     return;
   }
