@@ -13,7 +13,7 @@
         v-if="$page.props.app.locale === 'lt'"
         :href="
           route('newsArchive', {
-            subdomain: $page.props.padalinys?.subdomain === 'www',
+            subdomain: $page.props.padalinys?.subdomain ?? 'www',
           })
         "
         ><div class="inline-flex gap-1">
