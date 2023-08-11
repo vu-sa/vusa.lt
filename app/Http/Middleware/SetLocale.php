@@ -25,7 +25,7 @@ class SetLocale
         }
 
         // If the first segment is any of these, then process the request
-        if (in_array($segment, ['mano', 'auth', 'login', 'telescope', 'impersonate'])) {
+        if (in_array($segment, ['mano', 'auth', 'login', 'telescope', 'impersonate', 'feed'])) {
             return $next($request);
         }
 
