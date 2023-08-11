@@ -175,6 +175,6 @@ class ContactController extends PublicController
         // get padalinys alias
         $alias = $this->padalinys->alias;
 
-        return redirect()->route('contacts.alias', ['alias' => $alias, 'padalinys' => $alias === 'vusa' ? 'www' : $alias]);
+        return redirect()->route('contacts.alias', ['alias' => $alias, 'subdomain' => $alias === 'vusa' ? 'www' : $alias]);
     }
 }
