@@ -52,6 +52,7 @@ declare namespace App.Models {
     title: string;
     date: string;
     description: string;
+    permission_id: string | null;
   }
 
   export interface Comment {

@@ -39,6 +39,11 @@ declare module "@inertiajs/core" {
       App.Entities.Padalinys,
       "id" | "alias" | "shortname" | "fullname" | "type"
     >[];
+    padalinys:
+      | (Pick<App.Entities.Padalinys, "id" | "alias" | "shortname" | "type"> & {
+          subdomain: string;
+        })
+      | undefined;
     search: {
       calendar: Array<{
         date: string;

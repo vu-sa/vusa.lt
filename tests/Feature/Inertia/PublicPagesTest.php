@@ -17,10 +17,9 @@ class PublicPagesTest extends TestCase
     public function test_gets_default_public_props(): void
     {
 
-        $this->get(route('home', ['padalinys' => 'www', 'lang' => 'lt']))
+        $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']))
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Public/HomePage')
-                ->has('alias')
                 ->has('app', fn (Assert $page) => $page
                     ->has('env')
                     ->has('locale')
@@ -29,6 +28,7 @@ class PublicPagesTest extends TestCase
                 )
                 ->has('mainNavigation')
                 ->has('padaliniai')
+                ->has('padalinys')
             );
     }
 
@@ -36,7 +36,7 @@ class PublicPagesTest extends TestCase
 
     public function test_does_not_return_user_immediately_in_public_pages(): void
     {
-        $this->get(route('home', ['padalinys' => 'www', 'lang' => 'lt']))
+        $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']))
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Public/HomePage')
                 ->where('auth', null)
@@ -45,7 +45,7 @@ class PublicPagesTest extends TestCase
 
     public function test_can_see_the_home_page(): void
     {
-        $this->get(route('home', ['padalinys' => 'www', 'lang' => 'lt']))
+        $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']))
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Public/HomePage')
                 ->has('banners')

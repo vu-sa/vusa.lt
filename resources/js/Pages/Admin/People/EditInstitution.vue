@@ -9,8 +9,8 @@
         public-route="contacts.alias"
         :route-props="{
           alias: institution.alias,
-          lang: $page.props.locale,
-          padalinys: 'www',
+          lang: $page.props.app.locale,
+          subdomain: institution.padalinys?.alias ?? 'www',
         }"
       />
     </template>
@@ -49,7 +49,7 @@ if (!props.institution.extra_attributes) {
 }
 
 institution.value.extra_attributes = checkForEmptyArray(
-  institution.value.extra_attributes
+  institution.value.extra_attributes,
 );
 
 if (!props.institution.extra_attributes.en) {
@@ -57,7 +57,7 @@ if (!props.institution.extra_attributes.en) {
 }
 
 institution.value.extra_attributes.en = checkForEmptyArray(
-  institution.value.extra_attributes.en
+  institution.value.extra_attributes.en,
 );
 
 ////////////////////////////////////////////////////////////////////////////////

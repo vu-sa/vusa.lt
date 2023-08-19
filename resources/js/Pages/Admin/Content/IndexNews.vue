@@ -73,7 +73,7 @@ const columns = computed<DataTableColumns<App.Entities.News>>(() => [
           routeProps={{
             lang: row.lang,
             newsString: "naujiena",
-            padalinys: row.padalinys?.alias ?? "www",
+            subdomain: row.padalinys?.alias ?? "www",
             permalink: row.permalink,
           }}
         />

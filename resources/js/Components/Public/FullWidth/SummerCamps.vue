@@ -51,7 +51,7 @@
           route('contacts.category', {
             alias: 'padaliniai',
             lang: 'lt',
-            padalinys: 'www',
+            subdomain: 'www',
           })
         "
       >

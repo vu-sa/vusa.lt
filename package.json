@@ -3,7 +3,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "test": "vitest --dom",
+    "test": "vitest",
+    "test:dom": "vitest --dom",
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
@@ -64,7 +65,7 @@
     "tailwindcss": "^3.1.4",
     "typescript": "^5.1.3",
     "vite": "^4.0.0",
-    "vitest": "^0.33.0",
+    "vitest": "^0.34.1",
     "vue": "^3.3.4"
   }
 }
