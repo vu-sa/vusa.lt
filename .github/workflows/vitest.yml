@@ -1,0 +1,24 @@
+name: Vitest DOM tests
+
+on:
+  push:
+    branches: ['main']
+  pull_request:
+    branches-ignore:
+      - 'dependabot/npm_and_yarn/*'
+      - 'dependabot/composer/*'
+
+jobs:
+  vitest:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    # This is required because Ziggy is used from composer vendor.
+    - name: Install Composer dependencies
+      run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+    - name: NPM Install
+      run: npm ci
+    - name: NPM Build
+      run: npm run build
+    - name: Execute tests via Vitest
+      run: LARAVEL_BYPASS_ENV_CHECK=1 npm run test

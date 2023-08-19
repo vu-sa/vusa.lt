@@ -410,6 +410,14 @@ class MainController extends PublicController
         ]);
     }
 
+    public function individualStudies()
+    {
+        return Inertia::render('Public/IndividualStudies')->withViewData([
+            'title' => 'Individualios studijos',
+            'description' => 'Nuo 2023 m. Vilniaus universitete kiekvienas naujai įstojęs (-usi) bakalauro ar vientisųjų studijų programos studentas (-ė) turi galimybę dėlioti savo studijas pagal asmeninius interesus, pasinaudodas (-a) individualių studijų galimybe. Sužinok apie tai plačiau.',
+        ]);
+    }
+
     public function calendarEvent(Calendar $calendar)
     {
         return $this->calendarEventMain('lt', $calendar);

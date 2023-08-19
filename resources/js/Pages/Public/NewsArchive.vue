@@ -31,10 +31,7 @@
             route('news', {
               lang: item.lang,
               newsString: 'naujiena',
-              padalinys:
-                $page.props.alias === 'vusa'
-                  ? 'www'
-                  : $page.props.alias ?? 'www',
+              subdomain: $page.props.padalinys?.subdomain ?? 'www',
               permalink: item.permalink ?? '',
             })
           "

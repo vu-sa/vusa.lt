@@ -45,10 +45,12 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('kalendorius/renginys/{calendar}', [Public\MainController::class, 'calendarEventMain'])->name('calendar.event');
         Route::get('kalendorius/ics', [Public\MainController::class, 'publicAllEventCalendar'])->name('calendar.ics');
 
+        Route::get('individualios-studijos', [Public\MainController::class, 'individualStudies']);
+
         Route::post('search', [Public\MainController::class, 'search'])->name('search');
     });
 
-    Route::domain('{padalinys?}.'.explode('.', config('app.url'), 2)[1])->group(function () {
+    Route::domain('{subdomain}.'.explode('.', config('app.url'), 2)[1])->group(function () {
         Route::get('/', [Public\MainController::class, 'home'])->name('home');
         Route::get('naujienos', [Public\NewsController::class, 'newsArchive'])->name('newsArchive');
         Route::redirect('/naujiena/archyvas', '/naujienos', 301);

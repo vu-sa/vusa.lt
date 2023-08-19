@@ -6,13 +6,26 @@
     :columns="columns"
     :paginated-models="registrations"
   >
+    <template v-if="props.registrationForm.data[0].registration_form_id === 3">
+      <div class="m-2">
+        <a :href="route('registrationForms.index')">
+          <NButton
+            >Eksportuoti į .xsls<NIcon
+              :size="24"
+              :component="AnimalCat20Regular"
+            ></NIcon
+          ></NButton>
+        </a>
+      </div>
+    </template>
   </IndexPageLayout>
 </template>
 
 <script setup lang="ts">
 import { h } from "vue";
-import type { DataTableColumns } from "naive-ui";
-
+import { type DataTableColumns, NButton, NIcon } from "naive-ui";
+import { Link } from "@inertiajs/vue3";
+import { AnimalCat20Regular } from "@vicons/fluent";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
 const props = defineProps<{

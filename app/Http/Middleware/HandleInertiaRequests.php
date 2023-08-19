@@ -72,7 +72,8 @@ class HandleInertiaRequests extends Middleware
                     'unreadNotifications' => $user->unreadNotifications,
                 ],
             ],
-            // is used in the admin navigation to show only the allowed pages
+            // 'banners' property is shared in public pages from \App\Http\Controllers\PublicController.php
+            // 'flash' is used in the admin navigation to show only the allowed pages
             'flash' => [
                 'data' => fn () => $request->session()->get('data'),
                 'info' => fn () => $request->session()->get('info'),
@@ -80,10 +81,8 @@ class HandleInertiaRequests extends Middleware
                 // since inertia responses cannot have a 40X status code, we have to pass it in the flash data
                 'statusCode' => fn () => $request->session()->get('statusCode'),
             ],
-            // 'layout' => is_null($user) ? null : [
-            //     'navBackground' => null
-            // ],
             'padaliniai' => fn () => $this->getPadaliniaiForInertia(),
+            // 'padalinys' property is shared in public pages from \App\Http\Controllers\PublicController.php
             'search' => [
                 'calendar' => $request->session()->get('search_calendar') ?? [],
                 'news' => $request->session()->get('search_news') ?? [],

@@ -25,7 +25,7 @@
           @success="changeShowSearch"
         >
           <div
-            class="mb-2 rounded-lg border border-gray-200 bg-white/95 py-2 px-4 dark:border-zinc-600 dark:bg-zinc-700/90"
+            class="mb-2 rounded-lg border border-gray-200 bg-white/95 px-4 py-2 dark:border-zinc-600 dark:bg-zinc-700/90"
           >
             <p>{{ page.title }}</p>
           </div>
@@ -99,7 +99,7 @@ const handleSearchInput = useDebounceFn((input) => {
         onSuccess: () => {
           searchInputLoading.value = false;
         },
-      }
+      },
     );
   }
 }, 500);
@@ -108,15 +108,13 @@ const getRoute = (model: Record<string, any>, type: string) => {
   if (type === "page") {
     return route("page", {
       lang: model.lang,
-      padalinys:
-        usePage().props.alias === "vusa" ? "www" : usePage().props.alias,
+      subdomain: usePage().props.padalinys?.subdomain ?? "www",
       permalink: model?.permalink,
     });
   } else if (type === "news") {
     return route("news", {
       lang: model?.lang,
-      padalinys:
-        usePage().props?.alias === "vusa" ? "www" : usePage().props.alias,
+      subdomain: usePage().props.padalinys?.subdomain ?? "www",
       newsString: "naujiena",
       permalink: model?.permalink,
     });

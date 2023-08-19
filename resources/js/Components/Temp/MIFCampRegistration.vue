@@ -437,7 +437,7 @@ const handleValidateClick = (e: MouseEvent) => {
         "post",
         route("memberRegistration.store", {
           registrationForm: 3,
-          padalinys: "www",
+          subdomain: "www",
           lang: "lt",
         }),
         {

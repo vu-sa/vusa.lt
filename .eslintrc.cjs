@@ -29,6 +29,12 @@ module.exports = {
         "vue/max-attributes-per-line": "off",
       },
     },
+    {
+      files: ["*.d.ts"],
+      rules: {
+        // TODO: For some reason, top level declares in .d.ts files are not being recognized
+      },
+    },
   ],
   rules: {
     "sort-imports-es6-autofix/sort-imports-es6": [

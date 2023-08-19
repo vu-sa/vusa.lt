@@ -13,7 +13,7 @@
         :padalinys-props="{
           lang: page.lang,
           permalink: page.permalink,
-          padalinys: page.padalinys?.alias,
+          subdomain: page.padalinys?.alias,
         }"
         :padalinys-shortname="page.padalinys?.shortname"
       ></PreviewModelButton>
