@@ -410,14 +410,6 @@
 
 <script setup lang="ts">
 import { Head } from "@inertiajs/vue3";
-import { onMounted, ref } from "vue";
 import { NCollapse, NCollapseItem } from "naive-ui";
-import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
-
-const isThemeDark = ref(isDarkMode());
-
-onMounted(() => {
-  updateDarkMode(isThemeDark);
-});
 </script>
