@@ -14,26 +14,6 @@ use Inertia\Inertia;
 class AgendaItemController extends LaravelResourceController
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        return $this->authorize('viewAny', [AgendaItem::class, $this->authorizer]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        return $this->authorize('create', [AgendaItem::class, $this->authorizer]);
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -80,21 +60,6 @@ class AgendaItemController extends LaravelResourceController
 
         return Inertia::render('Admin/Representation/ShowAgendaItem', [
             'agendaItem' => $agendaItem,
-        ]);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\AgendaItem  $agendaItem
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(AgendaItem $agendaItem)
-    {
-        return $this->authorize('update', [
-            AgendaItem::class,
-            $agendaItem,
-            $this->authorizer,
         ]);
     }
 

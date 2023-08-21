@@ -75,20 +75,6 @@ class BannerController extends LaravelResourceController
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Banner $banner)
-    {
-        return $this->authorize('view', [
-            Banner::class,
-            $banner,
-            $this->authorizer,
-        ]);
-    }
-
-    /**
      * Show the form for editing the specified resource.
      *
      * @return \Illuminate\Http\Response

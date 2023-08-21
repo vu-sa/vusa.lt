@@ -14,15 +14,15 @@ Route::get('stats/representatives', [StatsController::class, 'representativesInP
 Route::post('sendFeedback', [DashboardController::class, 'sendFeedback'])->name('sendFeedback');
 
 // Resources
-Route::resource('pages', PagesController::class);
+Route::resource('pages', PagesController::class)->except(['show']);
 Route::post('pages/search', [PagesController::class, 'searchForPage'])->name('pages.search');
 
-Route::resource('news', NewsController::class);
+Route::resource('news', NewsController::class)->except(['show']);
 Route::post('news/search', [NewsController::class, 'searchForNews'])->name('news.search');
 
-Route::resource('mainPage', MainPageController::class);
-Route::resource('banners', BannerController::class);
-Route::resource('navigation', NavigationController::class);
+Route::resource('mainPage', MainPageController::class)->except(['show']);
+Route::resource('banners', BannerController::class)->except(['show']);
+Route::resource('navigation', NavigationController::class)->except(['show']);
 Route::resource('users', UserController::class);
 Route::post('users/{user}/sendWelcomeEmail', [UserController::class, 'sendWelcomeEmail'])->name('users.sendWelcomeEmail');
 Route::get('users/{user}/renderWelcomeEmail', [UserController::class, 'renderWelcomeEmail'])->name('users.renderWelcomeEmail');
@@ -34,15 +34,15 @@ Route::resource('contacts', ContactController::class);
 
 Route::resource('calendar', CalendarController::class);
 Route::post('calendar/{calendar}/media/{media}', [CalendarController::class, 'destroyMedia'])->name('calendar.destroyMedia');
-Route::resource('registrationForms', RegistrationFormController::class);
+Route::resource('registrationForms', RegistrationFormController::class)->only(['store', 'show']);
 Route::resource('registrations', RegistrationController::class);
 
 Route::resource('matters', MatterController::class)->except(['create', 'edit', 'update']);
 Route::resource('goals', GoalController::class);
 Route::post('matters/{matter}/attach', [MatterController::class, 'attachGoal'])->name('matters.attachGoal');
-Route::resource('goalGroups', GoalGroupController::class);
+Route::resource('goalGroups', GoalGroupController::class)->except(['show']);
 Route::resource('doings', DoingController::class);
-Route::resource('agendaItems', AgendaItemController::class);
+Route::resource('agendaItems', AgendaItemController::class)->except(['index', 'create', 'store']);
 Route::resource('meetings', MeetingController::class);
 
 Route::resource('resources', ResourceController::class);

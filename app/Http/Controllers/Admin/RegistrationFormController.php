@@ -27,16 +27,6 @@ class RegistrationFormController extends LaravelResourceController
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        // TODO: Implement function or just remove it entirely.
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @return \Illuminate\Http\Response
@@ -61,9 +51,14 @@ class RegistrationFormController extends LaravelResourceController
 
         $registrations = $registrationForm->load('registrations')->registrations;
 
-        if ($registrationForm->id === 2 && ! request()->user()->hasRole(config('permission.super_admin_role_name'))) {
+        if ($registrationForm->id === 2
+            && !request()->user()->hasRole(config('permission.super_admin_role_name')))
+        {
             $registrations = $registrationForm->load(['registrations' => function ($query) {
-                $query->whereIn('data->whereToRegister', request()->user()->padaliniai()->get(['padaliniai.id'])->pluck('id'));
+                $query->whereIn(
+                    'data->whereToRegister',
+                    request()->user()->padaliniai()->get(['padaliniai.id'])->pluck('id')
+                );
             }])->registrations;
         }
 
@@ -71,35 +66,5 @@ class RegistrationFormController extends LaravelResourceController
         return Inertia::render('Admin/RegistrationForms/ShowRegistrationForm', [
             'registrationForm' => $registrations->sortByDesc('created_at')->values()->paginate(20),
         ]);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(RegistrationForm $registrationForm)
-    {
-        // TODO: Implement function or just remove it entirely.
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, RegistrationForm $registrationForm)
-    {
-        // TODO: Implement function or just remove it entirely.
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(RegistrationForm $registrationForm)
-    {
-        // TODO: Implement function or just remove it entirely.
     }
 }
