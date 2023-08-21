@@ -10,46 +10,7 @@ use Inertia\Inertia;
 
 class DutiableController extends LaravelResourceController
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        return $this->authorize('viewAny', [Dutiable::class, $this->authorizer]);
-    }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        return $this->authorize('create', [Dutiable::class, $this->authorizer]);
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function store()
-    {
-        return $this->authorize('create', [Dutiable::class, $this->authorizer]);
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Dutiable  $dutiable
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Dutiable $dutiable)
-    {
-        return $this->authorize('view', [Dutiable::class, $dutiable, $this->authorizer]);
-    }
 
     /**
      * Show the form for editing the specified resource.

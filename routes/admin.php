@@ -26,7 +26,7 @@ Route::resource('navigation', NavigationController::class);
 Route::resource('users', UserController::class);
 Route::post('users/{user}/sendWelcomeEmail', [UserController::class, 'sendWelcomeEmail'])->name('users.sendWelcomeEmail');
 Route::get('users/{user}/renderWelcomeEmail', [UserController::class, 'renderWelcomeEmail'])->name('users.renderWelcomeEmail');
-Route::resource('users.comments', CommentController::class);
+Route::resource('users.comments', CommentController::class)->except(['index', 'create', 'show', 'edit']);
 Route::post('notification/{id}/markAsRead', [UserNotificationsController::class, 'markAsRead'])->name('notifications.markAsRead');
 Route::post('notification/markAllAsRead', [UserNotificationsController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
 
@@ -37,7 +37,7 @@ Route::post('calendar/{calendar}/media/{media}', [CalendarController::class, 'de
 Route::resource('registrationForms', RegistrationFormController::class);
 Route::resource('registrations', RegistrationController::class);
 
-Route::resource('matters', MatterController::class);
+Route::resource('matters', MatterController::class)->except(['create', 'edit', 'update']);
 Route::resource('goals', GoalController::class);
 Route::post('matters/{matter}/attach', [MatterController::class, 'attachGoal'])->name('matters.attachGoal');
 Route::resource('goalGroups', GoalGroupController::class);
@@ -68,7 +68,7 @@ Route::delete('relationships/relationshipables/{relationshipable}', [Relationshi
 Route::resource('roles', RoleController::class);
 Route::patch('roles/{role}/attach/{model}/permissions', [RoleController::class, 'syncPermissionGroup'])->name('roles.syncPermissionGroup');
 Route::put('roles/{role}/sync/duties', [RoleController::class, 'syncDuties'])->name('roles.syncDuties');
-Route::resource('permissions', PermissionController::class);
+Route::resource('permissions', PermissionController::class)->only(['index']);
 Route::resource('tasks', TaskController::class);
 Route::post('tasks/{task}/updateCompletionStatus', [TaskController::class, 'updateCompletionStatus'])->name('tasks.updateCompletionStatus');
 

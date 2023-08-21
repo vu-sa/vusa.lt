@@ -12,15 +12,6 @@ use Spatie\Enum\Laravel\Rules\EnumRule;
 
 class CommentController extends LaravelResourceController
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        return $this->authorize('viewAny', [Comment::class, $this->authorizer]);
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -60,31 +51,9 @@ class CommentController extends LaravelResourceController
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Comment $comment)
-    {
-        return $this->authorize('view', [Comment::class, $comment, $this->authorizer]);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Comment $comment)
-    {
-        return $this->authorize('update', [Comment::class, $comment, $this->authorizer]);
-    }
-
-    /**
      * Update the specified resource in storage.
      *
-     * FIX: Change the method flow to return Response object.
-     *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function update(Request $request, Comment $comment)
     {
@@ -92,14 +61,14 @@ class CommentController extends LaravelResourceController
 
         // update comment
         $comment->update($request->all());
+
+        return back()->with('success', 'Komentaras atnaujintas.');
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * FIX: Change the method flow to return Response object.
-     *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy(Comment $comment)
     {
@@ -107,5 +76,7 @@ class CommentController extends LaravelResourceController
 
         // delete comment
         $comment->delete();
+
+        return back()->with('success', 'Komentaras ištrintas.');
     }
 }
