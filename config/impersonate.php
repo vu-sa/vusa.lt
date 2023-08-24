@@ -81,7 +81,7 @@ return [
         |
         */
         'fields' => [
-            'name',
+            'name', 'email',
         ],
 
         'separator' => ' - ',

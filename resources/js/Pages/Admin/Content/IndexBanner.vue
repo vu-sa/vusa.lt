@@ -11,8 +11,12 @@
 </template>
 
 <script setup lang="tsx">
-import type { DataTableColumns } from "naive-ui";
+import { computed, provide, ref } from "vue";
+import { usePage } from "@inertiajs/vue3";
+import type { DataTableColumns, DataTableSortState } from "naive-ui";
 
+import { trans as $t } from "laravel-vue-i18n";
+import { padalinysColumn } from "@/Composables/dataTableColumns";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
@@ -27,24 +31,40 @@ const canUseRoutes = {
   destroy: true,
 };
 
-const columns: DataTableColumns<App.Entities.Banner> = [
+const sorters = ref<Record<string, DataTableSortState["order"]>>({
+  title: false,
+});
+
+provide("sorters", sorters);
+
+const filters = ref<Record<string, any>>({
+  "padalinys.id": [],
+});
+
+provide("filters", filters);
+
+const columns = computed<DataTableColumns<App.Entities.Banner>>(() => [
   {
     title: "Pavadinimas",
     key: "title",
-    render(row) {
+    sorter: true,
+    sortOrder: sorters.value.name,
+    render(row: App.Entities.Banner) {
       return (
-        <span
+        <a
           class={row.is_active ? "font-bold text-green-700" : "text-red-700"}
           href={route("banners.edit", { id: row.id })}
         >
           {row.title}
-        </span>
+        </a>
       );
     },
   },
   {
-    title: "Padalinys",
-    key: "padalinys.shortname",
+    ...padalinysColumn(filters, usePage().props.padaliniai),
+    render(row) {
+      return $t(row.padalinys?.shortname);
+    },
   },
-];
+]);
 </script>

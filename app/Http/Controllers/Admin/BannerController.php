@@ -6,7 +6,6 @@ use App\Http\Controllers\LaravelResourceController;
 use App\Models\Banner;
 use App\Models\Padalinys;
 use App\Services\ModelIndexer;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
@@ -17,17 +16,20 @@ class BannerController extends LaravelResourceController
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index()
     {
         $this->authorize('viewAny', [Banner::class, $this->authorizer]);
 
-        $search = request()->input('text');
+        $indexer = new ModelIndexer(new Banner(), request(), $this->authorizer);
 
-        $indexer = new ModelIndexer();
-        $banners = $indexer->execute(Banner::class, $search, 'title', $this->authorizer, false);
+        $banners = $indexer
+            ->setEloquentQuery()
+            ->filterAllColumns()
+            ->sortAllColumns()
+            ->builder->paginate(20);
 
-        return Inertia::render('Admin/Content/IndexBanners', [
-            'banners' => $banners->paginate(20),
+        return Inertia::render('Admin/Content/IndexBanner', [
+            'banners' => $banners,
         ]);
     }
 

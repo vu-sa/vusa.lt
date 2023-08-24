@@ -7,6 +7,7 @@ use App\Http\Requests\StoreChangelogItemRequest;
 use App\Models\ChangelogItem;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
 class ChangelogItemController extends LaravelResourceController
@@ -16,8 +17,9 @@ class ChangelogItemController extends LaravelResourceController
      */
     public function index(): InertiaResponse
     {
-        // return all
-        return inertia('Admin/ModelMeta/IndexChangelogItem', [
+        $this->authorize('viewAny', [ChangelogItem::class, $this->authorizer]);
+
+        return Inertia::render('Admin/ModelMeta/IndexChangelogItem', [
             'changelogItems' => ChangelogItem::paginate(20),
         ]);
     }
@@ -27,7 +29,9 @@ class ChangelogItemController extends LaravelResourceController
      */
     public function create(): InertiaResponse
     {
-        return inertia('Admin/ModelMeta/CreateChangelogItem');
+        $this->authorize('create', [ChangelogItem::class, $this->authorizer]);
+
+        return Inertia::render('Admin/ModelMeta/CreateChangelogItem');
     }
 
     /**

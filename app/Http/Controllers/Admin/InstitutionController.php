@@ -9,6 +9,7 @@ use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Type;
 use App\Services\ModelIndexer;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -24,31 +25,19 @@ class InstitutionController extends LaravelResourceController
     {
         $this->authorize('viewAny', [Institution::class, $this->authorizer]);
 
-        // base64 json encoded filters decode
-        $filters = json_decode(base64_decode(request()->input('filters')), true);
-        $sorters = json_decode(base64_decode(request()->input('sorters')), true);
-        $search = request()->input('text');
+        $indexer = new ModelIndexer(new Institution(), request(), $this->authorizer);
 
-        $indexer = new ModelIndexer();
-        $institutions = $indexer->execute(Institution::class, $search, 'name', $this->authorizer, null);
+        $institutions = $indexer
+            ->setEloquentQuery([
+                fn (Builder $query) => $query->with(['meetings' => fn ($query) => $query->orderBy('start_time'),
+                ])])
+            ->filterAllColumns()
+            ->sortAllColumns()
+            ->builder->paginate(15);
 
         // also check if empty array
         return Inertia::render('Admin/People/IndexInstitution', [
-            'institutions' => $institutions
-                ->when(isset(
-                    $filters['padalinys.id']
-                ) && $filters['padalinys.id'] !== [], function ($query) use ($filters) {
-                    $query->whereIn('padalinys_id', $filters['padalinys.id']);
-                })
-                ->when(
-                    isset($sorters['name']),
-                    function ($query) use ($sorters) {
-                        $query->orderBy('name', $sorters['name'] === 'descend' ? 'desc' : 'asc');
-                    }
-                )->with(['meetings' => function ($query) {
-                    $query->orderBy('start_time');
-                }])
-                ->paginate(20),
+            'institutions' => $institutions,
         ]);
     }
 

@@ -82,8 +82,4 @@ import { ArrowCircleRight20Regular } from "@vicons/fluent";
 import { NDivider, NIcon } from "naive-ui";
 
 defineOptions({ suspensible: false });
-
-defineProps<{
-  isThemeDark: boolean;
-}>();
 </script>

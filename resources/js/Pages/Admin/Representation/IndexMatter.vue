@@ -11,6 +11,8 @@
 </template>
 
 <script setup lang="tsx">
+import { NButton, NEllipsis, NIcon } from "naive-ui";
+
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
@@ -22,7 +24,7 @@ const canUseRoutes = {
   create: true,
   show: true,
   edit: true,
-  destroy: true,
+  destroy: false,
 };
 
 const columns = [
@@ -32,8 +34,37 @@ const columns = [
     minWidth: 200,
   },
   {
-    title: "Institucija",
-    key: "institution_id",
+    title: "Institucijos",
+    key: "institutions",
+    minWidth: 100,
+    render(row: App.Entities.Matter) {
+      let institutions = row.institutions?.map((institution) => {
+        return (
+          <a
+            href={route("institutions.edit", {
+              id: institution.id,
+            })}
+            target="_blank"
+            class="transition hover:text-vusa-red"
+          >
+            <NButton round size="tiny" tertiary>
+              {{
+                default: (
+                  <NEllipsis style="max-width: 150px">
+                    {institution.short_name ?? institution.name}
+                  </NEllipsis>
+                ),
+                icon: <NIcon component={Icons.INSTITUTION}></NIcon>,
+              }}
+            </NButton>
+          </a>
+        );
+      });
+
+      console.log(row.institutions, institutions);
+
+      return institutions;
+    },
   },
 ];
 </script>

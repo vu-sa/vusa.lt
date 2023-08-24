@@ -20,12 +20,7 @@ import { WeatherMoon28Regular, WeatherSunny24Regular } from "@vicons/fluent";
 import { ref } from "vue";
 import { useDark, useToggle } from "@vueuse/core";
 
-const isDark = useDark({
-  selector: "html",
-  attribute: "color-scheme",
-  valueDark: "dark",
-  valueLight: "light",
-});
+const isDark = useDark();
 
 const disabledSwitch = ref(false);
 

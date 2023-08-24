@@ -14,8 +14,8 @@ Route::get('stats/representatives', [StatsController::class, 'representativesInP
 Route::post('sendFeedback', [DashboardController::class, 'sendFeedback'])->name('sendFeedback');
 
 // Resources
-Route::resource('pages', PagesController::class);
-Route::post('pages/search', [PagesController::class, 'searchForPage'])->name('pages.search');
+Route::resource('pages', PageController::class);
+Route::post('pages/search', [PageController::class, 'searchForPage'])->name('pages.search');
 
 Route::resource('news', NewsController::class);
 Route::post('news/search', [NewsController::class, 'searchForNews'])->name('news.search');
@@ -26,7 +26,7 @@ Route::resource('navigation', NavigationController::class);
 Route::resource('users', UserController::class);
 Route::post('users/{user}/sendWelcomeEmail', [UserController::class, 'sendWelcomeEmail'])->name('users.sendWelcomeEmail');
 Route::get('users/{user}/renderWelcomeEmail', [UserController::class, 'renderWelcomeEmail'])->name('users.renderWelcomeEmail');
-Route::resource('users.comments', CommentController::class);
+Route::resource('users.comments', CommentController::class)->only(['store', 'destroy']);
 Route::post('notification/{id}/markAsRead', [UserNotificationsController::class, 'markAsRead'])->name('notifications.markAsRead');
 Route::post('notification/markAllAsRead', [UserNotificationsController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
 

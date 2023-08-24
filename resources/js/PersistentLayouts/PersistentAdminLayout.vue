@@ -1,8 +1,8 @@
 <template>
   <NConfigProvider
     :locale="enUS"
-    :theme="isThemeDark ? darkTheme : undefined"
-    :theme-overrides="isThemeDark ? darkThemeOverrides : themeOverrides"
+    :theme="isDark ? darkTheme : undefined"
+    :theme-overrides="isDark ? darkThemeOverrides : themeOverrides"
   >
     <!-- <component
       :is="$page.props.app.env === 'local' ? NThemeEditor : 'div'"
@@ -25,17 +25,13 @@
 
 <script setup lang="tsx">
 import { NConfigProvider, NMessageProvider, darkTheme, enUS } from "naive-ui";
-import { ref } from "vue";
+import { useDark } from "@vueuse/core";
 
-// import "./posthog";
-import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import Layout from "@/Components/Layouts/AdminLayout.vue";
 
 // import "@/echo";
 
-const isThemeDark = ref(isDarkMode());
-
-updateDarkMode(isThemeDark);
+const isDark = useDark();
 
 const themeOverrides = {
   common: {
