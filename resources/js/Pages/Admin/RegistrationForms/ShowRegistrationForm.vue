@@ -4,7 +4,7 @@
     model-name="registrations"
     :can-use-routes="canUseRoutes"
     :columns="columns"
-    :paginated-models="registrationForm"
+    :paginated-models="registrations"
   >
     <template v-if="props.registrationForm.data[0].registration_form_id === 3">
       <div class="m-2">
@@ -29,7 +29,7 @@ import { AnimalCat20Regular } from "@vicons/fluent";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
 const props = defineProps<{
-  registrationForm: PaginatedModels<any>;
+  registrations: PaginatedModels<any>;
 }>();
 
 const canUseRoutes = {
@@ -49,14 +49,14 @@ const renderObjects = (object: Record<string, any>) => {
           h("span", { class: "font-bold" }, key),
           h("span", value),
         ],
-      }
+      },
     );
   });
 };
 
 const columns: DataTableColumns<any> = [
   // generate columns from row.data
-  ...Object.keys(props.registrationForm.data[0].data).map((key) => ({
+  ...Object.keys(props.registrations.data[0].data).map((key) => ({
     title: key,
     key: `data.${key}`,
     minWidth: 150,

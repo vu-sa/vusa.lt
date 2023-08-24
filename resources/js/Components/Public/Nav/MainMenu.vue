@@ -30,7 +30,7 @@ const handleSelectNavigation = (id: number) => {
     return;
   }
 
-  if (props.padalinys === "Padaliniai") {
+  if (usePage().props.padalinys?.subdomain === "www") {
     router.visit(
       route("page", {
         lang: usePage().props.app.locale,
