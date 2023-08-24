@@ -15,8 +15,6 @@ use App\Models\Page;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Reservation;
 use App\Models\Resource;
-use App\Models\Registration;
-use App\Models\RegistrationForm;
 use App\Models\SaziningaiExam;
 use App\Models\SaziningaiExamFlow;
 use App\Models\SaziningaiExamObserver;
