@@ -8,6 +8,8 @@ use App\Models\Institution;
 use App\Models\MainPage;
 use App\Models\News;
 use App\Models\Page;
+use App\Models\Registration;
+use App\Models\RegistrationForm;
 use App\Models\SaziningaiExam;
 use App\Models\SaziningaiExamFlow;
 use App\Models\SaziningaiExamObserver;
@@ -24,7 +26,7 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         $this->call(CategoriesSeeder::class);
-        $this->call(RegistrationFormsSeeder::class);
+        // $this->call(RegistrationFormsSeeder::class);
         $this->call(AdminSeeder::class);
         $this->call(PadaliniaiSeeder::class);
 
@@ -40,6 +42,7 @@ class DatabaseSeeder extends Seeder
         MainPage::factory()->count(30)->create();
         News::factory()->count(75)->create();
         Page::factory()->count(40)->create();
+        RegistrationForm::factory()->has(Registration::factory()->count(40))->count(5)->create();
         SaziningaiExam::factory()->count(15)->create();
         SaziningaiExamFlow::factory()->count(20)->create();
         SaziningaiExamObserver::factory()->count(10)->create();
