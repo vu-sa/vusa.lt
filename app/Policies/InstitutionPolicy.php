@@ -75,7 +75,7 @@ class InstitutionPolicy extends ModelPolicy
      */
     public function restore(User $user, Institution $institution)
     {
-        //
+        return false;
     }
 
     /**
@@ -85,6 +85,6 @@ class InstitutionPolicy extends ModelPolicy
      */
     public function forceDelete(User $user, Institution $institution)
     {
-        //
+        return false;
     }
 }

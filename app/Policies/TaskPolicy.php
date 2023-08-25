@@ -78,7 +78,7 @@ class TaskPolicy extends ModelPolicy
      */
     public function restore(User $user, Task $task)
     {
-        //
+        return false;
     }
 
     /**
@@ -88,6 +88,6 @@ class TaskPolicy extends ModelPolicy
      */
     public function forceDelete(User $user, Task $task)
     {
-        //
+        return false;
     }
 }

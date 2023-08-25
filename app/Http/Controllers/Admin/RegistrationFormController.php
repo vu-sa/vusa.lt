@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Exports\MIFRegistrationExport;
 use App\Http\Controllers\LaravelResourceController;
+use App\Models\Institution;
 use App\Models\Registration;
 use App\Models\RegistrationForm;
 use Illuminate\Http\Request;

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Reservation;
 use Illuminate\Support\Carbon;
 
 class StoreReservationResourceRequest extends ResourceRequest

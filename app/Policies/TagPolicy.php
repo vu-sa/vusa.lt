@@ -74,7 +74,7 @@ class TagPolicy extends ModelPolicy
      */
     public function restore(User $user, Tag $tag)
     {
-        //
+        return false;
     }
 
     /**
@@ -84,6 +84,6 @@ class TagPolicy extends ModelPolicy
      */
     public function forceDelete(User $user, Tag $tag)
     {
-        //
+        return false;
     }
 }

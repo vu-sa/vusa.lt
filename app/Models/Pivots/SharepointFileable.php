@@ -3,6 +3,8 @@
 namespace App\Models\Pivots;
 
 use App\Models\Institution;
+use App\Models\Meeting;
+use App\Models\Type;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 

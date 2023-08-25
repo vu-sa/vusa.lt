@@ -74,7 +74,7 @@ class MainPagePolicy extends ModelPolicy
      */
     public function restore(User $user, MainPage $mainPage)
     {
-        //
+        return false;
     }
 
     /**
@@ -84,6 +84,6 @@ class MainPagePolicy extends ModelPolicy
      */
     public function forceDelete(User $user, MainPage $mainPage)
     {
-        //
+        return false;
     }
 }

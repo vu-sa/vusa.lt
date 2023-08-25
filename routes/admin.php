@@ -50,8 +50,7 @@ Route::resource('reservations', ReservationController::class);
 Route::resource('reservationResources', ReservationResourceController::class);
 
 Route::resource('saziningaiExams', SaziningaiExamsController::class);
-Route::resource('saziningaiExamFlows', SaziningaiExamFlowsController::class);
-Route::resource('saziningaiExamObservers', SaziningaiExamObserversController::class);
+Route::resource('saziningaiExamFlows', SaziningaiExamFlowsController::class)->except(['index', 'create', 'show', 'destroy']);
 Route::resource('files', FilesController::class);
 
 Route::put('duties/setAsStudentRepresentatives', [DutyController::class, 'setAsStudentRepresentatives'])->name('duties.setAsStudentRepresentatives');
@@ -68,7 +67,7 @@ Route::resource('roles', RoleController::class);
 Route::patch('roles/{role}/attach/{model}/permissions', [RoleController::class, 'syncPermissionGroup'])->name('roles.syncPermissionGroup');
 Route::put('roles/{role}/sync/duties', [RoleController::class, 'syncDuties'])->name('roles.syncDuties');
 Route::resource('permissions', PermissionController::class)->only(['index']);
-Route::resource('tasks', TaskController::class);
+Route::resource('tasks', TaskController::class)->except(['index', 'create', 'show', 'edit']);
 Route::post('tasks/{task}/updateCompletionStatus', [TaskController::class, 'updateCompletionStatus'])->name('tasks.updateCompletionStatus');
 
 Route::resource('changelogItems', ChangelogItemController::class);
@@ -80,7 +79,7 @@ Route::post('duties/search', [DutyController::class, 'searchForDuties'])->name('
 
 Route::post('files/uploadImage', [FilesController::class, 'uploadImage'])->name('files.uploadImage');
 
-Route::resource('sharepointFiles', SharepointFileController::class);
+Route::resource('sharepointFiles', SharepointFileController::class)->except('create', 'show', 'edit', 'update');
 
 // Route::post('sharepoint/addFile', [SharepointController::class, 'addFile'])->name('sharepoint.addFile');
 // Route::post('sharepoint/getFiles', [SharepointController::class, 'getFilesFromDocumentIds'])->name('sharepoint.getFiles');

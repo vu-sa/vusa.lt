@@ -74,7 +74,7 @@ class MatterPolicy extends ModelPolicy
      */
     public function restore(User $user, Matter $matter)
     {
-        //
+        return false;
     }
 
     /**
@@ -84,6 +84,6 @@ class MatterPolicy extends ModelPolicy
      */
     public function forceDelete(User $user, Matter $matter)
     {
-        //
+        return false;
     }
 }

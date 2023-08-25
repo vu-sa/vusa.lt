@@ -74,7 +74,7 @@ class ContactPolicy extends ModelPolicy
      */
     public function restore(User $user, Contact $contact)
     {
-        //
+        return false;
     }
 
     /**
@@ -84,6 +84,6 @@ class ContactPolicy extends ModelPolicy
      */
     public function forceDelete(User $user, Contact $contact)
     {
-        //
+        return false;
     }
 }

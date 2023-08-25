@@ -74,7 +74,7 @@ class AgendaItemPolicy extends ModelPolicy
      */
     public function restore(User $user, AgendaItem $agendaItem)
     {
-        //
+        return false;
     }
 
     /**
@@ -84,6 +84,6 @@ class AgendaItemPolicy extends ModelPolicy
      */
     public function forceDelete(User $user, AgendaItem $agendaItem)
     {
-        //
+        return false;
     }
 }

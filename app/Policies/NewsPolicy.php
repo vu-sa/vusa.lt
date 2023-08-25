@@ -74,7 +74,7 @@ class NewsPolicy extends ModelPolicy
      */
     public function restore(User $user, News $news)
     {
-        //
+        return false;
     }
 
     /**
@@ -84,6 +84,6 @@ class NewsPolicy extends ModelPolicy
      */
     public function forceDelete(User $user, News $news)
     {
-        //
+        return false;
     }
 }

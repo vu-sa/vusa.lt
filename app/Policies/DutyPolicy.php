@@ -74,7 +74,7 @@ class DutyPolicy extends ModelPolicy
      */
     public function restore(User $user, Duty $duty)
     {
-        //
+        return false;
     }
 
     /**
@@ -84,6 +84,6 @@ class DutyPolicy extends ModelPolicy
      */
     public function forceDelete(User $user, Duty $duty)
     {
-        //
+        return false;
     }
 }

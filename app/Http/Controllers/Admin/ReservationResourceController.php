@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\LaravelResourceController;
 use App\Http\Requests\StoreReservationResourceRequest;
 use App\Models\Pivots\ReservationResource;
+use App\Models\Reservation;
 
 class ReservationResourceController extends LaravelResourceController
 {

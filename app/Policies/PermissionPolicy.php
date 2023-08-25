@@ -74,7 +74,7 @@ class PermissionPolicy extends ModelPolicy
      */
     public function restore(User $user, Permission $permission)
     {
-        //
+        return false;
     }
 
     /**
@@ -84,6 +84,6 @@ class PermissionPolicy extends ModelPolicy
      */
     public function forceDelete(User $user, Permission $permission)
     {
-        //
+        return false;
     }
 }
