@@ -274,6 +274,8 @@ declare namespace App.Models {
     institutions_count?: number | null;
   }
 
+  export interface Model {}
+
   export interface Navigation {
     id: number;
     parent_id: number;
@@ -630,6 +632,16 @@ declare namespace App.Models.Pivots {
     padaliniai?: any | null;
   }
 
+  export interface Doable {
+    doable_type: string;
+    doable_id: string;
+    doing_id: string;
+    created_at: any;
+    updated_at: any;
+    doing?: App.Models.Doing | null;
+    user?: App.Models.User | null;
+  }
+
   export interface Dutiable {
     duty_id: string;
     dutiable_id: string;
@@ -651,6 +663,8 @@ declare namespace App.Models.Pivots {
     matter_id: string;
     created_at: any;
     updated_at: any;
+    goal?: App.Models.Goal | null;
+    matter?: App.Models.Matter | null;
   }
 
   export interface Relationshipable {
@@ -691,6 +705,8 @@ declare namespace App.Models.Pivots {
     created_at: any;
     updated_at: any;
     fileable?: any | null;
+    meeting?: App.Models.Meeting | null;
     institution?: App.Models.Institution | null;
+    type?: App.Models.Type | null;
   }
 }
