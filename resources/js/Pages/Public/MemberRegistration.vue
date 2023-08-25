@@ -15,7 +15,7 @@
             >Užsiregistruok ir lauk pakvietimo iš padalinio komandos!
           </span>
           <span v-else>Register and wait for the invite from the team! </span>
-          <Link :href="aboutLink">{{ $t("Daugiau apie VU SA") }}</Link
+          <a target="_blank" :href="aboutLink">{{ $t("Daugiau apie VU SA") }}</a
           >.
         </p>
 
@@ -23,12 +23,14 @@
           Taip pat gali registruotis ir į mūsų programas, klubus ir projektus
           (PKP)!
 
-          <Link :href="pkpLink">Visų mūsų PKP ieškok čia</Link>.
+          <a target="_blank" :href="pkpLink">Visų mūsų PKP ieškok čia</a>.
         </p>
         <p v-else>
           You can also register to our programs, clubs and projects (PKP)!
 
-          <Link :href="pkpLink">All of our PKPs can be found here</Link>.
+          <a target="_blank" :href="pkpLink"
+            >All of our PKPs can be found here</a
+          >.
         </p>
 
         <NForm
@@ -133,7 +135,7 @@
               <li>
                 {{
                   `${$t("Adresas")}: ${$t(
-                    "Universiteto g. 3, Observatorijos kiemelis"
+                    "Universiteto g. 3, Observatorijos kiemelis",
                   )}, Vilnius`
                 }}
               </li>
@@ -205,7 +207,8 @@ const aboutLink = computed(() =>
   route("page", {
     lang: usePage().props.app.locale,
     permalink: usePage().props.app.locale === "lt" ? "apie" : "about",
-  })
+    subdomain: "www",
+  }),
 );
 
 const pkpLink = computed(() =>
@@ -215,7 +218,8 @@ const pkpLink = computed(() =>
       usePage().props.app.locale === "lt"
         ? "programos-klubai-projektai"
         : "programs-clubs-projects",
-  })
+    subdomain: "www",
+  }),
 );
 
 // formRefs are needed by Naive UI
@@ -240,9 +244,9 @@ const padaliniaiOptions = computed(() =>
   props.padaliniaiOptions.map((padalinys) => ({
     value: padalinys.id,
     label: `${$t("VU SA")} ${getActiveLanguage() === "en" ? "in" : ""} ${$t(
-      padalinys.fullname.split("atstovybė ")[1]
+      padalinys.fullname.split("atstovybė ")[1],
     )}`,
-  }))
+  })),
 );
 
 const registerOptions = computed(() => [
@@ -279,7 +283,7 @@ const rules: FormRules = {
     validator(rule: FormItemRule, value: string) {
       if (!value) {
         return new Error(
-          $t("validation.required", { attribute: $t("Vardas ir pavardė") })
+          $t("validation.required", { attribute: $t("Vardas ir pavardė") }),
         );
       }
     },
@@ -290,12 +294,12 @@ const rules: FormRules = {
     validator(rule: FormItemRule, value: string) {
       if (!value) {
         return new Error(
-          $t("validation.required", { attribute: $t("El. paštas") })
+          $t("validation.required", { attribute: $t("El. paštas") }),
         );
       }
       if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(value)) {
         return new Error(
-          $t("validation.email", { attribute: $t("El. paštas") })
+          $t("validation.email", { attribute: $t("El. paštas") }),
         );
       }
       return true;
@@ -311,7 +315,7 @@ const rules: FormRules = {
     validator(rule: FormItemRule, value: string) {
       if (!value) {
         return new Error(
-          $t("validation.required", { attribute: $t("Tel. nr.") })
+          $t("validation.required", { attribute: $t("Tel. nr.") }),
         );
       }
       if (!/^\+?[0-9\s]*$/i.test(value)) {
@@ -371,12 +375,12 @@ const handleValidateClick = (e: MouseEvent) => {
             formValue.reset();
             message.success(
               `${$t(
-                "Sėkmingai užsiregistravai! Greitu metu susisieksime su tavimi"
+                "Sėkmingai užsiregistravai! Greitu metu susisieksime su tavimi",
               )} 👏`,
-              { duration: 15000 }
+              { duration: 15000 },
             );
           },
-        }
+        },
       );
     } else {
       message.error($t("Užpildykite visus privalomus laukelius"));
