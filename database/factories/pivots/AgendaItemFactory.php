@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Factories;
+namespace Database\Factories\Pivots;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -17,7 +17,7 @@ class AgendaItemFactory extends Factory
     public function definition()
     {
         return [
-            //
+            'title' => $this->faker->sentence,
         ];
     }
 }

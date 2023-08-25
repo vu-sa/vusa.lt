@@ -9,21 +9,28 @@ use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTasks;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Meeting extends Model
 {
-    use HasFactory, HasComments, HasSharepointFiles, HasTasks, HasUlids, HasRelationships, LogsActivity, SoftDeletes;
+    use HasFactory, HasComments, HasSharepointFiles, HasTasks, HasUlids, HasRelationships, LogsActivity, Searchable, SoftDeletes;
 
     protected $guarded = [];
 
     protected $casts = [
         'start_time' => 'datetime',
     ];
+
+    public function toSearchableArray()
+    {
+        return [
+            'title' => $this->title,
+        ];
+    }
 
     public function getActivitylogOptions(): LogOptions
     {

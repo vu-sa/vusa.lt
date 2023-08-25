@@ -11,13 +11,19 @@
 </template>
 
 <script setup lang="tsx">
-import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
+import { trans as $t } from "laravel-vue-i18n";
+import { computed, provide, ref, watch } from "vue";
+import { usePage } from "@inertiajs/vue3";
+import type { DataTableSortState } from "naive-ui";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
+import { padalinysColumn } from "@/Composables/dataTableColumns";
 import Icons from "@/Types/Icons/regular";
+import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
-defineProps<{
-  calendar: PaginatedModels<App.Entities.Calendar>;
+const props = defineProps<{
+  calendar: PaginatedModels<App.Entities.Calendar[]>;
+  allCategories: App.Entities.Category[];
 }>();
 
 const canUseRoutes = {
@@ -27,35 +33,73 @@ const canUseRoutes = {
   destroy: true,
 };
 
-const columns = [
-  {
-    title: "Pavadinimas",
-    key: "title",
-    maxWidth: 200,
-    ellipsis: {
-      tooltip: true,
+const sorters = ref<Record<string, DataTableSortState["order"]>>({
+  title: false,
+});
+
+provide("sorters", sorters);
+
+const filters = ref<Record<string, any>>({
+  "category.alias": [],
+  "padalinys.id": [],
+});
+
+watch(
+  filters,
+  (newFilters) => {
+    console.log(newFilters);
+  },
+  { deep: true },
+);
+
+provide("filters", filters);
+
+const columns = computed(() => {
+  return [
+    {
+      title: "Pavadinimas",
+      key: "title",
+      sorter: true,
+      sortOrder: sorters.value.name,
+      maxWidth: 200,
+      ellipsis: {
+        tooltip: true,
+      },
     },
-  },
-  {
-    title: "Data",
-    key: "date",
-    render(row) {
-      return formatStaticTime(row.date, {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "numeric",
-        minute: "numeric",
-      });
+    {
+      title: "Data",
+      key: "date",
+      render(row) {
+        return formatStaticTime(row.date, {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "numeric",
+          minute: "numeric",
+        });
+      },
     },
-  },
-  {
-    title: "Padalinys",
-    key: "padalinys.shortname",
-  },
-  {
-    title: "Kategorija",
-    key: "category.name",
-  },
-];
+    {
+      title: "Kategorija",
+      key: "category.alias",
+      filter: true,
+      filterOptionValues: filters.value["category.alias"],
+      filterOptions: props.allCategories.map((category) => {
+        return {
+          label: category.name,
+          value: category.alias,
+        };
+      }),
+      render(row: App.Entities.Calendar) {
+        return row.category?.name;
+      },
+    },
+    {
+      ...padalinysColumn(filters, usePage().props.padaliniai),
+      render(row: App.Entities.Calendar) {
+        return $t(row.padalinys?.shortname ?? "");
+      },
+    },
+  ];
+});
 </script>

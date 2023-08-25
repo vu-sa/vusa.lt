@@ -21,13 +21,16 @@ class MainPageController extends LaravelResourceController
     {
         $this->authorize('viewAny', [MainPage::class, $this->authorizer]);
 
-        $search = request()->input('text');
+        $indexer = new ModelIndexer(new MainPage(), request(), $this->authorizer);
 
-        $indexer = new ModelIndexer();
-        $mainPages = $indexer->execute(MainPage::class, $search, 'text', $this->authorizer, false);
+        $mainPage = $indexer
+            ->setEloquentQuery()
+            ->filterAllColumns()
+            ->sortAllColumns()
+            ->builder->paginate(15);
 
-        return Inertia::render('Admin/Content/IndexMainPages', [
-            'mainPages' => $mainPages->paginate(20),
+        return Inertia::render('Admin/Content/IndexMainPage', [
+            'mainPage' => $mainPage,
         ]);
     }
 

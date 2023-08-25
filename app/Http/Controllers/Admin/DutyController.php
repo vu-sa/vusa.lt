@@ -7,7 +7,9 @@ use App\Models\Duty;
 use App\Models\Role;
 use App\Models\Type;
 use App\Models\User;
+use App\Services\ModelIndexer;
 use App\Services\ResourceServices\DutyService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -23,12 +25,16 @@ class DutyController extends LaravelResourceController
     {
         $this->authorize('viewAny', [Duty::class, $this->authorizer]);
 
-        $search = request()->input('text');
+        $indexer = new ModelIndexer(new Duty(), $request, $this->authorizer);
 
-        $duties = $this->indexer->execute(Duty::class, $search, 'name', $this->authorizer, true);
+        $duties = $indexer
+            ->setEloquentQuery([fn (Builder $query) => $query->with('institution')])
+            ->filterAllColumns()
+            ->sortAllColumns()
+            ->builder->paginate(20);
 
         return Inertia::render('Admin/People/IndexDuty', [
-            'duties' => $duties->with('institution')->paginate(20),
+            'duties' => $duties,
         ]);
     }
 

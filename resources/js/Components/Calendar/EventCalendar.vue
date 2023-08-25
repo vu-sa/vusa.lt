@@ -2,9 +2,13 @@
   <div class="my-calendar">
     <Calendar
       :initial-page="currentDay"
-      :is-dark="isThemeDark"
+      :is-dark="isDark"
       :attributes="calendarAttributes"
-      :locale="{ id: $page.props.app.locale, firstDayOfWeek: 2, masks: { weekdays: 'WW' } }"
+      :locale="{
+        id: $page.props.app.locale,
+        firstDayOfWeek: 2,
+        masks: { weekdays: 'WW' },
+      }"
       color="red"
       class="shadow-xl"
     >
@@ -33,7 +37,7 @@
               >
               <NConfigProvider
                 class="flex h-fit items-center justify-center"
-                :theme="isThemeDark ? undefined : darkTheme"
+                :theme="isDark ? undefined : darkTheme"
               >
                 <div class="my-auto flex items-center justify-center">
                   <NButton
@@ -60,10 +64,10 @@ import "v-calendar/style.css";
 import { Calendar, PopoverRow } from "v-calendar";
 import { Google } from "@vicons/fa";
 import { NButton, NConfigProvider, NIcon, darkTheme } from "naive-ui";
+import { useDark } from "@vueuse/core";
 import type { PageAddress } from "v-calendar/dist/types/src/utils/page";
 
 const props = defineProps<{
-  isThemeDark: boolean;
   calendarEvents: App.Entities.Calendar[];
   locale: string;
 }>();
@@ -73,6 +77,8 @@ const currentDay: PageAddress = {
   month: new Date().getMonth() + 1,
   day: new Date().getDate(),
 };
+
+const isDark = useDark();
 
 // check if event date and end date is on the same day
 const isSameDay = (date1: string, date2: string) => {

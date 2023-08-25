@@ -24,13 +24,16 @@ class DoingController extends LaravelResourceController
     {
         $this->authorize('viewAny', [Doing::class, $this->authorizer]);
 
-        $search = request()->input('text');
+        $indexer = new ModelIndexer(new Doing(), request(), $this->authorizer);
 
-        $indexer = new ModelIndexer();
-        $doings = $indexer->execute(Doing::class, $search, 'title', $this->authorizer);
+        $doings = $indexer
+            ->setEloquentQuery()
+            ->filterAllColumns()
+            ->sortAllColumns()
+            ->builder->paginate(20);
 
         return Inertia::render('Admin/Representation/IndexDoing', [
-            'doings' => $doings->paginate(20),
+            'doings' => $doings,
         ]);
     }
 

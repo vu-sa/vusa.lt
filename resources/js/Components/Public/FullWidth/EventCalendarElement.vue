@@ -80,20 +80,19 @@
             class="relative z-[5]"
             :calendar-events="calendar"
             :locale="$page.props.app.locale"
-            :is-theme-dark="isThemeDark"
           />
         </FadeTransition>
       </div>
     </div>
   </div>
-  <div v-if="upcoming4Events.length > 0" class="lg:px-4 mx-auto my-8 max-w-7xl">
+  <div v-if="upcoming4Events.length > 0" class="mx-auto my-8 max-w-7xl lg:px-4">
     <template v-if="$page.props.app.locale === 'lt'"
       ><h2 class="text-center lg:text-start">Artėjantys renginiai</h2></template
     ><template v-else
       ><h2 class="text-center lg:text-start">Upcoming events</h2></template
     >
     <div
-      class="my-8 px-4 lg:px-0 mx-auto flex lg:w-full h-fit w-fit flex-wrap gap-4 place-content-around md:items-stretch"
+      class="mx-auto my-8 flex h-fit w-fit flex-wrap place-content-around gap-4 px-4 md:items-stretch lg:w-full lg:px-0"
     >
       <a
         v-for="event in upcoming4Events"
@@ -126,7 +125,6 @@ import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 defineProps<{
   calendar: Array<App.Entities.Calendar>;
-  isThemeDark: boolean;
   showPhotos: boolean;
   upcoming4Events: Array<App.Entities.Calendar>;
 }>();

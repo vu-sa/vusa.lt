@@ -1,12 +1,8 @@
 <template>
   <div>
     <div class="group relative">
+      <ShapeDivider1 class="absolute -top-1 z-10"></ShapeDivider1>
       <ShapeDivider1
-        :is-theme-dark="isThemeDark"
-        class="absolute -top-1 z-10"
-      ></ShapeDivider1>
-      <ShapeDivider1
-        :is-theme-dark="isThemeDark"
         class="absolute -bottom-2 z-10 rotate-180 lg:-bottom-1"
       ></ShapeDivider1>
       <a href="/ataskaita-2022" target="_blank">
@@ -69,8 +65,4 @@ import { NIcon } from "naive-ui";
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 
 defineOptions({ suspensible: false });
-
-defineProps<{
-  isThemeDark: boolean;
-}>();
 </script>

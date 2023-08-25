@@ -11,10 +11,11 @@
 </template>
 
 <script setup lang="tsx">
-import { h, ref } from "vue";
+import { h, provide, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
-import type { DataTableColumns } from "naive-ui";
+import type { DataTableColumns, DataTableSortState } from "naive-ui";
 
+import { langColumn, padalinysColumn } from "@/Composables/dataTableColumns";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
@@ -30,21 +31,19 @@ const canUseRoutes = {
   destroy: true,
 };
 
-const padaliniaiFilterOptions = ref(
-  usePage().props.padaliniai.map((padalinys) => {
-    return {
-      label: padalinys.shortname,
-      value: padalinys.id,
-    };
-  }),
-);
-
-const padaliniaiFilterOptionValues = ref<number[] | null>([]);
-
-padaliniaiFilterOptions.value.unshift({
-  label: "VU SA",
-  value: 16,
+const sorters = ref<Record<string, DataTableSortState["order"]>>({
+  created_at: "descend",
+  title: false,
 });
+
+provide("sorters", sorters);
+
+const filters = ref<Record<string, any>>({
+  lang: [],
+  "padalinys.id": [],
+});
+
+provide("filters", filters);
 
 const columns: DataTableColumns<App.Entities.News> = [
   {
@@ -55,7 +54,12 @@ const columns: DataTableColumns<App.Entities.News> = [
   {
     title: "Pavadinimas",
     key: "title",
-    minWidth: 200,
+    className: "text-wrap",
+    sorter: true,
+    sortOrder: sorters.value.title,
+    minWidth: 150,
+    width: 200,
+    resizable: true,
   },
   {
     // title: "Nuoroda",
@@ -78,8 +82,7 @@ const columns: DataTableColumns<App.Entities.News> = [
     },
   },
   {
-    key: "lang",
-    title: "Kalba",
+    ...langColumn(filters),
     render(row) {
       return row.lang === "lt" ? "🇱🇹" : "🇬🇧";
     },
@@ -101,16 +104,7 @@ const columns: DataTableColumns<App.Entities.News> = [
     },
   },
   {
-    title: "Padalinys",
-    key: "padalinys.id",
-    width: 150,
-    ellipsis: {
-      tooltip: true,
-    },
-    filter: true,
-    filterMultiple: true,
-    filterOptionValues: padaliniaiFilterOptionValues,
-    filterOptions: padaliniaiFilterOptions,
+    ...padalinysColumn(filters, usePage().props.padaliniai),
     render(row) {
       return row.padalinys.shortname;
     },
@@ -118,6 +112,12 @@ const columns: DataTableColumns<App.Entities.News> = [
   {
     title: "Sukurta",
     key: "created_at",
+    sorter: (a, b) => {
+      return (
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      );
+    },
+    sortOrder: sorters.value.created_at,
     minWidth: 100,
     ellipsis: {
       tooltip: true,

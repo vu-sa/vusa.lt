@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Exports\MIFRegistrationExport;
 use App\Http\Controllers\LaravelResourceController;
+use App\Models\Registration;
 use App\Models\RegistrationForm;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -49,22 +50,16 @@ class RegistrationFormController extends LaravelResourceController
     {
         // get registrations for admin or user
 
-        $registrations = $registrationForm->load('registrations')->registrations;
+        $registrations = Registration::query()->where('registration_form_id', $registrationForm->id);
 
-        if ($registrationForm->id === 2
-            && !request()->user()->hasRole(config('permission.super_admin_role_name')))
-        {
-            $registrations = $registrationForm->load(['registrations' => function ($query) {
-                $query->whereIn(
-                    'data->whereToRegister',
-                    request()->user()->padaliniai()->get(['padaliniai.id'])->pluck('id')
-                );
-            }])->registrations;
+        if ($registrationForm->id === 2 && ! request()->user()->hasRole(config('permission.super_admin_role_name'))) {
+            $registrations = $registrations
+                ->whereIn('data->whereToRegister', request()->user()->padaliniai()->get(['padaliniai.id'])->pluck('id'));
         }
 
         // for now, is accustomed to show only member registration
         return Inertia::render('Admin/RegistrationForms/ShowRegistrationForm', [
-            'registrationForm' => $registrations->sortByDesc('created_at')->values()->paginate(20),
+            'registrations' => $registrations->orderBy('created_at', 'desc')->paginate(30),
         ]);
     }
 }

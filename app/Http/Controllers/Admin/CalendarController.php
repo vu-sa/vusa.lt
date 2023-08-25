@@ -21,17 +21,21 @@ class CalendarController extends LaravelResourceController
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index()
     {
         $this->authorize('viewAny', [Calendar::class, $this->authorizer]);
 
-        $search = request()->input('text');
+        $indexer = new ModelIndexer(new Calendar(), request(), $this->authorizer);
 
-        $indexer = new ModelIndexer();
-        $calendar = $indexer->execute(Calendar::class, $search, 'title', $this->authorizer, null);
+        $calendar = $indexer
+            ->setEloquentQuery([fn ($query) => $query->with('category')])
+            ->filterAllColumns()
+            ->sortAllColumns()
+            ->builder->paginate(20);
 
         return Inertia::render('Admin/Calendar/IndexCalendarEvents', [
-            'calendar' => $calendar->with('category')->orderBy('date', 'desc')->paginate(20),
+            'calendar' => $calendar,
+            'allCategories' => Category::all(['id', 'alias', 'name', 'description']),
         ]);
     }
 

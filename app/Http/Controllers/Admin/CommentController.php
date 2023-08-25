@@ -12,7 +12,6 @@ use Spatie\Enum\Laravel\Rules\EnumRule;
 
 class CommentController extends LaravelResourceController
 {
-
     /**
      * Store a newly created resource in storage.
      *

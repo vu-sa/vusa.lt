@@ -3,16 +3,16 @@
     <!-- <Suspense> -->
     <NConfigProvider
       v-show="mounted"
-      :theme="isThemeDark ? darkTheme : undefined"
+      :theme="isDark ? darkTheme : undefined"
       :theme-overrides="themeOverrides"
     >
       <div
         class="flex min-h-screen flex-col justify-between bg-neutral-50 antialiased dark:bg-zinc-900"
       >
         <FadeTransition appear
-          ><MainNavigation :is-theme-dark="isThemeDark"
+          ><MainNavigation :is-theme-dark="isDark"
         /></FadeTransition>
-        <main class="pt-24 pb-8">
+        <main class="pb-8 pt-24">
           <FadeTransition mode="out-in">
             <Suspense>
               <slot />
@@ -60,13 +60,13 @@
 <script setup lang="ts">
 import { NConfigProvider, NSpin, darkTheme } from "naive-ui";
 import { defineAsyncComponent, onMounted, ref } from "vue";
-import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
-import { useStorage } from "@vueuse/core";
+import { useDark, useStorage } from "@vueuse/core";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import MainNavigation from "@/Components/Public/Layouts/MainNavigation.vue";
 
-const isThemeDark = ref<boolean>(isDarkMode());
+const isDark = useDark();
+
 const mounted = ref(false);
 const spinWarning = ref(false);
 
@@ -80,16 +80,14 @@ const themeOverrides = {
 };
 
 const ConsentCard = defineAsyncComponent(
-  () => import("@/Components/Public/ConsentCard.vue")
+  () => import("@/Components/Public/ConsentCard.vue"),
 );
 
 const Footer = defineAsyncComponent(
-  () => import("@/Components/Public/FullWidth/SiteFooter.vue")
+  () => import("@/Components/Public/FullWidth/SiteFooter.vue"),
 );
 
 const cookieConsent = useStorage("cookie-consent", false);
-
-updateDarkMode(isThemeDark);
 
 onMounted(() => {
   mounted.value = true;

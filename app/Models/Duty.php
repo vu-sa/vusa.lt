@@ -6,10 +6,10 @@ use App\Models\Pivots\Dutiable;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
@@ -17,7 +17,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Duty extends Model implements AuthorizableContract
 {
-    use HasFactory, Notifiable, Authorizable, HasRoles, HasRelationships, LogsActivity, HasUlids, SoftDeletes;
+    use HasFactory, Notifiable, Authorizable, HasRoles, HasRelationships, LogsActivity, HasUlids, SoftDeletes, Searchable;
 
     protected $with = ['types'];
 
@@ -28,6 +28,14 @@ class Duty extends Model implements AuthorizableContract
     protected $guard_name = 'web';
 
     protected $guarded = [];
+
+    public function toSearchableArray()
+    {
+        return [
+            'name' => $this->name,
+            'email' => $this->email,
+        ];
+    }
 
     public function getActivitylogOptions(): LogOptions
     {

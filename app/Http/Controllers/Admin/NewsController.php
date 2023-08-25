@@ -20,13 +20,16 @@ class NewsController extends LaravelResourceController
     {
         $this->authorize('viewAny', [News::class, $this->authorizer]);
 
-        $search = request()->input('text');
+        $indexer = new ModelIndexer(new News(), request(), $this->authorizer);
 
-        $indexer = new ModelIndexer();
-        $news = $indexer->execute(News::class, $search, 'title', $this->authorizer, null);
+        $news = $indexer
+            ->setEloquentQuery()
+            ->filterAllColumns()
+            ->sortAllColumns(['publish_time' => 'descend'])
+            ->builder->paginate(20);
 
         return Inertia::render('Admin/Content/IndexNews', [
-            'news' => $news->with('padalinys:id,shortname,alias')->orderBy('created_at', 'desc')->paginate(20),
+            'news' => $news,
         ]);
     }
 

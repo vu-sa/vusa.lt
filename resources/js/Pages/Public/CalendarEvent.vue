@@ -77,7 +77,6 @@
               <NDivider />
               <EventCalendar
                 :calendar-events="calendar"
-                :is-theme-dark="isThemeDark"
                 :locale="$page.props.app.locale"
               />
             </div>
@@ -92,9 +91,8 @@
 import { trans as $t } from "laravel-vue-i18n";
 import { Head } from "@inertiajs/vue3";
 import { NDivider, NImage, NImageGroup, NSpace } from "naive-ui";
-import { computed, ref } from "vue";
+import { computed } from "vue";
 
-import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import CalendarCard from "@/Components/Calendar/CalendarCard.vue";
 import EventCalendar from "@/Components/Calendar/EventCalendar.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
@@ -104,8 +102,6 @@ const props = defineProps<{
   calendar: App.Entities.Calendar[];
   googleLink: string;
 }>();
-
-const isThemeDark = ref(isDarkMode());
 
 // check if image array is empty
 const hasNoImage = computed(() => {
@@ -123,8 +119,6 @@ const headerImageStyle = computed(() => {
     })`,
   };
 });
-
-updateDarkMode(isThemeDark);
 </script>
 
 <style scoped>

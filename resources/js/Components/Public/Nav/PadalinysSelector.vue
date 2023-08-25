@@ -40,12 +40,13 @@ defineEmits<{
 }>();
 
 const props = defineProps<{
+  allPadaliniai: App.Entities.Padalinys[];
   padalinys: string;
   size: "tiny" | "small";
 }>();
 
 const options_padaliniai = computed<DropdownOption[]>(() => {
-  return usePage().props.padaliniai.map((padalinys) => ({
+  return props.allPadaliniai.map((padalinys) => ({
     label:
       props.size.value === "tiny"
         ? padalinys.alias

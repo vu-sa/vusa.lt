@@ -131,3 +131,7 @@
     @apply from-zinc-50 to-white dark:from-zinc-900/80 dark:to-zinc-800/80 bg-gradient-to-t dark:bg-gradient-to-b
   }
 }
+
+html.dark {
+  color-scheme: dark;
+}
