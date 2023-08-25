@@ -35,7 +35,6 @@ Route::resource('contacts', ContactController::class);
 Route::resource('calendar', CalendarController::class);
 Route::post('calendar/{calendar}/media/{media}', [CalendarController::class, 'destroyMedia'])->name('calendar.destroyMedia');
 Route::resource('registrationForms', RegistrationFormController::class)->only(['store', 'show']);
-Route::resource('registrations', RegistrationController::class);
 
 Route::resource('matters', MatterController::class)->except(['create', 'edit', 'update']);
 Route::resource('goals', GoalController::class);
