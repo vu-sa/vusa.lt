@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
+use Database\Factories\AgendaItemFactory;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class AgendaItem extends Pivot
 {
@@ -21,6 +23,11 @@ class AgendaItem extends Pivot
     protected $touches = ['meeting'];
 
     public $incrementing = true;
+
+    protected static function newFactory(): Factory
+    {
+        return AgendaItemFactory::new();
+    }
 
     protected $guarded = [];
 
