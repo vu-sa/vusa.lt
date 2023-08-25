@@ -50,9 +50,24 @@ class CommentController extends LaravelResourceController
     }
 
     /**
+     * Update the specified resource in storage.
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function update(Request $request, Comment $comment)
+    {
+        $this->authorize('update', [Comment::class, $comment, $this->authorizer]);
+
+        // update comment
+        $comment->update($request->all());
+
+        return back()->with('success', 'Komentaras atnaujintas.');
+    }
+
+    /**
      * Remove the specified resource from storage.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy(Comment $comment)
     {
@@ -60,5 +75,7 @@ class CommentController extends LaravelResourceController
 
         // delete comment
         $comment->delete();
+
+        return back()->with('success', 'Komentaras ištrintas.');
     }
 }

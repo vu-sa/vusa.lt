@@ -91,20 +91,6 @@ class NewsController extends LaravelResourceController
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function show(News $news)
-    {
-        return $this->authorize('view', [
-            News::class,
-            $news,
-            $this->authorizer,
-        ]);
-    }
-
-    /**
      * Show the form for editing the specified resource.
      *
      * @return \Illuminate\Http\Response

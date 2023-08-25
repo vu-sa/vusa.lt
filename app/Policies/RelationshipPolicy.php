@@ -74,7 +74,7 @@ class RelationshipPolicy extends ModelPolicy
      */
     public function restore(User $user, Relationship $relationship)
     {
-        //
+        return false;
     }
 
     /**
@@ -84,6 +84,6 @@ class RelationshipPolicy extends ModelPolicy
      */
     public function forceDelete(User $user, Relationship $relationship)
     {
-        //
+        return false;
     }
 }

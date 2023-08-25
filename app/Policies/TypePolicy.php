@@ -58,7 +58,7 @@ class TypePolicy extends ModelPolicy
      */
     public function delete(User $user, Type $type)
     {
-        //
+        return false;
     }
 
     /**
@@ -68,7 +68,7 @@ class TypePolicy extends ModelPolicy
      */
     public function restore(User $user, Type $type)
     {
-        //
+        return false;
     }
 
     /**
@@ -78,6 +78,6 @@ class TypePolicy extends ModelPolicy
      */
     public function forceDelete(User $user, Type $type)
     {
-        //
+        return false;
     }
 }

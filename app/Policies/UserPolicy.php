@@ -75,6 +75,7 @@ class UserPolicy extends ModelPolicy
      */
     public function restore(User $user, User $model)
     {
+        return false;
     }
 
     /**
@@ -84,6 +85,7 @@ class UserPolicy extends ModelPolicy
      */
     public function forceDelete(User $user, User $model)
     {
+        return false;
     }
 
     // TODO: wild policies

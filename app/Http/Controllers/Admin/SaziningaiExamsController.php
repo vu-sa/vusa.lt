@@ -74,20 +74,6 @@ class SaziningaiExamsController extends LaravelResourceController
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function show(SaziningaiExam $saziningaiExam)
-    {
-        return $this->authorize('view', [
-            SaziningaiExam::class,
-            $saziningaiExam,
-            $this->authorizer,
-        ]);
-    }
-
-    /**
      * Show the form for editing the specified resource.
      *
      * @param  \App\Models\Saziningai  $saziningai

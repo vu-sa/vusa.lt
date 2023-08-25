@@ -81,20 +81,6 @@ class MainPageController extends LaravelResourceController
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function show(MainPage $mainPage)
-    {
-        return $this->authorize('view', [
-            MainPage::class,
-            $mainPage,
-            $this->authorizer,
-        ]);
-    }
-
-    /**
      * Show the form for editing the specified resource.
      *
      * @return \Illuminate\Http\Response

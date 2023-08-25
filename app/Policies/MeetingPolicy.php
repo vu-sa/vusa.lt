@@ -74,7 +74,7 @@ class MeetingPolicy extends ModelPolicy
      */
     public function restore(User $user, Meeting $meeting)
     {
-        //
+        return false;
     }
 
     /**
@@ -84,6 +84,6 @@ class MeetingPolicy extends ModelPolicy
      */
     public function forceDelete(User $user, Meeting $meeting)
     {
-        //
+        return false;
     }
 }

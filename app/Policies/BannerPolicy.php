@@ -74,7 +74,7 @@ class BannerPolicy extends ModelPolicy
      */
     public function restore(User $user, Banner $banner)
     {
-        //
+        return false;
     }
 
     /**
@@ -84,6 +84,6 @@ class BannerPolicy extends ModelPolicy
      */
     public function forceDelete(User $user, Banner $banner)
     {
-        //
+        return false;
     }
 }

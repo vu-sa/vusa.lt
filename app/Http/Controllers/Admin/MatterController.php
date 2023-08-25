@@ -39,16 +39,6 @@ class MatterController extends LaravelResourceController
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        $this->authorize('create', [Matter::class, $this->authorizer]);
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @return \Illuminate\Http\Response
@@ -87,26 +77,6 @@ class MatterController extends LaravelResourceController
             'doingTypes' => Type::where('model_type', Doing::class)->get(['id', 'title']),
             'goals' => Inertia::lazy(fn () => Goal::get(['id', 'title'])),
         ]);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Matter $matter)
-    {
-        $this->authorize('update', [Matter::class, $matter, $this->authorizer]);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Matter $matter)
-    {
-        $this->authorize('update', [Matter::class, $matter, $this->authorizer]);
     }
 
     /**

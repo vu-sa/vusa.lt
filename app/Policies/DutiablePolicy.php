@@ -74,7 +74,7 @@ class DutiablePolicy extends ModelPolicy
      */
     public function restore(User $user, Dutiable $dutiable)
     {
-        //
+        return false;
     }
 
     /**
@@ -84,6 +84,6 @@ class DutiablePolicy extends ModelPolicy
      */
     public function forceDelete(User $user, Dutiable $dutiable)
     {
-        //
+        return false;
     }
 }

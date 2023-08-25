@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Resource;
+
 class UpdateResourceRequest extends ResourceRequest
 {
     /**

@@ -47,6 +47,8 @@ class ModelCommented extends Notification implements ShouldQueue
         if (class_basename(get_class($notifiable)) === 'Duty') {
             return ['mail'];
         }
+
+        return ['database', 'broadcast'];
     }
 
     /**

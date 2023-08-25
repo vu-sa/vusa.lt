@@ -74,7 +74,7 @@ class SharepointFilePolicy extends ModelPolicy
      */
     public function restore(User $user, SharepointFile $sharepointFile)
     {
-        //
+        return false;
     }
 
     /**
@@ -84,6 +84,6 @@ class SharepointFilePolicy extends ModelPolicy
      */
     public function forceDelete(User $user, SharepointFile $sharepointFile)
     {
-        //
+        return false;
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Models\Pivots;
 
+use App\Models\Goal;
+use App\Models\Matter;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 

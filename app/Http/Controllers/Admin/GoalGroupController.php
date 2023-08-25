@@ -60,20 +60,6 @@ class GoalGroupController extends LaravelResourceController
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function show(GoalGroup $goalGroup)
-    {
-        return $this->authorize('view', [
-            GoalGroup::class,
-            $goalGroup,
-            $this->authorizer,
-        ]);
-    }
-
-    /**
      * Show the form for editing the specified resource.
      *
      * @return \Illuminate\Http\Response

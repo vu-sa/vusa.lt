@@ -74,7 +74,7 @@ class GoalPolicy extends ModelPolicy
      */
     public function restore(User $user, Goal $goal)
     {
-        //
+        return false;
     }
 
     /**
@@ -84,6 +84,6 @@ class GoalPolicy extends ModelPolicy
      */
     public function forceDelete(User $user, Goal $goal)
     {
-        //
+        return false;
     }
 }

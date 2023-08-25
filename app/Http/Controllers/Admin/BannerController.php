@@ -6,6 +6,7 @@ use App\Http\Controllers\LaravelResourceController;
 use App\Models\Banner;
 use App\Models\Padalinys;
 use App\Services\ModelIndexer;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
@@ -74,20 +75,6 @@ class BannerController extends LaravelResourceController
         Cache::forget('banners-'.$banner->padalinys_id);
 
         return redirect()->route('banners.index')->with('success', 'Baneris sėkmingai sukurtas!');
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Banner $banner)
-    {
-        return $this->authorize('view', [
-            Banner::class,
-            $banner,
-            $this->authorizer,
-        ]);
     }
 
     /**

@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Factories\Pivots;
+namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class AgendaItemFactory extends Factory
 {
+
+    protected $model = \App\Models\Pivots\AgendaItem::class;
+
     /**
      * Define the model's default state.
      *

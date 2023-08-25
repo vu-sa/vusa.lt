@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Exports\MIFRegistrationExport;
 use App\Http\Controllers\LaravelResourceController;
+use App\Models\Institution;
 use App\Models\Registration;
 use App\Models\RegistrationForm;
 use Illuminate\Http\Request;
@@ -25,16 +26,6 @@ class RegistrationFormController extends LaravelResourceController
         ]);
 
         return Excel::download(new MIFRegistrationExport, 'registration.xlsx');
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        // TODO: Implement function or just remove it entirely.
     }
 
     /**
@@ -71,35 +62,5 @@ class RegistrationFormController extends LaravelResourceController
         return Inertia::render('Admin/RegistrationForms/ShowRegistrationForm', [
             'registrations' => $registrations->orderBy('created_at', 'desc')->paginate(30),
         ]);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(RegistrationForm $registrationForm)
-    {
-        // TODO: Implement function or just remove it entirely.
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, RegistrationForm $registrationForm)
-    {
-        // TODO: Implement function or just remove it entirely.
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(RegistrationForm $registrationForm)
-    {
-        // TODO: Implement function or just remove it entirely.
     }
 }
