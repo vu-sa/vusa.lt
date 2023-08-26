@@ -215,8 +215,7 @@ import {
   type TreeOption,
 } from "naive-ui";
 import { computed, h, ref } from "vue";
-import { router } from "@inertiajs/vue3";
-import { useForm, usePage } from "@inertiajs/vue3";
+import { router, useForm, usePage } from "@inertiajs/vue3";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";

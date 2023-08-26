@@ -82,7 +82,7 @@ class DutyController extends LaravelResourceController
         $duty->save();
 
         $duty->types()->sync($request->type);
-        $duty->users()->syncWithPivotValues($request->users, ['start_date' => now()]);
+        $duty->users()->syncWithPivotValues($request->users, ['start_date' => now()->subDay()]);
 
         return redirect()->route('duties.index')->with('success', trans_choice('messages.created', 0, ['model' => trans_choice('entities.duty.model', 1)]));
     }
@@ -141,7 +141,7 @@ class DutyController extends LaravelResourceController
         DB::transaction(function () use ($request, $duty) {
             $duty->update($request->only('name', 'description', 'email', 'places_to_occupy', 'extra_attributes'));
 
-            $duty->users()->syncWithPivotValues($request->users, ['start_date' => now()]);
+            $duty->users()->syncWithPivotValues($request->users, ['start_date' => now()->subDay()]);
 
             $duty->institution()->disassociate();
             $duty->institution()->associate($request->institution_id);

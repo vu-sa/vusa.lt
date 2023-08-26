@@ -11,6 +11,7 @@ use App\Models\MainPage;
 use App\Models\Matter;
 use App\Models\Meeting;
 use App\Models\News;
+use App\Models\Padalinys;
 use App\Models\Page;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Reservation;
@@ -38,6 +39,7 @@ class DatabaseSeeder extends Seeder
         Institution::factory(10)
             ->has(Matter::factory(3))
             ->has(Meeting::factory(3)->has(AgendaItem::factory(3)))
+            ->recycle(Padalinys::all())
             ->create();
 
         $users = User::factory(25)
