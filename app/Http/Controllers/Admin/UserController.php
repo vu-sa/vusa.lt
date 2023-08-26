@@ -44,7 +44,7 @@ class UserController extends LaravelResourceController
             ->builder->paginate(20);
 
         return Inertia::render('Admin/People/IndexUser', [
-            'users' => $users,
+            'users' => $users->setCollection($users->getCollection()->makeVisible('last_action')),
         ]);
     }
 
