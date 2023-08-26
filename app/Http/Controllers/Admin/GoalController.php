@@ -6,7 +6,6 @@ use App\Http\Controllers\LaravelResourceController;
 use App\Models\Goal;
 use App\Services\ModelIndexer;
 use Illuminate\Http\Request;
-use Illuminate\Database\Eloquent\Builder;
 use Inertia\Inertia;
 
 class GoalController extends LaravelResourceController
@@ -28,7 +27,7 @@ class GoalController extends LaravelResourceController
             ->builder->paginate(20);
 
         return Inertia::render('Admin/Representation/IndexGoal', [
-            'goals' => $goals
+            'goals' => $goals,
         ]);
     }
 

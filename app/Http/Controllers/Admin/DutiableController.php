@@ -13,7 +13,6 @@ class DutiableController extends LaravelResourceController
     /**
      * Show the form for editing the specified resource.
      *
-     * @param Dutiable $dutiable
      * @return \Illuminate\Http\Response
      */
     public function edit(Dutiable $dutiable)
@@ -29,7 +28,6 @@ class DutiableController extends LaravelResourceController
      * Update the specified resource in storage.
      * TODO: this will not work for contacts
      *
-     * @param  Dutiable $dutiable
      * @return \Illuminate\Http\Response
      */
     public function update(Dutiable $dutiable, Request $request)
@@ -50,7 +48,6 @@ class DutiableController extends LaravelResourceController
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Pivots\Dutiable  $dutiable
      * @return \Illuminate\Http\Response
      */
     public function destroy(Dutiable $dutiable)

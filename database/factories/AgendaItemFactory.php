@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class AgendaItemFactory extends Factory
 {
-
     protected $model = \App\Models\Pivots\AgendaItem::class;
 
     /**
