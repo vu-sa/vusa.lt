@@ -1,14 +1,14 @@
 <template>
   <PageContent
-    :title="`${dutiable.duty.name} (${dutiable.user.name})`"
-    :back-url="route('users.edit', dutiable.user.id)"
+    :title="`${dutiable.duty.name} (${dutiable.dutiable.name})`"
+    :back-url="route('users.edit', dutiable.dutiable.id)"
     :heading-icon="Icons.DUTY"
   >
     <UpsertModelLayout :errors="$page.props.errors" :model="dutiable">
       <DutiableForm
         :dutiable="dutiable"
-        model-route="duties.users.update"
-        delete-model-route="duties.users.destroy"
+        model-route="dutiables.update"
+        delete-model-route="dutiables.destroy"
       />
     </UpsertModelLayout>
   </PageContent>

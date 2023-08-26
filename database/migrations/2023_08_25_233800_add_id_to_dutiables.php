@@ -23,6 +23,14 @@ return new class extends Migration
             $ulid = strtolower(\Illuminate\Support\Str::ulid());
             DB::table('dutiables')->where('duty_id', $dutiable->duty_id)->where('dutiable_id', $dutiable->dutiable_id)->where('start_date', $dutiable->start_date)->update(['id' => $ulid]);
         });
+
+        // remove old primary key
+        Schema::table('dutiables', function (Blueprint $table) {
+            $table->dropPrimary(['dutiable_id', 'dutiable_type', 'duty_id', 'start_date']);
+
+            // add new primary key
+            $table->primary('id');
+        });
     }
 
     /**
