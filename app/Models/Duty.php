@@ -58,14 +58,20 @@ class Duty extends Model implements AuthorizableContract
     public function current_users()
     {
         return $this->users()
-            ->wherePivot('end_date', null)->orWherePivot('end_date', '>=', now())
+            ->where(function ($query) {
+                $query->whereNull('dutiables.end_date')
+                    ->orWhere('dutiables.end_date', '>=', now());
+            })
             ->withTimestamps();
     }
 
     public function previous_users()
     {
         return $this->users()
-            ->wherePivot('end_date', '<', now())
+            ->where(function ($query) {
+                $query->whereNotNull('dutiables.end_date')
+                    ->where('dutiables.end_date', '<', now());
+            })
             ->withTimestamps();
     }
 

@@ -112,14 +112,13 @@
       </FormElement>
     </div>
     <div class="flex justify-end gap-2">
-      <!-- TODO: add ability to remove dutiable -->
-      <!-- <DeleteModelButton
+      <DeleteModelButton
         v-if="deleteModelRoute"
         :form="form"
         :model-route="deleteModelRoute"
-      /> -->
+      />
       <UpsertModelButton
-        :route-parameters="[dutiable.duty_id, dutiable.dutiable_id]"
+        :route-parameters="[dutiable.id]"
         :form="form"
         :model-route="modelRoute"
       />

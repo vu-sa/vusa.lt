@@ -110,7 +110,7 @@ class DutyController extends LaravelResourceController
     {
         $this->authorize('update', [Duty::class, $duty, $this->authorizer]);
 
-        $duty->load('institution', 'types', 'roles', 'users');
+        $duty->load('institution', 'types', 'roles', 'current_users');
 
         return Inertia::render('Admin/People/EditDuty', [
             'duty' => $duty,

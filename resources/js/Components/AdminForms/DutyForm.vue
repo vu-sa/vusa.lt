@@ -203,7 +203,7 @@ const form = useForm("institution", props.duty);
 
 form.roles = props.duty.roles?.map((role) => role.id);
 form.types = props.duty.types?.map((type) => type.id);
-form.users = props.duty.users?.map((user) => user.id);
+form.users = props.duty.current_users?.map((user) => user.id);
 
 const userOptions = props.assignableUsers.map((user) => ({
   label: user.name,
