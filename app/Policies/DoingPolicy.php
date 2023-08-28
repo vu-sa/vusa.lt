@@ -74,7 +74,7 @@ class DoingPolicy extends ModelPolicy
      */
     public function restore(User $user, Doing $doing)
     {
-        //
+        return false;
     }
 
     /**
@@ -84,6 +84,6 @@ class DoingPolicy extends ModelPolicy
      */
     public function forceDelete(User $user, Doing $doing)
     {
-        //
+        return false;
     }
 }

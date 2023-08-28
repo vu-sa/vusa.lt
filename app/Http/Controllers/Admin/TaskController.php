@@ -11,27 +11,6 @@ use Illuminate\Support\Carbon;
 class TaskController extends LaravelResourceController
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        $this->authorize('viewAny', [Task::class, $this->authorizer]);
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        $this->authorize('create', [Task::class, $this->authorizer]);
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -51,26 +30,6 @@ class TaskController extends LaravelResourceController
         }
 
         return back()->with('success', 'Užduotis sėkmingai pridėta');
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Task $task)
-    {
-        $this->authorize('view', [Task::class, $task, $this->authorizer]);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Task $task)
-    {
-        $this->authorize('update', [Task::class, $task, $this->authorizer]);
     }
 
     /**

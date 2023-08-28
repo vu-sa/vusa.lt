@@ -6,15 +6,15 @@ use App\Models\Pivots\AgendaItem;
 use App\Models\Pivots\Doable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Matter extends Model
 {
-    use HasFactory, HasRelationships, HasUlids, LogsActivity, SoftDeletes;
+    use HasFactory, HasRelationships, HasUlids, LogsActivity, Searchable, SoftDeletes;
 
     protected $casts = [
         'created_at' => 'timestamp',
@@ -22,7 +22,12 @@ class Matter extends Model
 
     protected $guarded = [];
 
-    protected $table = 'matters';
+    public function toSearchableArray()
+    {
+        return [
+            'title' => $this->title,
+        ];
+    }
 
     public function getActivitylogOptions(): LogOptions
     {

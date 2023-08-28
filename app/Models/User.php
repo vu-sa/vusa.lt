@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Scout\Searchable;
 use Octopy\Impersonate\Concerns\Impersonate;
 use Octopy\Impersonate\ImpersonateAuthorization;
 use Spatie\Activitylog\LogOptions;
@@ -17,7 +18,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class User extends Authenticatable
 {
-    use Notifiable, HasFactory, HasRelationships, HasRoles, HasUlids, LogsActivity, SoftDeletes, Impersonate;
+    use Notifiable, HasFactory, HasRelationships, HasRoles, HasUlids, LogsActivity, SoftDeletes, Impersonate, Searchable;
 
     /**
      * The attributes that are mass assignable.
@@ -52,11 +53,39 @@ class User extends Authenticatable
         return LogOptions::defaults()->logFillable()->logOnlyDirty();
     }
 
+    public function toSearchableArray()
+    {
+        return [
+            'name' => $this->name,
+            'email' => $this->email,
+            'phone' => $this->phone ?? '',
+        ];
+    }
+
     public function impersonatable(ImpersonateAuthorization $authorization): void
     {
         $authorization->impersonator(fn (User $user) => $user->hasRole(config('permission.super_admin_role_name')));
 
         $authorization->impersonated(fn (User $user) => ! $user->hasRole(config('permission.super_admin_role_name')));
+    }
+
+    // * The problem is that some models have different method names for getting the unit relation
+    // * This returns the method name for the unit relation
+    // ! It's better if user is extended from Authenticatable, not from Model, because impersonate package throws errors
+    public function whichUnitRelation()
+    {
+        // check for padalinys relation
+        if (method_exists($this, 'padalinys')) {
+            return 'padalinys';
+        }
+
+        // check for padaliniai relation
+        if (method_exists($this, 'padaliniai')) {
+            return 'padaliniai';
+        }
+
+        // throw exception if no unit relation found
+        throw new \Exception('No unit relation found');
     }
 
     public function banners()

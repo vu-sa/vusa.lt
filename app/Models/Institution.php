@@ -10,7 +10,6 @@ use App\Models\Traits\HasSharepointFiles;
 use App\Services\RelationshipService;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
@@ -49,6 +48,7 @@ class Institution extends Model
         return $this->belongsTo(Padalinys::class, 'padalinys_id');
     }
 
+    // TODO: check if method is used anywhere and remove if not
     public function padaliniai()
     {
         return $this->padalinys();
@@ -94,6 +94,7 @@ class Institution extends Model
         // return only title
         $array = [
             'name' => $this->name,
+            'short_name' => $this->short_name,
         ];
 
         return $array;

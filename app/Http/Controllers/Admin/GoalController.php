@@ -6,6 +6,7 @@ use App\Http\Controllers\LaravelResourceController;
 use App\Models\Goal;
 use App\Services\ModelIndexer;
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Builder;
 use Inertia\Inertia;
 
 class GoalController extends LaravelResourceController
@@ -19,13 +20,15 @@ class GoalController extends LaravelResourceController
     {
         $this->authorize('viewAny', [Goal::class, $this->authorizer]);
 
-        $indexer = new ModelIndexer();
+        $indexer = new ModelIndexer(new Goal(), request(), $this->authorizer);
 
-        $search = request()->input('search');
-        $goals = $indexer->execute(Goal::class, $search, 'title', $this->authorizer, null);
+        $goals = $indexer
+            ->filterAllColumns()
+            ->sortAllColumns()
+            ->builder->paginate(20);
 
         return Inertia::render('Admin/Representation/IndexGoal', [
-            'goals' => $goals->paginate(20),
+            'goals' => $goals
         ]);
     }
 

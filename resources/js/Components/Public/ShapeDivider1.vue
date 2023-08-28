@@ -23,10 +23,10 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
+import { useDark } from "@vueuse/core";
 
-const props = defineProps<{
-  isThemeDark?: boolean;
-}>();
+// TODO: Inject theme color, instead of using useDark
+const isDark = useDark();
 
-const fill = computed(() => (props.isThemeDark ? "#18181b" : "#fafafa"));
+const fill = computed(() => (isDark.value ? "#18181b" : "#fafafa"));
 </script>

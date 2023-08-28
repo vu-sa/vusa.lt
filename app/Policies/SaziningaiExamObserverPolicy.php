@@ -74,7 +74,7 @@ class SaziningaiExamObserverPolicy extends ModelPolicy
      */
     public function restore(User $user, SaziningaiExamObserver $saziningaiExamObserver)
     {
-        //
+        return false;
     }
 
     /**
@@ -84,6 +84,6 @@ class SaziningaiExamObserverPolicy extends ModelPolicy
      */
     public function forceDelete(User $user, SaziningaiExamObserver $saziningaiExamObserver)
     {
-        //
+        return false;
     }
 }

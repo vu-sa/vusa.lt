@@ -18,7 +18,7 @@ class CommentFactory extends Factory
      */
     public function definition()
     {
-        $commentable = $this->commentable();
+        // $commentable = $this->commentable();
 
         return [
             'comment' => $this->faker->paragraph(),
@@ -26,18 +26,18 @@ class CommentFactory extends Factory
         ];
     }
 
-    public function configure()
-    {
-        return $this->for(
-            static::factoryForModel($this->commentable()),
-            'commentable',
-        );
-    }
+    // public function configure()
+    // {
+    //     return $this->for(
+    //         static::factoryForModel($this->commentable()),
+    //         'commentable',
+    //     );
+    // }
 
-    public function commentable()
-    {
-        return $this->faker->randomElement([
-            Doing::class,
-        ]);
-    }
+    // public function commentable()
+    // {
+    //     return $this->faker->randomElement([
+    //         Doing::class,
+    //     ]);
+    // }
 }

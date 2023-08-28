@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class AgendaItemFactory extends Factory
 {
+
+    protected $model = \App\Models\Pivots\AgendaItem::class;
+
     /**
      * Define the model's default state.
      *
@@ -17,7 +20,7 @@ class AgendaItemFactory extends Factory
     public function definition()
     {
         return [
-            //
+            'title' => $this->faker->sentence,
         ];
     }
 }

@@ -11,7 +11,7 @@
           :href="
             route('page', {
               lang: $page.props.app.locale,
-              padalinys: 'www',
+              subdomain: 'www',
               permalink:
                 $page.props.app.locale === 'lt'
                   ? 'individualios-studijos'
@@ -42,7 +42,7 @@
                 :href="
                   route('page', {
                     lang: $page.props.app.locale,
-                    padalinys: 'www',
+                    subdomain: 'www',
                     permalink: 'individualios-studijos',
                   })
                 "
@@ -61,7 +61,7 @@
                 :href="
                   route('page', {
                     lang: $page.props.app.locale,
-                    padalinys: 'www',
+                    subdomain: 'www',
                     permalink: 'individual-studies',
                   })
                 "
@@ -79,11 +79,7 @@
 
 <script setup lang="ts">
 import { ArrowCircleRight20Regular } from "@vicons/fluent";
-import { NIcon, NDivider } from "naive-ui";
+import { NDivider, NIcon } from "naive-ui";
 
 defineOptions({ suspensible: false });
-
-defineProps<{
-  isThemeDark: boolean;
-}>();
 </script>

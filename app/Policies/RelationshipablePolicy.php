@@ -74,7 +74,7 @@ class RelationshipablePolicy extends ModelPolicy
      */
     public function restore(User $user, Relationshipable $relationshipable)
     {
-        //
+        return false;
     }
 
     /**
@@ -84,6 +84,6 @@ class RelationshipablePolicy extends ModelPolicy
      */
     public function forceDelete(User $user, Relationshipable $relationshipable)
     {
-        //
+        return false;
     }
 }

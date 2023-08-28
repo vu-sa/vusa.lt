@@ -3,9 +3,7 @@
 
   <FadeTransition appear>
     <div>
-      <HeaderWithShapeDivider1
-        :is-theme-dark="isThemeDark"
-        image-src="/images/photos/stovykla.jpg"
+      <HeaderWithShapeDivider1 image-src="/images/photos/stovykla.jpg"
         >Pirmakursių stovyklos
       </HeaderWithShapeDivider1>
 
@@ -91,7 +89,7 @@
                 route('calendar.event', {
                   calendar: event.id,
                   lang: 'lt',
-                  padalinys: 'www',
+                  subdomain: 'www',
                 })
               "
             >
@@ -112,18 +110,14 @@
 
 <script setup lang="ts">
 import { Head, Link } from "@inertiajs/vue3";
-import { onMounted, ref } from "vue";
 
 import { getFacultyName } from "@/Utils/String";
-import { isDarkMode, updateDarkMode } from "@/Composables/darkMode";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import HeaderWithShapeDivider1 from "@/Components/Headers/HeaderWithShapeDivider1.vue";
 
 defineProps<{
   events: App.Entities.News;
 }>();
-
-const isThemeDark = ref(isDarkMode());
 
 const get5thResponsiveImage = (event: App.Entities.Calendar) => {
   if (event.media.length === 0) return "";
@@ -142,8 +136,4 @@ const get5thResponsiveImage = (event: App.Entities.Calendar) => {
     ];
   return responsiveUrl;
 };
-
-onMounted(() => {
-  updateDarkMode(isThemeDark);
-});
 </script>

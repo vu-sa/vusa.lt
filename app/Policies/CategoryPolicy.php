@@ -74,7 +74,7 @@ class CategoryPolicy extends ModelPolicy
      */
     public function restore(User $user, Category $category)
     {
-        //
+        return false;
     }
 
     /**
@@ -84,6 +84,6 @@ class CategoryPolicy extends ModelPolicy
      */
     public function forceDelete(User $user, Category $category)
     {
-        //
+        return false;
     }
 }

@@ -100,7 +100,7 @@ class RelationshipService
      * @param  mixed  $relationshipable
      * @return void
      */
-    protected static function getGivenModelsFromModelType($model_type, $relationshipable)
+    protected static function getGivenModelsFromModelType($model_type, $relationshipable): array
     {
         // The whole function is only for one relationshipable
         $relationships = [];

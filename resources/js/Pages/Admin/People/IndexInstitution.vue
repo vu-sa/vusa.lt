@@ -21,6 +21,7 @@ import { computed, provide, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
+import { padalinysColumn } from "@/Composables/dataTableColumns";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 import ModelChip from "@/Components/Chips/ModelChip.vue";
@@ -94,7 +95,7 @@ const columns = computed<DataTableColumns<App.Entities.Institution>>(() => {
         return (
           <PreviewModelButton
             publicRoute="contacts.alias"
-            routeProps={{ alias: row.alias, lang: "lt", padalinys: "www" }}
+            routeProps={{ alias: row.alias, lang: "lt", subdomain: "www" }}
           />
         );
       },
@@ -106,18 +107,9 @@ const columns = computed<DataTableColumns<App.Entities.Institution>>(() => {
       key: "short_name",
     },
     {
-      title: "Padalinys",
-      key: "padalinys.id",
-      filter: true,
-      filterOptionValues: filters.value["padalinys.id"],
-      filterOptions: usePage().props.padaliniai.map((padalinys) => {
-        return {
-          label: padalinys.shortname,
-          value: padalinys.id,
-        };
-      }),
+      ...padalinysColumn(filters, usePage().props.padaliniai),
       render(row) {
-        return row.padalinys?.shortname;
+        return $t(row.padalinys?.shortname ?? "");
       },
     },
   ];

@@ -3,6 +3,7 @@
 namespace App\Listeners;
 
 use App\Events\CommentPosted;
+use App\Models\Pivots\ReservationResource;
 use App\Notifications\ModelCommented;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Notification;

@@ -8,6 +8,7 @@ use App\Http\Requests\StoreResourceRequest;
 use App\Http\Requests\UpdateResourceRequest;
 use App\Models\Resource;
 use App\Services\ModelIndexer;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
 use Inertia\Inertia;
 
@@ -28,24 +29,16 @@ class ResourceController extends LaravelResourceController
     {
         $this->authorize('viewAny', [Resource::class, $this->authorizer]);
 
-        $resources = Resource::search(request()->input('text'));
+        $indexer = new ModelIndexer(new Resource(), request(), $this->authorizer);
 
-        $filters = json_decode(base64_decode(request()->input('filters')), true);
-        $sorters = json_decode(base64_decode(request()->input('sorters')), true);
-
-        $resources = ModelIndexer::filterByColumn($resources, 'padalinys_id', $filters);
-
-        // sort
-
-        $resources = $resources->when(
-            isset($sorters['name']),
-            function ($query) use ($sorters) {
-                $query->orderBy('name', $sorters['name'] === 'descend' ? 'desc' : 'asc');
-            }
-        );
+        $resources = $indexer
+            ->setEloquentQuery([fn (Builder $query) => $query->with(['media'])])
+            ->filterAllColumns()
+            ->sortAllColumns()
+            ->builder->paginate(20);
 
         return Inertia::render('Admin/Reservations/IndexResource', [
-            'resources' => $resources->get()->load('media', 'padalinys')->paginate(15),
+            'resources' => $resources,
         ]);
     }
 

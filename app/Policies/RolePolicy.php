@@ -74,7 +74,7 @@ class RolePolicy extends ModelPolicy
      */
     public function restore(User $user, Role $role)
     {
-        //
+        return false;
     }
 
     /**
@@ -84,6 +84,6 @@ class RolePolicy extends ModelPolicy
      */
     public function forceDelete(User $user, Role $role)
     {
-        //
+        return false;
     }
 }

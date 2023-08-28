@@ -1,11 +1,7 @@
 <template>
   <header class="group relative">
+    <ShapeDivider1 class="absolute -top-1 z-10"></ShapeDivider1>
     <ShapeDivider1
-      :is-theme-dark="isThemeDark"
-      class="absolute -top-1 z-10"
-    ></ShapeDivider1>
-    <ShapeDivider1
-      :is-theme-dark="isThemeDark"
       class="absolute bottom-5 z-10 rotate-180 lg:-bottom-1"
     ></ShapeDivider1>
     <div class="relative">
@@ -24,7 +20,6 @@
 <script setup lang="tsx">
 import ShapeDivider1 from "../Public/ShapeDivider1.vue";
 defineProps<{
-  isThemeDark: boolean;
   imageSrc: string;
   objectPosition?: string;
 }>();

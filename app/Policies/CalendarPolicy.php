@@ -74,7 +74,7 @@ class CalendarPolicy extends ModelPolicy
      */
     public function restore(User $user, Calendar $calendar)
     {
-        //
+        return false;
     }
 
     /**
@@ -84,6 +84,6 @@ class CalendarPolicy extends ModelPolicy
      */
     public function forceDelete(User $user, Calendar $calendar)
     {
-        //
+        return false;
     }
 }

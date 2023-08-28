@@ -13,7 +13,6 @@
     <meta name="og:description" content="{{ $description ?? '' }}">
     <meta name="image" content="{{ $image ?? '' }}">
     <meta name="og:image" content="{{ $image ?? '' }}">
-    <meta name="color-scheme" content="dark light" media="(prefers-color-scheme: dark)">
     <meta name="theme-color" content="#252528" media="(prefers-color-scheme: dark)" />
 
     @include('meta-icons')

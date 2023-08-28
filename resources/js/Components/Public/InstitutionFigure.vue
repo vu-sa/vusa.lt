@@ -17,7 +17,10 @@
           :href="
             route('contacts.alias', {
               alias: institution.alias,
-              padalinys: institution.padalinys?.alias ?? 'www',
+              subdomain:
+                institution.padalinys?.alias === 'vusa'
+                  ? 'www'
+                  : institution.padalinys?.alias ?? institution.alias,
               lang: $page.props.app.locale,
             })
           "
@@ -42,7 +45,8 @@
             :href="
               route('contacts.alias', {
                 alias: section.alias,
-                padalinys: institution.alias,
+                subdomain:
+                  institution.alias === 'vusa' ? 'www' : institution.alias,
                 lang: $page.props.app.locale,
               })
             "

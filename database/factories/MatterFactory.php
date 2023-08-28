@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\Institution;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,8 +19,6 @@ class MatterFactory extends Factory
         return [
             'title' => $this->faker->sentence,
             'description' => $this->faker->paragraph,
-            'status' => $this->faker->randomElement(['Sukurtas', 'Pabaigtas']),
-            'institution_id' => Institution::all()->random()->id,
             'created_at' => $this->faker->dateTimeBetween('-1 year', 'now'),
             'updated_at' => $this->faker->dateTimeBetween('-1 year', 'now'),
         ];

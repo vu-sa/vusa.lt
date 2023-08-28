@@ -10,6 +10,7 @@ use App\Models\Resource;
 use App\Models\User;
 use App\Notifications\UserAttachedToModel;
 use App\Services\ModelIndexer;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -34,30 +35,20 @@ class ReservationController extends LaravelResourceController
 
         $this->authorize('viewAny', [Reservation::class, $this->authorizer]);
 
-        $reservations = Reservation::search(request()->input('text'));
+        $indexer = new ModelIndexer(new Reservation(), request(), $this->authorizer);
 
-        $sorters = json_decode(base64_decode(request()->input('sorters')), true);
-
-        $reservations = $reservations
-            ->when(
-                isset($sorters['name']) && $sorters['name'],
-                function ($query) use ($sorters) {
-                    $query->orderBy('name', $sorters['name'] === 'descend' ? 'desc' : 'asc');
-                })
-            ->when(isset($sorters['start_time']) && $sorters['start_time'], function ($query) use ($sorters) {
-                $query->orderBy('start_time', $sorters['start_time'] === 'descend' ? 'desc' : 'asc');
-            })->when(isset($sorters['end_time']) && $sorters['end_time'], function ($query) use ($sorters) {
-                $query->orderBy('end_time', $sorters['end_time'] === 'descend' ? 'desc' : 'asc');
-            });
-
-        $reservations = ModelIndexer::filterByAuthorized($reservations, $this->authorizer);
+        $reservations = $indexer
+            ->setEloquentQuery([fn (Builder $query) => $query->with(['resources.padalinys', 'users'])])
+            ->filterAllColumns()
+            ->sortAllColumns(['start_time' => 'descend'])
+            ->builder->paginate(20);
 
         $resources = Resource::withWhereHas('padalinys', function ($query) {
             $query->whereIn('id', $this->authorizer->getPadaliniai()->pluck('id'));
         });
 
         return Inertia::render('Admin/Reservations/IndexReservation', [
-            'reservations' => $reservations->get()->load('resources', 'users', 'resources.padalinys')->paginate(15),
+            'reservations' => $reservations,
             'activeReservations' => $resources->with('reservations.resources.padalinys', 'reservations.users')->get()->pluck('reservations')->flatten()->unique('id')->values(),
         ]);
     }

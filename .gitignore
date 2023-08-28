@@ -35,3 +35,4 @@ lang/php_en.json
 lang/php_lt.json
 
 .phpunit.cache
+coverage/*

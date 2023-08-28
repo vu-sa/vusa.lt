@@ -71,20 +71,6 @@ class NavigationController extends LaravelResourceController
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Navigation $navigation)
-    {
-        return $this->authorize('view', [
-            Navigation::class,
-            $navigation,
-            $this->authorizer,
-        ]);
-    }
-
-    /**
      * Show the form for editing the specified resource.
      *
      * @return \Illuminate\Http\Response

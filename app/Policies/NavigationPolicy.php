@@ -74,7 +74,7 @@ class NavigationPolicy extends ModelPolicy
      */
     public function restore(User $user, Navigation $navigation)
     {
-        //
+        return false;
     }
 
     /**
@@ -84,6 +84,6 @@ class NavigationPolicy extends ModelPolicy
      */
     public function forceDelete(User $user, Navigation $navigation)
     {
-        //
+        return false;
     }
 }

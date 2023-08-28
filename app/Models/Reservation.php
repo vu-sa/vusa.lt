@@ -7,7 +7,6 @@ use App\Models\Traits\HasComments;
 use App\Models\Traits\HasTasks;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
@@ -32,11 +31,6 @@ class Reservation extends Model
 
     public function toSearchableArray()
     {
-        // return [
-        //     'name->'.app()->getLocale() => $this->getTranslation('name', 'lt'),
-        //     'description->'.app()->getLocale() => $this->getTranslation('description', 'lt'),
-        // ];
-
         return [
             'name' => $this->name,
             'description' => $this->description,

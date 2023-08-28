@@ -22,6 +22,7 @@
       <PadalinysSelector
         :size="smallerThanSm ? 'tiny' : 'small'"
         :padalinys="padalinys"
+        :all-padaliniai="padaliniai"
         @select:padalinys="handleSelectPadalinys"
       ></PadalinysSelector>
       <NButton
@@ -110,9 +111,9 @@ defineProps<{
   isThemeDark: boolean;
 }>();
 
-// map padaliniai to options_padaliniai
-
-const padaliniai = usePage().props.padaliniai;
+const padaliniai = usePage().props.padaliniai.filter(
+  (padalinys) => padalinys.type === "padalinys",
+);
 const locale = ref(usePage().props.app.locale);
 const activeDrawer = ref(false);
 const toggleMenu = () => {

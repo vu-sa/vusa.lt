@@ -8,7 +8,7 @@
     :paginated-models="reservations"
   >
     <NCard class="subtle-gray-gradient mb-4">
-      <template #header>Reservations with unit resources</template>
+      <template #header>{{ $t("Reservations with unit resources") }}</template>
       <NDataTable
         :columns="columnsWithActions"
         :data="activeReservations"
@@ -55,7 +55,7 @@ const canUseRoutes = {
 
 const sorters = ref<Record<string, DataTableSortState["order"]>>({
   name: false,
-  start_time: false,
+  start_time: "descend",
   end_time: false,
 });
 

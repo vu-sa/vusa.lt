@@ -9,7 +9,7 @@ use App\Services\ModelIndexer;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class PagesController extends LaravelResourceController
+class PageController extends LaravelResourceController
 {
     /**
      * Display a listing of the resource.
@@ -20,13 +20,16 @@ class PagesController extends LaravelResourceController
     {
         $this->authorize('viewAny', [Page::class, $this->authorizer]);
 
-        $search = request()->input('text');
+        $indexer = new ModelIndexer(new Page(), request(), $this->authorizer);
 
-        $indexer = new ModelIndexer();
-        $pages = $indexer->execute(Page::class, $search, 'title', $this->authorizer, false);
+        $pages = $indexer
+            ->setEloquentQuery()
+            ->filterAllColumns()
+            ->sortAllColumns(['created_at' => 'desc'])
+            ->builder->paginate(20);
 
         return Inertia::render('Admin/Content/IndexPages', [
-            'pages' => $pages->with('padalinys:id,shortname,alias')->orderBy('created_at', 'desc')->paginate(20),
+            'pages' => $pages,
         ]);
     }
 
@@ -77,20 +80,6 @@ class PagesController extends LaravelResourceController
         ]);
 
         return redirect()->route('pages.index')->with('success', 'Puslapis sėkmingai sukurtas!');
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Page $page)
-    {
-        return $this->authorize('view', [
-            Page::class,
-            $page,
-            $this->authorizer,
-        ]);
     }
 
     /**

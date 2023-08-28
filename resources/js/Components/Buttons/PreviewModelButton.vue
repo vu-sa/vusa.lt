@@ -1,28 +1,32 @@
 <template>
-  <NButton secondary size="small" @click="handleClick">
-    <NIcon :component="PreviewLink20Filled"></NIcon>
+  <NButton
+    tag="a"
+    :href="route(publicRoute, routePropsModified)"
+    rel="noopener noreferrer"
+    secondary
+    size="small"
+  >
+    <NIcon :component="PreviewLink20Filled" />
   </NButton>
 </template>
 
 <script setup lang="ts">
 import { NButton, NIcon } from "naive-ui";
 import { PreviewLink20Filled } from "@vicons/fluent";
+import { computed } from "vue";
 
 const props = defineProps<{
   publicRoute: string;
   routeProps: Record<string, string>;
 }>();
 
-const handleClick = () => {
-  // fix for permalinks when main org is vusa
-  if(props.routeProps['padalinys'] == "vusa"){
-    props.routeProps['padalinys'] = 'www';
-  } 
+const routePropsModified = computed(() => {
+  let routeProps = props.routeProps;
 
-  window.open(
-    route(props.publicRoute, props.routeProps),
-    "_blank",
-    "noopener,noreferrer"
-  );
-};
+  if (routeProps["padalinys"] === "vusa") {
+    routeProps["padalinys"] = "www";
+  }
+
+  return routeProps;
+});
 </script>

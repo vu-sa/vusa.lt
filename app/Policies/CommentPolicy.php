@@ -74,7 +74,7 @@ class CommentPolicy extends ModelPolicy
      */
     public function restore(User $user, Comment $comment)
     {
-        //
+        return false;
     }
 
     /**
@@ -84,6 +84,6 @@ class CommentPolicy extends ModelPolicy
      */
     public function forceDelete(User $user, Comment $comment)
     {
-        //
+        return false;
     }
 }

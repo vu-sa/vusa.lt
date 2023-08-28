@@ -9,26 +9,6 @@ use Inertia\Inertia;
 
 class SaziningaiExamFlowsController extends LaravelResourceController
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        $this->authorize('viewAny', [SaziningaiExamFlow::class, $this->authorizer]);
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        $this->authorize('create', [SaziningaiExamFlow::class, $this->authorizer]);
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -46,16 +26,6 @@ class SaziningaiExamFlowsController extends LaravelResourceController
         $saziningaiExamFlow->save();
 
         return back();
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function show(SaziningaiExamFlow $saziningaiExamFlow)
-    {
-        $this->authorize('view', [SaziningaiExamFlow::class, $saziningaiExamFlow, $this->authorizer]);
     }
 
     /**
@@ -87,15 +57,5 @@ class SaziningaiExamFlowsController extends LaravelResourceController
 
         // Redirect to the exam
         return back();
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(SaziningaiExamFlow $saziningaiExamFlow)
-    {
-        $this->authorize('delete', [SaziningaiExamFlow::class, $saziningaiExamFlow, $this->authorizer]);
     }
 }
