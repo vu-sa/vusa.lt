@@ -24,6 +24,7 @@ Route::resource('mainPage', MainPageController::class)->except(['show']);
 Route::resource('banners', BannerController::class)->except(['show']);
 Route::resource('navigation', NavigationController::class)->except(['show']);
 Route::resource('users', UserController::class);
+Route::post('users/{id}/restore', [UserController::class, 'restore'])->name('users.restore');
 Route::post('users/{user}/sendWelcomeEmail', [UserController::class, 'sendWelcomeEmail'])->name('users.sendWelcomeEmail');
 Route::get('users/{user}/renderWelcomeEmail', [UserController::class, 'renderWelcomeEmail'])->name('users.renderWelcomeEmail');
 Route::resource('users.comments', CommentController::class)->only(['store', 'update', 'destroy']);

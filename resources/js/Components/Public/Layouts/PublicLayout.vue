@@ -1,4 +1,5 @@
 <template>
+  <!-- https://www.joshwcomeau.com/css/full-bleed/ -->
   <FadeTransition>
     <!-- <Suspense> -->
     <NConfigProvider

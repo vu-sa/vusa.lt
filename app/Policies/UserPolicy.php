@@ -73,8 +73,14 @@ class UserPolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function restore(User $user, User $model)
+    public function restore(User $user, User $model, ModelAuthorizer $authorizer)
     {
+        $this->authorizer = $authorizer;
+
+        if ($this->commonChecker($user, $model, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
+            return true;
+        }
+
         return false;
     }
 

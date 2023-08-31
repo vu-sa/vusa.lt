@@ -141,6 +141,15 @@ class ModelIndexer
         return $this;
     }
 
+    public function onlyTrashed($boolean)
+    {
+        if ($boolean) {
+            $this->builder->onlyTrashed();
+        }
+
+        return $this;
+    }
+
     public function sortAllColumns(array $default = null)
     {
         if ($default && ! $this->sorters) {

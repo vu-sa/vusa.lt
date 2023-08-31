@@ -29,18 +29,51 @@
         ><template #icon> <NIcon :component="Search24Filled" /> </template
       ></NButton>
     </NInputGroup>
+    <NBadge :value="other.length">
+      <NPopover trigger="click">
+        <template #trigger>
+          <NButton circle>
+            <template #icon
+              ><NIcon :component="MoreVertical24Filled"
+            /></template>
+          </NButton>
+        </template>
+        <NCheckboxGroup
+          v-model:value="other"
+          @update:value="$emit('update:other', $event)"
+        >
+          <NCheckbox value="showSoftDeleted" label="Rodyti ištrintus"
+            >Rodyti ištrintus</NCheckbox
+          >
+        </NCheckboxGroup>
+      </NPopover>
+    </NBadge>
   </div>
 </template>
 
-<script setup lang="ts">
-import { Broom16Regular, Search24Filled } from "@vicons/fluent";
-import { NButton, NIcon, NInput, NInputGroup, NPopover } from "naive-ui";
+<script setup lang="tsx">
+import {
+  Broom16Regular,
+  MoreVertical24Filled,
+  Search24Filled,
+} from "@vicons/fluent";
+import {
+  NBadge,
+  NButton,
+  NCheckbox,
+  NCheckboxGroup,
+  NIcon,
+  NInput,
+  NInputGroup,
+  NPopover,
+} from "naive-ui";
 import { ref } from "vue";
 import { router } from "@inertiajs/vue3";
 
 // TODO: fix this event
 const emit = defineEmits<{
   (event: "completeSearch"): void;
+  (event: "update:other"): void;
   (event: "sweep"): void;
 }>();
 
@@ -52,6 +85,10 @@ const props = defineProps<{
 const loading = ref(false);
 const searchIsDirty = ref(false);
 const searchValue = ref("");
+// TODO: on page reload, other is not set according to query parameter
+const other = ref([]);
+
+// if query parameter showSoftDeleted is set to true, then show soft deleted models
 
 const handleSearchInput = () => {
   loading.value = true;
@@ -68,6 +105,7 @@ const handleSearchInput = () => {
 const sweepSearch = () => {
   searchValue.value = "";
   searchIsDirty.value = false;
+  other.value = [];
   emit("sweep");
 };
 </script>
