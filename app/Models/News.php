@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\Searchable;
 use Spatie\Feed\Feedable;
@@ -10,7 +11,7 @@ use Spatie\Feed\FeedItem;
 
 class News extends Model implements Feedable
 {
-    use HasFactory, Searchable;
+    use HasFactory, Searchable, SoftDeletes;
 
     protected $table = 'news';
 
