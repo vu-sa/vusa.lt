@@ -20,8 +20,6 @@ use App\Models\Resource;
 use App\Models\SaziningaiExam;
 use App\Models\SaziningaiExamFlow;
 use App\Models\SaziningaiExamObserver;
-use App\Models\Type;
-use App\Models\Typeable;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 

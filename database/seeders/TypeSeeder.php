@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Doing;
 use App\Models\Duty;
 use App\Models\Institution;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -31,7 +30,7 @@ class TypeSeeder extends Seeder
                 ['title' => 'Susitikimas', 'slug' => 'susitikimas', 'model_type' => Doing::class],
                 ['title' => 'Laiškas', 'slug' => 'laiskas', 'model_type' => Doing::class],
                 ['title' => 'El. apklausa', 'slug' => 'el-apklausa', 'model_type' => Doing::class],
-                ['title' => 'Focus grupė', 'slug' => 'focus-grupe', 'model_type' => Doing::class]
+                ['title' => 'Focus grupė', 'slug' => 'focus-grupe', 'model_type' => Doing::class],
             ]
         );
     }

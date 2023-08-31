@@ -15,7 +15,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Goal extends Model
 {
-    use HasComments, HasFactory, HasSharepointFiles, HasTasks, HasUlids, SoftDeletes, LogsActivity;
+    use HasComments, HasFactory, HasSharepointFiles, HasTasks, HasUlids, LogsActivity, SoftDeletes;
 
     protected $guarded = [];
 

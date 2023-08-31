@@ -6,7 +6,6 @@ use App\Models\Doing;
 use App\Models\Goal;
 use App\Models\Matter;
 use App\Models\Type;
-use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Seeder;
 
 class DoingSeeder extends Seeder

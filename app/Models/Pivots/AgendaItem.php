@@ -16,7 +16,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class AgendaItem extends Pivot
 {
-    use HasUlids, HasRelationships, LogsActivity, HasFactory;
+    use HasFactory, HasRelationships, HasUlids, LogsActivity;
 
     protected $table = 'agenda_items';
 

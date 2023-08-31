@@ -10,7 +10,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Task extends Model
 {
-    use HasFactory, HasUlids, HasRelationships, SoftDeletes;
+    use HasFactory, HasRelationships, HasUlids, SoftDeletes;
 
     protected $guarded = [];
 

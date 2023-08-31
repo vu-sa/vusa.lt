@@ -38,7 +38,7 @@ class PageFactory extends Factory
             'permalink' => 'page'.$this->incrementAndReturn(),
             'category_id' => $this->faker->numberBetween(1, 3),
             'text' => '<p>'.$this->faker->paragraph(3).'</p><p>'.$this->faker->paragraph(3).'</p>',
-            'padalinys_id' => Padalinys::factory()
+            'padalinys_id' => Padalinys::factory(),
         ];
     }
 }

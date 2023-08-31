@@ -23,7 +23,7 @@ class GoalFactory extends Factory
             'start_date' => $this->faker->date,
             // end date later than start date
             'end_date' => $this->faker->dateTimeBetween('now', '+1 year'),
-            'padalinys_id' => Padalinys::factory()
+            'padalinys_id' => Padalinys::factory(),
         ];
     }
 }

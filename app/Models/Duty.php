@@ -17,7 +17,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Duty extends Model implements AuthorizableContract
 {
-    use HasFactory, Notifiable, Authorizable, HasRoles, HasRelationships, LogsActivity, HasUlids, SoftDeletes, Searchable;
+    use Authorizable, HasFactory, HasRelationships, HasRoles, HasUlids, LogsActivity, Notifiable, Searchable, SoftDeletes;
 
     protected $with = ['types'];
 

@@ -15,7 +15,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Reservation extends Model
 {
-    use HasFactory, HasComments, HasTasks, HasRelationships, HasUlids, LogsActivity, Searchable, SoftDeletes;
+    use HasComments, HasFactory, HasRelationships, HasTasks, HasUlids, LogsActivity, Searchable, SoftDeletes;
 
     protected $guarded = [];
 

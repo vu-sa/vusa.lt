@@ -20,7 +20,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Doing extends Model implements Decidable
 {
-    use HasFactory, HasStates, HasComments, MakesDecisions, HasRelationships, HasSharepointFiles, HasTasks, HasUlids, LogsActivity, SoftDeletes, Searchable;
+    use HasComments, HasFactory, HasRelationships, HasSharepointFiles, HasStates, HasTasks, HasUlids, LogsActivity, MakesDecisions, Searchable, SoftDeletes;
 
     protected $with = ['types'];
 
