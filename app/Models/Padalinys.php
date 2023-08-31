@@ -13,6 +13,8 @@ class Padalinys extends Model
 
     protected $guarded = [];
 
+    public $timestamps = false;
+
     public function banners()
     {
         return $this->hasMany(Banner::class, 'padalinys_id');

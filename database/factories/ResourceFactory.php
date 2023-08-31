@@ -23,7 +23,7 @@ class ResourceFactory extends Factory
             'location' => $this->faker->word,
             'capacity' => $this->faker->numberBetween(1, 10),
             'is_reservable' => $this->faker->boolean,
-            'padalinys_id' => Padalinys::inRandomOrder()->first()->id,
+            'padalinys_id' => Padalinys::factory()
         ];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Padalinys;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,12 +18,12 @@ class GoalFactory extends Factory
     public function definition()
     {
         return [
-            'name' => $this->faker->name,
+            'title' => $this->faker->sentence,
             'description' => $this->faker->text,
             'start_date' => $this->faker->date,
             // end date later than start date
             'end_date' => $this->faker->dateTimeBetween('now', '+1 year'),
-            'status' => $this->faker->randomElement(['active', 'inactive']),
+            'padalinys_id' => Padalinys::factory()
         ];
     }
 }

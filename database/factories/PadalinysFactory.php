@@ -17,10 +17,10 @@ class PadalinysFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->company(),
-            'short_name' => $this->faker->companySuffix(),
+            'fullname' => $this->faker->company(),
+            'shortname' => $this->faker->companySuffix(),
             'alias' => $this->faker->companySuffix(),
-            'description' => '<p>'.$this->faker->paragraph(1).'</p><p>'.$this->faker->paragraph(1).'</p>',
+            'shortname_vu' => $this->faker->companySuffix(),
         ];
     }
 }

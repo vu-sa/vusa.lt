@@ -24,7 +24,7 @@ class BannerFactory extends Factory
             'lang' => fake()->randomElement(['lt', 'en']),
             'order' => fake()->numberBetween(1, 1000),
             'is_active' => fake()->boolean(),
-            'padalinys_id' => Padalinys::inRandomOrder()->select('id')->first()->id,
+            'padalinys_id' => Padalinys::factory(),
         ];
     }
 }

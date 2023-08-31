@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use App\Models\Doing;
 use App\Models\Goal;
 use App\Models\Matter;
+use App\Models\Type;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Seeder;
 
 class DoingSeeder extends Seeder
@@ -19,7 +21,9 @@ class DoingSeeder extends Seeder
         // call factory
         Goal::factory()
             ->has(Matter::factory()
-                ->has(Doing::factory()->count(10))
+                ->has(Doing::factory()->hasAttached(
+                    Type::query()->where('model_type', Doing::class)->inRandomOrder()->limit(2)
+                )->count(10))
                 ->count(10))
             ->count(3)->create();
     }

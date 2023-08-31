@@ -6,6 +6,7 @@ use App\Models\Banner;
 use App\Models\Calendar;
 use App\Models\Doing;
 use App\Models\Duty;
+use App\Models\Goal;
 use App\Models\Institution;
 use App\Models\MainPage;
 use App\Models\Matter;
@@ -19,6 +20,8 @@ use App\Models\Resource;
 use App\Models\SaziningaiExam;
 use App\Models\SaziningaiExamFlow;
 use App\Models\SaziningaiExamObserver;
+use App\Models\Type;
+use App\Models\Typeable;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -35,6 +38,7 @@ class DatabaseSeeder extends Seeder
         // $this->call(RegistrationFormsSeeder::class);
         $this->call(AdminSeeder::class);
         $this->call(PadaliniaiSeeder::class);
+        $this->call(TypeSeeder::class);
 
         Institution::factory(10)
             ->has(Matter::factory(3))
@@ -49,18 +53,20 @@ class DatabaseSeeder extends Seeder
         $this->call(MenuSeeder::class);
         $this->call(DeleteAndSeedPermissions::class);
 
-        Banner::factory(20)->create();
-        Calendar::factory(50)->create();
-        MainPage::factory(50)->create();
-        News::factory(75)->create();
-        Page::factory(75)->create();
+        Banner::factory(20)->recycle(Padalinys::all())->create();
+        Calendar::factory(50)->recycle(Padalinys::all())->create();
+        MainPage::factory(50)->recycle(Padalinys::all())->create();
+        News::factory(75)->recycle(Padalinys::all())->create();
+        Page::factory(75)->recycle(Padalinys::all())->create();
 
-        Resource::factory(50)->has(Reservation::factory()->hasAttached($users->random(3)))->create();
+        Resource::factory(50)->has(Reservation::factory()->hasAttached($users->random(3)))->recycle(Padalinys::all())->create();
         SaziningaiExam::factory(15)->create();
         SaziningaiExamFlow::factory(20)->create();
         SaziningaiExamObserver::factory(10)->create();
 
         $this->call(RoleStudentRepresentativeSeeder::class);
         $this->call(RoleStudentRepresentativeCoordinatorSeeder::class);
+
+        Goal::factory(10)->recycle(Padalinys::all())->create();
     }
 }
