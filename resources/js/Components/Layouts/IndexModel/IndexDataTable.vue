@@ -197,7 +197,7 @@ const columnsWithActions = computed(() => {
       key: "actions",
       width: 175,
       render(row) {
-        return row.deleted_at === null ? (
+        return [undefined, null].includes(row.deleted_at) ? (
           <NButtonGroup size="small">
             {props.showRoute ? (
               <Link href={route(props.showRoute, row.id)}>

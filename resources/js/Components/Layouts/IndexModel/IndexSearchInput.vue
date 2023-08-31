@@ -29,7 +29,7 @@
         ><template #icon> <NIcon :component="Search24Filled" /> </template
       ></NButton>
     </NInputGroup>
-    <NBadge :value="other.length">
+    <NBadge v-if="$page.props.app.path === 'mano/users'" :value="other.length">
       <NPopover trigger="click">
         <template #trigger>
           <NButton circle>
