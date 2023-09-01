@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\LaravelResourceController;
+use App\Models\Role;
 use App\Models\Type;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -36,6 +37,7 @@ class TypeController extends LaravelResourceController
 
         return Inertia::render('Admin/ModelMeta/CreateType', [
             'contentTypes' => Type::select('id', 'title', 'model_type')->get(),
+            'roles' => Role::all(),
         ]);
     }
 
@@ -52,12 +54,17 @@ class TypeController extends LaravelResourceController
             'title' => 'required',
             'model_type' => 'string|required',
             'parent_id' => 'nullable|exists:types,id|different:id',
+            'roles' => 'nullable|array',
             'slug' => 'nullable|string',
         ]);
 
         // TODO: somehow check if model_type is valid and allowed
 
-        Type::create($request->only('title', 'model_type', 'description', 'parent_id', 'slug'));
+        $type = Type::query()->create($request->only('title', 'model_type', 'description', 'parent_id', 'slug'));
+
+        if ($request['model_type'] === 'App\Models\Duty') {
+            $type->roles()->sync($request->input('roles', []));
+        }
 
         return redirect()->route('types.index')
             ->with('success', 'Turinio tipas sukurtas sėkmingai.');
@@ -89,11 +96,15 @@ class TypeController extends LaravelResourceController
         $modelType = Str::of($type->model_type)->afterLast('\\')->lower()->plural()->toString();
 
         return Inertia::render('Admin/ModelMeta/EditType', [
-            'contentType' => $type->load($modelType),
+            'contentType' => [
+                ...$type->load($modelType)->toArray(),
+                'roles' => $type->roles->pluck('id')->toArray(),
+            ],
             'contentTypes' => Type::select('id', 'title', 'model_type')->get(),
             'sharepointPath' => $type->sharepoint_path(),
             'allModelsFromModelType' => $type->allModelsFromModelType()->toArray(),
             'modelType' => $modelType,
+            'roles' => Role::all(),
         ]);
     }
 
@@ -118,7 +129,11 @@ class TypeController extends LaravelResourceController
 
         $type->$modelType()->sync($request->input($modelType, []));
 
-        return redirect()->route('types.index')->with('success', 'Turinio tipas sėkmingai atnaujintas!');
+        if ($request['model_type'] === 'App\Models\Duty') {
+            $type->roles()->sync($request->input('roles', []));
+        }
+
+        return back()->with('success', 'Turinio tipas sėkmingai atnaujintas!');
     }
 
     /**

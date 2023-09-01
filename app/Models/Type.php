@@ -43,6 +43,11 @@ class Type extends Model
         return $this->morphedByMany(Doing::class, 'typeable');
     }
 
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class)->using(RoleType::class);
+    }
+
     public function descendants()
     {
         return $this->hasMany(Type::class, 'parent_id');

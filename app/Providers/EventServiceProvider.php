@@ -36,6 +36,12 @@ class EventServiceProvider extends ServiceProvider
         \App\Events\TaskCreated::class => [
             \App\Listeners\HandleTaskCreated::class,
         ],
+        \App\Events\RoleTypeDeleted::class => [
+            \App\Listeners\HandleRoleTypeDeleted::class,
+        ],
+        \App\Events\RoleTypeSaved::class => [
+            \App\Listeners\HandleRoleTypeSaved::class,
+        ],
     ];
 
     /**
