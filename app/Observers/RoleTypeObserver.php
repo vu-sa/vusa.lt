@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Cache;
 
 class RoleTypeObserver
 {
-
     public function saved(RoleType $roleType): void
     {
         $role = $roleType->role;

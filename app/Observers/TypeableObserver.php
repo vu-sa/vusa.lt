@@ -7,7 +7,6 @@ use App\Models\Typeable;
 
 class TypeableObserver
 {
-
     /**
      * Handle the Typeable "saved" event.
      */

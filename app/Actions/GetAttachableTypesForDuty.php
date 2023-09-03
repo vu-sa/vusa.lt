@@ -3,10 +3,8 @@
 namespace App\Actions;
 
 use App\Models\Duty;
-use App\Models\Resource;
 use App\Models\Type;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Builder;
 
 //
 class GetAttachableTypesForDuty
@@ -22,7 +20,7 @@ class GetAttachableTypesForDuty
             $types = Type::all();
         } else {
             $types = User::query()->with('duties.roles.attachable_types')->find(auth()->user()->id)->duties
-            ->flatten()->pluck('roles')->flatten()->pluck('attachable_types')->flatten()->unique('id')->values();
+                ->flatten()->pluck('roles')->flatten()->pluck('attachable_types')->flatten()->unique('id')->values();
         }
 
         // filter types where model_type is App\Models\Duty
