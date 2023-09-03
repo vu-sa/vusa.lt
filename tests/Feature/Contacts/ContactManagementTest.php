@@ -315,7 +315,7 @@ class ContactManagementTest extends ContactTestCase
             'users' => [$user->id],
             'institution_id' => $userDuty->institution_id,
             'places_to_occupy' => $userDuty->places_to_occupy,
-            'types' => []
+            'types' => [],
         ]);
 
         $response->assertStatus(302)->assertRedirectToRoute('duties.edit', $userDuty->id);
