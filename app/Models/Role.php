@@ -20,4 +20,10 @@ class Role extends SpatieRole
     {
         return $this->hasManyDeepFromRelations($this->duties(), (new Duty())->users());
     }
+
+    // It describes the types that this role can attach to other objects.
+    public function attachable_types()
+    {
+        return $this->belongsToMany(Type::class, 'role_can_attach_types');
+    }
 }

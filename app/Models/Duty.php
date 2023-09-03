@@ -87,7 +87,7 @@ class Duty extends Model implements AuthorizableContract
 
     public function types()
     {
-        return $this->morphToMany(Type::class, 'typeable');
+        return $this->morphToMany(Type::class, 'typeable')->using(Typeable::class)->withPivot(['typeable_type']);
     }
 
     public function institution()

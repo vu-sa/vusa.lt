@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\GetAttachableTypesForDuty;
 use App\Http\Controllers\LaravelResourceController;
 use App\Models\Duty;
 use App\Models\Role;
@@ -112,10 +113,12 @@ class DutyController extends LaravelResourceController
 
         $duty->load('institution', 'types', 'roles', 'current_users');
 
+        $attachable_duty_types = GetAttachableTypesForDuty::execute($duty);
+
         return Inertia::render('Admin/People/EditDuty', [
             'duty' => $duty,
             'roles' => Role::all(),
-            'dutyTypes' => Type::where('model_type', Duty::class)->get(),
+            'dutyTypes' => $attachable_duty_types->values(),
             'assignableInstitutions' => DutyService::getInstitutionsForUpserts($this->authorizer),
             // TODO: shouldn't return all users?
             'assignableUsers' => User::select('id', 'name', 'profile_photo_path')->orderBy('name')->get(),

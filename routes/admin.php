@@ -67,6 +67,7 @@ Route::delete('relationships/relationshipables/{relationshipable}', [Relationshi
 Route::resource('roles', RoleController::class);
 Route::patch('roles/{role}/attach/{model}/permissions', [RoleController::class, 'syncPermissionGroup'])->name('roles.syncPermissionGroup');
 Route::put('roles/{role}/sync/duties', [RoleController::class, 'syncDuties'])->name('roles.syncDuties');
+Route::put('roles/{role}/sync/attachableTypes', [RoleController::class, 'syncAttachableTypes'])->name('roles.syncAttachableTypes');
 Route::resource('permissions', PermissionController::class)->only(['index']);
 Route::resource('tasks', TaskController::class)->except(['index', 'create', 'show', 'edit']);
 Route::post('tasks/{task}/updateCompletionStatus', [TaskController::class, 'updateCompletionStatus'])->name('tasks.updateCompletionStatus');

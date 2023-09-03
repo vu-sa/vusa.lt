@@ -127,7 +127,6 @@
         <NFormItem label="Pareigybės tipas">
           <NSelect
             v-model:value="form.types"
-            :disabled="!$page.props.auth.user.isSuperAdmin"
             multiple
             :options="dutyTypes"
             label-field="title"
@@ -140,8 +139,8 @@
         <NFormItem label="Administracinė vusa.lt rolė">
           <NSelect
             v-model:value="form.roles"
-            :disabled="!$page.props.auth.user.isSuperAdmin"
             :options="rolesOptions"
+            :disabled="!$page.props.auth?.user.isSuperAdmin"
             clearable
             multiple
             type="text"
