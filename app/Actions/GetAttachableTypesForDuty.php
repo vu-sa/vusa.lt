@@ -5,13 +5,13 @@ namespace App\Actions;
 use App\Models\Duty;
 use App\Models\Type;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection as Collection;
 
 //
 class GetAttachableTypesForDuty
 {
-    public static function execute()
+    public static function execute(): Collection
     {
-
         // get all attachable types for the current user
 
         $types = [];
@@ -27,6 +27,9 @@ class GetAttachableTypesForDuty
         $types = $types->filter(function ($type) {
             return $type->model_type === Duty::class;
         });
+
+        // support collection to eloquent collection
+        $types = Collection::make($types);
 
         return $types;
     }

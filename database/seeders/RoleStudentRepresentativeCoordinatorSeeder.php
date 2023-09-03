@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Role;
+use App\Models\Type;
 use Illuminate\Database\Seeder;
 
 class RoleStudentRepresentativeCoordinatorSeeder extends Seeder
@@ -55,5 +56,7 @@ class RoleStudentRepresentativeCoordinatorSeeder extends Seeder
             'tasks.read.own',
             'tasks.update.own',
         ]);
+
+        $role->attachable_types()->attach(Type::query()->where('slug', 'studentu-atstovai')->firstOrFail());
     }
 }

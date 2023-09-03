@@ -113,7 +113,7 @@ class DutyController extends LaravelResourceController
 
         $duty->load('institution', 'types', 'roles', 'current_users');
 
-        $attachable_duty_types = GetAttachableTypesForDuty::execute($duty);
+        $attachable_duty_types = GetAttachableTypesForDuty::execute();
 
         return Inertia::render('Admin/People/EditDuty', [
             'duty' => $duty,
@@ -139,6 +139,8 @@ class DutyController extends LaravelResourceController
             'users' => 'nullable|array',
             'institution_id' => 'required',
             'places_to_occupy' => 'required|numeric',
+            // array of integers
+            'types' => 'nullable|array',
         ]);
 
         DB::transaction(function () use ($request, $duty) {

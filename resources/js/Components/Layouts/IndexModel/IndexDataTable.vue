@@ -224,7 +224,7 @@ const columnsWithActions = computed(() => {
             {/* restore */}
             <NButton
               quaternary
-              onClick={() => router.post(route("users.restore", row.id))}
+              onClick={() => router.patch(route("users.restore", row.id))}
             >
               {{
                 icon: () => (

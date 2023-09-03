@@ -2,7 +2,9 @@
 
 namespace Tests\Feature\Contacts;
 
+use App\Actions\GetAttachableTypesForDuty;
 use App\Models\Duty;
+use App\Models\Role;
 use Inertia\Testing\AssertableInertia as Assert;
 use PHPUnit\Framework\Attributes\CoversNothing;
 
@@ -188,9 +190,154 @@ class ContactManagementTest extends ContactTestCase
         ]);
     }
 
-    // 6. Check if admin can delete an user and make it shown as soft-deleted
+    // 6. Check if admin can delete an user and if it is soft-deleted, and if it can be restored
 
-    // 7. Check if can delete previous_duties, but not current_duties dutiables
+    public function test_contact_manager_can_delete_and_restore_user()
+    {
+        $admin = $this->contactManagerUser;
+        $user = $this->simpleUser;
 
-    // 8. Check if the public returned users are ONLY current users
+        $this->actingAs($admin)->get(route('dashboard'));
+
+        $response = $this->actingAs($admin)->get(route('users.index'));
+
+        $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/People/IndexUser')
+            ->has('users.data')
+        );
+
+        $response = $this->actingAs($admin)->delete(route('users.destroy', $user->id));
+
+        $response->assertStatus(302)->assertRedirectToRoute('users.index');
+
+        $this->followRedirects($response)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/People/IndexUser')
+                ->has('flash.success')
+            );
+
+        $this->assertSoftDeleted('users', [
+            'id' => $user->id,
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('users.index', ['showSoftDeleted' => true]));
+
+        $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/People/IndexUser')
+            ->has('users.data')
+        );
+
+        $response = $this->actingAs($admin)->patch(route('users.restore', $user->id));
+
+        $response->assertStatus(302)->assertRedirectToRoute('users.index');
+
+        $this->followRedirects($response)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/People/IndexUser')
+                ->has('flash.success')
+            );
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+        ]);
+    }
+
+    // 7. Check if admin can add a type to user and when added, if a role is added automatically
+
+    // * This is A STUDENT REPRESENTATIVE CASE, it may be needed to be generalized more
+    public function test_contact_manager_can_add_type_to_duty()
+    {
+        $admin = $this->contactManagerUser;
+        $user = $this->simpleUser;
+        $userDuty = $user->current_duties->first();
+
+        $this->assertDatabaseHas('roles', [
+            'name' => 'Student Representative',
+        ]);
+
+        $this->assertDatabaseHas('types', [
+            'slug' => 'studentu-atstovai',
+        ]);
+
+        $this->actingAs($admin)->get(route('dashboard'));
+
+        $response = $this->actingAs($admin)->get(route('duties.index'));
+
+        $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/People/IndexDuty')
+            ->has('duties.data')
+        );
+
+        $response = $this->actingAs($admin)->get(route('duties.edit', $userDuty->id));
+
+        $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/People/EditDuty')
+            ->has('duty')
+            ->has('dutyTypes')
+        );
+
+        $types = [];
+
+        foreach (GetAttachableTypesForDuty::execute() as $type) {
+            array_push($types, $type->id);
+        }
+
+        $response = $this->actingAs($admin)->patch(route('duties.update', $userDuty->id), [
+            'name' => $userDuty->name,
+            'users' => [$user->id],
+            'institution_id' => $userDuty->institution_id,
+            'places_to_occupy' => $userDuty->places_to_occupy,
+            'types' => $types,
+        ]);
+
+        $response->assertStatus(302)->assertRedirectToRoute('duties.edit', $userDuty->id);
+
+        $this->followRedirects($response)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/People/EditDuty')
+                ->has('flash.success')
+            );
+
+        $this->assertDatabaseHas('typeables', [
+            'typeable_id' => $userDuty->id,
+            'typeable_type' => get_class($userDuty),
+            'type_id' => GetAttachableTypesForDuty::execute()->first()->id,
+        ]);
+
+        $this->assertDatabaseHas('model_has_roles', [
+            'role_id' => Role::query()->where('name', 'Student Representative')->first()->id,
+            'model_type' => get_class($userDuty),
+            'model_id' => $userDuty->id,
+        ]);
+
+        $response = $this->actingAs($admin)->patch(route('duties.update', $userDuty->id), [
+            'name' => $userDuty->name,
+            'users' => [$user->id],
+            'institution_id' => $userDuty->institution_id,
+            'places_to_occupy' => $userDuty->places_to_occupy,
+            'types' => []
+        ]);
+
+        $response->assertStatus(302)->assertRedirectToRoute('duties.edit', $userDuty->id);
+
+        $this->followRedirects($response)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/People/EditDuty')
+                ->has('flash.success')
+            );
+
+        $this->assertDatabaseMissing('typeables', [
+            'typeable_id' => $userDuty->id,
+            'typeable_type' => get_class($userDuty),
+            'type_id' => GetAttachableTypesForDuty::execute()->first()->id,
+        ]);
+
+        $this->assertDatabaseMissing('model_has_roles', [
+            'role_id' => Role::query()->where('name', 'Student Representative')->first()->id,
+            'model_type' => get_class($userDuty),
+            'model_id' => $userDuty->id,
+        ]);
+    }
+
+    // LAST. Check if the public returned users are ONLY current users in PUBLIC
 }

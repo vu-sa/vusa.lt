@@ -26,4 +26,10 @@ class Role extends SpatieRole
     {
         return $this->belongsToMany(Type::class, 'role_can_attach_types');
     }
+
+    // It describes the types of duties that grant users this role.
+    public function types()
+    {
+        return $this->belongsToMany(Type::class);
+    }
 }
