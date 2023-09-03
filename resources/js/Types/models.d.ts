@@ -310,6 +310,7 @@ declare namespace App.Models {
     draft: boolean | null;
     created_at: any;
     updated_at: any;
+    deleted_at: any | null;
     user?: App.Models.User | null;
     padalinys?: App.Models.Padalinys | null;
     tags?: Array<App.Models.Tag> | null;
@@ -357,6 +358,7 @@ declare namespace App.Models {
     padalinys_id: number;
     created_at: any;
     updated_at: any;
+    deleted_at: any | null;
     padalinys?: App.Models.Padalinys | null;
     category?: App.Models.Category | null;
   }
@@ -453,11 +455,23 @@ declare namespace App.Models {
     updated_at: any | null;
     duties?: Array<App.Models.Duty> | null;
     users_through_duties?: any | null;
+    attachable_types?: Array<App.Models.Type> | null;
     permissions?: Array<App.Models.Permission> | null;
     users?: Array<App.Models.User> | null;
     duties_count?: number | null;
+    attachable_types_count?: number | null;
     permissions_count?: number | null;
     users_count?: number | null;
+  }
+
+  export interface RoleType {
+    id: number;
+    role_id: string;
+    type_id: number;
+    created_at: any | null;
+    updated_at: any | null;
+    role?: App.Models.Role | null;
+    type?: App.Models.Type | null;
   }
 
   export interface SaziningaiExam {
@@ -564,6 +578,7 @@ declare namespace App.Models {
     institutions?: Array<App.Models.Institution> | null;
     duties?: Array<App.Models.Duty> | null;
     doings?: Array<App.Models.Doing> | null;
+    roles?: Array<App.Models.Role> | null;
     descendants?: Array<App.Models.Type> | null;
     recursive_descendants?: Array<App.Models.Type> | null;
     parent?: App.Models.Type | null;
@@ -571,8 +586,14 @@ declare namespace App.Models {
     institutions_count?: number | null;
     duties_count?: number | null;
     doings_count?: number | null;
+    roles_count?: number | null;
     descendants_count?: number | null;
     recursive_descendants_count?: number | null;
+  }
+
+  export interface Typeable {
+    type?: App.Models.Type | null;
+    typeable?: any | null;
   }
 
   export interface User {
@@ -643,6 +664,7 @@ declare namespace App.Models.Pivots {
   }
 
   export interface Dutiable {
+    id: string;
     duty_id: string;
     dutiable_id: string;
     dutiable_type: string;
