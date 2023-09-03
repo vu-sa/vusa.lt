@@ -209,7 +209,6 @@ import {
   type FormValidationError,
   NButton,
   NCheckbox,
-  NDatePicker,
   NDynamicInput,
   NForm,
   NFormItem,
@@ -219,9 +218,13 @@ import {
   createDiscreteApi,
 } from "naive-ui";
 import { Head, router, useForm, usePage } from "@inertiajs/vue3";
-import { computed, ref } from "vue";
+import { computed, defineAsyncComponent, ref } from "vue";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
+
+const NDatePicker = defineAsyncComponent(() =>
+  import("naive-ui/es/date-picker").then((module) => module.NDatePicker),
+);
 
 const props = defineProps<{
   padaliniaiOptions: Array<App.Entities.Padalinys>;
@@ -331,7 +334,7 @@ const rules: FormRules = {
     // check if any item in array is empty
     validator(
       rule: unknown,
-      value: Array<Pick<App.Entities.SaziningaiExamFlow, "start_time">>
+      value: Array<Pick<App.Entities.SaziningaiExamFlow, "start_time">>,
     ) {
       if (!value || value.length === 0) {
         return new Error("Įveskite bent vieno atsiskaitymo atsiskaitymo laiką");
@@ -398,11 +401,11 @@ const handleValidateClick = (e: MouseEvent) => {
         {
           onSuccess: () => {
             message.success(
-              `Ačiū už atsiskaitymo „${formValue.subject_name}“ užregistravimą!`
+              `Ačiū už atsiskaitymo „${formValue.subject_name}“ užregistravimą!`,
             );
             formValue.reset();
           },
-        }
+        },
       );
     } else {
       message.error("Užpildykite visus laukelius.");

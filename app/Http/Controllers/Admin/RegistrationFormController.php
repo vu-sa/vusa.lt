@@ -54,8 +54,10 @@ class RegistrationFormController extends LaravelResourceController
         $registrations = Registration::query()->where('registration_form_id', $registrationForm->id);
 
         if ($registrationForm->id === 2 && ! request()->user()->hasRole(config('permission.super_admin_role_name'))) {
-            $registrations = $registrations
-                ->whereIn('data->whereToRegister', request()->user()->padaliniai()->get(['padaliniai.id'])->pluck('id'));
+
+            $registrations = $registrationForm->load(['registrations' => function ($query) {
+                $query->whereIn('data->whereToRegister', request()->user()->padaliniai()->get(['padaliniai.id'])->pluck('id'));
+            }])->registrations;
         }
 
         // for now, is accustomed to show only member registration
