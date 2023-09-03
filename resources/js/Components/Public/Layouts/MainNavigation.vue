@@ -29,9 +29,10 @@
         v-if="$page.props.auth?.user"
         class="hidden lg:inline-flex"
         quaternary
+        tag="a"
         circle
         size="small"
-        @click="router.visit(route('dashboard'))"
+        :href="route('dashboard')"
         ><NIcon :size="16" :component="AnimalTurtle24Filled"></NIcon
       ></NButton>
     </div>
