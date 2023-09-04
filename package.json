@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@inertiajs/vue3": "^1.0.8",
-    "@tiptap/extension-bubble-menu": "^2.0.1",
+    "@tiptap/extension-bubble-menu": "^2.1.8",
     "@tiptap/extension-image": "^2.0.1",
     "@tiptap/extension-link": "^2.0.1",
     "@tiptap/extension-table": "^2.0.1",
