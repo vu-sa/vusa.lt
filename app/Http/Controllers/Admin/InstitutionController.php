@@ -187,7 +187,6 @@ class InstitutionController extends LaravelResourceController
      *
      * @return \Illuminate\Http\Response
      */
-
     public function restore(Institution $institution)
     {
         $this->authorize('restore', [Institution::class, $institution, $this->authorizer]);

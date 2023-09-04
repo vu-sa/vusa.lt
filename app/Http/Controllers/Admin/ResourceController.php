@@ -146,9 +146,7 @@ class ResourceController extends LaravelResourceController
     /**
      * Restore the specified resource from storage.
      */
-
     public function restore(Resource $resource)
-
     {
         $this->authorize('restore', [Resource::class, $resource, $this->authorizer]);
 

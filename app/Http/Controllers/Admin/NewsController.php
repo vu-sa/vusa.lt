@@ -170,7 +170,6 @@ class NewsController extends LaravelResourceController
      *
      * @return \Illuminate\Http\Response
      */
-
     public function restore(News $news)
     {
         $this->authorize('restore', [News::class, $news, $this->authorizer]);

@@ -114,7 +114,6 @@ class GoalGroupController extends LaravelResourceController
      *
      * @return \Illuminate\Http\Response
      */
-
     public function restore(GoalGroup $goalGroup)
     {
         $this->authorize('restore', [GoalGroup::class, $goalGroup, $this->authorizer]);

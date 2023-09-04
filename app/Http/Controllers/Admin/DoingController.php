@@ -195,9 +195,7 @@ class DoingController extends LaravelResourceController
      *
      * @return \Illuminate\Http\Response
      */
-
     public function restore(Doing $doing)
-
     {
         $this->authorize('restore', [Doing::class, $doing, $this->authorizer]);
 
