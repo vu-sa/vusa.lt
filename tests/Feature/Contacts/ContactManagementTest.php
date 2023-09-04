@@ -229,7 +229,7 @@ class ContactManagementTest extends ContactTestCase
 
         $response = $this->actingAs($admin)->patch(route('users.restore', $user->id));
 
-        $response->assertStatus(302)->assertRedirectToRoute('users.index');
+        $response->assertStatus(302)->assertRedirectToRoute('users.index', ['showSoftDeleted' => true]);
 
         $this->followRedirects($response)
             ->assertInertia(fn (Assert $page) => $page
