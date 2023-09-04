@@ -13,7 +13,7 @@ jobs:
     runs-on: "ubuntu-latest"
     name: Installing Dependencies
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Get Composer Cache Directory
         id: composer-cache
         run: |
@@ -33,7 +33,7 @@ jobs:
     name: PHP Static Analysis
     needs: composer_install
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Get Composer Cache Directory
         id: composer-cache
         run: |
