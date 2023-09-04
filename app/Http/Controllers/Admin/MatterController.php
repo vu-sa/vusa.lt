@@ -88,13 +88,23 @@ class MatterController extends LaravelResourceController
     {
         $this->authorize('delete', [Matter::class, $matter, $this->authorizer]);
 
+        // * Don't detach because of soft-deletes
         // delete doing_matter records
-        $matter->doings()->detach();
+        // $matter->doings()->detach();
 
         // delete matter
         $matter->delete();
 
         return redirect()->route('matters.index')->with('success', 'Klausimas sėkmingai ištrintas');
+    }
+
+    public function restore(Matter $matter)
+    {
+        $this->authorize('restore', [Matter::class, $matter, $this->authorizer]);
+
+        $matter->restore();
+
+        return back()->with('success', 'Klausimas atkurtas!');
     }
 
     public function attachGoal(Matter $matter, Request $request)

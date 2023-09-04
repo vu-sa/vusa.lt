@@ -29,7 +29,7 @@
         ><template #icon> <NIcon :component="Search24Filled" /> </template
       ></NButton>
     </NInputGroup>
-    <NBadge v-if="$page.props.app.path === 'mano/users'" :value="other.length">
+    <NBadge v-if="hasSoftDeletes" :value="other.length">
       <NPopover trigger="click">
         <template #trigger>
           <NButton circle>
@@ -80,11 +80,13 @@ const emit = defineEmits<{
 const props = defineProps<{
   // model?: string;
   payloadName: string;
+  hasSoftDeletes: boolean;
 }>();
 
 const loading = ref(false);
 const searchIsDirty = ref(false);
 const searchValue = ref("");
+
 // TODO: on page reload, other is not set according to query parameter
 const other = ref([]);
 

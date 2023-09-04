@@ -41,7 +41,6 @@ class UserController extends LaravelResourceController
                 ])->withCount('duties')])
             ->filterAllColumns()
             ->sortAllColumns()
-            ->onlyTrashed($request->input('showSoftDeleted') === 'true')
             ->builder->paginate(20);
 
         return Inertia::render('Admin/People/IndexUser', [
@@ -307,15 +306,13 @@ class UserController extends LaravelResourceController
         return redirect()->route('home', ['padalinys' => 'www']);
     }
 
-    public function restore($id, Request $request)
+    public function restore(User $user, Request $request)
     {
-        $user = User::withTrashed()->findOrFail($id);
-
         $this->authorize('restore', [User::class, $user, $this->authorizer]);
 
         $user->restore();
 
-        return redirect()->route('users.index')->with('success', 'Kontaktas sėkmingai atkurtas!');
+        return back()->with('success', 'Kontaktas sėkmingai atkurtas!');
     }
 
     public function forceDelete($id, Request $request)

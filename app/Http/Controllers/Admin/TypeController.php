@@ -145,13 +145,18 @@ class TypeController extends LaravelResourceController
     {
         $this->authorize('delete', [Type::class, $type, $this->authorizer]);
 
-        DB::transaction(function () use ($type) {
-            // delete typeables
-            DB::table('typeables')->where('type_id', $type->id)->delete();
-            // delete type
-            $type->delete();
-        });
+        $type->delete();
 
-        return back()->with('success', 'Tipas ištrintas');
+        return redirect()->route('types.index')
+            ->with('success', 'Turinio tipas ištrintas sėkmingai.');
+    }
+
+    public function restore(Type $type)
+    {
+        $this->authorize('restore', [Type::class, $type, $this->authorizer]);
+
+        $type->restore();
+
+        return back()->with('success', 'Tipas atkurtas!');
     }
 }

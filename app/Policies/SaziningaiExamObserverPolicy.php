@@ -68,16 +68,6 @@ class SaziningaiExamObserverPolicy extends ModelPolicy
     }
 
     /**
-     * Determine whether the user can restore the model.
-     *
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function restore(User $user, SaziningaiExamObserver $saziningaiExamObserver)
-    {
-        return false;
-    }
-
-    /**
      * Determine whether the user can permanently delete the model.
      *
      * @return \Illuminate\Auth\Access\Response|bool

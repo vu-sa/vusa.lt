@@ -127,4 +127,19 @@ class GoalController extends LaravelResourceController
 
         return redirect()->route('dashboard')->with('success', 'Klausimo grupė ištrinta.');
     }
+
+    /**
+     * Restore the specified resource from storage.
+     *
+     * @return \Illuminate\Http\Response
+     */
+
+    public function restore(Goal $goal)
+    {
+        $this->authorize('restore', [Goal::class, $goal, $this->authorizer]);
+
+        $goal->restore();
+
+        return back()->with('success', 'Tikslas atkurtas!');
+    }
 }

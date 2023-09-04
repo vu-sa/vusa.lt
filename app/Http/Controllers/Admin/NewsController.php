@@ -165,21 +165,18 @@ class NewsController extends LaravelResourceController
         return redirect()->route('news.index')->with('info', 'Naujiena sėkmingai ištrinta!');
     }
 
-    // TODO: ....
-    public function searchForNews(Request $request)
+    /**
+     * Restore the specified resource from storage.
+     *
+     * @return \Illuminate\Http\Response
+     */
+
+    public function restore(News $news)
     {
-        $data = $request->collect()['data'];
+        $this->authorize('restore', [News::class, $news, $this->authorizer]);
 
-        $news = News::where('title', 'like', "%{$data['title']}%")->where('lang', $data['lang'])->get();
+        $news->restore();
 
-        $news = $news->map(function ($news) {
-            return [
-                'id' => $news->id,
-                'title' => $news->title,
-                'padalinys' => $news->padalinys,
-            ];
-        });
-
-        return back()->with('search_news', $news);
+        return back()->with('success', 'Naujiena sėkmingai atkurta!');
     }
 }

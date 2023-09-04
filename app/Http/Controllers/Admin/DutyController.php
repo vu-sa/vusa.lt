@@ -190,6 +190,15 @@ class DutyController extends LaravelResourceController
         return redirect()->route('duties.index')->with('info', trans_choice('messages.deleted', 0, ['model' => trans_choice('entities.duty.model', 1)]));
     }
 
+    public function restore(Duty $duty)
+    {
+        $this->authorize('restore', [Duty::class, $duty, $this->authorizer]);
+
+        $duty->restore();
+
+        return back()->with('success', 'Pareigybė sėkmingai atkurta!');
+    }
+
     public function setAsStudentRepresentatives(Request $request)
     {
         $this->authorize('update', [Duty::class, $this->authorizer]);

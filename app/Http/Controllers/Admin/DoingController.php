@@ -168,22 +168,41 @@ class DoingController extends LaravelResourceController
         }
 
         DB::transaction(function () use ($doing) {
+            // * Since the model is soft-deleted, doesn't make complete sense
+            // * to detach relations.
+
             // detach doings from matters
-            $doing->matters()->detach();
+            // $doing->matters()->detach();
 
             // detach doings from types
-            $doing->types()->detach();
+            // $doing->types()->detach();
 
             // delete tasks
-            $doing->tasks()->delete();
+            // $doing->tasks()->delete();
 
             // delete comments
-            $doing->comments()->delete();
+            // $doing->comments()->delete();
 
             // delete doing
             $doing->delete();
         });
 
         return redirect()->route('dashboard')->with('success', 'Veikla ištrinta!');
+    }
+
+    /**
+     * Restore the specified resource from storage.
+     *
+     * @return \Illuminate\Http\Response
+     */
+
+    public function restore(Doing $doing)
+
+    {
+        $this->authorize('restore', [Doing::class, $doing, $this->authorizer]);
+
+        $doing->restore();
+
+        return back()->with('success', 'Veikla atkurtas!');
     }
 }

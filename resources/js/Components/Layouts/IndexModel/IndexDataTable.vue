@@ -1,6 +1,7 @@
 <template>
   <IndexSearchInput
     payload-name="text"
+    :has-soft-deletes="hasSoftDeletes"
     @complete-search="handleCompletedSearch"
     @update:other="handleShowOther"
     @sweep="sweepSearch"
@@ -59,10 +60,19 @@ const props = defineProps<{
 const loading = ref(false);
 const otherParams = ref<Record<string, boolean | undefined>>({});
 
+const hasSoftDeletes = computed(() => {
+  if (props.paginatedModels.data.length === 0) {
+    return true;
+  }
+
+  return Object.keys(props.paginatedModels.data[0]).includes("deleted_at");
+});
+
 const sorters = inject<Ref<Record<string, SortOrder>> | undefined>(
   "sorters",
   undefined,
 );
+
 const filters = inject<Ref<Record<string, any>> | undefined>(
   "filters",
   undefined,
@@ -224,7 +234,9 @@ const columnsWithActions = computed(() => {
             {/* restore */}
             <NButton
               quaternary
-              onClick={() => router.patch(route("users.restore", row.id))}
+              onClick={() =>
+                router.patch(route(`${props.modelName}.restore`, row.id))
+              }
             >
               {{
                 icon: () => (
