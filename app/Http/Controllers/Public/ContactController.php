@@ -8,7 +8,6 @@ use App\Models\Padalinys;
 use App\Models\Type;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class ContactController extends PublicController
@@ -25,22 +24,23 @@ class ContactController extends PublicController
         return $this->showInstitution($institution, $contacts);
     }
 
-    public function institutionDutyTypeContacts($subdomain, $lang, Type $type) {
+    public function institutionDutyTypeContacts($subdomain, $lang, Type $type)
+    {
 
         $types = $type->getDescendantsAndSelf();
 
-            if ($this->padalinys->type === 'pagrindinis') {
-                $institution = Institution::where('alias', '=', 'centrinis-biuras')->first();
-            } else {
-                $institution = Institution::where('alias', '=', $this->padalinys->alias)->firstOrFail();
-            }
+        if ($this->padalinys->type === 'pagrindinis') {
+            $institution = Institution::where('alias', '=', 'centrinis-biuras')->first();
+        } else {
+            $institution = Institution::where('alias', '=', $this->padalinys->alias)->firstOrFail();
+        }
 
-            // load duties whereHas types
-            $contacts = $institution->load(['duties' => function ($query) use ($types) {
-                $query->whereHas('types', fn (Builder $query) => $query->whereIn('id', $types->pluck('id')))->with('current_users.current_duties');
-            }])->duties->sortBy(function ($duty) {
-                return $duty->order;
-            })->pluck('current_users')->flatten()->unique('id');
+        // load duties whereHas types
+        $contacts = $institution->load(['duties' => function ($query) use ($types) {
+            $query->whereHas('types', fn (Builder $query) => $query->whereIn('id', $types->pluck('id')))->with('current_users.current_duties');
+        }])->duties->sortBy(function ($duty) {
+            return $duty->order;
+        })->pluck('current_users')->flatten()->unique('id');
 
         // make eloquent collection from array
         $contacts = new Collection($contacts);
@@ -48,7 +48,8 @@ class ContactController extends PublicController
         return $this->showInstitution($institution, $contacts);
     }
 
-    public function studentRepresentatives($subdomain, $lang) {
+    public function studentRepresentatives($subdomain, $lang)
+    {
         $type = Type::query()->where('slug', '=', 'studentu-atstovu-organas')->first();
         $descendants = $type->getDescendantsAndSelf();
 
@@ -69,12 +70,13 @@ class ContactController extends PublicController
         return Inertia::render('Public/Contacts/ShowStudentReps', [
             'types' => $descendants,
         ])->withViewData([
-            'title' => 'Studentų atstovai | ' . $this->padalinys->shortname,
+            'title' => 'Studentų atstovai | '.$this->padalinys->shortname,
             'description' => "{$this->padalinys->shortname} studentų atstovai",
         ]);
     }
 
-    private function showInstitution(Institution $institution, Collection $contacts) {
+    private function showInstitution(Institution $institution, Collection $contacts)
+    {
 
         return Inertia::render('Public/Contacts/ContactsShow', [
             'institution' => $institution,
@@ -105,8 +107,8 @@ class ContactController extends PublicController
         // Special case for 'padaliniai' alias, since it's a special category, fetched from 'padaliniai' table
 
         $padaliniai = Padalinys::with('institutions')
-                ->where('type', '=', 'padalinys')
-                ->get();
+            ->where('type', '=', 'padalinys')
+            ->get();
 
         $institutions = Institution::whereIn('alias', $padaliniai->pluck('alias'))->orderBy('name')->get();
 
@@ -116,7 +118,7 @@ class ContactController extends PublicController
             return redirect()->route('contacts.institution', [
                 'institution' => $institutions->first(),
                 'lang' => $lang,
-                'subdomain' => $subdomain
+                'subdomain' => $subdomain,
             ]);
         }
 
