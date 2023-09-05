@@ -2,7 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\Institution;
 use App\Models\Padalinys;
+use App\Models\Type;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -26,5 +28,12 @@ class InstitutionFactory extends Factory
             'image_url' => $this->faker->imageUrl(640, 480, 'business', true),
             'padalinys_id' => Padalinys::factory(),
         ];
+    }
+
+    public function withType()
+    {
+        return $this->afterCreating(function ($institution) {
+            $institution->types()->attach(Type::query()->where('model_type', Institution::class)->inRandomOrder()->first());
+        });
     }
 }

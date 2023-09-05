@@ -41,14 +41,15 @@ class DatabaseSeeder extends Seeder
 
         $padaliniai = Padalinys::all();
 
-        Institution::factory(10)
+        Institution::factory(20)
             ->has(Matter::factory(3))
             ->has(Meeting::factory(3)->has(AgendaItem::factory(3)))
             ->recycle($padaliniai)
+            ->withType()
             ->create();
 
         $users = User::factory(25)
-            ->has(Doing::factory(5))->hasAttached(Duty::factory(3), ['start_date' => now()])
+            ->has(Doing::factory(5)->withType())->hasAttached(Duty::factory(3)->withType(), ['start_date' => now()])
             ->create();
 
         $this->call(MenuSeeder::class);
@@ -72,19 +73,17 @@ class DatabaseSeeder extends Seeder
         foreach ($padaliniai as $padalinys) {
             MainPage::factory(6)
                 ->recycle($padalinys)
+                ->state(new Sequence(['lang' => 'lt'], ['lang' => 'en']))
                 ->state(new Sequence(
-                    ['lang' => 'lt', 'link' => '/lt/kontaktai/koordinatoriai', 'text' => 'Koordinatoriai'],
-                    ['lang' => 'en', 'link' => '/en/kontaktai/koordinatoriai', 'text' => 'Coordinators'],
-                    ['lang' => 'lt', 'link' => '/lt/kontaktai/kuratoriai', 'text' => 'Kuratoriai'],
-                    ['lang' => 'en', 'link' => '/en/kontaktai/kuratoriai', 'text' => 'Curators'],
-                    ['lang' => 'lt', 'link' => '/lt/kontaktai/studentu-atstovai', 'text' => 'Studentų atstovai'],
-                    ['lang' => 'en', 'link' => '/en/kontaktai/studentu-atstovai', 'text' => 'Studentų atstovai']
-                ))
-                ->create();
-
+                    ['link' => '/lt/kontaktai/koordinatoriai', 'text' => 'Koordinatoriai'],
+                    ['link' => '/en/kontaktai/koordinatoriai', 'text' => 'Coordinators'],
+                    ['link' => '/lt/kontaktai/kuratoriai', 'text' => 'Kuratoriai'],
+                    ['link' => '/en/kontaktai/kuratoriai', 'text' => 'Curators'],
+                    ['link' => '/lt/kontaktai/studentu-atstovai', 'text' => 'Studentų atstovai'],
+                    ['link' => '/en/kontaktai/studentu-atstovai', 'text' => 'Student representatives'],
+                    ))->create();
         }
 
         MainPage::factory(200)->recycle($padaliniai)->create();
-
     }
 }
