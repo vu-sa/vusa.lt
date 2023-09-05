@@ -49,7 +49,7 @@
       <a
         :href="
           route('contacts.category', {
-            alias: 'padaliniai',
+            type: 'padaliniai',
             lang: 'lt',
             subdomain: 'www',
           })

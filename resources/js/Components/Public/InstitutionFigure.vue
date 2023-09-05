@@ -16,7 +16,7 @@
         <a
           :href="
             route('contacts.alias', {
-              alias: institution.alias,
+              institution: institution.alias,
               subdomain:
                 institution.padalinys?.alias === 'vusa'
                   ? 'www'
@@ -44,7 +44,7 @@
             :key="section.alias"
             :href="
               route('contacts.alias', {
-                alias: section.alias,
+                institution: section.alias,
                 subdomain:
                   institution.alias === 'vusa' ? 'www' : institution.alias,
                 lang: $page.props.app.locale,

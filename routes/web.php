@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Route;
 use Laravel\Socialite\Facades\Socialite;
@@ -60,9 +61,26 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
             return Redirect::to(config('app.url').'/lt/bendrabuciai', 301);
         });
 
-        Route::get('kontaktai', [Public\ContactController::class, 'contacts'])->name('contacts');
-        Route::get('kontaktai/kategorija/{alias}', [Public\ContactController::class, 'contactsCategory'])->name('contacts.category');
-        Route::get('kontaktai/{alias}', [Public\ContactController::class, 'contactsPage'])->name('contacts.alias');
+        Route::get('kontaktai/id/{institution}', [Public\ContactController::class, 'institutionContacts'])->name('contacts.institution');
+
+        Route::get('kontaktai/studentu-atstovai', [Public\ContactController::class, 'studentRepresentatives'])->name('contacts.studentRepresentatives');
+        Route::get('kontaktai/{type:slug}', [Public\ContactController::class, 'institutionDutyTypeContacts'])->whereIn('type', [
+            'koordinatoriai', 'kuratoriai'
+        ]);
+
+        Route::get('kontaktai/{institution:alias}', [Public\ContactController::class, 'institutionContacts'])->name('contacts.alias')
+            ->missing(function (Request $request) {
+            return Redirect::route('contacts.institution', [
+                'institution' => $request->institution,
+                'lang' => $request->lang,
+                'subdomain' => $request->subdomain
+            ]);
+        });
+
+        // Route::get('kontaktai', [Public\ContactController::class, 'contacts'])->name('contacts');
+        Route::get('kontaktai/kategorija/{type:slug}', [Public\ContactController::class, 'institutionCategory'])->name('contacts.category')->whereIn(
+            'type', ['padaliniai']
+        );
 
         Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('news_string', '(naujiena|news)')->name('news');
 

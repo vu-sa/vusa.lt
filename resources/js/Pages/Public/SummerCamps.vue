@@ -42,8 +42,9 @@
               target="_blank"
               :href="
                 route('contacts.category', {
-                  alias: 'padaliniai',
+                  type: 'padaliniai',
                   lang: 'lt',
+                  subdomain: 'www',
                 })
               "
               >kuratoriai</Link

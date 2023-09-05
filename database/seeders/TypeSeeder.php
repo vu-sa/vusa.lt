@@ -19,7 +19,7 @@ class TypeSeeder extends Seeder
             [
                 ['title' => 'Programos, klubai, projektai', 'slug' => 'pkp', 'model_type' => Institution::class],
                 ['title' => 'Studentų atstovų organas', 'slug' => 'studentu-atstovu-organas', 'model_type' => Institution::class],
-                ['title' => 'VU SA padalinys', 'slug' => 'vu-sa-padaliniai', 'model_type' => Institution::class],
+                ['title' => 'VU SA padalinys', 'slug' => 'padaliniai', 'model_type' => Institution::class],
                 ['title' => 'Pirmininkas', 'slug' => 'pirmininkas', 'model_type' => Duty::class],
                 ['title' => 'Prezidentas', 'slug' => 'prezidentas', 'model_type' => Duty::class],
                 ['title' => 'Koordinatorius', 'slug' => 'koordinatoriai', 'model_type' => Duty::class],
