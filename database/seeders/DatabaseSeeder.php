@@ -81,7 +81,7 @@ class DatabaseSeeder extends Seeder
                     ['link' => '/en/kontaktai/kuratoriai', 'text' => 'Curators'],
                     ['link' => '/lt/kontaktai/studentu-atstovai', 'text' => 'Studentų atstovai'],
                     ['link' => '/en/kontaktai/studentu-atstovai', 'text' => 'Student representatives'],
-                    ))->create();
+                ))->create();
         }
 
         MainPage::factory(200)->recycle($padaliniai)->create();
