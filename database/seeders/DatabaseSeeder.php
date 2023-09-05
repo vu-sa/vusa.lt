@@ -21,6 +21,7 @@ use App\Models\SaziningaiExam;
 use App\Models\SaziningaiExamFlow;
 use App\Models\SaziningaiExamObserver;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -38,10 +39,12 @@ class DatabaseSeeder extends Seeder
         $this->call(PadaliniaiSeeder::class);
         $this->call(TypeSeeder::class);
 
+        $padaliniai = Padalinys::all();
+
         Institution::factory(10)
             ->has(Matter::factory(3))
             ->has(Meeting::factory(3)->has(AgendaItem::factory(3)))
-            ->recycle(Padalinys::all())
+            ->recycle($padaliniai)
             ->create();
 
         $users = User::factory(25)
@@ -51,13 +54,12 @@ class DatabaseSeeder extends Seeder
         $this->call(MenuSeeder::class);
         $this->call(DeleteAndSeedPermissions::class);
 
-        Banner::factory(20)->recycle(Padalinys::all())->create();
-        Calendar::factory(50)->recycle(Padalinys::all())->create();
-        MainPage::factory(50)->recycle(Padalinys::all())->create();
-        News::factory(75)->recycle(Padalinys::all())->create();
-        Page::factory(75)->recycle(Padalinys::all())->create();
+        Banner::factory(20)->recycle($padaliniai)->create();
+        Calendar::factory(50)->recycle($padaliniai)->create();
+        News::factory(75)->recycle($padaliniai)->create();
+        Page::factory(75)->recycle($padaliniai)->create();
 
-        Resource::factory(50)->has(Reservation::factory()->hasAttached($users->random(3)))->recycle(Padalinys::all())->create();
+        Resource::factory(50)->has(Reservation::factory()->hasAttached($users->random(3)))->recycle($padaliniai)->create();
         SaziningaiExam::factory(15)->create();
         SaziningaiExamFlow::factory(20)->create();
         SaziningaiExamObserver::factory(10)->create();
@@ -65,6 +67,25 @@ class DatabaseSeeder extends Seeder
         $this->call(RoleStudentRepresentativeSeeder::class);
         $this->call(RoleStudentRepresentativeCoordinatorSeeder::class);
 
-        Goal::factory(10)->recycle(Padalinys::all())->create();
+        Goal::factory(10)->recycle($padaliniai)->create();
+
+        foreach ($padaliniai as $padalinys) {
+            MainPage::factory(6)
+                ->recycle($padalinys)
+                ->state(new Sequence(
+                    ['lang' => 'lt', 'link' => '/lt/kontaktai/koordinatoriai', 'text' => 'Koordinatoriai'],
+                    ['lang' => 'en', 'link' => '/en/kontaktai/koordinatoriai', 'text' => 'Coordinators'],
+                    ['lang' => 'lt', 'link' => '/lt/kontaktai/kuratoriai', 'text' => 'Kuratoriai'],
+                    ['lang' => 'en', 'link' => '/en/kontaktai/kuratoriai', 'text' => 'Curators'],
+                    ['lang' => 'lt', 'link' => '/lt/kontaktai/studentu-atstovai', 'text' => 'Studentų atstovai'],
+                    ['lang' => 'en', 'link' => '/en/kontaktai/studentu-atstovai', 'text' => 'Studentų atstovai']
+                ))
+                ->create();
+
+
+        }
+
+        MainPage::factory(200)->recycle($padaliniai)->create();
+
     }
 }

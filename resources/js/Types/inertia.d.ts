@@ -42,6 +42,7 @@ declare module "@inertiajs/core" {
     padalinys:
       | (Pick<App.Entities.Padalinys, "id" | "alias" | "shortname" | "type"> & {
           subdomain: string;
+          links: Array<App.Entities.MainPage | null>;
         })
       | undefined;
     search: {

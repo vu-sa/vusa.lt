@@ -7,9 +7,7 @@
     <NMessageProvider>
       <Layout>
         <FadeTransition>
-          <main>
-            <slot />
-          </main>
+          <slot />
         </FadeTransition>
       </Layout>
     </NMessageProvider>

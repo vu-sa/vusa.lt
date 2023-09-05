@@ -13,10 +13,6 @@
     :upcoming4-events="upcoming4Events"
   />
 
-  <div v-if="mainPage.length > 0" class="mx-auto mt-2 max-w-7xl">
-    <MainLinks :main-page="mainPage" />
-  </div>
-
   <div v-if="news.length > 0" class="mx-auto mt-2 max-w-7xl">
     <NewsElement :news="news" />
   </div>
@@ -34,15 +30,9 @@ import { defineAsyncComponent } from "vue";
 
 defineProps<{
   news: Array<App.Entities.News>;
-  mainPage: Array<App.Entities.MainPage>;
   calendar: Array<App.Entities.Calendar>;
   upcoming4Events: Array<App.Entities.Calendar>;
 }>();
-
-const MainLinks = defineAsyncComponent(
-  // eslint-disable-next-line no-secrets/no-secrets
-  () => import("@/Components/Public/FullWidth/MainLinks.vue"),
-);
 
 const EventCalendar = defineAsyncComponent(
   // eslint-disable-next-line no-secrets/no-secrets

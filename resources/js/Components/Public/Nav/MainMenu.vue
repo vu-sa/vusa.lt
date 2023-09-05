@@ -17,7 +17,6 @@ const emit = defineEmits<{
 
 const props = defineProps<{
   flatNavigation: any;
-  padalinys: any;
 }>();
 
 const activeMenuKey = ref(usePage().props.navigationItemId);

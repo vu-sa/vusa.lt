@@ -28,31 +28,31 @@ Route::get('/auth/microsoft/callback', [Admin\UserController::class, 'storeFromM
 Route::inertia('login', 'Admin/LoginForm')->middleware('guest')->name('login');
 Route::post('login', [Admin\UserController::class, 'authenticate'])->middleware('guest');
 
-Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware' => ['main']], function () {
+Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware' => ['main', 'set.locale']], function () {
     Route::domain('www.'.explode('.', config('app.url'), 2)[1])->group(function () {
 
-        Route::get('saziningai-registracija', [Public\MainController::class, 'saziningaiExamRegistration'])->name('saziningaiExamRegistration');
+        Route::get('saziningai-registracija', [Public\PublicPageController::class, 'saziningaiExamRegistration'])->name('saziningaiExamRegistration');
         Route::post('saziningai-registracija', [Public\MainController::class, 'storeSaziningaiExamRegistration'])->name('saziningaiExamRegistration.store');
-        Route::get('saziningai-uzregistruoti-egzaminai', [Public\MainController::class, 'saziningaiExams'])->name('saziningaiExams.registered');
+        Route::get('saziningai-uzregistruoti-egzaminai', [Public\PublicPageController::class, 'saziningaiExams'])->name('saziningaiExams.registered');
         Route::post('saziningai-uzregistruoti-egzaminai', [Public\MainController::class, 'storeSaziningaiExamObserver'])->name('saziningaiExamObserver.store');
 
+        Route::get('nariu-registracija', [Public\PublicPageController::class, 'memberRegistration'])->name('memberRegistration');
         Route::post('nariu-registracija', [Public\MainController::class, 'storeMemberRegistration'])->name('memberRegistration.store');
-        Route::get('nariu-registracija', [Public\MainController::class, 'memberRegistration'])->name('memberRegistration');
 
-        Route::get('kuratoriu-registracija', [Public\MainController::class, 'curatorRegistration'])->name('curatorRegistration');
+        Route::get('kuratoriu-registracija', [Public\PublicPageController::class, 'curatorRegistration'])->name('curatorRegistration');
 
-        Route::get('pirmakursiu-stovyklos-2022', [Public\MainController::class, 'summerCamps2022'])->name('pirmakursiuStovyklos2022');
-        Route::get('pirmakursiu-stovyklos', [Public\MainController::class, 'summerCamps2023'])->name('pirmakursiuStovyklos');
-        Route::get('kalendorius/renginys/{calendar}', [Public\MainController::class, 'calendarEventMain'])->name('calendar.event');
+        Route::get('pirmakursiu-stovyklos-2022', [Public\PublicPageController::class, 'summerCamps2022'])->name('pirmakursiuStovyklos2022');
+        Route::get('pirmakursiu-stovyklos', [Public\MainConPublicPageControllertroller::class, 'summerCamps2023'])->name('pirmakursiuStovyklos');
+        Route::get('kalendorius/renginys/{calendar}', [Public\PublicPageController::class, 'calendarEventMain'])->name('calendar.event');
         Route::get('kalendorius/ics', [Public\MainController::class, 'publicAllEventCalendar'])->name('calendar.ics');
 
-        Route::get('individualios-studijos', [Public\MainController::class, 'individualStudies']);
+        Route::get('individualios-studijos', [Public\PublicPageController::class, 'individualStudies']);
 
         Route::post('search', [Public\MainController::class, 'search'])->name('search');
     });
 
     Route::domain('{subdomain}.'.explode('.', config('app.url'), 2)[1])->group(function () {
-        Route::get('/', [Public\MainController::class, 'home'])->name('home');
+        Route::get('/', [Public\PublicPageController::class, 'home'])->name('home');
         Route::get('naujienos', [Public\NewsController::class, 'newsArchive'])->name('newsArchive');
         Route::redirect('/naujiena/archyvas', '/naujienos', 301);
         Route::redirect('/admin', '/mano', 301);
@@ -82,11 +82,11 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
             'type', ['padaliniai']
         );
 
-        Route::get('{newsString}/{permalink}', [Public\MainController::class, 'news'])->where('news_string', '(naujiena|news)')->name('news');
+        Route::get('{newsString}/{permalink}', [Public\PublicPageController::class, 'news'])->where('news_string', '(naujiena|news)')->name('news');
 
         Route::get('mainNews', [Public\MainController::class, 'getMainNews']);
-        Route::get('{permalink}', [Public\MainController::class, 'page'])->where('permalink', '.*')->name('page');
+        Route::get('{permalink}', [Public\PublicPageController::class, 'page'])->where('permalink', '.*')->name('page');
     });
 });
 
-Route::get('{permalink}', [Public\MainController::class, 'page'])->where('permalink', '.*');
+Route::get('{permalink}', [Public\PublicPageController::class, 'page'])->where('permalink', '.*');

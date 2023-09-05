@@ -1,91 +1,108 @@
 <template>
-  <nav
-    class="fixed top-0 z-50 flex h-20 w-screen flex-row items-center justify-between gap-4 bg-white/80 p-2 text-gray-800 shadow-sm backdrop-blur-sm dark:bg-zinc-800/90 dark:text-white md:px-6 lg:px-12 xl:px-24"
-  >
-    <div class="flex flex-row items-center space-x-4">
-      <!-- Hamburger -->
-      <div class="block lg:hidden">
-        <NButton size="small" strong quaternary @click="toggleMenu">
-          <template #icon>
-            <NIcon>
-              <Navigation24Filled />
-            </NIcon>
-          </template>
-        </NButton>
-      </div>
-      <a
-        :href="`${$page.props.app.url}/${$page.props.app.locale}`"
-        @click="resetPadalinys()"
+  <section class="fixed top-0 z-50">
+    <div class="relative">
+      <nav
+        class="relative z-10 flex h-20 w-screen flex-row items-center justify-between gap-4 bg-white p-2 text-gray-800 shadow-sm dark:bg-zinc-800 dark:text-white md:px-6 lg:px-12 xl:px-24"
       >
-        <AppLogo :is-theme-dark="isThemeDark" class="w-24 md:w-32" />
-      </a>
-      <PadalinysSelector
-        :size="smallerThanSm ? 'tiny' : 'small'"
-        :padalinys="padalinys"
-        :all-padaliniai="padaliniai"
-        @select:padalinys="handleSelectPadalinys"
-      ></PadalinysSelector>
-      <NButton
-        v-if="$page.props.auth?.user"
-        class="hidden lg:inline-flex"
-        quaternary
-        tag="a"
-        circle
-        size="small"
-        :href="route('dashboard')"
-        ><NIcon :size="16" :component="AnimalTurtle24Filled"></NIcon
-      ></NButton>
-    </div>
+        <div class="flex flex-row items-center space-x-4">
+          <!-- Hamburger -->
+          <div v-if="smallerThanLg" class="block">
+            <NButton size="small" strong quaternary @click="toggleMenu">
+              <template #icon>
+                <NIcon :component="Navigation24Filled" />
+              </template>
+            </NButton>
+          </div>
+          <a :href="`${$page.props.app.url}/${$page.props.app.locale}`">
+            <AppLogo :is-theme-dark="isThemeDark" class="w-24 md:w-32" />
+          </a>
+          <PadalinysSelector
+            :size="smallerThanSm ? 'tiny' : 'small'"
+            @select:padalinys="handleSelectPadalinys"
+          ></PadalinysSelector>
+          <NButton
+            v-if="$page.props.auth?.user"
+            class="hidden lg:inline-flex"
+            quaternary
+            tag="a"
+            circle
+            size="small"
+            :href="route('dashboard')"
+            ><NIcon :size="16" :component="AnimalTurtle24Filled"></NIcon
+          ></NButton>
+        </div>
 
-    <div class="hidden items-center justify-center gap-x-2 md:gap-x-4 lg:flex">
-      <MainMenu
-        :options="navigation"
-        mode="horizontal"
-        class="grow"
-        :dropdown-props="{ size: 'medium' }"
-        :flat-navigation="$page.props.mainNavigation"
-        :padalinys="padalinys"
-        @close:drawer="activeDrawer = false"
-      ></MainMenu>
-      <div class="flex items-center gap-4">
-        <FacebookButton />
-        <InstagramButton />
-        <SearchButton />
-        <StartFM />
-      </div>
-    </div>
-    <div class="flex items-center gap-4">
-      <DarkModeSwitch />
-      <LocaleButton
-        :locale="$page.props.app.locale"
-        @change-locale="localeSelect"
-      />
-    </div>
-    <NDrawer
-      v-model:show="activeDrawer"
-      display-directive="show"
-      :width="325"
-      placement="left"
-      :trap-focus="true"
-    >
-      <NDrawerContent closable>
-        <template #header>
-          <div class="flex gap-4">
+        <div
+          class="hidden items-center justify-center gap-x-2 md:gap-x-4 lg:flex"
+        >
+          <MainMenu
+            :options="navigation"
+            mode="horizontal"
+            class="grow"
+            :dropdown-props="{ size: 'medium' }"
+            :flat-navigation="$page.props.mainNavigation"
+            @close:drawer="activeDrawer = false"
+          ></MainMenu>
+          <div class="flex items-center gap-4">
             <FacebookButton />
             <InstagramButton />
             <SearchButton />
             <StartFM />
           </div>
-        </template>
-        <MainMenu
-          :options="navigation"
-          :flat-navigation="$page.props.mainNavigation"
-          :padalinys="padalinys"
-          @close:drawer="activeDrawer = false"
-        ></MainMenu>
-      </NDrawerContent>
-    </NDrawer>
-  </nav>
+        </div>
+        <div class="flex items-center gap-4">
+          <DarkModeSwitch />
+          <LocaleButton
+            :locale="$page.props.app.locale"
+            @change-locale="localeSelect"
+          />
+        </div>
+        <NDrawer
+          v-model:show="activeDrawer"
+          display-directive="show"
+          :width="325"
+          placement="left"
+          :trap-focus="true"
+        >
+          <NDrawerContent closable>
+            <template #header>
+              <div class="flex gap-4">
+                <FacebookButton />
+                <InstagramButton />
+                <SearchButton />
+                <StartFM />
+              </div>
+            </template>
+            <MainMenu
+              :options="navigation"
+              :flat-navigation="$page.props.mainNavigation"
+              @close:drawer="activeDrawer = false"
+            ></MainMenu>
+          </NDrawerContent>
+        </NDrawer>
+      </nav>
+      <Transition>
+        <section
+          v-if="showSecondMenu"
+          class="border-bottom z-5 w-screen bg-neutral-50 px-8 py-2 shadow-sm dark:bg-zinc-900 md:px-8 lg:px-16 xl:px-28"
+        >
+          <span
+            class="mr-8 text-sm font-bold text-gray-900 dark:text-gray-200"
+            >{{ $page.props.padalinys?.shortname }}</span
+          >
+          <div
+            class="scroll-shadows mr-8 inline-flex w-3/4 gap-4 overflow-x-scroll whitespace-nowrap pb-2"
+          >
+            <MainPageLink
+              v-for="link in $page.props.padalinys?.links"
+              :key="link?.id"
+              :main-page-link="link"
+            ></MainPageLink>
+          </div>
+        </section>
+      </Transition>
+    </div>
+  </section>
 </template>
 
 <script setup lang="ts">
@@ -93,7 +110,7 @@ import { AnimalTurtle24Filled, Navigation24Filled } from "@vicons/fluent";
 import { NButton, NDrawer, NDrawerContent, NIcon, NScrollbar } from "naive-ui";
 import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
 import { computed, reactive, ref } from "vue";
-import { router, usePage } from "@inertiajs/vue3";
+import { usePage } from "@inertiajs/vue3";
 import type { RouteParamsWithQueryOverload } from "ziggy-js";
 
 import { LocaleEnum } from "@/Types/enums";
@@ -103,6 +120,7 @@ import FacebookButton from "../Nav/FacebookButton.vue";
 import InstagramButton from "../Nav/InstagramButton.vue";
 import LocaleButton from "../Nav/LocaleButton.vue";
 import MainMenu from "../Nav/MainMenu.vue";
+import MainPageLink from "../Nav/MainPageLink.vue";
 import PadalinysSelector from "../Nav/PadalinysSelector.vue";
 import SearchButton from "../Nav/SearchButton.vue";
 import StartFM from "@/Components/Public/Nav/StartFM.vue";
@@ -111,11 +129,9 @@ defineProps<{
   isThemeDark: boolean;
 }>();
 
-const padaliniai = usePage().props.padaliniai.filter(
-  (padalinys) => padalinys.type === "padalinys",
-);
-const locale = ref(usePage().props.app.locale);
 const activeDrawer = ref(false);
+
+const locale = ref(usePage().props.app.locale);
 const toggleMenu = () => {
   activeDrawer.value = !activeDrawer.value;
 };
@@ -151,20 +167,7 @@ const navigation = computed(() => {
   return parseNavigation(usePage().props.mainNavigation, 0);
 });
 
-const getPadalinys = (alias = usePage().props.alias) => {
-  for (const padalinys of padaliniai) {
-    if (padalinys.alias == alias) {
-      return padalinys.shortname.split(" ").pop();
-    }
-  }
-  return "Padaliniai";
-};
-
-const padalinys = ref(getPadalinys());
-
 const handleSelectPadalinys = (key) => {
-  console.log(key);
-
   let padalinys_alias = key;
 
   // if padalinys is array, get first element (for mobile)
@@ -182,23 +185,6 @@ const handleSelectPadalinys = (key) => {
   window.location.href = `${
     window.location.protocol
   }//${padalinys_alias}.${hostWithoutSubdomain}${usePage().url}`;
-
-  // if subdomain is different the same as padalinys_alias, reload page
-  // router.reload({
-  //   data: {
-  //     padalinys: padalinys_alias,
-  //   },
-  //   preserveScroll: false,
-  //   preserveState: false,
-  //   onSuccess: () => {
-  //     padalinys.value = getPadalinys(padalinys_alias);
-  //     activeDrawer.value = false;
-  //   },
-  // });
-};
-
-const resetPadalinys = () => {
-  padalinys.value = "Padaliniai";
 };
 
 const localeSelect = (lang: LocaleEnum) => {
@@ -209,10 +195,49 @@ const localeSelect = (lang: LocaleEnum) => {
   }
   // update app logo button
   homeParams.lang = locale.value;
-  // reset padalinys value if home
-  padalinys.value = getPadalinys();
 };
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const smallerThanSm = breakpoints.smaller("sm");
+const smallerThanLg = breakpoints.smaller("lg");
+
+const showSecondMenu = ref(true);
+
+// on 50px scroll down hide second menu, but on scroll up show it
+// only hide when scrolled down from last scroll up 50px
+
+let lastScrollTop = 0;
+
+window.addEventListener(
+  // when scrolling down, hide only when scrolled down 50px from previous scroll up
+  "scroll",
+  () => {
+    const st = window.scrollY || document.documentElement.scrollTop;
+    if (st > lastScrollTop) {
+      // downscroll code
+      showSecondMenu.value = false;
+    } else {
+      // upscroll code
+      showSecondMenu.value = true;
+    }
+    lastScrollTop = st <= 0 ? 0 : st; // For Mobile or negative scrolling
+  },
+);
 </script>
+
+<style scoped>
+/* add vue transform y to second menu */
+
+.v-enter-from,
+.v-leave-to {
+  transform: translateY(-100%);
+}
+
+.v-enter-active,
+.v-leave-active {
+  transition: all 0.3s ease;
+}
+
+/* https://css-tricks.com/books/greatest-css-tricks/scroll-shadows/ */
+/* horizontal scroll shadow */
+</style>
