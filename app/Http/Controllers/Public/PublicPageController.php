@@ -21,7 +21,6 @@ use Spatie\CalendarLinks\Link;
 
 class PublicPageController extends PublicController
 {
-
     // TODO: add all pages to dev seed
     private function getCalendarGoogleLink($calendarEvent, $locale = 'lt')
     {

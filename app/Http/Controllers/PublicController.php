@@ -45,7 +45,8 @@ class PublicController extends Controller
         Inertia::share('banners', $banners);
     }
 
-    protected function getPadalinysLinks() {
+    protected function getPadalinysLinks()
+    {
 
         $mainPage = MainPage::where([['padalinys_id', $this->padalinys->id], ['lang', app()->getLocale()]])->get();
 

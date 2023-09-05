@@ -82,7 +82,6 @@ class DatabaseSeeder extends Seeder
                 ))
                 ->create();
 
-
         }
 
         MainPage::factory(200)->recycle($padaliniai)->create();
