@@ -14,6 +14,9 @@ class ContactController extends PublicController
 {
     public function institutionContacts($subdomain, $lang, Institution $institution)
     {
+        $this->getBanners();
+        $this->getPadalinysLinks();
+
         $contacts = $institution->load('duties.current_users.current_duties')->duties->sortBy(function ($duty) {
             return $duty->order;
         })->pluck('current_users')->flatten()->unique('id');
@@ -26,6 +29,8 @@ class ContactController extends PublicController
 
     public function institutionDutyTypeContacts($subdomain, $lang, Type $type)
     {
+        $this->getBanners();
+        $this->getPadalinysLinks();
 
         $types = $type->getDescendantsAndSelf();
 
@@ -77,7 +82,6 @@ class ContactController extends PublicController
 
     private function showInstitution(Institution $institution, Collection $contacts)
     {
-
         return Inertia::render('Public/Contacts/ContactsShow', [
             'institution' => $institution,
             'contacts' => $contacts->map(function ($contact) use ($institution) {
@@ -104,23 +108,14 @@ class ContactController extends PublicController
      */
     public function institutionCategory($subdomain, $lang, Type $type)
     {
-        // Special case for 'padaliniai' alias, since it's a special category, fetched from 'padaliniai' table
+        $this->getBanners();
+        $this->getPadalinysLinks();
 
-        $padaliniai = Padalinys::with('institutions')
-            ->where('type', '=', 'padalinys')
-            ->get();
-
-        $institutions = Institution::whereIn('alias', $padaliniai->pluck('alias'))->orderBy('name')->get();
-
-        // check if institution array length is 1, then just return that one institution contacts.
-        if ($institutions->count() === 1) {
-            // redirect to that one institution page
-            return redirect()->route('contacts.institution', [
-                'institution' => $institutions->first(),
-                'lang' => $lang,
-                'subdomain' => $subdomain,
-            ]);
-        }
+        $institutions = $type->load(['institutions' => function ($query) {
+            $query->orderBy('name')->with(['padalinys' => function ($query) {
+                $query->where('type', 'padalinys');
+            }]);
+        }])->institutions;
 
         return Inertia::render('Public/Contacts/ShowContactCategory', [
             'institutions' => $institutions,

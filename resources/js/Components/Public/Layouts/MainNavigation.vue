@@ -84,14 +84,14 @@
       <Transition>
         <section
           v-if="showSecondMenu"
-          class="border-bottom z-5 w-screen bg-neutral-50 px-8 py-2 shadow-sm dark:bg-zinc-900 md:px-8 lg:px-16 xl:px-28"
+          class="border-bottom z-5 grid w-screen grid-cols-[auto,_1fr] gap-8 bg-neutral-50 px-8 py-2 shadow-sm dark:bg-zinc-900 md:px-8 lg:px-16 xl:px-28"
         >
           <span
-            class="mr-8 text-sm font-bold text-gray-900 dark:text-gray-200"
+            class="whitespace-nowrap pb-1 text-sm font-bold text-gray-900 dark:text-gray-200"
             >{{ $page.props.padalinys?.shortname }}</span
           >
           <div
-            class="scroll-shadows mr-8 inline-flex w-3/4 gap-4 overflow-x-scroll whitespace-nowrap pb-2"
+            class="scroll-shadows mr-8 inline-flex gap-4 overflow-x-scroll whitespace-nowrap pb-1"
           >
             <MainPageLink
               v-for="link in $page.props.padalinys?.links"
@@ -107,7 +107,7 @@
 
 <script setup lang="ts">
 import { AnimalTurtle24Filled, Navigation24Filled } from "@vicons/fluent";
-import { NButton, NDrawer, NDrawerContent, NIcon, NScrollbar } from "naive-ui";
+import { NButton, NDrawer, NDrawerContent, NIcon } from "naive-ui";
 import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
 import { computed, reactive, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";

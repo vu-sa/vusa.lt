@@ -28,7 +28,7 @@ Route::get('/auth/microsoft/callback', [Admin\UserController::class, 'storeFromM
 Route::inertia('login', 'Admin/LoginForm')->middleware('guest')->name('login');
 Route::post('login', [Admin\UserController::class, 'authenticate'])->middleware('guest');
 
-Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware' => ['main', 'set.locale']], function () {
+Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware' => ['main']], function () {
     Route::domain('www.'.explode('.', config('app.url'), 2)[1])->group(function () {
 
         Route::get('saziningai-registracija', [Public\PublicPageController::class, 'saziningaiExamRegistration'])->name('saziningaiExamRegistration');

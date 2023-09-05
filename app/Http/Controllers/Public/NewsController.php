@@ -10,6 +10,9 @@ class NewsController extends PublicController
 {
     public function newsArchive()
     {
+        $this->getBanners();
+        $this->getPadalinysLinks();
+
         $news = News::where('padalinys_id', $this->padalinys->id)
             ->select('id', 'title', 'short', 'image', 'permalink', 'publish_time', 'lang')
             ->orderBy('publish_time', 'desc')

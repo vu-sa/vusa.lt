@@ -12,8 +12,11 @@ class GetAttachableTypesForDuty
 {
     public static function execute(): Collection
     {
-        // get all attachable types for the current user
+        if (auth()->guest()) {
+            return new Collection();
+        }
 
+        // get all attachable types for the current user
         $types = [];
 
         if (auth()->user()->hasRole(config('permission.super_admin_role_name'))) {
