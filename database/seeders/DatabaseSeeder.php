@@ -41,15 +41,21 @@ class DatabaseSeeder extends Seeder
 
         $padaliniai = Padalinys::all();
 
-        Institution::factory(20)
+        Institution::factory(50)
             ->has(Matter::factory(3))
             ->has(Meeting::factory(3)->has(AgendaItem::factory(3)))
             ->recycle($padaliniai)
             ->withType()
             ->create();
 
+        Institution::factory()
+            ->state(['name' => 'Centrinis biuras', 'alias' => 'centrinis-biuras'])
+            ->withType()
+            ->has(Duty::factory(10)->withType()->hasAttached(User::factory(), ['start_date' => now()->subDay()]))
+            ->create();
+
         $users = User::factory(25)
-            ->has(Doing::factory(5)->withType())->hasAttached(Duty::factory(3)->withType(), ['start_date' => now()])
+            ->has(Doing::factory(5)->withType())->hasAttached(Duty::factory(3)->withType(), ['start_date' => now()->subDay()])
             ->create();
 
         $this->call(MenuSeeder::class);

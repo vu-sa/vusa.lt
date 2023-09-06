@@ -25,7 +25,8 @@ class InstitutionFactory extends Factory
             'alias' => $this->faker->companySuffix(),
             // html descriptioj
             'description' => '<p>'.$this->faker->paragraph(1).'</p><p>'.$this->faker->paragraph(1).'</p>',
-            'image_url' => $this->faker->imageUrl(640, 480, 'business', true),
+            // sometimes image is not available
+            'image_url' => $this->faker->boolean(50) ? $this->faker->imageUrl() : null,
             'padalinys_id' => Padalinys::factory(),
         ];
     }
