@@ -8,16 +8,16 @@
         class="mb-4 h-60 w-full object-cover shadow-lg"
         @error="imageError = true"
       />
-      <section class="mb-4 ml-4">
+      <section class="mb-4">
         <div class="sticky top-0">
-          <h1>
+          <h2>
             <template v-if="$page.props.app.locale === 'en'">
               {{ institution.extra_attributes?.en?.name ?? institution.name }}
             </template>
             <template v-else>
               {{ institution.name ?? "" }}
             </template>
-          </h1>
+          </h2>
           <p
             class="prose prose-sm dark:prose-invert"
             v-html="institutionDescription"

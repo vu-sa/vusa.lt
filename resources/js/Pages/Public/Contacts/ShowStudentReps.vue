@@ -1,7 +1,7 @@
 <template>
   <div class="mx-auto mt-8 flex max-w-7xl flex-col gap-4 px-8 lg:px-32">
     <h1>{{ $t("Studentų atstovai") }}</h1>
-    <NFormItem :show-feedback="false" label="Tipas" class="max-w-sm"
+    <NFormItem label="Tipas" class="max-w-sm"
       ><NSelect
         v-model:value="selectedTypeID"
         :label="$t('Tipas')"
@@ -10,29 +10,39 @@
         clearable
     /></NFormItem>
 
-    <div
-      v-if="selectedType"
-      class="prose prose-sm mb-8 dark:text-zinc-50"
-      v-html="selectedType?.description"
-    />
+    <section v-if="selectedType && selectedType.description">
+      <h2>Aprašymas</h2>
+      <div
+        class="prose prose-sm mb-8 dark:text-zinc-50"
+        v-html="selectedType?.description"
+      />
+    </section>
 
-    <section
-      v-for="institutionType in filteredTypes"
-      :key="institutionType.id"
-      class="my-4"
-    >
-      <InstitutionContacts
+    <section v-for="institutionType in filteredTypes" :key="institutionType.id">
+      <template
         v-for="institution in institutionType.institutions"
         :key="institution.id"
-        :institution="institution"
-        :contacts="getContacts(institution)"
-      />
+      >
+        <InstitutionContacts
+          :institution="institution"
+          :contacts="getContacts(institution)"
+        />
+        <!-- add divider except for last element -->
+        <NDivider
+          v-if="
+            institutionType.institutions[
+              institutionType.institutions.length - 1
+            ].id !== institution.id
+          "
+          class="my-8"
+        />
+      </template>
     </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import { NFormItem, NSelect } from "naive-ui";
+import { NDivider, NFormItem, NSelect } from "naive-ui";
 import { computed, ref } from "vue";
 
 import InstitutionContacts from "@/Components/Public/InstitutionContacts.vue";
