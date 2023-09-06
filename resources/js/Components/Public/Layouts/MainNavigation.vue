@@ -94,7 +94,7 @@ import { computed, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 
 import AppLogo from "@/Components/AppLogo.vue";
-import DarkModeSwitch from "@/Components/Buttons/DarkModeSwitch.vue";
+import DarkModeSwitch from "@/Components/Buttons/DarkModeButton.vue";
 import FacebookButton from "../Nav/FacebookButton.vue";
 import InstagramButton from "../Nav/InstagramButton.vue";
 import LocaleButton from "../Nav/LocaleButton.vue";

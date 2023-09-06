@@ -3,7 +3,7 @@
 
   <NLayout class="min-h-screen">
     <nav
-      class="fixed z-50 flex h-16 w-full flex-row items-center justify-between border-b py-2 px-8 shadow-sm backdrop-blur-lg dark:border-zinc-800 md:justify-end"
+      class="fixed z-50 flex h-16 w-full flex-row items-center justify-between border-b px-8 py-2 shadow-sm backdrop-blur-lg dark:border-zinc-800 md:justify-end"
     >
       <div class="flex items-center gap-2 md:hidden">
         <NButton size="small" strong quaternary @click="activeDrawer = true">
@@ -171,7 +171,7 @@ import { loadLanguageAsync } from "laravel-vue-i18n";
 import AdminMenu from "@/Components/Menus/AdminMenu.vue";
 import AppLogo from "@/Components/AppLogo.vue";
 import CardModal from "../Modals/CardModal.vue";
-import DarkModeSwitch from "@/Components/Buttons/DarkModeSwitch.vue";
+import DarkModeSwitch from "@/Components/Buttons/DarkModeButton.vue";
 import FeedbackModalButton from "../Buttons/FeedbackModalButton.vue";
 import NotificationBell from "@/Features/Admin/Notifications/NotificationBell.vue";
 import TaskIndicatorButton from "../../Features/Admin/TaskManager/TaskIndicatorButton.vue";
@@ -278,7 +278,7 @@ const approveChanges = () => {
       onStart() {
         showChanges.value = false;
       },
-    }
+    },
   );
 };
 
