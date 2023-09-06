@@ -98,7 +98,7 @@
           </template>
           <NTransfer
             ref="transfer"
-            v-model:value="form.users"
+            v-model:value="form.current_users"
             virtual-scroll
             :options="userOptions"
             :render-source-label="renderSourceLabel"
@@ -152,7 +152,7 @@
     <div class="flex justify-end gap-2">
       <DeleteModelButton
         v-if="deleteModelRoute"
-        :disabled="duty.users && duty.users.length > 0"
+        :disabled="duty.current_users && duty.current_users.length > 0"
         :form="form"
         :model-route="deleteModelRoute"
       ></DeleteModelButton>
@@ -202,7 +202,7 @@ const form = useForm("institution", props.duty);
 
 form.roles = props.duty.roles?.map((role) => role.id);
 form.types = props.duty.types?.map((type) => type.id);
-form.users = props.duty.current_users?.map((user) => user.id);
+form.current_users = props.duty.current_users?.map((user) => user.id);
 
 const userOptions = props.assignableUsers.map((user) => ({
   label: user.name,
