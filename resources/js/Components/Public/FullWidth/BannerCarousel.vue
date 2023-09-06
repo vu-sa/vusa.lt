@@ -27,7 +27,7 @@ import { NCarousel, NCarouselItem } from "naive-ui";
 import { onBeforeUnmount, ref } from "vue";
 
 defineProps<{
-  banners: Array<App.Entities.Banner>;
+  banners: Array<App.Entities.Banner> | [];
 }>();
 
 const calculateBannerCount = (width) => {

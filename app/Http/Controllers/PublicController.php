@@ -42,7 +42,7 @@ class PublicController extends Controller
             return $banners;
         });
 
-        Inertia::share('banners', $banners);
+        Inertia::share('padalinys.banners', $banners);
     }
 
     protected function getPadalinysLinks()

@@ -14,9 +14,8 @@ class PublicPagesTest extends TestCase
     use RefreshDatabase;
 
     // check if public inertia response returns default props
-    public function test_gets_default_public_props(): void
+    public function test_home_page_gets_default_public_props(): void
     {
-
         $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']))
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Public/HomePage')
@@ -28,13 +27,21 @@ class PublicPagesTest extends TestCase
                 )
                 ->has('mainNavigation')
                 ->has('padaliniai')
-                ->has('padalinys')
+                ->has('padalinys', fn (Assert $page) => $page
+                    ->has('alias')
+                    ->has('banners')
+                    ->has('id')
+                    ->has('shortname')
+                    ->has('type')
+                    ->has('subdomain')
+                    ->has('links')
+                )
             );
     }
 
     // check if public inertia response doesn't return any auth
 
-    public function test_does_not_return_user_immediately_in_public_pages(): void
+    public function test_no_auth_without_authentication(): void
     {
         $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']))
             ->assertInertia(fn (Assert $page) => $page
@@ -43,15 +50,13 @@ class PublicPagesTest extends TestCase
             );
     }
 
-    public function test_can_see_the_home_page(): void
+    public function test_can_open_the_home_page(): void
     {
         $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']))
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Public/HomePage')
-                ->has('banners')
                 ->has('news')
                 ->has('calendar')
-                ->has('mainPage')
                 ->has('banners')
             );
     }

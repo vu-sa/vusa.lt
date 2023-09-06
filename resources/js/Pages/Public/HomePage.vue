@@ -18,10 +18,6 @@
   </div>
 
   <YearReport2022 />
-
-  <div v-if="$page.props.banners" class="mx-auto mt-8 max-w-7xl">
-    <BannerCarousel :banners="$page.props.banners" />
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -37,11 +33,6 @@ defineProps<{
 const EventCalendar = defineAsyncComponent(
   // eslint-disable-next-line no-secrets/no-secrets
   () => import("@/Components/Public/FullWidth/EventCalendarElement.vue"),
-);
-
-const BannerCarousel = defineAsyncComponent(
-  // eslint-disable-next-line no-secrets/no-secrets
-  () => import("@/Components/Public/FullWidth/BannerCarousel.vue"),
 );
 
 const NewsElement = defineAsyncComponent(
