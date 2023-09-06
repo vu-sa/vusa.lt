@@ -100,23 +100,21 @@
               :main-page-link="link"
             ></MainPageLink>
           </div>
-          <div
-            class="visible my-auto transition-all duration-300 ease-in-out"
-            :class="{
-              invisible: arrivedState.right === true,
-            }"
-          >
-            <NButton
-              quaternary
-              circle
-              size="tiny"
-              class="right-0 top-0 my-auto"
-              @click="scrollSecondMenuToRight"
-            >
-              <template #icon>
-                <NIcon :component="ChevronRight16Regular"></NIcon>
-              </template>
-            </NButton>
+          <div class="my-auto">
+            <FadeTransition>
+              <NButton
+                v-if="arrivedState.right === false"
+                quaternary
+                circle
+                size="tiny"
+                class="right-0 top-0 my-auto"
+                @click="scrollSecondMenuToRight"
+              >
+                <template #icon>
+                  <NIcon :component="ChevronRight16Regular"></NIcon>
+                </template>
+              </NButton>
+            </FadeTransition>
           </div>
         </section>
       </Transition>
@@ -140,6 +138,7 @@ import { LocaleEnum } from "@/Types/enums";
 import AppLogo from "@/Components/AppLogo.vue";
 import DarkModeSwitch from "@/Components/Buttons/DarkModeSwitch.vue";
 import FacebookButton from "../Nav/FacebookButton.vue";
+import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import InstagramButton from "../Nav/InstagramButton.vue";
 import LocaleButton from "../Nav/LocaleButton.vue";
 import MainMenu from "../Nav/MainMenu.vue";
