@@ -84,20 +84,39 @@
       <Transition>
         <section
           v-if="showSecondMenu"
-          class="border-bottom z-5 grid w-screen grid-cols-[auto,_1fr] gap-8 bg-neutral-50 px-8 py-2 shadow-sm dark:bg-zinc-900 md:px-8 lg:px-16 xl:px-28"
+          class="z-5 relative grid w-screen grid-cols-[min-content,_1fr,_40px] bg-neutral-50 px-8 shadow-sm dark:bg-zinc-900 md:px-8 lg:px-16 xl:px-28"
         >
           <span
-            class="whitespace-nowrap pb-1 text-sm font-bold text-gray-900 dark:text-gray-200"
-            >{{ $page.props.padalinys?.shortname }}</span
-          >
+            class="my-auto mr-6 whitespace-nowrap text-sm font-bold text-gray-900 dark:text-gray-200"
+            >{{ $page.props.padalinys?.shortname }}
+          </span>
           <div
-            class="scroll-shadows mr-8 inline-flex gap-4 overflow-x-scroll whitespace-nowrap pb-1"
+            ref="secondMenuScrollSection"
+            class="mr-2 inline-flex gap-4 overflow-x-scroll whitespace-nowrap py-3"
           >
             <MainPageLink
               v-for="link in $page.props.padalinys?.links"
               :key="link?.id"
               :main-page-link="link"
             ></MainPageLink>
+          </div>
+          <div
+            class="visible my-auto transition-all duration-300 ease-in-out"
+            :class="{
+              invisible: arrivedState.right === true,
+            }"
+          >
+            <NButton
+              quaternary
+              circle
+              size="tiny"
+              class="right-0 top-0 my-auto"
+              @click="scrollSecondMenuToRight"
+            >
+              <template #icon>
+                <NIcon :component="ChevronRight16Regular"></NIcon>
+              </template>
+            </NButton>
           </div>
         </section>
       </Transition>
@@ -106,9 +125,13 @@
 </template>
 
 <script setup lang="ts">
-import { AnimalTurtle24Filled, Navigation24Filled } from "@vicons/fluent";
+import {
+  AnimalTurtle24Filled,
+  ChevronRight16Regular,
+  Navigation24Filled,
+} from "@vicons/fluent";
 import { NButton, NDrawer, NDrawerContent, NIcon } from "naive-ui";
-import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
+import { breakpointsTailwind, useBreakpoints, useScroll } from "@vueuse/core";
 import { computed, reactive, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 import type { RouteParamsWithQueryOverload } from "ziggy-js";
@@ -202,6 +225,15 @@ const smallerThanSm = breakpoints.smaller("sm");
 const smallerThanLg = breakpoints.smaller("lg");
 
 const showSecondMenu = ref(true);
+const secondMenuScrollSection = ref<HTMLElement | null>(null);
+
+const { arrivedState } = useScroll(secondMenuScrollSection);
+const scrollSecondMenuToRight = () => {
+  secondMenuScrollSection.value?.scrollBy({
+    left: 150,
+    behavior: "smooth",
+  });
+};
 
 // on 50px scroll down hide second menu, but on scroll up show it
 // only hide when scrolled down from last scroll up 50px
