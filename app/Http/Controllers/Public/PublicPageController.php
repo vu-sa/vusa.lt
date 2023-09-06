@@ -122,62 +122,6 @@ class PublicPageController extends PublicController
         ]);
     }
 
-    public function news()
-    {
-        $this->getBanners();
-        $this->getPadalinysLinks();
-
-        $news = News::where('permalink', '=', request()->route('permalink'))->first();
-
-        if ($news == null) {
-            // 404
-            abort(404);
-        }
-
-        if (substr($news->image, 0, 4) == 'http') {
-            $image = $news->image;
-        } else {
-            $image = Storage::get(str_replace('uploads', 'public', $news->image)) == null ? '/images/icons/naujienu_foto.png' : $news->image;
-        }
-
-        $other_lang_news = $news->other_lang_id == null ? null : News::where('id', '=', $news->other_lang_id)->select('id', 'lang', 'permalink')->first();
-
-        Inertia::share('alias', $news->padalinys->alias);
-        Inertia::share('sharedOtherLangPage', $other_lang_news);
-
-        return Inertia::render('Public/NewsPage', [
-            'article' => [
-                'id' => $news->id,
-                'title' => $news->title,
-                'short' => $news->short,
-                'text' => $news->text,
-                'lang' => $news->lang,
-                'other_lang_id' => $news->other_lang_id,
-                'permalink' => $news->permalink,
-                'publish_time' => $news->publish_time,
-                'category' => $news->category,
-                'tags' => $news->tags->map(function ($tag) {
-                    return [
-                        'id' => $tag->id,
-                        'name' => $tag->name,
-                    ];
-                }),
-                'content' => $news->content,
-                'image' => $image,
-                'image_author' => $news->image_author,
-                'important' => $news->important,
-                'padalinys' => $news->padalinys->shortname,
-                'main_points' => $news->main_points,
-                'read_more' => $news->read_more,
-            ],
-            'otherLangNews' => $other_lang_news,
-        ])->withViewData([
-            'title' => $news->title,
-            'description' => strip_tags($news->short),
-            'image' => $image,
-        ]);
-    }
-
     public function curatorRegistration()
     {
         $this->getBanners();

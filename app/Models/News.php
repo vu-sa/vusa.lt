@@ -33,7 +33,7 @@ class News extends Model implements Feedable
     }
 
     // Get another language news
-    public function getOtherLanguage()
+    public function getOtherLanguage(): ?News
     {
         return News::find($this->other_lang_id);
     }

@@ -10,7 +10,7 @@ use Inertia\Inertia;
 
 class PublicController extends Controller
 {
-    protected $padalinys;
+    protected Padalinys $padalinys;
 
     public function __construct()
     {
@@ -47,8 +47,7 @@ class PublicController extends Controller
 
     protected function getPadalinysLinks()
     {
-
-        $mainPage = MainPage::where([['padalinys_id', $this->padalinys->id], ['lang', app()->getLocale()]])->get();
+        $mainPage = MainPage::query()->where([['padalinys_id', $this->padalinys->id], ['lang', app()->getLocale()]])->get();
 
         Inertia::share('padalinys.links', $mainPage);
     }

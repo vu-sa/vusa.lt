@@ -30,9 +30,9 @@
           :href="
             route('news', {
               lang: item.lang,
+              news: item.permalink ?? '',
               newsString: 'naujiena',
               subdomain: $page.props.padalinys?.subdomain ?? 'www',
-              permalink: item.permalink ?? '',
             })
           "
         >

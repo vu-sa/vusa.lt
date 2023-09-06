@@ -42,9 +42,9 @@
             :href="
               route('news', {
                 lang: item.lang,
+                news: item.permalink ?? '',
                 newsString: 'naujiena',
                 subdomain: item.alias === 'vusa' ? 'www' : item.alias,
-                permalink: item.permalink ?? '',
               })
             "
             ><img
@@ -57,9 +57,9 @@
           :href="
             route('news', {
               lang: item.lang,
+              news: item.permalink ?? '',
               newsString: 'naujiena',
               subdomain: item.alias === 'vusa' ? 'www' : item.alias,
-              permalink: item.permalink ?? '',
             })
           "
           >{{ item.title }}</Link

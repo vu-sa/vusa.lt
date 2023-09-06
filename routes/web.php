@@ -31,23 +31,21 @@ Route::post('login', [Admin\UserController::class, 'authenticate'])->middleware(
 Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware' => ['main']], function () {
     Route::domain('www.'.explode('.', config('app.url'), 2)[1])->group(function () {
 
-        Route::get('saziningai-registracija', [Public\PublicPageController::class, 'saziningaiExamRegistration'])->name('saziningaiExamRegistration');
-        Route::post('saziningai-registracija', [Public\MainController::class, 'storeSaziningaiExamRegistration'])->name('saziningaiExamRegistration.store');
-        Route::get('saziningai-uzregistruoti-egzaminai', [Public\PublicPageController::class, 'saziningaiExams'])->name('saziningaiExams.registered');
-        Route::post('saziningai-uzregistruoti-egzaminai', [Public\MainController::class, 'storeSaziningaiExamObserver'])->name('saziningaiExamObserver.store');
-
         Route::get('nariu-registracija', [Public\PublicPageController::class, 'memberRegistration'])->name('memberRegistration');
-        Route::post('nariu-registracija', [Public\MainController::class, 'storeMemberRegistration'])->name('memberRegistration.store');
-
         Route::get('kuratoriu-registracija', [Public\PublicPageController::class, 'curatorRegistration'])->name('curatorRegistration');
+        Route::get('saziningai-registracija', [Public\PublicPageController::class, 'saziningaiExamRegistration'])->name('saziningaiExamRegistration');
+        Route::get('saziningai-uzregistruoti-egzaminai', [Public\PublicPageController::class, 'saziningaiExams'])->name('saziningaiExams.registered');
 
         Route::get('pirmakursiu-stovyklos-2022', [Public\PublicPageController::class, 'summerCamps2022'])->name('pirmakursiuStovyklos2022');
-        Route::get('pirmakursiu-stovyklos', [Public\MainConPublicPageControllertroller::class, 'summerCamps2023'])->name('pirmakursiuStovyklos');
+        Route::get('pirmakursiu-stovyklos', [Public\PublicPageControllertroller::class, 'summerCamps2023'])->name('pirmakursiuStovyklos');
         Route::get('kalendorius/renginys/{calendar}', [Public\PublicPageController::class, 'calendarEventMain'])->name('calendar.event');
-        Route::get('kalendorius/ics', [Public\MainController::class, 'publicAllEventCalendar'])->name('calendar.ics');
 
         Route::get('individualios-studijos', [Public\PublicPageController::class, 'individualStudies']);
 
+        Route::post('saziningai-registracija', [Public\MainController::class, 'storeSaziningaiExamRegistration'])->name('saziningaiExamRegistration.store');
+        Route::post('saziningai-uzregistruoti-egzaminai', [Public\MainController::class, 'storeSaziningaiExamObserver'])->name('saziningaiExamObserver.store');
+        Route::post('nariu-registracija', [Public\MainController::class, 'storeMemberRegistration'])->name('memberRegistration.store');
+        Route::get('kalendorius/ics', [Public\MainController::class, 'publicAllEventCalendar'])->name('calendar.ics');
         Route::post('search', [Public\MainController::class, 'search'])->name('search');
     });
 
@@ -78,11 +76,15 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
             });
 
         // Route::get('kontaktai', [Public\ContactController::class, 'contacts'])->name('contacts');
-        Route::get('kontaktai/kategorija/{type:slug}', [Public\ContactController::class, 'institutionCategory'])->name('contacts.category')->whereIn(
+        Route::get('kontaktai/kategorija/{type:slug}', [Public\ContactController::class, 'institutionCategory'])
+            ->name('contacts.category')
+            ->whereIn(
             'type', ['padaliniai']
         );
 
-        Route::get('{newsString}/{permalink}', [Public\PublicPageController::class, 'news'])->where('news_string', '(naujiena|news)')->name('news');
+        Route::get('{newsString}/{news:permalink}', [Public\NewsController::class, 'news'])
+            ->where('news_string', '(naujiena|news)')
+            ->name('news');
 
         Route::get('mainNews', [Public\MainController::class, 'getMainNews']);
         Route::get('{permalink}', [Public\PublicPageController::class, 'page'])->where('permalink', '.*')->name('page');
