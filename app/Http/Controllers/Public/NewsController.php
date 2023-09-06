@@ -25,7 +25,7 @@ class NewsController extends PublicController
         Inertia::share('otherLangPage', $other_lang_page ? [
             ...$other_lang_page->only('id', 'lang', 'title', 'permalink'),
             'type' => 'news',
-            ] : null);
+        ] : null);
 
         return Inertia::render('Public/NewsPage', [
             'article' => [
@@ -40,7 +40,7 @@ class NewsController extends PublicController
                 'padalinys' => $news->padalinys->shortname,
             ],
         ])->withViewData([
-            'title' => $news->title . ' | ' . $this->padalinys->shortname,
+            'title' => $news->title.' | '.$this->padalinys->shortname,
             'description' => $news->short ? strip_tags($news->short) : strip_tags($news->text),
             'image' => $image,
         ]);

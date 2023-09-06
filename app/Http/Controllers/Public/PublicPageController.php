@@ -149,7 +149,7 @@ class PublicPageController extends PublicController
         Inertia::share('otherLangPage', $other_lang_page ? [
             ...$other_lang_page->only('id', 'lang', 'title', 'permalink'),
             'model_type' => 'page',
-            ] : null);
+        ] : null);
 
         return Inertia::render('Public/ContentPage', [
             'navigationItemId' => $navigation_item?->id,

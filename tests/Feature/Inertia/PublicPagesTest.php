@@ -82,6 +82,4 @@ class PublicPagesTest extends TestCase
                 ->has('news')
             );
     }
-
-
 }
