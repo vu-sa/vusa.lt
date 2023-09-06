@@ -6,7 +6,7 @@
       >
         <div class="flex flex-row items-center space-x-4">
           <!-- Hamburger -->
-          <div v-if="smallerThanLg" class="block">
+          <div v-if="smallerThanLg">
             <NButton size="small" strong quaternary @click="toggleMenu">
               <template #icon>
                 <NIcon :component="Navigation24Filled" />
@@ -52,10 +52,7 @@
         </div>
         <div class="flex items-center gap-4">
           <DarkModeSwitch />
-          <LocaleButton
-            :locale="$page.props.app.locale"
-            @change-locale="localeSelect"
-          />
+          <LocaleButton :locale="$page.props.app.locale" />
         </div>
         <NDrawer
           v-model:show="activeDrawer"
@@ -93,11 +90,9 @@
 import { AnimalTurtle24Filled, Navigation24Filled } from "@vicons/fluent";
 import { NButton, NDrawer, NDrawerContent, NIcon } from "naive-ui";
 import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
-import { computed, reactive, ref } from "vue";
+import { computed, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
-import type { RouteParamsWithQueryOverload } from "ziggy-js";
 
-import { LocaleEnum } from "@/Types/enums";
 import AppLogo from "@/Components/AppLogo.vue";
 import DarkModeSwitch from "@/Components/Buttons/DarkModeSwitch.vue";
 import FacebookButton from "../Nav/FacebookButton.vue";
@@ -115,14 +110,9 @@ defineProps<{
 
 const activeDrawer = ref(false);
 
-const locale = ref(usePage().props.app.locale);
 const toggleMenu = () => {
   activeDrawer.value = !activeDrawer.value;
 };
-
-const homeParams: RouteParamsWithQueryOverload = reactive({
-  lang: locale.value,
-});
 
 const parseNavigation = (array: App.Entities.Navigation[], id: number) => {
   const result: Record<string, any>[] = [];
@@ -169,16 +159,6 @@ const handleSelectPadalinys = (key) => {
   window.location.href = `${
     window.location.protocol
   }//${padalinys_alias}.${hostWithoutSubdomain}${usePage().url}`;
-};
-
-const localeSelect = (lang: LocaleEnum) => {
-  if (lang !== "lt") {
-    locale.value = LocaleEnum.EN;
-  } else {
-    locale.value = LocaleEnum.LT;
-  }
-  // update app logo button
-  homeParams.lang = locale.value;
 };
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
