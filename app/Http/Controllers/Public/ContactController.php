@@ -47,7 +47,7 @@ class ContactController extends PublicController
         // make eloquent collection from array
         $contacts = new Collection($contacts);
 
-        return $this->showInstitution($institution, $contacts, $institution->name.' | '. ucfirst($type->slug));
+        return $this->showInstitution($institution, $contacts, $institution->name.' | '.ucfirst($type->slug));
     }
 
     public function studentRepresentatives()

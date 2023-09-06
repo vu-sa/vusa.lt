@@ -79,8 +79,8 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('kontaktai/kategorija/{type:slug}', [Public\ContactController::class, 'institutionCategory'])
             ->name('contacts.category')
             ->whereIn(
-            'type', ['padaliniai']
-        );
+                'type', ['padaliniai']
+            );
 
         Route::get('{newsString}/{news:permalink}', [Public\NewsController::class, 'news'])
             ->where('news_string', '(naujiena|news)')
