@@ -1,6 +1,6 @@
 <template>
   <div class="mx-auto mt-8 flex max-w-7xl flex-col gap-4 px-8 lg:px-32">
-    <h1>Studentų atstovai</h1>
+    <h1>{{ $t("Studentų atstovai") }}</h1>
     <NFormItem :show-feedback="false" label="Tipas" class="max-w-sm"
       ><NSelect
         v-model:value="selectedTypeID"
@@ -21,24 +21,12 @@
       :key="institutionType.id"
       class="my-4"
     >
-      <div
+      <InstitutionContacts
         v-for="institution in institutionType.institutions"
         :key="institution.id"
-        class="mb-8 flex flex-col gap-4"
-      >
-        <InstitutionFigure :institution="institution" />
-        <div class="grid grid-cols-ramFill gap-4">
-          <template v-for="duty in institution.duties">
-            <ContactWithPhoto
-              v-for="contact in duty.current_users"
-              :key="contact.id"
-              :contact="contact"
-              :duties="[duty]"
-            >
-            </ContactWithPhoto>
-          </template>
-        </div>
-      </div>
+        :institution="institution"
+        :contacts="getContacts(institution)"
+      />
     </section>
   </div>
 </template>
@@ -47,8 +35,7 @@
 import { NFormItem, NSelect } from "naive-ui";
 import { computed, ref } from "vue";
 
-import ContactWithPhoto from "@/Components/Public/ContactWithPhoto.vue";
-import InstitutionFigure from "@/Components/Public/InstitutionFigure.vue";
+import InstitutionContacts from "@/Components/Public/InstitutionContacts.vue";
 
 const props = defineProps<{
   types: App.Entities.Type[];
@@ -79,4 +66,18 @@ const selectedType = computed(() => {
 
   return null;
 });
+
+// flatten institution.duties.current_users and add duty to each user
+const getContacts = (institution: App.Entities.Institution) => {
+  const contacts: App.Entities.User[] = [];
+
+  institution.duties?.forEach((duty) => {
+    duty.current_users?.forEach((user) => {
+      user.duties = [duty];
+      contacts.push(user);
+    });
+  });
+
+  return contacts;
+};
 </script>

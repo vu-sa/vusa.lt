@@ -1,14 +1,11 @@
 <template>
   <figure
-    class="relative flex h-auto min-h-fit max-w-md flex-col rounded-sm border dark:border-zinc-700 lg:flex-row"
+    class="relative grid min-h-fit max-w-md rounded-md border border-zinc-200 bg-zinc-50 shadow-sm dark:border-zinc-900 dark:bg-zinc-800 lg:grid-cols-[2fr,_3fr]"
   >
-    <div
-      v-if="getImageUrl(contact)"
-      class="relative h-48 w-full lg:max-w-[40%]"
-    >
+    <div v-if="getImageUrl(contact)">
       <img
         :src="getImageUrl(contact)"
-        class="h-full w-full object-cover"
+        class="lg:rounded- h-44 w-full rounded-t-md object-cover lg:rounded-l-md lg:rounded-tr-none"
         loading="lazy"
         style="object-position: 50% 25%"
         :alt="contact.name"
@@ -18,14 +15,14 @@
       <div>
         <div class="flex items-center">
           <p
-            class="text-lg font-bold leading-5 tracking-tight text-zinc-800 dark:text-zinc-50"
+            class="mt-1 text-xl font-bold leading-3 text-zinc-800 dark:text-zinc-50"
           >
             {{ contact.name }}
           </p>
         </div>
         <div
           v-if="duties"
-          class="w-fit text-xs font-light text-zinc-600 dark:text-zinc-200"
+          class="mt-2 w-fit text-xs text-zinc-600 dark:text-zinc-200"
         >
           <template v-for="duty in duties" :key="duty.id">
             <p class="my-1">
@@ -53,22 +50,20 @@
           <a :href="`tel:${contact.phone}`">{{ contact.phone }}</a>
         </p>
         <template v-for="duty in duties" :key="duty.id">
-          <a v-if="duty.email" :href="`mailto:${duty.email}`">
-            <NEllipsis style="max-width: 250px">
+          <NEllipsis style="max-width: 250px">
+            <a v-if="duty.email" :href="`mailto:${duty.email}`">
               <NIcon class="mr-2 align-middle" :component="Mail20Regular" />
               <span class="align-middle">
                 {{ duty.email }}
               </span>
-            </NEllipsis>
-          </a>
-          <a v-else :href="`mailto:${contact.email}`">
-            <NEllipsis style="max-width: 250px">
+            </a>
+            <a v-else :href="`mailto:${contact.email}`">
               <NIcon class="mr-2 align-middle" :component="Mail20Regular" />
               <span class="align-middle">
                 {{ contact.email }}
               </span>
-            </NEllipsis>
-          </a>
+            </a>
+          </NEllipsis>
         </template>
       </div>
     </div>
@@ -136,7 +131,7 @@ const getImageUrl = (contact: App.Entities.User) => {
 
 const changeDutyNameEndings = (
   contact: App.Entities.User,
-  duty: App.Entities.Duty
+  duty: App.Entities.Duty,
 ) => {
   // check for english locale and just return english
   let locale = usePage().props.app.locale;

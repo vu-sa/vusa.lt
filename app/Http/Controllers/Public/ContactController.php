@@ -52,6 +52,8 @@ class ContactController extends PublicController
 
     public function studentRepresentatives()
     {
+        $this->getPadalinysLinks();
+
         $type = Type::query()->where('slug', '=', 'studentu-atstovu-organas')->first();
         $descendants = $type->getDescendantsAndSelf();
 
