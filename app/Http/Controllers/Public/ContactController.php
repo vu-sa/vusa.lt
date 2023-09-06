@@ -13,7 +13,6 @@ class ContactController extends PublicController
 {
     public function institutionContacts($subdomain, $lang, Institution $institution)
     {
-        $this->getBanners();
         $this->getPadalinysLinks();
 
         $contacts = $institution->load('duties.current_users.current_duties')->duties->sortBy(function ($duty) {
@@ -23,12 +22,11 @@ class ContactController extends PublicController
         // make eloquent collection from array
         $contacts = new Collection($contacts);
 
-        return $this->showInstitution($institution, $contacts);
+        return $this->showInstitution($institution, $contacts, $institution->name.' | Kontaktai');
     }
 
     public function institutionDutyTypeContacts($subdomain, $lang, Type $type)
     {
-        $this->getBanners();
         $this->getPadalinysLinks();
 
         $types = $type->getDescendantsAndSelf();
@@ -49,10 +47,10 @@ class ContactController extends PublicController
         // make eloquent collection from array
         $contacts = new Collection($contacts);
 
-        return $this->showInstitution($institution, $contacts);
+        return $this->showInstitution($institution, $contacts, $institution->name.' | '. ucfirst($type->slug));
     }
 
-    public function studentRepresentatives($subdomain, $lang)
+    public function studentRepresentatives()
     {
         $type = Type::query()->where('slug', '=', 'studentu-atstovu-organas')->first();
         $descendants = $type->getDescendantsAndSelf();
@@ -79,9 +77,9 @@ class ContactController extends PublicController
         ]);
     }
 
-    private function showInstitution(Institution $institution, Collection $contacts)
+    private function showInstitution(Institution $institution, Collection $contacts, string $title)
     {
-        return Inertia::render('Public/Contacts/ContactsShow', [
+        return Inertia::render('Public/Contacts/ContactInstitutionOrType', [
             'institution' => $institution,
             'contacts' => $contacts->map(function ($contact) use ($institution) {
                 return [
@@ -94,7 +92,7 @@ class ContactController extends PublicController
                 ];
             }),
         ])->withViewData([
-            'title' => $institution->name.' | Kontaktai',
+            'title' => $title,
             'description' => strip_tags($institution->description),
         ]);
     }
@@ -107,7 +105,6 @@ class ContactController extends PublicController
      */
     public function institutionCategory($subdomain, $lang, Type $type)
     {
-        $this->getBanners();
         $this->getPadalinysLinks();
 
         $institutions = $type->load(['institutions' => function ($query) {

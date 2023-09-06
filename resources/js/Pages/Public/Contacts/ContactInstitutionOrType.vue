@@ -1,5 +1,4 @@
 <template>
-  <Head :title="`${institution.short_name ?? institution.name}`"></Head>
   <FadeTransition appear>
     <div class="mx-auto max-w-7xl px-8">
       <div class="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-6">
