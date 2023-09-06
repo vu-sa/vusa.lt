@@ -27,6 +27,7 @@ import { loadLanguageAsync } from "laravel-vue-i18n";
 import { router, usePage } from "@inertiajs/vue3";
 
 import { LocaleEnum } from "@/Types/enums";
+import type { RouteParamsWithQueryOverload } from "ziggy-js";
 
 const props = defineProps<{
   locale: LocaleEnum;
@@ -78,10 +79,11 @@ const hasChangeableLocale = computed(() => {
 
   // check if current page url has /kontaktai or /contacts
   if (
-    window.location.pathname.includes("kontaktai") ||
-    window.location.pathname.includes("contacts") ||
-    window.location.pathname.includes("kuratoriu-registracija") ||
-    window.location.pathname.includes("individualios-studijos")
+    window.location.pathname.includes("/kontaktai") ||
+    window.location.pathname.includes("/contacts") ||
+    window.location.pathname.includes("/kuratoriu-registracija") ||
+    window.location.pathname.includes("/individualios-studijos") ||
+    window.location.pathname.includes("/nariu-registracija")
   ) {
     return true;
   }
@@ -127,12 +129,22 @@ const handleSelectLanguage = (key: "home" | "page") => {
 
   const routes = {
     home: () => route("home", { lang: newLang, subdomain }),
-    page: () =>
-      route("page", {
-        lang: newLang,
-        subdomain,
-        permalink: pageProps?.otherLangPage?.permalink,
-      }),
+    page:
+      pageProps.otherLangPage?.type === "page"
+        ? () =>
+            route("page", {
+              lang: newLang,
+              subdomain,
+              permalink: pageProps?.otherLangPage?.permalink,
+            } as RouteParamsWithQueryOverload)
+        : () =>
+            route("news", {
+              lang: newLang,
+              subdomain,
+              news: pageProps?.otherLangPage?.permalink,
+              newsString:
+                pageProps.otherLangPage?.lang === "lt" ? "naujiena" : "news",
+            } as RouteParamsWithQueryOverload),
   };
 
   router.visit(routes[key](), {
