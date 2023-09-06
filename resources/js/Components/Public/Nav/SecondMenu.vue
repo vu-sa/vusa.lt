@@ -60,6 +60,8 @@ const { arrivedState, measure } = useScroll(secondMenuScrollSection);
 window.addEventListener("resize", measure);
 
 onMounted(() => {
-  measure();
+  setTimeout(() => {
+    measure();
+  }, 100);
 });
 </script>
