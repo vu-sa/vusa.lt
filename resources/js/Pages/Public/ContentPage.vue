@@ -1,68 +1,54 @@
 <template>
-  <Head :title="page.title" />
-
-  <FadeTransition appear>
-    <div>
-      <section class="max-w-7xl px-8 pr-20 pt-8 last:pb-2 lg:pl-40">
-        <header>
-          <NBreadcrumb v-if="navigationItemId != null" class="mb-4 flex w-full">
-            <NBreadcrumbItem
-              v-for="breadcrumb in breadcrumbTree"
-              :key="breadcrumb.parent_id"
-              :clickable="false"
-            >
-              {{ breadcrumb.name }}
-              <template #separator>
-                <NIcon><HatGraduation20Filled /></NIcon>
-              </template>
-            </NBreadcrumbItem>
-          </NBreadcrumb>
-        </header>
-        <article
-          class="grid grid-cols-1 gap-x-12"
-          :class="{ 'lg:grid-cols-[1fr_250px]': anchorLinks }"
-        >
-          <h1 class="col-span-full col-start-1 inline-flex gap-4">
-            <span class="text-gray-900 dark:text-white">{{ page.title }}</span>
-            <NButton v-if="$page.props.auth?.user" text @click="editPage"
-              ><NIcon :size="32" :component="DocumentEdit20Regular"
-            /></NButton>
-          </h1>
-          <!-- eslint-disable-next-line vue/no-v-html -->
-          <div class="prose dark:prose-invert" v-html="text" />
-          <aside v-if="anchorLinks" class="sticky top-48 hidden h-fit lg:block">
-            <NAnchor ignore-gap :bound="120">
-              <NAnchorLink
-                v-for="link in anchorLinks"
-                :key="link.href"
-                :title="link.title"
-                :href="link.href"
-              ></NAnchorLink>
-            </NAnchor>
-          </aside>
-        </article>
-      </section>
-      <div v-if="$page.props.banners" class="mx-auto mt-8 max-w-7xl">
-        <BannerCarousel :banners="$page.props.banners" />
-      </div>
-    </div>
-  </FadeTransition>
+  <div>
+    <section class="pt-8 last:pb-2">
+      <header>
+        <NBreadcrumb v-if="navigationItemId != null" class="mb-4 flex w-full">
+          <NBreadcrumbItem
+            v-for="breadcrumb in breadcrumbTree"
+            :key="breadcrumb.parent_id"
+            :clickable="false"
+          >
+            {{ breadcrumb.name }}
+            <template #separator>
+              <NIcon><HatGraduation20Filled /></NIcon>
+            </template>
+          </NBreadcrumbItem>
+        </NBreadcrumb>
+      </header>
+      <article
+        class="grid grid-cols-1 gap-x-12"
+        :class="{ 'lg:grid-cols-[1fr_250px]': anchorLinks }"
+      >
+        <h1 class="col-span-full col-start-1 inline-flex gap-4">
+          <span class="text-gray-900 dark:text-white">{{ page.title }}</span>
+        </h1>
+        <!-- eslint-disable-next-line vue/no-v-html -->
+        <div class="prose dark:prose-invert" v-html="text" />
+        <aside v-if="anchorLinks" class="sticky top-48 hidden h-fit lg:block">
+          <NAnchor ignore-gap :bound="160">
+            <NAnchorLink
+              v-for="link in anchorLinks"
+              :key="link.href"
+              :title="link.title"
+              :href="link.href"
+            ></NAnchorLink>
+          </NAnchor>
+        </aside>
+      </article>
+    </section>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { DocumentEdit20Regular, HatGraduation20Filled } from "@vicons/fluent";
-import { Head, router, usePage } from "@inertiajs/vue3";
+import { HatGraduation20Filled } from "@vicons/fluent";
 import {
   NAnchor,
   NAnchorLink,
   NBreadcrumb,
   NBreadcrumbItem,
-  NButton,
   NIcon,
 } from "naive-ui";
-
-import BannerCarousel from "@/Components/Public/FullWidth/BannerCarousel.vue";
-import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
+import { usePage } from "@inertiajs/vue3";
 
 const props = defineProps<{
   navigationItemId: number;
@@ -76,7 +62,7 @@ const getBreadcrumbTree = (navigationItemId: number) => {
   while (navigationItemId) {
     // find array MainNavigation item by navigationItemId and add it to breadcrumbTree
     const navigationItem = mainNavigation.find(
-      (item) => item.id === navigationItemId
+      (item) => item.id === navigationItemId,
     );
     breadcrumbTree.unshift(navigationItem);
     navigationItemId = navigationItem.parent_id;
@@ -85,10 +71,6 @@ const getBreadcrumbTree = (navigationItemId: number) => {
 };
 
 const breadcrumbTree = getBreadcrumbTree(props.navigationItemId);
-
-const editPage = () => {
-  router.visit(route("pages.edit", { id: props.page.id }));
-};
 
 // TODO: should be added to backend
 
@@ -124,7 +106,8 @@ const anchorLinks = headings?.map((heading) => {
   flex-wrap: wrap;
 }
 
-* {
-  scroll-margin: 100px 0 0 0;
+/* offset scroll of content on anchor link click which uses h2 and h3 elements */
+*:target {
+  scroll-margin-top: 160px;
 }
 </style>

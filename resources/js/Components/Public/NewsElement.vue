@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-8 mb-4 rounded-lg p-4 lg:mx-16 lg:mb-8 lg:px-8">
+  <div class="mb-4 rounded-lg py-4 lg:mb-8">
     <header class="mb-4 flex flex-wrap items-center justify-between gap-1">
       <div>
         <h1 class="lg:mb-0">{{ $t("Naujienos") }}</h1>

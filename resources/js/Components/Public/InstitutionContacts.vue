@@ -1,6 +1,6 @@
 <template>
-  <div class="grid grid-cols-[4fr,_3fr] gap-12">
-    <div class="sticky top-32 h-fit">
+  <div class="gap-12 sm:grid sm:grid-cols-[4fr,_3fr]">
+    <div class="h-fit sm:sticky sm:top-32">
       <img
         v-if="institution.image_url"
         :src="institution.image_url"
@@ -18,7 +18,19 @@
               {{ institution.name ?? "" }}
             </template>
           </h2>
+          <NEllipsis
+            v-if="isMobile"
+            expand-trigger="click"
+            line-clamp="3"
+            :tooltip="true"
+          >
+            <p
+              class="prose prose-sm dark:prose-invert"
+              v-html="institutionDescription"
+            />
+          </NEllipsis>
           <p
+            v-else
             class="prose prose-sm dark:prose-invert"
             v-html="institutionDescription"
           />
@@ -38,6 +50,8 @@
 </template>
 
 <script setup lang="ts">
+import { NEllipsis } from "naive-ui";
+import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
 import { computed, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 
@@ -61,5 +75,6 @@ const institutionDescription = computed(() => {
   return props.institution.description ?? "";
 });
 
-console.log(props.contacts);
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const isMobile = computed(() => breakpoints.sm);
 </script>

@@ -1,7 +1,7 @@
 <template>
   <div>
     <NDivider />
-    <div class="prose-sm mx-8 dark:prose-invert lg:mx-32 lg:px-32">
+    <div class="prose-sm dark:prose-invert">
       <h2
         class="my-4 text-xl font-bold text-gray-900 duration-200 hover:text-vusa-red dark:text-zinc-50 lg:w-4/5 lg:text-2xl"
       >

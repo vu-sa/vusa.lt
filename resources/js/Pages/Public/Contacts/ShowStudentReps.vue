@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto mt-8 flex max-w-7xl flex-col gap-4 px-8 lg:px-32">
+  <div class="mt-8 flex flex-col gap-4">
     <h1>{{ $t("Studentų atstovai") }}</h1>
     <NFormItem label="Tipas" class="max-w-sm"
       ><NSelect

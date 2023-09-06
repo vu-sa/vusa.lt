@@ -9,9 +9,7 @@
     <link rel="preload" href="/images/photos/stovykla.jpg" as="image" />
   </Head>
 
-  <div
-    class="mx-auto mt-8 flex max-w-7xl flex-col-reverse gap-4 px-16 lg:mt-32 lg:flex-row lg:px-24 xl:px-40"
-  >
+  <div class="mt-8 flex flex-col-reverse gap-4 lg:mt-32 lg:flex-row">
     <div
       class="prose prose-sm flex w-fit flex-col items-center justify-center dark:prose-invert lg:h-4/5 lg:w-1/2 lg:items-start 2xl:w-3/4"
     >
@@ -85,7 +83,7 @@
       </div>
     </div>
   </div>
-  <div v-if="upcoming4Events.length > 0" class="mx-auto my-8 max-w-7xl lg:px-4">
+  <div v-if="upcoming4Events.length > 0" class="mx-auto my-8">
     <template v-if="$page.props.app.locale === 'lt'"
       ><h2 class="text-center lg:text-start">Artėjantys renginiai</h2></template
     ><template v-else

@@ -136,12 +136,13 @@ html.dark {
   color-scheme: dark;
 }
 
-/* .wrapper {
+.wrapper {
   display: grid;
   grid-template-columns:
     1fr
-    min(65ch, 100%)
+    min(75vw, 100%)
     1fr;
+  margin-top: 8rem;
 }
 
 .wrapper > * {
@@ -151,4 +152,4 @@ html.dark {
 .full-bleed {
   width: 100%;
   grid-column: 1 / 4;
-} */
+}

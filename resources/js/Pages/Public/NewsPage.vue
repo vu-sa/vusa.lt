@@ -14,11 +14,7 @@
         <!-- <NIcon class="mr-2" size="16"> <Clock20Regular /> </NIcon> -->
         {{ article.publish_time }}</template
       >
-      <template #title
-        >{{ article.title }}
-        <NButton v-if="$page.props.auth?.user" text @click="editNews"
-          ><NIcon size="28" :component="DocumentEdit24Regular" /></NButton
-      ></template>
+      <template #title>{{ article.title }} </template>
       <template #image
         ><img
           class="col-span-4 my-4 h-auto w-[65ch] rounded-sm object-cover shadow-md duration-200 hover:shadow-lg"
@@ -45,19 +41,14 @@
 
 <script setup lang="ts">
 import { trans as $t, loadLanguageAsync } from "laravel-vue-i18n";
-import { DocumentEdit24Regular } from "@vicons/fluent";
-import { NBackTop, NButton, NIcon } from "naive-ui";
+import { NBackTop, NButton } from "naive-ui";
 import { router, usePage } from "@inertiajs/vue3";
 
 import NewsArticle from "@/Components/Public/NewsArticle.vue";
 
-const props = defineProps<{
+defineProps<{
   article: App.Entities.News;
 }>();
-
-const editNews = () => {
-  router.visit(route("news.edit", { id: props.article.id }));
-};
 
 const openAnotherLangNews = () => {
   let otherLangNews = usePage().props.otherLangPage;

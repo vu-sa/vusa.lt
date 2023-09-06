@@ -13,10 +13,10 @@
         <FadeTransition appear
           ><MainNavigation :is-theme-dark="isDark"
         /></FadeTransition>
-        <div class="pb-8 pt-32">
+        <main class="pb-8">
           <Suspense>
             <div>
-              <slot />
+              <div class="wrapper"><slot /></div>
               <div
                 v-if="
                   $page.props.padalinys?.banners &&
@@ -47,7 +47,7 @@
               </div>
             </template>
           </Suspense>
-        </div>
+        </main>
 
         <FadeTransition appear>
           <ConsentCard

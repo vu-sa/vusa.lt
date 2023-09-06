@@ -1,7 +1,9 @@
 <template>
-  <div class="mx-auto max-w-7xl px-12 pt-10">
-    <InstitutionContacts :contacts="contacts" :institution="institution" />
-  </div>
+  <InstitutionContacts
+    class="mt-8"
+    :contacts="contacts"
+    :institution="institution"
+  />
 </template>
 
 <script setup lang="ts">
