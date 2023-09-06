@@ -57,7 +57,31 @@ class PublicPagesTest extends TestCase
                 ->component('Public/HomePage')
                 ->has('news')
                 ->has('calendar')
-                ->has('banners')
+                ->has('upcoming4Events')
             );
     }
+
+    public function test_can_open_news_archive(): void
+    {
+        $this->get(route('newsArchive', ['subdomain' => 'www', 'lang' => 'lt']))
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Public/NewsArchive')
+                ->has('news', fn (Assert $page) => $page
+                    ->has('data')
+                )
+            );
+    }
+
+    public function test_can_open_news(): void
+    {
+        $news = \App\Models\News::factory()->create();
+
+        $this->get(route('news', ['subdomain' => 'www', 'lang' => 'lt', 'news' => $news->permalink, 'newsString' => 'naujiena']))
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Public/News')
+                ->has('news')
+            );
+    }
+
+
 }

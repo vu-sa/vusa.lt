@@ -72,9 +72,9 @@ const columns = computed<DataTableColumns<App.Entities.News>>(() => [
           publicRoute="news"
           routeProps={{
             lang: row.lang,
+            news: row.permalink,
             newsString: "naujiena",
             subdomain: row.padalinys?.alias ?? "www",
-            permalink: row.permalink,
           }}
         />
       ) : (
@@ -90,21 +90,22 @@ const columns = computed<DataTableColumns<App.Entities.News>>(() => [
   },
   {
     key: "other_lang_id",
-    title: "Kitos kalbos puslapis",
-    width: 110,
+    title: "Kitos kalbos naujiena",
+    maxWidth: 110,
+    ellipsis: {
+      tooltip: true,
+    },
     render(row) {
-      {
-        row.other_lang_id ? (
-          <a
-            href={route("news.edit", { id: row.other_lang_id })}
-            target="_blank"
-          >
-            {row.other_lang_id}
-          </a>
-        ) : (
-          ""
-        );
-      }
+      return row.other_language_news ? (
+        <a
+          href={route("news.edit", { id: row.other_language_news.id })}
+          target="_blank"
+        >
+          {row.other_language_news?.title}
+        </a>
+      ) : (
+        ""
+      );
     },
   },
   {

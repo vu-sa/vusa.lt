@@ -13,16 +13,6 @@
         :show-quick-jumper="true"
         @update:page="handlePageChange"
       ></NPagination>
-      <!-- <NSelect
-        v-model:value="value"
-        filterable
-        placeholder="Search Songs"
-        :options="options"
-        :loading="loading"
-        clearable
-        remote
-        @search="handleSearch"
-      /> -->
       <div class="grid gap-8 px-8 pt-8 md:grid-cols-2 lg:grid-cols-4 lg:px-32">
         <Link
           v-for="item in props.news.data"
@@ -60,9 +50,8 @@
 
 <script setup lang="ts">
 import { Clock20Regular } from "@vicons/fluent";
-import { Head, Link, router, usePage } from "@inertiajs/vue3";
+import { Link, router } from "@inertiajs/vue3";
 import { NIcon, NPagination } from "naive-ui";
-import { ref } from "vue";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import HomeCard from "@/Components/Public/HomeCard.vue";
@@ -70,8 +59,6 @@ import HomeCard from "@/Components/Public/HomeCard.vue";
 const props = defineProps<{
   news: PaginatedModels<App.Entities.News>;
 }>();
-
-const locale = ref(usePage().props.app.locale);
 
 const handlePageChange = (page) => {
   router.reload({

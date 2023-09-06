@@ -137,16 +137,19 @@ class PublicPageController extends PublicController
         $this->getBanners();
         $this->getPadalinysLinks();
 
-        $page = Page::where([['permalink', '=', request()->permalink], ['padalinys_id', '=', $this->padalinys->id]])->first();
+        $page = Page::query()->where([['permalink', '=', request()->permalink], ['padalinys_id', '=', $this->padalinys->id]])->first();
 
         if ($page === null) {
             abort(404);
         }
 
         $navigation_item = Navigation::where([['padalinys_id', '=', $this->padalinys->id], ['name', '=', $page->title]])->get()->first();
-        $other_lang_page = $page->other_lang_id == null ? null : Page::where('id', '=', $page->other_lang_id)->select('id', 'lang', 'permalink')->first();
+        $other_lang_page = $page->getOtherLanguage();
 
-        Inertia::share('sharedOtherLangPage', $other_lang_page);
+        Inertia::share('otherLangPage', $other_lang_page ? [
+            ...$other_lang_page->only('id', 'lang', 'title', 'permalink'),
+            'model_type' => 'page',
+            ] : null);
 
         return Inertia::render('Public/ContentPage', [
             'navigationItemId' => $navigation_item?->id,
@@ -295,7 +298,7 @@ class PublicPageController extends PublicController
         return Inertia::render('Public/MemberRegistration', [
             'padaliniaiOptions' => $padaliniai,
         ])->withViewData([
-            'title' => 'Naujų narių registracija',
+            'title' => __('Prašymas tapti VU SA (arba VU SA PKP) nariu'),
             'description' => 'Naujų narių registracija',
         ]);
     }

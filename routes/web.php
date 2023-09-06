@@ -83,7 +83,7 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
             );
 
         Route::get('{newsString}/{news:permalink}', [Public\NewsController::class, 'news'])
-            ->where('news_string', '(naujiena|news)')
+            ->whereIn('newsString', ['naujiena', 'news'])
             ->name('news');
 
         Route::get('mainNews', [Public\MainController::class, 'getMainNews']);

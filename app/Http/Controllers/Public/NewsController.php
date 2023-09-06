@@ -20,40 +20,28 @@ class NewsController extends PublicController
             $image = Storage::get(str_replace('uploads', 'public', $news->image)) === null ? '/images/icons/naujienu_foto.png' : $news->image;
         }
 
-        $other_lang_news = $news->other_lang_id == null ? null : News::where('id', '=', $news->other_lang_id)->select('id', 'lang', 'permalink')->first();
+        $other_lang_page = $news->other_language_news;
 
-        Inertia::share('alias', $news->padalinys->alias);
-        Inertia::share('sharedOtherLangPage', $news->getOtherLanguage());
+        Inertia::share('otherLangPage', $other_lang_page ? [
+            ...$other_lang_page->only('id', 'lang', 'title', 'permalink'),
+            'type' => 'news',
+            ] : null);
 
         return Inertia::render('Public/NewsPage', [
             'article' => [
-                'id' => $news->id,
-                'title' => $news->title,
-                'short' => $news->short,
-                'text' => $news->text,
-                'lang' => $news->lang,
-                'other_lang_id' => $news->other_lang_id,
-                'permalink' => $news->permalink,
-                'publish_time' => $news->publish_time,
-                'category' => $news->category,
+                ...$news->only('id', 'title', 'short', 'text', 'lang', 'other_lang_id', 'permalink', 'publish_time', 'category', 'content', 'image_author', 'important', 'main_points', 'read_more'),
                 'tags' => $news->tags->map(function ($tag) {
                     return [
                         'id' => $tag->id,
                         'name' => $tag->name,
                     ];
                 }),
-                'content' => $news->content,
                 'image' => $image,
-                'image_author' => $news->image_author,
-                'important' => $news->important,
                 'padalinys' => $news->padalinys->shortname,
-                'main_points' => $news->main_points,
-                'read_more' => $news->read_more,
             ],
-            'otherLangNews' => $news->getOtherLanguage(),
         ])->withViewData([
-            'title' => $news->title,
-            'description' => strip_tags($news->short),
+            'title' => $news->title . ' | ' . $this->padalinys->shortname,
+            'description' => $news->short ? strip_tags($news->short) : strip_tags($news->text),
             'image' => $image,
         ]);
     }

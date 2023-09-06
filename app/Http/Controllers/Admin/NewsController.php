@@ -20,10 +20,10 @@ class NewsController extends LaravelResourceController
     {
         $this->authorize('viewAny', [News::class, $this->authorizer]);
 
-        $indexer = new ModelIndexer(new News(), request(), $this->authorizer);
+        $indexer = new ModelIndexer(new News(), $request, $this->authorizer);
 
         $news = $indexer
-            ->setEloquentQuery()
+            ->setEloquentQuery([fn ($query) => $query->with('other_language_news:id,title,lang')])
             ->filterAllColumns()
             ->sortAllColumns(['publish_time' => 'descend'])
             ->builder->paginate(20);
@@ -110,7 +110,7 @@ class NewsController extends LaravelResourceController
                 'permalink' => $news->permalink,
                 'text' => $news->text,
                 'lang' => $news->lang,
-                'other_lang_id' => $news->getOtherLanguage()?->id,
+                'other_lang_id' => $news->other_language_news?->id,
                 'category' => $news->category,
                 'padalinys' => $news->padalinys,
                 'draft' => $news->draft,

@@ -32,10 +32,9 @@ class News extends Model implements Feedable
         return $this->belongsTo(Padalinys::class, 'padalinys_id');
     }
 
-    // Get another language news
-    public function getOtherLanguage(): ?News
+    public function other_language_news()
     {
-        return News::find($this->other_lang_id);
+        return $this->hasOne(News::class, 'id', 'other_lang_id');
     }
 
     public function tags()
