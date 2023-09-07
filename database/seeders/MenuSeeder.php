@@ -65,12 +65,6 @@ class MenuSeeder extends Seeder
                     'name' => 'VU SA padaliniai',
                     'url' => 'kontaktai/kategorija/padaliniai',
                 ],
-                [
-                    'parent_id' => 2,
-                    'order' => 2,
-                    'name' => 'Kontaktų paieška',
-                    'url' => 'kontaktai/paieska',
-                ],
             ],
         );
     }

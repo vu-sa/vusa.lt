@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\PublicController;
 use App\Models\Institution;
+use App\Models\Padalinys;
 use App\Models\Type;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -11,6 +12,25 @@ use Inertia\Inertia;
 
 class ContactController extends PublicController
 {
+    public function contacts()
+    {
+        $this->getPadalinysLinks();
+
+        $padaliniai = json_decode(base64_decode(request()->input('selectedPadaliniai'))) ??
+            collect([Padalinys::query()->where('type', 'pagrindinis')->first()->id, $this->padalinys->id])->unique();
+
+        return Inertia::render('Public/Contacts/ContactsSearch', [
+            'institutions' => Institution::search(request()->input('search'))->query(fn ($query) => $query->with('padalinys', 'types:id,title,model_type,slug')
+                ->whereHas('padalinys', fn ($query) =>
+                    $query->whereIn('id', $padaliniai)->select(['id', 'shortname', 'alias'])
+                )->withCount('duties'))->orderBy('name')->get()->makeHidden(['parent_id', 'created_at', 'updated_at', 'deleted_at', 'extra_attributes']),
+            'selectedPadaliniai' => $padaliniai,
+        ])->withViewData([
+            'title' => 'Kontaktų paieška',
+            'description' => 'VU SA kontaktai',
+        ]);
+    }
+
     public function institutionContacts($subdomain, $lang, Institution $institution)
     {
         $this->getPadalinysLinks();

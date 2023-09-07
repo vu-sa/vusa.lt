@@ -24,7 +24,7 @@ class InstitutionFactory extends Factory
             'short_name' => $this->faker->companySuffix(),
             'alias' => $this->faker->companySuffix(),
             // html descriptioj
-            'description' => '<p>'.$this->faker->paragraph(1).'</p><p>'.$this->faker->paragraph(1).'</p>',
+            'description' => '<p>'.$this->faker->paragraph(2).'</p><p>'.$this->faker->paragraph(2).'</p><p>'.$this->faker->paragraph(2).'</p>',
             // sometimes image is not available
             'image_url' => $this->faker->boolean(50) ? $this->faker->imageUrl() : null,
             'padalinys_id' => Padalinys::factory(),

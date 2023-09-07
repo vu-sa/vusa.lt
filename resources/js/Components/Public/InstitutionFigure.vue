@@ -69,7 +69,6 @@ import { usePage } from "@inertiajs/vue3";
 
 const props = defineProps<{
   institution: App.Entities.Institution;
-  isPadalinys?: boolean;
 }>();
 
 const imageError = ref(false);
