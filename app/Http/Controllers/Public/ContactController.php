@@ -9,6 +9,7 @@ use App\Models\Type;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Inertia\Inertia;
+use Illuminate\Support\Str;
 
 class ContactController extends PublicController
 {
@@ -19,11 +20,19 @@ class ContactController extends PublicController
         $padaliniai = json_decode(base64_decode(request()->input('selectedPadaliniai'))) ??
             collect([Padalinys::query()->where('type', 'pagrindinis')->first()->id, $this->padalinys->id])->unique();
 
+        $institutions = Institution::query()->with('padalinys', 'types:id,title,model_type,slug')
+            ->whereHas('padalinys', fn ($query) =>
+                $query->whereIn('id', $padaliniai)->select(['id', 'shortname', 'alias'])
+            )->withCount('duties')->orderBy('name')->get()->makeHidden(['parent_id', 'created_at', 'updated_at', 'deleted_at', 'extra_attributes']);
+
         return Inertia::render('Public/Contacts/ContactsSearch', [
-            'institutions' => Institution::search(request()->input('search'))->query(fn ($query) => $query->with('padalinys', 'types:id,title,model_type,slug')
-                ->whereHas('padalinys', fn ($query) =>
-                    $query->whereIn('id', $padaliniai)->select(['id', 'shortname', 'alias'])
-                )->withCount('duties'))->orderBy('name')->get()->makeHidden(['parent_id', 'created_at', 'updated_at', 'deleted_at', 'extra_attributes']),
+            'institutions' => $institutions->map(function ($institution) {
+                return [
+                    ...$institution->toArray(),
+                    // shorten description and add ellipsis
+                    'description' => Str::limit(strip_tags($institution->description), 100, '...'),
+                ];
+            }),
             'selectedPadaliniai' => $padaliniai,
         ])->withViewData([
             'title' => 'Kontaktų paieška',

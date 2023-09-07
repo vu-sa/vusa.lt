@@ -57,6 +57,11 @@
             <NButton round size="tiny">{{ $t(section.title) }}</NButton>
           </a>
         </div>
+        <div
+          v-if="institution.description"
+          class="prose prose-sm mt-4"
+          v-html="institution.description"
+        ></div>
       </div>
     </div>
   </div>

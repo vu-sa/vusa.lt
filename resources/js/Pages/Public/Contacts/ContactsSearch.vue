@@ -1,6 +1,6 @@
 <template>
   <div class="mt-12">
-    <h1>VU SA kontaktai</h1>
+    <h1 class="text-4xl">{{ $t("Kontaktų paieška") }}</h1>
     <NFormItem>
       <NInputGroup class="my-4" size="large" round>
         <NSelect
@@ -8,7 +8,8 @@
           :options="treeOptions"
           filterable
           placement="bottom"
-          placeholder="Įrašykite ir spauskite Enter..."
+          :placeholder="`${$t('Ieškoti')}...`"
+          :virtual-scroll="false"
           @update:value="handleSelectInstitution"
         />
         <NSelect
@@ -18,14 +19,21 @@
           :options="padaliniaiOptions"
           :style="{ width: '30%' }"
           @update:value="handleUpdateSelectedPadaliniai"
-        />
+        >
+          <template #action>
+            <small class="text-zinc-500 dark:text-zinc-400"
+              >Pasirink padalinius, kuriuose ieškoti kontaktų.</small
+            >
+          </template>
+        </NSelect>
       </NInputGroup>
     </NFormItem>
     <template v-for="institution in institutions" :key="institution.id">
       <InstitutionFigure :institution="institution" />
-      <NDivider />
+      <NDivider
+        v-if="institution.id !== institutions[institutions.length - 1].id"
+      />
     </template>
-    <pre>{{ institutions }}</pre>
   </div>
 </template>
 
