@@ -1,16 +1,18 @@
 <template>
   <figure
-    class="relative grid min-h-fit max-w-md rounded-md border border-zinc-200 bg-zinc-50 shadow-sm dark:border-zinc-900 dark:bg-zinc-800 lg:grid-cols-[2fr,_3fr]"
+    class="relative grid min-h-fit max-w-md rounded-md border border-zinc-200 bg-zinc-50 shadow-sm duration-200 hover:shadow-md dark:border-zinc-900 dark:bg-zinc-800"
+    :class="{
+      'xl:grid-cols-[2fr,_3fr]': imageUrl,
+    }"
   >
-    <div v-if="getImageUrl(contact)">
-      <img
-        :src="getImageUrl(contact)"
-        class="lg:rounded- h-44 w-full rounded-t-md object-cover lg:rounded-l-md lg:rounded-tr-none"
-        loading="lazy"
-        style="object-position: 50% 25%"
-        :alt="contact.name"
-      />
-    </div>
+    <img
+      v-if="imageUrl"
+      :src="imageUrl"
+      class="h-44 w-full rounded-t-md object-cover xl:rounded-l-md xl:rounded-tr-none"
+      loading="lazy"
+      style="object-position: 50% 25%"
+      :alt="contact.name"
+    />
     <div class="flex flex-col justify-between gap-4 p-4">
       <div>
         <div class="flex items-center">
@@ -73,10 +75,11 @@
 <script setup lang="ts">
 import { Mail20Regular, Phone20Regular } from "@vicons/fluent";
 import { NEllipsis, NIcon } from "naive-ui";
+import { computed } from "vue";
 import { usePage } from "@inertiajs/vue3";
 import InfoPopover from "../Buttons/InfoPopover.vue";
 
-defineProps<{
+const props = defineProps<{
   contact: App.Entities.User;
   duties: App.Entities.Duty[];
 }>();
@@ -112,22 +115,24 @@ const showAdditionalInfo = (duty) => {
 };
 
 // ! TIK KURATORIAMS: nusprendžia, kurią nuotrauką imti, pagal tai, ar url turi "kuratoriai"
-const getImageUrl = (contact: App.Entities.User) => {
+const imageUrl = computed(() => {
   const url = new URL(window.location.href);
   if (url.pathname.includes("kuratoriai") && contact.duties) {
     // check all duties for duties name which includes kuratorius
     // iterate object simply because it may not be iterable
     for (const duty of Object.keys(contact.duties)) {
-      if (contact.duties[duty].name.toLowerCase().includes("kuratorius")) {
+      if (
+        props.contact.duties?.[duty].name.toLowerCase().includes("kuratorius")
+      ) {
         return (
-          contact.duties[duty].pivot.extra_attributes?.additional_photo ??
-          contact.profile_photo_path
+          props.contact.duties?.[duty].pivot.extra_attributes
+            ?.additional_photo ?? props.contact.profile_photo_path
         );
       }
     }
   }
-  return contact.profile_photo_path ?? "";
-};
+  return props.contact.profile_photo_path ?? "";
+});
 
 const changeDutyNameEndings = (
   contact: App.Entities.User,
