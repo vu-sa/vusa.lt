@@ -8,8 +8,8 @@ use App\Models\Padalinys;
 use App\Models\Type;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Inertia\Inertia;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class ContactController extends PublicController
 {
@@ -21,8 +21,7 @@ class ContactController extends PublicController
             collect([Padalinys::query()->where('type', 'pagrindinis')->first()->id, $this->padalinys->id])->unique();
 
         $institutions = Institution::query()->with('padalinys', 'types:id,title,model_type,slug')
-            ->whereHas('padalinys', fn ($query) =>
-                $query->whereIn('id', $padaliniai)->select(['id', 'shortname', 'alias'])
+            ->whereHas('padalinys', fn ($query) => $query->whereIn('id', $padaliniai)->select(['id', 'shortname', 'alias'])
             )->withCount('duties')->orderBy('name')->get()->makeHidden(['parent_id', 'created_at', 'updated_at', 'deleted_at', 'extra_attributes']);
 
         return Inertia::render('Public/Contacts/ContactsSearch', [
