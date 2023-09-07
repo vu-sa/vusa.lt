@@ -76,5 +76,5 @@ const institutionDescription = computed(() => {
 });
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
-const isMobile = computed(() => breakpoints.sm);
+const isMobile = breakpoints.smallerOrEqual("sm");
 </script>

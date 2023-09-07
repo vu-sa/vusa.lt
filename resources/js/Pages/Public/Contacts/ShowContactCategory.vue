@@ -2,7 +2,9 @@
   <div class="mt-12 flex flex-col gap-4">
     <template v-for="institution in institutions" :key="institution.id">
       <InstitutionFigure :institution="institution" />
-      <NDivider />
+      <NDivider
+        v-if="institution.id !== institutions[institutions.length - 1].id"
+      />
     </template>
   </div>
 </template>
