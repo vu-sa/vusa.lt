@@ -15,8 +15,8 @@
       <div>
         <a
           :href="
-            route('contacts.alias', {
-              institution: institution.alias,
+            route('contacts.institution', {
+              institution: institution.id,
               subdomain:
                 institution.padalinys?.alias === 'vusa'
                   ? 'www'
@@ -38,7 +38,10 @@
         >
           {{ institutionType.title }}
         </small>
-        <div v-if="isPadalinys" class="mt-3 flex flex-wrap gap-2">
+        <div
+          v-if="institution.alias === institution.padalinys?.alias"
+          class="mt-3 flex flex-wrap gap-2"
+        >
           <a
             v-for="section in padaliniaiSections"
             :key="section.alias"
