@@ -1,41 +1,11 @@
 <template>
   <div class="gap-12 sm:grid sm:grid-cols-[4fr,_3fr]">
     <div class="h-fit sm:sticky sm:top-32">
-      <img
-        v-if="institution.image_url"
-        :src="institution.image_url"
-        :alt="institution.name ?? ''"
-        class="mb-4 h-60 w-full object-cover shadow-lg"
-        @error="imageError = true"
-      />
-      <section class="mb-4">
-        <div class="sticky top-0">
-          <h2>
-            <template v-if="$page.props.app.locale === 'en'">
-              {{ institution.extra_attributes?.en?.name ?? institution.name }}
-            </template>
-            <template v-else>
-              {{ institution.name ?? "" }}
-            </template>
-          </h2>
-          <NEllipsis
-            v-if="isMobile"
-            expand-trigger="click"
-            line-clamp="3"
-            :tooltip="true"
-          >
-            <p
-              class="prose prose-sm dark:prose-invert"
-              v-html="institutionDescription"
-            />
-          </NEllipsis>
-          <p
-            v-else
-            class="prose prose-sm dark:prose-invert"
-            v-html="institutionDescription"
-          />
-        </div>
-      </section>
+      <InstitutionFigure
+        only-vertical
+        :is-mobile="isMobile"
+        :institution="institution"
+      ></InstitutionFigure>
     </div>
     <section class="flex flex-col gap-6">
       <ContactCard
@@ -50,30 +20,15 @@
 </template>
 
 <script setup lang="ts">
-import { NEllipsis } from "naive-ui";
 import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
-import { computed, ref } from "vue";
-import { usePage } from "@inertiajs/vue3";
 
 import ContactCard from "@/Components/Public/ContactWithPhoto.vue";
+import InstitutionFigure from "./InstitutionFigure.vue";
 
-const props = defineProps<{
+defineProps<{
   contacts: Array<App.Entities.User>;
   institution: App.Entities.Institution;
 }>();
-
-const imageError = ref(false);
-
-const institutionDescription = computed(() => {
-  if (usePage().props.app.locale === "en") {
-    return (
-      props.institution.extra_attributes?.en?.description ??
-      props.institution.description
-    );
-  }
-
-  return props.institution.description ?? "";
-});
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isMobile = breakpoints.smallerOrEqual("sm");

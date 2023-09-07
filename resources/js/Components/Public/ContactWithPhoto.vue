@@ -15,7 +15,7 @@
       <div>
         <div class="flex items-center">
           <p
-            class="mt-1 text-xl font-bold leading-5 text-zinc-800 dark:text-zinc-50"
+            class="text-xl font-bold leading-5 text-zinc-800 dark:text-zinc-50"
           >
             {{ contact.name }}
           </p>

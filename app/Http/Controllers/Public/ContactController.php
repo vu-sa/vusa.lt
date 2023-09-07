@@ -144,10 +144,17 @@ class ContactController extends PublicController
         }])->institutions;
 
         return Inertia::render('Public/Contacts/ShowContactCategory', [
-            'institutions' => $institutions,
+            'institutions' => $institutions->map(function ($institution) {
+                return [
+                    ...$institution->toArray(),
+                    // shorten description and add ellipsis
+                    'description' => Str::limit(strip_tags($institution->description), 100, '...'),
+                ];
+            }),
+            'type' => $type->unsetRelation('institutions'),
         ])->withViewData([
-            'title' => 'Kontaktai',
-            'description' => 'VU SA kontaktai',
+            'title' => 'Kontaktai: '.$type->title,
+            'description' => 'VU SA kontaktai: '.$type->title,
         ]);
     }
 }
