@@ -46,7 +46,7 @@
         <AdminMenu :collapsed="false" @close:drawer="activeDrawer = false" />
         <NDivider />
         <div class="flex items-center justify-center gap-6 overflow-hidden">
-          <div class="h-fit w-fit"><DarkModeSwitch /></div>
+          <DarkModeSwitch style="margin-top: auto; margin-bottom: auto" />
           <NButton text @click="changeLocale">
             <template #icon>
               <NIcon :size="16"

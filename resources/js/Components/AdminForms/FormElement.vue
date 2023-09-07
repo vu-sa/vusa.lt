@@ -1,7 +1,7 @@
 <template>
   <div class="grid gap-x-12 lg:grid-cols-6">
     <div class="lg:col-span-2">
-      <h4 class="inline-flex items-center gap-2 tracking-tighter">
+      <h4 class="inline-flex items-center gap-2 tracking-normal">
         <NIcon v-if="icon" :component="icon" />
         <slot name="title" />
       </h4>

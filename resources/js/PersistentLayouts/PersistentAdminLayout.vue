@@ -39,6 +39,7 @@ const themeOverrides = {
     primaryColorHover: "#CD3543FF",
     primaryColorPressed: "#CC2130FF",
     primaryColorSuppl: "#B93945FF",
+    borderRadius: "5px",
   },
   Carousel: {
     dotColor: "#ebebeb",
