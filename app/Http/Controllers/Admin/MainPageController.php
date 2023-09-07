@@ -51,7 +51,7 @@ class MainPageController extends LaravelResourceController
 
         return Inertia::render('Admin/Content/CreateMainPage', [
             'typeOptions' => Inertia::lazy(fn () => $this->getMainPageTypeOptions(request()->input('type'))),
-            'padaliniaiOptions' => GetPadaliniaiForUpserts::execute('mainPages.create.all', $this->authorizer)
+            'padaliniaiOptions' => GetPadaliniaiForUpserts::execute('mainPages.create.all', $this->authorizer),
         ]);
     }
 
@@ -116,7 +116,6 @@ class MainPageController extends LaravelResourceController
         //         !collect($route->getAction())->has('prefix', 'broadcasting');
         // });
 
-
         // dd($routesWithoutParams);
 
         return Inertia::render('Admin/Content/EditMainPage', [
@@ -161,7 +160,8 @@ class MainPageController extends LaravelResourceController
         return redirect()->route('mainPage.index')->with('info', 'Sėkmingai ištrinta greitoji nuoroda!');
     }
 
-    public function getMainPageTypeOptions($type) {
+    public function getMainPageTypeOptions($type)
+    {
         switch ($type) {
             case 'url':
                 return;
@@ -178,11 +178,11 @@ class MainPageController extends LaravelResourceController
             case 'institution':
                 return Institution::query()->with('padalinys:id,alias,shortname')->get(['id', 'name', 'padalinys_id']);
 
-            // case 'special-page':
-            //     return collect();
+                // case 'special-page':
+                //     return collect();
 
             default:
-                # code...
+                // code...
                 break;
         }
     }
