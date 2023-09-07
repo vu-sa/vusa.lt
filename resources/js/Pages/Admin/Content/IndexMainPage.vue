@@ -1,6 +1,6 @@
 <template>
   <IndexPageLayout
-    title="Pradinis puslapis"
+    title="Greitosios nuorodos"
     model-name="mainPage"
     :can-use-routes="canUseRoutes"
     :columns="columns"

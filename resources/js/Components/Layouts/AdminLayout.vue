@@ -91,7 +91,7 @@
         <div
           class="mb-4 flex items-center justify-center gap-6 overflow-hidden"
         >
-          <div class="h-fit w-fit"><DarkModeSwitch /></div>
+          <DarkModeSwitch style="margin-top: auto; margin-bottom: auto" />
           <NButton v-if="!collapsed" text @click="changeLocale">
             <template #icon>
               <NIcon :size="16"

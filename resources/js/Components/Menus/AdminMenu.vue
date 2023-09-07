@@ -272,7 +272,7 @@ const menuOptions = computed(() => [
         label: () => {
           return (
             <Link href={route("mainPage.index")}>
-              {$t("Greitieji mygtukai")}
+              {$t("Greitosios nuorodos")}
             </Link>
           );
         },

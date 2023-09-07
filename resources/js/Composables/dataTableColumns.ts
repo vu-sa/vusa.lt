@@ -22,7 +22,9 @@ export const padalinysColumn = (filters, padaliniai) => {
 export const langColumn = (filters) => {
   return {
     key: "lang",
-    title: "Kalba",
+    title() {
+      return $t("Kalba");
+    },
     width: 100,
     filter: true,
     filterOptionValues: filters.value["lang"],
