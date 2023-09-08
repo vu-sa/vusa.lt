@@ -43,10 +43,12 @@ const props = defineProps<{
 
 const options_padaliniai = computed<DropdownOption[]>(() => {
   return usePage()
-    .props.padaliniai.filter((padalinys) => padalinys.type === "padalinys")
+    .props.padaliniai.filter(
+      (padalinys) => padalinys.type === "padalinys" && padalinys.id <= 16,
+    )
     .map((padalinys) => ({
       label:
-        props.size.value === "tiny"
+        props.size.toLowerCase() === "tiny"
           ? padalinys.alias
           : $t(padalinys.fullname.split("atstovybė ")[1]),
       key: padalinys.alias,
