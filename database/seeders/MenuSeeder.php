@@ -45,25 +45,25 @@ class MenuSeeder extends Seeder
                     'parent_id' => 1,
                     'order' => 4,
                     'name' => 'Sąžiningai: registracija',
-                    'url' => route('saziningaiExamRegistration', ['lang' => 'lt'])
+                    'url' => route('saziningaiExamRegistration', ['lang' => 'lt']),
                 ],
                 [
                     'parent_id' => 1,
                     'order' => 5,
                     'name' => 'Sąžiningai: stebėjimas',
-                    'url' => route('saziningaiExams.registered', ['lang' => 'lt'])
+                    'url' => route('saziningaiExams.registered', ['lang' => 'lt']),
                 ],
                 [
                     'parent_id' => 2,
                     'order' => 0,
                     'name' => 'Kontaktų paieška',
-                    'url' => route('contacts', ['lang' => 'lt', 'subdomain' => 'www'])
+                    'url' => route('contacts', ['lang' => 'lt', 'subdomain' => 'www']),
                 ],
                 [
                     'parent_id' => 2,
                     'order' => 1,
                     'name' => 'VU SA padaliniai',
-                    'url' => route('contacts.category', ['lang' => 'lt', 'subdomain' => 'www', 'type' => 'padaliniai'])
+                    'url' => route('contacts.category', ['lang' => 'lt', 'subdomain' => 'www', 'type' => 'padaliniai']),
                 ],
             ],
         );
