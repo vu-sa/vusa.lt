@@ -1,56 +1,42 @@
 <template>
-  <NButton
-    tag="a"
-    size="tiny"
-    small
-    text
-    :href="link"
-    :target="link?.includes('http') ? '_blank' : undefined"
+  <component
+    :is="useInertiaRouter ? Link : 'a'"
+    :href="mainPageLink?.link"
+    class="text-xs text-zinc-700 dark:text-zinc-300 dark:hover:text-vusa-red"
+    :target="useInertiaRouter ? undefined : '_blank'"
   >
     {{ mainPageLink?.text }}
-  </NButton>
+  </component>
 </template>
 
 <script setup lang="ts">
-import { NButton } from "naive-ui";
+import { Link } from "@inertiajs/vue3";
 import { computed } from "vue";
-// import { router, usePage } from "@inertiajs/vue3";
 
-const props = defineProps<{ mainPageLink: App.Entities.MainPage | null }>();
+const props = defineProps<{
+  mainPageLink: App.Entities.MainPage | null;
+}>();
 
-const link = computed(() => {
+const useInertiaRouter = computed(() => {
+  // if link is null, return nothing
   let link = props.mainPageLink?.link;
 
-  if (link === undefined) {
-    return null;
+  // if link doesn't include http, useInertia
+  if (!link?.includes("http")) {
+    return true;
   }
 
-  // if link is null, return nothing
-  if (link === null || link.includes("http")) {
-    return link;
-  }
+  const hostnameSubdomain = window.location.hostname.split(".")[0];
+  const linkSubdomain = getSubdomainFromHrefOrPath(link);
 
-  // if subdomain different than padalinys alias, use window.location.href
-  // because inertiajs response is not normal
-
-  // if first char is /, remove it
-  if (link.charAt(0) === "/") {
-    link = link.substring(1);
-  }
-
-  // if starts with lt or en, remove it
-  if (link.startsWith("lt") || link.startsWith("en")) {
-    link = link.substring(3);
-  }
-
-  return link;
-
-  // router.visit(
-  //   route("page", {
-  //     lang: usePage().props.app.locale,
-  //     subdomain: usePage().props.padalinys?.subdomain ?? "www",
-  //     permalink: link,
-  //   }),
-  // );
+  return hostnameSubdomain !== linkSubdomain;
 });
+
+const getSubdomainFromHrefOrPath = (url: string) => {
+  // sometimes href: https://www.vusa.lt/lt/nuorodos... sometimes path: /lt/nuorodos...
+
+  const subdomain = url.split("/")[2].split(".")[0];
+
+  return subdomain;
+};
 </script>
