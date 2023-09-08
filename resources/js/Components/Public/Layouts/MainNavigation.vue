@@ -13,9 +13,12 @@
               </template>
             </NButton>
           </div>
-          <a :href="`${$page.props.app.url}/${$page.props.app.locale}`">
+          <SmartLink
+            :href="`${$page.props.app.url}/${$page.props.app.locale}`"
+            target="_self"
+          >
             <AppLogo :is-theme-dark="isThemeDark" class="w-24 md:w-32" />
-          </a>
+          </SmartLink>
           <PadalinysSelector
             :size="smallerThanSm ? 'tiny' : 'small'"
             @select:padalinys="handleSelectPadalinys"
@@ -86,7 +89,7 @@
   </section>
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
 import { AnimalTurtle24Filled, Navigation24Filled } from "@vicons/fluent";
 import { NButton, NDrawer, NDrawerContent, NIcon } from "naive-ui";
 import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
@@ -102,6 +105,7 @@ import MainMenu from "../Nav/MainMenu.vue";
 import PadalinysSelector from "../Nav/PadalinysSelector.vue";
 import SearchButton from "../Nav/SearchButton.vue";
 import SecondMenu from "../Nav/SecondMenu.vue";
+import SmartLink from "../SmartLink.vue";
 import StartFM from "@/Components/Public/Nav/StartFM.vue";
 
 defineProps<{
@@ -118,15 +122,33 @@ const parseNavigation = (array: App.Entities.Navigation[], id: number) => {
   const result: Record<string, any>[] = [];
   array.forEach((item) => {
     if (item.parent_id === id) {
+      // if item href matches usepage.props.app.url, then use self link
+      // else use external link
+
+      let target: string | undefined = undefined;
+      let appUrl = usePage().props.app.url;
+
+      if (item.url.startsWith(appUrl)) {
+        target = "_self";
+      }
+
       result.push({
         key: item.id,
-        label: item.name,
+        label() {
+          return (
+            <SmartLink target={target} href={item.url}>
+              {item.name}
+            </SmartLink>
+          );
+        },
         children: parseNavigation(array, item.id),
-        url: item.url.replace(/^\/|\/$/g, ""),
       });
       if (result[result.length - 1].children.length === 0) {
         delete result[result.length - 1].children;
         delete result[result.length - 1].icon;
+      } else {
+        // change label to simple span
+        result[result.length - 1].label = item.name;
       }
     }
   });
