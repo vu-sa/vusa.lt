@@ -43,7 +43,7 @@
         {{ institutionType.title }}
       </small>
       <slot name="more" />
-      <div class="mb-8">
+      <div class="mb-5">
         <NEllipsis
           v-if="isMobile"
           expand-trigger="click"

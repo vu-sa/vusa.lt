@@ -117,7 +117,7 @@ class ContactController extends PublicController
                     'name' => $contact->name,
                     'email' => $contact->email,
                     'phone' => $contact->phone,
-                    'duties' => $contact->current_duties->where('institution_id', '=', $institution->id),
+                    'duties' => $contact->current_duties->where('institution_id', '=', $institution->id)->values(),
                     'profile_photo_path' => $contact->profile_photo_path,
                 ];
             }),

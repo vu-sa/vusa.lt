@@ -83,8 +83,10 @@ const getContacts = (institution: App.Entities.Institution) => {
 
   institution.duties?.forEach((duty) => {
     duty.current_users?.forEach((user) => {
-      user.duties = [duty];
-      contacts.push(user);
+      let newUser = { ...user };
+
+      newUser.duties = [duty];
+      contacts.push(newUser);
     });
   });
 

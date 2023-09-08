@@ -117,10 +117,10 @@ const showAdditionalInfo = (duty) => {
 // ! TIK KURATORIAMS: nusprendžia, kurią nuotrauką imti, pagal tai, ar url turi "kuratoriai"
 const imageUrl = computed(() => {
   const url = new URL(window.location.href);
-  if (url.pathname.includes("kuratoriai") && contact.duties) {
+  if (url.pathname.includes("kuratoriai") && props.contact.duties) {
     // check all duties for duties name which includes kuratorius
     // iterate object simply because it may not be iterable
-    for (const duty of Object.keys(contact.duties)) {
+    for (const duty of Object.keys(props.contact.duties)) {
       if (
         props.contact.duties?.[duty].name.toLowerCase().includes("kuratorius")
       ) {
