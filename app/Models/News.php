@@ -44,12 +44,16 @@ class News extends Model implements Feedable
 
     public function toFeedItem(): FeedItem
     {
+        // add image to short
+        $short = '<img src="'.config('app.url').'/uploads\/'.$this->image.'" alt="'.$this->title.'" style="max-width: 100%; height: auto; object-position: cover; margin-bottom: 2rem">'.$this->short;
+
+
         return FeedItem::create()
             ->id($this->id)
             ->title($this->title)
-            ->summary($this->short)
+            ->summary($short)
             ->updated(Carbon::parse($this->publish_time))
-            ->image($this->image) // TODO: fix, as this doesn't show an image
+            // image with hostname
             ->link('naujiena/'.$this->permalink)
             ->authorName($this->padalinys->shortname);
     }
