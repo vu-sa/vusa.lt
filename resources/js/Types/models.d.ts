@@ -313,6 +313,7 @@ declare namespace App.Models {
     deleted_at: any | null;
     user?: App.Models.User | null;
     padalinys?: App.Models.Padalinys | null;
+    other_language_news?: App.Models.News | null;
     tags?: Array<App.Models.Tag> | null;
     tags_count?: number | null;
   }
@@ -456,10 +457,12 @@ declare namespace App.Models {
     duties?: Array<App.Models.Duty> | null;
     users_through_duties?: any | null;
     attachable_types?: Array<App.Models.Type> | null;
+    types?: Array<App.Models.Type> | null;
     permissions?: Array<App.Models.Permission> | null;
     users?: Array<App.Models.User> | null;
     duties_count?: number | null;
     attachable_types_count?: number | null;
+    types_count?: number | null;
     permissions_count?: number | null;
     users_count?: number | null;
   }
