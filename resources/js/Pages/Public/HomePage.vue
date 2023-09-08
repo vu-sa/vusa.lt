@@ -3,7 +3,7 @@
     <title>Pagrindinis</title>
   </Head>
 
-  <div v-if="news.length > 0" class="mx-auto mt-2 max-w-7xl">
+  <div v-if="news.length > 0" class="mx-auto mt-2">
     <NewsElement :news="news" />
   </div>
 
