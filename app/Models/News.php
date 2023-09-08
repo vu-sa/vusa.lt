@@ -47,7 +47,6 @@ class News extends Model implements Feedable
         // add image to short
         $short = '<img src="'.config('app.url').'/uploads\/'.$this->image.'" alt="'.$this->title.'" style="max-width: 100%; height: auto; object-position: cover; margin-bottom: 2rem">'.$this->short;
 
-
         return FeedItem::create()
             ->id($this->id)
             ->title($this->title)
