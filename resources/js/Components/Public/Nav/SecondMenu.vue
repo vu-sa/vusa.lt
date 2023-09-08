@@ -1,11 +1,12 @@
 <template>
   <section
-    class="z-5 relative grid w-screen grid-cols-[min-content,_1fr,_40px] bg-neutral-50 px-8 shadow-sm dark:bg-zinc-900 md:px-8 lg:px-16 xl:px-28"
+    class="z-5 relative grid w-screen grid-cols-[min-content,_1fr,_40px] bg-neutral-50 px-8 shadow-sm dark:border-b dark:border-zinc-800 dark:bg-zinc-900 md:px-8 lg:px-16 xl:px-28"
   >
-    <span
-      class="my-auto mr-6 whitespace-nowrap text-sm font-bold text-gray-900 dark:text-gray-200"
+    <Link
+      href="/"
+      class="my-auto mr-6 whitespace-nowrap text-sm font-bold text-gray-900 dark:text-gray-200 dark:hover:text-vusa-red"
       >{{ $page.props.padalinys?.shortname }}
-    </span>
+    </Link>
     <nav
       ref="secondMenuScrollSection"
       class="mr-2 inline-flex gap-4 overflow-x-scroll whitespace-nowrap py-3"
@@ -37,9 +38,11 @@
 
 <script setup lang="tsx">
 import { ChevronRight16Regular } from "@vicons/fluent";
+import { Link } from "@inertiajs/vue3";
 import { NButton, NIcon } from "naive-ui";
 import { onMounted, ref } from "vue";
 import { useScroll } from "@vueuse/core";
+
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import MainPageLink from "./MainPageLink.vue";
 
