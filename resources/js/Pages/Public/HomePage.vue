@@ -3,7 +3,9 @@
     <title>Pagrindinis</title>
   </Head>
 
-  <SummerCamps v-if="$page.props.app.locale === 'lt'" />
+  <div v-if="news.length > 0" class="mx-auto mt-2 max-w-7xl">
+    <NewsElement :news="news" />
+  </div>
 
   <IndividualStudies />
 
@@ -13,9 +15,7 @@
     :upcoming4-events="upcoming4Events"
   />
 
-  <div v-if="news.length > 0" class="mx-auto mt-2 max-w-7xl">
-    <NewsElement :news="news" />
-  </div>
+  <SummerCamps v-if="$page.props.app.locale === 'lt'" />
 
   <YearReport2022 />
 </template>
