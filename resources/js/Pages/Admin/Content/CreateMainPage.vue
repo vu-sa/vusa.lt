@@ -5,6 +5,7 @@
   >
     <UpsertModelLayout :errors="$page.props.errors" :model="mainPage">
       <MainPageForm
+        :padaliniai-options="padaliniaiOptions"
         :type-options="typeOptions"
         :main-page="mainPage"
         model-route="mainPage.store"
@@ -19,6 +20,7 @@ import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 defineProps<{
+  padaliniaiOptions: Record<string, any>[];
   typeOptions: Record<string, any>[];
 }>();
 

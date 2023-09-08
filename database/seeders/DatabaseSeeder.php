@@ -51,6 +51,7 @@ class DatabaseSeeder extends Seeder
         Institution::factory()
             ->state(['name' => 'Centrinis biuras', 'alias' => 'centrinis-biuras'])
             ->withType()
+            ->recycle(Padalinys::where('alias', 'vusa')->get())
             ->has(Duty::factory(10)->withType()->hasAttached(User::factory(), ['start_date' => now()->subDay()]))
             ->create();
 

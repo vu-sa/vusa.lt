@@ -160,7 +160,40 @@ class MainPageController extends LaravelResourceController
         return redirect()->route('mainPage.index')->with('info', 'Sėkmingai ištrinta greitoji nuoroda!');
     }
 
-    public function getMainPageTypeOptions($type)
+    public function editOrder(Padalinys $padalinys, string $lang)
+    {
+        $mainPages = MainPage::query()->where('padalinys_id', $padalinys->id)->where('lang', $lang)->orderBy('order')->get();
+
+        $this->authorize('update', [MainPage::class, $mainPages->first(), $this->authorizer]);
+
+        return Inertia::render('Admin/Content/EditMainPageOrder', [
+            'mainPages' => $mainPages,
+            'padalinys' => $padalinys,
+        ]);
+    }
+
+    public function updateOrder(Request $request, Padalinys $padalinys)
+    {
+        $request->validate([
+            'orderList' => 'required|array',
+        ]);
+
+        foreach ($request->orderList as $idAndOrder) {
+            $this->authorize('update', [MainPage::class, MainPage::find($idAndOrder['id']), $this->authorizer]);
+        }
+
+        DB::transaction(function () use ($request) {
+            foreach ($request->orderList as $idAndOrder) {
+                $mainPage = MainPage::find($idAndOrder['id']);
+                $mainPage->order = $idAndOrder['order'];
+                $mainPage->save();
+            }
+        });
+
+        return redirect()->route('mainPage.index')->with('success', 'Sėkmingai atnaujinta greitųjų nuorodų tvarka!');
+    }
+
+    protected function getMainPageTypeOptions($type)
     {
         switch ($type) {
             case 'url':

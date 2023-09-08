@@ -30,7 +30,7 @@ class MenuSeeder extends Seeder
                     'parent_id' => 0,
                     'order' => 2,
                     'name' => 'Administravimas',
-                    'url' => route('login', ['lang' => 'lt', 'subdomain' => 'www']),
+                    'url' => route('login'),
                 ],  [
                     'parent_id' => 1,
                     'order' => 0,

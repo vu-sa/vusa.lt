@@ -10,10 +10,35 @@
             placeholder="Įrašyti tekstą..."
           />
         </NFormItem>
-        <NFormItem label="Padalinys, kuriam priklauso institucija" :span="2">
+        <NFormItem>
+          <template #label>
+            <div class="inline-flex items-center gap-2">
+              <span>Padalinys, kuriam priklauso institucija</span>
+              <NButton
+                v-if="modelRoute === 'mainPage.update'"
+                secondary
+                tag="a"
+                size="tiny"
+                type="primary"
+                round
+                target="_blank"
+                :href="
+                  route('mainPage.edit-order', {
+                    padalinys: mainPage.padalinys_id,
+                    lang: mainPage.lang,
+                  } as RouteParamsWithQueryOverload)
+                "
+              >
+                Atnaujinti nuorodų tvarką
+                <template #icon>
+                  <NIcon :component="Icons.MAIN_PAGE" />
+                </template>
+              </NButton>
+            </div>
+          </template>
           <NSelect
             v-model:value="form.padalinys_id"
-            :options="padaliniaiOptions"
+            :options="options"
             placeholder="VU SA X"
             clearable
           />
@@ -50,12 +75,20 @@
           />
         </NFormItem>
         <NFormItem label="Nuoroda">
-          <NInput
-            v-model:value="form.link"
-            :disabled="form.type !== 'url'"
-            type="text"
-            placeholder=""
-          />
+          <NInputGroup>
+            <NInput
+              v-model:value="form.link"
+              :disabled="form.type !== 'url'"
+              type="text"
+              placeholder=""
+            />
+            <!-- link to form.link -->
+            <NButton tag="a" :href="form.link" target="_blank">
+              <template #icon>
+                <NIcon :component="Open24Regular" />
+              </template>
+            </NButton>
+          </NInputGroup>
         </NFormItem>
       </FormElement>
     </div>
@@ -71,15 +104,24 @@
 </template>
 
 <script setup lang="tsx">
-import { NForm, NFormItem, NIcon, NInput, NSelect } from "naive-ui";
+import { Link, router, useForm } from "@inertiajs/vue3";
+import {
+  NButton,
+  NForm,
+  NFormItem,
+  NIcon,
+  NInput,
+  NInputGroup,
+  NSelect,
+} from "naive-ui";
 import { computed, ref } from "vue";
-import { router, useForm } from "@inertiajs/vue3";
 
-import { Link24Regular } from "@vicons/fluent";
+import { Link24Regular, Open24Regular } from "@vicons/fluent";
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import FormElement from "./FormElement.vue";
 import Icons from "@/Types/Icons/regular";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
+import type { RouteParamsWithQueryOverload } from "ziggy-js";
 
 const props = defineProps<{
   mainPage: App.Entities.MainPage;
@@ -91,6 +133,11 @@ const props = defineProps<{
 
 const form = useForm("mainPage", props.mainPage);
 const pageSelection = ref(null);
+
+const options = props.padaliniaiOptions.map((padalinys) => ({
+  value: padalinys.id,
+  label: padalinys.shortname,
+}));
 
 const languageOptions = [
   {

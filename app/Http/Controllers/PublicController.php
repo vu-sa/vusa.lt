@@ -47,7 +47,7 @@ class PublicController extends Controller
 
     protected function getPadalinysLinks()
     {
-        $mainPage = MainPage::query()->where([['padalinys_id', $this->padalinys->id], ['lang', app()->getLocale()]])->get();
+        $mainPage = MainPage::query()->where([['padalinys_id', $this->padalinys->id], ['lang', app()->getLocale()]])->orderBy('order')->get(['id', 'link', 'text']);
 
         Inertia::share('padalinys.links', $mainPage);
     }
