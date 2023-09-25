@@ -5,7 +5,11 @@
     <Link
       href="/"
       class="my-auto mr-6 whitespace-nowrap text-sm font-bold text-gray-900 dark:text-gray-200 dark:hover:text-vusa-red"
-      >{{ $page.props.padalinys?.shortname }}
+      >{{
+        $page.props.padalinys?.shortname
+          ? $t($page.props.padalinys?.shortname)
+          : "VU SA"
+      }}
     </Link>
     <nav
       ref="secondMenuScrollSection"
