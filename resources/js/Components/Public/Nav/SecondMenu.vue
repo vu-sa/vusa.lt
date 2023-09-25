@@ -9,7 +9,7 @@
     </Link>
     <nav
       ref="secondMenuScrollSection"
-      class="mr-2 inline-flex gap-4 overflow-x-scroll whitespace-nowrap py-3"
+      class="mr-2 inline-flex gap-4 overflow-x-auto whitespace-nowrap py-3"
     >
       <MainPageLink
         v-for="link in $page.props.padalinys?.links"
