@@ -1,6 +1,6 @@
 <template>
   <section class="fixed top-0 z-50">
-    <div class="relative">
+    <div class="group relative">
       <nav
         class="relative z-10 flex h-20 w-screen flex-row items-center justify-between gap-4 bg-white p-2 text-gray-800 shadow-sm dark:bg-zinc-800 dark:text-white md:px-6 lg:px-12 xl:px-24"
       >
@@ -81,15 +81,18 @@
           </NDrawerContent>
         </NDrawer>
       </nav>
-      <Transition
+      <SecondMenu
         v-if="
           $page.props.padalinys?.links &&
           $page.props.padalinys?.links.length > 0
         "
+        class="transition group-hover:translate-y-0"
+        :class="{
+          '-translate-y-full': hasScrolledDown,
+        }"
+        :links="$page.props.padalinys?.links"
       >
-        <SecondMenu v-if="showSecondMenu" :links="$page.props.padalinys?.links">
-        </SecondMenu>
-      </Transition>
+      </SecondMenu>
     </div>
   </section>
 </template>
@@ -192,26 +195,17 @@ const breakpoints = useBreakpoints(breakpointsTailwind);
 const smallerThanSm = breakpoints.smaller("sm");
 const smallerThanLg = breakpoints.smaller("lg");
 
-const showSecondMenu = ref(true);
-
-// on 50px scroll down hide second menu, but on scroll up show it
-// only hide when scrolled down from last scroll up 50px
-
-let lastScrollTop = 0;
+const hasScrolledDown = ref(false);
 
 window.addEventListener(
   // when scrolling down, hide only when scrolled down 50px from previous scroll up
   "scroll",
   () => {
-    const st = window.scrollY || document.documentElement.scrollTop;
-    if (st > lastScrollTop) {
-      // downscroll code
-      showSecondMenu.value = false;
+    if (window.scrollY > 50) {
+      hasScrolledDown.value = true;
     } else {
-      // upscroll code
-      showSecondMenu.value = true;
+      hasScrolledDown.value = false;
     }
-    lastScrollTop = st <= 0 ? 0 : st; // For Mobile or negative scrolling
   },
 );
 </script>
