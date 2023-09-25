@@ -43,8 +43,7 @@
         {{ institutionType.title }}
       </small>
       <slot name="more" />
-      <!--TODO: better solution for displaying description or remove completely -->
-      <!--<div class="mb-5">
+      <div class="mb-5">
         <NEllipsis
           v-if="isMobile"
           expand-trigger="click"
@@ -60,8 +59,8 @@
           v-else
           class="prose prose-sm dark:prose-invert"
           v-html="institutionDescription"
-        /> 
-      </div> -->
+        />
+      </div>
     </div>
   </div>
 </template>
