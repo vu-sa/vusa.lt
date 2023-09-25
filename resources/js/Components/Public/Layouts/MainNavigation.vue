@@ -81,7 +81,12 @@
           </NDrawerContent>
         </NDrawer>
       </nav>
-      <Transition v-if="$page.props.padalinys?.links">
+      <Transition
+        v-if="
+          $page.props.padalinys?.links &&
+          $page.props.padalinys?.links.length > 0
+        "
+      >
         <SecondMenu v-if="showSecondMenu" :links="$page.props.padalinys?.links">
         </SecondMenu>
       </Transition>
