@@ -153,20 +153,12 @@ class PageController extends LaravelResourceController
         return redirect()->route('pages.index')->with('info', 'Puslapis ištrintas');
     }
 
-    public function searchForPage(Request $request)
+    public function restore(Page $page, Request $request)
     {
-        $data = $request->collect()['data'];
+        $this->authorize('restore', [Page::class, $page, $this->authorizer]);
 
-        $pages = Page::where('title', 'like', "%{$data['title']}%")->where('lang', $data['lang'])->get();
+        $page->restore();
 
-        $pages = $pages->map(function ($page) {
-            return [
-                'id' => $page->id,
-                'title' => $page->title,
-                'padalinys' => $page->padalinys,
-            ];
-        });
-
-        return back()->with('search_pages', $pages);
+        return back()->with('success', 'Puslapis sėkmingai atkurtas!');
     }
 }

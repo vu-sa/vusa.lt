@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class SharepointFile extends Model
 {
-    use HasFactory, HasUuids, HasComments;
+    use HasComments, HasFactory, HasUuids;
 
     public $timestamps = false;
 

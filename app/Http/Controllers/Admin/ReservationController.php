@@ -214,7 +214,20 @@ class ReservationController extends LaravelResourceController
      */
     public function destroy(Reservation $reservation)
     {
-        //
+        $this->authorize('delete', [Reservation::class, $reservation, $this->authorizer]);
+
+        $reservation->delete();
+
+        return back()->with('success', 'Rezervacija ištrinta sėkmingai!');
+    }
+
+    public function restore(Reservation $reservation)
+    {
+        $this->authorize('restore', [Reservation::class, $reservation, $this->authorizer]);
+
+        $reservation->restore();
+
+        return back()->with('success', 'Rezervacija atkurta!');
     }
 
     public function addUsers(Reservation $reservation, Request $request)

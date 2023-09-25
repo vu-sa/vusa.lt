@@ -142,4 +142,16 @@ class ResourceController extends LaravelResourceController
         return redirect()->route('resources.index')
             ->with('info', trans_choice('messages.deleted', 1, ['model' => trans_choice('entities.resource.model', 1)]));
     }
+
+    /**
+     * Restore the specified resource from storage.
+     */
+    public function restore(Resource $resource)
+    {
+        $this->authorize('restore', [Resource::class, $resource, $this->authorizer]);
+
+        $resource->restore();
+
+        return back()->with('success', 'Išteklius sėkmingai atkurtas!');
+    }
 }

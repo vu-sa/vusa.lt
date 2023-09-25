@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Actions\GetAliasSubdomainForPublic;
+use App\Models\MainPage;
 use App\Models\Padalinys;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 class PublicController extends Controller
 {
-    protected $padalinys;
+    protected Padalinys $padalinys;
 
     public function __construct()
     {
@@ -23,7 +24,9 @@ class PublicController extends Controller
         $this->padalinys = Padalinys::where('alias', $alias)->first();
 
         // Subdomain and alias won't be different, except when alias = 'vusa', then subdomain = 'www'
-        Inertia::share('padalinys', $this->padalinys->only(['id', 'shortname', 'alias', 'type']) + ['subdomain' => $subdomain]);
+        Inertia::share('padalinys', $this->padalinys->only(['id', 'shortname', 'alias', 'type']) +
+            ['subdomain' => $subdomain]
+        );
     }
 
     protected function getBanners()
@@ -39,6 +42,13 @@ class PublicController extends Controller
             return $banners;
         });
 
-        Inertia::share('banners', $banners);
+        Inertia::share('padalinys.banners', $banners);
+    }
+
+    protected function getPadalinysLinks()
+    {
+        $mainPage = MainPage::query()->where([['padalinys_id', $this->padalinys->id], ['lang', app()->getLocale()]])->orderBy('order')->get(['id', 'link', 'text']);
+
+        Inertia::share('padalinys.links', $mainPage);
     }
 }

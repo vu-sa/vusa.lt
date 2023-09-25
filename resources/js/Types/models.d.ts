@@ -274,6 +274,8 @@ declare namespace App.Models {
     institutions_count?: number | null;
   }
 
+  export interface Model {}
+
   export interface Navigation {
     id: number;
     parent_id: number;
@@ -308,8 +310,10 @@ declare namespace App.Models {
     draft: boolean | null;
     created_at: any;
     updated_at: any;
+    deleted_at: any | null;
     user?: App.Models.User | null;
     padalinys?: App.Models.Padalinys | null;
+    other_language_news?: App.Models.News | null;
     tags?: Array<App.Models.Tag> | null;
     tags_count?: number | null;
   }
@@ -355,6 +359,7 @@ declare namespace App.Models {
     padalinys_id: number;
     created_at: any;
     updated_at: any;
+    deleted_at: any | null;
     padalinys?: App.Models.Padalinys | null;
     category?: App.Models.Category | null;
   }
@@ -451,11 +456,25 @@ declare namespace App.Models {
     updated_at: any | null;
     duties?: Array<App.Models.Duty> | null;
     users_through_duties?: any | null;
+    attachable_types?: Array<App.Models.Type> | null;
+    types?: Array<App.Models.Type> | null;
     permissions?: Array<App.Models.Permission> | null;
     users?: Array<App.Models.User> | null;
     duties_count?: number | null;
+    attachable_types_count?: number | null;
+    types_count?: number | null;
     permissions_count?: number | null;
     users_count?: number | null;
+  }
+
+  export interface RoleType {
+    id: number;
+    role_id: string;
+    type_id: number;
+    created_at: any | null;
+    updated_at: any | null;
+    role?: App.Models.Role | null;
+    type?: App.Models.Type | null;
   }
 
   export interface SaziningaiExam {
@@ -562,6 +581,7 @@ declare namespace App.Models {
     institutions?: Array<App.Models.Institution> | null;
     duties?: Array<App.Models.Duty> | null;
     doings?: Array<App.Models.Doing> | null;
+    roles?: Array<App.Models.Role> | null;
     descendants?: Array<App.Models.Type> | null;
     recursive_descendants?: Array<App.Models.Type> | null;
     parent?: App.Models.Type | null;
@@ -569,8 +589,14 @@ declare namespace App.Models {
     institutions_count?: number | null;
     duties_count?: number | null;
     doings_count?: number | null;
+    roles_count?: number | null;
     descendants_count?: number | null;
     recursive_descendants_count?: number | null;
+  }
+
+  export interface Typeable {
+    type?: App.Models.Type | null;
+    typeable?: any | null;
   }
 
   export interface User {
@@ -630,7 +656,18 @@ declare namespace App.Models.Pivots {
     padaliniai?: any | null;
   }
 
+  export interface Doable {
+    doable_type: string;
+    doable_id: string;
+    doing_id: string;
+    created_at: any;
+    updated_at: any;
+    doing?: App.Models.Doing | null;
+    user?: App.Models.User | null;
+  }
+
   export interface Dutiable {
+    id: string;
     duty_id: string;
     dutiable_id: string;
     dutiable_type: string;
@@ -651,6 +688,8 @@ declare namespace App.Models.Pivots {
     matter_id: string;
     created_at: any;
     updated_at: any;
+    goal?: App.Models.Goal | null;
+    matter?: App.Models.Matter | null;
   }
 
   export interface Relationshipable {
@@ -691,6 +730,8 @@ declare namespace App.Models.Pivots {
     created_at: any;
     updated_at: any;
     fileable?: any | null;
+    meeting?: App.Models.Meeting | null;
     institution?: App.Models.Institution | null;
+    type?: App.Models.Type | null;
   }
 }

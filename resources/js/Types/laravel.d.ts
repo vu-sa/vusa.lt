@@ -6,7 +6,7 @@ export {};
 declare global {
   interface PaginatedModels<T> {
     current_page: number;
-    data: Array<T>;
+    data: Array<T> | [];
     first_page_url: string;
     from: number;
     last_page: number;

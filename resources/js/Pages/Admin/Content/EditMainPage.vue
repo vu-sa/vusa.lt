@@ -7,6 +7,8 @@
     <UpsertModelLayout :errors="$page.props.errors" :model="mainPage">
       <MainPageForm
         :main-page="mainPage"
+        :padaliniai-options="padaliniaiOptions"
+        :type-options="typeOptions"
         model-route="mainPage.update"
         delete-model-route="mainPage.destroy"
       />
@@ -22,5 +24,7 @@ import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 defineProps<{
   mainPage: App.Entities.MainPage;
+  padaliniaiOptions: Record<string, any>[];
+  typeOptions: Record<string, any>[];
 }>();
 </script>

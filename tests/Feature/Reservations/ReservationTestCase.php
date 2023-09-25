@@ -45,7 +45,7 @@ class ReservationTestCase extends TestCase
 
         $resourceManagerDuty = Duty::factory()->has(Institution::factory()->state(
             ['padalinys_id' => $this->resourcePadalinys->id]
-        ))->hasAttached($this->resourceManagerUser, ['start_date' => now()->subDays(1), 'end_date' => now()->addDays(1)])->create();
+        ))->hasAttached($this->resourceManagerUser, ['start_date' => now()->subDay(), 'end_date' => now()->addDays(1)])->create();
 
         $resourceManagerRole = Role::factory()->create();
         $resourceManagerRole->givePermissionTo(['reservations.read.*', config('permission.resource_managership_indicating_permission')]);

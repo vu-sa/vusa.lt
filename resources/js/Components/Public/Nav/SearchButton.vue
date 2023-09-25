@@ -81,10 +81,6 @@ const changeShowSearch = () => {
   showSearch.value = !showSearch.value;
 };
 
-const test = () => {
-  console.log("test");
-};
-
 const handleSearchInput = useDebounceFn((input) => {
   if (input.length > 2) {
     searchInputLoading.value = true;
@@ -99,7 +95,7 @@ const handleSearchInput = useDebounceFn((input) => {
         onSuccess: () => {
           searchInputLoading.value = false;
         },
-      },
+      }
     );
   }
 }, 500);
@@ -114,9 +110,9 @@ const getRoute = (model: Record<string, any>, type: string) => {
   } else if (type === "news") {
     return route("news", {
       lang: model?.lang,
-      subdomain: usePage().props.padalinys?.subdomain ?? "www",
+      news: model?.permalink,
       newsString: "naujiena",
-      permalink: model?.permalink,
+      subdomain: usePage().props.padalinys?.subdomain ?? "www",
     });
   } else if (type === "calendar") {
     return route("calendar.event", {

@@ -1,7 +1,7 @@
 <template>
   <NCard
     size="small"
-    class="subtle-gray-gradient h-full w-72 rounded-md text-gray-900 shadow-md dark:text-zinc-100 lg:border-2"
+    class="subtle-gray-gradient h-full max-w-md rounded-md text-gray-900 shadow-md dark:text-zinc-100 lg:border-2"
     hoverable
     :segmented="{ footer: 'soft' }"
   >
@@ -33,7 +33,7 @@
                 hour: "numeric",
                 minute: "numeric",
               },
-              $page.props.app.locale,
+              $page.props.app.locale
             )
           }}
         </strong>
@@ -112,7 +112,7 @@
           {{ $t("Dalyvauk") }}!
         </NButton>
         <NButton
-          v-else
+          v-if="calendarEvent.url"
           strong
           tag="a"
           round
@@ -222,7 +222,7 @@ const timeTillEvent = computed(() => {
   const now = new Date();
   // get full days till event
   const daysTillEvent = Math.floor(
-    (date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+    (date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
   );
   // get ms till event minus full days
   const msTillEvent =
@@ -264,7 +264,7 @@ const renderCountdown: CountdownProps["render"] = ({
 }) => {
   return (
     <span>{`${hours} ${$t("val.")} ${minutes} ${$t("min.")} ${seconds} ${$t(
-      "sek.",
+      "sek."
     )}`}</span>
   );
 };

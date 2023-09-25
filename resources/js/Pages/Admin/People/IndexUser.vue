@@ -14,6 +14,7 @@
 import { computed, provide, ref } from "vue";
 import type { DataTableSortState } from "naive-ui";
 
+import { formatRelativeTime } from "@/Utils/IntlTime";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
@@ -75,24 +76,23 @@ const columns = computed(() => {
         );
       },
     },
-    // TODO: need to find a way to makeVisible last_action from paginator, maybe use resources
-    // {
-    //   title: "Paskutinis prisijungimas",
-    //   key: "last_action",
-    //   maxWidth: 200,
-    //   ellipsis: {
-    //     tooltip: true,
-    //   },
-    //   render(row: App.Entities.User) {
-    //     return (
-    //       <span class={row.last_action ? "" : "text-vusa-red"}>
-    //         {row.last_action
-    //           ? formatRelativeTime(new Date(row.last_action))
-    //           : "Niekada"}
-    //       </span>
-    //     );
-    //   },
-    // },
+    {
+      title: "Paskutinis prisijungimas",
+      key: "last_action",
+      maxWidth: 200,
+      ellipsis: {
+        tooltip: true,
+      },
+      render(row: App.Entities.User) {
+        return (
+          <span class={row.last_action ? "" : "text-vusa-red"}>
+            {row.last_action
+              ? formatRelativeTime(new Date(row.last_action))
+              : "Niekada"}
+          </span>
+        );
+      },
+    },
     {
       title: "Pareigų skaičius",
       key: "duties_count",

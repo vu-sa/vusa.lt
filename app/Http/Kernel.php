@@ -24,6 +24,19 @@ class Kernel extends HttpKernel
     ];
 
     /**
+     * The priority-sorted list of middleware.
+     *
+     * This forces non-global middleware to always be in the given order.
+     *
+     * @var string[]
+     */
+    protected $middlewarePriority = [
+        \App\Http\Middleware\SetLocale::class,
+        // getting navigation
+        // getting padalinys links
+    ];
+
+    /**
      * The application's route middleware groups.
      *
      * @var array

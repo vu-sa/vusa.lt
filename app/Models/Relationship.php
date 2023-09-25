@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Relationship extends Model
 {
-    use HasFactory, EagerLoadPivotTrait;
+    use EagerLoadPivotTrait, HasFactory;
 
     // Basically they are relationship types, not relationships. But oh well...
 

@@ -2,13 +2,18 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Padalinys extends Model
 {
+    use HasFactory;
+
     protected $table = 'padaliniai';
 
     protected $guarded = [];
+
+    public $timestamps = false;
 
     public function banners()
     {

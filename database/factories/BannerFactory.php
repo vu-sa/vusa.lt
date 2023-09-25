@@ -22,9 +22,9 @@ class BannerFactory extends Factory
             'image_url' => fake()->imageUrl(),
             'link_url' => fake()->url(),
             'lang' => fake()->randomElement(['lt', 'en']),
-            'order' => fake()->numberBetween(1, 100),
+            'order' => fake()->numberBetween(1, 1000),
             'is_active' => fake()->boolean(),
-            'padalinys_id' => Padalinys::inRandomOrder()->select('id')->first()->id,
+            'padalinys_id' => Padalinys::factory(),
         ];
     }
 }

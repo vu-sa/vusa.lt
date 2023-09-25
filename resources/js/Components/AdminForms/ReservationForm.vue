@@ -20,9 +20,29 @@
             :placeholder="
               RESERVATION_PLACEHOLDERS.description[$page.props.app.locale]
             "
-            input-type="textarea"
+            type="textarea"
           />
         </NFormItem>
+      </FormElement>
+      <FormElement :icon="Icons.RESOURCE">
+        <template #title>{{
+          capitalize($tChoice("entities.resource.model", 2))
+        }}</template>
+        <template #description>
+          <component
+            :is="RESERVATION_DESCRIPTIONS.resources[$page.props.app.locale]"
+          />
+          <a class="w-fit" target="_blank" :href="route('resources.index')">
+            <div class="inline-flex items-center gap-2">
+              <NIcon :component="Icons.RESOURCE" class="align-center" />
+              <strong class="underline">{{
+                $t("entities.meta.model_list", {
+                  model: capitalize($tChoice("entities.resource.model", 11)),
+                })
+              }}</strong>
+            </div>
+          </a>
+        </template>
         <NFormItem
           required
           :label="capitalize($t('entities.reservation.period'))"
@@ -41,26 +61,6 @@
             @update:value="onDateChange"
           />
         </NFormItem>
-      </FormElement>
-      <FormElement :icon="Icons.RESOURCE">
-        <template #title>{{
-          capitalize($tChoice("entities.resource.model", 2))
-        }}</template>
-        <template #description>
-          <component
-            :is="RESERVATION_DESCRIPTIONS.resources[$page.props.app.locale]"
-          />
-          <Link class="w-fit" :href="route('resources.index')">
-            <div class="inline-flex items-center gap-2">
-              <NIcon :component="Icons.RESOURCE" class="align-center" />
-              <strong class="underline">{{
-                $t("entities.meta.model_list", {
-                  model: capitalize($tChoice("entities.resource.model", 11)),
-                })
-              }}</strong>
-            </div>
-          </Link>
-        </template>
         <NFormItem>
           <template #label>
             <span class="mb-2 inline-flex items-center gap-1"

@@ -22,11 +22,12 @@ class UserFactory extends Factory
     public function definition()
     {
         return [
-            'name' => $this->faker->name(),
+            'name' => fake('lt_LT')->name(),
             'email' => $this->faker->unique()->safeEmail(),
             'phone' => $this->faker->phoneNumber(),
             'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
-            'profile_photo_path' => $this->faker->imageUrl(640, 480, 'people'),
+            // random has photo or not
+            'profile_photo_path' => $this->faker->boolean(50) ? fake('lt-LT')->imageUrl(640, 480, 'people') : null,
         ];
     }
 }

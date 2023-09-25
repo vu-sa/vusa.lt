@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class ReservationResource extends Pivot implements Decidable
 {
-    use MakesDecisions, HasComments;
+    use HasComments, MakesDecisions;
 
     protected $guarded = [];
 

@@ -95,7 +95,11 @@ const columns = computed<DataTableColumns<App.Entities.Institution>>(() => {
         return (
           <PreviewModelButton
             publicRoute="contacts.alias"
-            routeProps={{ alias: row.alias, lang: "lt", subdomain: "www" }}
+            routeProps={{
+              institution: row.alias,
+              lang: "lt",
+              subdomain: "www",
+            }}
           />
         );
       },

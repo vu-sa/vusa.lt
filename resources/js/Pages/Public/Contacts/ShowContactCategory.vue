@@ -1,31 +1,63 @@
 <template>
-  <Head title="Kontaktų kategorija" />
-
-  <div class="mx-auto mt-16 flex max-w-7xl flex-col gap-4 px-8 lg:px-32">
+  <div class="mt-12 flex flex-col gap-4">
+    <h1 class="mb-8">{{ $t("Kontaktai") }}: {{ $t(type.title) }}</h1>
     <template v-for="institution in institutions" :key="institution.id">
-      <InstitutionFigure
-        :institution="institution"
-        :is-padalinys="isPadaliniai"
+      <InstitutionFigure :is-mobile="isMobile" :institution="institution">
+        <template #more>
+          <div
+            v-if="institution.alias === institution.padalinys?.alias"
+            class="mt-3 flex flex-wrap gap-2"
+          >
+            <a
+              v-for="section in padaliniaiSections"
+              :key="section.alias"
+              :href="
+                route('contacts.alias', {
+                  institution: section.alias,
+                  subdomain:
+                    institution.alias === 'vusa' ? 'www' : institution.alias,
+                  lang: $page.props.app.locale,
+                })
+              "
+            >
+              <NButton round size="medium">{{ $t(section.title) }}</NButton>
+            </a>
+          </div>
+        </template>
+      </InstitutionFigure>
+      <NDivider
+        v-if="institution.id !== institutions[institutions.length - 1].id"
       />
-      <NDivider />
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Head } from "@inertiajs/vue3";
-import { NDivider } from "naive-ui";
-import { computed } from "vue";
+import { NButton, NDivider } from "naive-ui";
 
+import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
 import InstitutionFigure from "@/Components/Public/InstitutionFigure.vue";
 
 defineProps<{
   institutions: App.Entities.Institution[];
+  type: App.Entities.Type;
 }>();
 
-// check if url ends with kontaktai/kategorija/padaliniai
-const isPadaliniai = computed(() => {
-  const url = window.location.href;
-  return url.endsWith("/padaliniai");
-});
+const padaliniaiSections = [
+  {
+    title: "Koordinatoriai",
+    alias: "koordinatoriai",
+  },
+  {
+    title: "Kuratoriai",
+    alias: "kuratoriai",
+  },
+  {
+    title: "Studentų atstovai",
+    alias: "studentu-atstovai",
+  },
+];
+
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const isMobile = breakpoints.smallerOrEqual("sm");
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <div class="group relative">
+  <div class="full-bleed group relative">
     <Head>
       <link rel="preload" href="/images/photos/VU SA.jpg" as="image" />
     </Head>
@@ -18,17 +18,16 @@
     </div>
   </div>
   <div
-    class="mx-8 mt-4 flex flex-col justify-center gap-4 lg:mx-16 lg:flex-row lg:items-center lg:px-16"
+    class="mt-4 flex flex-col justify-center gap-4 lg:flex-row lg:items-center"
   >
     <div class="prose prose-sm dark:prose-invert">
       <p class="text-2xl font-bold lg:w-4/5">
         VU SA
         <span class="font-extrabold text-vusa-red">pirmakursių stovyklos</span>
-        jau artėja!
+        jau baigėsi!
       </p>
       <p class="w-4/5">
-        Daugiau informacijos apie tavo padalinio stovyklą – jau greitai. Sek
-        naujienas mūsų
+        Tačiau tai nereiškia, jog veiklos baigtos! Sek naujienas mūsų
         <a href="https://www.facebook.com/VUstudentuatstovybe">Facebook</a>
         puslapyje 🔍
       </p>
@@ -36,7 +35,7 @@
     <div class="flex flex-wrap items-center gap-4 lg:justify-center">
       <a :href="route('pirmakursiuStovyklos')">
         <NButton round size="large" strong type="primary"
-          >Sužinok apie savo artėjančią stovyklą!<template #icon
+          >Kas vyko 2023 m.?<template #icon
             ><NIcon :component="Balloon20Regular"></NIcon></template
         ></NButton>
       </a>
@@ -49,7 +48,7 @@
       <a
         :href="
           route('contacts.category', {
-            alias: 'padaliniai',
+            type: 'padaliniai',
             lang: 'lt',
             subdomain: 'www',
           })
@@ -72,6 +71,5 @@ import {
 } from "@vicons/fluent";
 import { Head } from "@inertiajs/vue3";
 import { NButton, NIcon } from "naive-ui";
-
 import ShapeDivider1 from "@/Components/Public/ShapeDivider1.vue";
 </script>

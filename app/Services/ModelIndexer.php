@@ -43,6 +43,11 @@ class ModelIndexer
         $this->search();
         $this->setEloquentQuery();
         $this->takeCareOfRelationFilters();
+
+        // check if model uses SoftDeletes trait
+        if (in_array('Illuminate\Database\Eloquent\SoftDeletes', class_uses($this->indexable))) {
+            $this->onlyTrashed($request);
+        }
     }
 
     public function search()
@@ -136,6 +141,15 @@ class ModelIndexer
             $this->builder->when($value !== [], function (Builder $query) use ($name, $value) {
                 $query->whereIn($name, $value);
             });
+        }
+
+        return $this;
+    }
+
+    protected function onlyTrashed($request)
+    {
+        if ($request->input('showSoftDeleted') === 'true') {
+            $this->builder->onlyTrashed();
         }
 
         return $this;

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\GetAttachableTypesForDuty;
 use App\Http\Controllers\LaravelResourceController;
 use App\Models\Duty;
 use App\Models\Role;
@@ -11,6 +12,7 @@ use App\Services\ModelIndexer;
 use App\Services\ResourceServices\DutyService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -66,6 +68,7 @@ class DutyController extends LaravelResourceController
 
         $request->validate([
             'name' => 'required',
+            'current_users' => 'nullable|array',
             'institution_id' => 'required',
             'places_to_occupy' => 'required|numeric',
         ]);
@@ -82,7 +85,7 @@ class DutyController extends LaravelResourceController
         $duty->save();
 
         $duty->types()->sync($request->type);
-        $duty->users()->syncWithPivotValues($request->users, ['start_date' => now()]);
+        $duty->users()->syncWithPivotValues($request->current_users, ['start_date' => now()->subDay()]);
 
         return redirect()->route('duties.index')->with('success', trans_choice('messages.created', 0, ['model' => trans_choice('entities.duty.model', 1)]));
     }
@@ -110,12 +113,14 @@ class DutyController extends LaravelResourceController
     {
         $this->authorize('update', [Duty::class, $duty, $this->authorizer]);
 
-        $duty->load('institution', 'types', 'roles', 'users');
+        $duty->load('institution', 'types', 'roles', 'current_users');
+
+        $attachable_duty_types = GetAttachableTypesForDuty::execute();
 
         return Inertia::render('Admin/People/EditDuty', [
             'duty' => $duty,
             'roles' => Role::all(),
-            'dutyTypes' => Type::where('model_type', Duty::class)->get(),
+            'dutyTypes' => $attachable_duty_types->values(),
             'assignableInstitutions' => DutyService::getInstitutionsForUpserts($this->authorizer),
             // TODO: shouldn't return all users?
             'assignableUsers' => User::select('id', 'name', 'profile_photo_path')->orderBy('name')->get(),
@@ -133,15 +138,17 @@ class DutyController extends LaravelResourceController
 
         $request->validate([
             'name' => 'required',
-            'users' => 'nullable|array',
+            'current_users' => 'nullable|array',
             'institution_id' => 'required',
             'places_to_occupy' => 'required|numeric',
+            // array of integers
+            'types' => 'nullable|array',
         ]);
 
         DB::transaction(function () use ($request, $duty) {
             $duty->update($request->only('name', 'description', 'email', 'places_to_occupy', 'extra_attributes'));
 
-            $duty->users()->syncWithPivotValues($request->users, ['start_date' => now()]);
+            $this->handleUsersUpdate(new Collection($duty->current_users->pluck('id')), new Collection($request->current_users), $duty);
 
             $duty->institution()->disassociate();
             $duty->institution()->associate($request->institution_id);
@@ -171,6 +178,22 @@ class DutyController extends LaravelResourceController
         return back()->with('success', trans_choice('messages.updated', 0, ['model' => trans_choice('entities.duty.model', 1)]));
     }
 
+    private function handleUsersUpdate(Collection $existing_users, Collection $duty_users, Duty $duty)
+    {
+        $new = $duty_users->diff($existing_users);
+        $removed = $existing_users->diff($duty_users);
+
+        // remove users from duty
+        foreach ($removed as $user) {
+            $duty->users()->updateExistingPivot($user, ['end_date' => now()->subDay()]);
+        }
+
+        // add users to duty
+        foreach ($new as $user) {
+            $duty->users()->attach($user, ['start_date' => now()->subDay()]);
+        }
+    }
+
     /**
      * Remove the specified resource from storage.
      *
@@ -183,6 +206,15 @@ class DutyController extends LaravelResourceController
         $duty->delete();
 
         return redirect()->route('duties.index')->with('info', trans_choice('messages.deleted', 0, ['model' => trans_choice('entities.duty.model', 1)]));
+    }
+
+    public function restore(Duty $duty)
+    {
+        $this->authorize('restore', [Duty::class, $duty, $this->authorizer]);
+
+        $duty->restore();
+
+        return back()->with('success', 'Pareigybė sėkmingai atkurta!');
     }
 
     public function setAsStudentRepresentatives(Request $request)

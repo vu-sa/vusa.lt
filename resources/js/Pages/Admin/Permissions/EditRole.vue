@@ -1,6 +1,9 @@
 <template>
   <AdminContentPage :title="role.name" :back-url="route('roles.index')">
-    <div class="subtle-gray-gradient max-w-4xl p-4">
+    <NCard
+      class="subtle-gray-gradient max-w-4xl"
+      title="Priskirti rolę pareigybėms"
+    >
       <NTransfer
         ref="transfer"
         v-model:value="currentDuties"
@@ -9,8 +12,36 @@
         source-filterable
         :show-irrelevant-nodes="true"
       ></NTransfer>
-      <NButton class="mt-4" @click="handleDutyUpdate">Atnaujinti</NButton>
-    </div>
+      <template #action>
+        <NButton type="primary" class="mt-4" @click="handleDutyUpdate"
+          >Atnaujinti</NButton
+        >
+      </template>
+    </NCard>
+    <NCard>
+      <template #header> Pasirinkti priskiriamus tipus </template>
+      <NFormItem :span="6">
+        <NTransfer
+          v-model:value="role.attachable_types"
+          :options="
+            allTypes.map((type) => ({
+              value: type.id,
+              label: type.title,
+              type: type,
+            }))
+          "
+        ></NTransfer>
+      </NFormItem>
+      <template #action>
+        <NButton
+          type="primary"
+          class="mt-4"
+          @click="handleAttachableTypesUpdate"
+          >Atnaujinti</NButton
+        >
+      </template>
+    </NCard>
+    <h2 class="mt-4">Rolės teisės</h2>
     <RolePermissionForms :role="role" model-route="roles.update" />
   </AdminContentPage>
 </template>
@@ -21,6 +52,8 @@ import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
 import { Eye16Regular } from "@vicons/fluent";
 import {
   NButton,
+  NCard,
+  NFormItem,
   NIcon,
   NTransfer,
   NTree,
@@ -34,6 +67,7 @@ import RolePermissionForms from "@/Components/AdminForms/RolePermissionForms.vue
 const props = defineProps<{
   padaliniaiWithDuties: App.Entities.Padalinys[];
   role: App.Entities.Role;
+  allTypes: App.Entities.Type[];
 }>();
 
 const dutyOptions: TreeOption[] = props.padaliniaiWithDuties.map(
@@ -50,7 +84,7 @@ const dutyOptions: TreeOption[] = props.padaliniaiWithDuties.map(
         value: duty.id,
       })),
     })),
-  })
+  }),
 );
 
 const renderLabel = ({ option }: { option: TreeOption }) => {
@@ -83,10 +117,11 @@ const renderLabel = ({ option }: { option: TreeOption }) => {
   );
 };
 
-const flattenDutyOptions = dutyOptions.flatMap((padalinys) =>
-  padalinys.children?.flatMap((institution) =>
-    institution.children?.map((duty) => duty)
-  )
+const flattenDutyOptions = dutyOptions.flatMap(
+  (padalinys) =>
+    padalinys.children?.flatMap(
+      (institution) => institution.children?.map((duty) => duty),
+    ),
 );
 
 const currentDuties = ref(props.role.duties?.map((duty) => duty.id));
@@ -118,7 +153,19 @@ const handleDutyUpdate = () => {
     },
     {
       preserveState: true,
-    }
+    },
+  );
+};
+
+const handleAttachableTypesUpdate = () => {
+  router.put(
+    route("roles.syncAttachableTypes", props.role.id),
+    {
+      attachable_types: props.role.attachable_types,
+    },
+    {
+      preserveState: true,
+    },
   );
 };
 </script>

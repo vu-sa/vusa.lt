@@ -150,10 +150,10 @@ export const InstitutionDescription = (
 export const MainPageDescription = (
   <>
     <p>
-      Greitieji mygtukai yra mygtukai, kurie matomi vusa.lt ir padalinių
-      pagrindiniuose puslapiuose.
+      Greitosios nuorodos yra nuorodos rodomos po pagrindiniu meniu kiekviename
+      puslapyje.
     </p>
-    <p>Ši funkcija dar bus plėtojama.</p>
+    <p>Jos yra unikalios kiekvienam padaliniui.</p>
   </>
 );
 

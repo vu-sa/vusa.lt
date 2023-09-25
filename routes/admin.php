@@ -13,17 +13,35 @@ Route::get('stats/representatives', [StatsController::class, 'representativesInP
 
 Route::post('sendFeedback', [DashboardController::class, 'sendFeedback'])->name('sendFeedback');
 
+// Restore routes
+Route::patch('users/{user}/restore', [UserController::class, 'restore'])->name('users.restore')->withTrashed();
+Route::patch('pages/{page}/restore', [PageController::class, 'restore'])->name('pages.restore')->withTrashed();
+Route::patch('news/{news}/restore', [NewsController::class, 'restore'])->name('news.restore')->withTrashed();
+Route::patch('doings/{doing}/restore', [DoingController::class, 'restore'])->name('doings.restore')->withTrashed();
+Route::patch('duties/{duty}/restore', [DutyController::class, 'restore'])->name('duties.restore')->withTrashed();
+Route::patch('goals/{goal}/restore', [GoalController::class, 'restore'])->name('goals.restore')->withTrashed();
+Route::patch('goalGroups/{goalGroup}/restore', [GoalGroupController::class, 'restore'])->name('goalGroups.restore')->withTrashed();
+Route::patch('institutions/{institution}/restore', [InstitutionController::class, 'restore'])->name('institutions.restore')->withTrashed();
+Route::patch('matters/{matter}/restore', [MatterController::class, 'restore'])->name('matters.restore')->withTrashed();
+Route::patch('meetings/{meeting}/restore', [MeetingController::class, 'restore'])->name('meetings.restore')->withTrashed();
+Route::patch('reservations/{reservation}/restore', [ReservationController::class, 'restore'])->name('reservations.restore')->withTrashed();
+Route::patch('resources/{resource}/restore', [ResourceController::class, 'restore'])->name('resources.restore')->withTrashed();
+Route::patch('types/{type}/restore', [TypeController::class, 'restore'])->name('types.restore')->withTrashed();
+
 // Resources
 Route::resource('pages', PageController::class)->except(['show']);
-Route::post('pages/search', [PageController::class, 'searchForPage'])->name('pages.search');
-
 Route::resource('news', NewsController::class)->except(['show']);
-Route::post('news/search', [NewsController::class, 'searchForNews'])->name('news.search');
 
+// change order main page
+Route::get('mainPage/padalinys/{padalinys}/edit-order/{lang}', [MainPageController::class, 'editOrder'])->name('mainPage.edit-order')
+    ->whereIn('lang', ['lt', 'en']);
+
+Route::post('mainPage/update-order', [MainPageController::class, 'updateOrder'])->name('mainPage.update-order');
 Route::resource('mainPage', MainPageController::class)->except(['show']);
 Route::resource('banners', BannerController::class)->except(['show']);
 Route::resource('navigation', NavigationController::class)->except(['show']);
 Route::resource('users', UserController::class);
+
 Route::post('users/{user}/sendWelcomeEmail', [UserController::class, 'sendWelcomeEmail'])->name('users.sendWelcomeEmail');
 Route::get('users/{user}/renderWelcomeEmail', [UserController::class, 'renderWelcomeEmail'])->name('users.renderWelcomeEmail');
 Route::resource('users.comments', CommentController::class)->only(['store', 'update', 'destroy']);
@@ -34,14 +52,14 @@ Route::resource('contacts', ContactController::class);
 
 Route::resource('calendar', CalendarController::class);
 Route::post('calendar/{calendar}/media/{media}', [CalendarController::class, 'destroyMedia'])->name('calendar.destroyMedia');
-Route::resource('registrationForms', RegistrationFormController::class)->only(['store', 'show']);
+Route::resource('registrationForms', RegistrationFormController::class)->only(['store', 'show', 'index']);
 
-Route::resource('matters', MatterController::class)->except(['create', 'edit', 'update']);
+Route::resource('matters', MatterController::class)->except(['edit', 'update']);
 Route::resource('goals', GoalController::class);
 Route::post('matters/{matter}/attach', [MatterController::class, 'attachGoal'])->name('matters.attachGoal');
 Route::resource('goalGroups', GoalGroupController::class)->except(['show']);
 Route::resource('doings', DoingController::class);
-Route::resource('agendaItems', AgendaItemController::class)->except(['index', 'create', 'store']);
+Route::resource('agendaItems', AgendaItemController::class)->except(['index', 'create']);
 Route::resource('meetings', MeetingController::class);
 
 Route::resource('resources', ResourceController::class);
@@ -55,7 +73,7 @@ Route::resource('files', FilesController::class);
 
 Route::put('duties/setAsStudentRepresentatives', [DutyController::class, 'setAsStudentRepresentatives'])->name('duties.setAsStudentRepresentatives');
 Route::resource('duties', DutyController::class);
-Route::resource('duties.users', DutiableController::class);
+Route::resource('dutiables', DutiableController::class);
 Route::post('institutions/reorderDuties', [InstitutionController::class, 'reorderDuties'])->name('institutions.reorderDuties');
 Route::resource('institutions', InstitutionController::class);
 
@@ -66,6 +84,7 @@ Route::delete('relationships/relationshipables/{relationshipable}', [Relationshi
 Route::resource('roles', RoleController::class);
 Route::patch('roles/{role}/attach/{model}/permissions', [RoleController::class, 'syncPermissionGroup'])->name('roles.syncPermissionGroup');
 Route::put('roles/{role}/sync/duties', [RoleController::class, 'syncDuties'])->name('roles.syncDuties');
+Route::put('roles/{role}/sync/attachableTypes', [RoleController::class, 'syncAttachableTypes'])->name('roles.syncAttachableTypes');
 Route::resource('permissions', PermissionController::class)->only(['index']);
 Route::resource('tasks', TaskController::class)->except(['index', 'create', 'show', 'edit']);
 Route::post('tasks/{task}/updateCompletionStatus', [TaskController::class, 'updateCompletionStatus'])->name('tasks.updateCompletionStatus');

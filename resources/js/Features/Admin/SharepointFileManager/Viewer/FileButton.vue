@@ -55,8 +55,6 @@ const props = defineProps<{
   showThumbnail: boolean;
 }>();
 
-console.log(props.file.name);
-
 const gradientClasses = computed(() => {
   if (
     props.file.listItem?.fields?.properties?.Type ===

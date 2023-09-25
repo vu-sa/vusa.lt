@@ -4,7 +4,6 @@ namespace App\Models\Pivots;
 
 use App\Models\Doing;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
 
 class Doable extends MorphPivot

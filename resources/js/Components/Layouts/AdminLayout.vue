@@ -3,7 +3,7 @@
 
   <NLayout class="min-h-screen">
     <nav
-      class="fixed z-50 flex h-16 w-full flex-row items-center justify-between border-b py-2 px-8 shadow-sm backdrop-blur-lg dark:border-zinc-800 md:justify-end"
+      class="fixed z-50 flex h-16 w-full flex-row items-center justify-between border-b px-8 py-2 shadow-sm backdrop-blur-lg dark:border-zinc-800 md:justify-end"
     >
       <div class="flex items-center gap-2 md:hidden">
         <NButton size="small" strong quaternary @click="activeDrawer = true">
@@ -46,7 +46,7 @@
         <AdminMenu :collapsed="false" @close:drawer="activeDrawer = false" />
         <NDivider />
         <div class="flex items-center justify-center gap-6 overflow-hidden">
-          <div class="h-fit w-fit"><DarkModeSwitch /></div>
+          <DarkModeSwitch style="margin-top: auto; margin-bottom: auto" />
           <NButton text @click="changeLocale">
             <template #icon>
               <NIcon :size="16"
@@ -91,7 +91,7 @@
         <div
           class="mb-4 flex items-center justify-center gap-6 overflow-hidden"
         >
-          <div class="h-fit w-fit"><DarkModeSwitch /></div>
+          <DarkModeSwitch style="margin-top: auto; margin-bottom: auto" />
           <NButton v-if="!collapsed" text @click="changeLocale">
             <template #icon>
               <NIcon :size="16"
@@ -171,7 +171,7 @@ import { loadLanguageAsync } from "laravel-vue-i18n";
 import AdminMenu from "@/Components/Menus/AdminMenu.vue";
 import AppLogo from "@/Components/AppLogo.vue";
 import CardModal from "../Modals/CardModal.vue";
-import DarkModeSwitch from "@/Components/Buttons/DarkModeSwitch.vue";
+import DarkModeSwitch from "@/Components/Buttons/DarkModeButton.vue";
 import FeedbackModalButton from "../Buttons/FeedbackModalButton.vue";
 import NotificationBell from "@/Features/Admin/Notifications/NotificationBell.vue";
 import TaskIndicatorButton from "../../Features/Admin/TaskManager/TaskIndicatorButton.vue";
@@ -278,7 +278,7 @@ const approveChanges = () => {
       onStart() {
         showChanges.value = false;
       },
-    }
+    },
   );
 };
 

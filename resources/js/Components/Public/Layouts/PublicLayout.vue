@@ -1,4 +1,5 @@
 <template>
+  <!-- https://www.joshwcomeau.com/css/full-bleed/ -->
   <FadeTransition>
     <!-- <Suspense> -->
     <NConfigProvider
@@ -12,31 +13,40 @@
         <FadeTransition appear
           ><MainNavigation :is-theme-dark="isDark"
         /></FadeTransition>
-        <main class="pb-8 pt-24">
-          <FadeTransition mode="out-in">
-            <Suspense>
-              <slot />
-              <template #fallback>
-                <div class="flex h-screen items-center justify-center">
-                  <NSpin>
-                    <template #description>
-                      <div class="mt-2 h-8 text-vusa-red">
-                        <FadeTransition>
-                          <span v-if="spinWarning">
-                            Pabandykite perkrauti puslapį arba grįžkite į
-                            <a class="underline" :href="$page.props.app.url"
-                              >vusa.lt</a
-                            >
-                          </span>
-                          <span v-else></span>
-                        </FadeTransition>
-                      </div>
-                    </template>
-                  </NSpin>
-                </div>
-              </template>
-            </Suspense>
-          </FadeTransition>
+        <main class="pb-8">
+          <Suspense>
+            <div>
+              <div class="wrapper"><slot /></div>
+              <div
+                v-if="
+                  $page.props.padalinys?.banners &&
+                  $page.props.padalinys.banners.length > 0
+                "
+                class="mx-auto mt-8 max-w-7xl"
+              >
+                <BannerCarousel :banners="$page.props.padalinys?.banners" />
+              </div>
+            </div>
+            <template #fallback>
+              <div class="flex h-screen items-center justify-center">
+                <NSpin>
+                  <template #description>
+                    <div class="mt-2 h-8 text-vusa-red">
+                      <FadeTransition>
+                        <span v-if="spinWarning">
+                          Pabandykite perkrauti puslapį arba grįžkite į
+                          <a class="underline" :href="$page.props.app.url"
+                            >vusa.lt</a
+                          >
+                        </span>
+                        <span v-else></span>
+                      </FadeTransition>
+                    </div>
+                  </template>
+                </NSpin>
+              </div>
+            </template>
+          </Suspense>
         </main>
 
         <FadeTransition appear>
@@ -62,6 +72,7 @@ import { NConfigProvider, NSpin, darkTheme } from "naive-ui";
 import { defineAsyncComponent, onMounted, ref } from "vue";
 import { useDark, useStorage } from "@vueuse/core";
 
+import BannerCarousel from "../FullWidth/BannerCarousel.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import MainNavigation from "@/Components/Public/Layouts/MainNavigation.vue";
 
@@ -76,6 +87,7 @@ const themeOverrides = {
     primaryColorHover: "#CD3543FF",
     primaryColorPressed: "#CC2130FF",
     primaryColorSuppl: "#B93945FF",
+    borderRadius: "6px",
   },
 };
 

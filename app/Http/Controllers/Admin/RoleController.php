@@ -6,6 +6,7 @@ use App\Http\Controllers\LaravelResourceController;
 use App\Models\Padalinys;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Models\Type;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -98,8 +99,12 @@ class RoleController extends LaravelResourceController
 
         // edit role
         return Inertia::render('Admin/Permissions/EditRole', [
-            'role' => $role,
+            'role' => [
+                ...$role->toArray(),
+                'attachable_types' => $role->attachable_types->pluck('id')->toArray(),
+            ],
             'padaliniaiWithDuties' => $padaliniaiWithDuties,
+            'allTypes' => Type::all(),
         ]);
     }
 
@@ -186,6 +191,19 @@ class RoleController extends LaravelResourceController
         $this->clearCacheforRoleUsers($role);
 
         return back()->with('success', 'Rolės leidimai atnaujinti');
+    }
+
+    public function syncAttachableTypes(Role $role, Request $request)
+    {
+        $this->authorize('update', [Role::class, $role, $this->authorizer]);
+
+        $validated = $request->validate([
+            'attachable_types' => 'array',
+        ]);
+
+        $role->attachable_types()->sync($validated['attachable_types']);
+
+        return back()->with('success', 'Rolės galimos priklausomybės atnaujintos');
     }
 
     public function syncDuties(Role $role, Request $request)

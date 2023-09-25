@@ -57,7 +57,7 @@ class NewsFactory extends Factory
             'important' => rand(0, 1),
             'publish_time' => $this->faker->dateTimeBetween('-10 weeks'),
             'text' => '<p>'.$this->faker->paragraph(3).'</p><p>'.$this->faker->paragraph(3).'</p>',
-            'padalinys_id' => Padalinys::inRandomOrder()->select('id')->first()->id,
+            'padalinys_id' => Padalinys::factory(),
             'lang' => Arr::random(['lt', 'en']),
         ];
     }
