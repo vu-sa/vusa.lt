@@ -36,10 +36,6 @@ const useInertiaRouter = computed(() => {
   const hostnameSubdomain = window.location.hostname.split(".")[0];
   const linkSubdomain = getSubdomainFromHrefOrPath(props.href);
 
-  console.log(hostnameSubdomain, linkSubdomain);
-
   return hostnameSubdomain === linkSubdomain;
 });
-
-console.log(props.href, useInertiaRouter.value);
 </script>

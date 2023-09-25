@@ -20,7 +20,7 @@
                 })
               "
             >
-              <NButton round size="tiny">{{ $t(section.title) }}</NButton>
+              <NButton round size="medium">{{ $t(section.title) }}</NButton>
             </a>
           </div>
         </template>

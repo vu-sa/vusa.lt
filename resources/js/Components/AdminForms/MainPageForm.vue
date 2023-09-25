@@ -213,8 +213,6 @@ const createMainPageLink = (value: string, option) => {
     return;
   }
 
-  console.log(option.option);
-
   let subdomain =
     option.option.padalinys?.alias === "vusa"
       ? "www"
