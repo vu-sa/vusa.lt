@@ -86,7 +86,7 @@
           $page.props.padalinys?.links &&
           $page.props.padalinys?.links.length > 0
         "
-        class="transition group-hover:translate-y-0"
+        class="duration-300 ease-in-out group-hover:translate-y-0"
         :class="{
           '-translate-y-full': hasScrolledDown,
         }"
@@ -209,20 +209,3 @@ window.addEventListener(
   },
 );
 </script>
-
-<style scoped>
-/* add vue transform y to second menu */
-
-.v-enter-from,
-.v-leave-to {
-  transform: translateY(-100%);
-}
-
-.v-enter-active,
-.v-leave-active {
-  transition: all 0.3s ease;
-}
-
-/* https://css-tricks.com/books/greatest-css-tricks/scroll-shadows/ */
-/* horizontal scroll shadow */
-</style>
