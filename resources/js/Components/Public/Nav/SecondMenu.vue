@@ -1,11 +1,15 @@
 <template>
   <section
-    class="z-5 relative grid w-screen grid-cols-[min-content,_1fr,_40px] bg-neutral-50 px-8 shadow-sm dark:border-b dark:border-zinc-800 dark:bg-zinc-900 md:px-8 lg:px-16 xl:px-28"
+    class="z-5 relative grid h-10 w-screen grid-cols-[min-content,_1fr,_40px] bg-neutral-50 px-8 shadow-sm dark:border-b dark:border-zinc-800 dark:bg-zinc-900 md:px-8 lg:px-16 xl:px-28"
   >
     <Link
       href="/"
       class="my-auto mr-6 whitespace-nowrap text-sm font-bold text-gray-900 dark:text-gray-200 dark:hover:text-vusa-red"
-      >{{ $page.props.padalinys?.shortname }}
+      >{{
+        $page.props.padalinys?.shortname
+          ? $t($page.props.padalinys?.shortname)
+          : "VU SA"
+      }}
     </Link>
     <nav
       ref="secondMenuScrollSection"

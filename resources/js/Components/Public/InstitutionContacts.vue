@@ -1,6 +1,6 @@
 <template>
   <div class="gap-12 md:grid md:grid-cols-[5fr,_3fr]">
-    <div class="h-fit md:sticky md:top-32">
+    <div class="h-fit md:sticky md:top-36">
       <InstitutionFigure
         only-vertical
         :is-mobile="isMobile"
