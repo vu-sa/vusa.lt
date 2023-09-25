@@ -30,7 +30,7 @@
     "laravel-precognition-vue-inertia": "^0.4.1",
     "laravel-vue-i18n": "^2.3.2",
     "latinize": "^0.5.0",
-    "posthog-js": "^1.40.1",
+    "posthog-js": "^1.78.6",
     "sortablejs": "^1.15.0",
     "v-calendar": "3.0.2"
   },
