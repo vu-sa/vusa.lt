@@ -49,7 +49,7 @@ const options_padaliniai = computed<DropdownOption[]>(() => {
     .map((padalinys) => ({
       label:
         props.size.toLowerCase() === "tiny"
-          ? padalinys.alias
+          ? $t(padalinys.shortname.split(" ")[2])
           : $t(padalinys.fullname.split("atstovybė ")[1]),
       key: padalinys.alias,
     }));
