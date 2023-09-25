@@ -3,7 +3,7 @@
     <NDivider />
     <div class="prose-sm dark:prose-invert">
       <h2
-        class="my-4 text-xl font-bold text-gray-900 duration-200 hover:text-vusa-red dark:text-zinc-50 lg:w-4/5 lg:text-2xl"
+        class="my-4 text-2xl lg:text-3xl font-bold text-gray-900 duration-200 hover:text-vusa-red dark:text-zinc-50 lg:w-4/5"
       >
         <a
           class="flex w-fit flex-row items-center gap-2"

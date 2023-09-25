@@ -6,11 +6,11 @@
     :columns="columns"
     :paginated-models="registrations"
   >
-    <template v-if="props.registrationForm.data[0].registration_form_id === 3">
+    <template v-if="props.registrations.data[0].registration_form_id === 3">
       <div class="m-2">
         <a :href="route('registrationForms.index')">
           <NButton
-            >Eksportuoti į .xsls<NIcon
+            >Eksportuoti į .xlsx<NIcon
               :size="24"
               :component="AnimalCat20Regular"
             ></NIcon
@@ -49,13 +49,14 @@ const renderObjects = (object: Record<string, any>) => {
           h("span", { class: "font-bold" }, key),
           h("span", value),
         ],
-      },
+      }
     );
   });
 };
 
 const columns: DataTableColumns<any> = [
   // generate columns from row.data
+
   ...Object.keys(props.registrations.data[0].data).map((key) => ({
     title: key,
     key: `data.${key}`,

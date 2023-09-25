@@ -230,6 +230,7 @@ const formBlueprint = {
   phone: null,
   acceptGDPR: false,
   acceptDataManagement: false,
+  registrationForm: 2,
 };
 
 // useForm saves the form value to a remembered state.

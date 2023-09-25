@@ -52,14 +52,14 @@ Route::resource('contacts', ContactController::class);
 
 Route::resource('calendar', CalendarController::class);
 Route::post('calendar/{calendar}/media/{media}', [CalendarController::class, 'destroyMedia'])->name('calendar.destroyMedia');
-Route::resource('registrationForms', RegistrationFormController::class)->only(['store', 'show']);
+Route::resource('registrationForms', RegistrationFormController::class)->only(['store', 'show', 'index']);
 
 Route::resource('matters', MatterController::class)->except(['edit', 'update']);
 Route::resource('goals', GoalController::class);
 Route::post('matters/{matter}/attach', [MatterController::class, 'attachGoal'])->name('matters.attachGoal');
 Route::resource('goalGroups', GoalGroupController::class)->except(['show']);
 Route::resource('doings', DoingController::class);
-Route::resource('agendaItems', AgendaItemController::class)->except(['index', 'create', 'store']);
+Route::resource('agendaItems', AgendaItemController::class)->except(['index', 'create']);
 Route::resource('meetings', MeetingController::class);
 
 Route::resource('resources', ResourceController::class);
