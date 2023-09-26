@@ -33,9 +33,14 @@ const useInertiaRouter = computed(() => {
     return true;
   }
 
-  const hostnameSubdomain = window.location.hostname.split(".")[0];
+  // check if hostname ends in vusa.lt
+  const hostname = window.location.hostname;
+  if (!hostname.endsWith("vusa.lt")) {
+    return false;
+  }
+
   const linkSubdomain = getSubdomainFromHrefOrPath(props.href);
 
-  return hostnameSubdomain === linkSubdomain;
+  return hostname.split(".")[0] === linkSubdomain;
 });
 </script>
