@@ -32,7 +32,7 @@ class ResourceController extends LaravelResourceController
         $indexer = new ModelIndexer(new Resource(), request(), $this->authorizer);
 
         $resources = $indexer
-            ->setEloquentQuery([fn (Builder $query) => $query->with(['media'])])
+            ->setEloquentQuery([fn (Builder $query) => $query->with(['media'])], false)
             ->filterAllColumns()
             ->sortAllColumns()
             ->builder->paginate(20);
