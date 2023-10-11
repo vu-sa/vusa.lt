@@ -64,7 +64,7 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('kontaktai/studentu-atstovai', [Public\ContactController::class, 'studentRepresentatives'])->name('contacts.studentRepresentatives');
         Route::get('kontaktai/{type:slug}', [Public\ContactController::class, 'institutionDutyTypeContacts'])->whereIn('type', [
             'koordinatoriai', 'kuratoriai',
-        ]);
+        ])->name('contacts.dutyType');
 
         Route::get('kontaktai/{institution:alias}', [Public\ContactController::class, 'institutionContacts'])->name('contacts.alias')
             ->missing(function (Request $request) {

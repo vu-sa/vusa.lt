@@ -56,4 +56,18 @@ class PublicController extends Controller
 
         Inertia::share('padalinys.links', $mainPage);
     }
+
+    // This is mostly used for default sharing, other cases likes pages and news link to other URLs
+    protected function shareOtherLangURL($name, ?string $subdomain = null)
+    {
+        Inertia::share('otherLangURL', route($name,
+            ['lang' => $this->getOtherLang(),
+            'subdomain' => $subdomain
+        ]));
+    }
+
+    protected function getOtherLang()
+    {
+        return app()->getLocale() === 'lt' ? 'en' : 'lt';
+    }
 }
