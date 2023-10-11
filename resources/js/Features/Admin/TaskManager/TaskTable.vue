@@ -157,7 +157,6 @@ const iconComponent = (row: App.Entities.Task) => {
 
 const updateTaskCompletion = (task: App.Entities.Task) => {
   loading.value = true;
-  console.log("setTrue", task.completed_at === null);
 
   router.post(
     route("tasks.updateCompletionStatus", task.id),

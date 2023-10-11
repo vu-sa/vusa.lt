@@ -44,13 +44,7 @@ const filters = ref<Record<string, any>>({
   "padalinys.id": [],
 });
 
-watch(
-  filters,
-  (newFilters) => {
-    console.log(newFilters);
-  },
-  { deep: true },
-);
+watch(filters, (newFilters) => {}, { deep: true });
 
 provide("filters", filters);
 

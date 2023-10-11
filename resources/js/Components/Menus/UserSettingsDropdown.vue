@@ -46,7 +46,20 @@ const options: DropdownOption[] = [
     props: {
       onClick: () => {
         loading.value = true;
-        window.location.href = route("logout");
+        fetch(route("logout"), {
+          method: "POST",
+          headers: {
+            "X-CSRF-TOKEN": document
+              .querySelector('meta[name="csrf-token"]')
+              ?.getAttribute("content") as string,
+          },
+        })
+          .then(() => {
+            window.location.href = "/";
+          })
+          .finally(() => {
+            loading.value = false;
+          });
       },
     },
   },

@@ -25,15 +25,13 @@ const svg = d3
 const groupedData = d3.rollup(
   props.meetings,
   (v) => v.length,
-  (d) => d.status
+  (d) => d.status,
 );
 
 const reconstructedData = Array.from(groupedData, ([key, value]) => ({
   key,
   value,
 }));
-
-console.log(groupedData, reconstructedData);
 
 const keyColors = {
   Sukurtas: "#2080f0",
@@ -60,7 +58,7 @@ svg
   .append("g")
   .attr(
     "transform",
-    "translate(" + props.width / 2 + "," + props.height / 2 + ")"
+    "translate(" + props.width / 2 + "," + props.height / 2 + ")",
   )
   .selectAll()
   .data(data_ready)
@@ -71,7 +69,7 @@ svg
     d3
       .arc()
       .innerRadius(radius * 0.5) // This is the size of the donut hole
-      .outerRadius(radius * 0.8)
+      .outerRadius(radius * 0.8),
   )
   .attr("fill", function (d) {
     return colorScale(d.data.key);

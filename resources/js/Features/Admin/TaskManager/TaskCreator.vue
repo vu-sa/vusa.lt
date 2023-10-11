@@ -161,7 +161,6 @@ const getRandomTaskNamePlaceholder = () => {
 const submit = () => {
   formRef.value?.validate((errors) => {
     if (!errors) {
-      console.log(model);
       model.post(route("tasks.store"), {
         preserveScroll: true,
         onSuccess: () => {
@@ -174,7 +173,7 @@ const submit = () => {
 };
 
 const parseInstitutions = (
-  institutions: App.Entities.Institution[] | undefined
+  institutions: App.Entities.Institution[] | undefined,
 ) => {
   return institutions?.map((institution) => {
     return {

@@ -77,16 +77,12 @@ const afterGroupEnter = () => {
 
 const handleFileSelect = inject<(file: DriveItem) => void>(
   "handleFileSelect",
-  () => {
-    console.log("handleFileSelect not injected");
-  }
+  () => {},
 );
 
 const handleFileDblClick = inject<(file: DriveItem) => void>(
   "handleFileDblClick",
-  () => {
-    console.log("handleFileDblClick not injected");
-  }
+  () => {},
 );
 
 const backButton = {
@@ -156,8 +152,6 @@ const columns = [
 ];
 
 const fileIcon = (mimeType: string | null) => {
-  console.log(mimeType);
-
   if (mimeType === null) {
     return File;
   }

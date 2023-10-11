@@ -29,13 +29,13 @@
       >
         <span
           :class="[small ? 'text-xs' : 'text-sm']"
-          class="break-words px-2 line-clamp-2"
+          class="line-clamp-2 break-words px-2"
           >{{ file.name }}</span
         >
       </div>
     </button>
     <span
-      class="m-2 mx-auto w-4/5 text-center text-xs text-zinc-400 line-clamp-1"
+      class="m-2 mx-auto line-clamp-1 w-4/5 text-center text-xs text-zinc-400"
       >{{ file.listItem?.fields?.properties?.Type }}</span
     >
   </div>
@@ -106,15 +106,11 @@ const fileTypeIcon = computed(() => {
 
 const handleFileSelect = inject<(file: DriveItem) => void>(
   "handleFileSelect",
-  () => {
-    console.log("handleFileSelect not injected");
-  }
+  () => {},
 );
 
 const handleFileDblClick = inject<(file: DriveItem) => void>(
   "handleFileDblClick",
-  () => {
-    console.log("handleFileDblClick not injected");
-  }
+  () => {},
 );
 </script>

@@ -43,7 +43,6 @@
             mode="horizontal"
             class="grow"
             :dropdown-props="{ size: 'medium' }"
-            :flat-navigation="$page.props.mainNavigation"
             @close:drawer="activeDrawer = false"
           ></MainMenu>
           <div class="flex items-center gap-4">
@@ -75,7 +74,6 @@
             </template>
             <MainMenu
               :options="navigation"
-              :flat-navigation="$page.props.mainNavigation"
               @close:drawer="activeDrawer = false"
             ></MainMenu>
           </NDrawerContent>

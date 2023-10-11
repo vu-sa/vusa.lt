@@ -16,6 +16,7 @@ class ContactController extends PublicController
     public function contacts()
     {
         $this->getPadalinysLinks();
+        $this->shareOtherLangURL('contacts', $this->subdomain);
 
         $padaliniai = json_decode(base64_decode(request()->input('selectedPadaliniai'))) ??
             collect([Padalinys::query()->where('type', 'pagrindinis')->first()->id, $this->padalinys->id])->unique();
@@ -44,6 +45,7 @@ class ContactController extends PublicController
     public function institutionContacts($subdomain, $lang, Institution $institution)
     {
         $this->getPadalinysLinks();
+        Inertia::share('otherLangURL', route('contacts.institution', ['subdomain' => $this->subdomain, 'lang' => $this->getOtherLang(), 'institution' => $institution->id]));
 
         $contacts = $institution->load('duties.current_users.current_duties')->duties->sortBy(function ($duty) {
             return $duty->order;
@@ -58,6 +60,9 @@ class ContactController extends PublicController
     public function institutionDutyTypeContacts($subdomain, $lang, Type $type)
     {
         $this->getPadalinysLinks();
+        Inertia::share('otherLangURL', route('contacts.dutyType', [
+            'subdomain' => $this->subdomain,
+            'lang' => $this->getOtherLang(), 'type' => $type->slug]));
 
         $types = $type->getDescendantsAndSelf();
 
@@ -83,6 +88,7 @@ class ContactController extends PublicController
     public function studentRepresentatives()
     {
         $this->getPadalinysLinks();
+        $this->shareOtherLangURL('contacts.studentRepresentatives', $this->subdomain);
 
         $type = Type::query()->where('slug', '=', 'studentu-atstovu-organas')->first();
         $descendants = $type->getDescendantsAndSelf();
@@ -138,6 +144,10 @@ class ContactController extends PublicController
     public function institutionCategory($subdomain, $lang, Type $type)
     {
         $this->getPadalinysLinks();
+
+        Inertia::share('otherLangURL', route('contacts.category', [
+            'subdomain' => $this->subdomain,
+            'lang' => $this->getOtherLang(), 'type' => $type->slug]));
 
         $institutions = $type->load(['institutions' => function ($query) {
             $query->orderBy('name')->with(['padalinys' => function ($query) {

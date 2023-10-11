@@ -15,9 +15,5 @@ defineEmits<{
   (e: "close:drawer"): void;
 }>();
 
-defineProps<{
-  flatNavigation: any;
-}>();
-
 const activeMenuKey = ref(usePage().props.navigationItemId);
 </script>

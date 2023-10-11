@@ -12,6 +12,8 @@ class PublicController extends Controller
 {
     protected Padalinys $padalinys;
 
+    protected string $subdomain;
+
     public function __construct()
     {
         /**
@@ -22,6 +24,9 @@ class PublicController extends Controller
 
         // When we have the final alias, get the padalinys that will be used in all of the public controllers
         $this->padalinys = Padalinys::where('alias', $alias)->first();
+
+        // We also need to use the subdomain in the public controllers
+        $this->subdomain = $subdomain;
 
         // Subdomain and alias won't be different, except when alias = 'vusa', then subdomain = 'www'
         Inertia::share('padalinys', $this->padalinys->only(['id', 'shortname', 'alias', 'type']) +
@@ -50,5 +55,19 @@ class PublicController extends Controller
         $mainPage = MainPage::query()->where([['padalinys_id', $this->padalinys->id], ['lang', app()->getLocale()]])->orderBy('order')->get(['id', 'link', 'text']);
 
         Inertia::share('padalinys.links', $mainPage);
+    }
+
+    // This is mostly used for default sharing, other cases likes pages and news link to other URLs
+    protected function shareOtherLangURL($name, string $subdomain = null)
+    {
+        Inertia::share('otherLangURL', route($name,
+            ['lang' => $this->getOtherLang(),
+                'subdomain' => $subdomain,
+            ]));
+    }
+
+    protected function getOtherLang()
+    {
+        return app()->getLocale() === 'lt' ? 'en' : 'lt';
     }
 }

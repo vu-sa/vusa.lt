@@ -22,10 +22,15 @@ class NewsController extends PublicController
 
         $other_lang_page = $news->other_language_news;
 
-        Inertia::share('otherLangPage', $other_lang_page ? [
-            ...$other_lang_page->only('id', 'lang', 'title', 'permalink'),
-            'type' => 'news',
-        ] : null);
+        Inertia::share('otherLangURL', $other_lang_page ? route(
+            'news',
+            [
+                'news' => $other_lang_page->permalink,
+                'lang' => $other_lang_page->lang,
+                'newsString' => $other_lang_page->lang === 'lt' ? 'naujiena' : 'news',
+                'subdomain' => $this->subdomain,
+            ]
+        ) : null);
 
         return Inertia::render('Public/NewsPage', [
             'article' => [

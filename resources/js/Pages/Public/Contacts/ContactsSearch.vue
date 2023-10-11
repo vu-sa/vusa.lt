@@ -96,7 +96,6 @@ const handleUpdateSelectedPadaliniai = (value: number[]) => {
 
 const handleSelectInstitution = (value, option: SelectOption) => {
   //   go to page without opening blank tab
-  console.log(option);
   window.open(
     route("contacts.institution", {
       institution: option.value,

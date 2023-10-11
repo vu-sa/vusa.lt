@@ -77,7 +77,6 @@ const showSearch = ref(false);
 const searchInputLoading = ref(false);
 
 const changeShowSearch = () => {
-  console.log("changeShowSearch");
   showSearch.value = !showSearch.value;
 };
 
@@ -95,7 +94,7 @@ const handleSearchInput = useDebounceFn((input) => {
         onSuccess: () => {
           searchInputLoading.value = false;
         },
-      }
+      },
     );
   }
 }, 500);

@@ -126,6 +126,7 @@ class PublicPageController extends PublicController
     {
         $this->getBanners();
         $this->getPadalinysLinks();
+        $this->shareOtherLangURL('curatorRegistration');
 
         return Inertia::render('Public/CuratorRegistration', [
             'curatorPadaliniai' => (new CuratorRegistrationService)->getRegistrationPadaliniaiWithData(),
@@ -146,10 +147,14 @@ class PublicPageController extends PublicController
         $navigation_item = Navigation::where([['padalinys_id', '=', $this->padalinys->id], ['name', '=', $page->title]])->get()->first();
         $other_lang_page = $page->getOtherLanguage();
 
-        Inertia::share('otherLangPage', $other_lang_page ? [
-            ...$other_lang_page->only('id', 'lang', 'title', 'permalink'),
-            'model_type' => 'page',
-        ] : null);
+        Inertia::share('otherLangURL', $other_lang_page ? route(
+            'page',
+            [
+                'subdomain' => $this->subdomain,
+                'lang' => $other_lang_page->lang,
+                'permalink' => $other_lang_page->permalink,
+            ]
+        ) : null);
 
         return Inertia::render('Public/ContentPage', [
             'navigationItemId' => $navigation_item?->id,
@@ -164,7 +169,6 @@ class PublicPageController extends PublicController
                 'category' => $page->category,
                 'padalinys' => $page->padalinys->shortname,
             ],
-            'otherLangPage' => $other_lang_page,
         ])->withViewData([
             'title' => $page->title,
             // truncate text to first sentence
@@ -176,6 +180,7 @@ class PublicPageController extends PublicController
     {
         $this->getBanners();
         $this->getPadalinysLinks();
+        $this->shareOtherLangURL('saziningaiExamRegistration');
 
         // return all padalinys but only shortname VU and id
         $padaliniai = Padalinys::select('id', 'shortname_vu')->where('shortname', '!=', 'VU SA')->orderBy('shortname')->get();
@@ -192,6 +197,7 @@ class PublicPageController extends PublicController
     {
         $this->getBanners();
         $this->getPadalinysLinks();
+        $this->shareOtherLangURL('saziningaiExams');
 
         // return all padalinys but only shortname VU and id
         $padaliniai = Padalinys::select('id', 'shortname_vu')->where('shortname', '!=', 'VU SA')->orderBy('shortname')->get();
@@ -224,6 +230,7 @@ class PublicPageController extends PublicController
     {
         $this->getBanners();
         $this->getPadalinysLinks();
+        $this->shareOtherLangURL('summerCamps2022');
 
         // get events with category of freshmen camps
         $events = Calendar::whereHas('category', function (Builder $query) {
@@ -240,6 +247,7 @@ class PublicPageController extends PublicController
     {
         $this->getBanners();
         $this->getPadalinysLinks();
+        $this->shareOtherLangURL('summerCamps2023');
 
         // get events with category of freshmen camps
         $events = Calendar::whereHas('category', function (Builder $query) {
@@ -256,6 +264,7 @@ class PublicPageController extends PublicController
     {
         $this->getBanners();
         $this->getPadalinysLinks();
+        $this->shareOtherLangURL('individualStudies');
 
         return Inertia::render('Public/IndividualStudies')->withViewData([
             'title' => 'Individualios studijos',
@@ -272,6 +281,7 @@ class PublicPageController extends PublicController
     {
         $this->getBanners();
         $this->getPadalinysLinks();
+        $this->shareOtherLangURL('calendarEvent');
 
         $calendar->load('padalinys:id,alias,fullname,shortname');
 
@@ -292,6 +302,7 @@ class PublicPageController extends PublicController
     {
         $this->getBanners();
         $this->getPadalinysLinks();
+        $this->shareOtherLangURL('memberRegistration');
 
         $padaliniai = Padalinys::select('id', 'fullname', 'shortname')->where('shortname', '!=', 'VU SA')->orderBy('shortname')->get();
 
