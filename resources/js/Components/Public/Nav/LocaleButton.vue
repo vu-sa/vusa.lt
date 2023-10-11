@@ -15,14 +15,14 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t, loadLanguageAsync } from "laravel-vue-i18n";
 import { Home16Regular } from "@vicons/fluent";
 import { NDropdown, NIcon } from "naive-ui";
 import { computed, watch } from "vue";
+import { loadLanguageAsync } from "laravel-vue-i18n";
 import { usePage } from "@inertiajs/vue3";
 
+import { LocaleEnum } from "@/Types/enums";
 import SmartLink from "@/Components/Public/SmartLink.vue";
-import type { LocaleEnum } from "@/Types/enums";
 
 const props = defineProps<{
   locale: LocaleEnum;
@@ -38,7 +38,9 @@ const options = computed(() => {
       label() {
         return (
           <SmartLink target="_self" href={usePage().props.otherLangURL}>
-            {$t("Pakeisti puslapio kalbą")}
+            {props.locale === LocaleEnum.LT
+              ? "Change page language"
+              : "Pakeisti puslapio kalbą"}
           </SmartLink>
         );
       },
@@ -49,7 +51,9 @@ const options = computed(() => {
       label() {
         return (
           <SmartLink href={`/${otherLocale.value}`}>
-            {$t("Eiti į pagrindinį")}
+            {props.locale === LocaleEnum.LT
+              ? "Go to main page"
+              : "Eiti į pagrindinį"}
           </SmartLink>
         );
       },
