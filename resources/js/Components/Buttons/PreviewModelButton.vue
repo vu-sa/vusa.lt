@@ -23,8 +23,10 @@ const props = defineProps<{
 const routePropsModified = computed(() => {
   let routeProps = props.routeProps;
 
-  if (routeProps["padalinys"] === "vusa") {
-    routeProps["padalinys"] = "www";
+  console.log(routeProps);
+
+  if (routeProps["subdomain"] === "vusa") {
+    routeProps["subdomain"] = "www";
   }
 
   return routeProps;
