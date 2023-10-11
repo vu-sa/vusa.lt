@@ -1,19 +1,23 @@
 <template>
   <component
     :is="useInertiaRouter ? Link : 'a'"
+    v-if="href"
     :href="href"
     :target="target ?? useInertiaRouter ? undefined : '_blank'"
   >
     <slot />
   </component>
+  <span v-else>
+    <slot />
+  </span>
 </template>
 
 <script setup lang="ts">
-import { Link } from "@inertiajs/vue3";
+import { Link, usePage } from "@inertiajs/vue3";
 import { computed } from "vue";
 
 const props = defineProps<{
-  href: string;
+  href?: string | null;
   target?: string;
 }>();
 
@@ -33,9 +37,14 @@ const useInertiaRouter = computed(() => {
     return true;
   }
 
-  // check if hostname ends in vusa.lt
+  // check if hostname ends in vusa.lt or vusa.test or other ending
   const hostname = window.location.hostname;
-  if (!hostname.endsWith("vusa.lt")) {
+
+  if (
+    !hostname.endsWith(
+      usePage().props.app.url.split("://")[1].split(".").slice(1).join("."),
+    )
+  ) {
     return false;
   }
 

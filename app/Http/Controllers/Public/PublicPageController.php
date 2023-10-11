@@ -146,10 +146,14 @@ class PublicPageController extends PublicController
         $navigation_item = Navigation::where([['padalinys_id', '=', $this->padalinys->id], ['name', '=', $page->title]])->get()->first();
         $other_lang_page = $page->getOtherLanguage();
 
-        Inertia::share('otherLangPage', $other_lang_page ? [
-            ...$other_lang_page->only('id', 'lang', 'title', 'permalink'),
-            'model_type' => 'page',
-        ] : null);
+        Inertia::share('otherLangURL', $other_lang_page ? route(
+            'page',
+            [
+                'subdomain' => $this->subdomain,
+                'lang' => $other_lang_page->lang,
+                'permalink' => $other_lang_page->permalink,
+            ]
+        ) : null);
 
         return Inertia::render('Public/ContentPage', [
             'navigationItemId' => $navigation_item?->id,
@@ -164,7 +168,6 @@ class PublicPageController extends PublicController
                 'category' => $page->category,
                 'padalinys' => $page->padalinys->shortname,
             ],
-            'otherLangPage' => $other_lang_page,
         ])->withViewData([
             'title' => $page->title,
             // truncate text to first sentence

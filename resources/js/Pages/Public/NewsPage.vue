@@ -21,13 +21,15 @@
           :src="article.image"
       /></template>
       <em
-        v-if="$page.props.otherLangPage"
+        v-if="$page.props.otherLangURL"
         class="prose col-span-full text-sm dark:prose-invert"
         >{{ $t("Puslapis egzistuoja kita kalba") }}!
         <span class="ml-2">
-          <NButton tertiary round size="small" @click="openAnotherLangNews"
-            >{{ $t("Atidaryti") }}.</NButton
-          >
+          <SmartLink :href="$page.props.otherLangURL">
+            <NButton tertiary round size="small"
+              >{{ $t("Atidaryti") }}.</NButton
+            >
+          </SmartLink>
         </span>
       </em>
       <div
@@ -45,6 +47,7 @@ import { NBackTop, NButton } from "naive-ui";
 import { router, usePage } from "@inertiajs/vue3";
 
 import NewsArticle from "@/Components/Public/NewsArticle.vue";
+import SmartLink from "@/Components/Public/SmartLink.vue";
 
 defineProps<{
   article: App.Entities.News;

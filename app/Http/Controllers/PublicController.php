@@ -12,6 +12,8 @@ class PublicController extends Controller
 {
     protected Padalinys $padalinys;
 
+    protected string $subdomain;
+
     public function __construct()
     {
         /**
@@ -22,6 +24,9 @@ class PublicController extends Controller
 
         // When we have the final alias, get the padalinys that will be used in all of the public controllers
         $this->padalinys = Padalinys::where('alias', $alias)->first();
+
+        // We also need to use the subdomain in the public controllers
+        $this->subdomain = $subdomain;
 
         // Subdomain and alias won't be different, except when alias = 'vusa', then subdomain = 'www'
         Inertia::share('padalinys', $this->padalinys->only(['id', 'shortname', 'alias', 'type']) +

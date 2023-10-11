@@ -1,157 +1,53 @@
 <template>
-  <NDropdown
-    placement="top-end"
-    :options="options"
-    @select="handleSelectLanguage"
-  >
+  <NDropdown placement="top-end" :options="options">
     <NButton text>
       <div class="flex gap-1">
-        <NBadge dot processing :show="!!otherLanguagePage"
-          ><img
-            :src="`https://hatscripts.github.io/circle-flags/flags/${
-              locale === 'lt' ? 'lt' : 'gb'
-            }.svg`"
-            width="16"
-        /></NBadge>
+        <img
+          :src="`https://hatscripts.github.io/circle-flags/flags/${
+            locale === 'lt' ? 'lt' : 'gb'
+          }.svg`"
+          width="16"
+        />
         <NIcon :component="ChevronDown20Filled" />
       </div>
     </NButton>
   </NDropdown>
 </template>
 
-<script setup lang="ts">
-import { ChevronDown20Filled } from "@vicons/fluent";
-import { NBadge, NButton, NDropdown, NIcon } from "naive-ui";
+<script setup lang="tsx">
+import { trans as $t } from "laravel-vue-i18n";
+import { ChevronDown20Filled, Home16Regular } from "@vicons/fluent";
+import { NButton, NDropdown, NIcon } from "naive-ui";
 import { computed } from "vue";
-import { loadLanguageAsync } from "laravel-vue-i18n";
-import { router, usePage } from "@inertiajs/vue3";
+import { usePage } from "@inertiajs/vue3";
 
-import { LocaleEnum } from "@/Types/enums";
-import type { RouteParamsWithQueryOverload } from "ziggy-js";
+import SmartLink from "@/Components/Public/SmartLink.vue";
+import type { LocaleEnum } from "@/Types/enums";
 
-const props = defineProps<{
+defineProps<{
   locale: LocaleEnum;
 }>();
-
-const pageProps = usePage().props;
-
-const emit = defineEmits<{
-  (e: "changeLocale", lang: string): void;
-}>();
-
-const otherLanguagePage = computed(() => {
-  if (pageProps.otherLangPage) {
-    return {
-      lang: pageProps.otherLangPage.lang,
-      newsString: pageProps.otherLangPage.lang === "lt" ? "naujiena" : "news",
-      subdomain: pageProps.padalinys?.subdomain ?? "www",
-      permalink: pageProps.otherLangPage.permalink,
-    };
-  }
-
-  return false;
-});
 
 const options = computed(() => {
   return [
     {
-      label:
-        props.locale === LocaleEnum.LT
-          ? "Change page language"
-          : "Pakeisti puslapio kalbą",
+      label() {
+        return (
+          <SmartLink target="_self" href={usePage().props.otherLangURL}>
+            {$t("Pakeisti puslapio kalbą")}
+          </SmartLink>
+        );
+      },
       key: "page",
-      disabled: !hasChangeableLocale.value,
+      disabled: !usePage().props.otherLangURL,
     },
     {
-      label:
-        props.locale === LocaleEnum.LT
-          ? "Go to main page"
-          : "Eiti į pagrindinį",
+      label() {
+        return <SmartLink href="/">{$t("Eiti į pagrindinį")}</SmartLink>;
+      },
       key: "home",
+      icon: () => <NIcon size={16} component={Home16Regular} />,
     },
   ];
 });
-
-const hasChangeableLocale = computed(() => {
-  if (otherLanguagePage.value) {
-    return true;
-  }
-
-  // check if current page url has /kontaktai or /contacts
-  if (
-    window.location.pathname.includes("/kontaktai") ||
-    window.location.pathname.includes("/contacts") ||
-    window.location.pathname.includes("/kuratoriu-registracija") ||
-    window.location.pathname.includes("/individualios-studijos") ||
-    window.location.pathname.includes("/nariu-registracija")
-  ) {
-    return true;
-  }
-
-  return false;
-});
-
-const routerMethod = (key: "home" | "page") => {
-  if (otherLanguagePage.value) {
-    return "visit";
-  }
-
-  if (key === "home") {
-    return "visit";
-  }
-
-  return "reload";
-};
-
-const handleSelectLanguage = (key: "home" | "page") => {
-  const newLang = Object.values(LocaleEnum).filter((l) => {
-    return l !== props.locale;
-  })[0];
-
-  if (routerMethod(key) === "reload") {
-    // if first 3 chars of url are '/lt' or '/en', replace them with new lang and visit
-    let url = window.location.pathname.replace(
-      window.location.pathname.substr(0, 3),
-      `/${newLang}`,
-    );
-
-    router.visit(url, {
-      onSuccess: () => {
-        emit("changeLocale", newLang);
-        loadLanguageAsync(newLang);
-      },
-    });
-
-    return;
-  }
-
-  let subdomain = pageProps.padalinys?.subdomain ?? "www";
-
-  const routes = {
-    home: () => route("home", { lang: newLang, subdomain }),
-    page:
-      pageProps.otherLangPage?.type === "page"
-        ? () =>
-            route("page", {
-              lang: newLang,
-              subdomain,
-              permalink: pageProps?.otherLangPage?.permalink,
-            } as RouteParamsWithQueryOverload)
-        : () =>
-            route("news", {
-              lang: newLang,
-              subdomain,
-              news: pageProps?.otherLangPage?.permalink,
-              newsString:
-                pageProps.otherLangPage?.lang === "lt" ? "naujiena" : "news",
-            } as RouteParamsWithQueryOverload),
-  };
-
-  router.visit(routes[key](), {
-    onSuccess: () => {
-      emit("changeLocale", newLang);
-      loadLanguageAsync(newLang);
-    },
-  });
-};
 </script>
