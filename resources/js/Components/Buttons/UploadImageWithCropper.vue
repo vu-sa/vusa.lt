@@ -77,7 +77,7 @@ const fileList = ref<UploadFileInfo[]>([
 ]);
 
 const csrfToken = document.querySelector<HTMLMetaElement>(
-  'meta[name="csrf-token"]'
+  'meta[name="csrf-token"]',
 )?.content;
 
 const beforeUpload = async (data: {
@@ -120,6 +120,5 @@ const handleFinish = ({
 const handleCropFinish = (url: string) => {
   showCropper.value = false;
   fileList.value[0].url = url;
-  console.log(fileList.value, url);
 };
 </script>

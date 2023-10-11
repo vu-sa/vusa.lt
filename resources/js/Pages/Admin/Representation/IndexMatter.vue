@@ -61,8 +61,6 @@ const columns = [
         );
       });
 
-      console.log(row.institutions, institutions);
-
       return institutions;
     },
   },
