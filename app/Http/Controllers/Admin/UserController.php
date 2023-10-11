@@ -303,7 +303,7 @@ class UserController extends LaravelResourceController
 
         $request->session()->regenerateToken();
 
-        return redirect()->route('home', ['padalinys' => 'www']);
+        return redirect()->route('home', ['subdomain' => 'www', 'lang' => app()->getLocale()]);
     }
 
     public function restore(User $user, Request $request)
