@@ -62,7 +62,7 @@ class ContactController extends PublicController
         $this->getPadalinysLinks();
         Inertia::share('otherLangURL', route('contacts.dutyType', [
             'subdomain' => $this->subdomain,
-             'lang' => $this->getOtherLang(), 'type' => $type->slug]));
+            'lang' => $this->getOtherLang(), 'type' => $type->slug]));
 
         $types = $type->getDescendantsAndSelf();
 
@@ -147,7 +147,7 @@ class ContactController extends PublicController
 
         Inertia::share('otherLangURL', route('contacts.category', [
             'subdomain' => $this->subdomain,
-             'lang' => $this->getOtherLang(), 'type' => $type->slug]));
+            'lang' => $this->getOtherLang(), 'type' => $type->slug]));
 
         $institutions = $type->load(['institutions' => function ($query) {
             $query->orderBy('name')->with(['padalinys' => function ($query) {
