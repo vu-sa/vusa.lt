@@ -1,6 +1,6 @@
 <template>
   <NDropdown placement="top-end" :options="options">
-    <NButton text>
+    <SmartLink :href="$page.props.otherLangURL ?? `/${otherLocale}`">
       <div class="flex gap-1">
         <img
           :src="`https://hatscripts.github.io/circle-flags/flags/${
@@ -8,25 +8,29 @@
           }.svg`"
           width="16"
         />
-        <NIcon :component="ChevronDown20Filled" />
+        <!-- <NIcon :component="ChevronDown20Filled" /> -->
       </div>
-    </NButton>
+    </SmartLink>
   </NDropdown>
 </template>
 
 <script setup lang="tsx">
-import { trans as $t } from "laravel-vue-i18n";
-import { ChevronDown20Filled, Home16Regular } from "@vicons/fluent";
-import { NButton, NDropdown, NIcon } from "naive-ui";
-import { computed } from "vue";
+import { trans as $t, loadLanguageAsync } from "laravel-vue-i18n";
+import { Home16Regular } from "@vicons/fluent";
+import { NDropdown, NIcon } from "naive-ui";
+import { computed, watch } from "vue";
 import { usePage } from "@inertiajs/vue3";
 
 import SmartLink from "@/Components/Public/SmartLink.vue";
 import type { LocaleEnum } from "@/Types/enums";
 
-defineProps<{
+const props = defineProps<{
   locale: LocaleEnum;
 }>();
+
+const otherLocale = computed(() => {
+  return props.locale === "lt" ? "en" : "lt";
+});
 
 const options = computed(() => {
   return [
@@ -43,11 +47,22 @@ const options = computed(() => {
     },
     {
       label() {
-        return <SmartLink href="/">{$t("Eiti į pagrindinį")}</SmartLink>;
+        return (
+          <SmartLink href={`/${otherLocale.value}`}>
+            {$t("Eiti į pagrindinį")}
+          </SmartLink>
+        );
       },
       key: "home",
       icon: () => <NIcon size={16} component={Home16Regular} />,
     },
   ];
 });
+
+watch(
+  () => props.locale,
+  () => {
+    loadLanguageAsync(props.locale);
+  },
+);
 </script>
