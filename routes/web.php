@@ -40,7 +40,7 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('pirmakursiu-stovyklos', [Public\PublicPageController::class, 'summerCamps2023'])->name('pirmakursiuStovyklos');
         Route::get('kalendorius/renginys/{calendar}', [Public\PublicPageController::class, 'calendarEventMain'])->name('calendar.event');
 
-        Route::get('individualios-studijos', [Public\PublicPageController::class, 'individualStudies']);
+        Route::get('individualios-studijos', [Public\PublicPageController::class, 'individualStudies'])->name('individualStudies');
 
         Route::post('saziningai-registracija', [Public\MainController::class, 'storeSaziningaiExamRegistration'])->name('saziningaiExamRegistration.store');
         Route::post('saziningai-uzregistruoti-egzaminai', [Public\MainController::class, 'storeSaziningaiExamObserver'])->name('saziningaiExamObserver.store');

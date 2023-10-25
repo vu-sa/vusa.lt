@@ -230,7 +230,7 @@ class PublicPageController extends PublicController
     {
         $this->getBanners();
         $this->getPadalinysLinks();
-        $this->shareOtherLangURL('summerCamps2022');
+        $this->shareOtherLangURL('pirmakursiuStovyklos2022');
 
         // get events with category of freshmen camps
         $events = Calendar::whereHas('category', function (Builder $query) {
@@ -247,7 +247,7 @@ class PublicPageController extends PublicController
     {
         $this->getBanners();
         $this->getPadalinysLinks();
-        $this->shareOtherLangURL('summerCamps2023');
+        $this->shareOtherLangURL('pirmakursiuStovyklos');
 
         // get events with category of freshmen camps
         $events = Calendar::whereHas('category', function (Builder $query) {
@@ -281,7 +281,7 @@ class PublicPageController extends PublicController
     {
         $this->getBanners();
         $this->getPadalinysLinks();
-        $this->shareOtherLangURL('calendarEvent');
+        $this->shareOtherLangURL('calendar.event', calendarId: $calendar->id);
 
         $calendar->load('padalinys:id,alias,fullname,shortname');
 
