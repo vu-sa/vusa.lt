@@ -44,7 +44,7 @@ const props = defineProps<{
 const options_padaliniai = computed<DropdownOption[]>(() => {
   return usePage()
     .props.padaliniai.filter(
-      (padalinys) => padalinys.type === "padalinys" && padalinys.id <= 16,
+      (padalinys) => padalinys.type === "padalinys" && padalinys.id <= 17
     )
     .map((padalinys) => ({
       label:
