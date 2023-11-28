@@ -197,7 +197,6 @@ class PublicPageController extends PublicController
     {
         $this->getBanners();
         $this->getPadalinysLinks();
-        $this->shareOtherLangURL('saziningaiExams');
 
         // return all padalinys but only shortname VU and id
         $padaliniai = Padalinys::select('id', 'shortname_vu')->where('shortname', '!=', 'VU SA')->orderBy('shortname')->get();
@@ -205,6 +204,7 @@ class PublicPageController extends PublicController
         // return all exams that have their flows +1 day
 
         $saziningaiExamFlows = SaziningaiExamFlow::where('start_time', '>=', now()->subDay())->orderBy('start_time', 'asc')->get();
+        $this->shareOtherLangURL('saziningaiExams.registered', saziningaiExams: $saziningaiExamFlows);
 
         return Inertia::render('Public/SaziningaiExams', [
             'padaliniaiOptions' => $padaliniai,

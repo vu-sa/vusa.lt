@@ -58,11 +58,12 @@ class PublicController extends Controller
     }
 
     // This is mostly used for default sharing, other cases likes pages and news link to other URLs
-    protected function shareOtherLangURL($name, string $subdomain = null, $calendarId = null)
+    protected function shareOtherLangURL($name, string $subdomain = null, $calendarId = null, $saziningaiExams = null)
     {
         Inertia::share('otherLangURL', route($name,
             ['lang' => $this->getOtherLang(),
             'calendar' => $calendarId,
+            'saziningaiExams' => $saziningaiExams,
             'subdomain' => $subdomain,
             ]));
     }
