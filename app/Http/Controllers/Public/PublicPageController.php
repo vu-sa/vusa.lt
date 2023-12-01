@@ -272,6 +272,17 @@ class PublicPageController extends PublicController
         ]);
     }
 
+    public function pkp()
+    {
+        $this->getBanners();
+        $this->getPadalinysLinks();
+        $this->shareOtherLangURL('pkp');
+
+        return Inertia::render('Public/PKP')->withViewData([
+            'title' => 'Programos, klubai ir projektai'
+        ]);
+    }
+
     public function calendarEvent(Calendar $calendar)
     {
         return $this->calendarEventMain('lt', $calendar);
