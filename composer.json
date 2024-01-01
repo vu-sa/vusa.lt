@@ -36,7 +36,7 @@
         "spatie/laravel-translatable": "^6.5",
         "staudenmeir/eloquent-has-many-deep": "^v1.18",
         "tightenco/ziggy": "^1.0",
-        "octopyid/laravel-impersonate": "^3.0",
+        "octopyid/laravel-impersonate": "^3.0"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.7",
