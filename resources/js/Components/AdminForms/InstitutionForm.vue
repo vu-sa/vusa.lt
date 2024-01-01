@@ -100,7 +100,7 @@
             </a>
           </div>
         </template>
-        <NCard v-if="institution.duties" class="subtle-gray-gradient">
+        <NCard v-if="institution.duties">
           <strong
             >Šiuo metu institucijai priklauso šios pareigos ir asmenys:</strong
           >
@@ -128,7 +128,7 @@
             </div>
           </FadeTransition>
         </NCard>
-        <NCard v-else class="subtle-gray-gradient col-span-3 h-fit">
+        <NCard v-else class="col-span-3 h-fit">
           Ši institucija <strong>neturi</strong> pareigų.
         </NCard>
       </FormElement>

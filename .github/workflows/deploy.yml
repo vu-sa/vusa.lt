@@ -1,0 +1,38 @@
+name: Deploy To Production
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: Production
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: install ssh keys
+        # Check this thread to understand why it's needed:
+        # https://stackoverflow.com/a/70447517
+        run: |
+          install -m 600 -D /dev/null ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
+      - name: install composer deps
+        run: |
+          composer install -q --no-ansi --no-interaction --no-scripts --no-dev
+          tar -czf vendor.tar.gz vendor
+      - name: install and build npm deps
+        # Package build to tar.gz
+        run: |
+          npm ci
+          npm run build 
+          tar -czf build.tar.gz public/build
+      - name: upload and run on server
+        # Unpack build to public/build
+        run: |
+          scp build.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/build.tar.gz
+          scp vendor.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/vendor.tar.gz
+          ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && git pull && rm -rf public/build && rm -rf vendor && tar -xzf build.tar.gz && tar -xzf vendor.tar.gz && rm build.tar.gz && rm vendor.tar.gz"       
+      - name: after upload
+        run: |
+          ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} php artisan optimize
+          rm -rf ~/.ssh

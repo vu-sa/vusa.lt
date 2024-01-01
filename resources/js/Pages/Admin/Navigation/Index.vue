@@ -1,6 +1,6 @@
 <template>
   <PageContent title="Navigacija">
-    <NCard class="subtle-gray-gradient">
+    <NCard>
       <NTree
         block-line
         :data="data"

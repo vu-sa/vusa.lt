@@ -1,6 +1,6 @@
 <template>
   <PageContent :title="navigation.name">
-    <NCard class="subtle-gray-gradient">
+    <NCard>
       <h3 class="mb-4">Bendra informacija</h3>
 
       <form

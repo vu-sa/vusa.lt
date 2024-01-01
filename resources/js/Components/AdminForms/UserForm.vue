@@ -119,7 +119,7 @@
             source-filterable
           ></NTransfer>
         </NFormItem>
-        <NCard class="subtle-gray-gradient mb-4">
+        <NCard class="mb-4">
           <h4>Užimamos pareigos</h4>
           <NDataTable
             :data="user.current_duties"

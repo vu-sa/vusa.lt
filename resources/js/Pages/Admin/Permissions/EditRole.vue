@@ -1,9 +1,6 @@
 <template>
   <AdminContentPage :title="role.name" :back-url="route('roles.index')">
-    <NCard
-      class="subtle-gray-gradient max-w-4xl"
-      title="Priskirti rolę pareigybėms"
-    >
+    <NCard title="Priskirti rolę pareigybėms" class="max-w-4xl">
       <NTransfer
         ref="transfer"
         v-model:value="currentDuties"

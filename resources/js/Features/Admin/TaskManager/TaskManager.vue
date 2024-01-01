@@ -8,7 +8,7 @@
       ></FilterPopselect
       ><TaskCreator :taskable="taskable" />
     </div>
-    <NCard class="subtle-gray-gradient">
+    <NCard>
       <NSpin :show="false">
         <TaskTable :tasks="shownTasks" />
         <template #description>Tuojaus... </template>
