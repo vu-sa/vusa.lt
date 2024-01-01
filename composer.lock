@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a648edc235b23b721eb11bd270d10ca4",
+    "content-hash": "6add31fb13f2198d7f66d00aaac6adde",
     "packages": [
         {
             "name": "ajcastro/eager-load-pivot-relations",
@@ -3999,6 +3999,75 @@
                 }
             ],
             "time": "2023-02-08T01:06:31+00:00"
+        },
+        {
+            "name": "octopyid/laravel-impersonate",
+            "version": "v3.0.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/OctopyID/LaraPersonate.git",
+                "reference": "5a708a85c1d79227a1da663ae8a0a9a04f29730a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/OctopyID/LaraPersonate/zipball/5a708a85c1d79227a1da663ae8a0a9a04f29730a",
+                "reference": "5a708a85c1d79227a1da663ae8a0a9a04f29730a",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.0|^8.1"
+            },
+            "conflict": {
+                "lab404/laravel-impersonate": "*"
+            },
+            "require-dev": {
+                "nunomaduro/collision": "^6.2",
+                "orchestra/testbench": "^7.5"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Octopy\\Impersonate\\ImpersonateServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Octopy\\Impersonate\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "SupianIDz",
+                    "email": "supianidz@gmail.com"
+                }
+            ],
+            "description": "Login as a different user quickly",
+            "keywords": [
+                "Users",
+                "impersonate",
+                "laravel"
+            ],
+            "support": {
+                "issues": "https://github.com/OctopyID/LaraPersonate/issues",
+                "source": "https://github.com/OctopyID/LaraPersonate/tree/v3.0.3"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/SupianIDz",
+                    "type": "github"
+                },
+                {
+                    "url": "https://ko-fi.com/SupianIDz",
+                    "type": "ko_fi"
+                }
+            ],
+            "time": "2023-02-28T02:55:59+00:00"
         },
         {
             "name": "paragonie/random_compat",
@@ -10916,75 +10985,6 @@
                 }
             ],
             "time": "2023-10-11T15:45:01+00:00"
-        },
-        {
-            "name": "octopyid/laravel-impersonate",
-            "version": "v3.0.3",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/OctopyID/LaraPersonate.git",
-                "reference": "5a708a85c1d79227a1da663ae8a0a9a04f29730a"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/OctopyID/LaraPersonate/zipball/5a708a85c1d79227a1da663ae8a0a9a04f29730a",
-                "reference": "5a708a85c1d79227a1da663ae8a0a9a04f29730a",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^8.0|^8.1"
-            },
-            "conflict": {
-                "lab404/laravel-impersonate": "*"
-            },
-            "require-dev": {
-                "nunomaduro/collision": "^6.2",
-                "orchestra/testbench": "^7.5"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "Octopy\\Impersonate\\ImpersonateServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Octopy\\Impersonate\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "SupianIDz",
-                    "email": "supianidz@gmail.com"
-                }
-            ],
-            "description": "Login as a different user quickly",
-            "keywords": [
-                "Users",
-                "impersonate",
-                "laravel"
-            ],
-            "support": {
-                "issues": "https://github.com/OctopyID/LaraPersonate/issues",
-                "source": "https://github.com/OctopyID/LaraPersonate/tree/v3.0.3"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/SupianIDz",
-                    "type": "github"
-                },
-                {
-                    "url": "https://ko-fi.com/SupianIDz",
-                    "type": "ko_fi"
-                }
-            ],
-            "time": "2023-02-28T02:55:59+00:00"
         },
         {
             "name": "phar-io/manifest",
