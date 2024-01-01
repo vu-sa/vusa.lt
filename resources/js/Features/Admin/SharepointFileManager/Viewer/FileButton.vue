@@ -60,7 +60,7 @@ const gradientClasses = computed(() => {
     props.file.listItem?.fields?.properties?.Type ===
     "Veiklą reglamentuojantys dokumentai"
   ) {
-    return ["from-zinc-200", "subtle-gray-gradient", "bg-gradient-to-b"];
+    return ["from-zinc-200", "bg-gradient-to-b"];
   }
 
   if (props.file.listItem?.fields?.properties?.Type === "Metodinė medžiaga") {
@@ -73,11 +73,7 @@ const gradientClasses = computed(() => {
     ];
   }
 
-  return [
-    "subtle-gray-gradient",
-    "dark:from-zinc-800/90",
-    "dark:to-zinc-700/90",
-  ];
+  return ["dark:from-zinc-800/90", "dark:to-zinc-700/90"];
 });
 
 const fileTypeIcon = computed(() => {

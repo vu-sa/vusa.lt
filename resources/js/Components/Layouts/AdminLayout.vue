@@ -3,7 +3,7 @@
 
   <NLayout class="min-h-screen">
     <nav
-      class="fixed z-50 flex h-16 w-full flex-row items-center justify-between border-b px-8 py-2 shadow-sm backdrop-blur-lg dark:border-zinc-800 md:justify-end"
+      class="fixed z-50 flex h-16 w-full flex-row items-center justify-between border-b px-8 py-2 shadow-sm backdrop-blur-lg md:justify-end dark:border-zinc-800"
     >
       <div class="flex items-center gap-2 md:hidden">
         <NButton size="small" strong quaternary @click="activeDrawer = true">
@@ -68,7 +68,7 @@
     </NDrawer>
     <NLayout class="mt-16" has-sider>
       <NLayoutSider
-        class="subtle-gray-gradient my-6 ml-4 hidden h-fit rounded-md from-white shadow-md md:block"
+        class="my-6 ml-4 hidden h-fit rounded-md from-white shadow-md md:block"
         collapse-mode="width"
         :collapsed-width="69"
         :width="220"

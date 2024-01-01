@@ -1,5 +1,5 @@
 <template>
-  <NCard class="subtle-gray-gradient min-w-[450px]">
+  <NCard class="min-w-[450px]">
     <NAlert
       v-if="hasErrors"
       class="mb-4"

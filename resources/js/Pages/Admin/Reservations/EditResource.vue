@@ -11,10 +11,7 @@
         model-route="resources.update"
       />
     </UpsertModelLayout>
-    <NCard
-      :title="$t('Rezervacijų istorija')"
-      class="subtle-gray-gradient mt-4 min-w-[450px]"
-    >
+    <NCard :title="$t('Rezervacijų istorija')" class="mt-4 min-w-[450px]">
       <NDataTable
         size="small"
         :data="resource.reservations"

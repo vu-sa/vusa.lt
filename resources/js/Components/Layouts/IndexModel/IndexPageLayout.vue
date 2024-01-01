@@ -17,7 +17,7 @@
       </div>
     </SuggestionAlert>
     <slot />
-    <NCard class="subtle-gray-gradient w-full min-w-[768px]">
+    <NCard class="w-full min-w-[768px]">
       <IndexDataTable
         :paginated-models="paginatedModels"
         :columns="columns"
