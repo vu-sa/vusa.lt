@@ -155,7 +155,7 @@ class ModelIndexer
         return $this;
     }
 
-    public function sortAllColumns(array $default = null)
+    public function sortAllColumns(?array $default = null)
     {
         if ($default && ! $this->sorters) {
             $this->sorters = $default;

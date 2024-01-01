@@ -279,7 +279,7 @@ class PublicPageController extends PublicController
         $this->shareOtherLangURL('pkp');
 
         return Inertia::render('Public/PKP')->withViewData([
-            'title' => 'Programos, klubai ir projektai'
+            'title' => 'Programos, klubai ir projektai',
         ]);
     }
 
