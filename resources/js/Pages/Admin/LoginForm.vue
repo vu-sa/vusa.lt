@@ -36,7 +36,7 @@
             <AppLogo class="hidden w-96 invert sm:block" />
           </div>
           <div
-            class="m-auto mt-0 flex h-auto flex-col items-center gap-4 rounded-lg from-zinc-100 to-white p-4 text-zinc-700 shadow-xl transition-shadow duration-500 ease-in-out hover:shadow-zinc-900/90 sm:mt-auto sm:justify-center sm:p-12"
+            class="m-auto mt-0 flex h-auto flex-col items-center gap-4 rounded-lg bg-zinc-50 p-4 text-zinc-700 shadow-xl transition-shadow duration-500 ease-in-out hover:shadow-zinc-900/90 sm:mt-auto sm:justify-center sm:p-12 dark:bg-zinc-900"
           >
             <h1 class="font-bold text-zinc-700">{{ $t("Labas") }}! 👋</h1>
             <AppLogo class="w-24 sm:hidden" />
