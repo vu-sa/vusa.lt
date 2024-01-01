@@ -33,5 +33,5 @@ jobs:
           ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && git pull && rm -rf public/build && rm -rf vendor && tar -xzf build.tar.gz && tar -xzf vendor.tar.gz && rm build.tar.gz && rm vendor.tar.gz"       
       - name: after upload
         run: |
-          ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && /opt/php8.1/bin/php /usr/local/bin/composer dump-autoload && /opt/php8.1/bin/php artisan optimize"
+          ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && /opt/php81/bin/php /usr/local/bin/composer dump-autoload && /opt/php81/bin/php artisan optimize"
           rm -rf ~/.ssh
