@@ -3,7 +3,7 @@
 # Please see the documentation for all configuration options:
 # https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
 
-version: 2
+version: 3
 updates:
     # Maintain dependencies for GitHub Actions
   - package-ecosystem: "github-actions"
@@ -18,7 +18,7 @@ updates:
       interval: "weekly"
     ignore:
       - dependency-name: "*"
-        update-types: ["version-update:semver-minor"]
+        update-types: ["version-update:semver-patch", "version-update:semver-minor"]
 
   # Maintain dependencies for Composer
   - package-ecosystem: "composer"
@@ -27,4 +27,4 @@ updates:
       interval: "weekly"
     ignore:
       - dependency-name: "*"
-        update-types: ["version-update:semver-minor"]
+        update-types: ["version-update:semver-patch", "version-update:semver-minor"]
