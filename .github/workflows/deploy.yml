@@ -21,18 +21,17 @@ jobs:
           composer install -q --no-ansi --no-interaction --no-scripts --no-dev
           tar -czf vendor.tar.gz vendor
       - name: install and build npm deps
-        # Package build to tar.gz
         run: |
           npm ci
           npm run build 
           tar -czf build.tar.gz public/build
       - name: upload and run on server
-        # Unpack build to public/build
+        # Unpack
         run: |
           scp build.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/build.tar.gz
           scp vendor.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/vendor.tar.gz
           ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && git pull && rm -rf public/build && rm -rf vendor && tar -xzf build.tar.gz && tar -xzf vendor.tar.gz && rm build.tar.gz && rm vendor.tar.gz"       
       - name: after upload
         run: |
-          ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} php artisan optimize
+          ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "composer dump-autoload && php artisan optimize"
           rm -rf ~/.ssh
