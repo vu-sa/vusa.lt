@@ -26,6 +26,10 @@ module.exports = {
         "no-secrets/no-secrets": "error",
         "no-undef": "off",
         "vue/max-attributes-per-line": "off",
+        "vue/multiline-html-element-content-newline": "off",
+        "vue/first-attribute-linebreak": "off",
+        "vue/html-indent": "off",
+        "vue/html-closing-bracket-newline": "off",
       },
     },
     {
