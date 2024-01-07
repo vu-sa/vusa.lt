@@ -29,7 +29,8 @@ jobs:
       - name: install and build npm deps
         run: |
           npm ci
-          npm run build 
+          # TODO: Possible to maybe use this: https://import-meta-env.org/guide/getting-started/introduction.html#guide
+          POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }} ARCHYVAS_PASSWORD=${{ secrets.ARCHYVAS_PASSWORD }} ATSTOVAI_PASSWORD=${{ ATSTOVAI_PASSWORD }} npm run build 
           tar -czf build.tar.gz public/build
       - name: upload and run on server
         # Unpack

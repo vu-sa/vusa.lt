@@ -8,6 +8,7 @@
     "resolveJsonModule": true,
     "allowJs": false,
     "jsx": "preserve",
+    "jsxImportSource": "vue",
     "paths": {
       "@/*": ["./resources/js/*"]
     },
