@@ -30,7 +30,7 @@ jobs:
         run: |
           npm ci
           # TODO: Possible to maybe use this: https://import-meta-env.org/guide/getting-started/introduction.html#guide
-          POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }} ARCHYVAS_PASSWORD=${{ secrets.ARCHYVAS_PASSWORD }} ATSTOVAI_PASSWORD=${{ secrets.ATSTOVAI_PASSWORD }} npm run build 
+          VITE_POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }} VITE_ARCHYVAS_PASSWORD=${{ secrets.ARCHYVAS_PASSWORD }} VITE_ATSTOVAI_PASSWORD=${{ secrets.ATSTOVAI_PASSWORD }} npm run build 
           tar -czf build.tar.gz public/build
       - name: upload and run on server
         # Unpack
