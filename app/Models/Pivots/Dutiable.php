@@ -6,12 +6,13 @@ use App\Models\Contact;
 use App\Models\Duty;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Dutiable extends MorphPivot
 {
-    use HasRelationships;
+    use HasRelationships, HasUlids;
 
     protected $table = 'dutiables';
 

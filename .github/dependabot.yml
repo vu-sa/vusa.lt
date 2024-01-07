@@ -18,7 +18,7 @@ updates:
       interval: "weekly"
     ignore:
       - dependency-name: "*"
-        update-types: ["version-update:semver-minor"]
+        update-types: ["version-update:semver-patch", "version-update:semver-minor"]
 
   # Maintain dependencies for Composer
   - package-ecosystem: "composer"
@@ -27,4 +27,4 @@ updates:
       interval: "weekly"
     ignore:
       - dependency-name: "*"
-        update-types: ["version-update:semver-minor"]
+        update-types: ["version-update:semver-patch", "version-update:semver-minor"]

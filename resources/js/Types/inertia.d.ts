@@ -35,6 +35,7 @@ declare module "@inertiajs/core" {
       statusCode: number | null;
     };
     mainNavigation?: App.Entities.Navigation[];
+    otherLangURL?: string | null;
     padaliniai: Pick<
       App.Entities.Padalinys,
       "id" | "alias" | "shortname" | "fullname" | "type"
@@ -42,6 +43,8 @@ declare module "@inertiajs/core" {
     padalinys:
       | (Pick<App.Entities.Padalinys, "id" | "alias" | "shortname" | "type"> & {
           subdomain: string;
+          links: Array<App.Entities.MainPage | null>;
+          banners: Array<App.Entities.Banner> | [];
         })
       | undefined;
     search: {

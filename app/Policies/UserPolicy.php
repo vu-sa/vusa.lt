@@ -69,16 +69,6 @@ class UserPolicy extends ModelPolicy
     }
 
     /**
-     * Determine whether the user can restore the model.
-     *
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function restore(User $user, User $model)
-    {
-        return false;
-    }
-
-    /**
      * Determine whether the user can permanently delete the model.
      *
      * @return \Illuminate\Auth\Access\Response|bool

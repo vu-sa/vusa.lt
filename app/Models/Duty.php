@@ -17,7 +17,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Duty extends Model implements AuthorizableContract
 {
-    use HasFactory, Notifiable, Authorizable, HasRoles, HasRelationships, LogsActivity, HasUlids, SoftDeletes, Searchable;
+    use Authorizable, HasFactory, HasRelationships, HasRoles, HasUlids, LogsActivity, Notifiable, Searchable, SoftDeletes;
 
     protected $with = ['types'];
 
@@ -58,14 +58,20 @@ class Duty extends Model implements AuthorizableContract
     public function current_users()
     {
         return $this->users()
-            ->wherePivot('end_date', null)->orWherePivot('end_date', '>=', now())
+            ->where(function ($query) {
+                $query->whereNull('dutiables.end_date')
+                    ->orWhere('dutiables.end_date', '>=', now());
+            })
             ->withTimestamps();
     }
 
     public function previous_users()
     {
         return $this->users()
-            ->wherePivot('end_date', '<', now())
+            ->where(function ($query) {
+                $query->whereNotNull('dutiables.end_date')
+                    ->where('dutiables.end_date', '<', now());
+            })
             ->withTimestamps();
     }
 
@@ -81,7 +87,7 @@ class Duty extends Model implements AuthorizableContract
 
     public function types()
     {
-        return $this->morphToMany(Type::class, 'typeable');
+        return $this->morphToMany(Type::class, 'typeable')->using(Typeable::class)->withPivot(['typeable_type']);
     }
 
     public function institution()

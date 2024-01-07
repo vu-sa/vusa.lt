@@ -17,7 +17,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Meeting extends Model
 {
-    use HasFactory, HasComments, HasSharepointFiles, HasTasks, HasUlids, HasRelationships, LogsActivity, Searchable, SoftDeletes;
+    use HasComments, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasUlids, LogsActivity, Searchable, SoftDeletes;
 
     protected $guarded = [];
 

@@ -9,7 +9,6 @@ use Inertia\Inertia;
 
 class SaziningaiExamFlowsController extends LaravelResourceController
 {
-
     /**
      * Store a newly created resource in storage.
      *

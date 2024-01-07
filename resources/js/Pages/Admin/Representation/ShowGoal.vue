@@ -136,8 +136,6 @@ const shownMatters = computed(() => {
 });
 
 const handleFilterClick = (name: string | null) => {
-  console.log(name);
-
   selectedInstitution.value = name ?? "Be pavadinimo";
 };
 

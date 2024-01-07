@@ -88,7 +88,7 @@ class UserController extends LaravelResourceController
             ]);
 
             foreach ($request->current_duties as $duty) {
-                $user->duties()->attach($duty, ['start_date' => now()]);
+                $user->duties()->attach($duty, ['start_date' => now()->subDay()]);
             }
 
             // check if user is super admin
@@ -199,16 +199,15 @@ class UserController extends LaravelResourceController
     {
         $new = $existing_duties->diff($user_duties)->values();
         $deleted = $user_duties->diff($existing_duties)->values();
-
         // attach new duties
 
         foreach ($new as $duty) {
-            $user->duties()->attach($duty, ['start_date' => now()]);
+            $user->duties()->attach($duty, ['start_date' => now()->subDay()]);
         }
 
         // update duty end date of deleted duties
         foreach ($deleted as $duty) {
-            $user->duties()->updateExistingPivot($duty, ['end_date' => now()]);
+            $user->duties()->updateExistingPivot($duty, ['end_date' => now()->subDay()]);
         }
     }
 
@@ -221,7 +220,6 @@ class UserController extends LaravelResourceController
     {
         $this->authorize('delete', [User::class, $user, $this->authorizer]);
 
-        $user->duties()->detach();
         $user->delete();
 
         return redirect()->route('users.index')->with('info', 'Kontaktas sėkmingai ištrintas!');
@@ -305,6 +303,27 @@ class UserController extends LaravelResourceController
 
         $request->session()->regenerateToken();
 
-        return redirect()->route('home', ['padalinys' => 'www']);
+        return redirect()->route('home', ['subdomain' => 'www', 'lang' => app()->getLocale()]);
+    }
+
+    public function restore(User $user, Request $request)
+    {
+        $this->authorize('restore', [User::class, $user, $this->authorizer]);
+
+        $user->restore();
+
+        return back()->with('success', 'Kontaktas sėkmingai atkurtas!');
+    }
+
+    public function forceDelete($id, Request $request)
+    {
+        $user = User::withTrashed()->findOrFail($id);
+
+        $this->authorize('forceDelete', [User::class, $user, $this->authorizer]);
+
+        $user->duties()->detach();
+        $user->forceDelete();
+
+        return redirect()->route('users.index')->with('success', 'Kontaktas sėkmingai ištrintas!');
     }
 }

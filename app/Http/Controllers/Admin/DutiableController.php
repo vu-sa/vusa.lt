@@ -10,24 +10,17 @@ use Inertia\Inertia;
 
 class DutiableController extends LaravelResourceController
 {
-
-
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  string  $dutiable
      * @return \Illuminate\Http\Response
      */
-    public function edit(Duty $duty, $dutiable)
+    public function edit(Dutiable $dutiable)
     {
-        $this->authorize('update', [Duty::class, $duty, $this->authorizer]);
-
-        $dutiable = Dutiable::with('user', 'duty')
-            ->where('duty_id', $duty->id)
-            ->where('dutiable_id', $dutiable)->first();
+        $this->authorize('update', [Duty::class, $dutiable->duty, $this->authorizer]);
 
         return Inertia::render('Admin/People/EditDutiable', [
-            'dutiable' => $dutiable,
+            'dutiable' => $dutiable->load('duty', 'dutiable'),
         ]);
     }
 
@@ -35,12 +28,11 @@ class DutiableController extends LaravelResourceController
      * Update the specified resource in storage.
      * TODO: this will not work for contacts
      *
-     * @param  \App\Models\Dutiable  $dutiable
      * @return \Illuminate\Http\Response
      */
-    public function update(Duty $duty, $dutiable, Request $request)
+    public function update(Dutiable $dutiable, Request $request)
     {
-        $this->authorize('update', [Duty::class, $duty, $this->authorizer]);
+        $this->authorize('update', [Duty::class, $dutiable->duty, $this->authorizer]);
 
         $validated = $request->validate([
             'start_date' => 'required|date',
@@ -48,23 +40,24 @@ class DutiableController extends LaravelResourceController
             'extra_attributes' => 'nullable|array',
         ]);
 
-        $duty->users()->updateExistingPivot($dutiable, $validated);
+        $dutiable->update($validated);
 
-        return back()->with('success', 'Pareigybė sėkmingai atnaujinta!');
+        return back()->with('success', 'Pareigybės laikotarpis sėkmingai atnaujintas!');
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Dutiable  $dutiable
      * @return \Illuminate\Http\Response
      */
     public function destroy(Dutiable $dutiable)
     {
         $this->authorize('delete', [Dutiable::class, $dutiable, $this->authorizer]);
 
+        $user = $dutiable->dutiable;
+
         $dutiable->delete();
 
-        return back()->with('success', 'Pareigybės laikotarpis sėkmingai ištrintas!');
+        return redirect()->route('users.edit', $user)->with('success', 'Pareigybės laikotarpis sėkmingai ištrintas!');
     }
 }

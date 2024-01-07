@@ -119,7 +119,7 @@
             source-filterable
           ></NTransfer>
         </NFormItem>
-        <NCard class="subtle-gray-gradient mb-4">
+        <NCard class="mb-4">
           <h4>Užimamos pareigos</h4>
           <NDataTable
             :data="user.current_duties"
@@ -131,7 +131,7 @@
           <h4>Buvusios pareigos</h4>
           <NDataTable
             :data="user.previous_duties"
-            :columns="existingDutyColumns"
+            :columns="previousDutyColumns"
             :bordered="false"
             size="small"
         /></NCard>
@@ -190,7 +190,12 @@
 </template>
 
 <script setup lang="tsx">
-import { Add24Filled, Eye16Regular } from "@vicons/fluent";
+import {
+  Add24Filled,
+  Delete24Regular,
+  Eye16Regular,
+  PersonEdit24Regular,
+} from "@vicons/fluent";
 import {
   type DataTableColumns,
   NAutoComplete,
@@ -209,10 +214,8 @@ import {
   type TransferRenderSourceList,
   type TreeOption,
 } from "naive-ui";
-import { PersonEdit24Regular } from "@vicons/fluent";
 import { computed, h, ref } from "vue";
-import { router } from "@inertiajs/vue3";
-import { useForm, usePage } from "@inertiajs/vue3";
+import { router, useForm, usePage } from "@inertiajs/vue3";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
@@ -251,7 +254,7 @@ const dutyOptions: TreeOption[] = props.padaliniaiWithDuties.map(
         value: duty.id,
       })),
     })),
-  })
+  }),
 );
 
 // check if email contains "vusa.lt"
@@ -291,11 +294,36 @@ const existingDutyColumns: DataTableColumns = [
           secondary
           size="tiny"
           tag="a"
-          href={route("duties.users.edit", [row.id, props.user.id])}
+          href={route("dutiables.edit", row.pivot.id)}
           target="_blank"
         >
           {{
             icon: () => <NIcon component={PersonEdit24Regular} />,
+          }}
+        </NButton>
+      );
+    },
+  },
+];
+
+const previousDutyColumns: DataTableColumns = [
+  ...existingDutyColumns,
+  {
+    key: "delete",
+    render(row) {
+      return (
+        <NButton
+          size="tiny"
+          type="error"
+          onClick={() =>
+            router.delete(route("dutiables.destroy", row.pivot.id), {
+              preserveState: true,
+              preserveScroll: true,
+            })
+          }
+        >
+          {{
+            icon: () => <NIcon component={Delete24Regular} />,
           }}
         </NButton>
       );
@@ -357,18 +385,20 @@ const renderTargetLabel = ({ option }: { option: TreeOption }) => {
 };
 
 const flattenDutyOptions = computed(() => {
-  return dutyOptions.flatMap((padalinys) =>
-    padalinys.children?.flatMap((institution) =>
-      institution.children?.map((duty) => {
-        return {
-          label:
-            dutyShowMode.value === "tree"
-              ? duty.label
-              : `${duty.label} (${institution.label})`,
-          value: duty.value,
-        };
-      })
-    )
+  return dutyOptions.flatMap(
+    (padalinys) =>
+      padalinys.children?.flatMap(
+        (institution) =>
+          institution.children?.map((duty) => {
+            return {
+              label:
+                dutyShowMode.value === "tree"
+                  ? duty.label
+                  : `${duty.label} (${institution.label})`,
+              value: duty.value,
+            };
+          }),
+      ),
   );
 });
 
@@ -415,7 +445,7 @@ const sendWelcomeEmail = () => {
     {
       preserveState: true,
       preserveScroll: true,
-    }
+    },
   );
 };
 </script>

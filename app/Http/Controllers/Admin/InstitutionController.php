@@ -172,7 +172,28 @@ class InstitutionController extends LaravelResourceController
     {
         $this->authorize('delete', [Institution::class, $institution, $this->authorizer]);
 
-        return back()->with('info', 'Institucijų šiuo metu negalima ištrinti...');
+        // check if auth user is from this institution
+        if (auth()->user()->institutions->contains($institution)) {
+            return back()->with('error', 'Negalima ištrinti institucijos, kurioje esate!');
+        }
+
+        $institution->delete();
+
+        return back()->with('info', 'Institucija sėkmingai ištrinta!');
+    }
+
+    /**
+     * Restore the specified resource from storage.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function restore(Institution $institution)
+    {
+        $this->authorize('restore', [Institution::class, $institution, $this->authorizer]);
+
+        $institution->restore();
+
+        return back()->with('success', 'Institucija sėkmingai atkurta!');
     }
 
     /**

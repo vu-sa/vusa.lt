@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\LaravelResourceController;
 use App\Models\Permission;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class PermissionController extends LaravelResourceController

@@ -141,4 +141,13 @@ class MeetingController extends LaravelResourceController
 
         return back()->with('success', 'Posėdis ištrintas sėkmingai!');
     }
+
+    public function restore(Meeting $meeting)
+    {
+        $this->authorize('restore', [Meeting::class, $meeting, $this->authorizer]);
+
+        $meeting->restore();
+
+        return back()->with('success', 'Posėdis atkurtas!');
+    }
 }

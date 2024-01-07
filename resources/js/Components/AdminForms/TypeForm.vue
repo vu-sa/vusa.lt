@@ -74,6 +74,25 @@
           ></NTransfer>
         </NFormItem>
       </FormElement>
+      <FormElement v-if="form.model_type === 'App\\Models\\Duty'">
+        <template #title>Rolės, kurios priskiriamos pareigybėms</template>
+        <template #description
+          >Šios rolės automatiškai priskiriamos pareigybėms su šiuo
+          tipu.</template
+        >
+        <NFormItem label="Rolės" :span="6">
+          <NTransfer
+            v-model:value="form.roles"
+            :options="
+              roles?.map((role) => ({
+                value: role.id,
+                label: role.name,
+                role: role,
+              }))
+            "
+          ></NTransfer>
+        </NFormItem>
+      </FormElement>
       <FormElement no-divider>
         <template #title>Kiti nustatymai</template>
         <NFormItem label="Techninė žymė">
@@ -110,9 +129,9 @@ import {
   NTransfer,
 } from "naive-ui";
 import { computed, ref } from "vue";
-import { router, useForm } from "@inertiajs/vue3";
+import { useForm } from "@inertiajs/vue3";
 
-import { Edit16Filled, Edit16Regular } from "@vicons/fluent";
+import { Edit16Filled } from "@vicons/fluent";
 import { modelTypes } from "@/Types/formOptions";
 import FileManager from "@/Features/Admin/SharepointFileManager/Viewer/FileManager.vue";
 import FormElement from "./FormElement.vue";
@@ -130,6 +149,7 @@ const props = defineProps<{
   contentTypes: Record<string, any>[];
   sharepointPath?: string;
   allModelsFromModelType?: Record<string, any>[];
+  roles?: App.Entities.Role[];
 }>();
 
 const loading = ref(false);
@@ -161,7 +181,7 @@ const modelOptions = computed(() => {
 
 const parentTypeOptions = computed(() => {
   return props.contentTypes.filter(
-    (type) => form.model_type === type.model_type && form.id !== type.id
+    (type) => form.model_type === type.model_type && form.id !== type.id,
   );
 });
 

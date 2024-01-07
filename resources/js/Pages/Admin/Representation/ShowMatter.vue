@@ -79,9 +79,7 @@ const firstInstitution = computed(() => {
   return props.matter?.institutions?.[0];
 });
 
-const handleMatterSubmit = (form: Record<string, any>) => {
-  console.log(form);
-};
+const handleMatterSubmit = (form: Record<string, any>) => {};
 
 const breadcrumbOptions: BreadcrumbOption[] = [
   {

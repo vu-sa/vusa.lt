@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\Type;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class DutyFactory extends Factory
@@ -29,5 +30,12 @@ class DutyFactory extends Factory
             'institution_id' => Institution::inRandomOrder()->select('id')->first()->id,
             'email' => $this->faker->safeEmail(),
         ];
+    }
+
+    public function withType()
+    {
+        return $this->afterCreating(function ($duty) {
+            $duty->types()->attach(Type::query()->where('model_type', Duty::class)->inRandomOrder()->first());
+        });
     }
 }

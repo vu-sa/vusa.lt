@@ -58,4 +58,5 @@ export const typeTemplate: Pick<
   description: "",
   model_type: "",
   parent_id: null,
+  roles: [],
 };

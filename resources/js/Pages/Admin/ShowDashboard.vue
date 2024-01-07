@@ -169,7 +169,7 @@
           round
           tag="a"
           target="_blank"
-          href="https://atstovai.vusa.lt"
+          href="http://atstovai.vusa.lt"
           ><template #icon
             ><div class="ml-2 mr-1">
               <NIcon :size="10" :component="ExternalLinkSquareAlt"></NIcon></div
@@ -185,7 +185,7 @@
           round
           tag="a"
           target="_blank"
-          href="https://archyvas.vusa.lt"
+          href="http://archyvas.vusa.lt"
           ><template #icon
             ><div class="ml-2 mr-1">
               <NIcon :size="10" :component="ExternalLinkSquareAlt"></NIcon></div

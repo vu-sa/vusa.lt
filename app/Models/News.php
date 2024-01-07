@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\Searchable;
 use Spatie\Feed\Feedable;
@@ -10,7 +11,7 @@ use Spatie\Feed\FeedItem;
 
 class News extends Model implements Feedable
 {
-    use HasFactory, Searchable;
+    use HasFactory, Searchable, SoftDeletes;
 
     protected $table = 'news';
 
@@ -31,10 +32,9 @@ class News extends Model implements Feedable
         return $this->belongsTo(Padalinys::class, 'padalinys_id');
     }
 
-    // Get another language news
-    public function getOtherLanguage()
+    public function other_language_news()
     {
-        return News::find($this->other_lang_id);
+        return $this->hasOne(News::class, 'id', 'other_lang_id');
     }
 
     public function tags()
@@ -44,12 +44,15 @@ class News extends Model implements Feedable
 
     public function toFeedItem(): FeedItem
     {
+        // add image to short
+        $short = '<img src="'.config('app.url').'/uploads\/'.$this->image.'" alt="'.$this->title.'" style="max-width: 100%; height: auto; object-position: cover; margin-bottom: 2rem">'.$this->short;
+
         return FeedItem::create()
             ->id($this->id)
             ->title($this->title)
-            ->summary($this->short)
+            ->summary($short)
             ->updated(Carbon::parse($this->publish_time))
-            ->image($this->image) // TODO: fix, as this doesn't show an image
+            // image with hostname
             ->link('naujiena/'.$this->permalink)
             ->authorName($this->padalinys->shortname);
     }

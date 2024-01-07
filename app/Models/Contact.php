@@ -12,7 +12,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Contact extends Model
 {
-    use HasFactory, HasUlids, HasComments, LogsActivity, SoftDeletes;
+    use HasComments, HasFactory, HasUlids, LogsActivity, SoftDeletes;
 
     public $fillable = [
         'name',

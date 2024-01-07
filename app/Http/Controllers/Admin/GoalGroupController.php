@@ -108,4 +108,18 @@ class GoalGroupController extends LaravelResourceController
 
         return redirect()->route('goalGroups.index');
     }
+
+    /**
+     * Restore the specified resource from storage.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function restore(GoalGroup $goalGroup)
+    {
+        $this->authorize('restore', [GoalGroup::class, $goalGroup, $this->authorizer]);
+
+        $goalGroup->restore();
+
+        return back()->with('success', 'Tikslo grupė atkurta!');
+    }
 }

@@ -1,25 +1,23 @@
 <template>
   <!-- <PublicLayout title="Programos „Sąžiningai“ užregistruoti egzaminai"> -->
   <Head title="Programos „Sąžiningai“ užregistruoti egzaminai"></Head>
-  <FadeTransition appear>
-    <article class="ml-[5vw] grid grid-cols-3 gap-y-4 pt-8 last:pb-2">
-      <div class="col-span-3 col-start-1 pr-8">
-        <h1>Programos „Sąžiningai“ užregistruoti egzaminai</h1>
-        <p class="my-6 text-gray-800 dark:text-zinc-100">
-          Registruotis reikia į kiekvieną srautą atskirai.
-        </p>
-        <NCard class="subtle-gray-gradient w-full rounded-md p-0">
-          <NDataTable
-            size="small"
-            :scroll-x="1200"
-            :data="props.saziningaiExamFlows"
-            :columns="columns"
-          >
-          </NDataTable>
-        </NCard>
-      </div>
-    </article>
-  </FadeTransition>
+  <article class="grid grid-cols-3 gap-y-4 pt-8 last:pb-2">
+    <div class="col-span-3 col-start-1 pr-8">
+      <h1>Programos „Sąžiningai“ užregistruoti egzaminai</h1>
+      <p class="my-6 text-gray-800 dark:text-zinc-100">
+        Registruotis reikia į kiekvieną srautą atskirai.
+      </p>
+      <NCard class="w-full rounded-md p-0">
+        <NDataTable
+          size="small"
+          :scroll-x="1200"
+          :data="props.saziningaiExamFlows"
+          :columns="columns"
+        >
+        </NDataTable>
+      </NCard>
+    </div>
+  </article>
   <!-- </PublicLayout> -->
   <NModal v-model:show="showModal">
     <NCard
@@ -213,7 +211,7 @@ const createColumns = () => {
                 ? "default"
                 : "warning",
           },
-          { default: () => "Registruotis" }
+          { default: () => "Registruotis" },
         );
       },
     },
@@ -265,7 +263,7 @@ const createColumns = () => {
                 ? "text-green-700"
                 : "text-red-700",
           },
-          `${row.observers_registered} / ${row.exam.students_need}`
+          `${row.observers_registered} / ${row.exam.students_need}`,
         );
       },
     },
@@ -293,13 +291,13 @@ const handleValidateClick = (e: MouseEvent) => {
         {
           onSuccess: () => {
             message.success(
-              `Ačiū už užsiregistravimą stebėti „${formValue.exam_name}“ atsiskaitymą!`
+              `Ačiū už užsiregistravimą stebėti „${formValue.exam_name}“ atsiskaitymą!`,
             );
             showModal.value = false;
             formValue.reset();
           },
           preserveState: true,
-        }
+        },
       );
     } else {
       message.error("Užpildykite visus laukelius.");

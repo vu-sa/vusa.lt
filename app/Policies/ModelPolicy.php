@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\CRUDEnum;
 use App\Enums\PermissionScopeEnum;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
@@ -37,6 +38,17 @@ class ModelPolicy
         return $this->authorizer->forUser($user)->check($this->pluralModelName.'.create.padalinys');
     }
 
+    public function restore(User $user, Model $model, Authorizer $authorizer)
+    {
+        $this->authorizer = $authorizer;
+
+        if ($this->commonChecker($user, $model, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * commonChecker
      * This function checks resource models by a common pattern. First, it checks for wildcard,
@@ -47,11 +59,18 @@ class ModelPolicy
      */
     protected function commonChecker(User $user, Model $model, string $ability, string $relationFromDuties, $hasManyPadalinys = true): bool
     {
+
+        // Check for wildcard (.*), if true, return true
         if ($this->authorizer->forUser($user)->check($this->pluralModelName.'.'.$ability.'.'.PermissionScopeEnum::ALL()->label)) {
             return true;
         }
 
+        // Check for .padalinys
         if ($this->authorizer->forUser($user)->check($this->pluralModelName.'.'.$ability.'.'.PermissionScopeEnum::OWN()->label)) {
+
+            // Since a user can have multiple duties, we need to get all of them.
+            // ModelAuthorizer has already taken care of getting the permissable duties.
+
             $permissableDuties = $this->authorizer->getPermissableDuties();
 
             if ($relationFromDuties === 'duties') {

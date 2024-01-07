@@ -16,7 +16,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Resource extends Model implements HasMedia
 {
-    use HasFactory, HasUlids, HasTranslations, Searchable, SoftDeletes, EagerLoadPivotTrait, InteractsWithMedia;
+    use EagerLoadPivotTrait, HasFactory, HasTranslations, HasUlids, InteractsWithMedia, Searchable, SoftDeletes;
 
     protected $guarded = [];
 

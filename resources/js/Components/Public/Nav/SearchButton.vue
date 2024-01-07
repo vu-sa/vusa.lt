@@ -77,12 +77,7 @@ const showSearch = ref(false);
 const searchInputLoading = ref(false);
 
 const changeShowSearch = () => {
-  console.log("changeShowSearch");
   showSearch.value = !showSearch.value;
-};
-
-const test = () => {
-  console.log("test");
 };
 
 const handleSearchInput = useDebounceFn((input) => {
@@ -114,9 +109,9 @@ const getRoute = (model: Record<string, any>, type: string) => {
   } else if (type === "news") {
     return route("news", {
       lang: model?.lang,
-      subdomain: usePage().props.padalinys?.subdomain ?? "www",
+      news: model?.permalink,
       newsString: "naujiena",
-      permalink: model?.permalink,
+      subdomain: usePage().props.padalinys?.subdomain ?? "www",
     });
   } else if (type === "calendar") {
     return route("calendar.event", {

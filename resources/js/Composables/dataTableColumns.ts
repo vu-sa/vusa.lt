@@ -7,6 +7,7 @@ export const padalinysColumn = (filters, padaliniai) => {
     title() {
       return capitalize($tChoice("entities.padalinys.model", 1));
     },
+    width: 120,
     filter: true,
     filterOptionValues: filters.value["padalinys.id"],
     filterOptions: padaliniai.map((padalinys) => {
@@ -21,7 +22,9 @@ export const padalinysColumn = (filters, padaliniai) => {
 export const langColumn = (filters) => {
   return {
     key: "lang",
-    title: "Kalba",
+    title() {
+      return $t("Kalba");
+    },
     width: 100,
     filter: true,
     filterOptionValues: filters.value["lang"],

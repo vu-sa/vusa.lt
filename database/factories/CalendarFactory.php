@@ -29,7 +29,7 @@ class CalendarFactory extends Factory
             'description' => fake()->paragraph,
             'category' => Arr::random(['red', 'yellow', 'grey']),
             'url' => fake()->url,
-            'padalinys_id' => Padalinys::query()->inRandomOrder()->first()->id,
+            'padalinys_id' => Padalinys::factory(),
         ];
     }
 }

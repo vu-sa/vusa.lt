@@ -1,31 +1,30 @@
 <template>
   <figure
-    class="relative flex h-auto min-h-fit max-w-md flex-col rounded-sm border dark:border-zinc-700 lg:flex-row"
+    class="relative grid min-h-fit max-w-md rounded-md border border-zinc-200 bg-zinc-50 shadow-sm duration-200 hover:shadow-md dark:border-zinc-900 dark:bg-zinc-800"
+    :class="{
+      'xl:grid-cols-[2fr,_3fr]': imageUrl,
+    }"
   >
-    <div
-      v-if="getImageUrl(contact)"
-      class="relative h-48 w-full lg:max-w-[40%]"
-    >
-      <img
-        :src="getImageUrl(contact)"
-        class="h-full w-full object-cover"
-        loading="lazy"
-        style="object-position: 50% 25%"
-        :alt="contact.name"
-      />
-    </div>
+    <img
+      v-if="imageUrl"
+      :src="imageUrl"
+      class="h-44 w-full rounded-t-md object-cover xl:rounded-l-md xl:rounded-tr-none"
+      loading="lazy"
+      style="object-position: 50% 25%"
+      :alt="contact.name"
+    />
     <div class="flex flex-col justify-between gap-4 p-4">
       <div>
         <div class="flex items-center">
           <p
-            class="text-lg font-bold leading-5 tracking-tight text-zinc-800 dark:text-zinc-50"
+            class="text-xl font-bold leading-5 text-zinc-800 dark:text-zinc-50"
           >
             {{ contact.name }}
           </p>
         </div>
         <div
           v-if="duties"
-          class="w-fit text-xs font-light text-zinc-600 dark:text-zinc-200"
+          class="mt-2 w-fit text-xs text-zinc-600 dark:text-zinc-200"
         >
           <template v-for="duty in duties" :key="duty.id">
             <p class="my-1">
@@ -53,22 +52,20 @@
           <a :href="`tel:${contact.phone}`">{{ contact.phone }}</a>
         </p>
         <template v-for="duty in duties" :key="duty.id">
-          <a v-if="duty.email" :href="`mailto:${duty.email}`">
-            <NEllipsis style="max-width: 250px">
+          <NEllipsis style="max-width: 250px">
+            <a v-if="duty.email" :href="`mailto:${duty.email}`">
               <NIcon class="mr-2 align-middle" :component="Mail20Regular" />
               <span class="align-middle">
                 {{ duty.email }}
               </span>
-            </NEllipsis>
-          </a>
-          <a v-else :href="`mailto:${contact.email}`">
-            <NEllipsis style="max-width: 250px">
+            </a>
+            <a v-else :href="`mailto:${contact.email}`">
               <NIcon class="mr-2 align-middle" :component="Mail20Regular" />
               <span class="align-middle">
                 {{ contact.email }}
               </span>
-            </NEllipsis>
-          </a>
+            </a>
+          </NEllipsis>
         </template>
       </div>
     </div>
@@ -78,10 +75,11 @@
 <script setup lang="ts">
 import { Mail20Regular, Phone20Regular } from "@vicons/fluent";
 import { NEllipsis, NIcon } from "naive-ui";
+import { computed } from "vue";
 import { usePage } from "@inertiajs/vue3";
 import InfoPopover from "../Buttons/InfoPopover.vue";
 
-defineProps<{
+const props = defineProps<{
   contact: App.Entities.User;
   duties: App.Entities.Duty[];
 }>();
@@ -117,26 +115,28 @@ const showAdditionalInfo = (duty) => {
 };
 
 // ! TIK KURATORIAMS: nusprendžia, kurią nuotrauką imti, pagal tai, ar url turi "kuratoriai"
-const getImageUrl = (contact: App.Entities.User) => {
+const imageUrl = computed(() => {
   const url = new URL(window.location.href);
-  if (url.pathname.includes("kuratoriai") && contact.duties) {
+  if (url.pathname.includes("kuratoriai") && props.contact.duties) {
     // check all duties for duties name which includes kuratorius
     // iterate object simply because it may not be iterable
-    for (const duty of Object.keys(contact.duties)) {
-      if (contact.duties[duty].name.toLowerCase().includes("kuratorius")) {
+    for (const duty of Object.keys(props.contact.duties)) {
+      if (
+        props.contact.duties?.[duty].name.toLowerCase().includes("kuratorius")
+      ) {
         return (
-          contact.duties[duty].pivot.extra_attributes?.additional_photo ??
-          contact.profile_photo_path
+          props.contact.duties?.[duty].pivot.extra_attributes
+            ?.additional_photo ?? props.contact.profile_photo_path
         );
       }
     }
   }
-  return contact.profile_photo_path ?? "";
-};
+  return props.contact.profile_photo_path ?? "";
+});
 
 const changeDutyNameEndings = (
   contact: App.Entities.User,
-  duty: App.Entities.Duty
+  duty: App.Entities.Duty,
 ) => {
   // check for english locale and just return english
   let locale = usePage().props.app.locale;

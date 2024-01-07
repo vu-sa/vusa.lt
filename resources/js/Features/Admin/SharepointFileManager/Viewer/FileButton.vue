@@ -29,13 +29,13 @@
       >
         <span
           :class="[small ? 'text-xs' : 'text-sm']"
-          class="break-words px-2 line-clamp-2"
+          class="line-clamp-2 break-words px-2"
           >{{ file.name }}</span
         >
       </div>
     </button>
     <span
-      class="m-2 mx-auto w-4/5 text-center text-xs text-zinc-400 line-clamp-1"
+      class="m-2 mx-auto line-clamp-1 w-4/5 text-center text-xs text-zinc-400"
       >{{ file.listItem?.fields?.properties?.Type }}</span
     >
   </div>
@@ -55,14 +55,12 @@ const props = defineProps<{
   showThumbnail: boolean;
 }>();
 
-console.log(props.file.name);
-
 const gradientClasses = computed(() => {
   if (
     props.file.listItem?.fields?.properties?.Type ===
     "Veiklą reglamentuojantys dokumentai"
   ) {
-    return ["from-zinc-200", "subtle-gray-gradient", "bg-gradient-to-b"];
+    return ["from-zinc-200", "bg-gradient-to-b"];
   }
 
   if (props.file.listItem?.fields?.properties?.Type === "Metodinė medžiaga") {
@@ -75,11 +73,7 @@ const gradientClasses = computed(() => {
     ];
   }
 
-  return [
-    "subtle-gray-gradient",
-    "dark:from-zinc-800/90",
-    "dark:to-zinc-700/90",
-  ];
+  return ["dark:from-zinc-800/90", "dark:to-zinc-700/90"];
 });
 
 const fileTypeIcon = computed(() => {
@@ -108,15 +102,11 @@ const fileTypeIcon = computed(() => {
 
 const handleFileSelect = inject<(file: DriveItem) => void>(
   "handleFileSelect",
-  () => {
-    console.log("handleFileSelect not injected");
-  }
+  () => {},
 );
 
 const handleFileDblClick = inject<(file: DriveItem) => void>(
   "handleFileDblClick",
-  () => {
-    console.log("handleFileDblClick not injected");
-  }
+  () => {},
 );
 </script>

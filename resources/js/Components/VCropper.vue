@@ -143,8 +143,6 @@ const cropImage = async () => {
       return resultCanvas.toDataURL("image/jpg");
     })
     .catch((err) => {
-      console.log(err);
-
       return undefined;
     });
 

@@ -1,7 +1,9 @@
 <template>
   <IndexSearchInput
     payload-name="text"
+    :has-soft-deletes="hasSoftDeletes"
     @complete-search="handleCompletedSearch"
+    @update:other="handleShowOther"
     @sweep="sweepSearch"
   />
   <NDataTable
@@ -23,7 +25,11 @@
 
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
-import { ArrowForward20Filled, Edit20Filled } from "@vicons/fluent";
+import {
+  ArrowCounterclockwise28Regular,
+  ArrowForward20Filled,
+  Edit20Filled,
+} from "@vicons/fluent";
 import {
   type DataTableFilterState,
   type DataTableSortState,
@@ -52,11 +58,21 @@ const props = defineProps<{
 }>();
 
 const loading = ref(false);
+const otherParams = ref<Record<string, boolean | undefined>>({});
+
+const hasSoftDeletes = computed(() => {
+  if (props.paginatedModels.data.length === 0) {
+    return true;
+  }
+
+  return Object.keys(props.paginatedModels.data[0]).includes("deleted_at");
+});
 
 const sorters = inject<Ref<Record<string, SortOrder>> | undefined>(
   "sorters",
   undefined,
 );
+
 const filters = inject<Ref<Record<string, any>> | undefined>(
   "filters",
   undefined,
@@ -113,7 +129,12 @@ const handleChange = (page: number) => {
 
   loading.value = true;
   router.reload({
-    data: { page: page, filters: encodedFilters, sorters: encodedSorters },
+    data: {
+      page: page,
+      filters: encodedFilters,
+      sorters: encodedSorters,
+      ...otherParams.value,
+    },
     only: [props.modelName],
     onSuccess: () => {
       pagination.value.page = page;
@@ -125,6 +146,19 @@ const handleChange = (page: number) => {
 };
 
 const handleCompletedSearch = () => handleChange(1);
+
+const handleShowOther = (event: string[]) => {
+  // make each otherParams property to false
+  Object.keys(otherParams.value).forEach((key) => {
+    otherParams.value[key] = false;
+  });
+
+  event.forEach((key: string) => {
+    otherParams.value[key] = true;
+  });
+
+  handleChange(1);
+};
 
 const sweepSearch = () => {
   if (filters !== undefined) {
@@ -139,8 +173,18 @@ const sweepSearch = () => {
 
   handleCheckedRowKeysChange([]);
 
+  Object.keys(otherParams.value).forEach((key) => {
+    otherParams.value[key] = undefined;
+  });
+
   router.reload({
-    data: { page: 1, filters: undefined, sorters: undefined, text: undefined },
+    data: {
+      page: 1,
+      filters: undefined,
+      sorters: undefined,
+      text: undefined,
+      ...otherParams.value,
+    },
     only: [props.modelName],
     onSuccess: () => {
       pagination.value.page = 1;
@@ -163,7 +207,7 @@ const columnsWithActions = computed(() => {
       key: "actions",
       width: 175,
       render(row) {
-        return (
+        return [undefined, null].includes(row.deleted_at) ? (
           <NButtonGroup size="small">
             {props.showRoute ? (
               <Link href={route(props.showRoute, row.id)}>
@@ -184,6 +228,22 @@ const columnsWithActions = computed(() => {
             {props.destroyRoute ? (
               <DeleteModelButton form={row} modelRoute={props.destroyRoute} />
             ) : null}
+          </NButtonGroup>
+        ) : (
+          <NButtonGroup size="small">
+            {/* restore */}
+            <NButton
+              quaternary
+              onClick={() =>
+                router.patch(route(`${props.modelName}.restore`, row.id))
+              }
+            >
+              {{
+                icon: () => (
+                  <NIcon component={ArrowCounterclockwise28Regular} />
+                ),
+              }}
+            </NButton>
           </NButtonGroup>
         );
       },

@@ -12,12 +12,12 @@
         :main-props="{
           lang: news.lang,
           newsString: 'naujiena',
-          permalink: news.permalink,
+          news: news.permalink,
         }"
         :padalinys-props="{
           newsString: 'naujiena',
           lang: news.lang,
-          permalink: news.permalink,
+          news: news.permalink,
           subdomain: news.padalinys?.alias,
         }"
         :padalinys-shortname="news.padalinys?.shortname"

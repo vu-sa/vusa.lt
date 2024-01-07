@@ -3,6 +3,7 @@
     <UpsertModelLayout :errors="$page.props.errors" :model="type">
       <TypeForm
         :content-types="contentTypes"
+        :roles="roles"
         :type="typeTemplate"
         @submit:form="handleSubmit"
       />
@@ -18,6 +19,7 @@ import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 defineProps<{
   contentTypes: Record<string, any>[];
+  roles?: App.Entities.Role[];
 }>();
 
 const handleSubmit = (form: any) => {

@@ -7,7 +7,7 @@
     :columns="columns"
     :paginated-models="reservations"
   >
-    <NCard class="subtle-gray-gradient mb-4">
+    <NCard class="mb-4">
       <template #header>{{ $t("Reservations with unit resources") }}</template>
       <NDataTable
         :columns="columnsWithActions"

@@ -1,6 +1,6 @@
 <template>
   <PageContent :title="`${$page.props.auth?.user?.name}`">
-    <NCard class="subtle-gray-gradient">
+    <NCard>
       <!-- <p>{{ salutation }}</p> -->
       <div class="mb-4">
         <p>{{ $t("Tavo rolės") }}:</p>

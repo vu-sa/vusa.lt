@@ -14,7 +14,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Type extends Model
 {
-    use HasFactory, HasContentRelationships, HasSharepointFiles, LogsActivity, SoftDeletes;
+    use HasContentRelationships, HasFactory, HasSharepointFiles, LogsActivity, SoftDeletes;
 
     protected $guarded = [];
 
@@ -41,6 +41,11 @@ class Type extends Model
     public function doings()
     {
         return $this->morphedByMany(Doing::class, 'typeable');
+    }
+
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class)->using(RoleType::class);
     }
 
     public function descendants()

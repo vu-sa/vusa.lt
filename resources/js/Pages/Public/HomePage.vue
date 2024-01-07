@@ -3,7 +3,9 @@
     <title>Pagrindinis</title>
   </Head>
 
-  <SummerCamps v-if="$page.props.app.locale === 'lt'" />
+  <div v-if="news.length > 0" class="mx-auto mt-2">
+    <NewsElement :news="news" />
+  </div>
 
   <IndividualStudies />
 
@@ -13,19 +15,9 @@
     :upcoming4-events="upcoming4Events"
   />
 
-  <div v-if="mainPage.length > 0" class="mx-auto mt-2 max-w-7xl">
-    <MainLinks :main-page="mainPage" />
-  </div>
-
-  <div v-if="news.length > 0" class="mx-auto mt-2 max-w-7xl">
-    <NewsElement :news="news" />
-  </div>
+  <SummerCamps v-if="$page.props.app.locale === 'lt'" />
 
   <YearReport2022 />
-
-  <div v-if="$page.props.banners" class="mx-auto mt-8 max-w-7xl">
-    <BannerCarousel :banners="$page.props.banners" />
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -34,24 +26,13 @@ import { defineAsyncComponent } from "vue";
 
 defineProps<{
   news: Array<App.Entities.News>;
-  mainPage: Array<App.Entities.MainPage>;
   calendar: Array<App.Entities.Calendar>;
   upcoming4Events: Array<App.Entities.Calendar>;
 }>();
 
-const MainLinks = defineAsyncComponent(
-  // eslint-disable-next-line no-secrets/no-secrets
-  () => import("@/Components/Public/FullWidth/MainLinks.vue"),
-);
-
 const EventCalendar = defineAsyncComponent(
   // eslint-disable-next-line no-secrets/no-secrets
   () => import("@/Components/Public/FullWidth/EventCalendarElement.vue"),
-);
-
-const BannerCarousel = defineAsyncComponent(
-  // eslint-disable-next-line no-secrets/no-secrets
-  () => import("@/Components/Public/FullWidth/BannerCarousel.vue"),
 );
 
 const NewsElement = defineAsyncComponent(

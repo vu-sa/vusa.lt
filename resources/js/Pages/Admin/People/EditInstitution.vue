@@ -8,7 +8,7 @@
       <PreviewModelButton
         public-route="contacts.alias"
         :route-props="{
-          alias: institution.alias,
+          institution: institution.alias,
           lang: $page.props.app.locale,
           subdomain: institution.padalinys?.alias ?? 'www',
         }"

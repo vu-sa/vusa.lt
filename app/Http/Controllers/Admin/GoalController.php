@@ -6,7 +6,6 @@ use App\Http\Controllers\LaravelResourceController;
 use App\Models\Goal;
 use App\Services\ModelIndexer;
 use Illuminate\Http\Request;
-use Illuminate\Database\Eloquent\Builder;
 use Inertia\Inertia;
 
 class GoalController extends LaravelResourceController
@@ -28,7 +27,7 @@ class GoalController extends LaravelResourceController
             ->builder->paginate(20);
 
         return Inertia::render('Admin/Representation/IndexGoal', [
-            'goals' => $goals
+            'goals' => $goals,
         ]);
     }
 
@@ -127,5 +126,19 @@ class GoalController extends LaravelResourceController
         $goal->delete();
 
         return redirect()->route('dashboard')->with('success', 'Klausimo grupė ištrinta.');
+    }
+
+    /**
+     * Restore the specified resource from storage.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function restore(Goal $goal)
+    {
+        $this->authorize('restore', [Goal::class, $goal, $this->authorizer]);
+
+        $goal->restore();
+
+        return back()->with('success', 'Tikslas atkurtas!');
     }
 }

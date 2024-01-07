@@ -13,7 +13,7 @@ trait HasTasks
         return $this->morphMany(Task::class, 'taskable');
     }
 
-    public function storeTask(string $name, Collection $users, string $due_date = null)
+    public function storeTask(string $name, Collection $users, ?string $due_date = null)
     {
         $task = TaskService::storeTask($name, $this, $users, $due_date);
 

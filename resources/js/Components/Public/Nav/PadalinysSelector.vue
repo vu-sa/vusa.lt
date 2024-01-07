@@ -12,10 +12,8 @@
         :size="size"
         style="border-radius: 0.5rem"
       >
-        {{ $t(padalinys) }}
-        <NIcon class="ml-1" size="18">
-          <ChevronDown20Filled />
-        </NIcon>
+        {{ padalinys }}
+        <NIcon class="ml-1" size="18" :component="ChevronDown20Filled" />
       </NButton>
     </NDropdown>
   </NScrollbar>
@@ -40,19 +38,29 @@ defineEmits<{
 }>();
 
 const props = defineProps<{
-  allPadaliniai: App.Entities.Padalinys[];
-  padalinys: string;
   size: "tiny" | "small";
 }>();
 
 const options_padaliniai = computed<DropdownOption[]>(() => {
-  return props.allPadaliniai.map((padalinys) => ({
-    label:
-      props.size.value === "tiny"
-        ? padalinys.alias
-        : $t(padalinys.fullname.split("atstovybė ")[1]),
-    key: padalinys.alias,
-  }));
+  return usePage()
+    .props.padaliniai.filter(
+      (padalinys) => padalinys.type === "padalinys" && padalinys.id <= 17
+    )
+    .map((padalinys) => ({
+      label:
+        props.size.toLowerCase() === "tiny"
+          ? $t(padalinys.shortname.split(" ")[2])
+          : $t(padalinys.fullname.split("atstovybė ")[1]),
+      key: padalinys.alias,
+    }));
+});
+
+const padalinys = computed(() => {
+  return $t(
+    usePage().props.padalinys?.alias !== "vusa"
+      ? usePage().props.padalinys?.shortname.split(" ").pop() ?? "Padaliniai"
+      : "Padaliniai",
+  );
 });
 
 const isDisabled = computed(() => {

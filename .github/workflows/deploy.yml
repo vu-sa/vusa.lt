@@ -1,0 +1,44 @@
+name: Deploy To Production
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: [PHPUnit Tests]
+    branches:
+      - main
+    types:
+      - completed
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: Production
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: install ssh keys
+        # Check this thread to understand why it's needed:
+        # https://stackoverflow.com/a/70447517
+        run: |
+          install -m 600 -D /dev/null ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
+      - name: install composer deps
+        run: |
+          composer install -q --no-ansi --no-interaction --no-scripts --no-dev
+          tar -czf vendor.tar.gz vendor
+      - name: install and build npm deps
+        run: |
+          npm ci
+          # TODO: Possible to maybe use this: https://import-meta-env.org/guide/getting-started/introduction.html#guide
+          POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }} ARCHYVAS_PASSWORD=${{ secrets.ARCHYVAS_PASSWORD }} ATSTOVAI_PASSWORD=${{ ATSTOVAI_PASSWORD }} npm run build 
+          tar -czf build.tar.gz public/build
+      - name: upload and run on server
+        # Unpack
+        run: |
+          scp build.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/build.tar.gz
+          scp vendor.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/vendor.tar.gz
+          ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && git pull && rm -rf public/build && rm -rf vendor && tar -xzf build.tar.gz && tar -xzf vendor.tar.gz && rm build.tar.gz && rm vendor.tar.gz"       
+      - name: after upload
+        run: |
+          ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && /opt/php81/bin/php /usr/local/bin/composer dump-autoload && /opt/php81/bin/php artisan optimize"
+          rm -rf ~/.ssh

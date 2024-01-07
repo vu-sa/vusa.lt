@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\RoleType;
+use App\Models\Typeable;
+use App\Observers\RoleTypeObserver;
+use App\Observers\TypeableObserver;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -45,6 +49,7 @@ class EventServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        RoleType::observe(RoleTypeObserver::class);
+        Typeable::observe(TypeableObserver::class);
     }
 }

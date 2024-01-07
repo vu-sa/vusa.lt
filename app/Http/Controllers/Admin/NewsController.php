@@ -20,10 +20,10 @@ class NewsController extends LaravelResourceController
     {
         $this->authorize('viewAny', [News::class, $this->authorizer]);
 
-        $indexer = new ModelIndexer(new News(), request(), $this->authorizer);
+        $indexer = new ModelIndexer(new News(), $request, $this->authorizer);
 
         $news = $indexer
-            ->setEloquentQuery()
+            ->setEloquentQuery([fn ($query) => $query->with('other_language_news:id,title,lang')])
             ->filterAllColumns()
             ->sortAllColumns(['publish_time' => 'descend'])
             ->builder->paginate(20);
@@ -110,7 +110,7 @@ class NewsController extends LaravelResourceController
                 'permalink' => $news->permalink,
                 'text' => $news->text,
                 'lang' => $news->lang,
-                'other_lang_id' => $news->getOtherLanguage()?->id,
+                'other_lang_id' => $news->other_language_news?->id,
                 'category' => $news->category,
                 'padalinys' => $news->padalinys,
                 'draft' => $news->draft,
@@ -165,21 +165,17 @@ class NewsController extends LaravelResourceController
         return redirect()->route('news.index')->with('info', 'Naujiena sėkmingai ištrinta!');
     }
 
-    // TODO: ....
-    public function searchForNews(Request $request)
+    /**
+     * Restore the specified resource from storage.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function restore(News $news)
     {
-        $data = $request->collect()['data'];
+        $this->authorize('restore', [News::class, $news, $this->authorizer]);
 
-        $news = News::where('title', 'like', "%{$data['title']}%")->where('lang', $data['lang'])->get();
+        $news->restore();
 
-        $news = $news->map(function ($news) {
-            return [
-                'id' => $news->id,
-                'title' => $news->title,
-                'padalinys' => $news->padalinys,
-            ];
-        });
-
-        return back()->with('search_news', $news);
+        return back()->with('success', 'Naujiena sėkmingai atkurta!');
     }
 }

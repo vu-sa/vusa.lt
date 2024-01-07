@@ -6,94 +6,118 @@ use App\Http\Controllers\PublicController;
 use App\Models\Institution;
 use App\Models\Padalinys;
 use App\Models\Type;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class ContactController extends PublicController
 {
-    /**
-     * Right now, contactsPage can return user to two different pages:
-     * 1. Contacts page for specific institution
-     * 2. Contacts page for student representatives
-     *
-     * @param  array  $rest
-     * @return \Inertia\Response
-     */
-    public function contactsPage(Request $request, ...$rest)
+    public function contacts()
     {
-        // get last element of array, which is slug for this route
-        $slug = end($rest);
+        $this->getPadalinysLinks();
+        $this->shareOtherLangURL('contacts', $this->subdomain);
 
-        // check for the special page of studentu-atstovai (because they are in many institutions)
-        // TODO: check for 'current_duties'
+        $padaliniai = json_decode(base64_decode(request()->input('selectedPadaliniai'))) ??
+            collect([Padalinys::query()->where('type', 'pagrindinis')->first()->id, $this->padalinys->id])->unique();
 
-        if ($slug === 'studentu-atstovai') {
-            $type = Type::query()->where('slug', '=', 'studentu-atstovu-organas')->first();
-            $descendants = $type->getDescendantsAndSelf();
+        $institutions = Institution::query()->with('padalinys', 'types:id,title,model_type,slug')
+            ->whereHas('padalinys', fn ($query) => $query->whereIn('id', $padaliniai)->select(['id', 'shortname', 'alias'])
+            )->withCount('duties')->orderBy('name')->get()->makeHidden(['parent_id', 'created_at', 'updated_at', 'deleted_at', 'extra_attributes']);
 
-            $descendants->load(['institutions' => function ($query) {
-                $query->with('duties.current_users')->with('padalinys:id,alias')->where('padalinys_id', '=', $this->padalinys->id)->orderBy('name')->get(['id', 'name', 'alias', 'description']);
-            }]);
+        return Inertia::render('Public/Contacts/ContactsSearch', [
+            'institutions' => $institutions->map(function ($institution) {
+                return [
+                    ...$institution->toArray(),
+                    // shorten description and add ellipsis
+                    //'description' => Str::limit(strip_tags($institution->description), 100, '...'),
+                    //  TODO: better solution for displaying description or remove completely
+                    'description' => '',
+                ];
+            }),
+            'selectedPadaliniai' => $padaliniai,
+        ])->withViewData([
+            'title' => 'Kontaktų paieška',
+            'description' => 'VU SA kontaktai',
+        ]);
+    }
 
-            // remove descendants without institutions
-            $descendants = $descendants->filter(function ($descendant) {
-                return $descendant->institutions->count() > 0;
-            })->values();
+    public function institutionContacts($subdomain, $lang, Institution $institution)
+    {
+        $this->getPadalinysLinks();
+        Inertia::share('otherLangURL', route('contacts.institution', ['subdomain' => $this->subdomain, 'lang' => $this->getOtherLang(), 'institution' => $institution->id]));
 
-            return Inertia::render('Public/Contacts/ShowStudentReps', [
-                'types' => $descendants,
-            ])->withViewData([
-                'title' => 'Studentų atstovai',
-                'description' => "{$this->padalinys->shortname} studentų atstovai",
-            ]);
-        }
+        $contacts = $institution->load('duties.current_users.current_duties')->duties->sortBy(function ($duty) {
+            return $duty->order;
+        })->pluck('current_users')->flatten()->unique('id');
 
-        // check for special cases, that are in one institution always
+        // make eloquent collection from array
+        $contacts = new Collection($contacts);
 
-        if (in_array($slug, [null, 'koordinatoriai', 'kuratoriai'])) {
-            $types = Type::query()->where('slug', '=', $slug)->get()->first()->getDescendantsAndSelf();
+        return $this->showInstitution($institution, $contacts, $institution->name.' | Kontaktai');
+    }
 
-            if ($this->padalinys->type === 'pagrindinis') {
-                $institution = Institution::where('alias', '=', 'centrinis-biuras')->first();
-            } else {
-                $institution = Institution::where('alias', '=', $this->padalinys->alias)->first();
-            }
+    public function institutionDutyTypeContacts($subdomain, $lang, Type $type)
+    {
+        $this->getPadalinysLinks();
+        Inertia::share('otherLangURL', route('contacts.dutyType', [
+            'subdomain' => $this->subdomain,
+            'lang' => $this->getOtherLang(), 'type' => $type->slug]));
 
-            $contacts = User::withWhereHas('current_duties', function ($query) use ($types, $institution) {
-                $query->where('institution_id', '=', $institution->id)
-                    ->whereHas('types', fn (Builder $query) => $query->whereIn('id', $types->pluck('id'))
-                    );
-            })->get();
+        $types = $type->getDescendantsAndSelf();
 
-            // if not found, try to find institution
+        if ($this->padalinys->type === 'pagrindinis') {
+            $institution = Institution::where('alias', '=', 'centrinis-biuras')->first();
         } else {
-            $institution = Institution::where('alias', '=', $slug)->first();
-
-            if (is_null($institution)) {
-                abort(404);
-            }
-
-            // TODO: the same as above
-
-            $contacts = User::withWhereHas('duties', function ($query) use ($slug) {
-                $query->orderBy('order')->whereHas('institution', function ($query) use ($slug) {
-                    $query->where('alias', '=', $slug);
-                })->whereHas('dutiables', function (Builder $query) {
-                    $query->where('end_date', '>=', now())->where('end_date', '=', null, 'or');
-                });
-            })
-                ->get();
+            $institution = Institution::where('alias', '=', $this->padalinys->alias)->firstOrFail();
         }
 
-        // sort users by their duty smallest order
-        $contacts = $contacts->sortBy(function ($contact) {
-            return $contact->duties->min('order');
+        // load duties whereHas types
+        $contacts = $institution->load(['duties' => function ($query) use ($types) {
+            $query->whereHas('types', fn (Builder $query) => $query->whereIn('id', $types->pluck('id')))->with('current_users.current_duties');
+        }])->duties->sortBy(function ($duty) {
+            return $duty->order;
+        })->pluck('current_users')->flatten()->unique('id');
+
+        // make eloquent collection from array
+        $contacts = new Collection($contacts);
+
+        return $this->showInstitution($institution, $contacts, $institution->name.' | '.ucfirst($type->slug));
+    }
+
+    public function studentRepresentatives()
+    {
+        $this->getPadalinysLinks();
+        $this->shareOtherLangURL('contacts.studentRepresentatives', $this->subdomain);
+
+        $type = Type::query()->where('slug', '=', 'studentu-atstovu-organas')->first();
+        $descendants = $type->getDescendantsAndSelf();
+
+        $descendants->load(['institutions' => function ($query) {
+            $query
+                ->with('duties.current_users:id,name,email,phone,profile_photo_path')
+                ->with('padalinys:id,alias')
+                ->where('padalinys_id', '=', $this->padalinys->id)
+                ->orderBy('name')
+                ->get(['id', 'name', 'alias', 'description']);
+        }]);
+
+        // remove descendants without institutions
+        $descendants = $descendants->filter(function ($descendant) {
+            return $descendant->institutions->count() > 0;
         })->values();
 
-        return Inertia::render('Public/Contacts/ContactsShow', [
+        return Inertia::render('Public/Contacts/ShowStudentReps', [
+            'types' => $descendants,
+        ])->withViewData([
+            'title' => 'Studentų atstovai | '.$this->padalinys->shortname,
+            'description' => "{$this->padalinys->shortname} studentų atstovai",
+        ]);
+    }
+
+    private function showInstitution(Institution $institution, Collection $contacts, string $title)
+    {
+        return Inertia::render('Public/Contacts/ContactInstitutionOrType', [
             'institution' => $institution,
             'contacts' => $contacts->map(function ($contact) use ($institution) {
                 return [
@@ -101,23 +125,13 @@ class ContactController extends PublicController
                     'name' => $contact->name,
                     'email' => $contact->email,
                     'phone' => $contact->phone,
-                    'duties' => $contact->duties->where('institution_id', '=', $institution->id),
+                    'duties' => $contact->current_duties->where('institution_id', '=', $institution->id)->values(),
                     'profile_photo_path' => $contact->profile_photo_path,
-                    // 'profile_photo_path' => function () use ($contact) {
-                    // 	if (substr($contact->profile_photo_path, 0, 4) == 'http') {
-                    // 		return $contact->profile_photo_path;
-                    // 	} else if (is_null($contact->profile_photo_path)) {
-                    // 		return null;
-                    // 	} else {
-                    // 		return Storage::get(str_replace('uploads', 'public', $contact->profile_photo_path)) == null ? null : $contact->profile_photo_path;
-                    // 	}
-                    // },
                 ];
             }),
         ])->withViewData([
-            'title' => $this->padalinys->name.' kontaktai',
-            // description html to plain text
-            'description' => strip_tags($this->padalinys->description),
+            'title' => $title,
+            'description' => strip_tags($institution->description),
         ]);
     }
 
@@ -127,54 +141,34 @@ class ContactController extends PublicController
      * @param  array  $rest
      * @return \Inertia\Response
      */
-    public function contactsCategory(Request $request, ...$rest)
+    public function institutionCategory($subdomain, $lang, Type $type)
     {
-        $slug = end($rest);
+        $this->getPadalinysLinks();
 
-        // Special case for 'padaliniai' alias, since it's a special category, fetched from 'padaliniai' table
+        Inertia::share('otherLangURL', route('contacts.category', [
+            'subdomain' => $this->subdomain,
+            'lang' => $this->getOtherLang(), 'type' => $type->slug]));
 
-        if ($slug === 'padaliniai') {
-            $padaliniai = Padalinys::with('institutions')
-                ->where('type', '=', 'padalinys')
-                ->get();
-
-            // pluck padalinys alias and get institutions wherein
-            $institutions = Institution::whereIn('alias', $padaliniai->pluck('alias'))->orderBy('name')->get();
-        } else {
-            $institutions = Institution::whereHas('duties')
-                // TODO: Čia reikia aiškesnės logikos
-                ->when(
-                    $slug,
-                    // If /kontaktai/{} or /kontaktai/kategorija/{}
-                    function ($query) {
-                        return $query->where([['padalinys_id', '=', $this->padalinys->id], ['alias', 'not like', '%studentu-atstovai%']]);
-                    },
-                    // If there's an alias in the url
-                    function ($query) {
-                        return $query->where('alias', '=', request()->alias);
-                    }
-                )->get();
-        }
-
-        // check if institution array length is 1, then just return that one institution contacts.
-        if ($institutions->count() == 1) {
-            // redirect to that one institution page
-            return redirect('kontaktai/'.$institutions->first()->alias);
-        }
+        $institutions = $type->load(['institutions' => function ($query) {
+            $query->orderBy('name')->with(['padalinys' => function ($query) {
+                $query->where('type', 'padalinys');
+            }]);
+        }])->institutions;
 
         return Inertia::render('Public/Contacts/ShowContactCategory', [
-            'institutions' => $institutions,
+            'institutions' => $institutions->map(function ($institution) {
+                return [
+                    ...$institution->toArray(),
+                    // shorten description and add ellipsis
+                    // 'description' => Str::limit(strip_tags($institution->description), 100, '...'),
+                    //  TODO: better solution for displaying description or remove completely
+                    'description' => '',
+                ];
+            }),
+            'type' => $type->unsetRelation('institutions'),
         ])->withViewData([
-            'title' => 'Kontaktai',
-            'description' => 'VU SA kontaktai',
+            'title' => 'Kontaktai: '.$type->title,
+            'description' => 'VU SA kontaktai: '.$type->title,
         ]);
-    }
-
-    public function contacts()
-    {
-        // get padalinys alias
-        $alias = $this->padalinys->alias;
-
-        return redirect()->route('contacts.alias', ['alias' => $alias, 'subdomain' => $alias === 'vusa' ? 'www' : $alias]);
     }
 }

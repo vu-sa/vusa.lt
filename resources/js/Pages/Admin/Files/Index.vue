@@ -1,7 +1,7 @@
 <template>
   <PageContent title="Failų tvarkyklė">
     <div>
-      <NCard id="folders" class="subtle-gray-gradient">
+      <NCard id="folders">
         <h2 class="text-2xl font-bold">
           Aplankai ({{ showedDirectories.length }})
         </h2>
@@ -34,7 +34,7 @@
       <NCard
         v-if="showedFiles.length > 0"
         id="files"
-        class="subtle-gray-gradient max-h-full transition-all"
+        class="max-h-full transition-all"
       >
         <h2 class="text-2xl font-bold">Failai ({{ showedFiles.length }})</h2>
         <transition-group
@@ -155,7 +155,7 @@ const uploadFile = (e) => {
       onSuccess: () => {
         // message.success("Failas įkeltas");
       },
-    }
+    },
   );
 };
 </script>

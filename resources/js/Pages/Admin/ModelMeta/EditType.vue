@@ -5,6 +5,7 @@
         :content-types="contentTypes"
         :all-models-from-model-type="allModelsFromModelType"
         :type="contentType"
+        :roles="roles"
         :model-type="modelType"
         :sharepoint-path="sharepointPath"
         @submit:form="handleSubmit"
@@ -24,6 +25,7 @@ const props = defineProps<{
   sharepointPath: string;
   allModelsFromModelType?: Record<string, any>[];
   modelType?: string;
+  roles?: App.Entities.Role[];
 }>();
 
 const handleSubmit = (form: any) => {

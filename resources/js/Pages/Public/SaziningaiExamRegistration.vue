@@ -2,24 +2,23 @@
   <!-- <PublicLayout title="Sąžiningai atsiskaitymo registravimo forma"> -->
   <Head title="Sąžiningai atsiskaitymo registravimo forma"></Head>
   <FadeTransition appear>
-    <article class="grid grid-cols-3 gap-y-4 px-8 pt-8 last:pb-2 lg:px-32">
+    <article class="grid grid-cols-3 gap-y-4 pt-8 last:pb-2">
       <h1 class="col-span-3 col-start-1">
         Egzamino ar kolokviumo stebėjimo registracijos forma
       </h1>
       <div class="prose col-span-3 col-start-1 dark:prose-invert">
-        <!-- <strong class="text-red-600">
-            Registracijos forma šiuo metu yra uždaryta, greitu metu ją vėl atidarysime.
-            Prašome kreiptis į
-            <a href="mailto:saziningai@vusa.lt">saziningai@vusa.lt</a> dėl stebėjimo
-            registracijos.
-          </strong> -->
-        <p>
+        <strong class="text-xl text-red-600">
+          Atsiprašome, bet kol kas atsiskaitymų stebėjimų VU SA nevykdo,
+          pasikeitus situacijai informuosime universiteto bendruomenę. Ačiū už
+          supratingumą.
+        </strong>
+        <!-- <p>
           Prašome registruoti atsiskaitymus, kurie vyks nuo
           <strong>{{ date3DaysToFutureLT }}</strong> (bent 3 darbo dienos iki jo
           pradžios), kad būtų laiku surasti stebėtojai. Kitu atveju, kreipkitės
           į <a href="mailto:saziningai@vusa.lt">saziningai@vusa.lt</a> 🎓
-        </p>
-        <NForm
+        </p> -->
+        <!-- <NForm
           ref="formRef"
           :label-width="80"
           :model="formValue"
@@ -194,7 +193,7 @@
           <NButton type="primary" @click="handleValidateClick">
             Pateikti
           </NButton>
-        </NForm>
+        </NForm> -->
       </div>
     </article>
   </FadeTransition>
@@ -223,7 +222,7 @@ import { computed, defineAsyncComponent, ref } from "vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 const NDatePicker = defineAsyncComponent(() =>
-  import("naive-ui/es/date-picker").then((module) => module.NDatePicker),
+  import("naive-ui/es/date-picker").then((module) => module.NDatePicker)
 );
 
 const props = defineProps<{
@@ -334,7 +333,7 @@ const rules: FormRules = {
     // check if any item in array is empty
     validator(
       rule: unknown,
-      value: Array<Pick<App.Entities.SaziningaiExamFlow, "start_time">>,
+      value: Array<Pick<App.Entities.SaziningaiExamFlow, "start_time">>
     ) {
       if (!value || value.length === 0) {
         return new Error("Įveskite bent vieno atsiskaitymo atsiskaitymo laiką");
@@ -401,11 +400,11 @@ const handleValidateClick = (e: MouseEvent) => {
         {
           onSuccess: () => {
             message.success(
-              `Ačiū už atsiskaitymo „${formValue.subject_name}“ užregistravimą!`,
+              `Ačiū už atsiskaitymo „${formValue.subject_name}“ užregistravimą!`
             );
             formValue.reset();
           },
-        },
+        }
       );
     } else {
       message.error("Užpildykite visus laukelius.");

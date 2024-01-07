@@ -8,7 +8,7 @@
         delete-model-route="saziningaiExams.destroy"
       ></SaziningaiExamForm>
 
-      <NCard class="subtle-gray-gradient mt-4">
+      <NCard class="mt-4">
         <h3 class="flex items-center">
           Srautai
           <NButton text style="margin-left: 0.5em" @click="manageFlowModal()">

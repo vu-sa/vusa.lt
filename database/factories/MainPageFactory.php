@@ -27,7 +27,7 @@ class MainPageFactory extends Factory
             'link' => $this->faker->url(),
             'position' => '',
             'text' => $this->faker->word(),
-            'padalinys_id' => Padalinys::inRandomOrder()->select('id')->first()->id,
+            'padalinys_id' => Padalinys::factory(),
             'lang' => Arr::random(['lt', 'en']),
         ];
     }
