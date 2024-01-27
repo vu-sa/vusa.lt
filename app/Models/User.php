@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Notifications\Notification;
 use Laravel\Scout\Searchable;
 use Octopy\Impersonate\Concerns\Impersonate;
 use Octopy\Impersonate\ImpersonateAuthorization;
@@ -66,7 +67,32 @@ class User extends Authenticatable
     {
         $authorization->impersonator(fn (User $user) => $user->hasRole(config('permission.super_admin_role_name')));
 
-        $authorization->impersonated(fn (User $user) => ! $user->hasRole(config('permission.super_admin_role_name')));
+        $authorization->impersonated(fn (User $user) => !$user->hasRole(config('permission.super_admin_role_name')));
+    }
+
+    /**
+     * 
+     * If the user has a duty, always send to current_duties if duty email ends with vusa.lt
+     * More on this: https://laravel.com/docs/10.x/notifications#customizing-the-recipient
+     * TODO: it is not really optimal as sometimes notifications should be sent directly to user
+     *
+     * @param Notification notification
+     * @return array | string
+     */
+    public function routeNotificationForMail(Notification $notification): array | string
+    {
+        // If the user has a duty, always send to current_duties if duty email ends with vusa.lt
+        // More on this: https://laravel.com/docs/10.x/notifications#customizing-the-recipient
+        // TODO: it is not really optimal as sometimes notifications should be sent directly to user
+        if ($this->current_duties()->count() > 0) {
+            foreach ($this->current_duties()->get() as $duty) {
+                if (str_ends_with($duty->email, 'vusa.lt')) {
+                    return $duty->email;
+                }
+            }
+        }
+
+        return $this->email;
     }
 
     // * The problem is that some models have different method names for getting the unit relation
@@ -130,7 +156,6 @@ class User extends Authenticatable
                     ->orWhere('dutiables.end_date', '>=', now());
             })
             ->withTimestamps();
-
     }
 
     public function dutiables()
