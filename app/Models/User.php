@@ -67,19 +67,17 @@ class User extends Authenticatable
     {
         $authorization->impersonator(fn (User $user) => $user->hasRole(config('permission.super_admin_role_name')));
 
-        $authorization->impersonated(fn (User $user) => !$user->hasRole(config('permission.super_admin_role_name')));
+        $authorization->impersonated(fn (User $user) => ! $user->hasRole(config('permission.super_admin_role_name')));
     }
 
     /**
-     * 
      * If the user has a duty, always send to current_duties if duty email ends with vusa.lt
      * More on this: https://laravel.com/docs/10.x/notifications#customizing-the-recipient
      * TODO: it is not really optimal as sometimes notifications should be sent directly to user
      *
      * @param Notification notification
-     * @return array | string
      */
-    public function routeNotificationForMail(Notification $notification): array | string
+    public function routeNotificationForMail(Notification $notification): array|string
     {
         // If the user has a duty, always send to current_duties if duty email ends with vusa.lt
         // More on this: https://laravel.com/docs/10.x/notifications#customizing-the-recipient
