@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Pivots\Dutiable;
+use App\Models\Traits\HasUnitRelation;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -19,7 +20,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class User extends Authenticatable
 {
-    use HasFactory, HasRelationships, HasRoles, HasUlids, Impersonate, LogsActivity, Notifiable, Searchable, SoftDeletes;
+    use HasFactory, HasRelationships, HasRoles, HasUlids, HasUnitRelation, Impersonate, LogsActivity, Notifiable, Searchable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -74,14 +75,9 @@ class User extends Authenticatable
      * If the user has a duty, always send to current_duties if duty email ends with vusa.lt
      * More on this: https://laravel.com/docs/10.x/notifications#customizing-the-recipient
      * TODO: it is not really optimal as sometimes notifications should be sent directly to user
-     *
-     * @param Notification notification
      */
     public function routeNotificationForMail(Notification $notification): array|string
     {
-        // If the user has a duty, always send to current_duties if duty email ends with vusa.lt
-        // More on this: https://laravel.com/docs/10.x/notifications#customizing-the-recipient
-        // TODO: it is not really optimal as sometimes notifications should be sent directly to user
         if ($this->current_duties()->count() > 0) {
             foreach ($this->current_duties()->get() as $duty) {
                 if (str_ends_with($duty->email, 'vusa.lt')) {
@@ -91,25 +87,6 @@ class User extends Authenticatable
         }
 
         return $this->email;
-    }
-
-    // * The problem is that some models have different method names for getting the unit relation
-    // * This returns the method name for the unit relation
-    // ! It's better if user is extended from Authenticatable, not from Model, because impersonate package throws errors
-    public function whichUnitRelation()
-    {
-        // check for padalinys relation
-        if (method_exists($this, 'padalinys')) {
-            return 'padalinys';
-        }
-
-        // check for padaliniai relation
-        if (method_exists($this, 'padaliniai')) {
-            return 'padaliniai';
-        }
-
-        // throw exception if no unit relation found
-        throw new \Exception('No unit relation found');
     }
 
     public function banners()
