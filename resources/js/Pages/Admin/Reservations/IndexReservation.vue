@@ -1,20 +1,11 @@
 <template>
-  <IndexPageLayout
-    :title="capitalize($tChoice('entities.reservation.model', 2))"
-    model-name="reservations"
-    :icon="Icons.RESERVATION"
-    :can-use-routes="canUseRoutes"
-    :columns="columns"
-    :paginated-models="reservations"
-  >
+  <IndexPageLayout :title="capitalize($tChoice('entities.reservation.model', 2))" model-name="reservations"
+    :icon="Icons.RESERVATION" :can-use-routes="canUseRoutes" :columns="columns" :paginated-models="reservations">
     <NCard class="mb-4">
-      <template #header>{{ $t("Reservations with unit resources") }}</template>
-      <NDataTable
-        :columns="columnsWithActions"
-        :data="activeReservations"
-        size="small"
-        :row-key="(row) => row.id"
-      ></NDataTable>
+      <template #header>
+        {{ $t("Reservations with unit resources") }}
+      </template>
+      <NDataTable :columns="columnsWithActions" :data="activeReservations" size="small" :row-key="(row) => row.id" />
     </NCard>
   </IndexPageLayout>
 </template>
@@ -189,20 +180,13 @@ const columnsWithActions = computed(() => {
       width: 100,
       render(row) {
         return (
-          <div class="flex justify-center">
-            <NButton
-              quaternary
-              class="text-gray-500 hover:text-gray-700"
-              size="small"
-              onClick={() => {
-                route("reservations.show", row.id);
-              }}
-            >
+          <Link href={route("reservations.show", row.id)} >
+            <NButton quaternary size="small">
               <NIcon>
                 <ArrowForward20Filled />
               </NIcon>
             </NButton>
-          </div>
+          </Link>
         );
       },
     },
