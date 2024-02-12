@@ -242,7 +242,7 @@ declare namespace App.Models {
         meetings_count?: number | null;
     }
 
-    export interface Model {  }
+    export interface Model {}
 
     export interface Doing {
         id: string;
