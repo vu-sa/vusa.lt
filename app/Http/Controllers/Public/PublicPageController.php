@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\PublicController;
 use App\Models\Calendar;
+use App\Models\Institution;
 use App\Models\Navigation;
 use App\Models\News;
 use App\Models\Padalinys;
 use App\Models\Page;
 use App\Models\SaziningaiExamFlow;
 use App\Services\CuratorRegistrationService;
+use App\Services\ResourceServices\InstitutionService;
 use Datetime;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
@@ -272,13 +274,18 @@ class PublicPageController extends PublicController
         ]);
     }
 
+    // dynamically grabs list of pkp
     public function pkp()
     {
+        $typeSlug = 'pkp';
+        $institutionService = new  InstitutionService();
         $this->getBanners();
         $this->getPadalinysLinks();
         $this->shareOtherLangURL('pkp');
 
-        return Inertia::render('Public/PKP')->withViewData([
+        $institutions = $institutionService->getInstitutionsByTypeSlug($typeSlug);
+        
+        return Inertia::render('Public/PKP', ['institutions' => $institutions])->withViewData([
             'title' => 'Programos, klubai ir projektai',
         ]);
     }
