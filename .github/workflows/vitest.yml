@@ -14,6 +14,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     # This is required because Ziggy is used from composer vendor.
+    - name: setup php
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 8.3
+        extensions: dom, curl, libxml, mbstring, zip, fileinfo
     - name: Install Composer dependencies
       run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
     - name: NPM Install
