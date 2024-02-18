@@ -25,6 +25,11 @@ jobs:
             ./vendor
           key: composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: composer-
+      - name: setup php
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          extensions: dom, curl, libxml, mbstring, zip, fileinfo
       - name: Install Dependencies
         run: |
           composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
