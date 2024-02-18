@@ -46,7 +46,7 @@
       <template #header>
         <div class="flex flex-col break-all">
           <div
-            class="w-48 h-32 flex justify-start items-center overflow-hidden mb-4"
+            class="w-48 h-48 flex justify-start items-center overflow-hidden mb-4"
           >
             <!--TODO: somehow ensure equal scaling of all photos?-->
             <img
