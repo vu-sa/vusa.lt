@@ -1,4 +1,7 @@
 name: Deploy To Production
+
+concurrency: production
+
 on:
   workflow_dispatch:
   workflow_run:
