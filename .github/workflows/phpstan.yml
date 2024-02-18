@@ -39,6 +39,11 @@ jobs:
     needs: composer_install
     steps:
       - uses: actions/checkout@v4
+      - name: setup php
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          extensions: dom, curl, libxml, mbstring, zip, fileinfo
       - name: Get Composer Cache Directory
         id: composer-cache
         run: |
