@@ -4,7 +4,7 @@
     <ShapeDivider1
       class="absolute -bottom-2 z-10 rotate-180 lg:-bottom-1"
     ></ShapeDivider1>
-    <a href="/ataskaita-2022" target="_blank">
+    <a href="https://ataskaita2023.vusa.lt" target="_blank">
       <img
         src="/images/photos/VU SA 2023.jpg"
         loading="lazy"
@@ -21,7 +21,7 @@
       <a
         class="flex w-fit flex-row items-center gap-2"
         style="text-decoration: none"
-        href="https://www.vusa.lt/ataskaita-2023"
+        href="https://ataskaita2023.vusa.lt"
         target="_blank"
         ><template v-if="$page.props.app.locale === 'lt'"
           >Ką veikė VU SA 2022–2023 metais?</template
