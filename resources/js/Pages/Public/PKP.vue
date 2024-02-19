@@ -46,13 +46,12 @@
       <template #header>
         <div class="flex flex-col break-all">
           <div
-            class="w-48 h-48 flex justify-start items-center overflow-hidden mb-4"
+            class="w-48 h-48 overflow-hidden relative flex justify-center items-center mb-4"
           >
-            <!--TODO: somehow ensure equal scaling of all photos?-->
             <img
               :src="item.image_url"
               :alt="item.name"
-              class="object-contain ease-in transition-all duration-300 hover:scale-110"
+              class="max-w-full max-h-full object-contain transition-transform duration-300 ease-in-out hover:scale-110"
             />
           </div>
           <h4 v-if="$page.props.app.locale === 'lt'">{{ item.name }}</h4>
