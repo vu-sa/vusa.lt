@@ -11,7 +11,6 @@ declare namespace App.Models {
         category_id: number | null;
         permalink: string | null;
         short: string;
-        text: string;
         lang: string;
         other_lang_id: number | null;
         image: string | null;
@@ -29,7 +28,9 @@ declare namespace App.Models {
         padalinys?: App.Models.Padalinys | null;
         other_language_news?: App.Models.News | null;
         tags?: Array<App.Models.Tag> | null;
+        contents?: Array<App.Models.Content> | null;
         tags_count?: number | null;
+        contents_count?: number | null;
     }
 
     export interface SaziningaiExamObserver {
@@ -243,6 +244,15 @@ declare namespace App.Models {
     }
 
     export interface Model {}
+
+    export interface Content {
+        id: number;
+        type: string;
+        json_content: Array<any> | any;
+        options: Array<any> | any | null;
+        created_at: any;
+        updated_at: any;
+    }
 
     export interface Doing {
         id: string;
@@ -472,7 +482,6 @@ declare namespace App.Models {
         id: number;
         title: string;
         permalink: string | null;
-        text: string;
         lang: string;
         other_lang_id: number | null;
         category_id: number | null;
@@ -483,6 +492,8 @@ declare namespace App.Models {
         deleted_at: any | null;
         padalinys?: App.Models.Padalinys | null;
         category?: App.Models.Category | null;
+        contents?: Array<App.Models.Content> | null;
+        contents_count?: number | null;
     }
 
     export interface Media {

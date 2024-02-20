@@ -34,6 +34,11 @@ class Page extends Model
         return $this->belongsTo(Category::class, 'category_id');
     }
 
+    public function contents()
+    {
+        return $this->morphToMany(Content::class, 'contentable')->withPivot('order')->orderBy('order');
+    }
+
     public function toSearchableArray()
     {
         $array = $this->toArray();

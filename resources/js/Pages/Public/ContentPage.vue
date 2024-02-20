@@ -3,37 +3,34 @@
     <section class="pt-8 last:pb-2">
       <header>
         <NBreadcrumb v-if="navigationItemId != null" class="mb-4 flex w-full">
-          <NBreadcrumbItem
-            v-for="breadcrumb in breadcrumbTree"
-            :key="breadcrumb.parent_id"
-            :clickable="false"
-          >
+          <NBreadcrumbItem v-for="breadcrumb in breadcrumbTree" :key="breadcrumb.parent_id" :clickable="false">
             {{ breadcrumb.name }}
             <template #separator>
-              <NIcon><HatGraduation20Filled /></NIcon>
+              <NIcon>
+                <HatGraduation20Filled />
+              </NIcon>
             </template>
           </NBreadcrumbItem>
         </NBreadcrumb>
       </header>
-      <article
-        class="grid grid-cols-1 gap-x-12"
-        :class="{ 'lg:grid-cols-[1fr_250px]': anchorLinks }"
-      >
+      <article class="grid grid-cols-1 gap-x-12" :class="{ 'lg:grid-cols-[1fr_250px]': anchorLinks }">
         <h1 class="col-span-full col-start-1 inline-flex gap-4">
           <span class="text-gray-900 dark:text-white">{{ page.title }}</span>
         </h1>
         <!-- eslint-disable-next-line vue/no-v-html -->
-        <div class="prose dark:prose-invert" v-html="text" />
-        <aside v-if="anchorLinks" class="sticky top-48 hidden h-fit lg:block">
+        <div class="prose dark:prose-invert">
+          <RichContentParser :content="page.contents" />
+        </div>
+        <!-- <aside v-if="anchorLinks" class="sticky top-48 hidden h-fit lg:block">
           <NAnchor ignore-gap :bound="160">
             <NAnchorLink
               v-for="link in anchorLinks"
               :key="link.href"
               :title="link.title"
               :href="link.href"
-            ></NAnchorLink>
+            />
           </NAnchor>
-        </aside>
+        </aside> -->
       </article>
     </section>
   </div>
@@ -42,13 +39,14 @@
 <script setup lang="ts">
 import { HatGraduation20Filled } from "@vicons/fluent";
 import {
-  NAnchor,
-  NAnchorLink,
+  // NAnchor,
+  // NAnchorLink,
   NBreadcrumb,
   NBreadcrumbItem,
   NIcon,
 } from "naive-ui";
 import { usePage } from "@inertiajs/vue3";
+import RichContentParser from "@/Components/RichContentParser.vue";
 
 const props = defineProps<{
   navigationItemId: number;
@@ -72,32 +70,7 @@ const getBreadcrumbTree = (navigationItemId: number) => {
 
 const breadcrumbTree = getBreadcrumbTree(props.navigationItemId);
 
-// TODO: should be added to backend
-
-const text = props.page.text.replace(/<h[1-6]>(.*?)<\/h[1-6]>/g, (match) => {
-  const headingElement = document.createElement("div");
-  headingElement.innerHTML = match;
-  const headingText = headingElement.textContent;
-  const headingId = headingText?.replace(/\s/g, "-").toLowerCase();
-  return match.replace(">", ` id="${headingId}">`);
-});
-
-const headings = props.page.text.match(/<h[1-6]>(.*?)<\/h[1-6]>/g);
-
-// find headings in page text and create a parsable object for NAnchor
-
-const anchorLinks = headings?.map((heading) => {
-  const headingElement = document.createElement("div");
-  headingElement.innerHTML = heading;
-  const headingText = headingElement.textContent;
-  const headingId = headingText?.replace(/\s/g, "-").toLowerCase();
-  return {
-    title: headingText,
-    href: `#${headingId}`,
-  };
-});
-
-// add ids to text
+// TODO: parse headers from content JSON and generate anchor links
 </script>
 
 <style>

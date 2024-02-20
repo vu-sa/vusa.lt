@@ -32,16 +32,19 @@ class PublicPageController extends PublicController
             return null;
         }
 
-        $googleLink = Link::create($locale === 'en' ? ($calendarEvent?->extra_attributes['en']['title'] ?? $calendarEvent->title) : $calendarEvent->title,
+        $googleLink = Link::create(
+            $locale === 'en' ? ($calendarEvent?->extra_attributes['en']['title'] ?? $calendarEvent->title) : $calendarEvent->title,
             DateTime::createFromFormat('Y-m-d H:i:s', $calendarEvent->date),
             $calendarEvent->end_date
                 ? DateTime::createFromFormat('Y-m-d H:i:s', $calendarEvent->end_date)
-                : Carbon::parse($calendarEvent->date)->addHour()->toDateTime())
+                : Carbon::parse($calendarEvent->date)->addHour()->toDateTime()
+        )
             ->description($locale === 'en'
-            ? (strip_tags(
-                ($calendarEvent?->extra_attributes['en']['description'] ?? $calendarEvent->description)
-                ?? $calendarEvent->description))
-            : strip_tags($calendarEvent->description))
+                ? (strip_tags(
+                    ($calendarEvent?->extra_attributes['en']['description'] ?? $calendarEvent->description)
+                        ?? $calendarEvent->description
+                ))
+                : strip_tags($calendarEvent->description))
             ->address($calendarEvent->location ?? '')
             ->google();
 
@@ -161,15 +164,7 @@ class PublicPageController extends PublicController
         return Inertia::render('Public/ContentPage', [
             'navigationItemId' => $navigation_item?->id,
             'page' => [
-                'id' => $page->id,
-                'title' => $page->title,
-                'short' => $page->short,
-                'text' => $page->text,
-                'lang' => $page->lang,
-                'other_lang_id' => $page->other_lang_id,
-                'permalink' => $page->permalink,
-                'category' => $page->category,
-                'padalinys' => $page->padalinys->shortname,
+                ...$page->only('id', 'title', 'contents', 'lang', 'category', 'padalinys', 'permalink', 'other_lang_id'),
             ],
         ])->withViewData([
             'title' => $page->title,
@@ -284,7 +279,7 @@ class PublicPageController extends PublicController
         $this->shareOtherLangURL('pkp');
 
         $institutions = $institutionService->getInstitutionsByTypeSlug($typeSlug);
-        
+
         return Inertia::render('Public/PKP', ['institutions' => $institutions])->withViewData([
             'title' => 'Programos, klubai ir projektai',
         ]);
@@ -309,7 +304,8 @@ class PublicPageController extends PublicController
                 'images' => $calendar->getMedia('images'),
             ],
             'calendar' => $this->getEventsForCalendar(),
-            'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale())])
+            'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale())
+        ])
             ->withViewData([
                 'title' => $calendar->title,
                 'description' => strip_tags($calendar->description),

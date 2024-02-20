@@ -42,6 +42,11 @@ class News extends Model implements Feedable
         return $this->belongsToMany(Tag::class, 'posts_tags', 'news_id', 'tag_id');
     }
 
+    public function contents()
+    {
+        return $this->morphToMany(Content::class, 'contentable')->withPivot('order')->orderBy('order');
+    }
+
     public function toFeedItem(): FeedItem
     {
         // add image to short

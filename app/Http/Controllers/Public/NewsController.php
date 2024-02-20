@@ -34,7 +34,7 @@ class NewsController extends PublicController
 
         return Inertia::render('Public/NewsPage', [
             'article' => [
-                ...$news->only('id', 'title', 'short', 'text', 'lang', 'other_lang_id', 'permalink', 'publish_time', 'category', 'content', 'image_author', 'important', 'main_points', 'read_more'),
+                ...$news->only('id', 'title', 'short', 'contents', 'lang', 'other_lang_id', 'permalink', 'publish_time', 'category', 'content', 'image_author', 'important', 'main_points', 'read_more'),
                 'tags' => $news->tags->map(function ($tag) {
                     return [
                         'id' => $tag->id,

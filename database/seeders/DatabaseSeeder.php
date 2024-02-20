@@ -64,8 +64,8 @@ class DatabaseSeeder extends Seeder
 
         Banner::factory(20)->recycle($padaliniai)->create();
         Calendar::factory(50)->recycle($padaliniai)->create();
-        News::factory(75)->recycle($padaliniai)->create();
-        Page::factory(75)->recycle($padaliniai)->create();
+        News::factory(75)->hasContents(1)->recycle($padaliniai)->create();
+        Page::factory(75)->hasContents(1)->recycle($padaliniai)->create();
 
         Resource::factory(50)->has(Reservation::factory()->hasAttached($users->random(3)))->recycle($padaliniai)->create();
         SaziningaiExam::factory(15)->create();
