@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\PublicController;
 use App\Models\Calendar;
-use App\Models\Institution;
 use App\Models\Navigation;
 use App\Models\News;
 use App\Models\Padalinys;
@@ -273,7 +272,7 @@ class PublicPageController extends PublicController
     public function pkp()
     {
         $typeSlug = 'pkp';
-        $institutionService = new  InstitutionService();
+        $institutionService = new InstitutionService();
         $this->getBanners();
         $this->getPadalinysLinks();
         $this->shareOtherLangURL('pkp');
@@ -304,7 +303,7 @@ class PublicPageController extends PublicController
                 'images' => $calendar->getMedia('images'),
             ],
             'calendar' => $this->getEventsForCalendar(),
-            'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale())
+            'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale()),
         ])
             ->withViewData([
                 'title' => $calendar->title,
