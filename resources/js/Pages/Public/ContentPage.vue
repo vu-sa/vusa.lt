@@ -18,7 +18,7 @@
           <span class="text-gray-900 dark:text-white">{{ page.title }}</span>
         </h1>
         <!-- eslint-disable-next-line vue/no-v-html -->
-        <div class="prose dark:prose-invert">
+        <div class="prose prose-zinc dark:prose-invert flex gap-4 flex-col">
           <RichContentParser :content="page.contents" />
         </div>
         <!-- <aside v-if="anchorLinks" class="sticky top-48 hidden h-fit lg:block">

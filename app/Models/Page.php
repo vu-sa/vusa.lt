@@ -34,7 +34,7 @@ class Page extends Model
         return $this->belongsTo(Category::class, 'category_id');
     }
 
-    public function contents()
+    public function contents(): \Illuminate\Database\Eloquent\Relations\MorphToMany
     {
         return $this->morphToMany(Content::class, 'contentable')->withPivot('order')->orderBy('order');
     }

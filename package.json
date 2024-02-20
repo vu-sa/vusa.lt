@@ -39,6 +39,7 @@
     "@microsoft/microsoft-graph-types": "^2.25.0",
     "@tailwindcss/typography": "^0.5.0",
     "@types/d3": "^7.4.0",
+    "@types/latinize": "^0.2.18",
     "@typescript-eslint/eslint-plugin": "^6.2.0",
     "@typescript-eslint/parser": "^6.2.0",
     "@vicons/fa": "^0.12.0",

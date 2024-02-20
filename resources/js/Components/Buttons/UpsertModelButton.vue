@@ -21,6 +21,8 @@ const props = defineProps<{
   modelRoute: string;
 }>();
 
+const emit = defineEmits(["save"]);
+
 const showSpin = ref(false);
 
 const modelMethod = computed(() => {
@@ -42,6 +44,7 @@ const upsertModel = () => {
       {
         onSuccess: () => {
           showSpin.value = false;
+          emit("save")
         },
         onError: () => {
           showSpin.value = false;

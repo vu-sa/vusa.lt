@@ -14,5 +14,6 @@ class TrimStrings extends Middleware
     protected $except = [
         'password',
         'password_confirmation',
+        // Doesn't work with json_content ... text, skipped in AppServiceProvider
     ];
 }

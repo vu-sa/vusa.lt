@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\LaravelResourceController;
+use App\Models\Content;
 use App\Models\Padalinys;
 use App\Models\Page;
 use App\Services\ModelIndexer;
@@ -91,22 +92,14 @@ class PageController extends LaravelResourceController
     {
         $this->authorize('update', [Page::class, $page, $this->authorizer]);
 
-        $other_lang_pages = Page::with('padalinys:id,shortname')->when(! request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($page) {
+        $other_lang_pages = Page::with('padalinys:id,shortname')->when(!request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($page) {
             $query->where('padalinys_id', $page->padalinys_id);
         })->where('lang', '!=', $page->lang)->select('id', 'title', 'padalinys_id')->get();
 
         return Inertia::render('Admin/Content/EditPage', [
             'page' => [
-                'id' => $page->id,
-                'title' => $page->title,
-                'permalink' => $page->permalink,
-                'text' => $page->text,
-                'lang' => $page->lang,
+                ...$page->only('id', 'title', 'contents', 'permalink', 'text', 'lang', 'category', 'padalinys_id', 'is_active', 'aside'),
                 'other_lang_id' => $page->getOtherLanguage()?->only('id')['id'],
-                'category' => $page->category,
-                'padalinys' => $page->padalinys,
-                'is_active' => $page->is_active,
-                'aside' => $page->aside,
             ],
             'otherLangPages' => $other_lang_pages,
         ]);
@@ -123,7 +116,26 @@ class PageController extends LaravelResourceController
 
         $other_lang_page = Page::find($page->other_lang_id);
 
-        $page->update($request->only('title', 'text', 'lang', 'other_lang_id'));
+        $page->update($request->only('title', 'lang', 'other_lang_id'));
+
+        // Detach
+        $page->contents()->detach();
+
+        foreach ($request->contents as $key => $content) {
+            $id = $content['id'] ?? null;
+            $model = Content::findOrNew($id);
+
+            $model->type = $content['type']; 
+            $model->json_content = $content['json_content'];
+            $model->options = $content['options'] ?? null;
+
+            $model->save();
+
+            // TODO: maybe there's need to delete contents, when none are attached to page or news
+            $page->contents()->attach($model, ['order' => $key]);
+
+            $model->save();
+        }
 
         // update other lang id page
         if ($request->other_lang_id) {
@@ -131,12 +143,12 @@ class PageController extends LaravelResourceController
             $other_lang_page = Page::find($request->other_lang_id);
             $other_lang_page->other_lang_id = $page->id;
             $other_lang_page->save();
-        } elseif (is_null($request->other_lang_id) && ! is_null($other_lang_page)) {
+        } elseif (is_null($request->other_lang_id) && !is_null($other_lang_page)) {
             $other_lang_page->other_lang_id = null;
             $other_lang_page->save();
         }
 
-        return back()->with('success', 'Puslapis atnaujintas!');
+        return back()->with('success', 'Puslapis atnaujintas!')->with('data', $page->load('contents'));
     }
 
     /**
