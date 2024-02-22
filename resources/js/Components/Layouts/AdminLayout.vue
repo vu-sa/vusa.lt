@@ -3,41 +3,33 @@
 
   <NLayout class="min-h-screen">
     <nav
-      class="fixed z-50 flex h-16 w-full flex-row items-center justify-between border-b px-8 py-2 shadow-sm backdrop-blur-lg md:justify-end dark:border-zinc-800"
-    >
+      class="fixed z-50 flex h-16 w-full flex-row items-center justify-between border-b px-8 py-2 shadow-sm backdrop-blur-lg dark:border-zinc-800 md:justify-end">
       <div class="flex items-center gap-2 md:hidden">
         <NButton size="small" strong quaternary @click="activeDrawer = true">
           <template #icon>
             <NIcon :component="Navigation24Filled" />
           </template>
         </NButton>
-        <Link class="h-fit w-fit" :href="route('dashboard')">
-          <AppLogo class="h-12" />
+        <Link class="size-fit" :href="route('dashboard')">
+        <AppLogo class="h-12" />
         </Link>
       </div>
       <div class="mt-1 flex items-center gap-8">
-        <Link
-          v-if="$page.props.auth.can.index.user"
-          :href="route('stats.representativesInPadalinys')"
-        >
-          <NIcon :size="24" :component="ChartMultiple20Regular" />
+        <Link v-if="$page.props.auth.can.index.user" :href="route('stats.representativesInPadalinys')">
+        <NIcon :size="24" :component="ChartMultiple20Regular" />
         </Link>
         <FeedbackModalButton />
-        <Link
-          v-if="canSeeWorkspace && false"
-          class="mt-2 hidden md:inline"
-          :href="route('workspace')"
-          ><NButton text
-            ><template #icon
-              ><NIcon
-                :size="24"
-                :component="Board24Regular"
-              ></NIcon></template></NButton
-        ></Link>
+        <Link v-if="canSeeWorkspace && false" class="mt-2 hidden md:inline" :href="route('workspace')">
+        <NButton text><template #icon>
+            <NIcon :size="24" :component="Board24Regular" />
+          </template></NButton>
+        </Link>
         <TaskIndicatorButton class="mt-0.5" />
-        <NNotificationProvider placement="bottom-right"
-          ><NMessageProvider><NotificationBell class="mt-1" /></NMessageProvider
-        ></NNotificationProvider>
+        <NNotificationProvider placement="bottom-right">
+          <NMessageProvider>
+            <NotificationBell class="mt-1" />
+          </NMessageProvider>
+        </NNotificationProvider>
         <UserAdminOptionsMenu />
       </div>
     </nav>
@@ -49,17 +41,10 @@
           <DarkModeSwitch style="margin-top: auto; margin-bottom: auto" />
           <NButton text @click="changeLocale">
             <template #icon>
-              <NIcon :size="16"
-                ><img
-                  v-if="locale === 'en'"
-                  class="transition hover:opacity-70"
-                  src="https://hatscripts.github.io/circle-flags/flags/gb.svg"
-                />
-                <img
-                  v-else
-                  class="transition hover:opacity-70"
-                  src="https://hatscripts.github.io/circle-flags/flags/lt.svg"
-                />
+              <NIcon :size="16"><img v-if="locale === 'en'" class="transition hover:opacity-70"
+                  src="https://hatscripts.github.io/circle-flags/flags/gb.svg">
+                <img v-else class="transition hover:opacity-70"
+                  src="https://hatscripts.github.io/circle-flags/flags/lt.svg">
               </NIcon>
             </template>
           </NButton>
@@ -67,58 +52,36 @@
       </NDrawerContent>
     </NDrawer>
     <NLayout class="mt-16" has-sider>
-      <NLayoutSider
-        class="my-6 ml-4 hidden h-fit rounded-md from-white shadow-md md:block"
-        collapse-mode="width"
-        :collapsed-width="69"
-        :width="220"
-        :collapsed="collapsed"
-        show-trigger="bar"
-        @collapse="collapsed = true"
-        @expand="collapsed = false"
-      >
-        <Link class="h-fit w-fit" :href="route('dashboard')">
-          <AppLogo class="mx-auto w-full p-2" />
+      <NLayoutSider v-if="mdAndGreater" class="my-6 ml-4 h-fit rounded-md from-white shadow-md" collapse-mode="width" :collapsed-width="69"
+        :width="220" :collapsed="collapsed" show-trigger="bar" @collapse="collapsed = true" @expand="collapsed = false">
+        <Link class="size-fit" :href="route('dashboard')">
+        <AppLogo class="mx-auto w-full p-2" />
         </Link>
         <NScrollbar class="max-h-[calc(100vh-20rem)] px-1.5">
-          <AdminMenu
-            :collapsed="collapsed"
-            :collapsed-width="56"
-            :collapsed-icon-size="26"
-        /></NScrollbar>
+          <AdminMenu :collapsed="collapsed" :collapsed-width="56" :collapsed-icon-size="26" />
+        </NScrollbar>
         <NDivider />
 
-        <div
-          class="mb-4 flex items-center justify-center gap-6 overflow-hidden"
-        >
+        <div class="mb-4 flex items-center justify-center gap-6 overflow-hidden">
           <DarkModeSwitch style="margin-top: auto; margin-bottom: auto" />
           <NButton v-if="!collapsed" text @click="changeLocale">
             <template #icon>
-              <NIcon :size="16"
-                ><img
-                  v-if="locale === 'en'"
-                  class="transition hover:opacity-70"
-                  src="https://hatscripts.github.io/circle-flags/flags/gb.svg"
-                />
-                <img
-                  v-else
-                  class="transition hover:opacity-70"
-                  src="https://hatscripts.github.io/circle-flags/flags/lt.svg"
-                />
+              <NIcon :size="16"><img v-if="locale === 'en'" class="transition hover:opacity-70"
+                  src="https://hatscripts.github.io/circle-flags/flags/gb.svg">
+                <img v-else class="transition hover:opacity-70"
+                  src="https://hatscripts.github.io/circle-flags/flags/lt.svg">
               </NIcon>
             </template>
           </NButton>
         </div>
       </NLayoutSider>
       <NLayoutContent>
-        <NMessageProvider><slot /></NMessageProvider>
+        <NMessageProvider>
+          <slot />
+        </NMessageProvider>
       </NLayoutContent>
     </NLayout>
-    <CardModal
-      :title="`⭐️ ${$t('vusa.lt atsinaujino')}!`"
-      :show="showChanges"
-      @close="showChanges = false"
-    >
+    <CardModal :title="`⭐️ ${$t('vusa.lt atsinaujino')}!`" :show="showChanges" @close="showChanges = false">
       <div>
         <template v-for="change in $page.props.auth.changes" :key="change.id">
           <h4 class="mb-0 tracking-tight">
@@ -129,12 +92,10 @@
           <NDivider class="last:hidden" />
         </template>
       </div>
-      <NButton class="mt-8" type="primary" @click="approveChanges"
-        ><template #icon
-          ><NIcon :component="ThumbLike16Regular"></NIcon
-        ></template>
-        Liuks</NButton
-      >
+      <NButton class="mt-8" type="primary" @click="approveChanges"><template #icon>
+          <NIcon :component="ThumbLike16Regular" />
+        </template>
+        Liuks</NButton>
     </CardModal>
   </NLayout>
 </template>
@@ -158,7 +119,7 @@ import {
 } from "naive-ui";
 import { computed, onMounted, watch } from "vue";
 import { ref } from "vue";
-import { useOnline, useStorage, useTimeoutFn } from "@vueuse/core";
+import { useOnline, useStorage, useTimeoutFn, useBreakpoints, breakpointsTailwind } from "@vueuse/core";
 
 import {
   Board24Regular,
@@ -198,6 +159,8 @@ const changeLocale = () => {
 const successMessage = computed(() => usePage().props.flash.success);
 const infoMessage = computed(() => usePage().props.flash.info);
 const errorMessage = computed(() => usePage().props.errors);
+
+const mdAndGreater = useBreakpoints(breakpointsTailwind).greaterOrEqual('md');
 
 const canSeeWorkspace = computed(() => {
   let index = usePage().props.auth?.can?.index;
