@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Banner;
 use App\Models\Calendar;
-use App\Models\Content;
 use App\Models\Doing;
 use App\Models\Duty;
 use App\Models\Goal;

@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\Content;
-use App\Models\ContentPart;
 use App\Models\News;
 use App\Models\Page;
 use Illuminate\Database\Migrations\Migration;
@@ -50,7 +49,7 @@ return new class extends Migration
             $content->parts()->create([
                 'type' => 'tiptap',
                 'json_content' => $json,
-                ]);
+            ]);
 
             $page->content()->associate($content);
 
@@ -67,7 +66,7 @@ return new class extends Migration
             $content->parts()->create([
                 'type' => 'tiptap',
                 'json_content' => $json,
-                ]);
+            ]);
 
             $new->content()->associate($content);
 

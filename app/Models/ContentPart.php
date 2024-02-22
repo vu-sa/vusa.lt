@@ -19,7 +19,8 @@ class ContentPart extends Model
         'options',
     ];
 
-    public function content() {
+    public function content()
+    {
         return $this->belongsTo(Content::class);
     }
 }
