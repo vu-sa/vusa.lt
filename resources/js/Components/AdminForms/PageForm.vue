@@ -26,7 +26,16 @@
         <template #label>
           <span class="text-2xl font-bold">Turinys</span>
         </template>
-        <RichContentEditor v-model:contents="form.content.parts" />
+        <NTabs type="segment">
+          <NTabPane name="edit" tab="Redagavimas">
+            <RichContentEditor v-model:contents="form.content.parts" />
+          </NTabPane>
+          <NTabPane name="preview" tab="Peržiūra">
+            <div class="prose prose-zinc flex flex-col gap-4 dark:prose-invert">
+              <RichContentParser :content="form.content?.parts" />
+            </div>
+          </NTabPane>
+        </NTabs>
       </NFormItem>
     </div>
     <div class="flex justify-end gap-2">

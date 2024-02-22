@@ -56,7 +56,17 @@
         <template #label>
           <span class="text-2xl font-bold">Turinys</span>
         </template>
-        <RichContentEditor v-model:contents="form.content.parts" />
+        <NTabs type="segment">
+          <NTabPane name="edit" tab="Redagavimas">
+            <RichContentEditor v-model:contents="form.content.parts" />
+          </NTabPane>
+          <NTabPane name="preview" tab="Peržiūra">
+            <div
+              class="prose prose-zinc col-span-4 dark:prose-invert first-letter:float-left first-letter:mr-3 first-letter:text-7xl first-letter:font-bold">
+              <RichContentParser :content="form.content?.parts" />
+            </div>
+          </NTabPane>
+        </NTabs>
       </NFormItem>
       <div class="flex justify-end gap-2">
         <DeleteModelButton v-if="deleteModelRoute" :form="form" :model-route="deleteModelRoute" />
@@ -77,6 +87,8 @@ import {
   NMessageProvider,
   NSelect,
   NSwitch,
+  NTabPane,
+  NTabs,
 } from "naive-ui";
 import { computed, watch } from "vue";
 import { useForm, usePage } from "@inertiajs/vue3";
@@ -88,6 +100,7 @@ import RichContentEditor from "../RichContentEditor.vue";
 import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
 import UploadImageWithCropper from "../Buttons/UploadImageWithCropper.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
+import RichContentParser from "../RichContentParser.vue";
 
 const props = defineProps<{
   news: App.Entities.News;
