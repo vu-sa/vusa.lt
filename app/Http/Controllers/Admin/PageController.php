@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\LaravelResourceController;
 use App\Models\Content;
+use App\Models\Model;
 use App\Models\Padalinys;
 use App\Models\Page;
 use App\Services\ModelIndexer;
@@ -57,7 +58,7 @@ class PageController extends LaravelResourceController
 
         $request->validate([
             'title' => 'required|string|max:255',
-            'text' => 'required|string',
+            'contents' => 'required|array',
             'lang' => 'required|string',
             'permalink' => 'required|string|max:255|unique:pages',
         ]);
@@ -71,14 +72,15 @@ class PageController extends LaravelResourceController
             $padalinys_id = $this->authorizer->permissableDuties->first()->padaliniai->first()->id;
         }
 
-        Page::create([
+        $page = Page::query()->create([
             'title' => $request->title,
             'permalink' => $request->permalink,
             'lang' => $request->lang,
-            'text' => $request->text,
             'other_lang_id' => $request->other_lang_id,
             'padalinys_id' => $padalinys_id,
         ]);
+
+        $page->contents()->createMany($request->contents);
 
         return redirect()->route('pages.index')->with('success', 'Puslapis sėkmingai sukurtas!');
     }
