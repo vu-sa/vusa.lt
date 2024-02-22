@@ -17,7 +17,12 @@ const news = {
   permalink: "",
   lang: "lt",
   other_lang_id: null,
-  text: "",
+  contents: [
+    {
+      json_content: {},
+      type: "tiptap",
+    },
+  ],
   short: "",
   publish_time: null,
   draft: false,

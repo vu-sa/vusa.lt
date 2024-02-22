@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\LaravelResourceController;
+use App\Models\Content;
 use App\Models\News;
 use App\Models\Padalinys;
 use App\Services\ModelIndexer;
@@ -57,7 +58,7 @@ class NewsController extends LaravelResourceController
         $request->validate([
             'title' => 'required',
             'permalink' => 'required',
-            'text' => 'required',
+            'contents' => 'required',
             'lang' => 'required',
             'image' => 'required',
             'publish_time' => 'required',
@@ -73,10 +74,9 @@ class NewsController extends LaravelResourceController
             $padalinys_id = $this->authorizer->permissableDuties->first()->padaliniai->first()->id;
         }
 
-        News::create([
+        $news = News::create([
             'title' => $request->title,
             'permalink' => $request->permalink,
-            'text' => $request->text,
             'short' => $request->short,
             'lang' => $request->lang,
             'other_lang_id' => $request->other_lang_id,
@@ -86,6 +86,8 @@ class NewsController extends LaravelResourceController
             'draft' => $request->draft ?? 0,
             'padalinys_id' => $padalinys_id,
         ]);
+
+        $news->contents()->createMany($request->contents);
 
         return redirect()->route('news.index')->with('success', 'Naujiena sėkmingai sukurta!');
     }
@@ -108,7 +110,7 @@ class NewsController extends LaravelResourceController
                 'id' => $news->id,
                 'title' => $news->title,
                 'permalink' => $news->permalink,
-                'text' => $news->text,
+                'contents' => $news->contents,
                 'lang' => $news->lang,
                 'other_lang_id' => $news->other_language_news?->id,
                 'category' => $news->category,
@@ -135,7 +137,25 @@ class NewsController extends LaravelResourceController
 
         $other_lang_page = News::find($news->other_lang_id);
 
-        $news->update($request->only('title', 'text', 'lang', 'other_lang_id', 'draft', 'short', 'image', 'image_author', 'publish_time'));
+        $news->update($request->only('title', 'lang', 'other_lang_id', 'draft', 'short', 'image', 'image_author', 'publish_time'));
+
+        $news->contents()->detach();
+
+        foreach ($request->contents as $key => $content) {
+            $id = $content['id'] ?? null;
+            $model = Content::findOrNew($id);
+
+            $model->type = $content['type'];
+            $model->json_content = $content['json_content'];
+            $model->options = $content['options'] ?? null;
+
+            $model->save();
+
+            // TODO: maybe there's need to delete contents, when none are attached to page or news
+            $news->contents()->attach($model, ['order' => $key]);
+
+            $model->save();
+        }
 
         // update other lang id page
         if ($request->other_lang_id) {
@@ -148,7 +168,7 @@ class NewsController extends LaravelResourceController
             $other_lang_page->save();
         }
 
-        return back()->with('success', 'Naujiena sėkmingai atnaujinta!');
+        return back()->with('success', 'Naujiena sėkmingai atnaujinta!')->with('data', $news->load('contents'));
     }
 
     /**

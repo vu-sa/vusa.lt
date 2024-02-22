@@ -168,6 +168,7 @@ import TipTapButton from "@/Features/Admin/CommentViewer/TipTap/TipTapMarkButton
 import TipTapMarkButton from "@/Features/Admin/CommentViewer/TipTap/TipTapMarkButton.vue";
 
 const props = defineProps<{
+  html?: boolean;
   modelValue: string | Record<string, unknown> | null;
   searchFiles?: Record<string, unknown>;
   hideNavbar?: boolean;
@@ -288,7 +289,12 @@ const editor = useEditor({
   content: modelValue.value,
   onUpdate: () => {
     // HTML
-    emit("update:modelValue", editor.value?.getJSON());
+
+    if (props.html) {
+      emit("update:modelValue", editor.value?.getHTML());
+    } else {
+      emit("update:modelValue", editor.value?.getJSON());
+    }
   },
 });
 

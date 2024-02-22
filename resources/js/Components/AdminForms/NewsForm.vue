@@ -1,98 +1,71 @@
 <template>
   <NForm :model="form" label-placement="top">
-    <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
-      <NFormItemGi :label="$t('forms.fields.title')" :span="2">
-        <NInput
-          v-model:value="form.title"
-          type="text"
-          placeholder="Įrašyti pavadinimą..."
-        />
-      </NFormItemGi>
-
-      <NFormItemGi label="Nuoroda" :span="2">
-        <NInput
-          :value="form.permalink"
-          disabled
-          type="text"
-          placeholder="Sugeneruojama nuoroda"
-        />
-      </NFormItemGi>
-
-      <NFormItemGi label="Kalba" :span="2">
-        <NSelect
-          v-model:value="form.lang"
-          :options="languageOptions"
-          placeholder="Pasirinkti kalbą..."
-        />
-      </NFormItemGi>
-
-      <NFormItemGi label="Kitos kalbos puslapis" :span="2">
-        <NSelect
-          v-model:value="form.other_lang_id"
-          filterable
-          :disabled="modelRoute === 'news.store'"
-          placeholder="Pasirinkti kitos kalbos puslapį... (tik tada, kai jau sukūrėte puslapį)"
-          :options="otherLangNewsOptions"
-          clearable
-        />
-      </NFormItemGi>
-
-      <NFormItemGi label="Naujienos paskelbimo laikas" :span="2">
-        <NDatePicker
-          v-model:formatted-value="form.publish_time"
-          placeholder="Data..."
-          type="datetime"
-          value-format="yyyy-MM-dd HH:mm:ss"
-        />
-      </NFormItemGi>
-
-      <NFormItemGi label="Ar juodraštis?" :span="2">
-        <NSwitch
-          v-model:value="form.draft"
-          :checked-value="1"
-          :unchecked-value="0"
-        >
-        </NSwitch>
-      </NFormItemGi>
-
-      <NFormItemGi :span="6"
-        ><NDivider> Naujienos nuotrauka</NDivider>
-      </NFormItemGi>
-
-      <NFormItemGi label="Nuotrauka" :span="2">
-        <NMessageProvider>
-          <UploadImageWithCropper v-model:url="form.image" folder="news" />
-        </NMessageProvider>
-      </NFormItemGi>
-
-      <NFormItemGi label="Nuotraukos autorius" :span="2">
-        <NInput
-          v-model:value="form.image_author"
-          type="text"
-          placeholder="Žmogus arba organizacija.."
-        />
-      </NFormItemGi>
-      <NFormItemGi :span="6"
-        ><NDivider> Straipsnio turinys</NDivider>
-      </NFormItemGi>
-      <NFormItemGi :span="6">
-        <TipTap v-model="form.short" :search-files="$page.props.search.other" />
-        <template #label>
-          <span class="text-lg font-bold">Įvadas</span>
+    <div class="flex flex-col">
+      <FormElement>
+        <template #title>
+          {{ $t("forms.context.main_info") }}</template>
+        <NFormItem :label="$t('forms.fields.title')">
+          <NInput v-model:value="form.title" type="text" placeholder="Įrašyti pavadinimą..." />
+        </NFormItem>
+        <NFormItem label="Nuoroda">
+          <NInput :value="form.permalink" disabled type="text" placeholder="Sugeneruojama nuoroda" />
+        </NFormItem>
+        <div class="grid lg:grid-cols-2 lg:gap-4">
+          <NFormItem label="Kalba">
+            <NSelect v-model:value="form.lang" :options="languageOptions" placeholder="Pasirinkti kalbą..." />
+          </NFormItem>
+          <NFormItem label="Kitos kalbos puslapis">
+            <NSelect v-model:value="form.other_lang_id" filterable :disabled="modelRoute === 'news.store'"
+              placeholder="Pasirinkti kitos kalbos puslapį... (tik tada, kai jau sukūrėte puslapį)"
+              :options="otherLangNewsOptions" clearable />
+          </NFormItem>
+        </div>
+        <div class="grid lg:grid-cols-2 lg:gap-4">
+          <NFormItem label="Naujienos paskelbimo laikas">
+            <NDatePicker v-model:formatted-value="form.publish_time" placeholder="Data..." type="datetime"
+              value-format="yyyy-MM-dd HH:mm:ss" />
+          </NFormItem>
+          <NFormItem label="Ar juodraštis?">
+            <NSwitch v-model:value="form.draft" :checked-value="1" :unchecked-value="0" />
+          </NFormItem>
+        </div>
+      </FormElement>
+      <FormElement>
+        <template #title>
+          Nuotrauka
         </template>
-      </NFormItemGi>
-
-      <NFormItemGi :span="6" class="mt-2">
-        <TipTap v-model="form.text" :search-files="$page.props.search.other" />
-        <template #label>
-          <span class="text-lg font-bold">Pagrindinis tekstas</span>
+        <NFormItem label="Nuotrauka">
+          <NMessageProvider>
+            <UploadImageWithCropper v-model:url="form.image" folder="news" />
+          </NMessageProvider>
+        </NFormItem>
+        <NFormItem label="Nuotraukos autorius">
+          <NInput v-model:value="form.image_author" type="text" placeholder="Žmogus arba organizacija.." />
+        </NFormItem>
+      </FormElement>
+      <FormElement>
+        <template #title>
+          Įvadinis tekstas
         </template>
-      </NFormItemGi>
-    </NGrid>
-    <div class="flex justify-end gap-2">
-      <UpsertModelButton :form="form" :model-route="modelRoute"
-        >Sukurti</UpsertModelButton
-      >
+        <template #description>
+          Šiuo metu naudojamas tik paieškos rezultatuose.
+        </template>
+        <NFormItem>
+          <TipTap v-model="form.short" html :search-files="$page.props.search.other" />
+        </NFormItem>
+      </FormElement>
+      <NFormItem>
+        <template #label>
+          <span class="text-2xl font-bold">Turinys</span>
+        </template>
+        <RichContentEditor v-model:contents="form.contents" />
+      </NFormItem>
+      <div class="flex justify-end gap-2">
+        <DeleteModelButton v-if="deleteModelRoute" :form="form" :model-route="deleteModelRoute" />
+        <UpsertModelButton :form="form" :model-route="modelRoute" @save="updateContents">
+          Sukurti
+        </UpsertModelButton>
+      </div>
     </div>
   </NForm>
 </template>
@@ -100,20 +73,20 @@
 <script setup lang="ts">
 import {
   NDatePicker,
-  NDivider,
   NForm,
-  NFormItemGi,
-  NGrid,
+  NFormItem,
   NInput,
   NMessageProvider,
   NSelect,
   NSwitch,
 } from "naive-ui";
 import { computed, watch } from "vue";
-import { useForm } from "@inertiajs/vue3";
+import { useForm, usePage } from "@inertiajs/vue3";
 import latinize from "latinize";
 
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
+import FormElement from "./FormElement.vue";
+import RichContentEditor from "../RichContentEditor.vue";
 import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
 import UploadImageWithCropper from "../Buttons/UploadImageWithCropper.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
@@ -150,6 +123,11 @@ const languageOptions = [
     label: "English",
   },
 ];
+
+function updateContents() {
+  // Use usePage flash.data to grab page.contents and update form.contents
+  form.contents = usePage().props.flash.data?.contents
+}
 
 if (props.modelRoute == "news.store") {
   watch(
