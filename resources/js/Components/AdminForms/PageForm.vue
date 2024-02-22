@@ -26,7 +26,7 @@
         <template #label>
           <span class="text-2xl font-bold">Turinys</span>
         </template>
-        <RichContentEditor v-model:contents="form.contents" />
+        <RichContentEditor v-model:contents="form.content.parts" />
       </NFormItem>
     </div>
     <div class="flex justify-end gap-2">
@@ -89,7 +89,7 @@ const languageOptions = [
 
 function updateContents() {
   // Use usePage flash.data to grab page.contents and update form.contents
-  form.contents = usePage().props.flash.data?.contents
+  form.content = usePage().props.flash.data?.content
 }
 
 // watch form.title and update form.permalink

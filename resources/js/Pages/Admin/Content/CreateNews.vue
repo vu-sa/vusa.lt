@@ -17,14 +17,16 @@ const news = {
   permalink: "",
   lang: "lt",
   other_lang_id: null,
-  contents: [
-    {
-      json_content: {},
-      type: "tiptap",
-    },
-  ],
+  content: {
+    parts: [
+      {
+        type: "tiptap",
+        json_content: {},
+      },
+    ]
+  },
   short: "",
-  publish_time: null,
+  publish_time: new Date().toISOString().slice(0, 19).replace("T", " "),
   draft: false,
   image: null,
   image_author: null,

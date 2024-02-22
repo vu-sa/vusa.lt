@@ -13,6 +13,7 @@ declare namespace App.Models {
         short: string;
         lang: string;
         other_lang_id: number | null;
+        content_id: number;
         image: string | null;
         image_author: string | null;
         important: boolean;
@@ -28,9 +29,8 @@ declare namespace App.Models {
         padalinys?: App.Models.Padalinys | null;
         other_language_news?: App.Models.News | null;
         tags?: Array<App.Models.Tag> | null;
-        contents?: Array<App.Models.Content> | null;
+        content?: App.Models.Content | null;
         tags_count?: number | null;
-        contents_count?: number | null;
     }
 
     export interface SaziningaiExamObserver {
@@ -161,6 +161,17 @@ declare namespace App.Models {
         updated_at: any;
     }
 
+    export interface ContentPart {
+        content_id: number;
+        type: string;
+        json_content: Array<any> | any;
+        options: Array<any> | any | null;
+        order: number;
+        created_at: any;
+        updated_at: any;
+        content?: App.Models.Content | null;
+    }
+
     export interface User {
         id: string;
         email: string;
@@ -247,11 +258,10 @@ declare namespace App.Models {
 
     export interface Content {
         id: number;
-        type: string;
-        json_content: Array<any> | any;
-        options: Array<any> | any | null;
         created_at: any;
         updated_at: any;
+        parts?: Array<App.Models.ContentPart> | null;
+        parts_count?: number | null;
     }
 
     export interface Doing {
@@ -484,6 +494,7 @@ declare namespace App.Models {
         permalink: string | null;
         lang: string;
         other_lang_id: number | null;
+        content_id: number;
         category_id: number | null;
         is_active: boolean;
         padalinys_id: number;
@@ -492,8 +503,7 @@ declare namespace App.Models {
         deleted_at: any | null;
         padalinys?: App.Models.Padalinys | null;
         category?: App.Models.Category | null;
-        contents?: Array<App.Models.Content> | null;
-        contents_count?: number | null;
+        content?: App.Models.Content | null;
     }
 
     export interface Media {

@@ -163,12 +163,12 @@ class PublicPageController extends PublicController
         return Inertia::render('Public/ContentPage', [
             'navigationItemId' => $navigation_item?->id,
             'page' => [
-                ...$page->only('id', 'title', 'contents', 'lang', 'category', 'padalinys', 'permalink', 'other_lang_id'),
+                ...$page->only('id', 'title', 'content', 'lang', 'category', 'padalinys', 'permalink', 'other_lang_id'),
             ],
         ])->withViewData([
             'title' => $page->title,
-            // truncate text to first sentence
-            'description' => Str::limit(strip_tags($page->text), 150),
+            // TODO: SEO update to parse contents
+            // 'description' => Str::limit(strip_tags($page->text), 150),
         ]);
     }
 

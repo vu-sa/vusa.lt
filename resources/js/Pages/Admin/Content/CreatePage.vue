@@ -17,11 +17,13 @@ const page = {
   permalink: "",
   lang: "lt",
   other_lang_page: null,
-  contents: [
-    {
-      type: "tiptap",
-      json_content: {},
-    },
-  ]
+  content: {
+    parts: [
+      {
+        type: "tiptap",
+        json_content: {},
+      },
+    ]
+  }
 };
 </script>

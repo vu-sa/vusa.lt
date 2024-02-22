@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Category;
+use App\Models\Content;
 use App\Models\News;
 use App\Models\Padalinys;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -53,6 +54,7 @@ class NewsFactory extends Factory
             'permalink' => 'news'.$this->incrementAndReturn(),
             'category_id' => Category::inRandomOrder()->select('id')->first()->id,
             'short' => $this->faker->paragraph(1),
+            'content_id' => Content::factory()->hasParts(1),
             'image' => '/images/placeholders/foto'.rand(1, 5).'.jpg',
             'important' => rand(0, 1),
             'publish_time' => $this->faker->dateTimeBetween('-10 weeks'),

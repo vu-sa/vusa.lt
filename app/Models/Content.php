@@ -9,13 +9,10 @@ class Content extends Model
 {
     use HasFactory;
 
-    protected $casts = [
-        'json_content' => 'array',
-    ];
+    protected $with = ['parts'];
 
-    protected $fillable = [
-        'type',
-        'json_content',
-        'options',
-    ];
+    public function parts()
+    {
+        return $this->hasMany(ContentPart::class);
+    }
 }

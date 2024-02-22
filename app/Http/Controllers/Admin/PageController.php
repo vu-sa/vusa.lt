@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\LaravelResourceController;
 use App\Models\Content;
+use App\Models\ContentPart;
 use App\Models\Padalinys;
 use App\Models\Page;
 use App\Services\ModelIndexer;
@@ -57,7 +58,7 @@ class PageController extends LaravelResourceController
 
         $request->validate([
             'title' => 'required|string|max:255',
-            'contents' => 'required|array',
+            'content.parts' => 'required',
             'lang' => 'required|string',
             'permalink' => 'required|string|max:255|unique:pages',
         ]);
@@ -71,15 +72,20 @@ class PageController extends LaravelResourceController
             $padalinys_id = $this->authorizer->permissableDuties->first()->padaliniai->first()->id;
         }
 
-        $page = Page::query()->create([
+        $content = new Content();
+
+        $content->save();
+
+        $content->parts()->createMany($request->content['parts']);
+
+        Page::query()->create([
             'title' => $request->title,
+            'content_id' => $content->id,
             'permalink' => $request->permalink,
             'lang' => $request->lang,
             'other_lang_id' => $request->other_lang_id,
             'padalinys_id' => $padalinys_id,
         ]);
-
-        $page->contents()->createMany($request->contents);
 
         return redirect()->route('pages.index')->with('success', 'Puslapis sėkmingai sukurtas!');
     }
@@ -99,7 +105,7 @@ class PageController extends LaravelResourceController
 
         return Inertia::render('Admin/Content/EditPage', [
             'page' => [
-                ...$page->only('id', 'title', 'contents', 'permalink', 'text', 'lang', 'category', 'padalinys_id', 'is_active', 'aside'),
+                ...$page->only('id', 'title', 'content', 'permalink', 'text', 'lang', 'category', 'padalinys_id', 'is_active', 'aside'),
                 'other_lang_id' => $page->getOtherLanguage()?->only('id')['id'],
             ],
             'otherLangPages' => $other_lang_pages,
@@ -119,24 +125,24 @@ class PageController extends LaravelResourceController
 
         $page->update($request->only('title', 'lang', 'other_lang_id'));
 
-        // Detach
-        $page->contents()->detach();
+        $content = Content::query()->find($page->content->id);
 
-        foreach ($request->contents as $key => $content) {
-            $id = $content['id'] ?? null;
-            $model = Content::findOrNew($id);
+        foreach ($request->content['parts'] as $key => $part) {
+            $id = $part['id'] ?? null;
 
-            $model->type = $content['type'];
-            $model->json_content = $content['json_content'];
-            $model->options = $content['options'] ?? null;
+            $model = ContentPart::query()->findOrNew($id);
 
-            $model->save();
-
-            // TODO: maybe there's need to delete contents, when none are attached to page or news
-            $page->contents()->attach($model, ['order' => $key]);
+            $model->content_id = $content->id;
+            $model->type = $part['type'];
+            $model->json_content = $part['json_content'];
+            $model->options = $part['options'] ?? null;
+            $model->order = $key;
 
             $model->save();
         }
+
+        // Remove non-existing parts
+        $content->parts()->whereNotIn('id', collect($request->content['parts'])->pluck('id'))->delete();
 
         // update other lang id page
         if ($request->other_lang_id) {
@@ -149,7 +155,7 @@ class PageController extends LaravelResourceController
             $other_lang_page->save();
         }
 
-        return back()->with('success', 'Puslapis atnaujintas!')->with('data', $page->load('contents'));
+        return back()->with('success', 'Puslapis atnaujintas!')->with('data', $page->load('content'));
     }
 
     /**

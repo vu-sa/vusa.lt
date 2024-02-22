@@ -18,8 +18,8 @@
           <span class="text-gray-900 dark:text-white">{{ page.title }}</span>
         </h1>
         <!-- eslint-disable-next-line vue/no-v-html -->
-        <div class="prose prose-zinc dark:prose-invert flex gap-4 flex-col">
-          <RichContentParser :content="page.contents" />
+        <div class="prose prose-zinc flex flex-col gap-4 dark:prose-invert">
+          <RichContentParser :content="page.content?.parts" />
         </div>
         <!-- <aside v-if="anchorLinks" class="sticky top-48 hidden h-fit lg:block">
           <NAnchor ignore-gap :bound="160">
@@ -52,6 +52,8 @@ const props = defineProps<{
   navigationItemId: number;
   page: Record<string, any>;
 }>();
+
+console.log(props.page.content)
 
 const mainNavigation = usePage().props.mainNavigation;
 

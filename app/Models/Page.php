@@ -34,9 +34,9 @@ class Page extends Model
         return $this->belongsTo(Category::class, 'category_id');
     }
 
-    public function contents(): \Illuminate\Database\Eloquent\Relations\MorphToMany
+    public function content()
     {
-        return $this->morphToMany(Content::class, 'contentable')->withPivot('order')->orderBy('order');
+        return $this->belongsTo(Content::class);
     }
 
     public function toSearchableArray()

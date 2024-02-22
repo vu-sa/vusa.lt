@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Content;
+use App\Models\ContentPart;
 use App\Models\News;
 use App\Models\Page;
 use Illuminate\Database\Migrations\Migration;
@@ -16,38 +17,42 @@ return new class extends Migration
     {
         Schema::create('contents', function (Blueprint $table) {
             $table->id();
-            $table->string('type');
-            $table->json('json_content');
-            $table->json('options')->nullable();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
 
-        Schema::create('contentables', function (Blueprint $table) {
-            $table->foreignId('content_id');
-            $table->morphs('contentable');
+        Schema::create('content_parts', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('content_id')->constrained()->onDelete('cascade');
+            $table->string('type');
+            $table->json('json_content');
+            $table->json('options')->nullable();
             $table->integer('order')->default(0);
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+        });
 
-            $table->primary(['content_id', 'contentable_id', 'contentable_type'], 'contentables_primary');
+        Schema::table('pages', function (Blueprint $table) {
+            $table->foreignId('content_id')->after('other_lang_id')->constrained()->onDelete('cascade');
+        });
+
+        Schema::table('news', function (Blueprint $table) {
+            $table->foreignId('content_id')->after('other_lang_id')->constrained()->onDelete('cascade');
         });
 
         $pages = Page::all();
 
         foreach ($pages as $key => $page) {
-            $json = (new Tiptap\Editor)->setContent($page->text)->getJSON();
+            $json = (new Tiptap\Editor)->setContent($page->text)->getDocument();
 
             $content = new Content();
 
-            $content->type = 'tiptap';
-            $content->json_content = $json;
+            $content->parts()->create([
+                'type' => 'tiptap',
+                'json_content' => $json,
+                ]);
 
-            $content->save();
-
-            $page->contents()->attach($content, ['order' => 0]);
-
-            $page->save();
+            $page->content()->associate($content);
 
             echo "Page {$page->id} has been migrated\n";
         }
@@ -55,18 +60,16 @@ return new class extends Migration
         $news = News::all();
 
         foreach ($news as $key => $new) {
-            $json = (new Tiptap\Editor)->setContent($new->text)->getJSON();
+            $json = (new Tiptap\Editor)->setContent($new->text)->getDocument();
 
             $content = new Content();
 
-            $content->type = 'tiptap';
-            $content->json_content = $json;
+            $content->parts()->create([
+                'type' => 'tiptap',
+                'json_content' => $json,
+                ]);
 
-            $content->save();
-
-            $new->contents()->attach($content, ['order' => 0]);
-
-            $new->save();
+            $new->content()->associate($content);
 
             echo "News {$new->id} has been migrated\n";
         }

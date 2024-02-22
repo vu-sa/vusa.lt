@@ -4,24 +4,14 @@
       <FormElement>
         <template #title>
           {{ $t("forms.context.main_info") }}</template>
-        <NFormItem :label="$t('forms.fields.title')">
+        <NFormItem required :label="$t('forms.fields.title')">
           <NInput v-model:value="form.title" type="text" placeholder="Įrašyti pavadinimą..." />
         </NFormItem>
-        <NFormItem label="Nuoroda">
-          <NInput :value="form.permalink" disabled type="text" placeholder="Sugeneruojama nuoroda" />
-        </NFormItem>
-        <div class="grid lg:grid-cols-2 lg:gap-4">
-          <NFormItem label="Kalba">
+        <div class="grid lg:grid-cols-3 lg:gap-4">
+          <NFormItem required label="Kalba">
             <NSelect v-model:value="form.lang" :options="languageOptions" placeholder="Pasirinkti kalbą..." />
           </NFormItem>
-          <NFormItem label="Kitos kalbos puslapis">
-            <NSelect v-model:value="form.other_lang_id" filterable :disabled="modelRoute === 'news.store'"
-              placeholder="Pasirinkti kitos kalbos puslapį... (tik tada, kai jau sukūrėte puslapį)"
-              :options="otherLangNewsOptions" clearable />
-          </NFormItem>
-        </div>
-        <div class="grid lg:grid-cols-2 lg:gap-4">
-          <NFormItem label="Naujienos paskelbimo laikas">
+          <NFormItem required label="Naujienos paskelbimo laikas">
             <NDatePicker v-model:formatted-value="form.publish_time" placeholder="Data..." type="datetime"
               value-format="yyyy-MM-dd HH:mm:ss" />
           </NFormItem>
@@ -29,12 +19,22 @@
             <NSwitch v-model:value="form.draft" :checked-value="1" :unchecked-value="0" />
           </NFormItem>
         </div>
+        <div class="grid lg:grid-cols-2 lg:gap-4">
+          <NFormItem label="Kitos kalbos puslapis">
+            <NSelect v-model:value="form.other_lang_id" filterable :disabled="modelRoute === 'news.store'"
+              placeholder="Pasirinkti kitos kalbos puslapį... (tik tada, kai jau sukūrėte puslapį)"
+              :options="otherLangNewsOptions" clearable />
+          </NFormItem>
+          <NFormItem label="Nuoroda">
+            <NInput :value="form.permalink" disabled type="text" placeholder="Sugeneruojama nuoroda" />
+          </NFormItem>
+        </div>
       </FormElement>
       <FormElement>
         <template #title>
           Nuotrauka
         </template>
-        <NFormItem label="Nuotrauka">
+        <NFormItem required label="Nuotrauka">
           <NMessageProvider>
             <UploadImageWithCropper v-model:url="form.image" folder="news" />
           </NMessageProvider>
@@ -50,15 +50,13 @@
         <template #description>
           Šiuo metu naudojamas tik paieškos rezultatuose.
         </template>
-        <NFormItem>
-          <TipTap v-model="form.short" html :search-files="$page.props.search.other" />
-        </NFormItem>
+        <TipTap v-model="form.short" html :search-files="$page.props.search.other" />
       </FormElement>
-      <NFormItem>
+      <NFormItem required>
         <template #label>
           <span class="text-2xl font-bold">Turinys</span>
         </template>
-        <RichContentEditor v-model:contents="form.contents" />
+        <RichContentEditor v-model:contents="form.content.parts" />
       </NFormItem>
       <div class="flex justify-end gap-2">
         <DeleteModelButton v-if="deleteModelRoute" :form="form" :model-route="deleteModelRoute" />
@@ -126,7 +124,7 @@ const languageOptions = [
 
 function updateContents() {
   // Use usePage flash.data to grab page.contents and update form.contents
-  form.contents = usePage().props.flash.data?.contents
+  form.content = usePage().props.flash.data?.content
 }
 
 if (props.modelRoute == "news.store") {
