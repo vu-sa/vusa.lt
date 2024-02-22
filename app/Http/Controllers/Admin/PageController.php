@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\LaravelResourceController;
 use App\Models\Content;
-use App\Models\Model;
 use App\Models\Padalinys;
 use App\Models\Page;
 use App\Services\ModelIndexer;
