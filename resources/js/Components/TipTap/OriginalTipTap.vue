@@ -76,51 +76,51 @@
 
     <EditorContent :editor="editor"
       class="max-h-[calc(100vh-28rem)] min-h-16 border overflow-y-scroll rounded-md shadow-inner dark:bg-zinc-800/70 dark:border-zinc-900/80" />
+    <CardModal v-model:show="showFileModal" title="Sukurti nuorodą" @close="showFileModal = false">
+      <div class="rounded-sm">
+        <NTabs type="line" animated>
+          <NTabPane name="link" tab="Pridėti nuorodą">
+            <NInput v-model:value="previousUrl" placeholder="https://atstovavimas.vusa.lt" />
+            <div class="mt-2">
+              <NButton @click="updateLink">
+                Atnaujinti
+              </NButton>
+            </div>
+          </NTabPane>
+          <NTabPane name="file" tab="Pridėti failą, kaip nuorodą">
+            <p class="my-2">
+              Įrašyk failo pavadinimą ir pasirink, kad būtų pridėtas!
+              <a class="text-vusa-red" target="_blank" :href="route('files.index')">Failo įkėlimas</a>
+            </p>
+
+            <NSelect v-model:value="previousUrl" filterable
+              placeholder="Ieškoti failo pagal pavadinimą...(pvz.: Darbo reglamentas)" clearable :options="files" remote
+              @search="getFiles" />
+            <div class="mt-2">
+              <NButton @click="updateLink">
+                Atnaujinti
+              </NButton>
+            </div>
+          </NTabPane>
+          <NTabPane name="image" tab="Pridėti paveikslėlį">
+            <p class="my-2">
+              Įrašyk paveikslėlio pavadinimą ir pasirink!
+              <a class="text-vusa-red" target="_blank" :href="route('files.index')">Failo įkėlimas</a>
+            </p>
+
+            <NSelect v-model:value="previousUrl" filterable
+              placeholder="Ieškoti paveikslėlio...(jeigu įkėlėte paveikslėlį, rašykite jo pavadinimo bent tris raides)"
+              clearable :options="files" remote @search="getImages" />
+            <div class="mt-2">
+              <NButton @click="placeImage">
+                Atnaujinti
+              </NButton>
+            </div>
+          </NTabPane>
+        </NTabs>
+      </div>
+    </CardModal>
   </div>
-  <CardModal v-model:show="showFileModal" title="Sukurti nuorodą" @close="showFileModal = false">
-    <div class="rounded-sm">
-      <NTabs type="line" animated>
-        <NTabPane name="link" tab="Pridėti nuorodą">
-          <NInput v-model:value="previousUrl" placeholder="https://atstovavimas.vusa.lt" />
-          <div class="mt-2">
-            <NButton @click="updateLink">
-              Atnaujinti
-            </NButton>
-          </div>
-        </NTabPane>
-        <NTabPane name="file" tab="Pridėti failą, kaip nuorodą">
-          <p class="my-2">
-            Įrašyk failo pavadinimą ir pasirink, kad būtų pridėtas!
-            <a class="text-vusa-red" target="_blank" :href="route('files.index')">Failo įkėlimas</a>
-          </p>
-
-          <NSelect v-model:value="previousUrl" filterable
-            placeholder="Ieškoti failo pagal pavadinimą...(pvz.: Darbo reglamentas)" clearable :options="files" remote
-            @search="getFiles" />
-          <div class="mt-2">
-            <NButton @click="updateLink">
-              Atnaujinti
-            </NButton>
-          </div>
-        </NTabPane>
-        <NTabPane name="image" tab="Pridėti paveikslėlį">
-          <p class="my-2">
-            Įrašyk paveikslėlio pavadinimą ir pasirink!
-            <a class="text-vusa-red" target="_blank" :href="route('files.index')">Failo įkėlimas</a>
-          </p>
-
-          <NSelect v-model:value="previousUrl" filterable
-            placeholder="Ieškoti paveikslėlio...(jeigu įkėlėte paveikslėlį, rašykite jo pavadinimo bent tris raides)"
-            clearable :options="files" remote @search="getImages" />
-          <div class="mt-2">
-            <NButton @click="placeImage">
-              Atnaujinti
-            </NButton>
-          </div>
-        </NTabPane>
-      </NTabs>
-    </div>
-  </CardModal>
 </template>
 
 <script setup lang="ts">

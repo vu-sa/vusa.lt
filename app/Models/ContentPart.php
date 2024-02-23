@@ -11,6 +11,7 @@ class ContentPart extends Model
 
     protected $casts = [
         'json_content' => 'array',
+        'options' => 'array',
     ];
 
     protected $fillable = [
