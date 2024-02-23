@@ -21,26 +21,20 @@
         </template>
       </NButton>
       <!-- Text -->
-      <section v-if="content.type === 'tiptap'">
-        <span class="inline-flex items-center gap-2 text-xl font-bold">
-          <NIcon :component="TextCaseUppercase20Filled" />
-          Tekstas <NTag size="tiny">{{ content.id ? `#${content.id}` : 'Nauja' }}</NTag>
-        </span>
+      <RichContentEditorListElement v-if="content.type === 'tiptap'" :id="content?.id" :icon="TextCaseUppercase20Filled"
+        title="Tekstas">
         <OriginalTipTap v-show="content.expanded" v-model="content.json_content" />
-      </section>
+      </RichContentEditorListElement>
       <!-- Accordion, Collapse -->
-      <section v-else-if="content.type === 'naiveui-collapse'">
-        <span class="inline-flex items-center gap-2 text-xl font-bold">
-          <NIcon :component="AppsListDetail24Regular" />
-          Išsiskleidžiantis sąrašas <NTag size="tiny">{{ content.id ? `#${content.id}` : 'Nauja' }}</NTag>
-        </span>
+      <RichContentEditorListElement v-else-if="content.type === 'naiveui-collapse'" :id="content?.id"
+        :icon="AppsListDetail24Regular" title="Išsiskleidžiantis sąrašas">
         <NDynamicInput v-show="content.expanded" v-model:value="content.json_content" @create="onCreate">
           <template #create-button-default>
             Sukurti
           </template>
           <template #default="{ value }">
             <div
-              class="mt-2 flex w-full flex-col gap-6 rounded-lg border border-zinc-400/80 p-4 dark:border-zinc-800/50 dark:bg-zinc-800/20">
+              class="mt-2 flex w-full flex-col gap-6 rounded-lg border border-zinc-200/60 bg-zinc-50/30 p-4 dark:border-zinc-800/50 dark:bg-zinc-800/20">
               <NFormItem label="Pavadinimas" :show-feedback="false">
                 <NInput v-model:value="value.label" type="text" />
               </NFormItem>
@@ -48,13 +42,10 @@
             </div>
           </template>
         </NDynamicInput>
-      </section>
+      </RichContentEditorListElement>
       <!-- Card -->
-      <section v-else-if="content.type === 'naiveui-card'" class="flex flex-col gap-4">
-        <span class="inline-flex items-center gap-2 text-xl font-bold">
-          <NIcon :component="CalendarDay24Regular" />
-          Kortelė <NTag size="tiny">{{ content.id ? `#${content.id}` : 'Nauja' }}</NTag>
-        </span>
+      <RichContentEditorListElement v-else-if="content.type === 'naiveui-card'" :id="content?.id" title="Kortelė"
+        :icon="CalendarDay24Regular">
         <div v-show="content.expanded" class="flex flex-col gap-2">
           <div class="grid grid-cols-3 items-center gap-7" label="Pavadinimas" :show-feedback="false">
             <NFormItem label="Variantas" :show-feedback="false">
@@ -96,7 +87,7 @@
           </NFormItem>
           <OriginalTipTap v-model="content.json_content" />
         </div>
-      </section>
+      </RichContentEditorListElement>
     </div>
     <div class="my-2 flex max-w-64 gap-2">
       <NSelect v-model:value="selectedNewContent" :options="contentTypes" />
@@ -116,6 +107,7 @@ import { useSortable } from "@vueuse/integrations/useSortable";
 
 import InfoPopover from './Buttons/InfoPopover.vue';
 import OriginalTipTap from './TipTap/OriginalTipTap.vue';
+import RichContentEditorListElement from './RichContentEditorListElement.vue';
 
 const contents = defineModel('contents');
 

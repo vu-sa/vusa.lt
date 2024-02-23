@@ -24,7 +24,6 @@ defineProps<{
 }>();
 
 function generateHTMLfromTiptap(json_content: App.Models.ContentPart['json_content'] | Record<string, never>) {
-
   if (Object.keys(json_content).length === 0) {
     return '';
   }
