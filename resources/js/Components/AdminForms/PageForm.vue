@@ -22,21 +22,16 @@
           </NFormItem>
         </div>
       </FormElement>
-      <NFormItem>
-        <template #label>
-          <span class="text-2xl font-bold">Turinys</span>
-        </template>
-        <NTabs type="segment">
-          <NTabPane name="edit" tab="Redagavimas">
-            <RichContentEditor v-model:contents="form.content.parts" />
-          </NTabPane>
-          <NTabPane name="preview" tab="Peržiūra">
-            <div class="prose prose-zinc flex flex-col gap-4 dark:prose-invert">
-              <RichContentParser :content="form.content?.parts" />
-            </div>
-          </NTabPane>
-        </NTabs>
-      </NFormItem>
+      <NTabs type="segment">
+        <NTabPane name="edit" tab="Redagavimas">
+          <RichContentEditor v-model:contents="form.content.parts" />
+        </NTabPane>
+        <NTabPane name="preview" tab="Peržiūra">
+          <div class="prose prose-zinc flex flex-col gap-4 dark:prose-invert">
+            <RichContentParser :content="form.content?.parts" />
+          </div>
+        </NTabPane>
+      </NTabs>
     </div>
     <div class="flex justify-end gap-2">
       <DeleteModelButton v-if="deleteModelRoute" :form="form" :model-route="deleteModelRoute" />
@@ -48,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { NForm, NFormItem, NInput, NSelect } from "naive-ui";
+import { NForm, NFormItem, NInput, NSelect, NTabPane, NTabs } from "naive-ui";
 import { computed, watch } from "vue";
 import { useForm, usePage } from "@inertiajs/vue3";
 import latinize from "latinize";
@@ -57,6 +52,7 @@ import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import FormElement from "./FormElement.vue";
 import RichContentEditor from "../RichContentEditor.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
+import RichContentParser from "../RichContentParser.vue";
 
 const props = defineProps<{
   page: App.Entities.Page;
@@ -66,7 +62,6 @@ const props = defineProps<{
 }>();
 
 const form = useForm("page", props.page);
-
 
 const otherPageOptions = computed(() => {
   if (props.modelRoute === "pages.store") {
