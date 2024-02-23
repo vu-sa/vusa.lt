@@ -43,23 +43,70 @@
           </template>
         </NDynamicInput>
       </section>
+      <!-- Card -->
+      <section class="flex flex-col gap-4" v-else-if="content.type === 'naiveui-card'">
+        <h3 class="inline-flex items-center gap-2">
+          <NIcon :component="CalendarDay24Regular" />
+          Kortelė
+        </h3>
+        <div class="grid grid-cols-3 gap-7 items-center" label="Pavadinimas" :show-feedback="false">
+          <NFormItem label="Variantas" :show-feedback="false">
+            <NSelect v-model:value="content.options.variant" :options="[
+              { 'label': 'Outlined', 'value': 'outline' }, { 'label': 'Soft', 'value': 'soft' }]" />
+          </NFormItem>
+          <NFormItem label="Spalva" :show-feedback="false">
+            <NSelect v-model:value="content.options.color" :options="[{
+              'label': 'Pilka',
+              'value': 'zinc'
+            }, {
+              'label': 'Raudona',
+              'value': 'red'
+            }, {
+              'label': 'Geltona',
+              'value': 'yellow'
+            }
+            ]" />
+          </NFormItem>
+          <div class="mt-4">
+            <NCheckbox v-model:checked="content.options.isTitleColored" :checked-value="true" :unchecked-value="false">
+              Ar spalvinti kortelės pavadinimą?
+            </NCheckbox>
+            <NCheckbox v-model:checked="content.options.showIcon" :checked-value="true" :unchecked-value="false">
+              Ar naudoti ikonėlę?
+              <InfoPopover>
+                <p>Ikona bus rodoma kairėje pusėje </p>
+                <ul> 
+                  <li> Raudona: šauktukas </li>
+                  <li> Geltona: klaustukas </li>
+                  <li> Pilka: informacija </li>
+                </ul>
+              </InfoPopover>
+            </NCheckbox>
+          </div>
+        </div>
+        <NFormItem label="Pavadinimas" :show-feedback="false">
+          <NInput v-model:value="content.options.title" type="text" />
+        </NFormItem>
+        <OriginalTipTap v-model="content.json_content" />
+      </section>
     </div>
     <div class="my-2 flex max-w-64 gap-2">
       <NSelect v-model:value="selectedNewContent" :options="contentTypes" />
-      <NButton type="primary" @click="contents?.push({ json_content: {}, type: selectedNewContent })">Sukurti
-        naują
-        turinio bloką
+      <NButton type="primary"
+        @click="contents?.push({ json_content: {}, type: selectedNewContent, options: {}, key: Math.random().toString(36).substring(7) })">
+        Sukurti naują turinio bloką
       </NButton>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { AppsListDetail24Regular, Dismiss24Regular, ReOrderDotsVertical24Regular, TextCaseUppercase20Filled } from '@vicons/fluent';
-import { NButton, NDynamicInput, NFormItem, NIcon, NInput, NSelect } from 'naive-ui';
+import { AppsListDetail24Regular, CalendarDay24Regular, Dismiss24Regular, ReOrderDotsVertical24Regular, TextCaseUppercase20Filled } from '@vicons/fluent';
+import { NButton, NCheckbox, NDynamicInput, NFormItem, NIcon, NInput, NSelect } from 'naive-ui';
 import { ref } from 'vue';
 import { useSortable } from "@vueuse/integrations/useSortable";
 
+import InfoPopover from './Buttons/InfoPopover.vue';
 import OriginalTipTap from './TipTap/OriginalTipTap.vue';
 
 const contents = defineModel('contents');
@@ -82,7 +129,11 @@ const contentTypes = [
   {
     value: "naiveui-collapse",
     label: "Akordeonas",
-  }
+  },
+  {
+    value: "naiveui-card",
+    label: "Kortelė",
+  },
 ];
 
 useSortable(el, contents, { handle: ".handle", animation: 100 });
