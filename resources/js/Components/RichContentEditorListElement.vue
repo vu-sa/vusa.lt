@@ -1,14 +1,14 @@
 <template>
-  <section class="flex flex-col gap-3">
-    <div class="flex items-center gap-2 text-xl font-bold">
+  <section class="flex flex-col gap-5">
+    <div class="flex items-center gap-2 text-lg font-bold">
       <NIcon :component="icon" />
       {{ title }} <NTag size="tiny">
-        {{ content?.id ? `#${content?.id}` : 'Nauja' }}
+        {{ id ? `#${id}` : 'Nauja' }}
       </NTag>
       <div class="ml-auto flex gap-4">
         <NButton type="primary" circle color="#EEEEEE" size="small" bordered @click="$emit('expand')">
           <template #icon>
-            <NIcon :component="ArrowMaximizeVertical24Regular" color="#000000" />
+            <NIcon :component="isExpanded ? ArrowMinimizeVertical24Regular : ArrowMaximizeVertical24Regular" color="#000000" />
           </template>
         </NButton>
         <NButton :disabled="!canDelete" circle type="error" size="small" @click="$emit('remove')">
@@ -23,15 +23,16 @@
 </template>
 
 <script setup lang="ts">
-import { ArrowMaximizeVertical24Regular, Dismiss24Regular } from '@vicons/fluent';
+import { ArrowMaximizeVertical24Regular, ArrowMinimizeVertical24Regular, Dismiss24Regular } from '@vicons/fluent';
 import { NButton, NIcon, NTag } from 'naive-ui';
 import type { Component } from 'vue';
 
-const props = defineProps<{
+defineProps<{
   icon: Component;
   id?: number;
   title: string;
   canDelete: boolean;
+  isExpanded: boolean;
 }>()
 
 defineEmits(['expand', 'remove'])

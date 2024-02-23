@@ -127,7 +127,21 @@ class PageController extends LaravelResourceController
 
         $content = Content::query()->find($page->content->id);
 
+        // Collect and remove values with no ids
+        $existingParts = collect($request->content['parts'])->filter(function ($part) {
+            return isset($part['id']);
+        });
+
+        // Remove non-existing parts
+        $content->parts()->whereNotIn('id', $existingParts->pluck('id'))->delete();
+
         foreach ($request->content['parts'] as $key => $part) {
+
+            // Continue if part is null 
+            if (is_null($part)) {
+                continue;
+            }
+
             $id = $part['id'] ?? null;
 
             $model = ContentPart::query()->findOrNew($id);
@@ -140,9 +154,6 @@ class PageController extends LaravelResourceController
 
             $model->save();
         }
-
-        // Remove non-existing parts
-        $content->parts()->whereNotIn('id', collect($request->content['parts'])->pluck('id'))->delete();
 
         // update other lang id page
         if ($request->other_lang_id) {

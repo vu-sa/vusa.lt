@@ -1,6 +1,6 @@
 <template>
-  <div class="w-full">
-    <div v-if="showTiptapNavbar && editor" class="flex min-h-8 flex-wrap items-center gap-2 pb-4 pt-2">
+  <div class="gap flex w-full flex-col-reverse">
+    <div v-if="showToolbar && editor" class="flex min-h-8 flex-wrap items-center gap-2 pb-1 pt-3">
       <TipTapMarkButton :editor="editor" type="bold" :icon="TextBold20Regular" />
       <TipTapMarkButton :editor="editor" type="italic" :icon="TextItalic20Regular" />
       <TipTapButton :editor="editor" type="link" :icon="Link20Regular" @click="getLinkAndModal" />
@@ -60,8 +60,6 @@
           <NIcon :component="LineHorizontal120Regular" />
         </template>
       </NButton>
-      <!-- </div> -->
-      <!-- <div> -->
       <NButton size="small" @click="editor?.chain().focus().undo().run()">
         <template #icon>
           <NIcon :component="ArrowUndo20Filled" />
@@ -73,9 +71,15 @@
         </template>
       </NButton>
     </div>
-
-    <EditorContent :editor="editor"
-      class="max-h-[calc(100vh-28rem)] min-h-16 border overflow-y-scroll rounded-md shadow-inner dark:bg-zinc-800/70 dark:border-zinc-900/80" />
+    <div class="grid grid-cols-[auto,_30px] gap-2">
+      <EditorContent :editor="editor"
+        class="max-h-96 min-h-24 overflow-y-scroll rounded-md border dark:border-zinc-900/80 dark:bg-zinc-800/70 w-full" />
+      <NButton :type="showToolbar ? 'primary' : 'default'" size="small" @click="showToolbar = !showToolbar">
+        <template #icon>
+          <NIcon :component="Settings16Filled" />
+        </template>
+      </NButton>
+    </div>
     <CardModal v-model:show="showFileModal" title="Sukurti nuorodą" @close="showFileModal = false">
       <div class="rounded-sm">
         <NTabs type="line" animated>
@@ -131,6 +135,7 @@ import {
   LineHorizontal120Regular,
   Link20Regular,
   LinkDismiss20Filled,
+  Settings16Filled,
   TextBold20Regular,
   TextBulletListLtr24Filled,
   TextHeader120Filled,
@@ -171,12 +176,11 @@ const props = defineProps<{
   html?: boolean;
   modelValue: string | Record<string, unknown> | null;
   searchFiles?: Record<string, unknown>;
-  hideNavbar?: boolean;
 }>();
 
-const showTiptapNavbar = !props.hideNavbar;
-
 const emit = defineEmits(["update:modelValue"]);
+
+const showToolbar = ref(false);
 
 const showFileModal = ref(false);
 const previousUrl = ref("");
@@ -265,7 +269,7 @@ const placeImage = () => {
 const editor = useEditor({
   editorProps: {
     attributes: {
-      class: "prose prose-zinc dark:prose-invert focus:outline-none p-4",
+      class: "focus:outline-none px-3 py-2 w-full",
     },
   },
   extensions: [
@@ -305,3 +309,16 @@ onBeforeUnmount(() => {
 // must be called after everything
 const { message } = createDiscreteApi(["message"]);
 </script>
+
+<style>
+.tiptap {
+  & p, ul, ol, blockquote {
+    margin-bottom: 0.75rem;
+  }
+  & a {
+    color: #bd2835;
+    text-decoration: underline;
+    font-weight: 500;
+  }
+}
+</style>

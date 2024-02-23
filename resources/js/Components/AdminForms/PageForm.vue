@@ -23,10 +23,18 @@
         </div>
       </FormElement>
       <NTabs type="segment">
-        <NTabPane name="edit" tab="Redagavimas" :display-directive="'show'">
+        <NTabPane name="edit" :display-directive="'show'">
+          <template #tab>
+            <NIcon class="mr-2" :component="Edit20Regular" />
+            Redagavimas
+          </template>
           <RichContentEditor v-model:contents="form.content.parts" />
         </NTabPane>
-        <NTabPane name="preview" tab="Peržiūra">
+        <NTabPane name="preview">
+          <template #tab>
+            <NIcon class="mr-2" :component="Eye24Regular" />
+            Peržiūra
+          </template>
           <div class="prose prose-zinc flex flex-col gap-4 dark:prose-invert">
             <RichContentParser :content="form.content?.parts" />
           </div>
@@ -43,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-import { NForm, NFormItem, NInput, NSelect, NTabPane, NTabs } from "naive-ui";
+import { NForm, NFormItem, NIcon, NInput, NSelect, NTabPane, NTabs } from "naive-ui";
 import { computed, watch } from "vue";
 import { useForm, usePage } from "@inertiajs/vue3";
 import latinize from "latinize";
@@ -53,6 +61,7 @@ import FormElement from "./FormElement.vue";
 import RichContentEditor from "../RichContentEditor.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 import RichContentParser from "../RichContentParser.vue";
+import { Edit20Regular, Eye24Regular } from "@vicons/fluent";
 
 const props = defineProps<{
   page: App.Entities.Page;

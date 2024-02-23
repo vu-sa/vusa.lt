@@ -16,6 +16,7 @@
 import { NCollapse, NCollapseItem } from 'naive-ui';
 import { generateHTML } from '@tiptap/vue-3';
 import StarterKit from '@tiptap/starter-kit';
+import TipTapLink from "@tiptap/extension-link";
 
 import RichContentCard from './RichContentCard.vue';
 
@@ -28,7 +29,10 @@ function generateHTMLfromTiptap(json_content: App.Models.ContentPart['json_conte
     return '';
   }
 
-  return generateHTML(json_content, [StarterKit]);
+  return generateHTML(json_content, [StarterKit,
+    TipTapLink.configure({
+      openOnClick: false,
+    }),
+  ]);
 }
-
 </script>
