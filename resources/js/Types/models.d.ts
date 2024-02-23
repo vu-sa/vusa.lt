@@ -162,6 +162,7 @@ declare namespace App.Models {
     }
 
     export interface ContentPart {
+        id: number;
         content_id: number;
         type: string;
         json_content: Array<any> | any;
