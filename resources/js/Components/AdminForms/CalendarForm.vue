@@ -287,12 +287,12 @@
         </NFormItem>
 
         <NFormItem label="Aprašymas" :span="6" required>
-          <TipTap
+          <TipTap html
             v-if="locale === 'lt'"
             v-model="form.description"
             :search-files="$page.props.search.other"
           />
-          <TipTap
+          <TipTap html
             v-else
             v-model="form.extra_attributes.en.description"
             :search-files="$page.props.search.other"

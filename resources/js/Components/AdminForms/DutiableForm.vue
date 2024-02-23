@@ -80,12 +80,12 @@
               <SimpleLocaleButton v-model:locale="locale" />
             </div>
           </template>
-          <TipTap
+          <TipTap html
             v-if="locale === 'lt'"
             v-model="form.extra_attributes.info_text"
             :search-files="$page.props.search.other"
           />
-          <TipTap
+          <TipTap html
             v-else-if="locale === 'en'"
             v-model="form.extra_attributes.en.info_text"
             :search-files="$page.props.search.other"

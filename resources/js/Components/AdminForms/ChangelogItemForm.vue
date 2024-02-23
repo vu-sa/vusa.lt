@@ -10,12 +10,12 @@
           <MultiLocaleInput v-model:input="form.title" v-model:lang="locale" />
         </NFormItem>
         <NFormItem label="Aprašymas">
-          <OriginalTipTap
+          <OriginalTipTap html
             v-if="locale === 'lt'"
             v-model="form.description.lt"
             :search-files="$page.props.search.other"
           />
-          <OriginalTipTap
+          <OriginalTipTap html
             v-if="locale === 'en'"
             v-model="form.description.en"
             :search-files="$page.props.search.other"
@@ -36,7 +36,7 @@
 
 <script setup lang="tsx">
 import { NDatePicker, NForm, NFormItem } from "naive-ui";
-import { ref, watch } from "vue";
+import { ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 
 import FormElement from "./FormElement.vue";
