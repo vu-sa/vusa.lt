@@ -13,6 +13,6 @@ class Content extends Model
 
     public function parts()
     {
-        return $this->hasMany(ContentPart::class);
+        return $this->hasMany(ContentPart::class)->orderBy('order');
     }
 }

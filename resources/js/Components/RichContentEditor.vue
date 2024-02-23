@@ -1,7 +1,7 @@
 <template>
-  <div class="flex w-full flex-col gap-6">
+  <div ref="el" class="flex w-full flex-col gap-6">
     <div v-for="content, index in contents" :key="content.id"
-      class="relative w-full rounded-md border border-zinc-800 p-6 shadow-md dark:border-zinc-700/40 dark:bg-zinc-800/5">
+      class="relative grid w-full grid-cols-[24px_1fr] gap-4 rounded-md border border-zinc-800 p-3 shadow-md dark:border-zinc-700/40 dark:bg-zinc-800/5">
       <div class="absolute -right-4 -top-4">
         <NButton :disabled="contents?.length < 2" circle type="error" size="small" @click="contents?.splice(index, 1)">
           <template #icon>
@@ -9,19 +9,32 @@
           </template>
         </NButton>
       </div>
-      <p class="mb-4 text-xl font-bold underline">#{{ index + 1 }}: {{ contentTypes.find((type) => type.value ===
-        content.type)?.label }} </p>
-      <div v-if="content.type === 'tiptap'">
+      <NButton class="handle" style="height: 100%;" quaternary size="small">
+        <template #icon>
+          <NIcon :component="ReOrderDotsVertical24Regular" />
+        </template>
+      </NButton>
+      <!-- Text -->
+      <section v-if="content.type === 'tiptap'">
+        <h3 class="inline-flex items-center gap-2">
+          <NIcon :component="TextCaseUppercase20Filled" />
+          Tekstas
+        </h3>
         <OriginalTipTap v-model="content.json_content" />
-      </div>
-      <div v-else-if="content.type === 'naiveui-collapse'">
+      </section>
+      <!-- Accordion, Collapse -->
+      <section v-else-if="content.type === 'naiveui-collapse'">
+        <h3 class="inline-flex items-center gap-2">
+          <NIcon :component="AppsListDetail24Regular" />
+          Išsiskleidžiantis sąrašas
+        </h3>
         <NDynamicInput v-model:value="content.json_content" @create="onCreate">
           <template #create-button-default>
             Sukurti
           </template>
           <template #default="{ value }">
             <div
-              class="flex w-full flex-col gap-6 rounded-lg border border-zinc-400/80 p-4 dark:border-zinc-800/50 dark:bg-zinc-800/20">
+              class="mt-2 flex w-full flex-col gap-6 rounded-lg border border-zinc-400/80 p-4 dark:border-zinc-800/50 dark:bg-zinc-800/20">
               <NFormItem label="Pavadinimas" :show-feedback="false">
                 <NInput v-model:value="value.label" type="text" />
               </NFormItem>
@@ -29,7 +42,7 @@
             </div>
           </template>
         </NDynamicInput>
-      </div>
+      </section>
     </div>
     <div class="my-2 flex max-w-64 gap-2">
       <NSelect v-model:value="selectedNewContent" :options="contentTypes" />
@@ -42,13 +55,16 @@
 </template>
 
 <script setup lang="ts">
-import { Dismiss24Regular } from '@vicons/fluent';
+import { AppsListDetail24Regular, Dismiss24Regular, ReOrderDotsVertical24Regular, TextCaseUppercase20Filled } from '@vicons/fluent';
 import { NButton, NDynamicInput, NFormItem, NIcon, NInput, NSelect } from 'naive-ui';
 import { ref } from 'vue';
+import { useSortable } from "@vueuse/integrations/useSortable";
 
 import OriginalTipTap from './TipTap/OriginalTipTap.vue';
 
-defineModel('contents');
+const contents = defineModel('contents');
+
+const el = ref<HTMLElement | null>(null);
 
 function onCreate() {
   return {
@@ -58,7 +74,6 @@ function onCreate() {
 }
 
 const selectedNewContent = ref("tiptap");
-
 const contentTypes = [
   {
     value: "tiptap",
@@ -69,5 +84,7 @@ const contentTypes = [
     label: "Akordeonas",
   }
 ];
+
+useSortable(el, contents, { handle: ".handle", animation: 100 });
 
 </script>
