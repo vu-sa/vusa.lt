@@ -1,34 +1,40 @@
 <template>
   <div ref="el" class="mt-4 flex w-full flex-col gap-4">
-    <div v-for="content, index in contents" :key="content.id"
-      class="relative grid w-full grid-cols-[24px_1fr] gap-4 rounded-md border border-zinc-300 p-3 shadow-sm dark:border-zinc-700/40 dark:bg-zinc-800/5">
-      <div class="absolute -right-4 -top-4 flex gap-2">
-        <NButton type="primary" circle color="#EEEEEE" size="small" bordered
-          @click="content.expanded = !content.expanded">
-          <template #icon>
-            <NIcon :component="ArrowMaximizeVertical24Regular" color="#000000" />
-          </template>
-        </NButton>
-        <NButton :disabled="contents?.length < 2" circle type="error" size="small" @click="contents?.splice(index, 1)">
-          <template #icon>
-            <NIcon :component="Dismiss24Regular" />
-          </template>
-        </NButton>
+    <FadeTransition v-if="showHistory">
+      <div class="ml-auto flex items-center gap-2">
+        <NButtonGroup size="tiny">
+          <NButton :disabled="history?.length < 2" @click="undo()">
+            <template #icon>
+              <NIcon :component="ArrowUndo24Filled" />
+            </template>
+          </NButton>
+          <NButton @click="redo()">
+            <template #icon>
+              <NIcon :component="ArrowRedo24Filled" />
+            </template>
+          </NButton>
+        </NButtonGroup>
+        <p class="text-xs leading-5 text-zinc-400">
+          Grąžinti turinio blokų tvarką
+        </p>
       </div>
+    </FadeTransition>
+    <div v-for="content, index in contents " :key="content.id"
+      class="relative grid w-full grid-cols-[24px_1fr] gap-4 rounded-md border border-zinc-300 p-3 shadow-sm dark:border-zinc-700/40 dark:bg-zinc-800/5">
       <NButton class="handle" style="height: 100%;" quaternary size="small">
         <template #icon>
           <NIcon :component="ReOrderDotsVertical24Regular" />
         </template>
       </NButton>
-      <!-- Text -->
-      <RichContentEditorListElement v-if="content.type === 'tiptap'" :id="content?.id" :icon="TextCaseUppercase20Filled"
-        title="Tekstas">
-        <OriginalTipTap v-show="content.expanded" v-model="content.json_content" />
-      </RichContentEditorListElement>
-      <!-- Accordion, Collapse -->
-      <RichContentEditorListElement v-else-if="content.type === 'naiveui-collapse'" :id="content?.id"
-        :icon="AppsListDetail24Regular" title="Išsiskleidžiantis sąrašas">
-        <NDynamicInput v-show="content.expanded" v-model:value="content.json_content" @create="onCreate">
+      <RichContentEditorListElement :id="content?.id" :can-delete="contents?.length > 1"
+        :icon="contentTypes.find((type) => type.value === content.type)?.icon"
+        :title="contentTypes.find((type) => type.value === content.type)?.label"
+        @expand="content.expanded = !content.expanded" @remove="handleElementRemove(index)">
+        <!-- Text -->
+        <OriginalTipTap v-if="content.type === 'tiptap'" v-show="content.expanded" v-model="content.json_content" />
+        <!-- Collapse -->
+        <NDynamicInput v-else-if="content.type === 'naiveui-collapse'" v-show="content.expanded"
+          v-model:value="content.json_content" @create="onCreate">
           <template #create-button-default>
             Sukurti
           </template>
@@ -42,15 +48,13 @@
             </div>
           </template>
         </NDynamicInput>
-      </RichContentEditorListElement>
-      <!-- Card -->
-      <RichContentEditorListElement v-else-if="content.type === 'naiveui-card'" :id="content?.id" title="Kortelė"
-        :icon="CalendarDay24Regular">
-        <div v-show="content.expanded" class="flex flex-col gap-2">
+        <!-- Card -->
+        <div v-if="content.type === 'naiveui-card'" v-show="content.expanded" class="flex flex-col gap-2">
           <div class="grid grid-cols-3 items-center gap-7" label="Pavadinimas" :show-feedback="false">
             <NFormItem label="Variantas" :show-feedback="false">
               <NSelect v-model:value="content.options.variant" :options="[
-                { 'label': 'Outlined', 'value': 'outline' }, { 'label': 'Soft', 'value': 'soft' }]" />
+                { 'label': 'Outlined', 'value': 'outline' }, { 'label': 'Soft', 'value': 'soft' }]
+                " />
             </NFormItem>
             <NFormItem label="Spalva" :show-feedback="false">
               <NSelect v-model:value="content.options.color" :options="[{
@@ -63,7 +67,8 @@
                 'label': 'Geltona',
                 'value': 'yellow'
               }
-              ]" />
+              ]
+                " />
             </NFormItem>
             <div class="mt-4">
               <NCheckbox v-model:checked="content.options.isTitleColored" :checked-value="true" :unchecked-value="false">
@@ -89,10 +94,9 @@
         </div>
       </RichContentEditorListElement>
     </div>
-    <div class="my-2 flex max-w-64 gap-2">
+    <div class="my-2 flex w-full gap-2">
       <NSelect v-model:value="selectedNewContent" :options="contentTypes" />
-      <NButton type="primary"
-        @click="contents?.push({ json_content: {}, type: selectedNewContent, options: {}, key: Math.random().toString(36).substring(7), expanded: true })">
+      <NButton type="primary" @click="handleElementCreate">
         Sukurti naują turinio bloką
       </NButton>
     </div>
@@ -100,18 +104,23 @@
 </template>
 
 <script setup lang="ts">
-import { AppsListDetail24Regular, ArrowMaximizeVertical24Regular, CalendarDay24Regular, Dismiss24Regular, ReOrderDotsVertical24Regular, TextCaseUppercase20Filled } from '@vicons/fluent';
-import { NButton, NCheckbox, NDynamicInput, NFormItem, NIcon, NInput, NSelect, NTag } from 'naive-ui';
-import { ref } from 'vue';
-import { useSortable } from "@vueuse/integrations/useSortable";
+import { AppsListDetail24Regular, ArrowRedo24Filled, ArrowUndo24Filled, CalendarDay24Regular, ReOrderDotsVertical24Regular, TextCaseUppercase20Filled } from '@vicons/fluent';
+import { NButton, NButtonGroup, NCheckbox, NDynamicInput, NFormItem, NIcon, NInput, NSelect, NTag } from 'naive-ui';
+import { moveArrayElement, useSortable } from "@vueuse/integrations/useSortable";
+import { nextTick, ref } from 'vue';
+import { useManualRefHistory } from '@vueuse/core';
 
+import FadeTransition from './Transitions/FadeTransition.vue';
 import InfoPopover from './Buttons/InfoPopover.vue';
 import OriginalTipTap from './TipTap/OriginalTipTap.vue';
 import RichContentEditorListElement from './RichContentEditorListElement.vue';
 
 const contents = defineModel('contents');
 
+const { history, commit, undo, redo } = useManualRefHistory(contents, { clone: true, capacity: 30 });
+
 const el = ref<HTMLElement | null>(null);
+const showHistory = ref(false);
 
 function onCreate() {
   return {
@@ -120,22 +129,50 @@ function onCreate() {
   };
 }
 
+function handleElementCreate() {
+  commit();
+  contents.value?.push({ json_content: {}, type: selectedNewContent, options: {}, key: Math.random().toString(36).substring(7), expanded: true })
+  showHistory.value = true;
+
+  nextTick(() => commit());
+}
+
+function handleElementRemove(index: number) {
+  commit();
+  contents.value?.splice(index, 1);
+  showHistory.value = true;
+
+  nextTick(() => commit());
+}
+
 const selectedNewContent = ref("tiptap");
+
 const contentTypes = [
   {
     value: "tiptap",
     label: "Tekstas",
+    icon: TextCaseUppercase20Filled,
   },
   {
     value: "naiveui-collapse",
-    label: "Akordeonas",
+    label: "Išsiskleidžiantis sąrašas",
+    icon: AppsListDetail24Regular,
   },
   {
     value: "naiveui-card",
     label: "Kortelė",
+    icon: CalendarDay24Regular,
   },
 ];
 
-useSortable(el, contents, { handle: ".handle", animation: 100 });
+useSortable(el, contents, {
+  handle: ".handle", animation: 100,
+  onUpdate: (e) => {
+    commit();
+    moveArrayElement(contents.value, e.oldIndex, e.newIndex)
+    showHistory.value = true;
+    nextTick(() => commit());
+  }
+});
 
 </script>

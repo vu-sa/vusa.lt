@@ -23,7 +23,7 @@
         </div>
       </FormElement>
       <NTabs type="segment">
-        <NTabPane name="edit" tab="Redagavimas">
+        <NTabPane name="edit" tab="Redagavimas" :display-directive="'show'">
           <RichContentEditor v-model:contents="form.content.parts" />
         </NTabPane>
         <NTabPane name="preview" tab="Peržiūra">
