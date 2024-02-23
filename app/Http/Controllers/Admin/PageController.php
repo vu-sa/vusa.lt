@@ -137,7 +137,7 @@ class PageController extends LaravelResourceController
 
         foreach ($request->content['parts'] as $key => $part) {
 
-            // Continue if part is null 
+            // Continue if part is null
             if (is_null($part)) {
                 continue;
             }
