@@ -8,7 +8,7 @@
       :theme-overrides="themeOverrides"
     >
       <div
-        class="flex min-h-screen flex-col justify-between bg-neutral-50 antialiased dark:bg-zinc-900"
+        class="flex min-h-screen flex-col justify-between bg-zinc-50 antialiased dark:bg-zinc-900"
       >
         <FadeTransition appear
           ><MainNavigation :is-theme-dark="isDark"
@@ -88,6 +88,14 @@ const themeOverrides = {
     primaryColorPressed: "#CC2130FF",
     primaryColorSuppl: "#B93945FF",
     borderRadius: "6px",
+    fontWeightStrong: "600",
+    lineHeight: "1.5",
+    paddingMedium: '16px 24px 8px',
+    titleFontSizeMedium: '1.25rem',
+    titleFontWeight: '700',
+    // textColor1: 'rgb(24, 8, 6)',
+    // textColor2: 'rgb(32, 13, 11)',
+    // textColor3: 'rgb(130, 121, 118)'
   },
 };
 

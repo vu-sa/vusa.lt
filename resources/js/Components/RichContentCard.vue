@@ -75,10 +75,6 @@ const cardColors = {
 };
 
 const commonOverrides = {
-  paddingMedium: '16px 24px 8px',
-  titleFontSizeMedium: '1.25rem',
-  titleFontWeight: '700',
-  lineHeight: '1.5',
   borderRadius: '10px',
 };
 

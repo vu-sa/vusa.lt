@@ -1,8 +1,8 @@
 <template>
-  <section class="fixed top-0 z-50">
+  <section class="fixed top-0 z-50 w-full">
     <div class="group relative">
       <nav
-        class="relative z-10 flex h-20 w-screen flex-row items-center justify-between gap-4 bg-white p-2 text-gray-800 shadow-sm dark:bg-zinc-800 dark:text-white md:px-6 lg:px-12 xl:px-24"
+        class="relative z-10 flex h-20 flex-row items-center justify-between gap-4 bg-white px-8 py-4 text-zinc-800 shadow-sm dark:bg-zinc-800 dark:text-white lg:px-12 xl:px-24"
       >
         <div class="flex flex-row items-center space-x-4">
           <!-- Hamburger -->

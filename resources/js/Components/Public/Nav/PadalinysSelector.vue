@@ -10,10 +10,9 @@
       <NButton
         :disabled="isDisabled"
         :size="size"
-        style="border-radius: 0.5rem"
       >
         {{ padalinys }}
-        <NIcon class="ml-1" size="18" :component="ChevronDown20Filled" />
+        <NIcon class="ml-1" size="18" :component="ChevronDown20Regular" />
       </NButton>
     </NDropdown>
   </NScrollbar>
@@ -21,7 +20,7 @@
 
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
-import { ChevronDown20Filled } from "@vicons/fluent";
+import { ChevronDown20Regular } from "@vicons/fluent";
 import {
   type DropdownOption,
   NButton,
