@@ -40,7 +40,7 @@
         :key="institutionType.id"
         class="mb-4 block text-zinc-500"
       >
-        {{ institutionType.title }}
+        {{ $t(institutionType.title) }}
       </small>
       <slot name="more" />
       <div class="mb-5">
