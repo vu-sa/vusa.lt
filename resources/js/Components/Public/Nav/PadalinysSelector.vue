@@ -1,6 +1,6 @@
 <template>
   <NScrollbar>
-    <NDropdown
+    <NDropdown :disabled="isDisabled"
       :options="options_padaliniai"
       size="small"
       style="overflow: auto; max-height: 600px"
