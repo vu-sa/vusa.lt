@@ -78,22 +78,7 @@
         class="flex flex-col justify-center"
       >
         <div class="flex flex-col justify-center text-xs leading-4">
-          <p v-if="timeTillEvent.days >= 0" class="text-center">
-            {{ $t("Iki renginio liko") }}:
-          </p>
-
-          <NGradientText
-            v-if="timeTillEvent.days >= 0"
-            type="error"
-            class="mb-2 w-full text-center"
-          >
-            {{ `${timeTillEvent.days} ${$t("d.")}` }}
-            <NCountdown
-              :render="renderCountdown"
-              :active="true"
-              :duration="timeTillEvent.ms"
-            ></NCountdown>
-          </NGradientText>
+          {{ formatRelativeTime(new Date(calendarEvent.date)) }}
         </div>
 
         <NButton
@@ -189,8 +174,6 @@ import {
   type CountdownProps,
   NButton,
   NCard,
-  NCountdown,
-  NGradientText,
   NIcon,
   NMessageProvider,
   NModal,
@@ -200,7 +183,7 @@ import {
 import { FacebookF, Google } from "@vicons/fa";
 import { computed, ref } from "vue";
 
-import { formatStaticTime } from "@/Utils/IntlTime";
+import { formatRelativeTime, formatStaticTime } from "@/Utils/IntlTime";
 import MIFCampRegistration from "@/Components/Temp/MIFCampRegistration.vue";
 
 const props = defineProps<{
@@ -255,17 +238,5 @@ const calculateEventDuration = (event: App.Entities.Calendar) => {
     const minutes = Math.floor(duration / (1000 * 60));
     return `${minutes} ${$t("minutės")}`;
   }
-};
-
-const renderCountdown: CountdownProps["render"] = ({
-  hours,
-  minutes,
-  seconds,
-}) => {
-  return (
-    <span>{`${hours} ${$t("val.")} ${minutes} ${$t("min.")} ${seconds} ${$t(
-      "sek."
-    )}`}</span>
-  );
 };
 </script>
