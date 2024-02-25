@@ -60,6 +60,7 @@
           <NIcon :component="LineHorizontal120Regular" />
         </template>
       </NButton>
+      <TiptapYoutubeButton @submit="(youtubeUrl) => editor?.commands.setYoutubeVideo({ src: youtubeUrl })" />
       <NButton size="small" @click="editor?.chain().focus().undo().run()">
         <template #icon>
           <NIcon :component="ArrowUndo20Filled" />
@@ -149,6 +150,7 @@ import {
 import { EditorContent, useEditor } from "@tiptap/vue-3";
 import {
   NButton,
+  NDialogProvider,
   NIcon,
   NInput,
   NSelect,
@@ -166,11 +168,12 @@ import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
 import TableRow from "@tiptap/extension-table-row";
 import TipTapLink from "@tiptap/extension-link";
-import Youtube from "@tiptap/extension-youtube";
+import YoutubeExtension from "@tiptap/extension-youtube";
 
 import CardModal from "@/Components/Modals/CardModal.vue";
 import TipTapButton from "@/Features/Admin/CommentViewer/TipTap/TipTapMarkButton.vue";
 import TipTapMarkButton from "@/Features/Admin/CommentViewer/TipTap/TipTapMarkButton.vue";
+import TiptapYoutubeButton from "./TiptapYoutubeButton.vue";
 
 const props = defineProps<{
   html?: boolean;
@@ -179,13 +182,14 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits(["update:modelValue"]);
+const modelValue = ref(props.modelValue);
 
 const showToolbar = ref(false);
 
 const showFileModal = ref(false);
 const previousUrl = ref("");
 const files = ref([]);
-const modelValue = ref(props.modelValue);
+
 
 function getLinkAndModal() {
   previousUrl.value = editor.value?.getAttributes("link").href;
@@ -273,7 +277,12 @@ const editor = useEditor({
     },
   },
   extensions: [
-    StarterKit,
+    StarterKit.configure({
+      heading: {
+        levels: [1, 2, 3],
+      },
+      codeBlock: false
+    }),
     Image,
     Table.configure({
       resizable: true,
@@ -284,9 +293,9 @@ const editor = useEditor({
     TipTapLink.configure({
       openOnClick: false,
     }),
-    Youtube.configure({
+    YoutubeExtension.configure({
       HTMLAttributes: {
-        class: "w-full overflow-y-auto",
+        class: "aspect-video h-36 w-auto my-2",
       },
     }),
   ],
@@ -312,9 +321,14 @@ const { message } = createDiscreteApi(["message"]);
 
 <style>
 .tiptap {
-  & p, ul, ol, blockquote {
-    margin-bottom: 0.75rem;
+
+  & p,
+  ul,
+  ol,
+  blockquote {
+    margin: 0.4rem 0 0.4rem 0;
   }
+
   & a {
     color: #bd2835;
     text-decoration: underline;

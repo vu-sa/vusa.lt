@@ -32,7 +32,7 @@ defineProps<{
   id?: number;
   title: string;
   canDelete: boolean;
-  isExpanded: boolean;
+  isExpanded?: boolean;
 }>()
 
 defineEmits(['expand', 'remove'])

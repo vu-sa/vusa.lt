@@ -19,6 +19,7 @@ import StarterKit from '@tiptap/starter-kit';
 import TipTapLink from "@tiptap/extension-link";
 
 import RichContentCard from './RichContentCard.vue';
+import Youtube from '@tiptap/extension-youtube';
 
 defineProps<{
   content: App.Models.ContentPart[];
@@ -29,9 +30,13 @@ function generateHTMLfromTiptap(json_content: App.Models.ContentPart['json_conte
     return '';
   }
 
-  return generateHTML(json_content, [StarterKit,
-    TipTapLink.configure({
-      openOnClick: false,
+  return generateHTML(json_content, [
+    StarterKit,
+    TipTapLink,
+    Youtube.configure({
+      HTMLAttributes: {
+        class: "aspect-video h-auto w-full rounded-xl shadow-lg",
+      },
     }),
   ]);
 }

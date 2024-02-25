@@ -52,22 +52,7 @@
         </template>
         <TipTap v-model="form.short" html :search-files="$page.props.search.other" />
       </FormElement>
-      <NFormItem required>
-        <template #label>
-          <span class="text-2xl font-bold">Turinys</span>
-        </template>
-        <NTabs type="segment">
-          <NTabPane name="edit" tab="Redagavimas">
-            <RichContentEditor v-model:contents="form.content.parts" />
-          </NTabPane>
-          <NTabPane name="preview" tab="Peržiūra">
-            <div
-              class="prose prose-zinc col-span-4 dark:prose-invert first-letter:float-left first-letter:mr-3 first-letter:text-7xl first-letter:font-bold">
-              <RichContentParser :content="form.content?.parts" />
-            </div>
-          </NTabPane>
-        </NTabs>
-      </NFormItem>
+      <RichContentFormElement v-model="form.content.parts" />
       <div class="flex justify-end gap-2">
         <DeleteModelButton v-if="deleteModelRoute" :form="form" :model-route="deleteModelRoute" />
         <UpsertModelButton :form="form" :model-route="modelRoute" @save="updateContents">
@@ -87,8 +72,6 @@ import {
   NMessageProvider,
   NSelect,
   NSwitch,
-  NTabPane,
-  NTabs,
 } from "naive-ui";
 import { computed, watch } from "vue";
 import { useForm, usePage } from "@inertiajs/vue3";
@@ -96,11 +79,10 @@ import latinize from "latinize";
 
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import FormElement from "./FormElement.vue";
-import RichContentEditor from "../RichContentEditor.vue";
+import RichContentFormElement from "../RichContentFormElement.vue";
 import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
 import UploadImageWithCropper from "../Buttons/UploadImageWithCropper.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
-import RichContentParser from "../RichContentParser.vue";
 
 const props = defineProps<{
   news: App.Entities.News;
