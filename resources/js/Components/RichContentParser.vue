@@ -23,12 +23,12 @@ import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
 import TableRow from '@tiptap/extension-table-row';
 import TipTapLink from "@tiptap/extension-link";
+import Underline from '@tiptap/extension-underline';
+import Youtube from '@tiptap/extension-youtube';
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/Components/ShadcnVue/ui/accordion'
 
 import RichContentCard from './RichContentCard.vue';
-import Youtube from '@tiptap/extension-youtube';
-import Underline from '@tiptap/extension-underline';
 
 defineProps<{
   content: App.Models.ContentPart[];
@@ -40,23 +40,32 @@ function generateHTMLfromTiptap(json_content: App.Models.ContentPart['json_conte
   }
 
   return generateHTML(json_content, [
-    StarterKit,
+    StarterKit.configure({
+      heading: {
+        levels: [2, 3],
+      },
+      codeBlock: false
+    }),
     Table.configure({
       HTMLAttributes: {
-        class: "border-collapse table-auto"
+        class: "border-collapse table-auto w-full"
       },
     }),
     TableCell.configure({
       HTMLAttributes: {
-        class: "border-b border-t border-zinc-200 p-2",
+        class: "border border-zinc-400 dark:border-zinc-500 px-4 py-1 text-left [&[align=center]]:text-center [&[align=right]]:text-right",
       },
     }),
     TableHeader.configure({
       HTMLAttributes: {
-        class: "p-2 text-left"
+        class: "border border-zinc-400 dark:border-zinc-500 px-4 py-1 text-left font-bold [&[align=center]]:text-center [&[align=right]]:text-right"
       },
     }),
-    TableRow,
+    TableRow.configure({
+      HTMLAttributes: {
+        class: "m-0 border-t p-0 even:bg-zinc-100 dark:even:bg-zinc-800/20",
+      },
+    }),
     TipTapLink,
     Underline,
     Youtube.configure({

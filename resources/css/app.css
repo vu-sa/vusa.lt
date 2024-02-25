@@ -149,6 +149,10 @@ html.dark {
     @apply scroll-m-20 text-2xl font-semibold tracking-tight
   }
 
+  table p {
+    @apply my-0
+  }
+
   p {
     @apply [&:not(:first-child)]:mt-6 my-4
   }
