@@ -269,6 +269,7 @@ import { onBeforeUnmount, ref } from "vue";
 import { router } from "@inertiajs/vue3";
 import { useDebounceFn } from "@vueuse/core";
 import Image from "@tiptap/extension-image";
+import Placeholder from '@tiptap/extension-placeholder'
 import StarterKit from "@tiptap/starter-kit";
 import Table from "@tiptap/extension-table";
 import TableCell from "@tiptap/extension-table-cell";
@@ -394,6 +395,9 @@ const editor = useEditor({
       codeBlock: false
     }),
     BubbleMenu,
+    Placeholder.configure({
+      placeholder: "Tekstas...",
+    }),
     Image,
     Table.configure({
       resizable: true,
@@ -445,6 +449,15 @@ const { message } = createDiscreteApi(["message"]);
     color: #bd2835;
     text-decoration: underline;
     font-weight: 500;
+  }
+
+  /* For placeholder  */
+  p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    float: left;
+    color: #adb5bd;
+    pointer-events: none;
+    height: 0;
   }
 
   table {
