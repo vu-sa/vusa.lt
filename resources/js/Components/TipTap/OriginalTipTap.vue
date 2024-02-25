@@ -1,10 +1,23 @@
 <template>
   <div class="gap flex w-full flex-col">
-    <div v-if="showToolbar && editor" class="flex min-h-8 flex-wrap items-center gap-2 mt-1">
+    <BubbleMenu v-if="editor" class="bg-zinc-50 dark:bg-zinc-900" :editor="editor" :tippy-options="{ duration: 50 }">
+      <NButtonGroup secondary>
+        <TipTapMarkButton :editor="editor" type="bold" :icon="TextBold20Regular" />
+        <TipTapMarkButton :editor="editor" type="italic" :icon="TextItalic20Regular" />
+        <NButton size="small" :type="editor.isActive('underline') ? 'primary' : 'default'"
+          @click="editor.chain().focus().toggleUnderline().run()">
+          <template #icon>
+            <NIcon :component="TextUnderline20Regular" />
+          </template>
+        </NButton>
+      </NButtonGroup>
+    </BubbleMenu>
+    <div v-if="showToolbar && editor" class="mt-1 flex min-h-8 flex-wrap items-center gap-2">
       <NButtonGroup>
         <TipTapMarkButton :editor="editor" type="bold" :icon="TextBold20Regular" />
         <TipTapMarkButton :editor="editor" type="italic" :icon="TextItalic20Regular" />
-        <NButton size="small" @click="editor.chain().focus().toggleUnderline().run()" :type="editor.isActive('underline') ? 'primary' : 'default'">
+        <NButton size="small" :type="editor.isActive('underline') ? 'primary' : 'default'"
+          @click="editor.chain().focus().toggleUnderline().run()">
           <template #icon>
             <NIcon :component="TextUnderline20Regular" />
           </template>
@@ -87,7 +100,7 @@
         </NButton>
       </NButtonGroup>
     </div>
-    <div class="flex gap-2 items-center mt-1" v-if="showTableToolbar && editor">
+    <div v-if="showTableToolbar && editor" class="mt-1 flex items-center gap-2">
       <NButtonGroup size="small">
         <NButton @click="editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()">
           <template #icon>
@@ -145,9 +158,9 @@
         </template>
       </NButton>
     </div>
-    <div class="grid grid-cols-[auto,_30px] gap-2 items-center only:mt-0 mt-3">
+    <div class="mt-3 grid grid-cols-[auto,_30px] items-center gap-2 only:mt-0">
       <EditorContent :editor="editor"
-        class="max-h-96 min-h-24 overflow-y-scroll rounded-md border dark:border-zinc-900/80 dark:bg-zinc-800/70 w-full" />
+        class="max-h-96 min-h-24 w-full overflow-y-scroll rounded-md border dark:border-zinc-900/80 dark:bg-zinc-800/70" />
       <div class="flex flex-col gap-2">
         <NButton :type="showToolbar ? 'primary' : 'default'" size="small" @click="showToolbar = !showToolbar">
           <template #icon>
@@ -237,10 +250,10 @@ import {
   TextItalic20Regular,
   TextNumberListLtr20Filled,
   TextT24Regular,
-TextUnderline20Regular,
+  TextUnderline20Regular,
   // TextQuote20Filled,
 } from "@vicons/fluent";
-import { EditorContent, useEditor } from "@tiptap/vue-3";
+import { BubbleMenu, EditorContent, useEditor } from "@tiptap/vue-3";
 import {
   NButton,
   NButtonGroup,
@@ -380,6 +393,7 @@ const editor = useEditor({
       },
       codeBlock: false
     }),
+    BubbleMenu,
     Image,
     Table.configure({
       resizable: true,
@@ -459,4 +473,5 @@ const { message } = createDiscreteApi(["message"]);
   td {
     padding: 0 0.4rem;
   }
-}</style>
+}
+</style>
