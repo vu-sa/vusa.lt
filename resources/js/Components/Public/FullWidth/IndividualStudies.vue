@@ -1,9 +1,9 @@
 <template>
   <div>
     <NDivider />
-    <div class="prose-sm dark:prose-invert">
+    <div class="typography text-sm leading-7">
       <h2
-        class="my-4 text-2xl lg:text-3xl font-bold text-gray-900 duration-200 hover:text-vusa-red dark:text-zinc-50 lg:w-4/5"
+        class="my-4 text-2xl lg:text-3xl font-bold text-gray-900 duration-200 hover:text-vusa-red dark:text-zinc-50 lg:w-4/5 border-none"
       >
         <a
           class="flex w-fit flex-row items-center gap-2"

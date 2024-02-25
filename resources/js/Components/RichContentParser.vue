@@ -1,11 +1,14 @@
 <template>
   <template v-for="element in content" :key="element.id">
     <div v-if="element.type === 'tiptap'" v-html="generateHTMLfromTiptap(element.json_content)" />
-    <NCollapse v-else-if="element.type === 'naiveui-collapse'">
-      <NCollapseItem v-for="item in element.json_content" :key="item.id" :title="item.label">
-        <div v-html="generateHTMLfromTiptap(item.content)" />
-      </NCollapseItem>
-    </NCollapse>
+    <Accordion class="accordion" type="single" v-else-if="element.type === 'shadcn-accordion'" collapsible>
+      <AccordionItem v-for="item, index in element.json_content" :value="index" :key="index">
+        <AccordionTrigger>{{ item.label }}</AccordionTrigger>
+        <AccordionContent>
+          <div v-html="generateHTMLfromTiptap(item.content)" />
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
     <RichContentCard v-else-if="element.type === 'naiveui-card'" :element="element">
       <div v-html="generateHTMLfromTiptap(element.json_content)" />
     </RichContentCard>
@@ -13,7 +16,6 @@
 </template>
 
 <script setup lang="ts">
-import { NCollapse, NCollapseItem } from 'naive-ui';
 import { generateHTML } from '@tiptap/vue-3';
 import StarterKit from '@tiptap/starter-kit';
 import Table from '@tiptap/extension-table';
@@ -21,6 +23,7 @@ import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
 import TableRow from '@tiptap/extension-table-row';
 import TipTapLink from "@tiptap/extension-link";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/Components/ShadcnVue/ui/accordion'
 
 import RichContentCard from './RichContentCard.vue';
 import Youtube from '@tiptap/extension-youtube';
@@ -38,7 +41,7 @@ function generateHTMLfromTiptap(json_content: App.Models.ContentPart['json_conte
     StarterKit,
     Table.configure({
       HTMLAttributes: {
-        class: "not-prose border-collapse table-auto"
+        class: "border-collapse table-auto"
       },
     }),
     TableCell.configure({
@@ -61,3 +64,15 @@ function generateHTMLfromTiptap(json_content: App.Models.ContentPart['json_conte
   ]);
 }
 </script>
+
+<style>
+.accordion {
+  p {
+    margin-top: 0.5rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+</style>

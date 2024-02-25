@@ -34,14 +34,14 @@
           <!-- Text -->
           <OriginalTipTap v-if="content.type === 'tiptap'" v-show="content.expanded" v-model="content.json_content" />
           <!-- Collapse -->
-          <NDynamicInput v-else-if="content.type === 'naiveui-collapse'" v-show="content.expanded"
+          <NDynamicInput v-else-if="content.type === 'shadcn-accordion'" v-show="content.expanded"
             v-model:value="content.json_content" @create="onCreate">
             <template #create-button-default>
               Sukurti
             </template>
             <template #default="{ value }">
               <div
-                class="mt-2 flex w-full flex-col gap-6 rounded-lg border border-zinc-200/60 bg-zinc-50/30 p-4 dark:border-zinc-800/50 dark:bg-zinc-800/20">
+                class="flex w-full flex-col gap-3 rounded-lg border border-zinc-200/60 bg-zinc-50/30 p-4 dark:border-zinc-800/50 dark:bg-zinc-800/20">
                 <NFormItem label="Pavadinimas" :show-feedback="false">
                   <NInput v-model:value="value.label" type="text" />
                 </NFormItem>
@@ -171,7 +171,7 @@ const contentTypes = [
     icon: TextCaseUppercase20Filled,
   },
   {
-    value: "naiveui-collapse",
+    value: "shadcn-accordion",
     label: "Išsiskleidžiantis sąrašas",
     icon: AppsListDetail24Regular,
   },

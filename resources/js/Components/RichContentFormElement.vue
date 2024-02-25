@@ -12,7 +12,7 @@
         <NIcon class="mr-2" :component="Eye24Regular" />
         Peržiūra
       </template>
-      <div class="prose prose-zinc flex flex-col gap-4 p-4 dark:prose-invert">
+      <div class="typography flex flex-col gap-2 p-4 leading-7 text-base text-zinc-800 dark:text-zinc-300 max-w-[65ch]">
         <RichContentParser :content="contentParts" />
       </div>
     </NTabPane>

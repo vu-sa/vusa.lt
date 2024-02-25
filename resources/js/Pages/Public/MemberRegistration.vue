@@ -3,7 +3,7 @@
     <h1 class="col-span-3 col-start-1">
       {{ $t("Prašymas tapti VU SA (arba VU SA PKP) nariu") }}
     </h1>
-    <div class="prose col-span-3 col-start-1 dark:prose-invert">
+    <div class="typography text-base col-span-3 col-start-1">
       <p>
         <strong v-if="$page.props.app.locale === 'lt'"
           >Kiekvienas VU studentas gali tapti VU SA nariu!

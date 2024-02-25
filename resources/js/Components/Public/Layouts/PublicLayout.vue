@@ -8,7 +8,7 @@
       :theme-overrides="themeOverrides"
     >
       <div
-        class="flex min-h-screen flex-col justify-between bg-zinc-50 antialiased dark:bg-zinc-900"
+        class="flex min-h-screen flex-col justify-between bg-zinc-50 antialiased dark:bg-zinc-900 text-zinc-800 dark:text-zinc-300"
       >
         <FadeTransition appear
           ><MainNavigation :is-theme-dark="isDark"

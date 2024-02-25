@@ -30,7 +30,7 @@
         </span>
       </em>
       <div
-        class="prose col-span-4 prose-zinc dark:prose-invert">
+        class="typography col-span-4 flex flex-col gap-2 text-base leading-7">
         <RichContentParser :content="article.content?.parts" />
       </div>
     </NewsArticle>

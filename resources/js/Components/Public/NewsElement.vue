@@ -37,7 +37,7 @@
           >{{ item.publish_time }}
         </template>
         <template #image>
-          <Link
+          <Link :title="item.title"
             :preserve-scroll="false"
             :href="
               route('news', {
@@ -52,7 +52,7 @@
               class="mb-1 h-40 w-full rounded-sm object-cover shadow-md duration-200 hover:shadow-lg"
           /></Link>
         </template>
-        <Link
+        <Link :title="item.title" class="no-underline"
           :preserve-scroll="false"
           :href="
             route('news', {
