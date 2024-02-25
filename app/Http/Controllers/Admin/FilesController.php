@@ -18,18 +18,40 @@ class FilesController extends Controller
      */
     public function index(Request $request)
     {
-        $currentDirectory = $request->currentPath ?? 'public/files';
+        $path = $request->path ?? 'public/files';
 
-        $directories = Storage::directories($currentDirectory);
-        $files = Storage::files($currentDirectory);
-
-        // dd($files, $directories);
+        [$files, $directories, $currentDirectory] = $this->getFilesFromStorage($path);
 
         return Inertia::render('Admin/Files/Index', [
             'files' => $files,
             'directories' => $directories,
-            'currentPath' => $currentDirectory,
+            'path' => $currentDirectory,
         ]);
+    }
+
+    public function getFiles(Request $request)
+    {
+        $path = $request->path ?? 'public/files';
+
+        [$files, $directories, $currentDirectory] = $this->getFilesFromStorage($path);
+
+        return response()->json([
+            'files' => $files,
+            'directories' => $directories,
+            'path' => $currentDirectory,
+        ]);
+    }
+
+    protected function getFilesFromStorage($path)
+    {
+        $directories = Storage::directories($path);
+        $files = Storage::files($path);
+
+        return [
+            $files,
+            $directories,
+            $path,
+        ];
     }
 
     /**
@@ -51,9 +73,28 @@ class FilesController extends Controller
         $path = $request->input('path');
 
         // dd($file['file'], $path);
+        //
+        // check if file exists, if so, add timestamp to filename
 
-        // add file to storage
-        $file->storeAs($path, $file->getClientOriginalName());
+        if (Storage::exists($path.'/'.$file->getClientOriginalName())) {
+            $file->storeAs($path, time().'_'.$file->getClientOriginalName());
+        } else {
+            $file->storeAs($path, $file->getClientOriginalName());
+        }
+
+        // return redirect to files index
+        return back();
+    }
+
+    public function createDirectory(Request $request)
+    {
+        $path = $request->input('path');
+        $name = $request->input('name');
+
+        // check if directory exists
+        if (! Storage::exists($path.'/'.$name)) {
+            Storage::makeDirectory($path.'/'.$name);
+        }
 
         // return redirect to files index
         return back();

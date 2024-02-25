@@ -29,6 +29,7 @@ import Youtube from '@tiptap/extension-youtube';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/Components/ShadcnVue/ui/accordion'
 
 import RichContentCard from './RichContentCard.vue';
+import Image from '@tiptap/extension-image';
 
 defineProps<{
   content: App.Models.ContentPart[];
@@ -46,6 +47,7 @@ function generateHTMLfromTiptap(json_content: App.Models.ContentPart['json_conte
       },
       codeBlock: false
     }),
+    Image,
     Table.configure({
       HTMLAttributes: {
         class: "border-collapse table-auto w-full"

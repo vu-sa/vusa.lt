@@ -24,7 +24,8 @@
         </NButton>
       </NButtonGroup>
       <NButtonGroup>
-        <TipTapButton :editor="editor" type="link" :icon="Link20Regular" @click="getLinkAndModal" />
+        <TiptapLinkButton
+          @submit="(url) => editor?.chain().focus().extendMarkRange('link').setLink({ href: url }).run()" />
         <TipTapButton :editor="editor" type="other" :disabled="!editor.isActive('link')" :icon="LinkDismiss20Filled"
           @click="editor?.chain().focus().unsetLink().run()" />
       </NButtonGroup>
@@ -78,7 +79,12 @@
           <NIcon :component="LineHorizontal120Regular" />
         </template>
       </NButton>
-      <TiptapYoutubeButton @submit="(youtubeUrl) => editor?.commands.setYoutubeVideo({ src: youtubeUrl })" />
+      <NButtonGroup size="small">
+        <Suspense>
+          <TiptapImageButton @submit="(url) => editor?.chain().focus().setImage({ src: url }).run()" />
+        </Suspense>
+        <TiptapYoutubeButton @submit="(youtubeUrl) => editor?.commands.setYoutubeVideo({ src: youtubeUrl })" />
+      </NButtonGroup>
       <NButtonGroup size="small">
         <NButton @click="editor?.chain().focus().undo().run()">
           <template #icon>
@@ -167,18 +173,8 @@
         </NButton>
       </div>
     </div>
-    <CardModal v-model:show="showFileModal" title="Sukurti nuorodą" @close="showFileModal = false">
-      <div class="rounded-sm">
-        <NTabs type="line" animated>
-          <NTabPane name="link" tab="Pridėti nuorodą">
-            <NInput v-model:value="previousUrl" placeholder="https://atstovavimas.vusa.lt" />
-            <div class="mt-2">
-              <NButton @click="updateLink">
-                Atnaujinti
-              </NButton>
-            </div>
-          </NTabPane>
-          <NTabPane name="file" tab="Pridėti failą, kaip nuorodą">
+    <!-- </NTabPane> -->
+    <!-- <NTabPane name="file" tab="Pridėti failą, kaip nuorodą">
             <p class="my-2">
               Įrašyk failo pavadinimą ir pasirink, kad būtų pridėtas!
               <a class="text-vusa-red" target="_blank" :href="route('files.index')">Failo įkėlimas</a>
@@ -192,8 +188,8 @@
                 Atnaujinti
               </NButton>
             </div>
-          </NTabPane>
-          <NTabPane name="image" tab="Pridėti paveikslėlį">
+          </NTabPane> -->
+    <!-- <NTabPane name="image" tab="Pridėti paveikslėlį">
             <p class="my-2">
               Įrašyk paveikslėlio pavadinimą ir pasirink!
               <a class="text-vusa-red" target="_blank" :href="route('files.index')">Failo įkėlimas</a>
@@ -207,10 +203,8 @@
                 Atnaujinti
               </NButton>
             </div>
-          </NTabPane>
-        </NTabs>
-      </div>
-    </CardModal>
+          </NTabPane> -->
+    <!-- </NTabs> -->
   </div>
 </template>
 
@@ -220,7 +214,6 @@ import {
   ArrowUndo20Filled,
   ClearFormatting20Filled,
   LineHorizontal120Regular,
-  Link20Regular,
   LinkDismiss20Filled,
   Settings16Filled,
   Table24Regular,
@@ -243,7 +236,6 @@ import {
   TextQuote20Filled,
   TextT24Regular,
   TextUnderline20Regular,
-  // TextQuote20Filled,
 } from "@vicons/fluent";
 import { BubbleMenu, EditorContent, useEditor } from "@tiptap/vue-3";
 import {
@@ -251,10 +243,6 @@ import {
   NButtonGroup,
   NDivider,
   NIcon,
-  NInput,
-  NSelect,
-  NTabPane,
-  NTabs,
   createDiscreteApi,
 } from "naive-ui";
 import { onBeforeUnmount, ref } from "vue";
@@ -271,10 +259,11 @@ import TipTapLink from "@tiptap/extension-link";
 import UnderlineExtension from "@tiptap/extension-underline";
 import YoutubeExtension from "@tiptap/extension-youtube";
 
-import CardModal from "@/Components/Modals/CardModal.vue";
 import TipTapButton from "@/Features/Admin/CommentViewer/TipTap/TipTapMarkButton.vue";
 import TipTapMarkButton from "@/Features/Admin/CommentViewer/TipTap/TipTapMarkButton.vue";
 import TiptapYoutubeButton from "./TiptapYoutubeButton.vue";
+import TiptapLinkButton from "./TiptapLinkButton.vue";
+import TiptapImageButton from "./TiptapImageButton.vue";
 
 const props = defineProps<{
   disableTables?: boolean;
@@ -292,12 +281,6 @@ const showTableToolbar = ref(false);
 const showFileModal = ref(false);
 const previousUrl = ref("");
 const files = ref([]);
-
-
-function getLinkAndModal() {
-  previousUrl.value = editor.value?.getAttributes("link").href;
-  showFileModal.value = true;
-}
 
 const getFiles = useDebounceFn((query) => {
   if (query.length > 2) {
@@ -390,7 +373,11 @@ const editor = useEditor({
     Placeholder.configure({
       placeholder: "Tekstas...",
     }),
-    Image,
+    Image.configure({
+      HTMLAttributes: {
+        class: "w-96",
+      },
+    }),
     Table.configure({
       resizable: true,
     }),

@@ -69,6 +69,8 @@ Route::resource('reservationResources', ReservationResourceController::class);
 
 Route::resource('saziningaiExams', SaziningaiExamsController::class);
 Route::resource('saziningaiExamFlows', SaziningaiExamFlowsController::class)->except(['index', 'create', 'show', 'destroy']);
+Route::get('files/getFiles', [FilesController::class, 'getFiles'])->name('files.getFiles');
+Route::post('files/createDirectory', [FilesController::class, 'createDirectory'])->name('files.createDirectory');
 Route::resource('files', FilesController::class);
 
 Route::put('duties/setAsStudentRepresentatives', [DutyController::class, 'setAsStudentRepresentatives'])->name('duties.setAsStudentRepresentatives');
