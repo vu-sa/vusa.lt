@@ -50,7 +50,7 @@
         <template #description>
           Šiuo metu naudojamas tik paieškos rezultatuose.
         </template>
-        <TipTap v-model="form.short" html :search-files="$page.props.search.other" />
+        <TipTap disable-tables v-model="form.short" html :search-files="$page.props.search.other" />
       </FormElement>
       <RichContentFormElement v-model="form.content.parts" />
       <div class="flex justify-end gap-2">

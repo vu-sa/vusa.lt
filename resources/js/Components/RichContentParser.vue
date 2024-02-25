@@ -16,6 +16,10 @@
 import { NCollapse, NCollapseItem } from 'naive-ui';
 import { generateHTML } from '@tiptap/vue-3';
 import StarterKit from '@tiptap/starter-kit';
+import Table from '@tiptap/extension-table';
+import TableCell from '@tiptap/extension-table-cell';
+import TableHeader from '@tiptap/extension-table-header';
+import TableRow from '@tiptap/extension-table-row';
 import TipTapLink from "@tiptap/extension-link";
 
 import RichContentCard from './RichContentCard.vue';
@@ -32,6 +36,22 @@ function generateHTMLfromTiptap(json_content: App.Models.ContentPart['json_conte
 
   return generateHTML(json_content, [
     StarterKit,
+    Table.configure({
+      HTMLAttributes: {
+        class: "not-prose border-collapse table-auto"
+      },
+    }),
+    TableCell.configure({
+      HTMLAttributes: {
+        class: "border-b border-t border-zinc-200 p-2",
+      },
+    }),
+    TableHeader.configure({
+      HTMLAttributes: {
+        class: "p-2 text-left"
+      },
+    }),
+    TableRow,
     TipTapLink,
     Youtube.configure({
       HTMLAttributes: {

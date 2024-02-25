@@ -1,53 +1,61 @@
 <template>
-  <div class="gap flex w-full flex-col-reverse">
-    <div v-if="showToolbar && editor" class="flex min-h-8 flex-wrap items-center gap-2 pb-1 pt-3">
-      <TipTapMarkButton :editor="editor" type="bold" :icon="TextBold20Regular" />
-      <TipTapMarkButton :editor="editor" type="italic" :icon="TextItalic20Regular" />
-      <TipTapButton :editor="editor" type="link" :icon="Link20Regular" @click="getLinkAndModal" />
-      <TipTapButton :editor="editor" type="other" :disabled="!editor.isActive('link')" :icon="LinkDismiss20Filled"
-        @click="editor?.chain().focus().unsetLink().run()" />
+  <div class="gap flex w-full flex-col">
+    <div v-if="showToolbar && editor" class="flex min-h-8 flex-wrap items-center gap-2 mt-1">
+      <NButtonGroup>
+        <TipTapMarkButton :editor="editor" type="bold" :icon="TextBold20Regular" />
+        <TipTapMarkButton :editor="editor" type="italic" :icon="TextItalic20Regular" />
+      </NButtonGroup>
+      <NButtonGroup>
+        <TipTapButton :editor="editor" type="link" :icon="Link20Regular" @click="getLinkAndModal" />
+        <TipTapButton :editor="editor" type="other" :disabled="!editor.isActive('link')" :icon="LinkDismiss20Filled"
+          @click="editor?.chain().focus().unsetLink().run()" />
+      </NButtonGroup>
       <NButton size="small" @click="editor?.chain().focus().unsetAllMarks().run()">
         <template #icon>
           <NIcon :component="ClearFormatting20Filled" />
         </template>
       </NButton>
-      <div class="mx-2 h-6 border-l border-zinc-700" />
-      <NButton size="small" :type="editor.isActive('paragraph') ? 'primary' : 'default'"
-        @click="editor?.chain().focus().setParagraph().run()">
-        <template #icon>
-          <NIcon :component="TextT24Regular" />
-        </template>
-      </NButton>
-      <NButton size="small" :type="editor.isActive('heading', { level: 1 }) ? 'primary' : 'default'"
-        @click="editor?.chain().focus().toggleHeading({ level: 1 }).run()">
-        <template #icon>
-          <NIcon :component="TextHeader120Filled" />
-        </template>
-      </NButton>
-      <NButton size="small" :type="editor.isActive('heading', { level: 2 }) ? 'primary' : 'default'"
-        @click="editor?.chain().focus().toggleHeading({ level: 2 }).run()">
-        <template #icon>
-          <NIcon :component="TextHeader220Filled" />
-        </template>
-      </NButton>
-      <NButton size="small" :type="editor.isActive('heading', { level: 3 }) ? 'primary' : 'default'"
-        @click="editor?.chain().focus().toggleHeading({ level: 3 }).run()">
-        <template #icon>
-          <NIcon :component="TextHeader320Filled" />
-        </template>
-      </NButton>
-      <NButton size="small" :type="editor.isActive('bulletList') ? 'primary' : 'default'"
-        @click="editor?.chain().focus().toggleBulletList().run()">
-        <template #icon>
-          <NIcon :component="TextBulletListLtr24Filled" />
-        </template>
-      </NButton>
-      <NButton size="small" :type="editor.isActive('orderedList') ? 'primary' : 'default'"
-        @click="editor?.chain().focus().toggleOrderedList().run()">
-        <template #icon>
-          <NIcon :component="TextNumberListLtr20Filled" />
-        </template>
-      </NButton>
+      <NDivider vertical />
+      <NButtonGroup size="small">
+        <NButton :type="editor.isActive('paragraph') ? 'primary' : 'default'"
+          @click="editor?.chain().focus().setParagraph().run()">
+          <template #icon>
+            <NIcon :component="TextT24Regular" />
+          </template>
+        </NButton>
+        <NButton :type="editor.isActive('heading', { level: 1 }) ? 'primary' : 'default'"
+          @click="editor?.chain().focus().toggleHeading({ level: 1 }).run()">
+          <template #icon>
+            <NIcon :component="TextHeader120Filled" />
+          </template>
+        </NButton>
+        <NButton :type="editor.isActive('heading', { level: 2 }) ? 'primary' : 'default'"
+          @click="editor?.chain().focus().toggleHeading({ level: 2 }).run()">
+          <template #icon>
+            <NIcon :component="TextHeader220Filled" />
+          </template>
+        </NButton>
+        <NButton :type="editor.isActive('heading', { level: 3 }) ? 'primary' : 'default'"
+          @click="editor?.chain().focus().toggleHeading({ level: 3 }).run()">
+          <template #icon>
+            <NIcon :component="TextHeader320Filled" />
+          </template>
+        </NButton>
+      </NButtonGroup>
+      <NButtonGroup size="small">
+        <NButton :type="editor.isActive('bulletList') ? 'primary' : 'default'"
+          @click="editor?.chain().focus().toggleBulletList().run()">
+          <template #icon>
+            <NIcon :component="TextBulletListLtr24Filled" />
+          </template>
+        </NButton>
+        <NButton :type="editor.isActive('orderedList') ? 'primary' : 'default'"
+          @click="editor?.chain().focus().toggleOrderedList().run()">
+          <template #icon>
+            <NIcon :component="TextNumberListLtr20Filled" />
+          </template>
+        </NButton>
+      </NButtonGroup>
       <!-- <button
         type="button"
         :class="{ 'is-active': editor.isActive('blockquote') }"
@@ -61,25 +69,93 @@
         </template>
       </NButton>
       <TiptapYoutubeButton @submit="(youtubeUrl) => editor?.commands.setYoutubeVideo({ src: youtubeUrl })" />
-      <NButton size="small" @click="editor?.chain().focus().undo().run()">
+      <NButtonGroup size="small">
+        <NButton @click="editor?.chain().focus().undo().run()">
+          <template #icon>
+            <NIcon :component="ArrowUndo20Filled" />
+          </template>
+        </NButton>
+        <NButton @click="editor?.chain().focus().redo().run()">
+          <template #icon>
+            <NIcon :component="ArrowRedo20Filled" />
+          </template>
+        </NButton>
+      </NButtonGroup>
+    </div>
+    <div class="flex gap-2 items-center mt-1" v-if="showTableToolbar && editor">
+      <NButtonGroup size="small">
+        <NButton @click="editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()">
+          <template #icon>
+            <NIcon :component="TableAdd24Regular" />
+          </template>
+        </NButton>
+        <NButton @click="editor.chain().focus().toggleHeaderRow().run()">
+          <template #icon>
+            <NIcon :component="TableFreezeRow24Regular" />
+          </template>
+        </NButton>
+        <NButton @click="editor.chain().focus().addColumnAfter().run()">
+          <template #icon>
+            <NIcon :component="TableInsertColumn24Regular" />
+          </template>
+        </NButton>
+        <NButton @click="editor.chain().focus().addRowBefore().run()">
+          <template #icon>
+            <NIcon :component="TableInsertRow24Regular" />
+          </template>
+        </NButton>
+      </NButtonGroup>
+      <NButtonGroup size="small">
+        <NButton @click="editor.chain().focus().deleteColumn().run()">
+          <template #icon>
+            <NIcon :component="TableDeleteColumn24Regular" />
+          </template>
+        </NButton>
+        <NButton @click="editor.chain().focus().deleteRow().run()">
+          <template #icon>
+            <NIcon :component="TableDeleteRow24Regular" />
+          </template>
+        </NButton>
+        <NButton @click="editor.chain().focus().deleteTable().run()">
+          <template #icon>
+            <NIcon :component="TableDismiss24Regular" />
+          </template>
+        </NButton>
+      </NButtonGroup>
+      <NButtonGroup size="small">
+        <NButton @click="editor.chain().focus().mergeCells().run()">
+          <template #icon>
+            <NIcon :component="TableCellsMerge24Regular" />
+          </template>
+        </NButton>
+        <NButton @click="editor.chain().focus().splitCell().run()">
+          <template #icon>
+            <NIcon :component="TableCellsSplit24Regular" />
+          </template>
+        </NButton>
+      </NButtonGroup>
+      <NButton size="small" @click="editor.chain().focus().fixTables().run()">
         <template #icon>
-          <NIcon :component="ArrowUndo20Filled" />
-        </template>
-      </NButton>
-      <NButton size="small" @click="editor?.chain().focus().redo().run()">
-        <template #icon>
-          <NIcon :component="ArrowRedo20Filled" />
+          <NIcon :component="TableSettings24Regular" />
         </template>
       </NButton>
     </div>
-    <div class="grid grid-cols-[auto,_30px] gap-2">
+    <div class="grid grid-cols-[auto,_30px] gap-2 items-center only:mt-0 mt-3">
       <EditorContent :editor="editor"
         class="max-h-96 min-h-24 overflow-y-scroll rounded-md border dark:border-zinc-900/80 dark:bg-zinc-800/70 w-full" />
-      <NButton :type="showToolbar ? 'primary' : 'default'" size="small" @click="showToolbar = !showToolbar">
-        <template #icon>
-          <NIcon :component="Settings16Filled" />
-        </template>
-      </NButton>
+      <div class="flex flex-col gap-2">
+        <NButton :type="showToolbar ? 'primary' : 'default'" size="small" @click="showToolbar = !showToolbar">
+          <template #icon>
+            <NIcon :component="Settings16Filled" />
+          </template>
+        </NButton>
+        <NButton v-if="!disableTables" :type="showTableToolbar ? 'primary' : 'default'" size="small"
+          @click="showTableToolbar = !showTableToolbar">
+          <template #icon>
+            <NIcon :component="Table24Regular" />
+          </template>
+        </NButton>
+      </div>
     </div>
     <CardModal v-model:show="showFileModal" title="Sukurti nuorodą" @close="showFileModal = false">
       <div class="rounded-sm">
@@ -137,6 +213,17 @@ import {
   Link20Regular,
   LinkDismiss20Filled,
   Settings16Filled,
+  Table24Regular,
+  TableAdd24Regular,
+  TableCellsMerge24Regular,
+  TableCellsSplit24Regular,
+  TableDeleteColumn24Regular,
+  TableDeleteRow24Regular,
+  TableDismiss24Regular,
+  TableFreezeRow24Regular,
+  TableInsertColumn24Regular,
+  TableInsertRow24Regular,
+  TableSettings24Regular,
   TextBold20Regular,
   TextBulletListLtr24Filled,
   TextHeader120Filled,
@@ -150,7 +237,9 @@ import {
 import { EditorContent, useEditor } from "@tiptap/vue-3";
 import {
   NButton,
+  NButtonGroup,
   NDialogProvider,
+  NDivider,
   NIcon,
   NInput,
   NSelect,
@@ -176,6 +265,7 @@ import TipTapMarkButton from "@/Features/Admin/CommentViewer/TipTap/TipTapMarkBu
 import TiptapYoutubeButton from "./TiptapYoutubeButton.vue";
 
 const props = defineProps<{
+  disableTables?: boolean;
   html?: boolean;
   modelValue: string | Record<string, unknown> | null;
   searchFiles?: Record<string, unknown>;
@@ -184,7 +274,8 @@ const props = defineProps<{
 const emit = defineEmits(["update:modelValue"]);
 const modelValue = ref(props.modelValue);
 
-const showToolbar = ref(false);
+const showToolbar = ref(true);
+const showTableToolbar = ref(false);
 
 const showFileModal = ref(false);
 const previousUrl = ref("");
@@ -322,17 +413,43 @@ const { message } = createDiscreteApi(["message"]);
 <style>
 .tiptap {
 
-  & p,
+  p,
   ul,
   ol,
   blockquote {
     margin: 0.4rem 0 0.4rem 0;
   }
 
-  & a {
+  a {
     color: #bd2835;
     text-decoration: underline;
     font-weight: 500;
   }
-}
-</style>
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+
+    .selectedCell:after {
+      z-index: 2;
+      position: absolute;
+      content: "";
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      background: rgba(189, 40, 53, 0.08);
+      pointer-events: none;
+    }
+  }
+
+  th,
+  td {
+    border: 1px solid #e2e8f0;
+    position: relative;
+  }
+
+  td {
+    padding: 0 0.4rem;
+  }
+}</style>

@@ -1,5 +1,5 @@
 <template>
-  <section class="flex flex-col gap-5">
+  <section class="flex flex-col gap-3">
     <div class="flex items-center gap-2 text-lg font-bold">
       <NIcon :component="icon" />
       {{ title }} <NTag size="tiny">
