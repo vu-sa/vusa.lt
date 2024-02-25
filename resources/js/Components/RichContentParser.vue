@@ -23,10 +23,12 @@ import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
 import TableRow from '@tiptap/extension-table-row';
 import TipTapLink from "@tiptap/extension-link";
+
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/Components/ShadcnVue/ui/accordion'
 
 import RichContentCard from './RichContentCard.vue';
 import Youtube from '@tiptap/extension-youtube';
+import Underline from '@tiptap/extension-underline';
 
 defineProps<{
   content: App.Models.ContentPart[];
@@ -56,6 +58,7 @@ function generateHTMLfromTiptap(json_content: App.Models.ContentPart['json_conte
     }),
     TableRow,
     TipTapLink,
+    Underline,
     Youtube.configure({
       HTMLAttributes: {
         class: "aspect-video h-auto w-full rounded-xl shadow-lg",

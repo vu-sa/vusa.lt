@@ -4,6 +4,11 @@
       <NButtonGroup>
         <TipTapMarkButton :editor="editor" type="bold" :icon="TextBold20Regular" />
         <TipTapMarkButton :editor="editor" type="italic" :icon="TextItalic20Regular" />
+        <NButton size="small" @click="editor.chain().focus().toggleUnderline().run()" :type="editor.isActive('underline') ? 'primary' : 'default'">
+          <template #icon>
+            <NIcon :component="TextUnderline20Regular" />
+          </template>
+        </NButton>
       </NButtonGroup>
       <NButtonGroup>
         <TipTapButton :editor="editor" type="link" :icon="Link20Regular" @click="getLinkAndModal" />
@@ -232,13 +237,13 @@ import {
   TextItalic20Regular,
   TextNumberListLtr20Filled,
   TextT24Regular,
+TextUnderline20Regular,
   // TextQuote20Filled,
 } from "@vicons/fluent";
 import { EditorContent, useEditor } from "@tiptap/vue-3";
 import {
   NButton,
   NButtonGroup,
-  NDialogProvider,
   NDivider,
   NIcon,
   NInput,
@@ -257,6 +262,7 @@ import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
 import TableRow from "@tiptap/extension-table-row";
 import TipTapLink from "@tiptap/extension-link";
+import UnderlineExtension from "@tiptap/extension-underline";
 import YoutubeExtension from "@tiptap/extension-youtube";
 
 import CardModal from "@/Components/Modals/CardModal.vue";
@@ -384,6 +390,7 @@ const editor = useEditor({
     TipTapLink.configure({
       openOnClick: false,
     }),
+    UnderlineExtension,
     YoutubeExtension.configure({
       HTMLAttributes: {
         class: "aspect-video h-36 w-auto my-2",
