@@ -1,23 +1,17 @@
 <template>
-  <Head>
-    <title>Pagrindinis</title>
-  </Head>
+  <div>
+    <div v-if="news.length > 0" class="mx-auto mt-2">
+      <NewsElement :news="news" />
+    </div>
 
-  <div v-if="news.length > 0" class="mx-auto mt-2">
-    <NewsElement :news="news" />
+    <IndividualStudies />
+
+    <EventCalendar :show-photos="true" :calendar="calendar" :upcoming4-events="upcoming4Events" />
+
+    <!-- <SummerCamps v-if="$page.props.app.locale === 'lt'" /> -->
+
+    <!-- <YearReport2022 /> -->
   </div>
-
-  <IndividualStudies />
-
-  <EventCalendar
-    :show-photos="true"
-    :calendar="calendar"
-    :upcoming4-events="upcoming4Events"
-  />
-
-  <!-- <SummerCamps v-if="$page.props.app.locale === 'lt'" /> -->
-
-  <!-- <YearReport2022 /> -->
 </template>
 
 <script setup lang="ts">

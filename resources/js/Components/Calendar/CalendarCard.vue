@@ -109,7 +109,7 @@
           </template>
           {{ $t("Dalyvauk") }}!
         </NButton>
-        <NModal
+        <!-- <NModal
           v-if="
             calendarEvent.padalinys?.alias === 'mif' &&
             calendarEvent.category === 'freshmen-camps'
@@ -124,7 +124,7 @@
           <NScrollbar style="max-height: 600px"
             ><NMessageProvider><MIFCampRegistration /></NMessageProvider
           ></NScrollbar>
-        </NModal>
+        </NModal> -->
         <div
           v-if="calendarEvent.extra_attributes?.facebook_url || googleLink"
           class="mt-2 flex justify-center gap-2"
@@ -184,14 +184,14 @@ import { FacebookF, Google } from "@vicons/fa";
 import { computed, ref } from "vue";
 
 import { formatRelativeTime, formatStaticTime } from "@/Utils/IntlTime";
-import MIFCampRegistration from "@/Components/Temp/MIFCampRegistration.vue";
+// import MIFCampRegistration from "@/Components/Temp/MIFCampRegistration.vue";
 
 const props = defineProps<{
   calendarEvent: App.Entities.Calendar;
   googleLink?: string;
 }>();
 
-const eventOrganizer = computed((): string => {
+const eventOrganizer = computed(() => {
   return (
     props.calendarEvent.extra_attributes?.organizer ??
     props.calendarEvent.padalinys?.shortname

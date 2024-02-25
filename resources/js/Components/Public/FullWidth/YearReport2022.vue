@@ -14,9 +14,9 @@
     </a>
   </div>
 
-  <div class="prose-sm dark:prose-invert lg:px-32">
+  <div class="typography lg:px-32">
     <h2
-      class="my-4 text-2xl font-bold text-gray-900 duration-200 hover:text-vusa-red dark:text-zinc-50 lg:w-4/5 lg:text-3xl"
+      class="my-4 border-0 text-2xl font-bold text-gray-900 duration-200 hover:text-vusa-red dark:text-zinc-50 lg:w-4/5 lg:text-3xl"
     >
       <a
         class="flex w-fit flex-row items-center gap-2"
@@ -34,7 +34,7 @@
     </h2>
     <div class="space-between flex flex-row">
       <p
-        class="prose prose-sm mb-4 text-sm dark:prose-invert lg:max-w-[80ch] lg:text-base"
+        class="mb-4 leading-6 lg:max-w-[80ch] text-base"
       >
         <template v-if="$page.props.app.locale === 'lt'">
           Ataskaitos knygutė – kiekvienais metais skelbiama VU SA nuveiktų

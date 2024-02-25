@@ -122,6 +122,7 @@ class PublicPageController extends PublicController
                 ];
             }),
         ])->withViewData([
+            'title' => 'Pagrindinis puslapis',
             'description' => 'Vilniaus universiteto Studentų atstovybė (VU SA) – seniausia ir didžiausia Lietuvoje visuomeninė, ne pelno siekianti, nepolitinė, ekspertinė švietimo organizacija',
         ]);
     }
