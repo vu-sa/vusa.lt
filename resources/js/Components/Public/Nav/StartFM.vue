@@ -2,7 +2,7 @@
   <!-- No animation on Safari, if NButton has 'text' attribute -->
   <NPopover>
     <template #trigger>
-      <NButton text :loading="loading" @click="toggleAudio">
+      <NButton text :loading="loading" @click="toggleAudio" title="StartFM">
         <template #icon
           ><NIcon
             ><component

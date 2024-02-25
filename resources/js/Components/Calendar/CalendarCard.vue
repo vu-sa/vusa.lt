@@ -129,7 +129,7 @@
           v-if="calendarEvent.extra_attributes?.facebook_url || googleLink"
           class="mt-2 flex justify-center gap-2"
         >
-          <NButton
+          <NButton title="Facebook"
             v-if="calendarEvent.extra_attributes?.facebook_url"
             secondary
             tag="a"

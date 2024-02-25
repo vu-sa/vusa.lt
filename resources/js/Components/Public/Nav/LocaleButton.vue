@@ -1,6 +1,6 @@
 <template>
   <NDropdown placement="top-end" :options="options">
-    <SmartLink :href="$page.props.otherLangURL ?? `/${otherLocale}`">
+    <SmartLink title="Change language" :href="$page.props.otherLangURL ?? `/${otherLocale}`">
       <div class="flex gap-1">
         <img
           :src="`https://hatscripts.github.io/circle-flags/flags/${

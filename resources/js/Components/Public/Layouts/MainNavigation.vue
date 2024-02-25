@@ -13,7 +13,7 @@
               </template>
             </NButton>
           </div>
-          <SmartLink
+          <SmartLink title="Grįžti į pagrindinį puslapį"
             :href="`${$page.props.app.url}/${$page.props.app.locale}`"
             target="_self"
           >
