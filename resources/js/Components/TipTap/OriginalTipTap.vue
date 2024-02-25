@@ -41,12 +41,6 @@
             <NIcon :component="TextT24Regular" />
           </template>
         </NButton>
-        <NButton :type="editor.isActive('heading', { level: 1 }) ? 'primary' : 'default'"
-          @click="editor?.chain().focus().toggleHeading({ level: 1 }).run()">
-          <template #icon>
-            <NIcon :component="TextHeader120Filled" />
-          </template>
-        </NButton>
         <NButton :type="editor.isActive('heading', { level: 2 }) ? 'primary' : 'default'"
           @click="editor?.chain().focus().toggleHeading({ level: 2 }).run()">
           <template #icon>
@@ -244,7 +238,6 @@ import {
   TableSettings24Regular,
   TextBold20Regular,
   TextBulletListLtr24Filled,
-  TextHeader120Filled,
   TextHeader220Filled,
   TextHeader320Filled,
   TextItalic20Regular,
@@ -390,7 +383,7 @@ const editor = useEditor({
   extensions: [
     StarterKit.configure({
       heading: {
-        levels: [1, 2, 3],
+        levels: [2, 3],
       },
       codeBlock: false
     }),
