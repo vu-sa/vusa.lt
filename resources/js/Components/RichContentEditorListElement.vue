@@ -6,9 +6,21 @@
         {{ id ? `#${id}` : 'Nauja' }}
       </NTag>
       <div class="ml-auto flex gap-4">
+        <!-- up and down arrows -->
+        <NButton type="primary" circle color="#EEEEEE" size="small" bordered @click="$emit('up')">
+          <template #icon>
+            <NIcon :component="ArrowUp24Regular" color="#000000" />
+          </template>
+        </NButton>
+        <NButton type="primary" circle color="#EEEEEE" size="small" bordered @click="$emit('down')">
+          <template #icon>
+            <NIcon :component="ArrowDown24Regular" color="#000000" />
+          </template>
+        </NButton>
         <NButton type="primary" circle color="#EEEEEE" size="small" bordered @click="$emit('expand')">
           <template #icon>
-            <NIcon :component="isExpanded ? ArrowMinimizeVertical24Regular : ArrowMaximizeVertical24Regular" color="#000000" />
+            <NIcon :component="isExpanded ? ArrowMinimizeVertical24Regular : ArrowMaximizeVertical24Regular"
+              color="#000000" />
           </template>
         </NButton>
         <NButton :disabled="!canDelete" circle type="error" size="small" @click="$emit('remove')">
@@ -23,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { ArrowMaximizeVertical24Regular, ArrowMinimizeVertical24Regular, Dismiss24Regular } from '@vicons/fluent';
+import { ArrowDown24Regular, ArrowMaximizeVertical24Regular, ArrowMinimizeVertical24Regular, ArrowUp24Regular, Dismiss24Regular } from '@vicons/fluent';
 import { NButton, NIcon, NTag } from 'naive-ui';
 import type { Component } from 'vue';
 

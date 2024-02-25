@@ -29,7 +29,7 @@
         </NButton>
         <RichContentEditorListElement :id="content?.id" :is-expanded="content.expanded" :can-delete="contents?.length > 1"
           :icon="contentTypes.find((type) => type.value === content.type)?.icon"
-          :title="contentTypes.find((type) => type.value === content.type)?.label"
+          :title="contentTypes.find((type) => type.value === content.type)?.label" @up="moveArrayElement(contents, index, index - 1)" @down="moveArrayElement(contents, index, index + 1)"
           @expand="content.expanded = !content.expanded" @remove="handleElementRemove(index)">
           <!-- Text -->
           <OriginalTipTap v-if="content.type === 'tiptap'" v-show="content.expanded" v-model="content.json_content" />
