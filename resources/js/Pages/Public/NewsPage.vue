@@ -21,7 +21,7 @@
       <template #image><img
           class="col-span-4 my-4 h-auto w-[65ch] rounded-sm object-cover shadow-md duration-200 hover:shadow-lg"
           :src="article.image"></template>
-      <em v-if="$page.props.otherLangURL" class="prose col-span-full text-sm dark:prose-invert">
+      <em v-if="$page.props.otherLangURL" class="typography col-span-full text-sm">
         {{ $t("Puslapis egzistuoja kita kalba") }}!
         <span class="ml-2">
           <SmartLink :href="$page.props.otherLangURL">
@@ -30,7 +30,7 @@
         </span>
       </em>
       <div
-        class="typography col-span-4 flex flex-col gap-2 text-base leading-7">
+        class="typography col-span-4 flex flex-col gap-2 text-base leading-7 max-w-prose">
         <RichContentParser :content="article.content?.parts" />
       </div>
     </NewsArticle>

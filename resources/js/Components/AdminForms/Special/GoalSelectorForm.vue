@@ -19,7 +19,7 @@
             placeholder="60 laisvų kreditų implementavimas Gyvybės mokslų centre"
             ><template #action>
               <span
-                class="prose-sm prose-gray text-xs text-zinc-400 dark:prose-invert"
+                class="typography text-xs text-zinc-400"
                 >Gali sukurti ir savo tikslą! Įrašyk +
                 <NTag size="tiny">Enter</NTag></span
               >

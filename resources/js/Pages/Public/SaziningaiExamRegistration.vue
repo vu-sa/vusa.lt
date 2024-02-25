@@ -6,7 +6,7 @@
       <h1 class="col-span-3 col-start-1">
         Egzamino ar kolokviumo stebėjimo registracijos forma
       </h1>
-      <div class="prose col-span-3 col-start-1 dark:prose-invert">
+      <div class="typography col-span-3 col-start-1">
         <strong class="text-xl text-red-600">
           Atsiprašome, bet kol kas atsiskaitymų stebėjimų VU SA nevykdo,
           pasikeitus situacijai informuosime universiteto bendruomenę. Ačiū už
@@ -163,7 +163,7 @@
               universiteto Studentų atstovybėje tvarkos aprašą</NCheckbox
             >
           </NFormItem>
-          <div class="prose-sm">
+          <div class="">
             <p>
               Duomenų valdytojas yra Vilniaus universiteto Studentų atstovybė.
             </p>

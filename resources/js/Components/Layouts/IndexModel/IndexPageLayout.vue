@@ -12,7 +12,7 @@
       :show-alert="showAlert"
       @alert-closed="showAlert = false"
     >
-      <div class="prose-sm text-xs">
+      <div class="typography text-xs">
         <component :is="entity?.description"></component>
       </div>
     </SuggestionAlert>

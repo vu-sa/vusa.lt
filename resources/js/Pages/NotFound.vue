@@ -1,5 +1,5 @@
 <template>
-  <div class="prose m-4 rounded-sm p-4">
+  <div class="typography m-4 rounded-sm p-4 leading-7">
     <h1>Oops!</h1>
     <p>
       Pasiekei puslapį, kurio neturėjai pasiekti. Wow, way to go! Šią žinutę
@@ -21,7 +21,7 @@
       p.s. galbūt nuėjus į <strong><a href="https://vusa.lt">vusa.lt</a></strong
       >, galėsi toliau surasti, ko ieškojai...
     </p>
-    <img src="https://cataas.com/cat/cute" />
+    <img src="https://cataas.com/cat/cute">
   </div>
 </template>
 

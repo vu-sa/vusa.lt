@@ -18,7 +18,7 @@
           <span class="text-gray-900 dark:text-white">{{ page.title }}</span>
         </h1>
         <!-- eslint-disable-next-line vue/no-v-html -->
-        <div class="typography text-base leading-7 flex flex-col gap-2 p-4 max-w-[65ch]">
+        <div class="typography text-base leading-7 flex flex-col gap-2 p-4 max-w-prose">
           <RichContentParser :content="page.content?.parts" />
         </div>
         <!-- <aside v-if="anchorLinks" class="sticky top-48 hidden h-fit lg:block">

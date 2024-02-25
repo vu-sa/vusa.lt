@@ -34,7 +34,7 @@
           {{ $t("Aprašymas") }}
         </h2>
         <div
-          class="prose dark:prose-invert sm:max-w-[70ch]"
+          class="typography text-base leading-7 sm:max-w-[70ch]"
           v-html="
             $page.props.app.locale === 'en'
               ? event.extra_attributes?.en?.description ?? event.description

@@ -29,7 +29,7 @@
       title="Naujinti būseną"
       @close="showStateChangeModal = false"
     >
-      <div class="not-prose relative w-full">
+      <div class="relative w-full">
         <InfoText>Palik trumpą komentarą</InfoText>
 
         <CommentTipTap

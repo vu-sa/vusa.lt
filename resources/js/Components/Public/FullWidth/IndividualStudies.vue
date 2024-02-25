@@ -28,7 +28,7 @@
       </h2>
       <div class="space-between flex flex-row">
         <p
-          class="prose prose-sm mb-4 text-sm dark:prose-invert lg:max-w-[80ch] lg:text-base"
+          class="typography text-sm leading-6 lg:leading-6 mb-4 text-sm lg:max-w-[80ch] lg:text-base"
         >
           <template v-if="$page.props.app.locale === 'lt'">
             <p>
@@ -46,7 +46,7 @@
                     permalink: 'individualios-studijos',
                   })
                 "
-                class="no-underline hover:text-vusa-red"
+                class="hover:text-vusa-red"
                 >Skaitykite plačiau</a
               >
             </p>

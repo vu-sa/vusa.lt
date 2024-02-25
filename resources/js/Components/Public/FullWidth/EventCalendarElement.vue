@@ -11,7 +11,7 @@
 
   <div class="mt-8 flex flex-col-reverse gap-4 lg:mt-32 lg:flex-row">
     <div
-      class="prose prose-sm flex w-fit flex-col items-center justify-center dark:prose-invert lg:h-4/5 lg:w-1/2 lg:items-start 2xl:w-3/4"
+      class="typography text-base max-w-prose flex w-fit flex-col items-center justify-center lg:h-4/5 lg:w-1/2 lg:items-start 2xl:w-3/4"
     >
       <p
         v-if="$page.props.app.locale === 'lt'"

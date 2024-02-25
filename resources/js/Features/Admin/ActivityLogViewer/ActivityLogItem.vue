@@ -4,7 +4,7 @@
     <span v-else-if="activity.description === 'updated'"
       >Atnaujintas įvykis.</span
     >
-    <div class="not-prose w-fit">
+    <div class="w-fit">
       <UserPopover :size="24" show-name :user="activity.causer" />
     </div>
   </div>
