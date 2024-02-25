@@ -1,6 +1,6 @@
 <template>
   <div class="gap flex w-full flex-col">
-    <BubbleMenu v-if="editor" class="bg-zinc-50 dark:bg-zinc-900" :editor="editor" :tippy-options="{ duration: 50 }">
+    <BubbleMenu v-if="editor" class="bg-white dark:bg-zinc-900" :editor="editor" :tippy-options="{ duration: 50 }">
       <NButtonGroup secondary>
         <TipTapMarkButton :editor="editor" type="bold" :icon="TextBold20Regular" />
         <TipTapMarkButton :editor="editor" type="italic" :icon="TextItalic20Regular" />
@@ -67,15 +67,13 @@
             <NIcon :component="TextNumberListLtr20Filled" />
           </template>
         </NButton>
+        <NButton :type="editor.isActive('blockquote') ? 'primary' : 'default'"
+          @click="editor?.chain().focus().toggleBlockquote().run()">
+          <NIcon :component="TextQuote20Filled" />
+        </NButton>
       </NButtonGroup>
-      <!-- <button
-        type="button"
-        :class="{ 'is-active': editor.isActive('blockquote') }"
-        @click="editor?.chain().focus().toggleBlockquote().run()"
-      >
-        <NIcon><TextQuote20Filled></TextQuote20Filled></NIcon>
-      </button> -->
-      <NButton size="small" @click="editor?.chain().focus().setHorizontalRule().run()">
+      <NButton size="small" :type="editor.isActive('horizontalRule') ? 'primary' : 'default'"
+        @click="editor?.chain().focus().setHorizontalRule().run()">
         <template #icon>
           <NIcon :component="LineHorizontal120Regular" />
         </template>
@@ -242,6 +240,7 @@ import {
   TextHeader320Filled,
   TextItalic20Regular,
   TextNumberListLtr20Filled,
+  TextQuote20Filled,
   TextT24Regular,
   TextUnderline20Regular,
   // TextQuote20Filled,
@@ -442,6 +441,11 @@ const { message } = createDiscreteApi(["message"]);
     color: #bd2835;
     text-decoration: underline;
     font-weight: 500;
+  }
+
+  blockquote {
+    padding-left: 1rem;
+    @apply border-l-4 border-gray-200;
   }
 
   /* For placeholder  */
