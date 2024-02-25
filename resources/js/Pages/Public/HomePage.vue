@@ -15,9 +15,9 @@
     :upcoming4-events="upcoming4Events"
   />
 
-  <SummerCamps v-if="$page.props.app.locale === 'lt'" />
+  <!-- <SummerCamps v-if="$page.props.app.locale === 'lt'" /> -->
 
-  <YearReport2022 />
+  <!-- <YearReport2022 /> -->
 </template>
 
 <script setup lang="ts">
