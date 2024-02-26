@@ -1,18 +1,35 @@
 <template>
-  <NCard style="width: clamp(300px, 100%, 540px)"
-    :theme-overrides="isDark ? darkCardThemeOverrides : lightCardThemeOverrides"
-    :bordered="element.options?.variant === 'outline'">
-    <template #header>
-      <div class="flex items-center gap-2">
-        <NIcon v-if="element.options?.showIcon" :component="iconToUse" />
-        <span>{{ element.options?.title }}</span>
+  <Card :variant="element.options?.variant"
+    :style="`border-color: ${isDark ? cardColors.border.dark[props.element.options?.color] : cardColors.border.light[props.element.options?.color]}`">
+    <CardHeader>
+      <div class="flex items-center gap-2"
+        :style="`color: ${props.element.options?.isTitleColored ? cardColors.title[isDark ? 'dark' : 'light'][props.element.options?.color] : ''}`">
+        <NIcon v-if="element.options?.showIcon" size="20" :component="iconToUse" />
+        <CardTitle class="mb-0"
+          :style="`color: ${props.element.options?.isTitleColored ? cardColors.title[isDark ? 'dark' : 'light'][props.element.options?.color] : ''}`">
+          {{ element.options?.title }}
+        </CardTitle>
       </div>
-    </template>
-    <slot />
-  </NCard>
+    </CardHeader>
+    <CardContent>
+      <slot />
+    </CardContent>
+  </Card>
+  <!-- <NCard style="width: clamp(300px, 100%, 540px)" -->
+  <!--   :theme-overrides="isDark ? darkCardThemeOverrides : lightCardThemeOverrides" -->
+  <!--   :bordered="element.options?.variant === 'outline'"> -->
+  <!--   <template #header> -->
+  <!--     <div class="flex items-center gap-2"> -->
+  <!--       <NIcon v-if="element.options?.showIcon" :component="iconToUse" /> -->
+  <!--       <span>{{ element.options?.title }}</span> -->
+  <!--     </div> -->
+  <!--   </template> -->
+  <!--   <slot /> -->
+  <!-- </NCard> -->
 </template>
 
 <script setup lang="ts">
+import { Card, CardContent, CardHeader, CardTitle } from './ShadcnVue/ui/card';
 import { type CardProps, NCard, NIcon } from 'naive-ui';
 import { Important24Filled, Info24Filled, QuestionCircle24Filled } from '@vicons/fluent';
 import { computed } from 'vue';
@@ -39,7 +56,7 @@ const cardColors = {
   border: {
     light: {
       zinc: 'rgb(220, 222, 224)',
-      red: 'rgba(189, 40, 53, 0.7)',
+      red: 'rgba(189, 40, 53, 0.8)',
       yellow: 'rgb(251, 176, 27)',
     },
     dark: {
