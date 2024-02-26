@@ -24,7 +24,7 @@
         </NButton>
       </NButtonGroup>
       <NButtonGroup>
-        <TiptapLinkButton
+        <TiptapLinkButton :editor="editor"
           @submit="(url) => editor?.chain().focus().extendMarkRange('link').setLink({ href: url }).run()" />
         <TipTapButton :editor="editor" type="other" :disabled="!editor.isActive('link')" :icon="LinkDismiss20Filled"
           @click="editor?.chain().focus().unsetLink().run()" />

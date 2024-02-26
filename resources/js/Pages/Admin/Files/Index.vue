@@ -1,6 +1,6 @@
 <template>
   <PageContent title="Failų tvarkyklė">
-    <FileManager :files="showedFiles" :directories="showedDirectories" :current-path="currentPath" @file-selected="openFile"
+    <FileManager :files="showedFiles" :directories="showedDirectories" :path @file-selected="openFile"
       @back="getAllFilesAndDirectories('../')" @change-directory="getAllFilesAndDirectories" />
   </PageContent>
 </template>
@@ -16,7 +16,7 @@ import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 const props = defineProps<{
   directories: string[];
   files: string[];
-  currentPath: string;
+  path: string;
 }>();
 
 // Compute showed directories
