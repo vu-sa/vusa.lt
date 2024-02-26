@@ -394,7 +394,7 @@ const editor = useEditor({
       },
     }),
   ],
-  content: modelValue.value,
+  content: modelValue.value ?? "",
   onUpdate: () => {
     // HTML
 

@@ -1,15 +1,15 @@
 <template>
   <template v-for="element in content" :key="element.id">
     <div v-if="element.type === 'tiptap'" v-html="generateHTMLfromTiptap(element.json_content)" />
-    <Accordion class="accordion" type="single" v-else-if="element.type === 'shadcn-accordion'" collapsible>
-      <AccordionItem v-for="item, index in element.json_content" :value="index" :key="index">
+    <Accordion class="not-typography" type="single" v-else-if="element.type === 'shadcn-accordion'" collapsible>
+      <AccordionItem v-for="item, index in element.json_content" :value="`${index}`" :key="index">
         <AccordionTrigger>{{ item.label }}</AccordionTrigger>
         <AccordionContent>
           <div v-html="generateHTMLfromTiptap(item.content)" />
         </AccordionContent>
       </AccordionItem>
     </Accordion>
-    <RichContentCard v-else-if="element.type === 'naiveui-card'" :element="element">
+    <RichContentCard class="mt-4 not-typography" v-else-if="element.type === 'shadcn-card'" :element="element">
       <div v-html="generateHTMLfromTiptap(element.json_content)" />
     </RichContentCard>
   </template>
@@ -17,6 +17,7 @@
 
 <script setup lang="ts">
 import { generateHTML } from '@tiptap/vue-3';
+import Image from '@tiptap/extension-image';
 import StarterKit from '@tiptap/starter-kit';
 import Table from '@tiptap/extension-table';
 import TableCell from '@tiptap/extension-table-cell';
@@ -27,9 +28,7 @@ import Underline from '@tiptap/extension-underline';
 import Youtube from '@tiptap/extension-youtube';
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/Components/ShadcnVue/ui/accordion'
-
 import RichContentCard from './RichContentCard.vue';
-import Image from '@tiptap/extension-image';
 
 defineProps<{
   content: App.Models.ContentPart[];
@@ -80,7 +79,7 @@ function generateHTMLfromTiptap(json_content: App.Models.ContentPart['json_conte
 </script>
 
 <style>
-.accordion {
+.not-typography {
   p {
     margin-top: 0.5rem;
 
