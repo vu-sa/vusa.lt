@@ -1,5 +1,5 @@
 <template>
-  <div ref="el" class="mt-4 flex w-full flex-col gap-4">
+  <div class="mt-4 flex w-full flex-col gap-4">
     <FadeTransition v-if="showHistory">
       <div class="ml-auto flex items-center gap-2">
         <NButtonGroup size="tiny">
@@ -19,22 +19,22 @@
         </p>
       </div>
     </FadeTransition>
-    <TransitionGroup>
-      <div v-for="content, index in contents " :key="content?.id ?? content?.key"
+    <TransitionGroup tag="div" ref="el">
+      <div v-for="content, index in contents" :key="content?.id ?? content?.key"
         class="relative grid w-full grid-cols-[24px,_1fr] gap-4 rounded-md border border-zinc-300 p-3 shadow-sm dark:border-zinc-700/40 dark:bg-zinc-800/5">
         <NButton class="handle" style="height: 100%;" quaternary size="small">
           <template #icon>
             <NIcon :component="ReOrderDotsVertical24Regular" />
           </template>
         </NButton>
-        <RichContentEditorListElement :id="content?.id" :is-expanded="content.expanded" :can-delete="contents?.length > 1"
-          :icon="contentTypes.find((type) => type.value === content.type)?.icon"
-          :title="contentTypes.find((type) => type.value === content.type)?.label" @up="moveArrayElement(contents, index, index - 1)" @down="moveArrayElement(contents, index, index + 1)"
-          @expand="content.expanded = !content.expanded" @remove="handleElementRemove(index)">
+        <RichContentEditorListElement :id="content?.id" :is-expanded="content?.expanded" :can-delete="contents?.length > 1"
+          :icon="contentTypes.find((type) => type.value === content?.type)?.icon"
+          :title="contentTypes.find((type) => type.value === content?.type)?.label" @up="moveArrayElement(contents, index, index - 1)" @down="moveArrayElement(contents, index, index + 1)"
+          @expand="content.expanded = !content?.expanded" @remove="handleElementRemove(index)">
           <!-- Text -->
-          <OriginalTipTap v-if="content.type === 'tiptap'" v-show="content.expanded" v-model="content.json_content" />
+          <OriginalTipTap v-if="content?.type === 'tiptap'" v-show="content.expanded" v-model="content.json_content" />
           <!-- Collapse -->
-          <NDynamicInput v-else-if="content.type === 'shadcn-accordion'" v-show="content.expanded"
+          <NDynamicInput v-else-if="content?.type === 'shadcn-accordion'" v-show="content.expanded"
             v-model:value="content.json_content" @create="onCreate">
             <template #create-button-default>
               Sukurti
@@ -50,7 +50,7 @@
             </template>
           </NDynamicInput>
           <!-- Card -->
-          <div v-if="content.type === 'naiveui-card'" v-show="content.expanded" class="flex flex-col gap-4">
+          <div v-if="content?.type === 'shadcn-card'" v-show="content.expanded" class="flex flex-col gap-4">
             <div class="grid grid-cols-3 items-center gap-7" label="Pavadinimas" :show-feedback="false">
               <NFormItem label="Variantas" :show-feedback="false">
                 <NSelect v-model:value="content.options.variant" :options="[
@@ -148,7 +148,10 @@ function onCreate() {
 
 function handleElementCreate(selectedContent) {
   commit();
-  contents.value?.push({ json_content: {}, type: selectedContent, options: {}, key: Math.random().toString(36).substring(7), expanded: true })
+
+  const jsonContentTemplate = selectedContent === "shadcn-accordion" ? [] : {};
+
+  contents.value?.push({ json_content: jsonContentTemplate, type: selectedContent, options: {}, key: Math.random().toString(36).substring(7), expanded: true })
   showHistory.value = true;
 
   nextTick(() => commit());
@@ -176,7 +179,7 @@ const contentTypes = [
     icon: AppsListDetail24Regular,
   },
   {
-    value: "naiveui-card",
+    value: "shadcn-card",
     label: "Kortelė",
     icon: CalendarDay24Regular,
   },
