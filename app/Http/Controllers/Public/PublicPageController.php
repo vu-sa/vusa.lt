@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Spatie\CalendarLinks\Link;
+use Tiptap\Editor;
 
 class PublicPageController extends PublicController
 {
@@ -161,6 +162,14 @@ class PublicPageController extends PublicController
             ]
         ) : null);
 
+        // check if page->content->parts has type 'tiptap', if yes, use tiptap parser to get first part content (maybe enough for description)
+        
+        $firstTiptapElement = $page->content->parts->filter(function ($part) {
+            return $part->type === 'tiptap';
+        })->first();
+
+        $seoDescription = $firstTiptapElement ? (new Editor)->setContent($firstTiptapElement->json_content)->getText() : null;
+
         return Inertia::render('Public/ContentPage', [
             'navigationItemId' => $navigation_item?->id,
             'page' => [
@@ -168,8 +177,7 @@ class PublicPageController extends PublicController
             ],
         ])->withViewData([
             'title' => $page->title,
-            // TODO: SEO update to parse contents
-            // 'description' => Str::limit(strip_tags($page->text), 150),
+            'description' => Str::limit($seoDescription, 150)
         ]);
     }
 
