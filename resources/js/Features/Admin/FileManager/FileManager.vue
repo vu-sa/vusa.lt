@@ -1,31 +1,35 @@
 <template>
   <div>
-    <NButtonGroup>
-      <!-- Add file or folder   -->
-      <NButton size="small" @click="showFileUploadModal = true">
-        <template #icon>
-          <NIcon :component="DocumentAdd24Regular" />
-        </template>
-        Pridėti failą
-      </NButton>
-      <NButton size="small" @click="showFolderUploadModal = true">
-        <template #icon>
-          <NIcon :component="FolderAdd24Regular" />
-        </template>
-        Pridėti aplanką
-      </NButton>
-    </NButtonGroup>
+    <div class="flex gap-4 items-center">
+      <NButtonGroup>
+        <!-- Add file or folder   -->
+        <NButton size="small" @click="showFileUploadModal = true">
+          <template #icon>
+            <NIcon :component="DocumentAdd24Regular" />
+          </template>
+          Pridėti failą
+        </NButton>
+        <NButton size="small" @click="showFolderUploadModal = true">
+          <template #icon>
+            <NIcon :component="FolderAdd24Regular" />
+          </template>
+          Pridėti aplanką
+        </NButton>
+      </NButtonGroup>
+
+      <div class="text-zinc-500">{{ shownPath }}</div>
+    </div>
     <div class="mt-4 flex flex-wrap gap-4 rounded-md border border-zinc-200 p-8 shadow-sm dark:border-zinc-50/10">
       <FileButton v-if="props.path !== 'public/files'" :key="'back'" :small
         class="dark:from-zinc-800/90 dark:to-zinc-700/90" :icon-string="'folder'" :name="'..'"
         @dblclick="$emit('back')" />
-      <FileButton v-for="folder in directories" :key="folder.id" :small
-        class="dark:from-zinc-800/90 dark:to-zinc-700/90" :icon-string="'folder'" :name="folder.name"
-        @dblclick="$emit('changeDirectory', folder.path)" />
+      <FileButton v-for="folder in directories" :key="folder.id" :small class="dark:from-zinc-800/90 dark:to-zinc-700/90"
+        :icon-string="'folder'" :name="folder.name" @dblclick="$emit('changeDirectory', folder.path)" />
       <FileButton v-for="file in files" :key="file.id" :small class="dark:from-zinc-800/90 dark:to-zinc-700/90"
         :icon-string="getIconString(file.name, false)" :name="file.name"
         :show-thumbnail="file.name.endsWith('.jpg') || file.name.endsWith('.png')"
-        :thumbnail="`/uploads/${file.path.substring(file.path.indexOf('/') + 1)}`" @dblclick="$emit('fileSelected', file.path)" />
+        :thumbnail="`/uploads/${file.path.substring(file.path.indexOf('/') + 1)}`"
+        @dblclick="$emit('fileSelected', file.path)" />
     </div>
     <CardModal :show="showFileUploadModal" title="Pridėti failą" @close="showFileUploadModal = false">
       <NUpload :show-file-list="false" class="h-40 rounded-xl" @change="uploadFile">
@@ -54,7 +58,7 @@
 import { Archive } from '@vicons/fa';
 import { DocumentAdd24Regular, FolderAdd24Regular } from '@vicons/fluent';
 import { NButton, NButtonGroup, NFormItem, NIcon, NInput, NUpload, NUploadDragger, useMessage } from 'naive-ui';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 
 import CardModal from '@/Components/Modals/CardModal.vue';
@@ -81,6 +85,21 @@ const showFolderUploadModal = ref(false);
 const loading = ref(false);
 
 const newFolderName = ref("");
+
+// Split path with public/files and return only the path
+const shownPath = computed(() => {
+
+  // Check if path has public/files
+  if (props.path === "public/files") {
+    return "/";
+  }
+
+  if (props.path.includes("public/files")) {
+    return props.path.split("public/files")[1];
+  }
+
+  return props.path;
+});
 
 const uploadFile = (e) => {
   const file = e.file;

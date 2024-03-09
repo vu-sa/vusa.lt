@@ -5,6 +5,7 @@ export enum FormEnum {
 }
 
 export enum OtherIconEnum {
+  FILE = "FILE",
   HOME = "HOME",
   IMAGE = "IMAGE",
   NOTIFICATION = "NOTIFICATION",

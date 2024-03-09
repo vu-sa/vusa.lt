@@ -32,6 +32,7 @@ export enum ModelEnum {
   "DOING" = "doing",
   "DUTIABLE" = "dutiable",
   "DUTY" = "duty",
+  "FILE" = "file",
   "GOAL_GROUP" = "goalGroup",
   "GOAL" = "goal",
   "INSTITUTION" = "institution",

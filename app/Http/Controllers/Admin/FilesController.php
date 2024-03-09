@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller as Controller;
+use App\Http\Controllers\LaravelResourceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
+use App\Models\File;
 use Intervention\Image\Facades\Image;
 
-class FilesController extends Controller
+class FilesController extends LaravelResourceController
 {
     // TODO: add authorization and just do something with whole this section
     /**
@@ -19,6 +21,24 @@ class FilesController extends Controller
     public function index(Request $request)
     {
         $path = $request->path ?? 'public/files';
+
+        ## If path doesn't have public/files in it, change it to public/files
+
+        if (! str_contains($path, 'public/files')) {
+            $path = 'public/files';
+        }
+
+        // Check if can view directory
+        if (!$request->user()->can('viewAny', [File::class, $path, $this->authorizer])) {
+
+            // If not, redirect to padaliniai/{padalinys}
+            if($this->authorizer->getPadaliniai()->count() > 0) {
+                $path = 'public/files/padaliniai/vusa'.$this->authorizer->getPadaliniai()->first()->alias;
+            } else {
+                // Redirect to dashboard home
+                return redirect()->route('dashboard');
+            }
+        }
 
         [$files, $directories, $currentDirectory] = $this->getFilesFromStorage($path);
 
@@ -98,44 +118,6 @@ class FilesController extends Controller
 
         // return redirect to files index
         return back();
-    }
-
-    public function searchForFiles(Request $request)
-    {
-        $data = $request->collect()['data'];
-
-        $currentDirectory = $request->currentPath ?? 'public';
-
-        $allfiles = Storage::allfiles($currentDirectory);
-
-        // filter files by search term
-        $files = collect($allfiles)->filter(function ($file) use ($data) {
-            // search str_contains with case insensitive
-            return str_contains(strtolower($file), strtolower($data['search']));
-        });
-
-        // dd($files);
-
-        return back()->with('search_other', $files);
-    }
-
-    public function searchForImages(Request $request)
-    {
-        $data = $request->collect()['data'];
-
-        $currentDirectory = $request->currentPath ?? 'public';
-
-        $allfiles = Storage::allfiles($currentDirectory);
-
-        // filter images by search term
-        $images = collect($allfiles)->filter(function ($file) use ($data) {
-            // search str_contains with case insensitive img or png
-            return str_contains(strtolower($file), strtolower($data['search'])) && (str_contains(strtolower($file), '.png') || str_contains(strtolower($file), '.jpg' || str_contains(strtolower($file), '.jpeg')));
-        });
-
-        // dd($images);
-
-        return back()->with('search_other', $images);
     }
 
     public function uploadImage(Request $request)
