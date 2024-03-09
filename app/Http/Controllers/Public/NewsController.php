@@ -34,7 +34,7 @@ class NewsController extends PublicController
         ) : null);
 
         // check if page->content->parts has type 'tiptap', if yes, use tiptap parser to get first part content (maybe enough for description)
-        
+
         $firstTiptapElement = $news->content->parts->filter(function ($part) {
             return $part->type === 'tiptap';
         })->first();
