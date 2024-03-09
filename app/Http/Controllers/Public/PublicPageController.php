@@ -163,7 +163,7 @@ class PublicPageController extends PublicController
         ) : null);
 
         // check if page->content->parts has type 'tiptap', if yes, use tiptap parser to get first part content (maybe enough for description)
-        
+
         $firstTiptapElement = $page->content->parts->filter(function ($part) {
             return $part->type === 'tiptap';
         })->first();
@@ -177,7 +177,7 @@ class PublicPageController extends PublicController
             ],
         ])->withViewData([
             'title' => $page->title,
-            'description' => Str::limit($seoDescription, 150)
+            'description' => Str::limit($seoDescription, 150),
         ]);
     }
 
