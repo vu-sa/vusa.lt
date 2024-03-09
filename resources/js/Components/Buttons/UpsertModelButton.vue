@@ -1,16 +1,14 @@
 <template>
   <NPopconfirm @positive-click="upsertModel">
     <template #trigger>
-      <NSpin :show="showSpin" size="small">
-        <NButton type="primary">{{ buttonText }}</NButton>
-      </NSpin>
+      <NButton :loading="showSpin" type="primary">{{ buttonText }}</NButton>
     </template>
     Ar tikrai {{ buttonText }}?
   </NPopconfirm>
 </template>
 
 <script setup lang="ts">
-import { NButton, NPopconfirm, NSpin, type UploadFileInfo } from "naive-ui";
+import { NButton, NPopconfirm, type UploadFileInfo } from "naive-ui";
 import { computed, ref } from "vue";
 import { router } from "@inertiajs/vue3";
 
