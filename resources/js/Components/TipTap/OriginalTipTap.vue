@@ -173,38 +173,6 @@
         </NButton>
       </div>
     </div>
-    <!-- </NTabPane> -->
-    <!-- <NTabPane name="file" tab="Pridėti failą, kaip nuorodą">
-            <p class="my-2">
-              Įrašyk failo pavadinimą ir pasirink, kad būtų pridėtas!
-              <a class="text-vusa-red" target="_blank" :href="route('files.index')">Failo įkėlimas</a>
-            </p>
-
-            <NSelect v-model:value="previousUrl" filterable
-              placeholder="Ieškoti failo pagal pavadinimą...(pvz.: Darbo reglamentas)" clearable :options="files" remote
-              @search="getFiles" />
-            <div class="mt-2">
-              <NButton @click="updateLink">
-                Atnaujinti
-              </NButton>
-            </div>
-          </NTabPane> -->
-    <!-- <NTabPane name="image" tab="Pridėti paveikslėlį">
-            <p class="my-2">
-              Įrašyk paveikslėlio pavadinimą ir pasirink!
-              <a class="text-vusa-red" target="_blank" :href="route('files.index')">Failo įkėlimas</a>
-            </p>
-
-            <NSelect v-model:value="previousUrl" filterable
-              placeholder="Ieškoti paveikslėlio...(jeigu įkėlėte paveikslėlį, rašykite jo pavadinimo bent tris raides)"
-              clearable :options="files" remote @search="getImages" />
-            <div class="mt-2">
-              <NButton @click="placeImage">
-                Atnaujinti
-              </NButton>
-            </div>
-          </NTabPane> -->
-    <!-- </NTabs> -->
   </div>
 </template>
 
@@ -243,11 +211,8 @@ import {
   NButtonGroup,
   NDivider,
   NIcon,
-  createDiscreteApi,
 } from "naive-ui";
-import { onBeforeUnmount, ref } from "vue";
-import { router } from "@inertiajs/vue3";
-import { useDebounceFn } from "@vueuse/core";
+import { nextTick, onBeforeUnmount, ref } from "vue";
 import Image from "@tiptap/extension-image";
 import Placeholder from '@tiptap/extension-placeholder'
 import StarterKit from "@tiptap/starter-kit";
@@ -261,9 +226,11 @@ import YoutubeExtension from "@tiptap/extension-youtube";
 
 import TipTapButton from "@/Features/Admin/CommentViewer/TipTap/TipTapMarkButton.vue";
 import TipTapMarkButton from "@/Features/Admin/CommentViewer/TipTap/TipTapMarkButton.vue";
-import TiptapYoutubeButton from "./TiptapYoutubeButton.vue";
-import TiptapLinkButton from "./TiptapLinkButton.vue";
 import TiptapImageButton from "./TiptapImageButton.vue";
+import TiptapLinkButton from "./TiptapLinkButton.vue";
+import TiptapYoutubeButton from "./TiptapYoutubeButton.vue";
+import latinize from "latinize";
+import { CustomHeading } from "./CustomHeading";
 
 const props = defineProps<{
   disableTables?: boolean;
@@ -278,84 +245,6 @@ const modelValue = ref(props.modelValue);
 const showToolbar = ref(true);
 const showTableToolbar = ref(false);
 
-const showFileModal = ref(false);
-const previousUrl = ref("");
-const files = ref([]);
-
-const getFiles = useDebounceFn((query) => {
-  if (query.length > 2) {
-    message.loading("Ieškoma...");
-    router.post(
-      route("files.search"),
-      {
-        data: {
-          search: query,
-        },
-      },
-      {
-        preserveState: true,
-        preserveScroll: true,
-        onSuccess: () => {
-          message.success("Pabaigta.");
-          const searchFiles = Object.values(props.searchFiles);
-          files.value = searchFiles.map((file) => ({
-            // get the file name from the url
-            label: `${file.split("/").pop()} (${file})`,
-            // value: file,
-            value: file.replace("public", "/uploads"),
-          }));
-        },
-      }
-    );
-  }
-}, 500);
-
-const getImages = useDebounceFn((query) => {
-  if (query.length > 2) {
-    message.loading("Ieškoma...");
-    router.post(
-      route("images.search"),
-      {
-        data: {
-          search: query,
-        },
-      },
-      {
-        preserveState: true,
-        preserveScroll: true,
-        onSuccess: () => {
-          message.success("Pabaigta.");
-          const searchFiles = Object.values(props.searchFiles);
-          files.value = searchFiles.map((file) => ({
-            // get the file name from the url
-            label: `${file.split("/").pop()} (${file})`,
-            // remove 'public' and add slash to the beginning
-            value: `/uploads${file.replace("public", "")}`,
-            // value: file,
-          }));
-        },
-      }
-    );
-  }
-}, 500);
-
-const updateLink = () => {
-  const url = previousUrl.value;
-  editor.value
-    ?.chain()
-    .focus()
-    .extendMarkRange("link")
-    .setLink({ href: url })
-    .run();
-  showFileModal.value = false;
-};
-
-const placeImage = () => {
-  const url = previousUrl.value;
-  editor.value?.chain().focus().setImage({ src: url }).run();
-  showFileModal.value = false;
-};
-
 const editor = useEditor({
   editorProps: {
     attributes: {
@@ -364,10 +253,11 @@ const editor = useEditor({
   },
   extensions: [
     StarterKit.configure({
-      heading: {
-        levels: [2, 3],
-      },
+      heading: false,
       codeBlock: false
+    }),
+    CustomHeading.configure({
+      levels: [2, 3],
     }),
     BubbleMenu,
     Placeholder.configure({
@@ -396,13 +286,16 @@ const editor = useEditor({
   ],
   content: modelValue.value ?? "",
   onUpdate: () => {
-    // HTML
 
-    if (props.html) {
-      emit("update:modelValue", editor.value?.getHTML());
-    } else {
-      emit("update:modelValue", editor.value?.getJSON());
-    }
+    handleUpdate()
+
+    nextTick(() => {
+      if (props.html) {
+        emit("update:modelValue", editor.value?.getHTML());
+      } else {
+        emit("update:modelValue", editor.value?.getJSON());
+      }
+    });
   },
 });
 
@@ -410,8 +303,47 @@ onBeforeUnmount(() => {
   editor.value?.destroy();
 });
 
-// must be called after everything
-const { message } = createDiscreteApi(["message"]);
+function handleUpdate() {
+  const innerHeadings = []
+  const transaction = editor.value?.state.tr
+
+  function latinizeId (text: string) {
+    return latinize(text)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '')
+  }
+
+  editor.value?.state.doc.descendants((node, pos) => {
+    if (node.type.name === 'heading') {
+
+      // Get node text slug
+      let id = latinizeId(node.textContent)
+
+      // Check if id doesn't repeat
+      let counter = 1
+      while (innerHeadings.some((heading) => heading.id === id)) {
+        id = `${latinizeId(node.textContent)}-${counter}`
+        counter++
+      }
+
+      if (node.attrs.id !== id) {
+        transaction?.setNodeAttribute(pos, 'id', id)
+      }
+
+      innerHeadings.push({
+        level: node.attrs.level,
+        text: node.textContent,
+        id,
+      })
+    }
+  })
+
+  transaction?.setMeta('addToHistory', false)
+  transaction?.setMeta('preventUpdate', true)
+
+  editor.value?.view.dispatch(transaction)
+}
 </script>
 
 <style>

@@ -1,7 +1,7 @@
 <template>
   <template v-for="element in content" :key="element.id">
     <div v-if="element.type === 'tiptap'" v-html="generateHTMLfromTiptap(element.json_content)" />
-    <Accordion class="not-typography" type="single" v-else-if="element.type === 'shadcn-accordion'" collapsible>
+    <Accordion class="not-typography mt-1 mb-3" type="single" v-else-if="element.type === 'shadcn-accordion'" collapsible>
       <AccordionItem v-for="item, index in element.json_content" :value="`${index}`" :key="index">
         <AccordionTrigger>{{ item.label }}</AccordionTrigger>
         <AccordionContent>
@@ -29,6 +29,7 @@ import Youtube from '@tiptap/extension-youtube';
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/Components/ShadcnVue/ui/accordion'
 import RichContentCard from './RichContentCard.vue';
+import { CustomHeading } from './TipTap/CustomHeading';
 
 defineProps<{
   content: App.Models.ContentPart[];
@@ -41,10 +42,11 @@ function generateHTMLfromTiptap(json_content: App.Models.ContentPart['json_conte
 
   return generateHTML(json_content, [
     StarterKit.configure({
-      heading: {
-        levels: [2, 3],
-      },
+      heading: false,
       codeBlock: false
+    }),
+    CustomHeading.configure({
+      headings: [2, 3],
     }),
     Image,
     Table.configure({

@@ -1,4 +1,5 @@
 <template>
+  <!-- TODO: do it without :style -->
   <Card :variant="element.options?.variant"
     :style="`border-color: ${isDark ? cardColors.border.dark[props.element.options?.color] : cardColors.border.light[props.element.options?.color]}`">
     <CardHeader>
@@ -15,22 +16,11 @@
       <slot />
     </CardContent>
   </Card>
-  <!-- <NCard style="width: clamp(300px, 100%, 540px)" -->
-  <!--   :theme-overrides="isDark ? darkCardThemeOverrides : lightCardThemeOverrides" -->
-  <!--   :bordered="element.options?.variant === 'outline'"> -->
-  <!--   <template #header> -->
-  <!--     <div class="flex items-center gap-2"> -->
-  <!--       <NIcon v-if="element.options?.showIcon" :component="iconToUse" /> -->
-  <!--       <span>{{ element.options?.title }}</span> -->
-  <!--     </div> -->
-  <!--   </template> -->
-  <!--   <slot /> -->
-  <!-- </NCard> -->
 </template>
 
 <script setup lang="ts">
 import { Card, CardContent, CardHeader, CardTitle } from './ShadcnVue/ui/card';
-import { type CardProps, NCard, NIcon } from 'naive-ui';
+import { type CardProps, NIcon } from 'naive-ui';
 import { Important24Filled, Info24Filled, QuestionCircle24Filled } from '@vicons/fluent';
 import { computed } from 'vue';
 import { useDark } from '@vueuse/core';

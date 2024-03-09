@@ -21,16 +21,16 @@
         <div class="typography text-base leading-7 flex flex-col gap-2 p-4 max-w-prose">
           <RichContentParser :content="page.content?.parts" />
         </div>
-        <!-- <aside v-if="anchorLinks" class="sticky top-48 hidden h-fit lg:block">
+        <aside v-if="anchorLinks" class="sticky top-48 hidden h-fit lg:block">
           <NAnchor ignore-gap :bound="160">
-            <NAnchorLink
-              v-for="link in anchorLinks"
-              :key="link.href"
-              :title="link.title"
-              :href="link.href"
-            />
+            <template v-for="link in anchorLinks" :key="link.href">
+              <NAnchorLink :title="link.title" :href="link.href" />
+              <template v-for="child in link.children" :key="child.href">
+                <NAnchorLink :title="child.title" :href="child.href" :indent="true" />
+              </template>
+            </template>
           </NAnchor>
-        </aside> -->
+        </aside>
       </article>
     </section>
   </div>
@@ -39,8 +39,8 @@
 <script setup lang="ts">
 import { HatGraduation20Filled } from "@vicons/fluent";
 import {
-  // NAnchor,
-  // NAnchorLink,
+  NAnchor,
+  NAnchorLink,
   NBreadcrumb,
   NBreadcrumbItem,
   NIcon,
@@ -72,7 +72,47 @@ const getBreadcrumbTree = (navigationItemId: number) => {
 
 const breadcrumbTree = getBreadcrumbTree(props.navigationItemId);
 
-// TODO: parse headers from content JSON and generate anchor links
+const anchorLinks = props.page.content?.parts?.reduce((acc: any, part: any) => {
+  if (part.type === "tiptap") {
+    const partHeadings = part.json_content?.content?.filter(
+      (node: any) => node.type === "heading",
+    );
+
+    // check for h2 and h3 elements, if h3, nest it under h2
+    const headings = partHeadings?.reduce((acc: any, node: any) => {
+      console.log(node);
+      if (node.attrs.level === 2) {
+        acc.push({
+          title: node.content[0].text,
+          href: `#${node.attrs.id}`,
+          children: [],
+        });
+      } else if (node.attrs.level === 3) {
+
+        // Sometimes the h3 may come before h2, we need to check for that
+        if (acc[acc.length - 1]?.children) {
+          acc[acc.length - 1]?.children.push({
+            title: node.content[0].text,
+            href: `#${node.attrs.id}`,
+          });
+        } else {
+          acc.push({
+            title: node.content[0].text,
+            href: `#${node.attrs.id}`,
+            children: [],
+          });
+        }
+      }
+      return acc;
+    }, []);
+
+    acc.push(...headings);
+  }
+
+  return acc;
+}, []);
+
+console.log(anchorLinks);
 </script>
 
 <style>
@@ -82,7 +122,7 @@ const breadcrumbTree = getBreadcrumbTree(props.navigationItemId);
 }
 
 /* offset scroll of content on anchor link click which uses h2 and h3 elements */
-*:target {
-  scroll-margin-top: 160px;
-}
+/* *:target { */
+/*   scroll-margin-top: 160px; */
+/* } */
 </style>
