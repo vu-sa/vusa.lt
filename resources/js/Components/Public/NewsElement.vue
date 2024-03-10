@@ -49,7 +49,7 @@
             "
             ><img
               :src="item.image"
-              class="mb-1 h-40 w-full rounded-sm object-cover shadow-md duration-200 hover:shadow-lg"
+              class="mb-1 h-52 md:h-40 w-full rounded-sm object-cover shadow-md duration-200 hover:shadow-lg"
           /></Link>
         </template>
         <Link :title="item.title" class="no-underline"

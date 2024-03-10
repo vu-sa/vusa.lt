@@ -60,7 +60,7 @@
       {{ $t('Artėjantys renginiai') }}
     </h2>
     <div>
-      <NCarousel class="items-center hidden md:block" style="width: 100%;" :slides-per-view="3" :space-between="20"
+      <NCarousel class="hidden items-center md:block" style="width: 100%;" :slides-per-view="3" :space-between="20"
         autoplay :show-dots="false" draggable>
         <a v-for="event in eventsByHavingImages.hasImages" :key="event.id" class="w-fit" :href="route('calendar.event', {
           calendar: event.id,
@@ -81,14 +81,14 @@
           </div>
         </div>
       </NCarousel>
-      <div class="block md:hidden">
+      <div class="block md:hidden w-fit mx-auto">
         <div class="flex flex-col gap-4">
-          <a v-for="event in upcomingEvents.slice(0, 3)" :key="event.id" :href="route('calendar.event', {
+          <a v-for="event in upcomingEvents.slice(0, 3)" :key="event.id" class="w-[28rem]" :href="route('calendar.event', {
             calendar: event.id,
             lang: $page.props.app.locale,
           })
             ">
-            <CalendarCard :calendar-event="event" />
+            <CalendarCard class="w-[28rem]" :calendar-event="event" />
           </a>
         </div>
       </div>
