@@ -32,11 +32,19 @@ return new class extends Migration
         });
 
         Schema::table('pages', function (Blueprint $table) {
-            $table->foreignId('content_id')->after('other_lang_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('content_id')->after('other_lang_id');
+        });
+
+        Schema::table('pages', function (Blueprint $table) {
+            $table->foreign('content_id')->references('id')->on('contents')->onDelete('cascade');
         });
 
         Schema::table('news', function (Blueprint $table) {
-            $table->foreignId('content_id')->after('other_lang_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('content_id')->after('other_lang_id');
+        });
+
+        Schema::table('news', function (Blueprint $table) {
+            $table->foreign('content_id')->references('id')->on('contents')->onDelete('cascade');
         });
 
         $pages = Page::all();
