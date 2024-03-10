@@ -174,7 +174,16 @@ class PublicPageController extends PublicController
             'navigationItemId' => $navigation_item?->id,
             'page' => [
                 ...$page->only('id', 'title', 'content', 'lang', 'category', 'padalinys', 'permalink', 'other_lang_id'),
-            ],
+                // TODO: It's possible to parse tiptap elements in server, but doesn't parse correctly all the time. Will debug later.
+                // 'content' => [
+                //     ...$page->content->toArray(),
+                //     'parts' => $page->content->parts->map(function ($part) {
+                //         return [
+                //             ...$part->parseTipTapElements()->toArray(),
+                //         ];
+                //     }),
+                // ],
+            ]
         ])->withViewData([
             'title' => $page->title,
             'description' => Str::limit($seoDescription, 150),

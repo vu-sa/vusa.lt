@@ -1,16 +1,16 @@
 <template>
   <template v-for="element in content" :key="element.id">
-    <div v-if="element.type === 'tiptap'" v-html="generateHTMLfromTiptap(element.json_content)" />
+    <div v-if="element.type === 'tiptap'" v-html="html ? element.html : generateHTMLfromTiptap(element.json_content)" />
     <Accordion v-else-if="element.type === 'shadcn-accordion'" class="not-typography mb-3 mt-1" type="single" collapsible>
       <AccordionItem v-for="item, index in element.json_content" :key="index" :value="`${index}`">
         <AccordionTrigger>{{ item.label }}</AccordionTrigger>
         <AccordionContent>
-          <div v-html="generateHTMLfromTiptap(item.content)" />
+          <div v-html="html ? item.content : generateHTMLfromTiptap(item.content)" />
         </AccordionContent>
       </AccordionItem>
     </Accordion>
     <RichContentCard v-else-if="element.type === 'shadcn-card'" class="not-typography mt-4" :element="element">
-      <div v-html="generateHTMLfromTiptap(element.json_content)" />
+      <div v-html="html ? element.html : generateHTMLfromTiptap(element.json_content)" />
     </RichContentCard>
     <div v-else-if="element.type === 'image-grid'" class="mt-4">
       <NImageGroup :show-toolbar="false">
@@ -43,6 +43,7 @@ import RichContentCard from './RichContentCard.vue';
 
 defineProps<{
   content: App.Models.ContentPart[];
+  html?: boolean;
 }>();
 
 const getClassesForImage = (colspan: string) => {
