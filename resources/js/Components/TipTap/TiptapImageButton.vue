@@ -6,7 +6,7 @@
   </NButton>
   <CardModal v-model:show="showModal" class="max-w-3xl" title="Pasirinkti paveikslėlį" @close="showModal = false">
     <Suspense>
-      <FileSelector v-if="showModal" @submit="addImage" />
+      <FileSelector v-if="showModal" :file-extensions="['jpg', 'jpeg', 'png', 'gif']" @submit="addImage" />
       <div v-else class="h-32" />
       <template #fallback>
         <div class="flex h-32 items-center justify-center">

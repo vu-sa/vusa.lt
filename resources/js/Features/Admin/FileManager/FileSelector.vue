@@ -16,6 +16,10 @@ defineEmits<{
   (e: 'submit', path: string): void
 }>();
 
+const props = defineProps<{
+  fileExtensions?: string[];
+}>();
+
 const loading = ref(true);
 
 const files = ref([]);
@@ -46,6 +50,12 @@ async function getData(changedDirectory: string) {
     const fileName = file.split("/").slice(-1)[0];
     return { id: index, name: fileName, path: file };
   }) ?? [];
+
+  if (props.fileExtensions) {
+    files.value = files.value.filter((file) => {
+      return props.fileExtensions?.includes(file.name.split('.').pop());
+    });
+  }
 
   directories.value = data.value.directories?.map((directory, index) => {
     const directoryName = directory.split("/").slice(-1)[0];
