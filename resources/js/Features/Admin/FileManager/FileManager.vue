@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="flex items-center gap-4">
+    <div class="grid grid-cols-[auto,_1fr] items-center gap-x-6 gap-y-4 max-sm:grid-cols-2">
       <NButtonGroup>
         <!-- Add file or folder   -->
         <NButton size="small" @click="showFileUploadModal = true">
@@ -16,25 +16,27 @@
           Pridėti aplanką
         </NButton>
       </NButtonGroup>
+      <NInput style="width: 300px; margin-left: auto;" v-model:value="search" :size="small ? 'small' : 'medium'" round
+        placeholder="Filtruoti..." />
 
-      <div class="text-zinc-500">
+      <div class="text-zinc-500 col-span-2">
         {{ shownPath }}
       </div>
     </div>
     <div class="mt-4 flex flex-wrap gap-4 rounded-md border border-zinc-200 p-8 shadow-sm dark:border-zinc-50/10">
       <FileButton v-if="props.path !== 'public/files'" :key="'back'" :small
-        class="dark:from-zinc-800/90 dark:to-zinc-700/90" :icon-string="'folder'" :name="'..'"
-        @dblclick="$emit('back')" />
-      <FileButton v-for="folder in directories" :key="folder.id" :small class="dark:from-zinc-800/90 dark:to-zinc-700/90"
-        :icon-string="'folder'" :name="folder.name" @dblclick="$emit('changeDirectory', folder.path)" />
-      <div v-for="file in files" :key="file.id" class="group relative">
+        class="dark:from-zinc-800/90 dark:to-zinc-700/90" :icon-string="'folder'" :name="'..'" @dblclick="handleBack" />
+      <FileButton v-for="folder in shownDirectories" :key="folder.id" :small
+        class="dark:from-zinc-800/90 dark:to-zinc-700/90" :icon-string="'folder'" :name="folder.name"
+        @dblclick="handleChangeDirectory(folder.path)" />
+      <div v-for="file in shownFiles" :key="file.id" class="group relative">
         <FileButton :small class="dark:from-zinc-800/90 dark:to-zinc-700/90"
           :icon-string="getIconString(file.name, false)" :name="file.name"
-          :show-thumbnail="file.name.endsWith('.jpg') || file.name.endsWith('.png') || file.name.endsWith('.jpeg')"
-          :thumbnail="`/uploads/${file.path.substring(file.path.indexOf('/') + 1)}`"
+          :show-thumbnail="file?.name?.endsWith('.jpg') || file?.name?.endsWith('.png') || file?.name?.endsWith('.jpeg')"
+          :thumbnail="`/uploads/${file.path?.substring(file.path.indexOf('/') + 1)}`"
           @dblclick="$emit('fileSelected', file.path)" />
         <NButton class="-right-2 -top-2 opacity-0 group-hover:opacity-100" style="position: absolute" size="small"
-          type="error" circle @click="deleteFile(file.path)">
+          type="error" circle @click="deleteFile(file.item.path)">
           <template #icon>
             <NIcon :component="Delete24Regular" />
           </template>
@@ -67,7 +69,7 @@
     </CardModal>
     <CardModal :show="showDeleteModal" title="Ištrinti failą" @close="showDeleteModal = false">
       <div>
-        <p class="mb-4 font-bold text-base">
+        <p class="mb-4 text-base font-bold">
           Ar tikrai norite ištrinti šį failą? Failo bus neįmanoma atkurti!
         </p>
         <p class="mb-4 text-zinc-500">
@@ -117,10 +119,11 @@ const showFolderUploadModal = ref(false);
 const showDeleteModal = ref(false);
 
 const selectedFileForDeletion = ref("");
+const newFolderName = ref("");
 
 const loading = ref(false);
 
-const newFolderName = ref("");
+const search = ref("");
 
 // Split path with public/files and return only the path
 const shownPath = computed(() => {
@@ -135,6 +138,26 @@ const shownPath = computed(() => {
   }
 
   return props.path;
+});
+
+const shownFiles = computed(() => {
+  if (search.value === "") {
+    return props.files;
+  }
+
+  return props.files.filter((file: any) => {
+    return file.name.toLowerCase().includes(search.value.toLowerCase());
+  });
+});
+
+const shownDirectories = computed(() => {
+  if (search.value === "") {
+    return props.directories;
+  }
+
+  return props.directories.filter((directory: any) => {
+    return directory.name.toLowerCase().includes(search.value.toLowerCase());
+  });
 });
 
 const uploadFile = (e) => {
@@ -196,6 +219,14 @@ const deleteFileConfirmed = () => {
     },
   );
 };
+
+function handleChangeDirectory(path: string) {
+  emit("changeDirectory", path);
+}
+
+function handleBack() {
+  emit("back");
+}
 
 function getIconString(file: string, isFolder: boolean | undefined) {
   if (isFolder) {
