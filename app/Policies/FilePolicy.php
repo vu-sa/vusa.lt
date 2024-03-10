@@ -3,12 +3,9 @@
 namespace App\Policies;
 
 use App\Enums\ModelEnum;
-use App\Models\File;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
-use Illuminate\Support\Str;
 use App\Services\ModelAuthorizer as Authorizer;
-use Illuminate\Routing\Route;
+use Illuminate\Support\Str;
 
 class FilePolicy
 {
@@ -40,6 +37,7 @@ class FilePolicy
             // If $padalinys starts with vusa, remove it and only then return
             if (Str::startsWith($padalinys, 'vusa')) {
                 $padalinys = substr($padalinys, 4);
+
                 return $padalinys;
             }
         }
@@ -56,7 +54,7 @@ class FilePolicy
     {
         $this->authorizer = $authorizer;
 
-        $check = $this->authorizer->forUser($user)->check($this->pluralModelName . '.read.padalinys');
+        $check = $this->authorizer->forUser($user)->check($this->pluralModelName.'.read.padalinys');
 
         $padalinysDirectory = $this->getDirectoryPadalinysAlias($directory, $authorizer);
         $permissablePadaliniai = $this->authorizer->getPadaliniai()->pluck('alias')->toArray();
@@ -90,7 +88,7 @@ class FilePolicy
     public function delete(User $user, string $path, Authorizer $authorizer): bool
     {
         $this->authorizer = $authorizer;
-        $check = $this->authorizer->forUser($user)->check($this->pluralModelName . '.read.padalinys');
+        $check = $this->authorizer->forUser($user)->check($this->pluralModelName.'.read.padalinys');
 
         $padalinysDirectory = $this->getDirectoryPadalinysAlias($path, $this->authorizer);
 

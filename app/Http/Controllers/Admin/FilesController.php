@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller as Controller;
 use App\Http\Controllers\LaravelResourceController;
+use App\Models\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
-use App\Models\File;
 use Intervention\Image\Facades\Image;
 
 class FilesController extends LaravelResourceController
@@ -33,17 +32,17 @@ class FilesController extends LaravelResourceController
     {
         $path = $request->path ?? 'public/files';
 
-        ## If path doesn't have public/files in it, change it to public/files
+        //# If path doesn't have public/files in it, change it to public/files
 
         if (! str_contains($path, 'public/files')) {
             $path = 'public/files';
         }
 
         // Check if can view directory
-        if (!$request->user()->can('viewAny', [File::class, $path, $this->authorizer])) {
+        if (! $request->user()->can('viewAny', [File::class, $path, $this->authorizer])) {
 
             // If not, redirect to padaliniai/{padalinys}
-            if($this->authorizer->getPadaliniai()->count() > 0) {
+            if ($this->authorizer->getPadaliniai()->count() > 0) {
                 $path = 'public/files/padaliniai/vusa'.$this->authorizer->getPadaliniai()->first()->alias;
             } else {
                 // Redirect to dashboard home
@@ -69,10 +68,10 @@ class FilesController extends LaravelResourceController
         }
 
         // Check if can view directory
-        if (!$request->user()->can('viewAny', [File::class, $path, $this->authorizer])) {
+        if (! $request->user()->can('viewAny', [File::class, $path, $this->authorizer])) {
 
             // If not, redirect to padaliniai/{padalinys}
-            if($this->authorizer->getPadaliniai()->count() > 0) {
+            if ($this->authorizer->getPadaliniai()->count() > 0) {
                 $path = 'public/files/padaliniai/vusa'.$this->authorizer->getPadaliniai()->first()->alias;
             } else {
                 // Return error response
@@ -180,10 +179,10 @@ class FilesController extends LaravelResourceController
             ], 403);
         }
 
-        if (!$request->user()->can('delete', [File::class, $path, $this->authorizer])) {
+        if (! $request->user()->can('delete', [File::class, $path, $this->authorizer])) {
 
             // If not, redirect to padaliniai/{padalinys}
-            if($this->authorizer->getPadaliniai()->count() > 0) {
+            if ($this->authorizer->getPadaliniai()->count() > 0) {
                 $path = 'public/files/padaliniai/vusa'.$this->authorizer->getPadaliniai()->first()->alias;
             } else {
                 // Redirect to dashboard home
