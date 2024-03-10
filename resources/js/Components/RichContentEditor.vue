@@ -105,7 +105,7 @@
               </template>
               <template #default="{ value }">
                 <div class="flex w-full gap-4">
-                  <NFormItem class="w-48" label="Eilutės" :show-feedback="false">
+                  <NFormItem class="w-48" label="Nuotraukos plotis" :show-feedback="false">
                     <NSelect v-model:value="value.colspan" type="text" placeholder="Layout" :options="imageGridOptions" />
                   </NFormItem>
                   <NFormItem class="grow" label="Nuotrauka" :show-feedback="false">

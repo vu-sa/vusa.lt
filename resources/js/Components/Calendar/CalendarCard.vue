@@ -1,24 +1,18 @@
 <template>
-  <NCard
-    size="small"
-    class="h-full max-w-md rounded-md text-gray-900 shadow-md lg:border-2 dark:text-zinc-100"
-    hoverable
-    :segmented="{ footer: 'soft' }"
-  >
+  <NCard size="small" class="h-full max-w-md rounded-md text-gray-900 shadow-md dark:text-zinc-100 lg:border-2" hoverable
+    :segmented="{ footer: 'soft' }">
     <template #cover>
-      <img
-        v-if="calendarEvent.images && calendarEvent.images?.length > 0"
-        style="height: 100px"
-        class="rounded-t-md object-cover object-center"
-        :src="calendarEvent.images[0].original_url"
-      />
+      <img v-if="calendarEvent.images && calendarEvent.images?.length > 0" style="height: 100px"
+        class="rounded-t-md object-cover object-center" :src="calendarEvent.images[0].original_url">
     </template>
-    <template #header
-      ><strong class="line-clamp-2 text-center font-extrabold">{{
-        calendarEvent.title
-      }}</strong></template
-    >
-    <div class="flex flex-col gap-1 text-sm">
+    <template #header>
+      <div class="align-center flex h-14 flex-row items-center">
+        <p class="line-clamp-2 w-full text-center text-base font-bold leading-5">{{
+          calendarEvent.title
+        }}</p>
+      </div>
+    </template>
+    <div class="mb-2 flex flex-col gap-2 text-xs">
       <div class="inline-flex items-center gap-2">
         <NIcon :component="CalendarLtr24Regular" />
         <strong>
@@ -26,9 +20,8 @@
             formatStaticTime(
               new Date(calendarEvent.date),
               {
-                weekday: "short",
                 year: "numeric",
-                month: "long",
+                month: "numeric",
                 day: "numeric",
                 hour: "numeric",
                 minute: "numeric",
@@ -46,17 +39,13 @@
       </div>
       <div v-if="calendarEvent.location" class="inline-flex items-center gap-2">
         <NIcon :component="Location24Regular" />
-        <a
-          class="underline"
-          target="_blank"
-          :href="`https://www.google.com/maps/search/?api=1&query=${calendarEvent.location}`"
-          >{{
+        <a class="underline" target="_blank"
+          :href="`https://www.google.com/maps/search/?api=1&query=${calendarEvent.location}`">{{
             $page.props.app.locale === "en"
-              ? calendarEvent.extra_attributes?.en?.location ??
-                calendarEvent.location
-              : calendarEvent.location
-          }}</a
-        >
+            ? calendarEvent.extra_attributes?.en?.location ??
+            calendarEvent.location
+            : calendarEvent.location
+          }}</a>
       </div>
       <div class="inline-flex items-center gap-2">
         <NIcon :component="PeopleTeam28Regular" />
@@ -68,44 +57,24 @@
     </div>
 
     <template #footer>
-      <div
-        v-if="
-          timeTillEvent.days >= 0 ||
-          googleLink ||
-          calendarEvent.url ||
-          calendarEvent.extra_attributes?.facebook_url
-        "
-        class="flex flex-col justify-center"
-      >
-        <div class="flex flex-col justify-center text-xs leading-4">
-          {{ formatRelativeTime(new Date(calendarEvent.date)) }}
-        </div>
+      <div v-if="googleLink ||
+        calendarEvent.url ||
+        calendarEvent.extra_attributes?.facebook_url
+        " class="flex flex-col justify-center">
+        <!-- <div class="flex flex-col justify-center text-xs leading-4"> -->
+        <!--   {{ formatRelativeTime(new Date(calendarEvent.date)) }} -->
+        <!-- </div> -->
 
-        <NButton
-          v-if="
-            calendarEvent.padalinys?.alias === 'mif' &&
-            calendarEvent.category === 'freshmen-camps'
-          "
-          strong
-          tag="a"
-          round
-          type="primary"
-          @click="showModal = true"
-          ><template #icon>
-            <NIcon :component="HatGraduation20Regular"></NIcon>
+        <NButton v-if="calendarEvent.padalinys?.alias === 'mif' &&
+          calendarEvent.category === 'freshmen-camps'
+          " strong tag="a" round type="primary" @click="showModal = true"><template #icon>
+            <NIcon :component="HatGraduation20Regular" />
           </template>
           {{ $t("Dalyvauk") }}!
         </NButton>
-        <NButton
-          v-if="calendarEvent.url"
-          strong
-          tag="a"
-          round
-          type="primary"
-          target="_blank"
-          :href="calendarEvent.url"
-          ><template #icon>
-            <NIcon :component="HatGraduation20Regular"></NIcon>
+        <NButton v-if="calendarEvent.url" strong tag="a" round type="primary" target="_blank" :href="calendarEvent.url">
+          <template #icon>
+            <NIcon :component="HatGraduation20Regular" />
           </template>
           {{ $t("Dalyvauk") }}!
         </NButton>
@@ -125,33 +94,18 @@
             ><NMessageProvider><MIFCampRegistration /></NMessageProvider
           ></NScrollbar>
         </NModal> -->
-        <div
-          v-if="calendarEvent.extra_attributes?.facebook_url || googleLink"
-          class="mt-2 flex justify-center gap-2"
-        >
-          <NButton title="Facebook"
-            v-if="calendarEvent.extra_attributes?.facebook_url"
-            secondary
-            tag="a"
-            target="_blank"
-            :href="calendarEvent.extra_attributes?.facebook_url"
-            circle
-            size="small"
-            ><NIcon size="14" :component="FacebookF"></NIcon
-          ></NButton>
+        <div v-if="calendarEvent.extra_attributes?.facebook_url || googleLink" class="mt-2 flex justify-center gap-2">
+          <NButton v-if="calendarEvent.extra_attributes?.facebook_url" title="Facebook" secondary tag="a" target="_blank"
+            :href="calendarEvent.extra_attributes?.facebook_url" circle size="small">
+            <NIcon size="14" :component="FacebookF" />
+          </NButton>
           <NPopover v-if="googleLink">
             {{ $t("Įsidėk į Google kalendorių") }}
             <template #trigger>
-              <NButton
-                secondary
-                circle
-                size="small"
-                tag="a"
-                target="_blank"
-                :href="googleLink"
-                @click.stop
-              >
-                <template #icon><NIcon :component="Google" /></template>
+              <NButton secondary circle size="small" tag="a" target="_blank" :href="googleLink" @click.stop>
+                <template #icon>
+                  <NIcon :component="Google" />
+                </template>
               </NButton>
             </template>
           </NPopover>
@@ -170,17 +124,13 @@ import {
   PeopleTeam28Regular,
   Timer16Regular,
 } from "@vicons/fluent";
+import { FacebookF, Google } from "@vicons/fa";
 import {
-  type CountdownProps,
   NButton,
   NCard,
   NIcon,
-  NMessageProvider,
-  NModal,
   NPopover,
-  NScrollbar,
 } from "naive-ui";
-import { FacebookF, Google } from "@vicons/fa";
 import { computed, ref } from "vue";
 
 import { formatRelativeTime, formatStaticTime } from "@/Utils/IntlTime";
