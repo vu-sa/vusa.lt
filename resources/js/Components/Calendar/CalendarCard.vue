@@ -6,8 +6,8 @@
         class="rounded-t-md object-cover object-center" :src="calendarEvent.images[0].original_url">
     </template>
     <template #header>
-      <div class="align-center flex h-14 flex-row items-center">
-        <p class="line-clamp-2 w-full text-center text-base font-bold leading-5">{{
+      <div class="align-center flex h-12 p-2 flex-row items-center">
+        <p class="line-clamp-2 w-full text-center text-lg font-bold leading-5">{{
           calendarEvent.title
         }}</p>
       </div>

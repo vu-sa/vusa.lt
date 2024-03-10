@@ -3,8 +3,8 @@
     <section class="pt-8 last:pb-2">
       <header>
         <NBreadcrumb v-if="navigationItemId != null" class="mb-4 flex w-full">
-          <NBreadcrumbItem v-for="breadcrumb in breadcrumbTree" :key="breadcrumb.parent_id" :clickable="false">
-            {{ breadcrumb.name }}
+          <NBreadcrumbItem v-for="breadcrumb in breadcrumbTree" :key="breadcrumb?.parent_id" :clickable="false">
+            {{ breadcrumb?.name }}
             <template #separator>
               <NIcon>
                 <HatGraduation20Filled />
@@ -53,8 +53,6 @@ const props = defineProps<{
   page: Record<string, any>;
 }>();
 
-console.log(props.page.content)
-
 const mainNavigation = usePage().props.mainNavigation;
 
 const getBreadcrumbTree = (navigationItemId: number) => {
@@ -65,7 +63,7 @@ const getBreadcrumbTree = (navigationItemId: number) => {
       (item) => item.id === navigationItemId,
     );
     breadcrumbTree.unshift(navigationItem);
-    navigationItemId = navigationItem.parent_id;
+    navigationItemId = navigationItem?.parent_id;
   }
   return breadcrumbTree;
 };
@@ -80,7 +78,6 @@ const anchorLinks = props.page.content?.parts?.reduce((acc: any, part: any) => {
 
     // check for h2 and h3 elements, if h3, nest it under h2
     const headings = partHeadings?.reduce((acc: any, node: any) => {
-      console.log(node);
       if (node.attrs.level === 2) {
         acc.push({
           title: node.content[0].text,
@@ -112,7 +109,6 @@ const anchorLinks = props.page.content?.parts?.reduce((acc: any, part: any) => {
   return acc;
 }, []);
 
-console.log(anchorLinks);
 </script>
 
 <style>

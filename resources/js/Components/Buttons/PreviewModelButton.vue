@@ -5,6 +5,7 @@
     rel="noopener noreferrer"
     secondary
     size="small"
+    target="_blank"
   >
     <NIcon :component="PreviewLink20Filled" />
   </NButton>

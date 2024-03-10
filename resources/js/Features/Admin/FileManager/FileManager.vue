@@ -153,8 +153,6 @@ const shownFiles = computed(() => {
   });
 });
 
-console.log(shownFiles.value)
-
 const shownDirectories = computed(() => {
   if (search.value === "") {
     return props.directories;
