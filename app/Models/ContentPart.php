@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Tiptap\TiptapEditor;
-use App\Tiptap\TiptapParser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -18,7 +17,7 @@ class ContentPart extends Model
 
     protected $fillable = [
         'type',
-        'json_content', 
+        'json_content',
         'options',
     ];
 
@@ -26,7 +25,7 @@ class ContentPart extends Model
     {
         return $this->belongsTo(Content::class);
     }
-    
+
     // TODO: Maybe use later
     public function parseTiptapElements(): ContentPart
     {
@@ -49,7 +48,7 @@ class ContentPart extends Model
             $this->json_content = $json_content;
 
             return $this;
-        }  
+        }
 
         return $this;
     }

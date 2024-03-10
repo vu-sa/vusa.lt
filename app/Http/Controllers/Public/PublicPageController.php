@@ -183,7 +183,7 @@ class PublicPageController extends PublicController
                 //         ];
                 //     }),
                 // ],
-            ]
+            ],
         ])->withViewData([
             'title' => $page->title,
             'description' => Str::limit($seoDescription, 150),
