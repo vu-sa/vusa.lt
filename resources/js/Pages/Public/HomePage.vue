@@ -6,7 +6,7 @@
 
     <IndividualStudies />
 
-    <EventCalendar :show-photos="true" :calendar="calendar" :upcoming4-events="upcoming4Events" />
+    <EventCalendar :show-photos="true" :calendar="calendar" :upcoming-events="upcomingEvents" />
 
     <!-- <SummerCamps v-if="$page.props.app.locale === 'lt'" /> -->
 
@@ -21,7 +21,7 @@ import { defineAsyncComponent } from "vue";
 defineProps<{
   news: Array<App.Entities.News>;
   calendar: Array<App.Entities.Calendar>;
-  upcoming4Events: Array<App.Entities.Calendar>;
+  upcomingEvents: Array<App.Entities.Calendar>;
 }>();
 
 const EventCalendar = defineAsyncComponent(

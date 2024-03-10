@@ -83,21 +83,17 @@
       </div>
     </div>
   </div>
-  <div v-if="upcoming4Events.length > 0" class="mx-auto my-8">
+  <div v-if="upcomingEvents.length > 0" class="mx-auto my-8">
     <template v-if="$page.props.app.locale === 'lt'"
-      ><h2 class="text-center lg:text-start">Artėjantys renginiai</h2></template
+      ><h2 class="text-center lg:text-start mb-4">Artėjantys renginiai</h2></template
     ><template v-else
-      ><h2 class="text-center lg:text-start">Upcoming events</h2></template
+      ><h2 class="text-center lg:text-start mb-4">Upcoming events</h2></template
     >
-    <div
-      class="mx-auto my-8 flex h-fit w-fit flex-wrap place-content-around gap-4 px-4 md:items-stretch lg:w-full lg:px-0"
-    >
+    <NCarousel v-if="!mdAndSmaller" class="items-center" style="width: 100%;" :slides-per-view="3" :space-between="20" autoplay :show-dots="false" draggable>
       <a
-        v-for="event in upcoming4Events"
+        v-for="event in eventsByHavingImages.hasImages"
         :key="event.id"
-        :class="
-          upcoming4Events.length > 1 ? 'basis-1/2 md:basis-1/5 flex-grow' : ''
-        "
+        class="w-fit"
         :href="
           route('calendar.event', {
             calendar: event.id,
@@ -105,27 +101,68 @@
           })
         "
       >
-        <CalendarCard :calendar-event="event" />
+        <CalendarCard hide-footer :calendar-event="event" />
       </a>
-    </div>
+      <div class="h-full" v-for="event in eventsByHavingImages.noImages" :key="event[0].id">
+        <div class="grid-rows-2 items-start grid gap-4">
+          <a
+            v-for="subEvent in event"
+            :key="subEvent.id"
+            :href="
+              route('calendar.event', {
+                calendar: subEvent.id,
+                lang: $page.props.app.locale,
+              })
+            "
+          >
+            <CalendarCard hide-footer :calendar-event="subEvent" />
+          </a>
+        </div>
+      </div>
+    </NCarousel>
   </div>
 </template>
 
 <script setup lang="ts">
 import { Head } from "@inertiajs/vue3";
-import { NButton, NMessageProvider } from "naive-ui";
-import { ref } from "vue";
+import { NButton, NCarousel, NMessageProvider } from "naive-ui";
+import { computed, ref } from "vue";
+import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
 
 import CalendarCard from "@/Components/Calendar/CalendarCard.vue";
 import CalendarSyncModal from "@/Components/Modals/CalendarSyncModal.vue";
 import EventCalendar from "@/Components/Calendar/EventCalendar.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
-defineProps<{
+const props = defineProps<{
   calendar: Array<App.Entities.Calendar>;
   showPhotos: boolean;
-  upcoming4Events: Array<App.Entities.Calendar>;
+  upcomingEvents: Array<App.Entities.Calendar>;
 }>();
 
 const showModal = ref(false);
+
+const mdAndSmaller = useBreakpoints(breakpointsTailwind).isSmallerOrEqual('md');
+
+const eventsByHavingImages = computed(() => {
+  const data = { 
+    hasImages: props.upcomingEvents.filter((event) => event.images.length > 0),
+    // Generate array of arrays of two elements, because images take more space
+    noImages: props.upcomingEvents.filter((event) => event.images.length === 0).reduce((acc, event, index) => {
+      if (index % 2 === 0) {
+        acc.push([event]);
+      } else {
+        acc[acc.length - 1].push(event);
+      }
+      return acc;
+    }, []),
+  };
+
+  // if data noImages last array has one element, remove array
+  if (data.noImages.length > 0 && data.noImages[data.noImages.length - 1].length === 1) {
+    data.noImages.pop();
+  }
+
+  return data;
+});
 </script>

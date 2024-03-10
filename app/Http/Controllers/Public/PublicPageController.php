@@ -80,11 +80,11 @@ class PublicPageController extends PublicController
         $calendar = $this->getEventsForCalendar();
 
         // get 4 upcoming events by end_date if it exists, otherwise by date
-        $upcoming4Events = $calendar->filter(function ($event) {
+        $upcomingEvents = $calendar->filter(function ($event) {
             return $event->end_date ? $event->end_date > date('Y-m-d H:i:s') : $event->date > date('Y-m-d H:i:s');
         })->sortBy(function ($event) {
             return $event->date;
-        }, SORT_DESC)->take(3)->values()->load('padalinys:id,alias,fullname,shortname');
+        }, SORT_DESC)->take(8)->values()->load('padalinys:id,alias,fullname,shortname');
 
         return Inertia::render('Public/HomePage', [
             'news' => $news->map(function ($news) {
@@ -116,7 +116,7 @@ class PublicPageController extends PublicController
                     'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale()),
                 ];
             }),
-            'upcoming4Events' => $upcoming4Events->map(function ($calendar) {
+            'upcomingEvents' => $upcomingEvents->map(function ($calendar) {
                 return [
                     ...$calendar->toArray(),
                     'images' => $calendar->getMedia('images'),

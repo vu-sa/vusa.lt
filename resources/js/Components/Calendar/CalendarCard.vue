@@ -12,7 +12,7 @@
         }}</p>
       </div>
     </template>
-    <div class="mb-2 flex flex-col gap-2 text-xs">
+    <div class="mb-2 flex flex-col gap-2 text-sm">
       <div class="inline-flex items-center gap-2">
         <NIcon :component="CalendarLtr24Regular" />
         <strong>
@@ -56,7 +56,7 @@
       </div>
     </div>
 
-    <template #footer>
+    <template v-if="!hideFooter" #footer>
       <div v-if="googleLink ||
         calendarEvent.url ||
         calendarEvent.extra_attributes?.facebook_url
@@ -139,6 +139,7 @@ import { formatRelativeTime, formatStaticTime } from "@/Utils/IntlTime";
 const props = defineProps<{
   calendarEvent: App.Entities.Calendar;
   googleLink?: string;
+  hideFooter?: boolean;
 }>();
 
 const eventOrganizer = computed(() => {
