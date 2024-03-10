@@ -79,7 +79,7 @@ return new class extends Migration
 
         Schema::table('news', function (Blueprint $table) {
             $table->dropColumn('text');
-            });
+        });
 
         // long text for session payload
         Schema::table('sessions', function (Blueprint $table) {
