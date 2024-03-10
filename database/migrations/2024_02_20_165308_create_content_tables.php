@@ -38,15 +38,15 @@ return new class extends Migration
 
         Schema::table('news', function (Blueprint $table) {
             $table->unsignedBigInteger('content_id')->after('other_lang_id');
-            });
+        });
 
-            $tiptap = new TiptapEditor();
+        $tiptap = new TiptapEditor();
 
         $pages = Page::all();
 
-            foreach ($pages as $key => $page) {
+        foreach ($pages as $key => $page) {
 
-                $json = $tiptap->setContent($page->text)->getDocument();
+            $json = $tiptap->setContent($page->text)->getDocument();
 
             $content = new Content();
 
@@ -55,7 +55,7 @@ return new class extends Migration
             $content->parts()->create([
                 'type' => 'tiptap',
                 'json_content' => $json,
-                ]);
+            ]);
 
             $page->content_id = $content->id;
 
@@ -76,7 +76,7 @@ return new class extends Migration
             $content->parts()->create([
                 'type' => 'tiptap',
                 'json_content' => $json,
-                ]);
+            ]);
 
             $new->content_id = $content->id;
 
