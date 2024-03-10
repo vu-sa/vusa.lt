@@ -7,7 +7,7 @@
             locale === 'lt' ? 'lt' : 'gb'
           }.svg`"
           width="16"
-        />
+        >
         <!-- <NIcon :component="ChevronDown20Filled" /> -->
       </div>
     </SmartLink>

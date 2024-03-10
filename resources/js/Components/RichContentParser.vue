@@ -1,21 +1,31 @@
 <template>
   <template v-for="element in content" :key="element.id">
     <div v-if="element.type === 'tiptap'" v-html="generateHTMLfromTiptap(element.json_content)" />
-    <Accordion class="not-typography mt-1 mb-3" type="single" v-else-if="element.type === 'shadcn-accordion'" collapsible>
-      <AccordionItem v-for="item, index in element.json_content" :value="`${index}`" :key="index">
+    <Accordion v-else-if="element.type === 'shadcn-accordion'" class="not-typography mb-3 mt-1" type="single" collapsible>
+      <AccordionItem v-for="item, index in element.json_content" :key="index" :value="`${index}`">
         <AccordionTrigger>{{ item.label }}</AccordionTrigger>
         <AccordionContent>
           <div v-html="generateHTMLfromTiptap(item.content)" />
         </AccordionContent>
       </AccordionItem>
     </Accordion>
-    <RichContentCard class="mt-4 not-typography" v-else-if="element.type === 'shadcn-card'" :element="element">
+    <RichContentCard v-else-if="element.type === 'shadcn-card'" class="not-typography mt-4" :element="element">
       <div v-html="generateHTMLfromTiptap(element.json_content)" />
     </RichContentCard>
+    <div v-else-if="element.type === 'image-grid'" class="mt-4">
+      <NImageGroup :show-toolbar="false">
+        <div class="grid grid-flow-row-dense grid-cols-6 gap-4">
+          <div v-for="(image, index) in element.json_content" :key="index" :class="getClassesForImage(image.colspan)">
+            <NImage :src="image.image" width="100%" class="size-full rounded-md shadow-sm" object-fit="cover" />
+          </div>
+        </div>
+      </NImageGroup>
+    </div>
   </template>
 </template>
 
 <script setup lang="ts">
+import { NImage, NImageGroup } from 'naive-ui';
 import { generateHTML } from '@tiptap/vue-3';
 import Image from '@tiptap/extension-image';
 import StarterKit from '@tiptap/starter-kit';
@@ -28,12 +38,20 @@ import Underline from '@tiptap/extension-underline';
 import Youtube from '@tiptap/extension-youtube';
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/Components/ShadcnVue/ui/accordion'
-import RichContentCard from './RichContentCard.vue';
 import { CustomHeading } from './TipTap/CustomHeading';
+import RichContentCard from './RichContentCard.vue';
 
 defineProps<{
   content: App.Models.ContentPart[];
 }>();
+
+const getClassesForImage = (colspan: string) => {
+  if (colspan === 'col-span-full') {
+    return `h-48 md:h-60 ${colspan}`;
+  }
+
+  return `md:h-40 ${colspan}`;
+};
 
 function generateHTMLfromTiptap(json_content: App.Models.ContentPart['json_content'] | Record<string, never>) {
   if (Object.keys(json_content).length === 0) {

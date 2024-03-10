@@ -16,10 +16,10 @@
           Pridėti aplanką
         </NButton>
       </NButtonGroup>
-      <NInput style="width: 300px; margin-left: auto;" v-model:value="search" :size="small ? 'small' : 'medium'" round
+      <NInput v-model:value="search" style="width: 300px; margin-left: auto;" :size="small ? 'small' : 'medium'" round
         placeholder="Filtruoti..." />
 
-      <div class="text-zinc-500 col-span-2">
+      <div class="col-span-2 text-zinc-500">
         {{ shownPath }}
       </div>
     </div>
@@ -36,7 +36,7 @@
           :thumbnail="`/uploads/${file.path?.substring(file.path.indexOf('/') + 1)}`"
           @dblclick="$emit('fileSelected', file.path)" />
         <NButton class="-right-2 -top-2 opacity-0 group-hover:opacity-100" style="position: absolute" size="small"
-          type="error" circle @click="deleteFile(file.item.path)">
+          type="error" circle @click="deleteFile(file.path)">
           <template #icon>
             <NIcon :component="Delete24Regular" />
           </template>
@@ -70,7 +70,10 @@
     <CardModal :show="showDeleteModal" title="Ištrinti failą" @close="showDeleteModal = false">
       <div>
         <p class="mb-4 text-base font-bold">
-          Ar tikrai norite ištrinti šį failą? Failo bus neįmanoma atkurti!
+          Ar tikrai nori ištrinti šį failą? Failo bus neįmanoma atkurti!
+        </p>
+        <p class="mb-4">
+          Prieš ištrinant failą, įsitikink, kad jis nėra naudojamas jokiame puslapyje.
         </p>
         <p class="mb-4 text-zinc-500">
           {{ selectedFileForDeletion }}
@@ -149,6 +152,8 @@ const shownFiles = computed(() => {
     return file.name.toLowerCase().includes(search.value.toLowerCase());
   });
 });
+
+console.log(shownFiles.value)
 
 const shownDirectories = computed(() => {
   if (search.value === "") {

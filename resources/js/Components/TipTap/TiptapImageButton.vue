@@ -1,31 +1,26 @@
 <template>
-  <NButton size="small" @click="handleModalOpen">
+  <NButton :size="size ?? 'small'" v-bind="$attrs" @click="handleModalOpen">
+    <slot />
     <template #icon>
       <NIcon :component="Image20Regular" />
     </template>
   </NButton>
-  <CardModal v-model:show="showModal" class="max-w-3xl" title="Pasirinkti paveikslėlį" @close="showModal = false">
-    <Suspense>
-      <FileSelector v-if="showModal" :file-extensions="['jpg', 'jpeg', 'png', 'gif']" @submit="addImage" />
-      <div v-else class="h-32" />
-      <template #fallback>
-        <div class="flex h-32 items-center justify-center">
-          <NSpin />
-        </div>
-      </template>
-    </Suspense>
-  </CardModal>
+  <ImageSelector v-model:show-modal="showModal" @submit="$emit('submit', $event)" />
 </template>
 
 <script setup lang="ts">
 import { Image20Regular } from "@vicons/fluent";
-import { NButton, NIcon, NSpin } from "naive-ui";
+import { NButton, NIcon } from "naive-ui";
 import { ref } from "vue";
+import type { Size } from "naive-ui/es/button/src/interface";
 
-import CardModal from "../Modals/CardModal.vue";
-import FileSelector from "@/Features/Admin/FileManager/FileSelector.vue";
+import ImageSelector from "./ImageSelector.vue";
 
-const emit = defineEmits<{
+defineProps<{
+  size?: Size;
+}>()
+
+defineEmits<{
   (e: 'submit', url: string): void
 }>()
 
@@ -35,9 +30,4 @@ async function handleModalOpen() {
   showModal.value = true;
 }
 
-function addImage(url: string) {
-  // change from /public to /uploads
-  emit('submit', "/uploads/" + url.substring(url.indexOf("/") + 1));
-  showModal.value = false;
-}
 </script>
