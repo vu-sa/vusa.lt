@@ -1,22 +1,14 @@
 <template>
   <Head>
-    <link
-      rel="preload"
-      href="/images/photos/pirmakursiu_stovykla_kaune.jpg"
-      as="image"
-    />
-    <link rel="preload" href="/images/photos/vu.jpg" as="image" />
-    <link rel="preload" href="/images/photos/stovykla.jpg" as="image" />
+    <link rel="preload" href="/images/photos/pirmakursiu_stovykla_kaune.jpg" as="image">
+    <link rel="preload" href="/images/photos/vu.jpg" as="image">
+    <link rel="preload" href="/images/photos/stovykla.jpg" as="image">
   </Head>
 
   <div class="mt-8 flex flex-col-reverse gap-4 lg:mt-32 lg:flex-row">
     <div
-      class="typography text-base max-w-prose flex w-fit flex-col items-center justify-center lg:h-4/5 lg:w-1/2 lg:items-start 2xl:w-3/4"
-    >
-      <p
-        v-if="$page.props.app.locale === 'lt'"
-        class="text-2xl font-bold lg:w-2/3"
-      >
+      class="typography flex w-fit max-w-prose flex-col items-center justify-center text-base lg:h-4/5 lg:w-1/2 lg:items-start 2xl:w-3/4">
+      <p v-if="$page.props.app.locale === 'lt'" class="text-2xl font-bold lg:w-2/3">
         Sek visus VU studentų renginius bei įvykius
         <span class="text-vusa-red">čia!</span>
       </p>
@@ -27,99 +19,80 @@
 
       <p v-if="$page.props.app.locale === 'lt'" class="w-4/5">
         Arba nesuk galvos ir
-        <!-- <em>patingėti</em> ir -->
         <span class="mx-1">
-          <NButton size="tiny" round strong secondary @click="showModal = true"
-            >sinchronizuok</NButton
-          >
+          <NButton size="tiny" round strong secondary @click="showModal = true">sinchronizuok</NButton>
         </span>
         <strong>studentų kalendorių</strong> į „Google“ arba „Outlook“ ..? 🗓
       </p>
 
       <p v-else class="w-4/5">
         Or you can
-        <!-- <em>be lazy</em> and -->
         <span class="mx-1">
-          <NButton size="tiny" round strong secondary @click="showModal = true"
-            >sync</NButton
-          >
+          <NButton size="tiny" round strong secondary @click="showModal = true">sync</NButton>
         </span>
         <strong>this student calendar</strong> to „Google“ or „Outlook“ ..? 🗓
       </p>
     </div>
     <NMessageProvider>
-      <CalendarSyncModal
-        v-model:show-modal="showModal"
-        @close="showModal = false"
-      />
+      <CalendarSyncModal v-model:show-modal="showModal" @close="showModal = false" />
     </NMessageProvider>
     <div class="relative mx-auto">
       <div class="relative flex w-fit items-center justify-center lg:top-4">
         <template v-if="showPhotos">
           <img
             class="absolute -left-32 top-8 max-w-[12rem] rounded-lg object-cover shadow-xl blur brightness-50 lg:-top-24 lg:max-w-[16rem]"
-            src="/images/photos/vu.jpg"
-          />
+            src="/images/photos/vu.jpg">
           <img
             class="absolute -left-16 top-12 z-[1] max-w-[12rem] rounded-lg object-cover shadow-xl blur-sm brightness-75 lg:-top-12 lg:max-w-[16rem]"
-            src="/images/photos/stovykla.jpg"
-          />
+            src="/images/photos/stovykla.jpg">
           <img
             class="absolute left-12 top-14 z-[1] rounded-lg object-cover shadow-2xl brightness-125 contrast-100 sm:left-24 md:left-32 lg:left-48 lg:max-w-[16rem]"
-            src="/images/photos/pirmakursiu_stovykla_kaune.jpg"
-          />
+            src="/images/photos/pirmakursiu_stovykla_kaune.jpg">
         </template>
-        <!-- <img
-          class="absolute -top-24 -left-40 rounded-lg object-cover shadow-lg brightness-75"
-          src="/images/photos/pirmakursiu_stovykla_kaune.jpg"
-        /> -->
         <FadeTransition>
-          <EventCalendar
-            class="relative z-[5]"
-            :calendar-events="calendar"
-            :locale="$page.props.app.locale"
-          />
+          <EventCalendar class="relative z-[5]" :calendar-events="calendar" :locale="$page.props.app.locale" />
         </FadeTransition>
       </div>
     </div>
   </div>
   <div v-if="upcomingEvents.length > 0" class="mx-auto my-8">
-    <template v-if="$page.props.app.locale === 'lt'"
-      ><h2 class="text-center lg:text-start mb-4">Artėjantys renginiai</h2></template
-    ><template v-else
-      ><h2 class="text-center lg:text-start mb-4">Upcoming events</h2></template
-    >
-    <NCarousel v-if="!mdAndSmaller" class="items-center" style="width: 100%;" :slides-per-view="3" :space-between="20" autoplay :show-dots="false" draggable>
-      <a
-        v-for="event in eventsByHavingImages.hasImages"
-        :key="event.id"
-        class="w-fit"
-        :href="
-          route('calendar.event', {
+    <h2 class="mb-4 text-center lg:text-start">
+      {{ $t('Artėjantys renginiai') }}
+    </h2>
+    <div>
+      <NCarousel class="items-center hidden md:block" style="width: 100%;" :slides-per-view="3" :space-between="20"
+        autoplay :show-dots="false" draggable>
+        <a v-for="event in eventsByHavingImages.hasImages" :key="event.id" class="w-fit" :href="route('calendar.event', {
+          calendar: event.id,
+          lang: $page.props.app.locale,
+        })
+          ">
+          <CalendarCard hide-footer :calendar-event="event" />
+        </a>
+        <div v-for="event in eventsByHavingImages.noImages" :key="event[0].id" class="h-full">
+          <div class="grid grid-rows-2 items-start gap-4">
+            <a v-for="subEvent in event" :key="subEvent.id" :href="route('calendar.event', {
+              calendar: subEvent.id,
+              lang: $page.props.app.locale,
+            })
+              ">
+              <CalendarCard hide-footer :calendar-event="subEvent" />
+            </a>
+          </div>
+        </div>
+      </NCarousel>
+      <div class="block md:hidden">
+        <div class="flex flex-col gap-4">
+          <a v-for="event in upcomingEvents.slice(0, 3)" :key="event.id" :href="route('calendar.event', {
             calendar: event.id,
             lang: $page.props.app.locale,
           })
-        "
-      >
-        <CalendarCard hide-footer :calendar-event="event" />
-      </a>
-      <div class="h-full" v-for="event in eventsByHavingImages.noImages" :key="event[0].id">
-        <div class="grid-rows-2 items-start grid gap-4">
-          <a
-            v-for="subEvent in event"
-            :key="subEvent.id"
-            :href="
-              route('calendar.event', {
-                calendar: subEvent.id,
-                lang: $page.props.app.locale,
-              })
-            "
-          >
-            <CalendarCard hide-footer :calendar-event="subEvent" />
+            ">
+            <CalendarCard :calendar-event="event" />
           </a>
         </div>
       </div>
-    </NCarousel>
+    </div>
   </div>
 </template>
 
@@ -127,7 +100,6 @@
 import { Head } from "@inertiajs/vue3";
 import { NButton, NCarousel, NMessageProvider } from "naive-ui";
 import { computed, ref } from "vue";
-import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
 
 import CalendarCard from "@/Components/Calendar/CalendarCard.vue";
 import CalendarSyncModal from "@/Components/Modals/CalendarSyncModal.vue";
@@ -142,13 +114,11 @@ const props = defineProps<{
 
 const showModal = ref(false);
 
-const mdAndSmaller = useBreakpoints(breakpointsTailwind).isSmallerOrEqual('md');
-
 const eventsByHavingImages = computed(() => {
-  const data = { 
-    hasImages: props.upcomingEvents.filter((event) => event.images.length > 0),
+  const data = {
+    hasImages: props.upcomingEvents.filter((event) => event?.images.length > 0),
     // Generate array of arrays of two elements, because images take more space
-    noImages: props.upcomingEvents.filter((event) => event.images.length === 0).reduce((acc, event, index) => {
+    noImages: props.upcomingEvents.filter((event) => event?.images.length === 0).reduce((acc, event, index) => {
       if (index % 2 === 0) {
         acc.push([event]);
       } else {
