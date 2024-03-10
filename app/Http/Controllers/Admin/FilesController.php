@@ -12,7 +12,18 @@ use Intervention\Image\Facades\Image;
 
 class FilesController extends LaravelResourceController
 {
-    // TODO: add authorization and just do something with whole this section
+    protected function getFilesFromStorage($path)
+    {
+        $directories = Storage::directories($path);
+        $files = Storage::files($path);
+
+        return [
+            $files,
+            $directories,
+            $path,
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -53,6 +64,24 @@ class FilesController extends LaravelResourceController
     {
         $path = $request->path ?? 'public/files';
 
+        if (! str_contains($path, 'public/files')) {
+            $path = 'public/files';
+        }
+
+        // Check if can view directory
+        if (!$request->user()->can('viewAny', [File::class, $path, $this->authorizer])) {
+
+            // If not, redirect to padaliniai/{padalinys}
+            if($this->authorizer->getPadaliniai()->count() > 0) {
+                $path = 'public/files/padaliniai/vusa'.$this->authorizer->getPadaliniai()->first()->alias;
+            } else {
+                // Return error response
+                return response()->json([
+                    'error' => 'You do not have permission to view this directory.',
+                ], 403);
+            }
+        }
+
         [$files, $directories, $currentDirectory] = $this->getFilesFromStorage($path);
 
         return response()->json([
@@ -60,18 +89,6 @@ class FilesController extends LaravelResourceController
             'directories' => $directories,
             'path' => $currentDirectory,
         ]);
-    }
-
-    protected function getFilesFromStorage($path)
-    {
-        $directories = Storage::directories($path);
-        $files = Storage::files($path);
-
-        return [
-            $files,
-            $directories,
-            $path,
-        ];
     }
 
     /**
@@ -92,10 +109,7 @@ class FilesController extends LaravelResourceController
 
         $path = $request->input('path');
 
-        // dd($file['file'], $path);
-        //
-        // check if file exists, if so, add timestamp to filename
-
+        // Check if file exists, if so, add timestamp to filename
         if (Storage::exists($path.'/'.$file->getClientOriginalName())) {
             $file->storeAs($path, time().'_'.$file->getClientOriginalName());
         } else {
@@ -153,5 +167,36 @@ class FilesController extends LaravelResourceController
         return response()->json([
             'url' => '/uploads/'.$path.'/'.$originalName,
         ]);
+    }
+
+    public function delete(Request $request)
+    {
+        $path = $request->input('path');
+
+        if (! str_contains($path, 'public/files')) {
+            // Return with error
+            return response()->json([
+                'error' => 'You do not have permission to delete this file.',
+            ], 403);
+        }
+
+        if (!$request->user()->can('delete', [File::class, $path, $this->authorizer])) {
+
+            // If not, redirect to padaliniai/{padalinys}
+            if($this->authorizer->getPadaliniai()->count() > 0) {
+                $path = 'public/files/padaliniai/vusa'.$this->authorizer->getPadaliniai()->first()->alias;
+            } else {
+                // Redirect to dashboard home
+                return redirect()->route('dashboard');
+            }
+        }
+
+        // check if file exists
+        if (Storage::exists($path)) {
+            Storage::delete($path);
+        }
+
+        // return redirect to files index
+        return back();
     }
 }

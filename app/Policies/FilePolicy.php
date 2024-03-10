@@ -87,16 +87,22 @@ class FilePolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, string $path): bool
+    public function delete(User $user, string $path, Authorizer $authorizer): bool
     {
+        $this->authorizer = $authorizer;
+        $check = $this->authorizer->forUser($user)->check($this->pluralModelName . '.read.padalinys');
+
         $padalinysDirectory = $this->getDirectoryPadalinysAlias($path, $this->authorizer);
 
-        if ($this->authorizer->isAllScope) {
-            return true;
-        }
+        if ($check) {
 
-        if (in_array($padalinysDirectory, $this->authorizer->getPadaliniai()->pluck('alias')->toArray())) {
-            return true;
+            if ($this->authorizer->isAllScope) {
+                return true;
+            }
+
+            if (in_array($padalinysDirectory, $this->authorizer->getPadaliniai()->pluck('alias')->toArray())) {
+                return true;
+            }
         }
 
         return false;
