@@ -40,10 +40,10 @@ const delegatedProps = computed(() => {
 
 <style scoped>
 h3 {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 500;
-  margin: 0.9rem 0;
-  line-height: 1.3rem;
+  margin: 1.2rem 0;
+  line-height: 1.2rem;
 }
 
 button {
