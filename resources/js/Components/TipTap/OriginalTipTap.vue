@@ -377,8 +377,7 @@ function handleUpdate() {
   }
 
   h2, h3, h4, h5, h6 {
-    margin-top: 1.5rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
   }
 
   table {
