@@ -21,7 +21,7 @@
         <NIcon size="28" :component="ChevronLeft24Filled"
       /></template>
     </NButton>
-    <h1 class="mb-0 inline-flex items-center gap-3 whitespace-nowrap">
+    <h1 class="my-0 inline-flex items-center gap-3 whitespace-nowrap">
       <NIcon v-if="headingIcon" :component="headingIcon" />
       <slot name="title"
         ><NEllipsis style="max-width: 60rem">{{ $t(title) }}</NEllipsis></slot

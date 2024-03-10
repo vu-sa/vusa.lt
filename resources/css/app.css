@@ -99,7 +99,7 @@
   } */
 
   h1 {
-    @apply text-2xl md:text-3xl font-black mt-4 mb-12 text-gray-900 dark:text-zinc-100;
+    @apply text-2xl md:text-4xl font-black mt-4 mb-6 text-gray-900 dark:text-zinc-100;
   }
 
   h2 {

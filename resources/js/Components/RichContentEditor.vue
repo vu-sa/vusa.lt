@@ -113,7 +113,7 @@
                       <TiptapImageButton v-if="!value.image" size="medium" class="grow" @submit="value.image = $event">
                         Pasirinkti paveikslėlį
                       </TiptapImageButton>
-                      <img v-else :src="value.image" class="h-24 w-full rounded-lg">
+                      <img v-else :src="value.image" class="aspect-video h-24 object-cover rounded-lg">
                     </div>
                   </NFormItem>
                 </div>
