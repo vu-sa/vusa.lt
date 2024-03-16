@@ -54,7 +54,7 @@
         "nunomaduro/collision": "^8.1",
         "octopyid/laravel-impersonate": "^4.0",
         "phpstan/phpstan": "^1.10",
-        "phpunit/phpunit": "^10.2",
+        "phpunit/phpunit": "^11.0",
         "spatie/laravel-ignition": "^2.0",
         "spatie/laravel-typescript-transformer": "^2.1"
     },
