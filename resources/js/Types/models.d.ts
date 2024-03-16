@@ -755,8 +755,6 @@ declare global {
       created_at: string
       profile_photo_path: unknown|null
       deleted_at: string|null
-      // mutators
-      impersonate: ImpersonateManager
       // relations
       banners: Banner[]
       calendar: Calendar[]

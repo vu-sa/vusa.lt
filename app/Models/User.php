@@ -11,8 +11,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Notifications\Notification;
 use Laravel\Scout\Searchable;
-use Octopy\Impersonate\Concerns\Impersonate;
-use Octopy\Impersonate\ImpersonateAuthorization;
+use Octopy\Impersonate\Authorization;
+use Octopy\Impersonate\Concerns\HasImpersonation;
+use Octopy\Impersonate\Http\Resources\ImpersonateResource;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
@@ -20,7 +21,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class User extends Authenticatable
 {
-    use HasFactory, HasRelationships, HasRoles, HasUlids, HasUnitRelation, Impersonate, LogsActivity, Notifiable, Searchable, SoftDeletes;
+    use HasFactory, HasRelationships, HasRoles, HasUlids, HasUnitRelation, HasImpersonation, LogsActivity, Notifiable, Searchable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -64,11 +65,30 @@ class User extends Authenticatable
         ];
     }
 
-    public function impersonatable(ImpersonateAuthorization $authorization): void
+    public function getImpersonateDisplayText(): string
+    {
+        return $this->name;
+    }
+
+    public function getImpersonateSearchField() : array
+    {
+        return [
+            'name', 'email',
+        ];
+    }
+
+    public function setImpersonateAuthorization(Authorization $authorization): void
     {
         $authorization->impersonator(fn (User $user) => $user->hasRole(config('permission.super_admin_role_name')));
 
-        $authorization->impersonated(fn (User $user) => ! $user->hasRole(config('permission.super_admin_role_name')));
+        $authorization->impersonated(function ($impersonateResource)
+            { 
+                if ($impersonateResource::class === ImpersonateResource::class) {
+                    $impersonateResource = $impersonateResource->resource;
+                }
+
+                return ! $impersonateResource->hasRole(config('permission.super_admin_role_name'));
+            });
     }
 
     /**
