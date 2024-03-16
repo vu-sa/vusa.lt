@@ -9,9 +9,9 @@ module.exports = {
     "./app/Tiptap/*.php",
   ],
   darkMode: ["class"],
-  corePlugins: {
-    preflight: false,
-  },
+  // corePlugins: {
+  //   preflight: false,
+  // },
   theme: {
     container: {
       center: true,
