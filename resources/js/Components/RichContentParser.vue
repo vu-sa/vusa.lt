@@ -42,7 +42,7 @@ import { CustomHeading } from './TipTap/CustomHeading';
 import RichContentCard from './RichContentCard.vue';
 
 defineProps<{
-  content: App.Models.ContentPart[];
+  content: models.ContentPart[];
   html?: boolean;
 }>();
 
@@ -54,7 +54,7 @@ const getClassesForImage = (colspan: string) => {
   return `md:h-40 ${colspan}`;
 };
 
-function generateHTMLfromTiptap(json_content: App.Models.ContentPart['json_content'] | Record<string, never>) {
+function generateHTMLfromTiptap(json_content: models.ContentPart['json_content'] | Record<string, never>) {
   if (Object.keys(json_content).length === 0) {
     return '';
   }

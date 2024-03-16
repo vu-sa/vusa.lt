@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Scout\Searchable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -27,7 +29,8 @@ class Calendar extends Model implements HasMedia
         return $this->belongsTo(Padalinys::class, 'padalinys_id');
     }
 
-    public function category()
+    ## Undefined property: App\Models\Calendar::$category, when generating types 
+    public function categoryR(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'category', 'alias');
     }

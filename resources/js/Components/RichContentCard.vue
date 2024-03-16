@@ -26,7 +26,7 @@ import { computed } from 'vue';
 import { useDark } from '@vueuse/core';
 
 const props = defineProps<{
-  element: App.Models.ContentPart;
+  element: models.ContentPart;
 }>();
 
 const isDark = useDark();

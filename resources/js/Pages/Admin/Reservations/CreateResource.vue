@@ -32,7 +32,8 @@ export type ResourceCreationTemplate = Omit<
   id: undefined;
   name: Record<"lt" | "en", string>;
   description: Record<"lt" | "en", string>;
-  media: App.Models.Media[] | [];
+  media: Record<string, never>[];
+  // media: models.Media[] | [];
 };
 
 defineProps<{

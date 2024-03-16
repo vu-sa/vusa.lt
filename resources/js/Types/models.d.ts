@@ -1,761 +1,776 @@
-/**
- * This file is auto generated using 'php artisan typescript:generate'
- *
- * Changes to this file will be lost when the command is run again
- */
-
-declare namespace App.Models {
-    export interface News {
-        id: number;
-        title: string;
-        category_id: number | null;
-        permalink: string | null;
-        short: string;
-        lang: string;
-        other_lang_id: number | null;
-        content_id: number;
-        image: string | null;
-        image_author: string | null;
-        important: boolean;
-        padalinys_id: number;
-        publish_time: any | null;
-        main_points: string | null;
-        read_more: string | null;
-        draft: boolean | null;
-        created_at: any;
-        updated_at: any;
-        deleted_at: any | null;
-        user?: App.Models.User | null;
-        padalinys?: App.Models.Padalinys | null;
-        other_language_news?: App.Models.News | null;
-        tags?: Array<App.Models.Tag> | null;
-        content?: App.Models.Content | null;
-        tags_count?: number | null;
-    }
-
-    export interface SaziningaiExamObserver {
-        id: number;
-        exam_uuid: string;
-        name: string;
-        email: string | null;
-        phone: string;
-        flow: number;
-        created_at: string;
-        has_arrived: string;
-        phone_p: string | null;
-        updated_at: any;
-        padalinys_id: number;
-        flow?: App.Models.SaziningaiExamFlow | null;
-        exam?: App.Models.SaziningaiExam | null;
-        padalinys?: App.Models.Padalinys | null;
-    }
-
-    export interface Category {
-        id: number;
-        alias: string | null;
-        name: string;
-        description: string | null;
-        created_at: any;
-        updated_at: any;
-        banners?: App.Models.Banner | null;
-    }
-
-    export interface Typeable {
-        type?: App.Models.Type | null;
-        typeable?: any | null;
-    }
-
-    export interface Meeting {
-        id: string;
-        title: string;
-        description: string | null;
-        start_time: string;
-        end_time: string | null;
-        created_at: any;
-        updated_at: any;
-        deleted_at: any | null;
-        matters?: Array<App.Models.Matter> | null;
-        agenda_items?: Array<App.Models.Pivots.AgendaItem> | null;
-        institutions?: Array<App.Models.Institution> | null;
-        users?: any | null;
-        padaliniai?: any | null;
-        matters_count?: number | null;
-        agenda_items_count?: number | null;
-        institutions_count?: number | null;
-    }
-
-    export interface Goal {
-        id: string;
-        group_id: string | null;
-        padalinys_id: number;
-        title: string;
-        description: string | null;
-        start_date: string;
-        end_date: string | null;
-        created_at: any;
-        updated_at: any;
-        deleted_at: any | null;
-        matters?: Array<App.Models.Matter> | null;
-        doings?: Array<App.Models.Doing> | null;
-        group?: App.Models.GoalGroup | null;
-        padalinys?: App.Models.Padalinys | null;
-        matters_count?: number | null;
-        doings_count?: number | null;
-    }
-
-    export interface Type {
-        id: number;
-        parent_id: number | null;
-        title: string | null;
-        model_type: string | null;
-        description: string | null;
-        slug: string | null;
-        extra_attributes: Array<any> | any | null;
-        created_at: any;
-        updated_at: any;
-        deleted_at: any | null;
-        institutions?: Array<App.Models.Institution> | null;
-        duties?: Array<App.Models.Duty> | null;
-        doings?: Array<App.Models.Doing> | null;
-        roles?: Array<App.Models.Role> | null;
-        descendants?: Array<App.Models.Type> | null;
-        recursive_descendants?: Array<App.Models.Type> | null;
-        parent?: App.Models.Type | null;
-        recursive_parent?: App.Models.Type | null;
-        institutions_count?: number | null;
-        duties_count?: number | null;
-        doings_count?: number | null;
-        roles_count?: number | null;
-        descendants_count?: number | null;
-        recursive_descendants_count?: number | null;
-    }
+export {}
+declare global {
+  export namespace models {
 
     export interface Banner {
-        id: number;
-        title: string;
-        image_url: string;
-        link_url: string;
-        lang: string;
-        order: number;
-        is_active: number;
-        padalinys_id: number;
-        created_at: any;
-        updated_at: any;
-        padalinys?: App.Models.Padalinys | null;
-    }
-
-    export interface ChangelogItem {
-        id: number;
-        title: Array<any> | any;
-        date: string;
-        description: Array<any> | any;
-        permission_id: string | null;
-    }
-
-    export interface Tag {
-        id: number;
-        alias: string | null;
-        name: string;
-        description: string | null;
-        created_at: any;
-        updated_at: any;
-    }
-
-    export interface ContentPart {
-        id: number;
-        content_id: number;
-        type: string;
-        json_content: Array<any> | any;
-        options: Array<any> | any | null;
-        order: number;
-        created_at: any;
-        updated_at: any;
-        content?: App.Models.Content | null;
-    }
-
-    export interface User {
-        id: string;
-        email: string;
-        phone: string | null;
-        name: string;
-        password: string | null;
-        is_active: boolean;
-        email_verified_at: any | null;
-        remember_token: string | null;
-        last_action: any | null;
-        last_changelog_check: string | null;
-        microsoft_token: string | null;
-        google_token: string | null;
-        updated_at: any | null;
-        created_at: any;
-        profile_photo_path: string | null;
-        deleted_at: any | null;
-        banners?: Array<App.Models.Banner> | null;
-        calendar?: Array<App.Models.Calendar> | null;
-        doings?: Array<App.Models.Doing> | null;
-        duties?: Array<App.Models.Duty> | null;
-        previous_duties?: Array<App.Models.Duty> | null;
-        current_duties?: Array<App.Models.Duty> | null;
-        dutiables?: Array<App.Models.Pivots.Dutiable> | null;
-        padaliniai?: any | null;
-        tasks?: Array<App.Models.Task> | null;
-        institutions?: any | null;
-        reservations?: Array<App.Models.Reservation> | null;
-        banners_count?: number | null;
-        calendar_count?: number | null;
-        doings_count?: number | null;
-        duties_count?: number | null;
-        previous_duties_count?: number | null;
-        current_duties_count?: number | null;
-        dutiables_count?: number | null;
-        tasks_count?: number | null;
-        reservations_count?: number | null;
-        readonly impersonate?: any;
-    }
-
-    export interface Role {
-        id: string;
-        name: string;
-        guard_name: string;
-        created_at: any | null;
-        updated_at: any | null;
-        duties?: Array<App.Models.Duty> | null;
-        users_through_duties?: any | null;
-        attachable_types?: Array<App.Models.Type> | null;
-        types?: Array<App.Models.Type> | null;
-        permissions?: Array<App.Models.Permission> | null;
-        users?: Array<App.Models.User> | null;
-        duties_count?: number | null;
-        attachable_types_count?: number | null;
-        types_count?: number | null;
-        permissions_count?: number | null;
-        users_count?: number | null;
-    }
-
-    export interface RegistrationForm {
-        id: number;
-        user_id: number | null;
-        data: Array<any> | any;
-        created_at: any;
-        updated_at: any;
-        registrations?: Array<App.Models.Registration> | null;
-        registrations_count?: number | null;
-    }
-
-    export interface SharepointFile {
-        sharepoint_id: string;
-        id: string;
-        fileables?: Array<App.Models.Pivots.SharepointFileable> | null;
-        types?: Array<App.Models.Type> | null;
-        institutions?: Array<App.Models.Institution> | null;
-        meetings?: Array<App.Models.Meeting> | null;
-        fileables_count?: number | null;
-        types_count?: number | null;
-        institutions_count?: number | null;
-        meetings_count?: number | null;
-    }
-
-    export interface Model {}
-
-    export interface Content {
-        id: number;
-        created_at: any;
-        updated_at: any;
-        parts?: Array<App.Models.ContentPart> | null;
-        parts_count?: number | null;
-    }
-
-    export interface Doing {
-        id: string;
-        title: string;
-        drive_item_name: string | null;
-        state: string;
-        date: string;
-        extra_attributes: Array<any> | any | null;
-        created_at: any;
-        updated_at: any;
-        deleted_at: any | null;
-        goals?: Array<App.Models.Goal> | null;
-        matters?: Array<App.Models.Matter> | null;
-        types?: Array<App.Models.Type> | null;
-        users?: Array<App.Models.User> | null;
-        institutions?: any | null;
-        padaliniai?: any | null;
-        goals_count?: number | null;
-        matters_count?: number | null;
-        types_count?: number | null;
-        users_count?: number | null;
-    }
-
-    export interface Task {
-        id: string;
-        name: string;
-        description: string | null;
-        due_date: string | null;
-        taskable_type: string;
-        taskable_id: string;
-        completed_at: any | null;
-        created_at: any;
-        updated_at: any;
-        deleted_at: any | null;
-        taskable?: any | null;
-        users?: Array<App.Models.User> | null;
-        padaliniai?: any | null;
-        users_count?: number | null;
-    }
-
-    export interface Contact {
-        id: string;
-        name: string;
-        email: string | null;
-        phone: string | null;
-        profile_photo_path: string | null;
-        created_at: any;
-        updated_at: any;
-        deleted_at: any | null;
-        extra_attributes: Array<any> | any | null;
-        duties?: Array<App.Models.Duty> | null;
-        duties_count?: number | null;
-    }
-
-    export interface Matter {
-        id: string;
-        title: string;
-        description: string | null;
-        created_at: any;
-        updated_at: any;
-        deleted_at: any | null;
-        institutions?: Array<App.Models.Institution> | null;
-        meetings?: Array<App.Models.Meeting> | null;
-        doings?: Array<App.Models.Doing> | null;
-        goals?: Array<App.Models.Goal> | null;
-        padaliniai?: any | null;
-        institutions_count?: number | null;
-        meetings_count?: number | null;
-        doings_count?: number | null;
-        goals_count?: number | null;
-    }
-
-    export interface Institution {
-        id: string;
-        parent_id: string | null;
-        name: string | null;
-        short_name: string | null;
-        alias: string;
-        description: string | null;
-        image_url: string | null;
-        padalinys_id: number | null;
-        created_at: any;
-        updated_at: any;
-        extra_attributes: string | null;
-        deleted_at: any | null;
-        duties?: Array<App.Models.Duty> | null;
-        types?: Array<App.Models.Type> | null;
-        padalinys?: App.Models.Padalinys | null;
-        padaliniai?: App.Models.Padalinys | null;
-        matters?: Array<App.Models.Matter> | null;
-        meetings?: Array<App.Models.Meeting> | null;
-        users?: any | null;
-        duties_count?: number | null;
-        types_count?: number | null;
-        matters_count?: number | null;
-        meetings_count?: number | null;
-    }
-
-    export interface MainPage {
-        id: number;
-        link: string | null;
-        text: string | null;
-        image: string | null;
-        position: string;
-        order: number | null;
-        type: string | null;
-        is_active: boolean;
-        padalinys_id: number;
-        lang: string | null;
-        created_at: any;
-        updated_at: any;
-        padalinys?: App.Models.Padalinys | null;
-    }
-
-    export interface Reservation {
-        id: string;
-        name: string;
-        description: string | null;
-        start_time: string;
-        end_time: string;
-        completed_at: string | null;
-        created_at: any;
-        updated_at: any;
-        deleted_at: any | null;
-        resources?: Array<App.Models.Resource> | null;
-        users?: Array<App.Models.User> | null;
-        padaliniai?: any | null;
-        resources_count?: number | null;
-        users_count?: number | null;
-    }
-
-    export interface RoleType {
-        id: number;
-        role_id: string;
-        type_id: number;
-        created_at: any | null;
-        updated_at: any | null;
-        role?: App.Models.Role | null;
-        type?: App.Models.Type | null;
-    }
-
-    export interface Relationship {
-        id: number;
-        name: string;
-        slug: string;
-        description: string | null;
-        type: string | null;
-        created_at: any;
-        updated_at: any;
-        institutions?: Array<App.Models.Institution> | null;
-        relationshipables?: Array<App.Models.Pivots.Relationshipable> | null;
-        types?: Array<App.Models.Type> | null;
-        institutions_count?: number | null;
-        relationshipables_count?: number | null;
-        types_count?: number | null;
-    }
-
-    export interface Comment {
-        id: string;
-        parent_id: string | null;
-        comment: string;
-        decision: string | null;
-        user_id: string;
-        commentable_type: string;
-        commentable_id: string;
-        created_at: any;
-        updated_at: any;
-        deleted_at: any | null;
-        commentable?: any | null;
-        comments?: Array<App.Models.Comment> | null;
-        user?: App.Models.User | null;
-        comments_count?: number | null;
+      // columns
+      id: number
+      title: unknown
+      image_url: string
+      link_url: string
+      lang: unknown
+      order: number
+      is_active: number
+      padalinys_id: number
+      created_at: string
+      updated_at: string
+      // relations
+      padalinys: Padalinys
     }
 
     export interface Calendar {
-        id: number;
-        date: string;
-        end_date: string | null;
-        title: string;
-        description: string | null;
-        location: string | null;
-        category: string | null;
-        url: string | null;
-        padalinys_id: number;
-        extra_attributes: string | null;
-        created_at: any;
-        updated_at: any;
-        registration_form_id: number | null;
-        padalinys?: App.Models.Padalinys | null;
-        registration_form?: App.Models.RegistrationForm | null;
+      // columns
+      id: number
+      date: string
+      end_date: string|null
+      title: string
+      description: string|null
+      location: unknown|null
+      category: unknown|null
+      url: unknown|null
+      padalinys_id: number
+      extra_attributes: string[]|null
+      created_at: string
+      updated_at: string
+      registration_form_id: number|null
+      // relations
+      padalinys: Padalinys
+      category_r: Category
+      registration_form: RegistrationForm
+      media: Medium[]
     }
 
-    export interface SaziningaiExam {
-        id: number;
-        uuid: string;
-        name: string | null;
-        email: string | null;
-        exam_type: string | null;
-        padalinys_id: number | null;
-        place: string | null;
-        duration: string | null;
-        subject_name: string | null;
-        exam_holders: number | null;
-        students_need: number | null;
-        phone: string | null;
-        created_at: any;
-        updated_at: any;
-        padalinys?: App.Models.Padalinys | null;
-        flows?: Array<App.Models.SaziningaiExamFlow> | null;
-        observers?: Array<App.Models.SaziningaiExamObserver> | null;
-        flows_count?: number | null;
-        observers_count?: number | null;
+    export interface Category {
+      // columns
+      id: number
+      alias: unknown|null
+      name: unknown
+      description: string|null
+      created_at: string
+      updated_at: string
+      // relations
+      banners: Banner
     }
 
-    export interface GoalGroup {
-        id: string;
-        title: string;
-        description: string | null;
-        created_at: any;
-        updated_at: any;
-        deleted_at: any | null;
-        goals?: Array<App.Models.Goal> | null;
-        goals_count?: number | null;
+    export interface ChangelogItem {
+      // columns
+      id: number
+      title: string[]
+      date: string
+      description: string[]
+      permission_id: unknown|null
+      // mutators
+      translations: unknown
     }
 
-    export interface Page {
-        id: number;
-        title: string;
-        permalink: string | null;
-        lang: string;
-        other_lang_id: number | null;
-        content_id: number;
-        category_id: number | null;
-        is_active: boolean;
-        padalinys_id: number;
-        created_at: any;
-        updated_at: any;
-        deleted_at: any | null;
-        padalinys?: App.Models.Padalinys | null;
-        category?: App.Models.Category | null;
-        content?: App.Models.Content | null;
+    export interface Comment {
+      // columns
+      id: unknown
+      parent_id: unknown|null
+      comment: string
+      decision: unknown|null
+      user_id: unknown
+      commentable_type: unknown
+      commentable_id: unknown
+      created_at: string
+      updated_at: string
+      deleted_at: string|null
+      // relations
+      commentable: Comment
+      comments: Comment[]
+      user: User
+      activities: Activity[]
     }
 
-    export interface Media {
-        id: number;
-        model_type: string;
-        model_id: string;
-        uuid: string | null;
-        collection_name: string;
-        name: string;
-        file_name: string;
-        mime_type: string | null;
-        disk: string;
-        conversions_disk: string | null;
-        size: number;
-        manipulations: Array<any> | any;
-        custom_properties: Array<any> | any;
-        generated_conversions: Array<any> | any;
-        responsive_images: Array<any> | any;
-        order_column: number | null;
-        created_at: any | null;
-        updated_at: any | null;
-        model?: any | null;
+    export interface Contact {
+      // columns
+      id: unknown
+      name: unknown
+      email: unknown|null
+      phone: unknown|null
+      profile_photo_path: unknown|null
+      created_at: string
+      updated_at: string
+      deleted_at: string|null
+      extra_attributes: string[]|null
+      // relations
+      duties: Duty[]
+      commentable: Contact
+      comments: Comment[]
+      activities: Activity[]
     }
 
-    export interface Resource {
-        id: string;
-        name: Array<any> | any;
-        description: Array<any> | any | null;
-        location: string | null;
-        capacity: number;
-        padalinys_id: number;
-        is_reservable: boolean;
-        created_at: any;
-        updated_at: any;
-        deleted_at: any | null;
-        reservations?: Array<App.Models.Reservation> | null;
-        active_reservations?: Array<App.Models.Reservation> | null;
-        padalinys?: App.Models.Padalinys | null;
-        reservations_count?: number | null;
-        active_reservations_count?: number | null;
+    export interface Content {
+      // columns
+      id: number
+      created_at: string
+      updated_at: string
+      // relations
+      parts: ContentPart[]
     }
 
-    export interface Registration {
-        id: number;
-        registration_form_id: number;
-        data: Array<any> | any;
-        created_at: any;
-        updated_at: any;
-        registration_form?: App.Models.RegistrationForm | null;
+    export interface ContentPart {
+      // columns
+      id: number
+      content_id: number
+      type: unknown
+      json_content: string[]
+      options: string[]|null
+      order: number
+      created_at: string
+      updated_at: string
+      // relations
+      content: Content
     }
 
-    export interface SaziningaiExamFlow {
-        id: number;
-        exam_uuid: string;
-        start_time: string;
-        created_at: any;
-        updated_at: any;
-        exam?: App.Models.SaziningaiExam | null;
-        observers?: Array<App.Models.SaziningaiExamObserver> | null;
-        padalinys?: App.Models.Padalinys | null;
-        observers_count?: number | null;
-    }
-
-    export interface Permission {
-        id: string;
-        name: string;
-        guard_name: string;
-        created_at: any | null;
-        updated_at: any | null;
-        roles?: Array<App.Models.Role> | null;
-        users?: Array<App.Models.User> | null;
-        permissions?: Array<App.Models.Permission> | null;
-        roles_count?: number | null;
-        users_count?: number | null;
-        permissions_count?: number | null;
-    }
-
-    export interface Navigation {
-        id: number;
-        parent_id: number;
-        padalinys_id: number;
-        name: string;
-        lang: string;
-        url: string;
-        order: number;
-        is_active: boolean;
-        created_at: any;
-        updated_at: any;
-        user?: App.Models.User | null;
-        padalinys?: App.Models.Padalinys | null;
+    export interface Doing {
+      // columns
+      id: unknown
+      title: unknown
+      drive_item_name: unknown|null
+      state: unknown
+      date: string
+      extra_attributes: unknown|null
+      created_at: string
+      updated_at: string
+      deleted_at: string|null
+      // relations
+      goals: Goal[]
+      matters: Matter[]
+      types: Type[]
+      users: User[]
+      comments: Comment[]
+      commentable: Doing
+      files: SharepointFile[]
+      tasks: Task[]
+      activities: Activity[]
     }
 
     export interface Duty {
-        id: string;
-        name: string;
-        description: string | null;
-        institution_id: string;
-        order: number;
-        email: string | null;
-        extra_attributes: string | null;
-        places_to_occupy: number | null;
-        created_at: any;
-        updated_at: any;
-        deleted_at: any | null;
-        dutiables?: Array<App.Models.Pivots.Dutiable> | null;
-        users?: Array<App.Models.User> | null;
-        current_users?: Array<App.Models.User> | null;
-        previous_users?: Array<App.Models.User> | null;
-        contacts?: Array<App.Models.Contact> | null;
-        matters?: any | null;
-        types?: Array<App.Models.Type> | null;
-        institution?: App.Models.Institution | null;
-        doings?: any | null;
-        padaliniai?: any | null;
-        meetings?: any | null;
-        agenda_items?: any | null;
-        tasks?: any | null;
-        reservations?: any | null;
-        resources?: any | null;
-        dutiables_count?: number | null;
-        users_count?: number | null;
-        current_users_count?: number | null;
-        previous_users_count?: number | null;
-        contacts_count?: number | null;
-        types_count?: number | null;
+      // columns
+      id: unknown
+      name: unknown
+      description: string|null
+      institution_id: unknown
+      order: number
+      email: unknown|null
+      extra_attributes: string[]|null
+      places_to_occupy: number|null
+      created_at: string
+      updated_at: string
+      deleted_at: string|null
+      // relations
+      dutiables: Dutiable[]
+      users: User[]
+      contacts: Contact[]
+      types: Type[]
+      institution: Institution
+      roles: Role[]
+      permissions: Permission[]
+      activities: Activity[]
+      notifications: DatabaseNotification[]
+    }
+
+    export interface File {
+    }
+
+    export interface Goal {
+      // columns
+      id: unknown
+      group_id: unknown|null
+      padalinys_id: number
+      title: unknown
+      description: string|null
+      start_date: string
+      end_date: string|null
+      created_at: string
+      updated_at: string
+      deleted_at: string|null
+      // relations
+      matters: Matter[]
+      doings: Doing[]
+      group: GoalGroup
+      padalinys: Padalinys
+      commentable: Goal
+      comments: Comment[]
+      files: SharepointFile[]
+      tasks: Task[]
+      activities: Activity[]
+    }
+
+    export interface GoalGroup {
+      // columns
+      id: unknown
+      title: unknown
+      description: string|null
+      created_at: string
+      updated_at: string
+      deleted_at: string|null
+      // relations
+      goals: Goal[]
+      activities: Activity[]
+    }
+
+    export interface Institution {
+      // columns
+      id: unknown
+      parent_id: unknown|null
+      name: unknown|null
+      short_name: unknown|null
+      alias: unknown
+      description: string|null
+      image_url: unknown|null
+      padalinys_id: number|null
+      created_at: string
+      updated_at: string
+      extra_attributes: string[]|null
+      deleted_at: string|null
+      // relations
+      duties: Duty[]
+      types: Type[]
+      padalinys: Padalinys
+      matters: Matter[]
+      meetings: Meeting[]
+      commentable: Institution
+      comments: Comment[]
+      outgoing_relationships: Relationship[]
+      incoming_relationships: Relationship[]
+      files: SharepointFile[]
+      activities: Activity[]
+    }
+
+    export interface MainPage {
+      // columns
+      id: number
+      link: unknown|null
+      text: unknown|null
+      image: unknown|null
+      position: unknown
+      order: number|null
+      type: unknown|null
+      is_active: unknown
+      padalinys_id: number
+      lang: unknown|null
+      created_at: string
+      updated_at: string
+      // relations
+      padalinys: Padalinys
+    }
+
+    export interface Matter {
+      // columns
+      id: unknown
+      title: unknown
+      description: string|null
+      created_at: string
+      updated_at: string
+      deleted_at: string|null
+      // relations
+      institutions: Institution[]
+      meetings: Meeting[]
+      doings: Doing[]
+      goals: Goal[]
+      activities: Activity[]
+    }
+
+    export interface Meeting {
+      // columns
+      id: unknown
+      title: unknown
+      description: string|null
+      start_time: string
+      end_time: string|null
+      created_at: string
+      updated_at: string
+      deleted_at: string|null
+      // relations
+      matters: Matter[]
+      agenda_items: AgendaItem[]
+      institutions: Institution[]
+      comments: Comment[]
+      commentable: Meeting
+      files: SharepointFile[]
+      tasks: Task[]
+      activities: Activity[]
+    }
+
+    export interface Model {
+    }
+
+    export interface Navigation {
+      // columns
+      id: number
+      parent_id: number
+      padalinys_id: number
+      name: unknown
+      lang: unknown
+      url: unknown
+      order: number
+      is_active: unknown
+      created_at?: string
+      updated_at?: string
+      // relations
+      user: User
+      padalinys: Padalinys
+    }
+
+    export interface News {
+      // columns
+      id: number
+      title: unknown
+      category_id: number|null
+      permalink: unknown|null
+      short: unknown
+      lang: unknown
+      other_lang_id: number|null
+      content_id: number
+      image: unknown|null
+      image_author: unknown|null
+      important: unknown
+      padalinys_id: number
+      publish_time: string|null
+      main_points: unknown|null
+      read_more: unknown|null
+      draft: unknown|null
+      created_at: string
+      updated_at: string
+      deleted_at: string|null
+      // relations
+      user: User
+      padalinys: Padalinys
+      other_language_news: News
+      tags: Tag[]
+      content: Content
     }
 
     export interface Padalinys {
-        id: number;
-        type: string | null;
-        fullname: string;
-        shortname: string;
-        alias: string;
-        en: boolean;
-        phone: string | null;
-        email: string | null;
-        address: string | null;
-        shortname_vu: string;
-        banners?: Array<App.Models.Banner> | null;
-        calendar?: Array<App.Models.Calendar> | null;
-        duties?: Array<App.Models.Duty> | null;
-        institutions?: Array<App.Models.Institution> | null;
-        news?: Array<App.Models.News> | null;
-        pages?: Array<App.Models.Page> | null;
-        users?: Array<App.Models.User> | null;
-        resources?: Array<App.Models.Resource> | null;
-        banners_count?: number | null;
-        calendar_count?: number | null;
-        duties_count?: number | null;
-        institutions_count?: number | null;
-        news_count?: number | null;
-        pages_count?: number | null;
-        users_count?: number | null;
-        resources_count?: number | null;
+      // columns
+      id: number
+      type: unknown|null
+      fullname: unknown
+      shortname: unknown
+      alias: unknown
+      en: unknown
+      phone: unknown|null
+      email: unknown|null
+      address: unknown|null
+      shortname_vu: unknown
+      // relations
+      banners: Banner[]
+      calendar: Calendar[]
+      duties: Duty[]
+      institutions: Institution[]
+      news: News[]
+      pages: Page[]
+      users: User[]
+      resources: Resource[]
     }
 
-}
-
-declare namespace App.Models.Pivots {
-    export interface SharepointFileable {
-        sharepoint_file_id: string;
-        fileable_type: string;
-        fileable_id: string;
-        created_at: any;
-        updated_at: any;
-        fileable?: any | null;
-        meeting?: App.Models.Meeting | null;
-        institution?: App.Models.Institution | null;
-        type?: App.Models.Type | null;
+    export interface Page {
+      // columns
+      id: number
+      title: unknown
+      permalink: unknown|null
+      lang: unknown
+      other_lang_id: number|null
+      content_id: number
+      category_id: number|null
+      is_active: unknown
+      padalinys_id: number
+      created_at: string
+      updated_at: string
+      deleted_at: string|null
+      // relations
+      padalinys: Padalinys
+      category: Category
+      content: Content
     }
 
-    export interface ReservationResource {
-        id: number;
-        reservation_id: string;
-        resource_id: string;
-        start_time: string | null;
-        end_time: string | null;
-        quantity: number;
-        state: string;
-        returned_at: string | null;
-        created_at: any;
-        updated_at: any;
-        deleted_at: any | null;
-        reservation?: App.Models.Reservation | null;
-        resource?: App.Models.Resource | null;
-        readonly approvable?: boolean;
-        readonly state_properties?: any;
-    }
-
-    export interface Doable {
-        doable_type: string;
-        doable_id: string;
-        doing_id: string;
-        created_at: any;
-        updated_at: any;
-        doing?: App.Models.Doing | null;
-        user?: App.Models.User | null;
-    }
-
-    export interface GoalMatter {
-        goal_id: string;
-        matter_id: string;
-        created_at: any;
-        updated_at: any;
-        goal?: App.Models.Goal | null;
-        matter?: App.Models.Matter | null;
+    export interface Permission {
+      // columns
+      id: unknown
+      name: unknown
+      guard_name: unknown
+      created_at: string|null
+      updated_at: string|null
+      // relations
+      roles: Role[]
+      users: User[]
+      permissions: Permission[]
     }
 
     export interface AgendaItem {
-        id: string;
-        meeting_id: string;
-        matter_id: string | null;
-        created_at: any;
-        updated_at: any;
-        title: string;
-        start_time: number | null;
-        outcome: string | null;
-        matter?: App.Models.Matter | null;
-        meeting?: App.Models.Meeting | null;
-        institutions?: any | null;
-        padaliniai?: any | null;
+      // columns
+      id: unknown
+      meeting_id: unknown
+      matter_id: unknown|null
+      created_at: string
+      updated_at: string
+      title: string
+      start_time: unknown|null
+      outcome: unknown|null
+      // relations
+      matter: Matter
+      meeting: Meeting
+      activities: Activity[]
+    }
+
+    export interface Doable {
+      // columns
+      doable_type: unknown
+      doable_id: unknown
+      doing_id: unknown
+      created_at: string
+      updated_at: string
+      // relations
+      doing: Doing
+      user: User
     }
 
     export interface Dutiable {
-        id: string;
-        duty_id: string;
-        dutiable_id: string;
-        dutiable_type: string;
-        start_date: string;
-        end_date: string | null;
-        extra_attributes: string | null;
-        created_at: any;
-        updated_at: any;
-        dutiable?: any | null;
-        duty?: App.Models.Duty | null;
-        user?: App.Models.User | null;
-        contact?: App.Models.Contact | null;
-        padaliniai?: any | null;
+      // columns
+      id: unknown
+      duty_id: unknown
+      dutiable_id: unknown
+      dutiable_type: unknown
+      start_date: string
+      end_date: string|null
+      extra_attributes: Record<string, unknown>|null
+      created_at: string
+      updated_at: string
+      // relations
+      dutiable: Dutiable
+      duty: Duty
+      user: User
+      contact: Contact
+    }
+
+    export interface GoalMatter {
+      // columns
+      goal_id: unknown
+      matter_id: unknown
+      created_at: string
+      updated_at: string
+      // relations
+      goal: Goal
+      matter: Matter
     }
 
     export interface Relationshipable {
-        id: number;
-        relationship_id: number;
-        relationshipable_type: string;
-        relationshipable_id: string;
-        related_model_id: string;
-        created_at: any;
-        updated_at: any;
-        relationshipable?: any | null;
-        related_model?: any | null;
-        relationship?: App.Models.Relationship | null;
+      // columns
+      id: number
+      relationship_id: number
+      relationshipable_type: unknown
+      relationshipable_id: unknown
+      related_model_id: unknown
+      created_at: string
+      updated_at: string
+      // relations
+      relationshipable: Relationshipable
+      related_model: Relationshipable
+      relationship: Relationship
     }
 
+    export interface ReservationResource {
+      // columns
+      id: number
+      reservation_id: unknown
+      resource_id: unknown
+      start_time: string|null
+      end_time: string|null
+      quantity: number
+      state: unknown
+      returned_at: string|null
+      created_at: string
+      updated_at: string
+      deleted_at: string|null
+      // mutators
+      approvable: bool
+      state_properties: unknown
+      // relations
+      reservation: Reservation
+      resource: Resource
+      commentable: ReservationResource
+      comments: Comment[]
+    }
+
+    export interface SharepointFileable {
+      // columns
+      sharepoint_file_id: unknown
+      fileable_type: unknown
+      fileable_id: unknown
+      created_at: string
+      updated_at: string
+      // relations
+      fileable: SharepointFileable
+      meeting: Meeting
+      institution: Institution
+      type: Type
+    }
+
+    export interface Registration {
+      // columns
+      id: number
+      registration_form_id: number
+      data: string[]
+      created_at: string
+      updated_at: string
+      // relations
+      registration_form: RegistrationForm
+    }
+
+    export interface RegistrationForm {
+      // columns
+      id: number
+      user_id: number|null
+      data: unknown
+      created_at: string
+      updated_at: string
+      // relations
+      registrations: Registration[]
+    }
+
+    export interface Relationship {
+      // columns
+      id: number
+      name: unknown
+      slug: unknown
+      description: string|null
+      type: unknown|null
+      created_at: string
+      updated_at: string
+      // relations
+      institutions: Institution[]
+      relationshipables: Relationshipable[]
+      types: Type[]
+    }
+
+    export interface Reservation {
+      // columns
+      id: unknown
+      name: unknown
+      description: string|null
+      start_time: string
+      end_time: string
+      completed_at: string|null
+      created_at: string
+      updated_at: string
+      deleted_at: string|null
+      // relations
+      resources: Resource[]
+      users: User[]
+      commentable: Reservation
+      comments: Comment[]
+      tasks: Task[]
+      activities: Activity[]
+    }
+
+    export interface Resource {
+      // columns
+      id: unknown
+      name: string[]
+      description: string[]|null
+      location: unknown|null
+      capacity: number
+      padalinys_id: number
+      is_reservable: unknown
+      created_at: string
+      updated_at: string
+      deleted_at: string|null
+      // mutators
+      translations: unknown
+      // relations
+      reservations: Reservation[]
+      padalinys: Padalinys
+      media: Medium[]
+    }
+
+    export interface Role {
+      // columns
+      id: unknown
+      name: unknown
+      guard_name: unknown
+      created_at: string|null
+      updated_at: string|null
+      // relations
+      duties: Duty[]
+      attachable_types: Type[]
+      types: Type[]
+      permissions: Permission[]
+      users: User[]
+    }
+
+    export interface RoleType {
+      // columns
+      id: number
+      role_id: unknown
+      type_id: number
+      created_at: string|null
+      updated_at: string|null
+      // relations
+      role: Role
+      type: Type
+    }
+
+    export interface SaziningaiExam {
+      // columns
+      id: number
+      uuid: unknown
+      name: unknown|null
+      email: unknown|null
+      exam_type: unknown|null
+      padalinys_id: number|null
+      place: unknown|null
+      duration: unknown|null
+      subject_name: unknown|null
+      exam_holders: number|null
+      students_need: number|null
+      phone: unknown|null
+      created_at: string
+      updated_at: string
+      // relations
+      padalinys: Padalinys
+      flows: SaziningaiExamFlow[]
+      observers: SaziningaiExamObserver[]
+    }
+
+    export interface SaziningaiExamFlow {
+      // columns
+      id: number
+      exam_uuid: unknown
+      start_time: string
+      created_at: string
+      updated_at: string
+      // relations
+      exam: SaziningaiExam
+      observers: SaziningaiExamObserver[]
+      padalinys: Padalinys
+    }
+
+    export interface SaziningaiExamObserver {
+      // columns
+      id: number
+      exam_uuid: unknown
+      name: unknown
+      email: unknown|null
+      phone: unknown
+      flow: number
+      created_at: string
+      has_arrived: unknown
+      phone_p: unknown|null
+      updated_at: string
+      padalinys_id: number
+      // relations
+      flow: SaziningaiExamFlow
+      exam: SaziningaiExam
+      padalinys: Padalinys
+    }
+
+    export interface SharepointFile {
+      // columns
+      sharepoint_id: unknown
+      id: unknown
+      // relations
+      fileables: SharepointFileable[]
+      types: Type[]
+      institutions: Institution[]
+      meetings: Meeting[]
+      commentable: SharepointFile
+      comments: Comment[]
+    }
+
+    export interface Tag {
+      // columns
+      id: number
+      alias: unknown|null
+      name: unknown
+      description: string|null
+      created_at: string
+      updated_at: string
+    }
+
+    export interface Task {
+      // columns
+      id: unknown
+      name: unknown
+      description: string|null
+      due_date: string|null
+      taskable_type: unknown
+      taskable_id: unknown
+      completed_at: string|null
+      created_at: string
+      updated_at: string
+      deleted_at: string|null
+      // relations
+      taskable: Task
+      users: User[]
+    }
+
+    export interface Type {
+      // columns
+      id: number
+      parent_id: number|null
+      title: unknown|null
+      model_type: unknown|null
+      description: string|null
+      slug: unknown|null
+      extra_attributes: unknown|null
+      created_at: string
+      updated_at: string
+      deleted_at: string|null
+      // relations
+      institutions: Institution[]
+      duties: Duty[]
+      doings: Doing[]
+      roles: Role[]
+      descendants: Type[]
+      parent: Type
+      outgoing_relationships: Relationship[]
+      incoming_relationships: Relationship[]
+      files: SharepointFile[]
+      activities: Activity[]
+    }
+
+    export interface Typeable {
+      // relations
+      type: Type
+      typeable: Typeable
+    }
+
+    export interface User {
+      // columns
+      id: unknown
+      email: unknown
+      phone: unknown|null
+      name: unknown
+      password?: unknown|null
+      is_active: unknown
+      email_verified_at?: string|null
+      remember_token?: unknown|null
+      last_action?: string|null
+      last_changelog_check?: string|null
+      microsoft_token?: string|null
+      google_token?: unknown|null
+      updated_at: string|null
+      created_at: string
+      profile_photo_path: unknown|null
+      deleted_at: string|null
+      // mutators
+      impersonate: ImpersonateManager
+      // relations
+      banners: Banner[]
+      calendar: Calendar[]
+      doings: Doing[]
+      duties: Duty[]
+      dutiables: Dutiable[]
+      tasks: Task[]
+      reservations: Reservation[]
+      roles: Role[]
+      permissions: Permission[]
+      activities: Activity[]
+      notifications: DatabaseNotification[]
+    }
+
+  }
 }
+
