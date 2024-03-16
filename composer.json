@@ -40,7 +40,7 @@
         "spatie/laravel-permission": "^6.4",
         "spatie/laravel-translatable": "^6.5",
         "staudenmeir/eloquent-has-many-deep": "^v1.18",
-        "tightenco/ziggy": "^1.0",
+        "tightenco/ziggy": "^2.0",
         "ueberdosis/tiptap-php": "^1.3"
     },
     "require-dev": {
