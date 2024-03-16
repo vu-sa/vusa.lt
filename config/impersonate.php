@@ -17,7 +17,7 @@ return [
     | You can provide an array of URI's that must be ignored (eg. 'api/*')
     |
     */
-    'except'  => [
+    'except' => [
         'telescope*', 'horizon*', 'api/*',
     ],
 
@@ -32,7 +32,7 @@ return [
     | This must be an Eloquent Model instance.
     |
     */
-    'model'   => config('auth.providers.users.model'),
+    'model' => config('auth.providers.users.model'),
 
     /*
     |--------------------------------------------------------------------------
@@ -59,7 +59,7 @@ return [
     | mechanisms used by this application to persist your user's data.
     |
     */
-    'guard'   => config('auth.defaults.guard'),
+    'guard' => config('auth.defaults.guard'),
 
     'interface' => [
         /*

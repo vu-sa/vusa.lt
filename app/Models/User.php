@@ -21,7 +21,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class User extends Authenticatable
 {
-    use HasFactory, HasRelationships, HasRoles, HasUlids, HasUnitRelation, HasImpersonation, LogsActivity, Notifiable, Searchable, SoftDeletes;
+    use HasFactory, HasImpersonation, HasRelationships, HasRoles, HasUlids, HasUnitRelation, LogsActivity, Notifiable, Searchable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -70,7 +70,7 @@ class User extends Authenticatable
         return $this->name;
     }
 
-    public function getImpersonateSearchField() : array
+    public function getImpersonateSearchField(): array
     {
         return [
             'name', 'email',
@@ -81,14 +81,13 @@ class User extends Authenticatable
     {
         $authorization->impersonator(fn (User $user) => $user->hasRole(config('permission.super_admin_role_name')));
 
-        $authorization->impersonated(function ($impersonateResource)
-            { 
-                if ($impersonateResource::class === ImpersonateResource::class) {
-                    $impersonateResource = $impersonateResource->resource;
-                }
+        $authorization->impersonated(function ($impersonateResource) {
+            if ($impersonateResource::class === ImpersonateResource::class) {
+                $impersonateResource = $impersonateResource->resource;
+            }
 
-                return ! $impersonateResource->hasRole(config('permission.super_admin_role_name'));
-            });
+            return ! $impersonateResource->hasRole(config('permission.super_admin_role_name'));
+        });
     }
 
     /**
