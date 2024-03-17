@@ -30,14 +30,12 @@ const getSubdomainFromHrefOrPath = (href: string) => {
 };
 
 const useInertiaRouter = computed(() => {
-  // if link is null, return nothing
-
-  // check if first part is http
+  // 1. Check if first part is http
   if (!props.href?.startsWith("http")) {
     return true;
   }
 
-  // check if hostname ends in vusa.lt or vusa.test or other ending
+  // 2. Check if hostname ends in vusa.lt or vusa.test or other ending (???)
   const hostname = window.location.hostname;
 
   if (
@@ -48,6 +46,12 @@ const useInertiaRouter = computed(() => {
     return false;
   }
 
+  // 3. Check if external link
+  if (!props.href.startsWith(usePage().props.app.url)) {
+    return false;
+  }
+
+  // 4. This checks if the subdomain matches, if not, don't use inertia router
   const linkSubdomain = getSubdomainFromHrefOrPath(props.href);
 
   return hostname.split(".")[0] === linkSubdomain;
