@@ -58,7 +58,7 @@ class PublicPagesTest extends TestCase
                 ->component('Public/HomePage')
                 ->has('news')
                 ->has('calendar')
-                ->has('upcoming4Events')
+                ->has('upcomingEvents')
             );
     }
 

@@ -1,71 +1,47 @@
 <template>
   <NForm :model="form" label-placement="top">
-    <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
-      <NFormItemGi :label="$t('forms.fields.title')" :span="2">
-        <NInput
-          v-model:value="form.title"
-          type="text"
-          placeholder="Įrašyti pavadinimą..."
-        />
-      </NFormItemGi>
-
-      <NFormItemGi label="Nuoroda" :span="2">
-        <NInput
-          :value="form.permalink"
-          disabled
-          type="text"
-          placeholder="Sugeneruojama nuoroda..."
-        />
-      </NFormItemGi>
-
-      <NFormItemGi label="Kalba" :span="2">
-        <NSelect
-          v-model:value="form.lang"
-          filterable
-          :options="languageOptions"
-          placeholder="Pasirinkti kalbą..."
-        />
-      </NFormItemGi>
-
-      <NFormItemGi label="Kitos kalbos puslapis" :span="2">
-        <NSelect
-          v-model:value="form.other_lang_id"
-          filterable
-          :disabled="modelRoute === 'pages.store'"
-          placeholder="Pasirinkti kitos kalbos puslapį... (tik tada, kai jau sukūrėte puslapį)"
-          :options="otherPageOptions"
-          clearable
-        />
-      </NFormItemGi>
-
-      <NFormItemGi :span="6">
-        <template #label>
-          <span class="text-lg font-bold">Pagrindinis tekstas</span>
+    <div class="flex flex-col">
+      <FormElement>
+        <template #title>
+          {{ $t("forms.context.main_info") }}
         </template>
-        <TipTap v-model="form.text" :search-files="$page.props.search.other" />
-      </NFormItemGi>
-    </NGrid>
+        <NFormItem :label="$t('forms.fields.title')">
+          <NInput v-model:value="form.title" type="text" placeholder="Įrašyti pavadinimą..." />
+        </NFormItem>
+        <NFormItem label="Nuoroda">
+          <NInput :value="form.permalink" disabled type="text" placeholder="Sugeneruojama nuoroda..." />
+        </NFormItem>
+        <div class="grid lg:grid-cols-2 lg:gap-4">
+          <NFormItem label="Kalba">
+            <NSelect v-model:value="form.lang" filterable :options="languageOptions" placeholder="Pasirinkti kalbą..." />
+          </NFormItem>
+          <NFormItem label="Kitos kalbos puslapis">
+            <NSelect v-model:value="form.other_lang_id" filterable :disabled="modelRoute === 'pages.store'"
+              placeholder="Pasirinkti kitos kalbos puslapį... (tik tada, kai jau sukūrėte puslapį)"
+              :options="otherPageOptions" clearable />
+          </NFormItem>
+        </div>
+      </FormElement>
+      <RichContentFormElement v-model="form.content.parts" />
+    </div>
     <div class="flex justify-end gap-2">
-      <DeleteModelButton
-        v-if="deleteModelRoute"
-        :form="form"
-        :model-route="deleteModelRoute"
-      ></DeleteModelButton>
-      <UpsertModelButton :form="form" :model-route="modelRoute"
-        >Sukurti</UpsertModelButton
-      >
+      <DeleteModelButton v-if="deleteModelRoute" :form="form" :model-route="deleteModelRoute" />
+      <UpsertModelButton :form="form" :model-route="modelRoute" @save="updateContents">
+        Sukurti
+      </UpsertModelButton>
     </div>
   </NForm>
 </template>
 
 <script setup lang="ts">
-import { NForm, NFormItemGi, NGrid, NInput, NSelect } from "naive-ui";
+import { NForm, NFormItem, NInput, NSelect } from "naive-ui";
 import { computed, watch } from "vue";
-import { useForm } from "@inertiajs/vue3";
+import { useForm, usePage } from "@inertiajs/vue3";
 import latinize from "latinize";
 
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
-import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
+import FormElement from "./FormElement.vue";
+import RichContentFormElement from "../RichContentFormElement.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{
@@ -104,6 +80,11 @@ const languageOptions = [
     label: "English",
   },
 ];
+
+function updateContents() {
+  // Use usePage flash.data to grab page.contents and update form.contents
+  form.content = usePage().props.flash.data?.content
+}
 
 // watch form.title and update form.permalink
 

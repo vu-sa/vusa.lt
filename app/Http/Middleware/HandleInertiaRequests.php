@@ -121,6 +121,8 @@ class HandleInertiaRequests extends Middleware
             // remove where value is reservationResource
             // TODO: maybe needs better solution
             unset($labels[array_search('reservationResource', $labels)]);
+            // TODO: file is also a special case, since it isn't linked to models, but has permissions
+            unset($labels[array_search('file', $labels)]);
 
             return collect($labels)
                 ->mapWithKeys(function ($model) use ($user, $authorizer) {

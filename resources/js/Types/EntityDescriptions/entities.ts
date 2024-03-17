@@ -18,6 +18,12 @@ export default [
     description: Descriptions.NewsDescription,
   },
   {
+    title: "Failai VU SA puslapyje",
+    icon: Icons.FILE,
+    key: pluralizeModels(ModelEnum.FILE),
+    description: Descriptions.FileDescription,
+  },
+  {
     title: "Baneriai",
     icon: Icons.BANNER,
     key: pluralizeModels(ModelEnum.BANNER),

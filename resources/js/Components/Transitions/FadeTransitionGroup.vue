@@ -1,5 +1,7 @@
 <template>
-  <TransitionGroup name="fade"><slot /></TransitionGroup>
+  <TransitionGroup name="fade">
+    <slot />
+  </TransitionGroup>
 </template>
 
 <script setup lang="ts"></script>
@@ -7,7 +9,7 @@
 <style>
 .fade-enter-active,
 .fade-leave-active {
-  transition: all 1s ease;
+  transition: all 0.4s ease;
 }
 
 .fade-enter-from,

@@ -10,7 +10,7 @@
           :options="defaultOptions"
           ><template #action>
             <span
-              class="prose-sm prose-gray text-xs text-zinc-400 dark:prose-invert"
+              class="text-xs text-zinc-400"
               >Gali įrašyti ir savo klausimą...</span
             >
           </template></NSelect

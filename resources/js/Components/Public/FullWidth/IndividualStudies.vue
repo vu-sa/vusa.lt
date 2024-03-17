@@ -1,9 +1,9 @@
 <template>
   <div>
     <NDivider />
-    <div class="prose-sm dark:prose-invert">
+    <div class="typography text-sm leading-7">
       <h2
-        class="my-4 text-2xl lg:text-3xl font-bold text-gray-900 duration-200 hover:text-vusa-red dark:text-zinc-50 lg:w-4/5"
+        class="my-4 text-2xl lg:text-3xl font-bold text-gray-900 duration-200 hover:text-vusa-red dark:text-zinc-50 lg:w-4/5 border-none"
       >
         <a
           class="flex w-fit flex-row items-center gap-2"
@@ -28,7 +28,7 @@
       </h2>
       <div class="space-between flex flex-row">
         <p
-          class="prose prose-sm mb-4 text-sm dark:prose-invert lg:max-w-[80ch] lg:text-base"
+          class="typography text-sm leading-6 lg:leading-6 mb-4 text-sm lg:max-w-[80ch] lg:text-base"
         >
           <template v-if="$page.props.app.locale === 'lt'">
             <p>
@@ -46,7 +46,7 @@
                     permalink: 'individualios-studijos',
                   })
                 "
-                class="no-underline hover:text-vusa-red"
+                class="hover:text-vusa-red"
                 >Skaitykite plačiau</a
               >
             </p>

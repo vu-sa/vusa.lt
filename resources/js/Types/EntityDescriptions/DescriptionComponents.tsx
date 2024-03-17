@@ -91,6 +91,15 @@ export const DutyDescription = (
   </>
 );
 
+export const FileDescription = (
+  <>
+    <p>
+      Failai yra dokumentai, kurie gali būti įkelti į platformą ir naudojami
+      kaip informacinis šaltinis.
+    </p>
+  </>
+);
+
 export const GoalDescription = (
   <>
     <p>

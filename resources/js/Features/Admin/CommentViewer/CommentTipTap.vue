@@ -1,103 +1,50 @@
 <template>
   <div class="flex flex-col" style="max-height: 280px">
-    <div
-      :class="{ 'rounded-t-md': roundedTop }"
-      class="grid grid-cols-[60px_1fr] overflow-y-scroll rounded-b-md border dark:border-zinc-600"
-    >
+    <div :class="{ 'rounded-t-md': roundedTop }"
+      class="grid grid-cols-[60px_1fr] overflow-y-scroll rounded-b-md border dark:border-zinc-600">
       <div ref="commentContainer" class="flex justify-center">
-        <UserAvatar
-          :size="23"
-          class="sticky top-4"
-          :user="$page.props.auth?.user"
-        ></UserAvatar>
+        <UserAvatar :size="23" class="sticky top-4" :user="$page.props.auth?.user"></UserAvatar>
       </div>
       <EditorContent :editor="editor" class="leading-normal" />
       <!-- <NBackTop v-if="commentContainer" :to="commentContainer" /> -->
     </div>
-    <div
-      v-if="editor"
-      class="border-top-0 flex items-center justify-between gap-2 border-zinc-400 p-4"
-    >
+    <div v-if="editor" class="border-top-0 flex items-center justify-between gap-2 border-zinc-400 p-4">
       <div class="flex flex-wrap items-center gap-2">
-        <TipTapMarkButton
-          :editor="editor"
-          :type="'bold'"
-          :icon="TextBold20Regular"
-        />
-        <TipTapMarkButton
-          :editor="editor"
-          :type="'italic'"
-          :icon="TextItalic20Regular"
-        />
-        <TipTapMarkButton
-          :editor="editor"
-          :type="'underline'"
-          :icon="TextUnderline20Regular"
-        />
+        <TipTapMarkButton :editor="editor" :type="'bold'" :icon="TextBold20Regular" />
+        <TipTapMarkButton :editor="editor" :type="'italic'" :icon="TextItalic20Regular" />
+        <TipTapMarkButton :editor="editor" :type="'underline'" :icon="TextUnderline20Regular" />
 
-        <TipTapButton
-          :editor="editor"
-          :type="'bulletList'"
-          :icon="TextBulletListLtr24Filled"
-          :callback="() => editor.chain().focus().toggleBulletList().run()"
-        />
-        <TipTapButton
-          :editor="editor"
-          :type="'orderedList'"
-          :icon="TextNumberListLtr24Filled"
-          :callback="() => editor.chain().focus().toggleOrderedList().run()"
-        />
+        <TipTapButton :editor="editor" :type="'bulletList'" :icon="TextBulletListLtr24Filled"
+          :callback="() => editor?.chain().focus().toggleBulletList().run()" />
+        <TipTapButton :editor="editor" :type="'orderedList'" :icon="TextNumberListLtr24Filled"
+          :callback="() => editor?.chain().focus().toggleOrderedList().run()" />
       </div>
       <NButtonGroup type="primary" size="small">
-        <NButton
-          :disabled="disabled"
-          type="primary"
-          :loading="loading"
-          icon-placement="right"
-          @click="$emit('submit:comment')"
-          ><template #icon><NIcon :component="Send20Filled" /></template
-          >{{ submitText ?? $t("Pateikti") }}</NButton
-        >
-        <NPopover
-          v-if="enableApprove"
-          trigger="click"
-          class="rounded-md"
-          raw
-          :show-arrow="false"
-        >
+        <NButton :disabled="disabled" type="primary" :loading="loading" icon-placement="right"
+          @click="$emit('submit:comment')"><template #icon>
+            <NIcon :component="Send20Filled" />
+          </template>{{ submitText ?? $t("Pateikti") }}</NButton>
+        <NPopover v-if="enableApprove" trigger="click" class="rounded-md" raw :show-arrow="false">
           <div class="flex flex-col rounded-md bg-zinc-50 dark:bg-zinc-800">
             <NButtonGroup size="medium" vertical>
-              <NButton
-                type="success"
-                secondary
-                @click="$emit('submit:comment', 'approve')"
-                ><template #icon
-                  ><NIcon :component="CommentCheckmark24Regular" />
+              <NButton type="success" secondary @click="$emit('submit:comment', 'approve')">
+                <template #icon>
+                  <NIcon :component="CommentCheckmark24Regular" />
                 </template>
-                {{
-                  approveText ??
-                  `... ${$t("states.other.and_more", { decision: "approve" })}`
-                }}</NButton
-              >
-              <NButton
-                type="warning"
-                tertiary
-                ghost
-                @click="$emit('submit:comment', 'reject')"
-                ><template #icon
-                  ><NIcon :component="CommentError24Regular" /></template
-                >{{
-                  rejectText ??
-                  `... ${$t("states.other.and_more", { decision: "reject" })}`
-                }}</NButton
-              >
+                {{ approveText ?? `... ${$t("states.other.and_more", { decision: "approve" })}` }}
+              </NButton>
+              <NButton type="warning" tertiary ghost @click="$emit('submit:comment', 'reject')">
+                <template #icon>
+                  <NIcon :component="CommentError24Regular" />
+                </template>
+                {{ rejectText ?? `... ${$t("states.other.and_more", { decision: "reject" })}` }}
+              </NButton>
             </NButtonGroup>
           </div>
           <template #trigger>
-            <NButton type="primary" secondary
-              ><template #icon
-                ><NIcon :component="CaretDown24Filled" /></template
-            ></NButton>
+            <NButton type="primary" secondary><template #icon>
+                <NIcon :component="CaretDown24Filled" />
+              </template></NButton>
           </template>
         </NPopover>
       </NButtonGroup>
@@ -170,7 +117,7 @@ onBeforeUnmount(() => {
 <style lang="scss" scoped>
 /* Basic editor styles */
 .ProseMirror {
-  > * + * {
+  >*+* {
     margin-top: 0.75em;
   }
 
@@ -244,7 +191,7 @@ onBeforeUnmount(() => {
       box-sizing: border-box;
       position: relative;
 
-      > * {
+      >* {
         margin-bottom: 0;
       }
     }
@@ -298,7 +245,7 @@ onBeforeUnmount(() => {
       box-sizing: border-box;
       position: relative;
 
-      > * {
+      >* {
         margin-bottom: 0;
       }
     }

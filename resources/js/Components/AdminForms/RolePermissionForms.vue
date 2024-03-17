@@ -10,14 +10,10 @@
         ></NTransfer> -->
     <section v-for="entity in entities" :key="entity.key">
       <EntityDescription :title="entity.title" :icon="entity.icon">
-        <component :is="entity.description"></component>
+        <component :is="entity.description" />
       </EntityDescription>
-      <PermissionTable
-        :model-type="entity.key"
-        :icon="entity.icon"
-        :permissions="filterPermissionsFor(entity.key)"
-        :role="role"
-      ></PermissionTable>
+      <PermissionTable :model-type="entity.key" :icon="entity.icon" :permissions="filterPermissionsFor(entity.key)"
+        :role="role" />
       <NDivider />
     </section>
   </div>

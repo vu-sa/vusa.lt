@@ -1,7 +1,7 @@
 <template>
   <NModal
     :show="show"
-    class="max-w-3xl transition dark:prose-invert"
+    class="max-w-3xl transition"
     :bordered="false"
     size="large"
     role="card"

@@ -8,7 +8,7 @@
   </HeaderWithShapeDivider1>
 
   <div class="grid grid-cols-1 gap-4 pt-2 last:pb-2 lg:grid-cols-5">
-    <div class="prose prose-sm col-span-3 dark:prose-invert">
+    <div class="col-span-3 typography leading-7 text-base">
       <h2>Labas! 👋</h2>
 
       <p class="font-bold">

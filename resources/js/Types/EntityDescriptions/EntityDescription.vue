@@ -8,7 +8,7 @@
     </div>
     <h2 class="mb-0 text-xl">{{ title }}</h2>
 
-    <div class="prose-sm col-start-2 text-xs">
+    <div class="typography col-start-2 text-xs">
       <slot />
     </div>
   </div>

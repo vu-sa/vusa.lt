@@ -79,6 +79,16 @@ class ContactController extends PublicController
             return $duty->order;
         })->pluck('current_users')->flatten()->unique('id');
 
+        // keep all contacts, but remove some duties from them, if they are not in the selected types
+        $contacts = $contacts->map(function ($contact) use ($types) {
+            // You can't overwrite the relations, so we need to use another name
+            $contact->filtered_current_duties = $contact->current_duties->filter(function ($duty) use ($types) {
+                return $duty->types->intersect($types)->count() > 0;
+            });
+
+            return $contact;
+        });
+
         // make eloquent collection from array
         $contacts = new Collection($contacts);
 
@@ -125,7 +135,9 @@ class ContactController extends PublicController
                     'name' => $contact->name,
                     'email' => $contact->email,
                     'phone' => $contact->phone,
-                    'duties' => $contact->current_duties->where('institution_id', '=', $institution->id)->values(),
+                    // Sometimes the duties may be filtered, e.g. curator duties are not shown in coordinator
+                    'duties' => isset($contact->filtered_current_duties) ? $contact->filtered_current_duties->where('institution_id', '=', $institution->id)->values() :
+                    $contact->current_duties->where('institution_id', '=', $institution->id)->values(),
                     'profile_photo_path' => $contact->profile_photo_path,
                 ];
             }),

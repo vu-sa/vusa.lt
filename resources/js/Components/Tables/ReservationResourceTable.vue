@@ -16,7 +16,7 @@
     "
     @close="showStateChangeModal = false"
   >
-    <div class="not-prose relative w-full">
+    <div class="relative w-full">
       <InfoText>
         <template v-if="$page.props.app.locale === 'lt'"
           >Palik trumpą komentarą</template

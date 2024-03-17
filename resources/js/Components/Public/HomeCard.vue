@@ -13,9 +13,9 @@
     >
       <slot name="below-card"></slot>
     </div>
-    <h3 class="mt-1 leading-tight text-gray-800 line-clamp-2 dark:text-zinc-50">
+    <p class="mt-1 font-bold text-xl leading-tight text-gray-800 line-clamp-2 dark:text-zinc-50">
       <slot></slot>
-    </h3>
+    </p>
   </article>
 </template>
 

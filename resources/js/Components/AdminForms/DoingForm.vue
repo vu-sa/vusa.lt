@@ -10,7 +10,7 @@
           :options="doingOptions"
           ><template #action>
             <span
-              class="prose-sm prose-gray text-xs text-zinc-400 dark:prose-invert"
+              class="typography text-xs text-zinc-400"
               >Gali įrašyti ir savo veiklą...</span
             >
           </template></NSelect

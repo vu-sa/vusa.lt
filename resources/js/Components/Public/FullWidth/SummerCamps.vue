@@ -1,7 +1,7 @@
 <template>
   <div class="full-bleed group relative">
     <Head>
-      <link rel="preload" href="/images/photos/VU SA.jpg" as="image" />
+      <link rel="preload" href="/images/photos/stovykla.jpg" as="image" />
     </Head>
 
     <ShapeDivider1 class="absolute -top-1 z-[1]"></ShapeDivider1>
@@ -20,7 +20,7 @@
   <div
     class="mt-4 flex flex-col justify-center gap-4 lg:flex-row lg:items-center"
   >
-    <div class="prose prose-sm dark:prose-invert">
+    <div class="typography leading-7 text-base">
       <p class="text-2xl font-bold lg:w-4/5">
         VU SA
         <span class="font-extrabold text-vusa-red">pirmakursių stovyklos</span>

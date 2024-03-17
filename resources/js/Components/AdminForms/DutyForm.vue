@@ -62,12 +62,12 @@
               <SimpleLocaleButton v-model:locale="locale" />
             </div>
           </template>
-          <TipTap
+          <TipTap html
             v-if="locale === 'lt'"
             v-model="form.description"
             :search-files="$page.props.search.other"
           />
-          <TipTap
+          <TipTap html
             v-else
             v-model="form.extra_attributes.en.description"
             :search-files="$page.props.search.other"

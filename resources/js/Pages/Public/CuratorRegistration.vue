@@ -11,7 +11,7 @@
   <div
     class="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-4 pt-2 last:pb-2 lg:grid-cols-5 lg:px-16"
   >
-    <div class="prose prose-sm col-span-3 px-12 dark:prose-invert">
+    <div class="typography max-w-prose leading-7 text-base col-span-3 px-12">
       <NImage
         width="600"
         :src="'/images/curatorRegistration/curator1.jpg'"

@@ -69,6 +69,9 @@ Route::resource('reservationResources', ReservationResourceController::class);
 
 Route::resource('saziningaiExams', SaziningaiExamsController::class);
 Route::resource('saziningaiExamFlows', SaziningaiExamFlowsController::class)->except(['index', 'create', 'show', 'destroy']);
+Route::get('files/getFiles', [FilesController::class, 'getFiles'])->name('files.getFiles');
+Route::post('files/createDirectory', [FilesController::class, 'createDirectory'])->name('files.createDirectory');
+Route::delete('files/delete', [FilesController::class, 'delete'])->name('files.delete');
 Route::resource('files', FilesController::class);
 
 Route::put('duties/setAsStudentRepresentatives', [DutyController::class, 'setAsStudentRepresentatives'])->name('duties.setAsStudentRepresentatives');
@@ -92,8 +95,6 @@ Route::post('tasks/{task}/updateCompletionStatus', [TaskController::class, 'upda
 Route::resource('changelogItems', ChangelogItemController::class);
 Route::post('changelogItems/approveForUser', [ChangelogItemController::class, 'approveForUser'])->name('changelogItems.approve');
 
-Route::post('files/search', [FilesController::class, 'searchForFiles'])->name('files.search');
-Route::post('images/search', [FilesController::class, 'searchForImages'])->name('images.search');
 Route::post('duties/search', [DutyController::class, 'searchForDuties'])->name('duties.search');
 
 Route::post('files/uploadImage', [FilesController::class, 'uploadImage'])->name('files.uploadImage');

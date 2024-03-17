@@ -8,7 +8,7 @@
   </HeaderWithShapeDivider1>
 
   <div class="grid max-w-7xl grid-cols-1 gap-4 pt-2 last:pb-2 lg:grid-cols-5">
-    <div class="prose prose-sm col-span-3 px-12 dark:prose-invert">
+    <div class="typography text-base leading-7 col-span-3 px-12 max-w-prose">
       <h2>Labas! 👋</h2>
 
       <p class="font-bold">2022 m. pirmakursių stovyklos jau pasibaigė!</p>

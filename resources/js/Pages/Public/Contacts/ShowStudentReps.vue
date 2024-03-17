@@ -13,7 +13,7 @@
     <section v-if="selectedType && selectedType.description">
       <h2>Aprašymas</h2>
       <div
-        class="prose prose-sm mb-8 dark:text-zinc-50"
+        class="typography text-sm mb-8 dark:text-zinc-50"
         v-html="selectedType?.description"
       />
     </section>

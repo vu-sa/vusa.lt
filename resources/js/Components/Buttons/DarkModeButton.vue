@@ -1,5 +1,5 @@
 <template>
-  <NButton size="small" text @click="isDark = !isDark">
+  <NButton size="small" text title="Tamsaus režimo perjungimas" @click="isDark = !isDark">
     <template #icon>
       <NIcon
         :component="isDark ? WeatherMoon24Regular : WeatherSunny24Regular"
