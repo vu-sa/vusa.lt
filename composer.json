@@ -21,7 +21,7 @@
         "laravel/tinker": "^2.7",
         "maatwebsite/excel": "^3.1",
         "microsoft/microsoft-graph": "^1.86.0",
-        "octopyid/laravel-impersonate": "^3.0",
+        "octopyid/laravel-impersonate": "^4.02",
         "pusher/pusher-php-server": "^7.2",
         "socialiteproviders/microsoft": "^4.1",
         "spatie/calendar-links": "^1.8",

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d5645a921b5abc5d8c04b9a0790a04e7",
+    "content-hash": "cb5d43b57df3124f9719d570eb2e47ac",
     "packages": [
         {
             "name": "ajcastro/eager-load-pivot-relations",
@@ -4006,37 +4006,40 @@
         },
         {
             "name": "octopyid/laravel-impersonate",
-            "version": "v3.0.3",
+            "version": "v4.02",
             "source": {
                 "type": "git",
                 "url": "https://github.com/OctopyID/LaraPersonate.git",
-                "reference": "5a708a85c1d79227a1da663ae8a0a9a04f29730a"
+                "reference": "6a3e3763b365aaed34debd243833b3422b843763"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/OctopyID/LaraPersonate/zipball/5a708a85c1d79227a1da663ae8a0a9a04f29730a",
-                "reference": "5a708a85c1d79227a1da663ae8a0a9a04f29730a",
+                "url": "https://api.github.com/repos/OctopyID/LaraPersonate/zipball/6a3e3763b365aaed34debd243833b3422b843763",
+                "reference": "6a3e3763b365aaed34debd243833b3422b843763",
                 "shasum": ""
             },
             "require": {
-                "php": "^8.0|^8.1"
+                "php": "^8.1"
             },
             "conflict": {
                 "lab404/laravel-impersonate": "*"
             },
             "require-dev": {
-                "nunomaduro/collision": "^6.2",
-                "orchestra/testbench": "^7.5"
+                "nunomaduro/collision": "^7.8",
+                "orchestra/testbench": "^8.11"
             },
             "type": "library",
             "extra": {
                 "laravel": {
                     "providers": [
-                        "Octopy\\Impersonate\\ImpersonateServiceProvider"
+                        "Octopy\\Impersonate\\Providers\\ImpersonateServiceProvider"
                     ]
                 }
             },
             "autoload": {
+                "files": [
+                    "src/Helpers.php"
+                ],
                 "psr-4": {
                     "Octopy\\Impersonate\\": "src/"
                 }
@@ -4047,19 +4050,14 @@
             ],
             "authors": [
                 {
-                    "name": "SupianIDz",
+                    "name": "Supian M",
                     "email": "supianidz@gmail.com"
                 }
             ],
             "description": "Login as a different user quickly",
-            "keywords": [
-                "Users",
-                "impersonate",
-                "laravel"
-            ],
             "support": {
                 "issues": "https://github.com/OctopyID/LaraPersonate/issues",
-                "source": "https://github.com/OctopyID/LaraPersonate/tree/v3.0.3"
+                "source": "https://github.com/OctopyID/LaraPersonate/tree/v4.02"
             },
             "funding": [
                 {
@@ -4071,7 +4069,7 @@
                     "type": "ko_fi"
                 }
             ],
-            "time": "2023-02-28T02:55:59+00:00"
+            "time": "2024-03-10T00:23:05+00:00"
         },
         {
             "name": "paragonie/random_compat",
