@@ -112,7 +112,7 @@ class PublicPageController extends PublicController
                     'date' => $calendar->date,
                     'end_date' => $calendar->end_date,
                     'title' => app()->getLocale() === 'en' ? ($calendar->extra_attributes['en']['title'] ?? $calendar->title) : $calendar->title,
-                    'category' => $calendar->category,
+                    'category' => $calendar->categoryR,
                     'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale()),
                 ];
             }),

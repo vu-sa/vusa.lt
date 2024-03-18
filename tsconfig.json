@@ -10,9 +10,19 @@
     "jsx": "preserve",
     "jsxImportSource": "vue",
     "paths": {
-      "@/*": ["./resources/js/*"]
+      "@/*": [
+        "./resources/js/*"
+      ],
+      "ziggy-js": [
+        "./vendor/tightenco/ziggy"
+      ]
     },
-    "types": ["vite/client", "unplugin-vue-define-options/macros-global", "@microsoft/microsoft-graph-types", "vitest/globals"],
+    "types": [
+      "vite/client",
+      "unplugin-vue-define-options/macros-global",
+      "@microsoft/microsoft-graph-types",
+      "vitest/globals"
+    ],
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
@@ -29,5 +39,9 @@
     // Enforce using `import type` instead of `import` for types
     "importsNotUsedAsValues": "error"
   },
-  "exclude": ["./node_modules/**/*", "./public/**/*", "**/*.stories.ts"]
+  "exclude": [
+    "./node_modules/**/*",
+    "./public/**/*",
+    "**/*.stories.ts"
+  ]
 }

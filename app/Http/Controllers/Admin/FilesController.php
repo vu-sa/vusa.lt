@@ -7,7 +7,7 @@ use App\Models\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
-use Intervention\Image\Facades\Image;
+use Intervention\Image\Laravel\Facades\Image;
 
 class FilesController extends LaravelResourceController
 {
@@ -140,12 +140,9 @@ class FilesController extends LaravelResourceController
         $data = $request->file()['file'] ?? $request->image;
         $originalName = isset($request->file()['file']) ? $request->file()['file']->getClientOriginalName() : $request->name;
 
-        $image = Image::make($data)->orientate();
+        $image = Image::read($data);
 
-        $image->resize(1200, null, function ($constraint) {
-            $constraint->aspectRatio();
-            $constraint->upsize();
-        });
+        $image->scaleDown(width: 1200);
 
         $path = (string) $request->input('path');
 

@@ -1,14 +1,15 @@
 declare namespace App.Entities {
-  export type AgendaItem = App.Models.Pivots.AgendaItem;
-  export type Banner = App.Models.Banner;
-  export type Calendar = App.Models.Calendar;
-  export type Category = App.Models.Category;
-  export type ChangelogItem = App.Models.ChangelogItem;
-  export type Comment = App.Models.Comment;
-  export interface Contact extends App.Models.Contact {
-    comments: Array<App.Models.Comment>;
+  export type AgendaItem = models.AgendaItem;
+  export type Banner = models.Banner;
+  export type Calendar = models.Calendar;
+  export type Category = models.Category;
+  export type ChangelogItem = models.ChangelogItem;
+  export type Comment = models.Comment;
+  export interface Contact extends models.Contact {
+    comments: Array<models.Comment>;
   }
-  export interface Doing extends Omit<App.Models.Doing, "state"> {
+
+  export interface Doing extends Omit<models.Doing, "state"> {
     state:
       | "draft"
       | "pending_changes"
@@ -19,27 +20,27 @@ declare namespace App.Entities {
       | "completed"
       | "cancelled";
   }
-  export type Dutiable = App.Models.Pivots.Dutiable;
+  export type Dutiable = models.Dutiable;
 
-  export interface Duty extends App.Models.Duty {
-    roles?: Array<App.Models.Role> | null;
+  export type Duty = models.Duty & {
+    roles?: Array<models.Role> | null;
     roles_count?: number | null;
   }
 
-  export type Goal = App.Models.Goal;
-  export type GoalGroup = App.Models.GoalGroup;
-  export type GoalMatter = App.Models.Pivots.GoalMatter;
-  export type Institution = App.Models.Institution;
-  export type MainPage = App.Models.MainPage;
-  export type Matter = App.Models.Matter;
-  export interface Media extends App.Models.Media {
-    original_url?: string;
-  }
+  export type Goal = models.Goal;
+  export type GoalGroup = models.GoalGroup;
+  export type GoalMatter = models.GoalMatter;
+  export type Institution = models.Institution;
+  export type MainPage = models.MainPage;
+  export type Matter = models.Matter;
+  // export interface Media extends models.Media {
+  //   original_url?: string;
+  // }
 
-  export type Meeting = App.Models.Meeting;
+  export type Meeting = models.Meeting;
 
-  export type Navigation = App.Models.Navigation;
-  export type News = App.Models.News;
+  export type Navigation = models.Navigation;
+  export type News = models.News;
 
   export interface Notification<T> {
     created_at: string;
@@ -52,26 +53,26 @@ declare namespace App.Entities {
     updated_at: string;
   }
 
-  export type Padalinys = App.Models.Padalinys;
-  export type Page = App.Models.Page;
-  export type Permission = App.Models.Permission;
-  export type Registration = App.Models.Registration;
-  export type RegistrationForm = App.Models.RegistrationForm;
-  export type Relationship = App.Models.Relationship;
-  export type Relationshipable = App.Models.Pivots.Relationshipable;
-  export interface Reservation
-    extends Omit<App.Models.Reservation, "resources" | "users"> {
-    comments?: Array<App.Models.Comment> | null;
+  export type Padalinys = models.Padalinys;
+  export type Page = models.Page;
+  export type Permission = models.Permission;
+  export type Registration = models.Registration;
+  export type RegistrationForm = models.RegistrationForm;
+  export type Relationship = models.Relationship;
+  export type Relationshipable = models.Relationshipable;
+  export type Reservation =
+    Omit<models.Reservation, "resources" | "users"> & {
+    comments?: Array<models.Comment> | null;
     resources?: Array<App.Entities.Resource> | null;
     users?: Array<App.Entities.User> | null;
   }
-  export interface Resource extends Omit<App.Models.Resource, "is_reservable"> {
+  export type Resource = Omit<models.Resource, "is_reservable"> & {
     is_reservable: 0 | 1;
     pivot?: App.Entities.ReservationResource | null;
     media?: App.Entities.Media[] | null;
   }
-  export interface ReservationResource
-    extends Omit<App.Models.Pivots.ReservationResource, "state"> {
+  export type ReservationResource =
+    Omit<models.ReservationResource, "state"> & {
     state:
       | "created"
       | "reserved"
@@ -79,24 +80,24 @@ declare namespace App.Entities {
       | "returned"
       | "rejected"
       | "cancelled";
-    comments?: Array<App.Models.Comment> | [];
+    comments?: Array<models.Comment> | [];
   }
-  export type Role = App.Models.Role;
-  export type SaziningaiExam = App.Models.SaziningaiExam;
-  export type SaziningaiExamFlow = App.Models.SaziningaiExamFlow;
-  export type SaziningaiExamObserver = App.Models.SaziningaiExamObserver;
-  export type SharepointFile = App.Models.SharepointFile;
-  export type SharepointFileable = App.Models.Pivots.SharepointFileable;
-  export type Tag = App.Models.Tag;
-  export type Task = App.Models.Task;
-  export type Type = App.Models.Type;
+  export type Role = models.Role;
+  export type SaziningaiExam = models.SaziningaiExam;
+  export type SaziningaiExamFlow = models.SaziningaiExamFlow;
+  export type SaziningaiExamObserver = models.SaziningaiExamObserver;
+  export type SharepointFile = models.SharepointFile;
+  export type SharepointFileable = models.SharepointFileable;
+  export type Tag = models.Tag;
+  export type Task = models.Task;
+  export type Type = models.Type;
 
-  export interface User
-    extends Omit<App.Models.User, "padaliniai" | "reservations"> {
-    padaliniai?: Array<App.Models.Padalinys> | null;
+  export type User =
+    Omit<models.User, "padaliniai" | "reservations"> & {
+    padaliniai?: Array<models.Padalinys> | null;
     reservations?: Array<App.Entities.Reservation> | null;
-    roles?: Array<App.Models.Role> | null;
+    roles?: Array<models.Role> | null;
     roles_count?: number | null;
-    pivot?: App.Models.Pivots.Dutiable | null;
+    pivot?: models.Dutiable | null;
   }
 }

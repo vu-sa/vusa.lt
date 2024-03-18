@@ -42,7 +42,8 @@ export type ResourceEditType = Omit<
 > & {
   name: Record<"lt" | "en", string>;
   description: Record<"lt" | "en", string>;
-  media: App.Models.Media[];
+  media: Record<string, never>[];
+  // media: models.Media[];
 };
 
 const props = defineProps<{

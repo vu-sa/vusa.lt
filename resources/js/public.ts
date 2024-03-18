@@ -1,7 +1,7 @@
 import "../css/app.css";
 
 import { type DefineComponent, createApp, h } from "vue";
-import { ZiggyVue } from "../../vendor/tightenco/ziggy/src/js/vue.js";
+import { ZiggyVue } from 'ziggy-js'
 import { createInertiaApp } from "@inertiajs/vue3";
 import { defineAsyncComponent } from "vue";
 import { i18nVue } from "laravel-vue-i18n";
