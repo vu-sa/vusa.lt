@@ -75,6 +75,7 @@ import { useDark, useStorage } from "@vueuse/core";
 import BannerCarousel from "../FullWidth/BannerCarousel.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import MainNavigation from "@/Components/Public/Layouts/MainNavigation.vue";
+import { usePage } from "@inertiajs/vue3";
 
 const isDark = useDark();
 
@@ -92,11 +93,11 @@ const themeOverrides = {
 };
 
 const ConsentCard = defineAsyncComponent(
-  () => import("@/Components/Public/ConsentCard.vue"),
+  () => import("@/Components/Public/ConsentCard.vue")
 );
 
 const Footer = defineAsyncComponent(
-  () => import("@/Components/Public/FullWidth/SiteFooter.vue"),
+  () => import("@/Components/Public/FullWidth/SiteFooter.vue")
 );
 
 const cookieConsent = useStorage("cookie-consent", false);
@@ -112,6 +113,9 @@ onMounted(() => {
     (d.body || d.head).appendChild(s);
   })(document);
 
+  var lang = usePage().props.app.locale;
+
+  var Tawk_SRC = lang == "lt" ? "default" : "1foc6rga3";
   var Tawk_API = Tawk_API || {},
     Tawk_LoadStart = new Date();
 
@@ -119,7 +123,7 @@ onMounted(() => {
     let s1 = document.createElement("script"),
       s0 = document.getElementsByTagName("script")[0];
     s1.async = true;
-    s1.src = "https://embed.tawk.to/5f71b135f0e7167d00145612/default";
+    s1.src = `https://embed.tawk.to/5f71b135f0e7167d00145612/${Tawk_SRC}`;
     s1.charset = "UTF-8";
     s1.setAttribute("crossorigin", "*");
     s0.parentNode?.insertBefore(s1, s0);
