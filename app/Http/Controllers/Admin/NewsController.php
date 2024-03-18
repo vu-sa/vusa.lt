@@ -86,6 +86,7 @@ class NewsController extends LaravelResourceController
             'permalink' => $request->permalink,
             'short' => $request->short,
             'lang' => $request->lang,
+            'content_id' => $content->id,
             'other_lang_id' => $request->other_lang_id,
             'image' => $request->image,
             'image_author' => $request->image_author,
