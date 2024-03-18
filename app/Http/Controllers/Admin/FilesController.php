@@ -2,15 +2,27 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller as Controller;
+use App\Http\Controllers\LaravelResourceController;
+use App\Models\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Intervention\Image\Facades\Image;
 
-class FilesController extends Controller
+class FilesController extends LaravelResourceController
 {
-    // TODO: add authorization and just do something with whole this section
+    protected function getFilesFromStorage($path)
+    {
+        $directories = Storage::directories($path);
+        $files = Storage::files($path);
+
+        return [
+            $files,
+            $directories,
+            $path,
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -18,17 +30,63 @@ class FilesController extends Controller
      */
     public function index(Request $request)
     {
-        $currentDirectory = $request->currentPath ?? 'public/files';
+        $path = $request->path ?? 'public/files';
 
-        $directories = Storage::directories($currentDirectory);
-        $files = Storage::files($currentDirectory);
+        //# If path doesn't have public/files in it, change it to public/files
 
-        // dd($files, $directories);
+        if (! str_contains($path, 'public/files')) {
+            $path = 'public/files';
+        }
+
+        // Check if can view directory
+        if (! $request->user()->can('viewAny', [File::class, $path, $this->authorizer])) {
+
+            // If not, redirect to padaliniai/{padalinys}
+            if ($this->authorizer->getPadaliniai()->count() > 0) {
+                $path = 'public/files/padaliniai/vusa'.$this->authorizer->getPadaliniai()->first()->alias;
+            } else {
+                // Redirect to dashboard home
+                return redirect()->route('dashboard');
+            }
+        }
+
+        [$files, $directories, $currentDirectory] = $this->getFilesFromStorage($path);
 
         return Inertia::render('Admin/Files/Index', [
             'files' => $files,
             'directories' => $directories,
-            'currentPath' => $currentDirectory,
+            'path' => $currentDirectory,
+        ]);
+    }
+
+    public function getFiles(Request $request)
+    {
+        $path = $request->path ?? 'public/files';
+
+        if (! str_contains($path, 'public/files')) {
+            $path = 'public/files';
+        }
+
+        // Check if can view directory
+        if (! $request->user()->can('viewAny', [File::class, $path, $this->authorizer])) {
+
+            // If not, redirect to padaliniai/{padalinys}
+            if ($this->authorizer->getPadaliniai()->count() > 0) {
+                $path = 'public/files/padaliniai/vusa'.$this->authorizer->getPadaliniai()->first()->alias;
+            } else {
+                // Return error response
+                return response()->json([
+                    'error' => 'You do not have permission to view this directory.',
+                ], 403);
+            }
+        }
+
+        [$files, $directories, $currentDirectory] = $this->getFilesFromStorage($path);
+
+        return response()->json([
+            'files' => $files,
+            'directories' => $directories,
+            'path' => $currentDirectory,
         ]);
     }
 
@@ -50,51 +108,29 @@ class FilesController extends Controller
 
         $path = $request->input('path');
 
-        // dd($file['file'], $path);
-
-        // add file to storage
-        $file->storeAs($path, $file->getClientOriginalName());
+        // Check if file exists, if so, add timestamp to filename
+        if (Storage::exists($path.'/'.$file->getClientOriginalName())) {
+            $file->storeAs($path, time().'_'.$file->getClientOriginalName());
+        } else {
+            $file->storeAs($path, $file->getClientOriginalName());
+        }
 
         // return redirect to files index
         return back();
     }
 
-    public function searchForFiles(Request $request)
+    public function createDirectory(Request $request)
     {
-        $data = $request->collect()['data'];
+        $path = $request->input('path');
+        $name = $request->input('name');
 
-        $currentDirectory = $request->currentPath ?? 'public';
+        // check if directory exists
+        if (! Storage::exists($path.'/'.$name)) {
+            Storage::makeDirectory($path.'/'.$name);
+        }
 
-        $allfiles = Storage::allfiles($currentDirectory);
-
-        // filter files by search term
-        $files = collect($allfiles)->filter(function ($file) use ($data) {
-            // search str_contains with case insensitive
-            return str_contains(strtolower($file), strtolower($data['search']));
-        });
-
-        // dd($files);
-
-        return back()->with('search_other', $files);
-    }
-
-    public function searchForImages(Request $request)
-    {
-        $data = $request->collect()['data'];
-
-        $currentDirectory = $request->currentPath ?? 'public';
-
-        $allfiles = Storage::allfiles($currentDirectory);
-
-        // filter images by search term
-        $images = collect($allfiles)->filter(function ($file) use ($data) {
-            // search str_contains with case insensitive img or png
-            return str_contains(strtolower($file), strtolower($data['search'])) && (str_contains(strtolower($file), '.png') || str_contains(strtolower($file), '.jpg' || str_contains(strtolower($file), '.jpeg')));
-        });
-
-        // dd($images);
-
-        return back()->with('search_other', $images);
+        // return redirect to files index
+        return back();
     }
 
     public function uploadImage(Request $request)
@@ -130,5 +166,36 @@ class FilesController extends Controller
         return response()->json([
             'url' => '/uploads/'.$path.'/'.$originalName,
         ]);
+    }
+
+    public function delete(Request $request)
+    {
+        $path = $request->input('path');
+
+        if (! str_contains($path, 'public/files')) {
+            // Return with error
+            return response()->json([
+                'error' => 'You do not have permission to delete this file.',
+            ], 403);
+        }
+
+        if (! $request->user()->can('delete', [File::class, $path, $this->authorizer])) {
+
+            // If not, redirect to padaliniai/{padalinys}
+            if ($this->authorizer->getPadaliniai()->count() > 0) {
+                $path = 'public/files/padaliniai/vusa'.$this->authorizer->getPadaliniai()->first()->alias;
+            } else {
+                // Redirect to dashboard home
+                return redirect()->route('dashboard');
+            }
+        }
+
+        // check if file exists
+        if (Storage::exists($path)) {
+            Storage::delete($path);
+        }
+
+        // return redirect to files index
+        return back();
     }
 }

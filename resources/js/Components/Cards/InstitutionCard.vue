@@ -22,7 +22,7 @@
             <template #trigger>
               <NButton text size="small" circle @click.stop>
                 <template #icon>
-                  <div class="not-prose">
+                  <div>
                     <UserAvatar :user="$page.props.auth?.user" :size="24" />
                   </div>
                 </template>

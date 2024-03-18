@@ -83,6 +83,7 @@ const formIcons: Record<keyof typeof FormEnum, Component> = {
 };
 
 const otherIcons: Record<keyof typeof OtherIconEnum, Component> = {
+  FILE: DocumentMultiple24Regular,
   HOME: Home24Regular,
   IMAGE: Image24Regular,
   NOTIFICATION: Alert24Regular,

@@ -40,7 +40,7 @@
         :key="institutionType.id"
         class="mb-4 block text-zinc-500"
       >
-        {{ institutionType.title }}
+        {{ $t(institutionType.title) }}
       </small>
       <slot name="more" />
       <div class="mb-5">
@@ -51,13 +51,13 @@
           :tooltip="true"
         >
           <p
-            class="prose prose-sm dark:prose-invert"
+            class="typography leading-6 text-base max-w-[70ch]"
             v-html="institutionDescription"
           />
         </NEllipsis>
         <p
           v-else
-          class="prose prose-sm dark:prose-invert"
+          class="typography leading-6 text-sm max-w-[70ch]"
           v-html="institutionDescription"
         />
       </div>

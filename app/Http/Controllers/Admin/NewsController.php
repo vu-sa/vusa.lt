@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\LaravelResourceController;
+use App\Models\Content;
+use App\Models\ContentPart;
 use App\Models\News;
 use App\Models\Padalinys;
 use App\Services\ModelIndexer;
@@ -57,7 +59,7 @@ class NewsController extends LaravelResourceController
         $request->validate([
             'title' => 'required',
             'permalink' => 'required',
-            'text' => 'required',
+            'content.parts' => 'required',
             'lang' => 'required',
             'image' => 'required',
             'publish_time' => 'required',
@@ -73,10 +75,15 @@ class NewsController extends LaravelResourceController
             $padalinys_id = $this->authorizer->permissableDuties->first()->padaliniai->first()->id;
         }
 
+        $content = new Content();
+
+        $content->save();
+
+        $content->parts()->createMany($request->content['parts']);
+
         News::create([
             'title' => $request->title,
             'permalink' => $request->permalink,
-            'text' => $request->text,
             'short' => $request->short,
             'lang' => $request->lang,
             'other_lang_id' => $request->other_lang_id,
@@ -108,7 +115,7 @@ class NewsController extends LaravelResourceController
                 'id' => $news->id,
                 'title' => $news->title,
                 'permalink' => $news->permalink,
-                'text' => $news->text,
+                'content' => $news->content,
                 'lang' => $news->lang,
                 'other_lang_id' => $news->other_language_news?->id,
                 'category' => $news->category,
@@ -135,7 +142,26 @@ class NewsController extends LaravelResourceController
 
         $other_lang_page = News::find($news->other_lang_id);
 
-        $news->update($request->only('title', 'text', 'lang', 'other_lang_id', 'draft', 'short', 'image', 'image_author', 'publish_time'));
+        $news->update($request->only('title', 'lang', 'other_lang_id', 'draft', 'short', 'image', 'image_author', 'publish_time'));
+
+        $content = Content::query()->find($news->content->id);
+
+        foreach ($request->content['parts'] as $key => $part) {
+            $id = $part['id'] ?? null;
+
+            $model = ContentPart::query()->findOrNew($id);
+
+            $model->content_id = $content->id;
+            $model->type = $part['type'];
+            $model->json_content = $part['json_content'];
+            $model->options = $part['options'] ?? null;
+            $model->order = $key;
+
+            $model->save();
+        }
+
+        // Remove non-existing parts
+        $content->parts()->whereNotIn('id', collect($request->content['parts'])->pluck('id'))->delete();
 
         // update other lang id page
         if ($request->other_lang_id) {
@@ -148,7 +174,7 @@ class NewsController extends LaravelResourceController
             $other_lang_page->save();
         }
 
-        return back()->with('success', 'Naujiena sėkmingai atnaujinta!');
+        return back()->with('success', 'Naujiena sėkmingai atnaujinta!')->with('data', $news->load('content'));
     }
 
     /**

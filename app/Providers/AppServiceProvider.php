@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Http\Middleware\TrimStrings;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Spatie\Translatable\Facades\Translatable;
@@ -26,6 +28,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         Schema::defaultStringLength(125);
+
+        // Needed for json_content in Content model
+        TrimStrings::skipWhen(function (Request $request) {
+            return $request->is('mano/*');
+        });
 
         Translatable::fallback(
             fallbackLocale: 'lt'

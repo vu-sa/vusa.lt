@@ -8,7 +8,7 @@
     <img
       v-if="imageUrl"
       :src="imageUrl"
-      class="h-44 w-full rounded-t-md object-cover xl:rounded-l-md xl:rounded-tr-none"
+      class="h-full w-full rounded-t-md object-cover xl:rounded-l-md xl:rounded-tr-none"
       loading="lazy"
       style="object-position: 50% 25%"
       :alt="contact.name"

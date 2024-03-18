@@ -4,7 +4,7 @@
     <ShapeDivider1
       class="absolute -bottom-2 z-10 rotate-180 lg:-bottom-1"
     ></ShapeDivider1>
-    <a href="/ataskaita-2022" target="_blank">
+    <a href="https://ataskaita2023.vusa.lt" target="_blank">
       <img
         src="/images/photos/VU SA 2023.jpg"
         loading="lazy"
@@ -14,14 +14,14 @@
     </a>
   </div>
 
-  <div class="prose-sm dark:prose-invert lg:px-32">
+  <div class="typography lg:px-32">
     <h2
-      class="my-4 text-2xl font-bold text-gray-900 duration-200 hover:text-vusa-red dark:text-zinc-50 lg:w-4/5 lg:text-3xl"
+      class="my-4 border-0 text-2xl font-bold text-gray-900 duration-200 hover:text-vusa-red dark:text-zinc-50 lg:w-4/5 lg:text-3xl"
     >
       <a
         class="flex w-fit flex-row items-center gap-2"
         style="text-decoration: none"
-        href="https://www.vusa.lt/ataskaita-2023"
+        href="https://ataskaita2023.vusa.lt"
         target="_blank"
         ><template v-if="$page.props.app.locale === 'lt'"
           >Ką veikė VU SA 2022–2023 metais?</template
@@ -34,7 +34,7 @@
     </h2>
     <div class="space-between flex flex-row">
       <p
-        class="prose prose-sm mb-4 text-sm dark:prose-invert lg:max-w-[80ch] lg:text-base"
+        class="mb-4 leading-6 lg:max-w-[80ch] text-base"
       >
         <template v-if="$page.props.app.locale === 'lt'">
           Ataskaitos knygutė – kiekvienais metais skelbiama VU SA nuveiktų

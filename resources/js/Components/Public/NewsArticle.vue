@@ -12,7 +12,7 @@
       <div class="mx-2">@</div>
       <slot name="time"></slot>
     </div>
-    <h1 class="col-span-4 text-center text-gray-900 dark:text-white">
+    <h1 class="col-span-4 text-center mb-2 mt-0">
       <slot name="title"></slot>
     </h1>
     <slot name="image"></slot>

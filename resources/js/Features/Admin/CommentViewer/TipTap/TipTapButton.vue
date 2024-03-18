@@ -5,7 +5,7 @@
     @click="callback"
   >
     <template #icon>
-      <NIcon :component="icon"></NIcon>
+      <NIcon :component="icon" />
     </template>
   </NButton>
 </template>

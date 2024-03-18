@@ -1,38 +1,23 @@
 <template>
   <section
-    class="z-5 relative grid h-10 w-screen grid-cols-[min-content,_1fr,_40px] bg-neutral-50 px-8 shadow-sm dark:border-b dark:border-zinc-800 dark:bg-zinc-900 md:px-8 lg:px-16 xl:px-28"
-  >
-    <Link
-      href="/"
-      class="my-auto mr-6 whitespace-nowrap text-sm font-bold text-gray-900 dark:text-gray-200 dark:hover:text-vusa-red"
-      >{{
-        $page.props.padalinys?.shortname
-          ? $t($page.props.padalinys?.shortname)
-          : "VU SA"
-      }}
+    class="z-5 relative grid h-9 grid-cols-[min-content,_1fr,_40px] rounded-lg border border-zinc-200/70 bg-stone-50 px-12 dark:border-zinc-800/30 dark:bg-[rgb(23,_23,_25)] md:px-12 lg:px-16 xl:px-28">
+    <Link href="/"
+      class="my-auto mr-6 whitespace-nowrap text-sm font-bold text-gray-900 dark:text-gray-200 dark:hover:text-vusa-red">
+    {{
+      $page.props.padalinys?.shortname
+      ? $t($page.props.padalinys?.shortname)
+      : "VU SA"
+    }}
     </Link>
-    <nav
-      ref="secondMenuScrollSection"
-      class="mr-2 inline-flex gap-4 overflow-x-auto whitespace-nowrap py-3"
-    >
-      <MainPageLink
-        v-for="link in $page.props.padalinys?.links"
-        :key="link?.id"
-        :main-page-link="link"
-      ></MainPageLink>
+    <nav ref="secondMenuScrollSection" class="mr-2 inline-flex items-center gap-4 overflow-hidden whitespace-nowrap">
+      <MainPageLink v-for="link in $page.props.padalinys?.links" :key="link?.id" :main-page-link="link" />
     </nav>
     <div class="my-auto">
       <FadeTransition appear>
-        <NButton
-          v-if="arrivedState.right === false"
-          quaternary
-          circle
-          size="tiny"
-          class="right-0 top-0 my-auto"
-          @click="scrollSecondMenuToRight"
-        >
+        <NButton v-if="arrivedState.right === false" quaternary circle size="tiny" class="right-0 top-0 my-auto"
+          @click="scrollSecondMenuToRight">
           <template #icon>
-            <NIcon :component="ChevronRight16Regular"></NIcon>
+            <NIcon :component="ChevronRight16Regular" />
           </template>
         </NButton>
       </FadeTransition>

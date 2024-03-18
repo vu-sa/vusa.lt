@@ -6,6 +6,7 @@ use App\Http\Controllers\PublicController;
 use App\Models\News;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
+use Tiptap\Editor;
 
 class NewsController extends PublicController
 {
@@ -32,9 +33,17 @@ class NewsController extends PublicController
             ]
         ) : null);
 
+        // check if page->content->parts has type 'tiptap', if yes, use tiptap parser to get first part content (maybe enough for description)
+
+        $firstTiptapElement = $news->content->parts->filter(function ($part) {
+            return $part->type === 'tiptap';
+        })->first();
+
+        $seoDescription = $firstTiptapElement ? (new Editor)->setContent($firstTiptapElement->json_content)->getText() : null;
+
         return Inertia::render('Public/NewsPage', [
             'article' => [
-                ...$news->only('id', 'title', 'short', 'text', 'lang', 'other_lang_id', 'permalink', 'publish_time', 'category', 'content', 'image_author', 'important', 'main_points', 'read_more'),
+                ...$news->only('id', 'title', 'short', 'contents', 'lang', 'other_lang_id', 'permalink', 'publish_time', 'category', 'content', 'image_author', 'important', 'main_points', 'read_more'),
                 'tags' => $news->tags->map(function ($tag) {
                     return [
                         'id' => $tag->id,
@@ -46,7 +55,7 @@ class NewsController extends PublicController
             ],
         ])->withViewData([
             'title' => $news->title.' | '.$this->padalinys->shortname,
-            'description' => $news->short ? strip_tags($news->short) : strip_tags($news->text),
+            'description' => $news->short ? strip_tags($news->short) : $seoDescription,
             'image' => $image,
         ]);
     }

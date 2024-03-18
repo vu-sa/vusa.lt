@@ -21,7 +21,7 @@
         </NFormItem>
 
         <NFormItem label="Aprašymas" :span="6">
-          <OriginalTipTap
+          <OriginalTipTap html
             v-model="form.description"
             placeholder="Ilgas aprašymas..."
             :search-files="$page.props.search.other"

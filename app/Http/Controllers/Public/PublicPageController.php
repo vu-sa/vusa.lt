@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\PublicController;
 use App\Models\Calendar;
-use App\Models\Institution;
 use App\Models\Navigation;
 use App\Models\News;
 use App\Models\Padalinys;
@@ -20,6 +19,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Spatie\CalendarLinks\Link;
+use Tiptap\Editor;
 
 class PublicPageController extends PublicController
 {
@@ -32,16 +32,19 @@ class PublicPageController extends PublicController
             return null;
         }
 
-        $googleLink = Link::create($locale === 'en' ? ($calendarEvent?->extra_attributes['en']['title'] ?? $calendarEvent->title) : $calendarEvent->title,
+        $googleLink = Link::create(
+            $locale === 'en' ? ($calendarEvent?->extra_attributes['en']['title'] ?? $calendarEvent->title) : $calendarEvent->title,
             DateTime::createFromFormat('Y-m-d H:i:s', $calendarEvent->date),
             $calendarEvent->end_date
                 ? DateTime::createFromFormat('Y-m-d H:i:s', $calendarEvent->end_date)
-                : Carbon::parse($calendarEvent->date)->addHour()->toDateTime())
+                : Carbon::parse($calendarEvent->date)->addHour()->toDateTime()
+        )
             ->description($locale === 'en'
-            ? (strip_tags(
-                ($calendarEvent?->extra_attributes['en']['description'] ?? $calendarEvent->description)
-                ?? $calendarEvent->description))
-            : strip_tags($calendarEvent->description))
+                ? (strip_tags(
+                    ($calendarEvent?->extra_attributes['en']['description'] ?? $calendarEvent->description)
+                        ?? $calendarEvent->description
+                ))
+                : strip_tags($calendarEvent->description))
             ->address($calendarEvent->location ?? '')
             ->google();
 
@@ -77,11 +80,11 @@ class PublicPageController extends PublicController
         $calendar = $this->getEventsForCalendar();
 
         // get 4 upcoming events by end_date if it exists, otherwise by date
-        $upcoming4Events = $calendar->filter(function ($event) {
+        $upcomingEvents = $calendar->filter(function ($event) {
             return $event->end_date ? $event->end_date > date('Y-m-d H:i:s') : $event->date > date('Y-m-d H:i:s');
         })->sortBy(function ($event) {
             return $event->date;
-        }, SORT_DESC)->take(4)->values()->load('padalinys:id,alias,fullname,shortname');
+        }, SORT_DESC)->take(8)->values()->load('padalinys:id,alias,fullname,shortname');
 
         return Inertia::render('Public/HomePage', [
             'news' => $news->map(function ($news) {
@@ -113,13 +116,14 @@ class PublicPageController extends PublicController
                     'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale()),
                 ];
             }),
-            'upcoming4Events' => $upcoming4Events->map(function ($calendar) {
+            'upcomingEvents' => $upcomingEvents->map(function ($calendar) {
                 return [
                     ...$calendar->toArray(),
                     'images' => $calendar->getMedia('images'),
                 ];
             }),
         ])->withViewData([
+            'title' => 'Pagrindinis puslapis',
             'description' => 'Vilniaus universiteto Studentų atstovybė (VU SA) – seniausia ir didžiausia Lietuvoje visuomeninė, ne pelno siekianti, nepolitinė, ekspertinė švietimo organizacija',
         ]);
     }
@@ -158,23 +162,31 @@ class PublicPageController extends PublicController
             ]
         ) : null);
 
+        // check if page->content->parts has type 'tiptap', if yes, use tiptap parser to get first part content (maybe enough for description)
+
+        $firstTiptapElement = $page->content->parts->filter(function ($part) {
+            return $part->type === 'tiptap';
+        })->first();
+
+        $seoDescription = $firstTiptapElement ? (new Editor)->setContent($firstTiptapElement->json_content)->getText() : null;
+
         return Inertia::render('Public/ContentPage', [
             'navigationItemId' => $navigation_item?->id,
             'page' => [
-                'id' => $page->id,
-                'title' => $page->title,
-                'short' => $page->short,
-                'text' => $page->text,
-                'lang' => $page->lang,
-                'other_lang_id' => $page->other_lang_id,
-                'permalink' => $page->permalink,
-                'category' => $page->category,
-                'padalinys' => $page->padalinys->shortname,
+                ...$page->only('id', 'title', 'content', 'lang', 'category', 'padalinys', 'permalink', 'other_lang_id'),
+                // TODO: It's possible to parse tiptap elements in server, but doesn't parse correctly all the time. Will debug later.
+                // 'content' => [
+                //     ...$page->content->toArray(),
+                //     'parts' => $page->content->parts->map(function ($part) {
+                //         return [
+                //             ...$part->parseTipTapElements()->toArray(),
+                //         ];
+                //     }),
+                // ],
             ],
         ])->withViewData([
             'title' => $page->title,
-            // truncate text to first sentence
-            'description' => Str::limit(strip_tags($page->text), 150),
+            'description' => Str::limit($seoDescription, 150),
         ]);
     }
 
@@ -278,13 +290,13 @@ class PublicPageController extends PublicController
     public function pkp()
     {
         $typeSlug = 'pkp';
-        $institutionService = new  InstitutionService();
+        $institutionService = new InstitutionService();
         $this->getBanners();
         $this->getPadalinysLinks();
         $this->shareOtherLangURL('pkp');
 
         $institutions = $institutionService->getInstitutionsByTypeSlug($typeSlug);
-        
+
         return Inertia::render('Public/PKP', ['institutions' => $institutions])->withViewData([
             'title' => 'Programos, klubai ir projektai',
         ]);
@@ -309,7 +321,8 @@ class PublicPageController extends PublicController
                 'images' => $calendar->getMedia('images'),
             ],
             'calendar' => $this->getEventsForCalendar(),
-            'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale())])
+            'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale()),
+        ])
             ->withViewData([
                 'title' => $calendar->title,
                 'description' => strip_tags($calendar->description),

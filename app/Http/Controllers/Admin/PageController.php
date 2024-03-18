@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\LaravelResourceController;
+use App\Models\Content;
+use App\Models\ContentPart;
 use App\Models\Padalinys;
 use App\Models\Page;
 use App\Services\ModelIndexer;
@@ -56,7 +58,7 @@ class PageController extends LaravelResourceController
 
         $request->validate([
             'title' => 'required|string|max:255',
-            'text' => 'required|string',
+            'content.parts' => 'required',
             'lang' => 'required|string',
             'permalink' => 'required|string|max:255|unique:pages',
         ]);
@@ -70,11 +72,17 @@ class PageController extends LaravelResourceController
             $padalinys_id = $this->authorizer->permissableDuties->first()->padaliniai->first()->id;
         }
 
-        Page::create([
+        $content = new Content();
+
+        $content->save();
+
+        $content->parts()->createMany($request->content['parts']);
+
+        Page::query()->create([
             'title' => $request->title,
+            'content_id' => $content->id,
             'permalink' => $request->permalink,
             'lang' => $request->lang,
-            'text' => $request->text,
             'other_lang_id' => $request->other_lang_id,
             'padalinys_id' => $padalinys_id,
         ]);
@@ -97,16 +105,8 @@ class PageController extends LaravelResourceController
 
         return Inertia::render('Admin/Content/EditPage', [
             'page' => [
-                'id' => $page->id,
-                'title' => $page->title,
-                'permalink' => $page->permalink,
-                'text' => $page->text,
-                'lang' => $page->lang,
+                ...$page->only('id', 'title', 'content', 'permalink', 'text', 'lang', 'category', 'padalinys_id', 'is_active', 'aside'),
                 'other_lang_id' => $page->getOtherLanguage()?->only('id')['id'],
-                'category' => $page->category,
-                'padalinys' => $page->padalinys,
-                'is_active' => $page->is_active,
-                'aside' => $page->aside,
             ],
             'otherLangPages' => $other_lang_pages,
         ]);
@@ -123,7 +123,37 @@ class PageController extends LaravelResourceController
 
         $other_lang_page = Page::find($page->other_lang_id);
 
-        $page->update($request->only('title', 'text', 'lang', 'other_lang_id'));
+        $page->update($request->only('title', 'lang', 'other_lang_id'));
+
+        $content = Content::query()->find($page->content->id);
+
+        // Collect and remove values with no ids
+        $existingParts = collect($request->content['parts'])->filter(function ($part) {
+            return isset($part['id']);
+        });
+
+        // Remove non-existing parts
+        $content->parts()->whereNotIn('id', $existingParts->pluck('id'))->delete();
+
+        foreach ($request->content['parts'] as $key => $part) {
+
+            // Continue if part is null
+            if (is_null($part)) {
+                continue;
+            }
+
+            $id = $part['id'] ?? null;
+
+            $model = ContentPart::query()->findOrNew($id);
+
+            $model->content_id = $content->id;
+            $model->type = $part['type'];
+            $model->json_content = $part['json_content'];
+            $model->options = $part['options'] ?? null;
+            $model->order = $key;
+
+            $model->save();
+        }
 
         // update other lang id page
         if ($request->other_lang_id) {
@@ -136,7 +166,7 @@ class PageController extends LaravelResourceController
             $other_lang_page->save();
         }
 
-        return back()->with('success', 'Puslapis atnaujintas!');
+        return back()->with('success', 'Puslapis atnaujintas!')->with('data', $page->load('content'));
     }
 
     /**

@@ -34,6 +34,11 @@ class Page extends Model
         return $this->belongsTo(Category::class, 'category_id');
     }
 
+    public function content()
+    {
+        return $this->belongsTo(Content::class);
+    }
+
     public function toSearchableArray()
     {
         $array = $this->toArray();

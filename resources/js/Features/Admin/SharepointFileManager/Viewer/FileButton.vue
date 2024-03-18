@@ -1,112 +1,65 @@
 <template>
   <div :class="[small ? 'w-28' : 'w-48']">
-    <button
-      role="button"
-      class="grid w-full cursor-pointer grid-rows-[7fr_4fr] items-center rounded-lg border p-0 shadow-sm transition hover:shadow-md focus:outline-none focus:ring focus:ring-vusa-yellow dark:border-zinc-900 dark:bg-zinc-900 dark:focus:ring-vusa-red"
-      :class="gradientClasses.concat([small ? 'h-28' : 'h-48'])"
-      @click="handleFileSelect(file)"
-      @dblclick="handleFileDblClick(file)"
-    >
-      <div
-        class="align-center flex h-full justify-center overflow-hidden rounded-t-md"
-      >
+    <button v-bind="$attrs" role="button" :class="[small ? 'h-28' : 'h-48']"
+      class="grid w-full cursor-pointer grid-rows-[7fr_4fr] items-center rounded-lg border p-0 shadow-sm transition hover:shadow-md focus:outline-none focus:ring focus:ring-vusa-yellow dark:border-zinc-900 dark:bg-zinc-900 dark:focus:ring-vusa-red">
+      <div class="align-center flex h-full justify-center overflow-hidden rounded-t-md">
         <FadeTransition mode="out-in">
-          <img
-            v-if="file.thumbnails?.[0]?.large?.url && showThumbnail"
-            class="h-full w-full rounded-t-md object-cover object-top"
-            :src="file.thumbnails?.[0]?.large.url"
-          />
-          <NIcon
-            v-else
-            class="my-auto text-zinc-700 dark:text-zinc-200"
-            :size="small ? 30 : 56"
-            :component="fileTypeIcon"
-          ></NIcon>
+          <img v-if="thumbnail && showThumbnail" class="size-full rounded-t-md object-cover object-top" :src="thumbnail">
+          <NIcon v-else class="my-auto text-zinc-700 dark:text-zinc-200" :size="small ? 30 : 56" :component="icon" />
         </FadeTransition>
       </div>
       <div
-        class="flex h-full w-full flex-col justify-center overflow-auto rounded-b-md bg-white text-zinc-800 dark:bg-zinc-900 dark:text-white"
-      >
-        <span
-          :class="[small ? 'text-xs' : 'text-sm']"
-          class="line-clamp-2 break-words px-2"
-          >{{ file.name }}</span
-        >
+        class="flex size-full flex-col justify-center overflow-auto rounded-b-md bg-white text-zinc-700 dark:bg-zinc-900 dark:text-white">
+        <span :class="[small ? 'text-xs' : 'text-sm']" class="line-clamp-2 break-words px-3">{{ name }}</span>
       </div>
     </button>
-    <span
-      class="m-2 mx-auto line-clamp-1 w-4/5 text-center text-xs text-zinc-400"
-      >{{ file.listItem?.fields?.properties?.Type }}</span
-    >
+    <span v-if="$slots.belowButton" class="m-2 mx-auto line-clamp-1 w-4/5 text-center text-xs text-zinc-400">
+      <slot name="below-button" />
+    </span>
   </div>
 </template>
 
 <script setup lang="ts">
-import { File, FilePdf, FileWord, Folder } from "@vicons/fa";
+import { File, FileExcel, FilePdf, FileWord, Folder } from "@vicons/fa";
 import { NIcon } from "naive-ui";
-import { computed, inject } from "vue";
+import { computed } from "vue";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
-import type { DriveItem } from "@microsoft/microsoft-graph-types";
 
 const props = defineProps<{
-  file: DriveItem;
+  iconString: 'folder' | 'file' | 'file-pdf' | 'file-word' | 'file-excel';
+  name: string;
   small?: boolean;
-  showThumbnail: boolean;
+  showThumbnail?: boolean;
+  thumbnail?: string;
 }>();
 
-const gradientClasses = computed(() => {
-  if (
-    props.file.listItem?.fields?.properties?.Type ===
-    "Veiklą reglamentuojantys dokumentai"
-  ) {
-    return ["from-zinc-200", "bg-gradient-to-b"];
-  }
 
-  if (props.file.listItem?.fields?.properties?.Type === "Metodinė medžiaga") {
-    return [
-      "from-vusa-yellow/30",
-      "to-white",
-      "dark:from-vusa-red/60",
-      "dark:to-zinc-700/80",
-      "bg-gradient-to-b",
-    ];
-  }
-
-  return ["dark:from-zinc-800/90", "dark:to-zinc-700/90"];
-});
-
-const fileTypeIcon = computed(() => {
-  if (props.file.folder) {
+const icon = computed(() => {
+  if (props.iconString === 'folder') {
     return Folder;
   }
 
   // if word file
-  if (props.file.file === undefined) {
+  if (props.iconString === 'file') {
     return File;
   }
 
   if (
-    props.file.file?.mimeType ===
-    "application/vnd.openxmlformats-officefile.wordprocessingml.file"
+    props.iconString === 'file-word'
   ) {
     return FileWord;
   }
 
-  if (props.file.file?.mimeType === "application/pdf") {
+  if (props.iconString === 'file-excel') {
+    return FileExcel;
+  }
+
+  if (props.iconString === 'file-pdf') {
     return FilePdf;
   }
 
   return File;
 });
 
-const handleFileSelect = inject<(file: DriveItem) => void>(
-  "handleFileSelect",
-  () => {},
-);
-
-const handleFileDblClick = inject<(file: DriveItem) => void>(
-  "handleFileDblClick",
-  () => {},
-);
 </script>
