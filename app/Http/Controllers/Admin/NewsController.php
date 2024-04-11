@@ -58,7 +58,7 @@ class NewsController extends LaravelResourceController
 
         $request->validate([
             'title' => 'required',
-            'permalink' => 'required',
+            'permalink' => 'required|unique:news,permalink',
             'content.parts' => 'required',
             'lang' => 'required',
             'image' => 'required',

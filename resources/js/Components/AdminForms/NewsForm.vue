@@ -4,6 +4,9 @@
       <FormElement>
         <template #title>
           {{ $t("forms.context.main_info") }}</template>
+        <template #description>
+          <strong>Nuoroda</strong> susiformuoja automatiškai pagal pavadinimą. Pabandykite pakeisti pavadinimą, jeigu tokia nuoroda jau egzistuoja.
+        </template>
         <NFormItem required :label="$t('forms.fields.title')">
           <NInput v-model:value="form.title" type="text" placeholder="Įrašyti pavadinimą..." />
         </NFormItem>
@@ -133,7 +136,6 @@ if (props.modelRoute == "news.store") {
         .replace(/-+/g, "-")
         .replace(/^-+/, "")
         .replace(/-+$/, "")
-        .substring(0, 30);
     }
   );
 }
