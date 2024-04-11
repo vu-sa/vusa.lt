@@ -19,8 +19,8 @@ class StoreReservationRequest extends ResourceRequest
     {
         $this->merge([
             // check if int, if not, use input
-            'start_time' => is_int($this->input('start_time')) ? Carbon::createFromTimestampMs($this->input('start_time')) : $this->input('start_time'),
-            'end_time' => is_int($this->input('end_time')) ? Carbon::createFromTimestampMs($this->input('end_time')) : $this->input('end_time'),
+            'start_time' => is_int($this->input('start_time')) ? Carbon::createFromTimestampMs($this->input('start_time'), 'Europe/Vilnius') : $this->input('start_time'),
+            'end_time' => is_int($this->input('end_time')) ? Carbon::createFromTimestampMs($this->input('end_time'), 'Europe/Vilnius') : $this->input('end_time'),
         ]);
     }
 

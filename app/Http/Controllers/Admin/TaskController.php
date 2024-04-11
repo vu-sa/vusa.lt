@@ -47,7 +47,7 @@ class TaskController extends LaravelResourceController
         ]);
 
         // change due_date to Carbon object
-        $validated['due_date'] = Carbon::createFromTimestamp($validated['due_date'] / 1000);
+        $validated['due_date'] = Carbon::createFromTimestamp($validated['due_date'] / 1000, 'Europe/Vilnius');
 
         $task->update($validated);
 

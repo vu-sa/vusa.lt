@@ -77,7 +77,7 @@ class CalendarController extends LaravelResourceController
 
         $padalinys_id = null;
 
-        $validated['date'] = Carbon::createFromTimestamp($request->date / 1000)->toDateTime();
+        $validated['date'] = Carbon::createFromTimestamp($request->date / 1000, 'Europe/Vilnius')->toDateTime();
 
         Calendar::create($validated + ['padalinys_id' => $padalinys_id]);
 
@@ -140,7 +140,7 @@ class CalendarController extends LaravelResourceController
             'extra_attributes' => 'array|nullable',
         ]);
 
-        $validated['date'] = Carbon::createFromTimestamp($request->date / 1000)->toDateTime();
+        $validated['date'] = Carbon::createFromTimestamp($request->date / 1000, 'Europe/Vilnius')->toDateTime();
 
         DB::transaction(function () use ($request, $calendar, $validated) {
             $calendar->update($validated);

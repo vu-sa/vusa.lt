@@ -118,7 +118,7 @@ class MeetingController extends LaravelResourceController
             'start_time' => 'required|integer',
         ]);
 
-        $validated['start_time'] = Carbon::createFromTimestamp($validated['start_time'] / 1000)->toDateTime();
+        $validated['start_time'] = Carbon::createFromTimestamp($validated['start_time'] / 1000, 'Europe/Vilnius')->toDateTime();
         $validated['title'] = Carbon::parse($validated['start_time'])->locale('lt-LT')->isoFormat('YYYY MMMM DD [d.] HH.mm [val.]').' posėdis';
 
         $meeting->fill($validated);
