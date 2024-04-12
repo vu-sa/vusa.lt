@@ -126,7 +126,7 @@ class FilesController extends LaravelResourceController
 
         // check if directory exists
         if (! Storage::exists($path.'/'.$name)) {
-            Storage::makeDirectory($path.'/'.$name);
+            Storage::makeDirectory($path.'/'.$name, 0755);
         }
 
         // return redirect to files index
