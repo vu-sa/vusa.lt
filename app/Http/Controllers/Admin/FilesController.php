@@ -124,9 +124,12 @@ class FilesController extends LaravelResourceController
         $path = $request->input('path');
         $name = $request->input('name');
 
+        // Remove 'public' only from the start of the path, because it's already in the 'public' fs path
+        $path = str_replace('public/', '', $path);
+
         // check if directory exists
         if (! Storage::exists($path.'/'.$name)) {
-            Storage::makeDirectory($path.'/'.$name, 0755);
+            Storage::disk('public')->makeDirectory($path.'/'.$name);
         }
 
         // return redirect to files index
