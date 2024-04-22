@@ -5,7 +5,8 @@
         <template #title>
           {{ $t("forms.context.main_info") }}</template>
         <template #description>
-          <strong>Nuoroda</strong> susiformuoja automatiškai pagal pavadinimą. Pabandykite pakeisti pavadinimą, jeigu tokia nuoroda jau egzistuoja.
+          <strong>Nuoroda</strong> susiformuoja automatiškai pagal pavadinimą. Pabandykite pakeisti pavadinimą, jeigu
+          tokia nuoroda jau egzistuoja.
         </template>
         <NFormItem required :label="$t('forms.fields.title')">
           <NInput v-model:value="form.title" type="text" placeholder="Įrašyti pavadinimą..." />
@@ -51,10 +52,14 @@
           Įvadinis tekstas
         </template>
         <template #description>
-          Šiuo metu naudojamas tik paieškos rezultatuose.
+          <p>Šiuo metu naudojamas <strong>tik paieškos rezultatuose</strong>. Maksimalus ženklų skaičius: 200.</p>
         </template>
-        <TipTap disable-tables v-model="form.short" html :search-files="$page.props.search.other" />
+        <TipTap v-model="form.short" disable-tables :max-characters="200" html
+          :search-files="$page.props.search.other" />
       </FormElement>
+      <h4 class="mb-4 text-3xl font-bold">
+        Turinys
+      </h4>
       <RichContentFormElement v-model="form.content.parts" />
       <div class="flex justify-end gap-2">
         <DeleteModelButton v-if="deleteModelRoute" :form="form" :model-route="deleteModelRoute" />

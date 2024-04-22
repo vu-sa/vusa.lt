@@ -157,8 +157,13 @@
       </NButton>
     </div>
     <div class="mt-3 grid grid-cols-[auto,_30px] items-center gap-2 only:mt-0">
-      <EditorContent :editor="editor"
-        class="max-h-96 min-h-24 w-full overflow-y-scroll rounded-md border dark:border-zinc-900/80 dark:bg-zinc-800/70" />
+      <div class="max-h-96  w-full overflow-y-scroll">
+        <EditorContent :editor="editor"
+          class="min-h-24 rounded-md border dark:border-zinc-900/80 dark:bg-zinc-800/70" />
+        <div v-if="editor && maxCharacters" class="mt-4 text-xs text-gray-500 dark:text-gray-400">
+          {{ editor.storage.characterCount.characters() }}
+        </div>
+      </div>
       <div class="flex flex-col gap-2">
         <NButton :type="showToolbar ? 'primary' : 'default'" size="small" @click="showToolbar = !showToolbar">
           <template #icon>
@@ -213,6 +218,7 @@ import {
   NIcon,
 } from "naive-ui";
 import { nextTick, onBeforeUnmount, ref } from "vue";
+import CharacterCount from "@tiptap/extension-character-count";
 import Image from "@tiptap/extension-image";
 import Placeholder from '@tiptap/extension-placeholder'
 import StarterKit from "@tiptap/starter-kit";
@@ -224,16 +230,18 @@ import TipTapLink from "@tiptap/extension-link";
 import UnderlineExtension from "@tiptap/extension-underline";
 import YoutubeExtension from "@tiptap/extension-youtube";
 
+import { CustomHeading } from "./CustomHeading";
+import { maxIndex } from "d3";
 import TipTapButton from "@/Features/Admin/CommentViewer/TipTap/TipTapMarkButton.vue";
 import TipTapMarkButton from "@/Features/Admin/CommentViewer/TipTap/TipTapMarkButton.vue";
 import TiptapImageButton from "./TiptapImageButton.vue";
 import TiptapLinkButton from "./TiptapLinkButton.vue";
 import TiptapYoutubeButton from "./TiptapYoutubeButton.vue";
 import latinize from "latinize";
-import { CustomHeading } from "./CustomHeading";
 
 const props = defineProps<{
   disableTables?: boolean;
+  maxCharacters?: number;
   html?: boolean;
   modelValue: string | Record<string, unknown> | null;
   searchFiles?: Record<string, unknown>;
@@ -255,6 +263,9 @@ const editor = useEditor({
     StarterKit.configure({
       heading: false,
       codeBlock: false
+    }),
+    CharacterCount.configure({
+      limit: props.maxCharacters ?? null,
     }),
     CustomHeading.configure({
       levels: [2, 3],
@@ -307,7 +318,7 @@ function handleUpdate() {
   const innerHeadings = []
   const transaction = editor.value?.state.tr
 
-  function latinizeId (text: string) {
+  function latinizeId(text: string) {
     return latinize(text)
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
@@ -376,7 +387,11 @@ function handleUpdate() {
     height: 0;
   }
 
-  h2, h3, h4, h5, h6 {
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     margin-bottom: 1rem;
   }
 
