@@ -39,6 +39,13 @@ class NewsController extends PublicController
             return $part->type === 'tiptap';
         })->first();
 
+        // Check if empty array
+        // This comes up, when in news creation, user doesn't add any content to tiptap editor
+        // It is initialised as an empty array, and when the ->setContent() method is called, it was throwing an error
+        if ($firstTiptapElement->json_content === []) {
+            $firstTiptapElement = null;
+        }
+
         $seoDescription = $firstTiptapElement ? (new Editor)->setContent($firstTiptapElement->json_content)->getText() : null;
 
         return Inertia::render('Public/NewsPage', [
