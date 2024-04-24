@@ -367,6 +367,18 @@ function handleUpdate() {
     margin: 0.4rem 0 0.4rem 0;
   }
 
+  ul {
+    list-style-type: disc;
+  }
+
+  ol {
+    list-style-type: decimal;
+  }
+
+  ul, ol {
+    padding-left: 1.5rem;
+  }
+
   a {
     color: #bd2835;
     text-decoration: underline;
