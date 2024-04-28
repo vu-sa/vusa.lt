@@ -1,21 +1,19 @@
 <template>
-  <NScrollbar>
-    <NDropdown :disabled="isDisabled"
-      :options="options_padaliniai"
-      size="small"
-      style="overflow: auto; max-height: 600px"
-      :render-label="renderPadalinysLabel"
-      @select="$emit('select:padalinys', $event)"
+  <NDropdown :disabled="isDisabled"
+    :options="options_padaliniai"
+    size="small"
+    style="overflow: auto; max-height: 400px"
+    :render-label="renderPadalinysLabel"
+    @select="$emit('select:padalinys', $event)"
+  >
+    <NButton
+      :disabled="isDisabled"
+      :size="size"
     >
-      <NButton
-        :disabled="isDisabled"
-        :size="size"
-      >
-        {{ padalinys }}
-        <NIcon class="ml-1" size="18" :component="ChevronDown20Regular" />
-      </NButton>
-    </NDropdown>
-  </NScrollbar>
+      {{ padalinys }}
+      <NIcon class="ml-1" size="18" :component="ChevronDown20Regular" />
+    </NButton>
+  </NDropdown>
 </template>
 
 <script setup lang="tsx">
@@ -27,7 +25,6 @@ import {
   NDropdown,
   NEllipsis,
   NIcon,
-  NScrollbar,
 } from "naive-ui";
 import { computed } from "vue";
 import { usePage } from "@inertiajs/vue3";

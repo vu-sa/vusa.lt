@@ -11,7 +11,13 @@ class Navigation extends Model
 
     protected $table = 'navigation';
 
+    protected $guarded = [];
+
     protected $hidden = ['created_at', 'updated_at'];
+
+    protected $casts = [
+        'extra_attributes' => 'array',
+    ];
 
     public function user()
     {

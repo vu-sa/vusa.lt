@@ -193,7 +193,7 @@ class MainPageController extends LaravelResourceController
         return redirect()->route('mainPage.index')->with('success', 'Sėkmingai atnaujinta greitųjų nuorodų tvarka!');
     }
 
-    protected function getMainPageTypeOptions($type)
+    public static function getMainPageTypeOptions($type)
     {
         switch ($type) {
             case 'url':

@@ -2,52 +2,30 @@
   <section class="fixed top-0 z-50 w-full">
     <div class="group relative">
       <nav
-        class="relative z-10 flex h-20 flex-row items-center justify-between gap-4 bg-white px-8 py-4 text-zinc-800 shadow-sm dark:bg-zinc-800 dark:text-white lg:px-12 xl:px-24"
-      >
+        class="relative z-10 grid h-20 grid-cols-[auto,_1fr,_100px] gap-12 bg-white px-6 text-zinc-800 shadow-sm dark:bg-zinc-800 dark:text-white lg:px-12 xl:px-24 2xl:px-36">
         <div class="flex flex-row items-center space-x-4">
-          <!-- Hamburger -->
-          <div v-if="smallerThanLg">
-            <NButton size="small" strong quaternary @click="toggleMenu">
-              <template #icon>
-                <NIcon :component="Navigation24Filled" />
-              </template>
-            </NButton>
-          </div>
-          <SmartLink title="Grįžti į pagrindinį puslapį"
-            :href="`${$page.props.app.url}/${$page.props.app.locale}`"
-            target="_self"
-          >
+          <SmartLink title="Grįžti į pagrindinį puslapį" :href="`${$page.props.app.url}/${$page.props.app.locale}`"
+            target="_self">
             <AppLogo :is-theme-dark="isThemeDark" class="w-24 md:w-32" />
           </SmartLink>
-          <PadalinysSelector
-            :size="smallerThanSm ? 'tiny' : 'small'"
-            @select:padalinys="handleSelectPadalinys"
-          ></PadalinysSelector>
-          <NButton
-            v-if="$page.props.auth?.user"
-            class="hidden lg:inline-flex"
-            quaternary
-            tag="a"
-            circle
-            size="small"
-            :href="route('dashboard')"
-            ><NIcon :size="16" :component="AnimalTurtle24Filled"></NIcon
-          ></NButton>
+          <NButton v-if="$page.props.auth?.user" class="hidden lg:inline-flex" quaternary tag="a" circle size="small"
+            :href="route('dashboard')">
+            <NIcon :size="16" :component="AnimalTurtle24Filled" />
+          </NButton>
         </div>
 
-        <div
-          class="hidden items-center justify-center gap-x-2 md:gap-x-4 lg:flex"
-        >
-          <MainMenu
-            :options="navigation"
-            mode="horizontal"
-            class="grow"
-            :dropdown-props="{ size: 'medium' }"
-            @close:drawer="activeDrawer = false"
-          ></MainMenu>
+        <div class="flex w-full items-center gap-x-2 max-md:justify-between md:gap-x-6 lg:gap-x-8">
+          <!-- <MainMenu :options="navigation" mode="horizontal" class="grow" :dropdown-props="{ size: 'medium' }"
+@close:drawer="activeDrawer = false" /> -->
+          <MainMenuUpdated class="max-md:hidden">
+            <template #additional>
+              <PadalinysSelector :size="smallerThanSm ? 'tiny' : 'small'" @select:padalinys="handleSelectPadalinys" />
+            </template>
+          </MainMenuUpdated>
+          <div class="hidden max-md:block">
+            <PadalinysSelector :size="smallerThanSm ? 'tiny' : 'small'" @select:padalinys="handleSelectPadalinys" />
+          </div>
           <div class="flex items-center gap-4">
-            <FacebookButton />
-            <InstagramButton />
             <SearchButton />
             <StartFM />
           </div>
@@ -56,41 +34,16 @@
           <LocaleButton :locale="$page.props.app.locale" />
           <DarkModeSwitch />
         </div>
-        <NDrawer
-          v-model:show="activeDrawer"
-          display-directive="show"
-          :width="325"
-          placement="left"
-          :trap-focus="true"
-        >
-          <NDrawerContent closable>
-            <template #header>
-              <div class="flex gap-4">
-                <FacebookButton />
-                <InstagramButton />
-                <SearchButton />
-                <StartFM />
-              </div>
-            </template>
-            <MainMenu
-              :options="navigation"
-              @close:drawer="activeDrawer = false"
-            ></MainMenu>
-          </NDrawerContent>
-        </NDrawer>
       </nav>
-      <SecondMenu
-        v-if="
-          $page.props.padalinys?.links &&
-          $page.props.padalinys?.links.length > 0
-        "
-        class="duration-300 ease-in-out group-hover:translate-y-0"
-        :class="{
-          '-translate-y-full': hasScrolledDown,
-        }"
-        :links="$page.props.padalinys?.links"
-      >
-      </SecondMenu>
+      <nav class="relative z-50 w-full bg-white text-center shadow-sm dark:bg-zinc-800 dark:text-white">
+        <MainMenuUpdated class="mx-auto hidden max-md:block" />
+      </nav>
+      <SecondMenu v-if="
+        $page.props.padalinys?.links &&
+        $page.props.padalinys?.links.length > 0
+      " class="duration-300 ease-in-out group-hover:translate-y-0" :class="{
+        '-translate-y-full': hasScrolledDown,
+      }" :links="$page.props.padalinys?.links" />
     </div>
   </section>
 </template>
@@ -104,10 +57,9 @@ import { usePage } from "@inertiajs/vue3";
 
 import AppLogo from "@/Components/AppLogo.vue";
 import DarkModeSwitch from "@/Components/Buttons/DarkModeButton.vue";
-import FacebookButton from "../Nav/FacebookButton.vue";
-import InstagramButton from "../Nav/InstagramButton.vue";
 import LocaleButton from "../Nav/LocaleButton.vue";
 import MainMenu from "../Nav/MainMenu.vue";
+import MainMenuUpdated from "../Nav/MainMenuUpdated.vue";
 import PadalinysSelector from "../Nav/PadalinysSelector.vue";
 import SearchButton from "../Nav/SearchButton.vue";
 import SecondMenu from "../Nav/SecondMenu.vue";
@@ -184,9 +136,8 @@ const handleSelectPadalinys = (key) => {
     .slice(-2)
     .join(".");
 
-  window.location.href = `${
-    window.location.protocol
-  }//${padalinys_alias}.${hostWithoutSubdomain}${usePage().url}`;
+  window.location.href = `${window.location.protocol
+    }//${padalinys_alias}.${hostWithoutSubdomain}${usePage().url}`;
 };
 
 const breakpoints = useBreakpoints(breakpointsTailwind);

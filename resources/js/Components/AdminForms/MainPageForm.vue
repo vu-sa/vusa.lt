@@ -65,7 +65,7 @@
             @update:value="handleTypeChange"
           ></NSelect>
         </NFormItem>
-        <NFormItem v-if="form.type !== 'url'" label="Pasirinkite puslapį">
+      <NFormItem :show-feedback="false" v-if="form.type !== 'url'" label="Pasirinkite puslapį">
           <NSelect
             v-model:value="pageSelection"
             filterable
@@ -74,7 +74,7 @@
             @update:value="createMainPageLink"
           />
         </NFormItem>
-        <NFormItem label="Nuoroda">
+        <NFormItem :show-feedback="false" label="Nuoroda">
           <NInputGroup>
             <NInput
               v-model:value="form.link"

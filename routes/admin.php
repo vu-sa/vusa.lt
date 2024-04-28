@@ -39,7 +39,9 @@ Route::get('mainPage/padalinys/{padalinys}/edit-order/{lang}', [MainPageControll
 Route::post('mainPage/update-order', [MainPageController::class, 'updateOrder'])->name('mainPage.update-order');
 Route::resource('mainPage', MainPageController::class)->except(['show']);
 Route::resource('banners', BannerController::class)->except(['show']);
-Route::resource('navigation', NavigationController::class)->except(['show']);
+/* Route::resource('navigation', NavigationController::class)->except(['show', 'index']); */
+Route::get('navigation/editAll', [NavigationController::class, 'editAll'])->name('navigation.editAll');
+Route::post('navigation/updateAll', [NavigationController::class, 'updateAll'])->name('navigation.updateAll');
 Route::resource('users', UserController::class);
 
 Route::post('users/{user}/sendWelcomeEmail', [UserController::class, 'sendWelcomeEmail'])->name('users.sendWelcomeEmail');

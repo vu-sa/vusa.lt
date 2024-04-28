@@ -32,16 +32,59 @@ class NavigationController extends LaravelResourceController
     /**
      * Display a listing of the resource.
      *
-     * @param  \Illuminate\Http\Request  $_request  TODO: $request variable unused and possibly can be removed.
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function editAll()
     {
-        $this->authorize('viewAny', [Navigation::class, $this->authorizer]);
+        $this->authorize('create', [Navigation::class, $this->authorizer]);
 
-        return Inertia::render('Admin/Navigation/Index', [
+        return Inertia::render('Admin/Navigation/NavigationEdit', [
             'navigation' => Navigation::where('lang', '=', 'lt')->orderBy('order')->get(),
+            'typeOptions' => Inertia::lazy(fn () => MainPageController::getMainPageTypeOptions(request()->input('type'))),
         ]);
+    }
+
+    public function updateAll(Request $request)
+    {
+        $data = $request->all();
+
+        $flattenedData = [];
+
+        foreach ($data['navigation'] as $key => $value) {
+            $flattenedData[] = $value;
+
+            $children = isset($value['children']) ? $value['children'] : null;
+
+            if ($children) {
+                foreach ($children as $key => $child) {
+                    $child['order'] = $key;
+                    $child['extra_attributes'] = [
+                        'description' => $child['description'] ?? null,
+                        'image' => $child['image'] ?? null,
+                        'type' => $child['type'] ?? null,
+                        'icon' => $child['icon'] ?? null,
+                        'column' => $child['column'] ?? null,
+                    ];
+                    $flattenedData[] = $child;
+                }
+            }
+
+        }
+
+        foreach ($flattenedData as $key => $value) {
+            $navigation = Navigation::updateOrCreate(['id' => $value['id']],
+                [
+                    'parent_id' => $value['parent_id'],
+                    'name' => $value['name'],
+                    'lang' => $value['lang'],
+                    'url' => $value['url'],
+                    'order' => $value['order'],
+                    'is_active' => $value['is_active'],
+                    'extra_attributes' => $value['extra_attributes'],
+                ]);
+        }
+
+        return back();
     }
 
     /**
@@ -96,7 +139,7 @@ class NavigationController extends LaravelResourceController
         $navigation->name = $request->name;
         $navigation->url = $request->url;
         // $navigation->order = $request->order;
-        $navigation->save();
+        /*$navigation->save();*/
 
         return back();
     }

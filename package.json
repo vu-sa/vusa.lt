@@ -44,6 +44,7 @@
     "v-calendar": "^3.0.2"
   },
   "devDependencies": {
+    "@iconify/vue": "^4.1.2",
     "@microsoft/microsoft-graph-types": "^2.25.0",
     "@types/d3": "^7.4.0",
     "@types/latinize": "^0.2.18",

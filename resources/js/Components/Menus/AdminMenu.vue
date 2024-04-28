@@ -295,7 +295,7 @@ const menuOptions = computed(() => [
       {
         label: () => {
           return (
-            <Link href={route("navigation.index")}>{$t("Navigacija")}</Link>
+            <Link href={route("navigation.editAll")}>{$t("Navigacija")}</Link>
           );
         },
         key: "navigation",
