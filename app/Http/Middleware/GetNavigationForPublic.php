@@ -34,7 +34,7 @@ class GetNavigationForPublic
 
                     $children = $navigation->where('parent_id', $rootNavigation[$i]['id'])->values()->toArray();
 
-                    ## Expand extra_attributes to own keys
+                    //# Expand extra_attributes to own keys
                     foreach ($children as $key => $child) {
                         $extraAttributes = $child['extra_attributes'];
                         unset($child['extra_attributes']);
