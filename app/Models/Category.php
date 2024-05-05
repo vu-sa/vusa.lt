@@ -18,4 +18,9 @@ class Category extends Model
     {
         return $this->belongsTo(Banner::class, 'alias', 'category');
     }
+
+    public function pages()
+    {
+        return $this->hasMany(Page::class, 'category_id');
+    }
 }

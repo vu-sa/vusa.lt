@@ -176,6 +176,11 @@ const mainPageType = [
     label: "Institucija",
     icon: Icons.INSTITUTION,
   },
+  {
+    value: "category",
+    label: "Kategorija",
+    icon: Icons.CATEGORY,
+  }
   // {
   //   value: "special-page",
   //   label: "Specialus puslapis",
@@ -249,6 +254,15 @@ const createMainPageLink = (value: string, option) => {
     form.link = route("contacts.institution", {
       lang: form.lang as string,
       institution: option.option.id,
+      subdomain: subdomain,
+    });
+    return;
+  }
+
+  if (form.type === "category") {
+    form.link = route("category", {
+      lang: form.lang as string,
+      category: option.option.id,
       subdomain: subdomain,
     });
     return;

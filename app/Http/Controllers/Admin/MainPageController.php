@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\GetPadaliniaiForUpserts;
 use App\Http\Controllers\LaravelResourceController;
 use App\Models\Calendar;
+use App\Models\Category;
 use App\Models\Institution;
 use App\Models\MainPage;
 use App\Models\News;
@@ -213,6 +214,9 @@ class MainPageController extends LaravelResourceController
 
                 // case 'special-page':
                 //     return collect();
+
+            case 'category':
+                return Category::query()->get(['id', 'name', 'alias']);
 
             default:
                 // code...

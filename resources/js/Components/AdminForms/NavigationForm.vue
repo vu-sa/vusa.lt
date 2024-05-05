@@ -142,7 +142,7 @@ const columnOptions = [
   { value: 3, label: "3" },
 ]
 
-const currentLang = usePage().props.lang;
+const currentLang = usePage().props.app.locale;
 
 const mainPageType = [
   {
@@ -169,6 +169,11 @@ const mainPageType = [
     value: "institution",
     label: "Institucija",
     icon: Icons.INSTITUTION,
+  },
+  {
+    value: "category",
+    label: "Kategorija",
+    icon: Icons.CATEGORY,
   },
   // {
   //   value: "special-page",
@@ -277,6 +282,15 @@ const createMainPageLink = (changedValue: string, option) => {
     form.url = route("contacts.institution", {
       lang: currentLang.value as string,
       institution: option.option.id,
+      subdomain: subdomain,
+    });
+    return;
+  }
+
+  if (form.linkType === "category") {
+    form.url = route("category", {
+      lang: currentLang.value as string,
+      category: option.option.alias,
       subdomain: subdomain,
     });
     return;
