@@ -20,7 +20,7 @@ class NavigationController extends LaravelResourceController
         $this->authorize('viewAny', [Navigation::class, $this->authorizer]);
 
         return Inertia::render('Admin/Navigation/IndexNavigation', [
-            'navigation' => NavigationService::getNavigationForPublic(), 
+            'navigation' => NavigationService::getNavigationForPublic(),
             'typeOptions' => Inertia::lazy(fn () => MainPageController::getMainPageTypeOptions(request()->input('type'))),
         ]);
     }
@@ -78,15 +78,15 @@ class NavigationController extends LaravelResourceController
         $this->authorize('create', [Navigation::class, $this->authorizer]);
 
         // If root navigation or simple
-        
+
         $parent_id = $request?->parent_id ?? 0;
 
-        return Inertia::render('Admin/Navigation/CreateNavigation', 
+        return Inertia::render('Admin/Navigation/CreateNavigation',
             [
                 'parent_id' => $parent_id,
                 'parentElements' => Navigation::where('parent_id', 0)->get(),
                 'typeOptions' => Inertia::lazy(fn () => MainPageController::getMainPageTypeOptions(request()->input('type'))),
-            ] 
+            ]
         );
     }
 
@@ -134,7 +134,6 @@ class NavigationController extends LaravelResourceController
         $this->authorize('update', [Navigation::class, $navigation, $this->authorizer]);
 
         $navigation->fill($request->all());
-
 
         $navigation->save();
 

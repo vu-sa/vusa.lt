@@ -40,14 +40,15 @@ class NavigationService
 
             for ($j = 1; $j <= 3; $j++) {
                 // Push array to root links, where extra_attributes['column'] == $j
-                $rootNavigation[$i]['links'][] = array_filter($children, function ($child) use ($j) { 
-                    if (!isset($child['column'])) {
+                $rootNavigation[$i]['links'][] = array_filter($children, function ($child) use ($j) {
+                    if (! isset($child['column'])) {
                         return $j == 1;
                     }
+
                     return $child['column'] == $j;
                 });
 
-                // To values 
+                // To values
                 $rootNavigation[$i]['links'][$j - 1] = array_values($rootNavigation[$i]['links'][$j - 1]);
             }
 
