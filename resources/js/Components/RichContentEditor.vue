@@ -27,13 +27,13 @@
             <NIcon :component="ReOrderDotsVertical24Regular" />
           </template>
         </NButton>
-        <RichContentEditorListElement :id="content?.id" :is-expanded="content?.expanded"
+        <RichContentEditorListElement :id="content?.id" :is-expanded="content?.expanded ?? true"
           :can-delete="contents?.length > 1" :icon="contentTypes.find((type) => type.value === content?.type)?.icon"
           :title="contentTypes.find((type) => type.value === content?.type)?.label"
           @up="moveArrayElement(contents, index, index - 1)" @down="moveArrayElement(contents, index, index + 1)"
           @expand="content.expanded = !content?.expanded" @remove="handleElementRemove(index)">
           <!-- Text -->
-          <OriginalTipTap v-if="content?.type === 'tiptap'" v-show="content.expanded" v-model="content.json_content" />
+          <OriginalTipTap v-if="content?.type === 'tiptap'" v-show="content.expanded ?? true" v-model="content.json_content" />
           <!-- Collapse -->
           <NDynamicInput v-else-if="content?.type === 'shadcn-accordion'" v-show="content.expanded"
             v-model:value="content.json_content" @create="onCreate">

@@ -31,6 +31,7 @@ Route::patch('types/{type}/restore', [TypeController::class, 'restore'])->name('
 // Resources
 Route::resource('pages', PageController::class)->except(['show']);
 Route::resource('news', NewsController::class)->except(['show']);
+Route::resource('categories', CategoryController::class)->except(['show']);
 
 // change order main page
 Route::get('mainPage/padalinys/{padalinys}/edit-order/{lang}', [MainPageController::class, 'editOrder'])->name('mainPage.edit-order')

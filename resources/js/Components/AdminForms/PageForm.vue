@@ -11,6 +11,12 @@
         <NFormItem label="Nuoroda">
           <NInput :value="form.permalink" disabled type="text" placeholder="Sugeneruojama nuoroda..." />
         </NFormItem>
+        <NFormItem label="Kategorija">
+          <NSelect v-model:value="form.category_id" filterable :options="categories.map((category) => ({
+            value: category.id,
+            label: category.name,
+          }))" placeholder="Pasirinkti kategoriją..." />
+        </NFormItem>
         <div class="grid lg:grid-cols-2 lg:gap-4">
           <NFormItem label="Kalba">
             <NSelect v-model:value="form.lang" filterable :options="languageOptions" placeholder="Pasirinkti kalbą..." />
@@ -45,6 +51,7 @@ import RichContentFormElement from "../RichContentFormElement.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{
+  categories: App.Entities.Category[];
   page: App.Entities.Page;
   otherLangPages?: App.Entities.Page[];
   modelRoute: string;
