@@ -17,7 +17,7 @@
         <div class="flex w-full items-center gap-x-2 max-md:justify-between md:gap-x-6 lg:gap-x-8">
           <!-- <MainMenu :options="navigation" mode="horizontal" class="grow" :dropdown-props="{ size: 'medium' }"
 @close:drawer="activeDrawer = false" /> -->
-          <MainMenuUpdated class="max-md:hidden">
+          <MainMenuUpdated for-admin-edit class="max-md:hidden">
             <template #additional>
               <PadalinysSelector :size="smallerThanSm ? 'tiny' : 'small'" @select:padalinys="handleSelectPadalinys" />
             </template>

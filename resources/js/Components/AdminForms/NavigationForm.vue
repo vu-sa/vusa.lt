@@ -1,127 +1,115 @@
 <template>
-    <NCard>
-      <TransitionGroup ref="el" tag="div">
-        <div v-for="content, index in contents" :key="content?.id ?? content?.key"
-          class="relative grid w-full grid-cols-[24px,_1fr] gap-4 border border-zinc-300 p-3 shadow-sm first:rounded-t-lg last:rounded-b-lg dark:border-zinc-700/40 dark:bg-zinc-800/5">
-          <NButton class="handle" style="height: 100%;" quaternary size="small">
-            <template #icon>
-              <NIcon :component="ReOrderDotsVertical24Regular" />
-            </template>
-          </NButton>
-          <div class="flex flex-col gap-2">
-            <NInput v-model:value="content.name" type="text" placeholder="Įrašyti pavadinimą..." />
-            <NDynamicInput v-model:value="content.children" @create="onCreateChildren" show-sort-button>
-              <template #create-button-default>
-                Sukurti
-              </template>
-              <template #default="{ value }">
-                <div
-                  class="flex w-full flex-col gap-3 rounded-lg border border-zinc-200/60 bg-zinc-50/30 p-4 dark:border-zinc-800/50 dark:bg-zinc-800/20">
-                <div class="grid grid-cols-[1fr,_1fr,_200px] gap-2">
-                  <NFormItem required label="Pavadinimas" :show-feedback="false">
-                    <NInput v-model:value="value.name" type="text" placeholder="Įrašyti pavadinimą..." />
-                  </NFormItem>
-                  <NFormItem :show-feedback="false" required label="Nuorodos stilius">
-                    <NSelect
-                      v-model:value="value.type"
-                      :options="linkStyles(value)"
-                      placeholder="Pasirinkti nuorodos stilių..."
-                    />
-                  </NFormItem>
-                  <NFormItem required label="Stulpelis" :show-feedback="false">
-                    <NSelect v-model:value="value.column" :options="columnOptions" />
-                  </NFormItem>
-                </div>
-                <template v-if="value.type !== 'divider'">
-
-                  <NFormItem label="Ikona" :show-feedback="false">
-                    <template #label>
-                      Ikona. <span class="text-zinc-400"> Ikonų ieškokite <a target="_blank" class="font-bold underline" href="https://icon-sets.iconify.design/fluent/">čia</a>. Suradę reikiamą ikoną pasirinkite iš sąrašo. </span>
-                    </template>
-                    <NSelect filterable clearable v-model:value="value.icon" :options="iconOptions ?? []" />
-                  </NFormItem>
-
-                  <div class="grid grid-cols-2 gap-2">
-                    <NFormItem :show-feedback="false" label="Nuorodos tipas">
-                      <NSelect
-                      v-model:value="value.linkType"
-                      :options="mainPageType"
-                      :render-label="renderLabel"
-                      @update:value="(changedValue) => handleTypeChange(changedValue, value)"
-                    />
-                    </NFormItem>
-                    <NFormItem v-if="value.linkType !== 'url'" :show-feedback="false" label="Pasirinkite puslapį">
-                      <NSelect
-                      v-model:value="value.pageSelection"
-                      filterable
-                      :options="typeOptions"
-                      placeholder="Pasirinkti puslapį..."
-                      @update:value="(changedValue, option) => createMainPageLink(changedValue, option, value)"
-                    />
-                    </NFormItem>
-                  </div>
-                  <NFormItem required :show-feedback="false" label="Nuoroda">
-                    <NInputGroup>
-                      <NInput
-                      v-model:value="value.url"
-                      :disabled="value.linkType !== 'url'"
-                      type="text"
-                      placeholder=""
-                    />
-                      <!-- link to form.link -->
-                      <NButton tag="a" :href="value.url" target="_blank">
-                        <template #icon>
-                          <NIcon :component="Open24Regular" />
-                        </template>
-                      </NButton>
-                    </NInputGroup>
-                  </NFormItem>
-                  <NFormItem label="Aprašymas" :show-feedback="false">
-                    <NInput v-model:value="value.description" type="textarea" placeholder="Įrašyti aprašymą..." />
-                  </NFormItem>
-                  <NFormItem label="Foninis paveikslėlis" :show-feedback="false">
-                    <TiptapImageButton v-model:show-modal="showModal" @submit="value.image = $event" />
-                    <!-- Remove image button -->
-                    <NButton v-if="value.image" @click="value.image = null" type="error" size="small">
-                      Ištrinti paveikslėlį
-                    </NButton>
-                    <img v-if="value.image" class="size-20 ml-4 object-cover" :src="value.image" alt="image" />
-                  </NFormItem>
-                </template>
-                </div>
-              </template>
-            </NDynamicInput>
-          </div>
+  <NForm :model="form" label-placement="top">
+    <div class="flex flex-col">
+      <FormElement>
+        <template #title>
+          Pagrindinė informacija
+        </template>
+        <div class="grid gap-3 lg:grid-cols-2">
+          <NFormItem required label="Pavadinimas">
+            <NInput v-model:value="form.name" type="text" placeholder="Įrašyti pavadinimą..." />
+          </NFormItem>
+          <NFormItem required label="Stulpelis">
+            <NSelect v-model:value="form.extra_attributes.column" :options="columnOptions" />
+          </NFormItem>
+          <NFormItem label="Tėvinis elementas">
+            <NSelect v-model:value="form.parent_id" filterable
+              :options="parentElements.map((element) => ({ value: element.id, label: element.name }))"
+              placeholder="Pasirinkti tėvinį elementą..." clearable />
+          </NFormItem>
         </div>
-      </TransitionGroup>
-      <div class="mb-6 mt-2 flex w-full gap-2">
-        <NButton type="primary" @click="createMenuTrigger">
-          Pridėti navigacijos elementą
-        </NButton>
-        <NButton @click="saveNavigation" type="success">
-          Išsaugoti
-        </NButton>
-      </div>
-    </NCard>
+        <NFormItem :show-feedback="false" required label="Nuorodos stilius">
+          <NSelect v-model:value="form.extra_attributes.type" :options="linkStyles(value)"
+            placeholder="Pasirinkti nuorodos stilių..." />
+        </NFormItem>
+      </FormElement>
+      <FormElement>
+        <template #title>
+          Nuoroda
+        </template>
+
+        <div class="grid grid-cols-2 gap-2">
+          <NFormItem label="Nuorodos tipas">
+            <NSelect v-model:value="form.linkType" :options="mainPageType" :render-label="renderLabel"
+              @update:value="(changedValue) => handleTypeChange(changedValue)" />
+          </NFormItem>
+          <NFormItem v-if="form.linkType !== 'url'" label="Pasirinkite puslapį">
+            <NSelect v-model:value="form.pageSelection" filterable :options="typeOptions"
+              placeholder="Pasirinkti puslapį..."
+              @update:value="(changedValue, option) => createMainPageLink(changedValue, option)" />
+          </NFormItem>
+        </div>
+        <NFormItem required label="Nuoroda">
+          <NInputGroup>
+            <NInput v-model:value="form.url" :disabled="form.linkType !== 'url'" type="text" placeholder="" />
+            <!-- link to form.link -->
+            <NButton tag="a" :href="form.url" target="_blank">
+              <template #icon>
+                <NIcon :component="Open24Regular" />
+              </template>
+            </NButton>
+          </NInputGroup>
+        </NFormItem>
+      </FormElement>
+      <template v-if="form.type !== 'divider'">
+
+        <NFormItem label="Ikona">
+          <template #label>
+            Ikona. <span class="text-zinc-400"> Ikonų ieškokite <a target="_blank" class="font-bold underline"
+                href="https://icon-sets.iconify.design/fluent/">čia</a>. Suradę reikiamą ikoną pasirinkite iš
+              sąrašo. </span>
+          </template>
+          <NSelect v-model:value="form.extra_attributes.icon" filterable clearable :options="iconOptions ?? []" />
+        </NFormItem>
+
+        <NFormItem label="Aprašymas">
+          <NInput v-model:value="form.extra_attributes.description" type="textarea" placeholder="Įrašyti aprašymą..." />
+        </NFormItem>
+        <NFormItem label="Foninis paveikslėlis">
+            <img v-if="form.extra_attributes.image" class="mr-4 size-20 object-cover" :src="form.extra_attributes.image"
+              alt="image">
+          <NButtonGroup>
+            <TiptapImageButton v-model:show-modal="showModal" @submit="form.extra_attributes.image = $event" />
+            <!-- Remove image button -->
+            <NButton v-if="form.extra_attributes.image" type="error" size="small"
+              @click="form.extra_attributes.image = null">
+              Ištrinti paveikslėlį
+            </NButton>
+          </NButtonGroup>
+        </NFormItem>
+      </template>
+    </div>
+    <div class="flex justify-end gap-2">
+      <DeleteModelButton v-if="deleteModelRoute" :form="form" :model-route="deleteModelRoute" />
+      <UpsertModelButton :form="form" :model-route="modelRoute">
+        Sukurti
+      </UpsertModelButton>
+    </div>
+  </NForm>
 </template>
 
 <script setup lang="tsx">
-import { Link24Regular, Open24Regular, ReOrderDotsVertical24Regular } from "@vicons/fluent";
-import { NButton, NCard, NDynamicInput, NFormItem, NIcon, NInput, NInputGroup, NSelect } from "naive-ui";
-import { computed, reactive, ref } from "vue";
-import { router } from "@inertiajs/vue3"
-import { useSortable } from "@vueuse/integrations/useSortable";
+import { Link24Regular, Open24Regular } from "@vicons/fluent";
+import { NButton, NButtonGroup, NForm, NFormItem, NIcon, NInput, NInputGroup, NSelect } from "naive-ui";
+import { computed, ref } from "vue";
+import { router, useForm, usePage } from "@inertiajs/vue3"
 
+import DeleteModelButton from "../Buttons/DeleteModelButton.vue";
+import FormElement from "./FormElement.vue";
 import Icons from "@/Types/Icons/regular";
 import TiptapImageButton from "@/Components/TipTap/TiptapImageButton.vue";
+import UpsertModelButton from "../Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{
+  deleteModelRoute: string;
+  modelRoute: string;
   navigation: App.Entities.Navigation;
-  typeOptions?: any
+  parentElements: App.Entities.Navigation[];
+  typeOptions: any
 }>();
 
-const el = ref(null);
-const contents = reactive(props.navigation);
+const form = useForm("navigation", props.navigation);
+
 const showModal = ref(false);
 
 const linkStyles = (value) => [
@@ -129,22 +117,24 @@ const linkStyles = (value) => [
     value: 'link',
     label: 'Nuoroda',
   },
-  { value: 'block-link',
+  {
+    value: 'block-link',
     label: 'Nuoroda bloke',
   },
-  { value: 'category-link',
+  {
+    value: 'category-link',
     label: 'Kategorijos nuoroda',
   },
   {
     value: 'full-height-background-link',
     label: 'Pilno aukščio foninis nuorodos blokas',
-    disabled: !value.image,
+    disabled: !form?.extra_attributes?.image,
   },
   {
     value: 'divider',
     label: 'Skirtukas',
   },
-] 
+]
 
 const columnOptions = [
   { value: 1, label: "1" },
@@ -152,7 +142,7 @@ const columnOptions = [
   { value: 3, label: "3" },
 ]
 
-const currentLang = ref("lt");
+const currentLang = usePage().props.lang;
 
 const mainPageType = [
   {
@@ -167,7 +157,7 @@ const mainPageType = [
   },
   {
     value: "news",
-    label: "Naujiena", 
+    label: "Naujiena",
     icon: Icons.NEWS,
   },
   {
@@ -231,19 +221,23 @@ const renderLabel = (option: any) => {
   );
 };
 
-const handleTypeChange = (changedValue: string, value) => {
+const handleTypeChange = (changedValue: string) => {
+
+  if (changedValue === "url") {
+    return;
+  }
+
   router.reload({
     data: { type: changedValue },
     only: ["typeOptions"],
     onSuccess: () => {
-      value.pageSelection = null;
+      form.pageSelection = null;
     },
   });
 };
 
-const createMainPageLink = (changedValue: string, option, value) => {
-  console.log(changedValue, option, value);
-  if (value.linkType === "url") {
+const createMainPageLink = (changedValue: string, option) => {
+  if (form.linkType === "url") {
     return;
   }
 
@@ -252,8 +246,8 @@ const createMainPageLink = (changedValue: string, option, value) => {
       ? "www"
       : option.option.padalinys?.alias;
 
-  if (value.linkType === "page") {
-    value.url = route("page", {
+  if (form.linkType === "page") {
+    form.url = route("page", {
       lang: option.option.lang,
       subdomain: subdomain,
       permalink: option.option.permalink,
@@ -261,8 +255,8 @@ const createMainPageLink = (changedValue: string, option, value) => {
     return;
   }
 
-  if (value.linkType === "news") {
-    value.url = route("news", {
+  if (form.linkType === "news") {
+    form.url = route("news", {
       lang: option.option.lang,
       news: option.option.permalink,
       newsString: "naujiena",
@@ -271,61 +265,21 @@ const createMainPageLink = (changedValue: string, option, value) => {
     return;
   }
 
-  if (value.linkType === "calendarEvent") {
-    value.url = route("calendar.event", {
+  if (form.linkType === "calendarEvent") {
+    form.url = route("calendar.event", {
       lang: currentLang.value as string,
       calendar: option.option.id,
     });
     return;
   }
 
-  if (value.linkType === "institution") {
-    value.url = route("contacts.institution", {
+  if (form.linkType === "institution") {
+    form.url = route("contacts.institution", {
       lang: currentLang.value as string,
       institution: option.option.id,
       subdomain: subdomain,
     });
     return;
   }
-};
-
-const createMenuTrigger = () => {
-  contents.push({
-    id: null,
-    parent_id: 0,
-    name: "",
-    lang: currentLang.value,
-    url: "",
-    is_active: true,
-    children: [],
-  });
-};
-
-const onCreateChildren = (index) => {
-  // Create a child item on menu trigger
-
-  return {
-    id: null,
-    parent_id: null,
-    name: "",
-    lang: currentLang.value,
-    url: "",
-    is_active: true,
-    type: "block-link",
-    linkType: "url",
-    pageSelection: null,
-    column: 1,
-  }
-
-};
-
-useSortable(el, contents, {
-  handle: ".handle", animation: 100,
-});
-
-const saveNavigation = () => {
-  router.post(route("navigation.updateAll"), {
-    navigation: contents,
-  });
 };
 </script>

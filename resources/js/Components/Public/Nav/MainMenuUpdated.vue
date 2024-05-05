@@ -4,51 +4,12 @@
       <slot name="additional" />
     </div>
     <NavigationMenuList>
-      <NavigationMenuItem v-for="item in navigationData" :key="item.name">
+      <NavigationMenuItem v-for="item in mainNavigation" :key="item.name">
         <NavigationMenuTrigger
           class="bg-transparent px-2 py-1.5 hover:bg-zinc-100 dark:bg-transparent dark:hover:bg-zinc-700 max-lg:text-xs">
           {{ item.name }}
         </NavigationMenuTrigger>
-        <NavigationMenuContent class="dark:bg-zinc-900">
-          <ul
-            :class="`grid max-h-[calc(100vh-10rem)] gap-3 overflow-y-auto p-4 md:w-[400px] lg:w-[800px] lg:grid-cols-${item.cols ?? 1} content-stretch`">
-            <li v-for="(links, index) in item.links" :key="index">
-              <template v-for="link in links" :key="link.name">
-                <div v-if="link.type === 'divider'" class="my-3 border-t border-zinc-200" />
-                <NavigationMenuLink v-else-if="link.background" as-child
-                  class="mb-2 rounded-md bg-zinc-900 transition-colors last:mb-0 hover:bg-zinc-800"
-                  :class="[link.blockClass]">
-                  <SmartLink class="relative flex" :href="link.url" @click="closeMenu">
-                    <!-- <div class="h-24" /> -->
-                    <img class="absolute top-0 size-full rounded-md object-cover opacity-25 contrast-150"
-                      :src="link.background" alt="Background image">
-                    <div class="z-50 inline-block h-fit self-end p-4 align-bottom">
-                      <div class="text-lg font-black leading-tight text-zinc-50">
-                        {{ link.name }}
-                      </div>
-                      <p v-if="link.description" class="mt-2 line-clamp-2 leading-snug text-white">
-                        {{ link.description }}
-                      </p>
-                    </div>
-                  </SmartLink>
-                </NavigationMenuLink>
-                <NavigationMenuLink v-else :as="SmartLink"
-                  class="my-1 flex h-fit items-center rounded-md leading-none transition-colors" :href="link.url"
-                  :class="[linkTypes[link?.type ?? 'block-link']?.blockClass]" @click="closeMenu">
-                  <div class="h-fit">
-                    <div class="inline-flex items-center" :class="[linkTypes[link?.type ?? 'block-link']?.textClass]">
-                      <Icon v-if="link.icon" :icon="`fluent:${link.icon}`" class="mr-2 size-5" />
-                      {{ link.name }}
-                    </div>
-                    <p v-if="link.description" class="mt-1 line-clamp-2 text-sm leading-snug text-zinc-500/90">
-                      {{ link.description }}
-                    </p>
-                  </div>
-                </NavigationMenuLink>
-              </template>
-            </li>
-          </ul>
-        </NavigationMenuContent>
+        <MainNavigationMenuContent :item :for-admin-edit="false" @close-menu="closeMenu" />      
       </NavigationMenuItem>
     </NavigationMenuList>
   </NavigationMenu>
@@ -57,43 +18,23 @@
 <script setup lang="ts">
 import {
   NavigationMenu,
-  NavigationMenuContent,
   NavigationMenuItem,
-  NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
 } from '@/Components/ShadcnVue/ui/navigation-menu'
 import { computed, ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
-import { Icon } from "@iconify/vue"
-import SmartLink from '../SmartLink.vue';
+import MainNavigationMenuContent from './MainNavigationMenuContent.vue';
 
 const modelValue = ref(null);
 
 const mainNavigation = computed(() => usePage().props.mainNavigation);
 
-console.log(mainNavigation.value);
-
 function closeMenu(event: MouseEvent) {
   //event.preventDefault();
   modelValue.value = null;
 }
-
-const linkTypes = {
-  'link': {
-    'textClass': 'hover:underline focus:underline',
-    'blockClass': 'py-1 px-2.5 hover:bg-transparent focus:bg-transparent hover:underline',
-  },
-  'block-link': {
-    'textClass': 'no-underline',
-    'blockClass': 'p-2.5 hover:bg-zinc-100 focus:bg-zinc-100 dark:hover:bg-zinc-800 dark:focus:bg-zinc-800',
-  },
-  'category-link': {
-    'textClass': 'no-underline',
-    'blockClass': 'p-2.5 font-bold hover:bg-zinc-100 focus:bg-zinc-100 dark:hover:bg-zinc-800 dark:focus:bg-zinc-800',
-  },
-};
 
 const navigationData = [
   {
@@ -105,7 +46,7 @@ const navigationData = [
         name: 'Kas yra VU SA?',
         url: '#',
         description: 'Daugiau nei 30 metų atstovaujame Vilniaus universiteto studentų interesus.',
-        background: '/images/photos/VU SA 2023.jpg',
+        image: '/images/photos/VU SA 2023.jpg',
         blockClass: 'h-full',
       },
     ], [
@@ -286,7 +227,7 @@ const navigationData = [
       {
         name: 'Programos, klubai ir projektai',
         url: '#',
-        background: 'http://www.vusa.test/images/photos/pirmakursiu_stovykla_kaune.jpg',
+        image: 'http://www.vusa.test/images/photos/pirmakursiu_stovykla_kaune.jpg',
         description: 'VU SA buria 20 iniciatyvų: kiekvienas studentas gali rasti save dominančią veiklą!',
         blockClass: 'h-full',
       },
@@ -313,7 +254,7 @@ const navigationData = [
       {
         name: 'Komandos padaliniuose',
         url: '#',
-        background: 'http://www.vusa.test/images/photos/pirmakursiu_stovykla_kaune.jpg',
+        image: 'http://www.vusa.test/images/photos/pirmakursiu_stovykla_kaune.jpg',
         description: 'Kiekvienas VU fakultetas turi savo VU SA padalinį, kuris atstovauja studentų interesams. Surask savo!',
         blockClass: 'h-full',
       },
@@ -323,14 +264,14 @@ const navigationData = [
         name: 'Centrinis biuras',
         url: '/kontaktai/koordinatoriai',
         description: 'VU SA komandos kontaktai, kuriais galite susisiekti su mumis!',
-        background: '/images/photos/observatorijos_kiemelis.jpg',
+        image: '/images/photos/observatorijos_kiemelis.jpg',
       },
       {
         name: 'Studentų atstovų sąrašas',
         url: '#',
         icon: 'search-24-regular',
         textClass: 'font-bold',
-        background: 'http://www.vusa.test/images/photos/pirmakursiu_stovykla_kaune.jpg',
+        image: 'http://www.vusa.test/images/photos/pirmakursiu_stovykla_kaune.jpg',
         description: "Ieškok studentų atstovo pagal fakultetą ir darinio tipą."
       },
     ]
