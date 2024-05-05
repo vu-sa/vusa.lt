@@ -45,7 +45,7 @@ class PageController extends LaravelResourceController
     {
         $this->authorize('create', [Page::class, $this->authorizer]);
 
-        return Inertia::render('Admin/Content/CreatePage', 
+        return Inertia::render('Admin/Content/CreatePage',
             [
                 'categories' => Category::all(['id', 'name']),
             ]
