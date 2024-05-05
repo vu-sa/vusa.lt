@@ -35,7 +35,6 @@
     "laravel-precognition-vue-inertia": "^0.5.3",
     "laravel-vue-i18n": "^2.3.2",
     "latinize": "^2.0.0",
-    "lucide-vue-next": "^0.356",
     "posthog-js": "^1.40.1",
     "radix-vue": "^1.4.8",
     "sortablejs": "^1.15.0",

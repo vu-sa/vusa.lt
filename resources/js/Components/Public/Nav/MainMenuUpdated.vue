@@ -1,11 +1,11 @@
 <template>
-  <NavigationMenu as="div" v-model="modelValue">
+  <NavigationMenu v-model="modelValue" as="div">
     <div class="mr-8">
       <slot name="additional" />
     </div>
     <NavigationMenuList>
       <NavigationMenuItem v-for="item in navigationData" :key="item.name">
-        <NavigationMenuTrigger 
+        <NavigationMenuTrigger
           class="bg-transparent px-2 py-1.5 hover:bg-zinc-100 dark:bg-transparent dark:hover:bg-zinc-700 max-lg:text-xs">
           {{ item.name }}
         </NavigationMenuTrigger>
@@ -33,8 +33,8 @@
                   </SmartLink>
                 </NavigationMenuLink>
                 <NavigationMenuLink v-else :as="SmartLink"
-                  class="my-1 flex h-fit items-center rounded-md leading-none transition-colors"
-                   :href="link.url" @click="closeMenu" :class="[linkTypes[link?.type ?? 'block-link']?.blockClass]">
+                  class="my-1 flex h-fit items-center rounded-md leading-none transition-colors" :href="link.url"
+                  :class="[linkTypes[link?.type ?? 'block-link']?.blockClass]" @click="closeMenu">
                   <div class="h-fit">
                     <div class="inline-flex items-center" :class="[linkTypes[link?.type ?? 'block-link']?.textClass]">
                       <Icon v-if="link.icon" :icon="`fluent:${link.icon}`" class="mr-2 size-5" />
@@ -63,7 +63,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from '@/Components/ShadcnVue/ui/navigation-menu'
-import { ref, computed } from 'vue';
+import { computed, ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
 import { Icon } from "@iconify/vue"
@@ -84,7 +84,7 @@ const linkTypes = {
   'link': {
     'textClass': 'hover:underline focus:underline',
     'blockClass': 'py-1 px-2.5 hover:bg-transparent focus:bg-transparent hover:underline',
-    },
+  },
   'block-link': {
     'textClass': 'no-underline',
     'blockClass': 'p-2.5 hover:bg-zinc-100 focus:bg-zinc-100 dark:hover:bg-zinc-800 dark:focus:bg-zinc-800',
@@ -145,26 +145,22 @@ const navigationData = [
       {
         name: 'Protokolai ir nutarimai',
         url: '#',
-        textClass: 'hover:underline focus:underline',
-        blockClass: 'py-1 hover:bg-transparent focus:bg-transparent',
+        type: 'link',
       },
       {
         name: 'Raštai, pozicijos ir rezoliucijos',
         url: '#',
-        textClass: 'hover:underline focus:underline',
-        blockClass: 'py-1 hover:bg-transparent focus:bg-transparent',
+        type: 'link',
       },
       {
         name: 'Veiklos ir tyrimų ataskaitos',
         url: '#',
-        textClass: 'hover:underline focus:underline',
-        blockClass: 'py-1 hover:bg-transparent focus:bg-transparent',
+        type: 'link',
       },
       {
         name: 'Šablonai',
         url: '#',
-        textClass: 'hover:underline focus:underline',
-        blockClass: 'py-1 hover:bg-transparent focus:bg-transparent',
+        type: 'link',
       },
     ]],
   },
@@ -176,37 +172,32 @@ const navigationData = [
         name: 'Akademinė informacija',
         url: '#',
         icon: 'document-bullet-list-multiple-24-regular',
-        textClass: 'font-bold',
+        type: 'category-link'
       },
       {
         name: 'Atsiskaitymai, apeliacijos ir ginčai',
         url: '#',
-        textClass: 'hover:underline focus:underline',
-        blockClass: 'py-1 hover:bg-transparent focus:bg-transparent',
+        type: 'link',
       },
       {
         name: 'BUS, gretutinės studijos ir pasirenkamieji dalykai',
         url: '#',
-        textClass: 'hover:underline focus:underline',
-        blockClass: 'py-1 hover:bg-transparent focus:bg-transparent',
+        type: 'link',
       },
       {
         name: 'Akademinės atostogos, studijų stabdymas ir atnaujinimas',
         url: '#',
-        textClass: 'hover:underline focus:underline',
-        blockClass: 'py-1 hover:bg-transparent focus:bg-transparent',
+        type: 'link',
       },
       {
         name: 'Studijos ir praktika užsienyje',
         url: '#',
-        textClass: 'hover:underline focus:underline',
-        blockClass: 'py-1 hover:bg-transparent focus:bg-transparent',
+        type: 'link',
       },
       {
         name: 'Studentų teisės ir pareigos',
         url: '#',
-        textClass: 'hover:underline focus:underline',
-        blockClass: 'py-1 hover:bg-transparent focus:bg-transparent',
+        type: 'link',
       },
       {
         type: 'divider',
@@ -238,61 +229,53 @@ const navigationData = [
         name: 'Finansinė parama',
         url: '#',
         icon: 'document-bullet-list-multiple-24-regular',
-        textClass: 'font-bold',
+        type: 'category-link',
       },
       {
         name: 'Stipendijos',
         url: '#',
-        textClass: 'hover:underline focus:underline',
-        blockClass: 'py-1 hover:bg-transparent focus:bg-transparent',
+        type: 'link',
       },
       {
         name: 'Parama neįgaliesiems',
         url: '#',
-        textClass: 'hover:underline focus:underline',
-        blockClass: 'py-1 hover:bg-transparent focus:bg-transparent',
+        type: 'link',
       },
       {
         name: 'Parama išeivijos vaikams',
         url: '#',
-        textClass: 'hover:underline focus:underline',
-        blockClass: 'py-1 hover:bg-transparent focus:bg-transparent',
+        type: 'link',
       },
       {
         name: 'Paskolos',
         url: '#',
-        textClass: 'hover:underline focus:underline',
-        blockClass: 'py-1 hover:bg-transparent focus:bg-transparent',
+        type: 'link',
       },
       {
         name: 'Įmokos už studijas',
         url: '#',
-        textClass: 'hover:underline focus:underline',
-        blockClass: 'py-1 hover:bg-transparent focus:bg-transparent',
+        type: 'link',
       },
       {
         name: 'LSP',
         url: '#',
         icon: 'contact-card-32-regular',
-        textClass: 'font-bold',
+        type: 'category-link',
       },
       {
         name: 'Gamyba',
         url: '#',
-        textClass: 'hover:underline focus:underline',
-        blockClass: 'py-1 hover:bg-transparent focus:bg-transparent',
+        type: 'link',
       },
       {
         name: 'Grąžinimas',
         url: '#',
-        textClass: 'hover:underline focus:underline',
-        blockClass: 'py-1 hover:bg-transparent focus:bg-transparent',
+        type: 'link',
       },
       {
         name: 'Praradimas',
         url: '#',
-        textClass: 'hover:underline focus:underline',
-        blockClass: 'py-1 hover:bg-transparent focus:bg-transparent',
+        type: 'link',
       },
     ]]
   },
