@@ -6,6 +6,7 @@ use App\Http\Controllers\LaravelResourceController;
 use App\Models\Navigation;
 use App\Services\NavigationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 class NavigationController extends LaravelResourceController
@@ -62,6 +63,8 @@ class NavigationController extends LaravelResourceController
 
         $navigation->save();
 
+        Cache::forget('mainNavigation-'.app()->getLocale());
+
         return redirect()->route('navigation.index')->with('success', 'Navigation created.');
     }
 
@@ -93,6 +96,8 @@ class NavigationController extends LaravelResourceController
         $navigation->fill($request->all());
 
         $navigation->save();
+
+        Cache::forget('mainNavigation-'.app()->getLocale());
 
         return back()->with('success', 'Navigation updated.');
     }
@@ -129,6 +134,8 @@ class NavigationController extends LaravelResourceController
 
         $navigation->save();
 
+        Cache::forget('mainNavigation-'.app()->getLocale());
+
         return back()->with('success', 'Navigation column updated.');
     }
 
@@ -154,6 +161,8 @@ class NavigationController extends LaravelResourceController
                 }
             }
         }
+        
+        Cache::forget('mainNavigation-'.app()->getLocale());
 
         return back()->with('success', 'Navigation order updated.');
     }
@@ -168,6 +177,8 @@ class NavigationController extends LaravelResourceController
         $this->authorize('delete', [Navigation::class, $navigation, $this->authorizer]);
 
         $navigation->delete();
+
+        Cache::forget('mainNavigation-'.app()->getLocale());
 
         return back()->with('success', 'Navigation deleted.');
     }
