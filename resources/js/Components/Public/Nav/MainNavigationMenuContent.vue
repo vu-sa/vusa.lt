@@ -27,7 +27,7 @@
             </div>
           </NavigationMenuLink>
           <NavigationMenuLink v-else :as="forAdminEdit ? 'div' : SmartLink"
-            class="my-1 flex h-fit items-center rounded-md leading-none transition-colors" :href="link.url"
+            class="my-1 flex h-fit text-left items-center rounded-md leading-none transition-colors" :href="link.url"
             :class="[linkTypes[link?.type ?? 'block-link']?.blockClass]" @click="$emit('closeMenu')">
             <div class="flex w-full items-center justify-between gap-2">
               <div class="h-fit">
