@@ -15,13 +15,11 @@
         </div>
 
         <div class="flex w-full items-center gap-x-2 max-md:justify-between md:gap-x-6 lg:gap-x-8">
-          <!-- <MainMenu :options="navigation" mode="horizontal" class="grow" :dropdown-props="{ size: 'medium' }"
-@close:drawer="activeDrawer = false" /> -->
-          <MainMenuUpdated for-admin-edit class="max-md:hidden">
+          <MainMenu class="max-md:hidden">
             <template #additional>
               <PadalinysSelector :size="smallerThanSm ? 'tiny' : 'small'" @select:padalinys="handleSelectPadalinys" />
             </template>
-          </MainMenuUpdated>
+          </MainMenu>
           <div class="hidden max-md:block">
             <PadalinysSelector :size="smallerThanSm ? 'tiny' : 'small'" @select:padalinys="handleSelectPadalinys" />
           </div>
@@ -36,7 +34,7 @@
         </div>
       </nav>
       <nav class="relative z-50 w-full bg-white text-center shadow-sm dark:bg-zinc-800 dark:text-white">
-        <MainMenuUpdated class="mx-auto hidden max-md:block" />
+        <MainMenu class="mx-auto hidden max-md:block" />
       </nav>
       <SecondMenu v-if="
         $page.props.padalinys?.links &&
@@ -49,17 +47,16 @@
 </template>
 
 <script setup lang="tsx">
-import { AnimalTurtle24Filled, Navigation24Filled } from "@vicons/fluent";
-import { NButton, NDrawer, NDrawerContent, NIcon } from "naive-ui";
+import { AnimalTurtle24Filled } from "@vicons/fluent";
+import { NButton, NIcon } from "naive-ui";
 import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
-import { computed, ref } from "vue";
+import { ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 
 import AppLogo from "@/Components/AppLogo.vue";
 import DarkModeSwitch from "@/Components/Buttons/DarkModeButton.vue";
 import LocaleButton from "../Nav/LocaleButton.vue";
 import MainMenu from "../Nav/MainMenu.vue";
-import MainMenuUpdated from "../Nav/MainMenuUpdated.vue";
 import PadalinysSelector from "../Nav/PadalinysSelector.vue";
 import SearchButton from "../Nav/SearchButton.vue";
 import SecondMenu from "../Nav/SecondMenu.vue";
@@ -69,57 +66,6 @@ import StartFM from "@/Components/Public/Nav/StartFM.vue";
 defineProps<{
   isThemeDark: boolean;
 }>();
-
-const activeDrawer = ref(false);
-
-const toggleMenu = () => {
-  activeDrawer.value = !activeDrawer.value;
-};
-
-const parseNavigation = (array: App.Entities.Navigation[], id: number) => {
-  const result: Record<string, any>[] = [];
-  array.forEach((item) => {
-    if (item.parent_id === id) {
-      // if item href matches usepage.props.app.url, then use self link
-      // else use external link
-
-      let target: string | undefined = undefined;
-      let appUrl = usePage().props.app.url;
-
-      if (item.url.startsWith(appUrl)) {
-        target = "_self";
-      }
-
-      result.push({
-        key: item.id,
-        label() {
-          return (
-            <SmartLink target={target} href={item.url}>
-              {item.name}
-            </SmartLink>
-          );
-        },
-        children: parseNavigation(array, item.id),
-      });
-      if (result[result.length - 1].children.length === 0) {
-        delete result[result.length - 1].children;
-        delete result[result.length - 1].icon;
-      } else {
-        // change label to simple span
-        result[result.length - 1].label = item.name;
-      }
-    }
-  });
-  return result;
-};
-
-const navigation = computed(() => {
-  if (usePage().props.mainNavigation === undefined) {
-    return [];
-  }
-
-  return parseNavigation(usePage().props.mainNavigation, 0);
-});
 
 const handleSelectPadalinys = (key) => {
   let padalinys_alias = key;
@@ -142,7 +88,6 @@ const handleSelectPadalinys = (key) => {
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const smallerThanSm = breakpoints.smaller("sm");
-const smallerThanLg = breakpoints.smaller("lg");
 
 const hasScrolledDown = ref(false);
 

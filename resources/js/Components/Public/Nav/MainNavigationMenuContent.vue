@@ -10,7 +10,7 @@
 
           <NavigationMenuLink v-else-if="link.image" :as="forAdminEdit ? 'div' : SmartLink"
             class="relative mb-2 flex rounded-md bg-zinc-900 transition-colors last:mb-0 hover:bg-zinc-800"
-            :href="link.url" :class="[linkTypes[link?.type ?? 'block-link']?.blockClass]" @click="$emit('closeMenu')">
+            :href="link.url" :class="link?.type === 'full-height-background-link' ? linkTypes[link.type].blockClass : null" @click="$emit('closeMenu')">
             <!-- <div class="h-24" /> -->
             <img class="absolute left-0 top-0 size-full rounded-md object-cover opacity-25 contrast-150"
               :src="link.image" alt="Background image">
@@ -22,7 +22,7 @@
                 {{ link.description }}
               </p>
             </div>
-            <div v-if="showEditIcons" class="inline-flex my-auto p-2 rounded-lg bg-white/80 h-fit z-40">
+            <div v-if="showEditIcons" class="z-40 my-auto inline-flex h-fit rounded-lg bg-white/80 p-2">
             <slot :index :link :links name="editIconsBg" />
             </div>
           </NavigationMenuLink>
@@ -50,13 +50,10 @@
 
 <script setup lang="ts">
 import { Icon } from "@iconify/vue"
-import { Link, router } from '@inertiajs/vue3';
-import { NButton } from 'naive-ui';
 import {
   NavigationMenuContent,
   NavigationMenuLink,
 } from '@/Components/ShadcnVue/ui/navigation-menu'
-import { useSortable } from '@vueuse/integrations/useSortable';
 
 import SmartLink from '../SmartLink.vue';
 

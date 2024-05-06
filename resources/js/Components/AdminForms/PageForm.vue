@@ -8,18 +8,21 @@
         <NFormItem :label="$t('forms.fields.title')">
           <NInput v-model:value="form.title" type="text" placeholder="Įrašyti pavadinimą..." />
         </NFormItem>
-        <NFormItem label="Nuoroda">
-          <NInput :value="form.permalink" disabled type="text" placeholder="Sugeneruojama nuoroda..." />
-        </NFormItem>
-        <NFormItem label="Kategorija">
-          <NSelect v-model:value="form.category_id" filterable :options="categories.map((category) => ({
-            value: category.id,
-            label: category.name,
-          }))" placeholder="Pasirinkti kategoriją..." />
-        </NFormItem>
+        <div class="grid lg:grid-cols-2 lg:gap-4">
+          <NFormItem label="Nuoroda">
+            <NInput :value="form.permalink" disabled type="text" placeholder="Sugeneruojama nuoroda..." />
+          </NFormItem>
+          <NFormItem label="Kategorija">
+            <NSelect v-model:value="form.category_id" filterable :options="categories.map((category) => ({
+              value: category.id,
+              label: category.name,
+            }))" placeholder="Pasirinkti kategoriją..." />
+          </NFormItem>
+        </div>
         <div class="grid lg:grid-cols-2 lg:gap-4">
           <NFormItem label="Kalba">
-            <NSelect v-model:value="form.lang" filterable :options="languageOptions" placeholder="Pasirinkti kalbą..." />
+            <NSelect v-model:value="form.lang" filterable :options="languageOptions"
+              placeholder="Pasirinkti kalbą..." />
           </NFormItem>
           <NFormItem label="Kitos kalbos puslapis">
             <NSelect v-model:value="form.other_lang_id" filterable :disabled="modelRoute === 'pages.store'"
