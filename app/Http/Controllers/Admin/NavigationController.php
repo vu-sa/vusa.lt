@@ -161,7 +161,7 @@ class NavigationController extends LaravelResourceController
                 }
             }
         }
-        
+
         Cache::forget('mainNavigation-'.app()->getLocale());
 
         return back()->with('success', 'Navigation order updated.');
