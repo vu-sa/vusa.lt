@@ -17,8 +17,11 @@ class NewsController extends PublicController
 
         if (substr($news->image, 0, 4) == 'http') {
             $image = $news->image;
+            $seoImage = $news->image;
         } else {
             $image = Storage::get(str_replace('uploads', 'public', $news->image)) === null ? '/images/icons/naujienu_foto.png' : $news->image;
+            // Make seo image absolute
+            $seoImage = $news->image ? url($news->image) : null;
         }
 
         $other_lang_page = $news->other_language_news;
@@ -63,7 +66,7 @@ class NewsController extends PublicController
         ])->withViewData([
             'title' => $news->title.' | '.$this->padalinys->shortname,
             'description' => $news->short ? strip_tags($news->short) : $seoDescription,
-            'image' => $image,
+            'image' => $seoImage,
         ]);
     }
 
