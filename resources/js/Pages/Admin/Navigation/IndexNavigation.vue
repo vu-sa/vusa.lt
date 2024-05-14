@@ -27,7 +27,7 @@
           <MainNavigationMenuContent :item :for-admin-edit="true" :show-edit-icons="showAdminEdit">
             <template #editIconsLink="{ index, link, links }">
               <OrderEditDeleteButtons v-if="!showColumnChangeArrows" :index :length="links.length" :edit-route="route('navigation.edit', { navigation: link.id })"
-                :delete-route="route('navigation.destroy', link.id)" @move-up="moveUp(item, link)" @move-down="moveDown(item, link)" />
+                @delete="handleDelete(link)" @move-up="moveUp(item, link)" @move-down="moveDown(item, link)" />
               <div v-else>
                 <NButtonGroup>
                   <NButton size="tiny" circle tertiary @click="changeColumn(link, 'left')">
@@ -44,8 +44,7 @@
               </div>
             </template>
             <template #editIconsBg="{ index, link, links }">
-              <OrderEditDeleteButtons v-if="!showColumnChangeArrows" :index :length="links.length" :edit-route="route('navigation.edit', { navigation: link.id })"
-                :delete-route="route('navigation.destroy', link.id)" @move-up="moveUp(item, link)" @move-down="moveDown(item, link)" />
+              <OrderEditDeleteButtons v-if="!showColumnChangeArrows" :index :length="links.length" :edit-route="route('navigation.edit', { navigation: link.id })" @delete="handleDelete(link)" @move-up="moveUp(item, link)" @move-down="moveDown(item, link)" />
 
               <div v-else>
                 <NButtonGroup>
@@ -64,7 +63,8 @@
             </template>
             <template #editIconsDivider="{ index, link, links }">
               <OrderEditDeleteButtons :index :length="links.length" :edit-route="route('navigation.edit', { navigation: link.id })"
-                :delete-route="route('navigation.destroy', link.id)" @move-up="moveUp(item, link)" @move-down="moveDown(item, link)" />
+                @delete="handleDelete(link)" @move-up="moveUp(item, link)" @move-down="moveDown(item, link)" />
+
             </template>
           </MainNavigationMenuContent>
         </div>
@@ -76,12 +76,17 @@
               </template>
               Pridėti elementą
             </NButton>
-            <NButton type="error" @click="router.delete(route('navigation.destroy', item.id))">
-              <template #icon>
-                <Icon icon="fluent:delete-16-regular" />
+            <NPopconfirm @positive-click="handleDelete(item)">
+              <template #trigger>
+                <NButton type="error">
+                  <template #icon>
+                    <Icon icon="fluent:delete-16-regular" />
+                  </template>
+                  Ištrinti
+                </NButton>
               </template>
-              Ištrinti
-            </NButton>
+              Ar tikrai norite ištrinti šį elementą?
+            </NPopconfirm>
           </NButtonGroup>
         </div>
       </div>
@@ -108,7 +113,7 @@
 <script setup lang="tsx">
 import { Icon } from "@iconify/vue";
 import { Link, router } from "@inertiajs/vue3";
-import { NButton, NButtonGroup, NFormItem, NIcon, NSwitch } from "naive-ui";
+import { NButton, NButtonGroup, NFormItem, NIcon, NPopconfirm, NSwitch } from "naive-ui";
 import { ReOrderDotsVertical24Regular } from "@vicons/fluent";
 import { ref } from "vue";
 import { useSortable } from "@vueuse/integrations/useSortable";
@@ -131,7 +136,7 @@ useSortable(el, contents, {
   handle: ".handle", animation: 100,
 });
 
-const saveOrder = (parent_id) => {
+const saveOrder = () => {
   router.post(route("navigation.updateOrder"), {
     navigation: contents.value,
   });
@@ -202,5 +207,10 @@ const changeColumn = (link, direction) => {
     id: link.id,
     direction: direction,
   }, { preserveScroll: true });
+};
+
+const handleDelete = (link) => {
+  console.log(link);
+  router.delete(route("navigation.destroy", link.id));
 };
 </script>

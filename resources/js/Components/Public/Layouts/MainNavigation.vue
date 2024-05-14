@@ -14,7 +14,7 @@
           </NButton>
         </div>
 
-        <div class="flex w-full items-center gap-x-2 max-md:justify-between md:gap-x-6 lg:gap-x-8">
+        <div class="flex w-full items-center justify-center gap-x-2 max-md:justify-between md:gap-x-6 lg:gap-x-12">
           <MainMenu class="max-md:hidden">
             <template #additional>
               <PadalinysSelector :size="smallerThanSm ? 'tiny' : 'small'" @select:padalinys="handleSelectPadalinys" />
@@ -34,7 +34,7 @@
         </div>
       </nav>
       <nav class="relative z-50 w-full bg-white text-center shadow-sm dark:bg-zinc-800 dark:text-white">
-        <MainMenu class="mx-auto hidden max-md:block" />
+        <MainMenu class="mx-auto hidden pb-1 max-md:block" />
       </nav>
       <SecondMenu v-if="
         $page.props.padalinys?.links &&

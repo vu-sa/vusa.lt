@@ -6,7 +6,7 @@
       </template>
     </NButton>
     <NButton v-if="index < length - 1" size="tiny" circle tertiary class="mr-1" @click="$emit('moveDown')">
-    <template #icon>
+      <template #icon>
         <Icon icon="fluent:arrow-down-16-regular" width="12" height="12" />
       </template>
     </NButton>
@@ -17,25 +17,29 @@
       </template>
     </NButton>
     </Link>
-    <NButton size="tiny" circle type="error" @click="deleteRoute">
-      <template #icon>
-        <Icon icon="fluent:delete-16-regular" width="12" height="12" />
+    <NPopconfirm @positive-click="$emit('delete')">
+      <template #trigger>
+        <NButton size="tiny" circle type="error">
+          <template #icon>
+            <Icon icon="fluent:delete-16-regular" width="12" height="12" />
+          </template>
+        </NButton>
       </template>
-    </NButton>
+      Ar tikrai norite ištrinti šį elementą?
+    </NPopconfirm>
   </div>
 </template>
 
 <script setup lang="ts">
 import { Icon } from '@iconify/vue';
 import { Link } from '@inertiajs/vue3';
-import { NButton } from 'naive-ui';
+import { NButton, NPopconfirm } from 'naive-ui';
 
 defineProps<{
   index: number;
   length: number;
   editRoute: string;
-  deleteRoute: string;
 }>()
 
-defineEmits(['moveUp', 'moveDown']);
+defineEmits(['moveUp', 'moveDown', 'delete']);
 </script>
