@@ -65,7 +65,7 @@
             @update:value="handleTypeChange"
           ></NSelect>
         </NFormItem>
-        <NFormItem v-if="form.type !== 'url'" label="Pasirinkite puslapį">
+      <NFormItem :show-feedback="false" v-if="form.type !== 'url'" label="Pasirinkite puslapį">
           <NSelect
             v-model:value="pageSelection"
             filterable
@@ -74,7 +74,7 @@
             @update:value="createMainPageLink"
           />
         </NFormItem>
-        <NFormItem label="Nuoroda">
+        <NFormItem :show-feedback="false" label="Nuoroda">
           <NInputGroup>
             <NInput
               v-model:value="form.link"
@@ -176,6 +176,11 @@ const mainPageType = [
     label: "Institucija",
     icon: Icons.INSTITUTION,
   },
+  {
+    value: "category",
+    label: "Kategorija",
+    icon: Icons.CATEGORY,
+  }
   // {
   //   value: "special-page",
   //   label: "Specialus puslapis",
@@ -249,6 +254,15 @@ const createMainPageLink = (value: string, option) => {
     form.link = route("contacts.institution", {
       lang: form.lang as string,
       institution: option.option.id,
+      subdomain: subdomain,
+    });
+    return;
+  }
+
+  if (form.type === "category") {
+    form.link = route("category", {
+      lang: form.lang as string,
+      category: option.option.id,
       subdomain: subdomain,
     });
     return;

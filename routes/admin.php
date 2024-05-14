@@ -31,6 +31,7 @@ Route::patch('types/{type}/restore', [TypeController::class, 'restore'])->name('
 // Resources
 Route::resource('pages', PageController::class)->except(['show']);
 Route::resource('news', NewsController::class)->except(['show']);
+Route::resource('categories', CategoryController::class)->except(['show']);
 
 // change order main page
 Route::get('mainPage/padalinys/{padalinys}/edit-order/{lang}', [MainPageController::class, 'editOrder'])->name('mainPage.edit-order')
@@ -40,6 +41,9 @@ Route::post('mainPage/update-order', [MainPageController::class, 'updateOrder'])
 Route::resource('mainPage', MainPageController::class)->except(['show']);
 Route::resource('banners', BannerController::class)->except(['show']);
 Route::resource('navigation', NavigationController::class)->except(['show']);
+/*Route::get('navigation/editAll', [NavigationController::class, 'editAll'])->name('navigation.editAll');*/
+Route::post('navigation/updateOrder', [NavigationController::class, 'updateOrder'])->name('navigation.updateOrder');
+Route::post('navigation/updateColumn', [NavigationController::class, 'updateColumn'])->name('navigation.updateColumn');
 Route::resource('users', UserController::class);
 
 Route::post('users/{user}/sendWelcomeEmail', [UserController::class, 'sendWelcomeEmail'])->name('users.sendWelcomeEmail');

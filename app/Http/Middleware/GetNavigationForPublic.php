@@ -2,8 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Navigation;
-use App\Models\Padalinys;
+use App\Services\NavigationService as ServicesNavigationService;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -21,10 +20,9 @@ class GetNavigationForPublic
     {
         // Check if method is get
         if ($request->isMethod('get')) {
-            $mainNavigation = fn () => Cache::remember('mainNavigation-'.app()->getLocale(), 3600, function () {
-                $vusa = Padalinys::where('shortname', 'VU SA')->first();
 
-                return Navigation::where([['padalinys_id', $vusa->id], ['lang', app()->getLocale()]])->orderBy('order')->get();
+            $mainNavigation = fn () => Cache::remember('mainNavigation-'.app()->getLocale(), 3600, function () {
+                return ServicesNavigationService::getNavigationForPublic();
             });
 
             Inertia::share('mainNavigation', $mainNavigation);

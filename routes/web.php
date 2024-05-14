@@ -45,6 +45,8 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
         Route::get('programos-klubai-projektai', [Public\PublicPageController::class, 'pkp'])->name('pkp');
 
+        Route::get('kategorija/{category:alias}', [Public\PublicPageController::class, 'category'])->name('category');
+
         Route::post('saziningai-registracija', [Public\MainController::class, 'storeSaziningaiExamRegistration'])->name('saziningaiExamRegistration.store');
         Route::post('saziningai-uzregistruoti-egzaminai', [Public\MainController::class, 'storeSaziningaiExamObserver'])->name('saziningaiExamObserver.store');
         Route::post('nariu-registracija', [Public\MainController::class, 'storeMemberRegistration'])->name('memberRegistration.store');

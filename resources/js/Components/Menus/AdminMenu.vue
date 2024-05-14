@@ -1,11 +1,6 @@
 <template>
-  <NMenu
-    v-model:value="activeKey"
-    accordion
-    :collapsed="collapsed"
-    :options="menuOptions"
-    @update:value="$emit('close:drawer')"
-  />
+  <NMenu v-model:value="activeKey" accordion :collapsed="collapsed" :options="menuOptions"
+    @update:value="$emit('close:drawer')" />
 </template>
 
 <script setup lang="tsx">
@@ -314,6 +309,18 @@ const menuOptions = computed(() => [
         show: auth?.can.index.calendar,
         icon: () => {
           return <NIcon component={Icons.CALENDAR}></NIcon>;
+        },
+      },
+      {
+        label: () => {
+          return (
+            <Link href={route("categories.index")}>{$t("Kategorijos")}</Link>
+          );
+        },
+        key: "categories",
+        show: auth?.can.index.page,
+        icon: () => {
+          return <NIcon component={Icons.CATEGORY}></NIcon>;
         },
       },
       {

@@ -8,8 +8,19 @@ class Category extends Model
 {
     protected $table = 'categories';
 
+    protected $fillable = [
+        'name',
+        'alias',
+        'description',
+    ];
+
     public function banners()
     {
         return $this->belongsTo(Banner::class, 'alias', 'category');
+    }
+
+    public function pages()
+    {
+        return $this->hasMany(Page::class, 'category_id');
     }
 }

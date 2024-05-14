@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\PublicController;
 use App\Models\Calendar;
+use App\Models\Category;
 use App\Models\Navigation;
 use App\Models\News;
 use App\Models\Padalinys;
@@ -187,6 +188,18 @@ class PublicPageController extends PublicController
         ])->withViewData([
             'title' => $page->title,
             'description' => Str::limit($seoDescription, 150),
+        ]);
+    }
+
+    public function category($lang, Category $category)
+    {
+        $this->getBanners();
+        $this->getPadalinysLinks();
+
+        $category->load('pages:id,title,permalink,lang,category_id,padalinys_id')->load('pages.padalinys:id,alias');
+
+        return Inertia::render('Public/CategoryPage', [
+            'category' => $category->only('id', 'name', 'description', 'pages'),
         ]);
     }
 

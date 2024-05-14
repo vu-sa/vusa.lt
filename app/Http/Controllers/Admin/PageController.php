@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\LaravelResourceController;
+use App\Models\Category;
 use App\Models\Content;
 use App\Models\ContentPart;
 use App\Models\Padalinys;
@@ -44,7 +45,11 @@ class PageController extends LaravelResourceController
     {
         $this->authorize('create', [Page::class, $this->authorizer]);
 
-        return Inertia::render('Admin/Content/CreatePage');
+        return Inertia::render('Admin/Content/CreatePage',
+            [
+                'categories' => Category::all(['id', 'name']),
+            ]
+        );
     }
 
     /**
@@ -80,6 +85,7 @@ class PageController extends LaravelResourceController
 
         Page::query()->create([
             'title' => $request->title,
+            'category_id' => $request->category_id,
             'content_id' => $content->id,
             'permalink' => $request->permalink,
             'lang' => $request->lang,
@@ -105,10 +111,11 @@ class PageController extends LaravelResourceController
 
         return Inertia::render('Admin/Content/EditPage', [
             'page' => [
-                ...$page->only('id', 'title', 'content', 'permalink', 'text', 'lang', 'category', 'padalinys_id', 'is_active', 'aside'),
+                ...$page->only('id', 'title', 'content', 'permalink', 'text', 'lang', 'category_id', 'padalinys_id', 'is_active', 'aside'),
                 'other_lang_id' => $page->getOtherLanguage()?->only('id')['id'],
             ],
             'otherLangPages' => $other_lang_pages,
+            'categories' => Category::all(['id', 'name']),
         ]);
     }
 
@@ -123,7 +130,7 @@ class PageController extends LaravelResourceController
 
         $other_lang_page = Page::find($page->other_lang_id);
 
-        $page->update($request->only('title', 'lang', 'other_lang_id'));
+        $page->update($request->only('title', 'lang', 'other_lang_id', 'category_id'));
 
         $content = Content::query()->find($page->content->id);
 
