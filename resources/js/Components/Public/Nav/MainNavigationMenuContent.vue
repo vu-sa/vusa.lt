@@ -1,7 +1,7 @@
 <template>
   <component :is="forAdminEdit ? 'div' : NavigationMenuContent" class="dark:bg-zinc-900">
     <ul
-      :class="`grid max-h-[calc(100vh-10rem)] gap-3 overflow-y-auto p-4 max-md:w-[400px] lg:w-[800px] lg:grid-cols-${item.cols ?? 1} content-stretch`">
+      :class="`grid max-md:max-h-[calc(100dvh-20rem)] md:max-h-[calc(100vh-10rem)] gap-3 overflow-y-auto p-4 max-md:w-[340px] md:w-[450px] lg:w-[650px] xl:w-[800px] lg:grid-cols-${item.cols ?? 1} content-stretch`">
       <li v-for="links in item.links" :key="item.id">
         <template v-for="(link, index) in links" :key="link.name">
           <div v-if="link.type === 'divider'" class="my-3 border-t border-zinc-200">

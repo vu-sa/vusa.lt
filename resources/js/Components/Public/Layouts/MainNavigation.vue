@@ -2,7 +2,7 @@
   <section class="fixed top-0 z-50 w-full">
     <div class="group relative">
       <nav
-        class="relative z-10 grid h-20 grid-cols-[auto,_1fr,_100px] gap-12 bg-white px-6 text-zinc-800 shadow-sm dark:bg-zinc-800 dark:text-white lg:px-12 xl:px-24 2xl:px-36">
+        class="relative z-10 grid max-md:h-16 md:h-20 grid-cols-[auto,_1fr,_80px] max-md:gap-4 md:gap-12 bg-white px-6 text-zinc-800 shadow-sm dark:bg-zinc-800 dark:text-white lg:px-12 xl:px-24 2xl:px-36">
         <div class="flex flex-row items-center space-x-4">
           <SmartLink title="Grįžti į pagrindinį puslapį" :href="`${$page.props.app.url}/${$page.props.app.locale}`"
             target="_self">
@@ -14,7 +14,7 @@
           </NButton>
         </div>
 
-        <div class="flex w-full items-center justify-center gap-x-2 max-md:justify-between md:gap-x-6 lg:gap-x-12">
+        <div class="flex w-full items-center justify-center gap-x-2 max-md:justify-between md:gap-x-4 lg:gap-x-12">
           <MainMenu class="max-md:hidden">
             <template #additional>
               <PadalinysSelector :size="smallerThanSm ? 'tiny' : 'small'" @select:padalinys="handleSelectPadalinys" />
@@ -23,7 +23,7 @@
           <div class="hidden max-md:block">
             <PadalinysSelector :size="smallerThanSm ? 'tiny' : 'small'" @select:padalinys="handleSelectPadalinys" />
           </div>
-          <div class="flex items-center gap-4">
+          <div class="hidden md:flex items-center gap-4">
             <SearchButton />
             <StartFM />
           </div>
