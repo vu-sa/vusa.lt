@@ -274,7 +274,7 @@ class UserController extends LaravelResourceController
             return redirect()->intended(RouteServiceProvider::HOME);
         }
 
-        return redirect()->route('home');
+        return redirect()->route('home', ['subdomain' => 'www', 'lang' => app()->getLocale()]);
     }
 
     public function authenticate(Request $request)
