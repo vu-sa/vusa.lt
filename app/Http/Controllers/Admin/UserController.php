@@ -57,9 +57,12 @@ class UserController extends LaravelResourceController
     {
         $this->authorize('create', [User::class, $this->authorizer]);
 
+        $permissablePadaliniai = User::find(Auth::id())->hasRole(config('permission.super_admin_role_name')) ? Padalinys::all() : $this->authorizer->getPadaliniai();
+
         return Inertia::render('Admin/People/CreateUser', [
             'roles' => Role::all(),
             'padaliniaiWithDuties' => $this->getDutiesForForm($this->authorizer),
+            'permissablePadaliniai' => $permissablePadaliniai
         ]);
     }
 
@@ -133,11 +136,14 @@ class UserController extends LaravelResourceController
         // user load duties with pivot
         $user->load('current_duties', 'previous_duties', 'roles');
 
+        $permissablePadaliniai = User::find(Auth::id())->hasRole(config('permission.super_admin_role_name')) ? Padalinys::all() : $this->authorizer->getPadaliniai();
+
         return Inertia::render('Admin/People/EditUser', [
             'user' => $user->makeVisible(['last_action']),
             // get all roles
             'roles' => fn () => Role::all(),
             'padaliniaiWithDuties' => fn () => $this->getDutiesForForm($this->authorizer),
+            'permissablePadaliniai' => $permissablePadaliniai,
         ]);
     }
 
@@ -197,16 +203,37 @@ class UserController extends LaravelResourceController
     // TODO: doesn't account for duties with the same name
     private function handleDutiesUpdate(SupportCollection $existing_duties, SupportCollection $user_duties, User $user)
     {
+        // Check if not super admin
+        if (User::find(Auth::id())->hasRole(config('permission.super_admin_role_name'))) {
+            $permissablePadaliniai = Padalinys::all();
+        } else {
+            $permissablePadaliniai = $this->authorizer->getPadaliniai();
+        }
+
         $new = $existing_duties->diff($user_duties)->values();
         $deleted = $user_duties->diff($existing_duties)->values();
         // attach new duties
 
         foreach ($new as $duty) {
+
+            $duty = Duty::find($duty);
+
+            if (! $permissablePadaliniai->contains($duty->institution->padalinys)) {
+                continue;
+            }
+
             $user->duties()->attach($duty, ['start_date' => now()->subDay()]);
         }
 
         // update duty end date of deleted duties
         foreach ($deleted as $duty) {
+
+            $duty = Duty::find($duty);
+
+            if (! $permissablePadaliniai->contains($duty->institution->padalinys)) {
+                continue;
+            }
+
             $user->duties()->updateExistingPivot($duty, ['end_date' => now()->subDay()]);
         }
     }

@@ -6,9 +6,10 @@
   >
     <UpsertModelLayout :errors="$page.props.errors" :model="user">
       <UserForm
-        :user="user"
-        :roles="roles"
-        :padaliniai-with-duties="padaliniaiWithDuties"
+        :user
+        :roles
+        :padaliniai-with-duties
+        :permissable-padaliniai
         model-route="users.update"
         delete-model-route="users.destroy"
       />
@@ -16,7 +17,7 @@
   </PageContent>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
 import Icons from "@/Types/Icons/regular";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
@@ -27,5 +28,6 @@ defineProps<{
   roles: App.Entities.Role[];
   // TODO: don't return all duties from the controller immedixxately
   padaliniaiWithDuties: App.Entities.Padalinys[];
+  permissablePadaliniai: App.Entities.Padalinys[];
 }>();
 </script>

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Padalinys;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -110,7 +111,12 @@ class ModelAuthorizer
 
     private function getPadaliniaiFromPermissableDuties(): Collection
     {
-        $padaliniai = $this->permissableDuties->load('institution.padalinys')->pluck('institution.padalinys')->flatten(1)->unique('id')->values();
+        if ($this->isAllScope === true) {
+            $padaliniai = Padalinys::all();
+        } else {
+            $padaliniai = $this->permissableDuties->load('institution.padalinys')->pluck('institution.padalinys')->flatten(1)->unique('id')->values();
+        }
+
 
         return new Collection($padaliniai);
     }

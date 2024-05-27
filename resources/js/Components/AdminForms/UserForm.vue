@@ -228,6 +228,7 @@ const props = defineProps<{
   user: App.Entities.User;
   roles: App.Entities.Role[];
   padaliniaiWithDuties: App.Entities.Padalinys[];
+  permissablePadaliniai: App.Entities.Padalinys[];
   modelRoute: string;
   deleteModelRoute?: string;
 }>();
@@ -241,21 +242,23 @@ const form = useForm("user", props.user);
 form.roles = props.user.roles?.map((role) => role.id);
 
 const dutyOptions: TreeOption[] = props.padaliniaiWithDuties.map(
-  (padalinys) => ({
-    label: padalinys.shortname,
-    value: padalinys.id,
-    checkboxDisabled: true,
-    children: padalinys.institutions?.map((institution) => ({
-      label: institution.name,
-      value: institution.id,
+  (padalinys) => {
+    return ({
+      label: padalinys.shortname,
+      value: padalinys.id,
       checkboxDisabled: true,
-      children: institution.duties?.map((duty) => ({
-        label: duty.name,
-        value: duty.id,
+      children: padalinys.institutions?.map((institution) => ({
+        label: institution.name,
+        value: institution.id,
+        checkboxDisabled: true,
+        children: institution.duties?.map((duty) => ({
+          label: duty.name,
+          value: duty.id,
+        })),
       })),
-    })),
-  }),
-);
+    });
+  },
+).filter((padalinys) => props.permissablePadaliniai.some((permissable) => permissable.id === padalinys.value));
 
 // check if email contains "vusa.lt"
 const isUserEmailMaybeDutyEmail = computed(() => {
@@ -396,10 +399,11 @@ const flattenDutyOptions = computed(() => {
                   ? duty.label
                   : `${duty.label} (${institution.label})`,
               value: duty.value,
+              padalinysId: padalinys.value,
             };
           }),
       ),
-  );
+  ).filter((duty) => props.permissablePadaliniai.some((permissable) => permissable.id === duty?.padalinysId));
 });
 
 const rolesOptions = props.roles.map((role) => ({
