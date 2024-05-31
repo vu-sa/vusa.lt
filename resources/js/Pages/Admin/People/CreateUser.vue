@@ -2,9 +2,10 @@
   <PageContent title="Naujas studentas" :heading-icon="Icons.USER">
     <UpsertModelLayout :errors="$page.props.errors" :model="user">
       <UserForm
-        :user="user"
-        :roles="roles"
-        :padaliniai-with-duties="padaliniaiWithDuties"
+        :user
+        :roles
+        :padaliniai-with-duties
+        :permissable-padaliniai
         model-route="users.store"
       />
     </UpsertModelLayout>
@@ -20,6 +21,7 @@ import UserForm from "@/Components/AdminForms/UserForm.vue";
 defineProps<{
   roles: App.Entities.Role[];
   padaliniaiWithDuties: App.Entities.Padalinys[];
+  permissablePadaliniai: App.Entities.Padalinys[];
 }>();
 
 const user = {
