@@ -291,7 +291,8 @@ class UserController extends LaravelResourceController
         $duty = Duty::where('email', $microsoftUser->email)->first();
 
         if ($duty) {
-            $user = $duty->users()->first();
+            ## TEST: if only current users from duty are allowed to login
+            $user = $duty->current_users()->first();
             $user->microsoft_token = $microsoftUser->token;
 
             Auth::login($user);
