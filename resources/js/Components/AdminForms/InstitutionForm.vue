@@ -117,7 +117,7 @@
                   ><NIcon :component="ArrowCircleDown24Regular"
                 /></NButton>
               </NButtonGroup>
-              <div v-for="user in duty.users" :key="user.id" class="my-1">
+              <div v-for="user in duty.current_users" :key="user.id" class="my-1">
                 <UserPopover :user="user" show-name :size="24" />
               </div>
             </div>

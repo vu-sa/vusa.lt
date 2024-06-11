@@ -92,6 +92,7 @@ class InstitutionController extends LaravelResourceController
     {
         $this->authorize('view', [Institution::class, $institution, $this->authorizer]);
 
+        // TODO: only show current_users
         $institution->load('padalinys', 'users', 'matters')->load(['meetings' => function ($query) {
             $query->with('tasks', 'comments', 'files')->orderBy('start_time', 'asc');
         }])->load('activities.causer');
@@ -121,7 +122,7 @@ class InstitutionController extends LaravelResourceController
         $this->authorize('update', [Institution::class, $institution, $this->authorizer]);
 
         $institution->load('types')->load(['duties' => function ($query) {
-            $query->with('users')->orderBy('order', 'asc');
+            $query->with('current_users')->orderBy('order', 'asc');
         }]);
 
         return Inertia::render('Admin/People/EditInstitution', [
