@@ -62,7 +62,7 @@ class UserController extends LaravelResourceController
         return Inertia::render('Admin/People/CreateUser', [
             'roles' => Role::all(),
             'padaliniaiWithDuties' => $this->getDutiesForForm($this->authorizer),
-            'permissablePadaliniai' => $permissablePadaliniai
+            'permissablePadaliniai' => $permissablePadaliniai,
         ]);
     }
 
@@ -291,7 +291,7 @@ class UserController extends LaravelResourceController
         $duty = Duty::where('email', $microsoftUser->email)->first();
 
         if ($duty) {
-            ## TEST: if only current users from duty are allowed to login
+            //# TEST: if only current users from duty are allowed to login
             $user = $duty->current_users()->first();
             $user->microsoft_token = $microsoftUser->token;
 
