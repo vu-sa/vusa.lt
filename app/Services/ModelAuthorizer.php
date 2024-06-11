@@ -117,7 +117,6 @@ class ModelAuthorizer
             $padaliniai = $this->permissableDuties->load('institution.padalinys')->pluck('institution.padalinys')->flatten(1)->unique('id')->values();
         }
 
-
         return new Collection($padaliniai);
     }
 
