@@ -11,7 +11,9 @@ class UpdateResourceRequest extends ResourceRequest
      */
     public function authorize(): bool
     {
-        return $this->user()->can('update', [Resource::class, $this->authorizer]);
+        $resource = $this->route('resource');
+
+        return $this->user()->can('update', [Resource::class, $resource, $this->authorizer]);
     }
 
     /**
