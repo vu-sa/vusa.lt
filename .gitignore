@@ -36,3 +36,7 @@ lang/php_lt.json
 
 .phpunit.cache
 coverage/*
+
+# vitepress
+docs/.vitepress/dist
+docs/.vitepress/cache
