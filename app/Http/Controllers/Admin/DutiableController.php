@@ -52,7 +52,7 @@ class DutiableController extends LaravelResourceController
      */
     public function destroy(Dutiable $dutiable)
     {
-        $this->authorize('delete', [Dutiable::class, $dutiable, $this->authorizer]);
+        $this->authorize('delete', [Duty::class, $dutiable->duty, $this->authorizer]);
 
         $user = $dutiable->dutiable;
 
