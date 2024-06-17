@@ -1,6 +1,6 @@
 <template>
   <div class="mx-8 mb-4 rounded-lg p-4 lg:mx-16 lg:mb-8 lg:px-8">
-    <h2 class="mb-4">Mūsų draugai</h2>
+    <h2 class="mb-4">{{ $t('Taip pat apsilankyk') }}!</h2>
     <NCarousel
       :space-between="30"
       :loop="true"
