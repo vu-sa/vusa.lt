@@ -1,7 +1,7 @@
 <template>
   <CardModal v-model:show="showModal" class="max-w-3xl" title="Pasirinkti paveikslėlį" @close="showModal = false">
     <Suspense>
-      <FileSelector v-if="showModal" :file-extensions="['jpg', 'jpeg', 'png', 'gif']" @submit="addImage" />
+      <FileSelector v-if="showModal" :file-extensions @submit="addImage" />
       <div v-else class="h-32" />
       <template #fallback>
         <div class="flex h-32 items-center justify-center">
@@ -12,12 +12,26 @@
   </CardModal>
 </template>
 <script setup lang="ts">
-import { NSpin } from 'naive-ui';
+import { computed } from 'vue';
 
+import { NSpin } from 'naive-ui';
 import CardModal from '../Modals/CardModal.vue';
 import FileSelector from '@/Features/Admin/FileManager/FileSelector.vue';
 
+const props = defineProps<{
+  // only specific values for selectionType are allowed
+  selectionType?: 'image' | 'video';
+}>()
+
 const showModal = defineModel<boolean>('showModal');
+
+const fileExtensions = computed(() => {
+  if (props.selectionType === 'video') {
+    return ['mp4', 'webm', 'ogg', 'MP4', 'WEBM', 'OGG'];
+  }
+
+    return ['jpg', 'jpeg', 'png', 'gif', 'JPG', 'PNG'];
+});
 
 const emit = defineEmits<{
   (e: 'submit', url: string): void
