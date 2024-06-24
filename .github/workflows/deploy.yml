@@ -47,6 +47,8 @@ jobs:
       - name: upload and run on server
         # Unpack
         run: |
+          # Test connection
+          ssh -v -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "echo 'Connected to server'"
           scp build.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/build.tar.gz
           scp vendor.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/vendor.tar.gz
           scp build-docs.tar.gz $${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/build-docs.tar.gz
