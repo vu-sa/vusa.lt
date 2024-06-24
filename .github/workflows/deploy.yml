@@ -43,14 +43,14 @@ jobs:
       - name: build docs
         run: |
           npm run docs:build
-          tar -czf --directory docs/.vitepress/dist build-docs.tar.gz
+          tar -czf build-docs.tar.gz -C docs/.vitepress/dist .
       - name: upload and run on server
         # Unpack
         run: |
           scp build.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/build.tar.gz
           scp vendor.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/vendor.tar.gz
           scp build-docs.tar.gz $${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/build-docs.tar.gz
-          ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && git pull && rm -rf public/build && rm -rf vendor && rm -rf public/docs && tar -xzf build.tar.gz && tar -xzf vendor.tar.gz && mkdir public/docs && tar -xzf --directory public/docs build-docs.tar.gz && rm build.tar.gz && rm vendor.tar.gz && rm build-docs.tar.gz"       
+          ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && git pull && rm -rf public/build && rm -rf vendor && rm -rf public/docs && tar -xzf build.tar.gz && tar -xzf vendor.tar.gz && mkdir public/docs && tar -xzf build-docs.tar.gz -C public/docs && rm build.tar.gz && rm vendor.tar.gz && rm build-docs.tar.gz"       
       - name: after upload
         run: |
           ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && /opt/php83/bin/php /usr/local/bin/composer dump-autoload && /opt/php83/bin/php artisan optimize"
