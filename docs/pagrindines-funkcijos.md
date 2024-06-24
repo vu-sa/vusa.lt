@@ -1,0 +1,3 @@
+# Pagrindinės funkcijos
+
+Bus papildyta.
