@@ -5,6 +5,7 @@ import vueJsx from "@vitejs/plugin-vue-jsx";
 export default defineConfig({
   title: "vusa.lt gidas",
   description: "Gidas kaip naudotis vusa.lt",
+  base: '/docs/',
   vite: {
     plugins: [vueJsx()]
   },
