@@ -39,6 +39,7 @@ import Youtube from '@tiptap/extension-youtube';
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/Components/ShadcnVue/ui/accordion'
 import { CustomHeading } from './TipTap/CustomHeading';
+import { Video } from './TipTap/Video';
 import RichContentCard from './RichContentCard.vue';
 
 defineProps<{
@@ -90,6 +91,7 @@ function generateHTMLfromTiptap(json_content: models.ContentPart['json_content']
     }),
     TipTapLink,
     Underline,
+    Video,
     Youtube.configure({
       HTMLAttributes: {
         class: "aspect-video h-auto w-full rounded-xl shadow-lg",

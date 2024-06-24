@@ -26,10 +26,6 @@ export const BannerDescription = (
       principu. Jie yra naudojami pagrindiniame puslapyje, skirti reklamuoti
       bendroves, VU SA PKP bei partnerius.
     </p>
-    <p>
-      Šiuo metu banerių funkcija yra{" "}
-      <strong class="text-vusa-red">išjungta.</strong>
-    </p>
   </>
 );
 

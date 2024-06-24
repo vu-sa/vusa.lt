@@ -9,6 +9,7 @@ class TiptapEditor extends Editor
     public function __construct()
     {
         $this->configuration = [
+            /* TODO: add video */
             'extensions' => [
                 new \Tiptap\Extensions\StarterKit([
                     'heading' => false,

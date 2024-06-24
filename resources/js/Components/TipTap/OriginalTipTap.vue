@@ -83,6 +83,9 @@
         <Suspense>
           <TiptapImageButton @submit="(url) => editor?.chain().focus().setImage({ src: url }).run()" />
         </Suspense>
+        <Suspense>
+          <TiptapVideoButton @submit="attachVideoUrl" />
+        </Suspense>
         <TiptapYoutubeButton @submit="(youtubeUrl) => editor?.commands.setYoutubeVideo({ src: youtubeUrl })" />
       </NButtonGroup>
       <NButtonGroup size="small">
@@ -231,11 +234,12 @@ import UnderlineExtension from "@tiptap/extension-underline";
 import YoutubeExtension from "@tiptap/extension-youtube";
 
 import { CustomHeading } from "./CustomHeading";
-import { maxIndex } from "d3";
+import { Video } from './Video';
 import TipTapButton from "@/Features/Admin/CommentViewer/TipTap/TipTapMarkButton.vue";
 import TipTapMarkButton from "@/Features/Admin/CommentViewer/TipTap/TipTapMarkButton.vue";
 import TiptapImageButton from "./TiptapImageButton.vue";
 import TiptapLinkButton from "./TiptapLinkButton.vue";
+import TiptapVideoButton from "./TiptapVideoButton.vue";
 import TiptapYoutubeButton from "./TiptapYoutubeButton.vue";
 import latinize from "latinize";
 
@@ -289,6 +293,7 @@ const editor = useEditor({
       openOnClick: false,
     }),
     UnderlineExtension,
+    Video,
     YoutubeExtension.configure({
       HTMLAttributes: {
         class: "aspect-video h-36 w-auto my-2",
@@ -313,6 +318,11 @@ const editor = useEditor({
 onBeforeUnmount(() => {
   editor.value?.destroy();
 });
+
+function attachVideoUrl(url: string) {
+  console.log(url)
+  editor.value?.chain().focus().setVideo(url).run();
+}
 
 function handleUpdate() {
   const innerHeadings = []
