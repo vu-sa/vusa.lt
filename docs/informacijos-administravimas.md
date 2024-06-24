@@ -1,10 +1,16 @@
+<script setup>
+import { CalendarDescription, FileDescription, NewsDescription } from '../resources/js/Types/EntityDescriptions/DescriptionComponents.tsx'
+</script>
+
 # Informacijos administravimas
 
 Didžioji dalis informacijos gali būti administruojama koordinatorių.
 
+## Puslapiai
+
 ## Naujienos
 
-## Puslapiai
+<component :is="NewsDescription"></component>
 
 ## Greitosios nuorodos
 
@@ -28,7 +34,7 @@ Pagrindinė navigaciją gali atnaujinti tik VU SA centrinio biuro koordinatorius
 
 ## Kalendorius
 
-...
+<component :is="CalendarDescription"></component>
 
 ## Kategorijos
 
@@ -41,4 +47,4 @@ Kategorijas gali kurti tik pagrindinis administratorius.
 
 ## Failai
 
-Pagrindinė direktorija padalinių failams yra `padaliniai/{vusapadalinys}`.
+<component :is="FileDescription"></component>

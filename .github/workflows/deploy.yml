@@ -40,12 +40,17 @@ jobs:
           # TODO: Possible to maybe use this: https://import-meta-env.org/guide/getting-started/introduction.html#guide
           VITE_POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }} VITE_ARCHYVAS_PASSWORD=${{ secrets.ARCHYVAS_PASSWORD }} VITE_ATSTOVAI_PASSWORD=${{ secrets.ATSTOVAI_PASSWORD }} npm run build 
           tar -czf build.tar.gz public/build
+      - name: build docs
+        run: |
+          npm run docs:build
+          tar -czf --directory docs/.vitepress/dist build-docs.tar.gz
       - name: upload and run on server
         # Unpack
         run: |
           scp build.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/build.tar.gz
           scp vendor.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/vendor.tar.gz
-          ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && git pull && rm -rf public/build && rm -rf vendor && tar -xzf build.tar.gz && tar -xzf vendor.tar.gz && rm build.tar.gz && rm vendor.tar.gz"       
+          scp build-docs.tar.gz $${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/build_docs.tar.gz
+          ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && git pull && rm -rf public/build && rm -rf vendor && rm -rf public/docs && tar -xzf build.tar.gz && tar -xzf vendor.tar.gz && tar -xzf --directory public/docs build-docs.tar.gz && rm build.tar.gz && rm vendor.tar.gz"       
       - name: after upload
         run: |
           ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && /opt/php83/bin/php /usr/local/bin/composer dump-autoload && /opt/php83/bin/php artisan optimize"

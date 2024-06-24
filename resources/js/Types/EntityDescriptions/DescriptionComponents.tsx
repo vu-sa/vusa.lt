@@ -94,8 +94,10 @@ export const DutyDescription = (
 export const FileDescription = (
   <>
     <p>
-      Failai yra dokumentai, kurie gali būti įkelti į platformą ir naudojami
-      kaip informacinis šaltinis.
+      Failų skiltyje tvarkomi dokumentai, paveikslėliai ir kiti failai: į juos galima sukurti nuorodas arba, paveikslėlių atveju, įkelti tiesiai į puslapio tekstą.
+    </p>
+    <p>
+      Pagrindinė direktorija padalinių failams yra padaliniai/vusapadalinys.
     </p>
   </>
 );
@@ -210,7 +212,7 @@ export const NavigationDescription = (
 export const NewsDescription = (
   <>
     <p>
-      Naujienos yra puslapiai, turintys skelbimo laiką ir rodomi naujienų
+      Naujienos veikia panašiai kaip puslapiai, tačiau jie turi <strong>skelbimo laiką</strong> ir rodomi naujienų
       skiltyje.
     </p>
   </>

@@ -1,9 +1,13 @@
 import { defineConfig } from 'vitepress'
+import vueJsx from "@vitejs/plugin-vue-jsx";
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   title: "vusa.lt gidas",
   description: "Gidas kaip naudotis vusa.lt",
+  vite: {
+    plugins: [vueJsx()]
+  },
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
@@ -38,6 +42,6 @@ export default defineConfig({
 
     socialLinks: [
       { icon: 'github', link: 'https://github.com/vu-sa/vusa.lt' }
-    ]
+    ],
   }
 })
