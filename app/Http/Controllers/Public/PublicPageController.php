@@ -252,39 +252,41 @@ class PublicPageController extends PublicController
         ]);
     }
 
-    // TODO: pakeisti seno puslapio nuorodą
-    public function summerCamps2022()
-    {
-        $this->getBanners();
-        $this->getPadalinysLinks();
-        $this->shareOtherLangURL('pirmakursiuStovyklos2022');
-
-        // get events with category of freshmen camps
-        $events = Calendar::whereHas('category', function (Builder $query) {
-            $query->where('name', '=', 'freshmen-camps-2022');
-        })->with('padalinys:id,alias,fullname')->with(['media'])->get()->sortBy('padalinys.alias');
-
-        return Inertia::render('Public/SummerCamps', ['events' => $events->makeHidden(['description', 'location', 'category', 'url', 'user_id', 'extra_attributes'])->values()->all()])->withViewData([
-            'title' => 'Pirmakursių stovyklos',
-            'description' => 'Universiteto tvarka niekada su ja nesusidūrusiam žmogui gali pasirodyti labai sudėtinga ir būtent dėl to jau prieš septyniolika metų Vilniaus universiteto Studentų atstovybė (VU SA) surengė pirmąją pirmakursių stovyklą.',
-        ]);
-    }
-
-    public function summerCamps2023()
+    public function summerCamps($lang, $year = null)
     {
         $this->getBanners();
         $this->getPadalinysLinks();
         $this->shareOtherLangURL('pirmakursiuStovyklos');
 
-        // get events with category of freshmen camps
-        $events = Calendar::whereHas('category', function (Builder $query) {
-            $query->where('name', '=', 'Pirmakursių stovykla');
-        })->with('padalinys:id,alias,fullname')->with(['media'])->get()->sortBy('padalinys.alias');
+        if ($year == null) {
+            $year = intval(date('Y'));
+        } else {
+            $year = intval($year);
+        }
 
-        return Inertia::render('Public/SummerCamps2023', ['events' => $events->makeHidden(['description', 'location', 'category', 'url', 'user_id', 'extra_attributes'])->values()->all()])->withViewData([
-            'title' => 'Pirmakursių stovyklos',
-            'description' => 'Universiteto tvarka niekada su ja nesusidūrusiam žmogui gali pasirodyti labai sudėtinga ir būtent dėl to jau prieš septyniolika metų Vilniaus universiteto Studentų atstovybė (VU SA) surengė pirmąją pirmakursių stovyklą.',
-        ]);
+        // TODO: add alias in global settings instead
+        $events = Calendar::query()->whereHas('category', function (Builder $query) {
+            $query->where('alias', '=', 'freshmen-camps');
+        })->with('padalinys:id,alias,fullname')->whereYear('date', $year ?? date('Y'))
+            ->with(['media'])->get()->sortBy('padalinys.alias');
+
+        if ($events->isEmpty() && $year != intval(date('Y'))) {
+            return redirect()->route('pirmakursiuStovyklos', ['lang' => app()->getLocale(), 'year' => null]);
+        }
+
+        $yearsWhenEventsExist = Calendar::query()->whereHas('category', function (Builder $query) {
+            $query->where('alias', '=', 'freshmen-camps');
+        })->selectRaw('YEAR(date) as year')->distinct()->get()->pluck('year');
+
+        return Inertia::render('Public/SummerCamps',
+            [
+                'events' => $events->makeHidden(['description', 'location', 'category', 'url', 'user_id', 'extra_attributes'])->values()->all(),
+                'year' => $year,
+                'yearsWhenEventsExist' => $yearsWhenEventsExist,
+            ])->withViewData([
+                'title' => $year == intval(date('Y')) ? 'Pirmakursių stovyklos' : $year . ' m. pirmakursių stovyklos',
+                'description' => 'Universiteto tvarka niekada su ja nesusidūrusiam žmogui gali pasirodyti labai sudėtinga ir būtent dėl to jau prieš septyniolika metų Vilniaus universiteto Studentų atstovybė (VU SA) surengė pirmąją pirmakursių stovyklą.',
+            ]);
     }
 
     public function individualStudies()

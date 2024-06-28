@@ -1,5 +1,6 @@
 <template>
-  <div>
+    <SummerCamps v-if="$page.props.app.locale === 'lt'" />
+
     <div v-if="news.length > 0" class="mx-auto mt-2">
       <NewsElement :news="news" />
     </div>
@@ -8,10 +9,8 @@
 
     <EventCalendar :show-photos="true" :calendar="calendar" :upcoming-events="upcomingEvents" />
 
-    <!-- <SummerCamps v-if="$page.props.app.locale === 'lt'" /> -->
 
     <!-- <YearReport2022 /> -->
-  </div>
 </template>
 
 <script setup lang="ts">
