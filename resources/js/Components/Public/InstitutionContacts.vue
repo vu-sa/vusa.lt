@@ -1,20 +1,10 @@
 <template>
   <div class="gap-12 md:grid md:grid-cols-[5fr,_3fr]">
     <div class="h-fit md:sticky md:top-36">
-      <InstitutionFigure
-        only-vertical
-        :is-mobile="isMobile"
-        :institution="institution"
-      ></InstitutionFigure>
+      <InstitutionFigure only-vertical :is-mobile="isMobile" :institution="institution" />
     </div>
-    <section class="flex flex-col gap-6">
-      <ContactCard
-        v-for="contact in contacts"
-        :key="contact.id"
-        :contact="contact"
-        :duties="contact.duties"
-      >
-      </ContactCard>
+    <section class="flex flex-col gap-4 max-md:grid max-md:grid-cols-2">
+      <ContactCard v-for="contact in contacts" :key="contact.id" :contact="contact" :duties="contact.duties" />
     </section>
   </div>
 </template>

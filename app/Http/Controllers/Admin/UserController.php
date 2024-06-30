@@ -86,6 +86,7 @@ class UserController extends LaravelResourceController
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
+                'facebook_url' => $request->facebook_url,
                 'phone' => $request->phone,
                 'profile_photo_path' => $request->profile_photo_path,
             ]);
@@ -182,7 +183,7 @@ class UserController extends LaravelResourceController
         $this->handleDutiesUpdate((new SupportCollection($request->current_duties)), $user->current_duties->pluck('id'), $user);
 
         DB::transaction(function () use ($request, $user) {
-            $user->update($request->only('name', 'email', 'phone', 'profile_photo_path'));
+            $user->update($request->only('name', 'email', 'facebook_url', 'phone', 'profile_photo_path'));
 
             // handle duties update
 

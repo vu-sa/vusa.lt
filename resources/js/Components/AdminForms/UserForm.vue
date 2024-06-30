@@ -46,9 +46,14 @@
           />
         </NFormItem>
 
+        <div class="grid gap-4 lg:grid-cols-2">
         <NFormItem :label="$t('forms.fields.phone')">
           <NInput v-model:value="form.phone" placeholder="+370 612 34 567" />
         </NFormItem>
+          <NFormItem :label="$t('forms.fields.facebook_url')">
+            <NInput v-model:value="form.facebook_url" placeholder="https://www.facebook.com/..." />
+                      </NFormItem>
+        </div>
 
         <NFormItem :label="$t('forms.fields.picture')">
           <NMessageProvider>

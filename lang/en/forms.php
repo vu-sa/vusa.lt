@@ -23,6 +23,7 @@ return [
         'location' => 'Location',
         'media' => 'Pictures',
         'state' => 'State',
+        'facebook_url' => 'Facebook URL',
     ],
     'context' => [
         'main_info' => 'Main information',

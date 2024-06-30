@@ -23,6 +23,7 @@ return [
         'location' => 'Vieta',
         'media' => 'Nuotraukos',
         'state' => 'Būsena',
+        'facebook_url' => 'Facebook nuoroda',
     ],
     'context' => [
         'main_info' => 'Pagrindinė informacija',
