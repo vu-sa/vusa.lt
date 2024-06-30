@@ -5,8 +5,8 @@
       'gap-2 xl:grid-cols-[2fr,_3fr]': imageUrl,
     }">
     <img v-if="imageUrl" :src="imageUrl"
-      class="h-40 w-auto object-cover max-xl:rounded-t-md md:size-full xl:rounded-l-md" loading="lazy"
-      style="object-position: 50% 25%" :alt="contact?.name">
+      class="h-40 w-full object-cover max-xl:rounded-t-md xl:rounded-l-md" loading="lazy"
+      style="object-position: 50% 20%" :alt="contact?.name">
     <div class="flex flex-col justify-between gap-4 p-4">
       <div>
         <div class="flex items-center">
