@@ -31,8 +31,7 @@
           </SmartLink>
         </span>
       </em>
-      <div
-        class="typography col-span-4 flex flex-col gap-2 text-base leading-7 max-w-prose">
+      <div class="typography col-span-4 flex max-w-prose flex-col gap-2 text-base leading-7">
         <RichContentParser :content="article.content?.parts" />
       </div>
     </NewsArticle>
@@ -44,6 +43,7 @@
 import { trans as $t } from "laravel-vue-i18n";
 import { NBackTop, NButton } from "naive-ui";
 
+import { formatStaticTime } from "@/Utils/IntlTime";
 import NewsArticle from "@/Components/Public/NewsArticle.vue";
 import RichContentParser from "@/Components/RichContentParser.vue";
 import SmartLink from "@/Components/Public/SmartLink.vue";

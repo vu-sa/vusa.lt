@@ -1,12 +1,6 @@
 <template>
-  <IndexPageLayout
-    title="Naujienos"
-    model-name="news"
-    :can-use-routes="canUseRoutes"
-    :columns="columns"
-    :paginated-models="news"
-    :icon="Icons.NEWS"
-  />
+  <IndexPageLayout title="Naujienos" model-name="news" :can-use-routes="canUseRoutes" :columns="columns"
+    :paginated-models="news" :icon="Icons.NEWS" />
 </template>
 
 <script setup lang="tsx">
@@ -14,11 +8,11 @@ import { computed, provide, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 import type { DataTableColumns, DataTableSortState } from "naive-ui";
 
+import { formatStaticTime } from "@/Utils/IntlTime";
 import { langColumn, padalinysColumn } from "@/Composables/dataTableColumns";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
-import { formatStaticTime } from "@/Utils/IntlTime";
 
 defineProps<{
   news: PaginatedModels<App.Entities.News>;
