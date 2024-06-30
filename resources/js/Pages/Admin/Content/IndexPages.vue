@@ -1,17 +1,10 @@
 <template>
-  <IndexPageLayout
-    title="Puslapiai"
-    model-name="pages"
-    :can-use-routes="canUseRoutes"
-    :columns="columns"
-    :paginated-models="pages"
-    :icon="Icons.PAGE"
-  >
-  </IndexPageLayout>
+  <IndexPageLayout title="Puslapiai" model-name="pages" :can-use-routes="canUseRoutes" :columns="columns"
+    :paginated-models="pages" :icon="Icons.PAGE" />
 </template>
 
 <script setup lang="tsx">
-import { h, provide, ref } from "vue";
+import { computed, h, provide, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 import type { DataTableColumns, DataTableSortState } from "naive-ui";
 
@@ -45,7 +38,7 @@ const filters = ref<Record<string, any>>({
 
 provide("filters", filters);
 
-const columns: DataTableColumns<App.Entities.News> = [
+const columns = computed<DataTableColumns<App.Entities.News>>(() => [
   {
     title: "ID",
     key: "id",
@@ -93,13 +86,13 @@ const columns: DataTableColumns<App.Entities.News> = [
     render(row) {
       return row.other_lang_id
         ? h(
-            "a",
-            {
-              href: route("pages.edit", { id: row.other_lang_id }),
-              target: "_blank",
-            },
-            row.other_lang_id,
-          )
+          "a",
+          {
+            href: route("pages.edit", { id: row.other_lang_id }),
+            target: "_blank",
+          },
+          row.other_lang_id,
+        )
         : "";
     },
   },
@@ -123,5 +116,5 @@ const columns: DataTableColumns<App.Entities.News> = [
       tooltip: true,
     },
   },
-];
+]);
 </script>

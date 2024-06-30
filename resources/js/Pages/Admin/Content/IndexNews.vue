@@ -6,8 +6,7 @@
     :columns="columns"
     :paginated-models="news"
     :icon="Icons.NEWS"
-  >
-  </IndexPageLayout>
+  />
 </template>
 
 <script setup lang="tsx">
@@ -19,6 +18,7 @@ import { langColumn, padalinysColumn } from "@/Composables/dataTableColumns";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
+import { formatStaticTime } from "@/Utils/IntlTime";
 
 defineProps<{
   news: PaginatedModels<App.Entities.News>;
@@ -126,6 +126,13 @@ const columns = computed<DataTableColumns<App.Entities.News>>(() => [
     sortOrder: sorters.value.publish_time,
     ellipsis: {
       tooltip: true,
+    },
+    render(row) {
+      return formatStaticTime(
+        new Date(row.publish_time),
+        { year: "numeric", month: "numeric", day: "numeric" },
+        usePage().props.app.locale
+      );
     },
   },
 ]);
