@@ -284,7 +284,7 @@ class PublicPageController extends PublicController
                 'year' => $year,
                 'yearsWhenEventsExist' => $yearsWhenEventsExist,
             ])->withViewData([
-                'title' => $year == intval(date('Y')) ? 'Pirmakursių stovyklos' : $year . ' m. pirmakursių stovyklos',
+                'title' => $year == intval(date('Y')) ? 'Pirmakursių stovyklos' : $year.' m. pirmakursių stovyklos',
                 'description' => 'Universiteto tvarka niekada su ja nesusidūrusiam žmogui gali pasirodyti labai sudėtinga ir būtent dėl to jau prieš septyniolika metų Vilniaus universiteto Studentų atstovybė (VU SA) surengė pirmąją pirmakursių stovyklą.',
             ]);
     }
