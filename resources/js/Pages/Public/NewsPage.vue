@@ -14,7 +14,9 @@
       </template>
       <template #time>
         <!-- <NIcon class="mr-2" size="16"> <Clock20Regular /> </NIcon> -->
-        {{ article.publish_time }}</template>
+        {{ formatStaticTime(new Date(article.publish_time), { year: "numeric", month: "long", day: "numeric" },
+          $page.props.app.locale
+        ) }}</template>
       <template #title>
         {{ article.title }}
       </template>

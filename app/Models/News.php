@@ -20,6 +20,7 @@ class News extends Model implements Feedable
     protected $casts = [
         'updated_at' => 'datetime:Y-m-d H:i:s',
         'created_at' => 'datetime:Y-m-d H:i:s',
+        'publish_time' => 'datetime',
     ];
 
     public function user()

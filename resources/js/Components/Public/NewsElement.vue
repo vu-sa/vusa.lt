@@ -34,7 +34,7 @@
           <!-- <NIcon class="mr-2" size="20"> <CalendarLtr20Regular /> </NIcon>VU SA
               ataskaitinė-rinkiminė konferencija -->
           <NIcon class="mr-2" size="20"> <Clock20Regular /> </NIcon
-          >{{ item.publish_time }}
+          >{{ formatStaticTime(new Date(item.publish_time), { year: "numeric", month: "long", day: "numeric" }, $page.props.app.locale) }}
         </template>
         <template #image>
           <Link :title="item.title"
@@ -76,6 +76,7 @@ import { Link } from "@inertiajs/vue3";
 import { NIcon } from "naive-ui";
 
 import HomeCard from "@/Components/Public/HomeCard.vue";
+import { formatStaticTime } from "@/Utils/IntlTime";
 
 defineProps<{
   news: App.Entities.News[] | null;
