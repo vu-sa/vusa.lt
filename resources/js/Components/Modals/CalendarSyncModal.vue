@@ -1,24 +1,25 @@
 <template>
-  <CardModal
-    :show="showModal"
-    :title="$t('Kalendoriaus sinchronizavimo instrukcija')"
-    @close="$emit('close')"
-  >
+  <CardModal :show="showModal" :title="$t('Kalendoriaus sinchronizavimo instrukcija')" @close="$emit('close')">
     <p v-if="$page.props.app.locale === 'lt'">
       <strong>Pirmiausia</strong>, nusikopijuok nuorodą!
     </p>
-    <p v-else><strong>First</strong>, copy the link!</p>
+    <p v-else>
+      <strong>First</strong>, copy the link!
+    </p>
 
     <NMessageProvider>
-      <div class="flex flex-col gap-1">
+      <div class="mt-2 flex flex-col gap-1">
         <p v-if="$page.props.app.locale === 'en'" class="font-bold">
           All events:
         </p>
         <div class="flex gap-4">
-          <div class="flex items-center rounded-2xl bg-zinc-100/50 px-4">
+          <div class="flex items-center rounded-2xl bg-zinc-100/50 px-4 dark:bg-zinc-700/50">
             <span>{{ route("calendar.ics") }}</span>
           </div>
-          <CopyToClipboardButton :text-to-copy="route('calendar.ics')" />
+          <CopyToClipboardButton show-icon :text-to-copy="route('calendar.ics')"
+            error-text="Nepavyko nukopijuoti nuorodos..." success-text="Nuoroda nukopijuota!">
+            {{ $t("Kopijuoti") }}
+          </CopyToClipboardButton>
         </div>
         <template v-if="$page.props.app.locale === 'en'">
           <p class="font-bold">
@@ -29,25 +30,20 @@
             <div class="flex items-center rounded-2xl bg-zinc-100/50 px-4">
               <span>{{ route("calendar.ics", { lang: "en" }) }}</span>
             </div>
-            <CopyToClipboardButton
-              :text-to-copy="route('calendar.ics', { lang: 'en' })"
-            />
+            <CopyToClipboardButton :text-to-copy="route('calendar.ics', { lang: 'en' })">{{ $t("Kopijuoti") }}
+            </CopyToClipboardButton>
           </div>
         </template>
       </div>
     </NMessageProvider>
     <NDivider />
-    <NTabs animated
-      ><NTabPane name="Google">
+    <NTabs animated>
+      <NTabPane name="Google">
         <ol v-if="$page.props.app.locale === 'lt'">
           <li>
             Nueik į savo
-            <a
-              target="_blank"
-              href="https://calendar.google.com/calendar/u/0/r/settings/addbyurl"
-            >
-              Google kalendorių (per naršyklę kompiuteryje)</a
-            >
+            <a target="_blank" href="https://calendar.google.com/calendar/u/0/r/settings/addbyurl">
+              Google kalendorių (per naršyklę kompiuteryje)</a>
           </li>
           <li>Įkelk VU SA studentiško kalendoriaus nuorodą</li>
           <li>
@@ -58,26 +54,21 @@
         <ol v-else>
           <li>
             Go to your
-            <a
-              target="_blank"
-              href="https://calendar.google.com/calendar/u/0/r/settings/addbyurl"
-            >
-              Google Calendar (using a browser on a PC)</a
-            >
+            <a target="_blank" href="https://calendar.google.com/calendar/u/0/r/settings/addbyurl">
+              Google Calendar (using a browser on a PC)</a>
           </li>
           <li>Paste the VU SR student activity calendar link</li>
           <li>Press <strong>„Add calendar“</strong></li>
           <li>
             ✅ (You may need to wait a minute or two for the events to pop in)
           </li>
-        </ol> </NTabPane
-      ><NTabPane name="Outlook (Office 365)">
+        </ol>
+      </NTabPane>
+      <NTabPane name="Outlook (Office 365)">
         <ol v-if="$page.props.app.locale === 'lt'">
           <li>
             Nueik į savo
-            <a href="https://outlook.office.com/calendar/addcalendar"
-              >Outlook kalendorių</a
-            >
+            <a href="https://outlook.office.com/calendar/addcalendar">Outlook kalendorių</a>
           </li>
           <li>
             Pasirink
@@ -91,9 +82,7 @@
         <ol v-else>
           <li>
             Go to your
-            <a href="https://outlook.office.com/calendar/addcalendar"
-              >Outlook calendar</a
-            >
+            <a href="https://outlook.office.com/calendar/addcalendar">Outlook calendar</a>
           </li>
           <li>
             Go to
@@ -103,8 +92,8 @@
           <li>Press <strong>„Import“</strong></li>
           <li>✅</li>
         </ol>
-      </NTabPane></NTabs
-    >
+      </NTabPane>
+    </NTabs>
     <template #footer>
       <template v-if="$page.props.app.locale === 'lt'">
         „Google“ ir „Outlook“ kartais atnaujina renginių informaciją tik

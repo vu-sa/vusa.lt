@@ -105,7 +105,7 @@ class ContactController extends PublicController
 
         $descendants->load(['institutions' => function ($query) {
             $query
-                ->with('duties.current_users:id,name,email,phone,profile_photo_path')
+                ->with('duties.current_users:id,name,email,phone,facebook_url,profile_photo_path')
                 ->with('padalinys:id,alias')
                 ->where('padalinys_id', '=', $this->padalinys->id)
                 ->orderBy('name')
@@ -135,6 +135,7 @@ class ContactController extends PublicController
                     'name' => $contact->name,
                     'email' => $contact->email,
                     'phone' => $contact->phone,
+                    'facebook_url' => $contact->facebook_url,
                     // Sometimes the duties may be filtered, e.g. curator duties are not shown in coordinator
                     'duties' => isset($contact->filtered_current_duties) ? $contact->filtered_current_duties->where('institution_id', '=', $institution->id)->values() :
                     $contact->current_duties->where('institution_id', '=', $institution->id)->values(),

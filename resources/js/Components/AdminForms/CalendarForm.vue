@@ -211,7 +211,7 @@
           ></NInput>
         </NFormItem>
 
-        <NFormItem label="Facebook nuoroda">
+        <NFormItem :label="$t('forms.fields.facebook_url')">
           <NInput
             v-if="locale === 'lt'"
             v-model:value="form.extra_attributes.facebook_url"

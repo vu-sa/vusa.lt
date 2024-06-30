@@ -23,7 +23,7 @@ class PageController extends LaravelResourceController
     {
         $this->authorize('viewAny', [Page::class, $this->authorizer]);
 
-        $indexer = new ModelIndexer(new Page(), request(), $this->authorizer);
+        $indexer = new ModelIndexer(new Page(), $request, $this->authorizer);
 
         $pages = $indexer
             ->setEloquentQuery()

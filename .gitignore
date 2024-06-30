@@ -41,3 +41,6 @@ coverage/*
 # vitepress
 docs/.vitepress/dist
 docs/.vitepress/cache
+
+# components from unplugin
+resources/js/Types/components.d.ts

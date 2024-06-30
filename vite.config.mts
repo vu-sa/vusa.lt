@@ -1,6 +1,10 @@
 import { defineConfig } from "vitest/config";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
+import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
+import Components from 'unplugin-vue-components/vite'
+import Icons from 'unplugin-icons/vite'
+import IconsResolver from 'unplugin-icons/resolver'
 import i18n from "laravel-vue-i18n/vite";
 import laravel from "laravel-vite-plugin";
 import vue from "@vitejs/plugin-vue";
@@ -9,6 +13,14 @@ import vueJsx from "@vitejs/plugin-vue-jsx";
 export default defineConfig({
   plugins: [
     laravel(["resources/js/app.ts"]),
+    Components({
+      resolvers: [
+        IconsResolver(),
+        NaiveUiResolver(),
+      ],
+      dts: 'resources/js/Types/components.d.ts',
+    }),
+    Icons(),
     vue({
       template: {
         transformAssetUrls: {

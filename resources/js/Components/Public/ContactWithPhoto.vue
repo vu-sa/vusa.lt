@@ -1,82 +1,111 @@
 <template>
   <figure
-    class="relative grid min-h-fit max-w-md rounded-md border border-zinc-200 bg-zinc-50 shadow-sm duration-200 hover:shadow-md dark:border-zinc-900 dark:bg-zinc-800"
+    class="grid rounded-lg border border-zinc-200/50 bg-zinc-50 shadow-sm duration-200 hover:shadow-md dark:border-zinc-900/60 dark:bg-zinc-800"
     :class="{
-      'xl:grid-cols-[2fr,_3fr]': imageUrl,
-    }"
-  >
-    <img
-      v-if="imageUrl"
-      :src="imageUrl"
-      class="h-full w-full rounded-t-md object-cover xl:rounded-l-md xl:rounded-tr-none"
-      loading="lazy"
-      style="object-position: 50% 25%"
-      :alt="contact.name"
-    />
+      'gap-2 xl:grid-cols-[2fr,_3fr]': imageUrl,
+    }">
+    <img v-if="imageUrl" :src="imageUrl"
+      class="h-40 w-auto object-cover max-xl:rounded-t-md md:size-full xl:rounded-l-md" loading="lazy"
+      style="object-position: 50% 25%" :alt="contact?.name">
     <div class="flex flex-col justify-between gap-4 p-4">
       <div>
         <div class="flex items-center">
-          <p
-            class="text-xl font-bold leading-5 text-zinc-800 dark:text-zinc-50"
-          >
+          <p class="text-lg font-bold leading-5 text-zinc-800 dark:text-zinc-50 xl:text-xl">
             {{ contact.name }}
           </p>
         </div>
-        <div
-          v-if="duties"
-          class="mt-2 w-fit text-xs text-zinc-600 dark:text-zinc-200"
-        >
+        <div v-if="duties" class="w-fit text-xs text-zinc-600 dark:text-zinc-200">
           <template v-for="duty in duties" :key="duty.id">
             <p class="my-1">
               {{ changeDutyNameEndings(contact, duty) }}
               {{ showAdditionalInfo(duty) }}
-              <span
-                v-if="duty.description && duty.description !== '<p></p>'"
-                class="align-middle"
-              >
-                <InfoPopover
-                  style="max-width: 400px"
-                  trigger="hover"
-                  color="gray"
-                >
-                  <span v-html="dutyDescription(duty)"></span>
+              <span v-if="duty.description && duty.description !== '<p></p>'" class="align-middle">
+                <InfoPopover style="max-width: 400px" trigger="hover" color="gray">
+                  <span v-html="dutyDescription(duty)" />
                 </InfoPopover>
               </span>
             </p>
           </template>
         </div>
       </div>
-      <div class="flex flex-col gap-2 text-xs text-zinc-600 dark:text-zinc-200">
-        <p v-if="contact.phone" class="inline-flex items-center gap-2">
-          <NIcon :component="Phone20Regular" />
-          <a :href="`tel:${contact.phone}`">{{ contact.phone }}</a>
-        </p>
-        <template v-for="duty in duties" :key="duty.id">
-          <NEllipsis style="max-width: 250px">
-            <a v-if="duty.email" :href="`mailto:${duty.email}`">
-              <NIcon class="mr-2 align-middle" :component="Mail20Regular" />
-              <span class="align-middle">
-                {{ duty.email }}
-              </span>
+      <div class="flex gap-2">
+        <NTooltip v-if="contact.phone">
+          <template #trigger>
+            <a :href="`tel:${contact.phone}`">
+              <NButton tertiary size="small" circle>
+                <template #icon>
+                  <IFluentPhone20Regular />
+                </template>
+              </NButton>
             </a>
-            <a v-else :href="`mailto:${contact.email}`">
-              <NIcon class="mr-2 align-middle" :component="Mail20Regular" />
-              <span class="align-middle">
-                {{ contact.email }}
-              </span>
+          </template>
+          <CopyToClipboardButton size="small" circle text :text-to-copy="contact.phone"
+            success-text="Tel. nr. nukopijuotas!" error-text="Nepavyko nukopijuoti tel. nr...">
+            <div class="mt-1 inline-flex items-center gap-1 text-zinc-300 hover:text-vusa-red">
+              <IFluentPhone20Regular />
+              {{ contact.phone }}
+            </div>
+          </CopyToClipboardButton>
+        </NTooltip>
+        <a v-if="contact.facebook_url" :href="contact.facebook_url" target="_blank" rel="noopener noreferrer">
+          <NButton tertiary size="small" circle>
+            <template #icon>
+              <IMdiFacebook />
+            </template>
+          </NButton>
+        </a>
+        <NPopover v-if="shownContactEmail.length > 1" trigger="hover" placement="bottom-start">
+          <template #trigger>
+            <NButton tertiary size="small" circle>
+              <template #icon>
+                <IFluentMail20Regular />
+              </template>
+            </NButton>
+          </template>
+          <div class="p-2">
+            <div class="flex flex-col text-sm">
+              <template v-for="email in shownContactEmail" :key="email.email">
+                <span class="font-bold text-zinc-800 dark:text-zinc-100">{{ email.name }}</span>
+                <div class="inline-flex items-center">
+                  <CopyToClipboardButton size="small" circle text :text-to-copy="email.email"
+                    success-text="El. paštas nukopijuotas!" error-text="Nepavyko nukopijuoti el. pašto...">
+                    <IFluentMail20Regular />
+                    <span>{{ email.email }}</span>
+                  </CopyToClipboardButton>
+                </div>
+                <hr class="my-3 border border-zinc-300 last:hidden dark:border-zinc-500">
+              </template>
+            </div>
+          </div>
+        </NPopover>
+        <NTooltip v-else-if="shownContactEmail.length === 1">
+          <template #trigger>
+            <a :key="shownContactEmail[0].email" :href="`mailto:${shownContactEmail[0].email}`">
+              <NButton tertiary size="small" circle>
+                <template #icon>
+                  <IFluentMail20Regular />
+                </template>
+              </NButton>
             </a>
-          </NEllipsis>
-        </template>
+          </template>
+          <CopyToClipboardButton size="small" circle text :text-to-copy="shownContactEmail[0].email"
+            success-text="El. paštas nukopijuotas!" error-text="Nepavyko nukopijuoti el. pašto...">
+            <div class="mt-1 inline-flex items-center text-zinc-300 hover:text-vusa-red">
+              <IFluentMail20Regular class="mr-2" />
+              {{ shownContactEmail[0].email }}
+            </div>
+          </CopyToClipboardButton>
+        </NTooltip>
       </div>
     </div>
   </figure>
 </template>
 
 <script setup lang="ts">
-import { Mail20Regular, Phone20Regular } from "@vicons/fluent";
-import { NEllipsis, NIcon } from "naive-ui";
 import { computed } from "vue";
 import { usePage } from "@inertiajs/vue3";
+
+import CopyToClipboardButton from "../Buttons/CopyToClipboardButton.vue";
 import InfoPopover from "../Buttons/InfoPopover.vue";
 
 const props = defineProps<{
@@ -97,6 +126,21 @@ const dutyDescription = (duty) => {
 
   return duty.pivot?.extra_attributes?.info_text ?? duty.description;
 };
+
+const shownContactEmail = computed(() => {
+  let dutiesHaveEmail = props.duties.some((duty) => duty.email);
+
+  if (dutiesHaveEmail) {
+    return props.duties.reduce((acc, duty) => {
+      if (duty.email) {
+        acc.push({ name: duty.name, email: duty.email });
+      }
+      return acc;
+    }, []);
+  } else {
+    return [{ name: props.contact.name, email: props.contact.email }];
+  }
+});
 
 const showAdditionalInfo = (duty) => {
   if (!duty.pivot?.extra_attributes?.study_program) {

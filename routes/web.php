@@ -36,9 +36,8 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('saziningai-registracija', [Public\PublicPageController::class, 'saziningaiExamRegistration'])->name('saziningaiExamRegistration');
         Route::get('saziningai-uzregistruoti-egzaminai', [Public\PublicPageController::class, 'saziningaiExams'])->name('saziningaiExams.registered');
 
-        Route::get('pirmakursiu-stovyklos-2022', [Public\PublicPageController::class, 'summerCamps2022'])->name('pirmakursiuStovyklos2022');
-        Route::get('pirmakursiu-stovyklos', [Public\PublicPageController::class, 'summerCamps2023'])->name('pirmakursiuStovyklos');
         Route::get('kalendorius/renginys/{calendar}', [Public\PublicPageController::class, 'calendarEventMain'])->name('calendar.event');
+        Route::get('pirmakursiu-stovyklos/{year?}', [Public\PublicPageController::class, 'summerCamps'])->name('pirmakursiuStovyklos')->whereNumber('year');
 
         Route::get('programos-klubai-projektai', [Public\PublicPageController::class, 'pkp'])->name('pkp');
 
