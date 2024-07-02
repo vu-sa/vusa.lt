@@ -57,9 +57,9 @@
           studijoms!
         </p>
 
-        <p>
-          Daugiau informacijos rasi savo padalinio polapyje. Susimatome jau
-          greitai!
+        <p class="font-bold">
+          Bilietų prekyba ir tikslesnė informacija bus paskelbta vėliau! Sek savo padalinio Facebook puslapį ir sužinok
+          pirmas (-a)!
         </p>
 
         <a target="_blank" href="https://vu.lt/parduotuve/"><img src="/images/photos/atributika_banner2.jpg"></a>
@@ -83,9 +83,9 @@
             {{ year }} m. pirmakursių stovyklos
           </h3>
 
-          <p> Pirmakursių stovyklos - tai ilgametes tradicijas turintis Vilniaus universiteto studentų atstovybės
-            organizuojamas renginys VU pirmakursiams (-ėms), kuris vyksta kiekvienais metais. </p>
         </div>
+        <p> Pirmakursių stovyklos - tai ilgametes tradicijas turintis Vilniaus universiteto studentų atstovybės
+          organizuojamas renginys VU pirmakursiams (-ėms), kuris vyksta kiekvienais metais. </p>
 
         <SmartLink :href="route('pirmakursiuStovyklos', {
           year: null,
