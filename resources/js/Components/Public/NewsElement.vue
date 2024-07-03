@@ -18,7 +18,7 @@
           })
         "
         ><div class="inline-flex items-center gap-1">
-          <span>Daugiau</span><NIcon :component="ArrowRight16Regular"></NIcon>
+        <span>{{ $t("Daugiau") }}</span><NIcon :component="ArrowRight16Regular"></NIcon>
         </div>
       </Link>
     </header>
