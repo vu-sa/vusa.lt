@@ -75,7 +75,10 @@ class NewsController extends PublicController
         $this->getBanners();
         $this->getPadalinysLinks();
 
+        Inertia::share('otherLangURL', route('newsArchive', ['lang' => $this->getOtherLang(), 'subdomain' => $this->subdomain, 'newsString' => app()->getLocale() === 'lt' ? 'news' : 'naujienos']));
+
         $news = News::where('padalinys_id', $this->padalinys->id)
+            ->where('lang', app()->getLocale())
             ->select('id', 'title', 'short', 'image', 'permalink', 'publish_time', 'lang')
             ->orderBy('publish_time', 'desc')
             ->paginate(15);
