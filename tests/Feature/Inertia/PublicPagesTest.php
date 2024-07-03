@@ -64,7 +64,7 @@ class PublicPagesTest extends TestCase
 
     public function test_can_open_news_archive(): void
     {
-        $this->get(route('newsArchive', ['subdomain' => 'www', 'lang' => 'lt']))
+        $this->get(route('newsArchive', ['subdomain' => 'www', 'lang' => 'lt', 'newsArchive' => 'naujienos']))
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Public/NewsArchive')
                 ->has('news', fn (Assert $page) => $page

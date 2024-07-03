@@ -10,10 +10,11 @@
         </p> -->
       </div>
       <Link
-        v-if="$page.props.app.locale === 'lt'"
         :href="
           route('newsArchive', {
             subdomain: $page.props.padalinys?.subdomain ?? 'www',
+            lang: $page.props.app.locale === 'lt' ? 'en' : 'lt',
+            newsString: $page.props.app.locale === 'lt' ? 'news' : 'naujienos',
           })
         "
         ><div class="inline-flex items-center gap-1">
