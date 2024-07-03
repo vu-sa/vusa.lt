@@ -13,8 +13,8 @@
         :href="
           route('newsArchive', {
             subdomain: $page.props.padalinys?.subdomain ?? 'www',
-            lang: $page.props.app.locale === 'lt' ? 'en' : 'lt',
-            newsString: $page.props.app.locale === 'lt' ? 'news' : 'naujienos',
+            lang: $page.props.app.locale === 'lt' ? 'lt' : 'en',
+            newsString: $page.props.app.locale === 'lt' ? 'naujienos' : 'news',
           })
         "
         ><div class="inline-flex items-center gap-1">
