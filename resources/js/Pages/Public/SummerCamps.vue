@@ -58,7 +58,10 @@
         </p>
 
         <p class="font-bold">
-          Bilietų prekyba ir tikslesnė informacija bus paskelbta vėliau! Sek savo padalinio Facebook puslapį ir sužinok
+          Bilietų prekyba ir tikslesnė informacija bus paskelbta vėliau! Į kainą įskaičiuotas transportas į ir iš
+          stovyklos. 🚌 </p>
+
+        <p class="font-bold"> Sek savo padalinio Facebook puslapį ir sužinok
           pirmas (-a)!
         </p>
 
