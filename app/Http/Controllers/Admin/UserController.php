@@ -274,7 +274,6 @@ class UserController extends LaravelResourceController
     {
         $microsoftUser = Socialite::driver('microsoft')->stateless()->user();
 
-
         // pirmiausia ieškome per vartotoją, per paštą
         $user = User::where('email', $microsoftUser->email)->first();
 
