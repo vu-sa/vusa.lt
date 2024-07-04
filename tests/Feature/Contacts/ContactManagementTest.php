@@ -1,341 +1,332 @@
 <?php
 
-namespace Tests\Feature\Contacts;
-
 use App\Actions\GetAttachableTypesForDuty;
 use App\Models\Duty;
+use App\Models\Institution;
+use App\Models\Padalinys;
 use App\Models\Role;
+use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
-use PHPUnit\Framework\Attributes\CoversNothing;
 
-#[CoversNothing]
-class ContactManagementTest extends ContactTestCase
-{
-    // 1. Test if simple user can't access all contacts in admin
+beforeEach(function () {
 
-    public function test_simple_user_cant_access_all_users_in_admin()
-    {
-        $user = $this->simpleUser;
+    $this->padalinys = Padalinys::inRandomOrder()->first();
 
-        $this->actingAs($user)->get(route('dashboard'));
+    $this->simpleUser = User::factory()->hasAttached(Duty::factory()->for(Institution::factory()->for($this->padalinys)),
+        ['start_date' => now()->subDay()]
+    )->create();
 
-        $response = $this->actingAs($user)->get(route('users.index'));
+    $this->contactManagerUser = User::factory()->hasAttached(Duty::factory()->for(Institution::factory()->for($this->padalinys)),
+        ['start_date' => now()->subDay()]
+    )->create();
 
-        $response->assertStatus(302)->assertRedirectToRoute('dashboard');
+    $this->contactManagementDuty = $this->contactManagerUser->duties()->first();
 
-        $this->followRedirects($response)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/ShowDashboard')
-                ->where('flash.statusCode', 403)
-            );
-    }
+    $this->contactManagementDuty->assignRole('Student Representative Coordinator');
 
-    // 2. Test if simple user can't go to contact create page and create contact
+});
 
-    public function test_simple_user_cant_create_contact()
-    {
-        $user = $this->simpleUser;
+test('simple user cant access all users in admin', function () {
+    $user = $this->simpleUser;
 
-        $this->actingAs($user)->get(route('dashboard'));
+    $this->actingAs($user)->get(route('dashboard'));
 
-        $response = $this->actingAs($user)->get(route('users.create'));
+    $response = $this->actingAs($user)->get(route('users.index'));
 
-        $response->assertStatus(302)->assertRedirectToRoute('dashboard');
+    $response->assertStatus(302)->assertRedirectToRoute('dashboard');
 
-        $this->followRedirects($response)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/ShowDashboard')
-                ->where('flash.statusCode', 403)
-            );
+    $this->followRedirects($response)
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/ShowDashboard')
+            ->where('flash.statusCode', 403)
+        );
+});
 
-        $response = $this->actingAs($user)->post(route('users.store'), [
-            'name' => 'Test 1',
-            'email' => 'test@email.com',
-        ]);
+test('simple user cant create contact', function () {
+    $user = $this->simpleUser;
 
-        $response->assertStatus(302)->assertRedirectToRoute('dashboard');
+    $this->actingAs($user)->get(route('dashboard'));
 
-        $this->followRedirects($response)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/ShowDashboard')
-                ->where('flash.statusCode', 403)
-            );
+    $response = $this->actingAs($user)->get(route('users.create'));
 
-        $this->assertDatabaseMissing('users', [
-            'name' => 'Test 1',
-        ]);
-    }
+    $response->assertStatus(302)->assertRedirectToRoute('dashboard');
 
-    // 3. Test if admin can create user without duty
-
-    public function test_contact_manager_cant_create_user_without_duty()
-    {
-        $user = $this->contactManagerUser;
-
-        $this->actingAs($user)->get(route('dashboard'));
-
-        $response = $this->actingAs($user)->get(route('users.create'));
-
-        $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/People/CreateUser')
-            ->has('roles')
-            ->has('padaliniaiWithDuties')
+    $this->followRedirects($response)
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/ShowDashboard')
+            ->where('flash.statusCode', 403)
         );
 
-        $response = $this->actingAs($user)->post(route('users.store'), [
-            'name' => 'Test 2',
-            'email' => 'test@email.com',
-            'current_duties' => [],
-        ]);
+    $response = $this->actingAs($user)->post(route('users.store'), [
+        'name' => 'Test 1',
+        'email' => 'test@email.com',
+    ]);
 
-        $response->assertStatus(302)->assertRedirectToRoute('users.create');
+    $response->assertStatus(302)->assertRedirectToRoute('dashboard');
 
-        $this->followRedirects($response)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/People/CreateUser')
-                ->whereNot('errors.current_duties', null)
-            );
-
-        $this->assertDatabaseMissing('users', [
-            'name' => 'Test 2',
-        ]);
-    }
-
-    // 4. Test if admin can create user and assign duty to them
-
-    public function test_contact_manager_can_create_user_with_duty()
-    {
-        $user = $this->contactManagerUser;
-
-        $this->actingAs($user)->get(route('dashboard'));
-
-        $response = $this->actingAs($user)->get(route('users.create'));
-
-        $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/People/CreateUser')
-            ->has('roles')
-            ->has('padaliniaiWithDuties')
+    $this->followRedirects($response)
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/ShowDashboard')
+            ->where('flash.statusCode', 403)
         );
 
-        $response = $this->actingAs($user)->post(route('users.store'), [
-            'name' => 'Test 3',
-            'email' => 'test@email.com',
-            'current_duties' => [
-                [
-                    'duty_id' => Duty::inRandomOrder()->first()->id,
-                ],
+    $this->assertDatabaseMissing('users', [
+        'name' => 'Test 1',
+    ]);
+});
+
+test('contact manager cant create user without duty', function () {
+    $user = $this->contactManagerUser;
+
+    $this->actingAs($user)->get(route('dashboard'));
+
+    $response = $this->actingAs($user)->get(route('users.create'));
+
+    $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
+        ->component('Admin/People/CreateUser')
+        ->has('roles')
+        ->has('padaliniaiWithDuties')
+    );
+
+    $response = $this->actingAs($user)->post(route('users.store'), [
+        'name' => 'Test 2',
+        'email' => 'test@email.com',
+        'current_duties' => [],
+    ]);
+
+    $response->assertStatus(302)->assertRedirectToRoute('users.create');
+
+    $this->followRedirects($response)
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/People/CreateUser')
+            ->whereNot('errors.current_duties', null)
+        );
+
+    $this->assertDatabaseMissing('users', [
+        'name' => 'Test 2',
+    ]);
+});
+
+test('contact manager can create user with duty', function () {
+    $user = $this->contactManagerUser;
+
+    $this->actingAs($user)->get(route('dashboard'));
+
+    $response = $this->actingAs($user)->get(route('users.create'));
+
+    $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
+        ->component('Admin/People/CreateUser')
+        ->has('roles')
+        ->has('padaliniaiWithDuties')
+    );
+
+    $response = $this->actingAs($user)->post(route('users.store'), [
+        'name' => 'Test 3',
+        'email' => 'test@email.com',
+        'current_duties' => [
+            [
+                'duty_id' => Duty::inRandomOrder()->first()->id,
             ],
-        ]);
+        ],
+    ]);
 
-        $response->assertStatus(302)->assertRedirectToRoute('users.index');
+    $response->assertStatus(302)->assertRedirectToRoute('users.index');
 
-        $this->followRedirects($response)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/People/IndexUser')
-                ->has('flash.success')
-            );
-
-        $this->assertDatabaseHas('users', [
-            'name' => 'Test 3',
-        ]);
-    }
-
-    // 5. Test if admin can detach duty from user and check if the duty is not detached, but has end_date set to today
-    // And also check if the duty is in previous_duties, but not in current_duties
-
-    public function test_contact_manager_can_detach_duty_from_user()
-    {
-        $admin = $this->contactManagerUser;
-        $user = $this->simpleUser;
-
-        $duty = $this->simpleUser->current_duties->first();
-
-        $this->actingAs($admin)->get(route('dashboard'));
-
-        $response = $this->actingAs($admin)->get(route('users.index'));
-
-        $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
+    $this->followRedirects($response)
+        ->assertInertia(fn (Assert $page) => $page
             ->component('Admin/People/IndexUser')
-            ->has('users.data')
+            ->has('flash.success')
         );
 
-        $response = $this->actingAs($admin)->get(route('users.edit', $user->id))->assertStatus(200);
+    $this->assertDatabaseHas('users', [
+        'name' => 'Test 3',
+    ]);
+});
 
-        $this->followRedirects($response)->assertInertia(fn (Assert $page) => $page
+test('contact manager can detach duty from user', function () {
+    $admin = $this->contactManagerUser;
+    $user = $this->simpleUser;
+
+    $duty = $this->simpleUser->current_duties->first();
+
+    $this->actingAs($admin)->get(route('dashboard'));
+
+    $response = $this->actingAs($admin)->get(route('users.index'));
+
+    $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
+        ->component('Admin/People/IndexUser')
+        ->has('users.data')
+    );
+
+    $response = $this->actingAs($admin)->get(route('users.edit', $user->id))->assertStatus(200);
+
+    $this->followRedirects($response)->assertInertia(fn (Assert $page) => $page
+        ->component('Admin/People/EditUser')
+    );
+
+    $response = $this->actingAs($admin)->patch(route('users.update', $user->id), [
+        'name' => 'Test 4',
+        'email' => $user->email,
+        'current_duties' => [],
+    ]);
+
+    $response->assertStatus(302)->assertRedirectToRoute('users.edit', $user->id);
+
+    $this->followRedirects($response)
+        ->assertInertia(fn (Assert $page) => $page
             ->component('Admin/People/EditUser')
+            ->has('flash.success')
+            ->has('user.current_duties', 0)
+            ->has('user.previous_duties', 1)
         );
 
-        $response = $this->actingAs($admin)->patch(route('users.update', $user->id), [
-            'name' => 'Test 4',
-            'email' => $user->email,
-            'current_duties' => [],
-        ]);
+    // get dutiable
+    $dutiable = $user->dutiables->where('duty_id', $duty->id)->first();
 
-        $response->assertStatus(302)->assertRedirectToRoute('users.edit', $user->id);
+    // check if has end_date
+    expect($dutiable->end_date)->not->toBeNull();
+});
 
-        $this->followRedirects($response)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/People/EditUser')
-                ->has('flash.success')
-                ->has('user.current_duties', 0)
-                ->has('user.previous_duties', 1)
-            );
+test('contact manager can delete and restore user', function () {
+    $admin = $this->contactManagerUser;
+    $user = $this->simpleUser;
 
-        // get dutiable
-        $dutiable = $user->dutiables->where('duty_id', $duty->id)->first();
+    $this->actingAs($admin)->get(route('dashboard'));
 
-        // check if has end_date
-        $this->assertNotNull($dutiable->end_date);
+    $response = $this->actingAs($admin)->get(route('users.index'));
+
+    $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
+        ->component('Admin/People/IndexUser')
+        ->has('users.data')
+    );
+
+    $response = $this->actingAs($admin)->delete(route('users.destroy', $user->id));
+
+    $response->assertStatus(302)->assertRedirectToRoute('users.index');
+
+    $this->followRedirects($response)
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/People/IndexUser')
+            ->has('flash.success')
+        );
+
+    $this->assertSoftDeleted('users', [
+        'id' => $user->id,
+    ]);
+
+    $response = $this->actingAs($admin)->get(route('users.index', ['showSoftDeleted' => true]));
+
+    $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
+        ->component('Admin/People/IndexUser')
+        ->has('users.data')
+    );
+
+    $response = $this->actingAs($admin)->patch(route('users.restore', $user->id));
+
+    $response->assertStatus(302)->assertRedirectToRoute('users.index', ['showSoftDeleted' => true]);
+
+    $this->followRedirects($response)
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/People/IndexUser')
+            ->has('flash.success')
+        );
+
+    $this->assertDatabaseHas('users', [
+        'id' => $user->id,
+    ]);
+});
+
+test('contact manager can add type to duty', function () {
+    $admin = $this->contactManagerUser;
+    $user = $this->simpleUser;
+    $userDuty = $user->current_duties->first();
+
+    $this->assertDatabaseHas('roles', [
+        'name' => 'Student Representative',
+    ]);
+
+    $this->assertDatabaseHas('types', [
+        'slug' => 'studentu-atstovai',
+    ]);
+
+    $this->actingAs($admin)->get(route('dashboard'));
+
+    $response = $this->actingAs($admin)->get(route('duties.index'));
+
+    $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
+        ->component('Admin/People/IndexDuty')
+        ->has('duties.data')
+    );
+
+    $response = $this->actingAs($admin)->get(route('duties.edit', $userDuty->id));
+
+    $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
+        ->component('Admin/People/EditDuty')
+        ->has('duty')
+        ->has('dutyTypes')
+    );
+
+    $types = [];
+
+    foreach (GetAttachableTypesForDuty::execute() as $type) {
+        array_push($types, $type->id);
     }
 
-    // 6. Check if admin can delete an user and if it is soft-deleted, and if it can be restored
+    $response = $this->actingAs($admin)->patch(route('duties.update', $userDuty->id), [
+        'name' => $userDuty->name,
+        'users' => [$user->id],
+        'institution_id' => $userDuty->institution_id,
+        'places_to_occupy' => $userDuty->places_to_occupy,
+        'types' => $types,
+    ]);
 
-    public function test_contact_manager_can_delete_and_restore_user()
-    {
-        $admin = $this->contactManagerUser;
-        $user = $this->simpleUser;
+    $response->assertStatus(302)->assertRedirectToRoute('duties.edit', $userDuty->id);
 
-        $this->actingAs($admin)->get(route('dashboard'));
-
-        $response = $this->actingAs($admin)->get(route('users.index'));
-
-        $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/People/IndexUser')
-            ->has('users.data')
-        );
-
-        $response = $this->actingAs($admin)->delete(route('users.destroy', $user->id));
-
-        $response->assertStatus(302)->assertRedirectToRoute('users.index');
-
-        $this->followRedirects($response)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/People/IndexUser')
-                ->has('flash.success')
-            );
-
-        $this->assertSoftDeleted('users', [
-            'id' => $user->id,
-        ]);
-
-        $response = $this->actingAs($admin)->get(route('users.index', ['showSoftDeleted' => true]));
-
-        $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/People/IndexUser')
-            ->has('users.data')
-        );
-
-        $response = $this->actingAs($admin)->patch(route('users.restore', $user->id));
-
-        $response->assertStatus(302)->assertRedirectToRoute('users.index', ['showSoftDeleted' => true]);
-
-        $this->followRedirects($response)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/People/IndexUser')
-                ->has('flash.success')
-            );
-
-        $this->assertDatabaseHas('users', [
-            'id' => $user->id,
-        ]);
-    }
-
-    // 7. Check if admin can add a type to user and when added, if a role is added automatically
-
-    // * This is A STUDENT REPRESENTATIVE CASE, it may be needed to be generalized more
-    public function test_contact_manager_can_add_type_to_duty()
-    {
-        $admin = $this->contactManagerUser;
-        $user = $this->simpleUser;
-        $userDuty = $user->current_duties->first();
-
-        $this->assertDatabaseHas('roles', [
-            'name' => 'Student Representative',
-        ]);
-
-        $this->assertDatabaseHas('types', [
-            'slug' => 'studentu-atstovai',
-        ]);
-
-        $this->actingAs($admin)->get(route('dashboard'));
-
-        $response = $this->actingAs($admin)->get(route('duties.index'));
-
-        $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/People/IndexDuty')
-            ->has('duties.data')
-        );
-
-        $response = $this->actingAs($admin)->get(route('duties.edit', $userDuty->id));
-
-        $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
+    $this->followRedirects($response)
+        ->assertInertia(fn (Assert $page) => $page
             ->component('Admin/People/EditDuty')
-            ->has('duty')
-            ->has('dutyTypes')
+            ->has('flash.success')
         );
 
-        $types = [];
+    $this->assertDatabaseHas('typeables', [
+        'typeable_id' => $userDuty->id,
+        'typeable_type' => get_class($userDuty),
+        'type_id' => GetAttachableTypesForDuty::execute()->first()->id,
+    ]);
 
-        foreach (GetAttachableTypesForDuty::execute() as $type) {
-            array_push($types, $type->id);
-        }
+    $this->assertDatabaseHas('model_has_roles', [
+        'role_id' => Role::query()->where('name', 'Student Representative')->first()->id,
+        'model_type' => get_class($userDuty),
+        'model_id' => $userDuty->id,
+    ]);
 
-        $response = $this->actingAs($admin)->patch(route('duties.update', $userDuty->id), [
-            'name' => $userDuty->name,
-            'users' => [$user->id],
-            'institution_id' => $userDuty->institution_id,
-            'places_to_occupy' => $userDuty->places_to_occupy,
-            'types' => $types,
-        ]);
+    $response = $this->actingAs($admin)->patch(route('duties.update', $userDuty->id), [
+        'name' => $userDuty->name,
+        'users' => [$user->id],
+        'institution_id' => $userDuty->institution_id,
+        'places_to_occupy' => $userDuty->places_to_occupy,
+        'types' => [],
+    ]);
 
-        $response->assertStatus(302)->assertRedirectToRoute('duties.edit', $userDuty->id);
+    $response->assertStatus(302)->assertRedirectToRoute('duties.edit', $userDuty->id);
 
-        $this->followRedirects($response)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/People/EditDuty')
-                ->has('flash.success')
-            );
+    $this->followRedirects($response)
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/People/EditDuty')
+            ->has('flash.success')
+        );
 
-        $this->assertDatabaseHas('typeables', [
-            'typeable_id' => $userDuty->id,
-            'typeable_type' => get_class($userDuty),
-            'type_id' => GetAttachableTypesForDuty::execute()->first()->id,
-        ]);
+    $this->assertDatabaseMissing('typeables', [
+        'typeable_id' => $userDuty->id,
+        'typeable_type' => get_class($userDuty),
+        'type_id' => GetAttachableTypesForDuty::execute()->first()->id,
+    ]);
 
-        $this->assertDatabaseHas('model_has_roles', [
-            'role_id' => Role::query()->where('name', 'Student Representative')->first()->id,
-            'model_type' => get_class($userDuty),
-            'model_id' => $userDuty->id,
-        ]);
+    $this->assertDatabaseMissing('model_has_roles', [
+        'role_id' => Role::query()->where('name', 'Student Representative')->first()->id,
+        'model_type' => get_class($userDuty),
+        'model_id' => $userDuty->id,
+    ]);
+});
 
-        $response = $this->actingAs($admin)->patch(route('duties.update', $userDuty->id), [
-            'name' => $userDuty->name,
-            'users' => [$user->id],
-            'institution_id' => $userDuty->institution_id,
-            'places_to_occupy' => $userDuty->places_to_occupy,
-            'types' => [],
-        ]);
-
-        $response->assertStatus(302)->assertRedirectToRoute('duties.edit', $userDuty->id);
-
-        $this->followRedirects($response)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/People/EditDuty')
-                ->has('flash.success')
-            );
-
-        $this->assertDatabaseMissing('typeables', [
-            'typeable_id' => $userDuty->id,
-            'typeable_type' => get_class($userDuty),
-            'type_id' => GetAttachableTypesForDuty::execute()->first()->id,
-        ]);
-
-        $this->assertDatabaseMissing('model_has_roles', [
-            'role_id' => Role::query()->where('name', 'Student Representative')->first()->id,
-            'model_type' => get_class($userDuty),
-            'model_id' => $userDuty->id,
-        ]);
-    }
-
-    // LAST. Check if the public returned users are ONLY current users in PUBLIC
-}
+// LAST. Check if the public returned users are ONLY current users in PUBLIC

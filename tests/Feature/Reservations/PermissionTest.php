@@ -1,9 +1,14 @@
 <?php
 
-namespace Tests\Feature\Reservations;
+uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
+use App\Models\Duty;
+use App\Models\Institution;
+use App\Models\Padalinys;
 use App\Models\Reservation;
 use App\Models\Resource;
+use App\Models\Role;
+use App\Models\User;
 use App\States\ReservationResource\Cancelled;
 use App\States\ReservationResource\Created;
 use App\States\ReservationResource\Lent;
@@ -11,278 +16,281 @@ use App\States\ReservationResource\Rejected;
 use App\States\ReservationResource\Reserved;
 use App\States\ReservationResource\Returned;
 use Inertia\Testing\AssertableInertia as Assert;
-use PHPUnit\Framework\Attributes\CoversNothing;
 
-#[CoversNothing]
-class PermissionTest extends ReservationTestCase
-{
-    public function test_simple_user_cannot_access_reservation()
-    {
-        $user = $this->simpleUser;
-        $reservation = $this->reservation;
+beforeEach(function () {
 
-        // TODO: why first page visit is needed for flashing?
-        $this->actingAs($user)->get(route('dashboard'));
+    $this->resourcePadalinys = Padalinys::inRandomOrder()->first();
 
-        $response = $this->actingAs($user)->get(route('reservations.show', $reservation->id));
+    $this->resources = Resource::factory()->for($this->resourcePadalinys)->count(3)->create();
+    $this->reservation = Reservation::factory()->hasAttached($this->resources)->create();
 
-        $response->assertStatus(302)->assertRedirect(route('dashboard'));
+    $this->simpleUser = User::factory()->create();
+    $this->reservationManagerUser = User::factory()->hasAttached($this->reservation)->create();
+    $this->resourceManagerUser = User::factory()->create();
 
-        $this->followRedirects($response)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/ShowDashboard')
-                ->whereNot('flash.info', null)
-                ->where('flash.info', 'This action is unauthorized.')
-            );
-    }
+    $resourceManagerDuty = Duty::factory()->has(Institution::factory()->state(
+        ['padalinys_id' => $this->resourcePadalinys->id]
+    ))->hasAttached($this->resourceManagerUser, ['start_date' => now()->subDay(), 'end_date' => now()->addDays(1)])->create();
 
-    public function test_simple_user_cannot_update_reservation()
-    {
-        $user = $this->simpleUser;
-        $reservation = $this->reservation;
+    $resourceManagerRole = Role::factory()->create();
+    $resourceManagerRole->givePermissionTo(['reservations.read.*', config('permission.resource_managership_indicating_permission')]);
 
-        $this->actingAs($user)->get(route('dashboard'));
+    $resourceManagerDuty->assignRole($resourceManagerRole);
 
-        $response = $this->actingAs($user)->patch(route('reservations.update', $reservation->id), [
-            ...$reservation->toArray(),
-            'start_time' => now()->addHours(1),
-            'end_time' => now()->addHours(2),
-        ]);
+});
 
-        $response->assertStatus(302)->assertRedirect(route('dashboard'));
+test('simple user cannot access reservation', function () {
+    $user = $this->simpleUser;
+    $reservation = $this->reservation;
 
-        $this->followRedirects($response)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/ShowDashboard')
-                ->whereNot('flash.info', null)
-                ->where('flash.info', 'This action is unauthorized.')
-            );
-    }
+    // TODO: why first page visit is needed for flashing?
+    $this->actingAs($user)->get(route('dashboard'));
 
-    public function test_simple_user_can_access_reservation_after_they_are_assigned_to_it()
-    {
-        $user = $this->simpleUser;
-        $reservation = $this->reservation;
+    $response = $this->actingAs($user)->get(route('reservations.show', $reservation->id));
 
-        // first assign the user to the reservation
-        $this->actingAs($this->reservationManagerUser)->get(route('dashboard'));
+    $response->assertStatus(302)->assertRedirect(route('dashboard'));
 
-        $response = $this->actingAs($this->reservationManagerUser)->put(route('reservations.add-users', $reservation->id), [
-            'users' => [$user->id],
-        ]);
-
-        $response->assertStatus(302)->assertRedirect(route('dashboard'));
-
-        $this->followRedirects($response)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/ShowDashboard')
-                ->where('flash.success', __('messages.users_attached_to_reservation'))
-            );
-
-        $response = $this->actingAs($user)->get(route('reservations.show', $reservation->id));
-
-        $this->followRedirects($response)->assertStatus(200)->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/Reservations/ShowReservation')
-            ->whereNot('reservation', null)
-            ->where('reservation.id', $reservation->id)
+    $this->followRedirects($response)
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/ShowDashboard')
+            ->whereNot('flash.info', null)
+            ->where('flash.info', 'This action is unauthorized.')
         );
-    }
+});
 
-    public function test_simple_user_can_create_reservation()
-    {
-        $user = $this->simpleUser;
+test('simple user cannot update reservation', function () {
+    $user = $this->simpleUser;
+    $reservation = $this->reservation;
 
-        $this->actingAs($user)->get(route('reservations.create'))->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/Reservations/CreateReservation')
-            ->whereNot('resources', null)
+    $this->actingAs($user)->get(route('dashboard'));
+
+    $response = $this->actingAs($user)->patch(route('reservations.update', $reservation->id), [
+        ...$reservation->toArray(),
+        'start_time' => now()->addHours(1),
+        'end_time' => now()->addHours(2),
+    ]);
+
+    $response->assertStatus(302)->assertRedirect(route('dashboard'));
+
+    $this->followRedirects($response)
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/ShowDashboard')
+            ->whereNot('flash.info', null)
+            ->where('flash.info', 'This action is unauthorized.')
+        );
+});
+
+test('simple user can access reservation after they are assigned to it', function () {
+    $user = $this->simpleUser;
+    $reservation = $this->reservation;
+
+    // first assign the user to the reservation
+    $this->actingAs($this->reservationManagerUser)->get(route('dashboard'));
+
+    $response = $this->actingAs($this->reservationManagerUser)->put(route('reservations.add-users', $reservation->id), [
+        'users' => [$user->id],
+    ]);
+
+    $response->assertStatus(302)->assertRedirect(route('dashboard'));
+
+    $this->followRedirects($response)
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/ShowDashboard')
+            ->where('flash.success', __('messages.users_attached_to_reservation'))
         );
 
-        $reservation = Reservation::factory()->make([
-            'name' => 'test',
-            'resources' => $this->resources->map(fn ($resource) => ['id' => $resource->id, 'quantity' => 1])->toArray(),
-        ]);
+    $response = $this->actingAs($user)->get(route('reservations.show', $reservation->id));
 
-        $response = $this->actingAs($user)->post(route('reservations.store'),
-            $reservation->toArray()
+    $this->followRedirects($response)->assertStatus(200)->assertInertia(fn (Assert $page) => $page
+        ->component('Admin/Reservations/ShowReservation')
+        ->whereNot('reservation', null)
+        ->where('reservation.id', $reservation->id)
+    );
+});
+
+test('simple user can create reservation', function () {
+    $user = $this->simpleUser;
+
+    $this->actingAs($user)->get(route('reservations.create'))->assertInertia(fn (Assert $page) => $page
+        ->component('Admin/Reservations/CreateReservation')
+        ->whereNot('resources', null)
+    );
+
+    $reservation = Reservation::factory()->make([
+        'name' => 'test',
+        'resources' => $this->resources->map(fn ($resource) => ['id' => $resource->id, 'quantity' => 1])->toArray(),
+    ]);
+
+    $response = $this->actingAs($user)->post(route('reservations.store'),
+        $reservation->toArray()
+    );
+
+    $response->assertStatus(302);
+
+    $this->followRedirects($response)
+        ->assertStatus(200)->assertInertia(fn (Assert $page) => $page
+        ->component('Admin/Reservations/ShowReservation')
+        ->whereNot('reservation', null)
+        ->where('reservation.name', $reservation->name)
         );
+});
 
-        $response->assertStatus(302);
+test('simple user can update reservation resource state from created to cancelled after they are assigned to it', function () {
+    $user = $this->simpleUser;
 
-        $this->followRedirects($response)
-            ->assertStatus(200)->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/Reservations/ShowReservation')
-            ->whereNot('reservation', null)
-            ->where('reservation.name', $reservation->name)
-            );
-    }
+    $reservation = Reservation::factory()->has(Resource::factory())->create();
 
-    public function test_simple_user_can_update_reservation_resource_state_from_created_to_cancelled_after_they_are_assigned_to_it()
-    {
-        $user = $this->simpleUser;
+    $resource = $reservation->resources->first();
 
-        $reservation = Reservation::factory()->has(Resource::factory())->create();
+    $reservation->users()->attach($user->id);
 
-        $resource = $reservation->resources->first();
+    $this->actingAs($user)->get(route('reservations.show', $reservation->id));
 
-        $reservation->users()->attach($user->id);
+    $response = $this->post(route('users.comments.store', $user->id), [
+        'commentable_type' => 'reservation_resource',
+        'commentable_id' => $resource->pivot->id,
+        'comment' => 'test',
+        'decision' => 'cancel',
+    ]);
 
-        $this->actingAs($user)->get(route('reservations.show', $reservation->id));
+    $response->assertStatus(302)->assertRedirect(route('reservations.show', $reservation->id));
 
-        $response = $this->post(route('users.comments.store', $user->id), [
-            'commentable_type' => 'reservation_resource',
-            'commentable_id' => $resource->pivot->id,
-            'comment' => 'test',
-            'decision' => 'cancel',
-        ]);
+    $resource = $reservation->load(['resources' => fn ($query) => $query->where('resources.id', $resource->id)])->resources->first();
 
-        $response->assertStatus(302)->assertRedirect(route('reservations.show', $reservation->id));
+    // assert that the resource is in canceled state
+    expect(get_class($resource->pivot->state))->toEqual(Cancelled::class);
+});
 
-        $resource = $reservation->load(['resources' => fn ($query) => $query->where('resources.id', $resource->id)])->resources->first();
+test('resource manager can update reservation resource state from created to reserved', function () {
+    $user = $this->resourceManagerUser;
 
-        // assert that the resource is in canceled state
-        $this->assertEquals(Cancelled::class, get_class($resource->pivot->state));
-    }
+    $this->actingAs($user)->get(route('reservations.show', $this->reservation->id));
 
-    public function test_resource_manager_can_update_reservation_resource_state_from_created_to_reserved()
-    {
-        $user = $this->resourceManagerUser;
+    $resource = $this->reservation->resources->first();
 
-        $this->actingAs($user)->get(route('reservations.show', $this->reservation->id));
+    // assert that the resource is in created state
+    expect(get_class($resource->pivot->state))->toEqual(Created::class);
 
-        $resource = $this->reservation->resources->first();
+    $response = $this->post(route('users.comments.store', $user->id), [
+        'commentable_type' => 'reservation_resource',
+        'commentable_id' => $this->reservation->resources->first()->pivot->id,
+        'comment' => 'test',
+        'decision' => 'approve',
+    ]);
 
-        // assert that the resource is in created state
-        $this->assertEquals(Created::class, get_class($resource->pivot->state));
+    $response->assertStatus(302)->assertRedirect(route('reservations.show', $this->reservation->id));
+    $this->followRedirects($response)->assertStatus(200);
 
-        $response = $this->post(route('users.comments.store', $user->id), [
-            'commentable_type' => 'reservation_resource',
-            'commentable_id' => $this->reservation->resources->first()->pivot->id,
-            'comment' => 'test',
-            'decision' => 'approve',
-        ]);
+    $resource = $this->reservation->load(['resources' => fn ($query) => $query->where('resources.id', $resource->id)])->resources->first();
 
-        $response->assertStatus(302)->assertRedirect(route('reservations.show', $this->reservation->id));
-        $this->followRedirects($response)->assertStatus(200);
+    // assert that the resource is in reserved state
+    expect(get_class($resource->pivot->state))->toEqual(Reserved::class);
+});
 
-        $resource = $this->reservation->load(['resources' => fn ($query) => $query->where('resources.id', $resource->id)])->resources->first();
+test('resource manager can update reservation resource state from reserved to lent', function () {
+    $user = $this->resourceManagerUser;
 
-        // assert that the resource is in reserved state
-        $this->assertEquals(Reserved::class, get_class($resource->pivot->state));
-    }
+    $reservation = Reservation::factory()->create();
 
-    // reserved to lent
-    public function test_resource_manager_can_update_reservation_resource_state_from_reserved_to_lent()
-    {
-        $user = $this->resourceManagerUser;
+    $resource = Resource::factory()->create(['padalinys_id' => $this->resourcePadalinys->id]);
 
-        $reservation = Reservation::factory()->create();
+    $reservation->resources()->attach($resource->id, ['quantity' => 1, 'state' => 'reserved']);
 
-        $resource = Resource::factory()->create(['padalinys_id' => $this->resourcePadalinys->id]);
+    $this->actingAs($user)->get(route('reservations.show', $reservation->id));
 
-        $reservation->resources()->attach($resource->id, ['quantity' => 1, 'state' => 'reserved']);
+    $response = $this->post(route('users.comments.store', $user->id), [
+        'commentable_type' => 'reservation_resource',
+        'commentable_id' => $reservation->resources->first()->pivot->id,
+        'comment' => 'test',
+        'decision' => 'approve',
+    ]);
 
-        $this->actingAs($user)->get(route('reservations.show', $reservation->id));
+    $response->assertStatus(302)->assertRedirect(route('reservations.show', $reservation->id));
+    $this->followRedirects($response)->assertStatus(200);
 
-        $response = $this->post(route('users.comments.store', $user->id), [
-            'commentable_type' => 'reservation_resource',
-            'commentable_id' => $reservation->resources->first()->pivot->id,
-            'comment' => 'test',
-            'decision' => 'approve',
-        ]);
+    $resource = $reservation->load(['resources' => fn ($query) => $query->where('resources.id', $resource->id)])->resources->first();
 
-        $response->assertStatus(302)->assertRedirect(route('reservations.show', $reservation->id));
-        $this->followRedirects($response)->assertStatus(200);
+    // assert that the resource is in lent state
+    expect(get_class($resource->pivot->state))->toEqual(Lent::class);
+});
 
-        $resource = $reservation->load(['resources' => fn ($query) => $query->where('resources.id', $resource->id)])->resources->first();
+test('resource manager can update reservation resource state from lent to returned', function () {
+    $user = $this->resourceManagerUser;
 
-        // assert that the resource is in lent state
-        $this->assertEquals(Lent::class, get_class($resource->pivot->state));
-    }
+    $reservation = Reservation::factory()->create();
 
-    // lent to returned
-    public function test_resource_manager_can_update_reservation_resource_state_from_lent_to_returned()
-    {
-        $user = $this->resourceManagerUser;
+    $resource = Resource::factory()->create(['padalinys_id' => $this->resourcePadalinys->id]);
 
-        $reservation = Reservation::factory()->create();
+    $reservation->resources()->attach($resource->id, ['quantity' => 1, 'state' => 'lent']);
 
-        $resource = Resource::factory()->create(['padalinys_id' => $this->resourcePadalinys->id]);
+    $this->actingAs($user)->get(route('reservations.show', $reservation->id));
 
-        $reservation->resources()->attach($resource->id, ['quantity' => 1, 'state' => 'lent']);
+    $response = $this->post(route('users.comments.store', $user->id), [
+        'commentable_type' => 'reservation_resource',
+        'commentable_id' => $reservation->resources->first()->pivot->id,
+        'comment' => 'test',
+        'decision' => 'approve',
+    ]);
 
-        $this->actingAs($user)->get(route('reservations.show', $reservation->id));
+    $response->assertStatus(302)->assertRedirect(route('reservations.show', $reservation->id));
+    $this->followRedirects($response)->assertStatus(200);
 
-        $response = $this->post(route('users.comments.store', $user->id), [
-            'commentable_type' => 'reservation_resource',
-            'commentable_id' => $reservation->resources->first()->pivot->id,
-            'comment' => 'test',
-            'decision' => 'approve',
-        ]);
+    $resource = $reservation->load(['resources' => fn ($query) => $query->where('resources.id', $resource->id)])->resources->first();
 
-        $response->assertStatus(302)->assertRedirect(route('reservations.show', $reservation->id));
-        $this->followRedirects($response)->assertStatus(200);
+    // assert that the resource is in returned state
+    expect(get_class($resource->pivot->state))->toEqual(Returned::class);
+});
 
-        $resource = $reservation->load(['resources' => fn ($query) => $query->where('resources.id', $resource->id)])->resources->first();
+test('resource manager can update reservation resource state from created to rejected', function () {
+    $user = $this->resourceManagerUser;
 
-        // assert that the resource is in returned state
-        $this->assertEquals(Returned::class, get_class($resource->pivot->state));
-    }
+    $reservation = Reservation::factory()->create();
 
-    // created to rejected
-    public function test_resource_manager_can_update_reservation_resource_state_from_created_to_rejected()
-    {
-        $user = $this->resourceManagerUser;
+    $resource = Resource::factory()->create(['padalinys_id' => $this->resourcePadalinys->id]);
 
-        $reservation = Reservation::factory()->create();
+    $reservation->resources()->attach($resource->id, ['quantity' => 1]);
 
-        $resource = Resource::factory()->create(['padalinys_id' => $this->resourcePadalinys->id]);
+    $this->actingAs($user)->get(route('reservations.show', $reservation->id));
 
-        $reservation->resources()->attach($resource->id, ['quantity' => 1]);
+    $response = $this->post(route('users.comments.store', $user->id), [
+        'commentable_type' => 'reservation_resource',
+        'commentable_id' => $reservation->resources->first()->pivot->id,
+        'comment' => 'test',
+        'decision' => 'reject',
+    ]);
 
-        $this->actingAs($user)->get(route('reservations.show', $reservation->id));
+    $response->assertStatus(302)->assertRedirect(route('reservations.show', $reservation->id));
+    $this->followRedirects($response)->assertStatus(200);
 
-        $response = $this->post(route('users.comments.store', $user->id), [
-            'commentable_type' => 'reservation_resource',
-            'commentable_id' => $reservation->resources->first()->pivot->id,
-            'comment' => 'test',
-            'decision' => 'reject',
-        ]);
+    $resource = $reservation->load(['resources' => fn ($query) => $query->where('resources.id', $resource->id)])->resources->first();
 
-        $response->assertStatus(302)->assertRedirect(route('reservations.show', $reservation->id));
-        $this->followRedirects($response)->assertStatus(200);
+    // assert that the resource is in rejected state
+    expect(get_class($resource->pivot->state))->toEqual(Rejected::class);
+});
 
-        $resource = $reservation->load(['resources' => fn ($query) => $query->where('resources.id', $resource->id)])->resources->first();
+test('resource manager cannot update reservation resource state that has already been cancelled', function () {
+    $user = $this->resourceManagerUser;
 
-        // assert that the resource is in rejected state
-        $this->assertEquals(Rejected::class, get_class($resource->pivot->state));
-    }
+    $this->actingAs($user)->get(route('reservations.show', $this->reservation->id));
 
-    // created or reserved to cancelled, but this time, the simple user can do thi
+    $resource = $this->reservation->resources->first();
 
-    public function test_resource_manager_cannot_update_reservation_resource_state_that_has_already_been_cancelled()
-    {
-        $user = $this->resourceManagerUser;
+    $resource->pivot->update([
+        'state' => 'cancelled',
+    ]);
 
-        $this->actingAs($user)->get(route('reservations.show', $this->reservation->id));
+    $response = $this->post(route('users.comments.store', $user->id), [
+        'commentable_type' => 'reservation_resource',
+        'commentable_id' => $resource->pivot->id,
+        'comment' => 'test',
+        'decision' => 'approve',
+    ]);
 
-        $resource = $this->reservation->resources->first();
+    $response->assertStatus(302)->assertRedirect(route('reservations.show', $this->reservation->id));
+    $this->followRedirects($response)->assertStatus(200);
 
-        $resource->pivot->update([
-            'state' => 'cancelled',
-        ]);
+    // assert that the resource is still in cancelled state
 
-        $response = $this->post(route('users.comments.store', $user->id), [
-            'commentable_type' => 'reservation_resource',
-            'commentable_id' => $resource->pivot->id,
-            'comment' => 'test',
-            'decision' => 'approve',
-        ]);
-
-        $response->assertStatus(302)->assertRedirect(route('reservations.show', $this->reservation->id));
-        $this->followRedirects($response)->assertStatus(200);
-
-        // assert that the resource is still in cancelled state
-        // TODO: should test the response
-        $this->assertEquals(Cancelled::class, get_class($resource->pivot->state));
-    }
-}
+    // TODO: should test the response
+    expect(get_class($resource->pivot->state))->toEqual(Cancelled::class);
+});
