@@ -27,3 +27,12 @@ jobs:
       run: npm run build
     - name: Execute tests via Vitest
       run: LARAVEL_BYPASS_ENV_CHECK=1 npm run test
+    ## With coverage
+    - name: Execute tests via Vitest with coverage
+      run: LARAVEL_BYPASS_ENV_CHECK=1 npm run coverage
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        verbose: true
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
