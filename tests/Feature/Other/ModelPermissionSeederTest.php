@@ -2,7 +2,6 @@
 
 use App\Models\Permission;
 use Database\Seeders\ModelPermissionSeeder;
-use PHPUnit\Framework\Attributes\CoversClass;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
