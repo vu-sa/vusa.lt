@@ -20,6 +20,7 @@ use App\Models\SaziningaiExamObserver;
 use App\Models\User;
 use App\Notifications\MemberRegistered;
 use App\Services\IcalendarService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 
@@ -189,5 +190,15 @@ class MainController extends PublicController
         });
 
         return back()->with('search_calendar', $calendar)->with('search_news', $news)->with('search_pages', $pages);
+    }
+
+    public function sendFeedback(Request $request)
+    {
+        $data = $request->all();
+
+        Mail::to('it@vusa.lt')->queue(new \App\Mail\FeedbackMail($data['feedback'], auth()->user(), $data['href'], $data['selectedText']));
+
+        return back()->with('success', 'Ačiū už atsiliepimą!');
+
     }
 }

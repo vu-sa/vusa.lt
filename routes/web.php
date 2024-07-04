@@ -28,6 +28,8 @@ Route::get('/auth/microsoft/callback', [Admin\UserController::class, 'storeFromM
 Route::inertia('login', 'Admin/LoginForm')->middleware('guest')->name('login');
 Route::post('login', [Admin\UserController::class, 'authenticate'])->middleware('guest');
 
+Route::post('feedback', [Public\MainController::class, 'sendFeedback'])->name('feedback.send');
+
 Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware' => ['main']], function () {
     Route::domain('www.'.explode('.', config('app.url'), 2)[1])->group(function () {
 

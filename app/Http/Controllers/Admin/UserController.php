@@ -270,9 +270,10 @@ class UserController extends LaravelResourceController
         }
     }
 
-    public function storeFromMicrosoft()
+    public function storeFromMicrosoft(Request $request)
     {
         $microsoftUser = Socialite::driver('microsoft')->stateless()->user();
+
 
         // pirmiausia ieškome per vartotoją, per paštą
         $user = User::where('email', $microsoftUser->email)->first();
@@ -284,7 +285,7 @@ class UserController extends LaravelResourceController
             $user->microsoft_token = $microsoftUser->token;
 
             Auth::login($user);
-            request()->session()->regenerate();
+            $request->session()->regenerate();
 
             return redirect()->intended(RouteServiceProvider::HOME);
         }
@@ -298,7 +299,7 @@ class UserController extends LaravelResourceController
 
             Auth::login($user);
 
-            request()->session()->regenerate();
+            $request->session()->regenerate();
 
             return redirect()->intended(RouteServiceProvider::HOME);
         }

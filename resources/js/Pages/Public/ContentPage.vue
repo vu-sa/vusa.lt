@@ -33,19 +33,15 @@
         </aside>
       </article>
     </section>
+    <FeedbackPopover />
   </div>
 </template>
 
 <script setup lang="ts">
 //import { HatGraduation20Filled } from "@vicons/fluent";
-import {
-  NAnchor,
-  NAnchorLink,
-  //NBreadcrumb,
-  //NBreadcrumbItem,
-  //NIcon,
-} from "naive-ui";
 //import { usePage } from "@inertiajs/vue3";
+
+import FeedbackPopover from "@/Components/Public/FeedbackPopover.vue";
 import RichContentParser from "@/Components/RichContentParser.vue";
 
 const props = defineProps<{

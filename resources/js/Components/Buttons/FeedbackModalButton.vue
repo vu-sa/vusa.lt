@@ -88,11 +88,13 @@ const loading = ref(false);
 const form = useForm({
   feedback: null,
   anonymous: false,
+  href: window.location.href,
+  selectedText: null,
 });
 
 const handleSend = () => {
   loading.value = true;
-  form.post(route("sendFeedback"), {
+  form.post(route("feedback.send"), {
     onSuccess: () => {
       showModal.value = false;
       loading.value = false;

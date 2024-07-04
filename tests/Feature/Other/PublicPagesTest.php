@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\Institution;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia as Assert;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
@@ -93,4 +95,21 @@ test('can open representation padaliniai category', function () {
             ->component('Public/Contacts/ShowContactCategory')
             ->has('institutions')
         );
+});
+
+test('can leave feedback', function () {
+
+    Mail::fake();
+
+    // assert that route exists
+    $response = $this->post(route('feedback.send'), [
+        'feedback' => 'Test feedback',
+        'href' => 'https://vusa.lt',
+        'selectedText' => 'Test selected text',
+    ]);
+
+    $response->assertRedirect();
+
+    // assert that mail was sent
+    Mail::assertQueued(\App\Mail\FeedbackMail::class);
 });

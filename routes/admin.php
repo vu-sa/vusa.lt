@@ -11,8 +11,6 @@ Route::get('workspace', [DashboardController::class, 'workspace'])->name('worksp
 Route::get('institutionGraph', [DashboardController::class, 'institutionGraph'])->name('institutionGraph');
 Route::get('stats/representatives', [StatsController::class, 'representativesInPadalinys'])->name('stats.representativesInPadalinys');
 
-Route::post('sendFeedback', [DashboardController::class, 'sendFeedback'])->name('sendFeedback');
-
 // Restore routes
 Route::patch('users/{user}/restore', [UserController::class, 'restore'])->name('users.restore')->withTrashed();
 Route::patch('pages/{page}/restore', [PageController::class, 'restore'])->name('pages.restore')->withTrashed();

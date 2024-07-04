@@ -1,7 +1,7 @@
 import { defineConfig } from "vitest/config";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
+import { NaiveUiResolver, VueUseComponentsResolver } from 'unplugin-vue-components/resolvers'
 import Components from 'unplugin-vue-components/vite'
 import Icons from 'unplugin-icons/vite'
 import IconsResolver from 'unplugin-icons/resolver'
@@ -17,6 +17,7 @@ export default defineConfig({
       resolvers: [
         IconsResolver(),
         NaiveUiResolver(),
+        VueUseComponentsResolver()
       ],
       dts: 'resources/js/Types/components.d.ts',
     }),
