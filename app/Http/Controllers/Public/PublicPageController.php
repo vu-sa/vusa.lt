@@ -9,7 +9,6 @@ use App\Models\Navigation;
 use App\Models\News;
 use App\Models\Padalinys;
 use App\Models\Page;
-use App\Models\SaziningaiExamFlow;
 use App\Services\CuratorRegistrationService;
 use App\Services\ResourceServices\InstitutionService;
 use Datetime;
@@ -200,55 +199,6 @@ class PublicPageController extends PublicController
 
         return Inertia::render('Public/CategoryPage', [
             'category' => $category->only('id', 'name', 'description', 'pages'),
-        ]);
-    }
-
-    public function saziningaiExamRegistration()
-    {
-        $this->getBanners();
-        $this->getPadalinysLinks();
-        $this->shareOtherLangURL('saziningaiExamRegistration');
-
-        // return all padalinys but only shortname VU and id
-        $padaliniai = Padalinys::select('id', 'shortname_vu')->where('shortname', '!=', 'VU SA')->orderBy('shortname')->get();
-
-        return Inertia::render('Public/SaziningaiExamRegistration', [
-            'padaliniaiOptions' => $padaliniai,
-        ])->withViewData([
-            'title' => 'Programos „Sąžiningai“ atsiskaitymų registracija',
-            'description' => 'Prašome atsiskaitymą registruoti likus bent 3 d.d. iki jo pradžios, kad būtų laiku surasti stebėtojai. Kitu atveju, kreipkitės į saziningai@vusa.lt',
-        ]);
-    }
-
-    public function saziningaiExams()
-    {
-        $this->getBanners();
-        $this->getPadalinysLinks();
-
-        // return all padalinys but only shortname VU and id
-        $padaliniai = Padalinys::select('id', 'shortname_vu')->where('shortname', '!=', 'VU SA')->orderBy('shortname')->get();
-
-        // return all exams that have their flows +1 day
-
-        $saziningaiExamFlows = SaziningaiExamFlow::where('start_time', '>=', now()->subDay())->orderBy('start_time', 'asc')->get();
-        $this->shareOtherLangURL('saziningaiExams.registered', saziningaiExams: $saziningaiExamFlows);
-
-        return Inertia::render('Public/SaziningaiExams', [
-            'padaliniaiOptions' => $padaliniai,
-            'saziningaiExamFlows' => $saziningaiExamFlows->map(function ($saziningaiExamFlow) {
-                return [
-                    'key' => $saziningaiExamFlow->id,
-                    'exam_uuid' => $saziningaiExamFlow->exam_uuid,
-                    'start_time' => $saziningaiExamFlow->start_time,
-                    // get observers count
-                    'observers_registered' => $saziningaiExamFlow->observers->count(),
-                    'exam' => $saziningaiExamFlow->exam->only(['subject_name', 'place', 'duration', 'exam_holders', 'exam_type', 'students_need']),
-                    'unit' => $saziningaiExamFlow->exam->padalinys?->shortname_vu,
-                ];
-            }),
-        ])->withViewData([
-            'title' => 'Programos „Sąžiningai“ užregistruoti egzaminai',
-            'description' => 'Registruokitės į egzaminų ar atsiskaitymų stebėjimą! Registruotis reikia į kiekvieną srautą atskirai.',
         ]);
     }
 

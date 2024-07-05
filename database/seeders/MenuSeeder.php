@@ -41,19 +41,7 @@ class MenuSeeder extends Seeder
                     'order' => 1,
                     'name' => 'Narių registracija',
                     'url' => route('memberRegistration', ['lang' => 'lt']),
-                ],  [
-                    'parent_id' => 1,
-                    'order' => 4,
-                    'name' => 'Sąžiningai: registracija',
-                    'url' => route('saziningaiExamRegistration', ['lang' => 'lt']),
-                ],
-                [
-                    'parent_id' => 1,
-                    'order' => 5,
-                    'name' => 'Sąžiningai: stebėjimas',
-                    'url' => route('saziningaiExams.registered', ['lang' => 'lt']),
-                ],
-                [
+                ], [
                     'parent_id' => 2,
                     'order' => 0,
                     'name' => 'Kontaktų paieška',

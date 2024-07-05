@@ -69,8 +69,6 @@ Route::put('reservations/{reservation}/add-users', [ReservationController::class
 Route::resource('reservations', ReservationController::class);
 Route::resource('reservationResources', ReservationResourceController::class);
 
-Route::resource('saziningaiExams', SaziningaiExamsController::class);
-Route::resource('saziningaiExamFlows', SaziningaiExamFlowsController::class)->except(['index', 'create', 'show', 'destroy']);
 Route::get('files/getFiles', [FilesController::class, 'getFiles'])->name('files.getFiles');
 Route::post('files/createDirectory', [FilesController::class, 'createDirectory'])->name('files.createDirectory');
 Route::delete('files/delete', [FilesController::class, 'delete'])->name('files.delete');

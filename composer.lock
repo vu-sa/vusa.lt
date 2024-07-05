@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "458e9af5b98d97c47bbcc2a766b93828",
+    "content-hash": "8d0266d6ade30824e0340e0097877aed",
     "packages": [
         {
             "name": "ajcastro/eager-load-pivot-relations",

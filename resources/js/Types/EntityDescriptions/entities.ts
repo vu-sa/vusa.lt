@@ -48,12 +48,6 @@ export default [
     description: Descriptions.NavigationDescription,
   },
   {
-    title: "Sąžiningai egzaminai",
-    icon: Icons.SAZININGAI_EXAM,
-    key: pluralizeModels(ModelEnum.SAZININGAI_EXAM),
-    description: Descriptions.SaziningaiExamDescription,
-  },
-  {
     title: "Naudotojai",
     icon: Icons.USER,
     key: pluralizeModels(ModelEnum.USER),
