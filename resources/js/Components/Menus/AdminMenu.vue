@@ -50,9 +50,6 @@ const setActiveKey = (route: string | undefined) => {
   if (routeParts[0] === "calendar") {
     activeKey.value = "calendar";
   }
-  if (["saziningaiExams", "saziningaiExamPeople"].includes(routeParts[0])) {
-    activeKey.value = "saziningai";
-  }
   if (routeParts[0] === "files") {
     activeKey.value = "files";
   }
@@ -342,20 +339,9 @@ const menuOptions = computed(() => [
     },
     show:
       auth?.can.index.institution ||
-      auth?.can.index.saziningaiExam ||
       auth?.can.index.reservation ||
       auth?.can.index.resource,
     children: [
-      {
-        label: () => {
-          return <Link href={route("saziningaiExams.index")}>Sąžiningai</Link>;
-        },
-        key: "saziningai",
-        icon: () => {
-          return <NIcon component={Icons.SAZININGAI_EXAM}></NIcon>;
-        },
-        show: auth?.can.index.saziningaiExam,
-      },
       {
         label: () => {
           return (

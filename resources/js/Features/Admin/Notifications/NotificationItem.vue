@@ -1,29 +1,21 @@
 <template>
-  <div
-    role="button"
+  <div role="button"
     class="flex max-w-sm cursor-pointer items-center gap-2 rounded-sm p-2 text-zinc-700 transition hover:bg-zinc-200/80 dark:text-zinc-50 dark:hover:bg-zinc-800/80"
-    @click="router.visit(notification.data.object.url)"
-  >
-    <div
-      v-if="notificationType"
-      class="w-full text-xs text-zinc-700 dark:text-zinc-300"
-    >
-      <component
-        :is="getNotificationComponent(notificationType)"
-        :notification="notification"
-      />
+    @click="router.visit(notification.data.object.url)">
+    <div v-if="notificationType" class="w-full text-xs text-zinc-700 dark:text-zinc-300">
+      <component :is="getNotificationComponent(notificationType)" :notification="notification" />
     </div>
     <div class="flex flex-col gap-2">
       <NButton size="tiny" tertiary circle @click.stop="handleClick">
-        <template #icon><NIcon :component="Checkmark24Filled" /></template>
+        <template #icon>
+          <IFluentCheckmark24Filled />
+        </template>
       </NButton>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Checkmark24Filled, People24Regular } from "@vicons/fluent";
-import { NButton, NIcon } from "naive-ui";
 import { defineAsyncComponent } from "vue";
 import { router } from "@inertiajs/vue3";
 import { useAxios } from "@vueuse/integrations/useAxios";

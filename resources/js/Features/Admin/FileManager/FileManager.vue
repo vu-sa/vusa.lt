@@ -92,10 +92,9 @@
 </template>
 
 <script setup lang="ts">
-import { Archive } from '@vicons/fa';
-import { useMessage } from 'naive-ui';
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { useMessage } from 'naive-ui';
 
 import CardModal from '@/Components/Modals/CardModal.vue';
 import FileButton from '../SharepointFileManager/Viewer/FileButton.vue';

@@ -12,7 +12,7 @@
           }}
         </h4>
         <div class="flex items-center gap-1 text-xs">
-          <NIcon :depth="3" size="10" :component="Clock24Filled" />
+          <IFluentClock24Filled />
           <time class="">{{
             formatStaticTime(new Date(meeting.start_time), {
               hour: "2-digit",
@@ -41,17 +41,11 @@
           </div>
         </div>
       </div>
-      <div class="absolute -bottom-8 right-0 opacity-10">
-        <NIcon size="80" :depth="4">
-          <component :is="icon" />
-        </NIcon>
-      </div>
     </NCard>
   </NSpin>
 </template>
 
 <script setup lang="tsx">
-import { Clock24Filled, PeopleCommunity28Filled } from "@vicons/fluent";
 import { computed, ref } from "vue";
 import { router } from "@inertiajs/vue3";
 import Icons from "@/Types/Icons/filled";
@@ -72,10 +66,6 @@ const handleDelete = () => {
     preserveScroll: true,
   });
 };
-
-const icon = computed(() => {
-  return PeopleCommunity28Filled;
-});
 
 const completedTasks = computed(() => {
   return props.meeting.tasks.reduce(

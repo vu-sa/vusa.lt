@@ -17,7 +17,7 @@
       </NButtonGroup>
       <NButton size="small" @click="editor?.chain().focus().unsetAllMarks().run()">
         <template #icon>
-          <NIcon :component="ClearFormatting20Filled" />
+          <IFluentClearFormatting20Filled />
         </template>
       </NButton>
       <NDivider vertical />
@@ -25,19 +25,19 @@
         <NButton :type="editor.isActive('paragraph') ? 'primary' : 'default'"
           @click="editor?.chain().focus().setParagraph().run()">
           <template #icon>
-            <NIcon :component="TextT24Regular" />
+            <IFluentTextT24Regular />
           </template>
         </NButton>
         <NButton :type="editor.isActive('heading', { level: 2 }) ? 'primary' : 'default'"
           @click="editor?.chain().focus().toggleHeading({ level: 2 }).run()">
           <template #icon>
-            <NIcon :component="TextHeader220Filled" />
+            <IFluentTextHeader220Filled />
           </template>
         </NButton>
         <NButton :type="editor.isActive('heading', { level: 3 }) ? 'primary' : 'default'"
           @click="editor?.chain().focus().toggleHeading({ level: 3 }).run()">
           <template #icon>
-            <NIcon :component="TextHeader320Filled" />
+            <IFluentTextHeader320Filled />
           </template>
         </NButton>
       </NButtonGroup>
@@ -45,24 +45,24 @@
         <NButton :type="editor.isActive('bulletList') ? 'primary' : 'default'"
           @click="editor?.chain().focus().toggleBulletList().run()">
           <template #icon>
-            <NIcon :component="TextBulletListLtr24Filled" />
+            <IFluentTextBulletListLtr24Filled />
           </template>
         </NButton>
         <NButton :type="editor.isActive('orderedList') ? 'primary' : 'default'"
           @click="editor?.chain().focus().toggleOrderedList().run()">
           <template #icon>
-            <NIcon :component="TextNumberListLtr20Filled" />
+            <IFluentTextNumberListLtr24Filled />
           </template>
         </NButton>
         <NButton :type="editor.isActive('blockquote') ? 'primary' : 'default'"
           @click="editor?.chain().focus().toggleBlockquote().run()">
-          <NIcon :component="TextQuote20Filled" />
+          <IFluentTextQuote24Filled />
         </NButton>
       </NButtonGroup>
       <NButton size="small" :type="editor.isActive('horizontalRule') ? 'primary' : 'default'"
         @click="editor?.chain().focus().setHorizontalRule().run()">
         <template #icon>
-          <NIcon :component="LineHorizontal120Regular" />
+          <IFluentLineHorizontal120Regular />
         </template>
       </NButton>
       <NButtonGroup size="small">
@@ -77,12 +77,12 @@
       <NButtonGroup size="small">
         <NButton @click="editor?.chain().focus().undo().run()">
           <template #icon>
-            <NIcon :component="ArrowUndo20Filled" />
+            <IFluentArrowUndo20Regular />
           </template>
         </NButton>
         <NButton @click="editor?.chain().focus().redo().run()">
           <template #icon>
-            <NIcon :component="ArrowRedo20Filled" />
+            <IFluentArrowRedo20Regular />
           </template>
         </NButton>
       </NButtonGroup>
@@ -91,57 +91,57 @@
       <NButtonGroup size="small">
         <NButton @click="editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()">
           <template #icon>
-            <NIcon :component="TableAdd24Regular" />
+            <IFluentTableAdd24Regular />
           </template>
         </NButton>
         <NButton @click="editor.chain().focus().toggleHeaderRow().run()">
           <template #icon>
-            <NIcon :component="TableFreezeRow24Regular" />
+            <IFluentTableFreezeRow24Regular />
           </template>
         </NButton>
         <NButton @click="editor.chain().focus().addColumnAfter().run()">
           <template #icon>
-            <NIcon :component="TableInsertColumn24Regular" />
+            <IFluentTableInsertColumn24Regular />
           </template>
         </NButton>
         <NButton @click="editor.chain().focus().addRowBefore().run()">
           <template #icon>
-            <NIcon :component="TableInsertRow24Regular" />
+            <IFluentTableInsertRow24Regular />
           </template>
         </NButton>
       </NButtonGroup>
       <NButtonGroup size="small">
         <NButton @click="editor.chain().focus().deleteColumn().run()">
           <template #icon>
-            <NIcon :component="TableDeleteColumn24Regular" />
+            <IFluentTableDeleteColumn24Regular />
           </template>
         </NButton>
         <NButton @click="editor.chain().focus().deleteRow().run()">
           <template #icon>
-            <NIcon :component="TableDeleteRow24Regular" />
+            <ITableDeleteRow24Regular />
           </template>
         </NButton>
         <NButton @click="editor.chain().focus().deleteTable().run()">
           <template #icon>
-            <NIcon :component="TableDismiss24Regular" />
+            <IFluentTableDismiss24Regular />
           </template>
         </NButton>
       </NButtonGroup>
       <NButtonGroup size="small">
         <NButton @click="editor.chain().focus().mergeCells().run()">
           <template #icon>
-            <NIcon :component="TableCellsMerge24Regular" />
+            <IFluentTableCellsMerge24Regular />
           </template>
         </NButton>
         <NButton @click="editor.chain().focus().splitCell().run()">
           <template #icon>
-            <NIcon :component="TableCellsSplit24Regular" />
+            <IFluentTableCellsSplit24Regular />
           </template>
         </NButton>
       </NButtonGroup>
       <NButton size="small" @click="editor.chain().focus().fixTables().run()">
         <template #icon>
-          <NIcon :component="TableSettings24Regular" />
+          <IFluentTableSettings24Regular />
         </template>
       </NButton>
     </div>
@@ -156,7 +156,7 @@
       <div class="flex flex-col gap-2">
         <NButton :type="showToolbar ? 'primary' : 'default'" size="small" @click="showToolbar = !showToolbar">
           <template #icon>
-            <NIcon :component="Settings16Filled" />
+            <IFluentSettings24Filled />
           </template>
         </NButton>
         <NButton v-if="!disableTables" :type="showTableToolbar ? 'primary' : 'default'" size="small"
@@ -171,29 +171,6 @@
 </template>
 
 <script setup lang="ts">
-import {
-  ArrowRedo20Filled,
-  ArrowUndo20Filled,
-  ClearFormatting20Filled,
-  LineHorizontal120Regular,
-  Settings16Filled,
-  TableAdd24Regular,
-  TableCellsMerge24Regular,
-  TableCellsSplit24Regular,
-  TableDeleteColumn24Regular,
-  TableDeleteRow24Regular,
-  TableDismiss24Regular,
-  TableFreezeRow24Regular,
-  TableInsertColumn24Regular,
-  TableInsertRow24Regular,
-  TableSettings24Regular,
-  TextBulletListLtr24Filled,
-  TextHeader220Filled,
-  TextHeader320Filled,
-  TextNumberListLtr20Filled,
-  TextQuote20Filled,
-  TextT24Regular,
-} from "@vicons/fluent";
 import { BubbleMenu, EditorContent, useEditor } from "@tiptap/vue-3";
 import { nextTick, onBeforeUnmount, ref } from "vue";
 import CharacterCount from "@tiptap/extension-character-count";

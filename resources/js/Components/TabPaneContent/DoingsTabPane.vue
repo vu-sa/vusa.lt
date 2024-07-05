@@ -1,25 +1,10 @@
 <template>
   <div>
     <div class="grid grid-cols-ramFill gap-x-4">
-      <DoingCard
-        v-for="doing in doings"
-        :key="doing.id"
-        :doing="doing"
-      ></DoingCard>
-
-      <NewGridItemButton
-        v-if="matter"
-        :icon="AddCircle24Filled"
-        @click="showModal = true"
-      >
-      </NewGridItemButton>
+      <DoingCard v-for="doing in doings" :key="doing.id" :doing="doing" />
+      <NewGridItemButton v-if="matter" :icon="IFluentAddCircle24Filled" @click="showModal = true" />
     </div>
-    <CardModal
-      v-if="matter"
-      v-model:show="showModal"
-      title="Sukurti veiklą"
-      @close="showModal = false"
-    >
+    <CardModal v-if="matter" v-model:show="showModal" title="Sukurti veiklą" @close="showModal = false">
       <DoingForm :doing="doingTemplate" @submit="handleDoingSubmit" />
     </CardModal>
   </div>
@@ -29,7 +14,6 @@
 import { ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 
-import { AddCircle24Filled } from "@vicons/fluent";
 import { doingTemplate } from "@/Types/formTemplates";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import DoingCard from "@/Components/Cards/DoingCard.vue";

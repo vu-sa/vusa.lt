@@ -45,7 +45,7 @@
             <!-- link to form.link -->
             <NButton tag="a" :href="form.url" target="_blank">
               <template #icon>
-                <NIcon :component="Open24Regular" />
+                <IFluentOpen24Regular />
               </template>
             </NButton>
           </NInputGroup>
@@ -66,8 +66,8 @@
           <NInput v-model:value="form.extra_attributes.description" type="textarea" placeholder="Įrašyti aprašymą..." />
         </NFormItem>
         <NFormItem label="Foninis paveikslėlis">
-            <img v-if="form.extra_attributes.image" class="mr-4 size-20 object-cover" :src="form.extra_attributes.image"
-              alt="image">
+          <img v-if="form.extra_attributes.image" class="mr-4 size-20 object-cover" :src="form.extra_attributes.image"
+            alt="image">
           <NButtonGroup>
             <TiptapImageButton v-model:show-modal="showModal" @submit="form.extra_attributes.image = $event" />
             <!-- Remove image button -->
@@ -89,10 +89,10 @@
 </template>
 
 <script setup lang="tsx">
-import { Link24Regular, Open24Regular } from "@vicons/fluent";
-import { NButton, NButtonGroup, NForm, NFormItem, NIcon, NInput, NInputGroup, NSelect } from "naive-ui";
 import { computed, ref } from "vue";
 import { router, useForm, usePage } from "@inertiajs/vue3"
+
+import Link24Regular from "~icons/fluent/link24-regular";
 
 import DeleteModelButton from "../Buttons/DeleteModelButton.vue";
 import FormElement from "./FormElement.vue";

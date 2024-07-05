@@ -1,34 +1,25 @@
 <template>
-  <component
-    :is="disabled ? NPopover : NPopconfirm"
-    positive-text="Ištrinti!"
-    negative-text="Palikti"
-    @positive-click="destroyModel()"
-  >
+  <component :is="disabled ? NPopover : NPopconfirm" positive-text="Ištrinti!" negative-text="Palikti"
+    @positive-click="destroyModel()">
     <template #trigger>
-      <NButton
-        type="error"
-        quaternary
-        :loading="loading"
-        :disabled="disabled"
-        :size="size"
-      >
+      <NButton type="error" quaternary :loading="loading" :disabled="disabled" :size="size">
         <template #icon>
-          <NIcon :component="Delete20Filled" />
+          <IFluentDelete24Filled />
         </template>
       </NButton>
     </template>
     <!-- TODO: make this logic only for duties, or remove it -->
-    <template v-if="disabled"
-      >Pirmiausia išimkite visus kontaktus iš pareigybės.</template
-    >
-    <template v-else>Ištrinto elemento nebus galima atkurti!</template>
+    <template v-if="disabled">
+      Pirmiausia išimkite visus kontaktus iš pareigybės.
+    </template>
+    <template v-else>
+      Ištrinto elemento nebus galima atkurti!
+    </template>
   </component>
 </template>
 
 <script setup lang="ts">
-import { Delete20Filled } from "@vicons/fluent";
-import { NButton, NIcon, NPopconfirm, NPopover } from "naive-ui";
+import { NPopconfirm, NPopover } from "naive-ui";
 import { ref } from "vue";
 import { router } from "@inertiajs/vue3";
 

@@ -38,9 +38,6 @@
 </template>
 
 <script setup lang="ts">
-//import { HatGraduation20Filled } from "@vicons/fluent";
-//import { usePage } from "@inertiajs/vue3";
-
 import FeedbackPopover from "@/Components/Public/FeedbackPopover.vue";
 import RichContentParser from "@/Components/RichContentParser.vue";
 

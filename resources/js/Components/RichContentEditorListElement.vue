@@ -9,23 +9,23 @@
         <!-- up and down arrows -->
         <NButton type="primary" circle color="#EEEEEE" size="small" bordered @click="$emit('up')">
           <template #icon>
-            <NIcon :component="ArrowUp24Regular" color="#000000" />
+            <IFluentArrowUp24Regular />
           </template>
         </NButton>
         <NButton type="primary" circle color="#EEEEEE" size="small" bordered @click="$emit('down')">
           <template #icon>
-            <NIcon :component="ArrowDown24Regular" color="#000000" />
+            <IFluentArrowDown24Regular />
           </template>
         </NButton>
         <NButton type="primary" circle color="#EEEEEE" size="small" bordered @click="$emit('expand')">
           <template #icon>
-            <NIcon :component="isExpanded ? ArrowMinimizeVertical24Regular : ArrowMaximizeVertical24Regular"
-              color="#000000" />
+            <IFluentArrowMinimizeVertical24Regular v-if="isExpanded" />
+            <IFluentArrowMaximizeVertical24Regular v-else />
           </template>
         </NButton>
         <NButton :disabled="!canDelete" circle type="error" size="small" @click="$emit('remove')">
           <template #icon>
-            <NIcon :component="Dismiss24Regular" />
+            <IFluentDismiss24Regular />
           </template>
         </NButton>
       </div>
@@ -35,8 +35,6 @@
 </template>
 
 <script setup lang="ts">
-import { ArrowDown24Regular, ArrowMaximizeVertical24Regular, ArrowMinimizeVertical24Regular, ArrowUp24Regular, Dismiss24Regular } from '@vicons/fluent';
-import { NButton, NIcon, NTag } from 'naive-ui';
 import type { Component } from 'vue';
 
 defineProps<{

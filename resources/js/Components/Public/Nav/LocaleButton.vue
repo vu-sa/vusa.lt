@@ -1,5 +1,5 @@
 <template>
-  <NDropdown placement="top-end" :options :delay="750">
+  <NDropdown placement="top-end" :options="options" :delay="750">
     <SmartLink title="Change language" :href="$page.props.otherLangURL ?? `/${otherLocale}`">
       <div class="flex gap-1">
         <img

@@ -1,54 +1,28 @@
 <template>
   <div class="my-calendar">
-    <Calendar
-      :initial-page="currentDay"
-      :is-dark="isDark"
-      :attributes="calendarAttributes"
-      :locale="{
-        id: $page.props.app.locale,
-        firstDayOfWeek: 2,
-        masks: { weekdays: 'WW' },
-      }"
-      color="red"
-      class="shadow-xl"
-    >
+    <Calendar :initial-page="currentDay" :is-dark="isDark" :attributes="calendarAttributes" :locale="{
+      id: $page.props.app.locale,
+      firstDayOfWeek: 2,
+      masks: { weekdays: 'WW' },
+    }" color="red" class="shadow-xl">
       <template #day-popover="{ attributes, dayTitle }">
         <div class="max-w-md">
-          <div
-            class="mb-1 text-center text-xs font-semibold text-gray-300 dark:text-zinc-700"
-          >
+          <div class="mb-1 text-center text-xs font-semibold text-gray-300 dark:text-zinc-700">
             {{ dayTitle }}
           </div>
-          <PopoverRow
-            v-for="attr in attributes"
-            :key="attr.key"
-            :attribute="attr"
-          >
+          <PopoverRow v-for="attr in attributes" :key="attr.key" :attribute="attr">
             <div class="inline-flex items-center gap-2">
-              <a
-                target="_blank"
-                :href="
-                  route('calendar.event', {
-                    calendar: attr.key,
-                    lang: $page.props.app.locale,
-                  })
-                "
-                >{{ attr.popover.label }}</a
-              >
-              <NConfigProvider
-                class="flex h-fit items-center justify-center"
-                :theme="isDark ? undefined : darkTheme"
-              >
+              <a target="_blank" :href="route('calendar.event', {
+                calendar: attr.key,
+                lang: $page.props.app.locale,
+              })
+                ">{{ attr.popover.label }}</a>
+              <NConfigProvider class="flex h-fit items-center justify-center" :theme="isDark ? undefined : darkTheme">
                 <div class="my-auto flex items-center justify-center">
-                  <NButton
-                    text
-                    tag="a"
-                    target="_blank"
-                    :href="attr.customData.googleLink"
-                    color="rgb(189, 40, 53)"
-                    size="tiny"
-                    ><NIcon :component="Google"
-                  /></NButton>
+                  <NButton text tag="a" target="_blank" :href="attr.customData.googleLink" color="rgb(189, 40, 53)"
+                    size="tiny">
+                    <IMdiGoogle />
+                  </NButton>
                 </div>
               </NConfigProvider>
             </div>
@@ -62,8 +36,7 @@
 <script setup lang="tsx">
 import "v-calendar/style.css";
 import { Calendar, PopoverRow } from "v-calendar";
-import { Google } from "@vicons/fa";
-import { NButton, NConfigProvider, NIcon, darkTheme } from "naive-ui";
+import { darkTheme } from "naive-ui";
 import { useDark } from "@vueuse/core";
 import type { PageAddress } from "v-calendar/dist/types/src/utils/page";
 
@@ -117,9 +90,9 @@ const calendarAttributes = props.calendarEvents.map((event) => {
   let calendarAttrObject = {
     dates: event.end_date
       ? {
-          start: new Date(event.date),
-          end: new Date(event.end_date.replace(/-/g, "/")),
-        }
+        start: new Date(event.date),
+        end: new Date(event.end_date.replace(/-/g, "/")),
+      }
       : new Date(event.date),
     [isSameDay(event.date, event.end_date) ? "dot" : "highlight"]: eventColor,
     popover: {

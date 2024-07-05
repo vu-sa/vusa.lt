@@ -17,14 +17,15 @@
       <template #trigger>
         <div class="absolute right-0 top-0">
           <NButton circle quaternary><template #icon>
-              <NIcon :size="24" :component="Settings24Filled" />
+            <IFluentSettings24Filled />
             </template></NButton>
         </div>
       </template>
     </NPopover>
     <section v-if="shownSections.includes('Greitieji veiksmai')" class="mb-8">
       <h2 class="mb-4 flex items-center gap-2">
-        <NIcon class="text-vusa-yellow" :component="LightbulbFilament24Filled" /><span>{{ $t("Greitieji veiksmai")
+        <IFluentLightbulbFilament24Filled class="text-vusa-yellow" />
+        <span>{{ $t("Greitieji veiksmai")
           }}</span>
       </h2>
       <div class="flex flex-wrap items-center gap-4">
@@ -34,7 +35,7 @@
         <Link :href="route('reservations.create')">
         <QuickActionButton>{{
           $t("Kurti rezervaciją")
-          }}
+        }}
           <template #icon>
             <Icons.RESERVATION />
           </template>
@@ -76,7 +77,7 @@
       <h2 class="flex items-center gap-2">
         <NIcon :component="Icons.RESERVATION" /><span>{{ $t("Tavo rezervacijos") }}</span>
         <Link :href="route('reservations.create')">
-        <NIcon class="mb-1 ml-1 align-middle" :component="AddCircle24Filled" />
+        <IFluentAddCircle24Filled />
         </Link>
       </h2>
       <div v-if="currentUser.reservations && currentUser.reservations.length > 0"
@@ -102,13 +103,14 @@
     </section>
     <section id="naudingos-nuorodos">
       <h2 class="mb-4 flex items-center gap-2">
-        <NIcon :component="Link24Filled" /><span>{{ $t("Naudingos nuorodos") }}</span>
+        <IFluentLink24Filled />
+        <span>{{ $t("Naudingos nuorodos") }}</span>
       </h2>
       <div class="flex flex-wrap gap-2">
         <NButton type="warning" secondary :bordered="false" size="tiny" round tag="a" target="_blank"
           href="https://atstovavimas.vusa.lt"><template #icon>
             <div class="ml-2 mr-1">
-              <NIcon :size="10" :component="ExternalLinkSquareAlt" />
+              <IMdiExternalLink width="10" height="10" />
             </div>
           </template>
           <span class="text-zinc-900/70 dark:text-zinc-100/80">atstovavimas.vusa.lt</span>
@@ -116,7 +118,7 @@
         <NButton secondary :bordered="false" size="tiny" round tag="a" target="_blank" href="http://atstovai.vusa.lt">
           <template #icon>
             <div class="ml-2 mr-1">
-              <NIcon :size="10" :component="ExternalLinkSquareAlt" />
+              <IMdiExternalLink width="10" height="10" />
             </div>
           </template>
           <span class="text-zinc-900/70 dark:text-zinc-100/80">atstovai.vusa.lt (slaptažodis: {{ atstovaiPassword
@@ -125,7 +127,7 @@
         <NButton secondary :bordered="false" size="tiny" round tag="a" target="_blank" href="http://archyvas.vusa.lt">
           <template #icon>
             <div class="ml-2 mr-1">
-              <NIcon :size="10" :component="ExternalLinkSquareAlt" />
+              <IMdiExternalLink width="10" height="10" />
             </div>
           </template>
           <span class="text-zinc-900/70 dark:text-zinc-100/80">archyvas.vusa.lt (slaptažodis: {{ archyvasPassword
@@ -134,7 +136,7 @@
         <NButton secondary :bordered="false" size="tiny" round tag="a" target="_blank" href="https://office.com">
           <template #icon>
             <div class="ml-2 mr-1">
-              <NIcon :size="10" :component="ExternalLinkSquareAlt" />
+              <IMdiExternalLink width="10" height="10" />
             </div>
           </template>
           <span class="text-zinc-900/70 dark:text-zinc-100/80">Microsoft 365</span>
@@ -145,15 +147,7 @@
 </template>
 
 <script setup lang="tsx">
-import {
-  AddCircle24Filled,
-  LightbulbFilament24Filled,
-  Link24Filled,
-  Settings24Filled,
-} from "@vicons/fluent";
-import { ExternalLinkSquareAlt } from "@vicons/fa";
 import { Head, Link, router } from "@inertiajs/vue3";
-import { NButton, NCheckbox, NCheckboxGroup, NIcon, NPopover } from "naive-ui";
 import { useStorage } from "@vueuse/core";
 
 import DoingCard from "@/Components/Cards/DoingCard.vue";

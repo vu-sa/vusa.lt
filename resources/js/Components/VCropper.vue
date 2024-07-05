@@ -1,70 +1,49 @@
 <template>
   <div class="mb-4 flex items-center gap-2">
     <NButtonGroup>
-      <NButton @click="zoomImage(0.1)"
-        ><template #icon><NIcon :component="ZoomIn16Regular" /></template
-        >Priartinti</NButton
-      >
-      <NButton @click="zoomImage(-0.1)"
-        ><template #icon><NIcon :component="ZoomOut16Regular" /></template
-        >Nutolinti</NButton
-      >
+      <NButton @click="zoomImage(0.1)"><template #icon>
+          <IFluentZoomIn16Regular />
+        </template>Priartinti</NButton>
+      <NButton @click="zoomImage(-0.1)"><template #icon>
+          <IFluentZoomOut16Regular />
+        </template>Nutolinti</NButton>
     </NButtonGroup>
-    <NButton @click="centerImage"
-      ><template #icon
-        ><NIcon :component="AlignCenterVertical16Regular" /></template
-      >Centruoti</NButton
-    >
-    <NButton @click="rotateImage90"
-      ><template #icon
-        ><NIcon :component="ArrowRotateClockwise16Regular" /></template
-      >Pasukti 90°</NButton
-    >
-    <NButton type="primary" @click="handleImageCrop"
-      ><template #icon><NIcon :component="CheckmarkCircle16Filled" /></template
-      >Apkirpti</NButton
-    >
+    <NButton @click="centerImage">
+      <template #icon>
+        <IFluentAlignCenterVertical16Regular />
+      </template>Centruoti
+    </NButton>
+    <NButton @click="rotateImage90"><template #icon>
+      <IFluentArrowRotateClockwise16Regular />
+      </template>Pasukti
+      90°</NButton>
+    <NButton type="primary" @click="handleImageCrop"><template #icon>
+      <IFluentCheckmarkCircle16Filled />
+      </template>Apkirpti</NButton>
   </div>
 
   <cropper-canvas ref="canvas" v-bind="$attrs">
-    <cropper-image ref="image" :src="src" alt="Picture"></cropper-image>
-    <cropper-shade hidden></cropper-shade>
-    <cropper-handle action="select" plain></cropper-handle>
-    <cropper-selection
-      ref="selection"
-      initial-coverage="0.5"
-      movable
-      resizable
-      zoomable
-    >
-      <cropper-grid role="grid" covered></cropper-grid>
-      <cropper-crosshair centered></cropper-crosshair>
-      <cropper-handle
-        action="move"
-        theme-color="rgba(255, 255, 255, 0.35)"
-      ></cropper-handle>
-      <cropper-handle action="n-resize"></cropper-handle>
-      <cropper-handle action="e-resize"></cropper-handle>
-      <cropper-handle action="s-resize"></cropper-handle>
-      <cropper-handle action="w-resize"></cropper-handle>
-      <cropper-handle action="ne-resize"></cropper-handle>
-      <cropper-handle action="nw-resize"></cropper-handle>
-      <cropper-handle action="se-resize"></cropper-handle>
-      <cropper-handle action="sw-resize"></cropper-handle>
+    <cropper-image ref="image" :src="src" alt="Picture" />
+    <cropper-shade hidden />
+    <cropper-handle action="select" plain />
+    <cropper-selection ref="selection" initial-coverage="0.5" movable resizable zoomable>
+      <cropper-grid role="grid" covered />
+      <cropper-crosshair centered />
+      <cropper-handle action="move" theme-color="rgba(255, 255, 255, 0.35)" />
+      <cropper-handle action="n-resize" />
+      <cropper-handle action="e-resize" />
+      <cropper-handle action="s-resize" />
+      <cropper-handle action="w-resize" />
+      <cropper-handle action="ne-resize" />
+      <cropper-handle action="nw-resize" />
+      <cropper-handle action="se-resize" />
+      <cropper-handle action="sw-resize" />
     </cropper-selection>
   </cropper-canvas>
 </template>
 
 <script setup lang="ts">
 import "cropperjs";
-import {
-  AlignCenterVertical16Regular,
-  ArrowRotateClockwise16Regular,
-  CheckmarkCircle16Filled,
-  ZoomIn16Regular,
-  ZoomOut16Regular,
-} from "@vicons/fluent";
-import { NButton, NButtonGroup, NIcon } from "naive-ui";
 import { computed, ref } from "vue";
 import { useAxios } from "@vueuse/integrations/useAxios";
 import type { CropperCanvas, CropperImage, CropperSelection } from "cropperjs";

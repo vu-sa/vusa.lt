@@ -2,15 +2,13 @@
   <NButton :size="size ?? 'small'" v-bind="$attrs" @click="handleModalOpen">
     <slot />
     <template #icon>
-      <NIcon :component="Image20Regular" />
+      <IFluentImage20Regular />
     </template>
   </NButton>
   <ImageSelector v-model:show-modal="showModal" @submit="$emit('submit', $event)" />
 </template>
 
 <script setup lang="ts">
-import { Image20Regular } from "@vicons/fluent";
-import { NButton, NIcon } from "naive-ui";
 import { ref } from "vue";
 import type { Size } from "naive-ui/es/button/src/interface";
 

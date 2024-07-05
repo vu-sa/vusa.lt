@@ -1,29 +1,19 @@
 <template>
-  <NPopselect
-    v-model:value="value"
-    :disabled="disabled"
-    :options="popselectOptions ?? []"
-    @update:value="$emit('select:value', value)"
-  >
-    <NButton
-      :disabled="disabled"
-      :type="options?.[0] !== value ? 'primary' : 'default'"
-      icon-placement="right"
-      round
-      size="small"
-      ><NEllipsis class="py-1" style="max-width: 200px">{{
+  <NPopselect v-model:value="value" :disabled="disabled" :options="popselectOptions ?? []"
+    @update:value="$emit('select:value', value)">
+    <NButton :disabled="disabled" :type="options?.[0] !== value ? 'primary' : 'default'" icon-placement="right" round
+      size="small">
+      <NEllipsis class="py-1" style="max-width: 200px">{{
         $t(value ?? "") || "Nepasirinkta"
-      }}</NEllipsis>
+        }}</NEllipsis>
       <template #icon>
-        <NIcon :component="ChevronDown24Regular"></NIcon>
+        <IFluentChevronDown20Regular />
       </template>
     </NButton>
   </NPopselect>
 </template>
 
 <script setup lang="tsx">
-import { ChevronDown24Regular } from "@vicons/fluent";
-import { NButton, NEllipsis, NIcon, NPopselect } from "naive-ui";
 import { computed, ref } from "vue";
 
 defineEmits<{

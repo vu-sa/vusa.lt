@@ -33,7 +33,8 @@
           @up="moveArrayElement(contents, index, index - 1)" @down="moveArrayElement(contents, index, index + 1)"
           @expand="content.expanded = !content?.expanded" @remove="handleElementRemove(index)">
           <!-- Text -->
-          <OriginalTipTap v-if="content?.type === 'tiptap'" v-show="content.expanded ?? true" v-model="content.json_content" />
+          <OriginalTipTap v-if="content?.type === 'tiptap'" v-show="content.expanded ?? true"
+            v-model="content.json_content" />
           <!-- Collapse -->
           <NDynamicInput v-else-if="content?.type === 'shadcn-accordion'" v-show="content.expanded"
             v-model:value="content.json_content" @create="onCreate">
@@ -106,14 +107,15 @@
               <template #default="{ value }">
                 <div class="flex w-full gap-4">
                   <NFormItem class="w-48" label="Nuotraukos plotis" :show-feedback="false">
-                    <NSelect v-model:value="value.colspan" type="text" placeholder="Layout" :options="imageGridOptions" />
+                    <NSelect v-model:value="value.colspan" type="text" placeholder="Layout"
+                      :options="imageGridOptions" />
                   </NFormItem>
                   <NFormItem class="grow" label="Nuotrauka" :show-feedback="false">
                     <div>
                       <TiptapImageButton v-if="!value.image" size="medium" class="grow" @submit="value.image = $event">
                         Pasirinkti paveikslėlį
                       </TiptapImageButton>
-                      <img v-else :src="value.image" class="aspect-video h-24 object-cover rounded-lg">
+                      <img v-else :src="value.image" class="aspect-video h-24 rounded-lg object-cover">
                     </div>
                   </NFormItem>
                 </div>

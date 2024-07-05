@@ -17,7 +17,8 @@
             <IFluentTextBulletListLtr24Filled />
           </template>
         </TipTapButton>
-        <TipTapButton :editor="editor" :type="'orderedList'" :callback="() => editor?.chain().focus().toggleOrderedList().run()">
+        <TipTapButton :editor="editor" :type="'orderedList'"
+          :callback="() => editor?.chain().focus().toggleOrderedList().run()">
           <template #icon>
             <IFluentTextNumberListLtr24Filled />
           </template>
@@ -59,27 +60,15 @@
 </template>
 
 <script setup lang="ts">
-import {
-  CaretDown24Filled,
-  CommentCheckmark24Regular,
-  CommentError24Regular,
-  Send20Filled,
-  TextBold20Regular,
-  TextBulletListLtr24Filled,
-  TextItalic20Regular,
-  TextNumberListLtr24Filled,
-  TextUnderline20Regular,
-} from "@vicons/fluent";
 import { EditorContent, useEditor } from "@tiptap/vue-3";
-import { NButton, NButtonGroup, NIcon, NPopover } from "naive-ui";
 import { onBeforeUnmount, ref } from "vue";
+
 import StarterKit from "@tiptap/starter-kit";
 import TipTapButton from "./TipTap/TipTapButton.vue";
 import TipTapLink from "@tiptap/extension-link";
-import TipTapMarkButton from "./TipTap/TipTapMarkButton.vue";
+import TiptapFormattingButtons from "@/Components/TipTap/TiptapFormattingButtons.vue";
 import Underline from "@tiptap/extension-underline";
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
-import TiptapFormattingButtons from "@/Components/TipTap/TiptapFormattingButtons.vue";
 
 const props = defineProps<{
   text: string | null;

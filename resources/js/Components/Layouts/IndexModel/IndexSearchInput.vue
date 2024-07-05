@@ -3,48 +3,37 @@
     <NPopover>
       Išvalyti paiešką...
       <template #trigger>
-        <NButton round @click="sweepSearch"
-          ><template #icon><NIcon :component="Broom16Regular"></NIcon></template
-        ></NButton>
+        <NButton round @click="sweepSearch"><template #icon>
+            <NIcon :component="Broom16Regular" />
+          </template></NButton>
       </template>
     </NPopover>
     <NInputGroup>
-      <NInput
-        v-model:value="searchValue"
-        class="mb-4 md:col-span-4"
-        type="text"
-        clearable
-        round
-        :placeholder="`${$t('Ieškoti')}...`"
-        @update:value="searchIsDirty = true"
-        @keyup.enter="handleSearchInput"
-        ><template #prefix>
-          <NIcon class="mr-1" :component="Search24Filled" /> </template
-      ></NInput>
-      <NButton
-        round
-        :loading="loading"
-        :type="searchIsDirty ? 'primary' : 'default'"
-        @click="handleSearchInput"
-        ><template #icon> <NIcon :component="Search24Filled" /> </template
-      ></NButton>
+      <NInput v-model:value="searchValue" class="mb-4 md:col-span-4" type="text" clearable round
+        :placeholder="`${$t('Ieškoti')}...`" @update:value="searchIsDirty = true" @keyup.enter="handleSearchInput">
+        <template #prefix>
+          <IFluentSearch20Filled />
+        </template>
+      </NInput>
+      <NButton round :loading="loading" :type="searchIsDirty ? 'primary' : 'default'" @click="handleSearchInput">
+        <template #icon>
+          <IFluentSearch20Filled />
+        </template>
+      </NButton>
     </NInputGroup>
     <NBadge v-if="hasSoftDeletes" :value="other.length">
       <NPopover trigger="click">
         <template #trigger>
           <NButton circle>
-            <template #icon
-              ><NIcon :component="MoreVertical24Filled"
-            /></template>
+            <template #icon>
+              <IFluentMoreVertical24Filled />
+            </template>
           </NButton>
         </template>
-        <NCheckboxGroup
-          v-model:value="other"
-          @update:value="$emit('update:other', $event)"
-        >
-          <NCheckbox value="showSoftDeleted" label="Rodyti ištrintus"
-            >Rodyti ištrintus</NCheckbox
-          >
+        <NCheckboxGroup v-model:value="other" @update:value="$emit('update:other', $event)">
+          <NCheckbox value="showSoftDeleted" label="Rodyti ištrintus">
+            Rodyti ištrintus
+          </NCheckbox>
         </NCheckboxGroup>
       </NPopover>
     </NBadge>
@@ -52,21 +41,6 @@
 </template>
 
 <script setup lang="tsx">
-import {
-  Broom16Regular,
-  MoreVertical24Filled,
-  Search24Filled,
-} from "@vicons/fluent";
-import {
-  NBadge,
-  NButton,
-  NCheckbox,
-  NCheckboxGroup,
-  NIcon,
-  NInput,
-  NInputGroup,
-  NPopover,
-} from "naive-ui";
 import { ref } from "vue";
 import { router } from "@inertiajs/vue3";
 
