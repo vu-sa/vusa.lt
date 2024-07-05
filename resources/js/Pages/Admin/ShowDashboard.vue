@@ -1,215 +1,144 @@
 <template>
   <PageContent>
+
     <Head :title="$t('Pradinis')" />
 
     <NPopover>
       <NCheckboxGroup v-model:value="shownSections">
         <div class="flex flex-col gap-2">
-          <NCheckbox
-            disabled
-            value="Greitieji veiksmai"
-            :label="$t('Greitieji veiksmai')"
-          ></NCheckbox>
-          <NCheckbox
-            value="Institucijos"
-            :label="$t('Tavo institucijos')"
-          ></NCheckbox>
+          <NCheckbox disabled value="Greitieji veiksmai" :label="$t('Greitieji veiksmai')" />
+          <NCheckbox value="Institucijos" :label="$t('Tavo institucijos')" />
           <NCheckbox value="Posėdžiai" :label="$t('Artėjantys posėdžiai')" />
           <NCheckbox value="Rezervacijos" :label="$t('Tavo rezervacijos')" />
           <NCheckbox value="Veiklos" :label="$t('Tavo veiklos')" />
-          <NCheckbox
-            value="Nuorodos"
-            :label="$t('Naudingos nuorodos')"
-            disabled
-          ></NCheckbox>
+          <NCheckbox value="Nuorodos" :label="$t('Naudingos nuorodos')" disabled />
         </div>
       </NCheckboxGroup>
       <template #trigger>
         <div class="absolute right-0 top-0">
-          <NButton circle quaternary
-            ><template #icon
-              ><NIcon
-                :size="24"
-                :component="Settings24Filled"
-              ></NIcon></template
-          ></NButton>
+          <NButton circle quaternary><template #icon>
+              <NIcon :size="24" :component="Settings24Filled" />
+            </template></NButton>
         </div>
       </template>
     </NPopover>
     <section v-if="shownSections.includes('Greitieji veiksmai')" class="mb-8">
       <h2 class="mb-4 flex items-center gap-2">
-        <NIcon
-          class="text-vusa-yellow"
-          :component="LightbulbFilament24Filled"
-        ></NIcon
-        ><span>{{ $t("Greitieji veiksmai") }}</span>
+        <NIcon class="text-vusa-yellow" :component="LightbulbFilament24Filled" /><span>{{ $t("Greitieji veiksmai")
+          }}</span>
       </h2>
       <div class="flex flex-wrap items-center gap-4">
         <QActCreateMeeting />
         <QActSurveyButton />
         <QActFocusGroupButton />
         <Link :href="route('reservations.create')">
-          <QuickActionButton :icon="Icons.RESERVATION">{{
-            $t("Kurti rezervaciją")
-          }}</QuickActionButton>
+        <QuickActionButton>{{
+          $t("Kurti rezervaciją")
+          }}
+          <template #icon>
+            <Icons.RESERVATION />
+          </template>
+        </QuickActionButton>
         </Link>
       </div>
     </section>
-    <section
-      v-if="shownSections.includes('Institucijos')"
-      id="tavo-institucijos"
-      class="mb-8"
-    >
+    <section v-if="shownSections.includes('Institucijos')" id="tavo-institucijos" class="mb-8">
       <h2 class="flex items-center gap-2">
-        <NIcon :component="Icons.INSTITUTION"></NIcon
-        ><span>{{ $t("Tavo institucijos") }}</span>
+        <NIcon :component="Icons.INSTITUTION" /><span>{{ $t("Tavo institucijos") }}</span>
       </h2>
-      <div
-        v-if="currentUser.institutions.length > 0"
-        class="relative mt-4 grid w-full grid-cols-ramFill items-start gap-4 overflow-hidden pb-4 transition-transform duration-300 ease-in-out"
-      >
-        <InstitutionCard
-          v-for="institution in currentUser.institutions"
-          :key="institution.id"
-          :institution="institution"
-          :duties="currentUser.duties"
+      <div v-if="currentUser.institutions.length > 0"
+        class="relative mt-4 grid w-full grid-cols-ramFill items-start gap-4 overflow-hidden pb-4 transition-transform duration-300 ease-in-out">
+        <InstitutionCard v-for="institution in currentUser.institutions" :key="institution.id"
+          :institution="institution" :duties="currentUser.duties"
           :is-padalinys="institution.alias === institution.padalinys?.alias"
-          @click="router.visit(route('institutions.show', institution.id))"
-        />
+          @click="router.visit(route('institutions.show', institution.id))" />
       </div>
-      <p v-else>{{ $t("Neturi tiesiogiai priskirtų institucijų") }}.</p>
+      <p v-else>
+        {{ $t("Neturi tiesiogiai priskirtų institucijų") }}.
+      </p>
     </section>
     <section v-if="shownSections.includes('Posėdžiai')" class="relative mb-8">
       <h2 class="flex items-center gap-2">
-        <NIcon :component="Icons.MEETING"></NIcon
-        ><span>{{ $t("Artėjantys posėdžiai") }}</span>
+        <NIcon :component="Icons.MEETING" /><span>{{ $t("Artėjantys posėdžiai") }}</span>
       </h2>
       <div class="grid grid-cols-ramFill gap-x-4">
         <template v-for="institution in currentUser.institutions">
-          <MeetingCard
-            v-for="meeting in institution.meetings"
-            :key="meeting.id"
-            style="min-width: 300px; max-width: 400px"
-            :meeting="meeting"
-            :institution="institution"
-            @click="router.visit(route('meetings.show', meeting.id))"
-          ></MeetingCard>
+          <MeetingCard v-for="meeting in institution.meetings" :key="meeting.id"
+            style="min-width: 300px; max-width: 400px" :meeting="meeting" :institution="institution"
+            @click="router.visit(route('meetings.show', meeting.id))" />
         </template>
-        <p class="hidden first:block">{{ $t("Artėjančių posėdžių nėra") }}.</p>
+        <p class="hidden first:block">
+          {{ $t("Artėjančių posėdžių nėra") }}.
+        </p>
       </div>
     </section>
-    <section
-      v-if="shownSections.includes('Rezervacijos')"
-      class="relative mb-8"
-    >
+    <section v-if="shownSections.includes('Rezervacijos')" class="relative mb-8">
       <h2 class="flex items-center gap-2">
-        <NIcon :component="Icons.RESERVATION"></NIcon
-        ><span>{{ $t("Tavo rezervacijos") }}</span>
+        <NIcon :component="Icons.RESERVATION" /><span>{{ $t("Tavo rezervacijos") }}</span>
         <Link :href="route('reservations.create')">
-          <NIcon
-            class="mb-1 ml-1 align-middle"
-            :component="AddCircle24Filled"
-          />
+        <NIcon class="mb-1 ml-1 align-middle" :component="AddCircle24Filled" />
         </Link>
       </h2>
-      <div
-        v-if="currentUser.reservations && currentUser.reservations.length > 0"
-        class="relative mt-4 grid w-full grid-cols-ramFill items-start gap-4 overflow-hidden pb-4 transition-transform duration-300 ease-in-out"
-      >
-        <ReservationCard
-          v-for="reservation in currentUser.reservations"
-          :key="reservation.id"
-          :reservation="reservation"
-        ></ReservationCard>
+      <div v-if="currentUser.reservations && currentUser.reservations.length > 0"
+        class="relative mt-4 grid w-full grid-cols-ramFill items-start gap-4 overflow-hidden pb-4 transition-transform duration-300 ease-in-out">
+        <ReservationCard v-for="reservation in currentUser.reservations" :key="reservation.id"
+          :reservation="reservation" />
       </div>
-      <p v-else>{{ $t("Neturi sukurtų rezervacijų") }}.</p>
+      <p v-else>
+        {{ $t("Neturi sukurtų rezervacijų") }}.
+      </p>
     </section>
     <section v-if="shownSections.includes('Veiklos')" class="relative mb-8">
       <h2 class="flex items-center gap-2">
-        <NIcon :component="Icons.DOING"></NIcon
-        ><span>{{ $t("Tavo veiklos") }}</span>
+        <NIcon :component="Icons.DOING" /><span>{{ $t("Tavo veiklos") }}</span>
       </h2>
       <div class="grid grid-cols-ramFill gap-x-4">
-        <DoingCard
-          v-for="doing in currentUser.doings"
-          :key="doing.id"
-          :doing="doing"
-          @click="router.visit(route('doings.show', doing.id))"
-        ></DoingCard>
-        <p class="hidden first:block">{{ $t("Neturi sukurtų veiklų") }}.</p>
+        <DoingCard v-for="doing in currentUser.doings" :key="doing.id" :doing="doing"
+          @click="router.visit(route('doings.show', doing.id))" />
+        <p class="hidden first:block">
+          {{ $t("Neturi sukurtų veiklų") }}.
+        </p>
       </div>
     </section>
     <section id="naudingos-nuorodos">
       <h2 class="mb-4 flex items-center gap-2">
-        <NIcon :component="Link24Filled"></NIcon
-        ><span>{{ $t("Naudingos nuorodos") }}</span>
+        <NIcon :component="Link24Filled" /><span>{{ $t("Naudingos nuorodos") }}</span>
       </h2>
       <div class="flex flex-wrap gap-2">
-        <NButton
-          type="warning"
-          secondary
-          :bordered="false"
-          size="tiny"
-          round
-          tag="a"
-          target="_blank"
-          href="https://atstovavimas.vusa.lt"
-          ><template #icon
-            ><div class="ml-2 mr-1">
-              <NIcon :size="10" :component="ExternalLinkSquareAlt"></NIcon></div
-          ></template>
-          <span class="text-zinc-900/70 dark:text-zinc-100/80"
-            >atstovavimas.vusa.lt</span
-          ></NButton
-        >
-        <NButton
-          secondary
-          :bordered="false"
-          size="tiny"
-          round
-          tag="a"
-          target="_blank"
-          href="http://atstovai.vusa.lt"
-          ><template #icon
-            ><div class="ml-2 mr-1">
-              <NIcon :size="10" :component="ExternalLinkSquareAlt"></NIcon></div
-          ></template>
-          <span class="text-zinc-900/70 dark:text-zinc-100/80"
-            >atstovai.vusa.lt (slaptažodis: {{ atstovaiPassword }})</span
-          >
+        <NButton type="warning" secondary :bordered="false" size="tiny" round tag="a" target="_blank"
+          href="https://atstovavimas.vusa.lt"><template #icon>
+            <div class="ml-2 mr-1">
+              <NIcon :size="10" :component="ExternalLinkSquareAlt" />
+            </div>
+          </template>
+          <span class="text-zinc-900/70 dark:text-zinc-100/80">atstovavimas.vusa.lt</span>
         </NButton>
-        <NButton
-          secondary
-          :bordered="false"
-          size="tiny"
-          round
-          tag="a"
-          target="_blank"
-          href="http://archyvas.vusa.lt"
-          ><template #icon
-            ><div class="ml-2 mr-1">
-              <NIcon :size="10" :component="ExternalLinkSquareAlt"></NIcon></div
-          ></template>
-          <span class="text-zinc-900/70 dark:text-zinc-100/80"
-            >archyvas.vusa.lt (slaptažodis: {{ archyvasPassword }})</span
-          >
+        <NButton secondary :bordered="false" size="tiny" round tag="a" target="_blank" href="http://atstovai.vusa.lt">
+          <template #icon>
+            <div class="ml-2 mr-1">
+              <NIcon :size="10" :component="ExternalLinkSquareAlt" />
+            </div>
+          </template>
+          <span class="text-zinc-900/70 dark:text-zinc-100/80">atstovai.vusa.lt (slaptažodis: {{ atstovaiPassword
+            }})</span>
         </NButton>
-        <NButton
-          secondary
-          :bordered="false"
-          size="tiny"
-          round
-          tag="a"
-          target="_blank"
-          href="https://office.com"
-          ><template #icon
-            ><div class="ml-2 mr-1">
-              <NIcon :size="10" :component="ExternalLinkSquareAlt"></NIcon></div
-          ></template>
-          <span class="text-zinc-900/70 dark:text-zinc-100/80"
-            >Microsoft 365</span
-          ></NButton
-        >
+        <NButton secondary :bordered="false" size="tiny" round tag="a" target="_blank" href="http://archyvas.vusa.lt">
+          <template #icon>
+            <div class="ml-2 mr-1">
+              <NIcon :size="10" :component="ExternalLinkSquareAlt" />
+            </div>
+          </template>
+          <span class="text-zinc-900/70 dark:text-zinc-100/80">archyvas.vusa.lt (slaptažodis: {{ archyvasPassword
+            }})</span>
+        </NButton>
+        <NButton secondary :bordered="false" size="tiny" round tag="a" target="_blank" href="https://office.com">
+          <template #icon>
+            <div class="ml-2 mr-1">
+              <NIcon :size="10" :component="ExternalLinkSquareAlt" />
+            </div>
+          </template>
+          <span class="text-zinc-900/70 dark:text-zinc-100/80">Microsoft 365</span>
+        </NButton>
       </div>
     </section>
   </PageContent>

@@ -1,3 +1,18 @@
+export const INSTITUTION_PLACEHOLDERS = {
+  name: {
+    lt: "Vilniaus universiteto Studentų atstovybė",
+    en: "Vilnius University Student Representation",
+  },
+  short_name: {
+    lt: "VU SA",
+    en: "VU SR",
+  },
+  description: {
+    lt: "VU SA - Vilniaus universiteto studentų atstovybė, kuri atstovauja visiems studentams...",
+    en: "VU SA - Vilnius University Student Representation, which represents all students...",
+  },
+};
+
 export const RESOURCE_PLACEHOLDERS = {
   title: {
     lt: "JBL kolonėlė (įkraunama)",

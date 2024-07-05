@@ -2,9 +2,11 @@
   <NForm :model="form" label-placement="top">
     <div class="flex flex-col">
       <FormElement>
-        <template #title>{{ $t("forms.context.main_info") }} </template>
-        <template #description
-          ><p>Pagrindinė informacija apie renginį.</p>
+        <template #title>
+          {{ $t("forms.context.main_info") }}
+        </template>
+        <template #description>
+          <p>Pagrindinė informacija apie renginį.</p>
           <ul>
             <li>
               <p>
@@ -20,116 +22,69 @@
           </ul>
         </template>
         <NFormItem :label="$t('forms.fields.title')" required>
-          <NInput
-            v-if="locale === 'lt'"
-            v-model:value="form.title"
-            type="text"
-            placeholder="Įrašyti pavadinimą..."
-          >
-            <template #suffix
-              ><SimpleLocaleButton v-model:locale="locale"></SimpleLocaleButton
-            ></template>
+          <NInput v-if="locale === 'lt'" v-model:value="form.title" type="text" placeholder="Įrašyti pavadinimą...">
+            <template #suffix>
+              <SimpleLocaleButton v-model:locale="locale" />
+            </template>
           </NInput>
-          <NInput
-            v-else
-            v-model:value="form.extra_attributes.en.title"
-            type="text"
-            placeholder="Enter name of event..."
-            ><template #suffix
-              ><SimpleLocaleButton
-                v-model:locale="locale"
-              ></SimpleLocaleButton></template
-          ></NInput>
+          <NInput v-else v-model:value="form.extra_attributes.en.title" type="text"
+            placeholder="Enter name of event...">
+            <template #suffix>
+              <SimpleLocaleButton v-model:locale="locale" />
+            </template>
+          </NInput>
         </NFormItem>
         <div class="grid gap-4 lg:grid-cols-2">
           <NFormItem label="Organizatorius">
-            <NInput
-              v-if="locale === 'lt'"
-              v-model:value="form.extra_attributes.organizer"
-              :placeholder="defaultOrganizer ?? ''"
-              type="text"
-              ><template #suffix
-                ><SimpleLocaleButton
-                  v-model:locale="locale"
-                ></SimpleLocaleButton></template
-            ></NInput>
-            <NInput
-              v-else
-              v-model:value="form.extra_attributes.en.organizer"
-              :disabled="!form.extra_attributes.en.shown"
-              :placeholder="defaultOrganizer ?? ''"
-              type="text"
-              ><template #suffix
-                ><SimpleLocaleButton
-                  v-model:locale="locale"
-                ></SimpleLocaleButton></template></NInput
-          ></NFormItem>
+            <NInput v-if="locale === 'lt'" v-model:value="form.extra_attributes.organizer"
+              :placeholder="defaultOrganizer ?? ''" type="text"><template #suffix>
+                <SimpleLocaleButton v-model:locale="locale" />
+              </template></NInput>
+            <NInput v-else v-model:value="form.extra_attributes.en.organizer"
+              :disabled="!form.extra_attributes.en.shown" :placeholder="defaultOrganizer ?? ''" type="text"><template
+                #suffix>
+                <SimpleLocaleButton v-model:locale="locale" />
+              </template></NInput>
+          </NFormItem>
           <NFormItem label="Renginio vieta">
-            <NInput
-              v-if="locale === 'lt'"
-              v-model:value="form.location"
-              type="text"
-              placeholder="AB Imeda poilsiavietė, Kiškiai, Ignalinos raj."
-            >
-              <template #suffix
-                ><SimpleLocaleButton
-                  v-model:locale="locale"
-                ></SimpleLocaleButton></template
-            ></NInput>
-            <NInput
-              v-else
-              v-model:value="form.extra_attributes.en.location"
-              :disabled="!form.extra_attributes.en.shown"
-              type="text"
-              placeholder="AB Imeda recreation area, Kiškiai, Ignalina district"
-              ><template #suffix
-                ><SimpleLocaleButton
-                  v-model:locale="locale"
-                ></SimpleLocaleButton></template
-            ></NInput>
+            <NInput v-if="locale === 'lt'" v-model:value="form.location" type="text"
+              placeholder="AB Imeda poilsiavietė, Kiškiai, Ignalinos raj.">
+              <template #suffix>
+                <SimpleLocaleButton v-model:locale="locale" />
+              </template>
+            </NInput>
+            <NInput v-else v-model:value="form.extra_attributes.en.location" :disabled="!form.extra_attributes.en.shown"
+              type="text" placeholder="AB Imeda recreation area, Kiškiai, Ignalina district"><template #suffix>
+                <SimpleLocaleButton v-model:locale="locale" />
+              </template></NInput>
           </NFormItem>
         </div>
         <NFormItem label="Kategorija">
-          <NSelect
-            v-model:value="form.category"
-            :options="categoryOptions"
-            placeholder="Pasirinkti kategoriją..."
-            clearable
-          />
+          <NSelect v-model:value="form.category" :options="categoryOptions" placeholder="Pasirinkti kategoriją..."
+            clearable />
         </NFormItem>
         <NFormItem label="Viešinimo auditorija">
           <div class="grid w-full grid-cols-2 gap-4">
-            <NButton
-              strong
-              :type="form.extra_attributes.en.shown ? 'primary' : 'default'"
-              @click="form.extra_attributes.en.shown = true"
-              >Visi studentai
-              <template #icon
-                ><NIcon :component="Globe24Filled"></NIcon
-              ></template>
+            <NButton strong :type="form.extra_attributes.en.shown ? 'primary' : 'default'"
+              @click="form.extra_attributes.en.shown = true">Visi studentai
+              <template #icon>
+                <IFluentGlobe20Regular width="16" />
+              </template>
             </NButton>
-            <NButton
-              :type="form.extra_attributes.en.shown ? 'default' : 'primary'"
-              @click="form.extra_attributes.en.shown = false"
-            >
-              Tik lietuviškai mokantys studentai</NButton
-            >
+            <NButton :type="form.extra_attributes.en.shown ? 'default' : 'primary'"
+              @click="form.extra_attributes.en.shown = false">
+              Tik lietuviškai mokantys studentai</NButton>
           </div>
         </NFormItem>
         <NFormItem label="Padalinys">
-          <NSelect
-            v-model:value="form.padalinys_id"
-            :options="padaliniai"
-            label-field="shortname"
-            value-field="id"
-            placeholder="VU SA ..."
-            :default-value="padaliniai[0].id ?? ''"
-          >
-          </NSelect>
+          <NSelect v-model:value="form.padalinys_id" :options="padaliniai" label-field="shortname" value-field="id"
+            placeholder="VU SA ..." :default-value="padaliniai[0].id ?? ''" />
         </NFormItem>
       </FormElement>
       <FormElement>
-        <template #title>Laiko informacija</template>
+        <template #title>
+          Laiko informacija
+        </template>
         <template #description>
           <p class="mb-2">
             Jeigu nėra nurodytas pabaigos laikas, ICS kalendoriuje renginys
@@ -142,32 +97,21 @@
         </template>
         <div class="grid gap-4 lg:grid-cols-3">
           <NFormItem label="Renginio pradžia" required>
-            <NDatePicker
-              v-model:value="form.date"
-              default-time="12:00:00"
-              placeholder="Pasirinkti pradžios laiką..."
-              value-format="yyyy-MM-dd HH:mm:ss"
-              type="datetime"
-            />
+            <NDatePicker v-model:value="form.date" default-time="12:00:00" placeholder="Pasirinkti pradžios laiką..."
+              value-format="yyyy-MM-dd HH:mm:ss" type="datetime" />
           </NFormItem>
 
           <NFormItem label="Renginio pabaiga">
-            <NDatePicker
-              v-model:formatted-value="form.end_date"
-              default-time="12:00:00"
-              :disabled="props.modelRoute === 'calendar.store'"
-              placeholder="Pasirinkti pabaigos laiką..."
-              value-format="yyyy-MM-dd HH:mm:ss"
-              type="datetime"
-            />
+            <NDatePicker v-model:formatted-value="form.end_date" default-time="12:00:00"
+              :disabled="props.modelRoute === 'calendar.store'" placeholder="Pasirinkti pabaigos laiką..."
+              value-format="yyyy-MM-dd HH:mm:ss" type="datetime" />
           </NFormItem>
           <NFormItem>
             <template #label>
               <div class="inline-flex items-center gap-2">
-                Visos dienos renginys<InfoPopover
-                  >ICS kalendoriuje šis renginys bus žymimas kaip
-                  <strong>visos dienos</strong> renginys.</InfoPopover
-                >
+                Visos dienos renginys<InfoPopover>ICS kalendoriuje šis renginys bus žymimas kaip
+                  <strong>visos dienos</strong> renginys.
+                </InfoPopover>
               </div>
             </template>
             <NSwitch v-model:value="form.extra_attributes.all_day" />
@@ -175,163 +119,93 @@
         </div>
       </FormElement>
       <FormElement>
-        <template #title>Informacija viešinimui</template>
+        <template #title>
+          Informacija viešinimui
+        </template>
         <NFormItem>
-          <template #label
-            ><div class="inline-flex items-center gap-2">
-              CTO (Call to action) nuoroda<InfoPopover
-                >Įvedus nuorodą, renginio aprašyme bus rodomas
+          <template #label>
+            <div class="inline-flex items-center gap-2">
+              CTO (Call to action) nuoroda<InfoPopover>Įvedus nuorodą, renginio aprašyme bus rodomas
                 <strong>CTO mygtukas</strong>, kuris nukreips vartotoją į
                 nurodytą nuorodą. Dažniausiai šis mygtukas turėtų vesti į
                 <strong> pagrindinį renginio puslapį</strong> arba
-                <strong>registracijos formą</strong>.</InfoPopover
-              >
-            </div></template
-          >
-          <NInput
-            v-if="locale === 'lt'"
-            v-model:value="form.url"
-            type="text"
-            placeholder="https://vusa.lt/..."
-            ><template #suffix
-              ><SimpleLocaleButton
-                v-model:locale="locale"
-              ></SimpleLocaleButton></template
-          ></NInput>
-          <NInput
-            v-else
-            v-model:value="form.extra_attributes.en.url"
-            :disabled="!form.extra_attributes.en.shown"
-            type="text"
-            placeholder="https://vusa.lt/..."
-            ><template #suffix
-              ><SimpleLocaleButton
-                v-model:locale="locale"
-              ></SimpleLocaleButton></template
-          ></NInput>
+                <strong>registracijos formą</strong>.
+              </InfoPopover>
+            </div>
+          </template>
+          <NInput v-if="locale === 'lt'" v-model:value="form.url" type="text" placeholder="https://vusa.lt/...">
+            <template #suffix>
+              <SimpleLocaleButton v-model:locale="locale" />
+            </template>
+          </NInput>
+          <NInput v-else v-model:value="form.extra_attributes.en.url" :disabled="!form.extra_attributes.en.shown"
+            type="text" placeholder="https://vusa.lt/..."><template #suffix>
+              <SimpleLocaleButton v-model:locale="locale" />
+            </template></NInput>
         </NFormItem>
 
         <NFormItem :label="$t('forms.fields.facebook_url')">
-          <NInput
-            v-if="locale === 'lt'"
-            v-model:value="form.extra_attributes.facebook_url"
-            type="text"
-            placeholder="https://www.facebook.com/events/584152539934772"
-            ><template #suffix
-              ><SimpleLocaleButton
-                v-model:locale="locale"
-              ></SimpleLocaleButton></template
-          ></NInput>
-          <NInput
-            v-else
-            v-model:value="form.extra_attributes.en.facebook_url"
-            :disabled="!form.extra_attributes.en.shown"
-            type="text"
-            placeholder="https://www.facebook.com/events/584152539934772"
-            ><template #suffix
-              ><SimpleLocaleButton
-                v-model:locale="locale"
-              ></SimpleLocaleButton></template
-          ></NInput>
+          <NInput v-if="locale === 'lt'" v-model:value="form.extra_attributes.facebook_url" type="text"
+            placeholder="https://www.facebook.com/events/584152539934772"><template #suffix>
+              <SimpleLocaleButton v-model:locale="locale" />
+            </template></NInput>
+          <NInput v-else v-model:value="form.extra_attributes.en.facebook_url"
+            :disabled="!form.extra_attributes.en.shown" type="text"
+            placeholder="https://www.facebook.com/events/584152539934772"><template #suffix>
+              <SimpleLocaleButton v-model:locale="locale" />
+            </template></NInput>
         </NFormItem>
 
         <NFormItem label="Youtube video kodas">
           <NInputGroup>
-            <NInput
-              autosize
-              value="https://www.youtube.com/embed/"
-              :disabled="true"
-            ></NInput>
-            <NInput
-              v-if="locale === 'lt'"
-              v-model:value="form.extra_attributes.video_url"
-              type="text"
-              placeholder="dQw4w9WgXcQ"
-              ><template #suffix
-                ><SimpleLocaleButton
-                  v-model:locale="locale"
-                ></SimpleLocaleButton></template
-            ></NInput>
-            <NInput
-              v-else
-              v-model:value="form.extra_attributes.en.video_url"
-              :disabled="!form.extra_attributes.en.shown"
-              type="text"
-              placeholder="dQw4w9WgXcQ"
-              ><template #suffix
-                ><SimpleLocaleButton
-                  v-model:locale="locale"
-                ></SimpleLocaleButton></template
-            ></NInput>
+            <NInput autosize value="https://www.youtube.com/embed/" :disabled="true" />
+            <NInput v-if="locale === 'lt'" v-model:value="form.extra_attributes.video_url" type="text"
+              placeholder="dQw4w9WgXcQ"><template #suffix>
+                <SimpleLocaleButton v-model:locale="locale" />
+              </template></NInput>
+            <NInput v-else v-model:value="form.extra_attributes.en.video_url"
+              :disabled="!form.extra_attributes.en.shown" type="text" placeholder="dQw4w9WgXcQ"><template #suffix>
+                <SimpleLocaleButton v-model:locale="locale" />
+              </template></NInput>
           </NInputGroup>
         </NFormItem>
       </FormElement>
       <FormElement>
-        <template #title>Papildoma informacija</template>
-        <NFormItem
-          v-if="modelRoute === 'calendar.update'"
+        <template #title>
+          Papildoma informacija
+        </template>
+        <NFormItem v-if="modelRoute === 'calendar.update'"
           label="Įkelti paveikslėlius (pirmas bus panaudotas, kaip pagrindinis. Jeigu metama klaida, prieš tai sumažinkite paveikslėlius)"
-          :span="6"
-        >
-          <NUpload
-            ref="upload"
-            accept="image/jpg, image/jpeg, image/png"
-            list-type="image-card"
-            :default-file-list="images"
-            multiple
-            @change="handleUploadChange"
-            @remove="handleUploadRemove"
-          >
+          :span="6">
+          <NUpload ref="upload" accept="image/jpg, image/jpeg, image/png" list-type="image-card"
+            :default-file-list="images" multiple @change="handleUploadChange" @remove="handleUploadRemove">
             Įkelti paveikslėlius
           </NUpload>
         </NFormItem>
 
         <NFormItem label="Aprašymas" :span="6" required>
-          <TipTap html
-            v-if="locale === 'lt'"
-            v-model="form.description"
-            :search-files="$page.props.search.other"
-          />
-          <TipTap html
-            v-else
-            v-model="form.extra_attributes.en.description"
-            :search-files="$page.props.search.other"
-          />
+          <TipTap v-if="locale === 'lt'" v-model="form.description" html :search-files="$page.props.search.other" />
+          <TipTap v-else v-model="form.extra_attributes.en.description" html :search-files="$page.props.search.other" />
         </NFormItem>
       </FormElement>
     </div>
     <div class="flex justify-end gap-2">
-      <DeleteModelButton
-        v-if="deleteModelRoute"
-        :form="form"
-        :model-route="deleteModelRoute"
-      ></DeleteModelButton>
-      <UpsertModelButton :form="form" :model-route="modelRoute" :images="images"
-        >Sukurti</UpsertModelButton
-      >
+      <DeleteModelButton v-if="deleteModelRoute" :form="form" :model-route="deleteModelRoute" />
+      <UpsertModelButton :form="form" :model-route="modelRoute" :images="images">
+        Sukurti
+      </UpsertModelButton>
     </div>
   </NForm>
 </template>
 
 <script setup lang="ts">
 import {
-  NButton,
-  NDatePicker,
-  NForm,
-  NFormItem,
-  NIcon,
-  NInput,
-  NInputGroup,
-  NSelect,
-  NSwitch,
-  NUpload,
   type UploadFileInfo,
   type UploadInst,
 } from "naive-ui";
 import { computed, ref } from "vue";
 import { router, useForm, usePage } from "@inertiajs/vue3";
 
-import { Globe24Filled } from "@vicons/fluent";
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import FormElement from "./FormElement.vue";
 import InfoPopover from "../Buttons/InfoPopover.vue";

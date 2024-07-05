@@ -4,14 +4,11 @@
       <!-- TODO: Make card for many goals -->
       <div v-if="matter.goals && matter.goals?.length > 0">
         <div class="flex items-center gap-2">
-          <Link
-            class="inline-flex items-center gap-2"
-            :href="route('goals.show', matter.goals[0].id)"
-          >
-            <NIcon :size="30" :component="Icons.GOAL" />
-            <span class="text-2xl font-bold line-clamp-1">{{
-              matter.goals[0].title
-            }}</span>
+          <Link class="inline-flex items-center gap-2" :href="route('goals.show', matter.goals[0].id)">
+          <NIcon :size="30" :component="Icons.GOAL" />
+          <span class="line-clamp-1 text-2xl font-bold">{{
+            matter.goals[0].title
+          }}</span>
           </Link>
         </div>
         <p class="mt-4">
@@ -25,40 +22,28 @@
     </FadeTransition>
     <template #action-button>
       <div class="flex items-center gap-2">
-        <Link
-          v-if="matter.goals && matter.goals.length > 0"
-          :href="route('goals.show', matter.goals[0].id)"
-        >
-          <NButton icon-placement="right" secondary size="small"
-            ><template #icon
-              ><NIcon :component="ArrowUpRight24Filled" /></template
-            >Eiti</NButton
-          >
+        <Link v-if="matter.goals && matter.goals.length > 0" :href="route('goals.show', matter.goals[0].id)">
+        <NButton icon-placement="right" secondary size="small"><template #icon>
+            <IFluentArrowUpRight24Filled />
+          </template>Eiti</NButton>
         </Link>
         <NButton secondary size="small" @click="handleModalOpen">
-          <template #icon><NIcon :component="Icons.GOAL"></NIcon></template>
-          <slot>Pridėti?</slot></NButton
-        >
-        <CardModal
-          v-model:show="showModal"
-          display-directive="show"
-          title="Pakeisti tikslą"
-          @close="showModal = false"
-          ><GoalSelectorForm
-            :goals="goals"
-            :loading="loading"
-            :current="matter?.goals?.[0] ?? null"
-            @submit="handleGoalChange"
-        /></CardModal>
+          <template #icon>
+            <Icons.GOAL />
+          </template>
+          <slot>Pridėti?</slot>
+        </NButton>
+        <CardModal v-model:show="showModal" display-directive="show" title="Pakeisti tikslą" @close="showModal = false">
+          <GoalSelectorForm :goals="goals" :loading="loading" :current="matter?.goals?.[0] ?? null"
+            @submit="handleGoalChange" />
+        </CardModal>
       </div>
     </template>
   </QuickContentCard>
 </template>
 
 <script setup lang="tsx">
-import { ArrowUpRight24Filled } from "@vicons/fluent";
 import { Link, router } from "@inertiajs/vue3";
-import { NButton, NIcon } from "naive-ui";
 import { ref } from "vue";
 
 import CardModal from "@/Components/Modals/CardModal.vue";

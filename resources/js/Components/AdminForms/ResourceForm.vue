@@ -6,14 +6,12 @@
         <NFormItem :label="$t('forms.fields.title')" required>
           <MultiLocaleInput
             v-model:input="form.name"
-            v-model:lang="inputLang"
             :placeholder="RESOURCE_PLACEHOLDERS.title"
           />
         </NFormItem>
         <NFormItem :label="$t('forms.fields.description')" required>
           <MultiLocaleInput
             v-model:input="form.description"
-            v-model:lang="inputLang"
             input-type="textarea"
             :placeholder="RESOURCE_PLACEHOLDERS.description"
           />
@@ -102,7 +100,7 @@ import { router, useForm, usePage } from "@inertiajs/vue3";
 
 import FormElement from "./FormElement.vue";
 import Icons from "@/Types/Icons/regular";
-import MultiLocaleInput from "../SimpleAugment/MultiLocaleInput.vue";
+import MultiLocaleInput from "../FormElements/MultiLocaleInput.vue";
 // import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 import { RESOURCE_DESCRIPTIONS } from "@/Constants/I18n/Descriptions";
 import { RESOURCE_PLACEHOLDERS } from "@/Constants/I18n/Placeholders";

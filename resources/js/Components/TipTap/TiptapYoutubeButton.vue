@@ -1,11 +1,11 @@
 <template>
   <NButton size="small" @click="showModal = true">
     <template #icon>
-      <NIcon :component="Youtube" />
+      <IMdiYoutube />
     </template>
   </NButton>
   <CardModal v-model:show="showModal" class="max-w-xl" title="Įkelti Youtube filmuką" @close="showModal = false">
-    <div class="flex flex-col gap-2 items-baseline">
+    <div class="flex flex-col items-baseline gap-2">
       <NFormItem class="w-full" label="Youtube nuoroda" :show-feedback="false">
         <NInput v-model:value="youtubeUrl" />
       </NFormItem>
@@ -17,8 +17,6 @@
 </template>
 
 <script setup lang="ts">
-import { NButton, NFormItem, NIcon, NInput } from "naive-ui";
-import { Youtube } from "@vicons/fa";
 import { ref } from "vue";
 
 import CardModal from "../Modals/CardModal.vue";

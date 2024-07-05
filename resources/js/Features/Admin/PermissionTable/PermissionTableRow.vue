@@ -1,62 +1,53 @@
 <template>
   <tr>
     <td class="permission-description">
-      <template v-if="ability === 'create'"
-        ><NIcon :component="AddCircle24Filled" />Sukurti</template
-      >
-      <template v-if="ability === 'read'"
-        ><NIcon :component="Eye24Filled" />Matyti</template
-      >
-      <template v-if="ability === 'update'"
-        ><NIcon :component="Edit24Filled" />Redaguoti</template
-      >
-      <template v-if="ability === 'delete'"
-        ><NIcon color="#bd2835" :component="Delete24Filled" />Ištrinti</template
-      >
+      <template v-if="ability === 'create'">
+        <IFluentAddCircle24Filled />
+        Sukurti
+      </template>
+      <template v-if="ability === 'read'">
+        <IFluentEye24Filled />
+        Matyti
+      </template>
+      <template v-if="ability === 'update'">
+        <IFluentEdit24Filled />
+        Redaguoti
+      </template>
+      <template v-if="ability === 'delete'">
+        <IFluentDelete24Filled class="text-vusa-red" />
+        Ištrinti
+      </template>
     </td>
     <td>
       <div class="flex w-64 items-center gap-2">
-        <NCheckbox
-          v-model:checked="checkboxPadalinys"
-          :disabled="switchAll || disabled"
-          @update:checked="handleUpdate"
-        ></NCheckbox>
-        <NSwitch
-          v-model:value="switchPadalinys"
-          :disabled="switchAll || !checkboxPadalinys || disabled"
-          size="small"
-          @update:value="handleUpdate"
-        >
+        <NCheckbox v-model:checked="checkboxPadalinys" :disabled="switchAll || disabled"
+          @update:checked="handleUpdate" />
+        <NSwitch v-model:value="switchPadalinys" :disabled="switchAll || !checkboxPadalinys || disabled" size="small"
+          @update:value="handleUpdate">
           <template #unchecked>
             {{ checkboxPadalinys ? `Savo` : "" }}
           </template>
-          <template #checked> Visus </template>
-          <template #checked-icon><NIcon :component="icon"></NIcon></template>
+          <template #checked>
+            Visus
+          </template>
+          <template #checked-icon>
+            <NIcon :component="icon" />
+          </template>
         </NSwitch>
       </div>
     </td>
     <td>
-      <NSwitch
-        v-model:value="switchAll"
-        :disabled="disabled"
-        size="small"
-        @update:value="handleUpdate"
-      >
-        <template #checked-icon><NIcon :component="icon"></NIcon></template>
+      <NSwitch v-model:value="switchAll" :disabled="disabled" size="small" @update:value="handleUpdate">
+        <template #checked-icon>
+          <NIcon :component="icon" />
+        </template>
       </NSwitch>
     </td>
   </tr>
 </template>
 
 <script setup lang="tsx">
-import {
-  AddCircle24Filled,
-  Delete24Filled,
-  Edit24Filled,
-  Eye24Filled,
-} from "@vicons/fluent";
 import { type Component, ref } from "vue";
-import { NCheckbox, NIcon, NSwitch } from "naive-ui";
 import type { CRUDEnum } from "@/Types/enums";
 
 const emit = defineEmits<{
@@ -114,7 +105,7 @@ handleUpdate();
 </script>
 
 <style scoped>
-tr > td.permission-description {
+tr>td.permission-description {
   display: flex;
   align-items: center;
   gap: 0.5rem;

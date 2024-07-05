@@ -1,83 +1,53 @@
 <template>
-  <div
-    class="mt-4 rounded-md border border-zinc-200 p-8 shadow-sm dark:border-zinc-50/10"
-  >
+  <div class="mt-4 rounded-md border border-zinc-200 p-8 shadow-sm dark:border-zinc-50/10">
     <template v-if="startingPath">
       <div class="flex h-8">
         <div class="flex w-fit gap-2">
           <div class="w-96">
             <NSkeleton v-if="loading" size="medium" round />
-            <FuzzySearcher
-              v-else
-              :data="files"
-              @search:results="updateResults"
-            />
+            <FuzzySearcher v-else :data="files" @search:results="updateResults" />
           </div>
           <NSkeleton v-if="loading" size="medium" circle />
-          <NButton v-else circle @click="showFileUploader = true"
-            ><template #icon
-              ><NIcon :component="DocumentAdd24Regular"></NIcon></template
-          ></NButton>
+          <NButton v-else circle @click="showFileUploader = true"><template #icon>
+            <IFluentDocumentAdd24Regular />
+            </template></NButton>
         </div>
         <div class="ml-auto inline-flex items-center gap-4">
           <!-- <NSwitch v-model:value="showThumbnail" :disabled="loading">
             <template #icon><NIcon :component="Image24Regular"></NIcon></template>
           </NSwitch> -->
-          <NButton :disabled="loading" circle quaternary @click="refreshFiles"
-            ><template #icon
-              ><NIcon :component="ArrowClockwise24Filled"></NIcon></template
-          ></NButton>
+          <NButton :disabled="loading" circle quaternary @click="refreshFiles"><template #icon>
+            <IFluentArrowClockwise24Filled />
+            </template>
+          </NButton>
           <NButtonGroup>
-            <NButton
-              :disabled="loading"
-              :type="viewMode === 'grid' ? 'primary' : 'default'"
-              @click="viewMode = 'grid'"
-              ><template #icon
-                ><NIcon :component="Grid20Filled"></NIcon></template
-            ></NButton>
-            <NButton
-              :disabled="loading"
-              :type="viewMode === 'list' ? 'primary' : 'default'"
-              @click="viewMode = 'list'"
-              ><template #icon
-                ><NIcon :component="AppsList20Filled"></NIcon></template
-            ></NButton>
+            <NButton :disabled="loading" :type="viewMode === 'grid' ? 'primary' : 'default'" @click="viewMode = 'grid'">
+              <template #icon>
+                <IFluentArrowClockwise24Filled />
+              </template>
+            </NButton>
+            <NButton :disabled="loading" :type="viewMode === 'list' ? 'primary' : 'default'" @click="viewMode = 'list'">
+              <template #icon>
+                <IFluentAppsList20Filled />
+              </template>
+            </NButton>
           </NButtonGroup>
         </div>
       </div>
       <div class="mt-4 flex items-center gap-2">
-        <span class="text-xs text-zinc-600 dark:text-zinc-400"
-          >{{ $t("Filtrai") }}:</span
-        >
-        <FilterPopselect
-          :disabled="loading"
-          :options="[
-            'Visi tipai',
-            'Metodinė medžiaga',
-            'Protokolai',
-            'Veiklą reglamentuojantys dokumentai',
-          ]"
-          @select:value="contentTypeFilter = $event"
-        ></FilterPopselect>
+        <span class="text-xs text-zinc-600 dark:text-zinc-400">{{ $t("Filtrai") }}:</span>
+        <FilterPopselect :disabled="loading" :options="[
+          'Visi tipai',
+          'Metodinė medžiaga',
+          'Protokolai',
+          'Veiklą reglamentuojantys dokumentai',
+        ]" @select:value="contentTypeFilter = $event" />
       </div>
       <NDivider />
-      <FileViewer
-        :results="results"
-        :loading="loading"
-        :view-mode="viewMode"
-        :show-thumbnail="showThumbnail"
-        :current-path="path"
-        :starting-path="startingPath"
-      />
-      <FileDrawer
-        :file="selectedFile"
-        @hide:drawer="selectedFile = null"
-      ></FileDrawer>
-      <FileUploader
-        :show="showFileUploader"
-        :fileable="fileable"
-        @close="handleFileUploaderClose"
-      ></FileUploader>
+      <FileViewer :results="results" :loading="loading" :view-mode="viewMode" :show-thumbnail="showThumbnail"
+        :current-path="path" :starting-path="startingPath" />
+      <FileDrawer :file="selectedFile" @hide:drawer="selectedFile = null" />
+      <FileUploader :show="showFileUploader" :fileable="fileable" @close="handleFileUploaderClose" />
     </template>
     <p v-else v-once>
       Failų tvarkyklė išjungta, nes institucija nėra priskirta padaliniui.
@@ -86,17 +56,10 @@
 </template>
 
 <script setup lang="tsx">
-import {
-  AppsList20Filled,
-  ArrowClockwise24Filled,
-  DocumentAdd24Regular,
-  Grid20Filled,
-} from "@vicons/fluent";
-import { NButton, NButtonGroup, NDivider, NIcon, NSkeleton } from "naive-ui";
 import { computed, provide, ref, watch } from "vue";
 import { useAxios } from "@vueuse/integrations/useAxios";
-
 import { useStorage } from "@vueuse/core";
+
 import FileDrawer from "./FileDrawer.vue";
 import FileUploader from "../Uploader/FileUploader.vue";
 import FileViewer from "./FileGridTable.vue";

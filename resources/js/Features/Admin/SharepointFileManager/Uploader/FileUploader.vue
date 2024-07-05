@@ -1,46 +1,31 @@
 <template>
   <CardModal :show="show" :title="`Įkelti naują failą`" @close="$emit('close')">
-    <NSteps
-      class="my-2 py-2"
-      :current="(current as number)"
-      :status="'process'"
-    >
+    <NSteps class="my-2 py-2" :current="(current as number)" :status="'process'">
       <NStep title="Į ką kelsi failą?">
         <template #icon>
-          <NIcon :component="DocumentTableSearch24Regular"></NIcon>
+          <NIcon>
+            <IFluentDocumentTableSearch24Regular />
+          </NIcon>
         </template>
       </NStep>
-      <NStep title="Failo įkėlimas"></NStep>
+      <NStep title="Failo įkėlimas" />
     </NSteps>
     <FadeTransition>
-      <FileableForm
-        v-if="current === 1"
-        :show-alert="showAlert"
-        @close:alert="showAlert = false"
-        @submit="handleFileableSubmit"
-      ></FileableForm>
+      <FileableForm v-if="current === 1" :show-alert="showAlert" @close:alert="showAlert = false"
+        @submit="handleFileableSubmit" />
       <div v-else-if="current === 2">
         <NMessageProvider>
-          <FileForm
-            :fileable="fileForm.fileable"
-            :loading="loading"
-            @submit="handleFileSubmit"
-          ></FileForm>
+          <FileForm :fileable="fileForm.fileable" :loading="loading" @submit="handleFileSubmit" />
         </NMessageProvider>
       </div>
     </FadeTransition>
     <FadeTransition>
-      <ModalHelperButton
-        v-if="!showAlert && current === 1"
-        @click="showAlert = true"
-      />
+      <ModalHelperButton v-if="!showAlert && current === 1" @click="showAlert = true" />
     </FadeTransition>
   </CardModal>
 </template>
 
 <script setup lang="ts">
-import { DocumentTableSearch24Regular } from "@vicons/fluent";
-import { NIcon, NMessageProvider, NStep, NSteps } from "naive-ui";
 import { ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";

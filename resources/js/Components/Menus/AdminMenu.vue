@@ -5,18 +5,15 @@
 
 <script setup lang="tsx">
 import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
-import {
-  Flowchart20Regular,
-  Folder24Regular,
-  HatGraduation24Regular,
-  Home24Regular,
-  Notebook24Regular,
-  Settings24Regular,
-  TabDesktopNewPage20Regular,
-} from "@vicons/fluent";
 import { Link, usePage } from "@inertiajs/vue3";
-import { NIcon, NMenu } from "naive-ui";
 import { computed, ref } from "vue";
+
+import IconFlowchart from "~icons/fluent/flowchart20-regular";
+import IconHatGraduation from "~icons/fluent/hat-graduation24-regular";
+import IconHome from "~icons/fluent/home20-regular";
+import IconNotebook from "~icons/fluent/notebook24-regular";
+import IconSettings from "~icons/fluent/settings24-regular";
+import IconTabDesktopNewPage from "~icons/fluent/tab-desktop-new-page20-regular";
 
 import { capitalize } from "@/Utils/String";
 import Icons from "@/Types/Icons/regular";
@@ -70,7 +67,7 @@ const menuOptions = computed(() => [
     },
     key: "dashboard",
     icon: () => {
-      return <NIcon component={Home24Regular}></NIcon>;
+      return <IconHome width="20" />;
     },
   },
   {
@@ -79,7 +76,7 @@ const menuOptions = computed(() => [
     },
     key: "representation",
     icon: () => {
-      return <NIcon component={HatGraduation24Regular}></NIcon>;
+      return <IconHatGraduation width="20" />;
     },
     show:
       auth?.can.index.goal ||
@@ -173,7 +170,7 @@ const menuOptions = computed(() => [
         },
         key: "institutionsGraph",
         icon: () => {
-          return <NIcon component={Flowchart20Regular}></NIcon>;
+          return <IconFlowchart width="20" />;
         },
         show: auth?.can.index.institution,
       },
@@ -232,7 +229,7 @@ const menuOptions = computed(() => [
     label: "vusa.lt",
     key: "content",
     icon: () => {
-      return <NIcon component={TabDesktopNewPage20Regular}></NIcon>;
+      return <IconTabDesktopNewPage width="20" />;
     },
     show:
       auth?.can.index.page ||
@@ -330,7 +327,7 @@ const menuOptions = computed(() => [
         key: "files",
         show: auth?.can.index.news || auth?.can.index.page,
         icon: () => {
-          return <NIcon component={Folder24Regular}></NIcon>;
+          return <NIcon component={Icons.SHAREPOINT_FILE}></NIcon>;
         },
       },
     ],
@@ -341,7 +338,7 @@ const menuOptions = computed(() => [
     },
     key: "registrations",
     icon: () => {
-      return <NIcon component={Notebook24Regular}></NIcon>;
+      return <IconNotebook width="20" />;
     },
     show:
       auth?.can.index.institution ||
@@ -419,7 +416,7 @@ const menuOptions = computed(() => [
     },
     key: "settings",
     icon: () => {
-      return <NIcon component={Settings24Regular}></NIcon>;
+      return <IconSettings width="20" />;
     },
     children: [
       {

@@ -1,33 +1,19 @@
 <template>
   <div class="gap flex w-full flex-col">
     <BubbleMenu v-if="editor" class="bg-white dark:bg-zinc-900" :editor="editor" :tippy-options="{ duration: 50 }">
-      <NButtonGroup secondary>
-        <TipTapMarkButton :editor="editor" type="bold" :icon="TextBold20Regular" />
-        <TipTapMarkButton :editor="editor" type="italic" :icon="TextItalic20Regular" />
-        <NButton size="small" :type="editor.isActive('underline') ? 'primary' : 'default'"
-          @click="editor.chain().focus().toggleUnderline().run()">
-          <template #icon>
-            <NIcon :component="TextUnderline20Regular" />
-          </template>
-        </NButton>
-      </NButtonGroup>
+      <TiptapFormattingButtons v-model:editor="editor" secondary />
     </BubbleMenu>
     <div v-if="showToolbar && editor" class="mt-1 flex min-h-8 flex-wrap items-center gap-2">
-      <NButtonGroup>
-        <TipTapMarkButton :editor="editor" type="bold" :icon="TextBold20Regular" />
-        <TipTapMarkButton :editor="editor" type="italic" :icon="TextItalic20Regular" />
-        <NButton size="small" :type="editor.isActive('underline') ? 'primary' : 'default'"
-          @click="editor.chain().focus().toggleUnderline().run()">
-          <template #icon>
-            <NIcon :component="TextUnderline20Regular" />
-          </template>
-        </NButton>
-      </NButtonGroup>
-      <NButtonGroup>
+      <TiptapFormattingButtons v-model:editor="editor" />
+      <NButtonGroup size="small">
         <TiptapLinkButton :editor="editor"
           @submit="(url) => editor?.chain().focus().extendMarkRange('link').setLink({ href: url }).run()" />
-        <TipTapButton :editor="editor" type="other" :disabled="!editor.isActive('link')" :icon="LinkDismiss20Filled"
-          @click="editor?.chain().focus().unsetLink().run()" />
+        <NButton :disabled="!editor.isActive('link')"
+          @click="editor?.chain().focus().unsetLink().run()">
+          <template #icon>
+            <IFluentLinkDismiss20Filled />
+          </template>
+        </NButton> 
       </NButtonGroup>
       <NButton size="small" @click="editor?.chain().focus().unsetAllMarks().run()">
         <template #icon>
@@ -176,7 +162,7 @@
         <NButton v-if="!disableTables" :type="showTableToolbar ? 'primary' : 'default'" size="small"
           @click="showTableToolbar = !showTableToolbar">
           <template #icon>
-            <NIcon :component="Table24Regular" />
+            <IFluentTable24Regular />
           </template>
         </NButton>
       </div>
@@ -190,9 +176,7 @@ import {
   ArrowUndo20Filled,
   ClearFormatting20Filled,
   LineHorizontal120Regular,
-  LinkDismiss20Filled,
   Settings16Filled,
-  Table24Regular,
   TableAdd24Regular,
   TableCellsMerge24Regular,
   TableCellsSplit24Regular,
@@ -203,23 +187,14 @@ import {
   TableInsertColumn24Regular,
   TableInsertRow24Regular,
   TableSettings24Regular,
-  TextBold20Regular,
   TextBulletListLtr24Filled,
   TextHeader220Filled,
   TextHeader320Filled,
-  TextItalic20Regular,
   TextNumberListLtr20Filled,
   TextQuote20Filled,
   TextT24Regular,
-  TextUnderline20Regular,
 } from "@vicons/fluent";
 import { BubbleMenu, EditorContent, useEditor } from "@tiptap/vue-3";
-import {
-  NButton,
-  NButtonGroup,
-  NDivider,
-  NIcon,
-} from "naive-ui";
 import { nextTick, onBeforeUnmount, ref } from "vue";
 import CharacterCount from "@tiptap/extension-character-count";
 import Image from "@tiptap/extension-image";
@@ -235,8 +210,7 @@ import YoutubeExtension from "@tiptap/extension-youtube";
 
 import { CustomHeading } from "./CustomHeading";
 import { Video } from './Video';
-import TipTapButton from "@/Features/Admin/CommentViewer/TipTap/TipTapMarkButton.vue";
-import TipTapMarkButton from "@/Features/Admin/CommentViewer/TipTap/TipTapMarkButton.vue";
+import TiptapFormattingButtons from "./TiptapFormattingButtons.vue";
 import TiptapImageButton from "./TiptapImageButton.vue";
 import TiptapLinkButton from "./TiptapLinkButton.vue";
 import TiptapVideoButton from "./TiptapVideoButton.vue";

@@ -11,7 +11,7 @@
         class="relative grid w-full grid-cols-[24px,_1fr] gap-4 border border-zinc-300 p-3 shadow-sm first:rounded-t-lg last:rounded-b-lg dark:border-zinc-700/40 dark:bg-zinc-800/5">
         <NButton class="handle" style="height: 100%;" quaternary size="small">
           <template #icon>
-            <NIcon :component="ReOrderDotsVertical24Regular" />
+            <IFluentReOrderDotsVertical24Regular />
           </template>
         </NButton>
         <div>
@@ -113,8 +113,6 @@
 <script setup lang="tsx">
 import { Icon } from "@iconify/vue";
 import { Link, router } from "@inertiajs/vue3";
-import { NButton, NButtonGroup, NFormItem, NIcon, NPopconfirm, NSwitch } from "naive-ui";
-import { ReOrderDotsVertical24Regular } from "@vicons/fluent";
 import { ref } from "vue";
 import { useSortable } from "@vueuse/integrations/useSortable";
 

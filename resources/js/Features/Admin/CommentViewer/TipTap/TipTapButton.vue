@@ -2,21 +2,17 @@
   <NButton
     size="small"
     :type="editor.isActive(type) ? 'primary' : 'default'"
-    @click="callback"
   >
     <template #icon>
-      <NIcon :component="icon" />
+      <slot name="icon" />
     </template>
   </NButton>
 </template>
 
-<script setup lang="tsx">
-import { NButton, NIcon } from "naive-ui";
-
-const props = defineProps<{
+<script setup lang="ts">
+defineProps<{
   editor: any;
-  callback: any;
+  callback?: any;
   type: string;
-  icon: any;
 }>();
 </script>

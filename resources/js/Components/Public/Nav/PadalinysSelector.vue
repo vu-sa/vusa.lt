@@ -1,30 +1,20 @@
 <template>
-  <NDropdown :disabled="isDisabled"
-    :options="options_padaliniai"
-    size="small"
-    style="overflow: auto; max-height: 400px"
-    :render-label="renderPadalinysLabel"
-    @select="$emit('select:padalinys', $event)"
-  >
-    <NButton
-      :disabled="isDisabled"
-      :size="size"
-    >
+  <NDropdown :disabled="isDisabled" :options="options_padaliniai" size="small" style="overflow: auto; max-height: 440px"
+    :render-label="renderPadalinysLabel" @select="$emit('select:padalinys', $event)">
+    <NButton :disabled="isDisabled" :size="size" icon-placement="right">
       {{ padalinys }}
-      <NIcon class="ml-1" size="18" :component="ChevronDown20Regular" />
+      <template #icon>
+        <IFluentChevronDown20Regular />
+      </template>
     </NButton>
   </NDropdown>
 </template>
 
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
-import { ChevronDown20Regular } from "@vicons/fluent";
 import {
   type DropdownOption,
-  NButton,
-  NDropdown,
   NEllipsis,
-  NIcon,
 } from "naive-ui";
 import { computed } from "vue";
 import { usePage } from "@inertiajs/vue3";

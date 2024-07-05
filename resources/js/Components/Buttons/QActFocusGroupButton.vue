@@ -1,21 +1,13 @@
 <template>
   <div>
-    <QuickActionButton
-      :icon="PeopleCommunity24Regular"
-      @click="showModal = true"
-      >{{ $t("Organizuoti focus grupę") }}</QuickActionButton
-    >
-    <CardModal
-      :title="$t('Organizuoti focus grupę')"
-      :show="showModal"
-      @close="showModal = false"
-    >
-      <SpecialDoingForm
-        :show-alert="showAlert"
-        :form-template="doingTemplate"
-        @alert-closed="showAlert = false"
-        @submit:form="handleSubmitForm"
-      >
+    <QuickActionButton @click="showModal = true">{{ $t("Organizuoti focus grupę") }}
+      <template #icon>
+        <IFluentPeopleCommunity24Regular />
+      </template>
+    </QuickActionButton>
+    <CardModal :title="$t('Organizuoti focus grupę')" :show="showModal" @close="showModal = false">
+      <SpecialDoingForm :show-alert="showAlert" :form-template="doingTemplate" @alert-closed="showAlert = false"
+        @submit:form="handleSubmitForm">
         <template #suggestion-content>
           <p class="mb-4">
             <strong> <i>Focus</i> grupės </strong> yra gyvi arba virtualūs
@@ -29,22 +21,18 @@
         </template>
       </SpecialDoingForm>
       <ModalHelperButton v-if="!showAlert" @click="showAlert = true" />
-      <template #footer
-        ><span class="flex items-center gap-2 text-xs text-zinc-400">
-          <NIcon :component="Info24Regular"></NIcon>
+      <template #footer><span class="flex items-center gap-2 text-xs text-zinc-400">
+          <IFluentInfo24Regular />
           <span>
             Sukurtą <i>focus</i> grupės šabloną galėsi bet kada ištrinti!
           </span>
-        </span></template
-      >
+        </span></template>
     </CardModal>
   </div>
 </template>
 
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
-import { Info24Regular, PeopleCommunity24Regular } from "@vicons/fluent";
-import { NIcon } from "naive-ui";
 import { ref } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 

@@ -1,22 +1,15 @@
 <template>
-  <NButton
-    size="small"
-    :type="editor.isActive(type) ? 'primary' : 'default'"
-    @click="toggleMark"
-  >
+  <NButton size="small" :type="editor.isActive(type) ? 'primary' : 'default'" @click="toggleMark">
     <template #icon>
-      <NIcon :component="icon" />
+      <slot name="icon" />
     </template>
   </NButton>
 </template>
 
-<script setup lang="tsx">
-import { NButton, NIcon } from "naive-ui";
-
+<script setup lang="ts">
 const props = defineProps<{
   editor: any;
   type: string;
-  icon: any;
 }>();
 
 const toggleMark = () => {

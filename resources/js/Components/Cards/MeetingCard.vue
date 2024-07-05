@@ -1,16 +1,9 @@
 <template>
   <NSpin :show="spinning">
-    <NCard
-      size="small"
-      class="my-2 cursor-pointer overflow-hidden shadow-sm"
-      style="border-radius: 0.5em"
-      :segmented="{
-        content: 'soft',
-      }"
-      hoverable
-      as="button"
-      ><template #header
-        ><h4 class="mb-0 text-sm">
+    <NCard size="small" class="my-2 cursor-pointer overflow-hidden shadow-sm" style="border-radius: 0.5em" :segmented="{
+      content: 'soft',
+    }" hoverable as="button"><template #header>
+        <h4 class="mb-0 text-sm">
           {{ formatStaticTime(new Date(meeting.start_time)) }}
           {{
             institution
@@ -26,14 +19,10 @@
               minute: "2-digit",
             })
           }}</time>
-        </div></template
-      >
+        </div>
+      </template>
       <template #header-extra>
-        <MoreOptionsButton
-          small
-          delete
-          @delete-click="handleDelete"
-        ></MoreOptionsButton>
+        <MoreOptionsButton small delete @delete-click="handleDelete" />
       </template>
 
       <div class="text-xs text-zinc-700 dark:text-zinc-500">
@@ -54,7 +43,7 @@
       </div>
       <div class="absolute -bottom-8 right-0 opacity-10">
         <NIcon size="80" :depth="4">
-          <component :is="icon"></component>
+          <component :is="icon" />
         </NIcon>
       </div>
     </NCard>
@@ -63,7 +52,6 @@
 
 <script setup lang="tsx">
 import { Clock24Filled, PeopleCommunity28Filled } from "@vicons/fluent";
-import { NCard, NIcon, NSpin } from "naive-ui";
 import { computed, ref } from "vue";
 import { router } from "@inertiajs/vue3";
 import Icons from "@/Types/Icons/filled";

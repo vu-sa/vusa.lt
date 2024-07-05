@@ -1,21 +1,13 @@
 <template>
   <div>
-    <QuickActionButton
-      :icon="DocumentCheckmark24Regular"
-      @click="showModal = true"
-      >{{ $t("Organizuoti el. apklausą") }}</QuickActionButton
-    >
-    <CardModal
-      :title="$t('Organizuoti el. apklausą')"
-      :show="showModal"
-      @close="showModal = false"
-    >
-      <SpecialDoingForm
-        :show-alert="showAlert"
-        :form-template="doingTemplate"
-        @alert-closed="showAlert = false"
-        @submit:form="handleSubmitForm"
-      >
+    <QuickActionButton @click="showModal = true">{{ $t("Organizuoti el. apklausą") }}
+      <template #icon>
+        <IFluentDocumentCheckmark24Regular />
+      </template>
+    </QuickActionButton>
+    <CardModal :title="$t('Organizuoti el. apklausą')" :show="showModal" @close="showModal = false">
+      <SpecialDoingForm :show-alert="showAlert" :form-template="doingTemplate" @alert-closed="showAlert = false"
+        @submit:form="handleSubmitForm">
         <template #suggestion-content>
           <p class="mb-4">
             <strong> Elektroninės apklausos </strong> yra puikus būdas įvertinti
@@ -23,12 +15,12 @@
           </p>
           <p>
             Pradėjus apklausos organizavimą, bus sukurtas naujas veiksmas,
-            <strong
-              >kuriame <u>susipažinsi</u> su apklausos organizavimo
-              procesu</strong
-            >.
+            <strong>kuriame <u>susipažinsi</u> su apklausos organizavimo
+              procesu</strong>.
           </p>
-          <p class="mt-4">Pradėkime! ✊</p>
+          <p class="mt-4">
+            Pradėkime! ✊
+          </p>
         </template>
       </SpecialDoingForm>
       <ModalHelperButton v-if="!showAlert" @click="showAlert = true" />
@@ -43,7 +35,6 @@
 
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
-import { DocumentCheckmark24Regular } from "@vicons/fluent";
 import { ref } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 
