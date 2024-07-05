@@ -17,7 +17,7 @@
 <script setup lang="tsx">
 import { computed, ref } from "vue";
 
-import BookQuestionMark24Filled from "~icons/fluent/book-mark-question-mark24-filled";
+import BookQuestionMark24Filled from "~icons/fluent/book-question-mark24-filled";
 import PeopleTeam24Filled from "~icons/fluent/people-team24-filled";
 
 import { doingTemplate } from "@/Types/formTemplates";
