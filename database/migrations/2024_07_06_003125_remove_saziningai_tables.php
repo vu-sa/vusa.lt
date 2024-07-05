@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         // remove foreign keys
-        
+
         Schema::table('saziningai_observers', function (Blueprint $table) {
             $table->dropForeign(['exam_uuid']);
             $table->dropForeign(['flow']);
