@@ -10,7 +10,6 @@ use App\Services\ResourceServices\SharepointFileableService;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Services\SharepointGraphService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 class SharepointFileController extends LaravelResourceController
@@ -20,11 +19,13 @@ class SharepointFileController extends LaravelResourceController
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('viewAny', [SharepointFile::class, $this->authorizer]);
 
-        $path = request()->get('path');
+        $graph = new SharepointGraphService();
+
+        $path = $request->get('path');
 
         $path = $path ?? 'General';
 
@@ -65,8 +66,6 @@ class SharepointFileController extends LaravelResourceController
             return back()->with('error', 'Susijęs objektas negali turėti failų.');
         }
 
-        $fileToUpload = $request->file('file')['uploadValue']['file'];
-
         $sharepointFileService = new SharepointFileService();
         $sharepointFileableService = new SharepointFileableService();
 
@@ -78,7 +77,7 @@ class SharepointFileController extends LaravelResourceController
             'Date' => date('Y-m-d', intval($validated['file']['datetimeValue'] / 1000)),
         ];
 
-        $sharepointFile = $sharepointFileService->uploadFile($fileToUpload, $validated['file']['nameValue'], $fileable, $listItemProperties);
+        $sharepointFile = $sharepointFileService->uploadFile($request->file('file')['uploadValue']['file'], $validated['file']['nameValue'], $fileable, $listItemProperties);
         // sharepoint fileable concern - attach sharepoint file to fileable
         $sharepointFileableService->attachFileToFileable($sharepointFile, $fileable);
 
@@ -90,13 +89,15 @@ class SharepointFileController extends LaravelResourceController
      *
      * @return \Illuminate\Http\Response
      */
-    public function destroy(SharepointFile $sharepointFile)
+    public function destroy(Request $request, SharepointFile $sharepointFile)
     {
+        // TODO: don't all deletion of type files
+
         $this->authorize('delete', [SharepointFile::class, $sharepointFile, $this->authorizer]);
 
         $sharepointFileService = new SharepointGraphService();
 
-        $sharepointFileService->deleteDriveItem($sharepointFile);
+        $sharepointFileService->deleteDriveItem($sharepointFile->sharepoint_id);
 
         return back()->with('success', 'Failas sėkmingai ištrintas iš Sharepoint.');
     }
@@ -166,30 +167,26 @@ class SharepointFileController extends LaravelResourceController
             return;
         }
 
-        $driveItems = Cache::remember('sharepoint_drive_items_'.$types_string, 3600, function () use ($sharepointService, $paths) {
-            return $sharepointService->getDriveItemsChildrenByPaths($paths);
-        });
+        $driveItems = $sharepointService->getDriveItemsChildrenByPaths($paths);
 
         return response()->json($driveItems);
     }
 
-    public function getDriveItemPermissions(Request $request, string $driveItemId)
+    public function getDriveItemPublicLink(Request $request, string $driveItemId)
     {
         $sharepointService = new SharepointGraphService();
 
-        $permissions = $sharepointService->getDriveItemPublicLink($driveItemId);
+        $link = $sharepointService->getDriveItemPublicLink($driveItemId);
 
-        return response()->json($permissions);
+        return response()->json($link);
     }
 
     public function createPublicPermission(Request $request, string $driveItemId)
     {
-        // $this->authorize('update', [SharepointFile::class, $this->authorizer]);
-
         $sharepointService = new SharepointGraphService();
 
-        $permission = $sharepointService->createPublicPermission($driveItemId);
+        $link = $sharepointService->createPublicPermission($driveItemId);
 
-        return response()->json($permission);
+        return response()->json($link);
     }
 }

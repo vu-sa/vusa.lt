@@ -9,7 +9,7 @@
           </div>
           <NSkeleton v-if="loading" size="medium" circle />
           <NButton v-else circle @click="showFileUploader = true"><template #icon>
-            <IFluentDocumentAdd24Regular />
+              <IFluentDocumentAdd24Regular />
             </template></NButton>
         </div>
         <div class="ml-auto inline-flex items-center gap-4">
@@ -17,13 +17,13 @@
             <template #icon><NIcon :component="Image24Regular"></NIcon></template>
           </NSwitch> -->
           <NButton :disabled="loading" circle quaternary @click="refreshFiles"><template #icon>
-            <IFluentArrowClockwise24Filled />
+              <IFluentArrowClockwise24Filled />
             </template>
           </NButton>
           <NButtonGroup>
             <NButton :disabled="loading" :type="viewMode === 'grid' ? 'primary' : 'default'" @click="viewMode = 'grid'">
               <template #icon>
-                <IFluentArrowClockwise24Filled />
+                <IFluentGrid24Filled />
               </template>
             </NButton>
             <NButton :disabled="loading" :type="viewMode === 'list' ? 'primary' : 'default'" @click="viewMode = 'list'">
@@ -46,7 +46,7 @@
       <NDivider />
       <FileViewer :results="results" :loading="loading" :view-mode="viewMode" :show-thumbnail="showThumbnail"
         :current-path="path" :starting-path="startingPath" />
-      <FileDrawer :file="selectedFile" @hide:drawer="selectedFile = null" />
+      <FileDrawer :file="selectedFile" @hide:drawer="selectedFile = null" @file:deleted="handleFileDeleted"/>
       <FileUploader :show="showFileUploader" :fileable="fileable" @close="handleFileUploaderClose" />
     </template>
     <p v-else v-once>
@@ -150,6 +150,9 @@ const handleFileSelect = (file: MyDriveItem) => {
 // };
 
 const handleFileDblClick = (file: MyDriveItem) => {
+
+  console.log("file", file);
+
   if (file.name === "...") {
     // remove last folder from path
     path.value = path.value.split("/").slice(0, -1).join("/");
@@ -201,5 +204,12 @@ const refreshFiles = () => {
 const handleFileUploaderClose = () => {
   showFileUploader.value = false;
   refreshFiles();
+};
+
+const handleFileDeleted = (id: number) => {
+  const index = rawFiles.value?.findIndex((file) => file.item.id === id);
+  if (index !== -1) {
+    rawFiles.value?.splice(index, 1);
+  }
 };
 </script>

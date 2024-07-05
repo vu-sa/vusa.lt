@@ -1,6 +1,6 @@
 <template>
   <AdminContentPage title="Sharepoint failai">
-    <SharepointFileManager :starting-path="path"></SharepointFileManager>
+    <SharepointFileManager :starting-path="path" />
   </AdminContentPage>
 </template>
 

@@ -1,75 +1,52 @@
 <template>
-  <NDrawer
-    v-model:width="width"
-    :show="active"
-    :auto-focus="false"
-    :show-mask="false"
-    :mask-closable="false"
-    :trap-focus="false"
-    placement="right"
-    resizable
-    @update:show="$emit('hide:drawer')"
-  >
+  <NDrawer v-model:width="width" :show="active" :auto-focus="false" :show-mask="false" :mask-closable="false"
+    :trap-focus="false" placement="right" resizable @update:show="$emit('hide:drawer')">
     <NDrawerContent closable>
       <FadeTransition>
-        <div
-          class="mt-4 flex flex-col items-center justify-center gap-4 transition"
-        >
+        <div class="mt-4 flex flex-col items-center justify-center gap-4 transition">
           <NIcon class="mr-2" size="96" :component="fileIcon" />
           <span class="text-center text-xl tracking-wide">{{
             file?.name
           }}</span>
           <div class="flex gap-2">
-            <NSpin
-              size="small"
-              :stroke-width="12"
-              :show="loadingPublicPermission"
-            >
-              <div v-if="publicPermission?.link?.webUrl" class="flex gap-2">
+            <NSpin content-class="flex gap-2 items-center" size="small" :stroke-width="12"
+              :show="loadingPublicPermission">
+
+              <div v-if="publicWebUrl" class="flex gap-2">
                 <NButtonGroup size="small">
-                  <NButton
-                    type="primary"
-                    tag="a"
-                    target="_blank"
-                    :href="publicPermission?.link?.webUrl"
-                  >
-                    <template #icon
-                      ><NIcon :component="Open24Regular"
-                    /></template>
-                    Atidaryti</NButton
-                  >
-                  <NMessageProvider>
-                    <CopyToClipboardButton
-                      :text-to-copy="publicPermission?.link?.webUrl"
-                    ></CopyToClipboardButton>
-                  </NMessageProvider>
+                  <NButton type="primary" tag="a" target="_blank" :href="publicWebUrl">
+                    <template #icon>
+                      <IFluentOpen24Regular />
+                    </template>
+                    Atidaryti
+                  </NButton>
+                  <CopyToClipboardButton show-icon :text-to-copy="publicWebUrl">
+                    Kopijuoti
+                  </CopyToClipboardButton>
                 </NButtonGroup>
               </div>
-              <NButton
-                v-else-if="!loadingPublicPermission"
-                size="small"
-                @click="createPublicPermission"
-                >Sukurti viešą nuorodą
-                <template #icon
-                  ><NIcon :component="DocumentLink24Regular"></NIcon
-                ></template>
+              <NButton v-else-if="!loadingPublicPermission" size="small" @click="createPublicPermission">Sukurti viešą
+                nuorodą
+                <template #icon>
+                  <IFluentDocumentLink24Regular />
+                </template>
+              </NButton>
+              <NButton v-if="!route().current('sharepointFiles.index')" size="tiny" :loading="loadingDelete" type="error" class="mt-4" @click="handleDelete(file?.sharepointFile)">
+                <template #icon>
+                  <IFluentDelete24Filled />
+                </template>
               </NButton>
             </NSpin>
-            <!-- <NButton
-              :loading="loadingDelete"
-              type="error"
-              class="mt-4"
-              @click="handleDelete(file?.id)"
-              >Ištrinti</NButton
-            > -->
           </div>
           <NTable>
             <tbody class="text-xs">
               <tr>
-                <td class="font-bold">Failo data</td>
+                <td class="font-bold">
+                  Failo data
+                </td>
                 <td>
                   {{
-                    formatStaticTime(file?.listItem?.fields?.properties.Date)
+                    formatStaticTime(file?.listItem?.fields?.Date)
                   }}
                 </td>
               </tr>
@@ -78,28 +55,28 @@
                 <td>{{ fileSize(file?.size) }}</td>
               </tr> -->
               <tr>
-                <td class="font-bold">Tipas</td>
+                <td class="font-bold">
+                  Tipas
+                </td>
                 <td>
                   <NTag size="small">
                     <NEllipsis style="max-width: 140px">{{
-                      file?.listItem?.fields?.properties?.Type
+                      file?.listItem?.fields?.Type
                     }}</NEllipsis>
                   </NTag>
                 </td>
               </tr>
               <tr>
-                <td class="font-bold">Aprašymas</td>
+                <td class="font-bold">
+                  Aprašymas
+                </td>
                 <td>
-                  {{ file?.listItem?.fields?.properties?.Description0 }}
+                  {{ file?.listItem?.fields?.Description0 }}
                 </td>
               </tr>
             </tbody>
           </NTable>
-          <CommentPart
-            :commentable_type="'sharepoint_file'"
-            :text="currentCommentText"
-            :model="file?.sharepointFile"
-          ></CommentPart>
+          <CommentPart :commentable_type="'sharepoint_file'" :text="currentCommentText" :model="file?.sharepointFile" />
         </div>
       </FadeTransition>
     </NDrawerContent>
@@ -108,46 +85,32 @@
 
 <script setup lang="ts">
 import { File, FilePdf, FileWord } from "@vicons/fa";
-import {
-  NButton,
-  NButtonGroup,
-  NDrawer,
-  NDrawerContent,
-  NEllipsis,
-  NIcon,
-  NMessageProvider,
-  NSpin,
-  NTable,
-  NTag,
-} from "naive-ui";
 import { computed, ref, watch } from "vue";
+import { router } from "@inertiajs/vue3";
 import { useAxios } from "@vueuse/integrations/useAxios";
 import { useStorage } from "@vueuse/core";
-import type { Permission } from "@microsoft/microsoft-graph-types";
-// import { router } from "@inertiajs/vue3";
 
-import {
-  ClipboardLink24Regular,
-  DocumentLink24Regular,
-  Open24Regular,
-} from "@vicons/fluent";
-import { fileSize } from "@/Utils/Calc";
 import { formatStaticTime } from "@/Utils/IntlTime";
 import CommentPart from "@/Features/Admin/CommentViewer/CommentViewer.vue";
 import CopyToClipboardButton from "@/Components/Buttons/CopyToClipboardButton.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 // define emit for close
-defineEmits<{ (event: "hide:drawer"): void }>();
-
 const props = defineProps<{
   file: MyDriveItem | null;
 }>();
 
+const emit = defineEmits<{
+  (event: "hide:drawer"): void;
+  (event: "file:deleted", id: number): void;
+}>();
+
 const active = computed(() => !!props.file);
 const currentCommentText = ref("");
-const publicPermission = ref<Permission | null | undefined>(null);
+const publicWebUrl = ref<string | null | undefined>(null);
+
 const loadingPublicPermission = ref(false);
+const loadingDelete = ref(false);
 const width = useStorage("file-drawer-width", 350);
 
 watch(width, (val) => {
@@ -158,16 +121,24 @@ watch(width, (val) => {
 watch(
   () => props.file?.id,
   async (val) => {
-    publicPermission.value = null;
+    publicWebUrl.value = null;
 
     if (val) {
       loadingPublicPermission.value = true;
 
-      let { data, isFinished } = await useAxios<Permission>(
-        route("sharepoint.getDriveItemPermissions", props.file?.id)
+      let { data, isFinished } = await useAxios(
+        // eslint-disable-next-line no-secrets/no-secrets
+        route("sharepoint.getDriveItemPublicLink", props.file?.id)
       );
+
       loadingPublicPermission.value = !isFinished;
-      publicPermission.value = data.value;
+
+      // Check if empty object
+      if (Object.keys(data.value).length === 0) {
+        publicWebUrl.value = null;
+      } else {
+        publicWebUrl.value = data.value;
+      }
     }
   }
 );
@@ -175,14 +146,14 @@ watch(
 const createPublicPermission = async () => {
   loadingPublicPermission.value = true;
 
-  let { data, isFinished } = await useAxios<Permission>(
+  let { data, isFinished } = await useAxios(
     route("sharepoint.createPublicPermission", props.file?.id),
     {
       method: "POST",
     }
   );
   loadingPublicPermission.value = !isFinished;
-  publicPermission.value = data.value;
+  publicWebUrl.value = data.value;
 };
 
 const fileIcon = computed(() => {
@@ -200,16 +171,21 @@ const fileIcon = computed(() => {
   }
 });
 
-// const handleDelete = (id) => {
-//   loadingDelete.value = true;
-//   router.delete(route("sharepoint.destroy", id), {
-//     preserveState: true,
-//     onSuccess: () => {
-//       loadingDelete.value = false;
-//       active.value = false;
-//     },
-//   });
-// };
+const handleDelete = (sharepointFile) => {
+  loadingDelete.value = true;
+  router.delete(route("sharepointFiles.destroy", sharepointFile.id), {
+    preserveState: true,
+    preserveScroll: true,
+    onSuccess: () => {
+      loadingDelete.value = false;
+      emit("hide:drawer");
+      emit("file:deleted", sharepointFile.sharepoint_id);
+    },
+    onError: () => {
+      loadingDelete.value = false;
+    },
+  });
+};
 </script>
 
 <style>

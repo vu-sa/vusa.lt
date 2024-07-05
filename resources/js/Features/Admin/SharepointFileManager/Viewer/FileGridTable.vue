@@ -1,48 +1,24 @@
 <template>
   <FadeTransition mode="out-in">
-    <div
-      v-if="results.length === 0"
-      class="flex flex-col items-center justify-center gap-2 text-zinc-400"
-    >
-      <NIcon :size="24" :component="Icons.SHAREPOINT_FILE"></NIcon>
+    <div v-if="results.length === 0" class="flex flex-col items-center justify-center gap-2 text-zinc-400">
+      <NIcon :size="24" :component="Icons.SHAREPOINT_FILE" />
       <span>{{ $t("Failų nėra") }}.</span>
     </div>
-    <TransitionGroup
-      v-else-if="viewMode === 'grid'"
-      name="list"
-      tag="div"
-      class="flex flex-wrap gap-6"
-      @after-enter="afterGroupEnter"
-    >
-      <div v-if="currentPath !== startingPath">
-        <ModelDocumentButton
-          :loading="loading"
-          :show-thumbnail="showThumbnail"
-          :file="backButton.item"
-        ></ModelDocumentButton>
-      </div>
-      <div v-for="result in results" :key="result.refIndex">
-        <ModelDocumentButton
-          :loading="loading"
-          :show-thumbnail="showThumbnail"
-          :file="result.item"
-        ></ModelDocumentButton>
-      </div>
-    </TransitionGroup>
+    <div v-else-if="viewMode === 'grid'" name="list" tag="div" class="flex flex-wrap gap-6"
+      @after-enter="afterGroupEnter">
+      <ModelDocumentButton v-if="currentPath !== startingPath" :loading="loading" :show-thumbnail="showThumbnail"
+        :file="backButton.item" />
+      <ModelDocumentButton v-for="result in results" :key="result.refIndex" :loading="loading"
+        :show-thumbnail="showThumbnail" :file="result.item" />
+    </div>
     <div v-else-if="viewMode === 'list'" class="rounded-xl">
       <FadeTransition mode="out-in">
         <div v-if="loading">
-          <NDataTable :loading="loading"></NDataTable>
+          <NDataTable :loading="loading" />
         </div>
         <div v-else>
-          <NDataTable
-            :bordered="false"
-            :loading="loading"
-            :data="resultsWithBackButton"
-            :columns="columns"
-            :row-key="(row) => row.refIndex"
-            :row-props="rowProps"
-          ></NDataTable>
+          <NDataTable :bordered="false" :loading="loading" :data="resultsWithBackButton" :columns="columns"
+            :row-key="(row) => row.refIndex" :row-props="rowProps" />
         </div>
       </FadeTransition>
     </div>
@@ -77,12 +53,12 @@ const afterGroupEnter = () => {
 
 const handleFileSelect = inject<(file: DriveItem) => void>(
   "handleFileSelect",
-  () => {},
+  () => { },
 );
 
 const handleFileDblClick = inject<(file: DriveItem) => void>(
   "handleFileDblClick",
-  () => {},
+  () => { },
 );
 
 const backButton = {
@@ -172,21 +148,6 @@ const fileIcon = (mimeType: string | null) => {
 </script>
 
 <style scoped>
-.list-move,
-.list-enter-active,
-.list-leave-active {
-  transition: opacity 0.5s ease-out;
-}
-
-.list-enter-from,
-.list-leave-to {
-  opacity: 0;
-  /* transform: translateX(30px); */
-}
-.list-leave-active {
-  position: v-bind('absolute ? "absolute" : "initial"');
-}
-
 div.n-data-table {
   --n-merged-th-color: transparent;
   --n-merged-td-color: transparent;
