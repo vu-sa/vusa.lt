@@ -5,7 +5,7 @@ concurrency: production
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: [PHPUnit Tests]
+    workflows: [Pest Tests and Upload Coverage]
     branches:
       - main
     types:
