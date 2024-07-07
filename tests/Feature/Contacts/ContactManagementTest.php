@@ -8,9 +8,10 @@ use App\Models\Role;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
 
-beforeEach(function () {
+uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
-    $this->padalinys = Padalinys::inRandomOrder()->first();
+beforeEach(function () {
+    $this->padalinys = Padalinys::query()->inRandomOrder()->first();
 
     $this->simpleUser = User::factory()->hasAttached(Duty::factory()->for(Institution::factory()->for($this->padalinys)),
         ['start_date' => now()->subDay()]
@@ -23,7 +24,6 @@ beforeEach(function () {
     $this->contactManagementDuty = $this->contactManagerUser->duties()->first();
 
     $this->contactManagementDuty->assignRole('Student Representative Coordinator');
-
 });
 
 test('simple user cant access all users in admin', function () {
