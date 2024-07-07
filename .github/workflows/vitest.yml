@@ -25,5 +25,13 @@ jobs:
       run: npm ci
     - name: NPM Build
       run: npm run build
-    - name: Execute tests via Vitest
-      run: LARAVEL_BYPASS_ENV_CHECK=1 npm run test
+    - name: Execute tests via Vitest with coverage
+      run: LARAVEL_BYPASS_ENV_CHECK=1 npm run coverage
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        verbose: true
+        files: ./coverage/clover.xml
+        flags: frontend
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

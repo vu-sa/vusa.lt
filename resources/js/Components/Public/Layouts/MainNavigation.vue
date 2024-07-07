@@ -2,7 +2,7 @@
   <section class="fixed top-0 z-50 w-full">
     <div class="group relative">
       <nav
-        class="relative z-10 grid max-md:h-16 md:h-20 grid-cols-[auto,_1fr,_80px] max-md:gap-4 md:gap-12 bg-white px-6 text-zinc-800 shadow-sm dark:bg-zinc-800 dark:text-white lg:px-12 xl:px-24 2xl:px-36">
+        class="relative z-10 grid grid-cols-[auto,_1fr,_80px] bg-white px-6 text-zinc-800 shadow-sm dark:bg-zinc-800 dark:text-white max-md:h-16 max-md:gap-4 md:h-20 md:gap-12 lg:px-12 xl:px-24 2xl:px-36">
         <div class="flex flex-row items-center space-x-4">
           <SmartLink title="Grįžti į pagrindinį puslapį" :href="`${$page.props.app.url}/${$page.props.app.locale}`"
             target="_self">
@@ -10,7 +10,7 @@
           </SmartLink>
           <NButton v-if="$page.props.auth?.user" class="hidden lg:inline-flex" quaternary tag="a" circle size="small"
             :href="route('dashboard')">
-            <NIcon :size="16" :component="AnimalTurtle24Filled" />
+            <IFluentAnimalTurtle24Filled />
           </NButton>
         </div>
 
@@ -23,7 +23,7 @@
           <div class="hidden max-md:block">
             <PadalinysSelector :size="smallerThanSm ? 'tiny' : 'small'" @select:padalinys="handleSelectPadalinys" />
           </div>
-          <div class="hidden md:flex items-center gap-4">
+          <div class="hidden items-center gap-4 md:flex">
             <SearchButton />
             <StartFM />
           </div>
@@ -47,8 +47,6 @@
 </template>
 
 <script setup lang="tsx">
-import { AnimalTurtle24Filled } from "@vicons/fluent";
-import { NButton, NIcon } from "naive-ui";
 import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
 import { ref } from "vue";
 import { usePage } from "@inertiajs/vue3";

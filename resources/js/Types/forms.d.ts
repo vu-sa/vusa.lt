@@ -22,20 +22,4 @@ declare global {
     > {
     id?: number;
   }
-
-  interface SaziningaiExamForm
-    extends Omit<
-      App.Entities.SaziningaiExam,
-      | "id"
-      | "uuid"
-      | "created_at"
-      | "updated_at"
-      | "exam"
-      | "observers"
-      | "observers_count"
-    > {
-    flows: Array<Pick<App.Entities.SaziningaiExamFlow, "start_time">>;
-    acceptGDPR: boolean;
-    acceptDataManagement: boolean;
-  }
 }

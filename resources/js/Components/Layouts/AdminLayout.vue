@@ -1,4 +1,5 @@
 <template>
+
   <Head :title="title" />
 
   <NLayout class="min-h-screen">
@@ -7,21 +8,21 @@
       <div class="flex items-center gap-2 md:hidden">
         <NButton size="small" strong quaternary @click="activeDrawer = true">
           <template #icon>
-            <NIcon :component="Navigation24Filled" />
+            <IFluentNavigation24Filled />
           </template>
         </NButton>
         <Link class="size-fit" :href="route('dashboard')">
         <AppLogo class="h-12" />
         </Link>
       </div>
-      <div class="mt-1 flex items-center gap-8">
+      <div class="mt-1 flex items-center gap-9">
         <Link v-if="$page.props.auth.can.index.user" :href="route('stats.representativesInPadalinys')">
-        <NIcon :size="24" :component="ChartMultiple20Regular" />
+        <IFluentChartMultiple20Filled width="20" height="20" />
         </Link>
         <FeedbackModalButton />
         <Link v-if="canSeeWorkspace && false" class="mt-2 hidden md:inline" :href="route('workspace')">
         <NButton text><template #icon>
-            <NIcon :size="24" :component="Board24Regular" />
+            <IFluentBoard20Regular width="20" height="20" />
           </template></NButton>
         </Link>
         <TaskIndicatorButton class="mt-0.5" />
@@ -52,8 +53,9 @@
       </NDrawerContent>
     </NDrawer>
     <NLayout class="mt-16" has-sider>
-      <NLayoutSider v-if="mdAndGreater" class="my-6 ml-4 h-fit rounded-md from-white shadow-md" collapse-mode="width" :collapsed-width="69"
-        :width="220" :collapsed="collapsed" show-trigger="bar" @collapse="collapsed = true" @expand="collapsed = false">
+      <NLayoutSider v-if="mdAndGreater" class="my-6 ml-4 h-fit rounded-md from-white shadow-md" collapse-mode="width"
+        :collapsed-width="69" :width="220" :collapsed="collapsed" show-trigger="bar" @collapse="collapsed = true"
+        @expand="collapsed = false">
         <Link class="size-fit" :href="route('dashboard')">
         <AppLogo class="mx-auto w-full p-2" />
         </Link>
@@ -93,7 +95,7 @@
         </template>
       </div>
       <NButton class="mt-8" type="primary" @click="approveChanges"><template #icon>
-          <NIcon :component="ThumbLike16Regular" />
+          <IFluentThumbLike16Regular />
         </template>
         Liuks</NButton>
     </CardModal>
@@ -104,29 +106,12 @@
 import { Head, Link, router, usePage } from "@inertiajs/vue3";
 import {
   type MessageReactive,
-  NButton,
-  NDivider,
-  NDrawer,
-  NDrawerContent,
-  NIcon,
-  NLayout,
-  NLayoutContent,
-  NLayoutSider,
-  NMessageProvider,
-  NNotificationProvider,
-  NScrollbar,
   useMessage,
 } from "naive-ui";
+import { breakpointsTailwind, useBreakpoints, useOnline, useStorage, useTimeoutFn } from "@vueuse/core";
 import { computed, onMounted, watch } from "vue";
 import { ref } from "vue";
-import { useOnline, useStorage, useTimeoutFn, useBreakpoints, breakpointsTailwind } from "@vueuse/core";
 
-import {
-  Board24Regular,
-  ChartMultiple20Regular,
-  Navigation24Filled,
-  ThumbLike16Regular,
-} from "@vicons/fluent";
 import { formatStaticTime } from "@/Utils/IntlTime";
 import { loadLanguageAsync } from "laravel-vue-i18n";
 import AdminMenu from "@/Components/Menus/AdminMenu.vue";

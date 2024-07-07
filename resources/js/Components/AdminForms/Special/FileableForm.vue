@@ -2,25 +2,18 @@
   <NSpin :show="spin">
     <NForm ref="formRef">
       <FadeTransition>
-        <SuggestionAlert
-          class="mt-4"
-          :show-alert="showAlert"
-          @alert-closed="$emit('close:alert')"
-        >
+        <SuggestionAlert class="mt-4" :show-alert="showAlert" @alert-closed="$emit('close:alert')">
           <p>
-            <span
-              ><strong>mano.vusa.lt</strong> platformoje failai yra
-              laikomi</span
-            >
+            <span><strong>mano.vusa.lt</strong> platformoje failai yra
+              laikomi</span>
             <ModelChip>
-              <template #icon
-                ><NIcon :component="DocumentTableSearch24Regular"></NIcon
-              ></template>
-              objektuose</ModelChip
-            ><span>
+              <template #icon>
+                <IFluentDocumentTableSearch24Regular />
+              </template>
+              objektuose
+            </ModelChip><span>
               (institucijose, posėdžiuose, etc.), kad būtų išlaikyta failų
-              struktūra.</span
-            >
+              struktūra.</span>
           </p>
           <p class="my-0">
             Dažniausiai šis <em>objektas</em> parenkamas automatiškai, tačiau
@@ -29,37 +22,25 @@
         </SuggestionAlert>
       </FadeTransition>
       <NFormItem label="Objektas">
-        <NTreeSelect
-          default-expand-all
-          placeholder="Pasirink instituciją, susitikimą, etc."
-          show-path
-          filterable
-          clearable
-          virtual-scroll
-          :options="options"
-          check-strategy="all"
-          @update:value="handleSelect"
-        ></NTreeSelect>
+        <NTreeSelect default-expand-all placeholder="Pasirink instituciją, susitikimą, etc." show-path filterable
+          clearable virtual-scroll :options="options" check-strategy="all" @update:value="handleSelect" />
       </NFormItem>
       <NFormItem>
-        <NButton type="primary" @click="handleClick">Pateikti</NButton>
+        <NButton type="primary" @click="handleClick">
+          Pateikti
+        </NButton>
       </NFormItem>
     </NForm>
-    <template #description>Tuojaus...</template>
+    <template #description>
+      Tuojaus...
+    </template>
   </NSpin>
 </template>
 
 <script setup lang="ts">
-import { DocumentTableSearch24Regular } from "@vicons/fluent";
 import {
   type FormInst,
   type FormRules,
-  NButton,
-  NForm,
-  NFormItem,
-  NIcon,
-  NSpin,
-  NTreeSelect,
   type TreeSelectOption,
 } from "naive-ui";
 import { onMounted, ref } from "vue";
@@ -109,9 +90,9 @@ const getInstitutionOptions = async () => {
       children:
         institution.meetings && institution.meetings.length > 0
           ? institution.meetings?.map((meeting: App.Entities.Meeting) => ({
-              label: meeting.title,
-              key: `${meeting.id}_${meeting.start_time}_Meeting`,
-            }))
+            label: meeting.title,
+            key: `${meeting.id}_${meeting.start_time}_Meeting`,
+          }))
           : undefined,
     })
   );

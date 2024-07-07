@@ -3,23 +3,17 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\PublicController;
-use App\Mail\ConfirmExamRegistration;
 use App\Mail\ConfirmMemberRegistration;
-use App\Mail\ConfirmObserverRegistration;
-use App\Mail\InformSaziningaiAboutObserverRegistration;
-use App\Mail\InformSaziningaiAboutRegistration;
 use App\Models\Calendar;
 use App\Models\News;
 use App\Models\Padalinys;
 use App\Models\Page;
 use App\Models\Registration;
 use App\Models\RegistrationForm;
-use App\Models\SaziningaiExam;
-use App\Models\SaziningaiExamFlow;
-use App\Models\SaziningaiExamObserver;
 use App\Models\User;
 use App\Notifications\MemberRegistered;
 use App\Services\IcalendarService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 
@@ -29,60 +23,6 @@ class MainController extends PublicController
     {
         return response((new IcalendarService)->get())
             ->header('Content-Type', 'text/calendar; charset=utf-8');
-    }
-
-    public function storeSaziningaiExamRegistration()
-    {
-        $request = request();
-
-        $saziningaiExam = SaziningaiExam::create([
-            'uuid' => bin2hex(random_bytes(15)),
-            'subject_name' => $request->subject_name,
-            'name' => $request->name,
-            'padalinys_id' => $request->padalinys_id,
-            'place' => $request->place,
-            'email' => $request->email,
-            'duration' => $request->duration,
-            'exam_holders' => $request->exam_holders,
-            'exam_type' => $request->exam_type,
-            'phone' => $request->phone,
-            'students_need' => $request->students_need,
-        ]);
-
-        // Store new flow
-        foreach ($request->flows as $flow) {
-            $saziningaiExamFlow = new SaziningaiExamFlow();
-            $saziningaiExamFlow->exam_uuid = $saziningaiExam->uuid;
-            $saziningaiExamFlow->start_time = date('Y-m-d H:i:s', strtotime($flow['start_time']));
-            $saziningaiExamFlow->save();
-        }
-
-        $firstFlow = $saziningaiExam->flows->first();
-
-        Mail::to('saziningai@vusa.lt')->send(new InformSaziningaiAboutRegistration($saziningaiExam, $firstFlow));
-        Mail::to($saziningaiExam->email)->send(new ConfirmExamRegistration($saziningaiExam, $firstFlow));
-
-        return redirect()->route('saziningaiExams.registered');
-    }
-
-    public function storeSaziningaiExamObserver()
-    {
-        $request = request();
-
-        $saziningaiExamFlow = SaziningaiExamFlow::find($request->flow);
-
-        $saziningaiExamObserver = SaziningaiExamObserver::create([
-            'exam_uuid' => $saziningaiExamFlow->exam_uuid,
-            'flow' => $request->flow,
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'padalinys_id' => $request->padalinys_id,
-            'has_arrived' => 'neatvyko',
-        ]);
-
-        Mail::to('saziningai@vusa.lt')->send(new InformSaziningaiAboutObserverRegistration($saziningaiExamObserver, $saziningaiExamFlow));
-        Mail::to($saziningaiExamObserver->email)->send(new ConfirmObserverRegistration($saziningaiExamFlow));
     }
 
     public function storeMemberRegistration()
@@ -189,5 +129,15 @@ class MainController extends PublicController
         });
 
         return back()->with('search_calendar', $calendar)->with('search_news', $news)->with('search_pages', $pages);
+    }
+
+    public function sendFeedback(Request $request)
+    {
+        $data = $request->all();
+
+        Mail::to('it@vusa.lt')->queue(new \App\Mail\FeedbackMail($data['feedback'], auth()->user(), $data['href'], $data['selectedText']));
+
+        return back()->with('success', 'Ačiū už atsiliepimą!');
+
     }
 }

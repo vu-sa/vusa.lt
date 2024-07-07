@@ -1,73 +1,49 @@
 <template>
-  <NPopover
-    ref="popoverRef"
-    style="width: 300px"
-    placement="top-start"
-    trigger="click"
-    @update-show="getUsers"
-  >
+  <NPopover ref="popoverRef" style="width: 300px" placement="top-start" trigger="click" @update-show="getUsers">
     <template #trigger>
-      <NButton size="small" quaternary
-        ><template #icon
-          ><NIcon :component="TaskListSquareAdd24Regular"></NIcon
-        ></template>
+      <NButton size="small" quaternary>
+        <template #icon>
+          <IFluentTaskListSquareAdd24Regular />
+        </template>
         {{ $t("forms.add") }}
       </NButton>
     </template>
     <!-- Form title -->
     <NSpin :show="disabled">
       <h4 class="m-2 mb-4 flex items-center gap-2">
-        <NIcon :component="Icons.TASK"></NIcon>
+        <NIcon :component="Icons.TASK" />
         <span>Nauja užduotis</span>
       </h4>
-      <NForm
-        ref="formRef"
-        :disabled="disabled"
-        size="small"
-        class="m-2"
-        :model="model"
-        :rules="rules"
-      >
+      <NForm ref="formRef" :disabled="disabled" size="small" class="m-2" :model="model" :rules="rules">
         <NGrid cols="1">
           <NFormItemGi :label="$t('forms.fields.title')" required path="name">
-            <NInput
-              v-model:value="model.name"
-              :placeholder="getRandomTaskNamePlaceholder()"
-            ></NInput>
+            <NInput v-model:value="model.name" :placeholder="getRandomTaskNamePlaceholder()" />
           </NFormItemGi>
           <!-- <NFormItemGi label="Subjektas">
             <NInput></NInput>
           </NFormItemGi> -->
           <NFormItemGi label="Terminas" path="due_date">
-            <NDatePicker v-model:value="model.due_date"></NDatePicker>
+            <NDatePicker v-model:value="model.due_date" />
           </NFormItemGi>
           <NFormItemGi label="Atsakingi žmonės">
-            <NCascader
-              v-model:value="model.responsible_people"
-              placeholder="Pasirink arba ieškok iš sąrašo..."
-              multiple
-              :check-strategy="'child'"
-              :options="institutions"
-              expand-trigger="hover"
-              :filter="filter"
-              filterable
-              :max-tag-count="8"
-              clearable
-              virtual-scroll
-              :show-path="false"
-            />
+            <NCascader v-model:value="model.responsible_people" placeholder="Pasirink arba ieškok iš sąrašo..." multiple
+              :check-strategy="'child'" :options="institutions" expand-trigger="hover" :filter="filter" filterable
+              :max-tag-count="8" clearable virtual-scroll :show-path="false" />
           </NFormItemGi>
           <NFormItemGi :show-label="false">
-            <NCheckbox v-model:checked="model.separate_tasks"
-              >Ar individualios užduotys?
+            <NCheckbox v-model:checked="model.separate_tasks">Ar individualios užduotys?
             </NCheckbox>
           </NFormItemGi>
           <NFormItemGi :show-label="false" :show-feedback="false">
-            <NButton type="primary" @click="submit">Sukurti</NButton>
+            <NButton type="primary" @click="submit">
+              Sukurti
+            </NButton>
           </NFormItemGi>
         </NGrid>
       </NForm>
-      <template #description>Tuojaus...</template>
+      <template #description>
+        Tuojaus...
+      </template>
     </NSpin>
   </NPopover>
 </template>
@@ -77,19 +53,8 @@ import { trans as $t } from "laravel-vue-i18n";
 import {
   type CascaderOption,
   type FormInst,
-  NButton,
-  NCascader,
-  NCheckbox,
-  NDatePicker,
-  NForm,
-  NFormItemGi,
-  NGrid,
-  NIcon,
-  NInput,
   NPopover,
-  NSpin,
 } from "naive-ui";
-import { TaskListSquareAdd24Regular } from "@vicons/fluent";
 import { ref } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
 import Icons from "@/Types/Icons/filled";

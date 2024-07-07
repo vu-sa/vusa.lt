@@ -22,6 +22,9 @@ return [
     'resource' => [
         'model' => '{1} resource|[2,*] resources',
     ],
+    'resource_category' => [
+        'model' => '{1} resource category|[2,*] resource categories',
+    ],
     'reservation_resource' => [
         'model' => '{1} reservation resource|[2,*] reservation resources',
     ],

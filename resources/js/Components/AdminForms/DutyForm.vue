@@ -2,59 +2,51 @@
   <NForm :model="form" label-placement="top">
     <div class="flex flex-col">
       <FormElement>
-        <template #title>{{ $t("forms.context.main_info") }} </template>
+        <template #title>
+          {{ $t("forms.context.main_info") }}
+        </template>
+        <template #description>
+          Pareigos rodymas pagal žmogaus įvardį, jeigu įvardyje pirmas žodis yra:
+          <li>jis (he) - <strong>{{ changeDutyNameEndings(null, duty, $page.props.app.locale, "jis/jo", false) }}</strong>
+          </li>
+          <li>ji (she) - <strong>{{ changeDutyNameEndings(null, duty, $page.props.app.locale, "ji/jos", false) }}</strong>
+          </li>
+          <li>jie (they) - <strong>{{ changeDutyNameEndings(null, duty, $page.props.app.locale, "jie/jų", false) }}</strong>
+          </li>
+        </template>
         <NFormItem :label="$t('forms.fields.title')" :span="2">
-          <NInput
-            v-if="locale === 'lt'"
-            v-model:value="form.name"
-            type="text"
-            placeholder="Prezidentė"
-            ><template #suffix
-              ><SimpleLocaleButton
-                v-model:locale="locale"
-              ></SimpleLocaleButton></template
-          ></NInput>
-          <NInput
-            v-else
-            v-model:value="form.extra_attributes.en.name"
-            type="text"
-            placeholder="President"
-            ><template #suffix
-              ><SimpleLocaleButton
-                v-model:locale="locale"
-              ></SimpleLocaleButton></template
-          ></NInput>
+          <NInput v-if="locale === 'lt'" v-model:value="form.name" type="text" placeholder="Prezidentė"><template
+              #suffix>
+              <SimpleLocaleButton v-model:locale="locale" />
+            </template></NInput>
+          <NInput v-else v-model:value="form.extra_attributes.en.name" type="text" placeholder="President"><template
+              #suffix>
+              <SimpleLocaleButton v-model:locale="locale" />
+            </template></NInput>
         </NFormItem>
 
         <NFormItem :label="$t('forms.fields.email')">
-          <NAutoComplete
-            v-model:value="form.email"
-            :options="emailOptions"
-            placeholder="vusa@vusa.lt"
-          />
+          <NAutoComplete v-model:value="form.email" :options="emailOptions" placeholder="vusa@vusa.lt" />
         </NFormItem>
 
         <div class="grid gap-4 lg:grid-cols-2">
           <NFormItem label="Institucija">
-            <NSelect
-              v-model:value="form.institution_id"
-              filterable
-              placeholder="Pasirink instituciją pagal pavadinimą..."
-              :options="institutionsFromDatabase"
-              clearable
-            />
+            <NSelect v-model:value="form.institution_id" filterable
+              placeholder="Pasirink instituciją pagal pavadinimą..." :options="institutionsFromDatabase" clearable />
           </NFormItem>
 
-          <NFormItem :label="$t('forms.fields.duty_people_count')" :min="0"
-            ><NInputNumber v-model:value="form.places_to_occupy"></NInputNumber
-          ></NFormItem>
+          <NFormItem :label="$t('forms.fields.duty_people_count')" :min="0">
+            <NInputNumber v-model:value="form.places_to_occupy" />
+          </NFormItem>
         </div>
       </FormElement>
       <FormElement>
-        <template #title>{{ $t("forms.fields.description") }}</template>
-        <template #description
-          >Aprašymas yra rodomas vusa.lt puslapyje prie pareigybės</template
-        >
+        <template #title>
+          {{ $t("forms.fields.description") }}
+        </template>
+        <template #description>
+          Aprašymas yra rodomas vusa.lt puslapyje prie pareigybės
+        </template>
         <NFormItem label="Aprašymas" :span="6">
           <template #label>
             <div class="inline-flex items-center gap-2">
@@ -62,53 +54,43 @@
               <SimpleLocaleButton v-model:locale="locale" />
             </div>
           </template>
-          <TipTap html
-            v-if="locale === 'lt'"
-            v-model="form.description"
-            :search-files="$page.props.search.other"
-          />
-          <TipTap html
-            v-else
-            v-model="form.extra_attributes.en.description"
-            :search-files="$page.props.search.other"
-          />
+          <TipTap v-if="locale === 'lt'" v-model="form.description" html />
+          <TipTap v-else v-model="form.extra_attributes.en.description" html />
         </NFormItem>
       </FormElement>
       <FormElement>
-        <template #title>Asmenys</template>
-        <template #description
-          ><p class="mb-4">Pareigybę gali užimti daug naudotojų.</p>
+        <template #title>
+          Asmenys
+        </template>
+        <template #description>
+          <p class="mb-4">
+            Pareigybę gali užimti daug naudotojų.
+          </p>
           <p>
             Jeigu sąraše nėra asmens, kuris užima pareigybę, šį asmenį reikia
             sukurti.
-          </p></template
-        >
+          </p>
+        </template>
         <NFormItem>
           <template #label>
             <div class="inline-flex items-center gap-2">
-              <strong>{{ $t("Nariai") }}</strong
-              ><a target="_blank" :href="route('users.create')"
-                ><NButton text size="tiny"
-                  ><template #icon
-                    ><NIcon :component="Add24Filled"></NIcon></template
-                  >Sukurti naują asmenį</NButton
-                ></a
-              >
+              <strong>{{ $t("Nariai") }}</strong><a target="_blank" :href="route('users.create')">
+                <NButton text size="tiny">
+                  <template #icon>
+                    <IFluentAdd24Filled />
+                  </template>Sukurti naują asmenį
+                </NButton>
+              </a>
             </div>
           </template>
-          <NTransfer
-            ref="transfer"
-            v-model:value="form.current_users"
-            virtual-scroll
-            :options="userOptions"
-            :render-source-label="renderSourceLabel"
-            :render-target-label="renderTargetLabel"
-            source-filterable
-          ></NTransfer>
+          <NTransfer ref="transfer" v-model:value="form.current_users" virtual-scroll :options="userOptions"
+            :render-source-label="renderSourceLabel" :render-target-label="renderTargetLabel" source-filterable />
         </NFormItem>
       </FormElement>
       <FormElement>
-        <template #title>Papildoma informacija</template>
+        <template #title>
+          Papildoma informacija
+        </template>
         <template #description>
           <div class="flex flex-col gap-2">
             <p>
@@ -125,60 +107,37 @@
           </div>
         </template>
         <NFormItem label="Pareigybės tipas">
-          <NSelect
-            v-model:value="form.types"
-            multiple
-            :options="dutyTypes"
-            label-field="title"
-            value-field="id"
-            placeholder="Pasirinkti kategoriją..."
-            clearable
-          />
+          <NSelect v-model:value="form.types" multiple :options="dutyTypes" label-field="title" value-field="id"
+            placeholder="Pasirinkti kategoriją..." clearable />
         </NFormItem>
 
         <NFormItem label="Administracinė vusa.lt rolė">
-          <NSelect
-            v-model:value="form.roles"
-            :options="rolesOptions"
-            :disabled="!$page.props.auth?.user.isSuperAdmin"
-            clearable
-            multiple
-            type="text"
-            placeholder="Be rolės..."
-          />
+          <NSelect v-model:value="form.roles" :options="rolesOptions" :disabled="!$page.props.auth?.user.isSuperAdmin"
+            clearable multiple type="text" placeholder="Be rolės..." />
         </NFormItem>
       </FormElement>
     </div>
     <div class="flex justify-end gap-2">
-      <DeleteModelButton
-        v-if="deleteModelRoute"
-        :disabled="duty.current_users && duty.current_users.length > 0"
-        :form="form"
-        :model-route="deleteModelRoute"
-      ></DeleteModelButton>
+      <DeleteModelButton v-if="deleteModelRoute" :disabled="duty.current_users && duty.current_users.length > 0"
+        :form="form" :model-route="deleteModelRoute" />
       <UpsertModelButton :form="form" :model-route="modelRoute" />
     </div>
   </NForm>
 </template>
 
 <script setup lang="tsx">
-import { Add24Filled, Edit16Filled, Eye16Regular } from "@vicons/fluent";
 import {
-  NAutoComplete,
   NButton,
-  NForm,
-  NFormItem,
   NIcon,
-  NInput,
-  NInputNumber,
-  NSelect,
-  NTransfer,
   type TransferRenderSourceLabel,
   type TransferRenderTargetLabel,
 } from "naive-ui";
 import { computed, ref } from "vue";
 import { useForm, usePage } from "@inertiajs/vue3";
+import IconEdit from "~icons/fluent/edit16-filled";
+import IconEye from "~icons/fluent/eye16-regular";
 
+import { changeDutyNameEndings } from "@/Utils/String";
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import FormElement from "./FormElement.vue";
 import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
@@ -236,7 +195,7 @@ const renderSourceLabel: TransferRenderSourceLabel = ({ option }) => {
       <span>{option.label}</span>
       <a target="_blank" href={route("users.edit", option.value)}>
         <NButton text size="tiny">
-          {{ icon: <NIcon component={Edit16Filled}></NIcon> }}
+          {{ icon: <IconEdit /> }}
         </NButton>
       </a>
     </div>
@@ -253,7 +212,7 @@ const renderTargetLabel: TransferRenderTargetLabel = ({ option }) => {
         <a target="_blank" href={route("users.edit", option.value)}>
           <NButton size="tiny" text>
             {{
-              icon: <NIcon component={Eye16Regular} />,
+              icon: <IconEye />,
             }}
           </NButton>
         </a>

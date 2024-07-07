@@ -17,15 +17,21 @@ class FeedbackMail extends Mailable implements ShouldQueue
 
     public $user;
 
+    public string $href;
+
+    public ?string $selectedText;
+
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct(string $feedback, $user)
+    public function __construct(string $feedback, $user, ?string $href = null, ?string $selectedText = null)
     {
         $this->feedback = $feedback;
         $this->user = $user;
+        $this->href = $href;
+        $this->selectedText = $selectedText;
     }
 
     /**

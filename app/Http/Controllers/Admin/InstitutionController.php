@@ -38,6 +38,7 @@ class InstitutionController extends LaravelResourceController
         // also check if empty array
         return Inertia::render('Admin/People/IndexInstitution', [
             'institutions' => $institutions,
+            'types' => Type::where('model_type', Institution::class)->get(),
         ]);
     }
 

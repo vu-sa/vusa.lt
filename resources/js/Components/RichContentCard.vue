@@ -20,10 +20,13 @@
 
 <script setup lang="ts">
 import { Card, CardContent, CardHeader, CardTitle } from './ShadcnVue/ui/card';
-import { type CardProps, NIcon } from 'naive-ui';
-import { Important24Filled, Info24Filled, QuestionCircle24Filled } from '@vicons/fluent';
+import { type CardProps } from 'naive-ui';
 import { computed } from 'vue';
 import { useDark } from '@vueuse/core';
+
+import IconImportant from '~icons/fluent/important24-filled';
+import IconInfo from '~icons/fluent/info24-filled';
+import IconQuestion from '~icons/fluent/question-circle24-filled';
 
 const props = defineProps<{
   element: models.ContentPart;
@@ -34,11 +37,11 @@ const isDark = useDark();
 const iconToUse = computed(() => {
   switch (props.element.options?.color) {
     case 'red':
-      return Important24Filled;
+      return IconImportant;
     case 'yellow':
-      return QuestionCircle24Filled;
+      return IconQuestion;
     default:
-      return Info24Filled;
+      return IconInfo;
   }
 });
 

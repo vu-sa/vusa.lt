@@ -1,65 +1,40 @@
 <template>
-  <ShowPageLayout
-    :title="doing.title"
-    :breadcrumb-options="breadcrumbOptions"
-    :model="doing"
-    :related-models="relatedModels"
-    :current-tab="currentTab"
-    @change:tab="currentTab = $event"
-  >
+  <ShowPageLayout :title="doing.title" :breadcrumb-options="breadcrumbOptions" :model="doing"
+    :related-models="relatedModels" :current-tab="currentTab" @change:tab="currentTab = $event">
     <template #more-options>
-      <MoreOptionsButton
-        edit
-        delete
-        @edit-click="showEditModal = true"
-        @delete-click="handleDelete"
-      ></MoreOptionsButton>
-      <CardModal
-        v-model:show="showEditModal"
-        title="Redaguoti veiklą"
-        @close="showEditModal = false"
-      >
-        <DoingForm :doing="doing" @submit="handleSubmit"></DoingForm>
+      <MoreOptionsButton edit delete @edit-click="showEditModal = true" @delete-click="handleDelete" />
+      <CardModal v-model:show="showEditModal" title="Redaguoti veiklą" @close="showEditModal = false">
+        <DoingForm :doing="doing" @submit="handleSubmit" />
       </CardModal>
     </template>
-    <DoingStateCard :doing="doing"></DoingStateCard>
+    <DoingStateCard :doing="doing" />
     <template #below>
       <div v-if="currentTab === 'Failai'">
         <Suspense v-if="doing.types.length > 0">
-          <SimpleFileViewer
-            :fileable="{ id: doing.id, type: 'Doing' }"
-          ></SimpleFileViewer>
+          <SimpleFileViewer :fileable="{ id: doing.id, type: 'Doing' }" />
           <template #fallback>
             <div class="flex h-24 items-center justify-center">
               Kraunami susiję failai...
             </div>
           </template>
         </Suspense>
-        <FileManager
-          :starting-path="doing.sharepointPath"
-          :fileable="{ id: doing.id, type: 'Doing' }"
-        ></FileManager>
+        <FileManager :starting-path="doing.sharepointPath" :fileable="{ id: doing.id, type: 'Doing' }" />
       </div>
-      <CommentViewer
-        v-else-if="currentTab === 'Komentarai'"
-        class="mt-auto h-min"
-        :commentable_type="'doing'"
-        :model="doing"
-      />
-      <TaskManager
-        v-else-if="currentTab === 'Užduotys'"
-        :taskable="{ id: doing.id, type: 'App\\Models\\Doing' }"
-        :tasks="doing.tasks"
-      />
+      <CommentViewer v-else-if="currentTab === 'Komentarai'" class="mt-auto h-min" :commentable_type="'doing'"
+        :model="doing" />
+      <TaskManager v-else-if="currentTab === 'Užduotys'" :taskable="{ id: doing.id, type: 'App\\Models\\Doing' }"
+        :tasks="doing.tasks" />
     </template>
   </ShowPageLayout>
 </template>
 
 <script setup lang="tsx">
-import { Person24Filled, Sparkle20Filled } from "@vicons/fluent";
 import { computed, ref } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
+
+import Person24Filled from "~icons/fluent/person24-filled";
+import Sparkle20Filled from "~icons/fluent/sparkle20-filled";
 
 import CardModal from "@/Components/Modals/CardModal.vue";
 import CommentViewer from "@/Features/Admin/CommentViewer/CommentViewer.vue";

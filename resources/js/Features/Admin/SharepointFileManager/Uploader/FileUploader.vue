@@ -1,47 +1,28 @@
 <template>
-  <CardModal :show="show" :title="`Įkelti naują failą`" @close="$emit('close')">
-    <NSteps
-      class="my-2 py-2"
-      :current="(current as number)"
-      :status="'process'"
-    >
+  <CardModal :show :title="`Įkelti naują failą`" @close="$emit('close')">
+    <NSteps class="my-2 py-2" :current="(current as number)" :status="'process'">
       <NStep title="Į ką kelsi failą?">
         <template #icon>
-          <NIcon :component="DocumentTableSearch24Regular"></NIcon>
+          <IFluentDocumentTableSearch24Regular />
         </template>
       </NStep>
-      <NStep title="Failo įkėlimas"></NStep>
+      <NStep title="Failo įkėlimas" />
     </NSteps>
     <FadeTransition>
-      <FileableForm
-        v-if="current === 1"
-        :show-alert="showAlert"
-        @close:alert="showAlert = false"
-        @submit="handleFileableSubmit"
-      ></FileableForm>
+      <FileableForm v-if="current === 1" :show-alert="showAlert" @close:alert="showAlert = false"
+        @submit="handleFileableSubmit" />
       <div v-else-if="current === 2">
-        <NMessageProvider>
-          <FileForm
-            :fileable="fileForm.fileable"
-            :loading="loading"
-            @submit="handleFileSubmit"
-          ></FileForm>
-        </NMessageProvider>
+        <FileForm :fileable="fileForm.fileable" :loading="loading" @submit="handleFileSubmit" />
       </div>
     </FadeTransition>
     <FadeTransition>
-      <ModalHelperButton
-        v-if="!showAlert && current === 1"
-        @click="showAlert = true"
-      />
+      <ModalHelperButton v-if="!showAlert && current === 1" @click="showAlert = true" />
     </FadeTransition>
   </CardModal>
 </template>
 
 <script setup lang="ts">
-import { DocumentTableSearch24Regular } from "@vicons/fluent";
-import { NIcon, NMessageProvider, NStep, NSteps } from "naive-ui";
-import { ref } from "vue";
+import { inject, ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 
@@ -61,6 +42,8 @@ const props = defineProps<{
 const current = ref(1);
 const loading = ref(false);
 const showAlert = useStorage("new-file-button-alert", true);
+
+const keepFileable = inject<boolean>("keepFileable");
 
 const fileForm = useForm<Record<string, any>>({
   fileable: null,
@@ -82,8 +65,13 @@ const submitFullForm = () => {
   fileForm.post(route("sharepointFiles.store"), {
     onSuccess: () => {
       emit("close");
-      fileForm.reset();
-      current.value = 1;
+      if (!keepFileable) {
+        fileForm.reset();
+        current.value = 1;
+      } else {
+        current.value = 2;
+        fileForm.file = null;
+      }
     },
     onFinish: () => {
       loading.value = false;

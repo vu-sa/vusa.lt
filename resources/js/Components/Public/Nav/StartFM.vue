@@ -4,8 +4,8 @@
     <template #trigger>
       <NButton text :loading="loading" title="StartFM" @click="toggleAudio">
         <template #icon>
-          <i-fluent-pause-24-filled v-if="audioPlaying" />
-          <i-fluent-music-note-2-play-20-filled v-else />
+          <IFluentPause24Filled v-if="audioPlaying" />
+          <IFluentMusicNote2Play20Filled v-else />
         </template>
         <audio v-show="false" ref="startFM" preload="none" @canplay="changeLoading">
           <source src="https://eteris.startfm.lt/startfm.mp3" type="audio/mpeg">

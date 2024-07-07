@@ -45,29 +45,21 @@
             <!-- link to form.link -->
             <NButton tag="a" :href="form.url" target="_blank">
               <template #icon>
-                <NIcon :component="Open24Regular" />
+                <IFluentOpen24Regular />
               </template>
             </NButton>
           </NInputGroup>
         </NFormItem>
       </FormElement>
       <template v-if="form.type !== 'divider'">
-
-        <NFormItem label="Ikona">
-          <template #label>
-            Ikona. <span class="text-zinc-400"> Ikonų ieškokite <a target="_blank" class="font-bold underline"
-                href="https://icon-sets.iconify.design/fluent/">čia</a>. Suradę reikiamą ikoną pasirinkite iš
-              sąrašo. </span>
-          </template>
-          <NSelect v-model:value="form.extra_attributes.icon" filterable clearable :options="iconOptions ?? []" />
-        </NFormItem>
-
+        <FluentIconSelect :icon="form.extra_attributes.icon"
+          @update:icon="(value) => form.extra_attributes.icon = value" />
         <NFormItem label="Aprašymas">
           <NInput v-model:value="form.extra_attributes.description" type="textarea" placeholder="Įrašyti aprašymą..." />
         </NFormItem>
         <NFormItem label="Foninis paveikslėlis">
-            <img v-if="form.extra_attributes.image" class="mr-4 size-20 object-cover" :src="form.extra_attributes.image"
-              alt="image">
+          <img v-if="form.extra_attributes.image" class="mr-4 size-20 object-cover" :src="form.extra_attributes.image"
+            alt="image">
           <NButtonGroup>
             <TiptapImageButton v-model:show-modal="showModal" @submit="form.extra_attributes.image = $event" />
             <!-- Remove image button -->
@@ -89,12 +81,13 @@
 </template>
 
 <script setup lang="tsx">
-import { Link24Regular, Open24Regular } from "@vicons/fluent";
-import { NButton, NButtonGroup, NForm, NFormItem, NIcon, NInput, NInputGroup, NSelect } from "naive-ui";
 import { computed, ref } from "vue";
 import { router, useForm, usePage } from "@inertiajs/vue3"
 
+import Link24Regular from "~icons/fluent/link24-regular";
+
 import DeleteModelButton from "../Buttons/DeleteModelButton.vue";
+import FluentIconSelect from "../FormItems/FluentIconSelect.vue";
 import FormElement from "./FormElement.vue";
 import Icons from "@/Types/Icons/regular";
 import TiptapImageButton from "@/Components/TipTap/TiptapImageButton.vue";
@@ -194,27 +187,6 @@ const typeOptions = computed(() => {
       option,
     };
   });
-});
-
-const getIconOptions = async () => {
-  const icons = fetch("https://api.iconify.design/collection?prefix=fluent");
-
-  const data = await icons;
-
-  const iconData = await data.json()
-
-  return iconData;
-};
-
-const icons = await getIconOptions();
-
-const iconOptions = computed(() => {
-  return icons.uncategorized?.map((icon) => {
-    return {
-      value: icon,
-      label: icon,
-    };
-  })
 });
 
 const renderLabel = (option: any) => {

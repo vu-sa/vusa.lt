@@ -1,26 +1,15 @@
 <template>
   <div class="grid grid-cols-ramFill gap-x-4">
-    <MeetingCard
-      v-for="meeting in meetings"
-      :key="meeting.id"
-      class="max-w-sm"
-      :meeting="meeting"
-      @click="router.visit(route('meetings.show', meeting.id))"
-    ></MeetingCard>
+    <MeetingCard v-for="meeting in meetings" :key="meeting.id" class="max-w-sm" :meeting="meeting"
+      @click="router.visit(route('meetings.show', meeting.id))" />
     <template v-if="institution">
-      <NewGridItemButton :icon="AddCircle24Filled" @click="showModal = true">
-      </NewGridItemButton>
-      <NewMeetingModal
-        :institution="institution"
-        :show-modal="showModal"
-        @close="showModal = false"
-      ></NewMeetingModal>
+      <NewGridItemButton :icon="IFluentAddCircle24Filled" @click="showModal = true" />
+      <NewMeetingModal :institution="institution" :show-modal="showModal" @close="showModal = false" />
     </template>
   </div>
 </template>
 
 <script setup lang="tsx">
-import { AddCircle24Filled } from "@vicons/fluent";
 import { ref } from "vue";
 import { router } from "@inertiajs/vue3";
 

@@ -1,33 +1,14 @@
 <template>
   <div class="grid grid-cols-ramFill gap-4">
-    <MatterCard
-      v-for="matter in matters"
-      :key="matter.id"
-      class="max-w-md"
-      :matter="matter"
-    ></MatterCard>
-    <NewGridItemButton
-      v-if="institution"
-      :icon="AddCircle24Filled"
-      @click="showModal = true"
-    >
-    </NewGridItemButton>
-    <CardModal
-      v-model:show="showModal"
-      title="Sukurti klausimą"
-      @close="showModal = false"
-    >
-      <MatterForm
-        :form="matterTemplate"
-        :institution="institution"
-        @submit="handleSubmit"
-      />
+    <MatterCard v-for="matter in matters" :key="matter.id" class="max-w-md" :matter="matter" />
+    <NewGridItemButton v-if="institution" :icon="IFluentAddCircle24Filled" @click="showModal = true" />
+    <CardModal v-model:show="showModal" title="Sukurti klausimą" @close="showModal = false">
+      <MatterForm :form="matterTemplate" :institution="institution" @submit="handleSubmit" />
     </CardModal>
   </div>
 </template>
 
 <script setup lang="tsx">
-import { AddCircle24Filled } from "@vicons/fluent";
 import { ref } from "vue";
 
 import { matterTemplate } from "@/Types/formTemplates";

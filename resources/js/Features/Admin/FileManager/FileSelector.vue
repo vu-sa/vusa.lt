@@ -1,6 +1,6 @@
 <template>
   <NSpin class="w-full" :show="loading">
-    <FileManager @update="handleUpdate" small class="w-full" :files="files" :directories="directories" :path="path" @back="handleBack"
+    <FileManager small class="w-full" :files="files" :directories="directories" :path="path" @update="handleUpdate" @back="handleBack"
       @change-directory="handleChangeDirectory" @file-selected="(path) => $emit('submit', path)" />
   </NSpin>
 </template>

@@ -1,40 +1,29 @@
 <template>
-  <PageContent
-    title="Pradinio puslapio mygtukų tvarkymas"
-    :back-url="route('mainPage.index')"
-    :heading-icon="Icons.MAIN_PAGE"
-  >
+  <PageContent title="Pradinio puslapio mygtukų tvarkymas" :back-url="route('mainPage.index')"
+    :heading-icon="Icons.MAIN_PAGE">
     <UpsertModelLayout :errors="$page.props.errors" :model="mainPage">
       <h2>{{ padalinys.shortname }} greitosios nuorodos</h2>
-      <div
-        ref="el"
-        class="mb-4 flex flex-col gap-1 rounded-sm border p-4 shadow-sm"
-      >
+      <div ref="el" class="mb-4 flex flex-col gap-1 rounded-sm border p-4 shadow-sm">
         <NButtonGroup v-for="item in mainPageList" :key="item.id" size="small">
           <NButton secondary class="handle">
-            <template #icon
-              ><NIcon :component="Drag24Regular"></NIcon
-            ></template>
+            <template #icon>
+              <IFluentDrag24Regular />
+            </template>
           </NButton>
-          <NButton
-            tag="a"
-            :href="route('mainPage.edit', item.id)"
-            target="_blank"
-            quaternary
-          >
+          <NButton tag="a" :href="route('mainPage.edit', item.id)" target="_blank" quaternary>
             <strong class="mr-2">{{ item.text }}</strong>
             <span class="text-xs text-zinc-500">{{ item.link }}</span>
           </NButton>
         </NButtonGroup>
       </div>
-      <NButton type="primary" @click="handleOrderUpdate">Atnaujinti</NButton>
+      <NButton type="primary" @click="handleOrderUpdate">
+        Atnaujinti
+      </NButton>
     </UpsertModelLayout>
   </PageContent>
 </template>
 
 <script setup lang="tsx">
-import { Drag24Regular } from "@vicons/fluent";
-import { NButton, NButtonGroup, NIcon } from "naive-ui";
 import { ref } from "vue";
 import { router } from "@inertiajs/vue3";
 import { useSortable } from "@vueuse/integrations/useSortable";

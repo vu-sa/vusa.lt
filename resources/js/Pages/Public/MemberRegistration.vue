@@ -234,7 +234,7 @@ const formBlueprint = {
 };
 
 // useForm saves the form value to a remembered state.
-const formValue = useForm("SaziningaiExam", formBlueprint);
+const formValue = useForm("MemberRegistration", formBlueprint);
 
 const padaliniaiOptions = computed(() =>
   props.padaliniaiOptions.map((padalinys) => ({

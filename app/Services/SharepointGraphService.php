@@ -3,13 +3,21 @@
 namespace App\Services;
 
 use App\Models\SharepointFile;
-use GuzzleHttp\Exception\ClientException;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Facades\Http;
-use Microsoft\Graph\Graph;
-use Microsoft\Graph\Model;
+use Microsoft\Graph\BatchRequestBuilder;
+use Microsoft\Graph\Core\Requests\BatchRequestContent;
+use Microsoft\Graph\Core\Requests\BatchRequestItem;
+use Microsoft\Graph\Generated\Drives\Item\Items\Item\CreateLink\CreateLinkPostRequestBody;
+use Microsoft\Graph\Generated\Drives\Item\Items\Item\DriveItemItemRequestBuilderGetRequestConfiguration;
+use Microsoft\Graph\Generated\Models;
+use Microsoft\Graph\Generated\Models\FieldValueSet;
+use Microsoft\Graph\Generated\Models\ODataErrors\ODataError;
+use Microsoft\Graph\Generated\Models\PermissionCollectionResponse;
+use Microsoft\Graph\Generated\Sites\Item\Lists\Item\Items\Item\Fields\FieldsRequestBuilderPatchRequestConfiguration;
+use Microsoft\Graph\GraphServiceClient;
+use Microsoft\Kiota\Authentication\Oauth\ClientCredentialContext;
+use Nyholm\Psr7\Factory\Psr17Factory;
 
 /**
  * SharepointGraphService
@@ -20,6 +28,8 @@ use Microsoft\Graph\Model;
 class SharepointGraphService
 {
     protected $graph;
+
+    protected $graphApiBaseUrl;
 
     protected $siteId;
 
@@ -36,290 +46,233 @@ class SharepointGraphService
      */
     public function __construct(?string $siteId = null, ?string $driveId = null)
     {
-        if (Cache::has('ms_application_token')) {
-            $token = Crypt::decryptString(Cache::get('ms_application_token'));
-        } else {
-            $url = 'https://login.microsoftonline.com/'.config('filesystems.sharepoint.tenant_id').'/oauth2/v2.0/token';
+        $tokenRequestContext = new ClientCredentialContext(
+            config('filesystems.sharepoint.tenant_id'),
+            config('filesystems.sharepoint.client_id'),
+            config('filesystems.sharepoint.client_secret')
+        );
 
-            $token = json_decode(Http::asForm()->post($url, [
-                'client_id' => config('filesystems.sharepoint.client_id'),
-                'client_secret' => config('filesystems.sharepoint.client_secret'),
-                'scope' => 'https://graph.microsoft.com/.default',
-                'grant_type' => 'client_credentials',
-            ])->getBody()->getContents());
-            $token = $token->access_token;
+        $this->graph = new GraphServiceClient($tokenRequestContext);
+        $this->graphApiBaseUrl = 'https://graph.microsoft.com/v1.0/';
 
-            // put cache for just under an hour
-            Cache::put('ms_application_token', Crypt::encryptString($token), 3500);
-        }
-
-        $this->graph = new Graph();
-        $this->graph->setAccessToken($token);
         $this->siteId = $siteId ?? config('filesystems.sharepoint.site_id');
         $this->driveId = $driveId ?? $this->getDrive()->getId();
     }
 
-    private function getSite(): Model\Site
+    private function getSite(): Models\Site
     {
-        return Cache::remember('ms_site_'.$this->siteId, 3600, function () {
-            $site = $this->graph->createRequest('GET', "/sites/{$this->siteId}")
-                ->setReturnType(Model\Site::class)
-                ->execute();
+        $site = $this->graph->sites()->bySiteId($this->siteId)->get()->wait();
 
-            return $site;
-        });
+        return $site;
     }
 
-    private function getDrive(): Model\Drive
+    private function getDrive(): Models\Drive
     {
-        return Cache::remember('ms_drive_'.$this->siteId, 3600, function () {
-            $drive = $this->graph->createRequest('GET', "/sites/{$this->siteId}/drive")
-                ->setReturnType(Model\Drive::class)
-                ->execute();
+        $drive = $this->graph->sites()->bySiteId($this->siteId)->drive()->get()->wait();
 
-            return $drive;
-        });
+        return $drive;
     }
 
     /**
      * getDriveItemByPath
      *
+     * Note: for some reason DriveItems are not returned
+     *
      * @param  mixed  $path
      * @param  mixed  $siteId
      * @return array<Model\DriveItem>
      */
-    public function getDriveItemByPath(string $path, $getChildren = false): Collection
+    public function getDriveItemByPath(string $path, $getChildren = false)
     {
         // encode path
-        $path = rawurlencode($path);
         $childrenPath = $getChildren ? ':/children' : '';
 
         try {
-            $driveItems = $this->graph->createRequest('GET', "/drives/{$this->driveId}/root:/{$path}{$childrenPath}?\$expand=listItem,thumbnails")
-                ->setReturnType(Model\DriveItem::class)
-                ->execute();
-        } catch (ClientException $e) {
-            if ($e->getCode() == 404) {
-                return collect([]);
-            }
+            $sharepointPathFinal = $this->graphApiBaseUrl.'drives/'.$this->driveId.'/root:'."/{$path}{$childrenPath}?\$expand=listItem,thumbnails";
 
-            throw $e;
+            $drive = $this->graph->drives()->byDriveId($this->driveId)->withUrl($sharepointPathFinal)->get()->wait();
+
+        } catch (ODataError $e) {
+            return collect([]);
         }
 
-        // wrap in array if not array
-        if (! is_array($driveItems)) {
-            $driveItems = [$driveItems];
-        }
+        $driveItems = collect($drive->getAdditionalData()['value']);
 
         return $this->parseDriveItems($driveItems);
     }
 
-    public function getDriveItemByIdWithListItem(string $driveItemId): Model\DriveItem
-    {
-        $driveItem = $this->graph->createRequest('GET', "/drives/{$this->driveId}/items/{$driveItemId}?\$expand=listItem")
-            ->setReturnType(Model\DriveItem::class)
-            ->execute();
+    /*public function getDriveItemByIdWithListItem(string $driveItemId): Models\DriveItem*/
+    /*{*/
+    /*    $requestConfiguration = new DriveItemItemRequestBuilderGetRequestConfiguration();*/
+    /*    $queryParameters = DriveItemItemRequestBuilderGetRequestConfiguration::createQueryParameters();*/
+    /**/
+    /*    $queryParameters->expand = ['listItem'];*/
+    /**/
+    /*    $requestConfiguration->queryParameters = $queryParameters;*/
+    /**/
+    /*    $driveItem = $this->graph->drives()->byDriveId($this->driveId)->items()->byDriveItemId($driveItemId)->get($requestConfiguration)->wait();*/
+    /**/
+    /*    return $driveItem;*/
+    /*}*/
 
-        return $driveItem;
-    }
-
-    public function updateDriveItemByPath(string $path, array $fields): Model\DriveItem
+    public function updateDriveItemByPath(string $path, array $fields): Models\DriveItem
     {
         $path = rawurlencode($path);
 
-        $updatedDriveItem = $this->graph->createRequest('PATCH', "/drives/{$this->driveId}/root:/{$path}")
-            ->attachBody(
-                $fields
-            )
-            ->setReturnType(Model\DriveItem::class)
-            ->execute();
+        $sharepointPathFinal = $this->graphApiBaseUrl.'drives/'.$this->driveId.'/root:'."/{$path}";
 
-        return $updatedDriveItem;
+        $updatableDriveItem = $this->graph->drives()->byDriveId($this->driveId)->root($path)->withUrl($sharepointPathFinal)->withUrl($sharepointPathFinal)->get()->wait();
+
+        isset($fields['name']) ? $updatableDriveItem->setName($fields['name']) : null;
+
+        $result = $this->graph->drives()->byDriveId($this->driveId)->items()->byDriveItemId($updatableDriveItem->getId())->patch($updatableDriveItem)->wait();
+
+        return $result;
     }
 
-    public function updateListItem(string $listId, $listItemId, array $fields): Model\ListItem
+    public function updateListItem(string $listId, $listItemId, array $fields): Models\FieldValueSet
     {
-        $updatedListItem =
-        $this->graph->createRequest('PATCH', "/sites/{$this->siteId}/lists/{$listId}/items/{$listItemId}/fields")
-            ->attachBody(
-                $fields
-            )
-            ->setReturnType(Model\ListItem::class)
-            ->execute();
+        /*dd($fields, $this->siteId, $listId, $listItemId);*/
+
+        $requestConfiguration = new FieldsRequestBuilderPatchRequestConfiguration();
+        $fieldValueSet = new FieldValueSet();
+
+        $fieldValueSet->setAdditionalData($fields);
+
+        $updatedListItem = $this->graph->sites()->bySiteId($this->siteId)->lists()->byListId($listId)->items()->byListItemId($listItemId)->fields()->patch($fieldValueSet, $requestConfiguration)->wait();
 
         return $updatedListItem;
     }
 
+    // Since every institution can have types and with them associated documents, we need to
+    // get them by batch
     public function getDriveItemsChildrenByPaths(array $paths)
     {
         $pathCollection = collect($paths);
-        $id = 0;
 
-        $batch_request_body = ['requests' => $pathCollection->map(function ($path) use (&$id) {
-            $id++;
+        $batch = new BatchRequestContent(
+            $pathCollection->map(function ($path) {
+                $path = rawurlencode($path);
 
-            $path = rawurlencode($path);
+                $sharepointPathFinal = $this->graphApiBaseUrl.'drives/'.$this->driveId.'/root:'."/{$path}:/children?\expand=listItem,thumbnails";
 
-            return [
-                'id' => $id,
-                'method' => 'GET',
-                'url' => "/drives/{$this->driveId}/root:/{$path}:/children?\$expand=listItem,thumbnails",
-            ];
-        })->values()->toArray(),
-        ];
+                $request = $this->graph->drives()->byDriveId($this->driveId)->root()->withUrl($sharepointPathFinal)->toGetRequestInformation();
 
-        $batch_response = $this->graph->createRequest('POST', '/$batch')
-            ->attachBody($batch_request_body)
-            ->execute()->getBody();
+                return new BatchRequestItem($request);
+            })->toArray()
+        );
 
-        $driveItems = [];
+        // Create a batch request builder to send the batched requests
+        $batchRequestBuilder = new BatchRequestBuilder($this->graph->getRequestAdapter());
 
-        foreach ($batch_response['responses'] as $response) {
-            if ($response['status'] === 404) {
-                continue;
+        $batchResponse = $batchRequestBuilder->postAsync($batch)->wait();
+
+        $driveItemCollections = collect($batch->getRequests())->map(function (BatchRequestItem $request) use ($batchResponse) {
+            $response = $batchResponse->getResponseBody($request->getId(), Models\DriveItemCollectionResponse::class)->getValue();
+
+            return $response;
+        });
+
+        $driveItems = $driveItemCollections->map(function (?array $driveItemCollection) {
+            if (! $driveItemCollection) {
+                return false;
             }
 
-            // create DriveItem for each response
-            // $response = new HttpResponse($response['body'], $response['status'], $response['headers']);
-            collect($response['body']['value'])->each(function ($driveItem) use (&$driveItems) {
-                $driveItems[] = new Model\DriveItem($driveItem);
-            });
-        }
+            // flatten driveItemCollection
+            return $driveItemCollection;
+        })->reject(fn ($value) => $value === false)->flatten()->map(function (Models\DriveItem $driveItem) {
+            // turn to simple array
+            return $driveItem->getBackingStore()->enumerate();
+        });
 
         return $this->parseDriveItems($driveItems);
     }
 
-    protected function getDriveItemPermissions(string $driveItemId): array
+    protected function getDriveItemPermissions(string $driveItemId): PermissionCollectionResponse
     {
-        $permissions = $this->graph->createRequest('GET', "/drives/{$this->driveId}/items/{$driveItemId}/permissions")
-            ->setReturnType(Model\Permission::class)
-            ->execute();
+        $permissions = $this->graph->drives()->byDriveId($this->driveId)->items()->byDriveItemId($driveItemId)->permissions()->get()->wait();
 
         return $permissions;
     }
 
-    /**
-     * parsePermissionsForPublicLink
-     *
-     * @param  array<Model\Permission>  $permissions
-     * @return ?Model\Permission
-     */
-    protected function parsePermissionsForPublicLink(array $permissions): ?Model\Permission
+    public function getDriveItemPublicLink(string $driveItemId): ?string
     {
-        $permissions = collect($permissions);
+        $permissions = collect($this->getDriveItemPermissions($driveItemId)->getValue());
 
-        // filter collection for public link. public permissions have a link property which has scope to anonymous
-        $publicLinkPermission = $permissions->filter(function ($permission) {
+        $permission = $permissions->filter(function (Models\Permission $permission) {
             return $permission->getLink() && $permission->getLink()->getScope() == 'anonymous';
         })->first();
 
-        return $publicLinkPermission;
+        return $permission ? $permission->getLink()->getWebUrl() : null;
     }
 
-    public function getDriveItemPublicLink(string $driveItemId): ?Model\Permission
+    public function createPublicPermission(string $driveItemId): string
     {
-        $permissions = $this->getDriveItemPermissions($driveItemId);
+        $requestBody = new CreateLinkPostRequestBody();
 
-        return $this->parsePermissionsForPublicLink($permissions);
+        $requestBody->setType('view');
+        $requestBody->setScope('anonymous');
+        $requestBody->setExpirationDateTime(new \DateTime('2025-01-01T00:00:00Z'));
+
+        $permission = $this->graph->drives()->byDriveId($this->driveId)->items()->byDriveItemId($driveItemId)->createLink()->post($requestBody)->wait();
+
+        return $permission->getLink()->getWebUrl();
     }
 
-    public function createPublicPermission(string $driveItemId): ?Model\Permission
+    public function uploadDriveItem(string $filePath, UploadedFile $file): Models\DriveItem
     {
-        $permission = $this->graph->createRequest('POST', "/drives/{$this->driveId}/items/{$driveItemId}/createLink")
-            ->attachBody([
-                'type' => 'view',
-                'scope' => 'anonymous',
-            ])
-            ->setReturnType(Model\Permission::class)
-            ->execute();
+        $factory = new Psr17Factory();
 
-        return $permission;
-    }
+        $stream = $factory->createStreamFromFile($file->getPathname(), 'r');
 
-    public function uploadDriveItem(string $filePath, $content): Model\DriveItem
-    {
-        // if file is more than 100 MB, unauthorized error is thrown
-        abort_if(strlen($content) > 64000000, 403, 'Kolkas neleidžiama įkelti didesnių nei 64MB failų');
+        $sharepointPathFinal = $this->graphApiBaseUrl.'drives/'.$this->driveId.'/root:'."/{$filePath}:/content?\$expand=listItem&@microsoft.graph.conflictBehavior=rename";
 
-        // check if file is more than 4MB
-        if (strlen($content) > 4000000) {
-            $uploadSession = $this->graph->createRequest('POST', "/drives/{$this->driveId}/root:/{$filePath}:/createUploadSession")
-                ->attachBody([
-                    'item' => [
-                        '@microsoft.graph.conflictBehavior' => 'rename',
-                    ],
-                ])
-                ->setReturnType(Model\UploadSession::class)
-                ->execute();
-
-            $uploadUrl = $uploadSession->getUploadUrl($content);
-
-            $uploadedDriveItem = $this->graph->createRequest('PUT', $uploadUrl)
-                ->addHeaders(
-                    ['Content-Length' => strlen($content),
-                        'Content-Range' => 'bytes 0-'.(strlen($content) - 1).'/'.strlen($content),
-                    ])
-                ->attachBody($content)
-                ->setReturnType(Model\DriveItem::class)
-                ->execute();
-
-            $uploadedDriveItem = $this->getDriveItemByIdWithListItem($uploadedDriveItem->getId());
-        } else {
-            $uploadedDriveItem = $this->graph->createRequest('PUT', "/drives/{$this->driveId}/root:/{$filePath}:/content?expand=listItem")
-                ->attachBody($content)
-                ->setReturnType(Model\DriveItem::class)
-                ->execute();
-        }
+        $uploadedDriveItem = $this->graph->drives()->byDriveId($this->driveId)->root()->withUrl($sharepointPathFinal)->content()->put($stream)->wait();
 
         return $uploadedDriveItem;
     }
 
     public function deleteDriveItem(string $driveItemId): void
     {
-        $this->graph->createRequest('DELETE', "/drives/{$this->driveId}/items/{$driveItemId}")
-            ->execute();
+        $this->graph->drives()->byDriveId($this->driveId)->items()->byDriveItemId($driveItemId)->delete()->wait();
     }
 
     /**
      * parseDriveItems
      *
-     * @param  array<Model\DriveItem>  $driveItems
+     * @param  Models\Drive  $driveItems
      * @return Collection
      */
-    private function parseDriveItems(array|Model\DriveItem $driveItems)
+    private function parseDriveItems(Collection $driveItems)
     {
-        $driveItems = collect($driveItems);
-
         // get all driveitem ids
         $driveItemIds = $driveItems->map(function ($driveItem) {
-            return $driveItem->getId();
+            return $driveItem['id'];
         })->toArray();
 
         // load all sharepointFile models wherein sharepointfile.sharepoint_id
         // is in $driveItemIds
         $sharepointFiles = SharepointFile::whereIn('sharepoint_id', $driveItemIds)->with('fileables.fileable', 'comments')->get();
 
-        $parsedDriveItems = $driveItems->map(function ($driveItem) use ($sharepointFiles) {
+        $parsedDriveItems = $driveItems->map(function (array $driveItem) use ($sharepointFiles) {
             return [
-                'id' => $driveItem->getId(),
+                'id' => $driveItem['id'],
                 'sharepointFile' => $sharepointFiles->filter(function ($sharepointFile) use ($driveItem) {
-                    return $sharepointFile->sharepoint_id == $driveItem->getId();
+                    return $sharepointFile->sharepoint_id == $driveItem['id'];
                 })->first(),
-                'name' => $driveItem->getName(),
-                'file' => $driveItem->getFile()?->getProperties(),
+                'name' => $driveItem['name'],
+                'file' => $driveItem['file'] ?? null,
                 // if driveitem is a file, get content
-                'folder' => $driveItem->getFolder()?->getProperties(),
-                'size' => $driveItem->getSize(),
-                'createdDateTime' => $driveItem->getCreatedDateTime(),
-                'lastModifiedDateTime' => $driveItem->getLastModifiedDateTime(),
-                'webUrl' => $driveItem->getWebUrl(),
+                'folder' => $driveItem['folder'] ?? null,
+                'size' => $driveItem['size'],
+                'createdDateTime' => $driveItem['createdDateTime'],
+                'lastModifiedDateTime' => $driveItem['lastModifiedDateTime'],
+                'webUrl' => $driveItem['webUrl'],
                 'listItem' => [
-                    'fields' => [
-                        'properties' => $driveItem->getListItem()?->getFields()->getProperties(),
-                    ],
+                    'fields' => $driveItem['listItem']['fields'] ?? null,
                 ],
-                'permissions' => $driveItem->getPermissions(),
-                'thumbnails' => collect($driveItem->getThumbnails())->map(function ($thumbnail) {
+                'permissions' => $driveItem['permissions'] ?? null,
+                'thumbnails' => collect($driveItem['thumbnails'] ?? [])->map(function ($thumbnail) {
                     return [
                         'large' => [
                             'url' => $thumbnail['large']['url'],

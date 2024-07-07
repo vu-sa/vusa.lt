@@ -140,7 +140,7 @@ class UserController extends LaravelResourceController
         $permissablePadaliniai = User::find(Auth::id())->hasRole(config('permission.super_admin_role_name')) ? Padalinys::all() : $this->authorizer->getPadaliniai();
 
         return Inertia::render('Admin/People/EditUser', [
-            'user' => $user->makeVisible(['last_action']),
+            'user' => $user->makeVisible(['last_action'])->toFullArray(),
             // get all roles
             'roles' => fn () => Role::all(),
             'padaliniaiWithDuties' => fn () => $this->getDutiesForForm($this->authorizer),
@@ -183,7 +183,7 @@ class UserController extends LaravelResourceController
         $this->handleDutiesUpdate((new SupportCollection($request->current_duties)), $user->current_duties->pluck('id'), $user);
 
         DB::transaction(function () use ($request, $user) {
-            $user->update($request->only('name', 'email', 'facebook_url', 'phone', 'profile_photo_path'));
+            $user->update($request->only('name', 'email', 'facebook_url', 'phone', 'profile_photo_path', 'pronouns', 'show_pronouns'));
 
             // handle duties update
 
@@ -270,7 +270,7 @@ class UserController extends LaravelResourceController
         }
     }
 
-    public function storeFromMicrosoft()
+    public function storeFromMicrosoft(Request $request)
     {
         $microsoftUser = Socialite::driver('microsoft')->stateless()->user();
 
@@ -284,7 +284,7 @@ class UserController extends LaravelResourceController
             $user->microsoft_token = $microsoftUser->token;
 
             Auth::login($user);
-            request()->session()->regenerate();
+            $request->session()->regenerate();
 
             return redirect()->intended(RouteServiceProvider::HOME);
         }
@@ -298,7 +298,7 @@ class UserController extends LaravelResourceController
 
             Auth::login($user);
 
-            request()->session()->regenerate();
+            $request->session()->regenerate();
 
             return redirect()->intended(RouteServiceProvider::HOME);
         }

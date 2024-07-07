@@ -22,6 +22,9 @@ return [
     'resource' => [
         'model' => '{1} išteklius|[2,9] ištekliai|[10,*] išteklių',
     ],
+    'resource_category' => [
+        'model' => '{1} išteklių kategorija|[2,9] išteklių kategorijos|[10,19] išteklių kategorijų',
+    ],
     'reservation_resource' => [
         'model' => '{1} rezervacijos išteklius|[2,9] rezervacijos ištekliai|[10,*] rezervacijos išteklių',
     ],

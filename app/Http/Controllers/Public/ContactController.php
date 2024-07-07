@@ -140,6 +140,8 @@ class ContactController extends PublicController
                     'duties' => isset($contact->filtered_current_duties) ? $contact->filtered_current_duties->where('institution_id', '=', $institution->id)->values() :
                     $contact->current_duties->where('institution_id', '=', $institution->id)->values(),
                     'profile_photo_path' => $contact->profile_photo_path,
+                    'pronouns' => $contact->pronouns,
+                    'show_pronouns' => $contact->show_pronouns,
                 ];
             }),
         ])->withViewData([

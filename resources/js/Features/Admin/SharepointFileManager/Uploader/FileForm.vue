@@ -1,13 +1,9 @@
 <template>
   <NForm ref="formRef" :model="model" :rules="rules">
-    <NFormItem label="Tipas" path="typeValue"
-      ><NSelect
-        v-model:value="model.typeValue"
-        :disabled="!!model.uploadValue"
-        placeholder="Pasirink failo tipą..."
-        :options="sharepointFileTypeOptions"
-      ></NSelect
-    ></NFormItem>
+    <NFormItem label="Tipas" path="typeValue">
+      <NSelect v-model:value="model.typeValue" :disabled="!!model.uploadValue" placeholder="Pasirink failo tipą..."
+        :options="sharepointFileTypeOptions" />
+    </NFormItem>
     <!-- <NFormItem label="Raktažodžiai" path="keywordsValue"
         ><NSelect
           v-model:value="model.keywordsValue"
@@ -16,91 +12,49 @@
           tag
         ></NSelect
       ></NFormItem> -->
-    <NFormItem label="Dokumento data" path="datetimeValue"
-      ><NDatePicker
-        v-model:value="model.datetimeValue"
-        placeholder="2022-12-01"
-        type="date"
-      ></NDatePicker
-    ></NFormItem>
-    <NFormItem label="Aprašymas" path="descriptionValue"
-      ><NInput
-        v-model:value="model.description0Value"
-        type="textarea"
-        placeholder="Šis dokumentas yra skirtas..."
-      ></NInput
-    ></NFormItem>
+    <NFormItem label="Dokumento data" path="datetimeValue">
+      <NDatePicker v-model:value="model.datetimeValue" placeholder="2022-12-01" type="date" />
+    </NFormItem>
+    <NFormItem label="Aprašymas" path="descriptionValue">
+      <NInput v-model:value="model.description0Value" type="textarea" placeholder="Šis dokumentas yra skirtas..." />
+    </NFormItem>
     <NFormItem v-if="model.typeValue" label="Įkelti failą" path="uploadValue">
-      <NUpload
-        :max="1"
-        :default-upload="false"
-        @before-upload="beforeUpload"
-        @change="handleUploadChange"
-      >
-        <NUploadDragger>
-          <div style="margin-bottom: 12px">
-            <NIcon :component="Archive24Regular" size="48" :depth="3" />
-          </div>
-          <NText style="font-size: 16px">
+      <NUpload :max="1" :default-upload="false" @before-upload="beforeUpload" @change="handleUploadChange">
+        <NUploadDragger class="flex flex-col items-center gap-2">
+          <IFluentArchive24Regular width="48" height="48" class="opacity-90" />
+          <p class="font-bold">
             Paspausk arba nutempk failą čia
-          </NText>
-          <NP depth="3" style="margin: 8px 0 0 0">
+          </p>
+          <p class="text-xs opacity-50">
             Pateikite tik galutinį dokumentą, kuris bus patvirtintas
-          </NP>
+          </p>
         </NUploadDragger>
       </NUpload>
     </NFormItem>
     <NFormItem v-if="model.typeValue" label="Sugeneruotas failo pavadinimas">
       <NInputGroup>
-        <NInput
-          v-model:value="model.tempNameValue"
-          :style="{ width: '85%' }"
-          placeholder=""
-          :disabled="fileNameEditDisabled"
-        ></NInput>
-        <NInput
-          placeholder=""
-          disabled
-          :value="fileExtension"
-          :style="{ width: '15%' }"
-        ></NInput>
+        <NInput v-model:value="model.tempNameValue" :style="{ width: '85%' }" placeholder=""
+          :disabled="fileNameEditDisabled" />
+        <NInput placeholder="" disabled :value="fileExtension" :style="{ width: '15%' }" />
       </NInputGroup>
     </NFormItem>
 
-    <NButton
-      type="primary"
-      :disabled="!model.uploadValue"
-      :loading="loading"
-      @click="handleValidateClick"
-      ><template #icon
-        ><NIcon :component="DocumentAdd24Regular"></NIcon></template
-      >Įkelti failą</NButton
-    ></NForm
-  >
+    <NButton type="primary" :disabled="!model.uploadValue" :loading="loading" @click="handleValidateClick"><template
+        #icon>
+        <IFluentDocumentAdd24Regular />
+      </template>Įkelti failą</NButton>
+  </NForm>
 </template>
 
 <script setup lang="tsx">
-import { Archive24Regular, DocumentAdd24Regular } from "@vicons/fluent";
-import {
-  NButton,
-  NDatePicker,
-  NForm,
-  NFormItem,
-  NIcon,
-  NInput,
-  NInputGroup,
-  NP,
-  NSelect,
-  NText,
-  NUpload,
-  NUploadDragger,
-  useMessage,
-} from "naive-ui";
 import { generateNameForFile } from "./generateNameForFile";
 import { modelTypes } from "@/Types/formOptions";
 import { ref, watch } from "vue";
 import { splitFileNameAndExtension } from "@/Utils/String";
 import { useForm } from "@inertiajs/vue3";
+import {
+  useMessage,
+} from "naive-ui";
 import type { FormInst, FormRules, UploadFileInfo } from "naive-ui";
 
 const emit = defineEmits<{

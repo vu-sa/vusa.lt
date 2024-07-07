@@ -1,7 +1,7 @@
 <template>
   <NButton size="small" @click="handleOpenModal">
     <template #icon>
-      <NIcon :component="Link20Regular" />
+      <IFluentLink20Regular />
     </template>
   </NButton>
   <CardModal v-model:show="showModal" class="max-w-3xl" title="Įkelti nuorodą" @close="showModal = false">
@@ -32,8 +32,6 @@
 </template>
 
 <script setup lang="ts">
-import { Link20Regular } from "@vicons/fluent";
-import { NButton, NFormItem, NIcon, NInput, NSpin, NTabPane, NTabs } from "naive-ui";
 import { ref } from "vue";
 
 import CardModal from "../Modals/CardModal.vue";

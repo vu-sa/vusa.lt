@@ -1,39 +1,26 @@
 <template>
-  <PageContent
-    :title="title"
-    :heading-icon="icon"
-    :create-url="canUseRoutes.create ? route(`${modelName}.create`) : undefined"
-  >
+  <PageContent :title="title" :heading-icon="icon"
+    :create-url="canUseRoutes.create ? route(`${modelName}.create`) : undefined">
     <template #aside-header>
       <slot name="aside-header" />
     </template>
-    <SuggestionAlert
-      v-if="entity"
-      :show-alert="showAlert"
-      @alert-closed="showAlert = false"
-    >
+    <SuggestionAlert v-if="entity" :show-alert="showAlert" @alert-closed="showAlert = false">
       <div class="text-sm">
-        <component :is="entity?.description"></component>
+        <component :is="entity?.description" />
       </div>
     </SuggestionAlert>
     <slot />
     <NCard class="w-full min-w-[768px]">
-      <IndexDataTable
-        :paginated-models="paginatedModels"
-        :columns="columns"
-        :model-name="modelName"
+      <IndexDataTable :paginated-models="paginatedModels" :columns="columns" :model-name="modelName"
         :show-route="canUseRoutes.show ? `${modelName}.show` : undefined"
-        :edit-route="canUseRoutes.edit ? `${modelName}.edit` : undefined"
-        :destroy-route="
-          canUseRoutes.destroy ? `${modelName}.destroy` : undefined
-        "
-      />
+        :edit-route="canUseRoutes.edit ? `${modelName}.edit` : undefined" :destroy-route="canUseRoutes.destroy ? `${modelName}.destroy` : undefined
+          " />
     </NCard>
   </PageContent>
 </template>
 
 <script setup lang="tsx">
-import { type DataTableColumns, NCard } from "naive-ui";
+import { type DataTableColumns } from "naive-ui";
 import { useStorage } from "@vueuse/core";
 import type { Component } from "vue";
 

@@ -2,33 +2,22 @@
   <NForm :model="form" label-placement="top">
     <div class="flex flex-col">
       <FormElement>
-        <template #title> {{ $t("forms.context.main_info") }} </template>
+        <template #title>
+          {{ $t("forms.context.main_info") }}
+        </template>
         <NFormItem label="Mygtuko tekstas">
-          <NInput
-            v-model:value="form.text"
-            type="text"
-            placeholder="Įrašyti tekstą..."
-          />
+          <NInput v-model:value="form.text" type="text" placeholder="Įrašyti tekstą..." />
         </NFormItem>
         <NFormItem>
           <template #label>
             <div class="inline-flex items-center gap-2">
               <span>Padalinys, kuriam priklauso institucija</span>
-              <NButton
-                v-if="modelRoute === 'mainPage.update'"
-                secondary
-                tag="a"
-                size="tiny"
-                type="primary"
-                round
-                target="_blank"
-                :href="
-                  route('mainPage.edit-order', {
-                    padalinys: mainPage.padalinys_id,
-                    lang: mainPage.lang,
-                  } as RouteParamsWithQueryOverload)
-                "
-              >
+              <NButton v-if="modelRoute === 'mainPage.update'" secondary tag="a" size="tiny" type="primary" round
+                target="_blank" :href="route('mainPage.edit-order', {
+                  padalinys: mainPage.padalinys_id,
+                  lang: mainPage.lang,
+                } as RouteParamsWithQueryOverload)
+                  ">
                 Atnaujinti nuorodų tvarką
                 <template #icon>
                   <NIcon :component="Icons.MAIN_PAGE" />
@@ -36,56 +25,33 @@
               </NButton>
             </div>
           </template>
-          <NSelect
-            v-model:value="form.padalinys_id"
-            :options="options"
-            placeholder="VU SA X"
-            clearable
-          />
+          <NSelect v-model:value="form.padalinys_id" :options="options" placeholder="VU SA X" clearable />
         </NFormItem>
         <NFormItem label="Kurios kalbos puslapyje rodoma?">
-          <NSelect
-            v-model:value="form.lang"
-            :options="languageOptions"
-            placeholder="Pasirinkti kalbą..."
-          />
+          <NSelect v-model:value="form.lang" :options="languageOptions" placeholder="Pasirinkti kalbą..." />
         </NFormItem>
       </FormElement>
       <FormElement>
-        <template #title>Mygtuko informacija</template>
-        <template #description
-          >Pasirinkus tipą ir objektą, kolkas tipas visada pakeičiamas į
-          "Nuoroda" ir sugeneruojama atitinkamo puslapio nuoroda.</template
-        >
+        <template #title>
+          Mygtuko informacija
+        </template>
+        <template #description>Pasirinkus tipą ir objektą, kolkas tipas visada pakeičiamas į
+          "Nuoroda" ir sugeneruojama atitinkamo puslapio nuoroda.</template>
         <NFormItem label="Nuorodos tipas">
-          <NSelect
-            v-model:value="form.type"
-            :options="mainPageType"
-            :render-label="renderLabel"
-            @update:value="handleTypeChange"
-          ></NSelect>
+          <NSelect v-model:value="form.type" :options="mainPageType" :render-label="renderLabel"
+            @update:value="handleTypeChange" />
         </NFormItem>
-      <NFormItem :show-feedback="false" v-if="form.type !== 'url'" label="Pasirinkite puslapį">
-          <NSelect
-            v-model:value="pageSelection"
-            filterable
-            :options="typeOptions"
-            placeholder="Pasirinkti puslapį..."
-            @update:value="createMainPageLink"
-          />
+        <NFormItem v-if="form.type !== 'url'" :show-feedback="false" label="Pasirinkite puslapį">
+          <NSelect v-model:value="pageSelection" filterable :options="typeOptions" placeholder="Pasirinkti puslapį..."
+            @update:value="createMainPageLink" />
         </NFormItem>
         <NFormItem :show-feedback="false" label="Nuoroda">
           <NInputGroup>
-            <NInput
-              v-model:value="form.link"
-              :disabled="form.type !== 'url'"
-              type="text"
-              placeholder=""
-            />
+            <NInput v-model:value="form.link" :disabled="form.type !== 'url'" type="text" placeholder="" />
             <!-- link to form.link -->
             <NButton tag="a" :href="form.link" target="_blank">
               <template #icon>
-                <NIcon :component="Open24Regular" />
+                <IFluentOpen24Regular />
               </template>
             </NButton>
           </NInputGroup>
@@ -93,11 +59,7 @@
       </FormElement>
     </div>
     <div class="flex justify-end gap-2">
-      <DeleteModelButton
-        v-if="deleteModelRoute"
-        :form="form"
-        :model-route="deleteModelRoute"
-      />
+      <DeleteModelButton v-if="deleteModelRoute" :form="form" :model-route="deleteModelRoute" />
       <UpsertModelButton :form="form" :model-route="modelRoute" />
     </div>
   </NForm>
@@ -105,23 +67,15 @@
 
 <script setup lang="tsx">
 import { Link, router, useForm } from "@inertiajs/vue3";
-import {
-  NButton,
-  NForm,
-  NFormItem,
-  NIcon,
-  NInput,
-  NInputGroup,
-  NSelect,
-} from "naive-ui";
 import { computed, ref } from "vue";
+import type { RouteParamsWithQueryOverload } from "ziggy-js";
 
-import { Link24Regular, Open24Regular } from "@vicons/fluent";
+import Link24Regular from "~icons/fluent/link24-regular"
+
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import FormElement from "./FormElement.vue";
 import Icons from "@/Types/Icons/regular";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
-import type { RouteParamsWithQueryOverload } from "ziggy-js";
 
 const props = defineProps<{
   mainPage: App.Entities.MainPage;

@@ -13,7 +13,7 @@ class ConfirmMemberRegistration extends Mailable
     /**
      * The order instance.
      *
-     * @var \App\Models\Saziningai
+     * @var \App\Models\Registration
      */
     public $registration;
 

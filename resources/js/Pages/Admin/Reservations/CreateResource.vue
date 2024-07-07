@@ -1,18 +1,10 @@
 <template>
-  <PageContent
-    :title="
-      $tChoice('forms.new_model', 1, {
-        model: $tChoice('entities.resource.model', 1),
-      })
-    "
-    :heading-icon="Icons.RESOURCE"
-  >
+  <PageContent :title="$tChoice('forms.new_model', 1, {
+    model: $tChoice('entities.resource.model', 1),
+  })
+    " :heading-icon="Icons.RESOURCE">
     <UpsertModelLayout :errors="$page.props.errors" :model="resource">
-      <ResourceForm
-        :padaliniai="assignablePadaliniai"
-        :resource="resource"
-        model-route="resources.store"
-      />
+      <ResourceForm :padaliniai="assignablePadaliniai" :resource :categories model-route="resources.store" />
     </UpsertModelLayout>
   </PageContent>
 </template>
@@ -38,6 +30,7 @@ export type ResourceCreationTemplate = Omit<
 
 defineProps<{
   assignablePadaliniai: Array<App.Entities.Padalinys>;
+  categories: any
 }>();
 
 const resource: ResourceCreationTemplate = {

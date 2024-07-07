@@ -1,104 +1,49 @@
 <template>
-  <ShowPageLayout
-    :title="reservation.name"
-    :breadcrumb-options="breadcrumbOptions"
-    :model="reservation"
-    :related-models="relatedModels"
-    :current-tab="currentTab"
-    @change:tab="currentTab = $event"
-  >
+  <ShowPageLayout :title="reservation.name" :breadcrumb-options="breadcrumbOptions" :model="reservation"
+    :related-models="relatedModels" :current-tab="currentTab" @change:tab="currentTab = $event">
     <template #after-heading>
-      <UsersAvatarGroup
-        v-if="reservation.users && reservation.users.length > 0"
-        :users="reservation.users"
-      />
+      <UsersAvatarGroup v-if="reservation.users && reservation.users.length > 0" :users="reservation.users" />
     </template>
     <template #more-options>
       <NButton size="small" text @click="showReservationHelpModal = true">
-        <template #icon
-          ><NIcon :component="QuestionCircle16Regular"
-        /></template>
+        <template #icon>
+          <IFluentQuestion24Regular />
+        </template>
       </NButton>
-      <MoreOptionsButton
-        :more-options="moreOptions"
-        @more-option-click="handleMoreOptionClick"
-      ></MoreOptionsButton>
+      <MoreOptionsButton :more-options="moreOptions" @more-option-click="handleMoreOptionClick" />
     </template>
-    <ReservationResourceTable
-      v-model:selectedReservationResource="selectedReservationResource"
-      :reservation="reservation"
-    />
-    <CardModal
-      :title="
-        $t('entities.meta.help', {
-          model: $tChoice('entities.reservation.model', 2),
-        })
-      "
-      :show="showReservationHelpModal"
-      @close="showReservationHelpModal = false"
-    >
+    <ReservationResourceTable v-model:selectedReservationResource="selectedReservationResource"
+      :reservation="reservation" />
+    <CardModal :title="$t('entities.meta.help', {
+      model: $tChoice('entities.reservation.model', 2),
+    })
+      " :show="showReservationHelpModal" @close="showReservationHelpModal = false">
       <NTimeline class="mb-4" horizontal>
-        <NTimelineItem
-          type="info"
-          :title="capitalize($t('state.status.created'))"
-        />
-        <NTimelineItem
-          type="success"
-          :title="capitalize($t('state.status.reserved'))"
-        />
-        <NTimelineItem
-          type="warning"
-          :title="capitalize($t('state.status.lent'))"
-        />
-        <NTimelineItem
-          type="success"
-          :title="capitalize($t('state.status.returned'))"
-        />
+        <NTimelineItem type="info" :title="capitalize($t('state.status.created'))" />
+        <NTimelineItem type="success" :title="capitalize($t('state.status.reserved'))" />
+        <NTimelineItem type="warning" :title="capitalize($t('state.status.lent'))" />
+        <NTimelineItem type="success" :title="capitalize($t('state.status.returned'))" />
       </NTimeline>
-      <component
-        :is="RESERVATION_DESCRIPTIONS.help[$page.props.app.locale]"
-      ></component>
+      <component :is="RESERVATION_DESCRIPTIONS.help[$page.props.app.locale]" />
     </CardModal>
-    <CardModal
-      :show="showReservationResourceCreateModal"
-      :title="
-        RESERVATION_CARD_MODAL_TITLES.create_reservation_resource[
-          $page.props.app.locale
-        ]
-      "
-      @close="showReservationResourceCreateModal = false"
-    >
+    <CardModal :show="showReservationResourceCreateModal" :title="RESERVATION_CARD_MODAL_TITLES.create_reservation_resource[
+      $page.props.app.locale
+    ]
+      " @close="showReservationResourceCreateModal = false">
       <Suspense>
-        <ReservationResourceForm
-          :reservation-resource-form="reservationResourceForm"
-          :all-resources="allResources"
-          @success="showReservationResourceCreateModal = false"
-        />
+        <ReservationResourceForm :reservation-resource-form="reservationResourceForm" :all-resources="allResources"
+          @success="showReservationResourceCreateModal = false" />
       </Suspense>
     </CardModal>
-    <CardModal
-      :show="showReservationAddUserModal"
-      :title="
-        RESERVATION_CARD_MODAL_TITLES.attach_user_to_reservation[
-          $page.props.app.locale
-        ]
-      "
-      @close="showReservationAddUserModal = false"
-    >
+    <CardModal :show="showReservationAddUserModal" :title="RESERVATION_CARD_MODAL_TITLES.attach_user_to_reservation[
+      $page.props.app.locale
+    ]
+      " @close="showReservationAddUserModal = false">
       <NForm :model="reservationUserForm">
         <NFormItem :label="$t('Naudotojai')">
-          <NSelect
-            v-model:value="reservationUserForm.users"
-            :placeholder="`${$t('Pasirinkite')}...`"
-            filterable
-            clearable
-            label-field="name"
-            value-field="id"
-            multiple
-            :render-label="renderUserFormLabel"
-            :render-tag="renderUserFormTag"
-            :options="allUsers"
-          ></NSelect>
+          <NSelect v-model:value="reservationUserForm.users" :placeholder="`${$t('Pasirinkite')}...`" filterable
+            clearable label-field="name" value-field="id" multiple :render-label="renderUserFormLabel"
+            :render-tag="renderUserFormTag" :options="allUsers" />
         </NFormItem>
         <NFormItem>
           <NButton type="primary" @click="handleSubmitUserForm">
@@ -112,12 +57,8 @@
         <InfoText class="mb-4">{{
           RESERVATION_HELP_TEXTS.comments[$page.props.app.locale]
         }}</InfoText>
-        <CommentViewer
-          class="mt-auto h-min"
-          :commentable_type="'reservation'"
-          :model="reservation"
-          :comments="getAllComments()"
-        />
+        <CommentViewer class="mt-auto h-min" :commentable_type="'reservation'" :model="reservation"
+          :comments="getAllComments()" />
       </div>
       <div v-else-if="currentTab === 'Aprašymas'">
         <p>{{ reservation.description }}</p>
@@ -130,18 +71,11 @@
 import { trans as $t } from "laravel-vue-i18n";
 import {
   type MenuOption,
-  NButton,
-  NForm,
-  NFormItem,
   NIcon,
-  NSelect,
   NTag,
-  NTimeline,
-  NTimelineItem,
   type SelectRenderLabel,
   type SelectRenderTag,
 } from "naive-ui";
-import { QuestionCircle16Regular } from "@vicons/fluent";
 import { ref, toRaw } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";

@@ -19,14 +19,10 @@
       <div class="mb-2 flex flex-row items-center gap-2 duration-200 hover:text-gray-700" />
 
       <div style="grid-template-columns: min-content auto" class="grid grid-cols-2 items-center gap-2">
-        <NIcon>
-          <Phone20Regular />
-        </NIcon>
+        <IFluentPhone20Regular />
         <a href="tel:+37052687144">+370 5 268 7144</a>
 
-        <NIcon>
-          <Building20Regular />
-        </NIcon>
+        <IFluentBuilding20Regular />
         <div>
           <p>{{ $t("Universiteto g. 3, Observatorijos kiemelis") }}</p>
           <p>{{ $t("01513, Vilnius, Lietuva") }}</p>
@@ -38,8 +34,6 @@
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import { Building20Regular, Phone20Regular } from "@vicons/fluent";
-import { NDivider, NIcon } from "naive-ui";
 import FacebookButton from "../Nav/FacebookButton.vue";
 import InstagramButton from "../Nav/InstagramButton.vue";
 </script>

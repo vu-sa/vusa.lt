@@ -13,7 +13,7 @@ class InformChairAboutMemberRegistration extends Mailable // implements ShouldQu
     /**
      * The order instance.
      *
-     * @var \App\Models\Saziningai
+     * @var \App\Models\Registration
      */
     public $registration;
 

@@ -1,48 +1,25 @@
 <template>
-  <NDropdown
-    placement="bottom-end"
-    trigger="click"
-    :options="dropdownOptions"
-    @select="handleSelect"
-  >
-    <NButton
-      :size="small ? 'tiny' : 'small'"
-      :disabled="disabled"
-      circle
-      quaternary
-      @click.stop
-      ><template #icon
-        ><NIcon :component="MoreHorizontal24Filled"></NIcon></template
-    ></NButton>
+  <NDropdown placement="bottom-end" trigger="click" :options="dropdownOptions" @select="handleSelect">
+    <NButton :size="small ? 'tiny' : 'small'" :disabled="disabled" circle quaternary @click.stop><template #icon>
+        <IFluentMoreHorizontal24Filled />
+      </template></NButton>
   </NDropdown>
-  <NModal
-    v-model:show="showDeleteModal"
-    preset="dialog"
-    title="Ištrinti įrašą?"
-    content="Šis įrašas bus ištrintas negrįžtamai..."
-    type="warning"
-    :positive-text="$t('forms.delete')"
-    :negative-text="$t('forms.cancel')"
-    @positive-click="$emit('deleteClick')"
-    @negative-click="showDeleteModal = false"
-  />
+  <NModal v-model:show="showDeleteModal" preset="dialog" title="Ištrinti įrašą?"
+    content="Šis įrašas bus ištrintas negrįžtamai..." type="warning" :positive-text="$t('forms.delete')"
+    :negative-text="$t('forms.cancel')" @positive-click="$emit('deleteClick')"
+    @negative-click="showDeleteModal = false" />
 </template>
 
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
 import {
-  Delete24Filled,
-  Edit24Filled,
-  MoreHorizontal24Filled,
-} from "@vicons/fluent";
-import {
   type DropdownOption,
-  NButton,
-  NDropdown,
   NIcon,
-  NModal,
 } from "naive-ui";
 import { computed, ref } from "vue";
+
+import Delete24Filled from "~icons/fluent/delete24-filled";
+import Edit24Filled from "~icons/fluent/edit24-filled";
 
 const emit = defineEmits<{
   (event: "editClick"): void;

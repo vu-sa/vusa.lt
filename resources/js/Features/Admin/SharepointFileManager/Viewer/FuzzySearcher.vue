@@ -1,18 +1,12 @@
 <template>
-  <NInput
-    v-model:value="value"
-    :disabled="disabled"
-    round
-    placeholder="Ieškoti..."
-    @input="handleInput"
-  >
-    <template #suffix><NIcon :component="Search20Filled"></NIcon></template>
+  <NInput v-model:value="value" :disabled="disabled" round placeholder="Ieškoti..." @input="handleInput">
+    <template #suffix>
+      <IFluentSearch20Filled />
+    </template>
   </NInput>
 </template>
 
 <script setup lang="tsx">
-import { NIcon, NInput } from "naive-ui";
-import { Search20Filled } from "@vicons/fluent";
 import { computed, ref } from "vue";
 import { useFuse } from "@vueuse/integrations/useFuse";
 

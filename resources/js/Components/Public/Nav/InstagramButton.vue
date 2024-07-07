@@ -1,17 +1,10 @@
 <template>
-  <NButton title="Instagram" text @click="openBlank('https://www.instagram.com/vustudentuatstovybe/')">
-    <template #icon>
-      <NIcon size="14" :component="Instagram" />
-    </template>
-    <slot />
-  </NButton>
+  <a href="https://www.instagram.com/vustudentuatstovybe" target="_blank" rel="noopener noreferrer">
+    <NButton text title="Instagram">
+      <template #icon>
+        <IMdiInstagram width="14" />
+      </template>
+      <slot />
+    </NButton>
+  </a>
 </template>
-
-<script setup lang="ts">
-import { Instagram } from "@vicons/fa";
-import { NButton, NIcon } from "naive-ui";
-
-const openBlank = (url: string) => {
-  window.open(url, "_blank");
-};
-</script>

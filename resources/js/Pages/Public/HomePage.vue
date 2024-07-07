@@ -8,9 +8,6 @@
     <IndividualStudies />
 
     <EventCalendar :show-photos="true" :calendar="calendar" :upcoming-events="upcomingEvents" />
-
-
-    <!-- <YearReport2022 /> -->
 </template>
 
 <script setup lang="ts">
@@ -40,11 +37,5 @@ const SummerCamps = defineAsyncComponent(
 const IndividualStudies = defineAsyncComponent(
   // eslint-disable-next-line no-secrets/no-secrets
   () => import("@/Components/Public/FullWidth/IndividualStudies.vue"),
-);
-
-// yearreport2022 make unsuspensible
-const YearReport2022 = defineAsyncComponent(
-  // eslint-disable-next-line no-secrets/no-secrets
-  () => import("@/Components/Public/FullWidth/YearReport2022.vue"),
 );
 </script>

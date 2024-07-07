@@ -8,13 +8,12 @@
 
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
-import {
-  DoorArrowRight28Regular,
-  PersonSettings16Regular,
-} from "@vicons/fluent";
-import { type DropdownOption, NButton, NDropdown, NIcon } from "naive-ui";
+import { type DropdownOption, NIcon } from "naive-ui";
 import { ref } from "vue";
 import { router } from "@inertiajs/vue3";
+
+import DoorArrowRight28Regular from "~icons/fluent/door-arrow-right28-regular";
+import PersonSettings16Regular from "~icons/fluent/person-settings16-regular";
 
 import UserAvatar from "../Avatars/UserAvatar.vue";
 

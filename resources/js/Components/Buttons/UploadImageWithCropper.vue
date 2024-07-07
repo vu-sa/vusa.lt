@@ -1,53 +1,28 @@
 <template>
-  <NUpload
-    accept="image/jpg,image/jpeg,image/png"
-    :action="route('files.uploadImage')"
-    :data="{ path: props.folder }"
-    :file-list="fileList"
-    :headers="csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}"
-    list-type="image-card"
-    :max="1"
-    @before-upload="beforeUpload"
-    @change="fileList = $event.fileList"
-    @preview="handlePreview"
-    @finish="handleFinish"
-    @remove="fileList = $event.fileList"
-  />
-  <CardModal
-    v-if="url"
-    class="max-w-5xl"
-    :show="showModal"
-    title="Redaguoti paveikslėlį"
-    @close="showModal = false"
-  >
+  <NUpload accept="image/jpg,image/jpeg,image/png" :action="route('files.uploadImage')" :data="{ path: props.folder }"
+    :file-list="fileList" :headers="csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}" list-type="image-card" :max="1"
+    @before-upload="beforeUpload" @change="fileList = $event.fileList" @preview="handlePreview" @finish="handleFinish"
+    @remove="fileList = $event.fileList" />
+  <CardModal v-if="url" class="max-w-5xl" :show="showModal" title="Redaguoti paveikslėlį" @close="showModal = false">
     <div id="cropper-buttons" class="flex items-center gap-2">
-      <NButton @click="showCropper = !showCropper"
-        ><template #icon> <NIcon :component="Crop20Filled" /> </template>
+      <NButton @click="showCropper = !showCropper">
+        <template #icon>
+          <IFluentCrop24Regular />
+        </template>
         <span v-if="!showCropper"> Įjungti apkirpimą </span>
         <span v-else> Išjungti apkirpimą </span>
       </NButton>
     </div>
     <NDivider />
-    <img v-if="!showCropper" :src="url" />
-    <VCropper
-      v-else
-      v-model:src="url"
-      :style="{
-        height: '800px',
-      }"
-      :path="folder"
-      @finish="handleCropFinish"
-    />
+    <img v-if="!showCropper" :src="url">
+    <VCropper v-else v-model:src="url" :style="{
+      height: '800px',
+    }" :path="folder" @finish="handleCropFinish" />
   </CardModal>
 </template>
 
 <script setup lang="ts">
-import { Crop20Filled } from "@vicons/fluent";
 import {
-  NButton,
-  NDivider,
-  NIcon,
-  NUpload,
   type UploadFileInfo,
   useMessage,
 } from "naive-ui";

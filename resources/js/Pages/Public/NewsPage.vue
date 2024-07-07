@@ -35,15 +35,16 @@
         <RichContentParser :content="article.content?.parts" />
       </div>
     </NewsArticle>
+    <FeedbackPopover />
     <NBackTop :right="100" :bottom="28" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import { NBackTop, NButton } from "naive-ui";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
+import FeedbackPopover from "@/Components/Public/FeedbackPopover.vue";
 import NewsArticle from "@/Components/Public/NewsArticle.vue";
 import RichContentParser from "@/Components/RichContentParser.vue";
 import SmartLink from "@/Components/Public/SmartLink.vue";
@@ -51,4 +52,5 @@ import SmartLink from "@/Components/Public/SmartLink.vue";
 defineProps<{
   article: App.Entities.News;
 }>();
+
 </script>

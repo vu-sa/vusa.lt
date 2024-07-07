@@ -1,49 +1,30 @@
 <template>
+
   <Head title="Log in" />
 
   <NConfigProvider :theme-overrides="themeOverrides">
     <div>
-      <div
-        class="absolute -z-50 h-full w-full blur-[2px] brightness-[35%] saturate-50"
-      >
-        <NCarousel
-          autoplay
-          :interval="3000"
-          :show-dots="false"
-          :transition-style="{ transitionDuration: '1500ms' }"
-          effect="fade"
-          class="bg-black-800 h-full w-full"
-        >
-          <img
-            src="/images/photos/VU SA 2023.jpg"
-            class="h-full w-full object-cover"
-          />
-          <img
-            src="/images/photos/stovykla.jpg"
-            class="h-full w-full object-cover"
-          />
-          <img
-            src="/images/photos/observatorijos_kiemelis.jpg"
-            class="h-full w-full object-cover"
-          />
+      <div class="absolute -z-50 size-full blur-[2px] brightness-[35%] saturate-50">
+        <NCarousel autoplay :interval="3000" :show-dots="false" :transition-style="{ transitionDuration: '1500ms' }"
+          effect="fade" class="bg-black-800 size-full">
+          <img src="/images/photos/VU SA 2023.jpg" class="size-full object-cover">
+          <img src="/images/photos/stovykla.jpg" class="size-full object-cover">
+          <img src="/images/photos/observatorijos_kiemelis.jpg" class="size-full object-cover">
         </NCarousel>
       </div>
       <FadeTransition appear>
-        <div
-          class="grid min-h-screen justify-center p-4 sm:grid-cols-2 sm:grid-rows-none"
-        >
+        <div class="grid min-h-screen justify-center p-4 sm:grid-cols-2 sm:grid-rows-none">
           <div class="flex h-fit justify-center sm:h-auto">
             <AppLogo class="hidden w-96 invert sm:block" />
           </div>
           <div
-            class="m-auto mt-0 flex h-auto flex-col items-center gap-4 rounded-lg bg-zinc-50 p-4 text-zinc-700 shadow-xl transition-shadow duration-500 ease-in-out hover:shadow-zinc-900/90 sm:mt-auto sm:justify-center sm:p-12 dark:bg-zinc-900"
-          >
-            <h1 class="font-bold text-zinc-700">{{ $t("Labas") }}! 👋</h1>
+            class="m-auto mt-0 flex h-auto flex-col items-center gap-4 rounded-lg bg-zinc-50 p-4 text-zinc-700 shadow-xl transition-shadow duration-500 ease-in-out hover:shadow-zinc-900/90 dark:bg-zinc-900 sm:mt-auto sm:justify-center sm:p-12">
+            <h1 class="font-bold text-zinc-700">
+              {{ $t("Labas") }}! 👋
+            </h1>
             <AppLogo class="w-24 sm:hidden" />
 
-            <p
-              class="max-w-xs text-center text-xs text-zinc-600 sm:text-center"
-            >
+            <p class="max-w-xs text-center text-xs text-zinc-600 sm:text-center">
               <strong>vusa.lt/mano</strong> {{ $t("auth.usage_status") }}.
               <!-- <Link class="text-zinc-400 underline" :href="route('home')"
                 >Kaip tapti?</Link
@@ -51,26 +32,14 @@
             </p>
 
             <FadeTransition mode="out-in">
-              <div
-                v-if="!useSimpleRegistration"
-                class="mt-4 flex flex-col gap-4"
-              >
+              <div v-if="!useSimpleRegistration" class="mt-4 flex flex-col gap-4">
                 <MicrosoftButton />
                 <NDivider>{{ $t("Arba") }}</NDivider>
-                <NButton
-                  size="tiny"
-                  text
-                  quaternary
-                  @click="useSimpleRegistration = true"
-                  ><template #icon>
-                    <NIcon :component="Key24Filled"></NIcon> </template
-                  >{{ $t("auth.use_other_login") }}</NButton
-                >
+                <NButton size="tiny" text quaternary @click="useSimpleRegistration = true"><template #icon>
+                    <IFluentKey24Filled />
+                  </template>{{ $t("auth.use_other_login") }}</NButton>
               </div>
-              <div
-                v-else
-                class="flex flex-col gap-4 sm:w-96 sm:justify-center sm:pt-0"
-              >
+              <div v-else class="flex flex-col gap-4 sm:w-96 sm:justify-center sm:pt-0">
                 <div class="px-6 py-4">
                   <div v-if="hasErrors" class="mb-4">
                     <div class="font-medium text-vusa-red">
@@ -84,70 +53,32 @@
                     </ul>
                   </div>
 
-                  <div
-                    v-if="status"
-                    class="mb-4 text-sm font-medium text-green-600"
-                  >
+                  <div v-if="status" class="mb-4 text-sm font-medium text-green-600">
                     {{ status }}
                   </div>
 
-                  <NForm
-                    ref="formRef"
-                    :model="form"
-                    :rules="rules"
-                    @submit.prevent="submit"
-                  >
+                  <NForm ref="formRef" :model="form" :rules="rules" @submit.prevent="submit">
                     <NFormItem path="email">
-                      <NInput
-                        id="email"
-                        v-model:value="form.email"
-                        round
-                        placeholder="vusa@vusa.lt"
-                        :input-props="{ type: 'email' }"
-                        required
-                        autofocus
-                      />
-                      <template #label
-                        ><strong>{{
-                          $t("forms.fields.email")
-                        }}</strong></template
-                      >
+                      <NInput id="email" v-model:value="form.email" round placeholder="vusa@vusa.lt"
+                        :input-props="{ type: 'email' }" required autofocus />
+                      <template #label><strong>{{
+                        $t("forms.fields.email")
+                          }}</strong></template>
                     </NFormItem>
 
                     <NFormItem class="mt-4" path="password">
-                      <NInput
-                        id="password"
-                        v-model:value="form.password"
-                        round
-                        type="password"
-                        placeholder="*********"
-                        required
-                        autocomplete="current-password"
-                      />
-                      <template #label
-                        ><strong>{{
-                          $t("forms.fields.password")
-                        }}</strong></template
-                      >
+                      <NInput id="password" v-model:value="form.password" round type="password" placeholder="*********"
+                        required autocomplete="current-password" />
+                      <template #label><strong>{{
+                        $t("forms.fields.password")
+                          }}</strong></template>
                     </NFormItem>
 
                     <div class="mt-4 flex items-center justify-between gap-4">
-                      <NButton
-                        size="small"
-                        secondary
-                        @click="useSimpleRegistration = false"
-                        ><template #icon>
-                          <NIcon
-                            :component="ArrowHookUpLeft24Regular"
-                          ></NIcon> </template
-                        >{{ $t("Grįžti") }}</NButton
-                      >
-                      <NButton
-                        size="small"
-                        attr-type="submit"
-                        :disabled="form.processing"
-                        :loading="form.processing"
-                      >
+                      <NButton size="small" secondary @click="useSimpleRegistration = false"><template #icon>
+                          <IFluentArrowHookUpLeft24Regular />
+                        </template>{{ $t("Grįžti") }}</NButton>
+                      <NButton size="small" attr-type="submit" :disabled="form.processing" :loading="form.processing">
                         {{ $t("auth.login") }}
                       </NButton>
                     </div>
@@ -164,18 +95,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import { ArrowHookUpLeft24Regular, Key24Filled } from "@vicons/fluent";
 import { Head, useForm, usePage } from "@inertiajs/vue3";
-import {
-  NButton,
-  NCarousel,
-  NConfigProvider,
-  NDivider,
-  NForm,
-  NFormItem,
-  NIcon,
-  NInput,
-} from "naive-ui";
 import { ref } from "vue";
 
 import AppLogo from "@/Components/AppLogo.vue";

@@ -1,19 +1,11 @@
 <template>
-  <NButton
-    tag="a"
-    :href="route(publicRoute, routePropsModified)"
-    rel="noopener noreferrer"
-    secondary
-    size="small"
-    target="_blank"
-  >
-    <NIcon :component="PreviewLink20Filled" />
+  <NButton tag="a" :href="route(publicRoute, routePropsModified)" rel="noopener noreferrer" secondary size="small"
+    target="_blank">
+    <IFluentPreviewLink20Regular />
   </NButton>
 </template>
 
 <script setup lang="ts">
-import { NButton, NIcon } from "naive-ui";
-import { PreviewLink20Filled } from "@vicons/fluent";
 import { computed } from "vue";
 
 const props = defineProps<{

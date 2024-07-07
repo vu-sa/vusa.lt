@@ -1,16 +1,9 @@
 <template>
   <NSpin :show="spinning">
-    <NCard
-      size="small"
-      class="my-2 cursor-pointer overflow-hidden shadow-sm"
-      style="border-radius: 0.5em"
-      :segmented="{
-        content: 'soft',
-      }"
-      hoverable
-      as="button"
-      ><template #header
-        ><h4 class="mb-0 text-sm">
+    <NCard size="small" class="my-2 cursor-pointer overflow-hidden shadow-sm" style="border-radius: 0.5em" :segmented="{
+      content: 'soft',
+    }" hoverable as="button"><template #header>
+        <h4 class="mb-0 text-sm">
           {{ formatStaticTime(new Date(meeting.start_time)) }}
           {{
             institution
@@ -19,21 +12,17 @@
           }}
         </h4>
         <div class="flex items-center gap-1 text-xs">
-          <NIcon :depth="3" size="10" :component="Clock24Filled" />
+          <IFluentClock24Filled />
           <time class="">{{
             formatStaticTime(new Date(meeting.start_time), {
               hour: "2-digit",
               minute: "2-digit",
             })
           }}</time>
-        </div></template
-      >
+        </div>
+      </template>
       <template #header-extra>
-        <MoreOptionsButton
-          small
-          delete
-          @delete-click="handleDelete"
-        ></MoreOptionsButton>
+        <MoreOptionsButton small delete @delete-click="handleDelete" />
       </template>
 
       <div class="text-xs text-zinc-700 dark:text-zinc-500">
@@ -52,18 +41,11 @@
           </div>
         </div>
       </div>
-      <div class="absolute -bottom-8 right-0 opacity-10">
-        <NIcon size="80" :depth="4">
-          <component :is="icon"></component>
-        </NIcon>
-      </div>
     </NCard>
   </NSpin>
 </template>
 
 <script setup lang="tsx">
-import { Clock24Filled, PeopleCommunity28Filled } from "@vicons/fluent";
-import { NCard, NIcon, NSpin } from "naive-ui";
 import { computed, ref } from "vue";
 import { router } from "@inertiajs/vue3";
 import Icons from "@/Types/Icons/filled";
@@ -84,10 +66,6 @@ const handleDelete = () => {
     preserveScroll: true,
   });
 };
-
-const icon = computed(() => {
-  return PeopleCommunity28Filled;
-});
 
 const completedTasks = computed(() => {
   return props.meeting.tasks.reduce(

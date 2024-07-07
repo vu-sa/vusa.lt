@@ -57,8 +57,17 @@ class DashboardController extends Controller
             'duties.institution.padalinys:id,shortname');
 
         return Inertia::render('Admin/ShowUserSettings', [
-            'user' => $user->toArray(),
+            'user' => $user->toFullArray(),
         ]);
+    }
+
+    public function updateUserSettings(Request $request)
+    {
+        $user = User::find(Auth::id());
+
+        $user->update($request->all());
+
+        return redirect()->back()->with('success', 'Nustatymai išsaugoti.');
     }
 
     public function userTasks()

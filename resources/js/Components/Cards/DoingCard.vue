@@ -1,25 +1,18 @@
 <template>
   <NSpin :show="spinning">
-    <NCard
-      size="small"
-      class="my-2 cursor-pointer overflow-hidden shadow-sm"
-      style="border-radius: 0.5em"
-      hoverable
-      as="button"
-      ><template #header>{{ doing.title }}</template>
+    <NCard size="small" class="my-2 cursor-pointer overflow-hidden shadow-sm" style="border-radius: 0.5em" hoverable
+      as="button"><template #header>
+        {{ doing.title }}
+      </template>
       <template #header-extra>
-        <MoreOptionsButton
-          small
-          delete
-          @delete-click="handleDelete"
-        ></MoreOptionsButton>
+        <MoreOptionsButton small delete @delete-click="handleDelete" />
       </template>
 
       <DoingStateTag class="mb-4" :doing="doing" />
 
       <div class="text-xs text-zinc-700 dark:text-zinc-500">
         <div class="flex items-center gap-1">
-          <NIcon :depth="3" size="10" :component="CalendarClock24Filled" />
+          <IFluentCalendarClock24Filled />
           <time class="">{{ formatStaticTime(new Date(doing.date)) }}</time>
         </div>
         <div class="flex gap-2">
@@ -35,7 +28,7 @@
       </div>
       <div class="absolute -bottom-8 right-0 opacity-10">
         <NIcon size="80" :depth="4">
-          <component :is="icon"></component>
+          <component :is="icon" />
         </NIcon>
       </div>
     </NCard>
@@ -43,14 +36,11 @@
 </template>
 
 <script setup lang="tsx">
-import {
-  CalendarClock24Filled,
-  MailArrowUp24Filled,
-  PeopleCommunity28Filled,
-  PersonChat24Regular,
-  Sparkle20Filled,
-} from "@vicons/fluent";
-import { NCard, NIcon, NSpin, NTag } from "naive-ui";
+import MailArrowUp24Filled from "~icons/fluent/mail-arrow-up24-filled"
+import PeopleCommunity28Filled from "~icons/fluent/people-community28-filled"
+import PersonChat24Regular from "~icons/fluent/person-chat24-regular"
+import Sparkle20Filled from "~icons/fluent/sparkle20-filled"
+
 import { computed, ref } from "vue";
 import { router } from "@inertiajs/vue3";
 

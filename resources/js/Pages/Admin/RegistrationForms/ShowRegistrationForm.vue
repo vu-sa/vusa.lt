@@ -1,20 +1,13 @@
 <template>
-  <IndexPageLayout
-    title="Registracija"
-    model-name="registrations"
-    :can-use-routes="canUseRoutes"
-    :columns="columns"
-    :paginated-models="registrations"
-  >
+  <IndexPageLayout title="Registracija" model-name="registrations" :can-use-routes="canUseRoutes" :columns="columns"
+    :paginated-models="registrations">
     <template v-if="props.registrations.data[0].registration_form_id === 3">
       <div class="m-2">
         <a :href="route('registrationForms.index')">
-          <NButton
-            >Eksportuoti į .xlsx<NIcon
-              :size="24"
-              :component="AnimalCat20Regular"
-            ></NIcon
-          ></NButton>
+          <NButton>Eksportuoti į .xlsx<template #icon>
+              <IFluentAnimalCat20Regular />
+            </template>
+          </NButton>
         </a>
       </div>
     </template>
@@ -22,10 +15,8 @@
 </template>
 
 <script setup lang="ts">
+import { type DataTableColumns } from "naive-ui";
 import { h } from "vue";
-import { type DataTableColumns, NButton, NIcon } from "naive-ui";
-import { Link } from "@inertiajs/vue3";
-import { AnimalCat20Regular } from "@vicons/fluent";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
 const props = defineProps<{

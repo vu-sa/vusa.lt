@@ -83,9 +83,6 @@ declare namespace App.Entities {
     comments?: Array<models.Comment> | [];
   }
   export type Role = models.Role;
-  export type SaziningaiExam = models.SaziningaiExam;
-  export type SaziningaiExamFlow = models.SaziningaiExamFlow;
-  export type SaziningaiExamObserver = models.SaziningaiExamObserver;
   export type SharepointFile = models.SharepointFile;
   export type SharepointFileable = models.SharepointFileable;
   export type Tag = models.Tag;

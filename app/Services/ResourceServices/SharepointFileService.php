@@ -97,7 +97,7 @@ class SharepointFileService
 
         $filePath = self::pathForFileableDriveItem($fileable).'/'.$filename;
 
-        $driveItem = $sharepointService->uploadDriveItem($filePath, $file->getContent());
+        $driveItem = $sharepointService->uploadDriveItem($filePath, $file);
 
         $sharepointFile = SharepointFile::create(['sharepoint_id' => $driveItem->getId()]);
 

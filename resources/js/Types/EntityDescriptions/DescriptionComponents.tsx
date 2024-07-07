@@ -281,16 +281,6 @@ export const RoleDescription = (
   </>
 );
 
-export const SaziningaiExamDescription = (
-  <>
-    <p>
-      Sąžiningai egzaminų modulis leidžia VU SA bendruomenės nariams registruoti
-      egzaminus į atsiskaitymus. Užregistruoti egzaminai užfiksuojami sistemoje
-      ir jų informacija panaudojama tolimesniam procesui.
-    </p>
-  </>
-);
-
 export const SharepointFileDescription = (
   <>
     <p>

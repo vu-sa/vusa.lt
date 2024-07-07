@@ -1,18 +1,12 @@
 <template>
   <NBadge dot processing :offset="[-1, -1]">
-    <NButton text @click="showModal = true"
-      ><template #icon
-        ><NIcon
-          :component="PersonFeedback24Regular"
-          size="24"
-        ></NIcon></template
-    ></NButton>
+    <NButton text @click="showModal = true">
+      <template #icon>
+        <IFluentPersonFeedback24Filled />
+      </template>
+    </NButton>
   </NBadge>
-  <CardModal
-    :title="`${$t('Palik grįžtamąjį ryšį')}`"
-    :show="showModal"
-    @close="showModal = false"
-  >
+  <CardModal :title="`${$t('Palik grįžtamąjį ryšį')}`" :show="showModal" @close="showModal = false">
     <template v-if="$page.props.app.locale === 'lt'">
       <p class="mb-4 text-xs">
         <strong>mano.vusa.lt</strong> yra nuolat tobulinamas studentų projektas,
@@ -36,31 +30,21 @@
     </template>
     <NForm>
       <NFormItem :show-label="false">
-        <NInput
-          v-model:value="form.feedback"
-          :autosize="{
-            minRows: 3,
-            maxRows: 5,
-          }"
-          :placeholder="`${$t('Parašyk pastebėjimų, pasiūlymų')}...`"
-          show-count
-          class="mt-2"
-          type="textarea"
-        />
+        <NInput v-model:value="form.feedback" :autosize="{
+          minRows: 3,
+          maxRows: 5,
+        }" :placeholder="`${$t('Parašyk pastebėjimų, pasiūlymų')}...`" show-count class="mt-2" type="textarea" />
       </NFormItem>
-      <NFormItem :show-feedback="false" :show-label="false"
-        ><NCheckbox v-model:checked="form.anonymous">{{
+      <NFormItem :show-feedback="false" :show-label="false">
+        <NCheckbox v-model:checked="form.anonymous">{{
           $t("Siųsti anonimiškai")
-        }}</NCheckbox></NFormItem
-      >
+        }}</NCheckbox>
+      </NFormItem>
       <NFormItem :show-feedback="false">
-        <NButton
-          :loading="loading"
-          type="primary"
-          :disabled="!form.feedback"
-          @click="handleSend"
-          ><template #icon><NIcon :component="Send20Filled"></NIcon></template
-          >{{ $t("forms.submit") }}
+        <NButton :loading="loading" type="primary" :disabled="!form.feedback" @click="handleSend"><template #icon>
+            <NIcon :component="Send20Filled" />
+            <IFluentSend24Filled />
+          </template>{{ $t("forms.submit") }}
         </NButton>
       </NFormItem>
     </NForm>
@@ -68,16 +52,6 @@
 </template>
 
 <script setup lang="tsx">
-import {
-  NBadge,
-  NButton,
-  NCheckbox,
-  NForm,
-  NFormItem,
-  NIcon,
-  NInput,
-} from "naive-ui";
-import { PersonFeedback24Regular, Send20Filled } from "@vicons/fluent";
 import { ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 
@@ -85,14 +59,17 @@ import CardModal from "../Modals/CardModal.vue";
 
 const showModal = ref(false);
 const loading = ref(false);
+
 const form = useForm({
   feedback: null,
   anonymous: false,
+  href: window.location.href,
+  selectedText: null,
 });
 
 const handleSend = () => {
   loading.value = true;
-  form.post(route("sendFeedback"), {
+  form.post(route("feedback.send"), {
     onSuccess: () => {
       showModal.value = false;
       loading.value = false;

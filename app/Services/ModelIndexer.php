@@ -60,7 +60,6 @@ class ModelIndexer
     // This is needed because Laravel\Scout\Builder can support only one query
     public function setEloquentQuery($callbacks = [], $authorize = true)
     {
-
         $eloquentQueryClosure = function (EloquentBuilder $query) use ($callbacks, $authorize) {
 
             // add $callbacks to $this->callbacksArray
@@ -138,9 +137,12 @@ class ModelIndexer
         }
 
         foreach ($this->filters as $name => $value) {
-            $this->builder->when($value !== [], function (Builder $query) use ($name, $value) {
-                $query->whereIn($name, $value);
-            });
+            $this->builder->when(
+                //# When is not empty, filter
+                $value !== [],
+                function (Builder $query) use ($name, $value) {
+                    $query->whereIn($name, $value);
+                });
         }
 
         return $this;

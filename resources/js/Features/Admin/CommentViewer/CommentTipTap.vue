@@ -3,48 +3,55 @@
     <div :class="{ 'rounded-t-md': roundedTop }"
       class="grid grid-cols-[60px_1fr] overflow-y-scroll rounded-b-md border dark:border-zinc-600">
       <div ref="commentContainer" class="flex justify-center">
-        <UserAvatar :size="23" class="sticky top-4" :user="$page.props.auth?.user"></UserAvatar>
+        <UserAvatar :size="23" class="sticky top-4" :user="$page.props.auth?.user" />
       </div>
       <EditorContent :editor="editor" class="leading-normal" />
       <!-- <NBackTop v-if="commentContainer" :to="commentContainer" /> -->
     </div>
     <div v-if="editor" class="border-top-0 flex items-center justify-between gap-2 border-zinc-400 p-4">
       <div class="flex flex-wrap items-center gap-2">
-        <TipTapMarkButton :editor="editor" :type="'bold'" :icon="TextBold20Regular" />
-        <TipTapMarkButton :editor="editor" :type="'italic'" :icon="TextItalic20Regular" />
-        <TipTapMarkButton :editor="editor" :type="'underline'" :icon="TextUnderline20Regular" />
-
-        <TipTapButton :editor="editor" :type="'bulletList'" :icon="TextBulletListLtr24Filled"
-          :callback="() => editor?.chain().focus().toggleBulletList().run()" />
-        <TipTapButton :editor="editor" :type="'orderedList'" :icon="TextNumberListLtr24Filled"
-          :callback="() => editor?.chain().focus().toggleOrderedList().run()" />
+        <TiptapFormattingButtons v-model:editor="editor" />
+        <TipTapButton :editor="editor" :type="'bulletList'"
+          :callback="() => editor?.chain().focus().toggleBulletList().run()">
+          <template #icon>
+            <IFluentTextBulletListLtr24Filled />
+          </template>
+        </TipTapButton>
+        <TipTapButton :editor="editor" :type="'orderedList'"
+          :callback="() => editor?.chain().focus().toggleOrderedList().run()">
+          <template #icon>
+            <IFluentTextNumberListLtr24Filled />
+          </template>
+        </TipTapButton>
       </div>
       <NButtonGroup type="primary" size="small">
         <NButton :disabled="disabled" type="primary" :loading="loading" icon-placement="right"
           @click="$emit('submit:comment')"><template #icon>
-            <NIcon :component="Send20Filled" />
+            <IFluentSend24Filled />
           </template>{{ submitText ?? $t("Pateikti") }}</NButton>
         <NPopover v-if="enableApprove" trigger="click" class="rounded-md" raw :show-arrow="false">
           <div class="flex flex-col rounded-md bg-zinc-50 dark:bg-zinc-800">
             <NButtonGroup size="medium" vertical>
               <NButton type="success" secondary @click="$emit('submit:comment', 'approve')">
                 <template #icon>
-                  <NIcon :component="CommentCheckmark24Regular" />
+                  <IFluentCommentCheckmark24Regular />
                 </template>
                 {{ approveText ?? `... ${$t("states.other.and_more", { decision: "approve" })}` }}
               </NButton>
               <NButton type="warning" tertiary ghost @click="$emit('submit:comment', 'reject')">
                 <template #icon>
-                  <NIcon :component="CommentError24Regular" />
+                  <IFluentCommentError24Regular />
                 </template>
                 {{ rejectText ?? `... ${$t("states.other.and_more", { decision: "reject" })}` }}
               </NButton>
             </NButtonGroup>
           </div>
           <template #trigger>
-            <NButton type="primary" secondary><template #icon>
-                <NIcon :component="CaretDown24Filled" />
-              </template></NButton>
+            <NButton type="primary" secondary>
+              <template #icon>
+                <IFluentCaretDown24Filled />
+              </template>
+            </NButton>
           </template>
         </NPopover>
       </NButtonGroup>
@@ -53,24 +60,13 @@
 </template>
 
 <script setup lang="ts">
-import {
-  CaretDown24Filled,
-  CommentCheckmark24Regular,
-  CommentError24Regular,
-  Send20Filled,
-  TextBold20Regular,
-  TextBulletListLtr24Filled,
-  TextItalic20Regular,
-  TextNumberListLtr24Filled,
-  TextUnderline20Regular,
-} from "@vicons/fluent";
 import { EditorContent, useEditor } from "@tiptap/vue-3";
-import { NButton, NButtonGroup, NIcon, NPopover } from "naive-ui";
 import { onBeforeUnmount, ref } from "vue";
+
 import StarterKit from "@tiptap/starter-kit";
 import TipTapButton from "./TipTap/TipTapButton.vue";
 import TipTapLink from "@tiptap/extension-link";
-import TipTapMarkButton from "./TipTap/TipTapMarkButton.vue";
+import TiptapFormattingButtons from "@/Components/TipTap/TiptapFormattingButtons.vue";
 import Underline from "@tiptap/extension-underline";
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
 

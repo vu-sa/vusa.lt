@@ -1,47 +1,26 @@
 <template>
   <NBadge :offset="[-2, -4]" :value="notifications?.length">
-    <NPopover
-      trigger="click"
-      title="Pranešimai"
-      size="small"
-      placement="bottom-end"
-      :show-arrow="true"
-      scrollable
-    >
+    <NPopover trigger="click" title="Pranešimai" size="small" placement="bottom-end" :show-arrow="true" scrollable>
       <template #trigger>
-        <NButton circle text
-          ><template #icon
-            ><NIcon
-              :size="24"
-              :component="Icons.NOTIFICATION"
-            ></NIcon></template
-        ></NButton>
+        <NButton circle text><template #icon>
+            <NIcon :size="24" :component="Icons.NOTIFICATION" />
+          </template></NButton>
       </template>
-      <template #header
-        ><header class="flex justify-between gap-4">
+      <template #header>
+        <header class="flex justify-between gap-4">
           <span class="text-lg font-bold text-zinc-900 dark:text-zinc-50">{{
             $t("Pranešimai")
-          }}</span
-          ><NButton
-            :disabled="notifications.length === 0"
-            size="tiny"
-            :loading="loading"
-            text
-            @click="handleAllRead"
-            >{{ $t("Pažymėti visus")
-            }}<template #icon
-              ><NIcon :component="CheckmarkCircle24Regular"></NIcon></template
-          ></NButton></header
-      ></template>
-      <div
-        v-if="notifications.length > 0"
-        class="max-h-96 max-w-xs overflow-auto pr-4 sm:max-w-lg"
-      >
+            }}</span>
+          <NButton :disabled="notifications.length === 0" size="tiny" :loading="loading" text @click="handleAllRead">{{
+            $t("Pažymėti visus")
+            }}<template #icon>
+              <IFluentCheckmarkCircle24Regular />
+            </template></NButton>
+        </header>
+      </template>
+      <div v-if="notifications.length > 0" class="max-h-96 max-w-xs overflow-auto pr-4 sm:max-w-lg">
         <template v-for="notification in notifications" :key="notification.id">
-          <NotificationItem
-            :notification="notification"
-            @mark-as-read="removeNotification"
-          />
+          <NotificationItem :notification="notification" @mark-as-read="removeNotification" />
         </template>
       </div>
       <div v-else>
@@ -54,10 +33,6 @@
 <script setup lang="tsx">
 import {
   NAvatar,
-  NBadge,
-  NButton,
-  NIcon,
-  NPopover,
   useMessage,
   useNotification,
 } from "naive-ui";
@@ -67,9 +42,8 @@ import {
 } from "@vueuse/core";
 import { ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
-import Icons from "@/Types/Icons/regular";
+import Icons from "@/Types/Icons/filled";
 
-import { CheckmarkCircle24Regular } from "@vicons/fluent";
 import { useAxios } from "@vueuse/integrations/useAxios";
 import NotificationItem from "./NotificationItem.vue";
 import type { NotificationData } from "./NotificationItem.vue";

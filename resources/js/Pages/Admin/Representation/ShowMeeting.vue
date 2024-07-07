@@ -1,61 +1,31 @@
 <template>
-  <ShowPageLayout
-    :model="meeting"
-    :breadcrumb-options="breadcrumbOptions"
-    :title="meetingTitle"
-    :related-models="relatedModels"
-    :current-tab="currentTab"
-    @change:tab="currentTab = $event"
-  >
+  <ShowPageLayout :model="meeting" :breadcrumb-options="breadcrumbOptions" :title="meetingTitle"
+    :related-models="relatedModels" :current-tab="currentTab" @change:tab="currentTab = $event">
     <template #more-options>
-      <MoreOptionsButton
-        edit
-        @edit-click="showMeetingModal = true"
-      ></MoreOptionsButton>
-      <CardModal
-        v-model:show="showMeetingModal"
-        title="Redaguoti posėdžio datą"
-        @close="showMeetingModal = false"
-      >
-        <MeetingForm
-          class="mt-2"
-          :meeting="meeting"
-          @submit="handleMeetingFormSubmit"
-        ></MeetingForm>
+      <MoreOptionsButton edit @edit-click="showMeetingModal = true" />
+      <CardModal v-model:show="showMeetingModal" title="Redaguoti posėdžio datą" @close="showMeetingModal = false">
+        <MeetingForm class="mt-2" :meeting="meeting" @submit="handleMeetingFormSubmit" />
       </CardModal>
     </template>
-    <NCard
-      class="max-w-sm rounded-sm border bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-900"
-      size="small"
-      :segmented="{ footer: 'soft' }"
-    >
+    <NCard class="max-w-sm rounded-sm border bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-900" size="small"
+      :segmented="{ footer: 'soft' }">
       <NDivider style="margin-top: 0rem; margin-bottom: 0rem">{{
         $t("Darbotvarkė")
       }}</NDivider>
       <NScrollbar style="max-height: 35vh" trigger="none">
         <ol v-if="meeting.agenda_items?.length > 0" class="pl-4">
-          <li
-            v-for="(agenda_item, index) in meeting.agenda_items"
-            :key="agenda_item.id"
-            class="group flex gap-2"
-          >
+          <li v-for="(agenda_item, index) in meeting.agenda_items" :key="agenda_item.id" class="group flex gap-2">
             <span>{{ index + 1 }}. {{ agenda_item.title }}</span>
-            <NButton
-              size="tiny"
-              class="invisible transition duration-200 group-hover:visible"
-              strong
-              text
-              @click="handleAgendaClick(agenda_item)"
-              ><template #icon
-                ><NIcon :component="Edit24Filled"></NIcon></template
-            ></NButton>
-            <NButton
-              size="tiny"
-              class="invisible transition duration-200 group-hover:visible"
-              text
-              @click="handleAgendaItemDelete(agenda_item)"
-              ><template #icon><NIcon :component="Delete24Filled" /></template
-            ></NButton>
+            <NButton size="tiny" class="invisible transition duration-200 group-hover:visible" strong text
+              @click="handleAgendaClick(agenda_item)"><template #icon>
+                <IFluentEdit24Filled />
+              </template>
+            </NButton>
+            <NButton size="tiny" class="invisible transition duration-200 group-hover:visible" text
+              @click="handleAgendaItemDelete(agenda_item)"><template #icon>
+                <IFluentDelete24Filled />
+              </template>
+            </NButton>
           </li>
         </ol>
         <p v-else class="my-8 text-center text-sm text-zinc-500">
@@ -63,56 +33,31 @@
         </p>
       </NScrollbar>
       <template #footer>
-        <NButton size="small" @click="showAgendaItemStoreModal = true"
-          >{{ $t("forms.add")
-          }}<template #icon
-            ><NIcon size="16" :component="Icons.AGENDA_ITEM" /></template
-        ></NButton>
-        <CardModal
-          v-model:show="showAgendaItemStoreModal"
-          title="Pridėti darbotvarkės punktą"
-          class="max-w-md"
-          :segmented="{ content: 'soft' }"
-          @close="showAgendaItemStoreModal = false"
-        >
-          <AgendaItemForm
-            :agenda-item="{ title: null }"
-            @submit="handleAgendaItemStore"
-          />
+        <NButton size="small" @click="showAgendaItemStoreModal = true">{{ $t("forms.add")
+          }}<template #icon>
+            <NIcon size="16" :component="Icons.AGENDA_ITEM" />
+          </template></NButton>
+        <CardModal v-model:show="showAgendaItemStoreModal" title="Pridėti darbotvarkės punktą" class="max-w-md"
+          :segmented="{ content: 'soft' }" @close="showAgendaItemStoreModal = false">
+          <AgendaItemForm :agenda-item="{ title: null }" @submit="handleAgendaItemStore" />
         </CardModal>
       </template>
     </NCard>
-    <CardModal
-      v-model:show="showAgendaItemUpdateModal"
-      title="Redaguoti darbotvarkės punktą"
-      :segmented="{ content: 'soft' }"
-      @close="showAgendaItemUpdateModal = false"
-    >
-      <AgendaItemForm
-        v-if="selectedAgendaItem"
-        :agenda-item="selectedAgendaItem"
-        @submit="handleAgendaItemUpdate"
-      />
+    <CardModal v-model:show="showAgendaItemUpdateModal" title="Redaguoti darbotvarkės punktą"
+      :segmented="{ content: 'soft' }" @close="showAgendaItemUpdateModal = false">
+      <AgendaItemForm v-if="selectedAgendaItem" :agenda-item="selectedAgendaItem" @submit="handleAgendaItemUpdate" />
     </CardModal>
     <template #below>
-      <FileManager
-        v-if="currentTab === 'Failai'"
-        :starting-path="meeting.sharepointPath"
-        :fileable="{ ...meeting, type: 'Meeting' }"
-      ></FileManager>
-      <TaskManager
-        v-else-if="currentTab === 'Užduotys'"
-        :taskable="{ id: meeting.id, type: 'App\\Models\\Meeting' }"
-        :tasks="meeting.tasks"
-      />
+      <FileManager v-if="currentTab === 'Failai'" :starting-path="meeting.sharepointPath"
+        :fileable="{ ...meeting, type: 'Meeting' }" />
+      <TaskManager v-else-if="currentTab === 'Užduotys'" :taskable="{ id: meeting.id, type: 'App\\Models\\Meeting' }"
+        :tasks="meeting.tasks" />
     </template>
   </ShowPageLayout>
 </template>
 
 <script setup lang="tsx">
-import { Delete24Filled, Edit24Filled } from "@vicons/fluent";
-import { NButton, NCard, NDivider, NIcon, NScrollbar } from "naive-ui";
-import { computed, ref } from "vue";
+import { computed, provide, ref } from "vue";
 import { router } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 
@@ -138,6 +83,9 @@ const showAgendaItemStoreModal = ref(false);
 const showAgendaItemUpdateModal = ref(false);
 const currentTab = useStorage("show-meeting-tab", "Failai");
 
+// Used in FileUploader.vue
+provide<boolean>("keepFileable", true);
+
 const selectedAgendaItem = ref<App.Entities.AgendaItem | null>(null);
 
 const handleMeetingFormSubmit = (meeting: App.Entities.Meeting) => {
@@ -154,10 +102,10 @@ const mainInstitution: App.Entities.Institution | string =
 const meetingTitle =
   props.meeting.title === ""
     ? `${formatStaticTime(new Date(props.meeting.start_time), {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })} ${genitivizeEveryWord(mainInstitution.name)} posėdis`
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })} ${genitivizeEveryWord(mainInstitution.name)} posėdis`
     : props.meeting.title;
 
 const sharepointFileTypeOptions = computed(() => {

@@ -28,13 +28,13 @@ Route::get('/auth/microsoft/callback', [Admin\UserController::class, 'storeFromM
 Route::inertia('login', 'Admin/LoginForm')->middleware('guest')->name('login');
 Route::post('login', [Admin\UserController::class, 'authenticate'])->middleware('guest');
 
+Route::post('feedback', [Public\MainController::class, 'sendFeedback'])->name('feedback.send');
+
 Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware' => ['main']], function () {
     Route::domain('www.'.explode('.', config('app.url'), 2)[1])->group(function () {
 
         Route::get('nariu-registracija', [Public\PublicPageController::class, 'memberRegistration'])->name('memberRegistration');
         Route::get('kuratoriu-registracija', [Public\PublicPageController::class, 'curatorRegistration'])->name('curatorRegistration');
-        Route::get('saziningai-registracija', [Public\PublicPageController::class, 'saziningaiExamRegistration'])->name('saziningaiExamRegistration');
-        Route::get('saziningai-uzregistruoti-egzaminai', [Public\PublicPageController::class, 'saziningaiExams'])->name('saziningaiExams.registered');
 
         Route::get('kalendorius/renginys/{calendar}', [Public\PublicPageController::class, 'calendarEventMain'])->name('calendar.event');
         Route::get('pirmakursiu-stovyklos/{year?}', [Public\PublicPageController::class, 'summerCamps'])->name('pirmakursiuStovyklos')->whereNumber('year');
@@ -43,8 +43,6 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
         Route::get('kategorija/{category:alias}', [Public\PublicPageController::class, 'category'])->name('category');
 
-        Route::post('saziningai-registracija', [Public\MainController::class, 'storeSaziningaiExamRegistration'])->name('saziningaiExamRegistration.store');
-        Route::post('saziningai-uzregistruoti-egzaminai', [Public\MainController::class, 'storeSaziningaiExamObserver'])->name('saziningaiExamObserver.store');
         Route::post('nariu-registracija', [Public\MainController::class, 'storeMemberRegistration'])->name('memberRegistration.store');
         Route::get('kalendorius/ics', [Public\MainController::class, 'publicAllEventCalendar'])->name('calendar.ics');
         Route::post('search', [Public\MainController::class, 'search'])->name('search');

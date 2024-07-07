@@ -5,13 +5,13 @@
         <!-- Add file or folder   -->
         <NButton size="small" @click="showFileUploadModal = true">
           <template #icon>
-            <NIcon :component="DocumentAdd24Regular" />
+            <IFluentDocumentAdd24Regular />
           </template>
           Pridėti failą
         </NButton>
         <NButton size="small" @click="showFolderUploadModal = true">
           <template #icon>
-            <NIcon :component="FolderAdd24Regular" />
+            <IFluentFolderAdd24Regular />
           </template>
           Pridėti aplanką
         </NButton>
@@ -38,7 +38,7 @@
         <NButton class="-right-2 -top-2 opacity-0 group-hover:opacity-100" style="position: absolute" size="small"
           type="error" circle @click="deleteFile(file.path)">
           <template #icon>
-            <NIcon :component="Delete24Regular" />
+            <IFluentDelete24Filled />
           </template>
         </NButton>
       </div>
@@ -48,7 +48,7 @@
         <NUpload :show-file-list="false" class="h-40 rounded-xl" @change="uploadFile">
           <NUploadDragger style="height: 100%">
             <div style="margin-bottom: 12px">
-              <NIcon size="48" :depth="3" :component="Archive" />
+              <IFluentArchive24Regular width="48" height="48" />
             </div>
             <p style="font-size: 16px">
               Paspausk arba įtempk failą
@@ -92,11 +92,9 @@
 </template>
 
 <script setup lang="ts">
-import { Archive } from '@vicons/fa';
-import { Delete24Regular, DocumentAdd24Regular, FolderAdd24Regular } from '@vicons/fluent';
-import { NButton, NButtonGroup, NFormItem, NIcon, NInput, NSpin, NUpload, NUploadDragger, useMessage } from 'naive-ui';
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { useMessage } from 'naive-ui';
 
 import CardModal from '@/Components/Modals/CardModal.vue';
 import FileButton from '../SharepointFileManager/Viewer/FileButton.vue';

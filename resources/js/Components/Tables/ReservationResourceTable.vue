@@ -1,44 +1,26 @@
 <template>
-  <NDataTable
-    :data="reservation?.resources"
-    :columns="dataTableColumns"
-    :row-key="rowKey"
-    :scroll-x="650"
-    size="small"
-  ></NDataTable>
+  <NDataTable :data="reservation?.resources" :columns="dataTableColumns" :row-key="rowKey" :scroll-x="650"
+    size="small" />
 
-  <CardModal
-    v-model:show="showStateChangeModal"
-    :title="
-      $page.props.app.locale === 'lt'
-        ? 'Palikti komentarą arba naujinti būseną'
-        : 'Leave a comment or update state'
-    "
-    @close="showStateChangeModal = false"
-  >
+  <CardModal v-model:show="showStateChangeModal" :title="$page.props.app.locale === 'lt'
+    ? 'Palikti komentarą arba naujinti būseną'
+    : 'Leave a comment or update state'
+    " @close="showStateChangeModal = false">
     <div class="relative w-full">
       <InfoText>
-        <template v-if="$page.props.app.locale === 'lt'"
-          >Palik trumpą komentarą</template
-        >
-        <template v-else>Leave a short comment</template>
+        <template v-if="$page.props.app.locale === 'lt'">
+          Palik trumpą komentarą
+        </template>
+        <template v-else>
+          Leave a short comment
+        </template>
       </InfoText>
 
-      <CommentTipTap
-        v-model:text="commentText"
-        class="mt-4"
-        rounded-top
-        :loading="loading"
-        :enable-approve="selectedReservationResource?.approvable"
-        :submit-text="$t('Komentuoti')"
-        :approve-text="approveText"
-        :reject-text="`... ${$t('state.other.and_decision', {
+      <CommentTipTap v-model:text="commentText" class="mt-4" rounded-top :loading="loading"
+        :enable-approve="selectedReservationResource?.approvable" :submit-text="$t('Komentuoti')"
+        :approve-text="approveText" :reject-text="`... ${$t('state.other.and_decision', {
           decision: $t('state.decision.reject'),
-        })}`"
-        :disabled="false"
-        @submit:comment="submitComment"
-      >
-      </CommentTipTap>
+        })}`" :disabled="false" @submit:comment="submitComment" />
     </div>
   </CardModal>
 </template>
@@ -46,18 +28,12 @@
 <script setup lang="tsx">
 import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
 import { Link, router, usePage } from "@inertiajs/vue3";
-import {
-  NButton,
-  NDataTable,
-  NIcon,
-  NImage,
-  NImageGroup,
-  NPopover,
-  NSpace,
-} from "naive-ui";
+import { NButton, NIcon, NImage, NImageGroup, NPopover, NSpace } from "naive-ui";
 import { computed, ref } from "vue";
 
-import { Delete16Regular, DismissCircle24Regular } from "@vicons/fluent";
+import Delete16Regular from "~icons/fluent/delete16-regular";
+import DismissCircle24Regular from "~icons/fluent/dismiss-circle24-regular";
+
 import { RESERVATION_DATE_TIME_FORMAT } from "@/Constants/DateTimeFormats";
 import { capitalize } from "@/Utils/String";
 import { formatStaticTime } from "@/Utils/IntlTime";
@@ -305,7 +281,7 @@ const submitComment = (
   // add decision attribute
   loading.value = true;
   router.post(
-    route("users.comments.store", usePage().props.auth?.user.id),
+    route("users.comments.store", usePage().props.auth?.user.id as number),
     {
       commentable_type: "reservation_resource",
       commentable_id: selectedReservationResource.value?.id,

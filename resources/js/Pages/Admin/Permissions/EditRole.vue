@@ -1,56 +1,42 @@
 <template>
   <AdminContentPage :title="role.name" :back-url="route('roles.index')">
     <NCard title="Priskirti rolę pareigybėms" class="max-w-4xl">
-      <NTransfer
-        ref="transfer"
-        v-model:value="currentDuties"
-        :options="flattenDutyOptions"
-        :render-source-list="renderSourceList"
-        source-filterable
-        :show-irrelevant-nodes="true"
-      ></NTransfer>
+      <NTransfer ref="transfer" v-model:value="currentDuties" :options="flattenDutyOptions"
+        :render-source-list="renderSourceList" source-filterable :show-irrelevant-nodes="true" />
       <template #action>
-        <NButton type="primary" class="mt-4" @click="handleDutyUpdate"
-          >Atnaujinti</NButton
-        >
+        <NButton type="primary" class="mt-4" @click="handleDutyUpdate">
+          Atnaujinti
+        </NButton>
       </template>
     </NCard>
     <NCard>
-      <template #header> Pasirinkti priskiriamus tipus </template>
+      <template #header>
+        Pasirinkti priskiriamus tipus
+      </template>
       <NFormItem :span="6">
-        <NTransfer
-          v-model:value="role.attachable_types"
-          :options="
-            allTypes.map((type) => ({
-              value: type.id,
-              label: type.title,
-              type: type,
-            }))
-          "
-        ></NTransfer>
+        <NTransfer v-model:value="role.attachable_types" :options="allTypes.map((type) => ({
+          value: type.id,
+          label: type.title,
+          type: type,
+        }))
+          " />
       </NFormItem>
       <template #action>
-        <NButton
-          type="primary"
-          class="mt-4"
-          @click="handleAttachableTypesUpdate"
-          >Atnaujinti</NButton
-        >
+        <NButton type="primary" class="mt-4" @click="handleAttachableTypesUpdate">
+          Atnaujinti
+        </NButton>
       </template>
     </NCard>
-    <h2 class="mt-4">Rolės teisės</h2>
+    <h2 class="mt-4">
+      Rolės teisės
+    </h2>
     <RolePermissionForms :role="role" model-route="roles.update" />
   </AdminContentPage>
 </template>
 
 <script setup lang="tsx">
-import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
-
-import { Eye16Regular } from "@vicons/fluent";
 import {
   NButton,
-  NCard,
-  NFormItem,
   NIcon,
   NTransfer,
   NTree,
@@ -59,6 +45,10 @@ import {
 } from "naive-ui";
 import { h, ref } from "vue";
 import { router } from "@inertiajs/vue3";
+
+import Eye16Regular from "~icons/fluent/eye16-regular"
+
+import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
 import RolePermissionForms from "@/Components/AdminForms/RolePermissionForms.vue";
 
 const props = defineProps<{

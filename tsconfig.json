@@ -21,7 +21,8 @@
       "vite/client",
       "unplugin-vue-define-options/macros-global",
       "@microsoft/microsoft-graph-types",
-      "vitest/globals"
+      "vitest/globals",
+      "unplugin-icons/types/vue"
     ],
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,

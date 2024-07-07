@@ -5,12 +5,12 @@
         <NButtonGroup size="tiny">
           <NButton :disabled="history?.length < 2" @click="undo()">
             <template #icon>
-              <NIcon :component="ArrowUndo24Filled" />
+              <IFluentArrowUndo24Filled />
             </template>
           </NButton>
           <NButton @click="redo()">
             <template #icon>
-              <NIcon :component="ArrowRedo24Filled" />
+              <IFluentArrowRedo24Filled />
             </template>
           </NButton>
         </NButtonGroup>
@@ -24,7 +24,7 @@
         class="relative grid w-full grid-cols-[24px,_1fr] gap-4 border border-zinc-300 p-3 shadow-sm first:rounded-t-lg last:rounded-b-lg dark:border-zinc-700/40 dark:bg-zinc-800/5">
         <NButton class="handle" style="height: 100%;" quaternary size="small">
           <template #icon>
-            <NIcon :component="ReOrderDotsVertical24Regular" />
+            <IFluentReOrderDotsVertical24Regular />
           </template>
         </NButton>
         <RichContentEditorListElement :id="content?.id" :is-expanded="content?.expanded ?? true"
@@ -33,7 +33,8 @@
           @up="moveArrayElement(contents, index, index - 1)" @down="moveArrayElement(contents, index, index + 1)"
           @expand="content.expanded = !content?.expanded" @remove="handleElementRemove(index)">
           <!-- Text -->
-          <OriginalTipTap v-if="content?.type === 'tiptap'" v-show="content.expanded ?? true" v-model="content.json_content" />
+          <OriginalTipTap v-if="content?.type === 'tiptap'" v-show="content.expanded ?? true"
+            v-model="content.json_content" />
           <!-- Collapse -->
           <NDynamicInput v-else-if="content?.type === 'shadcn-accordion'" v-show="content.expanded"
             v-model:value="content.json_content" @create="onCreate">
@@ -106,14 +107,15 @@
               <template #default="{ value }">
                 <div class="flex w-full gap-4">
                   <NFormItem class="w-48" label="Nuotraukos plotis" :show-feedback="false">
-                    <NSelect v-model:value="value.colspan" type="text" placeholder="Layout" :options="imageGridOptions" />
+                    <NSelect v-model:value="value.colspan" type="text" placeholder="Layout"
+                      :options="imageGridOptions" />
                   </NFormItem>
                   <NFormItem class="grow" label="Nuotrauka" :show-feedback="false">
                     <div>
                       <TiptapImageButton v-if="!value.image" size="medium" class="grow" @submit="value.image = $event">
                         Pasirinkti paveikslėlį
                       </TiptapImageButton>
-                      <img v-else :src="value.image" class="aspect-video h-24 object-cover rounded-lg">
+                      <img v-else :src="value.image" class="aspect-video h-24 rounded-lg object-cover">
                     </div>
                   </NFormItem>
                 </div>
@@ -142,11 +144,14 @@
 </template>
 
 <script setup lang="ts">
-import { AppsListDetail24Regular, ArrowRedo24Filled, ArrowUndo24Filled, CalendarDay24Regular, ImageMultiple24Regular, ReOrderDotsVertical24Regular, TextCaseUppercase20Filled } from '@vicons/fluent';
-import { NButton, NButtonGroup, NCheckbox, NDynamicInput, NFormItem, NIcon, NInput, NSelect } from 'naive-ui';
 import { moveArrayElement, useSortable } from "@vueuse/integrations/useSortable";
 import { nextTick, ref } from 'vue';
 import { useManualRefHistory } from '@vueuse/core';
+
+import AppsListDetail24Regular from '~icons/fluent/apps-list-detail24-regular';
+import CalendarDay24Regular from '~icons/fluent/calendar-day24-regular';
+import ImageMultiple24Regular from '~icons/fluent/image-multiple24-regular';
+import TextCaseUppercase20Filled from '~icons/fluent/text-case-uppercase20-filled';
 
 import CardModal from './Modals/CardModal.vue';
 import FadeTransition from './Transitions/FadeTransition.vue';

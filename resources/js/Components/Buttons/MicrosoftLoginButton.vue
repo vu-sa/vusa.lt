@@ -1,26 +1,19 @@
 <template>
-  <NButton
-    type="primary"
-    size="large"
-    :loading="loadingRef"
-    @click="microsoftRedirect"
-  >
+  <NButton type="primary" size="large" :loading @click="microsoftRedirect">
     <template #icon>
-      <NIcon :component="MicrosoftIcon" />
+      <IMdiMicrosoft />
     </template>
     {{ $t("auth.continue_microsoft") }}
   </NButton>
 </template>
 
 <script setup lang="ts">
-import { Microsoft as MicrosoftIcon } from "@vicons/fa";
-import { NButton, NIcon } from "naive-ui";
 import { ref } from "vue";
 
-const loadingRef = ref(false);
+const loading = ref(false);
 
 const microsoftRedirect = () => {
-  loadingRef.value = true;
+  loading.value = true;
   window.location.href = route("microsoft.redirect");
 };
 </script>

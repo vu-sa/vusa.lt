@@ -1,23 +1,15 @@
 <template>
   <div>
-    <QuickActionButton
-      strong
-      :icon="PeopleTeamAdd24Filled"
-      @click="showModal = true"
-      >{{ $t("Pranešti apie posėdį") }}</QuickActionButton
-    >
-    <NMessageProvider
-      ><NewMeetingModal
-        :show-modal="showModal"
-        @close="showModal = false"
-      ></NewMeetingModal>
-    </NMessageProvider>
+    <QuickActionButton strong @click="showModal = true">{{ $t("Pranešti apie posėdį") }}
+      <template #icon>
+        <IFluentPeopleTeamAdd24Filled />
+      </template>
+    </QuickActionButton>
+    <NewMeetingModal :show-modal="showModal" @close="showModal = false" />
   </div>
 </template>
 
 <script setup lang="tsx">
-import { NMessageProvider } from "naive-ui";
-import { PeopleTeamAdd24Filled } from "@vicons/fluent";
 import { ref } from "vue";
 
 import NewMeetingModal from "../Modals/NewMeetingModal.vue";

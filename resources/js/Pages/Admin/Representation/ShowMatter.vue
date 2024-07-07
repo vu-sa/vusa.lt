@@ -1,44 +1,24 @@
 <template>
-  <ShowPageLayout
-    :breadcrumb-options="breadcrumbOptions"
-    :model="matter"
-    :title="matter.title"
-    :current-tab="currentTab"
-    :related-models="relatedModels"
-    @change:tab="currentTab = $event"
-  >
+  <ShowPageLayout :breadcrumb-options="breadcrumbOptions" :model="matter" :title="matter.title"
+    :current-tab="currentTab" :related-models="relatedModels" @change:tab="currentTab = $event">
     <template #more-options>
-      <MoreOptionsButton
-        disabled
-        edit
-        @edit-click="showMatterModal = true"
-      ></MoreOptionsButton>
+      <MoreOptionsButton disabled edit @edit-click="showMatterModal = true" />
     </template>
     <GoalCard :matter="matter" :goals="goals" />
-    <CardModal
-      v-model:show="showMatterModal"
-      title="Redaguoti klausimą"
-      @close="showMatterModal = false"
-      ><MatterForm
-        :form="matter"
-        :institution="firstInstitution"
-        @submit="handleMatterSubmit"
-      ></MatterForm
-    ></CardModal>
+    <CardModal v-model:show="showMatterModal" title="Redaguoti klausimą" @close="showMatterModal = false">
+      <MatterForm :form="matter" :institution="firstInstitution" @submit="handleMatterSubmit" />
+    </CardModal>
     <template #below>
-      <DoingsTabPane
-        :matter="matter"
-        :doings="matter.doings"
-        :doing-template="doingTemplate"
-        :doing-types="doingTypes"
-      ></DoingsTabPane>
+      <DoingsTabPane :matter="matter" :doings="matter.doings" :doing-template="doingTemplate" :doing-types="doingTypes" />
     </template>
   </ShowPageLayout>
 </template>
 
 <script setup lang="tsx">
-import { BookQuestionMark24Filled, PeopleTeam24Filled } from "@vicons/fluent";
 import { computed, ref } from "vue";
+
+import BookQuestionMark24Filled from "~icons/fluent/book-question-mark24-filled";
+import PeopleTeam24Filled from "~icons/fluent/people-team24-filled";
 
 import { doingTemplate } from "@/Types/formTemplates";
 import CardModal from "@/Components/Modals/CardModal.vue";
@@ -79,7 +59,7 @@ const firstInstitution = computed(() => {
   return props.matter?.institutions?.[0];
 });
 
-const handleMatterSubmit = (form: Record<string, any>) => {};
+const handleMatterSubmit = (form: Record<string, any>) => { };
 
 const breadcrumbOptions: BreadcrumbOption[] = [
   {

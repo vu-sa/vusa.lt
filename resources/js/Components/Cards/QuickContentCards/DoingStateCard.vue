@@ -2,46 +2,31 @@
   <QuickContentCard class="border" :class="[currentStateText.borderColorClass]">
     <template #header>
       <h2 class="flex items-center gap-2">
-        <NIcon :component="currentStateText.icon"></NIcon
-        ><span>{{ currentStateText.title }}</span>
+        <NIcon :component="currentStateText.icon" /><span>{{ currentStateText.title }}</span>
       </h2>
     </template>
-    <component :is="currentStateText.description"></component>
+    <component :is="currentStateText.description" />
 
     <template #action-button>
       <NPopover :disabled="doing.files.length > 0">
         Pirmiausia, įkelk bent vieną failą.
         <template #trigger>
-          <NButton
-            :strong="doing.files.length > 0"
-            :disabled="doing.files.length === 0"
-            icon-placement="right"
-            @click="showStateChangeModal = true"
-            ><template #icon
-              ><NIcon :component="ArrowExportLtr24Regular"></NIcon></template
-            >Naujinti būseną</NButton
-          >
+          <NButton :strong="doing.files.length > 0" :disabled="doing.files.length === 0" icon-placement="right"
+            @click="showStateChangeModal = true"><template #icon>
+              <NIcon :component="ArrowExportLtr24Regular" />
+            </template>Naujinti būseną</NButton>
         </template>
       </NPopover>
     </template>
-    <CardModal
-      v-model:show="showStateChangeModal"
-      title="Naujinti būseną"
-      @close="showStateChangeModal = false"
-    >
+    <CardModal v-model:show="showStateChangeModal" title="Naujinti būseną" @close="showStateChangeModal = false">
       <div class="relative w-full">
         <InfoText>Palik trumpą komentarą</InfoText>
 
-        <CommentTipTap
-          v-model:text="commentText"
-          class="mt-4"
-          rounded-top
-          :loading="loading"
-          :enable-approve="doing?.approvable"
-          :disabled="false"
-          @submit:comment="submitComment"
-        >
-          <template #submit-text>Pateikti</template>
+        <CommentTipTap v-model:text="commentText" class="mt-4" rounded-top :loading="loading"
+          :enable-approve="doing?.approvable" :disabled="false" @submit:comment="submitComment">
+          <template #submit-text>
+            Pateikti
+          </template>
         </CommentTipTap>
       </div>
     </CardModal>
@@ -49,16 +34,15 @@
 </template>
 
 <script setup lang="tsx">
-import { NButton, NIcon, NPopover } from "naive-ui";
+import { NIcon } from "naive-ui";
 import { computed, ref } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 
-import {
-  ArrowExportLtr24Regular,
-  CheckmarkCircle24Regular,
-  DocumentBulletListClock20Regular,
-  DocumentEdit24Regular,
-} from "@vicons/fluent";
+import IconArrow from "~icons/fluent/arrow-export-ltr24-regular";
+import IconCheckmarkCircle from "~icons/fluent/checkmark-circle24-regular";
+import IconDocumentBulletListClock from "~icons/fluent/document-bullet-list-clock20-regular";
+import IconDocumentEdit from "~icons/fluent/document-edit24-regular";
+
 import CardModal from "@/Components/Modals/CardModal.vue";
 import CommentTipTap from "@/Features/Admin/CommentViewer/CommentTipTap.vue";
 import Icons from "@/Types/Icons/filled";
@@ -116,7 +100,7 @@ const doingStateDescriptions: Record<
       </span>
     ),
     borderColorClass: "border-zinc-500",
-    icon: DocumentEdit24Regular,
+    icon: IconDocumentEdit,
   },
   pending_changes: {
     title: "Laukiama pakeitimų",
@@ -133,7 +117,7 @@ const doingStateDescriptions: Record<
       </span>
     ),
     borderColorClass: "border-vusa-yellow",
-    icon: DocumentBulletListClock20Regular,
+    icon: IconDocumentBulletListClock
   },
   pending_padalinys_approval: {
     title: "Laukia padalinio pritarimo arba komentarų",
@@ -144,7 +128,7 @@ const doingStateDescriptions: Record<
       </span>
     ),
     borderColorClass: "border-blue-500",
-    icon: DocumentBulletListClock20Regular,
+    icon: IconDocumentBulletListClock,
   },
   pending_final_approval: {
     title: "Laukia galutinio pritarimo",
@@ -154,7 +138,7 @@ const doingStateDescriptions: Record<
       </span>
     ),
     borderColorClass: "border-blue-500",
-    icon: DocumentBulletListClock20Regular,
+    icon: IconDocumentBulletListClock,
   },
   approved: {
     title: "Patvirtintas",
@@ -172,7 +156,7 @@ const doingStateDescriptions: Record<
       </span>
     ),
     borderColorClass: "border-green-500",
-    icon: CheckmarkCircle24Regular,
+    icon: IconCheckmarkCircle,
   },
   pending_completion: {
     title: "Laukia užbaigimo",
@@ -182,7 +166,7 @@ const doingStateDescriptions: Record<
       </span>
     ),
     borderColorClass: "border-blue-500",
-    icon: DocumentBulletListClock20Regular,
+    icon: IconDocumentBulletListClock,
   },
   completed: {
     title: "Užbaigtas",
@@ -193,13 +177,13 @@ const doingStateDescriptions: Record<
       </span>
     ),
     borderColorClass: "border-green-500",
-    icon: CheckmarkCircle24Regular,
+    icon: IconCheckmarkCircle,
   },
   cancelled: {
     title: "Atšauktas",
     description: <span>Veiksmas atšauktas.</span>,
     borderColorClass: "border-red-500",
-    icon: ArrowExportLtr24Regular,
+    icon: IconArrow,
   },
 };
 

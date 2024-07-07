@@ -5,10 +5,10 @@ declare global {
     export interface Banner {
       // columns
       id: number
-      title: unknown
+      title: string
       image_url: string
       link_url: string
-      lang: unknown
+      lang: string
       order: number
       is_active: number
       padalinys_id: number
@@ -25,9 +25,9 @@ declare global {
       end_date: string|null
       title: string
       description: string|null
-      location: unknown|null
-      category: unknown|null
-      url: unknown|null
+      location: string|null
+      category: string|null
+      url: string|null
       padalinys_id: number
       extra_attributes: string[]|null
       created_at: string
@@ -35,7 +35,6 @@ declare global {
       registration_form_id: number|null
       // relations
       padalinys: Padalinys
-      category_r: Category
       registration_form: RegistrationForm
       media: Medium[]
     }
@@ -43,13 +42,14 @@ declare global {
     export interface Category {
       // columns
       id: number
-      alias: unknown|null
-      name: unknown
+      alias: string|null
+      name: string
       description: string|null
       created_at: string
       updated_at: string
       // relations
       banners: Banner
+      pages: Page[]
     }
 
     export interface ChangelogItem {
@@ -58,20 +58,20 @@ declare global {
       title: string[]
       date: string
       description: string[]
-      permission_id: unknown|null
+      permission_id: string|null
       // mutators
       translations: unknown
     }
 
     export interface Comment {
       // columns
-      id: unknown
-      parent_id: unknown|null
+      id: string
+      parent_id: string|null
       comment: string
-      decision: unknown|null
-      user_id: unknown
-      commentable_type: unknown
-      commentable_id: unknown
+      decision: string|null
+      user_id: string
+      commentable_type: string
+      commentable_id: string
       created_at: string
       updated_at: string
       deleted_at: string|null
@@ -84,11 +84,11 @@ declare global {
 
     export interface Contact {
       // columns
-      id: unknown
-      name: unknown
-      email: unknown|null
-      phone: unknown|null
-      profile_photo_path: unknown|null
+      id: string
+      name: string
+      email: string|null
+      phone: string|null
+      profile_photo_path: string|null
       created_at: string
       updated_at: string
       deleted_at: string|null
@@ -113,7 +113,7 @@ declare global {
       // columns
       id: number
       content_id: number
-      type: unknown
+      type: string
       json_content: string[]
       options: string[]|null
       order: number
@@ -125,12 +125,12 @@ declare global {
 
     export interface Doing {
       // columns
-      id: unknown
-      title: unknown
-      drive_item_name: unknown|null
+      id: string
+      title: string
+      drive_item_name: string|null
       state: unknown
       date: string
-      extra_attributes: unknown|null
+      extra_attributes: string|null
       created_at: string
       updated_at: string
       deleted_at: string|null
@@ -148,12 +148,12 @@ declare global {
 
     export interface Duty {
       // columns
-      id: unknown
-      name: unknown
+      id: string
+      name: string
       description: string|null
-      institution_id: unknown
+      institution_id: string
       order: number
-      email: unknown|null
+      email: string|null
       extra_attributes: string[]|null
       places_to_occupy: number|null
       created_at: string
@@ -176,10 +176,10 @@ declare global {
 
     export interface Goal {
       // columns
-      id: unknown
-      group_id: unknown|null
+      id: string
+      group_id: string|null
       padalinys_id: number
-      title: unknown
+      title: string
       description: string|null
       start_date: string
       end_date: string|null
@@ -200,8 +200,8 @@ declare global {
 
     export interface GoalGroup {
       // columns
-      id: unknown
-      title: unknown
+      id: string
+      title: string
       description: string|null
       created_at: string
       updated_at: string
@@ -213,13 +213,13 @@ declare global {
 
     export interface Institution {
       // columns
-      id: unknown
-      parent_id: unknown|null
-      name: unknown|null
-      short_name: unknown|null
-      alias: unknown
+      id: string
+      parent_id: string|null
+      name: string|null
+      short_name: string|null
+      alias: string
       description: string|null
-      image_url: unknown|null
+      image_url: string|null
       padalinys_id: number|null
       created_at: string
       updated_at: string
@@ -242,15 +242,15 @@ declare global {
     export interface MainPage {
       // columns
       id: number
-      link: unknown|null
-      text: unknown|null
-      image: unknown|null
-      position: unknown
+      link: string|null
+      text: string|null
+      image: string|null
+      position: string
       order: number|null
-      type: unknown|null
-      is_active: unknown
+      type: string|null
+      is_active: boolean
       padalinys_id: number
-      lang: unknown|null
+      lang: string|null
       created_at: string
       updated_at: string
       // relations
@@ -259,8 +259,8 @@ declare global {
 
     export interface Matter {
       // columns
-      id: unknown
-      title: unknown
+      id: string
+      title: string
       description: string|null
       created_at: string
       updated_at: string
@@ -275,8 +275,8 @@ declare global {
 
     export interface Meeting {
       // columns
-      id: unknown
-      title: unknown
+      id: string
+      title: string
       description: string|null
       start_time: string
       end_time: string|null
@@ -302,11 +302,12 @@ declare global {
       id: number
       parent_id: number
       padalinys_id: number
-      name: unknown
-      lang: unknown
-      url: unknown
+      name: string
+      lang: string
+      url: string
       order: number
-      is_active: unknown
+      is_active: boolean
+      extra_attributes: string[]|null
       created_at?: string
       updated_at?: string
       // relations
@@ -317,21 +318,21 @@ declare global {
     export interface News {
       // columns
       id: number
-      title: unknown
+      title: string
       category_id: number|null
-      permalink: unknown|null
-      short: unknown
-      lang: unknown
+      permalink: string|null
+      short: string
+      lang: string
       other_lang_id: number|null
       content_id: number
-      image: unknown|null
-      image_author: unknown|null
-      important: unknown
+      image: string|null
+      image_author: string|null
+      important: boolean
       padalinys_id: number
       publish_time: string|null
-      main_points: unknown|null
-      read_more: unknown|null
-      draft: unknown|null
+      main_points: string|null
+      read_more: string|null
+      draft: boolean|null
       created_at: string
       updated_at: string
       deleted_at: string|null
@@ -346,15 +347,15 @@ declare global {
     export interface Padalinys {
       // columns
       id: number
-      type: unknown|null
-      fullname: unknown
-      shortname: unknown
-      alias: unknown
-      en: unknown
-      phone: unknown|null
-      email: unknown|null
-      address: unknown|null
-      shortname_vu: unknown
+      type: string|null
+      fullname: string
+      shortname: string
+      alias: string
+      en: boolean
+      phone: string|null
+      email: string|null
+      address: string|null
+      shortname_vu: string
       // relations
       banners: Banner[]
       calendar: Calendar[]
@@ -369,13 +370,13 @@ declare global {
     export interface Page {
       // columns
       id: number
-      title: unknown
-      permalink: unknown|null
-      lang: unknown
+      title: string
+      permalink: string|null
+      lang: string
       other_lang_id: number|null
       content_id: number
       category_id: number|null
-      is_active: unknown
+      is_active: boolean
       padalinys_id: number
       created_at: string
       updated_at: string
@@ -388,9 +389,9 @@ declare global {
 
     export interface Permission {
       // columns
-      id: unknown
-      name: unknown
-      guard_name: unknown
+      id: string
+      name: string
+      guard_name: string
       created_at: string|null
       updated_at: string|null
       // relations
@@ -401,14 +402,14 @@ declare global {
 
     export interface AgendaItem {
       // columns
-      id: unknown
-      meeting_id: unknown
-      matter_id: unknown|null
+      id: string
+      meeting_id: string
+      matter_id: string|null
       created_at: string
       updated_at: string
       title: string
-      start_time: unknown|null
-      outcome: unknown|null
+      start_time: string|null
+      outcome: string|null
       // relations
       matter: Matter
       meeting: Meeting
@@ -417,9 +418,9 @@ declare global {
 
     export interface Doable {
       // columns
-      doable_type: unknown
-      doable_id: unknown
-      doing_id: unknown
+      doable_type: string
+      doable_id: string
+      doing_id: string
       created_at: string
       updated_at: string
       // relations
@@ -429,10 +430,10 @@ declare global {
 
     export interface Dutiable {
       // columns
-      id: unknown
-      duty_id: unknown
-      dutiable_id: unknown
-      dutiable_type: unknown
+      id: string
+      duty_id: string
+      dutiable_id: string
+      dutiable_type: string
       start_date: string
       end_date: string|null
       extra_attributes: Record<string, unknown>|null
@@ -447,8 +448,8 @@ declare global {
 
     export interface GoalMatter {
       // columns
-      goal_id: unknown
-      matter_id: unknown
+      goal_id: string
+      matter_id: string
       created_at: string
       updated_at: string
       // relations
@@ -460,9 +461,9 @@ declare global {
       // columns
       id: number
       relationship_id: number
-      relationshipable_type: unknown
-      relationshipable_id: unknown
-      related_model_id: unknown
+      relationshipable_type: string
+      relationshipable_id: string
+      related_model_id: string
       created_at: string
       updated_at: string
       // relations
@@ -474,8 +475,8 @@ declare global {
     export interface ReservationResource {
       // columns
       id: number
-      reservation_id: unknown
-      resource_id: unknown
+      reservation_id: string
+      resource_id: string
       start_time: string|null
       end_time: string|null
       quantity: number
@@ -496,9 +497,9 @@ declare global {
 
     export interface SharepointFileable {
       // columns
-      sharepoint_file_id: unknown
-      fileable_type: unknown
-      fileable_id: unknown
+      sharepoint_file_id: string
+      fileable_type: string
+      fileable_id: string
       created_at: string
       updated_at: string
       // relations
@@ -523,7 +524,7 @@ declare global {
       // columns
       id: number
       user_id: number|null
-      data: unknown
+      data: string
       created_at: string
       updated_at: string
       // relations
@@ -533,10 +534,10 @@ declare global {
     export interface Relationship {
       // columns
       id: number
-      name: unknown
-      slug: unknown
+      name: string
+      slug: string
       description: string|null
-      type: unknown|null
+      type: string|null
       created_at: string
       updated_at: string
       // relations
@@ -547,8 +548,8 @@ declare global {
 
     export interface Reservation {
       // columns
-      id: unknown
-      name: unknown
+      id: string
+      name: string
       description: string|null
       start_time: string
       end_time: string
@@ -567,13 +568,13 @@ declare global {
 
     export interface Resource {
       // columns
-      id: unknown
+      id: string
       name: string[]
       description: string[]|null
-      location: unknown|null
+      location: string|null
       capacity: number
       padalinys_id: number
-      is_reservable: unknown
+      is_reservable: boolean
       created_at: string
       updated_at: string
       deleted_at: string|null
@@ -585,11 +586,14 @@ declare global {
       media: Medium[]
     }
 
+    export interface ResourceCategory {
+    }
+
     export interface Role {
       // columns
-      id: unknown
-      name: unknown
-      guard_name: unknown
+      id: string
+      name: string
+      guard_name: string
       created_at: string|null
       updated_at: string|null
       // relations
@@ -603,7 +607,7 @@ declare global {
     export interface RoleType {
       // columns
       id: number
-      role_id: unknown
+      role_id: string
       type_id: number
       created_at: string|null
       updated_at: string|null
@@ -612,64 +616,10 @@ declare global {
       type: Type
     }
 
-    export interface SaziningaiExam {
-      // columns
-      id: number
-      uuid: unknown
-      name: unknown|null
-      email: unknown|null
-      exam_type: unknown|null
-      padalinys_id: number|null
-      place: unknown|null
-      duration: unknown|null
-      subject_name: unknown|null
-      exam_holders: number|null
-      students_need: number|null
-      phone: unknown|null
-      created_at: string
-      updated_at: string
-      // relations
-      padalinys: Padalinys
-      flows: SaziningaiExamFlow[]
-      observers: SaziningaiExamObserver[]
-    }
-
-    export interface SaziningaiExamFlow {
-      // columns
-      id: number
-      exam_uuid: unknown
-      start_time: string
-      created_at: string
-      updated_at: string
-      // relations
-      exam: SaziningaiExam
-      observers: SaziningaiExamObserver[]
-      padalinys: Padalinys
-    }
-
-    export interface SaziningaiExamObserver {
-      // columns
-      id: number
-      exam_uuid: unknown
-      name: unknown
-      email: unknown|null
-      phone: unknown
-      flow: number
-      created_at: string
-      has_arrived: unknown
-      phone_p: unknown|null
-      updated_at: string
-      padalinys_id: number
-      // relations
-      flow: SaziningaiExamFlow
-      exam: SaziningaiExam
-      padalinys: Padalinys
-    }
-
     export interface SharepointFile {
       // columns
-      sharepoint_id: unknown
-      id: unknown
+      sharepoint_id: string
+      id: string
       // relations
       fileables: SharepointFileable[]
       types: Type[]
@@ -682,8 +632,8 @@ declare global {
     export interface Tag {
       // columns
       id: number
-      alias: unknown|null
-      name: unknown
+      alias: string|null
+      name: string
       description: string|null
       created_at: string
       updated_at: string
@@ -691,12 +641,12 @@ declare global {
 
     export interface Task {
       // columns
-      id: unknown
-      name: unknown
+      id: string
+      name: string
       description: string|null
       due_date: string|null
-      taskable_type: unknown
-      taskable_id: unknown
+      taskable_type: string
+      taskable_id: string
       completed_at: string|null
       created_at: string
       updated_at: string
@@ -710,11 +660,11 @@ declare global {
       // columns
       id: number
       parent_id: number|null
-      title: unknown|null
-      model_type: unknown|null
+      title: string|null
+      model_type: string|null
       description: string|null
-      slug: unknown|null
-      extra_attributes: unknown|null
+      slug: string|null
+      extra_attributes: string|null
       created_at: string
       updated_at: string
       deleted_at: string|null
@@ -725,6 +675,7 @@ declare global {
       roles: Role[]
       descendants: Type[]
       parent: Type
+      recursive_parent: Type
       outgoing_relationships: Relationship[]
       incoming_relationships: Relationship[]
       files: SharepointFile[]
@@ -739,22 +690,26 @@ declare global {
 
     export interface User {
       // columns
-      id: unknown
-      email: unknown
-      phone: unknown|null
-      name: unknown
-      password?: unknown|null
-      is_active: unknown
+      id: string
+      email: string
+      phone: string|null
+      facebook_url: string|null
+      name: string
+      pronouns: string[]|null
+      show_pronouns: boolean
+      password?: string|null
+      is_active: boolean
       email_verified_at?: string|null
-      remember_token?: unknown|null
+      remember_token?: string|null
       last_action?: string|null
       last_changelog_check?: string|null
       microsoft_token?: string|null
-      google_token?: unknown|null
       updated_at: string|null
       created_at: string
-      profile_photo_path: unknown|null
+      profile_photo_path: string|null
       deleted_at: string|null
+      // mutators
+      translations: unknown
       // relations
       banners: Banner[]
       calendar: Calendar[]

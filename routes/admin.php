@@ -6,12 +6,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [DashboardController::class, 'dashboard'])->name('dashboard');
 Route::get('profile', [DashboardController::class, 'userSettings'])->name('profile');
+Route::patch('profile', [DashboardController::class, 'updateUserSettings'])->name('profile.update');
 Route::get('userTasks', [DashboardController::class, 'userTasks'])->name('userTasks');
 Route::get('workspace', [DashboardController::class, 'workspace'])->name('workspace');
 Route::get('institutionGraph', [DashboardController::class, 'institutionGraph'])->name('institutionGraph');
 Route::get('stats/representatives', [StatsController::class, 'representativesInPadalinys'])->name('stats.representativesInPadalinys');
-
-Route::post('sendFeedback', [DashboardController::class, 'sendFeedback'])->name('sendFeedback');
 
 // Restore routes
 Route::patch('users/{user}/restore', [UserController::class, 'restore'])->name('users.restore')->withTrashed();
@@ -67,12 +66,12 @@ Route::resource('agendaItems', AgendaItemController::class)->except(['index', 'c
 Route::resource('meetings', MeetingController::class);
 
 Route::resource('resources', ResourceController::class);
+Route::resource('resourceCategories', ResourceCategoryController::class);
+
 Route::put('reservations/{reservation}/add-users', [ReservationController::class, 'addUsers'])->name('reservations.add-users');
 Route::resource('reservations', ReservationController::class);
 Route::resource('reservationResources', ReservationResourceController::class);
 
-Route::resource('saziningaiExams', SaziningaiExamsController::class);
-Route::resource('saziningaiExamFlows', SaziningaiExamFlowsController::class)->except(['index', 'create', 'show', 'destroy']);
 Route::get('files/getFiles', [FilesController::class, 'getFiles'])->name('files.getFiles');
 Route::post('files/createDirectory', [FilesController::class, 'createDirectory'])->name('files.createDirectory');
 Route::delete('files/delete', [FilesController::class, 'delete'])->name('files.delete');
@@ -107,10 +106,9 @@ Route::resource('sharepointFiles', SharepointFileController::class)->except('cre
 
 // Route::post('sharepoint/addFile', [SharepointController::class, 'addFile'])->name('sharepoint.addFile');
 // Route::post('sharepoint/getFiles', [SharepointController::class, 'getFilesFromDocumentIds'])->name('sharepoint.getFiles');
-// Route::delete('sharepoint/{id}', [SharepointController::class, 'destroyFile'])->name('sharepoint.destroy');
 Route::get('sharepoint/getPotentialFileables', [SharepointFileController::class, 'getPotentialFileables'])->name('sharepoint.getPotentialFileables');
 Route::get('sharepoint/getDriveItems', [SharepointFileController::class, 'getDriveItems'])->name('sharepoint.getDriveItems');
-Route::get('sharepoint/{id}/permissions', [SharepointFileController::class, 'getDriveItemPermissions'])->name('sharepoint.getDriveItemPermissions');
+Route::get('sharepoint/{id}/permissions', [SharepointFileController::class, 'getDriveItemPublicLink'])->name('sharepoint.getDriveItemPublicLink');
 Route::get('sharepoint/{type}/{id}', [SharepointFileController::class, 'getTypesDriveItems'])->name('sharepoint.getTypesDriveItems');
 Route::post('sharepoint/{id}/permissions/createPublic', [SharepointFileController::class, 'createPublicPermission'])->name('sharepoint.createPublicPermission');
 

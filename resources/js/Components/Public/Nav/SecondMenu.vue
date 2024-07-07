@@ -5,8 +5,8 @@
       class="my-auto mr-6 whitespace-nowrap text-sm font-bold text-gray-900 dark:text-gray-200 dark:hover:text-vusa-red">
     {{
       $page.props.padalinys?.shortname
-      ? $t($page.props.padalinys?.shortname)
-      : "VU SA"
+        ? $t($page.props.padalinys?.shortname)
+        : "VU SA"
     }}
     </Link>
     <nav ref="secondMenuScrollSection" class="mr-2 inline-flex items-center gap-4 overflow-hidden whitespace-nowrap">
@@ -17,7 +17,7 @@
         <NButton v-if="arrivedState.right === false" quaternary circle size="tiny" class="right-0 top-0 my-auto"
           @click="scrollSecondMenuToRight">
           <template #icon>
-            <NIcon :component="ChevronRight16Regular" />
+            <IFluentChevronRight16Regular />
           </template>
         </NButton>
       </FadeTransition>
@@ -26,9 +26,7 @@
 </template>
 
 <script setup lang="tsx">
-import { ChevronRight16Regular } from "@vicons/fluent";
 import { Link } from "@inertiajs/vue3";
-import { NButton, NIcon } from "naive-ui";
 import { onMounted, ref } from "vue";
 import { useScroll } from "@vueuse/core";
 

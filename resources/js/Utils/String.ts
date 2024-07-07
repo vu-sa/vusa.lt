@@ -94,3 +94,73 @@ export const getFacultyName = ({ fullname }: { fullname: string }) => {
 export const capitalize = (word: string) => {
   return word.charAt(0).toUpperCase() + word.slice(1);
 };
+
+export const changeDutyNameEndings = (
+  contact: App.Entities.User | null | undefined,
+  duty: App.Entities.Duty,
+  locale: string,
+  pronouns: string,
+  useOriginalDutyName: boolean
+) => {
+  if (locale === "en" && duty.extra_attributes?.en?.name) {
+    return duty.extra_attributes?.en?.name;
+  }
+
+  // check if duty name should not be explicitly changed
+  if (useOriginalDutyName) return duty.name;
+
+  const splitPronouns = pronouns?.split("/");
+
+  // replace duty.name ending 'ius' with 'ė', but only on end of string
+  const womanizedTitle = duty.name
+    .replace(/ius$/, "ė")
+    .replace(/as$/, "ė")
+    .replace(/ys$/, "ė");
+
+  const pluralizedTitle = duty.name
+    .replace(/ius$/, "iai")
+    .replace(/as$/, "ai")
+    .replace(/ys$/, "iai");
+
+  const masculinedTitle = duty.name
+    .replace(/vė$/, "vas")
+    .replace(/rė$/, "rius")
+    .replace(/kė$/, "kas");
+
+
+  if (splitPronouns[0] === "ji" || splitPronouns[0] === "she") {
+    return womanizedTitle;
+  } else if (splitPronouns[0] === "jie" || splitPronouns[0] === "they") {
+    return pluralizedTitle;
+  } else if (splitPronouns[0] === "jis" || splitPronouns[0] === "he") {
+    return masculinedTitle;
+  }
+
+  // If no pronouns are set, try to guess based on the name
+  if (!contact) {
+    return duty.name;
+  } 
+
+  const firstName = contact.name.split(" ")[0];
+  
+  const namesToWomanize = ["Katrin"];
+  if (namesToWomanize.includes(firstName)) {
+    return womanizedTitle;
+  }
+
+  const namesNotToWomanize = ["German"];
+  if (namesNotToWomanize.includes(firstName)) {
+    return duty.name;
+  }
+
+  if (contact.name.endsWith("ė") || firstName.endsWith("ė")) {
+    return womanizedTitle;
+  }
+
+  // check for first name ending with 's'
+  if (contact.name.endsWith("a") && !firstName.endsWith("s")) {
+    return womanizedTitle;
+  }
+
+  return duty.name ?? "";
+};

@@ -17,9 +17,6 @@ use App\Models\Page;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Reservation;
 use App\Models\Resource;
-use App\Models\SaziningaiExam;
-use App\Models\SaziningaiExamFlow;
-use App\Models\SaziningaiExamObserver;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Seeder;
@@ -68,9 +65,6 @@ class DatabaseSeeder extends Seeder
         Page::factory(75)->recycle($padaliniai)->create();
 
         Resource::factory(50)->has(Reservation::factory()->hasAttached($users->random(3)))->recycle($padaliniai)->create();
-        SaziningaiExam::factory(15)->create();
-        SaziningaiExamFlow::factory(20)->create();
-        SaziningaiExamObserver::factory(10)->create();
 
         $this->call(RoleStudentRepresentativeSeeder::class);
         $this->call(RoleStudentRepresentativeCoordinatorSeeder::class);
