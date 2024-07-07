@@ -1,4 +1,4 @@
-name: PHPUnit Tests and Upload Coverage
+name: Pest Tests and Upload Coverage
 
 on:
   push:
@@ -33,18 +33,17 @@ jobs:
       run: npm ci
     - name: NPM Build
       run: npm run build
-    - name: Execute tests (Unit and Feature tests) via PHPUnit
+    - name: Execute tests (Unit and Feature tests) via Pest
       env:
         DB_CONNECTION: sqlite
         DB_DATABASE: database/database.sqlite
       run: php artisan test --coverage --coverage-clover ./phpunit-coverage.xml
     ## With coverage
-    - name: Execute tests via Vitest with coverage
-      run: LARAVEL_BYPASS_ENV_CHECK=1 npm run coverage
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       with:
         verbose: true
-        files: ./phpunit-coverage.xml,./coverage/clover.xml
+        files: ./phpunit-coverage.xml
+        flags: backend
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

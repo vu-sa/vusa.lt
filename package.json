@@ -46,6 +46,7 @@
     "v-calendar": "^3.0.2"
   },
   "devDependencies": {
+    "@codecov/vite-plugin": "^0.0.1-beta.10",
     "@iconify-json/fluent": "^1.1.57",
     "@iconify-json/mdi": "^1.1.67",
     "@iconify/vue": "^4.1.2",

@@ -1,7 +1,9 @@
 import { defineConfig } from "vitest/config";
+import { loadEnv } from "vite";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { NaiveUiResolver, VueUseComponentsResolver } from 'unplugin-vue-components/resolvers'
+import { codecovVitePlugin } from "@codecov/vite-plugin";
 import Components from 'unplugin-vue-components/vite'
 import Icons from 'unplugin-icons/vite'
 import IconsResolver from 'unplugin-icons/resolver'
@@ -9,6 +11,8 @@ import i18n from "laravel-vue-i18n/vite";
 import laravel from "laravel-vite-plugin";
 import vue from "@vitejs/plugin-vue";
 import vueJsx from "@vitejs/plugin-vue-jsx";
+
+const token = loadEnv('production', './', 'CODECOV').CODECOV_TOKEN;
 
 export default defineConfig({
   plugins: [
@@ -39,6 +43,11 @@ export default defineConfig({
     i18n(),
     vueJsx({
       // options are passed on to @vue/babel-plugin-jsx
+    }),
+    codecovVitePlugin({
+      enableBundleAnalysis: token !== undefined,
+      bundleName: "Local",
+      uploadToken: token,
     }),
   ],
   test: {
