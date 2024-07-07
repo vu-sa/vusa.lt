@@ -1,4 +1,4 @@
-name: PHPUnit Tests
+name: PHPUnit Tests and Upload Coverage
 
 on:
   push:
@@ -37,11 +37,14 @@ jobs:
       env:
         DB_CONNECTION: sqlite
         DB_DATABASE: database/database.sqlite
-      run: php artisan test --coverage --coverage-clover ./coverage.xml
+      run: php artisan test --coverage --coverage-clover ./phpunit-coverage.xml
+    ## With coverage
+    - name: Execute tests via Vitest with coverage
+      run: LARAVEL_BYPASS_ENV_CHECK=1 npm run coverage
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       with:
         verbose: true
-        files: ./coverage.xml
+        files: ./phpunit-coverage.xml,./coverage/clover.xml
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
