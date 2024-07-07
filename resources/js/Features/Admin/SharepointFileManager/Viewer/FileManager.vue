@@ -46,7 +46,7 @@
       <NDivider />
       <FileViewer :results="results" :loading="loading" :view-mode="viewMode" :show-thumbnail="showThumbnail"
         :current-path="path" :starting-path="startingPath" />
-      <FileDrawer :file="selectedFile" @hide:drawer="selectedFile = null" @file:deleted="handleFileDeleted"/>
+      <FileDrawer :file="selectedFile" @hide:drawer="selectedFile = null" @file:deleted="handleFileDeleted" />
       <FileUploader :show="showFileUploader" :fileable="fileable" @close="handleFileUploaderClose" />
     </template>
     <p v-else v-once>

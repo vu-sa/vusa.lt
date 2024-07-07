@@ -1,11 +1,9 @@
 <template>
-  <CardModal :show="show" :title="`Įkelti naują failą`" @close="$emit('close')">
+  <CardModal :show :title="`Įkelti naują failą`" @close="$emit('close')">
     <NSteps class="my-2 py-2" :current="(current as number)" :status="'process'">
       <NStep title="Į ką kelsi failą?">
         <template #icon>
-          <NIcon>
-            <IFluentDocumentTableSearch24Regular />
-          </NIcon>
+          <IFluentDocumentTableSearch24Regular />
         </template>
       </NStep>
       <NStep title="Failo įkėlimas" />
@@ -14,9 +12,7 @@
       <FileableForm v-if="current === 1" :show-alert="showAlert" @close:alert="showAlert = false"
         @submit="handleFileableSubmit" />
       <div v-else-if="current === 2">
-        <NMessageProvider>
-          <FileForm :fileable="fileForm.fileable" :loading="loading" @submit="handleFileSubmit" />
-        </NMessageProvider>
+        <FileForm :fileable="fileForm.fileable" :loading="loading" @submit="handleFileSubmit" />
       </div>
     </FadeTransition>
     <FadeTransition>
@@ -26,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { inject, ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 
@@ -46,6 +42,8 @@ const props = defineProps<{
 const current = ref(1);
 const loading = ref(false);
 const showAlert = useStorage("new-file-button-alert", true);
+
+const keepFileable = inject<boolean>("keepFileable");
 
 const fileForm = useForm<Record<string, any>>({
   fileable: null,
@@ -67,8 +65,13 @@ const submitFullForm = () => {
   fileForm.post(route("sharepointFiles.store"), {
     onSuccess: () => {
       emit("close");
-      fileForm.reset();
-      current.value = 1;
+      if (!keepFileable) {
+        fileForm.reset();
+        current.value = 1;
+      } else {
+        current.value = 2;
+        fileForm.file = null;
+      }
     },
     onFinish: () => {
       loading.value = false;

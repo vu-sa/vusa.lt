@@ -11,14 +11,13 @@
       :segmented="{ footer: 'soft' }">
       <NDivider style="margin-top: 0rem; margin-bottom: 0rem">{{
         $t("Darbotvarkė")
-        }}</NDivider>
+      }}</NDivider>
       <NScrollbar style="max-height: 35vh" trigger="none">
         <ol v-if="meeting.agenda_items?.length > 0" class="pl-4">
           <li v-for="(agenda_item, index) in meeting.agenda_items" :key="agenda_item.id" class="group flex gap-2">
             <span>{{ index + 1 }}. {{ agenda_item.title }}</span>
             <NButton size="tiny" class="invisible transition duration-200 group-hover:visible" strong text
               @click="handleAgendaClick(agenda_item)"><template #icon>
-                <NIcon :component="Edit24Filled" />
                 <IFluentEdit24Filled />
               </template>
             </NButton>
@@ -58,7 +57,7 @@
 </template>
 
 <script setup lang="tsx">
-import { computed, ref } from "vue";
+import { computed, provide, ref } from "vue";
 import { router } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 
@@ -83,6 +82,9 @@ const showMeetingModal = ref(false);
 const showAgendaItemStoreModal = ref(false);
 const showAgendaItemUpdateModal = ref(false);
 const currentTab = useStorage("show-meeting-tab", "Failai");
+
+// Used in FileUploader.vue
+provide<boolean>("keepFileable", true);
 
 const selectedAgendaItem = ref<App.Entities.AgendaItem | null>(null);
 
