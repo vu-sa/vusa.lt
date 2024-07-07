@@ -24,6 +24,7 @@ return [
         'media' => 'Nuotraukos',
         'state' => 'Būsena',
         'facebook_url' => 'Facebook nuoroda',
+        'type' => '{0} Tipas|{1} Tipai',
     ],
     'context' => [
         'main_info' => 'Pagrindinė informacija',

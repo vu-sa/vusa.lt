@@ -4,7 +4,7 @@
       Išvalyti paiešką...
       <template #trigger>
         <NButton round @click="sweepSearch"><template #icon>
-            <NIcon :component="Broom16Regular" />
+            <IFluentBroom16Regular />
           </template></NButton>
       </template>
     </NPopover>

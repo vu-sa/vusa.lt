@@ -1,21 +1,17 @@
 <template>
-  <IndexPageLayout
-    title="Institucijos"
-    model-name="institutions"
-    :can-use-routes="canUseRoutes"
-    :columns="columns"
-    :paginated-models="institutions"
-    :icon="Icons.INSTITUTION"
-  >
+  <IndexPageLayout title="Institucijos" model-name="institutions" :can-use-routes="canUseRoutes" :columns="columns"
+    :paginated-models="institutions" :icon="Icons.INSTITUTION">
+    {{ filters }}
   </IndexPageLayout>
 </template>
 
 <script setup lang="tsx">
-import { trans as $t } from "laravel-vue-i18n";
+import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
 import {
   type DataTableColumns,
   type DataTableSortState,
   NIcon,
+  NTag,
 } from "naive-ui";
 import { computed, provide, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
@@ -27,8 +23,9 @@ import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue
 import ModelChip from "@/Components/Chips/ModelChip.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
 
-defineProps<{
+const props = defineProps<{
   institutions: PaginatedModels<App.Entities.Institution[]>;
+  types: App.Entities.Type[];
 }>();
 
 const canUseRoutes = {
@@ -46,6 +43,7 @@ provide("sorters", sorters);
 
 const filters = ref<Record<string, any>>({
   "padalinys.id": [],
+  "types.id": [],
 });
 
 provide("filters", filters);
@@ -63,6 +61,28 @@ const columns = computed<DataTableColumns<App.Entities.Institution>>(() => {
       maxWidth: 300,
       ellipsis: {
         tooltip: true,
+      },
+    },
+    {
+      key: "alias",
+      width: 55,
+      render(row) {
+        return (
+          <PreviewModelButton
+            publicRoute="contacts.alias"
+            routeProps={{
+              institution: row.alias,
+              lang: "lt",
+              subdomain: "www",
+            }}
+          />
+        );
+      },
+    },
+    {
+      ...padalinysColumn(filters, usePage().props.padaliniai),
+      render(row) {
+        return $t(row.padalinys?.shortname ?? "");
       },
     },
     {
@@ -89,31 +109,28 @@ const columns = computed<DataTableColumns<App.Entities.Institution>>(() => {
       },
     },
     {
-      key: "alias",
-      width: 55,
-      render(row) {
-        return (
-          <PreviewModelButton
-            publicRoute="contacts.alias"
-            routeProps={{
-              institution: row.alias,
-              lang: "lt",
-              subdomain: "www",
-            }}
-          />
-        );
-      },
-    },
-    {
       title() {
-        return $t("forms.fields.short_name");
+        return $tChoice("forms.fields.type", 2);
       },
-      key: "short_name",
-    },
-    {
-      ...padalinysColumn(filters, usePage().props.padaliniai),
+      key: "types.id",
+      filter: true,
+      filterOptionValues: filters.value["types.id"],
+      filterOptions: props.types.map((type) => {
+        return {
+          label: $t(type.title),
+          value: type.id,
+        };
+      }),
       render(row) {
-        return $t(row.padalinys?.shortname ?? "");
+        return row.types.map((type) => {
+          return (
+            <NTag size="small" class="mr-2">
+              {{
+                default: () => type.title,
+              }}
+            </NTag>
+          );
+        });
       },
     },
   ];

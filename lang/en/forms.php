@@ -24,6 +24,7 @@ return [
         'media' => 'Pictures',
         'state' => 'State',
         'facebook_url' => 'Facebook URL',
+        'type' => '{0} Type|{1} Types',
     ],
     'context' => [
         'main_info' => 'Main information',
