@@ -63,6 +63,7 @@ const modelIcons: Record<keyof typeof ModelEnum, Component> = {
   RELATIONSHIPABLE: FlowchartCircle24Regular,
   RESERVATION: Bookmark24Regular,
   RESOURCE: Cube24Regular,
+  RESOURCE_CATEGORY: TextBulletListSquare24Regular,
   ROLE: PersonBoard24Regular,
   SHAREPOINT_FILE: DocumentMultiple24Regular,
   SHAREPOINT_FILEABLE: DocumentMultiple24Regular,

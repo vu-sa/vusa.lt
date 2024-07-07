@@ -91,15 +91,13 @@ class SharepointFileController extends LaravelResourceController
      */
     public function destroy(Request $request, SharepointFile $sharepointFile)
     {
-        // TODO: don't all deletion of type files
-
         $this->authorize('delete', [SharepointFile::class, $sharepointFile, $this->authorizer]);
 
-        $sharepointFileService = new SharepointGraphService();
+        /*$sharepointFileService = new SharepointGraphService();*/
+        /**/
+        /*$sharepointFileService->deleteDriveItem($sharepointFile->sharepoint_id);*/
 
-        $sharepointFileService->deleteDriveItem($sharepointFile->sharepoint_id);
-
-        return back()->with('success', 'Failas sėkmingai ištrintas iš Sharepoint.');
+        return back()->with('info', 'Failo ištrinimo funkcija bus įgyvendinta vėliau.');
     }
 
     // get potential fileables, usually when none specified

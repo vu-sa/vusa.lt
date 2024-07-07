@@ -7,6 +7,7 @@ use App\Http\Controllers\LaravelResourceController;
 use App\Http\Requests\StoreResourceRequest;
 use App\Http\Requests\UpdateResourceRequest;
 use App\Models\Resource;
+use App\Models\ResourceCategory;
 use App\Services\ModelIndexer;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
@@ -32,13 +33,14 @@ class ResourceController extends LaravelResourceController
         $indexer = new ModelIndexer(new Resource(), request(), $this->authorizer);
 
         $resources = $indexer
-            ->setEloquentQuery([fn (Builder $query) => $query->with(['media'])], false)
+            ->setEloquentQuery([fn (Builder $query) => $query->with(['media', 'category'])], false)
             ->filterAllColumns()
             ->sortAllColumns()
             ->builder->paginate(20);
 
         return Inertia::render('Admin/Reservations/IndexResource', [
             'resources' => $resources,
+            'categories' => ResourceCategory::all(),
         ]);
     }
 
@@ -51,6 +53,7 @@ class ResourceController extends LaravelResourceController
 
         return Inertia::render('Admin/Reservations/CreateResource', [
             'assignablePadaliniai' => GetPadaliniaiForUpserts::execute('resources.create.all', $this->authorizer),
+            'categories' => ResourceCategory::all(),
         ]);
     }
 
@@ -101,6 +104,7 @@ class ResourceController extends LaravelResourceController
                 ]),
                 ],
             'assignablePadaliniai' => GetPadaliniaiForUpserts::execute('resources.update.all', $this->authorizer),
+            'categories' => ResourceCategory::all(),
         ]);
     }
 

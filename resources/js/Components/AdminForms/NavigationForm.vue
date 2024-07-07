@@ -52,16 +52,8 @@
         </NFormItem>
       </FormElement>
       <template v-if="form.type !== 'divider'">
-
-        <NFormItem label="Ikona">
-          <template #label>
-            Ikona. <span class="text-zinc-400"> Ikonų ieškokite <a target="_blank" class="font-bold underline"
-                href="https://icon-sets.iconify.design/fluent/">čia</a>. Suradę reikiamą ikoną pasirinkite iš
-              sąrašo. </span>
-          </template>
-          <NSelect v-model:value="form.extra_attributes.icon" filterable clearable :options="iconOptions ?? []" />
-        </NFormItem>
-
+        <FluentIconSelect :icon="form.extra_attributes.icon"
+          @update:icon="(value) => form.extra_attributes.icon = value" />
         <NFormItem label="Aprašymas">
           <NInput v-model:value="form.extra_attributes.description" type="textarea" placeholder="Įrašyti aprašymą..." />
         </NFormItem>
@@ -95,6 +87,7 @@ import { router, useForm, usePage } from "@inertiajs/vue3"
 import Link24Regular from "~icons/fluent/link24-regular";
 
 import DeleteModelButton from "../Buttons/DeleteModelButton.vue";
+import FluentIconSelect from "../FormItems/FluentIconSelect.vue";
 import FormElement from "./FormElement.vue";
 import Icons from "@/Types/Icons/regular";
 import TiptapImageButton from "@/Components/TipTap/TiptapImageButton.vue";
@@ -194,27 +187,6 @@ const typeOptions = computed(() => {
       option,
     };
   });
-});
-
-const getIconOptions = async () => {
-  const icons = fetch("https://api.iconify.design/collection?prefix=fluent");
-
-  const data = await icons;
-
-  const iconData = await data.json()
-
-  return iconData;
-};
-
-const icons = await getIconOptions();
-
-const iconOptions = computed(() => {
-  return icons.uncategorized?.map((icon) => {
-    return {
-      value: icon,
-      label: icon,
-    };
-  })
 });
 
 const renderLabel = (option: any) => {

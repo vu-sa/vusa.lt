@@ -188,7 +188,7 @@ import { formatStaticTime } from "@/Utils/IntlTime";
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import FormElement from "./FormElement.vue";
 import InfoPopover from "../Buttons/InfoPopover.vue";
-import MultiLocaleInput from "../FormElements/MultiLocaleInput.vue";
+import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 import UploadImageWithCropper from "../Buttons/UploadImageWithCropper.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 

@@ -12,10 +12,8 @@
           <MultiLocaleInput v-model:input="form.title" />
         </NFormItem>
         <NFormItem label="Aprašymas">
-          <OriginalTipTap v-if="locale === 'lt'" v-model="form.description.lt" html
-            :search-files="$page.props.search.other" />
-          <OriginalTipTap v-if="locale === 'en'" v-model="form.description.en" html
-            :search-files="$page.props.search.other" />
+          <OriginalTipTap v-if="locale === 'lt'" v-model="form.description.lt" html />
+          <OriginalTipTap v-if="locale === 'en'" v-model="form.description.en" html />
         </NFormItem>
         <NFormItem label="Data">
           <NDatePicker v-model:formatted-value="form.date" type="datetime" />
@@ -36,7 +34,7 @@ import { ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 
 import FormElement from "./FormElement.vue";
-import MultiLocaleInput from "../FormElements/MultiLocaleInput.vue";
+import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 import OriginalTipTap from "../TipTap/OriginalTipTap.vue";
 import UpsertModelButton from "../Buttons/UpsertModelButton.vue";
 

@@ -6,6 +6,7 @@
 <script setup lang="tsx">
 import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
 import { Link, usePage } from "@inertiajs/vue3";
+import { NIcon } from "naive-ui";
 import { computed, ref } from "vue";
 
 import IconFlowchart from "~icons/fluent/flowchart20-regular";
@@ -381,6 +382,20 @@ const menuOptions = computed(() => [
         key: "resources",
         icon: () => {
           return <NIcon component={Icons.RESOURCE}></NIcon>;
+        },
+        show: auth?.can.index.resource,
+      },
+      {
+        label: () => {
+          return (
+            <Link href={route("resourceCategories.index")}>
+              {capitalize($tChoice("entities.resource_category.model", 2))}
+            </Link>
+          );
+        },
+        key: "resourceCategories",
+        icon: () => {
+          return <NIcon component={Icons.RESOURCE_CATEGORY}></NIcon>;
         },
         show: auth?.can.index.resource,
       },

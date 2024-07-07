@@ -1,13 +1,6 @@
 <template>
-  <IndexPageLayout
-    title="Kontaktai"
-    model-name="contacts"
-    :can-use-routes="canUseRoutes"
-    :columns="columns"
-    :paginated-models="contacts"
-    :icon="Icons.CONTACT"
-  >
-  </IndexPageLayout>
+  <IndexPageLayout title="Kontaktai" model-name="contacts" :can-use-routes="canUseRoutes" :columns="columns"
+    :paginated-models="contacts" :icon="Icons.CONTACT" />
 </template>
 
 <script setup lang="tsx">

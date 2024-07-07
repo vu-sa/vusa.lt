@@ -66,6 +66,8 @@ Route::resource('agendaItems', AgendaItemController::class)->except(['index', 'c
 Route::resource('meetings', MeetingController::class);
 
 Route::resource('resources', ResourceController::class);
+Route::resource('resourceCategories', ResourceCategoryController::class);
+
 Route::put('reservations/{reservation}/add-users', [ReservationController::class, 'addUsers'])->name('reservations.add-users');
 Route::resource('reservations', ReservationController::class);
 Route::resource('reservationResources', ReservationResourceController::class);

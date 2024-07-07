@@ -586,6 +586,9 @@ declare global {
       media: Medium[]
     }
 
+    export interface ResourceCategory {
+    }
+
     export interface Role {
       // columns
       id: string
@@ -692,6 +695,8 @@ declare global {
       phone: string|null
       facebook_url: string|null
       name: string
+      pronouns: string[]|null
+      show_pronouns: boolean
       password?: string|null
       is_active: boolean
       email_verified_at?: string|null
@@ -699,11 +704,12 @@ declare global {
       last_action?: string|null
       last_changelog_check?: string|null
       microsoft_token?: string|null
-      google_token?: string|null
       updated_at: string|null
       created_at: string
       profile_photo_path: string|null
       deleted_at: string|null
+      // mutators
+      translations: unknown
       // relations
       banners: Banner[]
       calendar: Calendar[]

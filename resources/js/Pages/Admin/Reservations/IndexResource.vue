@@ -1,12 +1,7 @@
 <template>
-  <IndexPageLayout
-    :title="capitalize($tChoice('entities.resource.model', 2))"
-    model-name="resources"
-    :icon="Icons.RESOURCE"
-    :can-use-routes="canUseRoutes"
-    :columns="columns"
-    :paginated-models="resources"
-  >
+  <IndexPageLayout :title="capitalize($tChoice('entities.resource.model', 2))" model-name="resources"
+    :icon="Icons.RESOURCE" :can-use-routes="canUseRoutes" :columns="columns" :paginated-models="resources" >
+    {{ filters }}
   </IndexPageLayout>
 </template>
 
@@ -22,13 +17,15 @@ import {
 import { computed, provide, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 
+import { Icon } from "@iconify/vue";
 import { capitalize } from "@/Utils/String";
 import { padalinysColumn } from "@/Composables/dataTableColumns";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
-defineProps<{
+const props = defineProps<{
   resources: PaginatedModels<App.Entities.Resource>;
+  categories: any;
 }>();
 
 const canUseRoutes = {
@@ -45,7 +42,8 @@ const sorters = ref<Record<string, DataTableSortState["order"]>>({
 provide("sorters", sorters);
 
 const filters = ref<Record<string, any>>({
-  padalinys_id: [],
+  'padalinys.id': [],
+  'category.id': [],
 });
 
 provide("filters", filters);
@@ -82,6 +80,24 @@ const columns = computed<DataTableColumns<App.Entities.Resource>>(() => [
     maxWidth: 300,
     ellipsis: {
       tooltip: true,
+    },
+  },
+  {
+    title: "Kategorija",
+    key: "category.id",
+    filter: true,
+    filterOptionValues: filters.value["resource_category_id"],
+    filterOptions: props.categories.map((category) => {
+      return {
+        label: category.name,
+        value: category.id,
+      };
+    }),
+    render(row) {
+      if (!row.category) {
+        return;
+      }
+      return <div class="flex items-center gap-2"><Icon icon={`fluent:${row.category.icon}`} />{row.category.name}</div>;
     },
   },
   {

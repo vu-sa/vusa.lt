@@ -24,6 +24,17 @@ export const RESOURCE_PLACEHOLDERS = {
   },
 };
 
+export const RESOURCE_CATEGORY_PLACEHOLDERS = {
+  name: {
+    lt: "Prailgintuvai",
+    en: "Extension cords",
+  },
+  description: {
+    lt: "Įvairaus ilgio prailgintuvai, kurie gali būti naudojami įvairiems renginiams...",
+    en: "Extension cords of various lengths that can be used for various events...",
+  },
+};
+
 export const RESERVATION_PLACEHOLDERS = {
   name: {
     lt: "Renginys „VU SA dienos“",

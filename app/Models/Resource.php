@@ -58,6 +58,11 @@ class Resource extends Model implements HasMedia
         return $this->belongsTo(Padalinys::class);
     }
 
+    public function category()
+    {
+        return $this->belongsTo(ResourceCategory::class, 'resource_category_id');
+    }
+
     public function leftCapacityAtTime($datetime, $symbol_start = '<', $symbol_end = '>=')
     {
         // where pivot state is reserved or lent

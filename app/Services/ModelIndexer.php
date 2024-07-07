@@ -60,7 +60,6 @@ class ModelIndexer
     // This is needed because Laravel\Scout\Builder can support only one query
     public function setEloquentQuery($callbacks = [], $authorize = true)
     {
-
         $eloquentQueryClosure = function (EloquentBuilder $query) use ($callbacks, $authorize) {
 
             // add $callbacks to $this->callbacksArray

@@ -38,8 +38,11 @@
                 </NSwitch>
               </NFormItem>
             </div>
-            <NButton type="primary" @click="handleSubmit">
+            <NButton :loading type="primary" @click="handleSubmit">
               {{ $t("Išsaugoti") }}
+              <template #icon>
+                <IMdiContentSave />
+              </template>
             </NButton>
           </FormElement>
 
@@ -71,16 +74,19 @@
 
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
-
+import { ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
+
 import FormElement from "@/Components/AdminForms/FormElement.vue";
-import MultiLocaleInput from "@/Components/FormElements/MultiLocaleInput.vue";
+import MultiLocaleInput from "@/Components/FormItems/MultiLocaleInput.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UploadImageWithCropper from "@/Components/Buttons/UploadImageWithCropper.vue";
 
 const props = defineProps<{
   user: App.Entities.User;
 }>();
+
+const loading = ref(false);
 
 const form = useForm("userSettings", {
   phone: props.user.phone,
@@ -98,6 +104,12 @@ if (Array.isArray(form.pronouns)) {
 }
 
 const handleSubmit = () => {
-  form.patch(route("profile.update", props.user.id));
+  loading.value = true;
+  form.patch(route("profile.update", props.user.id), {
+    preserveScroll: true,
+    onSuccess: () => {
+      loading.value = false;
+    },
+  });
 };
 </script>

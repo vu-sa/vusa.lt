@@ -203,7 +203,6 @@ const props = defineProps<{
   maxCharacters?: number;
   html?: boolean;
   modelValue: string | Record<string, unknown> | null;
-  searchFiles?: Record<string, unknown>;
 }>();
 
 const emit = defineEmits(["update:modelValue"]);

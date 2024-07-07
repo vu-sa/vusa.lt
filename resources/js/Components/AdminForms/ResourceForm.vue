@@ -12,6 +12,9 @@
           <MultiLocaleInput v-model:input="form.description" input-type="textarea"
             :placeholder="RESOURCE_PLACEHOLDERS.description" />
         </NFormItem>
+        <NFormItem label="Identifikacinis kodas (nebūtinas)">
+          <NInput v-model:value="form.identifier" placeholder="PRJ-CB-01-K" />
+        </NFormItem>
         <NFormItem :label="capitalize($tChoice('entities.padalinys.model', 1))" required>
           <NSelect v-model:value="form.padalinys_id" :options="padaliniai" label-field="shortname" value-field="id"
             placeholder="VU SA X" clearable />
@@ -42,6 +45,10 @@
         <NFormItem :label="capitalize($t('entities.reservation.is_reservable'))" required>
           <NSwitch v-model:value="form.is_reservable" :checked-value="1" :unchecked-value="0" />
         </NFormItem>
+        <NFormItem label="Kategorija">
+          <NSelect v-model:value="form.resource_category_id" :render-label="renderTag" :options="categoriesOptions"
+            placeholder="Kategorija" clearable />
+        </NFormItem>
       </FormElement>
     </div>
     <div class="flex justify-end gap-2">
@@ -58,25 +65,18 @@
   </NForm>
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
+import { Icon } from '@iconify/vue';
 import {
-  NButton,
-  NForm,
-  NFormItem,
-  NInput,
-  NInputNumber,
-  NSelect,
-  NSwitch,
-  NUpload,
   type UploadFileInfo,
 } from "naive-ui";
-import { capitalize, computed, ref } from "vue";
-import { router, useForm, usePage } from "@inertiajs/vue3";
+import { capitalize, computed } from "vue";
+import { router, useForm } from "@inertiajs/vue3";
 
 import FormElement from "./FormElement.vue";
 import Icons from "@/Types/Icons/regular";
-import MultiLocaleInput from "../FormElements/MultiLocaleInput.vue";
-// import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
+import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
+
 import { RESOURCE_DESCRIPTIONS } from "@/Constants/I18n/Descriptions";
 import { RESOURCE_PLACEHOLDERS } from "@/Constants/I18n/Placeholders";
 import type { ResourceCreationTemplate } from "@/Pages/Admin/Reservations/CreateResource.vue";
@@ -84,10 +84,19 @@ import type { ResourceEditType } from "@/Pages/Admin/Reservations/EditResource.v
 
 const props = defineProps<{
   resource: ResourceCreationTemplate | ResourceEditType;
+  categories: App.Entities.ResourceCategory[];
   padaliniai: App.Entities.Padalinys[];
   modelRoute: string;
   deleteModelRoute?: string;
 }>();
+
+const categoriesOptions = computed(() => {
+  return props.categories.map((category) => ({
+    value: category.id,
+    label: category.name,
+    icon: category.icon,
+  }));
+});
 
 const routeToSubmit = computed(() => {
   return props.resource?.id
@@ -101,6 +110,11 @@ const form = useForm(props.resource);
 const formDisabled = computed(() => {
   return form.padalinys_id === 0;
 });
+
+const renderTag = (category) => {
+  console.log(category);
+  return <span class="inline-flex items-center gap-2"><Icon icon={`fluent:${category.icon}`} />{category.label}</span>;
+}
 
 const submit = () => {
   // add _method: "patch" if it's an update, to the data of the request
