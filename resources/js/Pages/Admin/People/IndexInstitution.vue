@@ -1,8 +1,6 @@
 <template>
   <IndexPageLayout title="Institucijos" model-name="institutions" :can-use-routes="canUseRoutes" :columns="columns"
-    :paginated-models="institutions" :icon="Icons.INSTITUTION">
-    {{ filters }}
-  </IndexPageLayout>
+    :paginated-models="institutions" :icon="Icons.INSTITUTION" />
 </template>
 
 <script setup lang="tsx">

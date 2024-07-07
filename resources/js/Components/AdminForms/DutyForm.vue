@@ -5,6 +5,15 @@
         <template #title>
           {{ $t("forms.context.main_info") }}
         </template>
+        <template #description>
+          Pareigos rodymas pagal žmogaus įvardį, jeigu įvardyje pirmas žodis yra:
+          <li>jis (he) - <strong>{{ changeDutyNameEndings(null, duty, $page.props.app.locale, "jis/jo", false) }}</strong>
+          </li>
+          <li>ji (she) - <strong>{{ changeDutyNameEndings(null, duty, $page.props.app.locale, "ji/jos", false) }}</strong>
+          </li>
+          <li>jie (they) - <strong>{{ changeDutyNameEndings(null, duty, $page.props.app.locale, "jie/jų", false) }}</strong>
+          </li>
+        </template>
         <NFormItem :label="$t('forms.fields.title')" :span="2">
           <NInput v-if="locale === 'lt'" v-model:value="form.name" type="text" placeholder="Prezidentė"><template
               #suffix>
@@ -117,8 +126,6 @@
 </template>
 
 <script setup lang="tsx">
-import IconEdit from "~icons/fluent/edit16-filled";
-import IconEye from "~icons/fluent/eye16-regular";
 import {
   NButton,
   NIcon,
@@ -127,7 +134,10 @@ import {
 } from "naive-ui";
 import { computed, ref } from "vue";
 import { useForm, usePage } from "@inertiajs/vue3";
+import IconEdit from "~icons/fluent/edit16-filled";
+import IconEye from "~icons/fluent/eye16-regular";
 
+import { changeDutyNameEndings } from "@/Utils/String";
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import FormElement from "./FormElement.vue";
 import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";

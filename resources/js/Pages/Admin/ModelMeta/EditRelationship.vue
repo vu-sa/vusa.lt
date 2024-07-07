@@ -1,59 +1,32 @@
 <template>
-  <PageContent
-    :title="relationship.name"
-    :back-url="route('relationships.index')"
-  >
+  <PageContent :title="relationship.name" :back-url="route('relationships.index')">
     <UpsertModelLayout :errors="$page.props.errors" :model="relationship">
-      <RelationshipForm
-        :relationship="relationship"
-        model-route="relationships.update"
-      />
+      <RelationshipForm :relationship="relationship" model-route="relationships.update" />
     </UpsertModelLayout>
-    <NButton @click="showModal = true">Sukurti ryšį</NButton>
-    <CardModal
-      v-model:show="showModal"
-      :title="`Sukurti naują ryšį`"
-      @close="showModal = false"
-      ><NForm label-placement="top">
+    <NButton @click="showModal = true">
+      Sukurti ryšį
+    </NButton>
+    <CardModal v-model:show="showModal" :title="`Sukurti naują ryšį`" @close="showModal = false">
+      <NForm label-placement="top">
         <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
           <NFormItemGi :span="6" label="Modelio tipas">
-            <NSelect
-              v-model:value="relationForm.model_type"
-              remote
-              :options="modelTypeOptions"
-              placeholder="Pasirinkite modelio tipą"
-              @update:value="handleUpdateModelType"
-            ></NSelect>
+            <NSelect v-model:value="relationForm.model_type" remote :options="modelTypeOptions"
+              placeholder="Pasirinkite modelio tipą" @update:value="handleUpdateModelType" />
           </NFormItemGi>
           <NFormItemGi :span="6" label="Ryšio suteikėjas">
-            <NSelect
-              v-model:value="relationForm.model_id"
-              filterable
-              clearable
-              :options="options"
-            >
-            </NSelect>
+            <NSelect v-model:value="relationForm.model_id" filterable clearable :options="options" />
           </NFormItemGi>
           <NFormItemGi :span="6" label="Ryšio gavėjas">
-            <NSelect
-              v-model:value="relationForm.related_model_id"
-              filterable
-              clearable
-              :options="options"
-            >
-            </NSelect>
+            <NSelect v-model:value="relationForm.related_model_id" filterable clearable :options="options" />
           </NFormItemGi>
           <!-- TODO: paaiškinti, kas yra ryšio suteikėjas ir ryšio gavėjas. -->
         </NGrid>
-        <NButton type="primary" @click="submitRelationForm">Sukurti</NButton>
-      </NForm></CardModal
-    >
-    <NDataTable
-      class="mt-4"
-      size="small"
-      :data="relationship.relationshipables"
-      :columns="relationshipableColumns"
-    ></NDataTable>
+        <NButton type="primary" @click="submitRelationForm">
+          Sukurti
+        </NButton>
+      </NForm>
+    </CardModal>
+    <NDataTable class="mt-4" size="small" :data="relationship.relationshipables" :columns="relationshipableColumns" />
   </PageContent>
 </template>
 

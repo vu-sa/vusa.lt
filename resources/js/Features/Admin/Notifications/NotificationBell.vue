@@ -10,10 +10,10 @@
         <header class="flex justify-between gap-4">
           <span class="text-lg font-bold text-zinc-900 dark:text-zinc-50">{{
             $t("Pranešimai")
-          }}</span>
+            }}</span>
           <NButton :disabled="notifications.length === 0" size="tiny" :loading="loading" text @click="handleAllRead">{{
             $t("Pažymėti visus")
-          }}<template #icon>
+            }}<template #icon>
               <IFluentCheckmarkCircle24Regular />
             </template></NButton>
         </header>
@@ -42,7 +42,7 @@ import {
 } from "@vueuse/core";
 import { ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
-import Icons from "@/Types/Icons/regular";
+import Icons from "@/Types/Icons/filled";
 
 import { useAxios } from "@vueuse/integrations/useAxios";
 import NotificationItem from "./NotificationItem.vue";

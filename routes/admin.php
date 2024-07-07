@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [DashboardController::class, 'dashboard'])->name('dashboard');
 Route::get('profile', [DashboardController::class, 'userSettings'])->name('profile');
+Route::patch('profile', [DashboardController::class, 'updateUserSettings'])->name('profile.update');
 Route::get('userTasks', [DashboardController::class, 'userTasks'])->name('userTasks');
 Route::get('workspace', [DashboardController::class, 'workspace'])->name('workspace');
 Route::get('institutionGraph', [DashboardController::class, 'institutionGraph'])->name('institutionGraph');

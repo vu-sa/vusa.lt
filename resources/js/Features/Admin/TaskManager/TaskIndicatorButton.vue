@@ -2,7 +2,9 @@
   <NBadge type="info" :offset="[0, -4]" :value="$page.props.auth?.user.tasks_count">
     <NButton :loading="loading" text circle @click="handleClick">
       <template #icon>
-        <IFluentTasksApp24Regular />
+        <NIcon size="20">
+          <IFluentTaskListSquare24Filled />
+        </NIcon>
       </template>
     </NButton>
   </NBadge>

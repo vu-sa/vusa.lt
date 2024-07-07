@@ -15,14 +15,14 @@
         <AppLogo class="h-12" />
         </Link>
       </div>
-      <div class="mt-1 flex items-center gap-8">
+      <div class="mt-1 flex items-center gap-9">
         <Link v-if="$page.props.auth.can.index.user" :href="route('stats.representativesInPadalinys')">
-        <IFluentChartMultiple20Regular />
+        <IFluentChartMultiple20Filled width="20" height="20" />
         </Link>
         <FeedbackModalButton />
         <Link v-if="canSeeWorkspace && false" class="mt-2 hidden md:inline" :href="route('workspace')">
         <NButton text><template #icon>
-            <IFluentBoard24Regular />
+            <IFluentBoard20Regular width="20" height="20" />
           </template></NButton>
         </Link>
         <TaskIndicatorButton class="mt-0.5" />

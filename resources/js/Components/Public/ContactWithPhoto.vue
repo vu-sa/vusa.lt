@@ -4,20 +4,25 @@
     :class="{
       'gap-2 xl:grid-cols-[2fr,_3fr]': imageUrl,
     }">
-    <img v-if="imageUrl" :src="imageUrl"
-      class="h-40 w-full object-cover max-xl:rounded-t-md xl:rounded-l-md" loading="lazy"
-      style="object-position: 50% 20%" :alt="contact?.name">
+    <img v-if="imageUrl" :src="imageUrl" class="h-40 w-full object-cover max-xl:rounded-t-md xl:rounded-l-md"
+      loading="lazy" style="object-position: 50% 20%" :alt="contact?.name">
     <div class="flex flex-col justify-between gap-4 p-4">
       <div>
         <div class="flex items-center">
           <p class="text-lg font-bold leading-5 text-zinc-800 dark:text-zinc-50 xl:text-xl">
             {{ contact.name }}
+            <template v-if="contact.show_pronouns">
+              <span class="text-xs text-zinc-400 dark:text-zinc-400">
+                ({{ contact.pronouns }})
+              </span>
+            </template>
           </p>
         </div>
         <div v-if="duties" class="w-fit text-xs text-zinc-600 dark:text-zinc-200">
           <template v-for="duty in duties" :key="duty.id">
             <p class="my-1">
-              {{ changeDutyNameEndings(contact, duty) }}
+              {{ changeDutyNameEndings(contact, duty, $page.props.app.locale, contact.pronouns,
+                duty.pivot?.extra_attributes?.use_original_duty_name) }}
               {{ showAdditionalInfo(duty) }}
               <span v-if="duty.description && duty.description !== '<p></p>'" class="align-middle">
                 <InfoPopover style="max-width: 400px" trigger="hover" color="gray">
@@ -105,6 +110,7 @@
 import { computed } from "vue";
 import { usePage } from "@inertiajs/vue3";
 
+import { changeDutyNameEndings } from "@/Utils/String";
 import CopyToClipboardButton from "../Buttons/CopyToClipboardButton.vue";
 import InfoPopover from "../Buttons/InfoPopover.vue";
 
@@ -178,46 +184,4 @@ const imageUrl = computed(() => {
   return props.contact.profile_photo_path ?? "";
 });
 
-const changeDutyNameEndings = (
-  contact: App.Entities.User,
-  duty: App.Entities.Duty,
-) => {
-  // check for english locale and just return english
-  let locale = usePage().props.app.locale;
-
-  if (locale === "en" && duty.extra_attributes?.en?.name) {
-    return duty.extra_attributes?.en?.name;
-  }
-
-  // check if duty name should not be explicitly changed
-  if (duty.pivot?.extra_attributes?.use_original_duty_name) return duty.name;
-
-  // replace duty.name ending 'ius' with 'ė', but only on end of string
-  let womanizedTitle = duty.name
-    .replace(/ius$/, "ė")
-    .replace(/as$/, "ė")
-    .replace(/ys$/, "ė");
-  let firstName = contact.name.split(" ")[0];
-
-  let namesToWomanize = ["Katrin"];
-  if (namesToWomanize.includes(firstName)) {
-    return womanizedTitle;
-  }
-
-  let namesNotToWomanize = ["German"];
-  if (namesNotToWomanize.includes(firstName)) {
-    return duty.name;
-  }
-
-  if (contact.name.endsWith("ė") || firstName.endsWith("ė")) {
-    return womanizedTitle;
-  }
-
-  // check for first name ending with 's'
-  if (contact.name.endsWith("a") && !firstName.endsWith("s")) {
-    return womanizedTitle;
-  }
-
-  return duty.name ?? "";
-};
 </script>

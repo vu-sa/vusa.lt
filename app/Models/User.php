@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Pivots\Dutiable;
+use App\Models\Traits\HasTranslations;
 use App\Models\Traits\HasUnitRelation;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -21,7 +22,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class User extends Authenticatable
 {
-    use HasFactory, HasImpersonation, HasRelationships, HasRoles, HasUlids, HasUnitRelation, LogsActivity, Notifiable, Searchable, SoftDeletes;
+    use HasFactory, HasImpersonation, HasRelationships, HasRoles, HasTranslations, HasUlids, HasUnitRelation, LogsActivity, Notifiable, Searchable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -29,7 +30,11 @@ class User extends Authenticatable
      * @var string[]
      */
     protected $fillable = [
-        'name', 'email', 'facebook_url', 'password', 'phone', 'profile_photo_path',
+        'name', 'email', 'facebook_url', 'password', 'phone', 'profile_photo_path', 'pronouns', 'show_pronouns'
+    ];
+
+    public $translatable = [
+        'pronouns',
     ];
 
     /**
@@ -49,6 +54,7 @@ class User extends Authenticatable
 
     protected $casts = [
         'last_action' => 'datetime',
+        'show_pronouns' => 'boolean',
     ];
 
     public function getActivitylogOptions(): LogOptions

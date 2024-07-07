@@ -1,13 +1,6 @@
 <template>
-  <IndexPageLayout
-    :title="$t('Nariai')"
-    model-name="users"
-    :can-use-routes="canUseRoutes"
-    :columns="columns"
-    :paginated-models="users"
-    :icon="Icons.USER"
-  >
-  </IndexPageLayout>
+  <IndexPageLayout :title="$t('Nariai')" model-name="users" :can-use-routes="canUseRoutes" :columns="columns"
+    :paginated-models="users" :icon="Icons.USER" />
 </template>
 
 <script setup lang="tsx">

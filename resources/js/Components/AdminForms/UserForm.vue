@@ -49,15 +49,42 @@
         </div>
 
         <NFormItem :label="$t('forms.fields.picture')">
-          <NMessageProvider>
-            <UploadImageWithCropper v-model:url="form.profile_photo_path" folder="contacts" />
-          </NMessageProvider>
+          <UploadImageWithCropper v-model:url="form.profile_photo_path" folder="contacts" />
         </NFormItem>
 
         <NFormItem v-if="$page.props.auth?.user?.isSuperAdmin" :label="$t('forms.fields.admin_role')">
           <NSelect v-model:value="form.roles" :options="rolesOptions" clearable multiple type="text"
             placeholder="Be rolės..." />
         </NFormItem>
+      </FormElement>
+
+      <FormElement>
+        <template #title>
+          {{ $t("Įvardžiai") }}
+        </template>
+        <template #description>
+          <p>
+            Jei nurodytas įvardis, asmens pareigybių pavadinimo galūnė automatiškai bus pakeista (nebent tai išjungta
+            asmens-pareigybės įraše.
+          </p>
+          <p> Taip pat, pasirinkus įvardžių rodymą viešai, jis bus rodomas prie asmens vardo, pavardės
+          </p>
+        </template>
+        <div class="grid gap-4 lg:grid-cols-2">
+          <NFormItem :label="$t('forms.fields.pronouns')">
+            <MultiLocaleInput v-model:input="form.pronouns" :placeholder="{ lt: 'Jie/jų', en: 'They/them' }" />
+          </NFormItem>
+          <NFormItem :label="$t('forms.fields.show_pronouns')">
+            <NSwitch v-model:value="form.show_pronouns" :disabled="form.pronouns === ''">
+              <template #checked>
+                <span>Įvardžiai rodomi viešai</span>
+              </template>
+              <template #unchecked>
+                <span>Įvardžiai nerodomi viešai</span>
+              </template>
+            </NSwitch>
+          </NFormItem>
+        </div>
       </FormElement>
 
       <FormElement>
@@ -161,6 +188,7 @@ import { formatStaticTime } from "@/Utils/IntlTime";
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import FormElement from "./FormElement.vue";
 import InfoPopover from "../Buttons/InfoPopover.vue";
+import MultiLocaleInput from "../FormElements/MultiLocaleInput.vue";
 import UploadImageWithCropper from "../Buttons/UploadImageWithCropper.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
@@ -180,6 +208,10 @@ const handleChangeDutyShowMode = () => {
 
 const form = useForm("user", props.user);
 form.roles = props.user.roles?.map((role) => role.id);
+
+if (Array.isArray(form.pronouns)) {
+  form.pronouns = { lt: "", en: "" };
+}
 
 const dutyOptions: TreeOption[] = props.padaliniaiWithDuties.map(
   (padalinys) => {

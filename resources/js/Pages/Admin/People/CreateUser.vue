@@ -1,13 +1,7 @@
 <template>
   <PageContent title="Naujas studentas" :heading-icon="Icons.USER">
     <UpsertModelLayout :errors="$page.props.errors" :model="user">
-      <UserForm
-        :user
-        :roles
-        :padaliniai-with-duties
-        :permissable-padaliniai
-        model-route="users.store"
-      />
+      <UserForm :user :roles :padaliniai-with-duties :permissable-padaliniai model-route="users.store" />
     </UpsertModelLayout>
   </PageContent>
 </template>
@@ -31,5 +25,7 @@ const user = {
   current_duties: [],
   roles: [],
   profile_photo_path: null,
+  pronouns: { lt: "", en: "" },
+  show_pronouns: false,
 };
 </script>

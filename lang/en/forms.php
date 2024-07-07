@@ -25,6 +25,8 @@ return [
         'state' => 'State',
         'facebook_url' => 'Facebook URL',
         'type' => '{0} Type|{1} Types',
+        'pronouns' => 'Pronouns',
+        'show_pronouns' => 'Show pronouns',
     ],
     'context' => [
         'main_info' => 'Main information',
