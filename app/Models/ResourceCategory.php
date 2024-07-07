@@ -9,7 +9,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class ResourceCategory extends Model
 {
-    use HasFactory, HasRelationships, Searchable, HasTranslations;
+    use HasFactory, HasRelationships, HasTranslations, Searchable;
 
     protected $guarded = [];
 

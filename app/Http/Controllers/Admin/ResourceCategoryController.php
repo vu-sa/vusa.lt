@@ -8,7 +8,6 @@ use App\Http\Requests\UpdateResourceCategoryRequest;
 use App\Models\Resource;
 use App\Models\ResourceCategory;
 use App\Services\ModelIndexer;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
 use Inertia\Inertia;
 
@@ -80,7 +79,8 @@ class ResourceCategoryController extends LaravelResourceController
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateResourceCategoryRequest $request, ResourceCategory $resourceCategory) {
+    public function update(UpdateResourceCategoryRequest $request, ResourceCategory $resourceCategory)
+    {
 
         $resourceCategory->fill($request->safe()->toArray());
         $resourceCategory->save();
