@@ -26,15 +26,18 @@
 </template>
 
 <script setup lang="tsx">
-import { FilePdf, FileWord, Folder } from "@vicons/fa";
-import { NDataTable, NIcon, NSkeleton } from "naive-ui";
+import { NDataTable, NIcon } from "naive-ui";
 import { computed, inject, ref } from "vue";
+import type { DriveItem } from "@microsoft/microsoft-graph-types";
+
+import FilePdf from "~icons/mdi/FilePdf";
+import FileWord from "~icons/mdi/FileWord";
+import Folder from "~icons/mdi/Folder";
 
 import { fileSize } from "@/Utils/Calc";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import Icons from "@/Types/Icons/filled";
 import ModelDocumentButton from "./FileButtonSkeletonWrapper.vue";
-import type { DriveItem } from "@microsoft/microsoft-graph-types";
 
 const props = defineProps<{
   loading: boolean;

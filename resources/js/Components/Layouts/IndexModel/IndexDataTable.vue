@@ -1,46 +1,29 @@
 <template>
-  <IndexSearchInput
-    payload-name="text"
-    :has-soft-deletes="hasSoftDeletes"
-    @complete-search="handleCompletedSearch"
-    @update:other="handleShowOther"
-    @sweep="sweepSearch"
-  />
-  <NDataTable
-    remote
-    size="small"
-    :data="paginatedModels.data"
-    :columns="columnsWithActions"
-    :loading="loading"
-    :pagination="pagination"
-    :row-key="rowKey"
-    pagination-behavior-on-filter="first"
-    @update:sorter="handleSorterChange"
-    @update:page="handleChange"
-    @update:filters="handleFiltersChange"
-    @update-checked-row-keys="handleCheckedRowKeysChange"
-  >
-  </NDataTable>
+  <IndexSearchInput payload-name="text" :has-soft-deletes="hasSoftDeletes" @complete-search="handleCompletedSearch"
+    @update:other="handleShowOther" @sweep="sweepSearch" />
+  <NDataTable remote size="small" :data="paginatedModels.data" :columns="columnsWithActions" :loading="loading"
+    :pagination="pagination" :row-key="rowKey" pagination-behavior-on-filter="first" @update:sorter="handleSorterChange"
+    @update:page="handleChange" @update:filters="handleFiltersChange"
+    @update-checked-row-keys="handleCheckedRowKeysChange" />
 </template>
 
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
 import {
-  ArrowCounterclockwise28Regular,
-  ArrowForward20Filled,
-  Edit20Filled,
-} from "@vicons/fluent";
-import {
+  type DataTableColumns,
   type DataTableFilterState,
+  type DataTableRowKey,
   type DataTableSortState,
   NButton,
   NButtonGroup,
-  NDataTable,
   NIcon,
 } from "naive-ui";
 import { type Ref, computed, inject, ref } from "vue";
 import { router } from "@inertiajs/vue3";
-import type { DataTableColumns, DataTableRowKey } from "naive-ui";
+
+import ArrowCounterclockwise28Regular from "~icons/fluent/arrow-counterclockwise28-regular";
+import ArrowForward20Filled from "~icons/fluent/arrow-forward20-filled";
+import Edit20Filled from "~icons/fluent/edit20-filled";
 
 import { Link } from "@inertiajs/vue3";
 import { updateSorters } from "@/Utils/DataTable";

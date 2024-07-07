@@ -1,40 +1,39 @@
 /* eslint-disable no-secrets/no-secrets */
-import {
-  Alert24Regular,
-  BookContacts28Regular,
-  BookQuestionMark24Regular,
-  Bookmark24Regular,
-  CalendarLtr24Regular,
-  Comment24Regular,
-  Cube24Regular,
-  DeviceMeetingRoomRemote24Regular,
-  DocumentBulletList24Regular,
-  DocumentMultiple24Regular,
-  DocumentSave24Regular,
-  DocumentSettings20Regular,
-  Flow20Regular,
-  FlowchartCircle24Regular,
-  Grid24Regular,
-  Home24Regular,
-  Image24Regular,
-  ImageArrowBack24Regular,
-  Important24Regular,
-  Navigation24Regular,
-  News24Regular,
-  PeopleSearch24Regular,
-  PeopleTeam24Regular,
-  Person24Regular,
-  PersonBoard24Regular,
-  PersonClock24Regular,
-  PuzzlePiece24Regular,
-  ShieldKeyhole24Regular,
-  Sparkle24Regular,
-  StarLineHorizontal324Regular,
-  Tag24Regular,
-  TaskListSquareLtr24Regular,
-  TextBulletListSquare24Regular,
-  TextField24Regular,
-} from "@vicons/fluent";
+import Alert24Regular from "~icons/fluent/alert24-regular";
+import BookContacts28Regular from "~icons/fluent/book-contacts28-regular";
+import BookQuestionMark24Regular from "~icons/fluent/book-question-mark24-regular";
+import Bookmark24Regular from "~icons/fluent/bookmark24-regular";
+import CalendarLtr24Regular from "~icons/fluent/calendar-ltr24-regular";
+import Comment24Regular from "~icons/fluent/comment24-regular";
+import Cube24Regular from "~icons/fluent/cube24-regular";
+import DeviceMeetingRoomRemote24Regular from "~icons/fluent/device-meeting-room-remote24-regular";
+import DocumentBulletList24Regular from "~icons/fluent/document-bullet-list24-regular";
+import DocumentMultiple24Regular from "~icons/fluent/document-multiple24-regular";
+import DocumentSave24Regular from "~icons/fluent/document-save24-regular";
+import DocumentSettings20Regular from "~icons/fluent/document-settings20-regular";
+import Flow20Regular from "~icons/fluent/flow20-regular";
+import FlowchartCircle24Regular from "~icons/fluent/flowchart-circle24-regular";
+import Grid24Regular from "~icons/fluent/grid24-regular";
+import Home24Regular from "~icons/fluent/home24-regular";
+import Image24Regular from "~icons/fluent/image24-regular";
+import ImageArrowBack24Regular from "~icons/fluent/image-arrow-back24-regular";
+import Important24Regular from "~icons/fluent/important24-regular";
+import Navigation24Regular from "~icons/fluent/navigation24-regular";
+import News24Regular from "~icons/fluent/news24-regular";
+import PeopleSearch24Regular from "~icons/fluent/people-search24-regular";
+import PeopleTeam24Regular from "~icons/fluent/people-team24-regular";
+import Person24Regular from "~icons/fluent/person24-regular";
+import PersonBoard24Regular from "~icons/fluent/person-board24-regular";
+import PersonClock24Regular from "~icons/fluent/person-clock24-regular";
+import PuzzlePiece24Regular from "~icons/fluent/puzzle-piece24-regular";
+import ShieldKeyhole24Regular from "~icons/fluent/shield-keyhole24-regular";
+import Sparkle24Regular from "~icons/fluent/sparkle24-regular";
+import StarLineHorizontal324Regular from "~icons/fluent/star-line-horizontal-3-24-regular";
+import Tag24Regular from "~icons/fluent/tag24-regular";
+import TaskListSquareLtr24Regular from "~icons/fluent/task-list-square-ltr24-regular";
+import TextBulletListSquare24Regular from "~icons/fluent/text-bullet-list-square24-regular";
+import TextField24Regular from "~icons/fluent/text-field24-regular";
+
 import type { Component } from "vue";
 import type { FormEnum, OtherIconEnum } from "../otherEnums";
 import type { ModelEnum } from "../enums";

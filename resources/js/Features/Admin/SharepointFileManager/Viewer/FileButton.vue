@@ -18,9 +18,13 @@
 </template>
 
 <script setup lang="ts">
-import { File, FileExcel, FilePdf, FileWord, Folder } from "@vicons/fa";
-import { NIcon } from "naive-ui";
 import { computed } from "vue";
+
+import File from "~icons/mdi/File";
+import FileExcel from "~icons/mdi/FileExcel";
+import FilePdf from "~icons/mdi/FilePdf";
+import FileWord from "~icons/mdi/FileWord";
+import Folder from "~icons/mdi/Folder";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 

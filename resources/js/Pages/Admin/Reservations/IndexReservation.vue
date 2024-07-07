@@ -16,17 +16,15 @@ import {
   type DataTableColumns,
   type DataTableSortState,
   NButton,
-  NCard,
-  NDataTable,
   NIcon,
   NTag,
 } from "naive-ui";
 import { Link, usePage } from "@inertiajs/vue3";
-import { computed, provide, ref } from "vue";
+import { capitalize, computed, provide, ref } from "vue";
 
-import { ArrowForward20Filled } from "@vicons/fluent";
+import ArrowForward20Filled from "~icons/fluent/arrow-forward20-filled";
+
 import { RESERVATION_DATE_TIME_FORMAT } from "@/Constants/DateTimeFormats";
-import { capitalize } from "vue";
 import { formatRelativeTime, formatStaticTime } from "@/Utils/IntlTime";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";

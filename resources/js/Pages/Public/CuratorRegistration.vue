@@ -1,22 +1,14 @@
 <template>
+
   <Head :title="$t('Registracija į kuratorių programą')" />
 
-  <HeaderWithShapeDivider1
-    class="full-bleed"
-    image-src="/images/curatorRegistration/curator3.jpg"
-    object-position="0% 45%"
-    >{{ $t("Registracija į kuratorių programą") }}
+  <HeaderWithShapeDivider1 class="full-bleed" image-src="/images/curatorRegistration/curator3.jpg"
+    object-position="0% 45%">{{ $t("Registracija į kuratorių programą") }}
   </HeaderWithShapeDivider1>
 
-  <div
-    class="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-4 pt-2 last:pb-2 lg:grid-cols-5 lg:px-16"
-  >
-    <div class="typography max-w-prose leading-7 text-base col-span-3 px-12">
-      <NImage
-        width="600"
-        :src="'/images/curatorRegistration/curator1.jpg'"
-        lazy
-      />
+  <div class="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-4 pt-2 last:pb-2 lg:grid-cols-5 lg:px-16">
+    <div class="typography col-span-3 max-w-prose px-12 text-base leading-7">
+      <NImage width="600" :src="'/images/curatorRegistration/curator1.jpg'" lazy />
       <template v-if="$page.props.app.locale === 'lt'">
         <p>
           Kiekvieną mokslo metų pradžią VU bendruomenė pradeda pasitikdama
@@ -43,11 +35,7 @@
           pakopos (MA) pirmo kurso studentų (-čių) kuratoriai (-ės).
         </p>
 
-        <NImage
-          width="400"
-          :src="'/images/curatorRegistration/curator2.jpg'"
-          lazy
-        />
+        <NImage width="400" :src="'/images/curatorRegistration/curator2.jpg'" lazy />
 
         <p>
           Šiais metais visame Universitete kuratorių programoje veikė daugiau
@@ -101,11 +89,7 @@
           Master’s (MA) students were introduced.
         </p>
 
-        <NImage
-          width="400"
-          :src="'/images/curatorRegistration/curator2.jpg'"
-          lazy
-        />
+        <NImage width="400" :src="'/images/curatorRegistration/curator2.jpg'" lazy />
 
         <p>
           This year, more than 300 students were involved in the mentoring
@@ -139,19 +123,11 @@
       </template>
       <NImageGroup :show-toolbar="false">
         <NSpace>
-          <NImage
-            v-for="(imageLink, index) in curatorImages"
-            :key="index"
-            width="150"
-            :src="imageLink"
-            lazy
-          />
+          <NImage v-for="(imageLink, index) in curatorImages" :key="index" width="150" :src="imageLink" lazy />
         </NSpace>
       </NImageGroup>
     </div>
-    <aside
-      class="-order-1 col-span-2 gap-6 px-12 text-zinc-800 dark:text-zinc-100 lg:order-1 lg:content-start lg:px-0"
-    >
+    <aside class="-order-1 col-span-2 gap-6 px-12 text-zinc-800 dark:text-zinc-100 lg:order-1 lg:content-start lg:px-0">
       <h2 class="text-2xl">
         🔗 {{ $t("Nuorodos į kuratorių registracijas") }}!
       </h2>
@@ -160,27 +136,15 @@
           ❗️ {{ $t("Registracijos jau prasidėjo") }}:
         </p>
         <ul>
-          <li
-            v-for="padalinys in arrayOfPadaliniaiWithStatus.active"
-            :key="padalinys.id"
-          >
+          <li v-for="padalinys in arrayOfPadaliniaiWithStatus.active" :key="padalinys.id">
             <p>
               {{ "VU" + getFacultyName(padalinys) }}
               <NPopover>
                 <template #trigger>
-                  <NButton
-                    tag="a"
-                    :href="padalinys.registration_url"
-                    target="_blank"
-                    text
-                    class="align-center"
-                  >
-                    <template #icon
-                      ><NIcon
-                        class="align-center"
-                        :component="Link24Regular"
-                      ></NIcon
-                    ></template>
+                  <NButton tag="a" :href="padalinys.registration_url" target="_blank" text class="align-center">
+                    <template #icon>
+                      <IFluentLink20Regular />
+                    </template>
                   </NButton>
                 </template>
                 <!-- Tell when the registration will end -->
@@ -205,18 +169,15 @@
           ⏱️ {{ $t("Registracijos greitu metu prasidės") }}:
         </p>
         <ul>
-          <li
-            v-for="padalinys in arrayOfPadaliniaiWithStatus.upcoming"
-            :key="padalinys.id"
-          >
+          <li v-for="padalinys in arrayOfPadaliniaiWithStatus.upcoming" :key="padalinys.id">
             {{ "VU" + getFacultyName(padalinys) }}
             (prasidės
             {{
               padalinys.registration_launch_time !== null
                 ? formatStaticTime(padalinys.registration_launch_time, {
-                    month: "long",
-                    day: "numeric",
-                  })
+                  month: "long",
+                  day: "numeric",
+                })
                 : "netrukus"
             }})
           </li>
@@ -228,10 +189,7 @@
           📅 {{ $t("Registracijos jau baigėsi") }}:
         </p>
         <ul>
-          <li
-            v-for="padalinys in arrayOfPadaliniaiWithStatus.ended"
-            :key="padalinys.id"
-          >
+          <li v-for="padalinys in arrayOfPadaliniaiWithStatus.ended" :key="padalinys.id">
             {{ "VU" + getFacultyName(padalinys) }}
           </li>
         </ul>
@@ -243,18 +201,8 @@
 <script setup lang="ts">
 import { Head } from "@inertiajs/vue3";
 
-import { Link24Regular } from "@vicons/fluent";
-import {
-  NButton,
-  NIcon,
-  NImage,
-  NImageGroup,
-  NPopover,
-  NSpace,
-} from "naive-ui";
 import { formatStaticTime } from "@/Utils/IntlTime";
 import { getFacultyName } from "@/Utils/String";
-import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import HeaderWithShapeDivider1 from "@/Components/Headers/HeaderWithShapeDivider1.vue";
 
 const props = defineProps<{

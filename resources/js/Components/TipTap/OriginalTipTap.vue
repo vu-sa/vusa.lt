@@ -31,13 +31,13 @@
         <NButton :type="editor.isActive('heading', { level: 2 }) ? 'primary' : 'default'"
           @click="editor?.chain().focus().toggleHeading({ level: 2 }).run()">
           <template #icon>
-            <IFluentTextHeader220Filled />
+            <TextHeader220Filled />
           </template>
         </NButton>
         <NButton :type="editor.isActive('heading', { level: 3 }) ? 'primary' : 'default'"
           @click="editor?.chain().focus().toggleHeading({ level: 3 }).run()">
           <template #icon>
-            <IFluentTextHeader320Filled />
+            <TextHeader320Filled />
           </template>
         </NButton>
       </NButtonGroup>
@@ -62,7 +62,7 @@
       <NButton size="small" :type="editor.isActive('horizontalRule') ? 'primary' : 'default'"
         @click="editor?.chain().focus().setHorizontalRule().run()">
         <template #icon>
-          <IFluentLineHorizontal120Regular />
+          <LineHorizontal120Regular />
         </template>
       </NButton>
       <NButtonGroup size="small">
@@ -184,6 +184,10 @@ import TableRow from "@tiptap/extension-table-row";
 import TipTapLink from "@tiptap/extension-link";
 import UnderlineExtension from "@tiptap/extension-underline";
 import YoutubeExtension from "@tiptap/extension-youtube";
+
+import LineHorizontal120Regular from "~icons/fluent/line-horizontal-1-20-regular"
+import TextHeader220Filled from "~icons/fluent/text-header-2-20-filled"
+import TextHeader320Filled from "~icons/fluent/text-header-3-20-filled"
 
 import { CustomHeading } from "./CustomHeading";
 import { Video } from './Video';

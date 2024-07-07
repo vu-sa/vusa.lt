@@ -7,7 +7,7 @@
           <NIcon class="mr-2" size="96" :component="fileIcon" />
           <span class="text-center text-xl tracking-wide">{{
             file?.name
-          }}</span>
+            }}</span>
           <div class="flex gap-2">
             <NSpin content-class="flex gap-2 items-center" size="small" :stroke-width="12"
               :show="loadingPublicPermission">
@@ -31,7 +31,8 @@
                   <IFluentDocumentLink24Regular />
                 </template>
               </NButton>
-              <NButton v-if="!route().current('sharepointFiles.index')" size="tiny" :loading="loadingDelete" type="error" class="mt-4" @click="handleDelete(file?.sharepointFile)">
+              <NButton v-if="!route().current('sharepointFiles.index')" size="tiny" :loading="loadingDelete"
+                type="error" class="mt-4" @click="handleDelete(file?.sharepointFile)">
                 <template #icon>
                   <IFluentDelete24Filled />
                 </template>
@@ -62,7 +63,7 @@
                   <NTag size="small">
                     <NEllipsis style="max-width: 140px">{{
                       file?.listItem?.fields?.Type
-                    }}</NEllipsis>
+                      }}</NEllipsis>
                   </NTag>
                 </td>
               </tr>
@@ -84,11 +85,14 @@
 </template>
 
 <script setup lang="ts">
-import { File, FilePdf, FileWord } from "@vicons/fa";
 import { computed, ref, watch } from "vue";
 import { router } from "@inertiajs/vue3";
 import { useAxios } from "@vueuse/integrations/useAxios";
 import { useStorage } from "@vueuse/core";
+
+import File from "~icons/mdi/file";
+import FilePdf from "~icons/mdi/file-pdf";
+import FileWord from "~icons/mdi/file-word";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
 import CommentPart from "@/Features/Admin/CommentViewer/CommentViewer.vue";

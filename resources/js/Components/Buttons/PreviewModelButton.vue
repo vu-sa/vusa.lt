@@ -1,7 +1,7 @@
 <template>
   <NButton tag="a" :href="route(publicRoute, routePropsModified)" rel="noopener noreferrer" secondary size="small"
     target="_blank">
-    <IFluentPreviwLink20Regular />
+    <IFluentPreviewLink20Regular />
   </NButton>
 </template>
 

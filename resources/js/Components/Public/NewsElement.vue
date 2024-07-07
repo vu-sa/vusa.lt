@@ -19,7 +19,7 @@
         ">
       <div class="inline-flex items-center gap-1">
         <span>{{ $t("Daugiau") }}</span>
-        <IFluentArrowRigh16Regular />
+        <IFluentArrowRight16Regular />
       </div>
       </Link>
     </header>

@@ -1,20 +1,16 @@
 <template>
   <NBreadcrumb>
     <AdminBreadcrumbItem :option="homeOption" />
-    <AdminBreadcrumbItem
-      v-for="(option, index) in options"
-      :key="index"
-      :option="option"
-    ></AdminBreadcrumbItem
-  ></NBreadcrumb>
+    <AdminBreadcrumbItem v-for="(option, index) in options" :key="index" :option="option" />
+  </NBreadcrumb>
 </template>
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
-import { Home24Filled } from "@vicons/fluent";
-import { NBreadcrumb } from "naive-ui";
-
 import { computed } from "vue";
+
+import Home24Filled from "~icons/fluent/home24-filled";
+
 import AdminBreadcrumbItem, {
   type BreadcrumbOptionInterface,
 } from "./AdminBreadcrumbItem.vue";
