@@ -22,4 +22,9 @@ class Banner extends Model
     {
         return $this->belongsTo(Padalinys::class, 'padalinys_id');
     }
+
+    public function padaliniai()
+    {
+        return $this->padalinys();
+    }
 }

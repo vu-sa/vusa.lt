@@ -10,11 +10,11 @@ use Illuminate\Support\Facades\Auth;
 class GetPadaliniaiForUpserts
 {
     // e.g. 'institutions.create.all'
-    public static function execute(string $permission, ModelAuthorizer $authorizer)
+    public static function execute(string $permission, ModelAuthorizer $authorizer): \Illuminate\Support\Collection
     {
         // ! must be already authorized for this action
         if (! $authorizer->forUser(Auth::user())->checkAllRoleables($permission)) {
-            return User::with('padaliniai:padaliniai.id,shortname')->find(Auth::user()->id)->padaliniai->unique()->map(
+            return User::query()->with('padaliniai:padaliniai.id,shortname')->find(Auth::user()->id)->padaliniai->unique()->map(
                 function ($padalinys) {
                     return [
                         'id' => $padalinys->id,
@@ -24,7 +24,7 @@ class GetPadaliniaiForUpserts
             );
         }
 
-        return Padalinys::orderBy('shortname_vu')->get(['id', 'shortname'])->map(
+        return Padalinys::query()->orderBy('shortname_vu')->get(['id', 'shortname'])->map(
             function ($padalinys) {
                 return [
                     'id' => $padalinys->id,

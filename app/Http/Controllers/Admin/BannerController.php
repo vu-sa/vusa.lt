@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\GetPadaliniaiForUpserts;
 use App\Http\Controllers\LaravelResourceController;
 use App\Models\Banner;
 use App\Models\Padalinys;
@@ -60,6 +61,8 @@ class BannerController extends LaravelResourceController
             'image_url' => 'required',
         ]);
 
+        $padaliniai = GetPadaliniaiForUpserts::execute('banners.create.all', $this->authorizer);
+
         $banner = new Banner();
         // $banner->text = $request->text;
         $banner->title = $request->title;
@@ -68,8 +71,7 @@ class BannerController extends LaravelResourceController
         // add random banner order for now
         $banner->order = rand(1, 10);
         $banner->image_url = $request->image_url;
-        $banner->padalinys_id = $request->user()->padalinys()?->id ?? Padalinys::where('alias', 'vusa')->first()->id;
-        $banner->user_id = $request->user()->id;
+        $banner->padalinys_id = $padaliniai->first()['id'] ?? null;
         $banner->save();
 
         Cache::forget('banners-'.$banner->padalinys_id);
