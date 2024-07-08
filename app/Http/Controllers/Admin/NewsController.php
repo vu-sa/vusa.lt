@@ -81,7 +81,7 @@ class NewsController extends LaravelResourceController
 
         $content->parts()->createMany($request->content['parts']);
 
-        News::create([
+        $news = News::create([
             'title' => $request->title,
             'permalink' => $request->permalink,
             'short' => $request->short,
@@ -90,10 +90,17 @@ class NewsController extends LaravelResourceController
             'other_lang_id' => $request->other_lang_id,
             'image' => $request->image,
             'image_author' => $request->image_author,
-            'publish_time' => $request->publish_time,
             'draft' => $request->draft ?? 0,
             'padalinys_id' => $padalinys_id,
         ]);
+
+        if (is_string($request->publish_time)) {
+            $news->publish_time = strtotime($request->publish_time);
+        } else {
+            $news->publish_time = $request->publish_time / 1000;
+        }
+
+        $news->save();
 
         return redirect()->route('news.index')->with('success', 'Naujiena sėkmingai sukurta!');
     }
@@ -143,7 +150,15 @@ class NewsController extends LaravelResourceController
 
         $other_lang_page = News::find($news->other_lang_id);
 
-        $news->update($request->only('title', 'lang', 'other_lang_id', 'draft', 'short', 'image', 'image_author', 'publish_time'));
+        $news->update($request->only('title', 'lang', 'other_lang_id', 'draft', 'short', 'image', 'image_author'));
+
+        if (is_string($request->publish_time)) {
+            $news->publish_time = strtotime($request->publish_time);
+        } else {
+            $news->publish_time = $request->publish_time / 1000;
+        }
+
+        $news->save();
 
         $content = Content::query()->find($news->content->id);
 

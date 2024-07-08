@@ -79,6 +79,7 @@ class NewsController extends PublicController
 
         $news = News::where('padalinys_id', $this->padalinys->id)
             ->where('lang', app()->getLocale())
+            ->where('draft', false)
             ->select('id', 'title', 'short', 'image', 'permalink', 'publish_time', 'lang')
             ->orderBy('publish_time', 'desc')
             ->paginate(15);

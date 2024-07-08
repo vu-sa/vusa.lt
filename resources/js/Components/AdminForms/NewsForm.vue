@@ -16,8 +16,7 @@
             <NSelect v-model:value="form.lang" :options="languageOptions" placeholder="Pasirinkti kalbą..." />
           </NFormItem>
           <NFormItem required label="Naujienos paskelbimo laikas">
-            <NDatePicker v-model:formatted-value="form.publish_time" placeholder="Data..." type="datetime"
-              value-format="yyyy-MM-dd HH:mm:ss" />
+            <NDatePicker v-model:value="form.publish_time" placeholder="Data..." type="datetime" value-format="yyyy-MM-dd'T'HH:mm:ss.SSSxxx" />
           </NFormItem>
           <NFormItem label="Ar juodraštis?">
             <NSwitch v-model:value="form.draft" :checked-value="1" :unchecked-value="0" />
