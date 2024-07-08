@@ -18,7 +18,6 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         \SocialiteProviders\Manager\SocialiteWasCalled::class => [
             \SocialiteProviders\Microsoft\MicrosoftExtendSocialite::class.'@handle',
-            // \SocialiteProviders\Google\GoogleExtendSocialite::class.'@handle',
         ],
         \App\Events\CommentPosted::class => [
             \App\Listeners\NotifyUsersOfComment::class,
@@ -37,9 +36,9 @@ class EventServiceProvider extends ServiceProvider
         \App\Events\ReservationResourceCreated::class => [
             \App\Listeners\ReservationResource\HandleReservationResourceCreated::class,
         ],
-        \App\Events\TaskCreated::class => [
-            \App\Listeners\HandleTaskCreated::class,
-        ],
+        /*\App\Events\TaskCreated::class => [*/
+        /*    \App\Listeners\HandleTaskCreated::class,*/
+        /*],*/
     ];
 
     /**

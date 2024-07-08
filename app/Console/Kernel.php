@@ -32,10 +32,6 @@ class Kernel extends ConsoleKernel
         // })->days([1, 3, 6])->daily('11:00');
 
         // $schedule->call(function () {
-        //     \App\Actions\Schedulable\ReflectionNotifier::notifyUsers();
-        // })->fridays()->at('17:15');
-
-        // $schedule->call(function () {
         //     \App\Actions\Schedulable\TaskNotifier::notifyDaysLeft(3);
         // });
 
