@@ -1,8 +1,6 @@
 <template>
   <IndexPageLayout :title="capitalize($tChoice('entities.resource.model', 2))" model-name="resources"
-    :icon="Icons.RESOURCE" :can-use-routes="canUseRoutes" :columns="columns" :paginated-models="resources" >
-    {{ filters }}
-  </IndexPageLayout>
+    :icon="Icons.RESOURCE" :can-use-routes="canUseRoutes" :columns="columns" :paginated-models="resources" />
 </template>
 
 <script setup lang="tsx">
@@ -86,7 +84,8 @@ const columns = computed<DataTableColumns<App.Entities.Resource>>(() => [
     title: "Kategorija",
     key: "category.id",
     filter: true,
-    filterOptionValues: filters.value["resource_category_id"],
+    defaultFilterOptionValues: filters.value["category.id"],
+    filterOptionValues: filters.value["category_id"],
     filterOptions: props.categories.map((category) => {
       return {
         label: category.name,

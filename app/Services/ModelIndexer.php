@@ -100,7 +100,7 @@ class ModelIndexer
             $relationFilterKeyArray = explode('.', $relationFilterKey);
 
             $relationFilterCallback = function (EloquentBuilder $query) use ($relationFilterKeyArray, $relationFilterValue, $relationFilterKey) {
-                $query->when($relationFilterValue !== [],
+                $query->when(!in_array($relationFilterValue, [[], null]),
                     fn (EloquentBuilder $query) => $query->whereHas(
                         $relationFilterKeyArray[0], fn (EloquentBuilder $query) => $query->whereIn(
                             // Sometimes some variables may be described as ambiguous, so we need to specify, which id we want to use
