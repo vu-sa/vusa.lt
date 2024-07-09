@@ -46,7 +46,7 @@ export default defineConfig({
     }),
     codecovVitePlugin({
       enableBundleAnalysis: token !== undefined,
-      bundleName: "Local",
+      bundleName: "Application",
       uploadToken: token,
     }),
   ],
