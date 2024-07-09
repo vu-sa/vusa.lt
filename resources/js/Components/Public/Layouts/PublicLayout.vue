@@ -50,6 +50,7 @@
 
       <!-- preconnect to tawk.to -->
       <link rel="preconnect" href="https://embed.tawk.to">
+      <link rel="preload" href="https://cdn.userway.org/widgetapp/images/body_wh.svg" as="image">
     </NConfigProvider>
 
     <!-- </Suspense> -->
