@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\GetPadaliniaiForUpserts;
 use App\Http\Controllers\LaravelResourceController;
 use App\Models\Banner;
-use App\Models\Padalinys;
 use App\Services\ModelIndexer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
