@@ -27,7 +27,7 @@ describe('auth: simple user', function () {
     beforeEach(function () {
         asUser($this->user)->get(route('dashboard'))->assertStatus(200);
     });
-    
+
     test('can\'t index calendar', function () {
         asUser($this->user)->get(route('calendar.index'))->assertStatus(302)->assertRedirectToRoute('dashboard');
     });

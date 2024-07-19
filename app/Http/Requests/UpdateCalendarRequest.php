@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Models\Calendar;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
 
 class UpdateCalendarRequest extends ResourceRequest
