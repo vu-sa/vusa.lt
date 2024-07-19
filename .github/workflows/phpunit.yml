@@ -44,6 +44,6 @@ jobs:
       with:
         verbose: true
         files: ./phpunit-coverage.xml
-        flags: backend
+        # flags: backend
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
