@@ -24,6 +24,7 @@ defineProps<{
 const calendar = {
   title: "",
   date: null,
+  end_date: null,
   description: "",
   location: "",
   category: null,

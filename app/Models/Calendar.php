@@ -18,6 +18,7 @@ class Calendar extends Model implements HasMedia
 
     protected $casts = [
         'date' => 'datetime',
+        'end_date' => 'datetime',
         'updated_at' => 'datetime:Y-m-d H:i:s',
         'created_at' => 'datetime:Y-m-d H:i:s',
         'extra_attributes' => 'array',

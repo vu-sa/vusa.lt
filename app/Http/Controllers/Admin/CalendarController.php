@@ -4,12 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetPadaliniaiForUpserts;
 use App\Http\Controllers\LaravelResourceController;
+use App\Http\Requests\StoreCalendarRequest;
+use App\Http\Requests\UpdateCalendarRequest;
 use App\Models\Calendar;
 use App\Models\Category;
 use App\Services\ModelIndexer;
-use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -59,30 +58,13 @@ class CalendarController extends LaravelResourceController
      *
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreCalendarRequest $request)
     {
-        $this->authorize('create', [Calendar::class, $this->authorizer]);
+        $calendar = new Calendar();
 
-        $validated = $request->validate([
-            'date' => 'required|integer',
-            'padalinys_id' => 'required|integer',
-            'end_date' => 'nullable|date',
-            'title' => 'required',
-            'description' => 'required',
-            'location' => 'nullable',
-            'url' => 'nullable',
-            'category' => 'nullable',
-            'extra_attributes' => 'nullable',
-        ]);
+        $calendar = $calendar->fill($request->validated());
 
-        $padalinys_id = null;
-
-        $validated['date'] = Carbon::createFromTimestamp($request->date / 1000, 'Europe/Vilnius')->toDateTime();
-
-        Calendar::create($validated + ['padalinys_id' => $padalinys_id]);
-
-        Cache::forget('calendar_lt');
-        Cache::forget('calendar_en');
+        $calendar->save();
 
         return redirect()->route('calendar.index')->with('success', 'Kalendoriaus įvykis sėkmingai sukurtas!');
     }
@@ -124,26 +106,12 @@ class CalendarController extends LaravelResourceController
      *
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Calendar $calendar)
+    public function update(UpdateCalendarRequest $request, Calendar $calendar)
     {
-        $this->authorize('update', [Calendar::class, $calendar, $this->authorizer]);
+        DB::transaction(function () use ($request, $calendar) {
+            $calendar->fill($request->validated());
 
-        $validated = $request->validate([
-            'date' => 'required|integer',
-            'padalinys_id' => 'required|integer',
-            'end_date' => 'date|nullable',
-            'title' => 'required',
-            'description' => 'required',
-            'location' => 'string|nullable',
-            'url' => 'string|nullable',
-            'category' => 'string|nullable',
-            'extra_attributes' => 'array|nullable',
-        ]);
-
-        $validated['date'] = Carbon::createFromTimestamp($request->date / 1000, 'Europe/Vilnius')->toDateTime();
-
-        DB::transaction(function () use ($request, $calendar, $validated) {
-            $calendar->update($validated);
+            $calendar->save();
 
             // if request has files
 
@@ -157,9 +125,6 @@ class CalendarController extends LaravelResourceController
 
             $calendar->save();
         });
-
-        Cache::forget('calendar_lt');
-        Cache::forget('calendar_en');
 
         return back()->with('success', 'Kalendoriaus įvykis sėkmingai atnaujintas!');
     }

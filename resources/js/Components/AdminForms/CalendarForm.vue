@@ -83,27 +83,22 @@
       </FormElement>
       <FormElement>
         <template #title>
-          Laiko informacija
+          Informacija apie renginio laiką
         </template>
         <template #description>
           <p class="mb-2">
-            Jeigu nėra nurodytas pabaigos laikas, ICS kalendoriuje renginys
+            Jeigu nėra nurodytas pabaigos laikas, kalendoriuje renginys
             rodomas kaip 1 val. trukmės.
-          </p>
-          <p>
-            Renginio pabaigos laiką galima nurodyti tik
-            <strong>sukūrus renginį</strong>.
           </p>
         </template>
         <div class="grid gap-4 lg:grid-cols-3">
           <NFormItem label="Renginio pradžia" required>
-            <NDatePicker v-model:value="form.date" default-time="12:00:00" placeholder="Pasirinkti pradžios laiką..."
+            <NDatePicker v-model:value="form.date" placeholder="Pasirinkti pradžios laiką..."
               value-format="yyyy-MM-dd HH:mm:ss" type="datetime" />
           </NFormItem>
 
           <NFormItem label="Renginio pabaiga">
-            <NDatePicker v-model:formatted-value="form.end_date" default-time="12:00:00"
-              :disabled="props.modelRoute === 'calendar.store'" placeholder="Pasirinkti pabaigos laiką..."
+            <NDatePicker v-model:value="form.end_date" placeholder="Pasirinkti pabaigos laiką..."
               value-format="yyyy-MM-dd HH:mm:ss" type="datetime" />
           </NFormItem>
           <NFormItem>
