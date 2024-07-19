@@ -16,18 +16,17 @@ class StoreCalendarRequest extends FormRequest
         return $this->user()->can('create', [Calendar::class, $this->authorizer]);
     }
 
-
     protected function prepareForValidation()
     {
         if ($this->date !== null) {
             $this->merge([
-                'date' => Carbon::parse($this->date / 1000)->format('Y-m-d H:i')
+                'date' => Carbon::parse($this->date / 1000)->format('Y-m-d H:i'),
             ]);
         }
 
         if ($this->end_date !== null) {
             $this->merge([
-                'end_date' => Carbon::parse($this->end_date / 1000)->format('Y-m-d H:i')
+                'end_date' => Carbon::parse($this->end_date / 1000)->format('Y-m-d H:i'),
             ]);
         }
     }
