@@ -11,6 +11,12 @@
 |
 */
 
+use App\Models\Duty;
+use App\Models\Institution;
+use App\Models\Padalinys;
+use App\Models\User;
+use Tests\TestCase;
+
 uses(
     Tests\TestCase::class,
     // Illuminate\Foundation\Testing\RefreshDatabase::class,
@@ -42,7 +48,18 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+function makeUser(Padalinys $padalinys): User
 {
-    // ..
+    /*$padalinys = Padalinys::query()->inRandomOrder()->first();*/
+
+    $user = User::factory()->hasAttached(Duty::factory()->for(Institution::factory()->for($padalinys)),
+        ['start_date' => now()->subDay()]
+    )->create();
+
+    return $user;
+}
+
+function asUser(User $user): TestCase
+{
+    return test()->actingAs($user);
 }

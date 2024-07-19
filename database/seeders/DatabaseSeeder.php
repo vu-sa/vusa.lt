@@ -68,6 +68,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call(RoleStudentRepresentativeSeeder::class);
         $this->call(RoleStudentRepresentativeCoordinatorSeeder::class);
+        $this->call(RoleCommunicationCoordinatorSeeder::class);
 
         Goal::factory(10)->recycle($padaliniai)->create();
 

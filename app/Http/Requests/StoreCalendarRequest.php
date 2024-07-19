@@ -3,20 +3,20 @@
 namespace App\Http\Requests;
 
 use App\Models\Calendar;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
 
-class StoreCalendarRequest extends FormRequest
+class StoreCalendarRequest extends ResourceRequest
 {
     /**
      * Determine if the user is authorized to make this request.
+     *
      */
     public function authorize(): bool
     {
         return $this->user()->can('create', [Calendar::class, $this->authorizer]);
     }
 
-    protected function prepareForValidation()
+    protected function prepareForValidation(): void
     {
         if ($this->date !== null) {
             $this->merge([

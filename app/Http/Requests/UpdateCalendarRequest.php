@@ -6,16 +6,14 @@ use App\Models\Calendar;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
 
-class UpdateCalendarRequest extends FormRequest
+class UpdateCalendarRequest extends ResourceRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        $calendar = $this->route('calendar');
-
-        return $this->user()->can('update', [Calendar::class, $calendar, $this->authorizer]);
+        return $this->user()->can('update', [Calendar::class, $this->calendar, $this->authorizer]);
     }
 
     protected function prepareForValidation()
