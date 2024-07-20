@@ -29,6 +29,9 @@ class AppServiceProvider extends ServiceProvider
     {
         Schema::defaultStringLength(125);
 
+        // For tests used with sqlite
+        Schema::enableForeignKeyConstraints();
+
         // Needed for json_content in Content model
         TrimStrings::skipWhen(function (Request $request) {
             return $request->is('mano/*');
