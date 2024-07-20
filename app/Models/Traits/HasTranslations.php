@@ -10,8 +10,6 @@ trait HasTranslations
 
     /**
      * Return attributes with translations of the model.
-     *
-     * @return array
      */
     public function toArray(): array
     {
@@ -25,8 +23,6 @@ trait HasTranslations
 
     /**
      * Return full attributes of the model.
-     *
-     * @return array
      */
     public function toFullArray(): array
     {

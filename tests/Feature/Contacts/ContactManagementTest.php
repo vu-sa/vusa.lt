@@ -2,8 +2,8 @@
 
 use App\Actions\GetAttachableTypesForDuty;
 use App\Models\Duty;
-use App\Models\Tenant;
 use App\Models\Role;
+use App\Models\Tenant;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
 
