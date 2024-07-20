@@ -81,6 +81,8 @@ class UserController extends LaravelResourceController
 
             $user->fill($request->safe()->except(['current_duties', 'roles']));
 
+            $user->save();
+
             foreach ($request->current_duties as $duty) {
                 $user->duties()->attach($duty, ['start_date' => now()->subDay()]);
             }
