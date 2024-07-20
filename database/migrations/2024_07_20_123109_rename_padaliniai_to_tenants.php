@@ -65,10 +65,6 @@ return new class extends Migration
         Schema::table('navigation', function (Blueprint $table) {
             $table->dropForeign(['padalinys_id']);
         });
-
-        Schema::table('navigation', function (Blueprint $table) {
-            $table->dropColumn('padalinys_id');
-        });
     }
 
     /**
