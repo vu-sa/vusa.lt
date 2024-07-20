@@ -63,11 +63,10 @@ return new class extends Migration
         });
 
         Schema::table('navigation', function (Blueprint $table) {
-            // drop column
-            // if connection not sqlite, drop foreign
-            if (config('database.default') !== 'sqlite') {
-                $table->dropForeign('navigation_padalinys_id_foreign');
-            }
+            $table->dropForeign(['padalinys_id']);
+        });
+
+        Schema::table('navigation', function (Blueprint $table) {
             $table->dropColumn('padalinys_id');
         });
     }
