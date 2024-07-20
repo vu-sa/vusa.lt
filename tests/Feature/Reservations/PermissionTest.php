@@ -44,7 +44,7 @@ describe('auth: simple user', function () {
     });
 
     test('can access reservation create page', function () {
-        asUser($this->user)->get(route('reservations.create'))->assertStatus(302);
+        asUser($this->user)->get(route('reservations.create'))->assertStatus(200);
     });
 
     test('can store reservation', function () {
@@ -82,11 +82,11 @@ describe('auth: simple user', function () {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ShowDashboard')
                 ->whereNot('flash.statusCode', null)
-                ->where('flash.statusCode', 402)
+                ->where('flash.statusCode', 403)
             );
     });
     test('can access reservation after they are assigned to it', function () {
-        $response = asUser($this->admin)->put(route('reservations.add-users', $this->reservation->id), [
+        $response = asUser($this->reservationManager)->put(route('reservations.add-users', $this->reservation->id), [
             'users' => [$this->user->id],
         ]);
 

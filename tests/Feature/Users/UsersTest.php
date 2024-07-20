@@ -51,7 +51,7 @@ describe('auth: simple user', function () {
     test('can\'t update user', function () {
         $user = User::query()->first();
 
-        asUser($this->user)->put(route('calendar.update', $user), [
+        asUser($this->user)->put(route('users.update', $user), [
             'name' => 'Test User Updated',
             'email' => 'test@mail.com',
         ])->assertStatus(302)->assertRedirectToRoute('dashboard');
