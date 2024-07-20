@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Actions\GetPadaliniaiForUpserts;
+use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\LaravelResourceController;
 use App\Http\Requests\StoreCalendarRequest;
 use App\Http\Requests\UpdateCalendarRequest;
@@ -48,7 +48,7 @@ class CalendarController extends LaravelResourceController
         $this->authorize('create', [Calendar::class, $this->authorizer]);
 
         return Inertia::render('Admin/Calendar/CreateCalendarEvent', [
-            'padaliniai' => GetPadaliniaiForUpserts::execute('calendar.create.all', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute('calendar.create.all', $this->authorizer),
             'categories' => Category::all(),
         ]);
     }
@@ -97,7 +97,7 @@ class CalendarController extends LaravelResourceController
             'calendar' => $calendar,
             'categories' => Category::all(),
             'images' => $calendar->getMedia('images'),
-            'padaliniai' => GetPadaliniaiForUpserts::execute('calendar.update.all', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute('calendar.update.all', $this->authorizer),
         ]);
     }
 

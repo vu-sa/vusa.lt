@@ -51,7 +51,7 @@
         class="relative mt-4 grid w-full grid-cols-ramFill items-start gap-4 overflow-hidden pb-4 transition-transform duration-300 ease-in-out">
         <InstitutionCard v-for="institution in currentUser.institutions" :key="institution.id"
           :institution="institution" :duties="currentUser.duties"
-          :is-padalinys="institution.alias === institution.padalinys?.alias"
+          :is-padalinys="institution.alias === institution.tenant?.alias"
           @click="router.visit(route('institutions.show', institution.id))" />
       </div>
       <p v-else>

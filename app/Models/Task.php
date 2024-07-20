@@ -24,8 +24,8 @@ class Task extends Model
         return $this->belongsToMany(User::class);
     }
 
-    public function padaliniai()
+    public function tenants()
     {
-        return $this->hasManyDeepFromRelations($this->users(), (new User)->padaliniai());
+        return $this->hasManyDeepFromRelations($this->users(), (new User)->tenants());
     }
 }

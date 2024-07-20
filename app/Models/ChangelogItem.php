@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ChangelogItem extends Model
 {
-    use HasFactory, Traits\HasTranslations;
+    use HasFactory, HasTranslations;
 
     public $translatable = ['title', 'description'];
 

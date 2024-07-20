@@ -29,22 +29,22 @@ const props = defineProps<{
 
 const options_padaliniai = computed<DropdownOption[]>(() => {
   return usePage()
-    .props.padaliniai.filter(
-      (padalinys) => padalinys.type === "padalinys" && padalinys.id <= 17
+    .props.tenants.filter(
+      (tenant) => tenant.type === "padalinys" && tenant.id <= 17
     )
-    .map((padalinys) => ({
+    .map((tenant) => ({
       label:
         props.size.toLowerCase() === "tiny"
-          ? $t(padalinys.shortname.split(" ")[2])
-          : $t(padalinys.fullname.split("atstovybė ")[1]),
-      key: padalinys.alias,
+          ? $t(tenant.shortname.split(" ")[2])
+          : $t(tenant.fullname.split("atstovybė ")[1]),
+      key: tenant.alias,
     }));
 });
 
 const padalinys = computed(() => {
   return $t(
-    usePage().props.padalinys?.alias !== "vusa"
-      ? usePage().props.padalinys?.shortname.split(" ").pop() ?? "Padaliniai"
+    usePage().props.tenant?.alias !== "vusa"
+      ? usePage().props.tenant?.shortname.split(" ").pop() ?? "Padaliniai"
       : "Padaliniai",
   );
 });

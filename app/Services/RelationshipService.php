@@ -42,13 +42,13 @@ class RelationshipService
 
         // now by type
         $outgoingDirectByType = $institution->load(['types.outgoingRelationships.pivot.related_model.institutions' => function ($query) use ($institution) {
-            $query->where('padalinys_id', $institution->padalinys_id);
+            $query->where('tenant_id', $institution->tenant_id);
         }])->types->map(function ($type) {
             return $type->outgoingRelationships;
         })->flatten(1);
 
         $incomingDirectByType = $institution->load(['types.incomingRelationships.pivot.relationshipable.institutions' => function ($query) use ($institution) {
-            $query->where('padalinys_id', $institution->padalinys_id);
+            $query->where('tenant_id', $institution->tenant_id);
         }])->types->map(function ($type) {
             return $type->incomingRelationships;
         })->flatten(1);
@@ -93,8 +93,8 @@ class RelationshipService
     /**
      * getGivenModelsFromModelType
      *  Okay so the idea of this is to get all relationships (through relationship givers) from a specific model class, while accounting
-     *  for types (this doesn't get direct relationships) and for padalinys. Because when you decide if an e.g. institution is related through
-     *  type, you must account for padalinys
+     *  for types (this doesn't get direct relationships) and for tenant. Because when you decide if an e.g. institution is related through
+     *  type, you must account for tenant
      *
      * @param  mixed  $model_type
      * @param  mixed  $relationshipable
@@ -115,7 +115,7 @@ class RelationshipService
         $givers->map(function ($giver) use (&$relationships, $model_type, $relationshipable) {
             $giver->receiver = $model_type::whereHas('types', function ($query) use ($relationshipable) {
                 $query->where('types.id', $relationshipable->related_model_id);
-            })->where('padalinys_id', $giver->padalinys_id)->get()->map(function ($receiver) use ($giver, &$relationships) {
+            })->where('tenant_id', $giver->tenant_id)->get()->map(function ($receiver) use ($giver, &$relationships) {
                 $relationships[] = [
                     'relationshipable_id' => $giver->id,
                     'related_model_id' => $receiver->id,

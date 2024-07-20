@@ -42,18 +42,18 @@ class SharepointFileService
         }
 
         if ($fileable instanceof Institution) {
-            $padalinys = $fileable->load('padalinys')->padalinys;
+            $tenant = $fileable->load('tenant')->tenant;
             $path .= '/'.'Padaliniai';
-            $path .= '/'.$padalinys->shortname;
+            $path .= '/'.$tenant->shortname;
             $path .= '/'.Str::plural(class_basename($fileable->getMorphClass())).'/'.$fileable->name;
         }
 
         if ($fileable instanceof Meeting) {
-            $institution = $fileable->load('institutions.padalinys')->institutions->first();
+            $institution = $fileable->load('institutions.tenant')->institutions->first();
             $formattedDatetime = Carbon::parse($fileable->start_time)->format('Y-m-d H.i');
 
             $path .= '/'.'Padaliniai';
-            $path .= '/'.$institution->padalinys->shortname;
+            $path .= '/'.$institution->tenant->shortname;
             $path .= '/'.Str::plural(class_basename($institution)).'/'.$institution->name;
             $path .= '/'.Str::plural(class_basename($fileable)).'/'.$formattedDatetime.'/'.$fileable->name;
         }
@@ -77,12 +77,12 @@ class SharepointFileService
         }
 
         if ($fileable instanceof Goal) {
-            $fileable->loadMissing('institutions.padalinys');
+            $fileable->loadMissing('institutions.tenant');
 
             $institution = $fileable->institutions->first();
 
             $path .= '/'.'Padaliniai';
-            $path .= '/'.$institution->padalinys->shortname;
+            $path .= '/'.$institution->tenant->shortname;
             $path .= '/'.Str::plural(class_basename($institution)).'/'.$institution->name;
             $path .= '/'.Str::plural(class_basename($fileable->getMorphClass())).'/'.$fileable->title;
         }

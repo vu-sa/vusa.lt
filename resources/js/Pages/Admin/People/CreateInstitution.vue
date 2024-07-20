@@ -1,12 +1,7 @@
 <template>
   <PageContent title="Nauja institucija" :heading-icon="Icons.INSTITUTION">
     <UpsertModelLayout :errors="$page.props.errors" :model="institution">
-      <InstitutionForm
-        :padaliniai="padaliniai"
-        model-route="institutions.store"
-        :institution="institution"
-        :institution-types="institutionTypes"
-      />
+      <InstitutionForm :assignable-tenants model-route="institutions.store" :institution :institution-types />
     </UpsertModelLayout>
   </PageContent>
 </template>
@@ -20,7 +15,7 @@ import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 defineProps<{
-  padaliniai: Array<App.Entities.Padalinys>;
+  assignableTenants: Array<App.Entities.Tenant>;
   institutionTypes: App.Entities.Type[];
 }>();
 
@@ -29,7 +24,7 @@ const institution = reactive({
   short_name: "",
   alias: "",
   description: "",
-  padalinys_id: null,
+  tenant_id: null,
   types: null,
   extra_attributes: {
     en: {

@@ -95,9 +95,9 @@ const dataTableColumns = [
   },
   {
     title() {
-      return capitalize($tChoice("entities.padalinys.model", 1));
+      return capitalize($tChoice("entities.tenant.model", 1));
     },
-    key: "padalinys.shortname",
+    key: "tenant.shortname",
     maxWidth: 150,
     width: 150,
     resizable: true,
@@ -109,7 +109,7 @@ const dataTableColumns = [
               row.pivot?.state === "created" ? "font-bold text-vusa-red" : ""
             }
           >
-            {$t(row.padalinys?.shortname)}
+            {$t(row.tenant?.shortname)}
           </span>
           <UsersAvatarGroup
             users={row.managers}

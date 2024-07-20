@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\LaravelResourceController;
-use App\Models\Padalinys;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -92,9 +92,9 @@ class RoleController extends LaravelResourceController
 
         $role->load('permissions:id,name', 'duties:id,name');
 
-        $padaliniaiWithDuties = Padalinys::orderBy('shortname')->with('institutions:id,name,padalinys_id', 'institutions.duties:id,name,institution_id')
+        $tenantsWithDuties = Tenant::orderBy('shortname')->with('institutions:id,name,tenant_id', 'institutions.duties:id,name,institution_id')
             ->when(! auth()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
-                $query->whereIn('id', User::find(Auth::id())->padaliniai->pluck('id'));
+                $query->whereIn('id', User::find(Auth::id())->tenants->pluck('id'));
             })->get();
 
         // edit role
@@ -103,7 +103,7 @@ class RoleController extends LaravelResourceController
                 ...$role->toArray(),
                 'attachable_types' => $role->attachable_types->pluck('id')->toArray(),
             ],
-            'padaliniaiWithDuties' => $padaliniaiWithDuties,
+            'tenantsWithDuties' => $tenantsWithDuties,
             'allTypes' => Type::all(),
         ]);
     }

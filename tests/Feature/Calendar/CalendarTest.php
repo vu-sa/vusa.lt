@@ -1,22 +1,22 @@
 <?php
 
 use App\Models\Calendar;
-use App\Models\Padalinys;
+use App\Models\Tenant;
 use App\Models\User;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->padalinys = Padalinys::query()->inRandomOrder()->first();
+    $this->tenant = Tenant::query()->inRandomOrder()->first();
 
-    $this->user = makeUser($this->padalinys);
+    $this->user = makeUser($this->tenant);
 
-    $this->admin = makeCalendarManager($this->padalinys);
+    $this->admin = makeCalendarManager($this->tenant);
 });
 
-function makeCalendarManager($padalinys): User
+function makeCalendarManager($tenant): User
 {
-    $user = makeUser($padalinys);
+    $user = makeUser($tenant);
 
     $user->duties()->first()->assignRole('Communication Coordinator');
 
@@ -52,7 +52,7 @@ describe('auth: simple user', function () {
         asUser($this->user)->get(route('calendar.edit', $calendar))->assertStatus(302);
     });
 
-    test('simple user cant update calendar', function () {
+    test('can\'t update calendar', function () {
         $calendar = Calendar::query()->first();
 
         asUser($this->user)->put(route('calendar.update', $calendar), [
@@ -64,7 +64,7 @@ describe('auth: simple user', function () {
         ])->assertStatus(302);
     });
 
-    test('simple user cant delete calendar', function () {
+    test('can\'t delete calendar', function () {
         $calendar = Calendar::query()->first();
 
         asUser($this->user)->delete(route('calendar.destroy', $calendar))->assertStatus(302);

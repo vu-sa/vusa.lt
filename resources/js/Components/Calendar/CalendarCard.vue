@@ -75,7 +75,7 @@
         <!--   {{ formatRelativeTime(new Date(calendarEvent.date)) }} -->
         <!-- </div> -->
 
-        <NButton v-if="calendarEvent.padalinys?.alias === 'mif' &&
+        <NButton v-if="calendarEvent.tenant?.alias === 'mif' &&
           calendarEvent.category === 'freshmen-camps'
         " strong tag="a" round type="primary" @click="showModal = true"><template #icon>
             <IFluentHatGraduation20Filled />
@@ -90,7 +90,7 @@
         </NButton>
         <!-- <NModal
           v-if="
-            calendarEvent.padalinys?.alias === 'mif' &&
+            calendarEvent.tenant?.alias === 'mif' &&
             calendarEvent.category === 'freshmen-camps'
           "
           v-model:show="showModal"
@@ -140,7 +140,7 @@ const props = defineProps<{
 const eventOrganizer = computed(() => {
   return (
     props.calendarEvent.extra_attributes?.organizer ??
-    props.calendarEvent.padalinys?.shortname
+    props.calendarEvent.tenant?.shortname
   );
 });
 

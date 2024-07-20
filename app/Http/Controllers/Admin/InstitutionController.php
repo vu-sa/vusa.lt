@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Actions\GetPadaliniaiForUpserts;
+use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\LaravelResourceController;
 use App\Models\Doing;
 use App\Models\Duty;
@@ -52,7 +52,7 @@ class InstitutionController extends LaravelResourceController
         $this->authorize('create', [Institution::class, $this->authorizer]);
 
         return Inertia::render('Admin/People/CreateInstitution', [
-            'padaliniai' => GetPadaliniaiForUpserts::execute('institutions.create.all', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute('institutions.create.all', $this->authorizer),
             'institutionTypes' => Type::where('model_type', Institution::class)->get(),
         ]);
     }
@@ -69,7 +69,7 @@ class InstitutionController extends LaravelResourceController
         $request->validate([
             'name' => 'required',
             'alias' => 'nullable|unique:institutions,alias',
-            'padalinys_id' => 'required',
+            'tenant_id' => 'required',
         ]);
 
         // if request alias is null, create slug from name
@@ -77,7 +77,7 @@ class InstitutionController extends LaravelResourceController
             $request->merge(['alias' => Str::slug($request->name)]);
         }
 
-        $institution = Institution::create($request->only('name', 'short_name', 'alias', 'padalinys_id', 'image_url', 'extra_attributes'));
+        $institution = Institution::create($request->only('name', 'short_name', 'alias', 'tenant_id', 'image_url', 'extra_attributes'));
 
         $institution->types()->sync($request->types);
 
@@ -94,7 +94,7 @@ class InstitutionController extends LaravelResourceController
         $this->authorize('view', [Institution::class, $institution, $this->authorizer]);
 
         // TODO: only show current_users
-        $institution->load('padalinys', 'users', 'matters')->load(['meetings' => function ($query) {
+        $institution->load('tenant', 'users', 'matters')->load(['meetings' => function ($query) {
             $query->with('tasks', 'comments', 'files')->orderBy('start_time', 'asc');
         }])->load('activities.causer');
 
@@ -106,7 +106,7 @@ class InstitutionController extends LaravelResourceController
                 'users' => $institution->users->unique('id')->values(),
                 'managers' => $institution->managers(),
                 'relatedInstitutions' => $institution->related_institution_relationshipables(),
-                'sharepointPath' => $institution->padalinys ? $institution->sharepoint_path() : null,
+                'sharepointPath' => $institution->tenant ? $institution->sharepoint_path() : null,
                 'lastMeeting' => $institution->lastMeeting(),
             ],
             'doingTypes' => Type::where('model_type', Doing::class)->get(['id', 'title']),
@@ -132,7 +132,7 @@ class InstitutionController extends LaravelResourceController
                 'types' => $institution->types->pluck('id'),
             ],
             'institutionTypes' => Type::where('model_type', Institution::class)->get(),
-            'padaliniai' => GetPadaliniaiForUpserts::execute('institutions.update.all', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute('institutions.update.all', $this->authorizer),
         ]);
     }
 
@@ -148,15 +148,15 @@ class InstitutionController extends LaravelResourceController
         // validate
         $request->validate([
             'name' => 'required',
-            'padalinys_id' => 'required',
+            'tenant_id' => 'required',
         ]);
 
         // TODO: short_name and shortname are used as columns in some tables. Need to make the same name.
         $institution->fill($request->only('name', 'short_name', 'description', 'image_url', 'extra_attributes'))->save();
 
-        // check if super admin, then update padalinys_id
+        // check if super admin, then update tenant_id
         if (auth()->user()->hasRole(config('permission.super_admin_role_name'))) {
-            $institution->update($request->only('padalinys_id'));
+            $institution->update($request->only('tenant_id'));
         }
 
         // get only types id

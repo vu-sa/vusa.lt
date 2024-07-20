@@ -8,7 +8,7 @@
         <template #description>
           <p class="mb-4">
             Institucija gali būti bet koks VU SA arba VU organas, pavyzdžiui, VU
-            SA padalinys, darbo grupė, VU studijų programos komitetas ir pan.
+            SA tenant, darbo grupė, VU studijų programos komitetas ir pan.
           </p>
         </template>
         <NFormItem :label="$t('forms.fields.title')" :span="2">
@@ -32,8 +32,8 @@
               </template></NInput>
           </NFormItem>
 
-          <NFormItem label="Padalinys, kuriam priklauso institucija" :span="2">
-            <NSelect v-model:value="form.padalinys_id" :options="options" placeholder="VU SA X" clearable />
+          <NFormItem label="tenant, kuriam priklauso institucija" :span="2">
+            <NSelect v-model:value="form.tenant_id" :options="options" placeholder="VU SA X" clearable />
           </NFormItem>
         </div>
       </FormElement>
@@ -173,7 +173,7 @@ import UserPopover from "../Avatars/UserPopover.vue";
 const props = defineProps<{
   institution: App.Entities.Institution;
   institutionTypes: App.Entities.Type[];
-  padaliniai: Array<App.Entities.Padalinys>;
+  assignableTenants: Array<App.Entities.Tenant>;
   modelRoute: string;
   deleteModelRoute?: string;
 }>();
@@ -182,9 +182,9 @@ const locale = ref("lt");
 
 const form = useForm("institution", props.institution);
 
-const options = props.padaliniai.map((padalinys) => ({
-  value: padalinys.id,
-  label: padalinys.shortname,
+const options = props.assignableTenants.map((tenant) => ({
+  value: tenant.id,
+  label: tenant.shortname,
 }));
 
 const dutiesWereReordered = ref(false);

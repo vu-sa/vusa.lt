@@ -86,7 +86,7 @@ const getRoute = (model: Record<string, any>, type: string) => {
   if (type === "page") {
     return route("page", {
       lang: model.lang,
-      subdomain: usePage().props.padalinys?.subdomain ?? "www",
+      subdomain: usePage().props.tenant?.subdomain ?? "www",
       permalink: model?.permalink,
     });
   } else if (type === "news") {
@@ -94,7 +94,7 @@ const getRoute = (model: Record<string, any>, type: string) => {
       lang: model?.lang,
       news: model?.permalink,
       newsString: "naujiena",
-      subdomain: usePage().props.padalinys?.subdomain ?? "www",
+      subdomain: usePage().props.tenant?.subdomain ?? "www",
     });
   } else if (type === "calendar") {
     return route("calendar.event", {

@@ -2,7 +2,7 @@
   <PageContent title="Pradinio puslapio mygtukų tvarkymas" :back-url="route('mainPage.index')"
     :heading-icon="Icons.MAIN_PAGE">
     <UpsertModelLayout :errors="$page.props.errors" :model="mainPage">
-      <h2>{{ padalinys.shortname }} greitosios nuorodos</h2>
+      <h2>{{ tenant.shortname }} greitosios nuorodos</h2>
       <div ref="el" class="mb-4 flex flex-col gap-1 rounded-sm border p-4 shadow-sm">
         <NButtonGroup v-for="item in mainPageList" :key="item.id" size="small">
           <NButton secondary class="handle">
@@ -34,7 +34,7 @@ import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 const props = defineProps<{
   mainPages: App.Entities.MainPage[];
-  padalinys: App.Entities.Padalinys;
+  tenant: App.Entities.Tenant;
 }>();
 
 const el = ref<HTMLElement | null>(null);

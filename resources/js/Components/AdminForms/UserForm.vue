@@ -195,8 +195,8 @@ import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 const props = defineProps<{
   user: App.Entities.User;
   roles: App.Entities.Role[];
-  padaliniaiWithDuties: App.Entities.Padalinys[];
-  permissablePadaliniai: App.Entities.Padalinys[];
+  tenantsWithDuties: App.Entities.Tenant[];
+  permissableTenants: App.Entities.Tenant[];
   modelRoute: string;
   deleteModelRoute?: string;
 }>();
@@ -213,13 +213,13 @@ if (Array.isArray(form.pronouns)) {
   form.pronouns = { lt: "", en: "" };
 }
 
-const dutyOptions: TreeOption[] = props.padaliniaiWithDuties.map(
-  (padalinys) => {
+const dutyOptions: TreeOption[] = props.tenantsWithDuties.map(
+  (tenant) => {
     return ({
-      label: padalinys.shortname,
-      value: padalinys.id,
+      label: tenant.shortname,
+      value: tenant.id,
       checkboxDisabled: true,
-      children: padalinys.institutions?.map((institution) => ({
+      children: tenant.institutions?.map((institution) => ({
         label: institution.name,
         value: institution.id,
         checkboxDisabled: true,
@@ -230,7 +230,7 @@ const dutyOptions: TreeOption[] = props.padaliniaiWithDuties.map(
       })),
     });
   },
-).filter((padalinys) => props.permissablePadaliniai.some((permissable) => permissable.id === padalinys.value));
+).filter((tenant) => props.permissableTenants.some((permissable) => permissable.id === tenant.value));
 
 // check if email contains "vusa.lt"
 const isUserEmailMaybeDutyEmail = computed(() => {
@@ -308,7 +308,7 @@ const previousDutyColumns: DataTableColumns = [
 
 const renderLabel = ({ option }: { option: TreeOption }) => {
   // jsx element
-  // if value is integer then it's a padalinys and doesn't have additional button
+  // if value is integer then it's a tenant and doesn't have additional button
   if (typeof option.value === "number") {
     return <span>{option.label}</span>;
   }
@@ -338,7 +338,7 @@ const renderLabel = ({ option }: { option: TreeOption }) => {
 
 const renderTargetLabel = ({ option }: { option: TreeOption }) => {
   // jsx element
-  // if value is integer then it's a padalinys and doesn't have additional button
+  // if value is integer then it's a tenant and doesn't have additional button
   if (typeof option.value === "number") {
     return <span>{option.label}</span>;
   }
@@ -361,8 +361,8 @@ const renderTargetLabel = ({ option }: { option: TreeOption }) => {
 
 const flattenDutyOptions = computed(() => {
   return dutyOptions.flatMap(
-    (padalinys) =>
-      padalinys.children?.flatMap(
+    (tenant) =>
+      tenant.children?.flatMap(
         (institution) =>
           institution.children?.map((duty) => {
             return {
@@ -371,11 +371,11 @@ const flattenDutyOptions = computed(() => {
                   ? duty.label
                   : `${duty.label} (${institution.label})`,
               value: duty.value,
-              padalinysId: padalinys.value,
+              tenantId: tenant.value,
             };
           }),
       ),
-  ).filter((duty) => props.permissablePadaliniai.some((permissable) => permissable.id === duty?.padalinysId));
+  ).filter((duty) => props.permissableTenants.some((permissable) => permissable.id === duty?.tenantId));
 });
 
 const rolesOptions = props.roles.map((role) => ({
@@ -384,11 +384,11 @@ const rolesOptions = props.roles.map((role) => ({
 }));
 
 const emailOptions = computed(() => {
-  return usePage().props.auth?.user.padaliniai.map((padalinys) => {
+  return usePage().props.auth?.user.tenants.map((tenant) => {
     const prefix = form.email?.split("@")[0];
     return {
-      label: `${prefix}@${padalinys.alias}.stud.vu.lt`,
-      value: `${prefix}@${padalinys.alias}.stud.vu.lt`,
+      label: `${prefix}@${tenant.alias}.stud.vu.lt`,
+      value: `${prefix}@${tenant.alias}.stud.vu.lt`,
     };
   });
 });

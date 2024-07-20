@@ -43,15 +43,14 @@ class Institution extends Model
         return $this->morphToMany(Type::class, 'typeable');
     }
 
-    public function padalinys()
+    public function tenant()
     {
-        return $this->belongsTo(Padalinys::class, 'padalinys_id');
+        return $this->belongsTo(Tenant::class);
     }
 
-    // TODO: check if method is used anywhere and remove if not
-    public function padaliniai()
+    public function tenants()
     {
-        return $this->padalinys();
+        return $this->tenant();
     }
 
     public function matters()

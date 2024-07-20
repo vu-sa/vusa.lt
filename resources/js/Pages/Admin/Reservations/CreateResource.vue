@@ -4,7 +4,7 @@
   })
     " :heading-icon="Icons.RESOURCE">
     <UpsertModelLayout :errors="$page.props.errors" :model="resource">
-      <ResourceForm :padaliniai="assignablePadaliniai" :resource :categories model-route="resources.store" />
+      <ResourceForm :assignable-tenants :resource :categories model-route="resources.store" />
     </UpsertModelLayout>
   </PageContent>
 </template>
@@ -29,7 +29,7 @@ export type ResourceCreationTemplate = Omit<
 };
 
 defineProps<{
-  assignablePadaliniai: Array<App.Entities.Padalinys>;
+  assignableTenants: Array<App.Entities.Tenant>;
   categories: any
 }>();
 
@@ -45,8 +45,8 @@ const resource: ResourceCreationTemplate = {
   },
   location: "",
   capacity: 1,
-  // If padalinys_id is zero, then the form will be disabled (set in form).
-  padalinys_id: usePage().props.auth?.user.padaliniai[0]?.id ?? 0,
+  // If tenant_id is zero, then the form will be disabled (set in form).
+  tenant_id: usePage().props.auth?.user.tenants[0]?.id ?? 0,
   is_reservable: 1,
   media: [],
 };

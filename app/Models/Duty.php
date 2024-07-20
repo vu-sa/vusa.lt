@@ -100,10 +100,10 @@ class Duty extends Model implements AuthorizableContract
         return $this->hasManyDeepFromRelations($this->users(), (new User())->doings());
     }
 
-    // it has only one padalinys all times, but it's better to have this method with this name
-    public function padaliniai()
+    // it has only one tenant all times, but it's better to have this method with this name
+    public function tenants()
     {
-        return $this->hasManyDeepFromRelations($this->institution(), (new Institution())->padalinys());
+        return $this->hasManyDeepFromRelations($this->institution(), (new Institution())->tenant());
     }
 
     public function meetings()
@@ -129,7 +129,7 @@ class Duty extends Model implements AuthorizableContract
 
     public function resources()
     {
-        return $this->hasManyDeepFromRelations($this->padaliniai(), (new Padalinys())->resources());
+        return $this->hasManyDeepFromRelations($this->tenants(), (new Tenant())->resources());
     }
 
     // add "duty" relation which points to self

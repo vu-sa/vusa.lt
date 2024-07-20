@@ -7,7 +7,7 @@ return [
     'meeting' => [
         'model' => '{1} susitikimas|[2,9] susitikimai|[10,*] susitikimų',
     ],
-    'padalinys' => [
+    'tenant' => [
         'model' => '{1} padalinys|[2,9] padaliniai|[10,*] padalinių',
     ],
     'reservation' => [

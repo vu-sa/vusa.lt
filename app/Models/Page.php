@@ -17,9 +17,9 @@ class Page extends Model
         'created_at' => 'datetime:Y-m-d H:i:s',
     ];
 
-    public function padalinys()
+    public function tenant()
     {
-        return $this->belongsTo(Padalinys::class, 'padalinys_id');
+        return $this->belongsTo(Tenant::class);
     }
 
     // Get another language page

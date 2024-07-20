@@ -77,8 +77,8 @@
           </div>
         </NFormItem>
         <NFormItem label="Padalinys">
-          <NSelect v-model:value="form.padalinys_id" :options="padaliniai" label-field="shortname" value-field="id"
-            placeholder="VU SA ..." :default-value="padaliniai[0].id ?? ''" />
+          <NSelect v-model:value="form.tenant_id" :options="assignableTenants" label-field="shortname" value-field="id"
+            placeholder="VU SA ..." :default-value="assignableTenants[0].id ?? ''" />
         </NFormItem>
       </FormElement>
       <FormElement>
@@ -214,7 +214,7 @@ const props = defineProps<{
   images?: any;
   modelRoute: string;
   deleteModelRoute?: string;
-  padaliniai: App.Entities.Padalinys[];
+  assignableTenants: App.Entities.Tenant[];
 }>();
 
 const locale = ref("lt");
@@ -250,7 +250,7 @@ if (form.extra_attributes !== null) {
 
 const defaultOrganizer = computed(() => {
   return (
-    props.calendar.padalinys?.shortname ?? usePage().props.auth?.user.padalinys
+    props.calendar.tenant?.shortname ?? usePage().props.auth?.user.tenant
   );
 });
 

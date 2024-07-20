@@ -8,7 +8,7 @@ import { computed, h, provide, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 import type { DataTableColumns, DataTableSortState } from "naive-ui";
 
-import { langColumn, padalinysColumn } from "@/Composables/dataTableColumns";
+import { langColumn, tenantColumn } from "@/Composables/dataTableColumns";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
@@ -65,7 +65,7 @@ const columns = computed<DataTableColumns<App.Entities.News>>(() => [
           publicRoute="page"
           routeProps={{
             lang: row.lang,
-            subdomain: row.padalinys?.alias ?? "www",
+            subdomain: row.tenant?.alias ?? "www",
             permalink: row.permalink,
           }}
         />
@@ -97,9 +97,9 @@ const columns = computed<DataTableColumns<App.Entities.News>>(() => [
     },
   },
   {
-    ...padalinysColumn(filters, usePage().props.padaliniai),
+    ...tenantColumn(filters, usePage().props.tenants),
     render(row) {
-      return row.padalinys.shortname;
+      return row.tenant.shortname;
     },
   },
   {

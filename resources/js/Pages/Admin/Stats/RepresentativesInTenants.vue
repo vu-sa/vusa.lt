@@ -1,6 +1,6 @@
 <template>
   <PageContent title="Stud. atstovavimo statistika">
-    <NDataTable :data="padaliniai" :columns="columns" />
+    <NDataTable :data="tenants" :columns="columns" />
   </PageContent>
 </template>
 
@@ -9,7 +9,7 @@ import { NDataTable } from "naive-ui";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 
 const props = defineProps<{
-  padaliniai: any;
+  tenants: any;
 }>();
 
 const columns = [

@@ -53,6 +53,7 @@ export enum ModelEnum {
   "SHAREPOINT_FILEABLE" = "sharepointFileable",
   "TAG" = "tag",
   "TASK" = "task",
+  "TENANT" = "tenant",
   "TYPE" = "type",
   "USER" = "user",
 }

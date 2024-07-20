@@ -15,8 +15,8 @@
         <NFormItem label="Identifikacinis kodas (nebūtinas)">
           <NInput v-model:value="form.identifier" placeholder="PRJ-CB-01-K" />
         </NFormItem>
-        <NFormItem :label="capitalize($tChoice('entities.padalinys.model', 1))" required>
-          <NSelect v-model:value="form.padalinys_id" :options="padaliniai" label-field="shortname" value-field="id"
+        <NFormItem :label="capitalize($tChoice('entities.tenant.model', 1))" required>
+          <NSelect v-model:value="form.tenant_id" :options="assignableTenants" label-field="shortname" value-field="id"
             placeholder="VU SA X" clearable />
         </NFormItem>
       </FormElement>
@@ -85,7 +85,7 @@ import type { ResourceEditType } from "@/Pages/Admin/Reservations/EditResource.v
 const props = defineProps<{
   resource: ResourceCreationTemplate | ResourceEditType;
   categories: App.Entities.ResourceCategory[];
-  padaliniai: App.Entities.Padalinys[];
+  assignableTenants: App.Entities.Tenant[];
   modelRoute: string;
   deleteModelRoute?: string;
 }>();
@@ -106,9 +106,9 @@ const routeToSubmit = computed(() => {
 
 const form = useForm(props.resource);
 
-// padalinys_id is set to 0 if it's not found. Shouldn't happen for authenticated users.
+// tenant_id is set to 0 if it's not found. Shouldn't happen for authenticated users.
 const formDisabled = computed(() => {
-  return form.padalinys_id === 0;
+  return form.tenant_id === 0;
 });
 
 const renderTag = (category) => {

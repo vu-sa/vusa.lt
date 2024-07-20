@@ -20,7 +20,7 @@ class DashboardController extends Controller
 
         // load user duty institutions
         // TODO: need to make it current duty institutions.
-        $user = User::with('duties.institution.padalinys', 'duties.institution.users:users.id,users.name,profile_photo_path,phone')->with(['doings' => function (Builder $query) {
+        $user = User::with('duties.institution.tenant', 'duties.institution.users:users.id,users.name,profile_photo_path,phone')->with(['doings' => function (Builder $query) {
             $query->with('comments', 'tasks')->where('deleted_at', null)->orderBy('date', 'desc');
         }])->with('reservations')->find(auth()->user()->id);
 
@@ -53,8 +53,8 @@ class DashboardController extends Controller
         $user->load('roles:id,name',
             'duties:id,name,institution_id',
             'duties.roles:id,name', 'duties.roles.permissions:id,name',
-            'duties.institution:id,padalinys_id',
-            'duties.institution.padalinys:id,shortname');
+            'duties.institution:id,tenant_id',
+            'duties.institution.tenant:id,shortname');
 
         return Inertia::render('Admin/ShowUserSettings', [
             'user' => $user->toFullArray(),

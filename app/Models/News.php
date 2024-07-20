@@ -28,9 +28,9 @@ class News extends Model implements Feedable
         return $this->belongsTo(User::class);
     }
 
-    public function padalinys()
+    public function tenant()
     {
-        return $this->belongsTo(Padalinys::class, 'padalinys_id');
+        return $this->belongsTo(Tenant::class);
     }
 
     public function other_language_news()
@@ -60,7 +60,7 @@ class News extends Model implements Feedable
             ->updated(Carbon::parse($this->publish_time))
             // image with hostname
             ->link('naujiena/'.$this->permalink)
-            ->authorName($this->padalinys->shortname);
+            ->authorName($this->tenant->shortname);
     }
 
     public static function getFeedItems()

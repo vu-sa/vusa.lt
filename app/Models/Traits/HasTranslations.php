@@ -8,7 +8,12 @@ trait HasTranslations
 {
     use BaseHasTranslations;
 
-    public function toArray()
+    /**
+     * Return attributes with translations of the model.
+     *
+     * @return array
+     */
+    public function toArray(): array
     {
         $attributes = parent::toArray();
         foreach ($this->getTranslatableAttributes() as $field) {
@@ -18,8 +23,12 @@ trait HasTranslations
         return $attributes;
     }
 
-    // get full model
-    public function toFullArray()
+    /**
+     * Return full attributes of the model.
+     *
+     * @return array
+     */
+    public function toFullArray(): array
     {
         $attributes = parent::toArray();
         foreach ($this->getTranslatableAttributes() as $field) {

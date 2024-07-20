@@ -2,7 +2,6 @@
 
 namespace App\Actions;
 
-use App\Models\Padalinys;
 use Illuminate\Support\Facades\Request;
 
 class GetAliasSubdomainForPublic
@@ -22,12 +21,12 @@ class GetAliasSubdomainForPublic
             $alias = in_array($subdomain, ['naujas', 'www', 'static']) ? 'vusa' : $subdomain;
         }
 
-        // In some routes, the padalinys is passed as a parameter. If so, we use that, instead of the subdomain.
-        if (request()->padalinys != null && in_array(request()->padalinys, ['Padaliniai', 'naujas'])) {
+        // In some routes, the tenant is passed as a parameter. If so, we use that, instead of the subdomain.
+        if (request()->tenant != null && in_array(request()->tenant, ['Padaliniai', 'naujas'])) {
             $alias = 'vusa';
         }
 
-        // When we have the final alias, get the padalinys that will be used in all of the public controllers
+        // When we have the final alias, get the tenant that will be used in all of the public controllers
         return [$alias, $subdomain];
     }
 }

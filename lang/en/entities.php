@@ -7,7 +7,7 @@ return [
     'meeting' => [
         'model' => '{1} meeting|[2,*] meetings',
     ],
-    'padalinys' => [
+    'tenant' => [
         'model' => '{1} unit|[2,*] units',
     ],
     'reservation' => [

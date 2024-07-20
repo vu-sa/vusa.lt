@@ -53,8 +53,8 @@ class AgendaItem extends Pivot
         return $this->hasManyDeepFromRelations($this->meeting(), (new Meeting)->institutions());
     }
 
-    public function padaliniai()
+    public function tenants()
     {
-        return $this->hasManyDeepFromRelations($this->institutions(), (new Institution)->padalinys());
+        return $this->hasManyDeepFromRelations($this->institutions(), (new Institution)->tenant());
     }
 }

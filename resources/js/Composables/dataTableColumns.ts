@@ -1,19 +1,19 @@
 import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
 import { capitalize } from "@/Utils/String";
 
-export const padalinysColumn = (filters, padaliniai) => {
+export const tenantColumn = (filters, tenants) => {
   return {
-    key: "padalinys.id",
+    key: "tenant.id",
     title() {
-      return capitalize($tChoice("entities.padalinys.model", 1));
+      return capitalize($tChoice("entities.tenant.model", 1));
     },
     width: 120,
     filter: true,
-    filterOptionValues: filters.value["padalinys.id"],
-    filterOptions: padaliniai.map((padalinys) => {
+    filterOptionValues: filters.value["tenant.id"],
+    filterOptions: tenants.map((tenant) => {
       return {
-        label: $t(padalinys.shortname),
-        value: padalinys.id,
+        label: $t(tenant.shortname),
+        value: tenant.id,
       };
     }),
   };

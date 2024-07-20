@@ -16,7 +16,7 @@ import { computed, provide, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 import type { DataTableColumns, DataTableSortState } from "naive-ui";
 
-import { langColumn, padalinysColumn } from "@/Composables/dataTableColumns";
+import { langColumn, tenantColumn } from "@/Composables/dataTableColumns";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
@@ -56,9 +56,9 @@ const columns = computed<DataTableColumns<App.Entities.MainPage>>(() => [
     maxWidth: 300,
   },
   {
-    ...padalinysColumn(filters, usePage().props.padaliniai),
+    ...tenantColumn(filters, usePage().props.tenants),
     render(row) {
-      return $t(row.padalinys?.shortname);
+      return $t(row.tenant?.shortname);
     },
   },
   {

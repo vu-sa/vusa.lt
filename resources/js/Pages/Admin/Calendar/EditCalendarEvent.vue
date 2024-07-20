@@ -11,7 +11,7 @@
         :calendar="calendar"
         :categories="categories"
         :images="images"
-        :padaliniai="padaliniai"
+        :assignable-tenants
       />
     </UpsertModelLayout>
   </PageContent>
@@ -30,7 +30,7 @@ const props = defineProps<{
   calendar: App.Entities.Calendar;
   categories: App.Entities.Category[];
   images: any;
-  padaliniai: App.Entities.Padalinys[];
+  assignableTenants: App.Entities.Tenant[];
 }>();
 
 const calendar = ref(props.calendar);

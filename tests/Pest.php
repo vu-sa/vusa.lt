@@ -13,7 +13,7 @@
 
 use App\Models\Duty;
 use App\Models\Institution;
-use App\Models\Padalinys;
+use App\Models\Tenant;
 use App\Models\User;
 use Tests\TestCase;
 
@@ -48,11 +48,9 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function makeUser(Padalinys $padalinys): User
+function makeUser(Tenant $tenant): User
 {
-    /*$padalinys = Padalinys::query()->inRandomOrder()->first();*/
-
-    $user = User::factory()->hasAttached(Duty::factory()->for(Institution::factory()->for($padalinys)),
+    $user = User::factory()->hasAttached(Duty::factory()->for(Institution::factory()->for($tenant)),
         ['start_date' => now()->subDay()]
     )->create();
 

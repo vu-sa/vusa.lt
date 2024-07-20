@@ -62,9 +62,9 @@ class Meeting extends Model
         return $this->hasManyDeepFromRelations($this->institutions(), (new Institution)->users());
     }
 
-    public function padaliniai()
+    public function tenants()
     {
-        return $this->hasManyDeepFromRelations($this->institutions(), (new Institution)->padalinys());
+        return $this->hasManyDeepFromRelations($this->institutions(), (new Institution)->tenant());
     }
 
     protected static function booted()

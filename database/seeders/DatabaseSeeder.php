@@ -12,11 +12,11 @@ use App\Models\MainPage;
 use App\Models\Matter;
 use App\Models\Meeting;
 use App\Models\News;
-use App\Models\Padalinys;
 use App\Models\Page;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Reservation;
 use App\Models\Resource;
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Seeder;
@@ -33,22 +33,22 @@ class DatabaseSeeder extends Seeder
         $this->call(CategoriesSeeder::class);
         // $this->call(RegistrationFormsSeeder::class);
         $this->call(AdminSeeder::class);
-        $this->call(PadaliniaiSeeder::class);
+        $this->call(TenantSeeder::class);
         $this->call(TypeSeeder::class);
 
-        $padaliniai = Padalinys::all();
+        $tenants = Tenant::all();
 
         Institution::factory(50)
             ->has(Matter::factory(3))
             ->has(Meeting::factory(3)->has(AgendaItem::factory(3)))
-            ->recycle($padaliniai)
+            ->recycle($tenants)
             ->withType()
             ->create();
 
         Institution::factory()
             ->state(['name' => 'Centrinis biuras', 'alias' => 'centrinis-biuras'])
             ->withType()
-            ->recycle(Padalinys::where('alias', 'vusa')->get())
+            ->recycle(Tenant::where('alias', 'vusa')->get())
             ->has(Duty::factory(10)->withType()->hasAttached(User::factory(), ['start_date' => now()->subDay()]))
             ->create();
 
@@ -59,22 +59,22 @@ class DatabaseSeeder extends Seeder
         $this->call(MenuSeeder::class);
         $this->call(DeleteAndSeedPermissions::class);
 
-        Banner::factory(20)->recycle($padaliniai)->create();
-        Calendar::factory(50)->recycle($padaliniai)->create();
-        News::factory(75)->recycle($padaliniai)->create();
-        Page::factory(75)->recycle($padaliniai)->create();
+        Banner::factory(20)->recycle($tenants)->create();
+        Calendar::factory(50)->recycle($tenants)->create();
+        News::factory(75)->recycle($tenants)->create();
+        Page::factory(75)->recycle($tenants)->create();
 
-        Resource::factory(50)->has(Reservation::factory()->hasAttached($users->random(3)))->recycle($padaliniai)->create();
+        Resource::factory(50)->has(Reservation::factory()->hasAttached($users->random(3)))->recycle($tenants)->create();
 
         $this->call(RoleStudentRepresentativeSeeder::class);
         $this->call(RoleStudentRepresentativeCoordinatorSeeder::class);
         $this->call(RoleCommunicationCoordinatorSeeder::class);
 
-        Goal::factory(10)->recycle($padaliniai)->create();
+        Goal::factory(10)->recycle($tenants)->create();
 
-        foreach ($padaliniai as $padalinys) {
+        foreach ($tenants as $tenant) {
             MainPage::factory(6)
-                ->recycle($padalinys)
+                ->recycle($tenant)
                 ->state(new Sequence(['lang' => 'lt'], ['lang' => 'en']))
                 ->state(new Sequence(
                     ['link' => '/lt/kontaktai/koordinatoriai', 'text' => 'Koordinatoriai'],
@@ -86,6 +86,6 @@ class DatabaseSeeder extends Seeder
                 ))->create();
         }
 
-        MainPage::factory(200)->recycle($padaliniai)->create();
+        MainPage::factory(200)->recycle($tenants)->create();
     }
 }

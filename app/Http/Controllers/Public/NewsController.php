@@ -13,7 +13,7 @@ class NewsController extends PublicController
     public function news($subdomain, $lang, $newsString, News $news)
     {
         $this->getBanners();
-        $this->getPadalinysLinks();
+        $this->getTenantLinks();
 
         if (substr($news->image, 0, 4) == 'http') {
             $image = $news->image;
@@ -61,10 +61,10 @@ class NewsController extends PublicController
                     ];
                 }),
                 'image' => $image,
-                'padalinys' => $news->padalinys->shortname,
+                'tenant' => $news->tenant->shortname,
             ],
         ])->withViewData([
-            'title' => $news->title.' | '.$this->padalinys->shortname,
+            'title' => $news->title.' | '.$this->tenant->shortname,
             'description' => $news->short ? strip_tags($news->short) : $seoDescription,
             'image' => $seoImage,
         ]);
@@ -73,11 +73,11 @@ class NewsController extends PublicController
     public function newsArchive()
     {
         $this->getBanners();
-        $this->getPadalinysLinks();
+        $this->getTenantLinks();
 
         Inertia::share('otherLangURL', route('newsArchive', ['lang' => $this->getOtherLang(), 'subdomain' => $this->subdomain, 'newsString' => app()->getLocale() === 'lt' ? 'news' : 'naujienos']));
 
-        $news = News::where('padalinys_id', $this->padalinys->id)
+        $news = News::where('tenant_id', $this->tenant->id)
             ->where('lang', app()->getLocale())
             ->where('draft', false)
             ->select('id', 'title', 'short', 'image', 'permalink', 'publish_time', 'lang')
@@ -87,8 +87,8 @@ class NewsController extends PublicController
         return Inertia::render('Public/NewsArchive', [
             'news' => $news,
         ])->withViewData([
-            'title' => "{$this->padalinys->shortname} naujienų archyvas",
-            'description' => "Naršyk per visas {$this->padalinys->shortname} naujienas",
+            'title' => "{$this->tenant->shortname} naujienų archyvas",
+            'description' => "Naršyk per visas {$this->tenant->shortname} naujienas",
         ]);
     }
 }

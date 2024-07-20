@@ -37,11 +37,11 @@
         <MainMenu class="mx-auto hidden pb-1 max-md:block" />
       </nav>
       <SecondMenu v-if="
-        $page.props.padalinys?.links &&
-        $page.props.padalinys?.links.length > 0
+        $page.props.tenant?.links &&
+        $page.props.tenant?.links.length > 0
       " class="duration-300 ease-in-out group-hover:translate-y-0" :class="{
         '-translate-y-full': hasScrolledDown,
-      }" :links="$page.props.padalinys?.links" />
+      }" :links="$page.props.tenant?.links" />
     </div>
   </section>
 </template>

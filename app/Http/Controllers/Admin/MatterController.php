@@ -116,11 +116,11 @@ class MatterController extends LaravelResourceController
         ]);
 
         // dd($validated);
-        // get padalinys from first matter institution
-        $padalinys = $matter->institutions->first()->padalinys;
+        // get tenant from first matter institution
+        $tenant = $matter->institutions->first()->tenant;
 
         // check if goal_id exists if not, create new with that name
-        $goal = Goal::firstOrNew(['id' => $validated['goal_id']], ['title' => $validated['goal_id'], 'padalinys_id' => $padalinys->id, 'start_date' => now()]);
+        $goal = Goal::firstOrNew(['id' => $validated['goal_id']], ['title' => $validated['goal_id'], 'tenant_id' => $tenant->id, 'start_date' => now()]);
         // generate uuid
         $goal->id = (string) \Illuminate\Support\Str::ulid();
         $goal->save();

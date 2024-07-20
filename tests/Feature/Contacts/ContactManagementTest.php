@@ -2,7 +2,7 @@
 
 use App\Actions\GetAttachableTypesForDuty;
 use App\Models\Duty;
-use App\Models\Padalinys;
+use App\Models\Tenant;
 use App\Models\Role;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -10,16 +10,16 @@ use Inertia\Testing\AssertableInertia as Assert;
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->padalinys = Padalinys::query()->inRandomOrder()->first();
+    $this->tenant = Tenant::query()->inRandomOrder()->first();
 
-    $this->user = makeUser($this->padalinys);
+    $this->user = makeUser($this->tenant);
 
-    $this->admin = makeContactManager($this->padalinys);
+    $this->admin = makeContactManager($this->tenant);
 });
 
-function makeContactManager($padalinys): User
+function makeContactManager($tenant): User
 {
-    $user = makeUser($padalinys);
+    $user = makeUser($tenant);
 
     $user->duties()->first()->assignRole('Student Representative Coordinator');
 
@@ -85,7 +85,7 @@ test('contact manager cant create user without duty', function () {
     $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
         ->component('Admin/People/CreateUser')
         ->has('roles')
-        ->has('padaliniaiWithDuties')
+        ->has('tenantsWithDuties')
     );
 
     $response = $admin->post(route('users.store'), [
@@ -117,7 +117,7 @@ test('contact manager can create user with duty', function () {
     $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
         ->component('Admin/People/CreateUser')
         ->has('roles')
-        ->has('padaliniaiWithDuties')
+        ->has('tenantsWithDuties')
     );
 
     $response = $admin->post(route('users.store'), [

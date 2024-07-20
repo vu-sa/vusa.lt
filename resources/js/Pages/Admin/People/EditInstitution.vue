@@ -10,13 +10,13 @@
         :route-props="{
           institution: institution.alias,
           lang: $page.props.app.locale,
-          subdomain: institution.padalinys?.alias ?? 'www',
+          subdomain: institution.tenant?.alias ?? 'www',
         }"
       />
     </template>
     <UpsertModelLayout :errors="$page.props.errors" :model="institution">
       <InstitutionForm
-        :padaliniai="padaliniai"
+        :assignable-tenants
         model-route="institutions.update"
         delete-model-route="institutions.destroy"
         :institution="institution"
@@ -39,7 +39,7 @@ import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 const props = defineProps<{
   institution: App.Entities.Institution;
   institutionTypes: Array<App.Entities.Type>;
-  padaliniai: Array<App.Entities.Padalinys>;
+  assignableTenants: Array<App.Entities.Tenant>;
 }>();
 
 const institution = ref(props.institution);

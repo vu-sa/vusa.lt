@@ -53,11 +53,11 @@ class ModelPolicy
      * commonChecker
      * This function checks resource models by a common pattern. First, it checks for wildcard,
      * then if the user has permission to view own models, and finally if the user has permission
-     * to view models of the same padalinys.
+     * to view models of the same tenant.
      *
      * The implementation may be finicky.
      */
-    protected function commonChecker(User $user, Model $model, string $ability, string $relationFromDuties, $hasManyPadalinys = true): bool
+    protected function commonChecker(User $user, Model $model, string $ability, string $relationFromDuties, $hasManyTenants = true): bool
     {
 
         // Check for wildcard (.*), if true, return true
@@ -97,29 +97,29 @@ class ModelPolicy
             }
         }
 
-        $padalinysRelation = $hasManyPadalinys ? 'padaliniai' : 'padalinys';
+        $tenantRelation = $hasManyTenants ? 'tenants' : 'tenant';
 
-        // If the user has permission to view padalinys and user belongs to same padalinys as the institution
+        // If the user has permission to view tenant and user belongs to same tenant as the institution
         if ($this->authorizer->forUser($user)->check($this->pluralModelName.'.'.$ability.'.'.PermissionScopeEnum::PADALINYS()->label)) {
-            $permissablePadaliniai = $user->padaliniai()
+            $permissableTenants = $user->tenants()
                 ->whereIn('duties.id', $this->authorizer->getPermissableDuties()
                     ->pluck('id'))
                 ->get();
 
-            $modelPadaliniai = $model->load($padalinysRelation)->$padalinysRelation;
+            $modelTenants = $model->load($tenantRelation)->$tenantRelation;
 
             $modelCollection = new Collection();
 
-            if ($modelPadaliniai instanceof Model) {
-                $modelCollection->push($modelPadaliniai);
+            if ($modelTenants instanceof Model) {
+                $modelCollection->push($modelTenants);
             }
 
-            if ($modelPadaliniai instanceof Collection) {
-                $modelCollection = $modelPadaliniai;
+            if ($modelTenants instanceof Collection) {
+                $modelCollection = $modelTenants;
             }
 
             // final intersection check
-            if ($modelCollection->intersect($permissablePadaliniai)->isNotEmpty()) {
+            if ($modelCollection->intersect($permissableTenants)->isNotEmpty()) {
                 return true;
             }
         }

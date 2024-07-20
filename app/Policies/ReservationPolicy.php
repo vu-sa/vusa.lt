@@ -39,7 +39,7 @@ class ReservationPolicy extends ModelPolicy
             return true;
         }
 
-        // foreach resource with unique padalinys_id, check
+        // foreach resource with unique tenant_id, check
         // if user has permission to view it
 
         foreach ($reservation->resources as $resource) {

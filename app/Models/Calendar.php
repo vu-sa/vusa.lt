@@ -24,9 +24,9 @@ class Calendar extends Model implements HasMedia
         'extra_attributes' => 'array',
     ];
 
-    public function padalinys()
+    public function tenant()
     {
-        return $this->belongsTo(Padalinys::class, 'padalinys_id');
+        return $this->belongsTo(Tenant::class);
     }
 
     //# Undefined property: App\Models\Calendar::$category, when generating types

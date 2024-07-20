@@ -20,9 +20,9 @@ class ResourceCategory extends Model
         return $this->hasMany(Resource::class);
     }
 
-    public function padaliniai()
+    public function tenants()
     {
-        return $this->hasManyDeepFromRelations($this->resources(), (new Resource)->padalinys());
+        return $this->hasManyDeepFromRelations($this->resources(), (new Resource)->tenant());
     }
 
     public function toSearchableArray()

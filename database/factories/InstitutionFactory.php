@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Institution;
-use App\Models\Padalinys;
+use App\Models\Tenant;
 use App\Models\Type;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -27,7 +27,7 @@ class InstitutionFactory extends Factory
             'description' => '<p>'.$this->faker->paragraph(2).'</p><p>'.$this->faker->paragraph(2).'</p><p>'.$this->faker->paragraph(2).'</p>',
             // sometimes image is not available
             'image_url' => $this->faker->boolean(50) ? $this->faker->imageUrl() : null,
-            'padalinys_id' => Padalinys::factory(),
+            'tenant_id' => Tenant::factory(),
         ];
     }
 

@@ -2,19 +2,18 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Actions\GetPadaliniaiForUpserts;
+use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\LaravelResourceController;
 use App\Models\Calendar;
 use App\Models\Category;
 use App\Models\Institution;
 use App\Models\MainPage;
 use App\Models\News;
-use App\Models\Padalinys;
 use App\Models\Page;
+use App\Models\Tenant;
 use App\Services\ModelIndexer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 class MainPageController extends LaravelResourceController
@@ -52,7 +51,7 @@ class MainPageController extends LaravelResourceController
 
         return Inertia::render('Admin/Content/CreateMainPage', [
             'typeOptions' => Inertia::lazy(fn () => $this->getMainPageTypeOptions(request()->input('type'))),
-            'padaliniaiOptions' => GetPadaliniaiForUpserts::execute('mainPages.create.all', $this->authorizer),
+            'tenantOptions' => GetTenantsForUpserts::execute('mainPages.create.all', $this->authorizer),
         ]);
     }
 
@@ -71,19 +70,19 @@ class MainPageController extends LaravelResourceController
         ]);
 
         if (request()->user()->hasRole(config('permission.super_admin_role_name'))) {
-            $padalinys_id = Padalinys::where('type', 'pagrindinis')->first()->id;
+            $tenant_id = Tenant::where('type', 'pagrindinis')->first()->id;
         } else {
-            $padalinys_id = $this->authorizer->permissableDuties->first()->padaliniai->first()->id;
+            $tenant_id = $this->authorizer->permissableDuties->first()->tenants->first()->id;
         }
 
-        DB::transaction(function () use ($request, $padalinys_id) {
+        DB::transaction(function () use ($request, $tenant_id) {
             $mainPage = new MainPage;
 
             $mainPage->text = $request->text;
             $mainPage->link = $request->link;
             $mainPage->lang = $request->lang;
             $mainPage->position = '';
-            $mainPage->padalinys()->associate($padalinys_id);
+            $mainPage->tenant()->associate($tenant_id);
             $mainPage->save();
         });
 
@@ -121,7 +120,7 @@ class MainPageController extends LaravelResourceController
 
         return Inertia::render('Admin/Content/EditMainPage', [
             'mainPage' => $mainPage,
-            'padaliniaiOptions' => GetPadaliniaiForUpserts::execute('mainPages.update.all', $this->authorizer),
+            'tenantOptions' => GetTenantsForUpserts::execute('mainPages.update.all', $this->authorizer),
             'typeOptions' => Inertia::lazy(fn () => $this->getMainPageTypeOptions(request()->input('type'))),
         ]);
     }
@@ -161,19 +160,19 @@ class MainPageController extends LaravelResourceController
         return redirect()->route('mainPage.index')->with('info', 'Sėkmingai ištrinta greitoji nuoroda!');
     }
 
-    public function editOrder(Padalinys $padalinys, string $lang)
+    public function editOrder(Tenant $tenant, string $lang)
     {
-        $mainPages = MainPage::query()->where('padalinys_id', $padalinys->id)->where('lang', $lang)->orderBy('order')->get();
+        $mainPages = MainPage::query()->where('tenant_id', $tenant->id)->where('lang', $lang)->orderBy('order')->get();
 
         $this->authorize('update', [MainPage::class, $mainPages->first(), $this->authorizer]);
 
         return Inertia::render('Admin/Content/EditMainPageOrder', [
             'mainPages' => $mainPages,
-            'padalinys' => $padalinys,
+            'tenant' => $tenant,
         ]);
     }
 
-    public function updateOrder(Request $request, Padalinys $padalinys)
+    public function updateOrder(Request $request, Tenant $tenant)
     {
         $request->validate([
             'orderList' => 'required|array',
@@ -201,16 +200,16 @@ class MainPageController extends LaravelResourceController
                 return;
 
             case 'page':
-                return Page::query()->with('padalinys:id,alias,shortname')->get(['id', 'lang', 'title', 'padalinys_id', 'permalink']);
+                return Page::query()->with('tenant:id,alias,shortname')->get(['id', 'lang', 'title', 'tenant_id', 'permalink']);
 
             case 'news':
-                return News::query()->with('padalinys:id,alias,shortname')->get(['id', 'lang', 'title', 'padalinys_id', 'permalink']);
+                return News::query()->with('tenant:id,alias,shortname')->get(['id', 'lang', 'title', 'tenant_id', 'permalink']);
 
             case 'calendarEvent':
-                return Calendar::query()->with('padalinys:id,alias,shortname')->get(['id', 'title', 'padalinys_id']);
+                return Calendar::query()->with('tenant:id,alias,shortname')->get(['id', 'title', 'tenant_id']);
 
             case 'institution':
-                return Institution::query()->with('padalinys:id,alias,shortname')->get(['id', 'name', 'padalinys_id']);
+                return Institution::query()->with('tenant:id,alias,shortname')->get(['id', 'name', 'tenant_id']);
 
                 // case 'special-page':
                 //     return collect();

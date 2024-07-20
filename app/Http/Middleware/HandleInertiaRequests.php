@@ -4,7 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Enums\ModelEnum;
 use App\Models\ChangelogItem;
-use App\Models\Padalinys;
+use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Database\Eloquent\Collection;
@@ -68,7 +68,7 @@ class HandleInertiaRequests extends Middleware
                 'user' => fn () => [
                     ...$user->toArray(),
                     'isSuperAdmin' => $isSuperAdmin,
-                    'padaliniai' => $user->padaliniai()->get(['padaliniai.id', 'padaliniai.shortname', 'padaliniai.alias'])->unique(),
+                    'tenants' => $user->tenants()->get(['tenants.id', 'tenants.shortname', 'tenants.alias'])->unique(),
                     'unreadNotifications' => $user->unreadNotifications,
                 ],
             ],
@@ -81,8 +81,8 @@ class HandleInertiaRequests extends Middleware
                 // since inertia responses cannot have a 40X status code, we have to pass it in the flash data
                 'statusCode' => fn () => $request->session()->get('statusCode'),
             ],
-            'padaliniai' => fn () => $this->getPadaliniaiForInertia(),
-            // 'padalinys' property is shared in public pages from \App\Http\Controllers\PublicController.php
+            'tenants' => fn () => $this->getTenantsForInertia(),
+            // 'tenants' property is shared in public pages from \App\Http\Controllers\PublicController.php
             'search' => [
                 'calendar' => $request->session()->get('search_calendar') ?? [],
                 'news' => $request->session()->get('search_news') ?? [],
@@ -101,14 +101,14 @@ class HandleInertiaRequests extends Middleware
         return $user;
     }
 
-    private function getPadaliniaiForInertia(): Collection
+    private function getTenantsForInertia(): Collection
     {
-        // TODO: maybe should return all 'padaliniai', even pagrindinis
-        $padaliniai = Cache::rememberForever('all-padaliniai-for-inertia',
-            fn () => Padalinys::orderBy('shortname_vu')->get(['id', 'alias', 'shortname', 'fullname', 'type'])
+        // TODO: maybe should return all tenants, even pagrindinis
+        $tenants = Cache::rememberForever('all-tenants-for-inertia',
+            fn () => Tenant::orderBy('shortname_vu')->get(['id', 'alias', 'shortname', 'fullname', 'type'])
         );
 
-        return $padaliniai;
+        return $tenants;
     }
 
     private function getIndexPermissions(User $user)

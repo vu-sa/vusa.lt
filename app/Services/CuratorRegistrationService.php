@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Padalinys;
+use App\Models\Tenant;
 use Illuminate\Support\Carbon;
 
 class CuratorRegistrationService
@@ -88,16 +88,16 @@ class CuratorRegistrationService
         ]);
     }
 
-    public function getRegistrationPadaliniaiWithData()
+    public function getRegistrationTenantsWithData()
     {
-        return Padalinys::query()->select('id', 'fullname', 'alias', 'type')->orderBy('fullname')->where('type', 'padalinys')->get()->map(function ($padalinys) {
+        return Tenant::query()->select('id', 'fullname', 'alias', 'type')->orderBy('fullname')->where('type', 'padalinys')->get()->map(function ($tenant) {
             return [
-                'id' => $padalinys->id,
-                'fullname' => $padalinys->fullname,
+                'id' => $tenant->id,
+                'fullname' => $tenant->fullname,
                 // Check if registration launch time is in the past
-                'registration_url' => $this->getRegistrationMetadata()[$padalinys?->alias]['registration_launch_time']?->isPast() ? $this->getRegistrationMetadata()[$padalinys?->alias]['registration_url'] : null,
-                'registration_launch_time' => $this->getRegistrationMetadata()[$padalinys?->alias]['registration_launch_time'],
-                'registration_end_time' => $this->getRegistrationMetadata()[$padalinys?->alias]['registration_end_time'],
+                'registration_url' => $this->getRegistrationMetadata()[$tenant?->alias]['registration_launch_time']?->isPast() ? $this->getRegistrationMetadata()[$tenant?->alias]['registration_url'] : null,
+                'registration_launch_time' => $this->getRegistrationMetadata()[$tenant?->alias]['registration_launch_time'],
+                'registration_end_time' => $this->getRegistrationMetadata()[$tenant?->alias]['registration_end_time'],
             ];
         });
     }

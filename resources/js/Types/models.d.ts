@@ -11,11 +11,11 @@ declare global {
       lang: string
       order: number
       is_active: number
-      padalinys_id: number
+      tenant_id: number
       created_at: string
       updated_at: string
       // relations
-      padalinys: Padalinys
+      tenant: Tenant
     }
 
     export interface Calendar {
@@ -28,13 +28,13 @@ declare global {
       location: string|null
       category: string|null
       url: string|null
-      padalinys_id: number
+      tenant_id: number
       extra_attributes: string[]|null
       created_at: string
       updated_at: string
       registration_form_id: number|null
       // relations
-      padalinys: Padalinys
+      tenant: Tenant
       registration_form: RegistrationForm
       media: Medium[]
     }
@@ -178,7 +178,7 @@ declare global {
       // columns
       id: string
       group_id: string|null
-      padalinys_id: number
+      tenant_id: number
       title: string
       description: string|null
       start_date: string
@@ -190,7 +190,7 @@ declare global {
       matters: Matter[]
       doings: Doing[]
       group: GoalGroup
-      padalinys: Padalinys
+      tenant: Tenant
       commentable: Goal
       comments: Comment[]
       files: SharepointFile[]
@@ -220,7 +220,7 @@ declare global {
       alias: string
       description: string|null
       image_url: string|null
-      padalinys_id: number|null
+      tenant_id: number|null
       created_at: string
       updated_at: string
       extra_attributes: string[]|null
@@ -228,7 +228,7 @@ declare global {
       // relations
       duties: Duty[]
       types: Type[]
-      padalinys: Padalinys
+      tenant: Tenant
       matters: Matter[]
       meetings: Meeting[]
       commentable: Institution
@@ -249,12 +249,12 @@ declare global {
       order: number|null
       type: string|null
       is_active: boolean
-      padalinys_id: number
+      tenant_id: number
       lang: string|null
       created_at: string
       updated_at: string
       // relations
-      padalinys: Padalinys
+      tenant: Tenant
     }
 
     export interface Matter {
@@ -301,7 +301,6 @@ declare global {
       // columns
       id: number
       parent_id: number
-      padalinys_id: number
       name: string
       lang: string
       url: string
@@ -312,7 +311,6 @@ declare global {
       updated_at?: string
       // relations
       user: User
-      padalinys: Padalinys
     }
 
     export interface News {
@@ -328,7 +326,7 @@ declare global {
       image: string|null
       image_author: string|null
       important: boolean
-      padalinys_id: number
+      tenant_id: number
       publish_time: string|null
       main_points: string|null
       read_more: string|null
@@ -338,33 +336,10 @@ declare global {
       deleted_at: string|null
       // relations
       user: User
-      padalinys: Padalinys
+      tenant: Tenant
       other_language_news: News
       tags: Tag[]
       content: Content
-    }
-
-    export interface Padalinys {
-      // columns
-      id: number
-      type: string|null
-      fullname: string
-      shortname: string
-      alias: string
-      en: boolean
-      phone: string|null
-      email: string|null
-      address: string|null
-      shortname_vu: string
-      // relations
-      banners: Banner[]
-      calendar: Calendar[]
-      duties: Duty[]
-      institutions: Institution[]
-      news: News[]
-      pages: Page[]
-      users: User[]
-      resources: Resource[]
     }
 
     export interface Page {
@@ -377,12 +352,12 @@ declare global {
       content_id: number
       category_id: number|null
       is_active: boolean
-      padalinys_id: number
+      tenant_id: number
       created_at: string
       updated_at: string
       deleted_at: string|null
       // relations
-      padalinys: Padalinys
+      tenant: Tenant
       category: Category
       content: Content
     }
@@ -569,11 +544,13 @@ declare global {
     export interface Resource {
       // columns
       id: string
+      identifier: string|null
       name: string[]
       description: string[]|null
+      resource_category_id: number|null
       location: string|null
       capacity: number
-      padalinys_id: number
+      tenant_id: number
       is_reservable: boolean
       created_at: string
       updated_at: string
@@ -582,11 +559,23 @@ declare global {
       translations: unknown
       // relations
       reservations: Reservation[]
-      padalinys: Padalinys
+      tenant: Tenant
+      category: ResourceCategory
       media: Medium[]
     }
 
     export interface ResourceCategory {
+      // columns
+      id: number
+      name: string[]
+      description: string[]|null
+      icon: string|null
+      created_at: string
+      updated_at: string
+      // mutators
+      translations: unknown
+      // relations
+      resources: Resource[]
     }
 
     export interface Role {
@@ -653,6 +642,29 @@ declare global {
       deleted_at: string|null
       // relations
       taskable: Task
+      users: User[]
+    }
+
+    export interface Tenant {
+      // columns
+      id: number
+      type: string|null
+      fullname: string
+      shortname: string
+      alias: string
+      phone: string|null
+      email: string|null
+      address: string|null
+      shortname_vu: string
+      primary_institution_id: string|null
+      // relations
+      banners: Banner[]
+      calendar: Calendar[]
+      duties: Duty[]
+      institutions: Institution[]
+      news: News[]
+      pages: Page[]
+      resources: Resource[]
       users: User[]
     }
 

@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Calendar;
-use App\Models\Padalinys;
+use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Arr;
 
@@ -29,7 +29,7 @@ class CalendarFactory extends Factory
             'description' => fake()->paragraph,
             'category' => Arr::random(['red', 'yellow', 'grey']),
             'url' => fake()->url,
-            'padalinys_id' => Padalinys::factory(),
+            'tenant_id' => Tenant::factory(),
         ];
     }
 }

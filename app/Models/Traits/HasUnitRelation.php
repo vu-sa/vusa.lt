@@ -11,14 +11,12 @@ trait HasUnitRelation
      */
     public function whichUnitRelation(): string
     {
-        // check for padalinys relation
-        if (method_exists($this, 'padalinys')) {
-            return 'padalinys';
+        if (method_exists($this, 'tenant')) {
+            return 'tenant';
         }
 
-        // check for padaliniai relation
-        if (method_exists($this, 'padaliniai')) {
-            return 'padaliniai';
+        if (method_exists($this, 'tenants')) {
+            return 'tenants';
         }
 
         // Throw exception if no unit relation found.

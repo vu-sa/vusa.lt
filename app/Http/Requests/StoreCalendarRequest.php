@@ -39,7 +39,7 @@ class StoreCalendarRequest extends ResourceRequest
     {
         return [
             'date' => 'required|date',
-            'padalinys_id' => 'required|integer',
+            'tenant_id' => 'required|integer',
             'end_date' => 'nullable|date|after:date',
             'title' => 'required',
             'description' => 'required',

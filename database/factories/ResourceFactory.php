@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Padalinys;
+use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -23,7 +23,7 @@ class ResourceFactory extends Factory
             'location' => $this->faker->word,
             'capacity' => $this->faker->numberBetween(1, 10),
             'is_reservable' => $this->faker->boolean,
-            'padalinys_id' => Padalinys::factory(),
+            'tenant_id' => Tenant::factory(),
         ];
     }
 }

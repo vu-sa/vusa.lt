@@ -4,25 +4,24 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\PublicController;
 use App\Models\Institution;
-use App\Models\Padalinys;
+use App\Models\Tenant;
 use App\Models\Type;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class ContactController extends PublicController
 {
     public function contacts()
     {
-        $this->getPadalinysLinks();
+        $this->getTenantLinks();
         $this->shareOtherLangURL('contacts', $this->subdomain);
 
-        $padaliniai = json_decode(base64_decode(request()->input('selectedPadaliniai'))) ??
-            collect([Padalinys::query()->where('type', 'pagrindinis')->first()->id, $this->padalinys->id])->unique();
+        $tenants = json_decode(base64_decode(request()->input('selectedTenants'))) ??
+            collect([Tenant::query()->where('type', 'pagrindinis')->first()->id, $this->tenant->id])->unique();
 
-        $institutions = Institution::query()->with('padalinys', 'types:id,title,model_type,slug')
-            ->whereHas('padalinys', fn ($query) => $query->whereIn('id', $padaliniai)->select(['id', 'shortname', 'alias'])
+        $institutions = Institution::query()->with('tenant', 'types:id,title,model_type,slug')
+            ->whereHas('tenant', fn ($query) => $query->whereIn('id', $tenants)->select(['id', 'shortname', 'alias'])
             )->withCount('duties')->orderBy('name')->get()->makeHidden(['parent_id', 'created_at', 'updated_at', 'deleted_at', 'extra_attributes']);
 
         return Inertia::render('Public/Contacts/ContactsSearch', [
@@ -35,7 +34,7 @@ class ContactController extends PublicController
                     'description' => '',
                 ];
             }),
-            'selectedPadaliniai' => $padaliniai,
+            'selectedTenants' => $tenants,
         ])->withViewData([
             'title' => 'Kontaktų paieška',
             'description' => 'VU SA kontaktai',
@@ -44,7 +43,7 @@ class ContactController extends PublicController
 
     public function institutionContacts($subdomain, $lang, Institution $institution)
     {
-        $this->getPadalinysLinks();
+        $this->getTenantLinks();
         Inertia::share('otherLangURL', route('contacts.institution', ['subdomain' => $this->subdomain, 'lang' => $this->getOtherLang(), 'institution' => $institution->id]));
 
         $contacts = $institution->load('duties.current_users.current_duties')->duties->sortBy(function ($duty) {
@@ -59,17 +58,17 @@ class ContactController extends PublicController
 
     public function institutionDutyTypeContacts($subdomain, $lang, Type $type)
     {
-        $this->getPadalinysLinks();
+        $this->getTenantLinks();
         Inertia::share('otherLangURL', route('contacts.dutyType', [
             'subdomain' => $this->subdomain,
             'lang' => $this->getOtherLang(), 'type' => $type->slug]));
 
         $types = $type->getDescendantsAndSelf();
 
-        if ($this->padalinys->type === 'pagrindinis') {
+        if ($this->tenant->type === 'pagrindinis') {
             $institution = Institution::where('alias', '=', 'centrinis-biuras')->first();
         } else {
-            $institution = Institution::where('alias', '=', $this->padalinys->alias)->firstOrFail();
+            $institution = Institution::where('alias', '=', $this->tenant->alias)->firstOrFail();
         }
 
         // load duties whereHas types
@@ -97,7 +96,7 @@ class ContactController extends PublicController
 
     public function studentRepresentatives()
     {
-        $this->getPadalinysLinks();
+        $this->getTenantLinks();
         $this->shareOtherLangURL('contacts.studentRepresentatives', $this->subdomain);
 
         $type = Type::query()->where('slug', '=', 'studentu-atstovu-organas')->first();
@@ -106,8 +105,8 @@ class ContactController extends PublicController
         $descendants->load(['institutions' => function ($query) {
             $query
                 ->with('duties.current_users:id,name,email,phone,facebook_url,profile_photo_path')
-                ->with('padalinys:id,alias')
-                ->where('padalinys_id', '=', $this->padalinys->id)
+                ->with('tenant:id,alias')
+                ->where('tenant_id', '=', $this->tenant->id)
                 ->orderBy('name')
                 ->get(['id', 'name', 'alias', 'description']);
         }]);
@@ -120,8 +119,8 @@ class ContactController extends PublicController
         return Inertia::render('Public/Contacts/ShowStudentReps', [
             'types' => $descendants,
         ])->withViewData([
-            'title' => 'Studentų atstovai | '.$this->padalinys->shortname,
-            'description' => "{$this->padalinys->shortname} studentų atstovai",
+            'title' => 'Studentų atstovai | '.$this->tenant->shortname,
+            'description' => "{$this->tenant->shortname} studentų atstovai",
         ]);
     }
 
@@ -158,14 +157,14 @@ class ContactController extends PublicController
      */
     public function institutionCategory($subdomain, $lang, Type $type)
     {
-        $this->getPadalinysLinks();
+        $this->getTenantLinks();
 
         Inertia::share('otherLangURL', route('contacts.category', [
             'subdomain' => $this->subdomain,
             'lang' => $this->getOtherLang(), 'type' => $type->slug]));
 
         $institutions = $type->load(['institutions' => function ($query) {
-            $query->orderBy('name')->with(['padalinys' => function ($query) {
+            $query->orderBy('name')->with(['tenant' => function ($query) {
                 $query->where('type', 'padalinys');
             }]);
         }])->institutions;

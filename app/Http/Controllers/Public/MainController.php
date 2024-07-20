@@ -6,10 +6,10 @@ use App\Http\Controllers\PublicController;
 use App\Mail\ConfirmMemberRegistration;
 use App\Models\Calendar;
 use App\Models\News;
-use App\Models\Padalinys;
 use App\Models\Page;
 use App\Models\Registration;
 use App\Models\RegistrationForm;
+use App\Models\Tenant;
 use App\Models\User;
 use App\Notifications\MemberRegistered;
 use App\Services\IcalendarService;
@@ -37,14 +37,14 @@ class MainController extends PublicController
             return;
         } else {
             $this->storeRegistration(RegistrationForm::find(2));
-            $registerLocation = new Padalinys();
+            $registerLocation = new Tenant();
             $chairPerson = new User();
 
-            // if whereToRegister is int, then it is a padalinys id
+            // if whereToRegister is int, then it is a tenant id
             if (is_int($data['whereToRegister'])) {
-                $registerPadalinys = Padalinys::find($data['whereToRegister']);
-                $registerLocation = __($registerPadalinys->fullname);
-                $chairDuty = $registerPadalinys->duties()->whereHas('types', function ($query) {
+                $registerTenant = Tenant::find($data['whereToRegister']);
+                $registerLocation = __($registerTenant->fullname);
+                $chairDuty = $registerTenant->duties()->whereHas('types', function ($query) {
                     $query->where('slug', 'pirmininkas');
                 })->first();
                 $chairPerson = $chairDuty->users->first();
@@ -76,7 +76,7 @@ class MainController extends PublicController
     public function storeRegistration(RegistrationForm $registrationForm)
     {
         $registration = new Registration;
-        $registration->data = request()->except('registrationForm', 'padalinys');
+        $registration->data = request()->except('registrationForm', 'tenant');
         $registration->registration_form_id = $registrationForm->id;
         $registration->save();
     }
@@ -84,8 +84,8 @@ class MainController extends PublicController
     public function getMainNews()
     {
         // get last 4 news by publishing date
-        $padalinys = Padalinys::where('shortname', '=', 'VU SA')->first();
-        $mainNews = News::select('title', 'short', 'image')->where([['padalinys_id', '=', $padalinys->id], ['draft', '=', 0]])->orderBy('publish_time', 'desc')->take(4)->get();
+        $tenant = Tenant::where('shortname', '=', 'VU SA')->first();
+        $mainNews = News::select('title', 'short', 'image')->where([['tenant_id', '=', $tenant->id], ['draft', '=', 0]])->orderBy('publish_time', 'desc')->take(4)->get();
 
         return response()->json($mainNews, 200, ['Content-type' => 'application/json; charset=utf-8'], JSON_UNESCAPED_UNICODE);
         //

@@ -104,7 +104,7 @@ class SharepointFileController extends LaravelResourceController
     public function getPotentialFileables(Request $request)
     {
         return response()->json([
-            'institutions' => Institution::with('meetings:meetings.id,start_time')->whereHas('padalinys')->get()->map->only('id', 'name', 'meetings'),
+            'institutions' => Institution::with('meetings:meetings.id,start_time')->whereHas('tenant')->get()->map->only('id', 'name', 'meetings'),
             'types' => Type::all()->map->only('id', 'title'),
         ]);
     }

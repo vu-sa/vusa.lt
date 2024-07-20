@@ -14,7 +14,7 @@
               <span>Padalinys, kuriam priklauso institucija</span>
               <NButton v-if="modelRoute === 'mainPage.update'" secondary tag="a" size="tiny" type="primary" round
                 target="_blank" :href="route('mainPage.edit-order', {
-                  padalinys: mainPage.padalinys_id,
+                  tenant: mainPage.tenant_id,
                   lang: mainPage.lang,
                 } as RouteParamsWithQueryOverload)
                   ">
@@ -25,7 +25,7 @@
               </NButton>
             </div>
           </template>
-          <NSelect v-model:value="form.padalinys_id" :options="options" placeholder="VU SA X" clearable />
+          <NSelect v-model:value="form.tenant_id" :options="options" placeholder="VU SA X" clearable />
         </NFormItem>
         <NFormItem label="Kurios kalbos puslapyje rodoma?">
           <NSelect v-model:value="form.lang" :options="languageOptions" placeholder="Pasirinkti kalbą..." />
@@ -79,7 +79,7 @@ import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{
   mainPage: App.Entities.MainPage;
-  padaliniaiOptions: Record<string, any>[];
+  tenantOptions: Record<string, any>[];
   typeOptions: Record<string, any>[];
   modelRoute: string;
   deleteModelRoute?: string;
@@ -88,7 +88,7 @@ const props = defineProps<{
 const form = useForm("mainPage", props.mainPage);
 const pageSelection = ref(null);
 
-const options = props.padaliniaiOptions.map((padalinys) => ({
+const options = props.tenantOptions.map((padalinys) => ({
   value: padalinys.id,
   label: padalinys.shortname,
 }));

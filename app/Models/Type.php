@@ -115,11 +115,11 @@ class Type extends Model
     public function allModelsFromModelType()
     {
         if (Str::contains($this->model_type, 'Institution')) {
-            return $this->model_type::select('id', 'name', 'padalinys_id')->with('padaliniai')->orderBy('name')->get();
+            return $this->model_type::select('id', 'name', 'tenant_id')->with('tenants')->orderBy('name')->get();
         } elseif (Str::contains($this->model_type, 'Duty')) {
-            return $this->model_type::select('id', 'name', 'institution_id')->with('padaliniai')->orderBy('name')->get();
+            return $this->model_type::select('id', 'name', 'institution_id')->with('tenants')->orderBy('name')->get();
         } elseif (Str::contains($this->model_type, 'Doing')) {
-            return $this->model_type::select('id', 'title')->with('padaliniai')->orderBy('title')->get();
+            return $this->model_type::select('id', 'title')->with('tenants')->orderBy('title')->get();
         }
     }
 }

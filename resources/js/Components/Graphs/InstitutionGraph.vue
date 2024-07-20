@@ -41,8 +41,6 @@ const nodes = computed(() => {
       userCount: institution.users_count,
       // short_name: institution.short_name,
       // alias: institution.alias,
-      // padalinys: institution.padalinys,
-      // group: institution.padalinys?.id,
     };
   });
 });

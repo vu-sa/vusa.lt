@@ -1,22 +1,17 @@
 <template>
-  <IndexPageLayout
-    :title="capitalize($tChoice('entities.meeting.model', 2))"
-    model-name="meetings"
-    :can-use-routes="canUseRoutes"
-    :columns="columns"
-    :paginated-models="meetings"
-    :icon="Icons.MEETING"
-  >
-  </IndexPageLayout>
+  <IndexPageLayout :title="capitalize($tChoice('entities.meeting.model', 2))" model-name="meetings"
+    :can-use-routes="canUseRoutes" :columns="columns" :paginated-models="meetings" :icon="Icons.MEETING" />
 </template>
 
 <script setup lang="tsx">
+import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
 import { computed, provide, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 import type { DataTableColumns, DataTableSortState } from "naive-ui";
 
 import { capitalize } from "@/Utils/String";
 import { formatStaticTime } from "@/Utils/IntlTime";
+import { tenantColumn } from "@/Composables/dataTableColumns";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
@@ -38,7 +33,7 @@ const sorters = ref<Record<string, DataTableSortState["order"]>>({
 provide("sorters", sorters);
 
 const filters = ref<Record<string, any>>({
-  "padaliniai.id": [],
+  "tenants.id": [],
 });
 
 provide("filters", filters);
@@ -60,21 +55,11 @@ const columns = computed<DataTableColumns<App.Entities.Meeting>>(() => {
       },
     },
     {
-      title: "Padalinys",
-      key: "padaliniai.id",
-      resizable: true,
-      filter: true,
-      filterOptionValues: filters.value["padaliniai.id"],
-      filterOptions: usePage().props.padaliniai.map((padalinys) => {
-        return {
-          label: padalinys.shortname,
-          value: padalinys.id,
-        };
-      }),
+      ...tenantColumn(filters, usePage().props.tenants),
       render(row) {
-        return row.padaliniai.length === 0
-          ? "Neturi padalinio"
-          : row.padaliniai?.map((padalinys) => padalinys.shortname).join(", ");
+        return row.tenants.length === 0
+          ? ""
+          : $t(row.tenants?.map((tenant) => tenant.shortname).join(", "));
       },
     },
     {

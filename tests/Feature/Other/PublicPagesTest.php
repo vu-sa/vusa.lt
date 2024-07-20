@@ -17,8 +17,8 @@ test('home page gets default public props', function () {
                 ->has('url')
             )
             ->has('mainNavigation')
-            ->has('padaliniai')
-            ->has('padalinys', fn (Assert $page) => $page
+            ->has('tenants')
+            ->has('tenant', fn (Assert $page) => $page
                 ->has('alias')
                 ->has('banners')
                 ->has('id')
