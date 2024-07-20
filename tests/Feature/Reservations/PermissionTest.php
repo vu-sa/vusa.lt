@@ -9,9 +9,7 @@ use App\Models\User;
 use App\States\ReservationResource\Cancelled;
 use App\States\ReservationResource\Created;
 use App\States\ReservationResource\Lent;
-use App\States\ReservationResource\Rejected;
 use App\States\ReservationResource\Reserved;
-use App\States\ReservationResource\Returned;
 use Inertia\Testing\AssertableInertia as Assert;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
