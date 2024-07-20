@@ -5,9 +5,9 @@ namespace App\Policies;
 use App\Enums\ModelEnum;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Support\Str;
-use App\Services\ModelAuthorizer as Authorizer;
 
 class TenantPolicy extends ModelPolicy
 {
@@ -23,8 +23,7 @@ class TenantPolicy extends ModelPolicy
      */
     public function create(User $user, Authorizer $authorizer): bool
     {
-        if ($user->hasRole(config('permission.super_admin_role_name')))
-        {
+        if ($user->hasRole(config('permission.super_admin_role_name'))) {
             return true;
         }
 
@@ -36,8 +35,7 @@ class TenantPolicy extends ModelPolicy
      */
     public function viewAny(User $user, Authorizer $authorizer): bool
     {
-        if ($user->hasRole(config('permission.super_admin_role_name')))
-        {
+        if ($user->hasRole(config('permission.super_admin_role_name'))) {
             return true;
         }
 
@@ -49,8 +47,7 @@ class TenantPolicy extends ModelPolicy
      */
     public function view(User $user, Tenant $tenant, Authorizer $authorizer): bool
     {
-        if ($user->hasRole(config('permission.super_admin_role_name')))
-        {
+        if ($user->hasRole(config('permission.super_admin_role_name'))) {
             return true;
         }
 
@@ -62,8 +59,7 @@ class TenantPolicy extends ModelPolicy
      */
     public function update(User $user, Tenant $tenant, Authorizer $authorizer): bool
     {
-        if ($user->hasRole(config('permission.super_admin_role_name')))
-        {
+        if ($user->hasRole(config('permission.super_admin_role_name'))) {
             return true;
         }
 
@@ -75,11 +71,9 @@ class TenantPolicy extends ModelPolicy
      */
     public function delete(User $user, Tenant $tenant, Authorizer $authorizer): bool
     {
-        if ($user->hasRole(config('permission.super_admin_role_name')))
-        {
+        if ($user->hasRole(config('permission.super_admin_role_name'))) {
             // Only allow deletion of pkp tenants
-            if ($tenant->type == 'pkp')
-            {
+            if ($tenant->type == 'pkp') {
                 return true;
             }
         }

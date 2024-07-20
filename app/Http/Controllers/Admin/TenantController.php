@@ -7,7 +7,6 @@ use App\Http\Requests\StoreTenantRequest;
 use App\Http\Requests\UpdateTenantRequest;
 use App\Models\Institution;
 use App\Models\Tenant;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class TenantController extends LaravelResourceController

@@ -22,12 +22,12 @@ class UpdateTenantRequest extends ResourceRequest
     public function rules(): array
     {
         return [
-            'fullname' => 'required|unique:tenants,fullname,' . $this->tenant->id,
-            'shortname' => 'required|unique:tenants,shortname,' . $this->tenant->id,
+            'fullname' => 'required|unique:tenants,fullname,'.$this->tenant->id,
+            'shortname' => 'required|unique:tenants,shortname,'.$this->tenant->id,
             // Type one of: pagrindinis, padalinys, pkp
             'type' => 'required|in:pagrindinis,padalinys,pkp',
-            'alias' => 'nullable|unique:tenants,alias,' . $this->tenant->id,
-            'shortname_vu' => 'nullable|unique:tenants,shortname_vu,' . $this->tenant->id,
+            'alias' => 'nullable|unique:tenants,alias,'.$this->tenant->id,
+            'shortname_vu' => 'nullable|unique:tenants,shortname_vu,'.$this->tenant->id,
             'primary_institution_id' => 'nullable|exists:institutions,id',
         ];
     }
