@@ -68,6 +68,7 @@ const modelIcons: Record<keyof typeof ModelEnum, FunctionalComponent> = {
   SHAREPOINT_FILEABLE: DocumentMultiple24Filled,
   TAG: Tag24Filled,
   TASK: TaskListSquareLtr24Filled,
+  TENANT: PeopleTeam24Filled,
   TYPE: DocumentSettings20Filled,
   USER: Person24Filled,
 };

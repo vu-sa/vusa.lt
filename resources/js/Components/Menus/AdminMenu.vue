@@ -478,6 +478,18 @@ const menuOptions = computed(() => [
         },
         show: auth?.can.index.changelogItem,
       },
+      {
+        label: () => {
+          return (
+            <Link href={route("tenants.index")}>{$t("Padaliniai")}</Link>
+          );
+        },
+        key: "tenants",
+        icon: () => {
+          return <NIcon component={Icons.TENANT}></NIcon>;
+        },
+        show: auth?.can.index.tenant,
+      },
     ],
     show:
       auth?.can.index.type ||

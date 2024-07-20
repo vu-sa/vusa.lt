@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\LaravelResourceController;
+use App\Http\Requests\StoreInstitutionRequest;
 use App\Models\Doing;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -11,7 +12,6 @@ use App\Models\Type;
 use App\Services\ModelIndexer;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class InstitutionController extends LaravelResourceController
@@ -62,22 +62,13 @@ class InstitutionController extends LaravelResourceController
      *
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreInstitutionRequest $request)
     {
-        $this->authorize('create', [Institution::class, $this->authorizer]);
+        $institution = new Institution();
 
-        $request->validate([
-            'name' => 'required',
-            'alias' => 'nullable|unique:institutions,alias',
-            'tenant_id' => 'required',
-        ]);
+        $institution->fill($request->safe()->except('types'))->save();
 
-        // if request alias is null, create slug from name
-        if (! $request->alias) {
-            $request->merge(['alias' => Str::slug($request->name)]);
-        }
-
-        $institution = Institution::create($request->only('name', 'short_name', 'alias', 'tenant_id', 'image_url', 'extra_attributes'));
+        $institution->save();
 
         $institution->types()->sync($request->types);
 

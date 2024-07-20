@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -14,6 +15,7 @@ return new class extends Migration
         Schema::table('padaliniai', function (Blueprint $table) {
             // remove columns: "en"
             $table->dropColumn('en');
+            $table->string('shortname_vu')->nullable()->change();
             // add column: primary_institution_id (ulid)
             $table->string('primary_institution_id', 26)->nullable();
             // add foreign key: primary_institution_id -> institutions(id)
