@@ -69,7 +69,7 @@ const columns = computed<DataTableColumns<App.Entities.Institution>>(() => {
           <PreviewModelButton
             publicRoute="contacts.alias"
             routeProps={{
-              institution: row.alias,
+              alias: row.alias,
               lang: "lt",
               subdomain: "www",
             }}

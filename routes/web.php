@@ -68,7 +68,7 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
             'koordinatoriai', 'kuratoriai',
         ])->name('contacts.dutyType');
 
-        Route::get('kontaktai/{institution:alias}', [Public\ContactController::class, 'institutionContacts'])->name('contacts.alias')
+        Route::get('kontaktai/{alias}', [Public\ContactController::class, 'institutionContactsByAlias'])->name('contacts.alias')
             ->missing(function (Request $request) {
                 return Redirect::route('contacts.institution', [
                     'institution' => $request->institution,

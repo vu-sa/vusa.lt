@@ -7,6 +7,7 @@ use App\Events\FileableNameUpdated;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasContentRelationships;
 use App\Models\Traits\HasSharepointFiles;
+use App\Models\Traits\HasTranslations;
 use App\Services\RelationshipService;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,7 +19,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Institution extends Model
 {
-    use HasComments, HasContentRelationships, HasFactory, HasRelationships, HasSharepointFiles, HasUlids, LogsActivity, Searchable, SoftDeletes;
+    use HasComments, HasContentRelationships, HasFactory, HasRelationships, HasSharepointFiles, HasUlids, LogsActivity, Searchable, SoftDeletes, HasTranslations;
 
     protected $guarded = [];
 
@@ -27,6 +28,8 @@ class Institution extends Model
     protected $casts = [
         'extra_attributes' => 'array',
     ];
+
+    public $translatable = ['name', 'short_name', 'alias', 'description', 'address'];
 
     public function getActivitylogOptions(): LogOptions
     {

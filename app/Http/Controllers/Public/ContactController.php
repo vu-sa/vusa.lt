@@ -22,7 +22,7 @@ class ContactController extends PublicController
 
         $institutions = Institution::query()->with('tenant', 'types:id,title,model_type,slug')
             ->whereHas('tenant', fn ($query) => $query->whereIn('id', $tenants)->select(['id', 'shortname', 'alias'])
-            )->withCount('duties')->orderBy('name')->get()->makeHidden(['parent_id', 'created_at', 'updated_at', 'deleted_at', 'extra_attributes']);
+            )->withCount('duties')->orderBy('name')->get()->makeHidden(['created_at', 'updated_at', 'deleted_at', 'extra_attributes']);
 
         return Inertia::render('Public/Contacts/ContactsSearch', [
             'institutions' => $institutions->map(function ($institution) {
@@ -41,9 +41,17 @@ class ContactController extends PublicController
         ]);
     }
 
+    public function institutionContactsByAlias($subdomain, $lang, $alias)
+    {
+        $institution = Institution::where('alias->'.$lang, '=', $alias)->firstOrFail();
+
+        return $this->institutionContacts($subdomain, $lang, $institution);
+    }
+
     public function institutionContacts($subdomain, $lang, Institution $institution)
     {
         $this->getTenantLinks();
+
         Inertia::share('otherLangURL', route('contacts.institution', ['subdomain' => $this->subdomain, 'lang' => $this->getOtherLang(), 'institution' => $institution->id]));
 
         $contacts = $institution->load('duties.current_users.current_duties')->duties->sortBy(function ($duty) {

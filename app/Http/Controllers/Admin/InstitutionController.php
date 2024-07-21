@@ -119,7 +119,7 @@ class InstitutionController extends LaravelResourceController
 
         return Inertia::render('Admin/People/EditInstitution', [
             'institution' => [
-                ...$institution->toArray(),
+                ...$institution->toFullArray(),
                 'types' => $institution->types->pluck('id'),
             ],
             'institutionTypes' => Type::where('model_type', Institution::class)->get(),

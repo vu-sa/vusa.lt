@@ -13,7 +13,7 @@
               :key="section.alias"
               :href="
                 route('contacts.alias', {
-                  institution: section.alias,
+                  alias: section.alias,
                   subdomain:
                     institution.alias === 'vusa' ? 'www' : institution.alias,
                   lang: $page.props.app.locale,

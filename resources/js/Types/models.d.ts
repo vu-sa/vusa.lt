@@ -214,17 +214,22 @@ declare global {
     export interface Institution {
       // columns
       id: string
-      parent_id: string|null
-      name: string|null
-      short_name: string|null
-      alias: string
-      description: string|null
+      name: string[]|null
+      short_name: string[]|null
+      alias: string[]|null
+      description: string[]|null
+      address: string[]|null
+      phone: string|null
+      email: string|null
       image_url: string|null
+      logo_url: string|null
       tenant_id: number|null
+      is_active: boolean
       created_at: string
       updated_at: string
-      extra_attributes: string[]|null
       deleted_at: string|null
+      // mutators
+      translations: unknown
       // relations
       duties: Duty[]
       types: Type[]
@@ -301,6 +306,7 @@ declare global {
       // columns
       id: number
       parent_id: number
+      padalinys_id: number
       name: string
       lang: string
       url: string
@@ -655,7 +661,7 @@ declare global {
       phone: string|null
       email: string|null
       address: string|null
-      shortname_vu: string
+      shortname_vu: string|null
       primary_institution_id: string|null
       // relations
       banners: Banner[]

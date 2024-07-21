@@ -11,29 +11,17 @@
             SA tenant, darbo grupė, VU studijų programos komitetas ir pan.
           </p>
         </template>
-        <NFormItem :label="$t('forms.fields.title')" :span="2">
-          <NInput v-if="locale === 'lt'" v-model:value="form.name" type="text"
-            placeholder="Vilniaus universiteto Studentų atstovybė"><template #suffix>
-              <SimpleLocaleButton v-model:locale="locale" />
-            </template></NInput>
-          <NInput v-else v-model:value="form.extra_attributes.en.name" type="text"
-            placeholder="Vilnius University Students' Representation"><template #suffix>
-              <SimpleLocaleButton v-model:locale="locale" />
-            </template></NInput>
+        <NFormItem :label="$t('forms.fields.title')">
+          <MultiLocaleInput v-model:input="form.name" />
         </NFormItem>
 
         <div class="grid gap-x-4 lg:grid-cols-2">
-          <NFormItem label="Trumpas pavadinimas" :span="2">
-            <NInput v-if="locale === 'lt'" v-model:value="form.short_name" placeholder="VU SA"><template #suffix>
-                <SimpleLocaleButton v-model:locale="locale" />
-              </template></NInput>
-            <NInput v-else v-model:value="form.extra_attributes.en.short_name" placeholder="VU SR"><template #suffix>
-                <SimpleLocaleButton v-model:locale="locale" />
-              </template></NInput>
+          <NFormItem :label="$t('forms.fields.short_name')">
+            <MultiLocaleInput v-model:input="form.short_name" />
           </NFormItem>
 
-          <NFormItem label="tenant, kuriam priklauso institucija" :span="2">
-            <NSelect v-model:value="form.tenant_id" :options="options" placeholder="VU SA X" clearable />
+          <NFormItem label="tenant, kuriam priklauso institucija">
+            <NSelect v-model:value="form.tenant_id" :options="options" placeholder="VU SA X" />
           </NFormItem>
         </div>
       </FormElement>
@@ -106,11 +94,15 @@
       </FormElement>
       <FormElement>
         <template #title>
-          Detalesnis aprašymas
+          Institucijos tipas ir papildoma informacija
         </template>
         <template #description>
-          Ši informacija rodoma viešai, vusa.lt tinklapyje
+          Priklausomai nuo institucijos tipo, gali būti įmanoma užpildyti papildomą informaciją.
         </template>
+        <NFormItem label="Institucijos tipas" :span="2">
+          <NSelect v-model:value="form.types" :options="institutionTypes" label-field="title" value-field="id"
+            placeholder="Studentų atstovų organas" clearable multiple />
+        </NFormItem>
         <NFormItem label="Nuotrauka" :span="6">
           <NMessageProvider>
             <UploadImageWithCropper v-model:url="form.image_url" folder="institutions" />
@@ -123,30 +115,16 @@
               <SimpleLocaleButton v-model:locale="locale" />
             </div>
           </template>
-          <TipTap v-if="locale === 'lt'" v-model="form.description" html :search-files="$page.props.search.other" />
-          <TipTap v-else v-model="form.extra_attributes.en.description" html :search-files="$page.props.search.other" />
+          <TipTap v-if="locale === 'lt'" v-model="form.description.lt" html />
+          <TipTap v-else v-model="form.description.en" html />
         </NFormItem>
       </FormElement>
       <FormElement>
         <template #title>
           Papildoma informacija
         </template>
-        <template #description>
-          Dažniausiai šios informacijos nereikėtų keisti...
-        </template>
-        <NFormItem label="Institucijos tipas" :span="2">
-          <NSelect v-model:value="form.types" :options="institutionTypes" label-field="title" value-field="id"
-            placeholder="Studentų atstovų organas" clearable multiple />
-        </NFormItem>
         <NFormItem label="Techninė žymė" :span="2">
-          <NInput v-if="locale === 'lt'" v-model:value="form.alias" :disabled="modelRoute === 'institutions.update'"
-            type="text" placeholder="vu-sa"><template #suffix>
-              <SimpleLocaleButton v-model:locale="locale" />
-            </template></NInput>
-          <NInput v-else v-model:value="form.extra_attributes.en.alias" :disabled="modelRoute === 'institutions.update'"
-            type="text" placeholder=""><template #suffix>
-              <SimpleLocaleButton v-model:locale="locale" />
-            </template></NInput>
+          <MultiLocaleInput v-model:input="form.alias" /> 
         </NFormItem>
       </FormElement>
     </div>
@@ -164,6 +142,7 @@ import { router, useForm } from "@inertiajs/vue3";
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import FadeTransition from "../Transitions/FadeTransition.vue";
 import FormElement from "./FormElement.vue";
+import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
 import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
 import UploadImageWithCropper from "../Buttons/UploadImageWithCropper.vue";

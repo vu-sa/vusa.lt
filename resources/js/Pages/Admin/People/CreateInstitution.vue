@@ -7,8 +7,6 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from "vue";
-
 import Icons from "@/Types/Icons/regular";
 import InstitutionForm from "@/Components/AdminForms/InstitutionForm.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
@@ -19,20 +17,12 @@ defineProps<{
   institutionTypes: App.Entities.Type[];
 }>();
 
-const institution = reactive({
+const institution = {
   name: "",
   short_name: "",
   alias: "",
   description: "",
   tenant_id: null,
   types: null,
-  extra_attributes: {
-    en: {
-      name: "",
-      short_name: "",
-      alias: "",
-      description: "",
-    },
-  },
-});
+};
 </script>
