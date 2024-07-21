@@ -40,16 +40,17 @@ const showModal = ref(false);
 const showCropper = ref(false);
 const message = useMessage();
 
-// TODO: Fix filelist generation
-
 const fileList = ref<UploadFileInfo[]>([
-  {
+]);
+
+if (url.value) {
+  fileList.value.push({
     id: "1",
     name: "image.jpg",
     status: "finished",
     url: url.value,
-  },
-]);
+  });
+}
 
 const csrfToken = document.querySelector<HTMLMetaElement>(
   'meta[name="csrf-token"]',

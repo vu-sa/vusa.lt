@@ -4,7 +4,7 @@
       <UserAvatar v-if="!showName" :user="user" :size="size" />
       <div v-else class="inline-flex items-center gap-2">
         <UserAvatar :user="user" :size="size" />
-        <span :class="[size ? 'text-base' : 'text-sm']"> {{ user.name }}</span>
+        <span :class="[size > 16 ? 'text-base' : 'text-sm']"> {{ user.name }}</span>
       </div>
     </template>
     <img v-if="photo" class="w-full rounded-t-sm" :src="photo" alt="">

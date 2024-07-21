@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\LaravelResourceController;
 use App\Http\Requests\StoreInstitutionRequest;
+use App\Http\Requests\UpdateInstitutionRequest;
 use App\Models\Doing;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -132,23 +133,16 @@ class InstitutionController extends LaravelResourceController
      *
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Institution $institution)
+    public function update(UpdateInstitutionRequest $request, Institution $institution)
     {
-        $this->authorize('update', [Institution::class, $institution, $this->authorizer]);
-
-        // validate
-        $request->validate([
-            'name' => 'required',
-            'tenant_id' => 'required',
-        ]);
-
-        // TODO: short_name and shortname are used as columns in some tables. Need to make the same name.
-        $institution->fill($request->only('name', 'short_name', 'description', 'image_url', 'extra_attributes'))->save();
+        $institution->fill($request->safe()->except('tenant_id', 'types'));
 
         // check if super admin, then update tenant_id
         if (auth()->user()->hasRole(config('permission.super_admin_role_name'))) {
-            $institution->update($request->only('tenant_id'));
+            $institution->fill($request->safe()->only('tenant_id'));
         }
+
+        $institution->save();
 
         // get only types id
         $institution->types()->sync($request->types);

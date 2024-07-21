@@ -1,6 +1,6 @@
 <template>
   <PageContent title="Nauja institucija" :heading-icon="Icons.INSTITUTION">
-    <UpsertModelLayout :errors="$page.props.errors" :model="institution">
+    <UpsertModelLayout>
       <InstitutionForm :assignable-tenants model-route="institutions.store" :institution :institution-types />
     </UpsertModelLayout>
   </PageContent>
@@ -18,10 +18,15 @@ defineProps<{
 }>();
 
 const institution = {
-  name: "",
-  short_name: "",
-  alias: "",
-  description: "",
+  name: { lt: "", en: "" },
+  short_name: { lt: "", en: "" },
+  alias: { lt: "", en: "" },
+  description: { lt: "", en: "" },
+  address: { lt: "", en: "" },
+  website: { lt: "", en: "" },
+  image_url: null,
+  logo_url: null,
+  is_active: 1,
   tenant_id: null,
   types: null,
 };

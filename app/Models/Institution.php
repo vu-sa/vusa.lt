@@ -29,7 +29,7 @@ class Institution extends Model
         'extra_attributes' => 'array',
     ];
 
-    public $translatable = ['name', 'short_name', 'alias', 'description', 'address'];
+    public $translatable = ['name', 'short_name', 'alias', 'description', 'address', 'website'];
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -90,16 +90,10 @@ class Institution extends Model
 
     public function toSearchableArray()
     {
-        $array = $this->toArray();
-
-        // Customize array...
-        // return only title
-        $array = [
-            'name' => $this->name,
-            'short_name' => $this->short_name,
+        return [
+            'name->'.app()->getLocale() => $this->getTranslation('name', 'lt'),
+            'short_name->'.app()->getLocale() => $this->getTranslation('short_name', 'lt'),
         ];
-
-        return $array;
     }
 
     protected static function booted()

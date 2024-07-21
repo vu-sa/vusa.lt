@@ -27,6 +27,7 @@ return new class extends Migration
             $table->json('address')->nullable()->after('description');
             $table->string('phone')->nullable()->after('address');
             $table->string('email')->nullable()->after('phone');
+            $table->string('website')->nullable()->after('email');
             $table->string('logo_url')->nullable()->after('image_url');
             $table->boolean('is_active')->default(true)->after('tenant_id');
         });

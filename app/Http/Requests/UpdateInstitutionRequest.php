@@ -3,24 +3,15 @@
 namespace App\Http\Requests;
 
 use App\Models\Institution;
-use Illuminate\Support\Str;
 
-class StoreInstitutionRequest extends ResourceRequest
+class UpdateInstitutionRequest extends ResourceRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return $this->user()->can('create', [Institution::class, $this->authorizer]);
-    }
-
-    public function prepareForValidation(): void
-    {
-        // if request alias is null, create slug from name
-        $this->merge([
-            'alias' => $this->alias['lt'] ?? Str::slug($this->name['lt']),
-        ]);
+        return $this->user()->can('update', [Institution::class, $this->institution, $this->authorizer]);
     }
 
     /**
