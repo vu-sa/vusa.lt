@@ -30,7 +30,7 @@ class UpdateInstitutionRequest extends ResourceRequest
             'description.en' => 'nullable',
             'address.lt' => 'nullable|string',
             'address.en' => 'nullable|string',
-            'alias' => 'nullable|unique:institutions,alias',
+            'alias' => 'nullable|unique:institutions,alias,' . $this->institution->id,
             'website' => 'nullable|string',
             'email' => 'nullable|email',
             'phone' => 'nullable|string',
