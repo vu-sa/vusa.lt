@@ -1,10 +1,12 @@
 <template>
   <SmartLink class="plain">
-    <Card class="border shadow-sm transition-all duration-300 hover:scale-105 hover:shadow-md dark:border-zinc-200/20" as="button">
+    <Card class="border shadow-sm transition-all duration-300 hover:scale-105 hover:shadow-md dark:border-zinc-200/20"
+      as="button">
       <div class="relative h-32 w-full">
         <img v-if="institution.image_url" class="size-full object-cover" :src="institution.image_url"
           :alt="institution.name">
-        <img v-if="institution.logo_url" class="absolute -bottom-4 left-8 size-16 rounded-full border shadow-sm"
+        <img v-if="institution.logo_url"
+          class="absolute -bottom-4 left-8 size-16 rounded-full border bg-white object-contain shadow-sm"
           :src="institution.logo_url">
       </div>
       <CardHeader class="mt-2">
