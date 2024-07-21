@@ -15,7 +15,7 @@
       <CardContent>
         <div v-html="institution.description" />
       </CardContent>
-      <CardFooter>
+      <CardFooter class="flex gap-2">
         <a v-if="institution.facebook_url" :href="institution.facebook_url" target="_blank" rel="noopener noreferrer">
           <NButton tertiary size="small" circle @click.stop>
             <template #icon>
