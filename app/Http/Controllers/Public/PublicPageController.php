@@ -160,7 +160,7 @@ class PublicPageController extends PublicController
             abort(404);
         }
 
-        $navigation_item = Navigation::where([['tenant_id', '=', $this->tenant->id], ['name', '=', $page->title]])->get()->first();
+        $navigation_item = Navigation::query()->where('name', $page->title)->get()->first();
         $other_lang_page = $page->getOtherLanguage();
 
         Inertia::share('otherLangURL', $other_lang_page ? route(
