@@ -59,7 +59,7 @@ return new class extends Migration
                     $institution->setTranslation('alias', 'en', $institution->extra_attributes['en']['alias']);
                 }
             }
-            
+
             if (isset($institution->description_old)) {
                 $institution->setTranslation('description', 'lt', $institution->description_old);
                 // check if extra_attributes.en.description, if yes, append to description

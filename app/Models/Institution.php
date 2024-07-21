@@ -19,7 +19,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Institution extends Model
 {
-    use HasComments, HasContentRelationships, HasFactory, HasRelationships, HasSharepointFiles, HasUlids, LogsActivity, Searchable, SoftDeletes, HasTranslations;
+    use HasComments, HasContentRelationships, HasFactory, HasRelationships, HasSharepointFiles, HasTranslations, HasUlids, LogsActivity, Searchable, SoftDeletes;
 
     protected $guarded = [];
 
