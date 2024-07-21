@@ -16,7 +16,9 @@
           lang: $page.props.app.locale,
         })
           ">
-          <img v-if="institution.logo_url" class="size-16 rounded-full border shadow-sm" :src="institution.logo_url">
+          <img v-if="institution.logo_url"
+            class="size-16 rounded-full border border-zinc-600/50 bg-white object-contain shadow-sm"
+            :src="institution.logo_url">
           <div>
             <div class="flex items-center gap-6">
               <h2
