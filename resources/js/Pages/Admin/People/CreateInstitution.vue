@@ -20,10 +20,10 @@ defineProps<{
 const institution = {
   name: { lt: "", en: "" },
   short_name: { lt: "", en: "" },
-  alias: { lt: "", en: "" },
   description: { lt: "", en: "" },
   address: { lt: "", en: "" },
   website: { lt: "", en: "" },
+  alias: "",
   image_url: null,
   logo_url: null,
   is_active: 1,

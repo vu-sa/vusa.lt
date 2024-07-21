@@ -19,7 +19,7 @@ class StoreInstitutionRequest extends ResourceRequest
     {
         // if request alias is null, create slug from name
         $this->merge([
-            'alias' => $this->alias['lt'] ?? Str::slug($this->name['lt']),
+            'alias' => $this->alias ?? Str::slug($this->name['lt']),
         ]);
     }
 
@@ -33,11 +33,10 @@ class StoreInstitutionRequest extends ResourceRequest
         return [
             'name.lt' => 'required|unique:institutions,name',
             'short_name.lt' => 'required|unique:institutions,short_name',
-            'alias.lt' => 'nullable|unique:institutions,alias',
             'description.lt' => 'nullable',
             'name.en' => 'nullable',
             'short_name.en' => 'nullable',
-            'alias.en' => 'nullable',
+            'alias' => 'nullable|unique:institutions,alias',
             'description.en' => 'nullable',
             'address.lt' => 'nullable|string',
             'address.en' => 'nullable|string',

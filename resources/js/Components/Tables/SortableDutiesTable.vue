@@ -15,10 +15,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useSortable } from "@vueuse/integrations/useSortable";
-
-//const props = defineProps<{
-//  models: Record<string, any>;
-//}>()
+import { watch } from 'vue';
 
 const contents = defineModel<Record<string, any>[]>();
 
@@ -26,5 +23,9 @@ const el = ref(null);
 
 useSortable(el, contents, {
   handle: ".handle", forceFallback: true, animation: 100,
+});
+
+watch(() => contents.value, () => {
+
 });
 </script>

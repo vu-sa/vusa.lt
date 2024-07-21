@@ -2,8 +2,8 @@
   <PageContent :title="institution.name[$page.props.app.locale]" :back-url="route('institutions.index')"
     :heading-icon="Icons.INSTITUTION">
     <template #after-heading>
-      <PreviewModelButton v-if="institution.alias[$page.props.app.locale]" public-route="contacts.alias" :route-props="{
-        alias: institution.alias[$page.props.app.locale],
+      <PreviewModelButton v-if="institution.alias" public-route="contacts.alias" :route-props="{
+        institution: institution.alias,
         lang: $page.props.app.locale,
         subdomain: institution.tenant?.alias ?? 'www',
       }" />

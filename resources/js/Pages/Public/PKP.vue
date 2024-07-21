@@ -23,7 +23,7 @@
   </a>
   <div class="grid max-w-7xl grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
     <NewInstitutionCard v-for="institution in institutions" :key="institution.id" :institution :href="route('contacts.alias', {
-    alias: institution.alias,
+    institution: institution.alias,
     subdomain:
       institution.tenant?.alias === 'vusa'
         ? 'www'

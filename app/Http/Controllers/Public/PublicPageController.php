@@ -146,7 +146,7 @@ class PublicPageController extends PublicController
         $institution = $pkps->firstWhere('alias', request()->permalink);
 
         if ($institution) {
-            return redirect()->route('contacts.alias', ['subdomain' => $this->subdomain, 'lang' => app()->getLocale(), 'alias' => request()->permalink]);
+            return redirect()->route('contacts.alias', ['subdomain' => $this->subdomain, 'lang' => app()->getLocale(), 'institution' => request()->permalink]);
         }
 
         // Continue with normal page rendering

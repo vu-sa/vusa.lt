@@ -41,13 +41,6 @@ class ContactController extends PublicController
         ]);
     }
 
-    public function institutionContactsByAlias($subdomain, $lang, $alias)
-    {
-        $institution = Institution::where('alias->'.$lang, '=', $alias)->firstOrFail();
-
-        return $this->institutionContacts($subdomain, $lang, $institution);
-    }
-
     public function institutionContacts($subdomain, $lang, Institution $institution)
     {
         $this->getTenantLinks();

@@ -17,12 +17,10 @@ return new class extends Migration
 
             $table->renameColumn('name', 'name_old');
             $table->renameColumn('short_name', 'short_name_old');
-            $table->renameColumn('alias', 'alias_old');
             $table->renameColumn('description', 'description_old');
 
             $table->json('name')->nullable()->after('id');
             $table->json('short_name')->nullable()->after('name');
-            $table->json('alias')->nullable()->after('short_name');
             $table->json('description')->nullable()->after('alias');
             $table->json('address')->nullable()->after('description');
             $table->string('phone')->nullable()->after('address');
@@ -52,14 +50,6 @@ return new class extends Migration
                 }
             }
 
-            if (isset($institution->alias_old)) {
-                $institution->setTranslation('alias', 'lt', $institution->alias_old);
-                // check if extra_attributes.en.alias, if yes, append to alias
-                if (isset($institution->extra_attributes['en']['alias'])) {
-                    $institution->setTranslation('alias', 'en', $institution->extra_attributes['en']['alias']);
-                }
-            }
-
             if (isset($institution->description_old)) {
                 $institution->setTranslation('description', 'lt', $institution->description_old);
                 // check if extra_attributes.en.description, if yes, append to description
@@ -76,7 +66,6 @@ return new class extends Migration
             $table->dropUnique(['name', 'padalinys_id']);
             $table->dropColumn('name_old');
             $table->dropColumn('short_name_old');
-            $table->dropColumn('alias_old');
             $table->dropColumn('description_old');
             $table->dropColumn('extra_attributes');
         });

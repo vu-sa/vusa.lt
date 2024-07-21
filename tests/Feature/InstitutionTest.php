@@ -26,8 +26,8 @@ describe('auth: simple user', function () {
 
     test('can\'t store institution', function () {
         asUser($this->user)->post(route('institutions.store'), [
-            'name' => 'Test User',
-            'short_name' => 'test',
+            'name' => ['lt' => 'Test User'],
+            'short_name' => ['lt' => 'test'],
             'tenant_id' => $this->tenant->id,
             'alias' => 'test',
         ])->assertStatus(302)->assertRedirectToRoute('dashboard');
@@ -43,8 +43,8 @@ describe('auth: simple user', function () {
         $tenant = Institution::query()->first();
 
         asUser($this->user)->put(route('institutions.update', $tenant), [
-            'name' => 'Test User',
-            'short_name' => 'test',
+            'name' => ['lt' => 'Test User'],
+            'short_name' => ['lt' => 'test'],
             'tenant_id' => $this->tenant->id,
             'alias' => 'test',
         ])->assertStatus(302)->assertRedirectToRoute('dashboard');

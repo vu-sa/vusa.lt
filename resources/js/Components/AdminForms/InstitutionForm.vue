@@ -154,7 +154,7 @@
           Papildoma informacija
         </template>
         <NFormItem label="Techninė žymė">
-          <MultiLocaleInput v-model:input="form.alias" />
+          <NInput v-model:value="form.alias" type="text" placeholder="vu-sa" />
         </NFormItem>
       </FormElement>
     </div>

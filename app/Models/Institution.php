@@ -29,7 +29,7 @@ class Institution extends Model
         'extra_attributes' => 'array',
     ];
 
-    public $translatable = ['name', 'short_name', 'alias', 'description', 'address'];
+    public $translatable = ['name', 'short_name', 'description', 'address'];
 
     public function getActivitylogOptions(): LogOptions
     {
