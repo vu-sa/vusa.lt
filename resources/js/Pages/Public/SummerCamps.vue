@@ -127,12 +127,12 @@
             <img class="size-full rounded-xl object-cover shadow-md transition group-hover:shadow-xl"
               :src="get5thResponsiveImage(event)">
             <h3 class="p-2 text-center text-lg font-extrabold leading-tight">
-              {{ "VU" + getFacultyName(event.padalinys) }}
+              {{ "VU" + getFacultyName(event.tenant) }}
             </h3>
           </div>
           <div v-else>
             <h3 class="p-2 text-center text-xl font-extrabold leading-tight">
-              {{ "VU" + getFacultyName(event.padalinys) }}
+              {{ "VU" + getFacultyName(event.tenant) }}
             </h3>
           </div>
         </SmartLink>

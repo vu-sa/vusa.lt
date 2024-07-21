@@ -228,7 +228,7 @@ class PublicPageController extends PublicController
         $events = Calendar::query()->whereHas('category', function (Builder $query) {
             $query->where('alias', '=', 'freshmen-camps');
         })->with('tenant:id,alias,fullname')->whereYear('date', $year ?? date('Y'))
-            ->with(['media'])->get()->sortBy('tenant.alias');
+            ->with(['media'])->get()->sortBy('tenant.alias')->values();
 
         if ($events->isEmpty() && $year != intval(date('Y'))) {
             return redirect()->route('pirmakursiuStovyklos', ['lang' => app()->getLocale(), 'year' => null]);
