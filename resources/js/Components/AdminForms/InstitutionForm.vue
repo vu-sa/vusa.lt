@@ -64,38 +64,34 @@
           </div>
         </template>
         <div v-if="institution.duties">
-          <TransitionGroup ref="el" tag="div">
-            <div v-for="duty in form.duties" :key="duty.id"
-              class="relative grid w-full grid-cols-[24px,_1fr] gap-4 border border-b-0 border-zinc-300 p-1 first:rounded-t-lg last:rounded-b-lg last:border-b dark:border-zinc-700/40 dark:bg-zinc-800/5">
-              <NButton class="handle" style="height: 100%;" quaternary size="small">
-                <template #icon>
-                  <IFluentReOrderDotsVertical24Regular />
-                </template>
-              </NButton>
+          <InfoText>
+            Tempk
+            <IFluentReOrderDotsVertical24Regular class="inline" /> ikoną, kad pakeistum pareigų eiliškumą.
+          </InfoText>
+          <SortableDutiesTable v-model="form.duties" class="mt-2" @update:model-value="dutiesWereReordered = true">
+            <template #default="{ model }">
               <div class="grid grid-cols-2 items-center justify-center">
-                <SmartLink :href="route('duties.edit', duty.id)" class="my-2 border-r px-4">
+                <SmartLink :href="route('duties.edit', model.id)" class="my-2 border-r px-4">
                   <NButton style="white-space: normal; text-align: left" text icon-placement="right">
-                    {{ duty.name }}
+                    {{ model.name }}
                     <template #icon>
                       <IFluentEdit24Regular width="14" />
                     </template>
                   </NButton>
                 </SmartLink>
                 <div class="flex flex-col gap-1 p-2">
-                  <template v-for="user in duty.current_users" :key="user.id">
-                    <UserPopover class="text-xs" :user show-name :size="16" />
+                  <template v-for="user in model.current_users" :key="user.id">
+                    <UserPopover :user show-name :size="24" />
                   </template>
                 </div>
               </div>
-            </div>
-          </TransitionGroup>
-          <FadeTransition>
-            <div class="mt-4">
-              <NButton type="primary" :disabled="!dutiesWereReordered" @click="saveReorderedDuties">
-                Atnaujinti eiliškumą
-              </NButton>
-            </div>
-          </FadeTransition>
+            </template>
+          </SortableDutiesTable>
+          <div class="mt-4">
+            <NButton type="primary" :disabled="!dutiesWereReordered" @click="saveReorderedDuties">
+              Atnaujinti eiliškumą
+            </NButton>
+          </div>
         </div>
         <div v-else class="col-span-3 h-fit">
           Ši institucija <strong>neturi</strong> pareigų.
@@ -128,11 +124,17 @@
             <NFormItem label="Telefonas">
               <NInput v-model:value="form.phone" type="text" placeholder="" />
             </NFormItem>
-            <NFormItem label="Svetainė">
-              <MultiLocaleInput v-model:input="form.website" />
-            </NFormItem>
             <NFormItem label="Adresas">
               <MultiLocaleInput v-model:input="form.address" />
+            </NFormItem>
+            <NFormItem label="Svetainė">
+              <NInput v-model:value="form.website" type="text" placeholder="" />
+            </NFormItem>
+            <NFormItem label="Facebook">
+              <NInput v-model:value="form.facebook_url" type="text" placeholder="" />
+            </NFormItem>
+            <NFormItem label="Instagram">
+              <NInput v-model:value="form.instagram_url" type="text" placeholder="" />
             </NFormItem>
           </div>
         </template>
@@ -166,15 +168,14 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
-import { useSortable } from "@vueuse/integrations/useSortable";
 
-import { watch } from "vue";
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
-import FadeTransition from "../Transitions/FadeTransition.vue";
 import FormElement from "./FormElement.vue";
+import InfoText from "../SmallElements/InfoText.vue";
 import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
 import SmartLink from "../Public/SmartLink.vue";
+import SortableDutiesTable from "../Tables/SortableDutiesTable.vue";
 import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
 import UploadImageWithCropper from "../Buttons/UploadImageWithCropper.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
@@ -188,23 +189,14 @@ const props = defineProps<{
   deleteModelRoute?: string;
 }>();
 
-const el = ref(null);
-
 const locale = ref("lt");
+const dutiesWereReordered = ref(false);
 
 const form = useForm("institution", props.institution);
 
 if (Array.isArray(form.address)) {
   form.address = { lt: "", en: "" };
 }
-
-if (Array.isArray(form.website)) {
-  form.website = { lt: "", en: "" };
-}
-
-useSortable(el, form.duties, {
-  handle: ".handle", animation: 100,
-});
 
 const options = props.assignableTenants.map((tenant) => ({
   value: tenant.id,
@@ -219,12 +211,6 @@ const showMoreOptions = computed(() => {
     .map((type) => type.id);
 
   return form.types?.some((type) => typeIds.includes(type));
-});
-
-const dutiesWereReordered = ref(false);
-
-watch(form.duties, () => {
-  dutiesWereReordered.value = true;
 });
 
 const saveReorderedDuties = () => {

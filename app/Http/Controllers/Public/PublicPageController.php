@@ -141,6 +141,16 @@ class PublicPageController extends PublicController
 
     public function page()
     {
+        // At first, since for PKP we want to redirect old pages to contacts page, we check in this function
+        $pkps = (new InstitutionService)->getInstitutionsByTypeSlug('pkp');
+        $institution = $pkps->firstWhere('alias', request()->permalink);
+
+        if ($institution) {
+            return redirect()->route('contacts.alias', ['subdomain' => $this->subdomain, 'lang' => app()->getLocale(), 'alias' => request()->permalink]);
+        }
+
+        // Continue with normal page rendering
+
         $this->getBanners();
         $this->getTenantLinks();
 
@@ -254,15 +264,20 @@ class PublicPageController extends PublicController
     // dynamically grabs list of pkp
     public function pkp()
     {
-        $typeSlug = 'pkp';
-        $institutionService = new InstitutionService();
         $this->getBanners();
         $this->getTenantLinks();
         $this->shareOtherLangURL('pkp');
 
-        $institutions = $institutionService->getInstitutionsByTypeSlug($typeSlug);
+        $institutions = (new InstitutionService)->getInstitutionsByTypeSlug('pkp')->where('is_active', true);
 
-        return Inertia::render('Public/PKP', ['institutions' => $institutions])->withViewData([
+        return Inertia::render('Public/PKP', [
+            'institutions' => $institutions->map(function ($institution) {
+                return [
+                    ...$institution->toArray(),
+                    'description' => Str::limit(strip_tags($institution->description), 100, '...'),
+                ];
+            }),
+        ])->withViewData([
             'title' => 'Programos, klubai ir projektai',
         ]);
     }

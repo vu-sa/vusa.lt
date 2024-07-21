@@ -1,33 +1,26 @@
 <template>
   <div class="mt-12 flex flex-col gap-4">
-    <h1 class="mb-8">{{ $t("Kontaktai") }}: {{ $t(type.title) }}</h1>
+    <h1 class="mb-8">
+      {{ $t("Kontaktai") }}: {{ $t(type.title) }}
+    </h1>
     <template v-for="institution in institutions" :key="institution.id">
-      <InstitutionFigure :is-mobile="isMobile" :institution="institution">
+      <InstitutionFigure :institution>
         <template #more>
-          <div
-            v-if="institution.alias === institution.padalinys?.alias"
-            class="mt-3 flex flex-wrap gap-2"
-          >
-            <a
-              v-for="section in padaliniaiSections"
-              :key="section.alias"
-              :href="
-                route('contacts.alias', {
-                  alias: section.alias,
-                  subdomain:
-                    institution.alias === 'vusa' ? 'www' : institution.alias,
-                  lang: $page.props.app.locale,
-                })
-              "
-            >
-              <NButton round size="medium">{{ $t(section.title) }}</NButton>
-            </a>
+          <div v-if="institution.alias === institution.tenant?.alias" class="mt-3 flex flex-wrap gap-2">
+            <NButtonGroup rounded size="small">
+              <NButton v-for="section in padaliniaiSections" :key="section.alias" :tag="SmartLink" :href="route('contacts.alias', {
+                alias: section.alias,
+                subdomain:
+                  institution.alias === 'vusa' ? 'www' : institution.alias,
+                lang: $page.props.app.locale,
+              })">
+                {{ $t(section.title) }}
+              </NButton>
+            </NButtonGroup>
           </div>
         </template>
       </InstitutionFigure>
-      <NDivider
-        v-if="institution.id !== institutions[institutions.length - 1].id"
-      />
+      <NDivider v-if="institution.id !== institutions[institutions.length - 1].id" />
     </template>
   </div>
 </template>
@@ -35,8 +28,8 @@
 <script setup lang="ts">
 import { NButton, NDivider } from "naive-ui";
 
-import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
 import InstitutionFigure from "@/Components/Public/InstitutionFigure.vue";
+import SmartLink from "@/Components/Public/SmartLink.vue";
 
 defineProps<{
   institutions: App.Entities.Institution[];
@@ -58,6 +51,4 @@ const padaliniaiSections = [
   },
 ];
 
-const breakpoints = useBreakpoints(breakpointsTailwind);
-const isMobile = breakpoints.smallerOrEqual("sm");
 </script>

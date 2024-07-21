@@ -29,6 +29,8 @@ return new class extends Migration
             $table->string('email')->nullable()->after('phone');
             $table->string('website')->nullable()->after('email');
             $table->string('logo_url')->nullable()->after('image_url');
+            $table->string('facebook_url')->nullable()->after('logo_url');
+            $table->string('instagram_url')->nullable()->after('facebook_url');
             $table->boolean('is_active')->default(true)->after('tenant_id');
         });
 

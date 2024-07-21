@@ -221,8 +221,11 @@ declare global {
       address: string[]|null
       phone: string|null
       email: string|null
+      website: string|null
       image_url: string|null
       logo_url: string|null
+      facebook_url: string|null
+      instagram_url: string|null
       tenant_id: number|null
       is_active: boolean
       created_at: string

@@ -1,106 +1,120 @@
 <template>
-  <div
-    class="grid grid-cols-1 gap-8"
-    :class="{
-      'md:grid-cols-[1fr_2fr]': institution.image_url && !onlyVertical,
-    }"
-  >
-    <img
-      v-if="institution.image_url && !imageError"
-      :src="institution.image_url"
-      :alt="institution.name ?? ''"
-      class="h-56 w-full rounded-sm object-cover shadow-lg"
-      :class="[imageError ? 'hidden' : '']"
-      @error="imageError = true"
-    />
+  <div class="grid grid-cols-1 gap-8" :class="{
+    'md:grid-cols-[1fr_2fr]': institution.image_url && !onlyVertical,
+  }">
+    <img v-if="institution.image_url && !imageError" :src="institution.image_url" :alt="institution.name ?? ''"
+      class="h-56 w-full rounded-sm object-cover shadow-lg" :class="[imageError ? 'hidden' : '']"
+      @error="imageError = true">
     <div class="w-full" :class="[imageError ? 'col-span-full' : '']">
       <div>
-        <a
-          class="inline-block w-fit"
-          :href="
-            route('contacts.institution', {
-              institution: institution.id,
-              subdomain:
-                institution.padalinys?.alias === 'vusa'
-                  ? 'www'
-                  : institution.padalinys?.alias ?? 'www',
-              lang: $page.props.app.locale,
-            })
-          "
-        >
-          <h2
-            class="mb-0 w-fit text-2xl font-black leading-5 text-zinc-800 transition-colors hover:text-vusa-red dark:text-zinc-100"
-          >
-            {{ institutionName }}
-          </h2>
+        <a class="inline-flex w-fit items-center gap-4" :href="route('contacts.institution', {
+          institution: institution.id,
+          subdomain:
+            institution.padalinys?.alias === 'vusa'
+              ? 'www'
+              : institution.padalinys?.alias ?? 'www',
+          lang: $page.props.app.locale,
+        })
+          ">
+          <img v-if="institution.logo_url" class="size-16 rounded-full border shadow-sm" :src="institution.logo_url">
+          <div>
+            <div class="flex items-center gap-6">
+              <h2
+                class="mb-1 w-fit text-2xl font-bold leading-5 text-zinc-800 transition-colors hover:text-vusa-red dark:text-zinc-100 xl:text-3xl xl:leading-6">
+                {{ institution.name }}
+              </h2>
+              <div class="flex gap-2">
+                <a v-if="institution.facebook_url" :href="institution.facebook_url" target="_blank"
+                  rel="noopener noreferrer">
+                  <NButton tertiary size="small" circle @click.stop>
+                    <template #icon>
+                      <IMdiFacebook />
+                    </template>
+                  </NButton>
+                </a>
+                <a v-if="institution.instagram_url" :href="institution.instagram_url" target="_blank"
+                  rel="noopener noreferrer">
+                  <NButton tertiary size="small" circle @click.stop>
+                    <template #icon>
+                      <IMdiInstagram />
+                    </template>
+                  </NButton>
+                </a>
+                <a v-if="institution.website" :href="institution.website" target="_blank" rel="noopener noreferrer">
+                  <NButton tertiary size="small" circle @click.stop>
+                    <template #icon>
+                      <IFluentGlobe20Regular />
+                    </template>
+                  </NButton>
+                </a>
+                <a v-if="institution.email" :href="`mailto:${institution.email}`">
+                  <NButton tertiary size="small" circle @click.stop>
+                    <template #icon>
+                      <IFluentMail20Regular />
+                    </template>
+                  </NButton>
+                </a>
+                <a v-if="institution.phone" :href="`tel:${institution.phone}`">
+                  <NButton tertiary size="small" circle @click.stop>
+                    <template #icon>
+                      <IFluentPhone20Regular />
+                    </template>
+                  </NButton>
+                </a>
+              </div>
+            </div>
+            <small v-for="institutionType in institution.types" :key="institutionType.id"
+              class="mb-4 inline-flex gap-2 text-zinc-500 last:mb-0">
+              <span>{{ $t(institutionType.title) }}</span>
+              <InfoPopover v-if="institutionType.description"> {{ institutionType.description }} </InfoPopover>
+            </small>
+          </div>
         </a>
       </div>
-      <small
-        v-for="institutionType in institution.types"
-        :key="institutionType.id"
-        class="mb-4 block text-zinc-500"
-      >
-        {{ $t(institutionType.title) }}
-      </small>
       <slot name="more" />
-      <div class="mb-5">
-        <NEllipsis
-          v-if="isMobile"
-          expand-trigger="click"
-          line-clamp="3"
-          :tooltip="true"
-        >
-          <p
-            class="typography leading-6 text-base max-w-[70ch]"
-            v-html="institutionDescription"
-          />
-        </NEllipsis>
-        <p
-          v-else
-          class="typography leading-6 text-sm max-w-[70ch]"
-          v-html="institutionDescription"
-        />
+      <div v-if="institution.description" class="my-5">
+        <Collapsible v-if="isMobile" v-model:open="isDescriptionOpen">
+          <CollapsibleTrigger>
+            <div class="flex items-center gap-4">
+              <h2 class="mb-0 underline">
+                {{ $t('forms.fields.description') }}
+              </h2>
+              <NButton size="tiny" circle tertiary>
+                <template #icon>
+                  <IFluentChevronDown24Regular v-if="!isDescriptionOpen" />
+                  <IFluentChevronUp24Regular v-else />
+                </template>
+              </NButton>
+            </div>
+
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <p class="typography max-w-[80ch] text-base leading-6" v-html="institution.description" />
+          </CollapsibleContent>
+        </Collapsible>
+        <p v-else class="typography max-w-[80ch] text-sm leading-6" v-html="institution.description" />
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="tsx">
-import { NEllipsis } from "naive-ui";
-import { computed, ref } from "vue";
-import { usePage } from "@inertiajs/vue3";
+import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
+import { ref } from "vue";
 
-const props = defineProps<{
+import Collapsible from "../ShadcnVue/ui/collapsible/Collapsible.vue";
+import CollapsibleContent from "../ShadcnVue/ui/collapsible/CollapsibleContent.vue";
+import CollapsibleTrigger from "../ShadcnVue/ui/collapsible/CollapsibleTrigger.vue";
+import InfoPopover from "../Buttons/InfoPopover.vue";
+
+defineProps<{
   institution: App.Entities.Institution;
-  isMobile?: boolean;
   onlyVertical?: boolean;
 }>();
 
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const isMobile = breakpoints.smallerOrEqual("sm");
+
 const imageError = ref(false);
-
-const institutionName = computed(() => {
-  const locale = usePage().props.app.locale;
-
-  if (locale === "en") {
-    return (
-      props.institution.extra_attributes?.en?.name ??
-      props.institution.extra_attributes?.en?.short_name ??
-      props.institution.name ??
-      props.institution.short_name
-    );
-  }
-
-  return props.institution.name ?? props.institution.short_name ?? "";
-});
-
-const institutionDescription = computed(() => {
-  if (usePage().props.app.locale === "en") {
-    return (
-      props.institution.extra_attributes?.en?.description ??
-      props.institution.description
-    );
-  }
-
-  return props.institution.description ?? "";
-});
+const isDescriptionOpen = ref(false);
 </script>

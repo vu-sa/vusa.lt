@@ -17,11 +17,11 @@
         <div class="flex w-full items-center justify-center gap-x-2 max-md:justify-between md:gap-x-4 lg:gap-x-12">
           <MainMenu class="max-md:hidden">
             <template #additional>
-              <PadalinysSelector :size="smallerThanSm ? 'tiny' : 'small'" @select:padalinys="handleSelectPadalinys" />
+              <PadalinysSelector :size="smallerThanSm ? 'tiny' : 'small'" />
             </template>
           </MainMenu>
           <div class="hidden max-md:block">
-            <PadalinysSelector :size="smallerThanSm ? 'tiny' : 'small'" @select:padalinys="handleSelectPadalinys" />
+            <PadalinysSelector :size="smallerThanSm ? 'tiny' : 'small'" />
           </div>
           <div class="hidden items-center gap-4 md:flex">
             <SearchButton />
@@ -64,25 +64,6 @@ import StartFM from "@/Components/Public/Nav/StartFM.vue";
 defineProps<{
   isThemeDark: boolean;
 }>();
-
-const handleSelectPadalinys = (key) => {
-  let padalinys_alias = key;
-
-  // if padalinys is array, get first element (for mobile)
-  // because tree component returns array of selected keys
-  if (Array.isArray(padalinys_alias)) {
-    padalinys_alias = key[0];
-  }
-
-  // get last two elements of host and join them with dot
-  const hostWithoutSubdomain = window.location.host
-    .split(".")
-    .slice(-2)
-    .join(".");
-
-  window.location.href = `${window.location.protocol
-    }//${padalinys_alias}.${hostWithoutSubdomain}${usePage().url}`;
-};
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const smallerThanSm = breakpoints.smaller("sm");

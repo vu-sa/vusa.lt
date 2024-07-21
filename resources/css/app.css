@@ -20,11 +20,11 @@
     @apply text-base md:text-lg font-bold mb-2 text-gray-900 dark:text-zinc-100;
   }
 
-  a {
+  a:not(.plain) {
     @apply hover:text-vusa-red duration-200;
   }
 
-  p > a {
+  p>a {
     @apply underline;
   }
 }
@@ -71,13 +71,11 @@ html.dark {
 .wrapper {
   display: grid;
   grid-template-columns:
-    1fr
-    min(85vw, 100%)
-    1fr;
+    1fr min(85vw, 100%) 1fr;
   margin-top: 8rem;
 }
 
-.wrapper > * {
+.wrapper>* {
   grid-column: 2;
 }
 
