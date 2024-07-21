@@ -53,9 +53,9 @@ class Resource extends Model implements HasMedia
         return GetResourceManagers::execute($this);
     }
 
-    public function padalinys()
+    public function tenant()
     {
-        return $this->belongsTo(Padalinys::class);
+        return $this->belongsTo(Tenant::class);
     }
 
     public function category()

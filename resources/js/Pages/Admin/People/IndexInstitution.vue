@@ -15,7 +15,7 @@ import { computed, provide, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
-import { padalinysColumn } from "@/Composables/dataTableColumns";
+import { tenantColumn } from "@/Composables/dataTableColumns";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 import ModelChip from "@/Components/Chips/ModelChip.vue";
@@ -40,7 +40,7 @@ const sorters = ref<Record<string, DataTableSortState["order"]>>({
 provide("sorters", sorters);
 
 const filters = ref<Record<string, any>>({
-  "padalinys.id": [],
+  "tenant.id": [],
   "types.id": [],
 });
 
@@ -78,9 +78,9 @@ const columns = computed<DataTableColumns<App.Entities.Institution>>(() => {
       },
     },
     {
-      ...padalinysColumn(filters, usePage().props.padaliniai),
+      ...tenantColumn(filters, usePage().props.tenants),
       render(row) {
-        return $t(row.padalinys?.shortname ?? "");
+        return $t(row.tenant?.shortname ?? "");
       },
     },
     {

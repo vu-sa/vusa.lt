@@ -7,6 +7,7 @@ use App\Events\FileableNameUpdated;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasContentRelationships;
 use App\Models\Traits\HasSharepointFiles;
+use App\Models\Traits\HasTranslations;
 use App\Services\RelationshipService;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,7 +19,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Institution extends Model
 {
-    use HasComments, HasContentRelationships, HasFactory, HasRelationships, HasSharepointFiles, HasUlids, LogsActivity, Searchable, SoftDeletes;
+    use HasComments, HasContentRelationships, HasFactory, HasRelationships, HasSharepointFiles, HasTranslations, HasUlids, LogsActivity, Searchable, SoftDeletes;
 
     protected $guarded = [];
 
@@ -27,6 +28,8 @@ class Institution extends Model
     protected $casts = [
         'extra_attributes' => 'array',
     ];
+
+    public $translatable = ['name', 'short_name', 'description', 'address'];
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -43,15 +46,14 @@ class Institution extends Model
         return $this->morphToMany(Type::class, 'typeable');
     }
 
-    public function padalinys()
+    public function tenant()
     {
-        return $this->belongsTo(Padalinys::class, 'padalinys_id');
+        return $this->belongsTo(Tenant::class);
     }
 
-    // TODO: check if method is used anywhere and remove if not
-    public function padaliniai()
+    public function tenants()
     {
-        return $this->padalinys();
+        return $this->tenant();
     }
 
     public function matters()
@@ -88,16 +90,10 @@ class Institution extends Model
 
     public function toSearchableArray()
     {
-        $array = $this->toArray();
-
-        // Customize array...
-        // return only title
-        $array = [
-            'name' => $this->name,
-            'short_name' => $this->short_name,
+        return [
+            'name->'.app()->getLocale() => $this->getTranslation('name', 'lt'),
+            'short_name->'.app()->getLocale() => $this->getTranslation('short_name', 'lt'),
         ];
-
-        return $array;
     }
 
     protected static function booted()

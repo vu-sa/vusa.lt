@@ -1,16 +1,7 @@
 <template>
-  <NCard
-    hoverable
-    :size="size"
-    as="button"
-    class="h-fit flex-1 cursor-pointer shadow-sm"
-  >
+  <NCard hoverable :size="size" as="button" class="h-fit flex-1 cursor-pointer shadow-sm">
     <template #cover>
-      <img
-        v-if="institution.image_url"
-        class="h-32 object-cover"
-        :src="institution.image_url"
-      />
+      <img v-if="institution.image_url" class="h-32 object-cover" :src="institution.image_url">
     </template>
     <template #header>
       <span :class="{ 'font-bold': isPadalinys }">{{ institution.name }}</span>
@@ -29,17 +20,13 @@
               </NButton>
             </template>
             <div class="flex flex-col gap-2">
-              <Link
-                v-for="duty in institutionDuties"
-                :key="duty.id"
-                :href="route('duties.show', duty.id)"
-              >
-                <NButton size="small" secondary>
-                  <template #icon>
-                    <UserAvatar :user="$page.props.auth?.user" :size="16" />
-                  </template>
-                  {{ duty.name }}</NButton
-                >
+              <Link v-for="duty in institutionDuties" :key="duty.id" :href="route('duties.show', duty.id)">
+              <NButton size="small" secondary>
+                <template #icon>
+                  <UserAvatar :user="$page.props.auth?.user" :size="16" />
+                </template>
+                {{ duty.name }}
+              </NButton>
               </Link>
             </div>
           </NPopover>
@@ -50,23 +37,12 @@
         </div>
       </slot>
     </template>
-    <InstitutionAvatarGroup
-      v-if="institution.users"
-      :users="institution.users"
-      :size="size === 'small' ? 32 : 40"
-    />
-    <slot></slot>
+    <InstitutionAvatarGroup v-if="institution.users" :users="institution.users" :size="size === 'small' ? 32 : 40" />
+    <slot />
     <template #footer>
-      <div
-        v-if="institution.types?.length > 0"
-        class="flex justify-between gap-2"
-      >
-        <NTag
-          v-for="institutionType in institution.types"
-          :key="institutionType.id"
-          :size="size ? 'tiny' : 'small'"
-          :bordered="false"
-        >
+      <div v-if="institution.types?.length > 0" class="flex justify-between gap-2">
+        <NTag v-for="institutionType in institution.types" :key="institutionType.id" :size="size ? 'tiny' : 'small'"
+          :bordered="false">
           {{ institutionType.title }}
         </NTag>
       </div>

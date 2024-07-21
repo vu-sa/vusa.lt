@@ -17,7 +17,7 @@ import { usePage } from "@inertiajs/vue3";
 
 import { Icon } from "@iconify/vue";
 import { capitalize } from "@/Utils/String";
-import { padalinysColumn } from "@/Composables/dataTableColumns";
+import { tenantColumn } from "@/Composables/dataTableColumns";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
@@ -107,9 +107,9 @@ const columns = computed<DataTableColumns<App.Entities.Resource>>(() => [
     width: 75,
   },
   {
-    ...padalinysColumn(filters, usePage().props.padaliniai),
+    ...tenantColumn(filters, usePage().props.tenants),
     render(row) {
-      return $t(row.padalinys?.shortname);
+      return $t(row.tenant?.shortname);
     },
   },
 ]);

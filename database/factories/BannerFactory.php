@@ -2,11 +2,11 @@
 
 namespace Database\Factories;
 
-use App\Models\Padalinys;
+use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\MeetingMatter>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Banner>
  */
 class BannerFactory extends Factory
 {
@@ -24,7 +24,7 @@ class BannerFactory extends Factory
             'lang' => fake()->randomElement(['lt', 'en']),
             'order' => fake()->numberBetween(1, 1000),
             'is_active' => fake()->boolean(),
-            'padalinys_id' => Padalinys::factory(),
+            'tenant_id' => Tenant::factory(),
         ];
     }
 }

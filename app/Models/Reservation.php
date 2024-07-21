@@ -51,8 +51,8 @@ class Reservation extends Model
             ->withTimestamps();
     }
 
-    public function padaliniai()
+    public function tenants()
     {
-        return $this->hasManyDeepFromRelations($this->users(), (new User)->padaliniai());
+        return $this->hasManyDeepFromRelations($this->users(), (new User)->tenants());
     }
 }

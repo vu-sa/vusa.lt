@@ -157,8 +157,8 @@ const renderSourceLabel = ({ option }) => {
   return (
     <>
       <span>
-        {`${option.label} (${option.model?.padaliniai?.[0]?.shortname ??
-          option.model?.padaliniai?.shortname
+        {`${option.label} (${option.model?.tenants?.[0]?.shortname ??
+          option.model?.tenants?.shortname
           })`}
       </span>
       <a target="_blank" href={route(`${props.modelType}.edit`, option.value)}>

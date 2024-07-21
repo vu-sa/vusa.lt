@@ -24,11 +24,6 @@ class Navigation extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function padalinys()
-    {
-        return $this->belongsTo(Padalinys::class, 'padalinys_id');
-    }
-
     // Get parent navigation
     public function parent()
     {

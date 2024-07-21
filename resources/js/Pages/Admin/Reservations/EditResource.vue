@@ -2,10 +2,10 @@
   <PageContent :title="resource.name[$page.props.app.locale]" :back-url="route('resources.index')"
     :heading-icon="Icons.RESOURCE">
     <UpsertModelLayout :errors="$page.props.errors" :model="resource">
-      <ResourceForm :resource :categories :padaliniai="assignablePadaliniai" model-route="resources.update" />
+      <ResourceForm :resource :categories :assignable-tenants model-route="resources.update" />
     </UpsertModelLayout>
     <NCard :title="$t('Rezervacijų istorija')" class="mt-4 min-w-[450px]">
-      <NDataTable size="small" :data="resource.reservations" :columns="columns" />
+      <NDataTable size="small" :data="resource.reservations" :columns />
     </NCard>
   </PageContent>
 </template>
@@ -35,10 +35,10 @@ export type ResourceEditType = Omit<
   // media: models.Media[];
 };
 
-const props = defineProps<{
+defineProps<{
   resource: ResourceEditType;
   categories: any
-  assignablePadaliniai: Array<App.Entities.Padalinys>;
+  assignableTenants: Array<App.Entities.Tenant>;
 }>();
 
 const columns = [

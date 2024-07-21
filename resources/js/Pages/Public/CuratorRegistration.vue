@@ -206,7 +206,7 @@ import { getFacultyName } from "@/Utils/String";
 import HeaderWithShapeDivider1 from "@/Components/Headers/HeaderWithShapeDivider1.vue";
 
 const props = defineProps<{
-  curatorPadaliniai: {
+  curatorTenants: {
     id: number;
     fullname: string;
     registration_url: string;

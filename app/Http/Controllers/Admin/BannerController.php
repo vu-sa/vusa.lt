@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Actions\GetPadaliniaiForUpserts;
+use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\LaravelResourceController;
 use App\Models\Banner;
-use App\Models\Padalinys;
 use App\Services\ModelIndexer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -61,7 +60,7 @@ class BannerController extends LaravelResourceController
             'image_url' => 'required',
         ]);
 
-        $padaliniai = GetPadaliniaiForUpserts::execute('banners.create.all', $this->authorizer);
+        $tenants = GetTenantsForUpserts::execute('banners.create.all', $this->authorizer);
 
         $banner = new Banner();
         // $banner->text = $request->text;
@@ -71,10 +70,10 @@ class BannerController extends LaravelResourceController
         // add random banner order for now
         $banner->order = rand(1, 10);
         $banner->image_url = $request->image_url;
-        $banner->padalinys_id = $padaliniai->first()['id'] ?? null;
+        $banner->tenant_id = $tenants->first()['id'] ?? null;
         $banner->save();
 
-        Cache::forget('banners-'.$banner->padalinys_id);
+        Cache::forget('banners-'.$banner->tenant_id);
 
         return redirect()->route('banners.index')->with('success', 'Baneris sėkmingai sukurtas!');
     }
@@ -108,7 +107,7 @@ class BannerController extends LaravelResourceController
         $banner->image_url = $request->image_url;
         $banner->save();
 
-        Cache::forget('banners-'.$banner?->padalinys_id);
+        Cache::forget('banners-'.$banner?->tenant_id);
 
         return back()->with('success', 'Baneris atnaujintas!');
     }

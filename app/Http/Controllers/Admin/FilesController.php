@@ -42,8 +42,8 @@ class FilesController extends LaravelResourceController
         if (! $request->user()->can('viewAny', [File::class, $path, $this->authorizer])) {
 
             // If not, redirect to padaliniai/{padalinys}
-            if ($this->authorizer->getPadaliniai()->count() > 0) {
-                $path = 'public/files/padaliniai/vusa'.$this->authorizer->getPadaliniai()->first()->alias;
+            if ($this->authorizer->getTenants()->count() > 0) {
+                $path = 'public/files/padaliniai/vusa'.$this->authorizer->getTenants()->first()->alias;
             } else {
                 // Redirect to dashboard home
                 return redirect()->route('dashboard');
@@ -71,8 +71,8 @@ class FilesController extends LaravelResourceController
         if (! $request->user()->can('viewAny', [File::class, $path, $this->authorizer])) {
 
             // If not, redirect to padaliniai/{padalinys}
-            if ($this->authorizer->getPadaliniai()->count() > 0) {
-                $path = 'public/files/padaliniai/vusa'.$this->authorizer->getPadaliniai()->first()->alias;
+            if ($this->authorizer->getTenants()->count() > 0) {
+                $path = 'public/files/padaliniai/vusa'.$this->authorizer->getTenants()->first()->alias;
             } else {
                 // Return error response
                 return response()->json([
@@ -182,8 +182,8 @@ class FilesController extends LaravelResourceController
         if (! $request->user()->can('delete', [File::class, $path, $this->authorizer])) {
 
             // If not, redirect to padaliniai/{padalinys}
-            if ($this->authorizer->getPadaliniai()->count() > 0) {
-                $path = 'public/files/padaliniai/vusa'.$this->authorizer->getPadaliniai()->first()->alias;
+            if ($this->authorizer->getTenants()->count() > 0) {
+                $path = 'public/files/padaliniai/vusa'.$this->authorizer->getTenants()->first()->alias;
             } else {
                 // Redirect to dashboard home
                 return redirect()->route('dashboard');

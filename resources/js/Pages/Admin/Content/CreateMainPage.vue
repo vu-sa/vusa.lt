@@ -1,15 +1,7 @@
 <template>
-  <PageContent
-    title="Naujas pradinio puslapio mygtukas"
-    :back-url="route('mainPage.index')"
-  >
+  <PageContent title="Naujas pradinio puslapio mygtukas" :back-url="route('mainPage.index')">
     <UpsertModelLayout :errors="$page.props.errors" :model="mainPage">
-      <MainPageForm
-        :padaliniai-options="padaliniaiOptions"
-        :type-options="typeOptions"
-        :main-page="mainPage"
-        model-route="mainPage.store"
-      />
+      <MainPageForm :tenant-options :type-options :main-page model-route="mainPage.store" />
     </UpsertModelLayout>
   </PageContent>
 </template>
@@ -20,7 +12,7 @@ import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 defineProps<{
-  padaliniaiOptions: Record<string, any>[];
+  tenantOptions: Record<string, any>[];
   typeOptions: Record<string, any>[];
 }>();
 

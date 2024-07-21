@@ -163,9 +163,9 @@ class User extends Authenticatable
         return $this->morphMany(Dutiable::class, 'dutiable');
     }
 
-    public function padaliniai()
+    public function tenants()
     {
-        return $this->hasManyDeepFromRelations($this->duties(), (new Duty())->institution(), (new Institution())->padalinys());
+        return $this->hasManyDeepFromRelations($this->duties(), (new Duty())->institution(), (new Institution())->tenant());
     }
 
     public function tasks()

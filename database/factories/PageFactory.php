@@ -3,8 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\Content;
-use App\Models\Padalinys;
 use App\Models\Page;
+use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class PageFactory extends Factory
@@ -39,7 +39,7 @@ class PageFactory extends Factory
             'permalink' => 'page'.$this->incrementAndReturn(),
             'category_id' => $this->faker->numberBetween(1, 3),
             'content_id' => Content::factory()->hasParts(1),
-            'padalinys_id' => Padalinys::factory(),
+            'tenant_id' => Tenant::factory(),
         ];
     }
 }

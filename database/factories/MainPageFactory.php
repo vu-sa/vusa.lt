@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\MainPage;
-use App\Models\Padalinys;
+use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Arr;
 
@@ -27,7 +27,7 @@ class MainPageFactory extends Factory
             'link' => $this->faker->url(),
             'position' => '',
             'text' => $this->faker->word(),
-            'padalinys_id' => Padalinys::factory(),
+            'tenant_id' => Tenant::factory(),
             'lang' => Arr::random(['lt', 'en']),
         ];
     }

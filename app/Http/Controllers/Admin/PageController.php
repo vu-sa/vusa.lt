@@ -6,8 +6,8 @@ use App\Http\Controllers\LaravelResourceController;
 use App\Models\Category;
 use App\Models\Content;
 use App\Models\ContentPart;
-use App\Models\Padalinys;
 use App\Models\Page;
+use App\Models\Tenant;
 use App\Services\ModelIndexer;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -68,13 +68,13 @@ class PageController extends LaravelResourceController
             'permalink' => 'required|string|max:255|unique:pages',
         ]);
 
-        $padalinys_id = null;
+        $tenant_id = null;
 
-        // check if super admin, else set padalinys_id
+        // check if super admin, else set tenant_id
         if (request()->user()->hasRole(config('permission.super_admin_role_name'))) {
-            $padalinys_id = Padalinys::where('type', 'pagrindinis')->first()->id;
+            $tenant_id = Tenant::where('type', 'pagrindinis')->first()->id;
         } else {
-            $padalinys_id = $this->authorizer->permissableDuties->first()->padaliniai->first()->id;
+            $tenant_id = $this->authorizer->permissableDuties->first()->tenants->first()->id;
         }
 
         $content = new Content();
@@ -90,7 +90,7 @@ class PageController extends LaravelResourceController
             'permalink' => $request->permalink,
             'lang' => $request->lang,
             'other_lang_id' => $request->other_lang_id,
-            'padalinys_id' => $padalinys_id,
+            'tenant_id' => $tenant_id,
         ]);
 
         return redirect()->route('pages.index')->with('success', 'Puslapis sėkmingai sukurtas!');
@@ -105,13 +105,13 @@ class PageController extends LaravelResourceController
     {
         $this->authorize('update', [Page::class, $page, $this->authorizer]);
 
-        $other_lang_pages = Page::with('padalinys:id,shortname')->when(! request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($page) {
-            $query->where('padalinys_id', $page->padalinys_id);
-        })->where('lang', '!=', $page->lang)->select('id', 'title', 'padalinys_id')->get();
+        $other_lang_pages = Page::with('tenant:id,shortname')->when(! request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($page) {
+            $query->where('tenant_id', $page->tenant_id);
+        })->where('lang', '!=', $page->lang)->select('id', 'title', 'tenant_id')->get();
 
         return Inertia::render('Admin/Content/EditPage', [
             'page' => [
-                ...$page->only('id', 'title', 'content', 'permalink', 'text', 'lang', 'category_id', 'padalinys_id', 'is_active', 'aside'),
+                ...$page->only('id', 'title', 'content', 'permalink', 'text', 'lang', 'category_id', 'tenant_id', 'is_active', 'aside'),
                 'other_lang_id' => $page->getOtherLanguage()?->only('id')['id'],
             ],
             'otherLangPages' => $other_lang_pages,

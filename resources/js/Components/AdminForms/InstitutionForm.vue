@@ -11,35 +11,26 @@
             SA padalinys, darbo grupė, VU studijų programos komitetas ir pan.
           </p>
         </template>
-        <NFormItem :label="$t('forms.fields.title')" :span="2">
-          <NInput v-if="locale === 'lt'" v-model:value="form.name" type="text"
-            placeholder="Vilniaus universiteto Studentų atstovybė"><template #suffix>
-              <SimpleLocaleButton v-model:locale="locale" />
-            </template></NInput>
-          <NInput v-else v-model:value="form.extra_attributes.en.name" type="text"
-            placeholder="Vilnius University Students' Representation"><template #suffix>
-              <SimpleLocaleButton v-model:locale="locale" />
-            </template></NInput>
+        <NFormItem :label="$t('forms.fields.title')">
+          <MultiLocaleInput v-model:input="form.name" />
         </NFormItem>
 
         <div class="grid gap-x-4 lg:grid-cols-2">
-          <NFormItem label="Trumpas pavadinimas" :span="2">
-            <NInput v-if="locale === 'lt'" v-model:value="form.short_name" placeholder="VU SA"><template #suffix>
-                <SimpleLocaleButton v-model:locale="locale" />
-              </template></NInput>
-            <NInput v-else v-model:value="form.extra_attributes.en.short_name" placeholder="VU SR"><template #suffix>
-                <SimpleLocaleButton v-model:locale="locale" />
-              </template></NInput>
+          <NFormItem :label="$t('forms.fields.short_name')">
+            <MultiLocaleInput v-model:input="form.short_name" />
           </NFormItem>
 
-          <NFormItem label="Padalinys, kuriam priklauso institucija" :span="2">
-            <NSelect v-model:value="form.padalinys_id" :options="options" placeholder="VU SA X" clearable />
+          <NFormItem label="tenant, kuriam priklauso institucija">
+            <NSelect v-model:value="form.tenant_id" :options="options" placeholder="VU SA X" />
           </NFormItem>
         </div>
+        <NFormItem label="Ar aktyvi institucija?">
+          <NSwitch v-model:value="form.is_active" :checked-value="1" :unchecked-value="0" />
+        </NFormItem>
       </FormElement>
-      <FormElement>
+      <FormElement is-closed>
         <template #title>
-          Institucijos pareigos
+          Institucijos pareigos ir jų eiliškumas
         </template>
         <template #description>
           <p class="mb-4">
@@ -72,81 +63,98 @@
             </a>
           </div>
         </template>
-        <NCard v-if="institution.duties">
-          <strong>Šiuo metu institucijai priklauso šios pareigos ir asmenys:</strong>
-          <TransitionGroup name="list" tag="div">
-            <div v-for="duty in form.duties" :key="duty.id">
-              <NButtonGroup size="tiny" round class="my-1">
-                <NButton @click="handleDutyClick(duty)">{{
-                  duty?.name
-                }}</NButton>
-                <NButton secondary @click="reorderDuties('up', duty)">
-                  <IFluentArrowCircleUp24Regular />
-                </NButton>
-                <NButton secondary @click="reorderDuties('down', duty)">
-                  <IFluentArrowCircleDown24Regular />
-                </NButton>
-              </NButtonGroup>
-              <div v-for="user in duty.current_users" :key="user.id" class="my-1">
-                <UserPopover :user="user" show-name :size="24" />
+        <div v-if="institution.duties">
+          <InfoText>
+            Tempk
+            <IFluentReOrderDotsVertical24Regular class="inline" /> ikoną, kad pakeistum pareigų eiliškumą.
+          </InfoText>
+          <SortableDutiesTable v-model="form.duties" class="mt-2" @update:model-value="dutiesWereReordered = true">
+            <template #default="{ model }">
+              <div class="grid grid-cols-2 items-center justify-center">
+                <SmartLink :href="route('duties.edit', model.id)" class="my-2 border-r px-4">
+                  <NButton style="white-space: normal; text-align: left" text icon-placement="right">
+                    {{ model.name }}
+                    <template #icon>
+                      <IFluentEdit24Regular width="14" />
+                    </template>
+                  </NButton>
+                </SmartLink>
+                <div class="flex flex-col gap-1 p-2">
+                  <template v-for="user in model.current_users" :key="user.id">
+                    <UserPopover :user show-name :size="24" />
+                  </template>
+                </div>
               </div>
-            </div>
-          </TransitionGroup>
-          <FadeTransition>
-            <div v-if="dutiesWereReordered" class="mt-4">
-              <NButton @click="saveReorderedDuties">
-                Atnaujinti
-              </NButton>
-            </div>
-          </FadeTransition>
-        </NCard>
-        <NCard v-else class="col-span-3 h-fit">
+            </template>
+          </SortableDutiesTable>
+          <div class="mt-4">
+            <NButton type="primary" :disabled="!dutiesWereReordered" @click="saveReorderedDuties">
+              Atnaujinti eiliškumą
+            </NButton>
+          </div>
+        </div>
+        <div v-else class="col-span-3 h-fit">
           Ši institucija <strong>neturi</strong> pareigų.
-        </NCard>
+        </div>
       </FormElement>
       <FormElement>
         <template #title>
-          Detalesnis aprašymas
+          Institucijos tipas ir papildoma informacija
         </template>
         <template #description>
-          Ši informacija rodoma viešai, vusa.lt tinklapyje
+          Priklausomai nuo institucijos tipo, gali būti įmanoma užpildyti papildomą informaciją.
         </template>
-        <NFormItem label="Nuotrauka" :span="6">
-          <NMessageProvider>
-            <UploadImageWithCropper v-model:url="form.image_url" folder="institutions" />
-          </NMessageProvider>
+        <NFormItem label="Institucijos tipas">
+          <NSelect v-model:value="form.types" :options="institutionTypes" label-field="title" value-field="id"
+            placeholder="Studentų atstovų organas" clearable multiple />
         </NFormItem>
-        <NFormItem :span="6">
+        <template v-if="showMoreOptions">
+          <div class="flex flex-row gap-4">
+            <NFormItem label="Nuotrauka">
+              <UploadImageWithCropper v-model:url="form.image_url" folder="institutions" />
+            </NFormItem>
+            <NFormItem label="Logotipas">
+              <UploadImageWithCropper v-model:url="form.logo_url" folder="institutions" />
+            </NFormItem>
+          </div>
+          <div class="grid grid-cols-2 gap-x-4">
+            <NFormItem label="El. paštas">
+              <NInput v-model:value="form.email" type="email" placeholder="" />
+            </NFormItem>
+            <NFormItem label="Telefonas">
+              <NInput v-model:value="form.phone" type="text" placeholder="" />
+            </NFormItem>
+            <NFormItem label="Adresas">
+              <MultiLocaleInput v-model:input="form.address" />
+            </NFormItem>
+            <NFormItem label="Svetainė">
+              <NInput v-model:value="form.website" type="text" placeholder="" />
+            </NFormItem>
+            <NFormItem label="Facebook">
+              <NInput v-model:value="form.facebook_url" type="text" placeholder="" />
+            </NFormItem>
+            <NFormItem label="Instagram">
+              <NInput v-model:value="form.instagram_url" type="text" placeholder="" />
+            </NFormItem>
+          </div>
+        </template>
+        <NFormItem>
           <template #label>
             <div class="inline-flex items-center gap-2">
               Aprašymas
               <SimpleLocaleButton v-model:locale="locale" />
             </div>
           </template>
-          <TipTap v-if="locale === 'lt'" v-model="form.description" html :search-files="$page.props.search.other" />
-          <TipTap v-else v-model="form.extra_attributes.en.description" html :search-files="$page.props.search.other" />
+          <TipTap v-if="locale === 'lt'" v-model="form.description.lt" html />
+          <TipTap v-else v-model="form.description.en" html />
         </NFormItem>
       </FormElement>
       <FormElement>
         <template #title>
           Papildoma informacija
         </template>
-        <template #description>
-          Dažniausiai šios informacijos nereikėtų keisti...
-        </template>
-        <NFormItem label="Institucijos tipas" :span="2">
-          <NSelect v-model:value="form.types" :options="institutionTypes" label-field="title" value-field="id"
-            placeholder="Studentų atstovų organas" clearable multiple />
-        </NFormItem>
-        <NFormItem label="Techninė žymė" :span="2">
-          <NInput v-if="locale === 'lt'" v-model:value="form.alias" :disabled="modelRoute === 'institutions.update'"
-            type="text" placeholder="vu-sa"><template #suffix>
-              <SimpleLocaleButton v-model:locale="locale" />
-            </template></NInput>
-          <NInput v-else v-model:value="form.extra_attributes.en.alias" :disabled="modelRoute === 'institutions.update'"
-            type="text" placeholder=""><template #suffix>
-              <SimpleLocaleButton v-model:locale="locale" />
-            </template></NInput>
+        <NFormItem label="Techninė žymė">
+          <NInput v-model:value="form.alias" type="text" placeholder="vu-sa" />
         </NFormItem>
       </FormElement>
     </div>
@@ -158,13 +166,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
 
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
-import FadeTransition from "../Transitions/FadeTransition.vue";
 import FormElement from "./FormElement.vue";
+import InfoText from "../SmallElements/InfoText.vue";
+import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
+import SmartLink from "../Public/SmartLink.vue";
+import SortableDutiesTable from "../Tables/SortableDutiesTable.vue";
 import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
 import UploadImageWithCropper from "../Buttons/UploadImageWithCropper.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
@@ -173,46 +184,34 @@ import UserPopover from "../Avatars/UserPopover.vue";
 const props = defineProps<{
   institution: App.Entities.Institution;
   institutionTypes: App.Entities.Type[];
-  padaliniai: Array<App.Entities.Padalinys>;
+  assignableTenants: Array<App.Entities.Tenant>;
   modelRoute: string;
   deleteModelRoute?: string;
 }>();
 
 const locale = ref("lt");
+const dutiesWereReordered = ref(false);
 
 const form = useForm("institution", props.institution);
 
-const options = props.padaliniai.map((padalinys) => ({
-  value: padalinys.id,
-  label: padalinys.shortname,
+if (Array.isArray(form.address)) {
+  form.address = { lt: "", en: "" };
+}
+
+const options = props.assignableTenants.map((tenant) => ({
+  value: tenant.id,
+  label: tenant.shortname,
 }));
 
-const dutiesWereReordered = ref(false);
+const showMoreOptions = computed(() => {
+  // HACK: manually added types to check
+  const typesToCheck = ["pkp", "padaliniai"];
+  const typeIds = props.institutionTypes
+    ?.filter((type) => typesToCheck.includes(type.slug))
+    .map((type) => type.id);
 
-// this function only reorders the array, but does not change the order value of the duties
-// the order value is assigned in the backend, using the indexes of the array, which is the one manipulated here
-const reorderDuties = (direction: "up" | "down", duty: App.Entities.Duty) => {
-  const index = form.duties.indexOf(duty);
-  if (index === -1) {
-    return;
-  }
-  const newIndex = direction === "up" ? index - 1 : index + 1;
-  if (newIndex < 0 || newIndex >= form.duties.length) {
-    return;
-  }
-
-  const newDuties = [...form.duties];
-  const temp = newDuties[index];
-  newDuties[index] = newDuties[newIndex];
-  newDuties[newIndex] = temp;
-  form.duties = newDuties;
-
-  dutiesWereReordered.value = true;
-};
-
-const handleDutyClick = (duty: App.Entities.Duty) => {
-  window.open(route("duties.edit", duty.id), "_blank");
-};
+  return form.types?.some((type) => typeIds.includes(type));
+});
 
 const saveReorderedDuties = () => {
   const newDuties = form.duties.map((duty, index) => {

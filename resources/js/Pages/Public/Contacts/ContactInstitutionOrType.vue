@@ -1,6 +1,6 @@
 <template>
   <InstitutionContacts
-    class="mt-8"
+    class="mt-16"
     :contacts="contacts"
     :institution="institution"
   />

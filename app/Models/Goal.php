@@ -46,8 +46,8 @@ class Goal extends Model
         return $this->belongsTo(GoalGroup::class);
     }
 
-    public function padalinys()
+    public function tenant()
     {
-        return $this->belongsTo(Padalinys::class);
+        return $this->belongsTo(Tenant::class);
     }
 }

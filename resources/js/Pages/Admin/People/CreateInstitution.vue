@@ -1,43 +1,33 @@
 <template>
   <PageContent title="Nauja institucija" :heading-icon="Icons.INSTITUTION">
-    <UpsertModelLayout :errors="$page.props.errors" :model="institution">
-      <InstitutionForm
-        :padaliniai="padaliniai"
-        model-route="institutions.store"
-        :institution="institution"
-        :institution-types="institutionTypes"
-      />
+    <UpsertModelLayout>
+      <InstitutionForm :assignable-tenants model-route="institutions.store" :institution :institution-types />
     </UpsertModelLayout>
   </PageContent>
 </template>
 
 <script setup lang="ts">
-import { reactive } from "vue";
-
 import Icons from "@/Types/Icons/regular";
 import InstitutionForm from "@/Components/AdminForms/InstitutionForm.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 defineProps<{
-  padaliniai: Array<App.Entities.Padalinys>;
+  assignableTenants: Array<App.Entities.Tenant>;
   institutionTypes: App.Entities.Type[];
 }>();
 
-const institution = reactive({
-  name: "",
-  short_name: "",
+const institution = {
+  name: { lt: "", en: "" },
+  short_name: { lt: "", en: "" },
+  description: { lt: "", en: "" },
+  address: { lt: "", en: "" },
+  website: { lt: "", en: "" },
   alias: "",
-  description: "",
-  padalinys_id: null,
+  image_url: null,
+  logo_url: null,
+  is_active: 1,
+  tenant_id: null,
   types: null,
-  extra_attributes: {
-    en: {
-      name: "",
-      short_name: "",
-      alias: "",
-      description: "",
-    },
-  },
-});
+};
 </script>

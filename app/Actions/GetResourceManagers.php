@@ -10,8 +10,8 @@ class GetResourceManagers
 {
     public static function execute(Resource $resource)
     {
-        $resourceManagers = Duty::whereHas('institution.padalinys', function (Builder $query) use ($resource) {
-            $query->where('id', $resource->padalinys_id);
+        $resourceManagers = Duty::whereHas('institution.tenant', function (Builder $query) use ($resource) {
+            $query->where('id', $resource->tenant_id);
         })->whereHas('roles.permissions', function (Builder $query) {
             $query->where('name', config('permission.resource_managership_indicating_permission'));
         })->with('users')->get()->pluck('users')->flatten()->unique('id')->values();

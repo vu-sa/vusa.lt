@@ -16,7 +16,7 @@ import { usePage } from "@inertiajs/vue3";
 import type { DataTableColumns, DataTableSortState } from "naive-ui";
 
 import { trans as $t } from "laravel-vue-i18n";
-import { padalinysColumn } from "@/Composables/dataTableColumns";
+import { tenantColumn } from "@/Composables/dataTableColumns";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
@@ -61,9 +61,9 @@ const columns = computed<DataTableColumns<App.Entities.Banner>>(() => [
     },
   },
   {
-    ...padalinysColumn(filters, usePage().props.padaliniai),
+    ...tenantColumn(filters, usePage().props.tenants),
     render(row) {
-      return $t(row.padalinys?.shortname);
+      return $t(row.tenant?.shortname);
     },
   },
 ]);

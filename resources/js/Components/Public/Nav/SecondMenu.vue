@@ -4,13 +4,13 @@
     <Link href="/"
       class="my-auto mr-6 whitespace-nowrap text-sm font-bold text-gray-900 dark:text-gray-200 dark:hover:text-vusa-red">
     {{
-      $page.props.padalinys?.shortname
-        ? $t($page.props.padalinys?.shortname)
+      $page.props.tenant?.shortname
+        ? $t($page.props.tenant?.shortname)
         : "VU SA"
     }}
     </Link>
     <nav ref="secondMenuScrollSection" class="mr-2 inline-flex items-center gap-4 overflow-hidden whitespace-nowrap">
-      <MainPageLink v-for="link in $page.props.padalinys?.links" :key="link?.id" :main-page-link="link" />
+      <MainPageLink v-for="link in $page.props.tenant?.links" :key="link?.id" :main-page-link="link" />
     </nav>
     <div class="my-auto">
       <FadeTransition appear>

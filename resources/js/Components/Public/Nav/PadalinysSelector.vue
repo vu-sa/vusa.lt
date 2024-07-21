@@ -1,6 +1,6 @@
 <template>
-  <NDropdown :disabled="isDisabled" :options="options_padaliniai" size="small" style="overflow: auto; max-height: 440px"
-    :render-label="renderPadalinysLabel" @select="$emit('select:padalinys', $event)">
+  <NDropdown :disabled="isDisabled" :options="options_padaliniai" size="small" style="overflow: auto; max-height: 480px"
+    :render-label="renderPadalinysLabel" @select="handleSelectPadalinys">
     <NButton :disabled="isDisabled" :size="size" icon-placement="right">
       {{ padalinys }}
       <template #icon>
@@ -19,32 +19,58 @@ import {
 import { computed } from "vue";
 import { usePage } from "@inertiajs/vue3";
 
-defineEmits<{
-  (event: "select:padalinys", key: string): void;
-}>();
+//defineEmits<{
+//  (event: "select:padalinys", key: string): void;
+//}>();
 
 const props = defineProps<{
-  size: "tiny" | "small";
+  size: "tiny" | "small" | "medium";
+  prependOptions?: Array<DropdownOption>;
 }>();
 
+const handleSelectPadalinys = (key) => {
+  let padalinys_alias = key;
+
+  // if padalinys is array, get first element (for mobile)
+  // because tree component returns array of selected keys
+  if (Array.isArray(padalinys_alias)) {
+    padalinys_alias = key[0];
+  }
+
+  // get last two elements of host and join them with dot
+  const hostWithoutSubdomain = window.location.host
+    .split(".")
+    .slice(-2)
+    .join(".");
+
+  window.location.href = `${window.location.protocol
+    }//${padalinys_alias}.${hostWithoutSubdomain}${usePage().url}`;
+};
+
 const options_padaliniai = computed<DropdownOption[]>(() => {
-  return usePage()
-    .props.padaliniai.filter(
-      (padalinys) => padalinys.type === "padalinys" && padalinys.id <= 17
+  const options = usePage()
+    .props.tenants.filter(
+      (tenant) => tenant.type === "padalinys" && tenant.id <= 17
     )
-    .map((padalinys) => ({
+    .map((tenant) => ({
       label:
         props.size.toLowerCase() === "tiny"
-          ? $t(padalinys.shortname.split(" ")[2])
-          : $t(padalinys.fullname.split("atstovybė ")[1]),
-      key: padalinys.alias,
+          ? $t(tenant.shortname.split(" ")[2])
+          : $t(tenant.fullname.split("atstovybė ")[1]),
+      key: tenant.alias,
     }));
+
+  if (props.prependOptions) {
+    return [...props.prependOptions, ...options];
+  }
+
+  return options;
 });
 
 const padalinys = computed(() => {
   return $t(
-    usePage().props.padalinys?.alias !== "vusa"
-      ? usePage().props.padalinys?.shortname.split(" ").pop() ?? "Padaliniai"
+    usePage().props.tenant?.alias !== "vusa"
+      ? usePage().props.tenant?.shortname.split(" ").pop() ?? "Padaliniai"
       : "Padaliniai",
   );
 });

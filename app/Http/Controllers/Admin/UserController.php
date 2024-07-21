@@ -4,9 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\SendWelcomeEmail;
 use App\Http\Controllers\LaravelResourceController;
+use App\Http\Requests\StoreUserRequest;
 use App\Models\Duty;
-use App\Models\Padalinys;
 use App\Models\Role;
+use App\Models\Tenant;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use App\Services\ModelIndexer;
@@ -30,14 +31,14 @@ class UserController extends LaravelResourceController
     {
         $this->authorize('viewAny', [User::class, $this->authorizer]);
 
-        $indexer = new ModelIndexer(new User(), request(), $this->authorizer);
+        $indexer = new ModelIndexer(new User(), $request, $this->authorizer);
 
         $users = $indexer
             ->setEloquentQuery([
                 fn (Builder $query) => $query->with([
                     'duties:id,institution_id',
-                    'duties.institution:id,padalinys_id',
-                    'duties.institution.padalinys:id,shortname',
+                    'duties.institution:id,tenant_id',
+                    'duties.institution.tenant:id,shortname',
                 ])->withCount('duties')])
             ->filterAllColumns()
             ->sortAllColumns()
@@ -57,12 +58,12 @@ class UserController extends LaravelResourceController
     {
         $this->authorize('create', [User::class, $this->authorizer]);
 
-        $permissablePadaliniai = User::find(Auth::id())->hasRole(config('permission.super_admin_role_name')) ? Padalinys::all() : $this->authorizer->getPadaliniai();
+        $permissableTenants = User::find(Auth::id())->hasRole(config('permission.super_admin_role_name')) ? Tenant::all() : $this->authorizer->getTenants();
 
         return Inertia::render('Admin/People/CreateUser', [
             'roles' => Role::all(),
-            'padaliniaiWithDuties' => $this->getDutiesForForm($this->authorizer),
-            'permissablePadaliniai' => $permissablePadaliniai,
+            'tenantsWithDuties' => $this->getDutiesForForm($this->authorizer),
+            'permissableTenants' => $permissableTenants,
         ]);
     }
 
@@ -71,25 +72,16 @@ class UserController extends LaravelResourceController
      *
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreUserRequest $request)
     {
-        $this->authorize('create', [User::class, $this->authorizer]);
-
-        $request->validate([
-            'name' => 'required',
-            'email' => 'required|email|unique:users,email',
-            'current_duties' => 'required',
-        ]);
-
         DB::transaction(function () use ($request) {
             // create user
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'facebook_url' => $request->facebook_url,
-                'phone' => $request->phone,
-                'profile_photo_path' => $request->profile_photo_path,
-            ]);
+
+            $user = new User();
+
+            $user->fill($request->safe()->except(['current_duties', 'roles']));
+
+            $user->save();
 
             foreach ($request->current_duties as $duty) {
                 $user->duties()->attach($duty, ['start_date' => now()->subDay()]);
@@ -137,14 +129,14 @@ class UserController extends LaravelResourceController
         // user load duties with pivot
         $user->load('current_duties', 'previous_duties', 'roles');
 
-        $permissablePadaliniai = User::find(Auth::id())->hasRole(config('permission.super_admin_role_name')) ? Padalinys::all() : $this->authorizer->getPadaliniai();
+        $permissableTenants = User::find(Auth::id())->hasRole(config('permission.super_admin_role_name')) ? Tenant::all() : $this->authorizer->getTenants();
 
         return Inertia::render('Admin/People/EditUser', [
             'user' => $user->makeVisible(['last_action'])->toFullArray(),
             // get all roles
             'roles' => fn () => Role::all(),
-            'padaliniaiWithDuties' => fn () => $this->getDutiesForForm($this->authorizer),
-            'permissablePadaliniai' => $permissablePadaliniai,
+            'tenantsWithDuties' => fn () => $this->getDutiesForForm($this->authorizer),
+            'permissableTenants' => $permissableTenants,
         ]);
     }
 
@@ -206,9 +198,9 @@ class UserController extends LaravelResourceController
     {
         // Check if not super admin
         if (User::find(Auth::id())->hasRole(config('permission.super_admin_role_name'))) {
-            $permissablePadaliniai = Padalinys::all();
+            $permissableTenants = Tenant::all();
         } else {
-            $permissablePadaliniai = $this->authorizer->getPadaliniai();
+            $permissableTenants = $this->authorizer->getTenants();
         }
 
         $new = $existing_duties->diff($user_duties)->values();
@@ -219,7 +211,7 @@ class UserController extends LaravelResourceController
 
             $duty = Duty::find($duty);
 
-            if (! $permissablePadaliniai->contains($duty->institution->padalinys)) {
+            if (! $permissableTenants->contains($duty->institution->tenant)) {
                 continue;
             }
 
@@ -231,7 +223,7 @@ class UserController extends LaravelResourceController
 
             $duty = Duty::find($duty);
 
-            if (! $permissablePadaliniai->contains($duty->institution->padalinys)) {
+            if (! $permissableTenants->contains($duty->institution->tenant)) {
                 continue;
             }
 
@@ -255,18 +247,18 @@ class UserController extends LaravelResourceController
 
     private function getDutiesForForm($authorizer)
     {
-        // return Duty::with(['institution:id,name,padalinys_id', 'institution.padalinys:id,shortname'])
+        // return Duty::with(['institution:id,name,tenant_id', 'institution.tenant:id,shortname'])
         // ->when(!auth()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) {
         //     $query->whereHas('institution', function ($query) {
-        //         $query->where('padalinys_id', User::find(Auth::id())->padalinys()?->id);
+        //         $query->where('tenant_id', User::find(Auth::id())->tenant()?->id);
         //     });
         // })->get();
 
         if (! $authorizer->forUser(Auth::user())->checkAllRoleables('users.create.all')) {
-            return Padalinys::orderBy('shortname')->with('institutions:id,name,padalinys_id', 'institutions.duties:id,name,institution_id')
-                ->whereIn('id', User::find(Auth::id())->padaliniai->pluck('id'))->get();
+            return Tenant::orderBy('shortname')->with('institutions:id,name,tenant_id', 'institutions.duties:id,name,institution_id')
+                ->whereIn('id', User::find(Auth::id())->tenants->pluck('id'))->get();
         } else {
-            return Padalinys::orderBy('shortname')->with('institutions:id,name,padalinys_id', 'institutions.duties:id,name,institution_id')->get();
+            return Tenant::orderBy('shortname')->with('institutions:id,name,tenant_id', 'institutions.duties:id,name,institution_id')->get();
         }
     }
 

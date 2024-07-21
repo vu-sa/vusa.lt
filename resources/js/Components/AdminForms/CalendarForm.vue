@@ -77,33 +77,28 @@
           </div>
         </NFormItem>
         <NFormItem label="Padalinys">
-          <NSelect v-model:value="form.padalinys_id" :options="padaliniai" label-field="shortname" value-field="id"
-            placeholder="VU SA ..." :default-value="padaliniai[0].id ?? ''" />
+          <NSelect v-model:value="form.tenant_id" :options="assignableTenants" label-field="shortname" value-field="id"
+            placeholder="VU SA ..." :default-value="assignableTenants[0].id ?? ''" />
         </NFormItem>
       </FormElement>
       <FormElement>
         <template #title>
-          Laiko informacija
+          Informacija apie renginio laiką
         </template>
         <template #description>
           <p class="mb-2">
-            Jeigu nėra nurodytas pabaigos laikas, ICS kalendoriuje renginys
+            Jeigu nėra nurodytas pabaigos laikas, kalendoriuje renginys
             rodomas kaip 1 val. trukmės.
-          </p>
-          <p>
-            Renginio pabaigos laiką galima nurodyti tik
-            <strong>sukūrus renginį</strong>.
           </p>
         </template>
         <div class="grid gap-4 lg:grid-cols-3">
           <NFormItem label="Renginio pradžia" required>
-            <NDatePicker v-model:value="form.date" default-time="12:00:00" placeholder="Pasirinkti pradžios laiką..."
+            <NDatePicker v-model:value="form.date" placeholder="Pasirinkti pradžios laiką..."
               value-format="yyyy-MM-dd HH:mm:ss" type="datetime" />
           </NFormItem>
 
           <NFormItem label="Renginio pabaiga">
-            <NDatePicker v-model:formatted-value="form.end_date" default-time="12:00:00"
-              :disabled="props.modelRoute === 'calendar.store'" placeholder="Pasirinkti pabaigos laiką..."
+            <NDatePicker v-model:value="form.end_date" placeholder="Pasirinkti pabaigos laiką..."
               value-format="yyyy-MM-dd HH:mm:ss" type="datetime" />
           </NFormItem>
           <NFormItem>
@@ -219,7 +214,7 @@ const props = defineProps<{
   images?: any;
   modelRoute: string;
   deleteModelRoute?: string;
-  padaliniai: App.Entities.Padalinys[];
+  assignableTenants: App.Entities.Tenant[];
 }>();
 
 const locale = ref("lt");
@@ -255,7 +250,7 @@ if (form.extra_attributes !== null) {
 
 const defaultOrganizer = computed(() => {
   return (
-    props.calendar.padalinys?.shortname ?? usePage().props.auth?.user.padalinys
+    props.calendar.tenant?.shortname ?? usePage().props.auth?.user.tenant
   );
 });
 

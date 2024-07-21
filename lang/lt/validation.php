@@ -114,7 +114,7 @@ return [
         'password' => 'Slaptažodis',
         'phone' => 'Telefono numeris',
         'short_name' => 'Trumpas pavadinimas',
-        'padalinys_id' => 'Padalinys',
+        'tenant_id' => 'Padalinys',
         'alias' => 'Techninė žymė',
         'link' => 'Nuoroda',
         'link_url' => 'Nuoroda',

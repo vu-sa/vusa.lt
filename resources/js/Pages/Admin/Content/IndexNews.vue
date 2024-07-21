@@ -9,7 +9,7 @@ import { usePage } from "@inertiajs/vue3";
 import type { DataTableColumns, DataTableSortState } from "naive-ui";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
-import { langColumn, padalinysColumn } from "@/Composables/dataTableColumns";
+import { langColumn, tenantColumn } from "@/Composables/dataTableColumns";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 import PreviewModelButton from "@/Components/Buttons/PreviewModelButton.vue";
@@ -34,7 +34,7 @@ provide("sorters", sorters);
 
 const filters = ref<Record<string, any>>({
   lang: [],
-  "padalinys.id": [],
+  "tenant.id": [],
 });
 
 provide("filters", filters);
@@ -68,7 +68,7 @@ const columns = computed<DataTableColumns<App.Entities.News>>(() => [
             lang: row.lang,
             news: row.permalink,
             newsString: "naujiena",
-            subdomain: row.padalinys?.alias ?? "www",
+            subdomain: row.tenant?.alias ?? "www",
           }}
         />
       ) : (
@@ -103,9 +103,9 @@ const columns = computed<DataTableColumns<App.Entities.News>>(() => [
     },
   },
   {
-    ...padalinysColumn(filters, usePage().props.padaliniai),
+    ...tenantColumn(filters, usePage().props.tenants),
     render(row) {
-      return row.padalinys?.shortname;
+      return row.tenant?.shortname;
     },
   },
   {

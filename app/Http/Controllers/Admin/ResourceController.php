@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Actions\GetPadaliniaiForUpserts;
+use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\LaravelResourceController;
 use App\Http\Requests\StoreResourceRequest;
 use App\Http\Requests\UpdateResourceRequest;
@@ -52,7 +52,7 @@ class ResourceController extends LaravelResourceController
         $this->authorize('create', [Resource::class, $this->authorizer]);
 
         return Inertia::render('Admin/Reservations/CreateResource', [
-            'assignablePadaliniai' => GetPadaliniaiForUpserts::execute('resources.create.all', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute('resources.create.all', $this->authorizer),
             'categories' => ResourceCategory::all(),
         ]);
     }
@@ -103,7 +103,7 @@ class ResourceController extends LaravelResourceController
                     'url' => $image->getUrl(),
                 ]),
                 ],
-            'assignablePadaliniai' => GetPadaliniaiForUpserts::execute('resources.update.all', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute('resources.update.all', $this->authorizer),
             'categories' => ResourceCategory::all(),
         ]);
     }

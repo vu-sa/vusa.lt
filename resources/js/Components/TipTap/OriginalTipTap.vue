@@ -118,7 +118,7 @@
         </NButton>
         <NButton @click="editor.chain().focus().deleteRow().run()">
           <template #icon>
-            <ITableDeleteRow24Regular />
+            <IFluentTableDeleteRow24Regular />
           </template>
         </NButton>
         <NButton @click="editor.chain().focus().deleteTable().run()">

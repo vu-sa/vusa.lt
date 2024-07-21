@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Padalinys;
+use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -23,7 +23,7 @@ class GoalFactory extends Factory
             'start_date' => $this->faker->date,
             // end date later than start date
             'end_date' => $this->faker->dateTimeBetween('now', '+1 year'),
-            'padalinys_id' => Padalinys::factory(),
+            'tenant_id' => Tenant::factory(),
         ];
     }
 }

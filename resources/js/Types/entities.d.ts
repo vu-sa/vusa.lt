@@ -53,7 +53,7 @@ declare namespace App.Entities {
     updated_at: string;
   }
 
-  export type Padalinys = models.Padalinys;
+  export type Tenant = models.Tenant;
   export type Page = models.Page;
   export type Permission = models.Permission;
   export type Registration = models.Registration;
@@ -90,8 +90,8 @@ declare namespace App.Entities {
   export type Type = models.Type;
 
   export type User =
-    Omit<models.User, "padaliniai" | "reservations"> & {
-    padaliniai?: Array<models.Padalinys> | null;
+    Omit<models.User, "tenants" | "reservations"> & {
+    tenants?: Array<models.Tenant> | null;
     reservations?: Array<App.Entities.Reservation> | null;
     roles?: Array<models.Role> | null;
     roles_count?: number | null;

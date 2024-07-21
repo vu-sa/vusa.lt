@@ -57,7 +57,6 @@ class FilePolicy
         $check = $this->authorizer->forUser($user)->check($this->pluralModelName.'.read.padalinys');
 
         $padalinysDirectory = $this->getDirectoryPadalinysAlias($directory, $authorizer);
-        $permissablePadaliniai = $this->authorizer->getPadaliniai()->pluck('alias')->toArray();
 
         if ($check) {
 
@@ -65,13 +64,12 @@ class FilePolicy
                 return true;
             }
 
-            if (in_array($padalinysDirectory, $this->authorizer->getPadaliniai()->pluck('alias')->toArray())) {
+            if (in_array($padalinysDirectory, $this->authorizer->getTenants()->pluck('alias')->toArray())) {
                 return true;
             }
         }
 
         return false;
-
     }
 
     /**
@@ -98,7 +96,7 @@ class FilePolicy
                 return true;
             }
 
-            if (in_array($padalinysDirectory, $this->authorizer->getPadaliniai()->pluck('alias')->toArray())) {
+            if (in_array($padalinysDirectory, $this->authorizer->getTenants()->pluck('alias')->toArray())) {
                 return true;
             }
         }

@@ -1,7 +1,7 @@
 <template>
   <PageContent title="Naujas studentas" :heading-icon="Icons.USER">
     <UpsertModelLayout :errors="$page.props.errors" :model="user">
-      <UserForm :user :roles :padaliniai-with-duties :permissable-padaliniai model-route="users.store" />
+      <UserForm :user :roles :tenants-with-duties :permissable-tenants model-route="users.store" />
     </UpsertModelLayout>
   </PageContent>
 </template>
@@ -14,8 +14,8 @@ import UserForm from "@/Components/AdminForms/UserForm.vue";
 
 defineProps<{
   roles: App.Entities.Role[];
-  padaliniaiWithDuties: App.Entities.Padalinys[];
-  permissablePadaliniai: App.Entities.Padalinys[];
+  tenantsWithDuties: App.Entities.Tenant[];
+  permissableTenants: App.Entities.Tenant[];
 }>();
 
 const user = {

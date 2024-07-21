@@ -5,7 +5,7 @@ namespace Database\Factories;
 use App\Models\Category;
 use App\Models\Content;
 use App\Models\News;
-use App\Models\Padalinys;
+use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Arr;
 
@@ -58,7 +58,7 @@ class NewsFactory extends Factory
             'image' => '/images/placeholders/foto'.rand(1, 5).'.jpg',
             'important' => rand(0, 1),
             'publish_time' => $this->faker->dateTimeBetween('-10 weeks'),
-            'padalinys_id' => Padalinys::factory(),
+            'tenant_id' => Tenant::factory(),
             'lang' => Arr::random(['lt', 'en']),
         ];
     }

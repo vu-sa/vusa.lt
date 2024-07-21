@@ -1,17 +1,8 @@
 <template>
-  <PageContent
-    :title="mainPage.text"
-    :back-url="route('mainPage.index')"
-    :heading-icon="Icons.MAIN_PAGE"
-  >
+  <PageContent :title="mainPage.text" :back-url="route('mainPage.index')" :heading-icon="Icons.MAIN_PAGE">
     <UpsertModelLayout :errors="$page.props.errors" :model="mainPage">
-      <MainPageForm
-        :main-page="mainPage"
-        :padaliniai-options="padaliniaiOptions"
-        :type-options="typeOptions"
-        model-route="mainPage.update"
-        delete-model-route="mainPage.destroy"
-      />
+      <MainPageForm :main-page :tenant-options :type-options model-route="mainPage.update"
+        delete-model-route="mainPage.destroy" />
     </UpsertModelLayout>
   </PageContent>
 </template>
@@ -24,7 +15,7 @@ import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 defineProps<{
   mainPage: App.Entities.MainPage;
-  padaliniaiOptions: Record<string, any>[];
+  tenantOptions: Record<string, any>[];
   typeOptions: Record<string, any>[];
 }>();
 </script>

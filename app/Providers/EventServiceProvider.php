@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Calendar;
 use App\Models\RoleType;
 use App\Models\Typeable;
+use App\Observers\CalendarObserver;
 use App\Observers\RoleTypeObserver;
 use App\Observers\TypeableObserver;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -48,6 +50,7 @@ class EventServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        Calendar::observe(CalendarObserver::class);
         RoleType::observe(RoleTypeObserver::class);
         Typeable::observe(TypeableObserver::class);
     }

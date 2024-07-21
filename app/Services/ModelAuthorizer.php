@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Padalinys;
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -109,20 +109,19 @@ class ModelAuthorizer
         return $this->duties;
     }
 
-    private function getPadaliniaiFromPermissableDuties(): Collection
+    /**
+     * Get tenants from permissable duties.
+     *
+     * @return Collection<App\Models\Tenant>
+     */
+    public function getTenants(): Collection
     {
         if ($this->isAllScope === true) {
-            $padaliniai = Padalinys::all();
+            $tenants = Tenant::all();
         } else {
-            $padaliniai = $this->permissableDuties->load('institution.padalinys')->pluck('institution.padalinys')->flatten(1)->unique('id')->values();
+            $tenants = $this->permissableDuties->load('institution.tenant')->pluck('institution.tenant')->flatten(1)->unique('id')->values();
         }
 
-        return new Collection($padaliniai);
-    }
-
-    // alias
-    public function getPadaliniai(): Collection
-    {
-        return $this->getPadaliniaiFromPermissableDuties();
+        return new Collection($tenants);
     }
 }

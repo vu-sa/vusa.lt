@@ -1,9 +1,9 @@
-export {};
+export { };
 
 import { LocaleEnum, ModelEnum } from "./enums";
 
-interface User extends Omit<App.Entities.User, "padaliniai"> {
-  padaliniai: Pick<App.Entities.Padalinys, "id" | "shortname">[];
+interface User extends Omit<App.Entities.User, "tenants"> {
+  tenants: Pick<App.Entities.Tenant, "id" | "shortname">[];
   isSuperAdmin: boolean;
   unreadNotifications: Record<string, any>[] | null;
 }
@@ -36,17 +36,17 @@ declare module "@inertiajs/core" {
     };
     mainNavigation?: App.Entities.Navigation[];
     otherLangURL?: string | null;
-    padaliniai: Pick<
-      App.Entities.Padalinys,
+    tenants: Pick<
+      App.Entities.Tenant,
       "id" | "alias" | "shortname" | "fullname" | "type"
     >[];
-    padalinys:
-      | (Pick<App.Entities.Padalinys, "id" | "alias" | "shortname" | "type"> & {
-          subdomain: string;
-          links: Array<App.Entities.MainPage | null>;
-          banners: Array<App.Entities.Banner> | [];
-        })
-      | undefined;
+    tenant:
+    | (Pick<App.Entities.Tenant, "id" | "alias" | "shortname" | "type"> & {
+      subdomain: string;
+      links: Array<App.Entities.MainPage | null>;
+      banners: Array<App.Entities.Banner> | [];
+    })
+    | undefined;
     search: {
       calendar: Array<{
         date: string;

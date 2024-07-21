@@ -3,16 +3,12 @@
 namespace App\Services;
 
 use App\Models\Navigation;
-use App\Models\Padalinys;
 
 class NavigationService
 {
     public static function getNavigationForPublic()
     {
-        // Get only navigation for VU SA padalinys
-        $vusa = Padalinys::where('shortname', 'VU SA')->first();
-
-        $navigation = Navigation::where([['padalinys_id', $vusa->id], ['lang', app()->getLocale()]])->orderBy('order')->get();
+        $navigation = Navigation::where('lang', app()->getLocale())->orderBy('order')->get();
 
         // Start with root navigation elements
         $rootNavigation = $navigation->where('parent_id', 0)->values()->toArray();

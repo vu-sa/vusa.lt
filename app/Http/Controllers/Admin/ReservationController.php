@@ -31,25 +31,25 @@ class ReservationController extends LaravelResourceController
      */
     public function index()
     {
-        // TODO: also return reservations with resources for this padalinys
+        // TODO: also return reservations with resources for this tenant
 
         $this->authorize('viewAny', [Reservation::class, $this->authorizer]);
 
         $indexer = new ModelIndexer(new Reservation(), request(), $this->authorizer);
 
         $reservations = $indexer
-            ->setEloquentQuery([fn (Builder $query) => $query->with(['resources.padalinys', 'users'])])
+            ->setEloquentQuery([fn (Builder $query) => $query->with(['resources.tenant', 'users'])])
             ->filterAllColumns()
             ->sortAllColumns(['start_time' => 'descend'])
             ->builder->paginate(20);
 
-        $resources = Resource::withWhereHas('padalinys', function ($query) {
-            $query->whereIn('id', $this->authorizer->getPadaliniai()->pluck('id'));
+        $resources = Resource::withWhereHas('tenant', function ($query) {
+            $query->whereIn('id', $this->authorizer->getTenants()->pluck('id'));
         });
 
         return Inertia::render('Admin/Reservations/IndexReservation', [
             'reservations' => $reservations,
-            'activeReservations' => $resources->with('reservations.resources.padalinys', 'reservations.users')->get()->pluck('reservations')->flatten()->unique('id')->values(),
+            'activeReservations' => $resources->with('reservations.resources.tenant', 'reservations.users')->get()->pluck('reservations')->flatten()->unique('id')->values(),
         ]);
     }
 
@@ -72,8 +72,8 @@ class ReservationController extends LaravelResourceController
         ];
 
         return Inertia::render('Admin/Reservations/CreateReservation', [
-            // 'assignablePadaliniai' => GetPadaliniaiForUpserts::execute('resources.create.all', $this->authorizer)
-            'resources' => Resource::with('padalinys')->select('id', 'name', 'capacity', 'is_reservable', 'padalinys_id')->get()->map(function ($resource) use ($dateTimeRange) {
+            // 'assignableTenants' => GetTenantsForUpserts::execute('resources.create.all', $this->authorizer)
+            'resources' => Resource::with('tenant')->select('id', 'name', 'capacity', 'is_reservable', 'tenant_id')->get()->map(function ($resource) use ($dateTimeRange) {
                 $capacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($dateTimeRange['start'], $dateTimeRange['end']);
 
                 return [
@@ -132,7 +132,7 @@ class ReservationController extends LaravelResourceController
             'reservation' => [
                 // load pivot relationship comments
                 ...$reservation->load('comments', 'activities.causer', 'users')->toArray(),
-                'resources' => $reservation->load('resources.media', 'resources.pivot.comments', 'resources.padalinys')->resources->map(function ($resource) {
+                'resources' => $reservation->load('resources.media', 'resources.pivot.comments', 'resources.tenant')->resources->map(function ($resource) {
                     return [
                         ...$resource->toArray(),
                         'managers' => $resource->managers(),
@@ -141,14 +141,14 @@ class ReservationController extends LaravelResourceController
                 }),
 
             ],
-            'allResources' => Inertia::lazy(fn () => Resource::with('padalinys')->select('id', 'name', 'is_reservable', 'capacity', 'padalinys_id')->get()->map(function ($resource) use ($dateTimeRange) {
+            'allResources' => Inertia::lazy(fn () => Resource::with('tenant')->select('id', 'name', 'is_reservable', 'capacity', 'tenant_id')->get()->map(function ($resource) use ($dateTimeRange) {
                 $capacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($dateTimeRange['start'], $dateTimeRange['end']);
 
                 return [
                     ...$resource->toArray(),
-                    'padalinys' => [
-                        'id' => $resource->padalinys->id,
-                        'shortname' => __($resource->padalinys->shortname),
+                    'tenant' => [
+                        'id' => $resource->tenant->id,
+                        'shortname' => __($resource->tenant->shortname),
                     ],
                     'capacityAtDateTimeRange' => $capacityAtDateTimeRange,
                     'lowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($capacityAtDateTimeRange),

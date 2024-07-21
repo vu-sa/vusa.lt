@@ -11,6 +11,12 @@
 |
 */
 
+use App\Models\Duty;
+use App\Models\Institution;
+use App\Models\Tenant;
+use App\Models\User;
+use Tests\TestCase;
+
 uses(
     Tests\TestCase::class,
     // Illuminate\Foundation\Testing\RefreshDatabase::class,
@@ -42,7 +48,16 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+function makeUser(Tenant $tenant): User
 {
-    // ..
+    $user = User::factory()->hasAttached(Duty::factory()->for(Institution::factory()->for($tenant)),
+        ['start_date' => now()->subDay()]
+    )->create();
+
+    return $user;
+}
+
+function asUser(User $user): TestCase
+{
+    return test()->actingAs($user);
 }

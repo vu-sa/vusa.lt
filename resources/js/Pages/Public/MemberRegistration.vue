@@ -195,7 +195,7 @@ import { computed, ref } from "vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
 const props = defineProps<{
-  padaliniaiOptions: Array<App.Entities.Padalinys>;
+  tenantOptions: Array<App.Entities.Tenant>;
 }>();
 
 const aboutLink = computed(() =>
@@ -236,10 +236,10 @@ const formBlueprint = {
 // useForm saves the form value to a remembered state.
 const formValue = useForm("MemberRegistration", formBlueprint);
 
-const padaliniaiOptions = computed(() =>
-  props.padaliniaiOptions.map((padalinys) => ({
-    value: padalinys.id,
-    label: $t(padalinys.fullname),
+const tenantOptions = computed(() =>
+  props.tenantOptions.map((tenant) => ({
+    value: tenant.id,
+    label: $t(tenant.fullname),
   })),
 );
 
@@ -260,7 +260,7 @@ const registerOptions = computed(() => [
     type: "group",
     label: $t("VU SA padaliniai"),
     key: "padaliniai",
-    children: padaliniaiOptions.value,
+    children: tenantOptions.value,
   },
 ]);
 

@@ -48,8 +48,8 @@ class Dutiable extends MorphPivot
         return $this->belongsTo(Contact::class, 'dutiable_id');
     }
 
-    public function padaliniai()
+    public function tenants()
     {
-        return $this->hasManyDeepFromRelations($this->duty(), (new Duty)->padaliniai());
+        return $this->hasManyDeepFromRelations($this->duty(), (new Duty)->tenants());
     }
 }

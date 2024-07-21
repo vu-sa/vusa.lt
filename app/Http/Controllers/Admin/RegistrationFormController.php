@@ -56,13 +56,13 @@ class RegistrationFormController extends LaravelResourceController
         if ($registrationForm->id === 2 && ! request()->user()->hasRole(config('permission.super_admin_role_name'))) {
 
             $registrations = $registrationForm->load(['registrations' => function ($query) {
-                $query->whereIn('data->whereToRegister', request()->user()->padaliniai()->get(['padaliniai.id'])->pluck('id'));
+                $query->whereIn('data->whereToRegister', request()->user()->tenants()->get(['tenants.id'])->pluck('id'));
             }])->registrations;
         }
 
         // for now, is accustomed to show only member registration
         return Inertia::render('Admin/RegistrationForms/ShowRegistrationForm', [
-            'registrations' => $registrations->orderBy('created_at', 'desc')->paginate(30),
+            'registrations' => $registrations->sortBy('created_at', 'desc')->paginate(30),
         ]);
     }
 }

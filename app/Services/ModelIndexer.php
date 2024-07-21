@@ -27,7 +27,7 @@ class ModelIndexer
 
     private Authorizer $authorizer;
 
-    private string $padalinysRelationString;
+    private string $tenantRelationString;
 
     public function __construct($indexable, $request, $authorizer)
     {
@@ -38,7 +38,7 @@ class ModelIndexer
 
         $this->authorizer = $authorizer;
 
-        $this->padalinysRelationString = $indexable->whichUnitRelation();
+        $this->tenantRelationString = $indexable->whichUnitRelation();
 
         $this->search();
         $this->setEloquentQuery();
@@ -65,7 +65,7 @@ class ModelIndexer
             // add $callbacks to $this->callbacksArray
             $this->callbacksArray = array_merge($this->callbacksArray, $callbacks);
 
-            $query->with($this->padalinysRelationString);
+            $query->with($this->tenantRelationString);
 
             if ($authorize) {
                 // add authorizer closure to callbacks to the first element of the callbacks
@@ -100,12 +100,12 @@ class ModelIndexer
             $relationFilterKeyArray = explode('.', $relationFilterKey);
 
             $relationFilterCallback = function (EloquentBuilder $query) use ($relationFilterKeyArray, $relationFilterValue, $relationFilterKey) {
-                $query->when(!in_array($relationFilterValue, [[], null]),
+                $query->when(! in_array($relationFilterValue, [[], null]),
                     fn (EloquentBuilder $query) => $query->whereHas(
                         $relationFilterKeyArray[0], fn (EloquentBuilder $query) => $query->whereIn(
                             // Sometimes some variables may be described as ambiguous, so we need to specify, which id we want to use
                             // TODO: use it the same way as in authorizer
-                            $relationFilterKey !== 'padaliniai.id' ? $relationFilterKeyArray[1] : $relationFilterKey, $relationFilterValue)
+                            $relationFilterKey !== 'tenants.id' ? $relationFilterKeyArray[1] : $relationFilterKey, $relationFilterValue)
                     )
                 );
             };
@@ -123,9 +123,9 @@ class ModelIndexer
         return fn (EloquentBuilder $query) => $query->when(
             ! $this->authorizer->isAllScope && ! $user->hasRole(config('permission.super_admin_role_name')),
             fn (EloquentBuilder $query) => $query->whereHas(
-                $this->padalinysRelationString, fn (EloquentBuilder $query) => $query->whereIn(
+                $this->tenantRelationString, fn (EloquentBuilder $query) => $query->whereIn(
                     // Optional, because this is how relationship is queried in query builder
-                    optional($this->padalinysRelationString === 'padaliniai', fn () => 'padaliniai.id'), $this->authorizer->getPadaliniai()->pluck('id')->toArray())
+                    optional($this->tenantRelationString === 'tenants', fn () => 'tenants.id'), $this->authorizer->getTenants()->pluck('id')->toArray())
             )
         );
     }

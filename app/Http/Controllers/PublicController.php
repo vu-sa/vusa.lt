@@ -4,57 +4,57 @@ namespace App\Http\Controllers;
 
 use App\Actions\GetAliasSubdomainForPublic;
 use App\Models\MainPage;
-use App\Models\Padalinys;
+use App\Models\Tenant;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 class PublicController extends Controller
 {
-    protected Padalinys $padalinys;
+    protected Tenant $tenant;
 
     protected string $subdomain;
 
     public function __construct()
     {
         /**
-         * Every public page requires an 'alias', which is basically the shortname of a padalinys.
+         * Every public page requires an 'alias', which is basically the shortname of a tenant.
          * Alias may decide in the controller, what kind of information is displayed.
          *  */
         [$alias, $subdomain] = GetAliasSubdomainForPublic::execute();
 
-        // When we have the final alias, get the padalinys that will be used in all of the public controllers
-        $this->padalinys = Padalinys::where('alias', $alias)->first();
+        // When we have the final alias, get the tenant that will be used in all of the public controllers
+        $this->tenant = Tenant::where('alias', $alias)->first();
 
         // We also need to use the subdomain in the public controllers
         $this->subdomain = $subdomain;
 
         // Subdomain and alias won't be different, except when alias = 'vusa', then subdomain = 'www'
-        Inertia::share('padalinys', $this->padalinys->only(['id', 'shortname', 'alias', 'type']) +
+        Inertia::share('tenant', $this->tenant->only(['id', 'shortname', 'alias', 'type']) +
             ['subdomain' => $subdomain]
         );
     }
 
     protected function getBanners()
     {
-        $banners = Cache::remember('banners-'.$this->padalinys->id, 60 * 30, function () {
+        $banners = Cache::remember('banners-'.$this->tenant->id, 60 * 30, function () {
 
-            $banners = Padalinys::where('alias', 'vusa')->first()->banners()->inRandomOrder()->where('is_active', 1)->get();
+            $banners = Tenant::where('alias', 'vusa')->first()->banners()->inRandomOrder()->where('is_active', 1)->get();
 
-            if ($this->padalinys->type !== 'pagrindinis') {
-                $banners = $this->padalinys->banners()->inRandomOrder()->where('is_active', 1)->get()->merge($banners);
+            if ($this->tenant->type !== 'pagrindinis') {
+                $banners = $this->tenant->banners()->inRandomOrder()->where('is_active', 1)->get()->merge($banners);
             }
 
             return $banners;
         });
 
-        Inertia::share('padalinys.banners', $banners);
+        Inertia::share('tenant.banners', $banners);
     }
 
-    protected function getPadalinysLinks()
+    protected function getTenantLinks()
     {
-        $mainPage = MainPage::query()->where([['padalinys_id', $this->padalinys->id], ['lang', app()->getLocale()]])->orderBy('order')->get(['id', 'link', 'text']);
+        $mainPage = MainPage::query()->where([['tenant_id', $this->tenant->id], ['lang', app()->getLocale()]])->orderBy('order')->get(['id', 'link', 'text']);
 
-        Inertia::share('padalinys.links', $mainPage);
+        Inertia::share('tenant.links', $mainPage);
     }
 
     // This is mostly used for default sharing, other cases likes pages and news link to other URLs

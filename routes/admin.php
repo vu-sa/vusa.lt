@@ -10,7 +10,7 @@ Route::patch('profile', [DashboardController::class, 'updateUserSettings'])->nam
 Route::get('userTasks', [DashboardController::class, 'userTasks'])->name('userTasks');
 Route::get('workspace', [DashboardController::class, 'workspace'])->name('workspace');
 Route::get('institutionGraph', [DashboardController::class, 'institutionGraph'])->name('institutionGraph');
-Route::get('stats/representatives', [StatsController::class, 'representativesInPadalinys'])->name('stats.representativesInPadalinys');
+Route::get('stats/representatives', [StatsController::class, 'representativesInTenant'])->name('stats.representativesInTenant');
 
 // Restore routes
 Route::patch('users/{user}/restore', [UserController::class, 'restore'])->name('users.restore')->withTrashed();
@@ -33,7 +33,7 @@ Route::resource('news', NewsController::class)->except(['show']);
 Route::resource('categories', CategoryController::class)->except(['show']);
 
 // change order main page
-Route::get('mainPage/padalinys/{padalinys}/edit-order/{lang}', [MainPageController::class, 'editOrder'])->name('mainPage.edit-order')
+Route::get('mainPage/tenant/{tenant}/edit-order/{lang}', [MainPageController::class, 'editOrder'])->name('mainPage.edit-order')
     ->whereIn('lang', ['lt', 'en']);
 
 Route::post('mainPage/update-order', [MainPageController::class, 'updateOrder'])->name('mainPage.update-order');
@@ -82,6 +82,8 @@ Route::resource('duties', DutyController::class);
 Route::resource('dutiables', DutiableController::class);
 Route::post('institutions/reorderDuties', [InstitutionController::class, 'reorderDuties'])->name('institutions.reorderDuties');
 Route::resource('institutions', InstitutionController::class);
+
+Route::resource('tenants', TenantController::class);
 
 Route::resource('types', TypeController::class);
 Route::resource('relationships', RelationshipController::class);

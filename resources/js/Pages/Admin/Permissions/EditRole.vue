@@ -52,17 +52,17 @@ import AdminContentPage from "@/Components/Layouts/AdminContentPage.vue";
 import RolePermissionForms from "@/Components/AdminForms/RolePermissionForms.vue";
 
 const props = defineProps<{
-  padaliniaiWithDuties: App.Entities.Padalinys[];
+  tenantsWithDuties: App.Entities.Tenant[];
   role: App.Entities.Role;
   allTypes: App.Entities.Type[];
 }>();
 
-const dutyOptions: TreeOption[] = props.padaliniaiWithDuties.map(
-  (padalinys) => ({
-    label: padalinys.shortname,
-    value: padalinys.id,
+const dutyOptions: TreeOption[] = props.tenantsWithDuties.map(
+  (tenant) => ({
+    label: tenant.shortname,
+    value: tenant.id,
     checkboxDisabled: true,
-    children: padalinys.institutions?.map((institution) => ({
+    children: tenant.institutions?.map((institution) => ({
       label: institution.name,
       value: institution.id,
       checkboxDisabled: true,
@@ -76,7 +76,7 @@ const dutyOptions: TreeOption[] = props.padaliniaiWithDuties.map(
 
 const renderLabel = ({ option }: { option: TreeOption }) => {
   // jsx element
-  // if value is integer then it's a padalinys and doesn't have additional button
+  // if value is integer then it's a tenant and doesn't have additional button
   if (typeof option.value === "number") {
     return <span>{option.label}</span>;
   }
@@ -105,8 +105,8 @@ const renderLabel = ({ option }: { option: TreeOption }) => {
 };
 
 const flattenDutyOptions = dutyOptions.flatMap(
-  (padalinys) =>
-    padalinys.children?.flatMap(
+  (tenant) =>
+    tenant.children?.flatMap(
       (institution) => institution.children?.map((duty) => duty),
     ),
 );

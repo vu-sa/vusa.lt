@@ -16,7 +16,7 @@
         </Link>
       </div>
       <div class="mt-1 flex items-center gap-9">
-        <Link v-if="$page.props.auth.can.index.user" :href="route('stats.representativesInPadalinys')">
+        <Link v-if="$page.props.auth.can.index.user" :href="route('stats.representativesInTenant')">
         <IFluentChartMultiple20Filled width="20" height="20" />
         </Link>
         <FeedbackModalButton />

@@ -1,7 +1,7 @@
 <template>
   <PageContent :title="userName" :back-url="route('users.index')" :heading-icon="Icons.USER">
     <UpsertModelLayout :errors="$page.props.errors" :model="user">
-      <UserForm :user :roles :padaliniai-with-duties :permissable-padaliniai model-route="users.update"
+      <UserForm :user :roles :tenants-with-duties :permissable-tenants model-route="users.update"
         delete-model-route="users.destroy" />
     </UpsertModelLayout>
   </PageContent>
@@ -20,8 +20,8 @@ const props = defineProps<{
   user: App.Entities.User;
   roles: App.Entities.Role[];
   // TODO: don't return all duties from the controller immedixxately
-  padaliniaiWithDuties: App.Entities.Padalinys[];
-  permissablePadaliniai: App.Entities.Padalinys[];
+  tenantsWithDuties: App.Entities.Tenant[];
+  permissableTenants: App.Entities.Tenant[];
 }>();
 
 const userName = computed(() => {

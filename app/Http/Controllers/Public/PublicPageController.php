@@ -7,8 +7,8 @@ use App\Models\Calendar;
 use App\Models\Category;
 use App\Models\Navigation;
 use App\Models\News;
-use App\Models\Padalinys;
 use App\Models\Page;
+use App\Models\Tenant;
 use App\Services\CuratorRegistrationService;
 use App\Services\ResourceServices\InstitutionService;
 use Datetime;
@@ -56,11 +56,11 @@ class PublicPageController extends PublicController
         if (app()->getLocale() === 'en') {
             return Cache::remember('calendar_en', 60 * 30, function () {
                 return Calendar::where('extra_attributes->en->shown', 'true')
-                    ->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'category', 'extra_attributes', 'padalinys_id')->take(200)->get();
+                    ->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'category', 'extra_attributes', 'tenant_id')->take(200)->get();
             });
         } else {
             return Cache::remember('calendar_lt', 60 * 30, function () {
-                return Calendar::orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'category', 'extra_attributes', 'padalinys_id')->take(200)->get();
+                return Calendar::orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'category', 'extra_attributes', 'tenant_id')->take(200)->get();
             });
         }
     }
@@ -68,10 +68,10 @@ class PublicPageController extends PublicController
     public function home()
     {
         $this->getBanners();
-        $this->getPadalinysLinks();
+        $this->getTenantLinks();
 
         // get last 4 news by publishing date
-        $news = News::with('padalinys')->where([['padalinys_id', '=', $this->padalinys->id], ['lang', app()->getLocale()], ['draft', '=', 0]])
+        $news = News::with('tenant')->where([['tenant_id', '=', $this->tenant->id], ['lang', app()->getLocale()], ['draft', '=', 0]])
             ->where('publish_time', '<=', date('Y-m-d H:i:s'))
             ->orderBy('publish_time', 'desc')
             ->take(4)
@@ -84,7 +84,7 @@ class PublicPageController extends PublicController
             return $event->end_date ? $event->end_date > date('Y-m-d H:i:s') : $event->date > date('Y-m-d H:i:s');
         })->sortBy(function ($event) {
             return $event->date;
-        }, SORT_DESC)->take(8)->values()->load('padalinys:id,alias,fullname,shortname');
+        }, SORT_DESC)->take(8)->values()->load('tenant:id,alias,fullname,shortname');
 
         return Inertia::render('Public/HomePage', [
             'news' => $news->map(function ($news) {
@@ -92,7 +92,7 @@ class PublicPageController extends PublicController
                     'id' => $news->id,
                     'title' => $news->title,
                     'lang' => $news->lang,
-                    'alias' => $news->padalinys->alias,
+                    'alias' => $news->tenant->alias,
                     // publish time to date format YYYY-MM-DD HH:MM
                     'publish_time' => date('Y-m-d H:i', strtotime($news->publish_time)),
                     'permalink' => $news->permalink,
@@ -131,26 +131,36 @@ class PublicPageController extends PublicController
     public function curatorRegistration()
     {
         $this->getBanners();
-        $this->getPadalinysLinks();
+        $this->getTenantLinks();
         $this->shareOtherLangURL('curatorRegistration');
 
         return Inertia::render('Public/CuratorRegistration', [
-            'curatorPadaliniai' => (new CuratorRegistrationService)->getRegistrationPadaliniaiWithData(),
+            'curatorTenants' => (new CuratorRegistrationService)->getRegistrationTenantsWithData(),
         ]);
     }
 
     public function page()
     {
-        $this->getBanners();
-        $this->getPadalinysLinks();
+        // At first, since for PKP we want to redirect old pages to contacts page, we check in this function
+        $pkps = (new InstitutionService)->getInstitutionsByTypeSlug('pkp');
+        $institution = $pkps->firstWhere('alias', request()->permalink);
 
-        $page = Page::query()->where([['permalink', '=', request()->permalink], ['padalinys_id', '=', $this->padalinys->id]])->first();
+        if ($institution) {
+            return redirect()->route('contacts.alias', ['subdomain' => $this->subdomain, 'lang' => app()->getLocale(), 'institution' => request()->permalink]);
+        }
+
+        // Continue with normal page rendering
+
+        $this->getBanners();
+        $this->getTenantLinks();
+
+        $page = Page::query()->where([['permalink', '=', request()->permalink], ['tenant_id', '=', $this->tenant->id]])->first();
 
         if ($page === null) {
             abort(404);
         }
 
-        $navigation_item = Navigation::where([['padalinys_id', '=', $this->padalinys->id], ['name', '=', $page->title]])->get()->first();
+        $navigation_item = Navigation::where([['tenant_id', '=', $this->tenant->id], ['name', '=', $page->title]])->get()->first();
         $other_lang_page = $page->getOtherLanguage();
 
         Inertia::share('otherLangURL', $other_lang_page ? route(
@@ -173,7 +183,7 @@ class PublicPageController extends PublicController
         return Inertia::render('Public/ContentPage', [
             'navigationItemId' => $navigation_item?->id,
             'page' => [
-                ...$page->only('id', 'title', 'content', 'lang', 'category', 'padalinys', 'permalink', 'other_lang_id'),
+                ...$page->only('id', 'title', 'content', 'lang', 'category', 'tenant', 'permalink', 'other_lang_id'),
                 // TODO: It's possible to parse tiptap elements in server, but doesn't parse correctly all the time. Will debug later.
                 // 'content' => [
                 //     ...$page->content->toArray(),
@@ -193,9 +203,9 @@ class PublicPageController extends PublicController
     public function category($lang, Category $category)
     {
         $this->getBanners();
-        $this->getPadalinysLinks();
+        $this->getTenantLinks();
 
-        $category->load('pages:id,title,permalink,lang,category_id,padalinys_id')->load('pages.padalinys:id,alias');
+        $category->load('pages:id,title,permalink,lang,category_id,tenant_id')->load('pages.tenant:id,alias');
 
         return Inertia::render('Public/CategoryPage', [
             'category' => $category->only('id', 'name', 'description', 'pages'),
@@ -205,7 +215,7 @@ class PublicPageController extends PublicController
     public function summerCamps($lang, $year = null)
     {
         $this->getBanners();
-        $this->getPadalinysLinks();
+        $this->getTenantLinks();
         $this->shareOtherLangURL('pirmakursiuStovyklos');
 
         if ($year == null) {
@@ -217,8 +227,8 @@ class PublicPageController extends PublicController
         // TODO: add alias in global settings instead
         $events = Calendar::query()->whereHas('category', function (Builder $query) {
             $query->where('alias', '=', 'freshmen-camps');
-        })->with('padalinys:id,alias,fullname')->whereYear('date', $year ?? date('Y'))
-            ->with(['media'])->get()->sortBy('padalinys.alias');
+        })->with('tenant:id,alias,fullname')->whereYear('date', $year ?? date('Y'))
+            ->with(['media'])->get()->sortBy('tenant.alias');
 
         if ($events->isEmpty() && $year != intval(date('Y'))) {
             return redirect()->route('pirmakursiuStovyklos', ['lang' => app()->getLocale(), 'year' => null]);
@@ -242,7 +252,7 @@ class PublicPageController extends PublicController
     public function individualStudies()
     {
         $this->getBanners();
-        $this->getPadalinysLinks();
+        $this->getTenantLinks();
         $this->shareOtherLangURL('individualStudies');
 
         return Inertia::render('Public/IndividualStudies')->withViewData([
@@ -254,15 +264,20 @@ class PublicPageController extends PublicController
     // dynamically grabs list of pkp
     public function pkp()
     {
-        $typeSlug = 'pkp';
-        $institutionService = new InstitutionService();
         $this->getBanners();
-        $this->getPadalinysLinks();
+        $this->getTenantLinks();
         $this->shareOtherLangURL('pkp');
 
-        $institutions = $institutionService->getInstitutionsByTypeSlug($typeSlug);
+        $institutions = (new InstitutionService)->getInstitutionsByTypeSlug('pkp')->where('is_active', true);
 
-        return Inertia::render('Public/PKP', ['institutions' => $institutions])->withViewData([
+        return Inertia::render('Public/PKP', [
+            'institutions' => $institutions->map(function ($institution) {
+                return [
+                    ...$institution->toArray(),
+                    'description' => Str::limit(strip_tags($institution->description), 100, '...'),
+                ];
+            }),
+        ])->withViewData([
             'title' => 'Programos, klubai ir projektai',
         ]);
     }
@@ -275,10 +290,10 @@ class PublicPageController extends PublicController
     public function calendarEventMain($lang, Calendar $calendar)
     {
         $this->getBanners();
-        $this->getPadalinysLinks();
+        $this->getTenantLinks();
         $this->shareOtherLangURL('calendar.event', calendarId: $calendar->id);
 
-        $calendar->load('padalinys:id,alias,fullname,shortname');
+        $calendar->load('tenant:id,alias,fullname,shortname');
 
         return Inertia::render('Public/CalendarEvent', [
             'event' => [
@@ -297,13 +312,13 @@ class PublicPageController extends PublicController
     public function memberRegistration()
     {
         $this->getBanners();
-        $this->getPadalinysLinks();
+        $this->getTenantLinks();
         $this->shareOtherLangURL('memberRegistration');
 
-        $padaliniai = Padalinys::select('id', 'fullname', 'shortname')->where('shortname', '!=', 'VU SA')->orderBy('shortname')->get();
+        $tenants = Tenant::select('id', 'fullname', 'shortname')->where('shortname', '!=', 'VU SA')->orderBy('shortname')->get();
 
         return Inertia::render('Public/MemberRegistration', [
-            'padaliniaiOptions' => $padaliniai,
+            'tenantOptions' => $tenants,
         ])->withViewData([
             'title' => __('Prašymas tapti VU SA (arba VU SA PKP) nariu'),
             'description' => 'Naujų narių registracija',

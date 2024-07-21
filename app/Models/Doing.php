@@ -77,9 +77,9 @@ class Doing extends Model implements Decidable
         return $this->hasManyDeepFromRelations($this->users(), (new User)->institutions());
     }
 
-    public function padaliniai()
+    public function tenants()
     {
-        return $this->hasManyDeepFromRelations($this->users(), (new User)->padaliniai());
+        return $this->hasManyDeepFromRelations($this->users(), (new User)->tenants());
     }
 
     // ! About decisions:

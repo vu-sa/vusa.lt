@@ -170,11 +170,11 @@ const userOptions = props.assignableUsers.map((user) => ({
 }));
 
 const emailOptions = computed(() => {
-  return usePage().props.auth?.user.padaliniai.map((padalinys) => {
+  return usePage().props.auth?.user.tenants.map((tenant) => {
     const prefix = form.email?.split("@")[0];
     return {
-      label: `${prefix}@${padalinys.alias}.vusa.lt`,
-      value: `${prefix}@${padalinys.alias}.vusa.lt`,
+      label: `${prefix}@${tenant.alias}.vusa.lt`,
+      value: `${prefix}@${tenant.alias}.vusa.lt`,
     };
   });
 });
@@ -185,7 +185,7 @@ const rolesOptions = props.roles.map((role) => ({
 }));
 
 const institutionsFromDatabase = props.institutions.map((institution) => ({
-  label: `${institution.name} (${institution.padalinys?.shortname})`,
+  label: `${institution.name} (${institution.tenant?.shortname})`,
   value: institution.id,
 }));
 

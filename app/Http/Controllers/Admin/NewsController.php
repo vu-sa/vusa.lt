@@ -6,7 +6,7 @@ use App\Http\Controllers\LaravelResourceController;
 use App\Models\Content;
 use App\Models\ContentPart;
 use App\Models\News;
-use App\Models\Padalinys;
+use App\Models\Tenant;
 use App\Services\ModelIndexer;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -66,13 +66,13 @@ class NewsController extends LaravelResourceController
             'short' => 'required',
         ]);
 
-        $padalinys_id = null;
+        $tenant_id = null;
 
-        // check if super admin, else set padalinys_id
+        // check if super admin, else set tenant_id
         if (request()->user()->hasRole(config('permission.super_admin_role_name'))) {
-            $padalinys_id = Padalinys::where('type', 'pagrindinis')->first()->id;
+            $tenant_id = Tenant::where('type', 'pagrindinis')->first()->id;
         } else {
-            $padalinys_id = $this->authorizer->permissableDuties->first()->padaliniai->first()->id;
+            $tenant_id = $this->authorizer->permissableDuties->first()->tenants->first()->id;
         }
 
         $content = new Content();
@@ -91,7 +91,7 @@ class NewsController extends LaravelResourceController
             'image' => $request->image,
             'image_author' => $request->image_author,
             'draft' => $request->draft ?? 0,
-            'padalinys_id' => $padalinys_id,
+            'tenant_id' => $tenant_id,
         ]);
 
         if (is_string($request->publish_time)) {
@@ -114,9 +114,9 @@ class NewsController extends LaravelResourceController
     {
         $this->authorize('update', [News::class, $news, $this->authorizer]);
 
-        $other_lang_pages = News::with('padalinys:id,shortname')->when(! request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($news) {
-            $query->where('padalinys_id', $news->padalinys_id);
-        })->where('lang', '!=', $news->lang)->select('id', 'title', 'padalinys_id')->get();
+        $other_lang_pages = News::with('tenant:id,shortname')->when(! request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($news) {
+            $query->where('tenant_id', $news->tenant_id);
+        })->where('lang', '!=', $news->lang)->select('id', 'title', 'tenant_id')->get();
 
         return Inertia::render('Admin/Content/EditNews', [
             'news' => [
@@ -127,7 +127,7 @@ class NewsController extends LaravelResourceController
                 'lang' => $news->lang,
                 'other_lang_id' => $news->other_language_news?->id,
                 'category' => $news->category,
-                'padalinys' => $news->padalinys,
+                'tenant' => $news->tenant,
                 'draft' => $news->draft,
                 'short' => $news->short,
                 'image' => $news->image,

@@ -18,14 +18,15 @@ class Calendar extends Model implements HasMedia
 
     protected $casts = [
         'date' => 'datetime',
+        'end_date' => 'datetime',
         'updated_at' => 'datetime:Y-m-d H:i:s',
         'created_at' => 'datetime:Y-m-d H:i:s',
         'extra_attributes' => 'array',
     ];
 
-    public function padalinys()
+    public function tenant()
     {
-        return $this->belongsTo(Padalinys::class, 'padalinys_id');
+        return $this->belongsTo(Tenant::class);
     }
 
     //# Undefined property: App\Models\Calendar::$category, when generating types

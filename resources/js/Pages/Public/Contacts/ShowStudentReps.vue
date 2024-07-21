@@ -1,80 +1,73 @@
 <template>
   <div class="mt-8 flex flex-col gap-4">
     <h1>{{ $t("Studentų atstovai") }}</h1>
-    <NFormItem label="Tipas" class="max-w-sm"
-      ><NSelect
-        v-model:value="selectedTypeID"
-        :label="$t('Tipas')"
-        placeholder="Pasirinkite tipą..."
-        :options="typeOptions"
-        clearable
-    /></NFormItem>
+    <div class="flex flex-row items-center gap-4">
+      <NFormItem label="Padalinys">
+        <PadalinysSelector size="medium" :prepend-options="prependPadalinysOptions()" />
+      </NFormItem>
 
-    <section v-if="selectedType && selectedType.description">
-      <h2>Aprašymas</h2>
-      <div
-        class="typography text-sm mb-8 dark:text-zinc-50"
-        v-html="selectedType?.description"
-      />
-    </section>
+      <NDivider vertical />
 
-    <section v-for="institutionType in filteredTypes" :key="institutionType.id">
-      <template
-        v-for="institution in institutionType.institutions"
-        :key="institution.id"
-      >
-        <InstitutionContacts
-          :institution="institution"
-          :contacts="getContacts(institution)"
-        />
+      <NFormItem :label="$t('forms.fields.title')" class="min-w-64">
+        <NInput v-model:value="search" placeholder="Ieškoti..." class="w-full" />
+      </NFormItem>
+    </div>
+
+    <section v-for="institutionType in filteredTypesAndInstitutions" :key="institutionType.id">
+      <template v-for="institution in institutionType.institutions" :key="institution.id">
+        <InstitutionContacts :institution="institution" :contacts="getContacts(institution)" />
         <!-- add divider except for last element -->
-        <NDivider
-          v-if="
-            institutionType.institutions[
-              institutionType.institutions.length - 1
-            ].id !== institution.id
-          "
-          class="my-8"
-        />
+        <NDivider v-if="
+          institutionType.institutions[
+            institutionType.institutions.length - 1
+          ].id !== institution.id
+        " class="my-8" />
       </template>
     </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import { NDivider, NFormItem, NSelect } from "naive-ui";
 import { computed, ref } from "vue";
 
 import InstitutionContacts from "@/Components/Public/InstitutionContacts.vue";
+import PadalinysSelector from "@/Components/Public/Nav/PadalinysSelector.vue";
 
 const props = defineProps<{
   types: App.Entities.Type[];
 }>();
 
-const selectedTypeID = ref<number | null>(null);
-const typeOptions = computed<Record<string, any>>(() => {
-  return props.types.map((type) => {
+const search = ref<string | null>(null);
+
+const prependPadalinysOptions = () => {
+  return [
+    {
+      label: "Centriniai atstovai",
+      key: 'www',
+    },
+    {
+      type: 'divider',
+    },
+  ];
+};
+
+const filteredTypesAndInstitutions = computed(() => {
+
+  // filter institutions by search
+  const filteredInstitutions = props.types.map((type) => {
     return {
-      label: type.title,
-      value: type.id,
+      ...type,
+      institutions: type.institutions.filter((institution) => {
+        if (search.value) {
+          return institution.name.toLowerCase().includes(search.value.toLowerCase());
+        }
+
+        return true;
+      }),
     };
   });
-});
 
-const filteredTypes = computed(() => {
-  if (selectedType.value) {
-    return props.types.filter((type) => type.id === selectedTypeID.value);
-  }
-
-  return props.types;
-});
-
-const selectedType = computed(() => {
-  if (selectedTypeID.value) {
-    return props.types.find((type) => type.id === selectedTypeID.value);
-  }
-
-  return null;
+  return filteredInstitutions;
 });
 
 // flatten institution.duties.current_users and add duty to each user

@@ -67,7 +67,7 @@ const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => {
                 {capitalize($t("entities.reservation.resources"))}
               </strong>
               <ul class="list-disc">
-                {/* add quantity and padalinys.shortname */}
+                {/* add quantity and tenant.shortname */}
                 {row.resources?.map((resource) => (
                   <li>
                     <div class="inline-flex items-center gap-2">
@@ -76,7 +76,7 @@ const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => {
                       </Link>
                       <NTag size="tiny" round>
                         <span class="ml-1 text-xs text-gray-500">
-                          {$t(resource.padalinys?.shortname)}
+                          {$t(resource.tenant?.shortname)}
                         </span>
                       </NTag>
                     </div>

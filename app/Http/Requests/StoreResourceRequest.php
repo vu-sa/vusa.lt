@@ -28,7 +28,7 @@ class StoreResourceRequest extends ResourceRequest
             'description.en' => 'nullable|string',
             'identifier' => 'nullable|string',
             'location' => 'required|string',
-            'padalinys_id' => 'required|integer|exists:padaliniai,id',
+            'tenant_id' => 'required|integer|exists:tenants,id',
             'capacity' => 'required|integer|min:1',
             'is_reservable' => 'required|boolean',
             'resource_category_id' => 'nullable|integer|exists:resource_categories,id',

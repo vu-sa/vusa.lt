@@ -5,7 +5,7 @@
         model-route="calendar.store"
         :calendar="calendar"
         :categories="categories"
-        :padaliniai="padaliniai"
+        :assignable-tenants
       />
     </UpsertModelLayout>
   </PageContent>
@@ -18,12 +18,13 @@ import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 defineProps<{
   categories: App.Entities.Category[];
-  padaliniai: App.Entities.Padalinys[];
+  assignableTenants: App.Entities.Tenant[];
 }>();
 
 const calendar = {
   title: "",
   date: null,
+  end_date: null,
   description: "",
   location: "",
   category: null,
