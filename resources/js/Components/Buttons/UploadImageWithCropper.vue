@@ -2,7 +2,7 @@
   <NUpload accept="image/jpg,image/jpeg,image/png" :action="route('files.uploadImage')" :data="{ path: props.folder }"
     :file-list="fileList" :headers="csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}" list-type="image-card" :max="1"
     @before-upload="beforeUpload" @change="fileList = $event.fileList" @preview="handlePreview" @finish="handleFinish"
-    @remove="fileList = $event.fileList" />
+    @remove="handleRemove" />
   <CardModal v-if="url" class="max-w-5xl" :show="showModal" title="Redaguoti paveikslėlį" @close="showModal = false">
     <div id="cropper-buttons" class="flex items-center gap-2">
       <NButton @click="showCropper = !showCropper">
@@ -97,4 +97,9 @@ const handleCropFinish = (url: string) => {
   showCropper.value = false;
   fileList.value[0].url = url;
 };
+
+function handleRemove({ fileList }: { fileList: UploadFileInfo[] }) {
+  url.value = null;
+  fileList.splice(0, fileList.length);
+}
 </script>
