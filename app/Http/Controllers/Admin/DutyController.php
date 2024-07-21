@@ -84,8 +84,8 @@ class DutyController extends LaravelResourceController
         $duty->extra_attributes = $request->extra_attributes;
         $duty->save();
 
-        $duty->types()->sync($request->type);
-        $duty->users()->syncWithPivotValues($request->current_users, ['start_date' => now()->subDay()]);
+        $duty->types()->sync($request->types);
+        $this->handleUsersUpdate(new Collection($duty->current_users->pluck('id')), new Collection($request->current_users), $duty);
 
         return redirect()->route('duties.index')->with('success', trans_choice('messages.created', 0, ['model' => trans_choice('entities.duty.model', 1)]));
     }

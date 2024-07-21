@@ -22,8 +22,8 @@ class UpdateInstitutionRequest extends ResourceRequest
     public function rules(): array
     {
         return [
-            'name.lt' => 'required|unique:institutions,name',
-            'short_name.lt' => 'required|unique:institutions,short_name',
+            'name.lt' => 'required|unique:institutions,name,' . $this->institution->id,
+            'short_name.lt' => 'nullable|unique:institutions,short_name,' . $this->institution->id,
             'description.lt' => 'nullable',
             'name.en' => 'nullable',
             'short_name.en' => 'nullable',

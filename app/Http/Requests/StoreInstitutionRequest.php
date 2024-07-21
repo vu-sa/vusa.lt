@@ -32,7 +32,7 @@ class StoreInstitutionRequest extends ResourceRequest
     {
         return [
             'name.lt' => 'required|unique:institutions,name',
-            'short_name.lt' => 'required|unique:institutions,short_name',
+            'short_name.lt' => 'nullable|unique:institutions,short_name',
             'description.lt' => 'nullable',
             'name.en' => 'nullable',
             'short_name.en' => 'nullable',
