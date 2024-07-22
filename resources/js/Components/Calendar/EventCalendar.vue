@@ -60,7 +60,7 @@ const isSameDay = (date1: string, date2: string) => {
   }
 
   let parsedDate1 = new Date(date1);
-  let parsedDate2 = new Date(date2.replace(/-/g, "/"));
+  let parsedDate2 = new Date(date2);
 
   return (
     parsedDate1.getFullYear() === parsedDate2.getFullYear() &&
@@ -91,7 +91,7 @@ const calendarAttributes = props.calendarEvents.map((event) => {
     dates: event.end_date
       ? {
         start: new Date(event.date),
-        end: new Date(event.end_date.replace(/-/g, "/")),
+        end: new Date(event.end_date),
       }
       : new Date(event.date),
     [isSameDay(event.date, event.end_date) ? "dot" : "highlight"]: eventColor,
