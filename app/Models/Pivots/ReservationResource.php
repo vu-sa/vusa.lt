@@ -58,7 +58,7 @@ class ReservationResource extends Pivot implements Decidable
 
         if ($authorizer->forUser(auth()->user())->check(config('permission.resource_managership_indicating_permission'))) {
             // check if authorizer->getTenants() contains $this->tenants
-            return $authorizer->getTenants()->contains($this->resource->tenants);
+            return $authorizer->getTenants()->contains($this->resource->tenant);
         }
 
         return false;
