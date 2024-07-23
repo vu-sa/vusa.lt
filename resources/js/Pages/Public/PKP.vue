@@ -21,7 +21,7 @@
     </NButton>
   </a>
   <div class="grid max-w-7xl grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
-    <TransitionGroup appear :css="false" @before-enter="onBeforeEnter" @enter="onEnter">
+    <StaggeredTransitionGroup appear>
       <NewInstitutionCard v-for="(institution, index) in institutions" :key="institution.id" :institution :href="route('contacts.alias', {
         institution: institution.alias,
         subdomain:
@@ -30,29 +30,17 @@
             : institution.tenant?.alias ?? 'www',
         lang: $page.props.app.locale,
       })" :data-index="index" />
-    </TransitionGroup>
+    </StaggeredTransitionGroup>
   </div>
 </template>
 
 <script setup lang="ts">
 import { Head } from "@inertiajs/vue3";
-import { gsap } from "gsap";
 import NewInstitutionCard from "@/Components/Cards/NewInstitutionCard.vue";
+import StaggeredTransitionGroup from "@/Components/Transitions/StaggeredTransitionGroup.vue";
 
 defineProps<{
   institutions: Array<App.Entities.Institution>;
 }>();
 
-function onBeforeEnter(el) {
-  el.style.opacity = 0
-}
-
-function onEnter(el, done) {
-  gsap.to(el, {
-    opacity: 1,
-    // Accelerating stagger
-    delay: el.dataset.index * 0.3 / (el.dataset.index / 5 + 1),
-    onComplete: done
-  })
-}
 </script>
