@@ -6,7 +6,7 @@
           {{ $t("forms.context.main_info") }}
         </template>
         <template #description>
-          <MarkdownFromDocs directory="reservations" :locale="$page.props.app.locale" file="main-info.md" />
+          <MdSuspenseWrapper directory="reservations" :locale="$page.props.app.locale" file="main-info" />
         </template>
         <NFormItem :label="$t('forms.fields.title')" required>
           <MultiLocaleInput v-model:input="form.name" :placeholder="RESOURCE_CATEGORY_PLACEHOLDERS.name" />
@@ -42,7 +42,7 @@ import { RESOURCE_CATEGORY_PLACEHOLDERS } from "@/Constants/I18n/Placeholders";
 
 import FluentIconSelect from "../FormItems/FluentIconSelect.vue";
 import FormElement from "./FormElement.vue";
-import MarkdownFromDocs from "../MarkdownFromDocs.vue";
+import MdSuspenseWrapper from "@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue";
 import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 
 const props = defineProps<{

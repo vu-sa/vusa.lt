@@ -10,7 +10,7 @@ Didžioji dalis informacijos gali būti administruojama koordinatorių.
 
 ## Naujienos
 
-<component :is="NewsDescription"></component>
+<!--@include: ./_parts/news/lt/description.md -->
 
 ## Greitosios nuorodos
 

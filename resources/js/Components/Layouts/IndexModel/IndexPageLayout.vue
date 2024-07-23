@@ -6,7 +6,8 @@
     </template>
     <SuggestionAlert v-if="entity" :show-alert="showAlert" @alert-closed="showAlert = false">
       <div class="text-sm">
-        <component :is="entity?.description" />
+        <component :is="entity?.description" v-if="entity.description" />
+        <MdSuspenseWrapper :directory="modelName" :locale="$page.props.app.locale" file="description" />
       </div>
     </SuggestionAlert>
     <slot />
@@ -25,6 +26,7 @@ import { useStorage } from "@vueuse/core";
 import type { Component } from "vue";
 
 import IndexDataTable from "@/Components/Layouts/IndexModel/IndexDataTable.vue";
+import MdSuspenseWrapper from "@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import SuggestionAlert from "@/Components/Alerts/SuggestionAlert.vue";
 import entities from "@/Types/EntityDescriptions/entities";
