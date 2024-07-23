@@ -4,11 +4,17 @@ import vueJsx from "@vitejs/plugin-vue-jsx";
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   title: "vusa.lt gidas",
-  description: "Gidas kaip naudotis vusa.lt",
-  base: '/docs/',
-  vite: {
-    plugins: [vueJsx()]
+  locales: {
+    root: {
+      label: 'Lietuvių',
+      lang: 'lt'
+    },
+    en: {
+      label: 'English',
+      lang: 'en',
+    }
   },
+  base: '/docs/',
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [

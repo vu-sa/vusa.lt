@@ -9,14 +9,17 @@ import Icons from 'unplugin-icons/vite'
 import IconsResolver from 'unplugin-icons/resolver'
 import i18n from "laravel-vue-i18n/vite";
 import laravel from "laravel-vite-plugin";
+import mdPlugin, { Mode } from 'vite-plugin-markdown';
 import vue from "@vitejs/plugin-vue";
 import vueJsx from "@vitejs/plugin-vue-jsx";
 
 const token = loadEnv('production', './', 'CODECOV').CODECOV_TOKEN;
 
+
 export default defineConfig({
   plugins: [
     laravel(["resources/js/app.ts"]),
+    mdPlugin({ mode: [Mode.VUE] }),
     Components({
       resolvers: [
         IconsResolver(),

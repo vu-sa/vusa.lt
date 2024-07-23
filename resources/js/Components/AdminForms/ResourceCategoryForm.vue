@@ -6,7 +6,7 @@
           {{ $t("forms.context.main_info") }}
         </template>
         <template #description>
-          <component :is="RESOURCE_CATEGORY_DESCRIPTIONS.main_info[$page.props.app.locale]" />
+          <MarkdownFromDocs directory="reservations" :locale="$page.props.app.locale" file="main-info.md" />
         </template>
         <NFormItem :label="$t('forms.fields.title')" required>
           <MultiLocaleInput v-model:input="form.name" :placeholder="RESOURCE_CATEGORY_PLACEHOLDERS.name" />
@@ -38,11 +38,11 @@
 import { computed } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
 
-import { RESOURCE_CATEGORY_DESCRIPTIONS } from "@/Constants/I18n/Descriptions";
 import { RESOURCE_CATEGORY_PLACEHOLDERS } from "@/Constants/I18n/Placeholders";
 
 import FluentIconSelect from "../FormItems/FluentIconSelect.vue";
 import FormElement from "./FormElement.vue";
+import MarkdownFromDocs from "../MarkdownFromDocs.vue";
 import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 
 const props = defineProps<{
