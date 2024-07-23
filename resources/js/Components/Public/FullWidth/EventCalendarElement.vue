@@ -56,7 +56,7 @@
       </div>
     </div>
   </div>
-  <div v-if="upcomingEvents.length > 0" class="mx-auto my-8">
+  <div v-if="upcomingEvents.length > 0" class="my-8">
     <h2 class="mb-4 text-center lg:text-start">
       {{ $t('Artėjantys renginiai') }}
     </h2>
