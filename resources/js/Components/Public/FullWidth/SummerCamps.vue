@@ -1,5 +1,5 @@
 <template>
-  <div class="full-bleed group relative">
+  <div class="full-bleed group relative min-h-48">
 
     <Head>
       <link rel="preload" href="/images/photos/stovykla.jpg" as="image">

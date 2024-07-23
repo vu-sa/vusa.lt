@@ -8,7 +8,7 @@ import { i18nVue } from "laravel-vue-i18n";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
 
 const PublicLayout = defineAsyncComponent(
-  () => import("./PersistentLayouts/PersistentPublicLayout.vue"),
+  () => import("./Layouts/PersistentPublicLayout.vue"),
 );
 
 const getPosthog = async () => {

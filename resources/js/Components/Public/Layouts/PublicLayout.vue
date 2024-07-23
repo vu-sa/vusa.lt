@@ -1,27 +1,26 @@
 <template>
   <!-- https://www.joshwcomeau.com/css/full-bleed/ -->
-  <FadeTransition>
-    <!-- <Suspense> -->
-    <NConfigProvider v-show="mounted" :theme="isDark ? darkTheme : undefined" :theme-overrides="themeOverrides">
-      <div
-        class="flex min-h-screen flex-col justify-between bg-zinc-50 text-zinc-800 antialiased dark:bg-zinc-900 dark:text-zinc-300">
-        <FadeTransition appear>
-          <MainNavigation :is-theme-dark="isDark" />
-        </FadeTransition>
-        <main class="pb-8">
-          <Suspense>
-            <div>
-              <div class="wrapper">
-                <slot />
-              </div>
-              <div v-if="
-                $page.props.padalinys?.banners &&
-                $page.props.padalinys.banners.length > 0
-              " class="mx-auto mt-8 max-w-7xl">
-                <BannerCarousel :banners="$page.props.padalinys?.banners" />
-              </div>
+  <NConfigProvider :theme="isDark ? darkTheme : undefined" :theme-overrides="themeOverrides">
+    <div
+      class="flex min-h-screen flex-col justify-between bg-zinc-50 text-zinc-800 antialiased dark:bg-zinc-900 dark:text-zinc-300">
+      <MainNavigation :is-theme-dark="isDark" />
+
+      <main class="pb-8">
+        <!-- <Suspense> -->
+        <div>
+          <FadeTransition appear>
+            <div :key="$page.url" class="wrapper">
+              <slot />
             </div>
-            <template #fallback>
+          </FadeTransition>
+          <div v-if="
+            $page.props.padalinys?.banners &&
+            $page.props.padalinys.banners.length > 0
+          " class="mx-auto mt-8 max-w-7xl">
+            <BannerCarousel :banners="$page.props.padalinys?.banners" />
+          </div>
+        </div>
+        <!--<template #fallback>
               <div class="flex h-screen items-center justify-center">
                 <NSpin>
                   <template #description>
@@ -35,35 +34,34 @@
                       </FadeTransition>
                     </div>
                   </template>
-                </NSpin>
-              </div>
-            </template>
-          </Suspense>
-        </main>
+</NSpin>
+</div>
+</template> -->
+        <!-- </Suspense> -->
+      </main>
 
-        <FadeTransition appear>
-          <ConsentCard v-if="!cookieConsent" @okay-cookie-consent="cookieConsent = true" />
-        </FadeTransition>
+      <FadeTransition appear>
+        <ConsentCard v-if="!cookieConsent" @okay-cookie-consent="cookieConsent = true" />
+      </FadeTransition>
 
-        <Footer />
-      </div>
+      <Footer />
+    </div>
 
-      <!-- preconnect to tawk.to -->
-      <link rel="preconnect" href="https://embed.tawk.to">
-      <link rel="preload" href="https://cdn.userway.org/widgetapp/images/body_wh.svg" as="image">
-    </NConfigProvider>
+    <!-- preconnect to tawk.to -->
+    <link rel="preconnect" href="https://embed.tawk.to">
+    <link rel="preload" href="https://cdn.userway.org/widgetapp/images/body_wh.svg" as="image">
+  </NConfigProvider>
 
-    <!-- </Suspense> -->
-  </FadeTransition>
 </template>
 
 <script setup lang="ts">
-import { NConfigProvider, NSpin, darkTheme } from "naive-ui";
-import { defineAsyncComponent, onMounted, ref } from "vue";
+import { NConfigProvider, darkTheme } from "naive-ui";
+import { onMounted, ref } from "vue";
 import { useDark, useStorage } from "@vueuse/core";
 
 import { usePage } from "@inertiajs/vue3";
 import BannerCarousel from "../FullWidth/BannerCarousel.vue";
+import ConsentCard from "../ConsentCard.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import MainNavigation from "@/Components/Public/Layouts/MainNavigation.vue";
 
@@ -89,14 +87,6 @@ const themeOverrides = {
     // textColor3: 'rgb(130, 121, 118)'
   },
 };
-
-const ConsentCard = defineAsyncComponent(
-  () => import("@/Components/Public/ConsentCard.vue")
-);
-
-const Footer = defineAsyncComponent(
-  () => import("@/Components/Public/FullWidth/SiteFooter.vue")
-);
 
 const cookieConsent = useStorage("cookie-consent", false);
 

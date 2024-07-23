@@ -1,15 +1,11 @@
 <template>
   <!-- v-show="mounted" -->
-  <NConfigProvider
-    :theme="isDark ? darkTheme : undefined"
-    :theme-overrides="isDark ? darkThemeOverrides : themeOverrides"
-  >
+  <NConfigProvider :theme="isDark ? darkTheme : undefined"
+    :theme-overrides="isDark ? darkThemeOverrides : themeOverrides">
     <NMessageProvider>
-      <Layout>
-        <FadeTransition>
-          <slot />
-        </FadeTransition>
-      </Layout>
+      <PublicLayout>
+        <slot />
+      </PublicLayout>
     </NMessageProvider>
   </NConfigProvider>
 </template>
@@ -19,7 +15,7 @@ import { NConfigProvider, NMessageProvider, darkTheme } from "naive-ui";
 import { useDark } from "@vueuse/core";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
-import Layout from "@/Components/Public/Layouts/PublicLayout.vue";
+import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
 
 const isDark = useDark();
 
