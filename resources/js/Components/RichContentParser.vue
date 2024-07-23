@@ -1,8 +1,13 @@
 <template>
   <template v-for="element in content" :key="element.id">
-    <div v-if="element.type === 'tiptap'" v-html="html ? element.html : generateHTMLfromTiptap(element.json_content)" />
+    <template v-if="element.type === 'tiptap'"
+      v-html="html ? element.html : generateHTMLfromTiptap(element.json_content)">
+      <RichContentTiptapHTML v-if="!html" :json_content="element.json_content" />
+      <div v-else v-html="element.html" />
+    </template>
     <RichContentCard v-else-if="element.type === 'shadcn-card'" class="not-typography mt-4" :element="element">
-      <div v-html="html ? element.html : generateHTMLfromTiptap(element.json_content)" />
+      <RichContentTiptapHTML v-if="!html" :json_content="element.json_content" />
+      <div v-else v-html="element.html" />
     </RichContentCard>
     <RichContentAccordion v-else-if="element.type === 'shadcn-accordion'" :element :html />
     <div v-else-if="element.type === 'image-grid'" class="mt-4">
@@ -20,13 +25,15 @@
 <script setup lang="ts">
 import { NImage, NImageGroup } from 'naive-ui';
 import { defineAsyncComponent } from 'vue';
-import { generateHTMLfromTiptap } from './richContent'
+import RichContentTiptapHTML from './RichContentTiptapHTML.vue';
 
 const RichContentCard = defineAsyncComponent(() => import('@/Components/RichContentCard.vue'));
 
 const RichContentAccordion = defineAsyncComponent(() => import('@/Components/RichContentAccordion.vue'));
 
-defineProps<{
+//const RichContentTiptapHTML = defineAsyncComponent(() => import('@/Components/RichContentTiptapHTML.vue'));
+
+const props = defineProps<{
   content: models.ContentPart[];
   html?: boolean;
 }>();

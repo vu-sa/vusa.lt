@@ -3,7 +3,8 @@
     <AccordionItem v-for="item, index in element.json_content" :key="index" :value="`${index}`">
       <AccordionTrigger>{{ item.label }}</AccordionTrigger>
       <AccordionContent>
-        <div v-html="html ? item.content : generateHTMLfromTiptap(item.content)" />
+        <RichContentTiptapHTML v-if="!html" :json_content="element.json_content" />
+        <div v-else v-html="element.html" />
       </AccordionContent>
     </AccordionItem>
   </Accordion>
@@ -11,8 +12,9 @@
 
 <script setup lang="ts">
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/Components/ShadcnVue/ui/accordion'
+import { defineAsyncComponent } from 'vue';
 
-import { generateHTMLfromTiptap } from './richContent'
+const RichContentTiptapHTML = defineAsyncComponent(() => import('@/Components/RichContentTiptapHTML.vue'));
 
 defineProps<{
   element: models.ContentPart;

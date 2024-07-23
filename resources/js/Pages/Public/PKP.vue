@@ -1,10 +1,9 @@
 <template>
 
   <Head :title="$t('Programos, klubai ir projektai')" />
+
   <h1 class="my-8">
-    {{
-      $t('Programos, klubai ir projektai')
-    }}
+    {{ $t('Programos, klubai ir projektai') }}
   </h1>
   <p class="text-lg">
     {{
@@ -23,13 +22,13 @@
   </a>
   <div class="grid max-w-7xl grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
     <NewInstitutionCard v-for="institution in institutions" :key="institution.id" :institution :href="route('contacts.alias', {
-    institution: institution.alias,
-    subdomain:
-      institution.tenant?.alias === 'vusa'
-        ? 'www'
-        : institution.tenant?.alias ?? 'www',
-    lang: $page.props.app.locale,
-  })" />
+      institution: institution.alias,
+      subdomain:
+        institution.tenant?.alias === 'vusa'
+          ? 'www'
+          : institution.tenant?.alias ?? 'www',
+      lang: $page.props.app.locale,
+    })" />
   </div>
 </template>
 

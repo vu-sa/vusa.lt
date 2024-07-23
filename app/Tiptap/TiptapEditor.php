@@ -4,6 +4,14 @@ namespace App\Tiptap;
 
 use Tiptap\Editor as Editor;
 
+class TipTapListItem extends \Tiptap\Nodes\ListItem
+{
+    public static function wrapper($DOMNode)
+    {
+        return null;
+    }
+}
+
 class TiptapEditor extends Editor
 {
     public function __construct()
@@ -11,10 +19,13 @@ class TiptapEditor extends Editor
         $this->configuration = [
             /* TODO: add video */
             'extensions' => [
-                new \Tiptap\Extensions\StarterKit([
-                    'heading' => false,
-                    'codeBlock' => false,
-                ]),
+                // NOTE: StarterKit adds double tags
+                /*new \Tiptap\Extensions\StarterKit([*/
+                /*    'heading' => false,*/
+                /*    'codeBlock' => false,*/
+                /*    'bold' => false,*/
+                /*    'italic' => false,*/
+                /*]),*/
                 new CustomHeading([
                     'levels' => [2, 3, 4],
                 ]),
