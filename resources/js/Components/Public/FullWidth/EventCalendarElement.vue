@@ -56,7 +56,7 @@
       </div>
     </div>
   </div>
-  <div v-if="upcomingEvents.length > 0" class="mx-auto my-8">
+  <div v-if="upcomingEvents.length > 0" class="my-8">
     <h2 class="mb-4 text-center lg:text-start">
       {{ $t('Artėjantys renginiai') }}
     </h2>
@@ -82,7 +82,7 @@
           </div>
         </div>
       </NCarousel>
-      <div class="mx-auto block w-fit md:hidden">
+      <div class="block w-fit md:hidden">
         <div class="flex flex-col gap-4">
           <a v-for="event in upcomingEvents.slice(0, 3)" :key="event.id" class="w-[28rem]" :href="route('calendar.event', {
             calendar: event.id,
