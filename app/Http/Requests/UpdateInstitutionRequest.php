@@ -22,15 +22,15 @@ class UpdateInstitutionRequest extends ResourceRequest
     public function rules(): array
     {
         return [
-            'name.lt' => 'required|unique:institutions,name,' . $this->institution->id,
-            'short_name.lt' => 'nullable|unique:institutions,short_name,' . $this->institution->id,
+            'name.lt' => 'required|unique:institutions,name,'.$this->institution->id,
+            'short_name.lt' => 'nullable|unique:institutions,short_name,'.$this->institution->id,
             'description.lt' => 'nullable',
             'name.en' => 'nullable',
             'short_name.en' => 'nullable',
             'description.en' => 'nullable',
             'address.lt' => 'nullable|string',
             'address.en' => 'nullable|string',
-            'alias' => 'nullable|unique:institutions,alias,' . $this->institution->id,
+            'alias' => 'nullable|unique:institutions,alias,'.$this->institution->id,
             'website' => 'nullable|string',
             'email' => 'nullable|email',
             'phone' => 'nullable|string',
