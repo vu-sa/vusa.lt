@@ -44,7 +44,7 @@
         <ConsentCard v-if="!cookieConsent" @okay-cookie-consent="cookieConsent = true" />
       </FadeTransition>
 
-      <Footer />
+      <SiteFooter />
     </div>
 
     <!-- preconnect to tawk.to -->
@@ -64,6 +64,7 @@ import BannerCarousel from "../FullWidth/BannerCarousel.vue";
 import ConsentCard from "../ConsentCard.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import MainNavigation from "@/Components/Public/Layouts/MainNavigation.vue";
+import SiteFooter from "../FullWidth/SiteFooter.vue";
 
 const isDark = useDark();
 
