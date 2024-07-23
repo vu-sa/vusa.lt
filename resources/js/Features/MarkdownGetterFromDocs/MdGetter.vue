@@ -13,12 +13,12 @@ const props = defineProps<{
 
 const refComponent = shallowRef(null);
 
-const { VueComponent } = await import(`../../../../docs/_parts/${props.directory}/${props.locale}/${props.file}.md`);
+const { default: VueComponent } = await import(`../../../../docs/_parts/${props.directory}/${props.locale}/${props.file}.md`);
 
 refComponent.value = VueComponent;
 
 watch(() => props.locale, async (locale) => {
-  const { VueComponent } = await import(`../../../../docs/_parts/${props.directory}/${locale}/${props.file}.md`);
+  const { default: VueComponent } = await import(`../../../../docs/_parts/${props.directory}/${locale}/${props.file}.md`);
   refComponent.value = VueComponent;
 });
 </script>
