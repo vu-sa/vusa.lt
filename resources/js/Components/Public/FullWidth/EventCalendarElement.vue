@@ -82,7 +82,7 @@
           </div>
         </div>
       </NCarousel>
-      <div class="mx-auto block w-fit md:hidden">
+      <div class="block w-fit md:hidden">
         <div class="flex flex-col gap-4">
           <a v-for="event in upcomingEvents.slice(0, 3)" :key="event.id" class="w-[28rem]" :href="route('calendar.event', {
             calendar: event.id,

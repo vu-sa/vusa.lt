@@ -10,7 +10,7 @@
       </template>
       <template #author>
         <!-- <img class="w-8 mr-1" src="/logos/vusa.lin.hor.svg" /> -->
-        <span>{{ article.padalinys }}</span>
+        <span>{{ article.tenant }}</span>
       </template>
       <template #time>
         <!-- <NIcon class="mr-2" size="16"> <Clock20Regular /> </NIcon> -->
