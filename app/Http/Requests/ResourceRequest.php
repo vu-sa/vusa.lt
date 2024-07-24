@@ -11,6 +11,6 @@ class ResourceRequest extends FormRequest
 
     public function __construct()
     {
-        $this->authorizer = new Authorizer();
+        $this->authorizer = new Authorizer;
     }
 }

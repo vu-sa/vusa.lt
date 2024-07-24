@@ -37,8 +37,8 @@ class MainController extends PublicController
             return;
         } else {
             $this->storeRegistration(RegistrationForm::find(2));
-            $registerLocation = new Tenant();
-            $chairPerson = new User();
+            $registerLocation = new Tenant;
+            $chairPerson = new User;
 
             // if whereToRegister is int, then it is a tenant id
             if (is_int($data['whereToRegister'])) {

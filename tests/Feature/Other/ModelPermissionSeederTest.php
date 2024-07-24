@@ -19,7 +19,7 @@ test('permission seeder doesnt remove existing permissions', function () {
     expect($permission)->toBeInstanceOf(Permission::class);
 
     // run db:seed with model permission seeder
-    $seeder = new ModelPermissionSeeder();
+    $seeder = new ModelPermissionSeeder;
     $seeder->run();
 
     // check if permissions are the same

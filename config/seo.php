@@ -91,7 +91,7 @@ return [
          * where we don't have a description set via an associated ->seo model or via
          * the ->getDynamicSEOData() method.
          */
-        'fallback' => 'VU SA - visuomeninė, ne pelno siekianti, nepolitinė, ekspertinė švietimo organizacija, atstovaujanti studentų interesams Vilniaus universitete bei už jo ribų' 
+        'fallback' => 'VU SA - visuomeninė, ne pelno siekianti, nepolitinė, ekspertinė švietimo organizacija, atstovaujanti studentų interesams Vilniaus universitete bei už jo ribų',
     ],
 
     'image' => [

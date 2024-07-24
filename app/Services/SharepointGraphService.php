@@ -134,8 +134,8 @@ class SharepointGraphService
     {
         /*dd($fields, $this->siteId, $listId, $listItemId);*/
 
-        $requestConfiguration = new FieldsRequestBuilderPatchRequestConfiguration();
-        $fieldValueSet = new FieldValueSet();
+        $requestConfiguration = new FieldsRequestBuilderPatchRequestConfiguration;
+        $fieldValueSet = new FieldValueSet;
 
         $fieldValueSet->setAdditionalData($fields);
 
@@ -208,7 +208,7 @@ class SharepointGraphService
 
     public function createPublicPermission(string $driveItemId): string
     {
-        $requestBody = new CreateLinkPostRequestBody();
+        $requestBody = new CreateLinkPostRequestBody;
 
         $requestBody->setType('view');
         $requestBody->setScope('anonymous');
@@ -221,7 +221,7 @@ class SharepointGraphService
 
     public function uploadDriveItem(string $filePath, UploadedFile $file): Models\DriveItem
     {
-        $factory = new Psr17Factory();
+        $factory = new Psr17Factory;
 
         $stream = $factory->createStreamFromFile($file->getPathname(), 'r');
 

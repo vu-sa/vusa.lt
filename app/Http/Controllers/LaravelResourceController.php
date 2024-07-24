@@ -12,6 +12,6 @@ class LaravelResourceController extends Controller
 
     public function __construct()
     {
-        $this->authorizer = new Authorizer();
+        $this->authorizer = new Authorizer;
     }
 }

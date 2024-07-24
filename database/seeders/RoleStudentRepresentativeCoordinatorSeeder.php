@@ -15,7 +15,7 @@ class RoleStudentRepresentativeCoordinatorSeeder extends Seeder
      */
     public function run()
     {
-        $role = new Role();
+        $role = new Role;
 
         $role->name = 'Student Representative Coordinator';
         $role->guard_name = 'web';

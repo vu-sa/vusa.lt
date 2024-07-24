@@ -23,7 +23,7 @@ class MeetingController extends LaravelResourceController
     {
         $this->authorize('viewAny', [Meeting::class, $this->authorizer]);
 
-        $indexer = new ModelIndexer(new Meeting(), request(), $this->authorizer);
+        $indexer = new ModelIndexer(new Meeting, request(), $this->authorizer);
 
         $meetings = $indexer
             ->setEloquentQuery([fn (Builder $query) => $query->with(['institutions', 'agendaItems'])])

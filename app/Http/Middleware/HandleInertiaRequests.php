@@ -113,7 +113,7 @@ class HandleInertiaRequests extends Middleware
     private function getIndexPermissions(User $user)
     {
         return Cache::remember('index-permissions-'.$user->id, 1800, function () use ($user) {
-            $authorizer = new Authorizer();
+            $authorizer = new Authorizer;
 
             $labels = ModelEnum::toLabels();
 

@@ -13,7 +13,7 @@ class GetAttachableTypesForDuty
     public static function execute(): Collection
     {
         if (auth()->guest()) {
-            return new Collection();
+            return new Collection;
         }
 
         // get all attachable types for the current user

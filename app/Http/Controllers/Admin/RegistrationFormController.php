@@ -35,7 +35,7 @@ class RegistrationFormController extends LaravelResourceController
      */
     public function store(Request $request)
     {
-        $registrationForm = new RegistrationForm();
+        $registrationForm = new RegistrationForm;
         $registrationForm->data = $request->data;
         $registrationForm->save();
 

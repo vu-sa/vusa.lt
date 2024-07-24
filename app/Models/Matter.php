@@ -56,11 +56,11 @@ class Matter extends Model
 
     public function users()
     {
-        return $this->hasManyDeepFromRelations($this->institution(), (new Institution())->duties(), (new Duty())->users());
+        return $this->hasManyDeepFromRelations($this->institution(), (new Institution)->duties(), (new Duty)->users());
     }
 
     public function tenants()
     {
-        return $this->hasManyDeepFromRelations($this->institutions(), (new Institution())->tenant());
+        return $this->hasManyDeepFromRelations($this->institutions(), (new Institution)->tenant());
     }
 }

@@ -24,7 +24,7 @@ class DoingController extends LaravelResourceController
     {
         $this->authorize('viewAny', [Doing::class, $this->authorizer]);
 
-        $indexer = new ModelIndexer(new Doing(), request(), $this->authorizer);
+        $indexer = new ModelIndexer(new Doing, request(), $this->authorizer);
 
         $doings = $indexer
             ->setEloquentQuery()
@@ -57,7 +57,7 @@ class DoingController extends LaravelResourceController
      */
     public function store(StoreDoingRequest $request)
     {
-        $doing = new Doing();
+        $doing = new Doing;
 
         // fill doing instead of create
         $doing->fill($request->safe()->only('title', 'date') + [

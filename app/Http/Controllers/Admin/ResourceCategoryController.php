@@ -28,7 +28,7 @@ class ResourceCategoryController extends LaravelResourceController
     {
         $this->authorize('viewAny', [Resource::class, $this->authorizer]);
 
-        $indexer = new ModelIndexer(new ResourceCategory(), request(), $this->authorizer);
+        $indexer = new ModelIndexer(new ResourceCategory, request(), $this->authorizer);
 
         $resourceCategories = $indexer
             ->setEloquentQuery()
@@ -56,7 +56,7 @@ class ResourceCategoryController extends LaravelResourceController
      */
     public function store(StoreResourceCategoryRequest $request)
     {
-        $resourceCategory = new ResourceCategory();
+        $resourceCategory = new ResourceCategory;
 
         $resourceCategory->fill($request->safe()->toArray());
         $resourceCategory->save();

@@ -82,7 +82,7 @@ class Duty extends Model implements AuthorizableContract
 
     public function matters()
     {
-        return $this->hasManyDeepFromRelations($this->institution(), (new Institution())->matters());
+        return $this->hasManyDeepFromRelations($this->institution(), (new Institution)->matters());
     }
 
     public function types()
@@ -97,39 +97,39 @@ class Duty extends Model implements AuthorizableContract
 
     public function doings()
     {
-        return $this->hasManyDeepFromRelations($this->users(), (new User())->doings());
+        return $this->hasManyDeepFromRelations($this->users(), (new User)->doings());
     }
 
     // it has only one tenant all times, but it's better to have this method with this name
     public function tenants()
     {
-        return $this->hasManyDeepFromRelations($this->institution(), (new Institution())->tenant());
+        return $this->hasManyDeepFromRelations($this->institution(), (new Institution)->tenant());
     }
 
     public function meetings()
     {
-        return $this->hasManyDeepFromRelations($this->institution(), (new Institution())->meetings());
+        return $this->hasManyDeepFromRelations($this->institution(), (new Institution)->meetings());
     }
 
     public function agendaItems()
     {
-        return $this->hasManyDeepFromRelations($this->institution(), (new Institution())->meetings(), (new Meeting())->agendaItems());
+        return $this->hasManyDeepFromRelations($this->institution(), (new Institution)->meetings(), (new Meeting)->agendaItems());
     }
 
     // TODO: tasks should not be completable through duties, only by users
     public function tasks()
     {
-        return $this->hasManyDeepFromRelations($this->users(), (new User())->tasks());
+        return $this->hasManyDeepFromRelations($this->users(), (new User)->tasks());
     }
 
     public function reservations()
     {
-        return $this->hasManyDeepFromRelations($this->users(), (new User())->reservations());
+        return $this->hasManyDeepFromRelations($this->users(), (new User)->reservations());
     }
 
     public function resources()
     {
-        return $this->hasManyDeepFromRelations($this->tenants(), (new Tenant())->resources());
+        return $this->hasManyDeepFromRelations($this->tenants(), (new Tenant)->resources());
     }
 
     // add "duty" relation which points to self

@@ -27,7 +27,7 @@ class MainPageController extends LaravelResourceController
     {
         $this->authorize('viewAny', [MainPage::class, $this->authorizer]);
 
-        $indexer = new ModelIndexer(new MainPage(), request(), $this->authorizer);
+        $indexer = new ModelIndexer(new MainPage, request(), $this->authorizer);
 
         $mainPage = $indexer
             ->setEloquentQuery()

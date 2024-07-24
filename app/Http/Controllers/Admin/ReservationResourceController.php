@@ -16,7 +16,7 @@ class ReservationResourceController extends LaravelResourceController
 
     public function store(StoreReservationResourceRequest $request)
     {
-        $reservationResource = new ReservationResource();
+        $reservationResource = new ReservationResource;
 
         $reservationResource->fill($request->validated());
         $reservationResource->save();

@@ -29,7 +29,7 @@ class TiptapEditor extends Editor
                 new CustomHeading([
                     'levels' => [2, 3, 4],
                 ]),
-                new \Tiptap\Nodes\Image(),
+                new \Tiptap\Nodes\Image,
                 new \Tiptap\Nodes\Table([
                     'HTMLAttributes' => [
                         'class' => 'border-collapse table-auto w-full',
@@ -50,8 +50,8 @@ class TiptapEditor extends Editor
                         'class' => 'm-0 border-t p-0 even:bg-zinc-100 dark:even:bg-zinc-800/20',
                     ],
                 ]),
-                new \Tiptap\Marks\Link(),
-                new \Tiptap\Marks\Underline(),
+                new \Tiptap\Marks\Link,
+                new \Tiptap\Marks\Underline,
             ],
         ];
 

@@ -136,7 +136,7 @@ class ContactController extends PublicController
     {
 
         $seo = $this->shareAndReturnSEOObject(
-            title: $title . ' - ' . $this->tenant->shortname,
+            title: $title.' - '.$this->tenant->shortname,
             description: Str::limit(strip_tags($institution->description), 160),
         );
 
@@ -183,7 +183,7 @@ class ContactController extends PublicController
         }])->institutions;
 
         $seo = $this->shareAndReturnSEOObject(
-            title: __('Kontaktai').': '.$type->title . ' - VU SA',
+            title: __('Kontaktai').': '.$type->title.' - VU SA',
             description: Str::limit($type->description, 160),
         );
 

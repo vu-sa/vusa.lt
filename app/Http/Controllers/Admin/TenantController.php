@@ -43,7 +43,7 @@ class TenantController extends LaravelResourceController
      */
     public function store(StoreTenantRequest $request)
     {
-        $tenant = new Tenant();
+        $tenant = new Tenant;
 
         $tenant->fill($request->validated());
 

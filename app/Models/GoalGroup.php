@@ -28,6 +28,6 @@ class GoalGroup extends Model
 
     public function doings()
     {
-        return $this->hasManyDeepFromRelations($this->matters(), (new Goal()))->doings();
+        return $this->hasManyDeepFromRelations($this->matters(), (new Goal))->doings();
     }
 }

@@ -23,7 +23,7 @@ class SharepointFileController extends LaravelResourceController
     {
         $this->authorize('viewAny', [SharepointFile::class, $this->authorizer]);
 
-        $graph = new SharepointGraphService();
+        $graph = new SharepointGraphService;
 
         $path = $request->get('path');
 
@@ -66,8 +66,8 @@ class SharepointFileController extends LaravelResourceController
             return back()->with('error', 'Susijęs objektas negali turėti failų.');
         }
 
-        $sharepointFileService = new SharepointFileService();
-        $sharepointFileableService = new SharepointFileableService();
+        $sharepointFileService = new SharepointFileService;
+        $sharepointFileableService = new SharepointFileableService;
 
         $listItemProperties = [
             'Type' => $validated['file']['typeValue'],
@@ -113,7 +113,7 @@ class SharepointFileController extends LaravelResourceController
     {
         // $this->authorize('viewAll', [SharepointFile::class, $this->authorizer]);
 
-        $sharepointService = new SharepointGraphService();
+        $sharepointService = new SharepointGraphService;
 
         $path = $request->get('path');
 
@@ -154,7 +154,7 @@ class SharepointFileController extends LaravelResourceController
         // TODO: maybe use 'pluck' instead of 'map'?
         $types_string = $types->pluck('id')->implode(',');
 
-        $sharepointService = new SharepointGraphService();
+        $sharepointService = new SharepointGraphService;
 
         // get all types paths into one array
         $paths = $types->map(function ($type) {
@@ -172,7 +172,7 @@ class SharepointFileController extends LaravelResourceController
 
     public function getDriveItemPublicLink(Request $request, string $driveItemId)
     {
-        $sharepointService = new SharepointGraphService();
+        $sharepointService = new SharepointGraphService;
 
         $link = $sharepointService->getDriveItemPublicLink($driveItemId);
 
@@ -181,7 +181,7 @@ class SharepointFileController extends LaravelResourceController
 
     public function createPublicPermission(Request $request, string $driveItemId)
     {
-        $sharepointService = new SharepointGraphService();
+        $sharepointService = new SharepointGraphService;
 
         $link = $sharepointService->createPublicPermission($driveItemId);
 

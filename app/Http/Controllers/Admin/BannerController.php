@@ -21,7 +21,7 @@ class BannerController extends LaravelResourceController
     {
         $this->authorize('viewAny', [Banner::class, $this->authorizer]);
 
-        $indexer = new ModelIndexer(new Banner(), request(), $this->authorizer);
+        $indexer = new ModelIndexer(new Banner, request(), $this->authorizer);
 
         $banners = $indexer
             ->setEloquentQuery()
@@ -62,7 +62,7 @@ class BannerController extends LaravelResourceController
 
         $tenants = GetTenantsForUpserts::execute('banners.create.all', $this->authorizer);
 
-        $banner = new Banner();
+        $banner = new Banner;
         // $banner->text = $request->text;
         $banner->title = $request->title;
         $banner->is_active = $request->is_active ?? 0;

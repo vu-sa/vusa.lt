@@ -29,7 +29,7 @@ class ContentPart extends Model
     // TODO: Maybe use later
     public function parseTiptapElements(): ContentPart
     {
-        $editor = new TiptapEditor();
+        $editor = new TiptapEditor;
 
         if ($this->type === 'tiptap' || $this->type === 'shadcn-card') {
             $this->html = $editor->setContent($this->json_content)->getHTML();

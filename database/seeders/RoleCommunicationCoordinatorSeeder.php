@@ -15,7 +15,7 @@ class RoleCommunicationCoordinatorSeeder extends Seeder
      */
     public function run()
     {
-        $role = new Role();
+        $role = new Role;
 
         $role->name = 'Communication Coordinator';
         $role->guard_name = 'web';

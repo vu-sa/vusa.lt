@@ -93,7 +93,7 @@ class SharepointFileService
     // sharepoint file concern - upload file, get id, update database and create record, update list item and that is it
     public function uploadFile(UploadedFile $file, string $filename, Model $fileable, array $listItemProperties)
     {
-        $sharepointService = new SharepointGraphService();
+        $sharepointService = new SharepointGraphService;
 
         $filePath = self::pathForFileableDriveItem($fileable).'/'.$filename;
 
