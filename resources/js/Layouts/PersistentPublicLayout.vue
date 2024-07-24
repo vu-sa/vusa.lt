@@ -14,7 +14,6 @@
 import { NConfigProvider, NMessageProvider, darkTheme } from "naive-ui";
 import { useDark } from "@vueuse/core";
 
-import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import PublicLayout from "@/Components/Public/Layouts/PublicLayout.vue";
 
 const isDark = useDark();

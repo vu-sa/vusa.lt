@@ -86,6 +86,8 @@ class PublicPageController extends PublicController
             return $event->date;
         }, SORT_DESC)->take(8)->values()->load('tenant:id,alias,fullname,shortname');
 
+        $seo = $this->shareAndReturnSEOObject(title: __('Pagrindinis puslapis') . ' - VU SA');
+
         return Inertia::render('Public/HomePage', [
             'news' => $news->map(function ($news) {
                 return [
@@ -123,8 +125,7 @@ class PublicPageController extends PublicController
                 ];
             }),
         ])->withViewData([
-            'title' => 'Pagrindinis puslapis',
-            'description' => 'Vilniaus universiteto Studentų atstovybė (VU SA) – seniausia ir didžiausia Lietuvoje visuomeninė, ne pelno siekianti, nepolitinė, ekspertinė švietimo organizacija',
+            'SEOData' => $seo,
         ]);
     }
 
@@ -134,14 +135,21 @@ class PublicPageController extends PublicController
         $this->getTenantLinks();
         $this->shareOtherLangURL('curatorRegistration');
 
+        $seo = $this->shareAndReturnSEOObject(
+            title: 'Kuratoriaus registracija - VU SA',
+            description: 'Kuratorių registracija - VU SA'
+        );
+
         return Inertia::render('Public/CuratorRegistration', [
             'curatorTenants' => (new CuratorRegistrationService)->getRegistrationTenantsWithData(),
+        ])->withViewData([
+            'SEOData' => $seo,
         ]);
     }
 
     public function page()
     {
-        // At first, since for PKP we want to redirect old pages to contacts page, we check in this function
+        // HACK: At first, since for PKP we want to redirect old pages to contacts page, we check in this function
         $pkps = (new InstitutionService)->getInstitutionsByTypeSlug('pkp');
         $institution = $pkps->firstWhere('alias', request()->permalink);
 
@@ -173,12 +181,14 @@ class PublicPageController extends PublicController
         ) : null);
 
         // check if page->content->parts has type 'tiptap', if yes, use tiptap parser to get first part content (maybe enough for description)
-
         $firstTiptapElement = $page->content->parts->filter(function ($part) {
             return $part->type === 'tiptap';
         })->first();
 
-        $seoDescription = $firstTiptapElement ? (new Editor)->setContent($firstTiptapElement->json_content)->getText() : null;
+        $seo = $this->shareAndReturnSEOObject(
+            title: $page->title.' - '.$this->tenant->shortname,
+            description: $firstTiptapElement ? (new Editor)->setContent($firstTiptapElement->json_content)->getText() : null,
+        );
 
         return Inertia::render('Public/ContentPage', [
             'navigationItemId' => $navigation_item?->id,
@@ -195,8 +205,7 @@ class PublicPageController extends PublicController
                 /*]*/
             ],
         ])->withViewData([
-            'title' => $page->title,
-            'description' => Str::limit($seoDescription, 150),
+            'SEOData' => $seo,
         ]);
     }
 
@@ -207,8 +216,15 @@ class PublicPageController extends PublicController
 
         $category->load('pages:id,title,permalink,lang,category_id,tenant_id')->load('pages.tenant:id,alias');
 
+        $seo = $this->shareAndReturnSEOObject(
+            title: $category->name.' - '.$this->tenant->shortname,
+            description: $category->description,
+        );
+
         return Inertia::render('Public/CategoryPage', [
             'category' => $category->only('id', 'name', 'description', 'pages'),
+        ])->withViewData([
+            'SEOData' => $seo,
         ]);
     }
 
@@ -238,14 +254,18 @@ class PublicPageController extends PublicController
             $query->where('alias', '=', 'freshmen-camps');
         })->selectRaw('YEAR(date) as year')->distinct()->get()->pluck('year');
 
+        $seo = $this->shareAndReturnSEOObject(
+            title: $year == intval(date('Y')) ? 'Pirmakursių stovyklos - VU SA' : $year.' m. pirmakursių stovyklos - VU SA',
+            description: 'Universiteto tvarka niekada su ja nesusidūrusiam žmogui gali pasirodyti labai sudėtinga ir būtent dėl to jau prieš septyniolika metų Vilniaus universiteto Studentų atstovybė (VU SA) surengė pirmąją pirmakursių stovyklą.',
+        );
+
         return Inertia::render('Public/SummerCamps',
             [
                 'events' => $events->makeHidden(['description', 'location', 'category', 'url', 'user_id', 'extra_attributes'])->values()->all(),
                 'year' => $year,
                 'yearsWhenEventsExist' => $yearsWhenEventsExist,
             ])->withViewData([
-                'title' => $year == intval(date('Y')) ? 'Pirmakursių stovyklos' : $year.' m. pirmakursių stovyklos',
-                'description' => 'Universiteto tvarka niekada su ja nesusidūrusiam žmogui gali pasirodyti labai sudėtinga ir būtent dėl to jau prieš septyniolika metų Vilniaus universiteto Studentų atstovybė (VU SA) surengė pirmąją pirmakursių stovyklą.',
+                'SEOData' => $seo,
             ]);
     }
 
@@ -255,9 +275,14 @@ class PublicPageController extends PublicController
         $this->getTenantLinks();
         $this->shareOtherLangURL('individualStudies');
 
+        $seo = $this->shareAndReturnSEOObject(
+            title: __('Individualios studijos').' - VU SA',
+            description: app()->getLocale() === 'lt' ? 'Nuo 2023 m. Vilniaus universitete kiekvienas naujai įstojęs (-usi) bakalauro ar vientisųjų studijų programos studentas (-ė) turi galimybę dėlioti savo studijas pagal asmeninius interesus, pasinaudodas (-a) individualių studijų galimybe.' : 'Since 2023 m. every newly 
+            enrolled bachelor\'s or integrated study program student at Vilnius University has the opportunity to arrange their studies according to personal interests, using the possibility of individual studies.',
+        );
+
         return Inertia::render('Public/IndividualStudies')->withViewData([
-            'title' => 'Individualios studijos',
-            'description' => 'Nuo 2023 m. Vilniaus universitete kiekvienas naujai įstojęs (-usi) bakalauro ar vientisųjų studijų programos studentas (-ė) turi galimybę dėlioti savo studijas pagal asmeninius interesus, pasinaudodas (-a) individualių studijų galimybe. Sužinok apie tai plačiau.',
+            'SEOData' => $seo,
         ]);
     }
 
@@ -270,6 +295,11 @@ class PublicPageController extends PublicController
 
         $institutions = (new InstitutionService)->getInstitutionsByTypeSlug('pkp')->where('is_active', true);
 
+        $seo = $this->shareAndReturnSEOObject(
+            title: __('Programos, klubai ir projektai').' - VU SA',
+            description: 'VU SA buria daugiau nei 20 iniciatyvų: programų, klubų ir projektų, skatinančių studentų saviraišką'
+        );
+
         return Inertia::render('Public/PKP', [
             'institutions' => $institutions->map(function ($institution) {
                 return [
@@ -278,7 +308,7 @@ class PublicPageController extends PublicController
                 ];
             }),
         ])->withViewData([
-            'title' => 'Programos, klubai ir projektai',
+            'SEOData' => $seo,
         ]);
     }
 
@@ -295,6 +325,15 @@ class PublicPageController extends PublicController
 
         $calendar->load('tenant:id,alias,fullname,shortname');
 
+        $seo = $this->shareAndReturnSEOObject(
+            title: $calendar->title.' - '.$this->tenant->shortname,
+            // Replace " with empty string, because it breaks JSON-LD
+            description: app()->getLocale() === 'lt' ? Str::of((strip_tags($calendar->description)))->limit(160)->replaceMatches(pattern: '/\"/', replace: '') : Str::of((strip_tags($calendar->extra_attributes['en']['description'] ?? $calendar->description)))->limit(160)->replaceMatches(pattern: '/\"/', replace: ''),
+            image: $calendar->getFirstMediaUrl('images'),
+            published_time: $calendar->created_at,
+            modified_time: $calendar->updated_at,
+        );
+
         return Inertia::render('Public/CalendarEvent', [
             'event' => [
                 ...$calendar->toArray(),
@@ -303,10 +342,11 @@ class PublicPageController extends PublicController
             'calendar' => $this->getEventsForCalendar(),
             'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale()),
         ])
-            ->withViewData([
-                'title' => $calendar->title,
-                'description' => strip_tags($calendar->description),
-            ]);
+            ->withViewData(
+                [
+                    'SEOData' => $seo,
+                ]
+            );
     }
 
     public function memberRegistration()
@@ -317,11 +357,15 @@ class PublicPageController extends PublicController
 
         $tenants = Tenant::select('id', 'fullname', 'shortname')->where('shortname', '!=', 'VU SA')->orderBy('shortname')->get();
 
+        $seo = $this->shareAndReturnSEOObject(
+            title: __('Prašymas tapti VU SA (arba VU SA PKP) nariu').' - VU SA',
+            description: app()->getLocale() === 'lt' ? 'Tapti VU SA nariu gali kiekvienas Vilniaus universiteto studentas, kuris nori aktyviai dalyvauti studentų atstovybės veikloje.' : 'Every Vilnius University student who wants to actively participate in the activities of the student representation can become a member of VU SR.',
+        );
+
         return Inertia::render('Public/MemberRegistration', [
             'tenantOptions' => $tenants,
         ])->withViewData([
-            'title' => __('Prašymas tapti VU SA (arba VU SA PKP) nariu'),
-            'description' => 'Naujų narių registracija',
+            'SEOData' => $seo,
         ]);
     }
 }

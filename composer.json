@@ -23,6 +23,7 @@
         "nyholm/psr7": "^1.8",
         "octopyid/laravel-impersonate": "^4.0",
         "pusher/pusher-php-server": "^7.2",
+        "ralphjsmit/laravel-seo": "^1.6",
         "socialiteproviders/microsoft": "^4.1",
         "spatie/calendar-links": "^1.8",
         "spatie/icalendar-generator": "^2.3",

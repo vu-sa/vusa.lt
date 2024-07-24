@@ -7,6 +7,7 @@ use App\Models\MainPage;
 use App\Models\Tenant;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
+use RalphJSmit\Laravel\SEO\Support\SEOData;
 
 class PublicController extends Controller
 {
@@ -73,5 +74,17 @@ class PublicController extends Controller
     protected function getOtherLang()
     {
         return app()->getLocale() === 'lt' ? 'en' : 'lt';
+    }
+
+    protected function shareAndReturnSEOObject(...$args)
+    {
+        $seoData = new SEOData(...$args);
+
+        $seoDataArray = seo(clone $seoData);
+
+        // NOTE: seo() modifies the object in place, so we need to clone it
+        Inertia::share('seo', $seoDataArray->tags);
+
+        return $seoData;
     }
 }

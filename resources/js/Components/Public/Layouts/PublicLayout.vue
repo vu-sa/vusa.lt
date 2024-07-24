@@ -1,6 +1,20 @@
 <template>
   <!-- https://www.joshwcomeau.com/css/full-bleed/ -->
   <NConfigProvider :theme="isDark ? darkTheme : undefined" :theme-overrides="themeOverrides">
+
+    <Head>
+      <link rel="preconnect" href="https://embed.tawk.to">
+      <link rel="preload" href="https://cdn.userway.org/widgetapp/images/body_wh.svg" as="image">
+      <template v-for="headItem in seo">
+        <title v-if="headItem.tag === 'title'">
+          {{ headItem.inner }}
+        </title>
+        <meta v-else-if="headItem.tag === 'meta'" :head-key="headItem.attributes.name ?? headItem.attributes.property"
+          v-bind="toValue(headItem.attributes)">
+        <link v-else-if="headItem.tag === 'link'" :head-key="headItem.attributes.rel"
+          v-bind="toValue(headItem.attributes)">
+      </template>
+    </Head>
     <div
       class="flex min-h-screen flex-col justify-between bg-zinc-50 text-zinc-800 antialiased dark:bg-zinc-900 dark:text-zinc-300">
       <MainNavigation :is-theme-dark="isDark" />
@@ -46,20 +60,16 @@
 
       <SiteFooter />
     </div>
-
-    <!-- preconnect to tawk.to -->
-    <link rel="preconnect" href="https://embed.tawk.to">
-    <link rel="preload" href="https://cdn.userway.org/widgetapp/images/body_wh.svg" as="image">
   </NConfigProvider>
 
 </template>
 
 <script setup lang="ts">
 import { NConfigProvider, darkTheme } from "naive-ui";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref, toValue } from "vue";
 import { useDark, useStorage } from "@vueuse/core";
 
-import { usePage } from "@inertiajs/vue3";
+import { Head, usePage } from "@inertiajs/vue3";
 import BannerCarousel from "../FullWidth/BannerCarousel.vue";
 import ConsentCard from "../ConsentCard.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
@@ -67,6 +77,13 @@ import MainNavigation from "@/Components/Public/Layouts/MainNavigation.vue";
 import SiteFooter from "../FullWidth/SiteFooter.vue";
 
 const isDark = useDark();
+
+const seo = computed(() => {
+  if (Array.isArray(usePage().props.seo)) {
+    return usePage().props.seo.reduce((acc, val) => acc.concat(val), []);
+  }
+  return [];
+});
 
 const mounted = ref(false);
 const spinWarning = ref(false);

@@ -1,7 +1,4 @@
 <template>
-
-  <Head :title="$t('Programos, klubai ir projektai')" />
-
   <h1 class="my-8">
     {{ $t('Programos, klubai ir projektai') }}
   </h1>
@@ -35,7 +32,6 @@
 </template>
 
 <script setup lang="ts">
-import { Head } from "@inertiajs/vue3";
 import NewInstitutionCard from "@/Components/Cards/NewInstitutionCard.vue";
 import StaggeredTransitionGroup from "@/Components/Transitions/StaggeredTransitionGroup.vue";
 

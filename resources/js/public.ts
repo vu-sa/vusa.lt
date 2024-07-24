@@ -21,11 +21,11 @@ const getPosthog = async () => {
   return PosthogPlugin;
 };
 
-const metaTitle =
-  window.document.getElementsByTagName("title")[0]?.innerText || "VU SA";
-
-// get title from appTitle by removing the suffix
-const pageTitle = metaTitle.replace(" - VU SA", "");
+//const metaTitle =
+//  window.document.getElementsByTagName("title")[0]?.innerText || "VU SA";
+//
+//// get title from appTitle by removing the suffix
+//const pageTitle = metaTitle.replace(" - VU SA", "");
 
 const meta = document.createElement("meta");
 meta.name = "naive-ui-style";
@@ -33,7 +33,8 @@ document.head.appendChild(meta);
 
 createInertiaApp({
   title: (title) => {
-    return title ? `${title} - VU SA` : pageTitle;
+    return title
+    //return title ? `${title} - VU SA` : pageTitle;
   },
   resolve: (name) => {
     const page = resolvePageComponent(
@@ -64,7 +65,7 @@ createInertiaApp({
           return await langs[`../../lang/${lang}.json`]();
         },
       })
-      .use(ZiggyVue);
+      .use(ZiggyVue)
 
     const PosthogPlugin = getPosthog();
 

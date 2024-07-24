@@ -8,6 +8,7 @@ use App\Models\Tenant;
 use App\Models\Type;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class ContactController extends PublicController
@@ -24,6 +25,10 @@ class ContactController extends PublicController
             ->whereHas('tenant', fn ($query) => $query->whereIn('id', $tenants)->select(['id', 'shortname', 'alias'])
             )->withCount('duties')->orderBy('name')->get()->makeHidden(['created_at', 'updated_at', 'deleted_at', 'extra_attributes']);
 
+        $seo = $this->shareAndReturnSEOObject(
+            title: __('Kontaktų paieška').' - '.$this->tenant->shortname,
+            description: app()->getLocale() === 'lt' ? 'VU SA kontaktų paieškoje vienoje vietoje suraskite visus VU SA kontaktus' : 'In the VU SA contact search, find all VU SA contacts in one place', );
+
         return Inertia::render('Public/Contacts/ContactsSearch', [
             'institutions' => $institutions->map(function ($institution) {
                 return [
@@ -35,10 +40,9 @@ class ContactController extends PublicController
                 ];
             }),
             'selectedTenants' => $tenants,
-        ])->withViewData([
-            'title' => 'Kontaktų paieška',
-            'description' => 'VU SA kontaktai',
-        ]);
+        ])->withViewData(
+            ['SEOData' => $seo]
+        );
     }
 
     public function institutionContacts($subdomain, $lang, Institution $institution)
@@ -117,16 +121,25 @@ class ContactController extends PublicController
             return $descendant->institutions->count() > 0;
         })->values();
 
+        $seo = $this->shareAndReturnSEOObject(
+            title: __('Studentų atstovai').' - '.$this->tenant->shortname,
+            description: app()->getLocale() === 'lt' ? $this->tenant->shortname.' studentų atstovų paieškoje vienoje vietoje suraskite visus '.$this->tenant->shortname.'studentų atstovus' : 'In '.$this->tenant->shortname.'contact search find all'.$this->tenant->shortname.'student representatives');
+
         return Inertia::render('Public/Contacts/ShowStudentReps', [
             'types' => $descendants,
         ])->withViewData([
-            'title' => 'Studentų atstovai | '.$this->tenant->shortname,
-            'description' => "{$this->tenant->shortname} studentų atstovai",
+            'SEOData' => $seo,
         ]);
     }
 
     private function showInstitution(Institution $institution, Collection $contacts, string $title)
     {
+
+        $seo = $this->shareAndReturnSEOObject(
+            title: $title . ' - ' . $this->tenant->shortname,
+            description: Str::limit(strip_tags($institution->description), 160),
+        );
+
         return Inertia::render('Public/Contacts/ContactInstitutionOrType', [
             'institution' => $institution,
             'contacts' => $contacts->map(function ($contact) use ($institution) {
@@ -144,10 +157,9 @@ class ContactController extends PublicController
                     'show_pronouns' => $contact->show_pronouns,
                 ];
             }),
-        ])->withViewData([
-            'title' => $title,
-            'description' => strip_tags($institution->description),
-        ]);
+        ])->withViewData(
+            ['SEOData' => $seo]
+        );
     }
 
     /**
@@ -170,6 +182,11 @@ class ContactController extends PublicController
             }]);
         }])->institutions;
 
+        $seo = $this->shareAndReturnSEOObject(
+            title: __('Kontaktai').': '.$type->title . ' - VU SA',
+            description: Str::limit($type->description, 160),
+        );
+
         return Inertia::render('Public/Contacts/ShowContactCategory', [
             'institutions' => $institutions->map(function ($institution) {
                 return [
@@ -181,9 +198,8 @@ class ContactController extends PublicController
                 ];
             }),
             'type' => $type->unsetRelation('institutions'),
-        ])->withViewData([
-            'title' => 'Kontaktai: '.$type->title,
-            'description' => 'VU SA kontaktai: '.$type->title,
-        ]);
+        ])->withViewData(
+            ['SEOData' => $seo]
+        );
     }
 }

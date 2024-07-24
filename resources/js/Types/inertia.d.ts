@@ -36,6 +36,7 @@ declare module "@inertiajs/core" {
     };
     mainNavigation?: App.Entities.Navigation[];
     otherLangURL?: string | null;
+    seo: Record<string, any>;
     tenants: Pick<
       App.Entities.Tenant,
       "id" | "alias" | "shortname" | "fullname" | "type"
@@ -65,11 +66,6 @@ declare module "@inertiajs/core" {
         lang: "lt" | "en";
         permalink: string;
         title: string;
-      } | null>;
-      other: Array<{
-        alias: string;
-        id: number;
-        name: string;
       } | null>;
     };
   }

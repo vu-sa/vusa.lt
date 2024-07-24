@@ -1,6 +1,4 @@
 <template>
-  <Head :title="event.title"></Head>
-
   <article class="mx-auto mt-4">
     <header
       class="camp-header max-h-96"

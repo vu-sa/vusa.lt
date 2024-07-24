@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\PublicController;
 use App\Models\News;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Tiptap\Editor;
 
@@ -49,7 +50,14 @@ class NewsController extends PublicController
             $firstTiptapElement = null;
         }
 
-        $seoDescription = $firstTiptapElement ? (new Editor)->setContent($firstTiptapElement->json_content)->getText() : null;
+        $seo = $this->shareAndReturnSEOObject(
+            title: $news->title.' - '.$this->tenant->shortname,
+            description: $firstTiptapElement ? Str::limit((new Editor)->setContent($firstTiptapElement->json_content)->getText(), 160) : null,
+            author: $news->tenant->shortname,
+            image: $news->image,
+            published_time: $news->publish_time,
+            modified_time: $news->updated_at,
+        );
 
         return Inertia::render('Public/NewsPage', [
             'article' => [
@@ -73,9 +81,7 @@ class NewsController extends PublicController
                 'tenant' => $news->tenant->shortname,
             ],
         ])->withViewData([
-            'title' => $news->title.' | '.$this->tenant->shortname,
-            'description' => $news->short ? strip_tags($news->short) : $seoDescription,
-            'image' => $seoImage,
+            'SEOData' => $seo,
         ]);
     }
 
@@ -93,11 +99,17 @@ class NewsController extends PublicController
             ->orderBy('publish_time', 'desc')
             ->paginate(15);
 
+        $seo = $this->shareAndReturnSEOObject(
+            title: "{$this->tenant->shortname} naujienų archyvas",
+            description: "Naršyk per visas {$this->tenant->shortname} naujienas"
+        );
+
         return Inertia::render('Public/NewsArchive', [
             'news' => $news,
-        ])->withViewData([
-            'title' => "{$this->tenant->shortname} naujienų archyvas",
-            'description' => "Naršyk per visas {$this->tenant->shortname} naujienas",
-        ]);
+        ])->withViewData(
+            [
+                'SEOData' => $seo,
+            ]
+        );
     }
 }

@@ -7,12 +7,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title inertia>{{ $title ?? 'VU SA' }} - VU SA</title>
-    <meta property="og:title" content="{{ $title ?? 'vusa.lt' }} - VU SA" />
-    <meta name="description" content="{{ $description ?? '' }}">
-    <meta property="og:description" content="{{ $description ?? '' }}">
-    <meta name="image" content="{{ $image ?? '' }}">
-    <meta property="og:image" content="{{ $image ?? '' }}">
+    {!! isset($SEOData) ? seo($SEOData) : null !!}
+        
     <meta name="theme-color" content="#252528" media="(prefers-color-scheme: dark)" />
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
 
@@ -34,6 +30,7 @@
     @routes
 
     @inertiaHead
+
 </head>
 
 {{-- TODO: something injects margin-bottom of 8px --}}

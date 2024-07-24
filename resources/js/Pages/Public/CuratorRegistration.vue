@@ -1,7 +1,4 @@
 <template>
-
-  <Head :title="$t('Registracija į kuratorių programą')" />
-
   <HeaderWithShapeDivider1 class="full-bleed" image-src="/images/curatorRegistration/curator3.jpg"
     object-position="0% 45%">{{ $t("Registracija į kuratorių programą") }}
   </HeaderWithShapeDivider1>
@@ -199,8 +196,6 @@
 </template>
 
 <script setup lang="ts">
-import { Head } from "@inertiajs/vue3";
-
 import { formatStaticTime } from "@/Utils/IntlTime";
 import { getFacultyName } from "@/Utils/String";
 import HeaderWithShapeDivider1 from "@/Components/Headers/HeaderWithShapeDivider1.vue";
