@@ -9,7 +9,7 @@
       <RichContentTiptapHTML v-if="!html" :json_content="element.json_content" />
       <div v-else v-html="element.html" />
     </RichContentCard>
-    <RichContentAccordion v-else-if="element.type === 'shadcn-accordion'" :element :html />
+    <RichContentAccordion v-else-if="element.type === 'shadcn-accordion'" :element />
     <div v-else-if="element.type === 'image-grid'" class="mt-4">
       <NImageGroup :show-toolbar="false">
         <div class="grid grid-flow-row-dense grid-cols-6 gap-4">
