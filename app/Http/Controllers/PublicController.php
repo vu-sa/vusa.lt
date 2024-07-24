@@ -8,8 +8,6 @@ use App\Models\Tenant;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use RalphJSmit\Laravel\SEO\Support\SEOData;
-use RalphJSmit\Laravel\SEO\Tags\OpenGraphTags;
-use RalphJSmit\Laravel\SEO\Tags\TwitterCardTags;
 
 class PublicController extends Controller
 {

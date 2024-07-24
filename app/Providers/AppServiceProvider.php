@@ -10,7 +10,6 @@ use RalphJSmit\Laravel\SEO\Facades\SEOManager;
 use RalphJSmit\Laravel\SEO\Support\OpenGraphTag;
 use RalphJSmit\Laravel\SEO\Support\Tag;
 use RalphJSmit\Laravel\SEO\TagCollection;
-use RalphJSmit\Laravel\SEO\Tags\OpenGraphTags;
 use RalphJSmit\Laravel\SEO\Tags\TwitterCard\SummaryLargeImage;
 use RalphJSmit\Laravel\SEO\Tags\TwitterCardTags;
 use Spatie\Translatable\Facades\Translatable;
