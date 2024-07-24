@@ -2,10 +2,12 @@
   <!-- https://www.joshwcomeau.com/css/full-bleed/ -->
   <NConfigProvider :theme="isDark ? darkTheme : undefined" :theme-overrides="themeOverrides">
     <!-- Overwrite image meta -->
-    <!-- <Head>
+
+    <Head>
       <meta head-key="og:image" property="og:image" :content="usePage().props.seo.image">
       <meta head-key="image" name="image" :content="usePage().props.seo.image">
-</Head> -->
+    </Head>
+
     <Head>
       <link rel="preconnect" href="https://embed.tawk.to">
       <link rel="preload" href="https://cdn.userway.org/widgetapp/images/body_wh.svg" as="image">
@@ -87,13 +89,20 @@ const seo = computed(() => {
   // Computed Seo is an object
   let computedSeo = usePage().props.seo.tags;
 
+  if (computedSeo['RalphJSmit\\Laravel\\SEO\\Support\\MetaTag']['attributes']['name'] === 'image') computedSeo['RalphJSmit\\Laravel\\SEO\\Support\\MetaTag']['attributes']['content'] = usePage().props.seo.image
+  
   // if computedSeo key is OpenGraph, then add og: prefix to the key
-
   if (computedSeo['RalphJSmit\\Laravel\\SEO\\Tags\\OpenGraphTags']) {
     // foreach property, prefix og:
     for (const [key, value] of Object.entries(computedSeo['RalphJSmit\\Laravel\\SEO\\Tags\\OpenGraphTags'])) {
       // check if property is not already prefixed
       if (!value['attributes']['property'].startsWith('og:')) computedSeo['RalphJSmit\\Laravel\\SEO\\Tags\\OpenGraphTags'][key]['attributes']['property'] = 'og:' + value['attributes']['property'];
+
+      // check image property
+      if (value['attributes']['property'] === 'og:image') {
+        // check if image is not already prefixed
+        computedSeo['RalphJSmit\\Laravel\\SEO\\Tags\\OpenGraphTags'][key]['attributes']['content'] = usePage().props.seo.image
+      }
     }
   }
 

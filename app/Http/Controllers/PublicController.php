@@ -6,6 +6,7 @@ use App\Actions\GetAliasSubdomainForPublic;
 use App\Models\MainPage;
 use App\Models\Tenant;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use RalphJSmit\Laravel\SEO\Support\SEOData;
 
@@ -90,7 +91,13 @@ class PublicController extends Controller
         // NOTE: seo() modifies the object in place, so we need to clone it
         Inertia::share('seo.tags', $associatedArray);
 
-        $image = secure_url($seoData->image) ?? secure_url(config('seo.image.fallback'));
+        if (substr($seoData->image, 0, 4) == 'http') {
+            $image = $seoData->image;
+        } else if (isset($seoData->image)) {
+            $image = Storage::get(str_replace('uploads', 'public', $seoData->image)) === null ? config('seo.image.fallback') : $seoData->image;
+        } else {
+            $image = config('app.url') . config('seo.image.fallback');
+        }
 
         // HACK: Share image separately, because it's hard to consume directly
         // But maybe it's because of secure_url not working in localhost

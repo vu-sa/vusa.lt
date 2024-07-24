@@ -138,6 +138,7 @@ class ContactController extends PublicController
         $seo = $this->shareAndReturnSEOObject(
             title: $title.' - '.$this->tenant->shortname,
             description: Str::limit(strip_tags($institution->description), 160),
+            image: $institution->image_url,
         );
 
         return Inertia::render('Public/Contacts/ContactInstitutionOrType', [
