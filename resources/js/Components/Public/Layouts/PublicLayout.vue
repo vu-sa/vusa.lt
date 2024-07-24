@@ -1,7 +1,11 @@
 <template>
   <!-- https://www.joshwcomeau.com/css/full-bleed/ -->
   <NConfigProvider :theme="isDark ? darkTheme : undefined" :theme-overrides="themeOverrides">
-
+    <!-- Overwrite image meta -->
+    <!-- <Head>
+      <meta head-key="og:image" property="og:image" :content="usePage().props.seo.image">
+      <meta head-key="image" name="image" :content="usePage().props.seo.image">
+</Head> -->
     <Head>
       <link rel="preconnect" href="https://embed.tawk.to">
       <link rel="preload" href="https://cdn.userway.org/widgetapp/images/body_wh.svg" as="image">
@@ -79,10 +83,22 @@ import SiteFooter from "../FullWidth/SiteFooter.vue";
 const isDark = useDark();
 
 const seo = computed(() => {
-  if (Array.isArray(usePage().props.seo)) {
-    return usePage().props.seo.reduce((acc, val) => acc.concat(val), []);
+
+  // Computed Seo is an object
+  let computedSeo = usePage().props.seo.tags;
+
+  // if computedSeo key is OpenGraph, then add og: prefix to the key
+
+  if (computedSeo['RalphJSmit\\Laravel\\SEO\\Tags\\OpenGraphTags']) {
+    // foreach property, prefix og:
+    for (const [key, value] of Object.entries(computedSeo['RalphJSmit\\Laravel\\SEO\\Tags\\OpenGraphTags'])) {
+      // check if property is not already prefixed
+      if (!value['attributes']['property'].startsWith('og:')) computedSeo['RalphJSmit\\Laravel\\SEO\\Tags\\OpenGraphTags'][key]['attributes']['property'] = 'og:' + value['attributes']['property'];
+    }
   }
-  return [];
+
+  // reduce Object.entries to an array of objects
+  return Object.values(computedSeo).reduce((acc, val) => acc.concat(val), []);
 });
 
 const mounted = ref(false);

@@ -257,6 +257,7 @@ class PublicPageController extends PublicController
         $seo = $this->shareAndReturnSEOObject(
             title: $year == intval(date('Y')) ? 'Pirmakursių stovyklos - VU SA' : $year.' m. pirmakursių stovyklos - VU SA',
             description: 'Universiteto tvarka niekada su ja nesusidūrusiam žmogui gali pasirodyti labai sudėtinga ir būtent dėl to jau prieš septyniolika metų Vilniaus universiteto Studentų atstovybė (VU SA) surengė pirmąją pirmakursių stovyklą.',
+            image: '/images/photos/stovykla.jpg',
         );
 
         return Inertia::render('Public/SummerCamps',

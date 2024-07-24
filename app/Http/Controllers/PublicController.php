@@ -8,6 +8,8 @@ use App\Models\Tenant;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use RalphJSmit\Laravel\SEO\Support\SEOData;
+use RalphJSmit\Laravel\SEO\Tags\OpenGraphTags;
+use RalphJSmit\Laravel\SEO\Tags\TwitterCardTags;
 
 class PublicController extends Controller
 {
@@ -82,8 +84,19 @@ class PublicController extends Controller
 
         $seoDataArray = seo(clone $seoData);
 
+        // Use named array with keys that use object classes
+        $associatedArray = collect($seoDataArray->tags)->mapWithKeys(function ($tag) {
+            return [get_class($tag) => $tag];
+        });
+
         // NOTE: seo() modifies the object in place, so we need to clone it
-        Inertia::share('seo', $seoDataArray->tags);
+        Inertia::share('seo.tags', $associatedArray);
+
+        $image = secure_url($seoData->image) ?? secure_url(config('seo.image.fallback'));
+
+        // HACK: Share image separately, because it's hard to consume directly
+        // But maybe it's because of secure_url not working in localhost
+        Inertia::share('seo.image', $image);
 
         return $seoData;
     }

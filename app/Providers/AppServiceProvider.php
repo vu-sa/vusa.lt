@@ -7,8 +7,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use RalphJSmit\Laravel\SEO\Facades\SEOManager;
+use RalphJSmit\Laravel\SEO\Support\OpenGraphTag;
 use RalphJSmit\Laravel\SEO\Support\Tag;
 use RalphJSmit\Laravel\SEO\TagCollection;
+use RalphJSmit\Laravel\SEO\Tags\OpenGraphTags;
 use RalphJSmit\Laravel\SEO\Tags\TwitterCard\SummaryLargeImage;
 use RalphJSmit\Laravel\SEO\Tags\TwitterCardTags;
 use Spatie\Translatable\Facades\Translatable;
@@ -45,7 +47,6 @@ class AppServiceProvider extends ServiceProvider
 
         SEOManager::tagTransformer(function (TagCollection $tags): TagCollection {
             $tags = $tags->map(function ($tag) {
-                // check if $tag extends Tag
                 if (is_subclass_of($tag, Tag::class)) {
                     $tag->attributes['inertia'] = '';
                 } elseif ($tag::class === TwitterCardTags::class) {
@@ -60,11 +61,17 @@ class AppServiceProvider extends ServiceProvider
                     }
                 } else {
                     foreach ($tag as $item) {
-                        try {
-                            $item->attributes['inertia'] = '';
-                        } catch (\Exception $e) {
-                            dd($e, $item, $tag);
-                        }
+                        /*if ($item::class === OpenGraphTag::class) {*/
+                        /*    // if property 'image', cast, since ->html is protected*/
+                        /*    if ($item->attributes['property'] === 'image') {*/
+                        /*        $array = (array)$item->attributes['content'];*/
+                        /**/
+                        /*        // set first value as 'content'*/
+                        /*        $item->attributes['image_content'] = collect($array)->first();*/
+                        /*    }*/
+                        /*}*/
+                        $item->attributes['inertia'] = '';
+
                     }
                 }
 
