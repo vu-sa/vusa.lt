@@ -1,5 +1,5 @@
 <script setup>
-import { CalendarDescription, FileDescription, NewsDescription } from '../resources/js/Types/EntityDescriptions/DescriptionComponents.tsx'
+import { CalendarDescription, FileDescription } from '../resources/js/Types/EntityDescriptions/DescriptionComponents.tsx'
 </script>
 
 # Informacijos administravimas

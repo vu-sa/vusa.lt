@@ -14,6 +14,9 @@ export default defineConfig({
       lang: 'en',
     }
   },
+  vite: {
+    plugins: [vueJsx()]
+  },
   base: '/docs/',
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
