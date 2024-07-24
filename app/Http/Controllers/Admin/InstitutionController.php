@@ -26,7 +26,7 @@ class InstitutionController extends LaravelResourceController
     {
         $this->authorize('viewAny', [Institution::class, $this->authorizer]);
 
-        $indexer = new ModelIndexer(new Institution(), request(), $this->authorizer);
+        $indexer = new ModelIndexer(new Institution, request(), $this->authorizer);
 
         $institutions = $indexer
             ->setEloquentQuery([
@@ -65,7 +65,7 @@ class InstitutionController extends LaravelResourceController
      */
     public function store(StoreInstitutionRequest $request)
     {
-        $institution = new Institution();
+        $institution = new Institution;
 
         $institution->fill($request->safe()->except('types'))->save();
 

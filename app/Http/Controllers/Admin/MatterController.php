@@ -23,7 +23,7 @@ class MatterController extends LaravelResourceController
     {
         $this->authorize('viewAny', [Matter::class, $this->authorizer]);
 
-        $indexer = new ModelIndexer(new Matter(), request(), $this->authorizer);
+        $indexer = new ModelIndexer(new Matter, request(), $this->authorizer);
 
         $matters = $indexer
             ->setEloquentQuery([

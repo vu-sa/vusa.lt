@@ -1,30 +1,3 @@
-export const RESOURCE_CATEGORY_DESCRIPTIONS = {
-  main_info: {
-    lt: (
-      <>
-        <p>
-          Kategorijos padeda suskirstyti išteklius pagal jų paskirtį.
-        </p>
-        <p class="mt-2">
-          Kategorijos gali būti priskirtos ištekliui, kad būtų lengviau
-          jas surasti.
-        </p>
-      </>
-    ),
-    en: (
-      <>
-        <p>
-          Categories help to divide resources according to their purpose.
-          Categories are added when creating a resource type.
-        </p>
-        <p class="mt-2">
-          Categories can be assigned to a resource to make it easier to find.
-        </p>
-      </>
-    ),
-  }
-}
-
 export const RESERVATION_DESCRIPTIONS = {
   main_info: {
     lt: (

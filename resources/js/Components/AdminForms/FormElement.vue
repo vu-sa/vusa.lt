@@ -18,7 +18,7 @@
     </div>
     <CollapsibleContent class="grid gap-x-12 lg:grid-cols-6">
       <div class="lg:col-span-2">
-        <div class="mb-6 flex flex-col text-xs text-zinc-500 dark:text-zinc-400">
+        <div class="mb-6 flex flex-col text-xs text-zinc-500 dark:text-zinc-400 [&_p]:mb-2">
           <slot name="description" />
         </div>
       </div>

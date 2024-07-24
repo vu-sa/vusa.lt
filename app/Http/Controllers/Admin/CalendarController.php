@@ -24,7 +24,7 @@ class CalendarController extends LaravelResourceController
     {
         $this->authorize('viewAny', [Calendar::class, $this->authorizer]);
 
-        $indexer = new ModelIndexer(new Calendar(), request(), $this->authorizer);
+        $indexer = new ModelIndexer(new Calendar, request(), $this->authorizer);
 
         $calendar = $indexer
             ->setEloquentQuery([fn ($query) => $query->with('category')])
@@ -60,7 +60,7 @@ class CalendarController extends LaravelResourceController
      */
     public function store(StoreCalendarRequest $request)
     {
-        $calendar = new Calendar();
+        $calendar = new Calendar;
 
         $calendar = $calendar->fill($request->validated());
 

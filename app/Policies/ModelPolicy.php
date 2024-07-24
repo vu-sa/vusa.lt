@@ -108,7 +108,7 @@ class ModelPolicy
 
             $modelTenants = $model->load($tenantRelation)->$tenantRelation;
 
-            $modelCollection = new Collection();
+            $modelCollection = new Collection;
 
             if ($modelTenants instanceof Model) {
                 $modelCollection->push($modelTenants);

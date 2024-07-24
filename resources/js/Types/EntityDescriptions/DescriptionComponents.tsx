@@ -205,15 +205,6 @@ export const NavigationDescription = (
   </>
 );
 
-export const NewsDescription = (
-  <>
-    <p>
-      Naujienos veikia panašiai kaip puslapiai, tačiau jie turi <strong>skelbimo laiką</strong> ir rodomi naujienų
-      skiltyje.
-    </p>
-  </>
-);
-
 export const PageDescription = (
   <>
     <p>

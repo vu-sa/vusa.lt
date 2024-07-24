@@ -23,7 +23,7 @@ class PageController extends LaravelResourceController
     {
         $this->authorize('viewAny', [Page::class, $this->authorizer]);
 
-        $indexer = new ModelIndexer(new Page(), $request, $this->authorizer);
+        $indexer = new ModelIndexer(new Page, $request, $this->authorizer);
 
         $pages = $indexer
             ->setEloquentQuery()
@@ -77,7 +77,7 @@ class PageController extends LaravelResourceController
             $tenant_id = $this->authorizer->permissableDuties->first()->tenants->first()->id;
         }
 
-        $content = new Content();
+        $content = new Content;
 
         $content->save();
 

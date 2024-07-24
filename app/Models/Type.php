@@ -71,7 +71,7 @@ class Type extends Model
     public function pushAndRecursiveDescendants($type, $flattened = null): Collection
     {
         if (is_null($flattened)) {
-            $flattened = new Collection();
+            $flattened = new Collection;
         }
 
         foreach ($type->recursiveDescendants as $descendant) {
@@ -93,7 +93,7 @@ class Type extends Model
     public function pushAndRecursiveParents($type, $flattened = null): Collection
     {
         if (is_null($flattened)) {
-            $flattened = new Collection();
+            $flattened = new Collection;
         }
 
         if ($parent = $type->recursiveParent) {

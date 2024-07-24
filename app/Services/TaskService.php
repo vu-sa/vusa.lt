@@ -12,7 +12,7 @@ class TaskService
 {
     public static function storeTask(string $name, Model $model, Collection $users, ?string $due_date = null)
     {
-        $task = new Task();
+        $task = new Task;
 
         $task = $task->fill([
             'name' => $name,

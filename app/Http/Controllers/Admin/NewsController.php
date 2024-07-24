@@ -22,7 +22,7 @@ class NewsController extends LaravelResourceController
     {
         $this->authorize('viewAny', [News::class, $this->authorizer]);
 
-        $indexer = new ModelIndexer(new News(), $request, $this->authorizer);
+        $indexer = new ModelIndexer(new News, $request, $this->authorizer);
 
         $news = $indexer
             ->setEloquentQuery([fn ($query) => $query->with('other_language_news:id,title,lang')])
@@ -75,7 +75,7 @@ class NewsController extends LaravelResourceController
             $tenant_id = $this->authorizer->permissableDuties->first()->tenants->first()->id;
         }
 
-        $content = new Content();
+        $content = new Content;
 
         $content->save();
 

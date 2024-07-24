@@ -87,7 +87,6 @@ class HandleInertiaRequests extends Middleware
                 'calendar' => $request->session()->get('search_calendar') ?? [],
                 'news' => $request->session()->get('search_news') ?? [],
                 'pages' => $request->session()->get('search_pages') ?? [],
-                'other' => $request->session()->get('search_other') ?? [],
             ],
         ]);
     }
@@ -114,7 +113,7 @@ class HandleInertiaRequests extends Middleware
     private function getIndexPermissions(User $user)
     {
         return Cache::remember('index-permissions-'.$user->id, 1800, function () use ($user) {
-            $authorizer = new Authorizer();
+            $authorizer = new Authorizer;
 
             $labels = ModelEnum::toLabels();
 

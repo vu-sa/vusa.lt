@@ -1,7 +1,4 @@
 <template>
-
-  <Head :title="summerCampTitle" />
-
   <HeaderWithShapeDivider1 class="full-bleed" image-src="/images/photos/stovykla.jpg">{{ summerCampTitle }}
   </HeaderWithShapeDivider1>
 
@@ -142,7 +139,7 @@
 </template>
 
 <script setup lang="ts">
-import { Head, Link } from "@inertiajs/vue3";
+import { Link } from "@inertiajs/vue3";
 import { computed } from "vue";
 
 import { getFacultyName } from "@/Utils/String";
@@ -154,9 +151,6 @@ const props = defineProps<{
   year: number;
   yearsWhenEventsExist: number[]
 }>();
-
-// console log full year
-console.log(new Date().getFullYear() === props.year, props.year);
 
 const summerCampTitle = computed(() => {
   return props.year === new Date().getFullYear() ? "Pirmakursių stovyklos" : `${props.year} m. pirmakursių stovyklos`;

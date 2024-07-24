@@ -19,7 +19,7 @@ class GoalController extends LaravelResourceController
     {
         $this->authorize('viewAny', [Goal::class, $this->authorizer]);
 
-        $indexer = new ModelIndexer(new Goal(), request(), $this->authorizer);
+        $indexer = new ModelIndexer(new Goal, request(), $this->authorizer);
 
         $goals = $indexer
             ->filterAllColumns()

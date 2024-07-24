@@ -18,7 +18,7 @@ class Role extends SpatieRole
 
     public function usersThroughDuties()
     {
-        return $this->hasManyDeepFromRelations($this->duties(), (new Duty())->users());
+        return $this->hasManyDeepFromRelations($this->duties(), (new Duty)->users());
     }
 
     // It describes the types that this role can attach to other objects.

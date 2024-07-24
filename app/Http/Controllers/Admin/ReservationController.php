@@ -35,7 +35,7 @@ class ReservationController extends LaravelResourceController
 
         $this->authorize('viewAny', [Reservation::class, $this->authorizer]);
 
-        $indexer = new ModelIndexer(new Reservation(), request(), $this->authorizer);
+        $indexer = new ModelIndexer(new Reservation, request(), $this->authorizer);
 
         $reservations = $indexer
             ->setEloquentQuery([fn (Builder $query) => $query->with(['resources.tenant', 'users'])])
@@ -93,7 +93,7 @@ class ReservationController extends LaravelResourceController
     {
         $this->authorize('create', [Reservation::class, $this->authorizer]);
 
-        $reservation = new Reservation();
+        $reservation = new Reservation;
 
         $reservation->fill($request->safe()->only(['name', 'description', 'start_time', 'end_time']));
         $reservation->save();

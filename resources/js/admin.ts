@@ -8,7 +8,7 @@ import { i18nVue } from "laravel-vue-i18n";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
 
 const AdminLayout = defineAsyncComponent(
-  () => import("./PersistentLayouts/PersistentAdminLayout.vue"),
+  () => import("./Layouts/PersistentAdminLayout.vue"),
 );
 
 const getPosthog = async () => {

@@ -40,7 +40,7 @@ return new class extends Migration
             $table->unsignedBigInteger('content_id')->after('other_lang_id');
         });
 
-        $tiptap = new TiptapEditor();
+        $tiptap = new TiptapEditor;
 
         $pages = Page::all();
 
@@ -48,7 +48,7 @@ return new class extends Migration
 
             $json = $tiptap->setContent($page->text)->getDocument();
 
-            $content = new Content();
+            $content = new Content;
 
             $content->save();
 
@@ -69,7 +69,7 @@ return new class extends Migration
         foreach ($news as $key => $new) {
             $json = $tiptap->setContent($new->text)->getDocument();
 
-            $content = new Content();
+            $content = new Content;
 
             $content->save();
 

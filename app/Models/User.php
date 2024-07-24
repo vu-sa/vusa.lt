@@ -165,7 +165,7 @@ class User extends Authenticatable
 
     public function tenants()
     {
-        return $this->hasManyDeepFromRelations($this->duties(), (new Duty())->institution(), (new Institution())->tenant());
+        return $this->hasManyDeepFromRelations($this->duties(), (new Duty)->institution(), (new Institution)->tenant());
     }
 
     public function tasks()
@@ -175,7 +175,7 @@ class User extends Authenticatable
 
     public function institutions()
     {
-        return $this->hasManyDeepFromRelations($this->duties(), (new Duty())->institution());
+        return $this->hasManyDeepFromRelations($this->duties(), (new Duty)->institution());
     }
 
     public function reservations()

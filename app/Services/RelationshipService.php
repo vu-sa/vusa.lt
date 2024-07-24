@@ -25,7 +25,7 @@ class RelationshipService
             return [];
         }
 
-        $model = new $modelClass();
+        $model = new $modelClass;
 
         Schema::hasColumn($model->getTable(), 'name')
             ? $models = $modelClass::select('id', 'name')->get()

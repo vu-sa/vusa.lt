@@ -1,3 +1,8 @@
+<template>
+  <div v-html="generateHTMLfromTiptap(json_content)" />
+</template>
+
+<script setup lang="ts">
 import { generateHTML } from '@tiptap/vue-3';
 import Image from '@tiptap/extension-image';
 import StarterKit from '@tiptap/starter-kit';
@@ -12,7 +17,11 @@ import Youtube from '@tiptap/extension-youtube';
 import { CustomHeading } from './TipTap/CustomHeading';
 import { Video } from './TipTap/Video';
 
-export const generateHTMLfromTiptap = (json_content: any) => {
+defineProps<{
+  json_content: any;
+}>();
+
+const generateHTMLfromTiptap = (json_content: any) => {
   if (Object.keys(json_content).length === 0) {
     return '';
   }
@@ -56,3 +65,4 @@ export const generateHTMLfromTiptap = (json_content: any) => {
     }),
   ]);
 }
+</script>

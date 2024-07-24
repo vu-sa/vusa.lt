@@ -15,7 +15,6 @@ export default [
     title: "Naujienos",
     icon: Icons.NEWS,
     key: pluralizeModels(ModelEnum.NEWS),
-    description: Descriptions.NewsDescription,
   },
   {
     title: "Failai VU SA puslapyje",

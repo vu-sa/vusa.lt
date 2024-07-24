@@ -2,17 +2,11 @@
   <NDropdown placement="top-end" :options :delay="750">
     <SmartLink title="Change language" :href="$page.props.otherLangURL ?? `/${otherLocale}`">
       <div class="flex gap-1">
-        <img
-          :src="`https://hatscripts.github.io/circle-flags/flags/${
-            locale === 'lt' ? 'lt' : 'gb'
-          }.svg`"
-          width="16"
-        >
-
+        <img alt="Change language" :src="`https://hatscripts.github.io/circle-flags/flags/${locale === 'lt' ? 'lt' : 'gb'
+          }.svg`" width="16">
         <span class="text-zinc-700 dark:text-zinc-300">
           {{ locale === "lt" ? "LT" : "EN" }}
         </span>
-        <!-- <NIcon :component="ChevronDown20Filled" /> -->
       </div>
     </SmartLink>
   </NDropdown>

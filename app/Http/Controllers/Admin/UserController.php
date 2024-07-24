@@ -31,7 +31,7 @@ class UserController extends LaravelResourceController
     {
         $this->authorize('viewAny', [User::class, $this->authorizer]);
 
-        $indexer = new ModelIndexer(new User(), $request, $this->authorizer);
+        $indexer = new ModelIndexer(new User, $request, $this->authorizer);
 
         $users = $indexer
             ->setEloquentQuery([
@@ -77,7 +77,7 @@ class UserController extends LaravelResourceController
         DB::transaction(function () use ($request) {
             // create user
 
-            $user = new User();
+            $user = new User;
 
             $user->fill($request->safe()->except(['current_duties', 'roles']));
 
@@ -144,7 +144,7 @@ class UserController extends LaravelResourceController
     {
         $this->authorize('update', [User::class, $user, $this->authorizer]);
 
-        SendWelcomeEmail::execute((new Collection())->push($user));
+        SendWelcomeEmail::execute((new Collection)->push($user));
 
         return back()->with('success', 'Laiškas sėkmingai išsiųstas!');
     }

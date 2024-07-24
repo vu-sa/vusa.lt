@@ -1,3 +1,3 @@
 # Rezervacijų sistema
 
-Bus pildoma.
+<!--@include: ./_parts/reservations/lt/main-info.md -->

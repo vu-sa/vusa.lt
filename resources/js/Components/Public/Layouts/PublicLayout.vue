@@ -1,27 +1,44 @@
 <template>
   <!-- https://www.joshwcomeau.com/css/full-bleed/ -->
-  <FadeTransition>
-    <!-- <Suspense> -->
-    <NConfigProvider v-show="mounted" :theme="isDark ? darkTheme : undefined" :theme-overrides="themeOverrides">
-      <div
-        class="flex min-h-screen flex-col justify-between bg-zinc-50 text-zinc-800 antialiased dark:bg-zinc-900 dark:text-zinc-300">
-        <FadeTransition appear>
-          <MainNavigation :is-theme-dark="isDark" />
-        </FadeTransition>
-        <main class="pb-8">
-          <Suspense>
-            <div>
-              <div class="wrapper">
-                <slot />
-              </div>
-              <div v-if="
-                $page.props.padalinys?.banners &&
-                $page.props.padalinys.banners.length > 0
-              " class="mx-auto mt-8 max-w-7xl">
-                <BannerCarousel :banners="$page.props.padalinys?.banners" />
-              </div>
+  <NConfigProvider :theme="isDark ? darkTheme : undefined" :theme-overrides="themeOverrides">
+    <!-- Overwrite image meta -->
+    <!-- <Head>
+      <meta head-key="og:image" property="og:image" :content="usePage().props.seo.image">
+      <meta head-key="image" name="image" :content="usePage().props.seo.image">
+</Head> -->
+    <Head>
+      <link rel="preconnect" href="https://embed.tawk.to">
+      <link rel="preload" href="https://cdn.userway.org/widgetapp/images/body_wh.svg" as="image">
+      <template v-for="headItem in seo">
+        <title v-if="headItem.tag === 'title'">
+          {{ headItem.inner }}
+        </title>
+        <meta v-else-if="headItem.tag === 'meta'" :head-key="headItem.attributes.name ?? headItem.attributes.property"
+          v-bind="toValue(headItem.attributes)">
+        <link v-else-if="headItem.tag === 'link'" :head-key="headItem.attributes.rel"
+          v-bind="toValue(headItem.attributes)">
+      </template>
+    </Head>
+    <div
+      class="flex min-h-screen flex-col justify-between bg-zinc-50 text-zinc-800 antialiased dark:bg-zinc-900 dark:text-zinc-300">
+      <MainNavigation :is-theme-dark="isDark" />
+
+      <main class="pb-8">
+        <!-- <Suspense> -->
+        <div>
+          <FadeTransition appear>
+            <div :key="$page.url" class="wrapper">
+              <slot />
             </div>
-            <template #fallback>
+          </FadeTransition>
+          <div v-if="
+            $page.props.padalinys?.banners &&
+            $page.props.padalinys.banners.length > 0
+          " class="mx-auto mt-8 max-w-7xl">
+            <BannerCarousel :banners="$page.props.padalinys?.banners" />
+          </div>
+        </div>
+        <!--<template #fallback>
               <div class="flex h-screen items-center justify-center">
                 <NSpin>
                   <template #description>
@@ -35,39 +52,54 @@
                       </FadeTransition>
                     </div>
                   </template>
-                </NSpin>
-              </div>
-            </template>
-          </Suspense>
-        </main>
+</NSpin>
+</div>
+</template> -->
+        <!-- </Suspense> -->
+      </main>
 
-        <FadeTransition appear>
-          <ConsentCard v-if="!cookieConsent" @okay-cookie-consent="cookieConsent = true" />
-        </FadeTransition>
+      <FadeTransition appear>
+        <ConsentCard v-if="!cookieConsent" @okay-cookie-consent="cookieConsent = true" />
+      </FadeTransition>
 
-        <Footer />
-      </div>
+      <SiteFooter />
+    </div>
+  </NConfigProvider>
 
-      <!-- preconnect to tawk.to -->
-      <link rel="preconnect" href="https://embed.tawk.to">
-      <link rel="preload" href="https://cdn.userway.org/widgetapp/images/body_wh.svg" as="image">
-    </NConfigProvider>
-
-    <!-- </Suspense> -->
-  </FadeTransition>
 </template>
 
 <script setup lang="ts">
-import { NConfigProvider, NSpin, darkTheme } from "naive-ui";
-import { defineAsyncComponent, onMounted, ref } from "vue";
+import { NConfigProvider, darkTheme } from "naive-ui";
+import { computed, onMounted, ref, toValue } from "vue";
 import { useDark, useStorage } from "@vueuse/core";
 
-import { usePage } from "@inertiajs/vue3";
+import { Head, usePage } from "@inertiajs/vue3";
 import BannerCarousel from "../FullWidth/BannerCarousel.vue";
+import ConsentCard from "../ConsentCard.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import MainNavigation from "@/Components/Public/Layouts/MainNavigation.vue";
+import SiteFooter from "../FullWidth/SiteFooter.vue";
 
 const isDark = useDark();
+
+const seo = computed(() => {
+
+  // Computed Seo is an object
+  let computedSeo = usePage().props.seo.tags;
+
+  // if computedSeo key is OpenGraph, then add og: prefix to the key
+
+  if (computedSeo['RalphJSmit\\Laravel\\SEO\\Tags\\OpenGraphTags']) {
+    // foreach property, prefix og:
+    for (const [key, value] of Object.entries(computedSeo['RalphJSmit\\Laravel\\SEO\\Tags\\OpenGraphTags'])) {
+      // check if property is not already prefixed
+      if (!value['attributes']['property'].startsWith('og:')) computedSeo['RalphJSmit\\Laravel\\SEO\\Tags\\OpenGraphTags'][key]['attributes']['property'] = 'og:' + value['attributes']['property'];
+    }
+  }
+
+  // reduce Object.entries to an array of objects
+  return Object.values(computedSeo).reduce((acc, val) => acc.concat(val), []);
+});
 
 const mounted = ref(false);
 const spinWarning = ref(false);
@@ -89,14 +121,6 @@ const themeOverrides = {
     // textColor3: 'rgb(130, 121, 118)'
   },
 };
-
-const ConsentCard = defineAsyncComponent(
-  () => import("@/Components/Public/ConsentCard.vue")
-);
-
-const Footer = defineAsyncComponent(
-  () => import("@/Components/Public/FullWidth/SiteFooter.vue")
-);
 
 const cookieConsent = useStorage("cookie-consent", false);
 

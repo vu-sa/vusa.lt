@@ -30,7 +30,7 @@ class ResourceController extends LaravelResourceController
     {
         $this->authorize('viewAny', [Resource::class, $this->authorizer]);
 
-        $indexer = new ModelIndexer(new Resource(), request(), $this->authorizer);
+        $indexer = new ModelIndexer(new Resource, request(), $this->authorizer);
 
         $resources = $indexer
             ->setEloquentQuery([fn (Builder $query) => $query->with(['media', 'category'])], false)
@@ -64,7 +64,7 @@ class ResourceController extends LaravelResourceController
     {
         $this->authorize('create', [Resource::class, $this->authorizer]);
 
-        $resource = new Resource();
+        $resource = new Resource;
 
         $resource->fill($request->safe()->except('media'));
         $resource->save();

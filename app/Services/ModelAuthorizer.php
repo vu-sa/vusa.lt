@@ -29,8 +29,8 @@ class ModelAuthorizer
 
     public function __construct()
     {
-        $this->duties = new Collection();
-        $this->permissableDuties = new Collection();
+        $this->duties = new Collection;
+        $this->permissableDuties = new Collection;
     }
 
     public function getPermissableDuties(): Collection
@@ -43,14 +43,14 @@ class ModelAuthorizer
         $this->user = $user;
 
         // ? when user is set, reset duties?
-        $this->duties = new Collection();
+        $this->duties = new Collection;
 
         return $this;
     }
 
     public function checkAllRoleables(string $permission): bool
     {
-        $this->permissableDuties = new Collection();
+        $this->permissableDuties = new Collection;
 
         // TODO: if super admin, it needs to still return the duties, which may be applicable
         if ($this->user->hasRole(config('permission.super_admin_role_name'))) {

@@ -40,12 +40,12 @@ class UpdateSharepointFolder implements ShouldQueue
             return;
         }
 
-        $sharepointService = new SharepointFileService();
+        $sharepointService = new SharepointFileService;
 
         // get the path of the current fileable object (that's why the fileable->name,title is set above)
         $path = $sharepointService->pathForFileableDriveItem($fileable);
 
-        $sharepointGraph = new \App\Services\SharepointGraphService();
+        $sharepointGraph = new \App\Services\SharepointGraphService;
 
         try {
             $driveItem = $sharepointGraph->updateDriveItemByPath($path, [

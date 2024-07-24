@@ -27,7 +27,7 @@ class DutyController extends LaravelResourceController
     {
         $this->authorize('viewAny', [Duty::class, $this->authorizer]);
 
-        $indexer = new ModelIndexer(new Duty(), $request, $this->authorizer);
+        $indexer = new ModelIndexer(new Duty, $request, $this->authorizer);
 
         $duties = $indexer
             ->setEloquentQuery([fn (Builder $query) => $query->with('institution')])
