@@ -20,9 +20,9 @@ class TypeFactory extends Factory
     public function definition()
     {
         return [
-            'title' => $this->faker->sentence,
+            'title' => [ 'lt' => $this->faker->sentence, 'en' => $this->faker->sentence ],
             'model_type' => fake()->randomElement([Doing::class, Duty::class, Institution::class]),
-            'description' => $this->faker->paragraph,
+            'description' => [ 'lt' => $this->faker->paragraph, 'en' => $this->faker->paragraph ],
             'slug' => $this->faker->slug,
         ];
     }

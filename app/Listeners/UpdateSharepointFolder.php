@@ -47,6 +47,7 @@ class UpdateSharepointFolder implements ShouldQueue
 
         $sharepointGraph = new \App\Services\SharepointGraphService;
 
+        // TODO: right now is failing
         try {
             $driveItem = $sharepointGraph->updateDriveItemByPath($path, [
                 // the drive item name property in Sharepoint is always "name"

@@ -216,7 +216,7 @@ declare global {
       id: string
       name: string[]|null
       short_name: string[]|null
-      alias: string[]|null
+      alias: string
       description: string[]|null
       address: string[]|null
       phone: string|null
@@ -681,14 +681,15 @@ declare global {
       // columns
       id: number
       parent_id: number|null
-      title: string|null
       model_type: string|null
-      description: string|null
       slug: string|null
-      extra_attributes: string|null
       created_at: string
       updated_at: string
       deleted_at: string|null
+      title: string[]|null
+      description: string[]|null
+      // mutators
+      translations: unknown
       // relations
       institutions: Institution[]
       duties: Duty[]
