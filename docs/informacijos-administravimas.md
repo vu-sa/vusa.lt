@@ -1,7 +1,3 @@
-<script setup>
-import { CalendarDescription, FileDescription } from '../resources/js/Types/EntityDescriptions/DescriptionComponents.tsx'
-</script>
-
 # Informacijos administravimas
 
 Didžioji dalis informacijos gali būti administruojama koordinatorių.
@@ -34,7 +30,7 @@ Pagrindinė navigaciją gali atnaujinti tik VU SA centrinio biuro koordinatorius
 
 ## Kalendorius
 
-<component :is="CalendarDescription"></component>
+<!--@include: ./_parts/calendars/lt/description.md -->
 
 ## Kategorijos
 
@@ -47,4 +43,4 @@ Kategorijas gali kurti tik pagrindinis administratorius.
 
 ## Failai
 
-<component :is="FileDescription"></component>
+<!--@include: ./_parts/files/lt/description.md -->

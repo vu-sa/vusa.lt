@@ -24,6 +24,7 @@ export default defineConfig({
         linkify: true,
         typographer: true,
       },
+      wrapperClasses: undefined
     }),
     Components({
       resolvers: [

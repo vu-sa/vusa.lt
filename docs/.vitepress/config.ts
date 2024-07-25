@@ -1,5 +1,4 @@
 import { defineConfig } from 'vitepress'
-import vueJsx from "@vitejs/plugin-vue-jsx";
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -13,9 +12,6 @@ export default defineConfig({
       label: 'English',
       lang: 'en',
     }
-  },
-  vite: {
-    plugins: [vueJsx()]
   },
   base: '/docs/',
   themeConfig: {
