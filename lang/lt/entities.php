@@ -1,6 +1,22 @@
 <?php
 
 return [
+    'document' => [
+        'model' => '{1} dokumentas|[2,9] dokumentai|[10,*] dokumentų',
+        'title' => 'pavadinimas',
+        'sharepoint_id' => 'SharePoint ID',
+        'eTag' => 'eTag',
+        'document_date' => 'dokumento data',
+        'language' => 'kalba',
+        'content_type' => 'turinio tipas',
+        'institution_id' => 'institucija',
+        'public_url' => 'viešas URL',
+        'public_url_created_at' => 'viešo URL sukūrimo data',
+        'thumbnail_url' => 'miniatiūros URL',
+        'is_active' => 'aktyvus?',
+        'sharepoint_site_id' => 'SharePoint svetainės ID',
+        'sharepoint_list_id' => 'SharePoint sąrašo ID',
+    ],
     'duty' => [
         'model' => '{1} pareiga|[2,9] pareigos|[10,*] pareigų',
     ],

@@ -1,7 +1,7 @@
 <template>
-  <button @click="openPicker">
-    Open Picker
-  </button>
+  <NButton @click="openPicker">
+    <slot />
+  </NButton>
 </template>
 
 <script setup lang="ts">
@@ -9,7 +9,11 @@ import { PublicClientApplication } from "@azure/msal-browser";
 import { combine } from "@pnp/core";
 import { usePage } from "@inertiajs/vue3";
 
-import type { FilePickerOptions } from "./picker.ts";
+import type { FilePickerOptions, Item } from "./picker.ts";
+
+const emit = defineEmits<{
+  pick: [items: Item[]]
+}>()
 
 // random string generate
 const channelId = Math.random().toString(36).substring(7);
@@ -116,7 +120,7 @@ async function openPicker() {
   const url = baseUrl + `/_layouts/15/FilePicker.aspx?${queryString}`;
 
   // create a form
-  const form = win.document.createElement("form");
+  const form = win?.document.createElement("form");
 
   const accessToken = await getToken({
     resource: baseUrl,
@@ -124,7 +128,9 @@ async function openPicker() {
     type: "SharePoint",
   });
 
-  //const accessToken = microsoftToken;
+  if (form === undefined) {
+    throw new Error("Unable to create form element.");
+  }
 
   // set the action of the form to the url defined above
   // This will include the query string options for the picker.
@@ -135,14 +141,19 @@ async function openPicker() {
 
   // Create a hidden input element to send the OAuth token to the Picker.
   // This optional when using a popup window but required when using an iframe.
-  const tokenInput = win.document.createElement("input");
+  const tokenInput = win?.document.createElement("input");
+
+  if (tokenInput === undefined) {
+    throw new Error("Unable to create input element.");
+  }
+
   tokenInput.setAttribute("type", "hidden");
   tokenInput.setAttribute("name", "access_token");
   tokenInput.setAttribute("value", accessToken);
   form.appendChild(tokenInput);
 
   // append the form to the body
-  win.document.body.append(form);
+  win?.document.body.append(form);
 
   // submit the form, this will load the picker page
   form.submit();
@@ -217,11 +228,12 @@ async function openPicker() {
             break;
 
           case "close":
-            win.close();
+            win?.close();
             break;
           case "pick":
-
             try {
+
+              emit("pick", message.data.data.items);
 
               // let the picker know that the pick command was handled (required)
               port.postMessage({
@@ -231,6 +243,11 @@ async function openPicker() {
                   result: "success"
                 }
               });
+
+              port.close();
+
+              win?.close();
+
             } catch (error) {
               port.postMessage({
                 type: "result",
@@ -288,5 +305,19 @@ async function openPicker() {
       }
     }
   });
+
+  window.onbeforeunload = () => {
+    port.postMessage({
+      type: "result",
+      id: "close",
+      data: {
+        result: "success"
+      }
+    });
+
+    port.close();
+
+    win?.close();
+  }
 }
 </script>

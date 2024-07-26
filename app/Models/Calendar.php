@@ -31,10 +31,10 @@ class Calendar extends Model implements HasMedia
 
     //# Undefined property: App\Models\Calendar::$category, when generating types
     // "@php artisan model:typer --global > resources/js/Types/models.d.ts"
-    /*public function category(): BelongsTo*/
-    /*{*/
-    /*    return $this->belongsTo(Category::class, 'category', 'alias', 'category');*/
-    /*}*/
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class, 'category', 'alias', 'category');
+    }
 
     public function registrationForm()
     {

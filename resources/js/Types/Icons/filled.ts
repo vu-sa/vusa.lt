@@ -45,6 +45,7 @@ const modelIcons: Record<keyof typeof ModelEnum, FunctionalComponent> = {
   CHANGELOG_ITEM: DocumentBulletList24Filled,
   COMMENT: Comment24Filled,
   CONTACT: BookContacts28Filled,
+  DOCUMENT: DocumentMultiple24Filled,
   DOING: Important24Filled,
   DUTIABLE: PersonClock24Filled,
   DUTY: PuzzlePiece24Filled,

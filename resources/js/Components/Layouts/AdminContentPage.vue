@@ -25,13 +25,15 @@
         </NEllipsis>
       </slot>
     </h1>
-    <Link v-if="isIndex && createUrl" :href="createUrl">
-    <div class="flex">
-      <NButton round size="tiny" :theme-overrides="{ border: '1.2px solid' }"><template #icon>
-        <IFluentAdd24Filled />
-        </template>{{ $t("forms.add") }}</NButton>
-    </div>
-    </Link>
+    <slot name="create-button">
+      <Link v-if="isIndex && createUrl" :href="createUrl">
+      <div class="flex">
+        <NButton round size="tiny" :theme-overrides="{ border: '1.2px solid' }"><template #icon>
+            <IFluentAdd24Filled />
+          </template>{{ $t("forms.add") }}</NButton>
+      </div>
+      </Link>
+    </slot>
     <aside class="w-full">
       <NScrollbar x-scrollable>
         <div class="flex flex-row items-center justify-between gap-2">

@@ -1,6 +1,20 @@
-import type { DriveItem } from "@microsoft/microsoft-graph-types";
+import type { DriveItem, ItemReference, NullableOption, SharepointIds } from "@microsoft/microsoft-graph-types";
 
 type ExtFilter = 'folder' | 'site' | 'documentLibrary' | 'list' | 'onenote' | 'file' | 'media' | 'photo' | 'video' | 'audio' | 'document' | 'listItem' | 'playlist' | 'syntexTemplate' | 'syntexSnippet' | 'syntexField' | `.${string}`;
+
+export type Item = {
+  '@sharepoint.embedUrl': string;
+  '@sharepoint.endpoint': string;
+  '@sharepoint.listUrl': string;
+  folder?: string;
+  id: string;
+  name: string;
+  parentReference: NullableOption<ItemReference>;
+  sharepointIds: NullableOption<SharepointIds>;
+  size: number;
+  webDavUrl: string;
+  webUrl: string;
+};
 
 export type FilePickerOptions = {
   sdk: "8.0";

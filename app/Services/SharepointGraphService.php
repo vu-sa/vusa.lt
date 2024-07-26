@@ -35,6 +35,8 @@ class SharepointGraphService
 
     protected $driveId;
 
+    protected $listId;
+
     /**
      * __construct
      * Set for which sharepoint site and drive to interact with
@@ -44,7 +46,7 @@ class SharepointGraphService
      * @param  mixed  $driveId
      * @return void
      */
-    public function __construct(?string $siteId = null, ?string $driveId = null)
+    public function __construct(?string $siteId = null, ?string $driveId = null, ?string $listId = null)
     {
         $tokenRequestContext = new ClientCredentialContext(
             config('filesystems.sharepoint.tenant_id'),
@@ -57,6 +59,7 @@ class SharepointGraphService
 
         $this->siteId = $siteId ?? config('filesystems.sharepoint.site_id');
         $this->driveId = $driveId ?? $this->getDrive()->getId();
+        $this->listId = $listId;
     }
 
     private function getSite(): Models\Site
@@ -128,6 +131,13 @@ class SharepointGraphService
         $result = $this->graph->drives()->byDriveId($this->driveId)->items()->byDriveItemId($updatableDriveItem->getId())->patch($updatableDriveItem)->wait();
 
         return $result;
+    }
+
+    public function getListItem(string $siteId, string $listId, $listItemId): Models\FieldValueSet
+    {
+        $listItem = $this->graph->sites()->bySiteId($siteId)->lists()->byListId($listId)->items()->byListItemId($listItemId)->fields()->get()->wait();
+
+        return $listItem;
     }
 
     public function updateListItem(string $listId, $listItemId, array $fields): Models\FieldValueSet

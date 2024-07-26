@@ -320,6 +320,18 @@ const menuOptions = computed(() => [
       },
       {
         label: () => {
+          return (
+            <Link href={route("documents.index")}>{$t("Dokumentai")}</Link>
+          );
+        },
+        key: "documents",
+        show: auth?.can.index.document,
+        icon: () => {
+          return <NIcon component={Icons.DOCUMENT}></NIcon>;
+        },
+      },
+      {
+        label: () => {
           return <Link href={route("files.index")}>{$t("Failai")}</Link>;
         },
         key: "files",
