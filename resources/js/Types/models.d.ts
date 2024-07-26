@@ -131,11 +131,12 @@ declare global {
       sharepoint_id?: string
       e_tag?: string|null
       document_date: string|null
-      language: string|null
-      content_type: string|null
       institution_id: string|null
-      public_url: string|null
-      public_url_created_at?: string|null
+      content_type: string|null
+      language: string|null
+      summary: string|null
+      anonymous_url: string|null
+      anonymous_url_expiration_date: string|null
       thumbnail_url: string|null
       is_active: boolean
       sharepoint_site_id?: string
@@ -144,7 +145,6 @@ declare global {
       updated_at?: string
       // relations
       institution: Institution
-      tenant: Tenant
     }
 
     export interface Doing {
@@ -261,6 +261,7 @@ declare global {
       duties: Duty[]
       types: Type[]
       tenant: Tenant
+      documents: Document[]
       matters: Matter[]
       meetings: Meeting[]
       commentable: Institution

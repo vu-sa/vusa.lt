@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\PublicController;
 use App\Models\Calendar;
 use App\Models\Category;
+use App\Models\Document;
 use App\Models\Navigation;
 use App\Models\News;
 use App\Models\Page;
@@ -257,7 +258,7 @@ class PublicPageController extends PublicController
         $seo = $this->shareAndReturnSEOObject(
             title: $year == intval(date('Y')) ? 'Pirmakursių stovyklos - VU SA' : $year.' m. pirmakursių stovyklos - VU SA',
             description: 'Universiteto tvarka niekada su ja nesusidūrusiam žmogui gali pasirodyti labai sudėtinga ir būtent dėl to jau prieš septyniolika metų Vilniaus universiteto Studentų atstovybė (VU SA) surengė pirmąją pirmakursių stovyklą.',
-            image: config('app.url') . '/images/photos/stovykla.jpg',
+            image: config('app.url').'/images/photos/stovykla.jpg',
         );
 
         return Inertia::render('Public/SummerCamps',
@@ -365,6 +366,24 @@ class PublicPageController extends PublicController
 
         return Inertia::render('Public/MemberRegistration', [
             'tenantOptions' => $tenants,
+        ])->withViewData([
+            'SEOData' => $seo,
+        ]);
+    }
+
+    public function documents()
+    {
+        $this->getBanners();
+        $this->getTenantLinks();
+        $this->shareOtherLangURL('documents');
+
+        $seo = $this->shareAndReturnSEOObject(
+            title: __('Dokumentai').' - VU SA',
+            description: 'VU SA dokumentai'
+        );
+
+        return Inertia::render('Public/ShowDocuments', [
+            'documents' => Document::query()->where('is_active', true)->get(),
         ])->withViewData([
             'SEOData' => $seo,
         ]);

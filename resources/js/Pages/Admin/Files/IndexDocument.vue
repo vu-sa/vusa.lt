@@ -29,6 +29,7 @@ import ArrowCounterclockwise28Regular from "~icons/fluent/arrow-counterclockwise
 import FilePicker from "@/Features/Admin/SharepointFilePicker/FilePicker.vue";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
+import SmartLink from "@/Components/Public/SmartLink.vue";
 
 defineProps<{
   documents: PaginatedModels<App.Entities.Document>;
@@ -44,7 +45,7 @@ const canUseRoutes = {
 const loading = ref(false);
 
 const sorters = ref<Record<string, DataTableSortState["order"]>>({
-  name: false,
+  title: false,
 });
 
 provide("sorters", sorters);
@@ -59,13 +60,23 @@ provide("sorters", sorters);
 // add columns
 const columns = computed<DataTableColumns<App.Entities.Document>>(() => [
   {
+    key: "thumbnail_url",
+    render(row) {
+      return (
+        <img src={row.thumbnail_url} class="size-12 rounded-md border object-cover" />
+      );
+    },
+    align: "center",
+    width: 66,
+  },
+  {
     title() {
       return $t("forms.fields.title");
     },
-    key: "name",
+    key: "title",
     sorter: true,
-    sortOrder: sorters.value.name,
-    maxWidth: 300,
+    sortOrder: sorters.value.title,
+    width: 400,
     ellipsis: {
       tooltip: true,
     },
@@ -90,13 +101,29 @@ const columns = computed<DataTableColumns<App.Entities.Document>>(() => [
     }
   },
   {
-    title: "ETag",
-    key: "eTag",
+    title: "Data",
+    key: "document_date",
   },
   {
     title: "Content Type",
     key: "content_type",
   },
+  {
+    title: "Language",
+    key: "language",
+  },
+  {
+    key: "anonymous_url",
+    render(row) {
+      return (
+        <SmartLink href={row.anonymous_url}>
+          <NButton size="tiny">
+            Open
+          </NButton>
+        </SmartLink >
+      );
+    },
+  }
 ]);
 
 const handleDocumentPick = (items: Item[]) => {

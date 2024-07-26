@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\SharepointFile;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Microsoft\Graph\BatchRequestBuilder;
 use Microsoft\Graph\Core\Requests\BatchRequestContent;
@@ -14,6 +15,8 @@ use Microsoft\Graph\Generated\Models;
 use Microsoft\Graph\Generated\Models\FieldValueSet;
 use Microsoft\Graph\Generated\Models\ODataErrors\ODataError;
 use Microsoft\Graph\Generated\Models\PermissionCollectionResponse;
+use Microsoft\Graph\Generated\Models\ThumbnailSet;
+use Microsoft\Graph\Generated\Sites\Item\Lists\Item\Items\Item\DriveItem\DriveItemRequestBuilderGetRequestConfiguration;
 use Microsoft\Graph\Generated\Sites\Item\Lists\Item\Items\Item\Fields\FieldsRequestBuilderPatchRequestConfiguration;
 use Microsoft\Graph\GraphServiceClient;
 use Microsoft\Kiota\Authentication\Oauth\ClientCredentialContext;
@@ -118,6 +121,20 @@ class SharepointGraphService
     /*    return $driveItem;*/
     /*}*/
 
+    public function getDriveItemByListItem(string $siteId, string $listId, string $listItemId): Models\DriveItem
+    {
+        $requestConfiguration = new DriveItemRequestBuilderGetRequestConfiguration();
+        $queryParameters = DriveItemRequestBuilderGetRequestConfiguration::createQueryParameters();
+
+        $queryParameters->expand = ['thumbnails'];
+
+        $requestConfiguration->queryParameters = $queryParameters;
+
+        $driveItem = $this->graph->sites()->bySiteId($siteId)->lists()->byListId($listId)->items()->byListItemId($listItemId)->driveItem()->get($requestConfiguration)->wait();
+
+        return $driveItem;
+    }
+
     public function updateDriveItemByPath(string $path, array $fields): Models\DriveItem
     {
         $path = rawurlencode($path);
@@ -136,6 +153,7 @@ class SharepointGraphService
     public function getListItem(string $siteId, string $listId, $listItemId): Models\FieldValueSet
     {
         $listItem = $this->graph->sites()->bySiteId($siteId)->lists()->byListId($listId)->items()->byListItemId($listItemId)->fields()->get()->wait();
+
 
         return $listItem;
     }
@@ -205,28 +223,36 @@ class SharepointGraphService
         return $permissions;
     }
 
-    public function getDriveItemPublicLink(string $driveItemId): ?string
+    public function getDriveItemPublicLink(string $driveItemId): ?Models\Permission
     {
         $permissions = collect($this->getDriveItemPermissions($driveItemId)->getValue());
 
         $permission = $permissions->filter(function (Models\Permission $permission) {
-            return $permission->getLink() && $permission->getLink()->getScope() == 'anonymous';
+            return $permission->getLink() && $permission->getLink()->getScope() == 'anonymous' && $permission->getExpirationDateTime() === null;
         })->first();
 
-        return $permission ? $permission->getLink()->getWebUrl() : null;
+        return $permission ?? null;
     }
 
-    public function createPublicPermission(string $driveItemId): string
+    public function createPublicPermission(string $siteId = null, string $driveItemId, Carbon | false $datetime = null): Models\Permission
     {
+        $siteId = $siteId ?? $this->siteId;
+        $datetime = $datetime ?? Carbon::now()->addYear(1)->subUTCMonth();
+
         $requestBody = new CreateLinkPostRequestBody;
 
         $requestBody->setType('view');
         $requestBody->setScope('anonymous');
-        $requestBody->setExpirationDateTime(new \DateTime('2025-01-01T00:00:00Z'));
 
-        $permission = $this->graph->drives()->byDriveId($this->driveId)->items()->byDriveItemId($driveItemId)->createLink()->post($requestBody)->wait();
+        if ($datetime !== false) {
+            $requestBody->setExpirationDateTime($datetime);
+        }
 
-        return $permission->getLink()->getWebUrl();
+        $sharepointPathFinal = "{$this->graphApiBaseUrl}sites/{$siteId}/drive/items/{$driveItemId}/createLink";
+
+        $permission = $this->graph->drives()->byDriveId($driveItemId)->items()->byDriveItemId($driveItemId)->createLink()->withUrl($sharepointPathFinal)->post($requestBody)->wait();
+
+        return $permission;
     }
 
     public function uploadDriveItem(string $filePath, UploadedFile $file): Models\DriveItem

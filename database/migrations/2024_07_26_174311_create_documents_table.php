@@ -18,12 +18,13 @@ return new class extends Migration
             $table->string('sharepoint_id', 50)->unique();
             $table->string('eTag')->nullable();
             $table->date('document_date')->nullable();
-            $table->string('language')->nullable()->index();
-            $table->string('content_type')->nullable()->index();
             $table->ulid('institution_id')->nullable();
             $table->foreign('institution_id')->references('id')->on('institutions')->nullOnDelete();
-            $table->text('public_url')->nullable();
-            $table->date('public_url_created_at')->nullable();
+            $table->string('content_type')->nullable()->index();
+            $table->string('language')->nullable()->index();
+            $table->string('summary')->nullable();
+            $table->text('anonymous_url')->nullable();
+            $table->date('anonymous_url_expiration_date')->nullable();
             $table->text('thumbnail_url')->nullable();
             $table->boolean('is_active')->default(true);
             $table->string('sharepoint_site_id', 50);
