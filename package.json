@@ -12,7 +12,10 @@
     "docs:preview": "vitepress preview docs --port 6006"
   },
   "dependencies": {
+    "@azure/msal-browser": "^3.20.0",
     "@inertiajs/vue3": "^1.0.8",
+    "@pnp/graph": "^4.3.0",
+    "@pnp/sp": "^4.3.0",
     "@tiptap/extension-bubble-menu": "^2.0.1",
     "@tiptap/extension-character-count": "^2.3.0",
     "@tiptap/extension-image": "^2.0.1",

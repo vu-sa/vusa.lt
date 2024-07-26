@@ -1,17 +1,16 @@
 <template>
-    <SummerCamps v-if="$page.props.app.locale === 'lt'" />
+  <SummerCamps v-if="$page.props.app.locale === 'lt'" />
 
-    <div v-if="news.length > 0" class="mx-auto mt-2">
-      <NewsElement :news="news" />
-    </div>
+  <div v-if="news.length > 0" class="mx-auto mt-2">
+    <NewsElement :news="news" />
+  </div>
 
-    <IndividualStudies />
+  <IndividualStudies />
 
-    <EventCalendar :show-photos="true" :calendar="calendar" :upcoming-events="upcomingEvents" />
+  <EventCalendar :show-photos="true" :calendar="calendar" :upcoming-events="upcomingEvents" />
 </template>
 
 <script setup lang="ts">
-import { Head } from "@inertiajs/vue3";
 import { defineAsyncComponent } from "vue";
 
 defineProps<{

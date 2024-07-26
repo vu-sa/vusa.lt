@@ -266,6 +266,8 @@ class UserController extends LaravelResourceController
     {
         $microsoftUser = Socialite::driver('microsoft')->stateless()->user();
 
+        /*dd(Socialite::driver('microsoft')->stateless());*/
+
         // pirmiausia ieškome per vartotoją, per paštą
         $user = User::where('email', $microsoftUser->email)->first();
 
@@ -274,6 +276,8 @@ class UserController extends LaravelResourceController
 
             // if user role is null, add role
             $user->microsoft_token = $microsoftUser->token;
+
+            $user->save();
 
             Auth::login($user);
             $request->session()->regenerate();
@@ -287,6 +291,8 @@ class UserController extends LaravelResourceController
             //# TEST: if only current users from duty are allowed to login
             $user = $duty->current_users()->first();
             $user->microsoft_token = $microsoftUser->token;
+
+            $user->save();
 
             Auth::login($user);
 
