@@ -7,7 +7,9 @@ use App\Http\Requests\StoreDocumentRequest;
 use App\Http\Requests\UpdateDocumentRequest;
 use App\Models\Document;
 use App\Services\ModelIndexer;
+use App\Services\SharepointGraphService;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -38,6 +40,8 @@ class DocumentController extends LaravelResourceController
      */
     public function store(StoreDocumentRequest $request)
     {
+        $documentCollection = new Collection;
+
         foreach ($request->documents as $document) {
             $model = new Document;
 
@@ -47,8 +51,14 @@ class DocumentController extends LaravelResourceController
             $model->sharepoint_site_id = $document['site_id'];
             $model->sharepoint_list_id = $document['list_id'];
 
-            $model->save();
+            $documentCollection->push($model);
+
+            /*$model->save();*/
         }
+
+        $graph = new SharepointGraphService(siteId: $model->sharepoint_site_id);
+
+        $documentCollection = $graph->batchProcessDocuments($documentCollection);
 
         return redirect()->route('documents.index')->with('success', 'Documents have been successfully stored.');
     }

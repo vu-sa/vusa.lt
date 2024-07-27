@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\Models\Document;
 use App\Models\SharepointFile;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -248,6 +250,7 @@ class SharepointGraphService
 
         $sharepointPathFinal = "{$this->graphApiBaseUrl}sites/{$siteId}/drive/items/{$driveItemId}/createLink";
 
+        // This is the wrong chain, but it should work
         $permission = $this->graph->drives()->byDriveId($driveItemId)->items()->byDriveItemId($driveItemId)->createLink()->withUrl($sharepointPathFinal)->post($requestBody)->wait();
 
         return $permission;
@@ -317,5 +320,124 @@ class SharepointGraphService
         });
 
         return $parsedDriveItems;
+    }
+
+    /**
+     * [TODO:description]
+     *
+     * @param Collection<Document> documentColection
+     */
+    public function batchProcessDocuments(EloquentCollection $documentColection)
+    {
+
+        // First, get the drive item and associated data
+        $batch = new BatchRequestContent(
+            $documentColection->map(function (Document $document) {
+
+                $requestConfiguration = new DriveItemRequestBuilderGetRequestConfiguration;
+                $queryParameters = DriveItemRequestBuilderGetRequestConfiguration::createQueryParameters();
+
+                $queryParameters->expand = ['listItem', 'thumbnails', 'permissions'];
+
+                $requestConfiguration->queryParameters = $queryParameters;
+
+                $driveItemRequestConfiguration = $this->graph->sites()->bySiteId($document->sharepoint_site_id)->lists()->byListId($document->sharepoint_list_id)->items()->byListItemId($document->sharepoint_id)->driveItem()->toGetRequestInformation($requestConfiguration);
+
+                return new BatchRequestItem($driveItemRequestConfiguration, $document->sharepoint_id);
+            })->toArray()
+        );
+
+        // Create a batch request builder to send the batched requests
+        $batchRequestBuilder = new BatchRequestBuilder($this->graph->getRequestAdapter());
+
+        $batchResponse = $batchRequestBuilder->postAsync($batch)->wait();
+
+        $driveItemCollections = collect($batch->getRequests())->map(function (BatchRequestItem $request) use ($batchResponse) {
+            $additionalData = $batchResponse->getResponseBody($request->getId(), Models\DriveItemCollectionResponse::class)->getAdditionalData();
+
+            $additionalData['listItem']['uniqueId'] = $request->getId();
+
+            return $additionalData;
+            // keyBy list item id
+        })->keyBy(fn ($value) => $value['listItem']['uniqueId']);
+
+        // Get permissions without anonymous url
+        $driveItemsWithoutAnonymousUrl = $driveItemCollections->filter(function ($driveItem) {
+            return collect($driveItem['permissions'])->contains(function ($permission) {
+                $hasAnonymous = isset($permission['link']['scope']) ? $permission['link']['scope'] === 'anonymous' : false;
+
+                $hasPassword = isset($permission['hasPassword']) ? $permission['hasPassword'] : false;
+
+                return ! $hasAnonymous || $hasPassword;
+            });
+        });
+
+        // Add anonymous url to drive items without it
+        if ($driveItemsWithoutAnonymousUrl->isNotEmpty()) {
+            $batch = new BatchRequestContent(
+                $driveItemsWithoutAnonymousUrl->map(function (array $driveItem) {
+
+                    $requestBody = new CreateLinkPostRequestBody;
+
+                    $requestBody->setType('view');
+                    $requestBody->setScope('anonymous');
+
+                    $sharepointPathFinal = "{$this->graphApiBaseUrl}sites/{$this->siteId}/drive/items/{$driveItem['id']}/createLink";
+
+                    // This is the wrong chain, but it should work
+                    $permissionRequestConfiguration = $this->graph->drives()->byDriveId($this->driveId)->items()->byDriveItemId($driveItem['id'])->createLink()->withUrl($sharepointPathFinal)->toPostRequestInformation($requestBody);
+
+                    return new BatchRequestItem($permissionRequestConfiguration, $driveItem['listItem']['uniqueId']);
+                })->toArray()
+
+            );
+            $batchRequestBuilder = new BatchRequestBuilder($this->graph->getRequestAdapter());
+
+            $batchResponse = $batchRequestBuilder->postAsync($batch)->wait();
+
+            $permissionCollection = collect($batch->getRequests())->map(function (BatchRequestItem $request) use ($batchResponse) {
+                $additionalData = $batchResponse->getResponseBody($request->getId(), Models\PermissionCollectionResponse::class)->getAdditionalData();
+
+                $additionalData['list_item_unique_id'] = $request->getId();
+
+                return $additionalData;
+            })->keyBy(fn ($value) => $value['list_item_unique_id'])->each(function ($permission) use ($driveItemCollections) {
+                $driveItem = $driveItemCollections->get($permission['list_item_unique_id']);
+
+                // add to permissions array
+                $driveItem['permissions'][] = $permission;
+            });
+        } else {
+            $permissionCollection = collect([]);
+        }
+
+        // Update documents
+        $documentColection->each(function (Document $document) use ($driveItemCollections) {
+            // TODO: handle batch update (need to set to current model)
+            $driveItem = $driveItemCollections->get($document->sharepoint_id);
+
+            $document->name = $driveItem['name'];
+            $document->title = isset($driveItem['listItem']['fields']['Title']) ? $driveItem['listItem']['fields']['Title'] : $driveItem['name'];
+            $document->eTag = $driveItem['listItem']['eTag'];
+            $document->document_date = isset($driveItem['listItem']['fields']['Date']) ? Carbon::parseFromLocale(time: $driveItem['listItem']['fields']['Date'], timezone: 'UTC')->setTimezone('Europe/Vilnius') : null;
+
+            $document->language = isset($driveItem['listItem']['fields']['Language']) ? $driveItem['listItem']['fields']['Language'] : null;
+            $document->content_type = isset($driveItem['listItem']['fields']['Turinys']['Label']) ? $driveItem['listItem']['fields']['Turinys']['Label'] : null;
+
+            $document->summary = $driveItem['listItem']['fields']['Summary'] ?? null;
+            $document->thumbnail_url = $driveItem['thumbnails'][0]['large']['url'];
+            $document->anonymous_url = collect($driveItem['permissions'])->filter(function ($permission) {
+
+                $isAnonymous = isset($permission['link']['scope']) ? $permission['link']['scope'] === 'anonymous' : false;
+                $hasPassword = isset($permission['hasPassword']) ? $permission['hasPassword'] : false;
+
+                return $isAnonymous && ! $hasPassword;
+            })->first()['link']['webUrl'];
+
+            $document->save();
+        });
+
+        return $documentColection;
+
     }
 }
