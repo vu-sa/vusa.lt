@@ -15,7 +15,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Type extends Model
 {
-    use HasContentRelationships, HasFactory, HasTranslations, HasSharepointFiles, LogsActivity, SoftDeletes;
+    use HasContentRelationships, HasFactory, HasSharepointFiles, HasTranslations, LogsActivity, SoftDeletes;
 
     protected $guarded = [];
 

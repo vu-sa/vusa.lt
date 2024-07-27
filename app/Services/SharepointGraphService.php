@@ -15,7 +15,6 @@ use Microsoft\Graph\Generated\Models;
 use Microsoft\Graph\Generated\Models\FieldValueSet;
 use Microsoft\Graph\Generated\Models\ODataErrors\ODataError;
 use Microsoft\Graph\Generated\Models\PermissionCollectionResponse;
-use Microsoft\Graph\Generated\Models\ThumbnailSet;
 use Microsoft\Graph\Generated\Sites\Item\Lists\Item\Items\Item\DriveItem\DriveItemRequestBuilderGetRequestConfiguration;
 use Microsoft\Graph\Generated\Sites\Item\Lists\Item\Items\Item\Fields\FieldsRequestBuilderPatchRequestConfiguration;
 use Microsoft\Graph\GraphServiceClient;
@@ -123,7 +122,7 @@ class SharepointGraphService
 
     public function getDriveItemByListItem(string $siteId, string $listId, string $listItemId): Models\DriveItem
     {
-        $requestConfiguration = new DriveItemRequestBuilderGetRequestConfiguration();
+        $requestConfiguration = new DriveItemRequestBuilderGetRequestConfiguration;
         $queryParameters = DriveItemRequestBuilderGetRequestConfiguration::createQueryParameters();
 
         $queryParameters->expand = ['thumbnails'];
@@ -153,7 +152,6 @@ class SharepointGraphService
     public function getListItem(string $siteId, string $listId, $listItemId): Models\FieldValueSet
     {
         $listItem = $this->graph->sites()->bySiteId($siteId)->lists()->byListId($listId)->items()->byListItemId($listItemId)->fields()->get()->wait();
-
 
         return $listItem;
     }
@@ -234,7 +232,7 @@ class SharepointGraphService
         return $permission ?? null;
     }
 
-    public function createPublicPermission(string $siteId = null, string $driveItemId, Carbon | false $datetime = null): Models\Permission
+    public function createPublicPermission(?string $siteId, string $driveItemId, Carbon|false|null $datetime = null): Models\Permission
     {
         $siteId = $siteId ?? $this->siteId;
         $datetime = $datetime ?? Carbon::now()->addYear(1)->subUTCMonth();
