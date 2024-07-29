@@ -65,9 +65,9 @@ class Document extends Model
         $driveItem = $graph->getDriveItemByListItem($this->sharepoint_site_id, $this->sharepoint_list_id, $this->sharepoint_id);
 
         // Add thumbnails
-        collect($driveItem->getThumbnails())->each(function ($thumbnailSet) {
-            $this->thumbnail_url = $thumbnailSet->getLarge()->getUrl();
-        });
+        /*collect($driveItem->getThumbnails())->each(function ($thumbnailSet) {*/
+        /*    $this->thumbnail_url = $thumbnailSet->getLarge()->getUrl();*/
+        /*});*/
 
         $anonymous_permission = $graph->getDriveItemPublicLink($driveItem->getId());
 

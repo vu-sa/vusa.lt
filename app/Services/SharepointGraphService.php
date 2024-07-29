@@ -337,7 +337,7 @@ class SharepointGraphService
                 $requestConfiguration = new DriveItemRequestBuilderGetRequestConfiguration;
                 $queryParameters = DriveItemRequestBuilderGetRequestConfiguration::createQueryParameters();
 
-                $queryParameters->expand = ['listItem', 'thumbnails', 'permissions'];
+                $queryParameters->expand = ['listItem', 'permissions'];
 
                 $requestConfiguration->queryParameters = $queryParameters;
 
@@ -425,7 +425,7 @@ class SharepointGraphService
             $document->content_type = isset($driveItem['listItem']['fields']['Turinys']['Label']) ? $driveItem['listItem']['fields']['Turinys']['Label'] : null;
 
             $document->summary = $driveItem['listItem']['fields']['Summary'] ?? null;
-            $document->thumbnail_url = $driveItem['thumbnails'][0]['large']['url'];
+            /*$document->thumbnail_url = $driveItem['thumbnails'][0]['large']['url'];*/
             $document->anonymous_url = collect($driveItem['permissions'])->filter(function ($permission) {
 
                 $isAnonymous = isset($permission['link']['scope']) ? $permission['link']['scope'] === 'anonymous' : false;
@@ -433,6 +433,8 @@ class SharepointGraphService
 
                 return $isAnonymous && ! $hasPassword;
             })->first()['link']['webUrl'];
+
+            $document->checked_at = Carbon::now();
 
             $document->save();
         });
