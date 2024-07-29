@@ -45,20 +45,9 @@ class AppServiceProvider extends ServiceProvider
         // HACK: Add inertia attribute to all SEO tags, so SPA can handle it
         SEOManager::tagTransformer(function (TagCollection $tags): TagCollection {
 
-            function addInertiaAttribute($tag)
-            {
-                if (is_subclass_of($tag, Tag::class)) {
-                    $tag->attributes['inertia'] = '';
-                } elseif ($tag instanceof Collection) {
-                    foreach ($tag as $item) {
-                        addInertiaAttribute($item);
-                    }
-                }
-            }
-
             // Apply the helper function to each tag in the collection
             $tags = $tags->map(function ($tag) {
-                addInertiaAttribute($tag);
+                $this->addInertiaAttribute($tag);
 
                 return $tag;
             });
@@ -66,4 +55,15 @@ class AppServiceProvider extends ServiceProvider
             return $tags;
         });
     }
+
+    private function addInertiaAttribute($tag)
+        {
+            if (is_subclass_of($tag, Tag::class)) {
+                $tag->attributes['inertia'] = '';
+            } elseif ($tag instanceof Collection) {
+                foreach ($tag as $item) {
+                    $this->addInertiaAttribute($item);
+                }
+            }
+        }
 }
