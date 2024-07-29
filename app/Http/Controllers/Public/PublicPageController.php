@@ -87,7 +87,7 @@ class PublicPageController extends PublicController
             return $event->date;
         }, SORT_DESC)->take(8)->values()->load('tenant:id,alias,fullname,shortname');
 
-        $seo = $this->shareAndReturnSEOObject(title: __('Pagrindinis puslapis').' - VU SA');
+        $seo = $this->shareAndReturnSEOObject(title: __('Pagrindinis puslapis').' - '.$this->tenant->shortname);
 
         return Inertia::render('Public/HomePage', [
             'news' => $news->map(function ($news) {
