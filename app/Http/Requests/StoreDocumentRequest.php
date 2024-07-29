@@ -26,7 +26,7 @@ class StoreDocumentRequest extends ResourceRequest
             'documents.*.name' => 'required|string',
             'documents.*.site_id' => 'required|string',
             'documents.*.list_id' => 'required|string',
-            'documents.*.list_item_unique_id' => 'required|string|unique:documents,sharepoint_id',
+            'documents.*.list_item_unique_id' => 'required|string',
         ];
     }
 }

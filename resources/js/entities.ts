@@ -100,9 +100,14 @@ export default [
     key: "comments",
   },
   {
-    title: "Dokumentai",
+    title: "Sharepoint atstovų dokumentai",
     icon: Icons.SHAREPOINT_FILE,
     key: pluralizeModels(ModelEnum.SHAREPOINT_FILE),
+  },
+  {
+    title: "Archyvo Sharepoint dokumentai",
+    icon: Icons.DOCUMENT,
+    key: pluralizeModels(ModelEnum.DOCUMENT),
   },
   {
     title: "Užduotys",

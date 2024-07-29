@@ -330,6 +330,10 @@ class SharepointGraphService
      */
     public function batchProcessDocuments(EloquentCollection $documentColection)
     {
+        // filter by documents that don't exist
+        $documentColection = $documentColection->filter(function (Document $document) {
+            return Document::query()->where('sharepoint_id', $document->sharepoint_id)->doesntExist();
+        });
 
         // First, get the drive item and associated data
         $batch = new BatchRequestContent(
