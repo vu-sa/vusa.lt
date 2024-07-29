@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Document;
+use App\Models\Institution;
 use App\Models\SharepointFile;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\UploadedFile;
@@ -401,15 +402,21 @@ class SharepointGraphService
                 $additionalData['list_item_unique_id'] = $request->getId();
 
                 return $additionalData;
-            })->keyBy(fn ($value) => $value['list_item_unique_id'])->each(function ($permission) use ($driveItemCollections) {
-                $driveItem = $driveItemCollections->get($permission['list_item_unique_id']);
-
-                // add to permissions array
-                $driveItem['permissions'][] = $permission;
-            });
+            })->keyBy(fn ($value) => $value['list_item_unique_id']);
         } else {
             $permissionCollection = collect([]);
         }
+
+        $driveItemCollections->each(function ($driveItem, string $key) use ($permissionCollection, $driveItemCollections) {
+            // get permission where collection key matches with driveitem collection key
+            $permission = $permissionCollection->get($key);
+
+            // add permission to drive item
+            $driveItem['permissions'][] = $permission;
+
+            // update drive item collection
+            $driveItemCollections->put($key, $driveItem);
+        });
 
         // Update documents
         $documentColection->each(function (Document $document) use ($driveItemCollections) {
@@ -426,6 +433,7 @@ class SharepointGraphService
 
             $document->summary = $driveItem['listItem']['fields']['Summary'] ?? null;
             /*$document->thumbnail_url = $driveItem['thumbnails'][0]['large']['url'];*/
+
             $document->anonymous_url = collect($driveItem['permissions'])->filter(function ($permission) {
 
                 $isAnonymous = isset($permission['link']['scope']) ? $permission['link']['scope'] === 'anonymous' : false;
@@ -435,6 +443,12 @@ class SharepointGraphService
             })->first()['link']['webUrl'];
 
             $document->checked_at = Carbon::now();
+
+            $institutionField = 'Padalinys'; // Entity
+
+            if (isset($driveItem['listItem']['fields'][$institutionField]['Label'])) {
+                $document->institution()->associate(Institution::query()->where('name->lt', $driveItem['listItem']['fields'][$institutionField]['Label'])->orWhere('short_name->lt', $driveItem['listItem']['fields'][$institutionField]['Label'])->first());
+            }
 
             $document->save();
         });

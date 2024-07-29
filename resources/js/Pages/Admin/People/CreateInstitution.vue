@@ -22,7 +22,7 @@ const institution = {
   short_name: { lt: "", en: "" },
   description: { lt: "", en: "" },
   address: { lt: "", en: "" },
-  website: { lt: "", en: "" },
+  website: "",
   alias: "",
   image_url: null,
   logo_url: null,

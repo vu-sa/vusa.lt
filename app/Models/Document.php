@@ -43,6 +43,10 @@ class Document extends Model
         $additionalData = $graph->getListItem($this->sharepoint_site_id, $this->sharepoint_list_id, $this->sharepoint_id)->getAdditionalData();
 
         if ($this->eTag === $additionalData['@odata.etag']) {
+
+            $this->checked_at = Carbon::now();
+            $this->save();
+
             return null;
         }
 
@@ -81,6 +85,8 @@ class Document extends Model
             $this->anonymous_url = $anonymous_permission->getLink()->getWebUrl();
             $this->anonymous_url_expiration_date = Carbon::parse($anonymous_permission->getExpirationDateTime());
         }
+
+        $this->checked_at = Carbon::now();
 
         $this->save();
 

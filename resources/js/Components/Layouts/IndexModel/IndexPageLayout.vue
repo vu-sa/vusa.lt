@@ -14,7 +14,7 @@
     </SuggestionAlert>
     <slot />
     <NCard class="w-full min-w-[768px]">
-      <IndexDataTable :paginated-models="paginatedModels" :columns="columns" :model-name="modelName"
+      <IndexDataTable v-bind="$attrs" :paginated-models="paginatedModels" :columns="columns" :model-name="modelName"
         :show-route="canUseRoutes.show ? `${modelName}.show` : undefined"
         :edit-route="canUseRoutes.edit ? `${modelName}.edit` : undefined" :destroy-route="canUseRoutes.destroy ? `${modelName}.destroy` : undefined
           " />

@@ -1,5 +1,5 @@
 <template>
-  <IndexPageLayout :title="capitalize($tChoice('entities.document.model', 2))" model-name="documents"
+  <IndexPageLayout :title="capitalize($tChoice('entities.document.model', 2))" model-name="documents" :scroll-x="1600"
     :icon="Icons.DOCUMENT" :can-use-routes :columns :paginated-models="documents">
     <template #create-button>
       <FilePicker :loading round size="tiny" :theme-overrides="{ border: '1.2px solid' }" @pick="handleDocumentPick">
@@ -27,6 +27,7 @@ import { Item } from "@/Features/Admin/SharepointFilePicker/picker";
 import { capitalize } from "@/Utils/String";
 import ArrowCounterclockwise28Regular from "~icons/fluent/arrow-counterclockwise28-regular";
 import FilePicker from "@/Features/Admin/SharepointFilePicker/FilePicker.vue";
+import IFluentOpen24Filled from "~icons/fluent/open16-filled";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 import SmartLink from "@/Components/Public/SmartLink.vue";
@@ -59,26 +60,34 @@ provide("sorters", sorters);
 
 // add columns
 const columns = computed<DataTableColumns<App.Entities.Document>>(() => [
-  {
-    key: "thumbnail_url",
-    render(row) {
-      return (
-        <img src={row.thumbnail_url} class="size-12 rounded-md border object-cover" />
-      );
-    },
-    align: "center",
-    width: 66,
-  },
+  //{
+  //  key: "thumbnail_url",
+  //  render(row) {
+  //    return (
+  //      <img src={row.thumbnail_url} class="size-12 rounded-md border object-cover" />
+  //    );
+  //  },
+  //  align: "center",
+  //  width: 66,
+  //},
   {
     title() {
       return $t("forms.fields.title");
     },
     key: "title",
     sorter: true,
+    fixed: "left",
     sortOrder: sorters.value.title,
     width: 400,
     ellipsis: {
       tooltip: true,
+    },
+    render(row) {
+      return (
+        <SmartLink href={row.anonymous_url}>
+          <div class="inline-flex items-center gap-1">{row.title} <IFluentOpen24Filled /></div>
+        </SmartLink>
+      );
     },
   },
   {
@@ -89,7 +98,7 @@ const columns = computed<DataTableColumns<App.Entities.Document>>(() => [
     render(row) {
       return (
         <div class="flex justify-center">
-          <NButton secondary onClick={() => handleDocumentRefresh(row)}>
+          <NButton size="small" secondary onClick={() => handleDocumentRefresh(row)}>
             {{
               icon: () => (
                 <NIcon component={ArrowCounterclockwise28Regular} />
@@ -113,16 +122,28 @@ const columns = computed<DataTableColumns<App.Entities.Document>>(() => [
     key: "language",
   },
   {
-    key: "anonymous_url",
+    title: "Institution",
+    key: "institution.short_name",
+  },
+  {
+    title: "Atnaujinimo data",
+    key: "checked_at",
     render(row) {
       return (
-        <SmartLink href={row.anonymous_url}>
-          <NButton size="tiny">
-            Open
+        <div class="flex justify-center">
+          <NButton size="tiny" secondary onClick={() => handleDocumentRefresh(row)}>
+            {{
+              icon: () => (
+                <NIcon component={ArrowCounterclockwise28Regular} />
+              ),
+              default: () => (
+                row.checked_at
+              )
+            }}
           </NButton>
-        </SmartLink >
-      );
-    },
+        </div>
+      )
+    }
   }
 ]);
 

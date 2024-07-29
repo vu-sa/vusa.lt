@@ -39,7 +39,7 @@ const options: FilePickerOptions = {
     access: {
       mode: "read",
     },
-    filters: ['.pdf', '.xlsx', '.docx', '.pptx', '.jpg', '.jpeg', '.png'],
+    //filters: ['.pdf', '.xlsx', '.docx', '.pptx', '.jpg', '.jpeg', '.png'],
     pivots: {
       oneDrive: false,
       shared: false,

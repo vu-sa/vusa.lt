@@ -22,7 +22,6 @@
         </div>
       </template>
     </NPopover>
-    <FilePicker />
     <section v-if="shownSections.includes('Greitieji veiksmai')" class="mb-8">
       <h2 class="mb-4 flex items-center gap-2">
         <IFluentLightbulbFilament24Filled class="text-vusa-yellow" />
@@ -161,7 +160,6 @@ import QActFocusGroupButton from "@/Components/Buttons/QActFocusGroupButton.vue"
 import QActSurveyButton from "@/Components/Buttons/QActSurveyButton.vue";
 import QuickActionButton from "@/Components/Buttons/QuickActionButton.vue";
 import ReservationCard from "@/Components/Cards/ReservationCard.vue";
-import FilePicker from "@/Features/Admin/SharepointFilePicker/FilePicker.vue";
 
 defineProps<{
   currentUser: App.Entities.User;

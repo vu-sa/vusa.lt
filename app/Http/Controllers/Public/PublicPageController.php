@@ -382,22 +382,25 @@ class PublicPageController extends PublicController
             description: 'VU SA dokumentai'
         );
 
-        $documents = Document::search(request()->title)->query(function (Builder $query) {
-            $query->with('institution')->when(request()->has('tenants'), function (Builder $query) {
-                $query->whereHas('tenant', fn ($query) => $query->whereIn('tenants.shortname', request()->tenants));
-            })->when(request()->has('content_type'), function (Builder $query) {
-                $query->whereIn('content_type', request()->content_type);
-            })->when(request()->has('language'), function (Builder $query) {
-                $query->where('language', request()->language);
-            })->when(request()->has('dateRange') && request('dateRange'), function (Builder $query) {
-                $query->whereBetween('document_date', [Carbon::createFromTimestamp(request()->dateRange[0] / 1000), Carbon::createFromTimestamp(request()->dateRange[1] / 1000)]);
-            });
+        if (request()->all() === []) {
+            $documents = Document::query()->with('institution');
+        } else {
 
-            $query->where('is_active', true)->orderBy('document_date', 'desc');
-        });
+            $documents = Document::search(request()->title)->query(function (Builder $query) {
+                $query->with('institution.tenant')->when(request()->has('tenants'), function (Builder $query) {
+                    $query->whereHas('institution.tenant', fn ($query) => $query->whereIn('tenants.shortname', request()->tenants));
+                })->when(request()->has('contentTypes'), function (Builder $query) {
+                    $query->whereIn('content_type', request()->contentTypes);
+                })->when(request()->has('language'), function (Builder $query) {
+                    $query->where('language', request()->language);
+                })->when(request()->has('dateRange') && request('dateRange'), function (Builder $query) {
+                    $query->whereBetween('document_date', [Carbon::createFromTimestamp(request()->dateRange[0] / 1000), Carbon::createFromTimestamp(request()->dateRange[1] / 1000)])->orderBy('document_date', 'desc');
+                });
+            });
+        }
 
         return Inertia::render('Public/ShowDocuments', [
-            'documents' => $documents->get(),
+            'documents' => $documents->where('is_active', true)->get(),
             // Filter null values from content_type
             'allContentTypes' => Document::query()->select('content_type')->whereNotNull('content_type')->distinct()->get()->pluck('content_type')->sort(),
         ])->withViewData([
