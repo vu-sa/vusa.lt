@@ -38,7 +38,7 @@ jobs:
         run: |
           npm ci
           # TODO: Possible to maybe use this: https://import-meta-env.org/guide/getting-started/introduction.html#guide
-          VITE_POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }} VITE_ARCHYVAS_PASSWORD=${{ secrets.ARCHYVAS_PASSWORD }} VITE_ATSTOVAI_PASSWORD=${{ secrets.ATSTOVAI_PASSWORD }} npm run build 
+          VITE_POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }} VITE_ARCHYVAS_PASSWORD=${{ secrets.ARCHYVAS_PASSWORD }} VITE_ATSTOVAI_PASSWORD=${{ secrets.ATSTOVAI_PASSWORD }} VITE_SHAREPOINT_CLIENT_ID=${{ secrets.SHAREPOINT_CLIENT_ID }} VITE_SHAREPOINT_TENANT_ID=${{ secrets.SHAREPOINT_TENANT_ID }} npm run build 
           tar -czf build.tar.gz public/build
       - name: build docs
         run: |

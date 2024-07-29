@@ -46,6 +46,7 @@ const modelIcons: Record<keyof typeof ModelEnum, Component> = {
   CHANGELOG_ITEM: DocumentBulletList24Regular,
   COMMENT: Comment24Regular,
   CONTACT: BookContacts28Regular,
+  DOCUMENT: DocumentMultiple24Regular,
   DOING: Important24Regular,
   DUTIABLE: PersonClock24Regular,
   DUTY: PuzzlePiece24Regular,

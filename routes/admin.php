@@ -77,6 +77,9 @@ Route::post('files/createDirectory', [FilesController::class, 'createDirectory']
 Route::delete('files/delete', [FilesController::class, 'delete'])->name('files.delete');
 Route::resource('files', FilesController::class);
 
+Route::resource('documents', DocumentController::class)->except('create', 'edit');
+Route::post('documents/{document}/refresh', [DocumentController::class, 'refresh'])->name('documents.refresh');
+
 Route::put('duties/setAsStudentRepresentatives', [DutyController::class, 'setAsStudentRepresentatives'])->name('duties.setAsStudentRepresentatives');
 Route::resource('duties', DutyController::class);
 Route::resource('dutiables', DutiableController::class);

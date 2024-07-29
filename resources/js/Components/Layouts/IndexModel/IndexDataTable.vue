@@ -2,8 +2,8 @@
   <IndexSearchInput payload-name="text" :has-soft-deletes="hasSoftDeletes" @complete-search="handleCompletedSearch"
     @update:other="handleShowOther" @sweep="sweepSearch" />
   <NDataTable remote size="small" :data="paginatedModels.data" :columns="columnsWithActions" :loading="loading"
-    :pagination="pagination" :row-key="rowKey" pagination-behavior-on-filter="first" @update:sorter="handleSorterChange"
-    @update:page="handleChange" @update:filters="handleFiltersChange"
+    :pagination="pagination" :row-key="rowKey" pagination-behavior-on-filter="first" v-bind="$attrs"
+    @update:sorter="handleSorterChange" @update:page="handleChange" @update:filters="handleFiltersChange"
     @update-checked-row-keys="handleCheckedRowKeysChange" />
 </template>
 
@@ -188,6 +188,7 @@ const columnsWithActions = computed(() => {
           ? $t("Veiksmai")
           : null,
       key: "actions",
+      fixed: "right",
       width: 175,
       render(row) {
         return [undefined, null].includes(row.deleted_at) ? (

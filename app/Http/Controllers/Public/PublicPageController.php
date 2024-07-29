@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\PublicController;
 use App\Models\Calendar;
 use App\Models\Category;
+use App\Models\Document;
 use App\Models\Navigation;
 use App\Models\News;
 use App\Models\Page;
@@ -257,7 +258,7 @@ class PublicPageController extends PublicController
         $seo = $this->shareAndReturnSEOObject(
             title: $year == intval(date('Y')) ? 'Pirmakursių stovyklos - VU SA' : $year.' m. pirmakursių stovyklos - VU SA',
             description: 'Universiteto tvarka niekada su ja nesusidūrusiam žmogui gali pasirodyti labai sudėtinga ir būtent dėl to jau prieš septyniolika metų Vilniaus universiteto Studentų atstovybė (VU SA) surengė pirmąją pirmakursių stovyklą.',
-            image: config('app.url') . '/images/photos/stovykla.jpg',
+            image: config('app.url').'/images/photos/stovykla.jpg',
         );
 
         return Inertia::render('Public/SummerCamps',
@@ -365,6 +366,43 @@ class PublicPageController extends PublicController
 
         return Inertia::render('Public/MemberRegistration', [
             'tenantOptions' => $tenants,
+        ])->withViewData([
+            'SEOData' => $seo,
+        ]);
+    }
+
+    public function documents()
+    {
+        $this->getBanners();
+        $this->getTenantLinks();
+        $this->shareOtherLangURL('documents');
+
+        $seo = $this->shareAndReturnSEOObject(
+            title: __('Dokumentai').' - VU SA',
+            description: 'VU SA dokumentai'
+        );
+
+        if (request()->all() === []) {
+            $documents = Document::query()->with('institution');
+        } else {
+
+            $documents = Document::search(request()->title)->query(function (Builder $query) {
+                $query->with('institution.tenant')->when(request()->has('tenants'), function (Builder $query) {
+                    $query->whereHas('institution.tenant', fn ($query) => $query->whereIn('tenants.shortname', request()->tenants));
+                })->when(request()->has('contentTypes'), function (Builder $query) {
+                    $query->whereIn('content_type', request()->contentTypes);
+                })->when(request()->has('language'), function (Builder $query) {
+                    $query->where('language', request()->language);
+                })->when(request()->has('dateRange') && request('dateRange'), function (Builder $query) {
+                    $query->whereBetween('document_date', [Carbon::createFromTimestamp(request()->dateRange[0] / 1000), Carbon::createFromTimestamp(request()->dateRange[1] / 1000)])->orderBy('document_date', 'desc');
+                });
+            });
+        }
+
+        return Inertia::render('Public/ShowDocuments', [
+            'documents' => $documents->where('is_active', true)->get(),
+            // Filter null values from content_type
+            'allContentTypes' => Document::query()->select('content_type')->whereNotNull('content_type')->distinct()->get()->pluck('content_type')->sort(),
         ])->withViewData([
             'SEOData' => $seo,
         ]);

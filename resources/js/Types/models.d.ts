@@ -123,6 +123,30 @@ declare global {
       content: Content
     }
 
+    export interface Document {
+      // columns
+      id: number
+      name: string
+      title: string
+      sharepoint_id?: string
+      e_tag?: string|null
+      document_date: string|null
+      institution_id: string|null
+      content_type: string|null
+      language: string|null
+      summary: string|null
+      anonymous_url: string|null
+      anonymous_url_expiration_date: string|null
+      thumbnail_url: string|null
+      is_active: boolean
+      sharepoint_site_id?: string
+      sharepoint_list_id?: string
+      created_at?: string
+      updated_at?: string
+      // relations
+      institution: Institution
+    }
+
     export interface Doing {
       // columns
       id: string
@@ -216,7 +240,7 @@ declare global {
       id: string
       name: string[]|null
       short_name: string[]|null
-      alias: string[]|null
+      alias: string
       description: string[]|null
       address: string[]|null
       phone: string|null
@@ -237,6 +261,7 @@ declare global {
       duties: Duty[]
       types: Type[]
       tenant: Tenant
+      documents: Document[]
       matters: Matter[]
       meetings: Meeting[]
       commentable: Institution
@@ -681,14 +706,15 @@ declare global {
       // columns
       id: number
       parent_id: number|null
-      title: string|null
+      title: string[]|null
+      description: string[]|null
       model_type: string|null
-      description: string|null
       slug: string|null
-      extra_attributes: string|null
       created_at: string
       updated_at: string
       deleted_at: string|null
+      // mutators
+      translations: unknown
       // relations
       institutions: Institution[]
       duties: Duty[]

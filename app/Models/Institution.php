@@ -56,6 +56,11 @@ class Institution extends Model
         return $this->tenant();
     }
 
+    public function documents()
+    {
+        return $this->hasMany(Document::class);
+    }
+
     public function matters()
     {
         return $this->belongsToMany(Matter::class, 'institutions_matters', 'institution_id', 'matter_id');

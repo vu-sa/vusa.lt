@@ -15,11 +15,19 @@
               Pavadinimas
             </span>
           </template>
-          <NInput v-model:value="form.title" type="text" placeholder="Turinio tipas" />
+          <MultiLocaleInput v-model:input="form.title"
+            :placeholder="{ lt: 'Studentų atstovų organas', en: 'Student representative body' }" />
         </NFormItem>
 
-        <NFormItem label="Aprašymas" :span="6">
-          <OriginalTipTap v-model="form.description" html placeholder="Ilgas aprašymas..." />
+        <NFormItem>
+          <template #label>
+            <div class="inline-flex items-center gap-2">
+              Aprašymas
+              <SimpleLocaleButton v-model:locale="locale" />
+            </div>
+          </template>
+          <TipTap v-if="locale === 'lt'" v-model="form.description.lt" html />
+          <TipTap v-else v-model="form.description.en" html />
         </NFormItem>
       </FormElement>
       <FormElement>
@@ -105,7 +113,9 @@ import FileManager from "@/Features/Admin/SharepointFileManager/Viewer/FileManag
 import FormElement from "./FormElement.vue";
 import Icons from "@/Types/Icons/filled";
 import InfoPopover from "../Buttons/InfoPopover.vue";
-import OriginalTipTap from "../TipTap/OriginalTipTap.vue";
+import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
+import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
+import TipTap from "../TipTap/OriginalTipTap.vue";
 
 const emit = defineEmits<{
   (event: "submit:form", form: any): void;
@@ -119,6 +129,8 @@ const props = defineProps<{
   allModelsFromModelType?: Record<string, any>[];
   roles?: App.Entities.Role[];
 }>();
+
+const locale = ref("lt");
 
 const loading = ref(false);
 

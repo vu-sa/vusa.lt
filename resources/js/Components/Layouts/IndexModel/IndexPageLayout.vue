@@ -1,18 +1,20 @@
 <template>
   <PageContent :title="title" :heading-icon="icon"
     :create-url="canUseRoutes.create ? route(`${modelName}.create`) : undefined">
+    <template #create-button>
+      <slot name="create-button" />
+    </template>
     <template #aside-header>
       <slot name="aside-header" />
     </template>
     <SuggestionAlert v-if="entity" :show-alert="showAlert" @alert-closed="showAlert = false">
       <div class="text-sm">
-        <component :is="entity?.description" v-if="entity.description" />
         <MdSuspenseWrapper :directory="modelName" :locale="$page.props.app.locale" file="description" />
       </div>
     </SuggestionAlert>
     <slot />
     <NCard class="w-full min-w-[768px]">
-      <IndexDataTable :paginated-models="paginatedModels" :columns="columns" :model-name="modelName"
+      <IndexDataTable v-bind="$attrs" :paginated-models="paginatedModels" :columns="columns" :model-name="modelName"
         :show-route="canUseRoutes.show ? `${modelName}.show` : undefined"
         :edit-route="canUseRoutes.edit ? `${modelName}.edit` : undefined" :destroy-route="canUseRoutes.destroy ? `${modelName}.destroy` : undefined
           " />
@@ -29,7 +31,7 @@ import IndexDataTable from "@/Components/Layouts/IndexModel/IndexDataTable.vue";
 import MdSuspenseWrapper from "@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import SuggestionAlert from "@/Components/Alerts/SuggestionAlert.vue";
-import entities from "@/Types/EntityDescriptions/entities";
+import entities from "@/entities";
 
 const props = defineProps<{
   paginatedModels: PaginatedModels<Record<string, any>>;

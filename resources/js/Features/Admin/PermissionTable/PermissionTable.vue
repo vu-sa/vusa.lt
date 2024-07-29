@@ -3,40 +3,24 @@
     <template #description>
       <p>Netikėta klaida. Praneškite administratoriui.</p>
     </template>
-    <div
-      class="rounded-sm border border-zinc-200 p-4 shadow-sm dark:border-zinc-700"
-    >
-      <table class="w-full table-auto">
-        <thead>
-          <tr>
-            <th></th>
-            <!-- TODO: Paaiškinti detaliau, kas tas "padalinyje" -->
-            <th>Padalinyje</th>
-            <th>{{ modelType }}</th>
-          </tr>
-        </thead>
-        <tbody class="border-t-8 border-transparent">
-          <PermissionTableRow
-            v-for="ability in abilities"
-            :key="ability"
-            :disabled="formDisabled"
-            :default-value="formTemplate[ability]"
-            :permissions="permissions"
-            :icon="icon"
-            :ability="ability"
-            @update="permissionForm[ability] = $event"
-          ></PermissionTableRow>
-        </tbody>
-      </table>
-      <div class="mt-4 flex justify-end">
-        <NButton
-          :disabled="formDisabled || !permissionForm.isDirty"
-          :loading="loading"
-          type="primary"
-          @click="updatePermissionsForRole"
-          >Atnaujinti</NButton
-        >
-      </div>
+    <table class="w-full table-auto">
+      <thead>
+        <tr>
+          <th />
+          <!-- TODO: Paaiškinti detaliau, kas tas "padalinyje" -->
+          <th>Padalinyje</th>
+          <th>{{ modelType }}</th>
+        </tr>
+      </thead>
+      <tbody class="border-t-8 border-transparent">
+        <PermissionTableRow v-for="ability in abilities" :key="ability" :disabled="formDisabled"
+          :default-value="formTemplate[ability]" :permissions="permissions" :icon="icon" :ability="ability"
+          @update="permissionForm[ability] = $event" />
+      </tbody>
+    </table>
+    <div class="mt-4 flex justify-end">
+      <NButton :disabled="formDisabled || !permissionForm.isDirty" :loading="loading" type="primary"
+        @click="updatePermissionsForRole">Atnaujinti</NButton>
     </div>
   </NSpin>
 </template>
@@ -125,11 +109,11 @@ td {
   padding: 0.5rem;
 }
 
-tbody > tr {
+tbody>tr {
   border-bottom: 1px solid #e5e7eb;
 }
 
-tbody > tr:last-child {
+tbody>tr:last-child {
   border-bottom: 0;
 }
 
@@ -137,7 +121,7 @@ th {
   text-align: left;
 }
 
-tr > td.permission-description {
+tr>td.permission-description {
   display: flex;
   align-items: center;
   gap: 0.5rem;

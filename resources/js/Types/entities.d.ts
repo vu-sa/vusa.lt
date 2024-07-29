@@ -9,6 +9,8 @@ declare namespace App.Entities {
     comments: Array<models.Comment>;
   }
 
+  export type Document = Omit<models.Document, "sharepoint_id" | "eTag" | "public_url_created_at" | "sharepoint_site_id" | "sharepoint_list_id" | "created_at" | "updated_at">
+
   export interface Doing extends Omit<models.Doing, "state"> {
     state:
       | "draft"

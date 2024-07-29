@@ -53,6 +53,7 @@
         "pestphp/pest": "^2.34",
         "pestphp/pest-plugin-drift": "^2.6",
         "pestphp/pest-plugin-laravel": "^2.4",
+        "phpmd/phpmd": "^2.15",
         "phpstan/phpstan": "^1.10",
         "spatie/laravel-ignition": "^2.0",
         "spatie/laravel-typescript-transformer": "^2.1"

@@ -50,7 +50,10 @@ class TypeController extends LaravelResourceController
         $this->authorize('create', [Type::class, $this->authorizer]);
 
         $request->validate([
-            'title' => 'required',
+            'title.lt' => 'required|string',
+            'title.en' => 'nullable|string',
+            'description.lt' => 'nullable|string',
+            'description.en' => 'nullable|string',
             'model_type' => 'string|required',
             'parent_id' => 'nullable|exists:types,id|different:id',
             'roles' => 'nullable|array',
@@ -96,7 +99,7 @@ class TypeController extends LaravelResourceController
 
         return Inertia::render('Admin/ModelMeta/EditType', [
             'contentType' => [
-                ...$type->load($modelType)->toArray(),
+                ...$type->load($modelType)->toFullArray(),
                 'roles' => $type->roles->pluck('id')->toArray(),
             ],
             'contentTypes' => Type::select('id', 'title', 'model_type')->get(),
@@ -117,7 +120,10 @@ class TypeController extends LaravelResourceController
         $this->authorize('update', [Type::class, $type, $this->authorizer]);
 
         $request->validate([
-            'title' => 'required',
+            'title.lt' => 'required|string',
+            'title.en' => 'nullable|string',
+            'description.lt' => 'nullable|string',
+            'description.en' => 'nullable|string',
             'model_type' => 'required',
             'parent_id' => 'nullable|exists:types,id|different:id',
         ]);

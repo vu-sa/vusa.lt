@@ -90,7 +90,7 @@ const seo = computed(() => {
   let computedSeo = usePage().props.seo.tags;
 
   if (computedSeo['RalphJSmit\\Laravel\\SEO\\Support\\MetaTag']['attributes']['name'] === 'image') computedSeo['RalphJSmit\\Laravel\\SEO\\Support\\MetaTag']['attributes']['content'] = usePage().props.seo.image
-  
+
   // if computedSeo key is OpenGraph, then add og: prefix to the key
   if (computedSeo['RalphJSmit\\Laravel\\SEO\\Tags\\OpenGraphTags']) {
     // foreach property, prefix og:

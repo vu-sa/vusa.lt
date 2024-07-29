@@ -93,10 +93,10 @@ class PublicController extends Controller
 
         if (substr($seoData->image, 0, 4) == 'http') {
             $image = $seoData->image;
-        } else if (isset($seoData->image)) {
+        } elseif (isset($seoData->image)) {
             $image = Storage::get(str_replace('uploads', 'public', $seoData->image)) === null ? config('seo.image.fallback') : $seoData->image;
         } else {
-            $image = config('app.url') . config('seo.image.fallback');
+            $image = config('app.url').config('seo.image.fallback');
         }
 
         // HACK: Share image separately, because it's hard to consume directly

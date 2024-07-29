@@ -29,6 +29,7 @@ export enum ModelEnum {
   "CHANGELOG_ITEM" = "changelogItem",
   "COMMENT" = "comment",
   "CONTACT" = "contact",
+  "DOCUMENT" = "document",
   "DOING" = "doing",
   "DUTIABLE" = "dutiable",
   "DUTY" = "duty",
