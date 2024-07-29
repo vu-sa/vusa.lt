@@ -1,18 +1,22 @@
 <template>
-  <h1 class="pt-8 text-gray-900 dark:text-zinc-50">
+  <h1 class="pt-8 text-gray-900 dark:text-zinc-50 text-2xl md:text-2xl">
     Dokumentai
   </h1>
-  <div class="mt-8 flex max-w-4xl flex-col items-center justify-center">
+  <div class="mt-4 flex max-w-4xl flex-col items-center justify-center">
     <div class="flex w-full flex-row flex-wrap items-center gap-8">
       <NForm>
-        <div class="grid grid-cols-2 gap-x-8 lg:grid-cols-[4fr_3fr_1fr]">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 lg:grid-cols-3">
           <NFormItem label="Pavadinimas" :show-feedback="false">
             <NInput v-model:value="form.title" clearable size="large" round type="text"
               placeholder="Ieškoti pagal pavadinimą..." />
           </NFormItem>
-          <NFormItem label="Dokumento data" :show-feedback="false">
-            <NDatePicker v-model:value="form.dateRange" size="large" type="daterange" clearable />
+          <NFormItem label="Nuo..." :show-feedback="false">
+            <NDatePicker v-model:value="form.dateRange[0]" size="large" clearable placeholder="2023-05-01" />
           </NFormItem>
+          <NFormItem label="Iki..." :show-feedback="false">
+            <NDatePicker v-model:value="form.dateRange[1]" size="large" clearable placeholder="2024-05-01" />
+          </NFormItem>
+        </div>
           <NFormItem :show-feedback="false">
             <NButton type="primary" round size="large" :loading="searchLoading" @click="handleSearch">
               <template #icon>
@@ -21,7 +25,6 @@
               Ieškoti
             </NButton>
           </NFormItem>
-        </div>
 
         <Collapsible v-model:open="openAdditionalOptions" class="mt-4">
           <CollapsibleTrigger>
@@ -34,13 +37,13 @@
             </NButton>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <div class="mt-4 grid w-full grid-cols-3 items-center gap-4">
+            <div class="mt-4 grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 items-center gap-4">
               <NFormItem class="grow" label="Padalinys" :show-feedback="false">
-                <NSelect v-model:value="form.tenants" clearable size="small" multiple :options="tenantOptions"
+                <NSelect v-model:value="form.tenants" clearable size="small" multiple :options="tenantOptions" placeholder="VU SA"
                   max-tag-count="responsive" />
               </NFormItem>
               <NFormItem class="grow" label="Turinio tipas" :show-feedback="false">
-                <NSelect v-model:value="form.contentTypes" clearable size="small" :options="contentTypeOptions"
+                <NSelect v-model:value="form.contentTypes" clearable size="small" :options="contentTypeOptions" placeholder="Ataskaitos"
                   multiple />
               </NFormItem>
               <NFormItem label="Kalba" :show-feedback="false">
@@ -170,7 +173,7 @@ const props = defineProps<{
 
 const form = useForm('DocumentsSearch', {
   title: undefined,
-  dateRange: undefined,
+  dateRange: [undefined, undefined],
   tenants: undefined,
   contentTypes: undefined,
   language: undefined,
