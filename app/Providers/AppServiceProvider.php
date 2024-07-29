@@ -57,13 +57,13 @@ class AppServiceProvider extends ServiceProvider
     }
 
     private function addInertiaAttribute($tag)
-        {
-            if (is_subclass_of($tag, Tag::class)) {
-                $tag->attributes['inertia'] = '';
-            } elseif ($tag instanceof Collection) {
-                foreach ($tag as $item) {
-                    $this->addInertiaAttribute($item);
-                }
+    {
+        if (is_subclass_of($tag, Tag::class)) {
+            $tag->attributes['inertia'] = '';
+        } elseif ($tag instanceof Collection) {
+            foreach ($tag as $item) {
+                $this->addInertiaAttribute($item);
             }
         }
+    }
 }
