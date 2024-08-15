@@ -11,12 +11,16 @@ import Markdown from 'unplugin-vue-markdown/vite'
 import i18n from "laravel-vue-i18n/vite";
 import laravel from "laravel-vite-plugin";
 import vue from "@vitejs/plugin-vue";
+import vueDevTools from 'vite-plugin-vue-devtools'
 import vueJsx from "@vitejs/plugin-vue-jsx";
 
 const token = loadEnv('production', './', 'CODECOV').CODECOV_TOKEN;
 
 export default defineConfig({
   plugins: [
+    vueDevTools({
+      appendTo: 'resources/js/app.ts'
+    }),
     laravel(["resources/js/app.ts"]),
     Markdown({
       markdownItOptions: {
@@ -70,11 +74,6 @@ export default defineConfig({
       "@": "/resources/js",
       // vue: "vue/dist/vue.esm-bundler.js",
       "ziggy-js": "/vendor/tightenco/ziggy/dist",
-    },
-  },
-  server: {
-    hmr: {
-      host: "localhost",
     },
   },
   build: {
