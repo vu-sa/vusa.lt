@@ -63,3 +63,5 @@ describe('auth: simple user', function () {
         asUser($this->user)->delete(route('users.destroy', $user))->assertStatus(302);
     });
 });
+
+it('can login')->todo();
