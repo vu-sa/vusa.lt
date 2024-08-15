@@ -14,7 +14,7 @@ class UpdateDutiableRequest extends FormRequest
     public function authorize(): bool
     {
         return $this->user()->can('update', [Duty::class, request('duty'), $this->authorizer]);
-;
+
     }
 
     protected function prepareForValidation()
