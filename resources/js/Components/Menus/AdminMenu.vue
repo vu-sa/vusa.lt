@@ -212,6 +212,20 @@ const menuOptions = computed(() => [
       {
         label: () => {
           return (
+            <Link href={route("dutiables.index")}>
+              {capitalize($tChoice("entities.dutiable.model", 2))}
+            </Link>
+          );
+        },
+        key: "dutiables",
+        icon: () => {
+          return <NIcon component={Icons.DUTIABLE}></NIcon>;
+        },
+        show: auth?.can.index.dutiable,
+      },
+      {
+        label: () => {
+          return (
             <Link href={route("contacts.index")}>{$t("Kiti kontaktai")}</Link>
           );
         },

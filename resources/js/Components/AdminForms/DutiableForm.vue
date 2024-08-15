@@ -11,10 +11,10 @@
           giminizuotas pagal vardą ir pavardę.
         </template>
         <NFormItem label="Pareigų ėjimo pradžia" required>
-          <NDatePicker v-model:formatted-value="form.start_date" value-format="yyyy-MM-dd" type="date" />
+          <NDatePicker v-model:value="form.start_date" type="date" />
         </NFormItem>
         <NFormItem label="Pareigų ėjimo pabaiga" required>
-          <NDatePicker v-model:formatted-value="form.end_date" clearable value-format="yyyy-MM-dd" type="date" />
+          <NDatePicker v-model:value="form.end_date" clearable type="date" />
         </NFormItem>
       </FormElement>
       <FormElement>

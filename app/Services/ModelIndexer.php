@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\Model;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
@@ -52,7 +51,12 @@ class ModelIndexer
 
     public function search()
     {
-        $this->builder = $this->indexable::search($this->search);
+        // check if indexable implements Searchable trait
+        if (! in_array('Laravel\Scout\Searchable', class_uses($this->indexable))) {
+            $this->builder = $this->indexable::search($this->search);
+        } else {
+            $this->builder = $this->indexable::query();
+        }
 
         return $this;
     }
