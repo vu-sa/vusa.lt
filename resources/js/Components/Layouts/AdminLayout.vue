@@ -83,7 +83,7 @@
         </NMessageProvider>
       </NLayoutContent>
     </NLayout>
-    <CardModal :title="`⭐️ ${$t('vusa.lt atsinaujino')}!`" :show="showChanges" @close="showChanges = false">
+    <CardModal :title="`⭐️ ${$t('vusa.lt atsinaujino')}!`" :show="showChanges" @close="approveChanges">
       <div>
         <template v-for="change in $page.props.auth.changes" :key="change.id">
           <h4 class="mb-0 tracking-tight">
