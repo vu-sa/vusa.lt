@@ -10,6 +10,7 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { h } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { useDialog } from 'naive-ui';
 
 import IFluentArrowCounterclockwise28Regular from "~icons/fluent/arrow-counterclockwise28-regular";
 import IFluentArrowForward20Filled from "~icons/fluent/arrow-forward20-filled";
@@ -27,6 +28,8 @@ const props = defineProps<{
   model: T;
   modelName: string;
 }>()
+
+const dialog = useDialog();
 
 const options: DropdownOption[] = [
   {
@@ -68,9 +71,17 @@ const handleAction = (key: string) => {
       }
       break;
     case 'destroy':
-      if (props.routes.destroy) {
-        router.delete(route(props.routes.destroy, props.model.id));
-      }
+      dialog.warning({
+        title: $t('Ištrinti įrašą'),
+        content: $t('Ar tikrai norite ištrinti šį įrašą?'),
+        positiveText: $t('Ištrinti'),
+        negativeText: $t('Atšaukti'),
+        onPositiveClick: () => {
+          if (props.routes.destroy) {
+            router.delete(route(props.routes.destroy, props.model.id));
+          }
+        },
+      });
       break;
     case 'restore':
       if (props.model.deleted_at) {

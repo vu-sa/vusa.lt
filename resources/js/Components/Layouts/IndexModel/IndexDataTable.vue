@@ -183,6 +183,7 @@ const columnsWithActions = computed(() => {
           : null,
       key: "actions",
       fixed: "right",
+      width: 85,
       render(row: Record<string, unknown> & { id: number | string, deleted_at: string | undefined | null }) {
         return h(ActionColumns, {
           routes: {
