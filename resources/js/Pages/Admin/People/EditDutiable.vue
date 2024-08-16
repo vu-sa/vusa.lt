@@ -27,7 +27,7 @@ const props = defineProps<{
 const dutiable = {
   ...props.dutiable,
   start_date: new Date(props.dutiable.start_date).getTime(),
-  end_date: new Date(props.dutiable.end_date).getTime(),
+  end_date: props.dutiable.end_date ? new Date(props.dutiable.end_date).getTime() : null,
 };
 
 console.log(dutiable)

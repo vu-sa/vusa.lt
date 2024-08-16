@@ -18,22 +18,22 @@ class DutiableController extends LaravelResourceController
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
-    {
-        $this->authorize('viewAny', [Dutiable::class, $this->authorizer]);
-
-        $indexer = new ModelIndexer(new Dutiable, $request, $this->authorizer);
-
-        $dutiables = $indexer
-            ->setEloquentQuery([fn (Builder $query) => $query->with('duty', 'dutiable', 'tenants')])
-            ->filterAllColumns()
-            ->sortAllColumns()
-            ->builder->paginate(20);
-
-        return Inertia::render('Admin/People/IndexDutiable', [
-            'dutiables' => $dutiables,
-        ]);
-    }
+    /*public function index(Request $request)*/
+    /*{*/
+    /*    $this->authorize('viewAny', [Dutiable::class, $this->authorizer]);*/
+    /**/
+    /*    $indexer = new ModelIndexer(new Dutiable, $request, $this->authorizer);*/
+    /**/
+    /*    $dutiables = $indexer*/
+    /*        ->setEloquentQuery()*/
+    /*        ->filterAllColumns()*/
+    /*        ->sortAllColumns()*/
+    /*        ->builder->with('duty', 'dutiable', 'tenants')->paginate(20);*/
+    /**/
+    /*    return Inertia::render('Admin/People/IndexDutiable', [*/
+    /*        'dutiables' => $dutiables,*/
+    /*    ]);*/
+    /*}*/
 
     /**
      * Show the form for editing the specified resource.

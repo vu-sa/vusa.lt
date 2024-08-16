@@ -21,8 +21,12 @@ class UpdateDutiableRequest extends FormRequest
     {
         $this->merge([
             'start_date' => Carbon::createFromTimestampMs($this->input('start_date'), 'Europe/Vilnius'),
-            'end_date' => Carbon::createFromTimestampMs($this->input('end_date'), 'Europe/Vilnius'),
         ]);
+        if ($this->input('end_date') !== null) {
+            $this->merge([
+                'end_date' => Carbon::createFromTimestampMs($this->input('end_date'), 'Europe/Vilnius'),
+            ]);
+        }
     }
 
     /**
@@ -34,7 +38,7 @@ class UpdateDutiableRequest extends FormRequest
     {
         return [
             'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
+            'end_date' => 'nullable|date|after:start_date',
             'extra_attributes' => 'nullable|array',
         ];
     }
