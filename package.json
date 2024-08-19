@@ -31,7 +31,7 @@
     "@tiptap/starter-kit": "^2.0.1",
     "@tiptap/vue-3": "^2.0.1",
     "@vee-validate/zod": "^4.13.2",
-    "@vueuse/core": "^10.11.0",
+    "@vueuse/core": "^11.0.1",
     "@vueuse/integrations": "^10.1.0",
     "axios": "^1.2.3",
     "class-variance-authority": "^0.7.0",
