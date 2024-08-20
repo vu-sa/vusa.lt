@@ -20,7 +20,7 @@ export const renderResourceLabel = (
       </span>
       <NTag size="tiny" round>
         <span class="text-xs text-gray-400">
-          {option?.padalinys?.shortname}
+          {option?.tenant?.shortname}
         </span>
       </NTag>
     </div>
@@ -45,7 +45,7 @@ export const renderResourceTag = (option, resources) => {
       </span>
       <NTag size="tiny" round>
         <span class="text-xs text-gray-400">
-          {option?.padalinys?.shortname}
+          {option?.tenant?.shortname}
         </span>
       </NTag>
     </div>

@@ -2,26 +2,18 @@
   <NForm :model="form" label-placement="top">
     <div class="flex flex-col">
       <FormElement>
-        <template #title>{{ $t("forms.context.main_info") }}</template>
+        <template #title>
+          {{ $t("forms.context.main_info") }}
+        </template>
         <template #description>
-          <component
-            :is="RESERVATION_DESCRIPTIONS.main_info[$page.props.app.locale]"
-          />
+          <component :is="RESERVATION_DESCRIPTIONS.main_info[$page.props.app.locale]" />
         </template>
         <NFormItem :label="$t('forms.fields.title')" required>
-          <NInput
-            v-model:value="form.name"
-            :placeholder="RESERVATION_PLACEHOLDERS.name[$page.props.app.locale]"
-          />
+          <NInput v-model:value="form.name" :placeholder="RESERVATION_PLACEHOLDERS.name[$page.props.app.locale]" />
         </NFormItem>
         <NFormItem :label="$t('forms.fields.description')" required>
-          <NInput
-            v-model:value="form.description"
-            :placeholder="
-              RESERVATION_PLACEHOLDERS.description[$page.props.app.locale]
-            "
-            type="textarea"
-          />
+          <NInput v-model:value="form.description" :placeholder="RESERVATION_PLACEHOLDERS.description[$page.props.app.locale]
+            " type="textarea" />
         </NFormItem>
       </FormElement>
       <FormElement :icon="Icons.RESOURCE">
@@ -29,9 +21,7 @@
           capitalize($tChoice("entities.resource.model", 2))
         }}</template>
         <template #description>
-          <component
-            :is="RESERVATION_DESCRIPTIONS.resources[$page.props.app.locale]"
-          />
+          <component :is="RESERVATION_DESCRIPTIONS.resources[$page.props.app.locale]" />
           <a class="w-fit" target="_blank" :href="route('resources.index')">
             <div class="inline-flex items-center gap-2">
               <NIcon :component="Icons.RESOURCE" class="align-center" />
@@ -43,61 +33,38 @@
             </div>
           </a>
         </template>
-        <NFormItem
-          required
-          :label="capitalize($t('entities.reservation.period'))"
-        >
-          <NDatePicker
-            v-model:value="date"
-            :loading="resourceLoading"
-            type="datetimerange"
-            :first-day-of-week="0"
-            format="yyyy-MM-dd HH:mm"
-            default-time="13:00:00"
-            :time-picker-props="{
+        <NFormItem required :label="capitalize($t('entities.reservation.period'))">
+          <NDatePicker v-model:value="date" :loading="resourceLoading" type="datetimerange" :first-day-of-week="0"
+            format="yyyy-MM-dd HH:mm" default-time="13:00:00" :time-picker-props="{
               format: 'HH:mm',
               minutes: 15,
-            }"
-            @update:value="onDateChange"
-          />
+            }" @update:value="onDateChange" />
         </NFormItem>
         <NFormItem>
           <template #label>
-            <span class="mb-2 inline-flex items-center gap-1"
-              ><NIcon :component="Icons.RESOURCE" />
+            <span class="mb-2 inline-flex items-center gap-1">
+              <NIcon :component="Icons.RESOURCE" />
               {{ $t("Pasirinkti ištekliai") }}
             </span>
           </template>
           <NDynamicInput v-model:value="form.resources" :on-create="onCreate">
             <template #default="{ value }">
               <div class="flex w-full gap-2">
-                <NSelect
-                  v-model:value="value.id"
-                  filterable
-                  clearable
-                  value-field="id"
-                  label-field="name"
-                  :options="allResourceOptions"
-                  :placeholder="
-                    RESERVATION_PLACEHOLDERS.resource[$page.props.app.locale]
-                  "
-                  :render-label="handleRenderResourceLabel"
-                  :render-tag="handleRenderResourceTag"
-                  @update:value="value.quantity = 1"
-                />
-                <NInputNumber
-                  v-model:value="value.quantity"
-                  :min="1"
-                  :max="getleftCapacity(value.id)"
-                  :default-value="1"
-                ></NInputNumber>
+                <NSelect v-model:value="value.id" filterable clearable value-field="id" label-field="name"
+                  :options="allResourceOptions" :placeholder="RESERVATION_PLACEHOLDERS.resource[$page.props.app.locale]
+                    " :render-label="handleRenderResourceLabel" :render-tag="handleRenderResourceTag"
+                  @update:value="value.quantity = 1" />
+                <NInputNumber v-model:value="value.quantity" :min="1" :max="getleftCapacity(value.id)"
+                  :default-value="1" />
               </div>
             </template>
           </NDynamicInput>
         </NFormItem>
       </FormElement>
       <FormElement>
-        <template #title>{{ $t("forms.context.additional_info") }}</template>
+        <template #title>
+          {{ $t("forms.context.additional_info") }}
+        </template>
         <NFormItem :show-label="false">
           <NCheckbox v-model:checked="conditionAcquaintance">
             <template v-if="$page.props.app.locale === 'lt'">
@@ -119,9 +86,9 @@
         :model-route="deleteModelRoute"
       /> -->
       <!-- <UpsertModelButton :form="form" :model-route="modelRoute" /> -->
-      <NButton :disabled="!conditionAcquaintance" @click="submit"
-        >Pateikti</NButton
-      >
+      <NButton :disabled="!conditionAcquaintance" @click="submit">
+        Pateikti
+      </NButton>
     </div>
   </NForm>
 </template>
