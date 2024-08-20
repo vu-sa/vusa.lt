@@ -1,11 +1,11 @@
 <template>
-  <ShowPageLayout :current-tab="currentTab" :title="institution.name" :breadcrumb-options="breadcrumbOptions"
-    :model="institution" :related-models="relatedModels" @change:tab="currentTab = $event">
+  <ShowPageLayout :current-tab :title="institution.name" :breadcrumb-options
+    :model="institution" :related-models @change:tab="currentTab = $event">
     <template #title>
       <span class="text-3xl">{{ institution.name }}</span>
     </template>
     <template #after-heading>
-      <InstitutionAvatarGroup :max="5" :users="institution.users" />
+      <InstitutionAvatarGroup :max="5" :users="institution.current_users" />
       <template v-if="institution.managers.length > 0">
         <NDivider v-if="institution.managers.length > 0" vertical />
         <span class="text-xs text-zinc-500">Admin:</span>
