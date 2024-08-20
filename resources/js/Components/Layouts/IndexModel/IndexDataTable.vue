@@ -1,33 +1,29 @@
 <template>
   <IndexSearchInput payload-name="text" :has-soft-deletes="hasSoftDeletes" @complete-search="handleCompletedSearch"
     @update:other="handleShowOther" @sweep="sweepSearch" />
-  <NDataTable remote size="small" :data="paginatedModels.data" :columns="columnsWithActions" :loading="loading"
-    :pagination="pagination" :row-key="rowKey" pagination-behavior-on-filter="first" v-bind="$attrs"
-    @update:sorter="handleSorterChange" @update:page="handleChange" @update:filters="handleFiltersChange"
-    @update-checked-row-keys="handleCheckedRowKeysChange" />
+  <!-- Dialog provider is used for the delete button -->
+  <NDialogProvider>
+    <NDataTable remote :data="paginatedModels.data" :columns="columnsWithActions" :loading="loading"
+      :pagination="pagination" :row-key="(row) => row.id" pagination-behavior-on-filter="first" v-bind="$attrs"
+      @update:sorter="handleSorterChange" @update:page="handleChange" @update:filters="handleFiltersChange"
+      @update-checked-row-keys="handleCheckedRowKeysChange" />
+  </NDialogProvider>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
 import {
   type DataTableColumns,
   type DataTableFilterState,
   type DataTableRowKey,
   type DataTableSortState,
-  NButton,
-  NButtonGroup,
-  NIcon,
+  NDialogProvider,
 } from "naive-ui";
-import { type Ref, computed, inject, ref } from "vue";
+import { type Ref, computed, h, inject, ref } from "vue";
 import { router } from "@inertiajs/vue3";
 
-import ArrowCounterclockwise28Regular from "~icons/fluent/arrow-counterclockwise28-regular";
-import ArrowForward20Filled from "~icons/fluent/arrow-forward20-filled";
-import Edit20Filled from "~icons/fluent/edit20-filled";
-
-import { Link } from "@inertiajs/vue3";
 import { updateSorters } from "@/Utils/DataTable";
-import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
+import ActionColumns from "./ActionColumns.vue";
 import IndexSearchInput from "./IndexSearchInput.vue";
 import type { SortOrder } from "naive-ui/es/data-table/src/interface";
 
@@ -84,8 +80,6 @@ const handleFiltersChange = (state: DataTableFilterState) => {
 
   handleChange(1);
 };
-
-const rowKey = (row: Record<string, any>) => row.id;
 
 const checkedRowKeys = inject<Ref<DataTableRowKey[]>>(
   "checkedRowKeys",
@@ -189,46 +183,17 @@ const columnsWithActions = computed(() => {
           : null,
       key: "actions",
       fixed: "right",
-      width: 175,
-      render(row) {
-        return [undefined, null].includes(row.deleted_at) ? (
-          <NButtonGroup size="small">
-            {props.showRoute ? (
-              <Link href={route(props.showRoute, row.id)}>
-                <NButton quaternary>
-                  {{
-                    icon: () => <NIcon component={ArrowForward20Filled} />,
-                  }}
-                </NButton>
-              </Link>
-            ) : null}
-            {props.editRoute ? (
-              <Link href={route(props.editRoute, row.id)}>
-                <NButton quaternary>
-                  {{ icon: () => <NIcon component={Edit20Filled} /> }}
-                </NButton>
-              </Link>
-            ) : null}
-            {props.destroyRoute ? (
-              <DeleteModelButton form={row} modelRoute={props.destroyRoute} />
-            ) : null}
-          </NButtonGroup>
-        ) : (
-          <NButtonGroup size="small">
-            {/* restore */}
-            <NButton
-              quaternary
-              onClick={() =>
-                router.patch(route(`${props.modelName}.restore`, row.id))
-              }
-            >
-              {{
-                icon: () => (
-                  <NIcon component={ArrowCounterclockwise28Regular} />
-                ),
-              }}
-            </NButton>
-          </NButtonGroup>
+      width: 85,
+      render(row: Record<string, unknown> & { id: number | string, deleted_at: string | undefined | null }) {
+        return h(ActionColumns, {
+          routes: {
+            show: props.showRoute,
+            edit: props.editRoute,
+            destroy: props.destroyRoute,
+          },
+          model: row,
+          modelName: props.modelName,
+        }
         );
       },
     },

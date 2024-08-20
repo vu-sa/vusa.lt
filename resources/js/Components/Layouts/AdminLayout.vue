@@ -83,8 +83,8 @@
         </NMessageProvider>
       </NLayoutContent>
     </NLayout>
-    <CardModal :title="`⭐️ ${$t('vusa.lt atsinaujino')}!`" :show="showChanges" @close="showChanges = false">
-      <div>
+    <CardModal :title="`⭐️ ${$t('vusa.lt atsinaujino')}!`" :show="showChanges" @close="approveChanges">
+      <div class="mb-8">
         <template v-for="change in $page.props.auth.changes" :key="change.id">
           <h4 class="mb-0 tracking-tight">
             {{ formatStaticTime(new Date(change.date)) }}
@@ -94,10 +94,12 @@
           <NDivider class="last:hidden" />
         </template>
       </div>
-      <NButton class="mt-8" type="primary" @click="approveChanges"><template #icon>
+      <NButton type="primary" @click="approveChanges">
+        <template #icon>
           <IFluentThumbLike16Regular />
         </template>
-        Liuks</NButton>
+        Liuks
+      </NButton>
     </CardModal>
   </NLayout>
 </template>

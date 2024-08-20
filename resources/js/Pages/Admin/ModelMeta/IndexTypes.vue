@@ -1,13 +1,6 @@
 <template>
-  <IndexPageLayout
-    title="Turinio tipai"
-    model-name="types"
-    :can-use-routes="canUseRoutes"
-    :columns="columns"
-    :paginated-models="types"
-    :icon="Icons.TYPE"
-  >
-  </IndexPageLayout>
+  <IndexPageLayout title="Turinio tipai" model-name="types" :can-use-routes="canUseRoutes" :columns="columns"
+    :paginated-models="types" :icon="Icons.TYPE" />
 </template>
 
 <script setup lang="tsx">
@@ -32,6 +25,7 @@ const columns: DataTableColumns<App.Entities.Type> = [
   {
     title: "ID",
     key: "id",
+    width: 60,
   },
   {
     title: "Pavadinimas",

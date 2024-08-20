@@ -20,7 +20,15 @@ import Icons from "@/Types/Icons/regular";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
-defineProps<{
+const props = defineProps<{
   dutiable: App.Entities.Dutiable;
 }>();
+
+const dutiable = {
+  ...props.dutiable,
+  start_date: new Date(props.dutiable.start_date).getTime(),
+  end_date: props.dutiable.end_date ? new Date(props.dutiable.end_date).getTime() : null,
+};
+
+console.log(dutiable)
 </script>

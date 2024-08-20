@@ -5,8 +5,9 @@ namespace App\Listeners;
 use App\Events\FileableNameUpdated;
 use App\Services\ResourceServices\SharepointFileService;
 use Carbon\Carbon;
-use GuzzleHttp\Exception\ClientException;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Microsoft\Graph\Generated\Models\ODataErrors\ODataError;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class UpdateSharepointFolder implements ShouldQueue
 {
@@ -42,8 +43,14 @@ class UpdateSharepointFolder implements ShouldQueue
 
         $sharepointService = new SharepointFileService;
 
-        // get the path of the current fileable object (that's why the fileable->name,title is set above)
-        $path = $sharepointService->pathForFileableDriveItem($fileable);
+        // get the path of the current fileable object (that's why the fileable->name,title is set above). But right now, path depends on the fileable tenant name, and not always this name is present
+        try {
+            $path = $sharepointService->pathForFileableDriveItem($fileable);
+        } catch (HttpException $e) {
+            report($e);
+
+            return;
+        }
 
         $sharepointGraph = new \App\Services\SharepointGraphService;
 
@@ -53,7 +60,9 @@ class UpdateSharepointFolder implements ShouldQueue
                 // the drive item name property in Sharepoint is always "name"
                 'name' => $newName,
             ]);
-        } catch (ClientException $e) {
+        } catch (ODataError $e) {
+            // TODO: handle the error
+            report($e);
         }
     }
 }

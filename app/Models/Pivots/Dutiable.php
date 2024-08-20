@@ -4,6 +4,7 @@ namespace App\Models\Pivots;
 
 use App\Models\Contact;
 use App\Models\Duty;
+use App\Models\Traits\HasUnitRelation;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -12,7 +13,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Dutiable extends MorphPivot
 {
-    use HasRelationships, HasUlids;
+    // NOTE: for some reason, if Searchable trait is used on this model, it will cause an error
+    // in the update route. But only if the queue driver is set to sync.
+    use HasRelationships, HasUlids, HasUnitRelation;
 
     protected $table = 'dutiables';
 
@@ -24,10 +27,11 @@ class Dutiable extends MorphPivot
     ];
 
     protected $casts = [
+        'start_date' => 'datetime',
+        'end_date' => 'datetime',
         'extra_attributes' => AsArrayObject::class,
     ];
 
-    // dutiable
     public function dutiable()
     {
         return $this->morphTo();

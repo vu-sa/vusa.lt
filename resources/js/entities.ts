@@ -75,6 +75,11 @@ export default [
     key: pluralizeModels(ModelEnum.DUTY),
   },
   {
+    title: "Pareigybės ėjimo laikotarpiai",
+    icon: Icons.DUTIABLE,
+    key: pluralizeModels(ModelEnum.DUTIABLE),
+  },
+  {
     title: "Tikslai",
     icon: Icons.GOAL,
     key: pluralizeModels(ModelEnum.GOAL),

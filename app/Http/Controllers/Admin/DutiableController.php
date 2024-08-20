@@ -3,13 +3,38 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\LaravelResourceController;
+use App\Http\Requests\UpdateDutiableRequest;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
+use App\Services\ModelIndexer;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class DutiableController extends LaravelResourceController
 {
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    /*public function index(Request $request)*/
+    /*{*/
+    /*    $this->authorize('viewAny', [Dutiable::class, $this->authorizer]);*/
+    /**/
+    /*    $indexer = new ModelIndexer(new Dutiable, $request, $this->authorizer);*/
+    /**/
+    /*    $dutiables = $indexer*/
+    /*        ->setEloquentQuery()*/
+    /*        ->filterAllColumns()*/
+    /*        ->sortAllColumns()*/
+    /*        ->builder->with('duty', 'dutiable', 'tenants')->paginate(20);*/
+    /**/
+    /*    return Inertia::render('Admin/People/IndexDutiable', [*/
+    /*        'dutiables' => $dutiables,*/
+    /*    ]);*/
+    /*}*/
+
     /**
      * Show the form for editing the specified resource.
      *
@@ -30,17 +55,11 @@ class DutiableController extends LaravelResourceController
      *
      * @return \Illuminate\Http\Response
      */
-    public function update(Dutiable $dutiable, Request $request)
+    public function update(Dutiable $dutiable, UpdateDutiableRequest $request)
     {
-        $this->authorize('update', [Duty::class, $dutiable->duty, $this->authorizer]);
+        $dutiable->fill($request->validated());
 
-        $validated = $request->validate([
-            'start_date' => 'required|date',
-            'end_date' => 'nullable|date|after:start_date',
-            'extra_attributes' => 'nullable|array',
-        ]);
-
-        $dutiable->update($validated);
+        $dutiable->save();
 
         return back()->with('success', 'Pareigybės laikotarpis sėkmingai atnaujintas!');
     }
