@@ -14,7 +14,7 @@ class GetInstitutionManagers
             $query->where('id', $institution->tenant_id);
         })->whereHas('roles.permissions', function (Builder $query) {
             $query->where('name', config('permission.institution_managership_indicating_permission'));
-        })->with('users')->get()->pluck('users')->flatten()->unique('id')->values();
+        })->with('current_users')->get()->pluck('current_users')->flatten()->unique('id')->values();
 
         return $institutionManagers;
     }

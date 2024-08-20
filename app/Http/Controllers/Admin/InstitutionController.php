@@ -86,7 +86,7 @@ class InstitutionController extends LaravelResourceController
         $this->authorize('view', [Institution::class, $institution, $this->authorizer]);
 
         // TODO: only show current_users
-        $institution->load('tenant', 'users', 'matters')->load(['meetings' => function ($query) {
+        $institution->load('tenant', 'duties.current_users', 'matters')->load(['meetings' => function ($query) {
             $query->with('tasks', 'comments', 'files')->orderBy('start_time', 'asc');
         }])->load('activities.causer');
 
@@ -95,7 +95,7 @@ class InstitutionController extends LaravelResourceController
         return Inertia::render('Admin/People/ShowInstitution', [
             'institution' => [
                 ...$institution->toArray(),
-                'users' => $institution->users->unique('id')->values(),
+                'current_users' => $institution->duties->load('current_users')->pluck('current_users')->flatten()->unique('id')->values(),
                 'managers' => $institution->managers(),
                 'relatedInstitutions' => $institution->related_institution_relationshipables(),
                 'sharepointPath' => $institution->tenant ? $institution->sharepoint_path() : null,
