@@ -48,6 +48,7 @@ class UpdateSharepointFolder implements ShouldQueue
             $path = $sharepointService->pathForFileableDriveItem($fileable);
         } catch (HttpException $e) {
             report($e);
+
             return;
         }
 

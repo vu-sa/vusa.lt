@@ -44,7 +44,7 @@ class SharepointFileService
         if ($fileable instanceof Institution) {
             $tenant = $fileable->load('tenant')->tenant;
 
-            if (!isset($tenant)) {
+            if (! isset($tenant)) {
                 abort(500, 'Institution does not have a tenant. Tenant must be assigned.');
             }
 
@@ -57,7 +57,7 @@ class SharepointFileService
             $institution = $fileable->load('institutions.tenant')->institutions->first();
             $formattedDatetime = Carbon::parse($fileable->start_time)->format('Y-m-d H.i');
 
-            if (!isset($institution)) {
+            if (! isset($institution)) {
                 abort(500, 'Meeting does not have an institution. Institution must be assigned.');
             }
 
@@ -65,7 +65,7 @@ class SharepointFileService
 
             $tenant = $institution->tenant;
 
-            if (!isset($tenant)) {
+            if (! isset($tenant)) {
                 abort(500, 'Institution does not have a tenant. Tenant must be assigned.');
             }
 
