@@ -256,10 +256,16 @@ const existingDutyColumns: DataTableColumns = [
   {
     title: "Pradžia",
     key: "pivot.start_date",
+    render(row) {
+      return formatStaticTime(row.pivot.start_date);
+    },
   },
   {
     title: "Pabaiga",
     key: "pivot.end_date",
+    render(row) {
+      return row.pivot?.end_date ? formatStaticTime(row.pivot.end_date) : "Nenurodyta";
+    },
   },
   {
     key: "actions",
