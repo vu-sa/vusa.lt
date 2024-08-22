@@ -9,9 +9,6 @@ module.exports = {
     "./app/Tiptap/*.php",
   ],
   darkMode: ["class"],
-  // corePlugins: {
-  //   preflight: false,
-  // },
   theme: {
     container: {
       center: true,
@@ -21,6 +18,9 @@ module.exports = {
       },
     },
     extend: {
+      //fontFamily: {
+      //  sans: ["DM Sans", "sans-serif"],
+      //},
       keyframes: {
         "accordion-down": {
           from: { height: 0 },
