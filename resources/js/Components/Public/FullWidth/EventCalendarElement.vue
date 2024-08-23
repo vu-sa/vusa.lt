@@ -60,31 +60,28 @@
     <h2 class="mb-4 text-center lg:text-start">
       {{ $t('Artėjantys renginiai') }}
     </h2>
-    <div>
-      <NCarousel class="hidden items-center md:block" style="width: 100%;" :slides-per-view="3" :space-between="20"
-        autoplay :show-dots="false" draggable>
-        <a v-for="event in eventsByHavingImages.hasImages" :key="event.id" class="w-fit" :href="route('calendar.event', {
-          calendar: event.id,
-          lang: $page.props.app.locale,
-        })
-          ">
-          <CalendarCard hide-footer :calendar-event="event" />
-        </a>
-        <div v-for="event in eventsByHavingImages.noImages" :key="event[0].id" class="h-full">
-          <div class="grid grid-rows-2 items-start gap-4">
-            <a v-for="subEvent in event" :key="subEvent.id" :href="route('calendar.event', {
-              calendar: subEvent.id,
-              lang: $page.props.app.locale,
-            })
-              ">
-              <CalendarCard hide-footer :calendar-event="subEvent" />
-            </a>
-          </div>
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <a v-for="event in eventsByHavingImages.hasImages" :key="event.id" class="hidden w-full md:block" :href="route('calendar.event', {
+        calendar: event.id,
+        lang: $page.props.app.locale,
+      })
+        ">
+        <CalendarCard hide-footer :calendar-event="event" />
+      </a>
+      <div v-for="event in eventsByHavingImages.noImages" :key="event[0].id" class="hidden h-full md:block">
+        <div class="grid grid-rows-2 items-start gap-4">
+          <a v-for="subEvent in event" :key="subEvent.id" :href="route('calendar.event', {
+            calendar: subEvent.id,
+            lang: $page.props.app.locale,
+          })
+            ">
+            <CalendarCard hide-footer :calendar-event="subEvent" />
+          </a>
         </div>
-      </NCarousel>
+      </div>
       <div class="block w-fit md:hidden">
         <div class="flex flex-col gap-4">
-          <a v-for="event in upcomingEvents.slice(0, 3)" :key="event.id" class="w-[28rem]" :href="route('calendar.event', {
+          <a v-for="event in upcomingEvents.slice(0, 3)" :key="event.id" :href="route('calendar.event', {
             calendar: event.id,
             lang: $page.props.app.locale,
           })

@@ -1,5 +1,5 @@
 <template>
-  <NavigationMenu v-model="modelValue" as="div">
+  <NavigationMenu v-model="activeMenuItem" as="div">
     <div class="mr-8">
       <slot name="additional" />
     </div>
@@ -9,7 +9,7 @@
           class="bg-transparent hover:bg-zinc-100 dark:bg-transparent  dark:hover:bg-zinc-700 max-lg:px-1 max-lg:py-0.5 max-lg:text-xs lg:px-2 lg:py-1.5">
           {{ item.name }}
         </NavigationMenuTrigger>
-        <MainNavigationMenuContent :item :for-admin-edit="false" @close-menu="closeMenu" />      
+        <MainNavigationMenuContent :item @close-menu="closeMenu" />
       </NavigationMenuItem>
     </NavigationMenuList>
   </NavigationMenu>
@@ -27,12 +27,11 @@ import { usePage } from '@inertiajs/vue3';
 
 import MainNavigationMenuContent from './MainNavigationMenuContent.vue';
 
-const modelValue = ref(null);
+const activeMenuItem = ref(undefined);
 
 const mainNavigation = computed(() => usePage().props.mainNavigation);
 
-function closeMenu(event: MouseEvent) {
-  //event.preventDefault();
-  modelValue.value = null;
+function closeMenu() {
+  activeMenuItem.value = undefined;
 }
 </script>

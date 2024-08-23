@@ -10,6 +10,10 @@ return [
         'default' => 'https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,600;0,700;0,900;1,400;1,600;1,700;1,900&display=swap',
     ],
 
+    /*'fonts' => [*/
+    /*    'default' => 'https://fonts.googleapis.com/css2?family=DM Sans:ital,wght@0,400;0,600;0,700;0,900;1,400;1,600;1,700;1,900&display=swap',*/
+    /*],*/
+
     /*
      * This disk will be used to store local Google Fonts. The public disk
      * is the default because it can be served over HTTP with storage:link.

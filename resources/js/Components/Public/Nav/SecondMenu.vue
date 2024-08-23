@@ -1,15 +1,16 @@
 <template>
   <section
     class="z-5 relative grid h-9 grid-cols-[min-content,_1fr,_40px] rounded-lg border border-zinc-200/70 bg-stone-50 px-12 dark:border-zinc-800/30 dark:bg-[rgb(23,_23,_25)] md:px-12 lg:px-16 xl:px-28">
-    <Link href="/"
+    <SmartLink href="/"
       class="my-auto mr-6 whitespace-nowrap text-sm font-bold text-gray-900 dark:text-gray-200 dark:hover:text-vusa-red">
-    {{
-      $page.props.tenant?.shortname
-        ? $t($page.props.tenant?.shortname)
-        : "VU SA"
-    }}
-    </Link>
-    <nav ref="secondMenuScrollSection" class="mr-2 inline-flex items-center gap-4 overflow-hidden whitespace-nowrap">
+      {{
+        $page.props.tenant?.shortname
+          ? $t($page.props.tenant?.shortname)
+          : "VU SA"
+      }}
+    </SmartLink>
+    <nav ref="secondMenuScrollSection"
+      class="mr-2 inline-flex items-center gap-4 overflow-hidden whitespace-nowrap text-xs">
       <MainPageLink v-for="link in $page.props.tenant?.links" :key="link?.id" :main-page-link="link" />
     </nav>
     <div class="my-auto">
@@ -32,10 +33,7 @@ import { useScroll } from "@vueuse/core";
 
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 import MainPageLink from "./MainPageLink.vue";
-
-defineProps<{
-  links: any;
-}>();
+import SmartLink from "../SmartLink.vue";
 
 const secondMenuScrollSection = ref<HTMLElement | null>(null);
 

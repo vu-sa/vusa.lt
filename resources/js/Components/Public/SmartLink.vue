@@ -35,6 +35,7 @@ const useInertiaRouter = computed(() => {
     return true;
   }
 
+
   // 2. Check if hostname ends in vusa.lt or vusa.test or other ending (???)
   const hostname = window.location.hostname;
 
@@ -47,7 +48,7 @@ const useInertiaRouter = computed(() => {
   }
 
   // 3. Check if external link
-  if (!props.href.startsWith(usePage().props.app.url)) {
+  if (!props.href.startsWith(window.location.protocol + "//" + window.location.hostname)) {
     return false;
   }
 

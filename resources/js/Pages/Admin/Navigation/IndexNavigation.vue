@@ -24,10 +24,11 @@
             </NButton>
             </Link>
           </span>
-          <MainNavigationMenuContent :item :for-admin-edit="true" :show-edit-icons="showAdminEdit">
+          <MainNavigationMenuContent :item is-used-without-root are-links-disabled :show-edit-icons="showAdminEdit">
             <template #editIconsLink="{ index, link, links }">
-              <OrderEditDeleteButtons v-if="!showColumnChangeArrows" :index :length="links.length" :edit-route="route('navigation.edit', { navigation: link.id })"
-                @delete="handleDelete(link)" @move-up="moveUp(item, link)" @move-down="moveDown(item, link)" />
+              <OrderEditDeleteButtons v-if="!showColumnChangeArrows" :index :length="links.length"
+                :edit-route="route('navigation.edit', { navigation: link.id })" @delete="handleDelete(link)"
+                @move-up="moveUp(item, link)" @move-down="moveDown(item, link)" />
               <div v-else>
                 <NButtonGroup>
                   <NButton size="tiny" circle tertiary @click="changeColumn(link, 'left')">
@@ -44,7 +45,9 @@
               </div>
             </template>
             <template #editIconsBg="{ index, link, links }">
-              <OrderEditDeleteButtons v-if="!showColumnChangeArrows" :index :length="links.length" :edit-route="route('navigation.edit', { navigation: link.id })" @delete="handleDelete(link)" @move-up="moveUp(item, link)" @move-down="moveDown(item, link)" />
+              <OrderEditDeleteButtons v-if="!showColumnChangeArrows" :index :length="links.length"
+                :edit-route="route('navigation.edit', { navigation: link.id })" @delete="handleDelete(link)"
+                @move-up="moveUp(item, link)" @move-down="moveDown(item, link)" />
 
               <div v-else>
                 <NButtonGroup>
@@ -62,8 +65,9 @@
               </div>
             </template>
             <template #editIconsDivider="{ index, link, links }">
-              <OrderEditDeleteButtons :index :length="links.length" :edit-route="route('navigation.edit', { navigation: link.id })"
-                @delete="handleDelete(link)" @move-up="moveUp(item, link)" @move-down="moveDown(item, link)" />
+              <OrderEditDeleteButtons :index :length="links.length"
+                :edit-route="route('navigation.edit', { navigation: link.id })" @delete="handleDelete(link)"
+                @move-up="moveUp(item, link)" @move-down="moveDown(item, link)" />
 
             </template>
           </MainNavigationMenuContent>

@@ -1,7 +1,7 @@
 <template>
-  <div class="gap-12 md:grid md:grid-cols-[5fr,_3fr]">
+  <div class="gap-12 md:grid md:grid-cols-[auto,_250px] xl:grid-cols-[5fr,_3fr]">
     <div class="h-fit md:sticky md:top-36">
-      <InstitutionFigure only-vertical :institution="institution" />
+      <InstitutionFigure only-vertical :institution />
     </div>
     <h2 v-if="isMobile" class="mb-4">
       {{ $t('Kontaktai') }}

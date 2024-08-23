@@ -1,18 +1,17 @@
 <template>
-  <NCard size="small" class="h-full max-w-md rounded-md text-gray-900 shadow-md dark:text-zinc-100 lg:border-2"
-    hoverable :segmented="{ footer: 'soft' }">
-    <template #cover>
+  <Card class="border shadow-sm transition-all duration-300  hover:shadow-md dark:border-zinc-200/20">
+    <div class="h-32 w-full">
       <img v-if="calendarEvent.images && calendarEvent.images?.length > 0" style="height: 100px"
         class="rounded-t-md object-cover object-center" :src="calendarEvent.images[0].original_url">
-    </template>
-    <template #header>
+    </div>
+    <CardHeader class="mt-2">
       <div class="align-center flex h-12 flex-row items-center p-2">
         <p class="line-clamp-2 w-full text-center text-lg font-bold leading-5">{{
           calendarEvent.title
-          }}</p>
+        }}</p>
       </div>
-    </template>
-    <div class="mb-2 flex flex-col gap-2 text-sm">
+    </CardHeader>
+    <CardContent class="mb-2 flex flex-col gap-2 text-sm">
       <div class="inline-flex items-center gap-2">
         <IFluentCalendarLtr24Regular />
         <strong>
@@ -64,9 +63,9 @@
           <strong>{{ eventOrganizer }}</strong>
         </span>
       </div>
-    </div>
+    </CardContent>
 
-    <template v-if="!hideFooter" #footer>
+    <CardFooter v-if="!hideFooter">
       <div v-if="googleLink ||
         calendarEvent.url ||
         calendarEvent.extra_attributes?.facebook_url
@@ -121,13 +120,18 @@
           </NPopover>
         </div>
       </div>
-    </template>
-  </NCard>
+    </CardFooter>
+  </Card>
 </template>
 
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
 import { computed, ref } from "vue";
+
+import Card from "../ShadcnVue/ui/card/Card.vue";
+import CardContent from '../ShadcnVue/ui/card/CardContent.vue';
+import CardFooter from '../ShadcnVue/ui/card/CardFooter.vue';
+import CardHeader from '../ShadcnVue/ui/card/CardHeader.vue';
 
 import { formatStaticTime } from "@/Utils/IntlTime";
 
