@@ -1,5 +1,5 @@
 <template>
-  <SummerCamps v-if="$page.props.app.locale === 'lt'" />
+  <!-- <SummerCamps v-if="$page.props.app.locale === 'lt'" /> -->
 
   <div v-if="news.length > 0" class="mx-auto mt-2">
     <NewsElement :news="news" />
@@ -28,10 +28,10 @@ const NewsElement = defineAsyncComponent(
   () => import("@/Components/Public/NewsElement.vue"),
 );
 
-const SummerCamps = defineAsyncComponent(
-  // eslint-disable-next-line no-secrets/no-secrets
-  () => import("@/Components/Public/FullWidth/SummerCamps.vue"),
-);
+//const SummerCamps = defineAsyncComponent(
+//  // eslint-disable-next-line no-secrets/no-secrets
+//  () => import("@/Components/Public/FullWidth/SummerCamps.vue"),
+//);
 
 const IndividualStudies = defineAsyncComponent(
   // eslint-disable-next-line no-secrets/no-secrets

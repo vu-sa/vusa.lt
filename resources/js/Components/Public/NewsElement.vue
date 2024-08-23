@@ -11,17 +11,17 @@
           }}!
         </p> -->
       </div>
-      <Link :href="route('newsArchive', {
-        subdomain: $page.props.padalinys?.subdomain ?? 'www',
+      <SmartLink :href="route('newsArchive', {
+        subdomain: $page.props.tenant?.subdomain ?? 'www',
         lang: $page.props.app.locale === 'lt' ? 'lt' : 'en',
         newsString: $page.props.app.locale === 'lt' ? 'naujienos' : 'news',
       })
         ">
-      <div class="inline-flex items-center gap-1">
-        <span>{{ $t("Daugiau") }}</span>
-        <IFluentArrowRight16Regular />
-      </div>
-      </Link>
+        <div class="inline-flex items-center gap-1">
+          <span>{{ $t("Daugiau") }}</span>
+          <IFluentArrowRight16Regular />
+        </div>
+      </SmartLink>
     </header>
 
     <div class="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
@@ -62,6 +62,7 @@ import { Link } from "@inertiajs/vue3";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
 import HomeCard from "@/Components/Public/HomeCard.vue";
+import SmartLink from "./SmartLink.vue";
 
 defineProps<{
   news: App.Entities.News[] | null;
