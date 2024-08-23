@@ -1,14 +1,14 @@
 <template>
   <Card class="border shadow-sm transition-all duration-300  hover:shadow-md dark:border-zinc-200/20">
     <div class="h-32 w-full">
-      <img v-if="calendarEvent.images && calendarEvent.images?.length > 0" style="height: 100px"
-        class="rounded-t-md object-cover object-center" :src="calendarEvent.images[0].original_url">
+      <img v-if="calendarEvent.images && calendarEvent.images?.length > 0"
+        class="size-full rounded-t-md object-cover object-center" :src="calendarEvent.images[0].original_url">
     </div>
     <CardHeader class="mt-2">
-      <div class="align-center flex h-12 flex-row items-center p-2">
-        <p class="line-clamp-2 w-full text-center text-lg font-bold leading-5">{{
+      <div class="align-center flex flex-row items-center p-2">
+        <p class="line-clamp-2 w-full text-center text-xl font-bold leading-5">{{
           calendarEvent.title
-        }}</p>
+          }}</p>
       </div>
     </CardHeader>
     <CardContent class="mb-2 flex flex-col gap-2 text-sm">

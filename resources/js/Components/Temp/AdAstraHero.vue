@@ -20,7 +20,7 @@
     </section>
     <div class="absolute top-0 h-3 w-full bg-gradient-to-b from-white to-transparent dark:from-zinc-900" />
     <div class="absolute bottom-0 h-5 w-full bg-gradient-to-b from-transparent to-white dark:to-zinc-900" />
-    <div class="absolute bottom-[15%] left-[7%] z-10 p-4 text-white max-lg:max-w-[55ch]">
+    <div class="absolute bottom-[15%] left-[2%] z-10 py-4 px-10 text-white max-lg:max-w-[55ch]">
       <p class="text-4xl font-extrabold sm:text-5xl">
         Rugsėjo 6 d.
       </p>
