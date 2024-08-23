@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div class="mt-4">
+    <AdAstraBanner />
     <NewsArticle>
       <template #tags>
         <template v-for="tag in article.tags" :key="tag.id">
@@ -48,6 +49,7 @@ import FeedbackPopover from "@/Components/Public/FeedbackPopover.vue";
 import NewsArticle from "@/Components/Public/NewsArticle.vue";
 import RichContentParser from "@/Components/RichContentParser.vue";
 import SmartLink from "@/Components/Public/SmartLink.vue";
+import AdAstraBanner from "@/Components/Temp/AdAstraBanner.vue";
 
 defineProps<{
   article: App.Entities.News;

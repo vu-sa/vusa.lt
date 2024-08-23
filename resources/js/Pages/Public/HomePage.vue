@@ -1,5 +1,6 @@
 <template>
   <!-- <SummerCamps v-if="$page.props.app.locale === 'lt'" /> -->
+  <AdAstraHero />
 
   <div v-if="news.length > 0" class="mx-auto mt-2">
     <NewsElement :news="news" />
@@ -7,11 +8,12 @@
 
   <IndividualStudies />
 
-  <EventCalendar :show-photos="true" :calendar="calendar" :upcoming-events="upcomingEvents" />
+  <EventCalendar :show-photos="true" :calendar :upcoming-events />
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent } from "vue";
+import { computed, defineAsyncComponent } from "vue";
+import AdAstraHero from "@/Components/Temp/AdAstraHero.vue";
 
 defineProps<{
   news: Array<App.Entities.News>;

@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div class="mt-8">
+    <AdAstraBanner />
     <section class="pt-8 last:pb-2">
       <!-- <header>
         <NBreadcrumb v-if="navigationItemId != null" class="mb-4 flex w-full">
@@ -40,6 +41,7 @@
 <script setup lang="ts">
 import FeedbackPopover from "@/Components/Public/FeedbackPopover.vue";
 import RichContentParser from "@/Components/RichContentParser.vue";
+import AdAstraBanner from "@/Components/Temp/AdAstraBanner.vue";
 
 const props = defineProps<{
   navigationItemId: number;

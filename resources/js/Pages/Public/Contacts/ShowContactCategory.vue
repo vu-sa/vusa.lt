@@ -1,5 +1,6 @@
 <template>
   <div class="mt-12 flex flex-col gap-4">
+    <AdAstraBanner />
     <h1 class="mb-8">
       {{ $t("Kontaktai") }}: {{ $t(type.title) }}
     </h1>
@@ -30,6 +31,7 @@ import { NButton, NDivider } from "naive-ui";
 
 import InstitutionFigure from "@/Components/Public/InstitutionFigure.vue";
 import SmartLink from "@/Components/Public/SmartLink.vue";
+import AdAstraBanner from "@/Components/Temp/AdAstraBanner.vue";
 
 defineProps<{
   institutions: App.Entities.Institution[];

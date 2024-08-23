@@ -1,4 +1,5 @@
 <template>
+    <AdAstraBanner />
   <HeaderWithShapeDivider1 class="full-bleed" image-src="/images/photos/stovykla.jpg">{{ summerCampTitle }}
   </HeaderWithShapeDivider1>
 
@@ -145,6 +146,7 @@ import { computed } from "vue";
 import { getFacultyName } from "@/Utils/String";
 import HeaderWithShapeDivider1 from "@/Components/Headers/HeaderWithShapeDivider1.vue";
 import SmartLink from "@/Components/Public/SmartLink.vue";
+import AdAstraBanner from "@/Components/Temp/AdAstraBanner.vue";
 
 const props = defineProps<{
   events: App.Entities.News;
