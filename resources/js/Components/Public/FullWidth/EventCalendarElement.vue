@@ -86,7 +86,7 @@
             lang: $page.props.app.locale,
           })
             ">
-            <CalendarCard class="w-[28rem]" :calendar-event="event" />
+            <CalendarCard :calendar-event="event" />
           </a>
         </div>
       </div>
@@ -96,7 +96,7 @@
 
 <script setup lang="ts">
 import { Head } from "@inertiajs/vue3";
-import { NButton, NCarousel, NMessageProvider } from "naive-ui";
+import { NButton, NMessageProvider } from "naive-ui";
 import { computed, ref } from "vue";
 
 import CalendarCard from "@/Components/Calendar/CalendarCard.vue";

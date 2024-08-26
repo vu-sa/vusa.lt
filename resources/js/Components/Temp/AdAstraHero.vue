@@ -1,9 +1,9 @@
 <template>
-  <div class="full-bleed relative mt-2 h-96 overflow-hidden">
+  <div class="full-bleed relative mt-4 h-[28rem] overflow-hidden">
 
-    <img id="adastra-background" class="top-0 z-0 size-full object-cover" src="/images/adastra/adastra-fonas.jpg">
+    <img id="adastra-background" class="top-0 size-full object-cover" src="/images/adastra/adastra-fonas.jpg">
     <img src="/images/adastra/adastra-logo.svg"
-      class="absolute right-16 top-12 z-10 my-auto h-1/6 md:inset-y-0 md:h-1/2 lg:right-24 xl:right-32">
+      class="absolute -right-4 top-[-10%] my-auto w-3/5 opacity-70 sm:top-[-35%] md:bottom-0 md:right-[-10%] md:top-[-30%] md:h-4/5 lg:-top-8 lg:h-full">
     <section class="absolute left-0 top-0 size-full overflow-hidden">
 
       <span />
@@ -18,22 +18,22 @@
       <span />
 
     </section>
-    <div class="absolute top-0 h-3 w-full bg-gradient-to-b from-white to-transparent dark:from-zinc-900" />
+    <div class="absolute top-0 h-6 w-full bg-gradient-to-b from-white to-transparent dark:from-zinc-900" />
     <div class="absolute bottom-0 h-5 w-full bg-gradient-to-b from-transparent to-white dark:to-zinc-900" />
-    <div class="absolute bottom-[15%] left-[2%] z-10 py-4 px-10 text-white max-lg:max-w-[55ch]">
-      <p class="text-4xl font-extrabold sm:text-5xl">
+    <div class="absolute bottom-8 left-[4%] z-10 px-10 py-4 text-white md:max-w-[50%]">
+      <p class="text-4xl font-extrabold tracking-wide sm:text-5xl">
         Rugsėjo 6 d.
       </p>
-      <p class="mt-1 text-xl font-medium sm:text-2xl sm:tracking-wide">
+      <p class="mt-1 text-xl font-medium leading-6 tracking-wider sm:text-2xl">
         Universiteto gyvenimo integracijos festivalis
       </p>
 
-      <p class="mt-6 font-light">
+      <p class="mt-4 font-light">
         Diskusijos · Koncertas · Dirbtuvės · Kontaktų mugė · ir daugiau!
       </p>
-      <a href="https://www.facebook.com/events/484501527532466" class="block sm:w-1/2" target="_blank">
+      <a href="https://www.facebook.com/events/484501527532466" class="mt-4 block sm:w-1/2" target="_blank">
         <button
-          class="mt-8 w-full justify-self-end rounded-full bg-gradient-to-b from-orange-500 to-amber-400 px-4 py-2 font-bold text-white shadow-xl transition-shadow">Dalyvauk!</button></a>
+          class="w-full justify-self-end rounded-full bg-gradient-to-b from-orange-600 to-amber-500 px-4 py-2 font-bold text-white shadow-xl transition-shadow">Dalyvauk!</button></a>
     </div>
   </div>
 </template>
