@@ -3,17 +3,16 @@
 namespace App\Http\Requests;
 
 use App\Models\Duty;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
 
-class UpdateDutiableRequest extends FormRequest
+class UpdateDutiableRequest extends ResourceRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return $this->user()->can('update', [Duty::class, request('duty'), $this->authorizer]);
+        return $this->user()->can('update', [Duty::class, Duty::find(request('duty')['id']), $this->authorizer]);
 
     }
 
