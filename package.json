@@ -40,7 +40,7 @@
     "d3": "^7.7.0",
     "fuse.js": "^7.0.0",
     "gsap": "^3.12.5",
-    "happy-dom": "^14.0.0",
+    "happy-dom": "^15.7.2",
     "laravel-precognition-vue-inertia": "^0.5.3",
     "laravel-vue-i18n": "^2.3.2",
     "latinize": "^2.0.0",
