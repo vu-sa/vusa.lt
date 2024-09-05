@@ -53,8 +53,8 @@ class NewsController extends LaravelResourceController
 
         $newNews = $news->replicate();
 
-        $newNews->title = $newNews->title . ' (kopija)';
-        $newNews->permalink = $newNews->permalink . '-kopija';
+        $newNews->title = $newNews->title.' (kopija)';
+        $newNews->permalink = $newNews->permalink.'-kopija';
         $newNews->draft = 1;
         $newNews->publish_time = null;
         $newNews->save();
