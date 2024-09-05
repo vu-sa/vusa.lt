@@ -4,6 +4,7 @@
 </template>
 
 <script setup lang="tsx">
+import { NButton } from "naive-ui";
 import { computed, provide, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 import type { DataTableColumns, DataTableSortState } from "naive-ui";
@@ -43,7 +44,7 @@ const columns = computed<DataTableColumns<App.Entities.News>>(() => [
   {
     title: "ID",
     key: "id",
-    width: 40,
+    width: 70,
   },
   {
     title: "Pavadinimas",
@@ -98,7 +99,11 @@ const columns = computed<DataTableColumns<App.Entities.News>>(() => [
           {row.other_language_news?.title}
         </a>
       ) : (
-        ""
+        <a href={route('news.duplicate', row.id)}>
+          <NButton size="tiny">
+            Duplikuoti
+          </NButton>
+        </a>
       );
     },
   },

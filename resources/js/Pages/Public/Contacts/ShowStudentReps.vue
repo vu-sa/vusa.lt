@@ -51,6 +51,7 @@ const prependPadalinysOptions = () => {
   ];
 };
 
+// TODO: if institution has multiple types, show only once
 const filteredTypesAndInstitutions = computed(() => {
 
   // filter institutions by search

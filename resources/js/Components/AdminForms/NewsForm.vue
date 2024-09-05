@@ -16,22 +16,30 @@
             <NSelect v-model:value="form.lang" :options="languageOptions" placeholder="Pasirinkti kalbą..." />
           </NFormItem>
           <NFormItem required label="Naujienos paskelbimo laikas">
-            <NDatePicker v-model:value="form.publish_time" placeholder="Data..." type="datetime" value-format="yyyy-MM-dd'T'HH:mm:ss.SSSxxx" />
+            <NDatePicker v-model:value="form.publish_time" placeholder="Data..." type="datetime"
+              value-format="yyyy-MM-dd'T'HH:mm:ss.SSSxxx" />
           </NFormItem>
           <NFormItem label="Ar juodraštis?">
             <NSwitch v-model:value="form.draft" :checked-value="1" :unchecked-value="0" />
           </NFormItem>
         </div>
-        <div class="grid lg:grid-cols-2 lg:gap-4">
-          <NFormItem label="Kitos kalbos puslapis">
-            <NSelect v-model:value="form.other_lang_id" filterable :disabled="modelRoute === 'news.store'"
-              placeholder="Pasirinkti kitos kalbos puslapį... (tik tada, kai jau sukūrėte puslapį)"
-              :options="otherLangNewsOptions" clearable />
-          </NFormItem>
-          <NFormItem label="Nuoroda">
-            <NInput :value="form.permalink" disabled type="text" placeholder="Sugeneruojama nuoroda" />
-          </NFormItem>
-        </div>
+        <NFormItem class="items-start" label="Kitos kalbos puslapis">
+          <NSelect v-model:value="form.other_lang_id" filterable :disabled="modelRoute === 'news.store'"
+            placeholder="Pasirinkti kitos kalbos puslapį... (tik tada, kai jau sukūrėte puslapį)"
+            :options="otherLangNewsOptions" clearable />
+        </NFormItem>
+        <NFormItem>
+          <template #label>
+            <div class="inline-flex items-center gap-2">
+              <IFluentLink24Regular />
+              Nuoroda
+            </div>
+          </template>
+          <div class="flex grow flex-col gap-1">
+            <NInput :value="form.permalink" type="text" placeholder="Sugeneruojama nuoroda" />
+            <InfoText>Atsargiai: pakeitus nuorodą, sena nuoroda nebeveiks!</InfoText>
+          </div>
+        </NFormItem>
       </FormElement>
       <FormElement>
         <template #title>
@@ -86,6 +94,7 @@ import latinize from "latinize";
 
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import FormElement from "./FormElement.vue";
+import InfoText from "../SmallElements/InfoText.vue";
 import RichContentFormElement from "../RichContentFormElement.vue";
 import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
 import UploadImageWithCropper from "../Buttons/UploadImageWithCropper.vue";

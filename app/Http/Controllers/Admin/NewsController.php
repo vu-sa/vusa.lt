@@ -47,6 +47,33 @@ class NewsController extends LaravelResourceController
         return Inertia::render('Admin/Content/CreateNews');
     }
 
+    public function duplicate(News $news)
+    {
+        $this->authorize('create', [News::class, $this->authorizer]);
+
+        $newNews = $news->replicate();
+
+        $newNews->title = $newNews->title . ' (kopija)';
+        $newNews->permalink = $newNews->permalink . '-kopija';
+        $newNews->draft = 1;
+        $newNews->publish_time = null;
+        $newNews->save();
+
+        // disassociate content
+        $newNews->content_id = null;
+
+        $newNews->content->parts()->createMany($news->content->parts->map(function ($part) {
+            return [
+                'type' => $part->type,
+                'json_content' => $part->json_content,
+                'options' => $part->options,
+                'order' => $part->order,
+            ];
+        })->toArray());
+
+        return redirect()->route('news.edit', $newNews)->with('success', 'Naujiena sėkmingai nukopijuota!');
+    }
+
     /**
      * Store a newly created resource in storage.
      *
