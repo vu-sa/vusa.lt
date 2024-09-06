@@ -1,6 +1,5 @@
 <template>
   <div class="mt-8">
-    <AdAstraBanner />
     <section class="pt-8 last:pb-2">
       <!-- <header>
         <NBreadcrumb v-if="navigationItemId != null" class="mb-4 flex w-full">

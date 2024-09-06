@@ -16,6 +16,7 @@ import Youtube from '@tiptap/extension-youtube';
 
 import { CustomHeading } from './TipTap/CustomHeading';
 import { Video } from './TipTap/Video';
+import { target } from 'happy-dom/lib/PropertySymbol';
 
 defineProps<{
   json_content: any;
@@ -55,7 +56,12 @@ const generateHTMLfromTiptap = (json_content: any) => {
         class: "m-0 border-t p-0 even:bg-zinc-100 dark:even:bg-zinc-800/20",
       },
     }),
-    TipTapLink,
+    TipTapLink.configure({
+      HTMLAttributes: {
+        target: null,
+        rel: 'noopener noreferrer'
+      },
+    }),
     Underline,
     Video,
     Youtube.configure({

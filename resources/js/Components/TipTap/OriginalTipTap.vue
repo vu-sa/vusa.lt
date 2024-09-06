@@ -245,6 +245,10 @@ const editor = useEditor({
     TableRow,
     TipTapLink.configure({
       openOnClick: false,
+      HTMLAttributes: {
+        target: null,
+        rel: 'noopener noreferrer'
+      },
     }),
     UnderlineExtension,
     Video,
