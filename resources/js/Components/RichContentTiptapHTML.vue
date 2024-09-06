@@ -59,7 +59,7 @@ const generateHTMLfromTiptap = (json_content: any) => {
       HTMLAttributes: {
         class: "text-blue-500 underline",
       },
-    })
+    }),
     Underline,
     Video,
     Youtube.configure({
