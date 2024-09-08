@@ -357,7 +357,8 @@ class PublicPageController extends PublicController
         $this->getTenantLinks();
         $this->shareOtherLangURL('memberRegistration');
 
-        $tenants = Tenant::select('id', 'fullname', 'shortname')->where('shortname', '!=', 'VU SA')->orderBy('shortname')->get();
+        $tenants = Tenant::select('id', 'fullname', 'shortname')->where('shortname', '!=', 'VU SA')->where('type', 'padalinys')->
+            orderBy('shortname')->get();
 
         $seo = $this->shareAndReturnSEOObject(
             title: __('Prašymas tapti VU SA (arba VU SA PKP) nariu').' - VU SA',

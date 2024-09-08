@@ -55,7 +55,11 @@ const generateHTMLfromTiptap = (json_content: any) => {
         class: "m-0 border-t p-0 even:bg-zinc-100 dark:even:bg-zinc-800/20",
       },
     }),
-    TipTapLink,
+    TipTapLink.configure({
+      HTMLAttributes: {
+        class: "text-blue-500 underline",
+      },
+    }),
     Underline,
     Video,
     Youtube.configure({
