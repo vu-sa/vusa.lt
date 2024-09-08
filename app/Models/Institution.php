@@ -25,10 +25,6 @@ class Institution extends Model
 
     protected $with = ['types'];
 
-    protected $casts = [
-        'extra_attributes' => 'array',
-    ];
-
     public $translatable = ['name', 'short_name', 'description', 'address'];
 
     public function getActivitylogOptions(): LogOptions

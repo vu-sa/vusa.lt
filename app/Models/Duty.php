@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Pivots\Dutiable;
+use App\Models\Traits\HasTranslations;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,22 +18,20 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Duty extends Model implements AuthorizableContract
 {
-    use Authorizable, HasFactory, HasRelationships, HasRoles, HasUlids, LogsActivity, Notifiable, Searchable, SoftDeletes;
+    use Authorizable, HasFactory, HasRelationships, HasRoles, HasTranslations, HasUlids, LogsActivity, Notifiable, Searchable, SoftDeletes;
+
+    protected $guarded = [];
 
     protected $with = ['types'];
 
-    protected $casts = [
-        'extra_attributes' => 'array',
-    ];
-
     protected $guard_name = 'web';
 
-    protected $guarded = [];
+    public $translatable = ['name', 'description'];
 
     public function toSearchableArray()
     {
         return [
-            'name' => $this->name,
+            'name->'.app()->getLocale() => $this->getTranslation('name', app()->getLocale()),
             'email' => $this->email,
         ];
     }
@@ -131,6 +130,4 @@ class Duty extends Model implements AuthorizableContract
     {
         return $this->hasManyDeepFromRelations($this->tenants(), (new Tenant)->resources());
     }
-
-    // add "duty" relation which points to self
 }

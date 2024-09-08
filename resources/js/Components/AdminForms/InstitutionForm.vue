@@ -20,7 +20,7 @@
             <MultiLocaleInput v-model:input="form.short_name" />
           </NFormItem>
 
-          <NFormItem label="tenant, kuriam priklauso institucija">
+          <NFormItem label="Padalinys, kuriam priklauso institucija">
             <NSelect v-model:value="form.tenant_id" :options="options" placeholder="VU SA X" />
           </NFormItem>
         </div>
@@ -28,7 +28,59 @@
           <NSwitch v-model:value="form.is_active" :checked-value="1" :unchecked-value="0" />
         </NFormItem>
       </FormElement>
-      <FormElement is-closed>
+      <FormElement>
+        <template #title>
+          Institucijos tipas ir papildoma informacija
+        </template>
+        <template #description>
+          Priklausomai nuo institucijos tipo, gali būti įmanoma užpildyti papildomą informaciją.
+        </template>
+        <NFormItem label="Institucijos tipas">
+          <NSelect v-model:value="form.types" :options="institutionTypes" label-field="title" value-field="id"
+            placeholder="Studentų atstovų organas" clearable multiple />
+        </NFormItem>
+        <template v-if="showMoreOptions">
+          <div class="flex flex-row gap-4">
+            <NFormItem label="Nuotrauka">
+              <UploadImageWithCropper v-model:url="form.image_url" folder="institutions" />
+            </NFormItem>
+            <NFormItem label="Logotipas">
+              <UploadImageWithCropper v-model:url="form.logo_url" folder="institutions" />
+            </NFormItem>
+          </div>
+          <div class="grid grid-cols-2 gap-x-4">
+            <NFormItem label="El. paštas">
+              <NInput v-model:value="form.email" type="email" placeholder="" />
+            </NFormItem>
+            <NFormItem label="Telefonas">
+              <NInput v-model:value="form.phone" type="text" placeholder="" />
+            </NFormItem>
+            <NFormItem label="Adresas">
+              <MultiLocaleInput v-model:input="form.address" />
+            </NFormItem>
+            <NFormItem label="Svetainė">
+              <NInput v-model:value="form.website" type="text" placeholder="" />
+            </NFormItem>
+            <NFormItem label="Facebook">
+              <NInput v-model:value="form.facebook_url" type="text" placeholder="" />
+            </NFormItem>
+            <NFormItem label="Instagram">
+              <NInput v-model:value="form.instagram_url" type="text" placeholder="" />
+            </NFormItem>
+          </div>
+        </template>
+        <NFormItem>
+          <template #label>
+            <div class="inline-flex items-center gap-2">
+              Aprašymas
+              <SimpleLocaleButton v-model:locale="locale" />
+            </div>
+          </template>
+          <TipTap v-if="locale === 'lt'" v-model="form.description.lt" html />
+          <TipTap v-else v-model="form.description.en" html />
+        </NFormItem>
+      </FormElement>
+      <FormElement>
         <template #title>
           Institucijos pareigos ir jų eiliškumas
         </template>
@@ -96,58 +148,6 @@
         <div v-else class="col-span-3 h-fit">
           Ši institucija <strong>neturi</strong> pareigų.
         </div>
-      </FormElement>
-      <FormElement>
-        <template #title>
-          Institucijos tipas ir papildoma informacija
-        </template>
-        <template #description>
-          Priklausomai nuo institucijos tipo, gali būti įmanoma užpildyti papildomą informaciją.
-        </template>
-        <NFormItem label="Institucijos tipas">
-          <NSelect v-model:value="form.types" :options="institutionTypes" label-field="title" value-field="id"
-            placeholder="Studentų atstovų organas" clearable multiple />
-        </NFormItem>
-        <template v-if="showMoreOptions">
-          <div class="flex flex-row gap-4">
-            <NFormItem label="Nuotrauka">
-              <UploadImageWithCropper v-model:url="form.image_url" folder="institutions" />
-            </NFormItem>
-            <NFormItem label="Logotipas">
-              <UploadImageWithCropper v-model:url="form.logo_url" folder="institutions" />
-            </NFormItem>
-          </div>
-          <div class="grid grid-cols-2 gap-x-4">
-            <NFormItem label="El. paštas">
-              <NInput v-model:value="form.email" type="email" placeholder="" />
-            </NFormItem>
-            <NFormItem label="Telefonas">
-              <NInput v-model:value="form.phone" type="text" placeholder="" />
-            </NFormItem>
-            <NFormItem label="Adresas">
-              <MultiLocaleInput v-model:input="form.address" />
-            </NFormItem>
-            <NFormItem label="Svetainė">
-              <NInput v-model:value="form.website" type="text" placeholder="" />
-            </NFormItem>
-            <NFormItem label="Facebook">
-              <NInput v-model:value="form.facebook_url" type="text" placeholder="" />
-            </NFormItem>
-            <NFormItem label="Instagram">
-              <NInput v-model:value="form.instagram_url" type="text" placeholder="" />
-            </NFormItem>
-          </div>
-        </template>
-        <NFormItem>
-          <template #label>
-            <div class="inline-flex items-center gap-2">
-              Aprašymas
-              <SimpleLocaleButton v-model:locale="locale" />
-            </div>
-          </template>
-          <TipTap v-if="locale === 'lt'" v-model="form.description.lt" html />
-          <TipTap v-else v-model="form.description.en" html />
-        </NFormItem>
       </FormElement>
       <FormElement>
         <template #title>

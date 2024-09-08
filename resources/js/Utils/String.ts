@@ -97,32 +97,32 @@ export const capitalize = (word: string) => {
 
 export const changeDutyNameEndings = (
   contact: App.Entities.User | null | undefined,
-  duty: App.Entities.Duty,
+  dutyName: App.Entities.Duty["name"],
   locale: string,
   pronouns: string,
   useOriginalDutyName: boolean
 ) => {
-  if (locale === "en" && duty.extra_attributes?.en?.name) {
-    return duty.extra_attributes?.en?.name;
+  if (locale === "en") {
+    return dutyName;
   }
 
   // check if duty name should not be explicitly changed
-  if (useOriginalDutyName) return duty.name;
+  if (useOriginalDutyName) return dutyName;
 
   const splitPronouns = pronouns?.split("/");
 
   // replace duty.name ending 'ius' with 'ė', but only on end of string
-  const womanizedTitle = duty.name
+  const womanizedTitle = dutyName
     .replace(/ius$/, "ė")
     .replace(/as$/, "ė")
     .replace(/ys$/, "ė");
 
-  const pluralizedTitle = duty.name
+  const pluralizedTitle = dutyName
     .replace(/ius$/, "iai")
     .replace(/as$/, "ai")
     .replace(/ys$/, "iai");
 
-  const masculinedTitle = duty.name
+  const masculinedTitle = dutyName
     .replace(/vė$/, "vas")
     .replace(/rė$/, "rius")
     .replace(/kė$/, "kas");
@@ -138,7 +138,7 @@ export const changeDutyNameEndings = (
 
   // If no pronouns are set, try to guess based on the name
   if (!contact) {
-    return duty.name;
+    return dutyName;
   } 
 
   const firstName = contact.name.split(" ")[0];
@@ -150,7 +150,7 @@ export const changeDutyNameEndings = (
 
   const namesNotToWomanize = ["German"];
   if (namesNotToWomanize.includes(firstName)) {
-    return duty.name;
+    return dutyName;
   }
 
   if (contact.name.endsWith("ė") || firstName.endsWith("ė")) {
@@ -162,5 +162,5 @@ export const changeDutyNameEndings = (
     return womanizedTitle;
   }
 
-  return duty.name ?? "";
+  return dutyName ?? "";
 };

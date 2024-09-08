@@ -5,6 +5,7 @@
     </h1>
     <template v-for="institution in institutions" :key="institution.id">
       <InstitutionFigure :institution>
+        <!-- Mostly used for tenant buttons (they have separate sections for coordinators and mentors) -->
         <template #more>
           <div v-if="institution.alias === institution.tenant?.alias" class="mt-3 flex flex-wrap gap-2">
             <NButtonGroup rounded size="small">

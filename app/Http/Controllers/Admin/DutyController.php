@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetAttachableTypesForDuty;
 use App\Http\Controllers\LaravelResourceController;
+use App\Http\Requests\StoreDutyRequest;
 use App\Models\Duty;
 use App\Models\Role;
 use App\Models\Type;
@@ -62,29 +63,14 @@ class DutyController extends LaravelResourceController
      *
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreDutyRequest $request)
     {
-        $this->authorize('create', [Duty::class, $this->authorizer]);
+        $duty = new Duty;
 
-        $request->validate([
-            'name' => 'required',
-            'current_users' => 'nullable|array',
-            'institution_id' => 'required',
-            'places_to_occupy' => 'required|numeric',
-        ]);
-
-        $duty = Duty::create([
-            'name' => $request->name,
-            'places_to_occupy' => $request->places_to_occupy,
-            'email' => $request->email,
-            'description' => $request->description,
-            'institution_id' => $request->institution_id,
-        ]);
-
-        $duty->extra_attributes = $request->extra_attributes;
-        $duty->save();
+        $duty->fill($request->safe()->except('types', 'roles', 'current_users'))->save();
 
         $duty->types()->sync($request->types);
+
         $this->handleUsersUpdate(new Collection($duty->current_users->pluck('id')), new Collection($request->current_users), $duty);
 
         return redirect()->route('duties.index')->with('success', trans_choice('messages.created', 0, ['model' => trans_choice('entities.duty.model', 1)]));
@@ -115,12 +101,10 @@ class DutyController extends LaravelResourceController
 
         $duty->load('institution', 'types', 'roles', 'current_users');
 
-        $attachable_duty_types = GetAttachableTypesForDuty::execute();
-
         return Inertia::render('Admin/People/EditDuty', [
-            'duty' => $duty,
+            'duty' => $duty->toFullArray(),
             'roles' => Role::all(),
-            'dutyTypes' => $attachable_duty_types->values(),
+            'dutyTypes' => GetAttachableTypesForDuty::execute()->values(),
             'assignableInstitutions' => DutyService::getInstitutionsForUpserts($this->authorizer),
             // TODO: shouldn't return all users?
             'assignableUsers' => User::select('id', 'name', 'profile_photo_path')->orderBy('name')->get(),
@@ -154,22 +138,20 @@ class DutyController extends LaravelResourceController
             $duty->institution()->associate($request->institution_id);
             $duty->save();
 
-            if (true) {
-                // check if user is super admin
-                if ($request->has('roles')) {
-                    $roles = Role::find($request->roles);
+            // check if user is super admin
+            if ($request->has('roles')) {
+                $roles = Role::find($request->roles);
 
-                    // foreach check if super admin
-                    foreach ($roles as $role) {
-                        if ($role->name == config('permission.super_admin_role_name')) {
-                            abort(403, 'Negalima priskirti šios rolės pareigybėms! Bandykite iš naujo');
-                        }
+                // foreach check if super admin
+                foreach ($roles as $role) {
+                    if ($role->name == config('permission.super_admin_role_name')) {
+                        abort(403, 'Negalima priskirti šios rolės pareigybėms! Bandykite iš naujo');
                     }
-
-                    $duty->syncRoles($roles);
-                } else {
-                    $duty->syncRoles([]);
                 }
+
+                $duty->syncRoles($roles);
+            } else {
+                $duty->syncRoles([]);
             }
 
             $duty->types()->sync($request->types);
@@ -215,24 +197,5 @@ class DutyController extends LaravelResourceController
         $duty->restore();
 
         return back()->with('success', 'Pareigybė sėkmingai atkurta!');
-    }
-
-    public function setAsStudentRepresentatives(Request $request)
-    {
-        $this->authorize('update', [Duty::class, $this->authorizer]);
-
-        $request->validate([
-            'duties' => 'required|array',
-        ]);
-
-        $duties = Duty::find($request->duties);
-
-        // attach student representative type and role to duties, but without duplication errors
-        foreach ($duties as $duty) {
-            $duty->types()->syncWithoutDetaching(Type::where('title', 'Studentų atstovas')->first());
-            $duty->roles()->syncWithoutDetaching(Role::where('name', 'Studentų atstovas')->first());
-        }
-
-        return back()->with('success', 'Pareigybės sėkmingai atnaujintos!');
     }
 }

@@ -27,19 +27,13 @@ defineProps<{
 }>();
 
 const duty = {
-  name: "",
-  description: "",
+  name: { lt: "", en: "" },
+  description: { lt: "", en: "" },
   email: null,
   institution_id: null,
   places_to_occupy: null,
   types: [],
   roles: [],
-  users: [],
-  extra_attributes: {
-    en: {
-      name: "",
-      description: "",
-    },
-  },
+  current_users: [],
 };
 </script>

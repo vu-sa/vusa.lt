@@ -81,7 +81,6 @@ Route::resource('files', FilesController::class);
 Route::resource('documents', DocumentController::class)->except('create', 'edit');
 Route::post('documents/{document}/refresh', [DocumentController::class, 'refresh'])->name('documents.refresh');
 
-Route::put('duties/setAsStudentRepresentatives', [DutyController::class, 'setAsStudentRepresentatives'])->name('duties.setAsStudentRepresentatives');
 Route::resource('duties', DutyController::class);
 Route::resource('dutiables', DutiableController::class);
 Route::post('institutions/reorderDuties', [InstitutionController::class, 'reorderDuties'])->name('institutions.reorderDuties');
@@ -103,8 +102,6 @@ Route::post('tasks/{task}/updateCompletionStatus', [TaskController::class, 'upda
 
 Route::resource('changelogItems', ChangelogItemController::class);
 Route::post('changelogItems/approveForUser', [ChangelogItemController::class, 'approveForUser'])->name('changelogItems.approve');
-
-Route::post('duties/search', [DutyController::class, 'searchForDuties'])->name('duties.search');
 
 Route::post('files/uploadImage', [FilesController::class, 'uploadImage'])->name('files.uploadImage');
 

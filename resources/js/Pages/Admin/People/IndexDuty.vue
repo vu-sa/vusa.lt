@@ -50,23 +50,6 @@ provide("sorters", sorters);
 
 const columns = computed<DataTableColumns<App.Entities.Duty>>(() => [
   {
-    type: "selection",
-    options: [
-      "all",
-      "none",
-      {
-        label: "Set as student representatives",
-        key: "set-as-student-representatives",
-        onSelect: (rows) => {
-          router.put(route("duties.setAsStudentRepresentatives"), {
-            duties: checkedRowKeys.value,
-          });
-        },
-      },
-    ],
-    width: 50,
-  },
-  {
     title: "Pavadinimas",
     key: "name",
     sorter: true,

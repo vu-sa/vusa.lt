@@ -21,7 +21,7 @@
         <div v-if="duties" class="w-fit text-xs text-zinc-600 dark:text-zinc-200">
           <template v-for="duty in duties" :key="duty.id">
             <p class="my-1">
-              {{ changeDutyNameEndings(contact, duty, $page.props.app.locale, contact.pronouns,
+              {{ changeDutyNameEndings(contact, duty.name, $page.props.app.locale, contact.pronouns,
                 duty.pivot?.extra_attributes?.use_original_duty_name) }}
               {{ showAdditionalInfo(duty) }}
               <span v-if="duty.description && duty.description !== '<p></p>'" class="align-middle">
@@ -124,7 +124,6 @@ const dutyDescription = (duty) => {
 
   if (locale === "en") {
     return (
-      duty.extra_attributes?.en?.description ??
       duty.pivot?.extra_attributes?.info_text ??
       duty.description
     );

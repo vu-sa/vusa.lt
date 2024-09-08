@@ -69,8 +69,6 @@ class InstitutionController extends LaravelResourceController
 
         $institution->fill($request->safe()->except('types'))->save();
 
-        $institution->save();
-
         $institution->types()->sync($request->types);
 
         return redirect()->route('institutions.index')->with('success', 'Institucija sėkmingai sukurta!');
