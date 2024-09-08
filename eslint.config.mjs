@@ -4,7 +4,6 @@ import pluginVue from 'eslint-plugin-vue'
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import vueParser from 'vue-eslint-parser';
-import stylistic from '@stylistic/eslint-plugin'
 import pluginVueA11y from "eslint-plugin-vuejs-accessibility";
 
 export default [
@@ -15,7 +14,6 @@ export default [
     ...tailwind.configs["flat/recommended"],
     {
         plugins: {
-            '@stylistic': stylistic,
             "no-secrets": noSecrets
         },
 
@@ -36,7 +34,14 @@ export default [
         rules: {
             "no-secrets/no-secrets": "error",
             "vue/max-attributes-per-line": "off",
+            // Some bugs for this rule
             "tailwindcss/no-custom-classname": "off",
+            // Namespaces shown as undefined, so disable for now
+            "no-undef": "off",
+            // Haven't found a way to override volar with eslint
+            'vue/html-indent': "off",
+            'vue/html-closing-bracket-newline': "off",
+            'vue/first-attribute-linebreak': "off",
         },
     }
 ];
