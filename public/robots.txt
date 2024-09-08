@@ -1,2 +1,6 @@
 User-agent: *
 Disallow: /uploads
+
+# Disable /docs
+User-agent: *
+Disallow: /docs
