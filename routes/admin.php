@@ -16,7 +16,7 @@ Route::get('stats/representatives', [StatsController::class, 'representativesInT
 Route::patch('users/{user}/restore', [UserController::class, 'restore'])->name('users.restore')->withTrashed();
 Route::patch('pages/{page}/restore', [PageController::class, 'restore'])->name('pages.restore')->withTrashed();
 Route::patch('news/{news}/restore', [NewsController::class, 'restore'])->name('news.restore')->withTrashed();
-Route::get('news/{news}/duplicate', [NewsController::class, 'duplicate'])->name('news.duplicate');
+Route::post('news/{news}/duplicate', [NewsController::class, 'duplicate'])->name('news.duplicate');
 Route::patch('doings/{doing}/restore', [DoingController::class, 'restore'])->name('doings.restore')->withTrashed();
 Route::patch('duties/{duty}/restore', [DutyController::class, 'restore'])->name('duties.restore')->withTrashed();
 Route::patch('goals/{goal}/restore', [GoalController::class, 'restore'])->name('goals.restore')->withTrashed();

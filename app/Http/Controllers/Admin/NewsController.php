@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\DuplicateNewsAction;
 use App\Http\Controllers\LaravelResourceController;
 use App\Models\Content;
 use App\Models\ContentPart;
@@ -51,25 +52,7 @@ class NewsController extends LaravelResourceController
     {
         $this->authorize('create', [News::class, $this->authorizer]);
 
-        $newNews = $news->replicate();
-
-        $newNews->title = $newNews->title . ' (kopija)';
-        $newNews->permalink = $newNews->permalink . '-kopija';
-        $newNews->draft = 1;
-        $newNews->publish_time = null;
-        $newNews->save();
-
-        // disassociate content
-        $newNews->content_id = null;
-
-        $newNews->content->parts()->createMany($news->content->parts->map(function ($part) {
-            return [
-                'type' => $part->type,
-                'json_content' => $part->json_content,
-                'options' => $part->options,
-                'order' => $part->order,
-            ];
-        })->toArray());
+        $newNews = (new DuplicateNewsAction)->execute($news);
 
         return redirect()->route('news.edit', $newNews)->with('success', 'Naujiena sėkmingai nukopijuota!');
     }

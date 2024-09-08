@@ -40,9 +40,9 @@ describe('auth: simple user', function () {
     });
 
     test('can\'t update institutions', function () {
-        $tenant = Institution::query()->first();
+        $institution = Institution::query()->first();
 
-        asUser($this->user)->put(route('institutions.update', $tenant), [
+        asUser($this->user)->put(route('institutions.update', $institution), [
             'name' => ['lt' => 'Test User'],
             'short_name' => ['lt' => 'test'],
             'tenant_id' => $this->tenant->id,
@@ -51,8 +51,8 @@ describe('auth: simple user', function () {
     });
 
     test('can\'t delete institution', function () {
-        $tenant = Institution::query()->first();
+        $institution = Institution::query()->first();
 
-        asUser($this->user)->delete(route('institutions.destroy', $tenant))->assertStatus(302);
+        asUser($this->user)->delete(route('institutions.destroy', $institution))->assertStatus(302);
     });
 });

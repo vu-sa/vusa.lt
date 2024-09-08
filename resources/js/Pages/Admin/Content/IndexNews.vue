@@ -6,7 +6,7 @@
 <script setup lang="tsx">
 import { NButton } from "naive-ui";
 import { computed, provide, ref } from "vue";
-import { usePage } from "@inertiajs/vue3";
+import { router, usePage } from "@inertiajs/vue3";
 import type { DataTableColumns, DataTableSortState } from "naive-ui";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
@@ -99,11 +99,9 @@ const columns = computed<DataTableColumns<App.Entities.News>>(() => [
           {row.other_language_news?.title}
         </a>
       ) : (
-        <a href={route('news.duplicate', row.id)}>
-          <NButton size="tiny">
-            Duplikuoti
+          <NButton size="tiny" onClick={() => duplicateNews(row.id)}>
+              Duplikuoti
           </NButton>
-        </a>
       );
     },
   },
@@ -135,4 +133,8 @@ const columns = computed<DataTableColumns<App.Entities.News>>(() => [
     },
   },
 ]);
+
+function duplicateNews(id: number) {
+  router.post(route("news.duplicate", { id }));
+}
 </script>
