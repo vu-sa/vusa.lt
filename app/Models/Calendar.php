@@ -17,8 +17,9 @@ class Calendar extends Model implements HasMedia
     protected $guarded = ['id', 'created_at', 'updated_at'];
 
     protected $casts = [
-        'date' => 'datetime',
-        'end_date' => 'datetime',
+        // IMPORTANT: just transform date always to datetime, don't keep as number, as problems arise
+        'date' => 'datetime:Y-m-d H:i',
+        'end_date' => 'datetime:Y-m-d H:i',
         'updated_at' => 'datetime:Y-m-d H:i:s',
         'created_at' => 'datetime:Y-m-d H:i:s',
         'extra_attributes' => 'array',

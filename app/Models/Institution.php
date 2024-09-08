@@ -25,10 +25,6 @@ class Institution extends Model
 
     protected $with = ['types'];
 
-    protected $casts = [
-        'extra_attributes' => 'array',
-    ];
-
     public $translatable = ['name', 'short_name', 'description', 'address'];
 
     public function getActivitylogOptions(): LogOptions
@@ -80,7 +76,7 @@ class Institution extends Model
 
     public function users()
     {
-        report('Institution::users() is deprecated. Use Institution::duties()->users() instead.');
+        /*report('Institution::users() is deprecated. Use Institution::duties()->users() instead.');*/
 
         return $this->hasManyDeepFromRelations($this->duties(), (new Duty)->users());
     }

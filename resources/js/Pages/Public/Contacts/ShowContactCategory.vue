@@ -1,11 +1,11 @@
 <template>
   <div class="mt-12 flex flex-col gap-4">
-    <AdAstraBanner />
     <h1 class="mb-8">
       {{ $t("Kontaktai") }}: {{ $t(type.title) }}
     </h1>
     <template v-for="institution in institutions" :key="institution.id">
       <InstitutionFigure :institution>
+        <!-- Mostly used for tenant buttons (they have separate sections for coordinators and mentors) -->
         <template #more>
           <div v-if="institution.alias === institution.tenant?.alias" class="mt-3 flex flex-wrap gap-2">
             <NButtonGroup rounded size="small">
@@ -31,7 +31,6 @@ import { NButton, NDivider } from "naive-ui";
 
 import InstitutionFigure from "@/Components/Public/InstitutionFigure.vue";
 import SmartLink from "@/Components/Public/SmartLink.vue";
-import AdAstraBanner from "@/Components/Temp/AdAstraBanner.vue";
 
 defineProps<{
   institutions: App.Entities.Institution[];

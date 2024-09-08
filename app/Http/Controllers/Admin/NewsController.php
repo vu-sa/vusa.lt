@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\DuplicateNewsAction;
 use App\Http\Controllers\LaravelResourceController;
 use App\Models\Content;
 use App\Models\ContentPart;
@@ -45,6 +46,15 @@ class NewsController extends LaravelResourceController
         $this->authorize('create', [News::class, $this->authorizer]);
 
         return Inertia::render('Admin/Content/CreateNews');
+    }
+
+    public function duplicate(News $news)
+    {
+        $this->authorize('create', [News::class, $this->authorizer]);
+
+        $newNews = (new DuplicateNewsAction)->execute($news);
+
+        return redirect()->route('news.edit', $newNews)->with('success', 'Naujiena sėkmingai nukopijuota!');
     }
 
     /**

@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
     "outDir": "dist",
-    "module": "ES2022",
+    "module": "esnext",
     "target": "ES2017",
     "strict": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "allowJs": false,
     "jsx": "preserve",

@@ -40,7 +40,6 @@
 <script setup lang="ts">
 import FeedbackPopover from "@/Components/Public/FeedbackPopover.vue";
 import RichContentParser from "@/Components/RichContentParser.vue";
-import AdAstraBanner from "@/Components/Temp/AdAstraBanner.vue";
 
 const props = defineProps<{
   navigationItemId: number;

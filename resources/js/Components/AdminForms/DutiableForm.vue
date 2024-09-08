@@ -77,7 +77,7 @@
             čia
             </Link>.
           </p>
-          <p> Pareigos pavadinimas bus rodomas taip: <strong> {{ changeDutyNameEndings(dutiable.dutiable, dutiable.duty,
+          <p> Pareigos pavadinimas bus rodomas taip: <strong> {{ changeDutyNameEndings(dutiable.dutiable, dutiable.duty.name,
             $page.props.app.locale, dutiable.dutiable.pronouns, dutiable.extra_attributes.use_original_duty_name)
               }}</strong>
           </p>

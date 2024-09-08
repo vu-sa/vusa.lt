@@ -4,8 +4,9 @@
 </template>
 
 <script setup lang="tsx">
+import { NButton } from "naive-ui";
 import { computed, provide, ref } from "vue";
-import { usePage } from "@inertiajs/vue3";
+import { router, usePage } from "@inertiajs/vue3";
 import type { DataTableColumns, DataTableSortState } from "naive-ui";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
@@ -43,7 +44,7 @@ const columns = computed<DataTableColumns<App.Entities.News>>(() => [
   {
     title: "ID",
     key: "id",
-    width: 40,
+    width: 70,
   },
   {
     title: "Pavadinimas",
@@ -98,7 +99,9 @@ const columns = computed<DataTableColumns<App.Entities.News>>(() => [
           {row.other_language_news?.title}
         </a>
       ) : (
-        ""
+          <NButton size="tiny" onClick={() => duplicateNews(row.id)}>
+              Duplikuoti
+          </NButton>
       );
     },
   },
@@ -130,4 +133,8 @@ const columns = computed<DataTableColumns<App.Entities.News>>(() => [
     },
   },
 ]);
+
+function duplicateNews(id: number) {
+  router.post(route("news.duplicate", { id }));
+}
 </script>

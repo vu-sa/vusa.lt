@@ -7,22 +7,21 @@
         </template>
         <template #description>
           Pareigos rodymas pagal žmogaus įvardį, jeigu įvardyje pirmas žodis yra:
-          <li>jis (he) - <strong>{{ changeDutyNameEndings(null, duty, $page.props.app.locale, "jis/jo", false) }}</strong>
+          <li>
+            jis (he) - <strong>{{ changeDutyNameEndings(null, duty.name.lt, $page.props.app.locale, "jis/jo", false)
+              }}</strong>
           </li>
-          <li>ji (she) - <strong>{{ changeDutyNameEndings(null, duty, $page.props.app.locale, "ji/jos", false) }}</strong>
+          <li>
+            ji (she) - <strong>{{ changeDutyNameEndings(null, duty.name.lt, $page.props.app.locale, "ji/jos", false)
+              }}</strong>
           </li>
-          <li>jie (they) - <strong>{{ changeDutyNameEndings(null, duty, $page.props.app.locale, "jie/jų", false) }}</strong>
+          <li>
+            jie (they) - <strong>{{ changeDutyNameEndings(null, duty.name.lt, $page.props.app.locale, "jie/jų", false)
+              }}</strong>
           </li>
         </template>
-        <NFormItem :label="$t('forms.fields.title')" :span="2">
-          <NInput v-if="locale === 'lt'" v-model:value="form.name" type="text" placeholder="Prezidentė"><template
-              #suffix>
-              <SimpleLocaleButton v-model:locale="locale" />
-            </template></NInput>
-          <NInput v-else v-model:value="form.extra_attributes.en.name" type="text" placeholder="President"><template
-              #suffix>
-              <SimpleLocaleButton v-model:locale="locale" />
-            </template></NInput>
+        <NFormItem :label="$t('forms.fields.title')">
+          <MultiLocaleInput v-model:input="form.name" />
         </NFormItem>
 
         <NFormItem :label="$t('forms.fields.email')">
@@ -54,8 +53,8 @@
               <SimpleLocaleButton v-model:locale="locale" />
             </div>
           </template>
-          <TipTap v-if="locale === 'lt'" v-model="form.description" html />
-          <TipTap v-else v-model="form.extra_attributes.en.description" html />
+          <TipTap v-if="locale === 'lt'" v-model="form.description.lt" html />
+          <TipTap v-else v-model="form.description.en" html />
         </NFormItem>
       </FormElement>
       <FormElement>
@@ -128,7 +127,6 @@
 <script setup lang="tsx">
 import {
   NButton,
-  NIcon,
   type TransferRenderSourceLabel,
   type TransferRenderTargetLabel,
 } from "naive-ui";
@@ -144,6 +142,7 @@ import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
 import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 import UserAvatar from "../Avatars/UserAvatar.vue";
+import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 
 const props = defineProps<{
   duty: App.Entities.Duty;

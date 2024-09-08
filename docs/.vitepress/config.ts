@@ -42,6 +42,12 @@ export default defineConfig({
         ]
       },
       {
+        text: 'Kitos platformos',
+        items: [
+          { text: 'Miro', link: '/kitos-platformos/miro' }
+        ]
+      },
+      {
         text: 'D.U.K.', link: '/duk'
       }
     ],

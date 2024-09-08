@@ -16,12 +16,12 @@
     <section v-for="institutionType in filteredTypesAndInstitutions" :key="institutionType.id">
       <template v-for="institution in institutionType.institutions" :key="institution.id">
         <InstitutionContacts :institution="institution" :contacts="getContacts(institution)" />
-        <!-- add divider except for last element -->
+        <!-- Add divider except for last element -->
         <NDivider v-if="
           institutionType.institutions[
             institutionType.institutions.length - 1
           ].id !== institution.id
-        " class="my-8" />
+        " style="margin-top: 48px; margin-bottom: 48px" />
       </template>
     </section>
   </div>
@@ -51,6 +51,7 @@ const prependPadalinysOptions = () => {
   ];
 };
 
+// TODO: if institution has multiple types, show only once
 const filteredTypesAndInstitutions = computed(() => {
 
   // filter institutions by search

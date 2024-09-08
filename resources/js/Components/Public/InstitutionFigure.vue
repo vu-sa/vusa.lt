@@ -16,13 +16,13 @@
           lang: $page.props.app.locale,
         })
           ">
-          <img v-if="institution.logo_url"
+          <img v-if="institution.logo_url" :alt="institution.name"
             class="size-16 rounded-full border border-zinc-600/50 bg-white object-contain shadow-sm"
             :src="institution.logo_url">
           <div>
             <div class="flex items-center gap-6">
               <h2
-                class="mb-1 w-fit text-2xl font-bold leading-5 text-zinc-800 transition-colors hover:text-vusa-red dark:text-zinc-100 xl:text-3xl xl:leading-6">
+                class="mb-1 w-fit text-2xl font-bold leading-6 text-zinc-800 transition-colors hover:text-vusa-red dark:text-zinc-100 xl:text-3xl xl:leading-7">
                 {{ institution.name }}
               </h2>
               <div class="flex gap-2">
@@ -88,7 +88,6 @@
                 </template>
               </NButton>
             </div>
-
           </CollapsibleTrigger>
           <CollapsibleContent>
             <p class="typography max-w-[80ch] text-base leading-6" v-html="institution.description" />

@@ -1,6 +1,6 @@
 <template>
   <PageContent
-    :title="`${duty.name} (${
+    :title="`${duty.name.lt} (${
       duty.institution?.short_name ??
       duty.institution?.name ??
       'Neturi institucijos'
@@ -25,7 +25,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-import { checkForEmptyArray } from "@/Composables/checkAttributes";
 import DutyForm from "@/Components/AdminForms/DutyForm.vue";
 import Icons from "@/Types/Icons/regular";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
@@ -40,9 +39,4 @@ const props = defineProps<{
 }>();
 
 const duty = ref(props.duty);
-
-duty.value.extra_attributes = checkForEmptyArray(duty.value.extra_attributes);
-duty.value.extra_attributes.en = checkForEmptyArray(
-  duty.value.extra_attributes.en
-);
 </script>

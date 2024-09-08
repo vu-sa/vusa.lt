@@ -134,7 +134,6 @@ class ContactController extends PublicController
 
     private function showInstitution(Institution $institution, Collection $contacts, string $title)
     {
-
         $seo = $this->shareAndReturnSEOObject(
             title: $title.' - '.$this->tenant->shortname,
             description: Str::limit(strip_tags($institution->description), 160),

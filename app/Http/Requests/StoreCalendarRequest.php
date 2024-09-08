@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Models\Calendar;
-use Illuminate\Support\Carbon;
 
 class StoreCalendarRequest extends ResourceRequest
 {
@@ -13,21 +12,6 @@ class StoreCalendarRequest extends ResourceRequest
     public function authorize(): bool
     {
         return $this->user()->can('create', [Calendar::class, $this->authorizer]);
-    }
-
-    protected function prepareForValidation(): void
-    {
-        if ($this->date !== null) {
-            $this->merge([
-                'date' => Carbon::parse($this->date / 1000)->format('Y-m-d H:i'),
-            ]);
-        }
-
-        if ($this->end_date !== null) {
-            $this->merge([
-                'end_date' => Carbon::parse($this->end_date / 1000)->format('Y-m-d H:i'),
-            ]);
-        }
     }
 
     /**
