@@ -15,18 +15,19 @@ class UpdateCalendarRequest extends ResourceRequest
         return $this->user()->can('update', [Calendar::class, $this->calendar, $this->authorizer]);
     }
 
-    protected function prepareForValidation()
-    {
-        $this->merge([
-            'date' => Carbon::parse($this->date / 1000)->format('Y-m-d H:i'),
-        ]);
-
-        if ($this->end_date !== null) {
-            $this->merge([
-                'end_date' => Carbon::parse($this->end_date / 1000)->format('Y-m-d H:i'),
-            ]);
-        }
-    }
+    /*protected function prepareForValidation()*/
+    /*{*/
+    /*    // IMPORTANT: just transform date always to datetime, don't keep as number, as problems arise*/
+    /*    $this->merge([*/
+    /*        'date' => Carbon::parse($this->date),*/
+    /*    ]);*/
+    /**/
+    /*    if ($this->end_date !== null) {*/
+    /*        $this->merge([*/
+    /*            'end_date' => Carbon::parse($this->date),*/
+    /*        ]);*/
+    /*    }*/
+    /*}*/
 
     /**
      * Get the validation rules that apply to the request.

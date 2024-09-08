@@ -41,7 +41,4 @@ calendar.value.extra_attributes = checkForEmptyArray(
 calendar.value.extra_attributes.en = checkForEmptyArray(
   calendar.value.extra_attributes.en
 );
-
-calendar.value.date = new Date(calendar.value.date).getTime();
-calendar.value.end_date = new Date(calendar.value.end_date).getTime();
 </script>
