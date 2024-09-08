@@ -1,8 +1,9 @@
 <?php
+
 namespace App\Actions;
 
-use App\Models\News;
 use App\Models\Content;
+use App\Models\News;
 
 class DuplicateNewsAction
 {
