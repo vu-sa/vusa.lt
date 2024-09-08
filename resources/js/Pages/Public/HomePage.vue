@@ -1,7 +1,5 @@
 <template>
   <!-- <SummerCamps v-if="$page.props.app.locale === 'lt'" /> -->
-  <AdAstraHero />
-
   <div v-if="news.length > 0" class="mx-auto mt-2">
     <NewsElement :news="news" />
   </div>
@@ -13,7 +11,6 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from "vue";
-import AdAstraHero from "@/Components/Temp/AdAstraHero.vue";
 
 defineProps<{
   news: Array<App.Entities.News>;

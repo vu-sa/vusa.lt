@@ -1,5 +1,4 @@
 <template>
-  <AdAstraBanner />
   <h1 class="my-8">
     {{ $t('Programos, klubai ir projektai') }}
   </h1>
@@ -34,7 +33,6 @@
 
 <script setup lang="ts">
 import NewInstitutionCard from "@/Components/Cards/NewInstitutionCard.vue";
-import AdAstraBanner from "@/Components/Temp/AdAstraBanner.vue";
 import StaggeredTransitionGroup from "@/Components/Transitions/StaggeredTransitionGroup.vue";
 
 defineProps<{

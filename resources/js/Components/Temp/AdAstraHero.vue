@@ -1,11 +1,11 @@
 <template>
   <div class="full-bleed relative mt-4 h-[28rem] overflow-hidden">
-
     <img id="adastra-background" class="top-0 size-full object-cover" src="/images/adastra/adastra-fonas.jpg">
-    <img src="/images/adastra/adastra-logo.svg"
-      class="absolute -right-4 top-[-10%] my-auto w-3/5 opacity-70 sm:top-[-35%] md:bottom-0 md:right-[-10%] md:top-[-30%] md:h-4/5 lg:-top-8 lg:h-full">
+    <img
+      src="/images/adastra/adastra-logo.svg"
+      class="absolute -right-4 top-[-10%] my-auto w-3/5 opacity-70 sm:top-[-35%] md:bottom-0 md:right-[-10%] md:top-[-30%] md:h-4/5 lg:-top-8 lg:h-full"
+    >
     <section class="absolute left-0 top-0 size-full overflow-hidden">
-
       <span />
       <span />
       <span />
@@ -16,7 +16,6 @@
       <span />
       <span />
       <span />
-
     </section>
     <div class="absolute top-0 h-6 w-full bg-gradient-to-b from-white to-transparent dark:from-zinc-900" />
     <div class="absolute bottom-0 h-5 w-full bg-gradient-to-b from-transparent to-white dark:to-zinc-900" />
@@ -33,7 +32,8 @@
       </p>
       <a href="https://www.facebook.com/events/484501527532466" class="mt-4 block sm:w-1/2" target="_blank">
         <button
-          class="w-full justify-self-end rounded-full bg-gradient-to-b from-orange-600 to-amber-500 px-4 py-2 font-bold text-white shadow-xl transition-shadow">Dalyvauk!</button></a>
+          class="w-full justify-self-end rounded-full bg-gradient-to-b from-orange-600 to-amber-500 px-4 py-2 font-bold text-white shadow-xl transition-shadow"
+        >Dalyvauk!</button></a>
     </div>
   </div>
 </template>

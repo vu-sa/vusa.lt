@@ -1,6 +1,6 @@
 <template>
-    <AdAstraBanner />
-  <HeaderWithShapeDivider1 class="full-bleed" image-src="/images/photos/stovykla.jpg">{{ summerCampTitle }}
+  <HeaderWithShapeDivider1 class="full-bleed" image-src="/images/photos/stovykla.jpg">
+    {{ summerCampTitle }}
   </HeaderWithShapeDivider1>
 
   <div class="grid grid-cols-1 gap-4 pt-2 last:pb-2 lg:grid-cols-5">
@@ -31,12 +31,16 @@
             SA)</a>
           kviečia Tave susipažinti su tais, kurie per visus mokslo metus lydės
           daugiausiai – tai Tavo padalinio, kurso, grupės draugai bei, žinoma,
-          <Link class="font-bold underline" target="_blank" :href="route('contacts.category', {
-            type: 'padaliniai',
-            lang: 'lt',
-            subdomain: 'www',
-          })
-            ">kuratoriai</Link>.
+          <Link
+            class="font-bold underline" target="_blank" :href="route('contacts.category', {
+              type: 'padaliniai',
+              lang: 'lt',
+              subdomain: 'www',
+            })
+            "
+          >
+            kuratoriai
+          </Link>.
         </p>
 
         <p>
@@ -57,9 +61,11 @@
 
         <p class="font-bold">
           Bilietų prekyba ir tikslesnė informacija bus paskelbta vėliau! Į kainą įskaičiuotas transportas į ir iš
-          stovyklos. 🚌 </p>
+          stovyklos. 🚌
+        </p>
 
-        <p class="font-bold"> Sek savo padalinio Facebook puslapį ir sužinok
+        <p class="font-bold">
+          Sek savo padalinio Facebook puslapį ir sužinok
           pirmas (-a)!
         </p>
 
@@ -67,45 +73,50 @@
       </template>
       <template v-else>
         <div class="mb-4 inline-flex items-center justify-center gap-3">
-          <SmartLink :href="route('pirmakursiuStovyklos', {
-            year: null,
-            lang: 'lt',
-          })
-            ">
+          <SmartLink
+            :href="route('pirmakursiuStovyklos', {
+              year: null,
+              lang: 'lt',
+            })
+            "
+          >
             <NButton round quartenary size="small">
               <template #icon>
                 <i-fluent-arrow-left-24-filled />
               </template>
               Grįžti
-
             </NButton>
           </SmartLink>
           <h3 class="mb-0">
             {{ year }} m. pirmakursių stovyklos
           </h3>
-
         </div>
-        <p> Pirmakursių stovyklos - tai ilgametes tradicijas turintis Vilniaus universiteto studentų atstovybės
-          organizuojamas renginys VU pirmakursiams (-ėms), kuris vyksta kiekvienais metais. </p>
+        <p>
+          Pirmakursių stovyklos - tai ilgametes tradicijas turintis Vilniaus universiteto studentų atstovybės
+          organizuojamas renginys VU pirmakursiams (-ėms), kuris vyksta kiekvienais metais.
+        </p>
 
-        <SmartLink :href="route('pirmakursiuStovyklos', {
-          year: null,
-          lang: 'lt',
-        })
-          " />
+        <SmartLink
+          :href="route('pirmakursiuStovyklos', {
+            year: null,
+            lang: 'lt',
+          })
+          "
+        />
 
         <a target="_blank" href="https://vu.lt/parduotuve/"><img src="/images/photos/atributika_banner2.jpg"></a>
-
       </template>
       <h3 class="mt-6">
         Stovyklos pagal metus
       </h3>
       <div class="flex gap-4">
-        <SmartLink v-for="eventsYear in yearsWhenEventsExist" :key="eventsYear" :href="route('pirmakursiuStovyklos', {
-          year: eventsYear,
-          lang: 'lt',
-        })
-          ">
+        <SmartLink
+          v-for="eventsYear in yearsWhenEventsExist" :key="eventsYear" :href="route('pirmakursiuStovyklos', {
+            year: eventsYear,
+            lang: 'lt',
+          })
+          "
+        >
           <NButton round tertiary>
             {{ eventsYear }}
           </NButton>
@@ -115,15 +126,19 @@
 
     <div class="-order-1 col-span-2 flex flex-wrap justify-center gap-6 px-12 lg:order-1 lg:content-start lg:px-0">
       <section v-for="event in events" :key="event.id" class="group h-fit w-48 rounded-b-md bg-white/0">
-        <SmartLink :href="route('calendar.event', {
-          calendar: event.id,
-          lang: 'lt',
-          subdomain: 'www',
-        })
-          ">
+        <SmartLink
+          :href="route('calendar.event', {
+            calendar: event.id,
+            lang: 'lt',
+            subdomain: 'www',
+          })
+          "
+        >
           <div v-if="get5thResponsiveImage(event)">
-            <img class="size-full rounded-xl object-cover shadow-md transition group-hover:shadow-xl"
-              :src="get5thResponsiveImage(event)">
+            <img
+              class="size-full rounded-xl object-cover shadow-md transition group-hover:shadow-xl"
+              :src="get5thResponsiveImage(event)"
+            >
             <h3 class="p-2 text-center text-lg font-extrabold leading-tight">
               {{ "VU" + getFacultyName(event.tenant) }}
             </h3>
@@ -146,7 +161,6 @@ import { computed } from "vue";
 import { getFacultyName } from "@/Utils/String";
 import HeaderWithShapeDivider1 from "@/Components/Headers/HeaderWithShapeDivider1.vue";
 import SmartLink from "@/Components/Public/SmartLink.vue";
-import AdAstraBanner from "@/Components/Temp/AdAstraBanner.vue";
 
 const props = defineProps<{
   events: App.Entities.News;

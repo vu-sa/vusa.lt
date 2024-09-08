@@ -1,6 +1,5 @@
 <template>
   <div class="mt-4">
-    <AdAstraBanner />
     <NewsArticle>
       <template #tags>
         <template v-for="tag in article.tags" :key="tag.id">
@@ -16,14 +15,18 @@
       <template #time>
         <!-- <NIcon class="mr-2" size="16"> <Clock20Regular /> </NIcon> -->
         {{ formatStaticTime(new Date(article.publish_time), { year: "numeric", month: "long", day: "numeric" },
-          $page.props.app.locale
-        ) }}</template>
+                            $page.props.app.locale
+        ) }}
+      </template>
       <template #title>
         {{ article.title }}
       </template>
-      <template #image><img
+      <template #image>
+        <img
           class="col-span-4 my-4 h-auto w-[65ch] rounded-sm object-cover shadow-md duration-200 hover:shadow-lg"
-          :src="article.image"></template>
+          :src="article.image"
+        >
+      </template>
       <em v-if="$page.props.otherLangURL" class="typography col-span-full text-sm">
         {{ $t("Puslapis egzistuoja kita kalba") }}!
         <span class="ml-2">
@@ -49,7 +52,6 @@ import FeedbackPopover from "@/Components/Public/FeedbackPopover.vue";
 import NewsArticle from "@/Components/Public/NewsArticle.vue";
 import RichContentParser from "@/Components/RichContentParser.vue";
 import SmartLink from "@/Components/Public/SmartLink.vue";
-import AdAstraBanner from "@/Components/Temp/AdAstraBanner.vue";
 
 defineProps<{
   article: App.Entities.News;
