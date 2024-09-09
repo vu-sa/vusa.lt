@@ -36,7 +36,7 @@ class SharepointGraphService
 
     protected $graphApiBaseUrl;
 
-    protected $siteId;
+    public $siteId;
 
     protected $driveId;
 

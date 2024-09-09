@@ -176,6 +176,10 @@ class SharepointFileController extends LaravelResourceController
 
         $permission = $sharepointService->getDriveItemPublicLink($driveItemId);
 
+        if (! $permission) {
+            return response()->json(null);
+        }
+
         $link = $permission->getLink()->getWebUrl();
 
         return response()->json($link);
@@ -185,7 +189,8 @@ class SharepointFileController extends LaravelResourceController
     {
         $sharepointService = new SharepointGraphService;
 
-        $permission = $sharepointService->createPublicPermission(driveItemId: $driveItemId);
+        $permission = $sharepointService->createPublicPermission(
+            siteId: $sharepointService->siteId, driveItemId: $driveItemId);
 
         $link = $permission->getLink()->getWebUrl();
 
