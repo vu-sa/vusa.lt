@@ -33,8 +33,8 @@ class Resource extends Model implements HasMedia
     public function toSearchableArray()
     {
         return [
-            'name->'.app()->getLocale() => $this->getTranslation('name', 'lt'),
-            'description->'.app()->getLocale() => $this->getTranslation('description', 'lt'),
+            'name->'.app()->getLocale() => $this->getTranslation('name', app()->getLocale()),
+            'description->'.app()->getLocale() => $this->getTranslation('description', app()->getLocale()),
         ];
     }
 

@@ -94,8 +94,8 @@ class Institution extends Model
     public function toSearchableArray()
     {
         return [
-            'name->'.app()->getLocale() => $this->getTranslation('name', 'lt'),
-            'short_name->'.app()->getLocale() => $this->getTranslation('short_name', 'lt'),
+            'name->'.app()->getLocale() => $this->getTranslation('name', app()->getLocale()),
+            'short_name->'.app()->getLocale() => $this->getTranslation('short_name', app()->getLocale()),
         ];
     }
 
