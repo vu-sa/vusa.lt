@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Models\Calendar;
-use Illuminate\Support\Carbon;
 
 class UpdateCalendarRequest extends ResourceRequest
 {
@@ -15,37 +14,35 @@ class UpdateCalendarRequest extends ResourceRequest
         return $this->user()->can('update', [Calendar::class, $this->calendar, $this->authorizer]);
     }
 
-    /*protected function prepareForValidation()*/
-    /*{*/
-    /*    // IMPORTANT: just transform date always to datetime, don't keep as number, as problems arise*/
-    /*    $this->merge([*/
-    /*        'date' => Carbon::parse($this->date),*/
-    /*    ]);*/
-    /**/
-    /*    if ($this->end_date !== null) {*/
-    /*        $this->merge([*/
-    /*            'end_date' => Carbon::parse($this->date),*/
-    /*        ]);*/
-    /*    }*/
-    /*}*/
-
     /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
+
+    // NOTE: just transform date always to datetime, don't keep as number, as problems arise
     public function rules(): array
     {
         return [
+            'title.lt' => 'required|string',
+            'title.en' => 'nullable|string',
+            'description.lt' => 'nullable|string',
+            'description.en' => 'nullable|string',
+            'location.lt' => 'nullable|string',
+            'location.en' => 'nullable|string',
+            'organizer.lt' => 'nullable|string',
+            'organizer.en' => 'nullable|string',
+            'cto_url.lt' => 'nullable|url',
+            'cto_url.en' => 'nullable|url',
+            'facebook_url' => 'nullable|url',
+            'video_url' => 'nullable',
+            'is_draft' => 'boolean',
+            'is_all_day' => 'boolean',
+            'is_international' => 'boolean',
             'date' => 'required|date',
-            'tenant_id' => 'required|integer',
             'end_date' => 'nullable|date|after:date',
-            'title' => 'required',
-            'description' => 'required',
-            'location' => 'nullable',
-            'url' => 'nullable',
             'category' => 'nullable',
-            'extra_attributes' => 'nullable',
+            'tenant_id' => 'required|integer',
         ];
     }
 }

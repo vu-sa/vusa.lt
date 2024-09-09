@@ -1,3 +1,20 @@
+export const calendarTemplate: Omit<App.Entities.Calendar, "created_at" | "updated_at" | "registration_form_id" | "tenant" | "registration_form" | "media"> = {
+  title: { lt: '', en: '' },
+  date: null,
+  end_date: null,
+  description: { lt: '', en: '' },
+  location: { lt: '', en: '' },
+  organizer: { lt: '', en: '' },
+  cto_url: { lt: '', en: '' },
+  tenant_id: null,
+  category: null,
+  facebook_url: "",
+  youtube_url: "",
+  is_draft: false,
+  is_all_day: false,
+  is_international: false,
+}; 
+
 export const changelogItemTemplate: Pick<App.Entities.ChangelogItem, "date"> & {
   title: Record<"lt" | "en", string>;
   description: Record<"lt" | "en", string>;

@@ -25,7 +25,7 @@ use Tiptap\Editor;
 class PublicPageController extends PublicController
 {
     // TODO: add all pages to dev seed
-    private function getCalendarGoogleLink($calendarEvent, $locale = 'lt')
+    private function getCalendarGoogleLink($calendarEvent)
     {
         // check if event date is after end date, if so, return null
         // TODO: check in frontend
@@ -34,18 +34,13 @@ class PublicPageController extends PublicController
         }
 
         $googleLink = Link::create(
-            $locale === 'en' ? ($calendarEvent?->extra_attributes['en']['title'] ?? $calendarEvent->title) : $calendarEvent->title,
+            $calendarEvent->title,
             DateTime::createFromFormat('Y-m-d H:i:s', $calendarEvent->date),
             $calendarEvent->end_date
                 ? DateTime::createFromFormat('Y-m-d H:i:s', $calendarEvent->end_date)
                 : Carbon::parse($calendarEvent->date)->addHour()->toDateTime()
         )
-            ->description($locale === 'en'
-                ? (strip_tags(
-                    ($calendarEvent?->extra_attributes['en']['description'] ?? $calendarEvent->description)
-                        ?? $calendarEvent->description
-                ))
-                : strip_tags($calendarEvent->description))
+            ->description(strip_tags($calendarEvent->description))
             ->address($calendarEvent->location ?? '')
             ->google();
 
@@ -56,12 +51,12 @@ class PublicPageController extends PublicController
     {
         if (app()->getLocale() === 'en') {
             return Cache::remember('calendar_en', 60 * 30, function () {
-                return Calendar::where('extra_attributes->en->shown', 'true')
-                    ->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'category', 'extra_attributes', 'tenant_id')->take(200)->get();
+                return Calendar::where('is_international', true)
+                    ->orderBy('date', 'desc')->take(100)->get();
             });
         } else {
             return Cache::remember('calendar_lt', 60 * 30, function () {
-                return Calendar::orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'category', 'extra_attributes', 'tenant_id')->take(200)->get();
+                return Calendar::orderBy('date', 'desc')->take(100)->get();
             });
         }
     }
@@ -114,9 +109,9 @@ class PublicPageController extends PublicController
                     'id' => $calendar->id,
                     'date' => $calendar->date,
                     'end_date' => $calendar->end_date,
-                    'title' => app()->getLocale() === 'en' ? ($calendar->extra_attributes['en']['title'] ?? $calendar->title) : $calendar->title,
+                    'title' => $calendar->title,
                     'category' => $calendar->category,
-                    'googleLink' => $this->getCalendarGoogleLink($calendar, app()->getLocale()),
+                    'googleLink' => $this->getCalendarGoogleLink($calendar),
                 ];
             }),
             'upcomingEvents' => $upcomingEvents->map(function ($calendar) {
@@ -263,7 +258,7 @@ class PublicPageController extends PublicController
 
         return Inertia::render('Public/SummerCamps',
             [
-                'events' => $events->makeHidden(['description', 'location', 'category', 'url', 'user_id', 'extra_attributes'])->values()->all(),
+                'events' => $events->makeHidden(['description', 'location', 'category', 'url', 'user_id'])->values()->all(),
                 'year' => $year,
                 'yearsWhenEventsExist' => $yearsWhenEventsExist,
             ])->withViewData([
@@ -330,7 +325,7 @@ class PublicPageController extends PublicController
         $seo = $this->shareAndReturnSEOObject(
             title: $calendar->title.' - '.$this->tenant->shortname,
             // Replace " with empty string, because it breaks JSON-LD
-            description: app()->getLocale() === 'lt' ? Str::of((strip_tags($calendar->description)))->limit(160)->replaceMatches(pattern: '/\"/', replace: '') : Str::of((strip_tags($calendar->extra_attributes['en']['description'] ?? $calendar->description)))->limit(160)->replaceMatches(pattern: '/\"/', replace: ''),
+            description: app()->getLocale() === 'lt' ? Str::of((strip_tags($calendar->description)))->limit(160)->replaceMatches(pattern: '/\"/', replace: '') : Str::of((strip_tags($calendar->description)))->limit(160)->replaceMatches(pattern: '/\"/', replace: ''),
             image: $calendar->getFirstMediaUrl('images'),
             published_time: $calendar->created_at,
             modified_time: $calendar->updated_at,

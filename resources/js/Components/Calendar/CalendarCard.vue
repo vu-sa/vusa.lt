@@ -6,9 +6,11 @@
     </div>
     <CardHeader class="mt-2">
       <div class="align-center flex flex-row items-center p-2">
-        <p class="line-clamp-2 w-full text-center text-xl font-bold leading-5">{{
-          calendarEvent.title
-          }}</p>
+        <p class="line-clamp-2 w-full text-center text-xl font-bold leading-5">
+          {{
+            calendarEvent.title
+          }}
+        </p>
       </div>
     </CardHeader>
     <CardContent class="mb-2 flex flex-col gap-2 text-sm">
@@ -50,10 +52,7 @@
         <IFluentLocation24Regular />
         <a class="underline" target="_blank"
           :href="`https://www.google.com/maps/search/?api=1&query=${calendarEvent.location}`">{{
-            $page.props.app.locale === "en"
-              ? calendarEvent.extra_attributes?.en?.location ??
-              calendarEvent.location
-              : calendarEvent.location
+            calendarEvent.location
           }}</a>
       </div>
       <div class="inline-flex items-center gap-2">
@@ -67,8 +66,8 @@
 
     <CardFooter v-if="!hideFooter">
       <div v-if="googleLink ||
-        calendarEvent.url ||
-        calendarEvent.extra_attributes?.facebook_url
+        calendarEvent.cto_url ||
+        calendarEvent.facebook_url
       " class="flex flex-col justify-center">
         <!-- <div class="flex flex-col justify-center text-xs leading-4"> -->
         <!--   {{ formatRelativeTime(new Date(calendarEvent.date)) }} -->
@@ -76,7 +75,8 @@
 
         <NButton v-if="calendarEvent.tenant?.alias === 'mif' &&
           calendarEvent.category === 'freshmen-camps'
-        " strong tag="a" round type="primary" @click="showModal = true"><template #icon>
+        " strong tag="a" round type="primary" @click="showModal = true">
+          <template #icon>
             <IFluentHatGraduation20Filled />
           </template>
           {{ $t("Dalyvauk") }}!
@@ -103,9 +103,9 @@
             ><NMessageProvider><MIFCampRegistration /></NMessageProvider
           ></NScrollbar>
         </NModal> -->
-        <div v-if="calendarEvent.extra_attributes?.facebook_url || googleLink" class="mt-2 flex justify-center gap-2">
-          <NButton v-if="calendarEvent.extra_attributes?.facebook_url" title="Facebook" secondary tag="a"
-            target="_blank" :href="calendarEvent.extra_attributes?.facebook_url" circle size="small">
+        <div v-if="calendarEvent.facebook_url || googleLink" class="mt-2 flex justify-center gap-2">
+          <NButton v-if="calendarEvent.facebook_url" title="Facebook" secondary tag="a" target="_blank"
+            :href="calendarEvent.facebook_url" circle size="small">
             <IMdiFacebook />
           </NButton>
           <NPopover v-if="googleLink">
@@ -143,7 +143,7 @@ const props = defineProps<{
 
 const eventOrganizer = computed(() => {
   return (
-    props.calendarEvent.extra_attributes?.organizer ??
+    props.calendarEvent.organizer ??
     props.calendarEvent.tenant?.shortname
   );
 });

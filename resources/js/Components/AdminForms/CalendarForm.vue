@@ -22,46 +22,14 @@
           </ul>
         </template>
         <NFormItem :label="$t('forms.fields.title')" required>
-          <NInput v-if="locale === 'lt'" v-model:value="form.title" type="text" placeholder="Įrašyti pavadinimą...">
-            <template #suffix>
-              <SimpleLocaleButton v-model:locale="locale" />
-            </template>
-          </NInput>
-          <NInput v-else v-model:value="form.extra_attributes.en.title" type="text"
-            placeholder="Enter name of event...">
-            <template #suffix>
-              <SimpleLocaleButton v-model:locale="locale" />
-            </template>
-          </NInput>
+          <MultiLocaleInput v-model:input="form.title" />
         </NFormItem>
         <div class="grid gap-4 lg:grid-cols-2">
           <NFormItem label="Organizatorius">
-            <NInput v-if="locale === 'lt'" v-model:value="form.extra_attributes.organizer"
-              :placeholder="defaultOrganizer ?? ''" type="text">
-              <template #suffix>
-                <SimpleLocaleButton v-model:locale="locale" />
-              </template>
-            </NInput>
-            <NInput v-else v-model:value="form.extra_attributes.en.organizer"
-              :disabled="!form.extra_attributes.en.shown" :placeholder="defaultOrganizer ?? ''" type="text">
-              <template #suffix>
-                <SimpleLocaleButton v-model:locale="locale" />
-              </template>
-            </NInput>
+            <MultiLocaleInput v-model:input="form.organizer" />
           </NFormItem>
           <NFormItem label="Renginio vieta">
-            <NInput v-if="locale === 'lt'" v-model:value="form.location" type="text"
-              placeholder="AB Imeda poilsiavietė, Kiškiai, Ignalinos raj.">
-              <template #suffix>
-                <SimpleLocaleButton v-model:locale="locale" />
-              </template>
-            </NInput>
-            <NInput v-else v-model:value="form.extra_attributes.en.location" :disabled="!form.extra_attributes.en.shown"
-              type="text" placeholder="AB Imeda recreation area, Kiškiai, Ignalina district">
-              <template #suffix>
-                <SimpleLocaleButton v-model:locale="locale" />
-              </template>
-            </NInput>
+            <MultiLocaleInput v-model:input="form.location" />
           </NFormItem>
         </div>
         <NFormItem label="Kategorija">
@@ -70,15 +38,15 @@
         </NFormItem>
         <NFormItem label="Viešinimo auditorija">
           <div class="grid w-full grid-cols-2 gap-4">
-            <NButton strong :type="form.extra_attributes.en.shown ? 'primary' : 'default'"
-              @click="form.extra_attributes.en.shown = true">
+            <NButton strong :type="form.is_international ? 'primary' : 'default'"
+              @click="form.is_international = true">
               Visi studentai
               <template #icon>
                 <IFluentGlobe20Regular width="16" />
               </template>
             </NButton>
-            <NButton :type="form.extra_attributes.en.shown ? 'default' : 'primary'"
-              @click="form.extra_attributes.en.shown = false">
+            <NButton :type="form.is_international ? 'default' : 'primary'"
+              @click="form.is_international = false">
               Tik lietuviškai mokantys studentai
             </NButton>
           </div>
@@ -117,7 +85,7 @@
                 </InfoPopover>
               </div>
             </template>
-            <NSwitch v-model:value="form.extra_attributes.all_day" />
+            <NSwitch v-model:value="form.is_all_day" />
           </NFormItem>
         </div>
       </FormElement>
@@ -137,50 +105,19 @@
               </InfoPopover>
             </div>
           </template>
-          <NInput v-if="locale === 'lt'" v-model:value="form.url" type="text" placeholder="https://vusa.lt/...">
-            <template #suffix>
-              <SimpleLocaleButton v-model:locale="locale" />
-            </template>
-          </NInput>
-          <NInput v-else v-model:value="form.extra_attributes.en.url" :disabled="!form.extra_attributes.en.shown"
-            type="text" placeholder="https://vusa.lt/...">
-            <template #suffix>
-              <SimpleLocaleButton v-model:locale="locale" />
-            </template>
-          </NInput>
+          <MultiLocaleInput v-model:input="form.cto_url" />
         </NFormItem>
 
         <NFormItem :label="$t('forms.fields.facebook_url')">
-          <NInput v-if="locale === 'lt'" v-model:value="form.extra_attributes.facebook_url" type="text"
-            placeholder="https://www.facebook.com/events/584152539934772">
-            <template #suffix>
-              <SimpleLocaleButton v-model:locale="locale" />
-            </template>
-          </NInput>
-          <NInput v-else v-model:value="form.extra_attributes.en.facebook_url"
-            :disabled="!form.extra_attributes.en.shown" type="text"
-            placeholder="https://www.facebook.com/events/584152539934772">
-            <template #suffix>
-              <SimpleLocaleButton v-model:locale="locale" />
-            </template>
-          </NInput>
+          <NInput v-model:value="form.facebook_url" type="text"
+            placeholder="https://www.facebook.com/events/584152539934772" />
         </NFormItem>
 
         <NFormItem label="Youtube video kodas">
           <NInputGroup>
             <NInput autosize value="https://www.youtube.com/embed/" :disabled="true" />
-            <NInput v-if="locale === 'lt'" v-model:value="form.extra_attributes.video_url" type="text"
-              placeholder="dQw4w9WgXcQ">
-              <template #suffix>
-                <SimpleLocaleButton v-model:locale="locale" />
-              </template>
-            </NInput>
-            <NInput v-else v-model:value="form.extra_attributes.en.video_url"
-              :disabled="!form.extra_attributes.en.shown" type="text" placeholder="dQw4w9WgXcQ">
-              <template #suffix>
-                <SimpleLocaleButton v-model:locale="locale" />
-              </template>
-            </NInput>
+            <NInput v-model:value="form.video_url" type="text"
+              placeholder="dQw4w9WgXcQ" />
           </NInputGroup>
         </NFormItem>
       </FormElement>
@@ -197,9 +134,9 @@
           </NUpload>
         </NFormItem>
 
-        <NFormItem label="Aprašymas" :span="6" required>
-          <TipTap v-if="locale === 'lt'" v-model="form.description" html :search-files="$page.props.search.other" />
-          <TipTap v-else v-model="form.extra_attributes.en.description" html :search-files="$page.props.search.other" />
+        <NFormItem label="Aprašymas">
+          <TipTap v-if="locale === 'lt'" v-model="form.description.lt" html />
+          <TipTap v-else v-model="form.description.en" html />
         </NFormItem>
       </FormElement>
     </div>
@@ -223,9 +160,9 @@ import { router, useForm, usePage } from "@inertiajs/vue3";
 import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import FormElement from "./FormElement.vue";
 import InfoPopover from "../Buttons/InfoPopover.vue";
-import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
 import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
+import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 
 const props = defineProps<{
   calendar: CalendarEventForm;
@@ -239,33 +176,6 @@ const props = defineProps<{
 const locale = ref("lt");
 
 const form = useForm("calendar", props.calendar);
-
-// create disabled end date if start date is not set
-
-if (props.modelRoute === "calendar.update") {
-  // const date = new Date(form.date);
-  // const disabledEndDate = (ts) => {
-  //   return !ts || date > ts + 1000 * 60 * 60 * 24;
-  // };
-}
-
-// convert date_range array of string to number
-
-const convertDateRange = (form_date_range: Array<string | number>) => {
-  if (form_date_range === undefined) return undefined;
-  // if form_date_range is null, return undefined
-  if (form_date_range === null) return undefined;
-  form_date_range = form_date_range.map((string: string) => {
-    return parseInt(string);
-  });
-  return form_date_range;
-};
-
-if (form.extra_attributes !== null) {
-  form.extra_attributes.date_range = convertDateRange(
-    form.extra_attributes.date_range
-  );
-}
 
 const defaultOrganizer = computed(() => {
   return (
@@ -290,10 +200,6 @@ if (props.images !== undefined) {
 const uploadRef = ref<UploadInst | null>(null);
 const upload = uploadRef;
 
-// if no extra_attributes are provided, create an empty object
-if (!form.extra_attributes || form.extra_attributes.length === 0) {
-  form.extra_attributes = {};
-}
 // map category options to array
 const categoryOptions = props.categories.map((category) => ({
   label: category.name,
