@@ -1,5 +1,6 @@
 <template>
-  <NForm :model="form" label-placement="top">
+  <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" 
+    @delete="$emit('delete')">
     <div class="flex flex-col">
       <FormElement>
         <template #title>
@@ -50,8 +51,10 @@
         <template #title>
           Failai
         </template>
-        <template #description>Failai, susiję su šiuo tipu. Šie failai rodomi atitinkamose vietose
-          prie modelių, kurie priklauso šiam tipui.</template>
+        <template #description>
+          Failai, susiję su šiuo tipu. Šie failai rodomi atitinkamose vietose
+          prie modelių, kurie priklauso šiam tipui.
+        </template>
         <FileManager :starting-path="sharepointPath" :fileable="{ id: form.id, type: 'Type' }" />
       </FormElement>
       <FormElement>
@@ -70,8 +73,10 @@
         <template #title>
           Rolės, kurios priskiriamos pareigybėms
         </template>
-        <template #description>Šios rolės automatiškai priskiriamos pareigybėms su šiuo
-          tipu.</template>
+        <template #description>
+          Šios rolės automatiškai priskiriamos pareigybėms su šiuo
+          tipu.
+        </template>
         <NFormItem label="Rolės" :span="6">
           <NTransfer v-model:value="form.roles" :options="roles?.map((role) => ({
             value: role.id,
@@ -86,19 +91,16 @@
           Kiti nustatymai
         </template>
         <NFormItem label="Techninė žymė">
-          <template #label><span class="inline-flex items-center gap-1">Techninė žymė
+          <template #label>
+            <span class="inline-flex items-center gap-1">Techninė žymė
               <InfoPopover>Keičiama tik išskirtiniais atvejais.</InfoPopover>
-            </span></template>
+            </span>
+          </template>
           <NInput v-model:value="form.slug" type="text" placeholder="pvz.: turinio-tipas" />
         </NFormItem>
       </FormElement>
     </div>
-    <div class="flex justify-end gap-2">
-      <NButton @click="handleSubmit">
-        Naujinti
-      </NButton>
-    </div>
-  </NForm>
+  </AdminForm>
 </template>
 
 <script setup lang="tsx">
@@ -116,9 +118,11 @@ import InfoPopover from "../Buttons/InfoPopover.vue";
 import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
 import TipTap from "../TipTap/OriginalTipTap.vue";
+import AdminForm from "./AdminForm.vue";
 
-const emit = defineEmits<{
-  (event: "submit:form", form: any): void;
+defineEmits<{
+  (event: "submit:form", form: unknown): void;
+  (event: "delete"): void;
 }>();
 
 const props = defineProps<{
@@ -182,10 +186,5 @@ const renderSourceLabel = ({ option }) => {
       </a>
     </>
   );
-};
-
-const handleSubmit = () => {
-  loading.value = true;
-  emit("submit:form", form);
 };
 </script>
