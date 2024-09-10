@@ -29,14 +29,14 @@ class CalendarFactory extends Factory
         $end_date = fake()->dateTimeBetween(Carbon::parse($date)->addHour(), Carbon::parse($date)->addDays(3));
 
         return [
-            'title' => [ 'lt' => fake()->sentence, 'en' => fake()->sentence ],
-            'description' => [ 'lt' => fake()->paragraph, 'en' => fake()->paragraph ],
-            'location' => [ 'lt' => fake()->city, 'en' => fake()->city ],
-            'organizer' => [ 'lt' => fake()->name, 'en' => fake()->name ],
+            'title' => ['lt' => fake()->sentence, 'en' => fake()->sentence],
+            'description' => ['lt' => fake()->paragraph, 'en' => fake()->paragraph],
+            'location' => ['lt' => fake()->city, 'en' => fake()->city],
+            'organizer' => ['lt' => fake()->name, 'en' => fake()->name],
             'date' => $date,
             'end_date' => $end_date,
             'category' => Arr::random(['red', 'yellow', 'grey']),
-            'cto_url' => [ 'lt' => fake()->url, 'en' => fake()->url ],
+            'cto_url' => ['lt' => fake()->url, 'en' => fake()->url],
             'is_international' => fake()->boolean,
             'is_draft' => fake()->boolean,
             'is_all_day' => fake()->boolean,
