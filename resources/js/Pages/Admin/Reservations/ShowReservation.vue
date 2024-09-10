@@ -2,18 +2,22 @@
   <ShowPageLayout :title="reservation.name" :breadcrumb-options="breadcrumbOptions" :model="reservation"
     :related-models="relatedModels" :current-tab="currentTab" @change:tab="currentTab = $event">
     <template #after-heading>
-      <UsersAvatarGroup v-if="reservation.users && reservation.users.length > 0" :users="reservation.users" />
+      <UsersAvatarGroup v-if="reservation.users && reservation.users.length > 0" class="mr-2"
+        :users="reservation.users" />
     </template>
     <template #more-options>
-      <NButton size="small" text @click="showReservationHelpModal = true">
-        <template #icon>
-          <IFluentQuestion24Regular />
-        </template>
-      </NButton>
       <MoreOptionsButton :more-options="moreOptions" @more-option-click="handleMoreOptionClick" />
     </template>
-    <ReservationResourceTable v-model:selectedReservationResource="selectedReservationResource"
-      :reservation="reservation" />
+
+    <ReservationResourceTable v-model:selected-reservation-resource="selectedReservationResource" class="mb-2"
+      :reservation />
+    <NButton style="width: 100%;" quaternary size="small" @click="handleMoreOptionClick('add-resource')">
+      <template #icon>
+        <IFluentAdd24Filled />
+      </template>
+      {{ $t("Pridėti rezervacijos išteklių") }}
+    </NButton>
+
     <CardModal :title="$t('entities.meta.help', {
       model: $tChoice('entities.reservation.model', 2),
     })
@@ -54,9 +58,11 @@
     </CardModal>
     <template #below>
       <div v-if="currentTab === 'Komentarai'">
-        <InfoText class="mb-4">{{
-          RESERVATION_HELP_TEXTS.comments[$page.props.app.locale]
-        }}</InfoText>
+        <InfoText class="mb-4">
+          {{
+            RESERVATION_HELP_TEXTS.comments[$page.props.app.locale]
+          }}
+        </InfoText>
         <CommentViewer class="mt-auto h-min" :commentable_type="'reservation'" :model="reservation"
           :comments="getAllComments()" />
       </div>
@@ -70,9 +76,9 @@
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
 import {
-  type MenuOption,
   NIcon,
   NTag,
+  type MenuOption,
   type SelectRenderLabel,
   type SelectRenderTag,
 } from "naive-ui";
@@ -88,13 +94,13 @@ import CardModal from "@/Components/Modals/CardModal.vue";
 import CommentViewer from "@/Features/Admin/CommentViewer/CommentViewer.vue";
 import Icons from "@/Types/Icons/filled";
 import InfoText from "@/Components/SmallElements/InfoText.vue";
-import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ReservationResourceForm from "@/Components/AdminForms/ReservationResourceForm.vue";
 import ReservationResourceTable from "@/Components/Tables/ReservationResourceTable.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
 import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
+import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 
 const props = defineProps<{
   reservation: App.Entities.Reservation;
@@ -150,7 +156,7 @@ const moreOptions: MenuOption[] = [
   },
 ];
 
-const handleMoreOptionClick = (key: string) => {
+const handleMoreOptionClick = (key: 'add-resource' | 'add-user') => {
   switch (key) {
     case "add-resource":
       showReservationResourceCreateModal.value = true;

@@ -24,44 +24,33 @@
           </template>
         </TipTapButton>
       </div>
-      <NButtonGroup type="primary" size="small">
-        <NButton :disabled="disabled" type="primary" :loading="loading" icon-placement="right"
-          @click="$emit('submit:comment')"><template #icon>
-            <IFluentSend24Filled />
-          </template>{{ submitText ?? $t("Pateikti") }}</NButton>
-        <NPopover v-if="enableApprove" trigger="click" class="rounded-md" raw :show-arrow="false">
-          <div class="flex flex-col rounded-md bg-zinc-50 dark:bg-zinc-800">
-            <NButtonGroup size="medium" vertical>
-              <NButton type="success" secondary @click="$emit('submit:comment', 'approve')">
-                <template #icon>
-                  <IFluentCommentCheckmark24Regular />
-                </template>
-                {{ approveText ?? `... ${$t("states.other.and_more", { decision: "approve" })}` }}
-              </NButton>
-              <NButton type="warning" tertiary ghost @click="$emit('submit:comment', 'reject')">
-                <template #icon>
-                  <IFluentCommentError24Regular />
-                </template>
-                {{ rejectText ?? `... ${$t("states.other.and_more", { decision: "reject" })}` }}
-              </NButton>
-            </NButtonGroup>
-          </div>
-          <template #trigger>
-            <NButton type="primary" secondary>
-              <template #icon>
-                <IFluentCaretDown24Filled />
-              </template>
-            </NButton>
+      <NButtonGroup v-if="enableApprove" size="small">
+        <NButton :loading type="success" secondary @click="$emit('submit:comment', 'approve')">
+          <template #icon>
+            <IFluentCommentCheckmark24Regular />
           </template>
-        </NPopover>
+          {{ approveText ?? capitalize($t("states.decision.approve")) }}
+        </NButton>
+        <NButton :loading type="warning" secondary @click="$emit('submit:comment', 'reject')">
+          <template #icon>
+            <IFluentCommentError24Regular />
+          </template>
+          {{ rejectText ?? `... ${$t("states.decision.reject")}` }}
+        </NButton>
       </NButtonGroup>
+      <NButton v-else size="small" :disabled type="primary" :loading="loading" icon-placement="right"
+        @click="$emit('submit:comment')">
+        <template #icon>
+          <IFluentSend24Filled />
+        </template>{{ submitText ?? $t("Pateikti") }}
+      </NButton>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { EditorContent, useEditor } from "@tiptap/vue-3";
-import { onBeforeUnmount, ref } from "vue";
+import { capitalize, onBeforeUnmount, ref } from "vue";
 
 import StarterKit from "@tiptap/starter-kit";
 import TipTapButton from "./TipTap/TipTapButton.vue";

@@ -1,6 +1,6 @@
 <template>
-  <NDataTable :data="reservation?.resources" :columns="dataTableColumns" :row-key="rowKey" :scroll-x="650"
-    size="small" />
+  <NDataTable v-bind="$attrs" :data="reservation?.resources" :columns="dataTableColumns" :row-key="rowKey"
+    :scroll-x="650" size="small" />
 
   <CardModal v-model:show="showStateChangeModal" :title="$page.props.app.locale === 'lt'
     ? 'Palikti komentarą arba naujinti būseną'
@@ -18,9 +18,8 @@
 
       <CommentTipTap v-model:text="commentText" class="mt-4" rounded-top :loading="loading"
         :enable-approve="selectedReservationResource?.approvable" :submit-text="$t('Komentuoti')"
-        :approve-text="approveText" :reject-text="`... ${$t('state.other.and_decision', {
-          decision: $t('state.decision.reject'),
-        })}`" :disabled="false" @submit:comment="submitComment" />
+        :approve-text="approveText" :reject-text="capitalize($t('state.decision.reject'))" :disabled="false"
+        @submit:comment="submitComment" />
     </div>
   </CardModal>
 </template>
@@ -56,6 +55,12 @@ const showStateChangeModal = ref(false);
 const rowKey = (row: App.Entities.Resource) => row.pivot?.id;
 
 const dataTableColumns = [
+  //{
+  //  type: 'selection',
+  //  disabled(row) {
+  //    return !row?.pivot?.approvable
+  //  }
+  //},
   {
     type: "expand",
     renderExpand(row) {
@@ -247,20 +252,14 @@ const handleStateChange = (row: any) => {
 
 const approveText = computed(() => {
   if (selectedReservationResource.value?.state === "reserved") {
-    return `... ${$t("state.other.and_decision", {
-      decision: $t("state.comment.lent"),
-    })}`;
+    return capitalize($t("state.comment.lent"))
   }
 
   if (selectedReservationResource.value?.state === "lent") {
-    return `... ${$t("state.other.and_decision", {
-      decision: $t("state.comment.return"),
-    })}`;
+    return capitalize($t("state.comment.return"))
   }
 
-  return `... ${$t("state.other.and_decision", {
-    decision: $t("state.decision.approve"),
-  })}`;
+  return capitalize($t("state.decision.approve"));
 });
 
 const setSelectedReservationResource = async (
