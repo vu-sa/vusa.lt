@@ -54,7 +54,7 @@
             <template v-for="duty in user.duties">
               <li v-for="role in duty.roles" :key="role.id">
                 <strong>{{ $t(role.name) }}</strong> ({{
-                  `iš pareigybės „${duty.name}“, kuri yra iš ${duty.institution?.padalinys?.shortname ?? "nežinomo\
+                  `iš pareigybės „${duty.name}“, kuri yra iš ${duty.institution?.tenant?.shortname ?? "nežinomo\
                 padalinio"}` }})
               </li>
             </template>

@@ -75,7 +75,8 @@ class Resource extends Model implements HasMedia
         // where pivot state is reserved or lent
         return [
             'before' => $this->leftCapacityAtTime($datetime, '<', '>='),
-            'after' => $this->leftCapacityAtTime($datetime, '<=', '>')];
+            'after' => $this->leftCapacityAtTime($datetime, '<=', '>')
+        ];
     }
 
     // returns array of left capacity at each intersection of reservation resource start and end time

@@ -6,6 +6,18 @@
           {{ $t("forms.context.main_info") }}
         </template>
         <template #description>
+          <template v-if="$page.props.app.locale === 'lt'">
+            <a class="mb-4" target="_blank"
+              href="https://vustudentuatstovybe.sharepoint.com/:b:/s/vieningai/ERnxptqtoF5DmDiqAbpfBewBjV-z7QcgAZiZi5w5sS1ODQ?e=cP6Zsv">
+              <strong class="underline">Rezervacijų atmintinė</strong>
+            </a>
+          </template>
+          <template v-else>
+            <a class="mb-4" target="_blank"
+              href="https://vustudentuatstovybe.sharepoint.com/:b:/s/vieningai/ESPcgxR0HqNFj0TBAQL4hmQBLmE5RSN72cEFe9psis3gjg?e=wS2uKj">
+              <strong class="underline">Reservation guide</strong>
+            </a>
+          </template>
           <component :is="RESERVATION_DESCRIPTIONS.main_info[$page.props.app.locale]" />
         </template>
         <NFormItem :label="$t('forms.fields.title')" required>
@@ -17,9 +29,11 @@
         </NFormItem>
       </FormElement>
       <FormElement :icon="Icons.RESOURCE">
-        <template #title>{{
-          capitalize($tChoice("entities.resource.model", 2))
-        }}</template>
+        <template #title>
+          {{
+            capitalize($tChoice("entities.resource.model", 2))
+          }}
+        </template>
         <template #description>
           <component :is="RESERVATION_DESCRIPTIONS.resources[$page.props.app.locale]" />
           <a class="w-fit" target="_blank" :href="route('resources.index')">

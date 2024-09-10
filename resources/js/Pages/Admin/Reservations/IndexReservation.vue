@@ -1,12 +1,14 @@
 <template>
   <IndexPageLayout :title="capitalize($tChoice('entities.reservation.model', 2))" model-name="reservations"
-    :icon="Icons.RESERVATION" :can-use-routes="canUseRoutes" :columns="columns" :paginated-models="reservations">
-    <NCard class="mb-4">
-      <template #header>
-        {{ $t("Reservations with unit resources") }}
-      </template>
-      <NDataTable :columns="columnsWithActions" :data="activeReservations" size="small" :row-key="(row) => row.id" />
-    </NCard>
+    :icon="Icons.RESERVATION" :can-use-routes :columns :paginated-models="reservations">
+    <template #after-table>
+      <NCard class="mt-4">
+        <template #header>
+          {{ $t("Reservations with unit resources") }}
+        </template>
+        <NDataTable :columns="columnsWithActions" :data="activeReservations" size="small" :row-key="(row) => row.id" />
+      </NCard>
+    </template>
   </IndexPageLayout>
 </template>
 
@@ -66,7 +68,7 @@ const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => {
               <strong>
                 {capitalize($t("entities.reservation.resources"))}
               </strong>
-              <ul class="list-disc">
+              <ul class="list-inside list-disc">
                 {/* add quantity and tenant.shortname */}
                 {row.resources?.map((resource) => (
                   <li>
@@ -93,8 +95,7 @@ const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => {
         return $t("forms.fields.title");
       },
       key: "name",
-      sorter: true,
-      sortOrder: sorters.value.name,
+      sorter: 'default',
       maxWidth: 300,
       ellipsis: {
         tooltip: true,
@@ -118,8 +119,9 @@ const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => {
         return capitalize($tChoice("entities.reservation.start_time", 2));
       },
       key: "start_time",
-      sorter: true,
-      sortOrder: sorters.value.start_time,
+      sorter: (a, b) =>
+        new Date(a.start_time).getTime() - new Date(b.start_time).getTime(),
+      defaultSortOrder: "descend",
       ellipsis: {
         tooltip: true,
       },
@@ -136,8 +138,8 @@ const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => {
         return capitalize($tChoice("entities.reservation.end_time", 2));
       },
       key: "end_time",
-      sorter: true,
-      sortOrder: sorters.value.end_time,
+      sorter: (a, b) =>
+        new Date(a.end_time).getTime() - new Date(b.end_time).getTime(),
       ellipsis: {
         tooltip: true,
       },
