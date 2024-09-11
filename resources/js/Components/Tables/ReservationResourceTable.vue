@@ -27,7 +27,7 @@
 <script setup lang="tsx">
 import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
 import { Link, router, usePage } from "@inertiajs/vue3";
-import { NButton, NIcon, NImage, NImageGroup, NPopover, NSpace } from "naive-ui";
+import { type MenuOption, NButton, NIcon, NImage, NImageGroup, NPopover, NSpace } from "naive-ui";
 import { computed, ref } from "vue";
 
 import Delete16Regular from "~icons/fluent/delete16-regular";
@@ -41,10 +41,15 @@ import CommentTipTap from "@/Features/Admin/CommentViewer/CommentTipTap.vue";
 import InfoText from "../SmallElements/InfoText.vue";
 import ReservationResourceStateTag from "../Tag/ReservationResourceStateTag.vue";
 import UsersAvatarGroup from "../Avatars/UsersAvatarGroup.vue";
+import MoreOptionsButton from "../Buttons/MoreOptionsButton.vue";
 
 defineProps<{
   reservation: App.Entities.Reservation & { approvable: boolean };
 }>();
+
+const emit = defineEmits<{
+  'edit:reservationResource': [reservationResource: App.Entities.ReservationResource]
+}>()
 
 const selectedReservationResource =
   defineModel<App.Entities.ReservationResource | null>(
@@ -218,29 +223,41 @@ const dataTableColumns = [
             </NButton>
           ) : null}
           {["created", "reserved"].includes(row.pivot?.state) ? (
-            <NPopover>
-              {{
-                trigger: () => (
-                  <NButton
-                    quaternary
-                    circle
-                    size="small"
-                    onClick={() => handleReservationResourceCancel(row)}
-                  >
-                    {{
-                      icon: () => <NIcon component={DismissCircle24Regular} />,
-                    }}
-                  </NButton>
-                ),
-                default: () => "Atšaukti rezervaciją",
-              }}
-            </NPopover>
+            <>
+              <MoreOptionsButton edit more-options={moreOptions} onEditClick={() => handleEditClick(row)} onMoreOptionClick={(key) => handleMoreOptionClick(key, row)} />
+            </>
           ) : null}
         </div>
       );
     },
   },
 ];
+
+const moreOptions: MenuOption[] = [
+  {
+    label() {
+      return $t("Atšaukti rezervaciją");
+    },
+    icon() {
+      return <NIcon component={DismissCircle24Regular}></NIcon>;
+    },
+    key: "dismiss-reservation",
+  },
+];
+
+const handleMoreOptionClick = (key: 'dismiss-reservation', row) => {
+  switch (key) {
+    case "dismiss-reservation":
+      handleReservationResourceCancel(row)
+      break;
+    default:
+      break;
+  }
+};
+
+const handleEditClick = (row: App.Entities.Resource) => {
+  emit('edit:reservationResource', row.pivot)
+};
 
 const commentText = ref("");
 const loading = ref(false);

@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 use Laravel\Scout\Searchable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -63,19 +64,25 @@ class Resource extends Model implements HasMedia
         return $this->belongsTo(ResourceCategory::class, 'resource_category_id');
     }
 
-    public function leftCapacityAtTime($datetime, $symbol_start = '<', $symbol_end = '>=')
+    public function leftCapacityAtTime($datetime, $symbol_start = '<', $symbol_end = '>=', array $exceptReservations = [], array $exceptResources = [])
     {
         // where pivot state is reserved or lent
-        return $this->capacity - $this->active_reservations()
-            ->wherePivot('start_time', $symbol_start, $datetime)->wherePivot('end_time', $symbol_end, $datetime)->sum('quantity');
+        $builder = $this->active_reservations()
+            ->wherePivot('start_time', $symbol_start, $datetime)->wherePivot('end_time', $symbol_end, $datetime);
+
+        if (! empty($exceptReservations) && in_array($this->id, $exceptResources)) {
+            $builder = $builder->whereNotIn('reservations.id', $exceptReservations);
+        }
+
+        return $this->capacity - $builder->sum('quantity') ;
     }
 
-    public function leftCapacityAtTimeArray($datetime): array
+    public function leftCapacityAtTimeArray($datetime, $exceptReservations = [], $exceptResources = []): array
     {
         // where pivot state is reserved or lent
         return [
-            'before' => $this->leftCapacityAtTime($datetime, '<', '>='),
-            'after' => $this->leftCapacityAtTime($datetime, '<=', '>')
+            'before' => $this->leftCapacityAtTime($datetime, '<', '>=', $exceptReservations, $exceptResources),
+            'after' => $this->leftCapacityAtTime($datetime, '<=', '>', $exceptReservations, $exceptResources),
         ];
     }
 
@@ -83,9 +90,9 @@ class Resource extends Model implements HasMedia
 
     // $resource = Resource::find("01h2y03by254dm8f3p9nkpfxn9");
     // $resource->leftCapacityAtTimePeriod("2023-05-01 00:00:00", "2023-07-10 23:59:59");
-    public function getCapacityAtDateTimeRange($from, $to): array
+    public function getCapacityAtDateTimeRange($from, $to, array $exceptReservations = [], array $exceptResources = []): array
     {
-
+        /*dd($exceptReservations, $exceptResources);*/
         // if $from and $to are numbers (timestamps), convert them to Carbon
         if (is_numeric($from)) {
             $from = Carbon::createFromTimestampMs($from);
@@ -96,7 +103,16 @@ class Resource extends Model implements HasMedia
         }
 
         $leftCapacity = [];
-        $reservations = $this->active_reservations()->wherePivot('start_time', '<=', $to)->wherePivot('end_time', '>=', $from)->get();
+        $reservationBuilder = $this->active_reservations()->wherePivot('start_time', '<=', $to)->wherePivot('end_time', '>=', $from);
+
+        // For reservationResource update routes in ShowReservation, discard amount of resource that is already reserved in the calculation
+        // Also check if $this->id is in $exceptResources
+        if (! empty($exceptReservations) && in_array($this->id, $exceptResources)) {
+            $reservationBuilder = $reservationBuilder->whereNotIn('reservations.id', $exceptReservations);
+            $reservations = $reservationBuilder->get();
+        } else {
+            $reservations = $reservationBuilder->get();
+        }
 
         // get left capacity at start and end of each reservation
         $reservations->each(function ($reservation) use (&$leftCapacity, $from, $to) {
@@ -109,9 +125,10 @@ class Resource extends Model implements HasMedia
                 + ['reservation' => $reservation->toArray(), 'end' => true];
         });
 
+
         // get left capacity at start and end of time period
-        $leftCapacity[strval(Carbon::parse($from)->getTimestampMs())] = $this->leftCapacityAtTimeArray($from);
-        $leftCapacity[strval(Carbon::parse($to)->getTimestampMs())] = $this->leftCapacityAtTimeArray($to);
+        $leftCapacity[strval(Carbon::parse($from)->getTimestampMs())] = $this->leftCapacityAtTimeArray(datetime: $from, exceptReservations: $exceptReservations, exceptResources: $exceptResources);
+        $leftCapacity[strval(Carbon::parse($to)->getTimestampMs())] = $this->leftCapacityAtTimeArray(datetime: $to, exceptReservations: $exceptReservations, exceptResources: $exceptResources);
 
         ksort($leftCapacity);
 
