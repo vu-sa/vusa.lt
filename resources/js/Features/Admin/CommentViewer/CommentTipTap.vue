@@ -24,7 +24,7 @@
           </template>
         </TipTapButton>
       </div>
-      <NButtonGroup v-if="enableApprove" size="small">
+      <NButtonGroup v-if="enableApprove" size="small" vertical class="gap-2">
         <NButton :loading type="success" secondary @click="$emit('submit:comment', 'approve')">
           <template #icon>
             <IFluentCommentCheckmark24Regular />

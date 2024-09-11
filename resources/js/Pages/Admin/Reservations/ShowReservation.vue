@@ -9,9 +9,9 @@
       <MoreOptionsButton :more-options="moreOptions" @more-option-click="handleMoreOptionClick" />
     </template>
 
-    <ReservationResourceTable v-model:selected-reservation-resource="selectedReservationResource" class="mb-2"
+    <ReservationResourceTable v-model:selected-reservation-resource="selectedReservationResource" class="mb-4"
       :reservation @edit:reservation-resource="editReservationResource" />
-    <NButton style="width: 100%;" quaternary size="small" @click="handleMoreOptionClick('add-resource')">
+    <NButton secondary size="small" @click="handleMoreOptionClick('add-resource')">
       <template #icon>
         <IFluentAdd24Filled />
       </template>

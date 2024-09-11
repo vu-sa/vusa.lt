@@ -15,9 +15,6 @@
     </header>
     <section class="mx-auto mt-8 grid max-w-7xl lg:grid-cols-3">
       <div class="px-12 lg:col-span-2">
-        <h2 v-if="event.description !== ''" class="my-4 text-gray-900 dark:text-zinc-50">
-          {{ $t("Aprašymas") }}
-        </h2>
         <div class="typography text-base leading-7 sm:max-w-[70ch]" v-html="event.description" />
 
         <iframe v-if="event.video_url" class="mb-8 mt-4 aspect-video h-auto w-full rounded-2xl" width="560" height="315"

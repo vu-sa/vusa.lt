@@ -1,5 +1,5 @@
 <template>
-  <NDataTable size="small" :data="reservations" :columns />
+  <NDataTable size="small" :data="reservations" :columns :scroll-x="800" />
 </template>
 
 <script setup lang="tsx">
@@ -9,7 +9,7 @@ import { NDataTable } from "naive-ui";
 
 import { RESERVATION_DATE_TIME_FORMAT } from "@/Constants/DateTimeFormats";
 import { capitalize } from "@/Utils/String";
-import { formatRelativeTime, formatStaticTime } from "@/Utils/IntlTime";
+import { formatStaticTime } from "@/Utils/IntlTime";
 import ReservationResourceStateTag from "@/Components/Tag/ReservationResourceStateTag.vue";
 import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 
@@ -26,12 +26,15 @@ const columns = [
     render(row) {
       return <Link href={route("reservations.show", row.id)}>{row.name}</Link>;
     },
+    minWidth: 50,
+    fixed: 'left'
   },
   {
     title() {
       return $t("forms.fields.quantity");
     },
     key: "pivot.quantity",
+    minWidth: 40,
   },
   {
     title() {

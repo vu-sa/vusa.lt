@@ -102,6 +102,7 @@ const dataTableColumns = [
       return $t("forms.fields.quantity");
     },
     key: "pivot.quantity",
+    minWidth: 75,
   },
   {
     title() {
@@ -136,6 +137,7 @@ const dataTableColumns = [
       return capitalize($t("entities.reservation.start_time"));
     },
     key: "pivot.start_time",
+    minWidth: 75,
     render(row: App.Entities.Resource) {
       return (
         <span
@@ -157,6 +159,7 @@ const dataTableColumns = [
       return capitalize($t("entities.reservation.end_time"));
     },
     key: "pivot.end_time",
+    minWidth: 75,
     render(row: App.Entities.Resource) {
       return (
         <span
