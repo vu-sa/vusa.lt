@@ -92,8 +92,6 @@ const getAllResources = async (value: string[]) => {
     exceptResources = [props.reservationResourceForm.resource_id];
   }
 
-  console.log(exceptReservations, exceptResources);
-
   router.reload({
     data: {
       dateTimeRange: {

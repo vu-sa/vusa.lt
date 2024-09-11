@@ -8,6 +8,7 @@ use App\Models\Pivots\ReservationResource;
 use App\Models\Reservation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class ReservationResourceController extends LaravelResourceController
 {
@@ -43,6 +44,8 @@ class ReservationResourceController extends LaravelResourceController
 
         $this->authorize('update', [Reservation::class, $reservation, $this->authorizer]);
 
+        $reservationResource->start_time = Carbon::createFromTimestampMs($request->start_time, 'Europe/Vilnius');
+        $reservationResource->end_time = Carbon::createFromTimestampMs($request->end_time, 'Europe/Vilnius');
         $reservationResource->resource_id = $request->resource_id;
         $reservationResource->quantity = $request->quantity;
 
