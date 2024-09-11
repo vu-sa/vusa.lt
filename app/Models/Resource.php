@@ -10,7 +10,6 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Collection;
 use Laravel\Scout\Searchable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -74,7 +73,7 @@ class Resource extends Model implements HasMedia
             $builder = $builder->whereNotIn('reservations.id', $exceptReservations);
         }
 
-        return $this->capacity - $builder->sum('quantity') ;
+        return $this->capacity - $builder->sum('quantity');
     }
 
     public function leftCapacityAtTimeArray($datetime, $exceptReservations = [], $exceptResources = []): array
@@ -124,7 +123,6 @@ class Resource extends Model implements HasMedia
             $leftCapacity[strval(Carbon::parse($end)->getTimestampMs())] = $this->leftCapacityAtTimeArray($end)
                 + ['reservation' => $reservation->toArray(), 'end' => true];
         });
-
 
         // get left capacity at start and end of time period
         $leftCapacity[strval(Carbon::parse($from)->getTimestampMs())] = $this->leftCapacityAtTimeArray(datetime: $from, exceptReservations: $exceptReservations, exceptResources: $exceptResources);

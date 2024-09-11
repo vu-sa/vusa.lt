@@ -15,7 +15,6 @@ class ReservationResourceController extends LaravelResourceController
      * Redirect to the reservation show page. Separate reservation resource show pages are not needed.
      *
      * @param ReservationResource reservationResource
-     * @return RedirectResponse
      */
     public function show(ReservationResource $reservationResource): RedirectResponse
     {
@@ -37,7 +36,6 @@ class ReservationResourceController extends LaravelResourceController
      *
      * @param Request request
      * @param ReservationResource reservationResource
-     * @return \Illuminate\Http\RedirectResponse
      */
     public function update(Request $request, ReservationResource $reservationResource): RedirectResponse
     {
