@@ -47,7 +47,7 @@ class MainController extends PublicController
                 $chairDuty = $registerTenant->duties()->whereHas('types', function ($query) {
                     $query->where('slug', 'pirmininkas');
                 })->first();
-                $chairPerson = $chairDuty->users->first();
+                $chairPerson = $chairDuty->current_users->first();
                 $chairEmail = $chairDuty->email;
             } else {
                 switch ($data['whereToRegister']) {
