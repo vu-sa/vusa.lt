@@ -1,9 +1,10 @@
 <template>
-  <PageContent title="Naujas navigacijos elementas" :back-url="route('navigation.index')" :heading-icon="Icons.NAVIGATION">
-    <UpsertModelLayout :errors="$page.props.errors" :model="navigationElement">
+  <PageContent title="Naujas navigacijos elementas" :back-url="route('navigation.index')"
+    :heading-icon="Icons.NAVIGATION">
+    <UpsertModelLayout>
       <Suspense v-if="navigationElement.parent_id !== 0">
-        <NavigationForm model-route="navigation.store" :navigation="navigationElement" :parent-elements
-          :type-options />
+        <NavigationForm :navigation="navigationElement" :parent-elements :type-options
+          @submit:form="(form) => form.post(route('navigation.store'))" />
       </Suspense>
       <NavigationParentForm v-else model-route="navigation.store" :navigation="navigationElement" />
     </UpsertModelLayout>
@@ -25,7 +26,7 @@ const props = defineProps<{
 
 const navigationElement = {
   id: null,
-  parent_id: parseInt(props.parent_id), 
+  parent_id: parseInt(props.parent_id),
   name: "",
   lang: "lt",
   url: "#",

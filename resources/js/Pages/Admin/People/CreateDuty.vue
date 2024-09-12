@@ -1,14 +1,8 @@
 <template>
   <PageContent title="Nauja pareiga" :heading-icon="Icons.DUTY">
-    <UpsertModelLayout :errors="$page.props.errors" :model="duty">
-      <DutyForm
-        :duty="duty"
-        :duty-types="dutyTypes"
-        :institutions="assignableInstitutions"
-        :assignable-users="assignableUsers"
-        :roles="roles"
-        model-route="duties.store"
-      />
+    <UpsertModelLayout>
+      <DutyForm :duty :duty-types :assignable-institutions :assignable-users :roles
+        @submit:form="(form) => form.post(route('duties.store'))" />
     </UpsertModelLayout>
   </PageContent>
 </template>

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Laravel\Scout\Searchable;
@@ -10,7 +11,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Calendar extends Model implements HasMedia
 {
-    use HasFactory, InteractsWithMedia, Searchable;
+    use HasFactory, HasTranslations, InteractsWithMedia, Searchable;
 
     protected $table = 'calendar';
 
@@ -22,7 +23,14 @@ class Calendar extends Model implements HasMedia
         'end_date' => 'datetime:Y-m-d H:i',
         'updated_at' => 'datetime:Y-m-d H:i:s',
         'created_at' => 'datetime:Y-m-d H:i:s',
-        'extra_attributes' => 'array',
+    ];
+
+    public $translatable = [
+        'title',
+        'description',
+        'location',
+        'organizer',
+        'cto_url',
     ];
 
     public function tenant()

@@ -1,64 +1,58 @@
 <template>
-  <NForm :model="form" label-placement="top">
-    <div class="flex flex-col">
-      <FormElement>
-        <template #title>
-          {{ $t("forms.context.main_info") }}
-        </template>
-        <NFormItem :label="$t('forms.fields.title')">
-          <NInput v-model:value="form.title" type="text" placeholder="Įrašyti pavadinimą..." />
+  <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
+    <FormElement>
+      <template #title>
+        {{ $t("forms.context.main_info") }}
+      </template>
+      <NFormItem :label="$t('forms.fields.title')">
+        <NInput v-model:value="form.title" type="text" placeholder="Įrašyti pavadinimą..." />
+      </NFormItem>
+      <div class="grid lg:grid-cols-2 lg:gap-4">
+        <NFormItem label="Nuoroda">
+          <NInput :value="form.permalink" disabled type="text" placeholder="Sugeneruojama nuoroda..." />
         </NFormItem>
-        <div class="grid lg:grid-cols-2 lg:gap-4">
-          <NFormItem label="Nuoroda">
-            <NInput :value="form.permalink" disabled type="text" placeholder="Sugeneruojama nuoroda..." />
-          </NFormItem>
-          <NFormItem label="Kategorija">
-            <NSelect v-model:value="form.category_id" filterable :options="categories.map((category) => ({
-              value: category.id,
-              label: category.name,
-            }))" placeholder="Pasirinkti kategoriją..." />
-          </NFormItem>
-        </div>
-        <div class="grid lg:grid-cols-2 lg:gap-4">
-          <NFormItem label="Kalba">
-            <NSelect v-model:value="form.lang" filterable :options="languageOptions"
-              placeholder="Pasirinkti kalbą..." />
-          </NFormItem>
-          <NFormItem label="Kitos kalbos puslapis">
-            <NSelect v-model:value="form.other_lang_id" filterable :disabled="modelRoute === 'pages.store'"
-              placeholder="Pasirinkti kitos kalbos puslapį... (tik tada, kai jau sukūrėte puslapį)"
-              :options="otherPageOptions" clearable />
-          </NFormItem>
-        </div>
-      </FormElement>
-      <RichContentFormElement v-model="form.content.parts" />
-    </div>
-    <div class="flex justify-end gap-2">
-      <DeleteModelButton v-if="deleteModelRoute" :form="form" :model-route="deleteModelRoute" />
-      <UpsertModelButton :form="form" :model-route="modelRoute" @save="updateContents">
-        Sukurti
-      </UpsertModelButton>
-    </div>
-  </NForm>
+        <NFormItem label="Kategorija">
+          <NSelect v-model:value="form.category_id" filterable :options="categories.map((category) => ({
+            value: category.id,
+            label: category.name,
+          }))" placeholder="Pasirinkti kategoriją..." />
+        </NFormItem>
+      </div>
+      <div class="grid lg:grid-cols-2 lg:gap-4">
+        <NFormItem label="Kalba">
+          <NSelect v-model:value="form.lang" filterable :options="languageOptions" placeholder="Pasirinkti kalbą..." />
+        </NFormItem>
+        <NFormItem label="Kitos kalbos puslapis">
+          <NSelect v-model:value="form.other_lang_id" filterable :disabled="modelRoute === 'pages.store'"
+            placeholder="Pasirinkti kitos kalbos puslapį... (tik tada, kai jau sukūrėte puslapį)"
+            :options="otherPageOptions" clearable />
+        </NFormItem>
+      </div>
+    </FormElement>
+    <RichContentFormElement v-model="form.content.parts" />
+  </AdminForm>
 </template>
 
 <script setup lang="ts">
-import { NForm, NFormItem, NInput, NSelect } from "naive-ui";
+import { NFormItem, NInput, NSelect } from "naive-ui";
 import { computed, watch } from "vue";
 import { useForm, usePage } from "@inertiajs/vue3";
 import latinize from "latinize";
 
-import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import FormElement from "./FormElement.vue";
 import RichContentFormElement from "../RichContentFormElement.vue";
-import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
+import AdminForm from "./AdminForm.vue";
 
 const props = defineProps<{
   categories: App.Entities.Category[];
   page: App.Entities.Page;
   otherLangPages?: App.Entities.Page[];
   modelRoute: string;
-  deleteModelRoute?: string;
+}>();
+
+defineEmits<{
+  (event: "submit:form", form: unknown): void;
+  (event: "delete"): void;
 }>();
 
 const form = useForm("page", props.page);

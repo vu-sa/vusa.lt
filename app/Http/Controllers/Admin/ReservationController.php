@@ -127,22 +127,29 @@ class ReservationController extends LaravelResourceController
 
         // TODO: this may need to be refactored to account for null
         $dateTimeRange = request()->input('dateTimeRange');
+        $exceptReservations = collect(request()->input('except-reservations'))->unique()->toArray();
+        $exceptResources = collect(request()->input('except-resources'))->unique()->toArray();
 
         return Inertia::render('Admin/Reservations/ShowReservation', [
             'reservation' => [
                 // load pivot relationship comments
                 ...$reservation->load('comments', 'activities.causer', 'users')->toArray(),
-                'resources' => $reservation->load('resources.media', 'resources.pivot.comments', 'resources.tenant')->resources->map(function ($resource) {
+                'resources' => $reservation->load('resources.media', 'resources.pivot.comments', 'resources.tenant')->resources->map(function ($resource) use ($reservation) {
+
+                    // This is used to update the left capacity of resources already attached to the reservation
+                    $capacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($reservation->start_time, $reservation->end_time);
+
                     return [
                         ...$resource->toArray(),
                         'managers' => $resource->managers(),
                         'pivot' => $resource->pivot->append('approvable')->toArray(),
+                        'lowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($capacityAtDateTimeRange),
                     ];
                 }),
-
             ],
-            'allResources' => Inertia::lazy(fn () => Resource::with('tenant')->select('id', 'name', 'is_reservable', 'capacity', 'tenant_id')->get()->map(function ($resource) use ($dateTimeRange) {
-                $capacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($dateTimeRange['start'], $dateTimeRange['end']);
+            'allResources' => Inertia::lazy(fn () => Resource::query()->with('tenant')->select('id', 'name', 'is_reservable', 'capacity', 'tenant_id')->get()->map(function ($resource) use ($dateTimeRange, $exceptResources, $exceptReservations) {
+
+                $capacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($dateTimeRange['start'], $dateTimeRange['end'], $exceptReservations, $exceptResources);
 
                 return [
                     ...$resource->toArray(),

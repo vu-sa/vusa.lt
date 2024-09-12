@@ -19,6 +19,7 @@
         :edit-route="canUseRoutes.edit ? `${modelName}.edit` : undefined" :destroy-route="canUseRoutes.destroy ? `${modelName}.destroy` : undefined
           " />
     </NCard>
+    <slot name="after-table" />
   </PageContent>
 </template>
 

@@ -1,20 +1,17 @@
 <template>
-  <PageContent
-    :title="`${dutiable.duty.name} (${dutiable.dutiable.name})`"
-    :back-url="route('users.edit', dutiable.dutiable.id)"
-    :heading-icon="Icons.DUTY"
-  >
-    <UpsertModelLayout :errors="$page.props.errors" :model="dutiable">
-      <DutiableForm
-        :dutiable="dutiable"
-        model-route="dutiables.update"
-        delete-model-route="dutiables.destroy"
-      />
+  <PageContent :title="`${dutiable.duty.name} (${dutiable.dutiable.name})`"
+    :back-url="route('users.edit', dutiable.dutiable.id)" :heading-icon="Icons.DUTY">
+    <UpsertModelLayout>
+      <DutiableForm :dutiable enable-delete
+        @submit:form="(form) => form.patch(route('dutiables.update', dutiable.id), { preserveScroll: true })"
+        @delete="() => router.delete(route('dutiables.destroy', dutiable.id))" />
     </UpsertModelLayout>
   </PageContent>
 </template>
 
 <script setup lang="ts">
+import { router } from "@inertiajs/vue3";
+
 import DutiableForm from "@/Components/AdminForms/DutiableForm.vue";
 import Icons from "@/Types/Icons/regular";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
@@ -29,6 +26,4 @@ const dutiable = {
   start_date: new Date(props.dutiable.start_date).getTime(),
   end_date: props.dutiable.end_date ? new Date(props.dutiable.end_date).getTime() : null,
 };
-
-console.log(dutiable)
 </script>

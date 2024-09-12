@@ -28,7 +28,4 @@ return [
         'lent' => 'mark as lent',
         'return' => 'mark as returned',
     ],
-    'other' => [
-        'and_decision' => 'and :decision',
-    ],
 ];

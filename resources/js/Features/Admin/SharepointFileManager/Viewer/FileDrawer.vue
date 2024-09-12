@@ -11,7 +11,6 @@
           <div class="flex gap-2">
             <NSpin content-class="flex gap-2 items-center" size="small" :stroke-width="12"
               :show="loadingPublicPermission">
-
               <div v-if="publicWebUrl" class="flex gap-2">
                 <NButtonGroup size="small">
                   <NButton type="primary" tag="a" target="_blank" :href="publicWebUrl">
@@ -25,7 +24,8 @@
                   </CopyToClipboardButton>
                 </NButtonGroup>
               </div>
-              <NButton v-else-if="!loadingPublicPermission" size="small" @click="createPublicPermission">Sukurti viešą
+              <NButton v-else-if="!loadingPublicPermission" size="small" @click="createPublicPermission">
+                Sukurti viešą
                 nuorodą
                 <template #icon>
                   <IFluentDocumentLink24Regular />
@@ -61,9 +61,11 @@
                 </td>
                 <td>
                   <NTag size="small">
-                    <NEllipsis style="max-width: 140px">{{
-                      file?.listItem?.fields?.Type
-                      }}</NEllipsis>
+                    <NEllipsis style="max-width: 140px">
+                      {{
+                        file?.listItem?.fields?.Type
+                      }}
+                    </NEllipsis>
                   </NTag>
                 </td>
               </tr>
@@ -77,7 +79,6 @@
               </tr>
             </tbody>
           </NTable>
-          <CommentPart :commentable_type="'sharepoint_file'" :text="currentCommentText" :model="file?.sharepointFile" />
         </div>
       </FadeTransition>
     </NDrawerContent>
@@ -95,7 +96,6 @@ import FilePdf from "~icons/mdi/file-pdf";
 import FileWord from "~icons/mdi/file-word";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
-import CommentPart from "@/Features/Admin/CommentViewer/CommentViewer.vue";
 import CopyToClipboardButton from "@/Components/Buttons/CopyToClipboardButton.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
 
@@ -110,7 +110,6 @@ const emit = defineEmits<{
 }>();
 
 const active = computed(() => !!props.file);
-const currentCommentText = ref("");
 const publicWebUrl = ref<string | null | undefined>(null);
 
 const loadingPublicPermission = ref(false);

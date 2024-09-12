@@ -1,7 +1,4 @@
 import { defineConfig } from "vitest/config";
-import { loadEnv } from "vite";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import { NaiveUiResolver, VueUseComponentsResolver } from 'unplugin-vue-components/resolvers'
 import { codecovVitePlugin } from "@codecov/vite-plugin";
 import Components from 'unplugin-vue-components/vite'
@@ -14,13 +11,25 @@ import vue from "@vitejs/plugin-vue";
 import vueDevTools from 'vite-plugin-vue-devtools'
 import vueJsx from "@vitejs/plugin-vue-jsx";
 
+// Load the CODECOV_TOKEN from the .env file
+import { loadEnv } from "vite";
 const token = loadEnv('production', './', 'CODECOV').CODECOV_TOKEN;
+
+// This makes so that the <docs> block in Vue SFCs is removed
+const vueDocsPlugin = {
+  name: 'vue-docs',
+  transform(code, id) {
+    if (!/vue&type=docs/.test(id)) return
+    return `export default ''`
+  }
+}
 
 export default defineConfig({
   plugins: [
     vueDevTools({
       appendTo: 'resources/js/app.ts'
     }),
+    vueDocsPlugin,
     laravel(["resources/js/app.ts"]),
     Markdown({
       markdownItOptions: {

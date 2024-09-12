@@ -3,9 +3,10 @@
     model: $tChoice('entities.resource_category.model', 1),
   })
     " :heading-icon="Icons.RESOURCE_CATEGORY">
-    <UpsertModelLayout :errors="$page.props.errors" :model="resourceCategory">
-      <ResourceCategoryForm :resource-category="resourceCategory" model-route="resourceCategories.update"
-        delete-model-route="resourceCategories.delete" />
+    <UpsertModelLayout>
+      <ResourceCategoryForm :resource-category
+        @submit:form="(form) => form.patch(route('resourceCategories.update', resourceCategory.id), { preserveScroll: true })"
+        @delete="() => router.delete(route('resourceCategories.destroy', resourceCategory.id))" />
     </UpsertModelLayout>
   </PageContent>
 </template>

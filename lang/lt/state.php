@@ -28,7 +28,4 @@ return [
         'lent' => 'pažymėti, kaip paskolintą',
         'return' => 'pažymėti, kaip grąžintą',
     ],
-    'other' => [
-        'and_decision' => 'ir :decision',
-    ],
 ];

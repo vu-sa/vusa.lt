@@ -2,40 +2,34 @@
   <AdminContentPage :title="title">
     <template #above-header>
       <template v-if="breadcrumbOptions">
-        <AdminBreadcrumbDisplayer
-          :options="breadcrumbOptions"
-          class="mb-4 w-full"
-        />
+        <AdminBreadcrumbDisplayer :options="breadcrumbOptions" class="mb-4 w-full" />
       </template>
     </template>
     <template #after-heading>
-      <slot name="after-heading"></slot>
+      <slot name="after-heading" />
     </template>
     <template #aside-header>
       <div class="inline-flex gap-2">
         <ActivityLogButton :activities="model.activities" />
-        <slot name="more-options"></slot>
+        <slot name="more-options" />
       </div>
     </template>
     <template #title>
       <slot name="title" />
     </template>
     <div class="grid grid-rows-[minmax(300px,_50vh)_minmax(450px,_auto)] gap-4">
-      <div class="overflow-y-auto"><slot /></div>
+      <div class="overflow-y-auto">
+        <slot />
+      </div>
       <div>
         <div v-if="relatedModels" class="flex-items mb-6 flex gap-4">
-          <RelatedModelButton
-            v-for="related in relatedModels"
-            :key="related.name"
-            :name="$t(related.name)"
-            :icon="related.icon"
-            :count="related.count"
-            :disabled="related.disabled"
-            :active="currentTab === related.name"
-            @click="$emit('change:tab', related.name)"
-          ></RelatedModelButton>
+          <RelatedModelButton v-for="related in relatedModels" :key="related.name" :name="$t(related.name)"
+            :icon="related.icon" :count="related.count" :disabled="related.disabled"
+            :active="currentTab === related.name" @click="$emit('change:tab', related.name)" />
         </div>
-        <FadeTransition mode="out-in"><slot name="below" /></FadeTransition>
+        <FadeTransition mode="out-in">
+          <slot name="below" />
+        </FadeTransition>
       </div>
     </div>
   </AdminContentPage>

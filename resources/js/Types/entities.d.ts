@@ -73,6 +73,7 @@ declare namespace App.Entities {
     pivot?: App.Entities.ReservationResource | null;
     media?: App.Entities.Media[] | null;
   }
+  export type ResourceCategory = models.ResourceCategory;
   export type ReservationResource =
     Omit<models.ReservationResource, "state"> & {
     state:

@@ -71,7 +71,7 @@ Route::resource('resourceCategories', ResourceCategoryController::class);
 
 Route::put('reservations/{reservation}/add-users', [ReservationController::class, 'addUsers'])->name('reservations.add-users');
 Route::resource('reservations', ReservationController::class);
-Route::resource('reservationResources', ReservationResourceController::class);
+Route::resource('reservationResources', ReservationResourceController::class)->except(['index', 'create', 'edit']);
 
 Route::get('files/getFiles', [FilesController::class, 'getFiles'])->name('files.getFiles');
 Route::post('files/createDirectory', [FilesController::class, 'createDirectory'])->name('files.createDirectory');

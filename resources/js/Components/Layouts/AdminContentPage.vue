@@ -28,9 +28,11 @@
     <slot name="create-button">
       <Link v-if="isIndex && createUrl" :href="createUrl">
       <div class="flex">
-        <NButton round size="tiny" :theme-overrides="{ border: '1.2px solid' }"><template #icon>
+        <NButton round size="tiny" :theme-overrides="{ border: '1.2px solid' }">
+          <template #icon>
             <IFluentAdd24Filled />
-          </template>{{ $t("forms.add") }}</NButton>
+          </template>{{ $t("forms.add") }}
+        </NButton>
       </div>
       </Link>
     </slot>

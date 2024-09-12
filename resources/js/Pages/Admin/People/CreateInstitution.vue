@@ -1,7 +1,8 @@
 <template>
   <PageContent title="Nauja institucija" :heading-icon="Icons.INSTITUTION">
     <UpsertModelLayout>
-      <InstitutionForm :assignable-tenants model-route="institutions.store" :institution :institution-types />
+      <InstitutionForm :assignable-tenants :institution :institution-types
+        @submit:form="(form) => form.post(route('institutions.store'))" />
     </UpsertModelLayout>
   </PageContent>
 </template>

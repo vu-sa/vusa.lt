@@ -2,18 +2,22 @@
   <ShowPageLayout :title="reservation.name" :breadcrumb-options="breadcrumbOptions" :model="reservation"
     :related-models="relatedModels" :current-tab="currentTab" @change:tab="currentTab = $event">
     <template #after-heading>
-      <UsersAvatarGroup v-if="reservation.users && reservation.users.length > 0" :users="reservation.users" />
+      <UsersAvatarGroup v-if="reservation.users && reservation.users.length > 0" class="mr-2"
+        :users="reservation.users" />
     </template>
     <template #more-options>
-      <NButton size="small" text @click="showReservationHelpModal = true">
-        <template #icon>
-          <IFluentQuestion24Regular />
-        </template>
-      </NButton>
       <MoreOptionsButton :more-options="moreOptions" @more-option-click="handleMoreOptionClick" />
     </template>
-    <ReservationResourceTable v-model:selectedReservationResource="selectedReservationResource"
-      :reservation="reservation" />
+
+    <ReservationResourceTable v-model:selected-reservation-resource="selectedReservationResource" class="mb-4"
+      :reservation @edit:reservation-resource="editReservationResource" />
+    <NButton secondary size="small" @click="handleMoreOptionClick('add-resource')">
+      <template #icon>
+        <IFluentAdd24Filled />
+      </template>
+      {{ $t("Pridėti rezervacijos išteklių") }}
+    </NButton>
+
     <CardModal :title="$t('entities.meta.help', {
       model: $tChoice('entities.reservation.model', 2),
     })
@@ -28,10 +32,11 @@
     </CardModal>
     <CardModal :show="showReservationResourceCreateModal" :title="RESERVATION_CARD_MODAL_TITLES.create_reservation_resource[
       $page.props.app.locale
-    ]
+    ][reservationResourceFormRouteName]
       " @close="showReservationResourceCreateModal = false">
       <Suspense>
-        <ReservationResourceForm :reservation-resource-form="reservationResourceForm" :all-resources="allResources"
+        <ReservationResourceForm :reservation-resource-form="reservationResourceForm" :all-resources
+          :reservation-resource-form-route-name :currently-used-capacity
           @success="showReservationResourceCreateModal = false" />
       </Suspense>
     </CardModal>
@@ -54,9 +59,11 @@
     </CardModal>
     <template #below>
       <div v-if="currentTab === 'Komentarai'">
-        <InfoText class="mb-4">{{
-          RESERVATION_HELP_TEXTS.comments[$page.props.app.locale]
-        }}</InfoText>
+        <InfoText class="mb-4">
+          {{
+            RESERVATION_HELP_TEXTS.comments[$page.props.app.locale]
+          }}
+        </InfoText>
         <CommentViewer class="mt-auto h-min" :commentable_type="'reservation'" :model="reservation"
           :comments="getAllComments()" />
       </div>
@@ -70,9 +77,9 @@
 <script setup lang="tsx">
 import { trans as $t } from "laravel-vue-i18n";
 import {
-  type MenuOption,
   NIcon,
   NTag,
+  type MenuOption,
   type SelectRenderLabel,
   type SelectRenderTag,
 } from "naive-ui";
@@ -84,20 +91,22 @@ import { RESERVATION_CARD_MODAL_TITLES } from "@/Constants/I18n/CardModalTitles"
 import { RESERVATION_DESCRIPTIONS } from "@/Constants/I18n/Descriptions";
 import { RESERVATION_HELP_TEXTS } from "@/Constants/I18n/HelpTexts";
 import { capitalize } from "@/Utils/String";
+
 import CardModal from "@/Components/Modals/CardModal.vue";
 import CommentViewer from "@/Features/Admin/CommentViewer/CommentViewer.vue";
 import Icons from "@/Types/Icons/filled";
 import InfoText from "@/Components/SmallElements/InfoText.vue";
-import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ReservationResourceForm from "@/Components/AdminForms/ReservationResourceForm.vue";
 import ReservationResourceTable from "@/Components/Tables/ReservationResourceTable.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
 import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
+import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 
 const props = defineProps<{
   reservation: App.Entities.Reservation;
+  // NOTE: allResources is used only in reservationResourceForm
   allResources?: App.Entities.Resource[];
   allUsers?: App.Entities.User[];
 }>();
@@ -111,12 +120,17 @@ const showReservationAddUserModal = ref(false);
 const showReservationHelpModal = ref(false);
 
 const reservationResourceForm = useForm({
+  id: undefined,
   resource_id: null,
   reservation_id: props.reservation.id,
   quantity: 1,
   start_time: new Date(props.reservation.start_time).getTime(),
   end_time: new Date(props.reservation.end_time).getTime(),
 });
+
+// NOTE: I try to manage both cases of forms in one file, so this is needed
+const reservationResourceFormRouteName = ref('reservationResources.store');
+const currentlyUsedCapacity = ref(0);
 
 const reservationUserForm = useForm({
   users: null,
@@ -150,9 +164,12 @@ const moreOptions: MenuOption[] = [
   },
 ];
 
-const handleMoreOptionClick = (key: string) => {
+const handleMoreOptionClick = (key: 'add-resource' | 'add-user') => {
   switch (key) {
     case "add-resource":
+      reservationResourceFormRouteName.value = 'reservationResources.store';
+      currentlyUsedCapacity.value = 0;
+      reservationResourceForm.reset();
       showReservationResourceCreateModal.value = true;
       break;
     case "add-user":
@@ -180,8 +197,22 @@ const handleSubmitUserForm = () => {
   );
 };
 
+const editReservationResource = (rResource: App.Entities.ReservationResource) => {
+  reservationResourceForm.reset();
+  reservationResourceForm.id = rResource.id;
+  reservationResourceForm.resource_id = rResource.resource_id;
+  reservationResourceForm.quantity = rResource.quantity;
+  reservationResourceForm.start_time = new Date(rResource.start_time).getTime();
+  reservationResourceForm.end_time = new Date(rResource.end_time).getTime();
+
+  reservationResourceFormRouteName.value = 'reservationResources.update';
+  currentlyUsedCapacity.value = rResource.quantity;
+
+  showReservationResourceCreateModal.value = true;
+};
+
 const getAllComments = () => {
-  // ! Not using toRaw() here causes a bug: Uncaught DOMException: Failed to execute 'replaceState' on 'History': #<Object> could not be cloned
+  // WARNING: Not using toRaw() here causes a bug: Uncaught DOMException: Failed to execute 'replaceState' on 'History': #<Object> could not be cloned
   let comments = toRaw(props.reservation.comments) ?? [];
   let resources = toRaw(props.reservation.resources) ?? [];
 

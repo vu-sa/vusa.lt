@@ -94,7 +94,7 @@ class CalendarController extends LaravelResourceController
         $this->authorize('update', [Calendar::class, $calendar, $this->authorizer]);
 
         return Inertia::render('Admin/Calendar/EditCalendarEvent', [
-            'calendar' => $calendar,
+            'calendar' => $calendar->toFullArray(),
             'categories' => Category::all(),
             'images' => $calendar->getMedia('images'),
             'assignableTenants' => GetTenantsForUpserts::execute('calendar.update.all', $this->authorizer),

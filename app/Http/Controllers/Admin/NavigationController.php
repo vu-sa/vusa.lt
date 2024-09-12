@@ -180,6 +180,6 @@ class NavigationController extends LaravelResourceController
 
         Cache::forget('mainNavigation-'.app()->getLocale());
 
-        return back()->with('success', 'Navigation deleted.');
+        return redirect()->route('navigation.index')->with('info', 'Navigation deleted.');
     }
 }

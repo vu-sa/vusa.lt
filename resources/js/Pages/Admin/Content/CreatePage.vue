@@ -1,10 +1,10 @@
 <template>
   <PageContent title="Naujas puslapis" :back-url="route('pages.index')">
-    <UpsertModelLayout :errors="$page.props.errors" :model="page">
+    <UpsertModelLayout>
       <template #card-header>
         Puslapio informacija
       </template>
-      <PageForm :page="page" model-route="pages.store" :categories />
+      <PageForm :page model-route="pages.store" :categories @submit:form="(form) => form.post(route('pages.store'))" />
     </UpsertModelLayout>
   </PageContent>
 </template>

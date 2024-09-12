@@ -22,15 +22,25 @@ class StoreCalendarRequest extends ResourceRequest
     public function rules(): array
     {
         return [
+            'title.lt' => 'required|string',
+            'title.en' => 'nullable|string',
+            'description.lt' => 'nullable|string',
+            'description.en' => 'nullable|string',
+            'location.lt' => 'nullable|string',
+            'location.en' => 'nullable|string',
+            'organizer.lt' => 'nullable|string',
+            'organizer.en' => 'nullable|string',
+            'cto_url.lt' => 'nullable|url',
+            'cto_url.en' => 'nullable|url',
+            'facebook_url' => 'nullable|url',
+            'video_url' => 'nullable',
+            'is_draft' => 'boolean',
+            'is_all_day' => 'boolean',
+            'is_international' => 'boolean',
             'date' => 'required|date',
-            'tenant_id' => 'required|integer',
             'end_date' => 'nullable|date|after:date',
-            'title' => 'required',
-            'description' => 'required',
-            'location' => 'nullable',
-            'url' => 'nullable',
             'category' => 'nullable',
-            'extra_attributes' => 'nullable',
+            'tenant_id' => 'required|integer',
         ];
     }
 }

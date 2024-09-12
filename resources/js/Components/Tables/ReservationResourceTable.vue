@@ -1,6 +1,6 @@
 <template>
-  <NDataTable :data="reservation?.resources" :columns="dataTableColumns" :row-key="rowKey" :scroll-x="650"
-    size="small" />
+  <NDataTable v-bind="$attrs" :data="reservation?.resources" :columns="dataTableColumns" :row-key="rowKey"
+    :scroll-x="650" size="small" />
 
   <CardModal v-model:show="showStateChangeModal" :title="$page.props.app.locale === 'lt'
     ? 'Palikti komentarą arba naujinti būseną'
@@ -18,9 +18,8 @@
 
       <CommentTipTap v-model:text="commentText" class="mt-4" rounded-top :loading="loading"
         :enable-approve="selectedReservationResource?.approvable" :submit-text="$t('Komentuoti')"
-        :approve-text="approveText" :reject-text="`... ${$t('state.other.and_decision', {
-          decision: $t('state.decision.reject'),
-        })}`" :disabled="false" @submit:comment="submitComment" />
+        :approve-text="approveText" :reject-text="capitalize($t('state.decision.reject'))" :disabled="false"
+        @submit:comment="submitComment" />
     </div>
   </CardModal>
 </template>
@@ -28,7 +27,7 @@
 <script setup lang="tsx">
 import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
 import { Link, router, usePage } from "@inertiajs/vue3";
-import { NButton, NIcon, NImage, NImageGroup, NPopover, NSpace } from "naive-ui";
+import { type MenuOption, NButton, NIcon, NImage, NImageGroup, NPopover, NSpace } from "naive-ui";
 import { computed, ref } from "vue";
 
 import Delete16Regular from "~icons/fluent/delete16-regular";
@@ -42,10 +41,15 @@ import CommentTipTap from "@/Features/Admin/CommentViewer/CommentTipTap.vue";
 import InfoText from "../SmallElements/InfoText.vue";
 import ReservationResourceStateTag from "../Tag/ReservationResourceStateTag.vue";
 import UsersAvatarGroup from "../Avatars/UsersAvatarGroup.vue";
+import MoreOptionsButton from "../Buttons/MoreOptionsButton.vue";
 
 defineProps<{
   reservation: App.Entities.Reservation & { approvable: boolean };
 }>();
+
+const emit = defineEmits<{
+  'edit:reservationResource': [reservationResource: App.Entities.ReservationResource]
+}>()
 
 const selectedReservationResource =
   defineModel<App.Entities.ReservationResource | null>(
@@ -56,6 +60,12 @@ const showStateChangeModal = ref(false);
 const rowKey = (row: App.Entities.Resource) => row.pivot?.id;
 
 const dataTableColumns = [
+  //{
+  //  type: 'selection',
+  //  disabled(row) {
+  //    return !row?.pivot?.approvable
+  //  }
+  //},
   {
     type: "expand",
     renderExpand(row) {
@@ -92,6 +102,7 @@ const dataTableColumns = [
       return $t("forms.fields.quantity");
     },
     key: "pivot.quantity",
+    minWidth: 75,
   },
   {
     title() {
@@ -126,6 +137,7 @@ const dataTableColumns = [
       return capitalize($t("entities.reservation.start_time"));
     },
     key: "pivot.start_time",
+    minWidth: 75,
     render(row: App.Entities.Resource) {
       return (
         <span
@@ -147,6 +159,7 @@ const dataTableColumns = [
       return capitalize($t("entities.reservation.end_time"));
     },
     key: "pivot.end_time",
+    minWidth: 75,
     render(row: App.Entities.Resource) {
       return (
         <span
@@ -213,29 +226,41 @@ const dataTableColumns = [
             </NButton>
           ) : null}
           {["created", "reserved"].includes(row.pivot?.state) ? (
-            <NPopover>
-              {{
-                trigger: () => (
-                  <NButton
-                    quaternary
-                    circle
-                    size="small"
-                    onClick={() => handleReservationResourceCancel(row)}
-                  >
-                    {{
-                      icon: () => <NIcon component={DismissCircle24Regular} />,
-                    }}
-                  </NButton>
-                ),
-                default: () => "Atšaukti rezervaciją",
-              }}
-            </NPopover>
+            <>
+              <MoreOptionsButton edit more-options={moreOptions} onEditClick={() => handleEditClick(row)} onMoreOptionClick={(key) => handleMoreOptionClick(key, row)} />
+            </>
           ) : null}
         </div>
       );
     },
   },
 ];
+
+const moreOptions: MenuOption[] = [
+  {
+    label() {
+      return $t("Atšaukti rezervaciją");
+    },
+    icon() {
+      return <NIcon component={DismissCircle24Regular}></NIcon>;
+    },
+    key: "dismiss-reservation",
+  },
+];
+
+const handleMoreOptionClick = (key: 'dismiss-reservation', row) => {
+  switch (key) {
+    case "dismiss-reservation":
+      handleReservationResourceCancel(row)
+      break;
+    default:
+      break;
+  }
+};
+
+const handleEditClick = (row: App.Entities.Resource) => {
+  emit('edit:reservationResource', row.pivot)
+};
 
 const commentText = ref("");
 const loading = ref(false);
@@ -247,20 +272,14 @@ const handleStateChange = (row: any) => {
 
 const approveText = computed(() => {
   if (selectedReservationResource.value?.state === "reserved") {
-    return `... ${$t("state.other.and_decision", {
-      decision: $t("state.comment.lent"),
-    })}`;
+    return capitalize($t("state.comment.lent"))
   }
 
   if (selectedReservationResource.value?.state === "lent") {
-    return `... ${$t("state.other.and_decision", {
-      decision: $t("state.comment.return"),
-    })}`;
+    return capitalize($t("state.comment.return"))
   }
 
-  return `... ${$t("state.other.and_decision", {
-    decision: $t("state.decision.approve"),
-  })}`;
+  return capitalize($t("state.decision.approve"));
 });
 
 const setSelectedReservationResource = async (

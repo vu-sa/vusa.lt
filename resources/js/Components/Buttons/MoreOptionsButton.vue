@@ -1,8 +1,10 @@
 <template>
   <NDropdown placement="bottom-end" trigger="click" :options="dropdownOptions" @select="handleSelect">
-    <NButton :size="small ? 'tiny' : 'small'" :disabled="disabled" circle quaternary @click.stop><template #icon>
+    <NButton :size="small ? 'tiny' : 'small'" :disabled="disabled" circle quaternary @click.stop>
+      <template #icon>
         <IFluentMoreHorizontal24Filled />
-      </template></NButton>
+      </template>
+    </NButton>
   </NDropdown>
   <NModal v-model:show="showDeleteModal" preset="dialog" title="Ištrinti įrašą?"
     content="Šis įrašas bus ištrintas negrįžtamai..." type="warning" :positive-text="$t('forms.delete')"
@@ -63,7 +65,7 @@ const defaultOptions: DropdownOption[] = [
 // add those two arrays of options if they are not empty
 const dropdownOptions = computed(() => {
   const options = props.moreOptions ? props.moreOptions : [];
-  return [...options, ...defaultOptions];
+  return [...defaultOptions, ...options];
 });
 
 const handleSelect = (key: string) => {

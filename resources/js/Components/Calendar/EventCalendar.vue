@@ -1,6 +1,6 @@
 <template>
   <div class="my-calendar">
-    <Calendar :initial-page="currentDay" :is-dark="isDark" :attributes="calendarAttributes" :locale="{
+    <Calendar :initial-page="currentDay" :is-dark :attributes="calendarAttributes" :locale="{
       id: $page.props.app.locale,
       firstDayOfWeek: 2,
       masks: { weekdays: 'WW' },

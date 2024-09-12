@@ -3,13 +3,14 @@
     model: $tChoice('entities.resource.model', 1),
   })
     " :heading-icon="Icons.RESOURCE">
-    <UpsertModelLayout :errors="$page.props.errors" :model="resource">
-      <ResourceForm :assignable-tenants :resource :categories model-route="resources.store" />
+    <UpsertModelLayout>
+      <ResourceForm :assignable-tenants :resource :categories
+        @submit:form="(form) => form.post(route('resources.store'))" />
     </UpsertModelLayout>
   </PageContent>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
 import { usePage } from "@inertiajs/vue3";
 
 import Icons from "@/Types/Icons/regular";
@@ -45,6 +46,7 @@ const resource: ResourceCreationTemplate = {
   },
   location: "",
   capacity: 1,
+  resource_category_id: null,
   // If tenant_id is zero, then the form will be disabled (set in form).
   tenant_id: usePage().props.auth?.user.tenants[0]?.id ?? 0,
   is_reservable: 1,

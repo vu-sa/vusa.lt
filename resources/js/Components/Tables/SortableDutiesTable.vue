@@ -1,3 +1,7 @@
+<docs>
+Implemented in InstitutionForm.vue
+</docs>
+
 <template>
   <TransitionGroup ref="el" tag="div">
     <div v-for="model in contents" :key="model?.id || model?.name"

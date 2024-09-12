@@ -7,8 +7,8 @@
       </h4>
       <CollapsibleTrigger as-child>
         <NButton size="tiny">
-          <span v-if="isOpen">Paslėpti</span>
-          <span v-else>Rodyti</span>
+          <span v-if="isOpen">{{ $t('Paslėpti') }}</span>
+          <span v-else>{{ $t('Rodyti') }}</span>
           <template #icon>
             <IFluentChevronDown24Regular v-if="isOpen" />
             <IFluentChevronRight24Regular v-else />

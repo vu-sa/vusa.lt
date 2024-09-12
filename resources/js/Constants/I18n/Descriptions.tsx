@@ -29,17 +29,24 @@ export const RESERVATION_DESCRIPTIONS = {
   },
   resources: {
     lt: (
-      <p class="mb-4">
-        Pakeitus rezervacijos laiką, pasirinkti ištekliai bus išvalyti. Rodomas
-        išteklių kiekis nurodytu rezervacijos laikotarpiu.
-      </p>
+      <>
+        <p class="mb-4">
+          Pakeitus rezervacijos laiką, pasirinkti ištekliai bus išvalyti.
+        </p>
+        <p>Rodomas
+          išteklių kiekis <strong>automatiškai apskaičiuojamas nurodytam rezervacijos laikotarpiui.</strong>
+        </p>
+      </>
     ),
     en: (
-      <p class="mb-4">
-        Changing the reservation time will clear the selected resources. The
-        amount of resources available during the specified reservation period is
-        displayed.
-      </p>
+      <>
+        <p class="mb-4">
+          Changing the reservation time will clear the selected resources.
+        </p><p>
+          The
+          number of resources displayed is <strong>automatically calculated for the specified reservation period.</strong>
+        </p>
+      </>
     ),
   },
   help: {

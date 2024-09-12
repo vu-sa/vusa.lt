@@ -1,18 +1,8 @@
 <template>
-  <PageContent
-    :title="calendar.title"
-    :back-url="route('calendar.index')"
-    :heading-icon="Icons.CALENDAR"
-  >
-    <UpsertModelLayout :errors="$page.props.errors" :model="calendar">
-      <CalendarForm
-        model-route="calendar.update"
-        delete-model-route="calendar.destroy"
-        :calendar="calendar"
-        :categories="categories"
-        :images="images"
-        :assignable-tenants
-      />
+  <PageContent :title="calendar.title.lt" :back-url="route('calendar.index')" :heading-icon="Icons.CALENDAR">
+    <UpsertModelLayout>
+      <CalendarForm model-route="calendar.update" delete-model-route="calendar.destroy" :calendar :categories :images
+        :assignable-tenants />
     </UpsertModelLayout>
   </PageContent>
 </template>
@@ -20,7 +10,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-import { checkForEmptyArray } from "@/Composables/checkAttributes";
 import CalendarForm from "@/Components/AdminForms/CalendarForm.vue";
 import Icons from "@/Types/Icons/regular";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
@@ -34,11 +23,4 @@ const props = defineProps<{
 }>();
 
 const calendar = ref(props.calendar);
-
-calendar.value.extra_attributes = checkForEmptyArray(
-  calendar.value.extra_attributes
-);
-calendar.value.extra_attributes.en = checkForEmptyArray(
-  calendar.value.extra_attributes.en
-);
 </script>

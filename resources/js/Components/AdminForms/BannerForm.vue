@@ -1,70 +1,39 @@
 <template>
-  <NForm :model="form" label-placement="top">
-    <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
-      <NFormItemGi :label="$t('forms.fields.title')" :span="2">
-        <NInput
-          v-model:value="form.title"
-          type="text"
-          placeholder="Įrašyti pavadinimą"
-        />
-      </NFormItemGi>
+  <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
+    <FormElement>
+      <NFormItem :label="$t('forms.fields.title')">
+        <NInput v-model:value="form.title" type="text" placeholder="Įrašyti pavadinimą" />
+      </NFormItem>
 
-      <NFormItemGi label="Nuoroda, į kurią nukreipia paveikslėlis" :span="2">
-        <NInput
-          v-model:value="form.link_url"
-          type="text"
-          placeholder="https://vu.lt"
-        />
-      </NFormItemGi>
+      <NFormItem label="Nuoroda, į kurią nukreipia paveikslėlis">
+        <NInput v-model:value="form.link_url" type="text" placeholder="https://vu.lt" />
+      </NFormItem>
 
-      <NFormItemGi label="Ar aktyvus?" :span="2">
-        <NSwitch
-          v-model:value="form.is_active"
-          :checked-value="1"
-          :unchecked-value="0"
-        />
-      </NFormItemGi>
+      <NFormItem label="Ar aktyvus?">
+        <NSwitch v-model:value="form.is_active" :checked-value="1" :unchecked-value="0" />
+      </NFormItem>
 
-      <NFormItemGi label="Logotipas" :span="2">
-        <NMessageProvider>
-          <UploadImageWithCropper
-            v-model:url="form.image_url"
-            folder="banners"
-          />
-        </NMessageProvider>
-      </NFormItemGi>
-    </NGrid>
-    <div class="flex justify-end gap-2">
-      <DeleteModelButton
-        v-if="deleteModelRoute"
-        :form="form"
-        :model-route="deleteModelRoute"
-      />
-      <UpsertModelButton :form="form" :model-route="modelRoute" />
-    </div>
-  </NForm>
+      <NFormItem label="Paveikslėlis">
+        <UploadImageWithCropper v-model:url="form.image_url" folder="banners" />
+      </NFormItem>
+    </FormElement>
+  </AdminForm>
 </template>
 
 <script setup lang="ts">
-import {
-  NForm,
-  NFormItemGi,
-  NGrid,
-  NInput,
-  NMessageProvider,
-  NSwitch,
-} from "naive-ui";
 import { useForm } from "@inertiajs/vue3";
-
-import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
 import UploadImageWithCropper from "../Buttons/UploadImageWithCropper.vue";
-import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
+import AdminForm from "./AdminForm.vue";
+import FormElement from "./FormElement.vue";
 
-const props = defineProps<{
-  banner: App.Entities.Banner;
-  modelRoute: string;
-  deleteModelRoute?: string;
+defineEmits<{
+  (event: "submit:form", form: unknown): void;
+  (event: "delete"): void;
 }>();
 
-const form = useForm("banner", props.banner);
+const { banner } = defineProps<{
+  banner: App.Entities.Banner;
+}>();
+
+const form = useForm("banner", banner);
 </script>

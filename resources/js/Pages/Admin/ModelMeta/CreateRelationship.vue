@@ -1,11 +1,7 @@
 <template>
   <PageContent title="Naujas ryšys" :back-url="route('relationships.index')">
-    <UpsertModelLayout :errors="$page.props.errors" :model="relationship">
-      <RelationshipForm
-        :relationship="relationship"
-        :content-types="contentTypes"
-        model-route="relationships.store"
-      />
+    <UpsertModelLayout>
+      <RelationshipForm :relationship :content-types @submit:form="(form) => form.post(route('relationships.store'))" />
     </UpsertModelLayout>
   </PageContent>
 </template>

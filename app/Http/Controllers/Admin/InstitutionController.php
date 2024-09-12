@@ -164,7 +164,7 @@ class InstitutionController extends LaravelResourceController
 
         $institution->delete();
 
-        return back()->with('info', 'Institucija sėkmingai ištrinta!');
+        return redirect()->route('institutions.index')->with('info', 'Institucija sėkmingai ištrinta!');
     }
 
     /**

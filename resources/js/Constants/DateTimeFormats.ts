@@ -1,7 +1,7 @@
 export const RESERVATION_DATE_TIME_FORMAT: Intl.DateTimeFormatOptions = {
-  weekday: "short",
   day: "2-digit",
-  month: "narrow",
+  month: "short",
   hour: "numeric",
   minute: "numeric",
+  year: "numeric",
 };

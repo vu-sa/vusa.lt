@@ -21,18 +21,25 @@ declare global {
     export interface Calendar {
       // columns
       id: number
+      title: string[]|null
+      description: string[]|null
+      location: string[]|null
+      organizer: string[]|null
+      cto_url: string[]|null
+      facebook_url: string|null
+      video_url: string|null
+      is_draft: boolean
+      is_all_day: boolean
+      is_international: boolean
       date: string
       end_date: string|null
-      title: string
-      description: string|null
-      location: string|null
       category: string|null
-      url: string|null
       tenant_id: number
-      extra_attributes: string[]|null
       created_at: string
       updated_at: string
       registration_form_id: number|null
+      // mutators
+      translations: unknown
       // relations
       tenant: Tenant
       registration_form: RegistrationForm
@@ -136,12 +143,11 @@ declare global {
       language: string|null
       summary: string|null
       anonymous_url: string|null
-      anonymous_url_expiration_date: string|null
-      thumbnail_url: string|null
       is_active: boolean
       sharepoint_site_id?: string
       sharepoint_list_id?: string
       created_at?: string
+      checked_at: string|null
       updated_at?: string
       // relations
       institution: Institution
@@ -173,16 +179,17 @@ declare global {
     export interface Duty {
       // columns
       id: string
-      name: string
-      description: string|null
+      name: string[]|null
+      description: string[]|null
       institution_id: string
       order: number
       email: string|null
-      extra_attributes: string[]|null
       places_to_occupy: number|null
       created_at: string
       updated_at: string
       deleted_at: string|null
+      // mutators
+      translations: unknown
       // relations
       dutiables: Dutiable[]
       users: User[]

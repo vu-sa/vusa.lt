@@ -71,6 +71,7 @@ const handleAction = (key: string) => {
       }
       break;
     case 'destroy':
+      // NOTE: Duplicated in AdminForm.vue
       dialog.warning({
         title: $t('Ištrinti įrašą'),
         content: $t('Ar tikrai norite ištrinti šį įrašą?'),

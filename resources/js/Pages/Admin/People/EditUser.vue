@@ -1,8 +1,9 @@
 <template>
   <PageContent :title="userName" :back-url="route('users.index')" :heading-icon="Icons.USER">
-    <UpsertModelLayout :errors="$page.props.errors" :model="user">
-      <UserForm :user :roles :tenants-with-duties :permissable-tenants model-route="users.update"
-        delete-model-route="users.destroy" />
+    <UpsertModelLayout>
+      <UserForm :user :roles :tenants-with-duties :permissable-tenants
+        @submit:form="(form) => form.patch(route('users.update', user.id), { preserveScroll: true })"
+        @delete="() => router.delete(route('users.destroy', user.id))" />
     </UpsertModelLayout>
   </PageContent>
 </template>
@@ -10,7 +11,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import { usePage } from "@inertiajs/vue3";
+import { usePage, router } from "@inertiajs/vue3";
 import Icons from "@/Types/Icons/regular";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
