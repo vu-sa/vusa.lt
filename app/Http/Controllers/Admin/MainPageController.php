@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Models\Calendar;
 use App\Models\Category;
 use App\Models\Institution;
@@ -13,11 +13,14 @@ use App\Models\Page;
 use App\Models\Tenant;
 use App\Services\ModelIndexer;
 use Illuminate\Http\Request;
+use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
-class MainPageController extends LaravelResourceController
+class MainPageController extends Controller
 {
+    public function __construct(public Authorizer $authorizer) {}
+
     /**
      * Display a listing of the resource.
      *
@@ -25,9 +28,9 @@ class MainPageController extends LaravelResourceController
      */
     public function index(Request $request)
     {
-        $this->authorize('viewAny', [MainPage::class, $this->authorizer]);
+        $this->authorize('viewAny', MainPage::class);
 
-        $indexer = new ModelIndexer(new MainPage, request(), $this->authorizer);
+        $indexer = new ModelIndexer(new MainPage);
 
         $mainPage = $indexer
             ->setEloquentQuery()
@@ -47,11 +50,11 @@ class MainPageController extends LaravelResourceController
      */
     public function create()
     {
-        $this->authorize('create', [MainPage::class, $this->authorizer]);
+        $this->authorize('create', MainPage::class);
 
         return Inertia::render('Admin/Content/CreateMainPage', [
             'typeOptions' => Inertia::lazy(fn () => $this->getMainPageTypeOptions(request()->input('type'))),
-            'tenantOptions' => GetTenantsForUpserts::execute('mainPages.create.all', $this->authorizer),
+            'tenantOptions' => GetTenantsForUpserts::execute('mainPages.create.padalinys', $this->authorizer),
         ]);
     }
 
@@ -62,7 +65,7 @@ class MainPageController extends LaravelResourceController
      */
     public function store(Request $request)
     {
-        $this->authorize('create', [MainPage::class, $this->authorizer]);
+        $this->authorize('create', MainPage::class);
 
         $request->validate([
             'text' => 'required',
@@ -96,7 +99,7 @@ class MainPageController extends LaravelResourceController
      */
     public function edit(MainPage $mainPage)
     {
-        $this->authorize('update', [MainPage::class, $mainPage, $this->authorizer]);
+        $this->authorize('update', $mainPage);
 
         // $routes = Route::getRoutes();
 
@@ -120,7 +123,7 @@ class MainPageController extends LaravelResourceController
 
         return Inertia::render('Admin/Content/EditMainPage', [
             'mainPage' => $mainPage,
-            'tenantOptions' => GetTenantsForUpserts::execute('mainPages.update.all', $this->authorizer),
+            'tenantOptions' => GetTenantsForUpserts::execute('mainPages.update.padalinys', $this->authorizer),
             'typeOptions' => Inertia::lazy(fn () => $this->getMainPageTypeOptions(request()->input('type'))),
         ]);
     }
@@ -132,7 +135,7 @@ class MainPageController extends LaravelResourceController
      */
     public function update(Request $request, MainPage $mainPage)
     {
-        $this->authorize('update', [MainPage::class, $mainPage, $this->authorizer]);
+        $this->authorize('update', $mainPage);
 
         $request->validate([
             'text' => 'required',
@@ -153,7 +156,7 @@ class MainPageController extends LaravelResourceController
      */
     public function destroy(MainPage $mainPage)
     {
-        $this->authorize('delete', [MainPage::class, $mainPage, $this->authorizer]);
+        $this->authorize('delete', $mainPage);
 
         $mainPage->delete();
 
@@ -164,7 +167,7 @@ class MainPageController extends LaravelResourceController
     {
         $mainPages = MainPage::query()->where('tenant_id', $tenant->id)->where('lang', $lang)->orderBy('order')->get();
 
-        $this->authorize('update', [MainPage::class, $mainPages->first(), $this->authorizer]);
+        $this->authorize('update', $mainPages->first());
 
         return Inertia::render('Admin/Content/EditMainPageOrder', [
             'mainPages' => $mainPages,

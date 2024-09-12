@@ -2,28 +2,28 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreReservationRequest;
 use App\Http\Requests\UpdateReservationRequest;
 use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\User;
 use App\Notifications\UserAttachedToModel;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
+/*use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;*/
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
-class ReservationController extends LaravelResourceController
+class ReservationController extends Controller
 {
-    public function __construct()
+    public function __construct(public Authorizer $authorizer)
     {
-        parent::__construct();
-
-        $this->middleware([HandlePrecognitiveRequests::class])->only(['store', 'update']);
+        /*$this->middleware([HandlePrecognitiveRequests::class])->only(['store', 'update']);*/
     }
 
     /**
@@ -33,9 +33,11 @@ class ReservationController extends LaravelResourceController
     {
         // TODO: also return reservations with resources for this tenant
 
-        $this->authorize('viewAny', [Reservation::class, $this->authorizer]);
+        $this->authorize('viewAny', Reservation::class);
 
-        $indexer = new ModelIndexer(new Reservation, request(), $this->authorizer);
+        /*dd('success', $this->authorizer);*/
+
+        $indexer = new ModelIndexer(new Reservation);
 
         $reservations = $indexer
             ->setEloquentQuery([fn (Builder $query) => $query->with(['resources.tenant', 'users'])])

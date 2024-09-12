@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Http\Middleware\TrimStrings;
+use App\Services\ModelAuthorizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
@@ -21,7 +22,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->singleton(ModelAuthorizer::class, function ($app) {
+            return new ModelAuthorizer();
+        });
     }
 
     /**

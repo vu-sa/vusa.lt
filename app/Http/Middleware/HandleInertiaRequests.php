@@ -6,7 +6,6 @@ use App\Enums\ModelEnum;
 use App\Models\ChangelogItem;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -113,8 +112,6 @@ class HandleInertiaRequests extends Middleware
     private function getIndexPermissions(User $user)
     {
         return Cache::remember('index-permissions-'.$user->id, 1800, function () use ($user) {
-            $authorizer = new Authorizer;
-
             $labels = ModelEnum::toLabels();
 
             // remove where value is reservationResource
@@ -124,8 +121,8 @@ class HandleInertiaRequests extends Middleware
             unset($labels[array_search('file', $labels)]);
 
             return collect($labels)
-                ->mapWithKeys(function ($model) use ($user, $authorizer) {
-                    return [$model => $user->can('viewAny', ['App\\Models\\'.ucfirst($model), $authorizer])];
+                ->mapWithKeys(function ($model) use ($user) {
+                    return [$model => $user->can('viewAny', ['App\\Models\\'.ucfirst($model)])];
                 })->toArray();
         });
     }

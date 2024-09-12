@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Tenant;
@@ -12,9 +12,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
+use App\Services\ModelAuthorizer as Authorizer;
 
-class RoleController extends LaravelResourceController
+class RoleController extends Controller
 {
+    public function __construct(public Authorizer $authorizer) {}
+
     /**
      * Display a listing of the resource.
      *
@@ -22,7 +25,7 @@ class RoleController extends LaravelResourceController
      */
     public function index()
     {
-        $this->authorize('viewAny', [Role::class, $this->authorizer]);
+        $this->authorize('viewAny', Role::class);
 
         return Inertia::render('Admin/Permissions/IndexRole', [
             'roles' => Role::paginate(20),
@@ -36,7 +39,7 @@ class RoleController extends LaravelResourceController
      */
     public function create()
     {
-        $this->authorize('create', [Role::class, $this->authorizer]);
+        $this->authorize('create', Role::class);
 
         return Inertia::render('Admin/Permissions/CreateRole');
     }
@@ -48,7 +51,7 @@ class RoleController extends LaravelResourceController
      */
     public function store(Request $request)
     {
-        $this->authorize('create', [Role::class, $this->authorizer]);
+        $this->authorize('create', Role::class);
 
         $validated = $request->validate([
             'name' => 'required|unique:roles,name',
@@ -66,7 +69,7 @@ class RoleController extends LaravelResourceController
      */
     public function show(Role $role)
     {
-        $this->authorize('view', [Role::class, $role, $this->authorizer]);
+        $this->authorize('view', $role);
 
         $role->load('permissions:id,name');
 
@@ -83,7 +86,7 @@ class RoleController extends LaravelResourceController
      */
     public function edit(Role $role)
     {
-        $this->authorize('update', [Role::class, $role, $this->authorizer]);
+        $this->authorize('update', $role);
 
         // not load Super Admin
         if ($role->name === config('permission.super_admin_role_name')) {
@@ -115,7 +118,7 @@ class RoleController extends LaravelResourceController
      */
     public function update(Request $request, Role $role)
     {
-        $this->authorize('update', [Role::class, $role, $this->authorizer]);
+        $this->authorize('update', $role);
 
         // not update Super Admin
         if ($role->name === config('permission.super_admin_role_name')) {
@@ -138,7 +141,7 @@ class RoleController extends LaravelResourceController
      */
     public function destroy(Role $role)
     {
-        $this->authorize('delete', [Role::class, $role, $this->authorizer]);
+        $this->authorize('delete', $role);
 
         // check if role is not Super Admin
         if ($role->name === config('permission.super_admin_role_name')) {
@@ -154,7 +157,7 @@ class RoleController extends LaravelResourceController
 
     public function syncPermissionGroup(Role $role, string $model, Request $request)
     {
-        $this->authorize('update', [Role::class, $role, $this->authorizer]);
+        $this->authorize('update', $role);
 
         $validated = $request->validate([
             'create' => 'string',
@@ -195,7 +198,7 @@ class RoleController extends LaravelResourceController
 
     public function syncAttachableTypes(Role $role, Request $request)
     {
-        $this->authorize('update', [Role::class, $role, $this->authorizer]);
+        $this->authorize('update', $role);
 
         $validated = $request->validate([
             'attachable_types' => 'array',
@@ -208,7 +211,7 @@ class RoleController extends LaravelResourceController
 
     public function syncDuties(Role $role, Request $request)
     {
-        $this->authorize('update', [Role::class, $role, $this->authorizer]);
+        $this->authorize('update', $role);
 
         $validated = $request->validate([
             'duties' => 'array',

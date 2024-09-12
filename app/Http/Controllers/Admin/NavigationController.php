@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Models\Navigation;
 use App\Services\NavigationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
+use App\Services\ModelAuthorizer as Authorizer;
 
-class NavigationController extends LaravelResourceController
+class NavigationController extends Controller
 {
+    public function __construct(public Authorizer $authorizer) {}
+
     /**
      * Display a listing of the resource.
      *
@@ -18,7 +21,7 @@ class NavigationController extends LaravelResourceController
      */
     public function index()
     {
-        $this->authorize('viewAny', [Navigation::class, $this->authorizer]);
+        $this->authorize('viewAny', Navigation::class);
 
         return Inertia::render('Admin/Navigation/IndexNavigation', [
             'navigation' => NavigationService::getNavigationForPublic(),
@@ -33,7 +36,7 @@ class NavigationController extends LaravelResourceController
      */
     public function create(Request $request)
     {
-        $this->authorize('create', [Navigation::class, $this->authorizer]);
+        $this->authorize('create', Navigation::class);
 
         // If root navigation or simple
 
@@ -55,7 +58,7 @@ class NavigationController extends LaravelResourceController
      */
     public function store(Request $request)
     {
-        $this->authorize('create', [Navigation::class, $this->authorizer]);
+        $this->authorize('create', Navigation::class);
 
         $navigation = new Navigation($request->all());
 
@@ -75,7 +78,7 @@ class NavigationController extends LaravelResourceController
      */
     public function edit(Navigation $navigation)
     {
-        $this->authorize('update', [Navigation::class, $navigation, $this->authorizer]);
+        $this->authorize('update', $navigation);
 
         return Inertia::render('Admin/Navigation/EditNavigation', [
             'navigationElement' => $navigation,
@@ -91,7 +94,7 @@ class NavigationController extends LaravelResourceController
      */
     public function update(Request $request, Navigation $navigation)
     {
-        $this->authorize('update', [Navigation::class, $navigation, $this->authorizer]);
+        $this->authorize('update', $navigation);
 
         $navigation->fill($request->all());
 
@@ -174,7 +177,7 @@ class NavigationController extends LaravelResourceController
      */
     public function destroy(Navigation $navigation)
     {
-        $this->authorize('delete', [Navigation::class, $navigation, $this->authorizer]);
+        $this->authorize('delete', $navigation);
 
         $navigation->delete();
 

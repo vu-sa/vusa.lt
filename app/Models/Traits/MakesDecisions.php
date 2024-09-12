@@ -11,11 +11,11 @@ trait MakesDecisions
 
     private string $modelName;
 
-    public function decision($decision, ModelAuthorizer $authorizer)
+    public function decision($decision)
     {
         $this->modelName = Str::of(class_basename($this))->camel()->plural();
 
-        $this->authorizer = $authorizer;
+        $this->authorizer = app(ModelAuthorizer::class);
 
         // based on the decision, call the appropriate method
         $method = 'decisionTo'.Str::ucfirst(Str::camel($decision));

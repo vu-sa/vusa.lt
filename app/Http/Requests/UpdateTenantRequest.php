@@ -2,16 +2,16 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Tenant;
+use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateTenantRequest extends ResourceRequest
+class UpdateTenantRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return $this->user()->can('update', [Tenant::class, $this->tenant, $this->authorizer]);
+        return $this->user()->can('update', $this->tenant);
     }
 
     /**

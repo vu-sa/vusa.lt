@@ -3,15 +3,16 @@
 namespace App\Http\Requests;
 
 use App\Models\Tenant;
+use Illuminate\Foundation\Http\FormRequest;
 
-class StoreTenantRequest extends ResourceRequest
+class StoreTenantRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return $this->user()->can('create', [Tenant::class, $this->authorizer]);
+        return $this->user()->can('create', Tenant::class);
     }
 
     /**

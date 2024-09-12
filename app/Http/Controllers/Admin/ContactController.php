@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Models\Contact;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
-class ContactController extends LaravelResourceController
+class ContactController extends Controller
 {
+    public function __construct(public Authorizer $authorizer) {}
     /**
      * Display a listing of the resource.
      *
@@ -17,7 +19,7 @@ class ContactController extends LaravelResourceController
      */
     public function index()
     {
-        $this->authorize('viewAny', [Contact::class, $this->authorizer]);
+        $this->authorize('viewAny', Contact::class);
 
         $contacts = Contact::all()->paginate(20);
 
@@ -33,7 +35,7 @@ class ContactController extends LaravelResourceController
      */
     public function create()
     {
-        $this->authorize('create', [Contact::class, $this->authorizer]);
+        $this->authorize('create', Contact::class);
 
         // TODO: implement duties later
         return Inertia::render('Admin/People/CreateContact', [
@@ -48,7 +50,7 @@ class ContactController extends LaravelResourceController
      */
     public function store(Request $request)
     {
-        $this->authorize('create', [Contact::class, $this->authorizer]);
+        $this->authorize('create', Contact::class);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -69,7 +71,7 @@ class ContactController extends LaravelResourceController
      */
     public function show(Contact $contact)
     {
-        $this->authorize('view', [Contact::class, $contact, $this->authorizer]);
+        $this->authorize('view', Contact::class);
 
         return Inertia::render('Admin/People/ShowContact', [
             'contact' => $contact->load('activities.causer', 'comments'),
@@ -83,7 +85,7 @@ class ContactController extends LaravelResourceController
      */
     public function edit(Contact $contact)
     {
-        $this->authorize('update', [Contact::class, $contact, $this->authorizer]);
+        $this->authorize('update', $contact);
 
         return Inertia::render('Admin/People/EditContact', [
             'contact' => $contact,
@@ -97,7 +99,7 @@ class ContactController extends LaravelResourceController
      */
     public function update(Request $request, Contact $contact)
     {
-        $this->authorize('update', [Contact::class, $contact, $this->authorizer]);
+        $this->authorize('update', $contact);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -118,7 +120,7 @@ class ContactController extends LaravelResourceController
      */
     public function destroy(Contact $contact)
     {
-        $this->authorize('delete', [Contact::class, $contact, $this->authorizer]);
+        $this->authorize('delete', $contact);
 
         $contact->delete();
 

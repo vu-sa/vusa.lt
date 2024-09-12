@@ -3,15 +3,16 @@
 namespace App\Http\Requests;
 
 use App\Models\Calendar;
+use Illuminate\Foundation\Http\FormRequest;
 
-class StoreCalendarRequest extends ResourceRequest
+class StoreCalendarRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return $this->user()->can('create', [Calendar::class, $this->authorizer]);
+        return $this->user()->can('create', Calendar::class);
     }
 
     /**

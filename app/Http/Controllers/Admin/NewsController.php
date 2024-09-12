@@ -3,17 +3,20 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\DuplicateNewsAction;
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Models\Content;
 use App\Models\ContentPart;
 use App\Models\News;
 use App\Models\Tenant;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class NewsController extends LaravelResourceController
+class NewsController extends Controller
 {
+    public function __construct(public Authorizer $authorizer) {}
+
     /**
      * Display a listing of the resource.
      *
@@ -21,9 +24,9 @@ class NewsController extends LaravelResourceController
      */
     public function index(Request $request)
     {
-        $this->authorize('viewAny', [News::class, $this->authorizer]);
+        $this->authorize('viewAny', News::class);
 
-        $indexer = new ModelIndexer(new News, $request, $this->authorizer);
+        $indexer = new ModelIndexer(new News);
 
         $news = $indexer
             ->setEloquentQuery([fn ($query) => $query->with('other_language_news:id,title,lang')])
@@ -43,14 +46,14 @@ class NewsController extends LaravelResourceController
      */
     public function create()
     {
-        $this->authorize('create', [News::class, $this->authorizer]);
+        $this->authorize('create', News::class);
 
         return Inertia::render('Admin/Content/CreateNews');
     }
 
     public function duplicate(News $news)
     {
-        $this->authorize('create', [News::class, $this->authorizer]);
+        $this->authorize('create', News::class);
 
         $newNews = (new DuplicateNewsAction)->execute($news);
 
@@ -64,7 +67,7 @@ class NewsController extends LaravelResourceController
      */
     public function store(Request $request)
     {
-        $this->authorize('create', [News::class, $this->authorizer]);
+        $this->authorize('create', News::class);
 
         $request->validate([
             'title' => 'required',
@@ -122,7 +125,7 @@ class NewsController extends LaravelResourceController
      */
     public function edit(News $news)
     {
-        $this->authorize('update', [News::class, $news, $this->authorizer]);
+        $this->authorize('update', $news);
 
         $other_lang_pages = News::with('tenant:id,shortname')->when(! request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($news) {
             $query->where('tenant_id', $news->tenant_id);
@@ -156,7 +159,7 @@ class NewsController extends LaravelResourceController
      */
     public function update(Request $request, News $news)
     {
-        $this->authorize('update', [News::class, $news, $this->authorizer]);
+        $this->authorize('update', $news);
 
         $other_lang_page = News::find($news->other_lang_id);
 
@@ -210,7 +213,7 @@ class NewsController extends LaravelResourceController
      */
     public function destroy(News $news)
     {
-        $this->authorize('delete', [News::class, $news, $this->authorizer]);
+        $this->authorize('delete', $news);
 
         $news->delete();
 
@@ -224,7 +227,7 @@ class NewsController extends LaravelResourceController
      */
     public function restore(News $news)
     {
-        $this->authorize('restore', [News::class, $news, $this->authorizer]);
+        $this->authorize('restore', $news);
 
         $news->restore();
 

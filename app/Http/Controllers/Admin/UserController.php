@@ -3,13 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\SendWelcomeEmail;
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUserRequest;
 use App\Models\Duty;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -20,8 +21,10 @@ use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Laravel\Socialite\Facades\Socialite;
 
-class UserController extends LaravelResourceController
+class UserController extends Controller
 {
+   public function __construct(public Authorizer $authorizer) {}
+
     /**
      * Display a listing of the resource.
      *
@@ -29,9 +32,9 @@ class UserController extends LaravelResourceController
      */
     public function index(Request $request)
     {
-        $this->authorize('viewAny', [User::class, $this->authorizer]);
+        $this->authorize('viewAny', User::class);
 
-        $indexer = new ModelIndexer(new User, $request, $this->authorizer);
+        $indexer = new ModelIndexer(new User);
 
         $users = $indexer
             ->setEloquentQuery([
@@ -56,7 +59,7 @@ class UserController extends LaravelResourceController
      */
     public function create()
     {
-        $this->authorize('create', [User::class, $this->authorizer]);
+        $this->authorize('create', User::class);
 
         $permissableTenants = User::find(Auth::id())->hasRole(config('permission.super_admin_role_name')) ? Tenant::all() : $this->authorizer->getTenants();
 
@@ -108,7 +111,7 @@ class UserController extends LaravelResourceController
      */
     public function show(User $user)
     {
-        $this->authorize('view', [User::class, $user, $this->authorizer]);
+        $this->authorize('view', $user);
 
         return Inertia::render('Admin/People/ShowUser', [
             'user' => $user->load(['duties' => function ($query) {
@@ -124,7 +127,7 @@ class UserController extends LaravelResourceController
      */
     public function edit(User $user)
     {
-        $this->authorize('update', [User::class, $user, $this->authorizer]);
+        $this->authorize('update', $user);
 
         // user load duties with pivot
         $user->load('current_duties', 'previous_duties', 'roles');
@@ -142,7 +145,7 @@ class UserController extends LaravelResourceController
 
     public function sendWelcomeEmail(User $user)
     {
-        $this->authorize('update', [User::class, $user, $this->authorizer]);
+        $this->authorize('update', $user);
 
         SendWelcomeEmail::execute((new Collection)->push($user));
 
@@ -151,7 +154,7 @@ class UserController extends LaravelResourceController
 
     public function renderWelcomeEmail(User $user)
     {
-        $this->authorize('update', [User::class, $user, $this->authorizer]);
+        $this->authorize('update', $user);
 
         return new \App\Mail\WelcomeEmail($user);
     }
@@ -164,7 +167,7 @@ class UserController extends LaravelResourceController
     public function update(Request $request, User $user)
     {
         // TODO: make duty attach / detach work properly
-        $this->authorize('update', [User::class, $user, $this->authorizer]);
+        $this->authorize('update', $user);
 
         $request->validate([
             'name' => 'required',
@@ -238,7 +241,7 @@ class UserController extends LaravelResourceController
      */
     public function destroy(User $user)
     {
-        $this->authorize('delete', [User::class, $user, $this->authorizer]);
+        $this->authorize('delete', $user);
 
         $user->delete();
 
@@ -335,7 +338,7 @@ class UserController extends LaravelResourceController
 
     public function restore(User $user, Request $request)
     {
-        $this->authorize('restore', [User::class, $user, $this->authorizer]);
+        $this->authorize('restore', $user);
 
         $user->restore();
 
@@ -346,7 +349,7 @@ class UserController extends LaravelResourceController
     {
         $user = User::withTrashed()->findOrFail($id);
 
-        $this->authorize('forceDelete', [User::class, $user, $this->authorizer]);
+        $this->authorize('forceDelete', $user);
 
         $user->duties()->detach();
         $user->forceDelete();

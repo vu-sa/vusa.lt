@@ -7,7 +7,6 @@ use App\Models\Type;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection as Collection;
 
-//
 class GetAttachableTypesForDuty
 {
     public static function execute(): Collection

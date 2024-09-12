@@ -2,21 +2,24 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTenantRequest;
 use App\Http\Requests\UpdateTenantRequest;
 use App\Models\Institution;
 use App\Models\Tenant;
 use Inertia\Inertia;
+use App\Services\ModelAuthorizer as Authorizer;
 
-class TenantController extends LaravelResourceController
+class TenantController extends Controller
 {
+    public function __construct(public Authorizer $authorizer) {}
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $this->authorize('viewAny', [Tenant::class, $this->authorizer]);
+        $this->authorize('viewAny', Tenant::class);
 
         $tenants = Tenant::query()->paginate(15);
 
@@ -31,7 +34,7 @@ class TenantController extends LaravelResourceController
      */
     public function create()
     {
-        $this->authorize('create', [Tenant::class, $this->authorizer]);
+        $this->authorize('create', Tenant::class);
 
         return Inertia::render('Admin/People/CreateTenant', [
             'assignableInstitutions' => Institution::all(['id', 'name']),
@@ -57,7 +60,7 @@ class TenantController extends LaravelResourceController
      */
     public function edit(Tenant $tenant)
     {
-        $this->authorize('update', [$tenant, $this->authorizer]);
+        $this->authorize('update', $tenant);
 
         return Inertia::render('Admin/People/EditTenant', [
             'tenant' => $tenant,
@@ -82,7 +85,7 @@ class TenantController extends LaravelResourceController
      */
     public function destroy(Tenant $tenant)
     {
-        $this->authorize('delete', [$tenant, $this->authorizer]);
+        $this->authorize('delete', $tenant);
 
         $tenant->delete();
 

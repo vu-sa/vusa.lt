@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Models\Goal;
 use App\Services\ModelIndexer;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Services\ModelAuthorizer as Authorizer;
 
-class GoalController extends LaravelResourceController
+class GoalController extends Controller
 {
+   public function __construct(public Authorizer $authorizer) {}
+
     /**
      * Display a listing of the resource.
      *
@@ -17,9 +20,9 @@ class GoalController extends LaravelResourceController
      */
     public function index()
     {
-        $this->authorize('viewAny', [Goal::class, $this->authorizer]);
+        $this->authorize('viewAny', Goal::class);
 
-        $indexer = new ModelIndexer(new Goal, request(), $this->authorizer);
+        $indexer = new ModelIndexer(new Goal);
 
         $goals = $indexer
             ->filterAllColumns()
@@ -38,7 +41,7 @@ class GoalController extends LaravelResourceController
      */
     public function create()
     {
-        $this->authorize('create', [Goal::class, $this->authorizer]);
+        $this->authorize('create', Goal::class);
 
         return Inertia::render('Admin/Representation/CreateGoal');
     }
@@ -50,7 +53,7 @@ class GoalController extends LaravelResourceController
      */
     public function store(Request $request)
     {
-        $this->authorize('create', [Goal::class, $this->authorizer]);
+        $this->authorize('create', Goal::class);
 
         $validated = $request->validate([
             'title' => 'required',
@@ -68,7 +71,7 @@ class GoalController extends LaravelResourceController
      */
     public function show(Goal $goal)
     {
-        $this->authorize('view', [Goal::class, $goal, $this->authorizer]);
+        $this->authorize('view', $goal);
 
         $goal->load('matters.doings', 'matters.institutions:id,name', 'activities.causer', 'comments')->load(['tasks' => function ($query) {
             $query->with('users', 'taskable');
@@ -89,7 +92,7 @@ class GoalController extends LaravelResourceController
      */
     public function edit(Goal $goal)
     {
-        $this->authorize('update', [Goal::class, $goal, $this->authorizer]);
+        $this->authorize('update', $goal);
 
         return Inertia::render('Admin/Representation/EditGoal', [
             'goal' => $goal,
@@ -103,7 +106,7 @@ class GoalController extends LaravelResourceController
      */
     public function update(Request $request, Goal $goal)
     {
-        $this->authorize('update', [Goal::class, $goal, $this->authorizer]);
+        $this->authorize('update', $goal);
 
         $validated = $request->validate(
             ['title' => 'required']
@@ -121,7 +124,7 @@ class GoalController extends LaravelResourceController
      */
     public function destroy(Goal $goal)
     {
-        $this->authorize('delete', [Goal::class, $goal, $this->authorizer]);
+        $this->authorize('delete', $goal);
 
         $goal->delete();
 
@@ -135,7 +138,7 @@ class GoalController extends LaravelResourceController
      */
     public function restore(Goal $goal)
     {
-        $this->authorize('restore', [Goal::class, $goal, $this->authorizer]);
+        $this->authorize('restore', $goal);
 
         $goal->restore();
 

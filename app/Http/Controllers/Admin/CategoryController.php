@@ -2,20 +2,23 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Models\Page;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class CategoryController extends LaravelResourceController
+class CategoryController extends Controller
 {
+    public function __construct(public Authorizer $authorizer) {}
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $this->authorize('viewAny', [Page::class, $this->authorizer]);
+        $this->authorize('viewAny', Page::class);
 
         $categories = Category::all()->paginate(20);
 
@@ -29,7 +32,7 @@ class CategoryController extends LaravelResourceController
      */
     public function create()
     {
-        $this->authorize('create', [Page::class, $this->authorizer]);
+        $this->authorize('create', Page::class);
 
         return Inertia::render('Admin/Content/CreateCategory');
     }
@@ -39,7 +42,7 @@ class CategoryController extends LaravelResourceController
      */
     public function store(Request $request)
     {
-        $this->authorize('create', [Page::class, $this->authorizer]);
+        $this->authorize('create', Page::class);
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -57,7 +60,7 @@ class CategoryController extends LaravelResourceController
      */
     public function edit(Category $category)
     {
-        $this->authorize('update', [Page::class, $this->authorizer]);
+        $this->authorize('update', Page::class);
 
         return Inertia::render('Admin/Content/EditCategory', [
             'category' => $category,
@@ -69,7 +72,7 @@ class CategoryController extends LaravelResourceController
      */
     public function update(Request $request, Category $category)
     {
-        $this->authorize('update', [Page::class, $this->authorizer]);
+        $this->authorize('update', Page::class);
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -87,7 +90,7 @@ class CategoryController extends LaravelResourceController
      */
     public function destroy(string $id)
     {
-        $this->authorize('delete', [Page::class, $this->authorizer]);
+        $this->authorize('delete', Page::class);
 
         Category::destroy($id);
 

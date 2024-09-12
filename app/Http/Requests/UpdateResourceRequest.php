@@ -2,18 +2,16 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Resource;
+use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateResourceRequest extends ResourceRequest
+class UpdateResourceRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        $resource = $this->route('resource');
-
-        return $this->user()->can('update', [Resource::class, $resource, $this->authorizer]);
+        return $this->user()->can('update', $this->resource);
     }
 
     /**

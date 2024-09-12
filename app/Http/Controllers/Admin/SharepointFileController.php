@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Http\Controllers\LaravelResourceController;
 use App\Models\Institution;
 use App\Models\SharepointFile;
@@ -10,10 +11,13 @@ use App\Services\ResourceServices\SharepointFileableService;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Services\SharepointGraphService;
 use Illuminate\Http\Request;
+use App\Services\ModelAuthorizer as Authorizer;
 use Inertia\Inertia;
 
-class SharepointFileController extends LaravelResourceController
+class SharepointFileController extends Controller
 {
+    public function __construct(public Authorizer $authorizer) {}
+
     /**
      * Display a listing of the resource.
      *
@@ -21,7 +25,7 @@ class SharepointFileController extends LaravelResourceController
      */
     public function index(Request $request)
     {
-        $this->authorize('viewAny', [SharepointFile::class, $this->authorizer]);
+        $this->authorize('viewAny', SharepointFile::class);
 
         $graph = new SharepointGraphService;
 
@@ -41,7 +45,7 @@ class SharepointFileController extends LaravelResourceController
      */
     public function store(Request $request)
     {
-        $this->authorize('create', [SharepointFile::class, $this->authorizer]);
+        $this->authorize('create', SharepointFile::class);
 
         $validated = $request->validate([
             'file' => 'required',
@@ -91,7 +95,7 @@ class SharepointFileController extends LaravelResourceController
      */
     public function destroy(Request $request, SharepointFile $sharepointFile)
     {
-        $this->authorize('delete', [SharepointFile::class, $sharepointFile, $this->authorizer]);
+        $this->authorize('delete', $sharepointFile);
 
         /*$sharepointFileService = new SharepointGraphService();*/
         /**/

@@ -2,22 +2,25 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreChangelogItemRequest;
 use App\Models\ChangelogItem;
 use App\Models\User;
+use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
-class ChangelogItemController extends LaravelResourceController
+class ChangelogItemController extends Controller
 {
+    public function __construct(public Authorizer $authorizer) {}
+
     /**
      * Display a listing of the resource.
      */
     public function index(): InertiaResponse
     {
-        $this->authorize('viewAny', [ChangelogItem::class, $this->authorizer]);
+        $this->authorize('viewAny', ChangelogItem::class);
 
         return Inertia::render('Admin/ModelMeta/IndexChangelogItem', [
             'changelogItems' => ChangelogItem::paginate(20),
@@ -29,7 +32,7 @@ class ChangelogItemController extends LaravelResourceController
      */
     public function create(): InertiaResponse
     {
-        $this->authorize('create', [ChangelogItem::class, $this->authorizer]);
+        $this->authorize('create', ChangelogItem::class);
 
         return Inertia::render('Admin/ModelMeta/CreateChangelogItem');
     }

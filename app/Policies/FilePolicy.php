@@ -11,14 +11,12 @@ class FilePolicy
 {
     protected $pluralModelName;
 
-    protected $authorizer;
-
-    public function __construct()
+    public function __construct(public Authorizer $authorizer)
     {
         $this->pluralModelName = Str::plural(ModelEnum::FILE()->label);
     }
 
-    protected function getDirectoryPadalinysAlias(string $directory, Authorizer $authorizer): string
+    protected function getDirectoryPadalinysAlias(string $directory): string
     {
         // Check if path has padalinys in form of 'public/files/padaliniai/{padalinys}' and also handle the case of 'public/files/padaliniai'
         // {padalinys} directory example is 'vusapadalinys'
@@ -50,13 +48,11 @@ class FilePolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function viewAny(User $user, string $directory, Authorizer $authorizer)
+    public function viewAny(User $user, string $directory)
     {
-        $this->authorizer = $authorizer;
-
         $check = $this->authorizer->forUser($user)->check($this->pluralModelName.'.read.padalinys');
 
-        $padalinysDirectory = $this->getDirectoryPadalinysAlias($directory, $authorizer);
+        $padalinysDirectory = $this->getDirectoryPadalinysAlias($directory, $this->authorizer);
 
         if ($check) {
 
@@ -83,9 +79,8 @@ class FilePolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, string $path, Authorizer $authorizer): bool
+    public function delete(User $user, string $path): bool
     {
-        $this->authorizer = $authorizer;
         $check = $this->authorizer->forUser($user)->check($this->pluralModelName.'.read.padalinys');
 
         $padalinysDirectory = $this->getDirectoryPadalinysAlias($path, $this->authorizer);

@@ -3,16 +3,19 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Exports\MIFRegistrationExport;
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Models\Institution;
 use App\Models\Registration;
 use App\Models\RegistrationForm;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Services\ModelAuthorizer as Authorizer;
 
-class RegistrationFormController extends LaravelResourceController
+class RegistrationFormController extends Controller
 {
+    public function __construct(public Authorizer $authorizer) {}
+
     /**
      * Display a listing of the resource.
      *
@@ -20,10 +23,7 @@ class RegistrationFormController extends LaravelResourceController
      */
     public function index()
     {
-        $this->authorize('viewAny', [
-            Institution::class,
-            $this->authorizer,
-        ]);
+        $this->authorize('viewAny', Institution::class);
 
         return Excel::download(new MIFRegistrationExport, 'registration.xlsx');
     }

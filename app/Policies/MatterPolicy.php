@@ -14,8 +14,10 @@ class MatterPolicy extends ModelPolicy
 {
     use HandlesAuthorization;
 
-    public function __construct()
+    public function __construct(public Authorizer $authorizer)
     {
+        parent::__construct($authorizer);
+
         $this->pluralModelName = Str::plural(ModelEnum::MATTER()->label);
     }
 
@@ -24,10 +26,8 @@ class MatterPolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Matter $matter, Authorizer $authorizer)
+    public function view(User $user, Matter $matter)
     {
-        $this->authorizer = $authorizer;
-
         if ($this->commonChecker($user, $matter, CRUDEnum::READ()->label, $this->pluralModelName)) {
             return true;
         }
@@ -40,10 +40,8 @@ class MatterPolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Matter $matter, Authorizer $authorizer)
+    public function update(User $user, Matter $matter)
     {
-        $this->authorizer = $authorizer;
-
         if ($this->commonChecker($user, $matter, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
             return true;
         }
@@ -56,10 +54,8 @@ class MatterPolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Matter $matter, Authorizer $authorizer)
+    public function delete(User $user, Matter $matter)
     {
-        $this->authorizer = $authorizer;
-
         if ($this->commonChecker($user, $matter, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
             return true;
         }

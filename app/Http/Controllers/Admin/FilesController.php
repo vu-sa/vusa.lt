@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Models\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Intervention\Image\Laravel\Facades\Image;
+use App\Services\ModelAuthorizer as Authorizer;
 
-class FilesController extends LaravelResourceController
+class FilesController extends Controller
 {
+    public function __construct(public Authorizer $authorizer) {}
+
     protected function getFilesFromStorage($path)
     {
         $directories = Storage::directories($path);
@@ -39,7 +42,7 @@ class FilesController extends LaravelResourceController
         }
 
         // Check if can view directory
-        if (! $request->user()->can('viewAny', [File::class, $path, $this->authorizer])) {
+        if (! $request->user()->can('viewAny', $path)) {
 
             // If not, redirect to padaliniai/{padalinys}
             if ($this->authorizer->getTenants()->count() > 0) {
@@ -68,7 +71,7 @@ class FilesController extends LaravelResourceController
         }
 
         // Check if can view directory
-        if (! $request->user()->can('viewAny', [File::class, $path, $this->authorizer])) {
+        if (! $request->user()->can('viewAny', $path)) {
 
             // If not, redirect to padaliniai/{padalinys}
             if ($this->authorizer->getTenants()->count() > 0) {
@@ -179,7 +182,7 @@ class FilesController extends LaravelResourceController
             ], 403);
         }
 
-        if (! $request->user()->can('delete', [File::class, $path, $this->authorizer])) {
+        if (! $request->user()->can('delete', $path)) {
 
             // If not, redirect to padaliniai/{padalinys}
             if ($this->authorizer->getTenants()->count() > 0) {

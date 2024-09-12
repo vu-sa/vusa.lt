@@ -2,18 +2,21 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Content;
 use App\Models\ContentPart;
 use App\Models\Page;
 use App\Models\Tenant;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class PageController extends LaravelResourceController
+class PageController extends Controller
 {
+   public function __construct(public Authorizer $authorizer) {}
+
     /**
      * Display a listing of the resource.
      *
@@ -21,9 +24,9 @@ class PageController extends LaravelResourceController
      */
     public function index(Request $request)
     {
-        $this->authorize('viewAny', [Page::class, $this->authorizer]);
+        $this->authorize('viewAny', Page::class);
 
-        $indexer = new ModelIndexer(new Page, $request, $this->authorizer);
+        $indexer = new ModelIndexer(new Page);
 
         $pages = $indexer
             ->setEloquentQuery()
@@ -43,7 +46,7 @@ class PageController extends LaravelResourceController
      */
     public function create()
     {
-        $this->authorize('create', [Page::class, $this->authorizer]);
+        $this->authorize('create', Page::class);
 
         return Inertia::render('Admin/Content/CreatePage',
             [
@@ -59,7 +62,7 @@ class PageController extends LaravelResourceController
      */
     public function store(Request $request)
     {
-        $this->authorize('create', [Page::class, $this->authorizer]);
+        $this->authorize('create', Page::class);
 
         $request->validate([
             'title' => 'required|string|max:255',
@@ -103,7 +106,7 @@ class PageController extends LaravelResourceController
      */
     public function edit(Page $page)
     {
-        $this->authorize('update', [Page::class, $page, $this->authorizer]);
+        $this->authorize('update', $page);
 
         $other_lang_pages = Page::with('tenant:id,shortname')->when(! request()->user()->hasRole(config('permission.super_admin_role_name')), function ($query) use ($page) {
             $query->where('tenant_id', $page->tenant_id);
@@ -126,7 +129,7 @@ class PageController extends LaravelResourceController
      */
     public function update(Request $request, Page $page)
     {
-        $this->authorize('update', [Page::class, $page, $this->authorizer]);
+        $this->authorize('update', $page);
 
         $other_lang_page = Page::find($page->other_lang_id);
 
@@ -183,7 +186,7 @@ class PageController extends LaravelResourceController
      */
     public function destroy(Page $page)
     {
-        $this->authorize('delete', [Page::class, $page, $this->authorizer]);
+        $this->authorize('delete', $page);
 
         $page->delete();
 
@@ -192,7 +195,7 @@ class PageController extends LaravelResourceController
 
     public function restore(Page $page, Request $request)
     {
-        $this->authorize('restore', [Page::class, $page, $this->authorizer]);
+        $this->authorize('restore', $page);
 
         $page->restore();
 

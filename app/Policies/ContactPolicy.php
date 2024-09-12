@@ -6,7 +6,7 @@ use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
 use App\Models\Contact;
 use App\Models\User;
-use App\Services\ModelAuthorizer;
+use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Support\Str;
 
@@ -14,8 +14,10 @@ class ContactPolicy extends ModelPolicy
 {
     use HandlesAuthorization;
 
-    public function __construct()
+    public function __construct(public Authorizer $authorizer)
     {
+        parent::__construct($authorizer);
+
         $this->pluralModelName = Str::plural(ModelEnum::CONTACT()->label);
     }
 
@@ -24,10 +26,8 @@ class ContactPolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Contact $contact, ModelAuthorizer $authorizer)
+    public function view(User $user, Contact $contact)
     {
-        $this->authorizer = $authorizer;
-
         if ($this->commonChecker($user, $contact, CRUDEnum::READ()->label, $this->pluralModelName)) {
             return true;
         }
@@ -40,10 +40,8 @@ class ContactPolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Contact $contact, ModelAuthorizer $authorizer)
+    public function update(User $user, Contact $contact)
     {
-        $this->authorizer = $authorizer;
-
         if ($this->commonChecker($user, $contact, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
             return true;
         }
@@ -56,10 +54,8 @@ class ContactPolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Contact $contact, ModelAuthorizer $authorizer)
+    public function delete(User $user, Contact $contact)
     {
-        $this->authorizer = $authorizer;
-
         if ($this->commonChecker($user, $contact, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
             return true;
         }

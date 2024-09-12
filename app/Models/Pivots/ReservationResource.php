@@ -54,7 +54,7 @@ class ReservationResource extends Pivot implements Decidable
             return false;
         }
 
-        $authorizer = new ModelAuthorizer;
+        $authorizer = app(ModelAuthorizer::class);
 
         if ($authorizer->forUser(auth()->user())->check(config('permission.resource_managership_indicating_permission'))) {
             // check if authorizer->getTenants() contains $this->tenants

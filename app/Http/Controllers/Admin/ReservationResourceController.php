@@ -2,16 +2,19 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreReservationResourceRequest;
 use App\Models\Pivots\ReservationResource;
 use App\Models\Reservation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use App\Services\ModelAuthorizer as Authorizer;
 
-class ReservationResourceController extends LaravelResourceController
+class ReservationResourceController extends Controller
 {
+    public function __construct(public Authorizer $authorizer) {}
+
     /**
      * Redirect to the reservation show page. Separate reservation resource show pages are not needed.
      *
@@ -42,7 +45,7 @@ class ReservationResourceController extends LaravelResourceController
     {
         $reservation = Reservation::query()->find($reservationResource->reservation_id);
 
-        $this->authorize('update', [Reservation::class, $reservation, $this->authorizer]);
+        $this->authorize('update', $reservation);
 
         $reservationResource->start_time = Carbon::createFromTimestampMs($request->start_time, 'Europe/Vilnius');
         $reservationResource->end_time = Carbon::createFromTimestampMs($request->end_time, 'Europe/Vilnius');
@@ -56,7 +59,7 @@ class ReservationResourceController extends LaravelResourceController
 
     public function destroy(ReservationResource $reservationResource)
     {
-        $this->authorize('delete', [Reservation::class, $reservationResource->reservation, $this->authorizer]);
+        $this->authorize('delete', $reservationResource->reservation);
 
         $reservationResource->delete();
 

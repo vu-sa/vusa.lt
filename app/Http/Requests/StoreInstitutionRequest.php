@@ -3,16 +3,17 @@
 namespace App\Http\Requests;
 
 use App\Models\Institution;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 
-class StoreInstitutionRequest extends ResourceRequest
+class StoreInstitutionRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return $this->user()->can('create', [Institution::class, $this->authorizer]);
+        return $this->user()->can('create', Institution::class);
     }
 
     public function prepareForValidation(): void

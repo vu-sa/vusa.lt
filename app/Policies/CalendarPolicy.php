@@ -6,7 +6,7 @@ use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
 use App\Models\Calendar;
 use App\Models\User;
-use App\Services\ModelAuthorizer;
+use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Support\Str;
 
@@ -14,8 +14,10 @@ class CalendarPolicy extends ModelPolicy
 {
     use HandlesAuthorization;
 
-    public function __construct()
+    public function __construct(public Authorizer $authorizer)
     {
+        parent::__construct($authorizer);
+
         $this->pluralModelName = Str::plural(ModelEnum::CALENDAR()->label);
     }
 
@@ -24,10 +26,8 @@ class CalendarPolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Calendar $calendar, ModelAuthorizer $authorizer)
+    public function view(User $user, Calendar $calendar)
     {
-        $this->authorizer = $authorizer;
-
         if ($this->commonChecker($user, $calendar, CRUDEnum::READ()->label, $this->pluralModelName, false)) {
             return true;
         }
@@ -40,10 +40,8 @@ class CalendarPolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Calendar $calendar, ModelAuthorizer $authorizer)
+    public function update(User $user, Calendar $calendar)
     {
-        $this->authorizer = $authorizer;
-
         if ($this->commonChecker($user, $calendar, CRUDEnum::UPDATE()->label, $this->pluralModelName, false)) {
             return true;
         }
@@ -56,10 +54,8 @@ class CalendarPolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Calendar $calendar, ModelAuthorizer $authorizer)
+    public function delete(User $user, Calendar $calendar)
     {
-        $this->authorizer = $authorizer;
-
         if ($this->commonChecker($user, $calendar, CRUDEnum::DELETE()->label, $this->pluralModelName, false)) {
             return true;
         }

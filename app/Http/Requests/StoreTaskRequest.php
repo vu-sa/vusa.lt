@@ -3,8 +3,9 @@
 namespace App\Http\Requests;
 
 use App\Models\Task;
+use Illuminate\Foundation\Http\FormRequest;
 
-class StoreTaskRequest extends ResourceRequest
+class StoreTaskRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -13,7 +14,7 @@ class StoreTaskRequest extends ResourceRequest
      */
     public function authorize()
     {
-        return $this->user()->can('create', [Task::class, $this->authorizer]);
+        return $this->user()->can('create', Task::class);
     }
 
     protected function prepareForValidation()

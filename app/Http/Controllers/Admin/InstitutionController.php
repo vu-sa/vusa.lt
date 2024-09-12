@@ -3,20 +3,23 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreInstitutionRequest;
 use App\Http\Requests\UpdateInstitutionRequest;
 use App\Models\Doing;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Type;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class InstitutionController extends LaravelResourceController
+class InstitutionController extends Controller
 {
+    public function __construct(public Authorizer $authorizer) {}
+
     /**
      * Display a listing of the resource.
      *
@@ -24,9 +27,9 @@ class InstitutionController extends LaravelResourceController
      */
     public function index()
     {
-        $this->authorize('viewAny', [Institution::class, $this->authorizer]);
+        $this->authorize('viewAny', Institution::class);
 
-        $indexer = new ModelIndexer(new Institution, request(), $this->authorizer);
+        $indexer = new ModelIndexer(new Institution);
 
         $institutions = $indexer
             ->setEloquentQuery([
@@ -50,10 +53,10 @@ class InstitutionController extends LaravelResourceController
      */
     public function create()
     {
-        $this->authorize('create', [Institution::class, $this->authorizer]);
+        $this->authorize('create', Institution::class);
 
         return Inertia::render('Admin/People/CreateInstitution', [
-            'assignableTenants' => GetTenantsForUpserts::execute('institutions.create.all', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute('institutions.create.padalinys', $this->authorizer),
             'institutionTypes' => Type::where('model_type', Institution::class)->get(),
         ]);
     }
@@ -81,7 +84,7 @@ class InstitutionController extends LaravelResourceController
      */
     public function show(Institution $institution)
     {
-        $this->authorize('view', [Institution::class, $institution, $this->authorizer]);
+        $this->authorize('view', $institution);
 
         // TODO: only show current_users
         $institution->load('tenant', 'duties.current_users', 'matters')->load(['meetings' => function ($query) {
@@ -110,7 +113,7 @@ class InstitutionController extends LaravelResourceController
      */
     public function edit(Institution $institution)
     {
-        $this->authorize('update', [Institution::class, $institution, $this->authorizer]);
+        $this->authorize('update', $institution);
 
         $institution->load('types')->load(['duties' => function ($query) {
             $query->with('current_users')->orderBy('order', 'asc');
@@ -122,7 +125,7 @@ class InstitutionController extends LaravelResourceController
                 'types' => $institution->types->pluck('id'),
             ],
             'institutionTypes' => Type::where('model_type', Institution::class)->get(),
-            'assignableTenants' => GetTenantsForUpserts::execute('institutions.update.all', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute('institutions.update.padalinys', $this->authorizer),
         ]);
     }
 
@@ -155,7 +158,7 @@ class InstitutionController extends LaravelResourceController
      */
     public function destroy(Institution $institution)
     {
-        $this->authorize('delete', [Institution::class, $institution, $this->authorizer]);
+        $this->authorize('delete', $institution);
 
         // check if auth user is from this institution
         if (auth()->user()->institutions->contains($institution)) {
@@ -174,7 +177,7 @@ class InstitutionController extends LaravelResourceController
      */
     public function restore(Institution $institution)
     {
-        $this->authorize('restore', [Institution::class, $institution, $this->authorizer]);
+        $this->authorize('restore', $institution);
 
         $institution->restore();
 

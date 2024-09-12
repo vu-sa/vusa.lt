@@ -3,16 +3,17 @@
 namespace App\Http\Requests;
 
 use App\Models\Reservation;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
 
-class StoreReservationResourceRequest extends ResourceRequest
+class StoreReservationResourceRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return $this->user()->can('create', [Reservation::class, $this->authorizer]);
+        return $this->user()->can('create', Reservation::class);
     }
 
     protected function prepareForValidation()

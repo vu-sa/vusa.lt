@@ -3,15 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\ModelEnum;
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Models\Comment;
 use App\Models\Traits\MakesDecisions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Services\ModelAuthorizer as Authorizer;
 use Spatie\Enum\Laravel\Rules\EnumRule;
 
-class CommentController extends LaravelResourceController
+class CommentController extends Controller
 {
+    public function __construct(public Authorizer $authorizer) {}
     /**
      * Store a newly created resource in storage.
      *
@@ -19,8 +21,6 @@ class CommentController extends LaravelResourceController
      */
     public function store(Request $request)
     {
-        // $this->authorize('create', [Comment::class, $this->authorizer]);
-
         $validated = $request->validate([
             'commentable_type' => [new EnumRule(ModelEnum::class), 'required'],
             'commentable_id' => 'required',
@@ -41,7 +41,7 @@ class CommentController extends LaravelResourceController
         $model = $modelClass::find($request->commentable_id);
 
         if (isset($validated['decision']) && class_uses($model, MakesDecisions::class)) {
-            $model->decision($validated['decision'], $this->authorizer);
+            $model->decision($validated['decision']);
         }
 
         $model->comment($request->comment, $request->decision);
@@ -56,7 +56,7 @@ class CommentController extends LaravelResourceController
      */
     public function update(Request $request, Comment $comment)
     {
-        $this->authorize('update', [Comment::class, $comment, $this->authorizer]);
+        $this->authorize('update', $comment);
 
         // update comment
         $comment->update($request->all());
@@ -71,7 +71,7 @@ class CommentController extends LaravelResourceController
      */
     public function destroy(Comment $comment)
     {
-        $this->authorize('delete', [Comment::class, $comment, $this->authorizer]);
+        $this->authorize('delete', $comment);
 
         // delete comment
         $comment->delete();
