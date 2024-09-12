@@ -3,15 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\LaravelResourceController;
 use App\Models\Institution;
 use App\Models\SharepointFile;
 use App\Models\Type;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ResourceServices\SharepointFileableService;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Services\SharepointGraphService;
 use Illuminate\Http\Request;
-use App\Services\ModelAuthorizer as Authorizer;
 use Inertia\Inertia;
 
 class SharepointFileController extends Controller

@@ -5,9 +5,9 @@ namespace App\Policies;
 use App\Enums\ModelEnum;
 use App\Models\ChangelogItem;
 use App\Models\User;
+use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Support\Str;
-use App\Services\ModelAuthorizer as Authorizer;
 
 class ChangelogItemPolicy extends ModelPolicy
 {

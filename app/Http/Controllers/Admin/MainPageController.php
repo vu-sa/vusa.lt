@@ -11,9 +11,9 @@ use App\Models\MainPage;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Tenant;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use Illuminate\Http\Request;
-use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 

@@ -20,8 +20,11 @@ class ModelAuthorizer
     // TODO: cache somehow against duty-permission? user-ability-modeltype?
 
     public User $user;
+
     public Collection $duties;
+
     public Collection $permissableDuties;
+
     public bool $isAllScope = false;
 
     public function __construct()
@@ -37,11 +40,11 @@ class ModelAuthorizer
 
     public function forUser(User $user): self
     {
-        if (!isset($this->user) || $this->user->id !== $user->id) {
+        if (! isset($this->user) || $this->user->id !== $user->id) {
             $this->user = $user;
             $this->duties = new Collection;
         }
-    
+
         // check if user is different, if so, reset duties
         if ($this->user && $this->user->id !== $user->id) {
             $this->duties = new Collection;
@@ -50,18 +53,16 @@ class ModelAuthorizer
         return $this;
     }
 
-/**
+    /**
      * Check all roles for the given permission.
-     *
-     * @param string $permission
-     * @return bool
      */
     public function checkAllRoleables(string $permission): bool
     {
-        $this->permissableDuties = new Collection();
+        $this->permissableDuties = new Collection;
 
         if ($this->user->hasRole(config('permission.super_admin_role_name'))) {
             $this->isAllScope = true;
+
             return true;
         }
 
@@ -105,8 +106,8 @@ class ModelAuthorizer
      */
     public function getTenants(): Collection
     {
-        $tenants = $this->isAllScope 
-            ? Tenant::all() 
+        $tenants = $this->isAllScope
+            ? Tenant::all()
             : $this->permissableDuties->load('institution.tenant')->pluck('institution.tenant')->flatten(1)->unique('id')->values();
 
         return new Collection($tenants);
@@ -114,10 +115,6 @@ class ModelAuthorizer
 
     /**
      * Check if the duty has a global permission.
-     *
-     * @param $duty
-     * @param string $permission
-     * @return bool
      */
     protected function hasGlobalPermission($duty, string $permission): bool
     {

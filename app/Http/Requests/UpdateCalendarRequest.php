@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Calendar;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateCalendarRequest extends FormRequest

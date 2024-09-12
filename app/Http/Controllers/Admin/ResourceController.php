@@ -8,9 +8,9 @@ use App\Http\Requests\StoreResourceRequest;
 use App\Http\Requests\UpdateResourceRequest;
 use App\Models\Resource;
 use App\Models\ResourceCategory;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use Illuminate\Database\Eloquent\Builder;
-use App\Services\ModelAuthorizer as Authorizer;
 use Inertia\Inertia;
 
 class ResourceController extends Controller

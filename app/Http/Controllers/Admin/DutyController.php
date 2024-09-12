@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\GetAttachableTypesForDuty;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreDutyRequest;
-use App\Services\ModelAuthorizer as Authorizer;
 use App\Models\Duty;
 use App\Models\Role;
 use App\Models\Type;
 use App\Models\User;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use App\Services\ResourceServices\DutyService;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,7 +20,7 @@ use Inertia\Inertia;
 
 class DutyController extends Controller
 {
-   public function __construct(public Authorizer $authorizer) {}
+    public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.

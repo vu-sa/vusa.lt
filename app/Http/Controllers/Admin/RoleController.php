@@ -8,11 +8,11 @@ use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
+use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
-use App\Services\ModelAuthorizer as Authorizer;
 
 class RoleController extends Controller
 {

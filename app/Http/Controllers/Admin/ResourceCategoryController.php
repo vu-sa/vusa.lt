@@ -7,9 +7,9 @@ use App\Http\Requests\StoreResourceCategoryRequest;
 use App\Http\Requests\UpdateResourceCategoryRequest;
 use App\Models\Resource;
 use App\Models\ResourceCategory;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use Inertia\Inertia;
-use App\Services\ModelAuthorizer as Authorizer;
 
 class ResourceCategoryController extends Controller
 {

@@ -7,10 +7,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Institution;
 use App\Models\Registration;
 use App\Models\RegistrationForm;
+use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Services\ModelAuthorizer as Authorizer;
 
 class RegistrationFormController extends Controller
 {

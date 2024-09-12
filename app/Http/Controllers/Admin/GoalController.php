@@ -4,14 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Goal;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Services\ModelAuthorizer as Authorizer;
 
 class GoalController extends Controller
 {
-   public function __construct(public Authorizer $authorizer) {}
+    public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.

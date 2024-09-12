@@ -4,11 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Navigation;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\NavigationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
-use App\Services\ModelAuthorizer as Authorizer;
 
 class NavigationController extends Controller
 {

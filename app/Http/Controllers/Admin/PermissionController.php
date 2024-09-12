@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Permission;
-use Inertia\Inertia;
 use App\Services\ModelAuthorizer as Authorizer;
+use Inertia\Inertia;
 
 class PermissionController extends Controller
 {

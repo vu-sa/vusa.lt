@@ -5,12 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateDutiableRequest;
 use App\Models\Pivots\Dutiable;
-use Inertia\Inertia;
 use App\Services\ModelAuthorizer as Authorizer;
+use Inertia\Inertia;
 
 class DutiableController extends Controller
 {
-   public function __construct(public Authorizer $authorizer) {}
+    public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Show the form for editing the specified resource.

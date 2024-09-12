@@ -6,14 +6,15 @@ use App\Enums\ModelEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Comment;
 use App\Models\Traits\MakesDecisions;
+use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use App\Services\ModelAuthorizer as Authorizer;
 use Spatie\Enum\Laravel\Rules\EnumRule;
 
 class CommentController extends Controller
 {
     public function __construct(public Authorizer $authorizer) {}
+
     /**
      * Store a newly created resource in storage.
      *

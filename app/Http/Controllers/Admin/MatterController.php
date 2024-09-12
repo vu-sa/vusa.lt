@@ -7,11 +7,11 @@ use App\Models\Doing;
 use App\Models\Goal;
 use App\Models\Matter;
 use App\Models\Type;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Services\ModelAuthorizer as Authorizer;
 
 class MatterController extends Controller
 {

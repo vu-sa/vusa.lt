@@ -14,7 +14,6 @@ use App\Services\ModelIndexer;
 use Illuminate\Database\Eloquent\Builder;
 /*use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;*/
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Inertia\Inertia;

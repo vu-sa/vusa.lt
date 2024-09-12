@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
-use App\Services\ModelAuthorizer as Authorizer;
 use App\Models\Page;
+use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 

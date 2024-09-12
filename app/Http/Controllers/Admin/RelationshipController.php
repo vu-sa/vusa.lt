@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller as Controller;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Relationship;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
-use App\Services\ModelAuthorizer as Authorizer;
 
 // Controller is used for the relationship object, which describes
 // content related relationships.

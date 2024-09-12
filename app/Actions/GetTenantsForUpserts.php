@@ -3,7 +3,6 @@
 namespace App\Actions;
 
 use App\Models\Tenant;
-use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Support\Facades\Auth;
 

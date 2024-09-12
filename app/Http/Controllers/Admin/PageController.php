@@ -15,7 +15,7 @@ use Inertia\Inertia;
 
 class PageController extends Controller
 {
-   public function __construct(public Authorizer $authorizer) {}
+    public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.

@@ -6,10 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreReservationResourceRequest;
 use App\Models\Pivots\ReservationResource;
 use App\Models\Reservation;
+use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use App\Services\ModelAuthorizer as Authorizer;
 
 class ReservationResourceController extends Controller
 {

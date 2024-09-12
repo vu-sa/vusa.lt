@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Services\ModelAuthorizer as Authorizer;
 use App\Models\Contact;
+use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -12,6 +12,7 @@ use Inertia\Inertia;
 class ContactController extends Controller
 {
     public function __construct(public Authorizer $authorizer) {}
+
     /**
      * Display a listing of the resource.
      *
