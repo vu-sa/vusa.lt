@@ -12,9 +12,7 @@ class UpdateResourceCategoryRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        dd($this);
-
-        return $this->user()->can('create', Resource::find(request('resource')['id']));
+        return $this->user()->can('create', Resource::class);
     }
 
     /**

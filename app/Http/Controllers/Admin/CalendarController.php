@@ -139,7 +139,7 @@ class CalendarController extends Controller
      */
     public function destroy(Calendar $calendar)
     {
-        $this->authorize('delete', Calendar::class);
+        $this->authorize('delete', $calendar);
 
         $calendar->delete();
 
@@ -149,7 +149,7 @@ class CalendarController extends Controller
     // TODO: something with this???
     public function destroyMedia(Calendar $calendar, Media $media)
     {
-        $this->authorize('update', [Calendar::class, $calendar, $this->authorizer]);
+        $this->authorize('update', $calendar);
 
         $calendar->getMedia('images')->where('id', '=', $media->id)->first()->delete();
 
