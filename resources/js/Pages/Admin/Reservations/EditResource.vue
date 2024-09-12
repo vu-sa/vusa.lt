@@ -4,14 +4,17 @@
     <NCard :title="$t('Rezervacijų istorija')" class="mb-4 min-w-[450px]">
       <ResourceReservationsTable :reservations="resource.reservations" />
     </NCard>
-    <UpsertModelLayout :errors="$page.props.errors" :model="resource">
-      <ResourceForm :resource :categories :assignable-tenants model-route="resources.update" />
+    <UpsertModelLayout>
+      <ResourceForm enable-delete :resource :categories :assignable-tenants
+        @submit:form="(form) => form.patch(route('resources.update', resource.id), { preserveScroll: true })"
+        @delete="() => router.delete(route('resource.destroy', resource.id))" />
     </UpsertModelLayout>
   </PageContent>
 </template>
 
 <script setup lang="ts">
 import { trans as $t } from "laravel-vue-i18n";
+import { router } from "@inertiajs/vue3";
 import { NCard } from "naive-ui";
 
 import Icons from "@/Types/Icons/regular";

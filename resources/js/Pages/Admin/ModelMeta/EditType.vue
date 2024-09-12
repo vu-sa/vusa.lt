@@ -16,7 +16,7 @@ import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import TypeForm from "@/Components/AdminForms/TypeForm.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
-const props = defineProps<{
+defineProps<{
   contentType: App.Entities.Type;
   contentTypes: App.Entities.Type[];
   sharepointPath: string;

@@ -1,88 +1,84 @@
 <template>
-  <NForm :model="form" label-placement="top">
-    <div class="flex flex-col">
-      <FormElement>
-        <template #title>
-          {{ $t("forms.context.main_info") }}
-        </template>
-        <NFormItem label="Mygtuko tekstas">
-          <NInput v-model:value="form.text" type="text" placeholder="Įrašyti tekstą..." />
-        </NFormItem>
-        <NFormItem>
-          <template #label>
-            <div class="inline-flex items-center gap-2">
-              <span>Padalinys, kuriam priklauso institucija</span>
-              <NButton v-if="modelRoute === 'mainPage.update'" secondary tag="a" size="tiny" type="primary" round
-                target="_blank" :href="route('mainPage.edit-order', {
-                  tenant: mainPage.tenant_id,
-                  lang: mainPage.lang,
-                } as RouteParamsWithQueryOverload)
-                  ">
-                Atnaujinti nuorodų tvarką
-                <template #icon>
-                  <NIcon :component="Icons.MAIN_PAGE" />
-                </template>
-              </NButton>
-            </div>
-          </template>
-          <NSelect v-model:value="form.tenant_id" :options="options" placeholder="VU SA X" clearable />
-        </NFormItem>
-        <NFormItem label="Kurios kalbos puslapyje rodoma?">
-          <NSelect v-model:value="form.lang" :options="languageOptions" placeholder="Pasirinkti kalbą..." />
-        </NFormItem>
-      </FormElement>
-      <FormElement>
-        <template #title>
-          Mygtuko informacija
-        </template>
-        <template #description>Pasirinkus tipą ir objektą, kolkas tipas visada pakeičiamas į
-          "Nuoroda" ir sugeneruojama atitinkamo puslapio nuoroda.</template>
-        <NFormItem label="Nuorodos tipas">
-          <NSelect v-model:value="form.type" :options="mainPageType" :render-label="renderLabel"
-            @update:value="handleTypeChange" />
-        </NFormItem>
-        <NFormItem v-if="form.type !== 'url'" :show-feedback="false" label="Pasirinkite puslapį">
-          <NSelect v-model:value="pageSelection" filterable :options="typeOptions" placeholder="Pasirinkti puslapį..."
-            @update:value="createMainPageLink" />
-        </NFormItem>
-        <NFormItem :show-feedback="false" label="Nuoroda">
-          <NInputGroup>
-            <NInput v-model:value="form.link" :disabled="form.type !== 'url'" type="text" placeholder="" />
-            <!-- link to form.link -->
-            <NButton tag="a" :href="form.link" target="_blank">
+  <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
+    <FormElement>
+      <template #title>
+        {{ $t("forms.context.main_info") }}
+      </template>
+      <NFormItem label="Mygtuko tekstas">
+        <NInput v-model:value="form.text" type="text" placeholder="Įrašyti tekstą..." />
+      </NFormItem>
+      <NFormItem>
+        <template #label>
+          <div class="inline-flex items-center gap-2">
+            <span>Padalinys, kuriam priklauso institucija</span>
+            <NButton v-if="mainPage.tenant_id" secondary tag="a" size="tiny" type="primary" round target="_blank" :href="route('mainPage.edit-order', {
+              tenant: mainPage.tenant_id,
+              lang: mainPage.lang,
+            })
+              ">
+              Atnaujinti nuorodų tvarką
               <template #icon>
-                <IFluentOpen24Regular />
+                <NIcon :component="Icons.MAIN_PAGE" />
               </template>
             </NButton>
-          </NInputGroup>
-        </NFormItem>
-      </FormElement>
-    </div>
-    <div class="flex justify-end gap-2">
-      <DeleteModelButton v-if="deleteModelRoute" :form="form" :model-route="deleteModelRoute" />
-      <UpsertModelButton :form="form" :model-route="modelRoute" />
-    </div>
-  </NForm>
+          </div>
+        </template>
+        <NSelect v-model:value="form.tenant_id" :options="options" placeholder="VU SA X" clearable />
+      </NFormItem>
+      <NFormItem label="Kurios kalbos puslapyje rodoma?">
+        <NSelect v-model:value="form.lang" :options="languageOptions" placeholder="Pasirinkti kalbą..." />
+      </NFormItem>
+    </FormElement>
+    <FormElement>
+      <template #title>
+        Mygtuko informacija
+      </template>
+      <template #description>
+        Pasirinkus tipą ir objektą, kolkas tipas visada pakeičiamas į
+        "Nuoroda" ir sugeneruojama atitinkamo puslapio nuoroda.
+      </template>
+      <NFormItem label="Nuorodos tipas">
+        <NSelect v-model:value="form.type" :options="mainPageType" :render-label="renderLabel"
+          @update:value="handleTypeChange" />
+      </NFormItem>
+      <NFormItem v-if="form.type !== 'url'" :show-feedback="false" label="Pasirinkite puslapį">
+        <NSelect v-model:value="pageSelection" filterable :options="typeOptions" placeholder="Pasirinkti puslapį..."
+          @update:value="createMainPageLink" />
+      </NFormItem>
+      <NFormItem :show-feedback="false" label="Nuoroda">
+        <NInputGroup>
+          <NInput v-model:value="form.link" :disabled="form.type !== 'url'" type="text" placeholder="" />
+          <!-- link to form.link -->
+          <NButton tag="a" :href="form.link" target="_blank">
+            <template #icon>
+              <IFluentOpen24Regular />
+            </template>
+          </NButton>
+        </NInputGroup>
+      </NFormItem>
+    </FormElement>
+  </AdminForm>
 </template>
 
 <script setup lang="tsx">
-import { Link, router, useForm } from "@inertiajs/vue3";
+import { router, useForm } from "@inertiajs/vue3";
 import { computed, ref } from "vue";
-import type { RouteParamsWithQueryOverload } from "ziggy-js";
 
 import Link24Regular from "~icons/fluent/link24-regular"
 
-import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
+import AdminForm from "./AdminForm.vue";
 import FormElement from "./FormElement.vue";
 import Icons from "@/Types/Icons/regular";
-import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 
 const props = defineProps<{
   mainPage: App.Entities.MainPage;
   tenantOptions: Record<string, any>[];
   typeOptions: Record<string, any>[];
-  modelRoute: string;
-  deleteModelRoute?: string;
+}>();
+
+defineEmits<{
+  (event: "submit:form", form: unknown): void;
+  (event: "delete"): void;
 }>();
 
 const form = useForm("mainPage", props.mainPage);

@@ -3,9 +3,9 @@
     model: $tChoice('entities.resource_category.model', 1),
   })
     " :heading-icon="Icons.RESOURCE_CATEGORY">
-    <UpsertModelLayout :errors="$page.props.errors" :model="resourceCategory">
-      <ResourceCategoryForm :resource-category :categories model-route="resourceCategories.store"
-        delete-model-route="resourceCategories.delete" />
+    <UpsertModelLayout>
+      <ResourceCategoryForm :resource-category :categories
+        @submit:form="(form) => form.post(route('resourceCategories.store'))" />
     </UpsertModelLayout>
   </PageContent>
 </template>

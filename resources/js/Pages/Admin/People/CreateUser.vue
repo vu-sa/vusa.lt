@@ -1,7 +1,8 @@
 <template>
-  <PageContent title="Naujas studentas" :heading-icon="Icons.USER">
-    <UpsertModelLayout :errors="$page.props.errors" :model="user">
-      <UserForm :user :roles :tenants-with-duties :permissable-tenants model-route="users.store" />
+  <PageContent title="Naujas narys (-ė)" :heading-icon="Icons.USER">
+    <UpsertModelLayout>
+      <UserForm :user :roles :tenants-with-duties :permissable-tenants
+        @submit:form="(form) => form.post(route('users.store'))" />
     </UpsertModelLayout>
   </PageContent>
 </template>

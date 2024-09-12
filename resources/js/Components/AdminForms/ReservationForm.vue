@@ -1,120 +1,113 @@
 <template>
-  <NForm :model="form" label-placement="top">
-    <div class="flex flex-col">
-      <FormElement>
-        <template #title>
-          {{ $t("forms.context.main_info") }}
-        </template>
-        <template #description>
-          <template v-if="$page.props.app.locale === 'lt'">
-            <a class="mb-4" target="_blank"
-              href="https://vustudentuatstovybe.sharepoint.com/:b:/s/vieningai/ERnxptqtoF5DmDiqAbpfBewBjV-z7QcgAZiZi5w5sS1ODQ?e=cP6Zsv">
-              <strong class="underline">Rezervacijų atmintinė</strong>
-            </a>
-          </template>
-          <template v-else>
-            <a class="mb-4" target="_blank"
-              href="https://vustudentuatstovybe.sharepoint.com/:b:/s/vieningai/ESPcgxR0HqNFj0TBAQL4hmQBLmE5RSN72cEFe9psis3gjg?e=wS2uKj">
-              <strong class="underline">Reservation guide</strong>
-            </a>
-          </template>
-          <component :is="RESERVATION_DESCRIPTIONS.main_info[$page.props.app.locale]" />
-        </template>
-        <NFormItem :label="$t('forms.fields.title')" required>
-          <NInput v-model:value="form.name" :placeholder="RESERVATION_PLACEHOLDERS.name[$page.props.app.locale]" />
-        </NFormItem>
-        <NFormItem :label="$t('forms.fields.description')" required>
-          <NInput v-model:value="form.description" :placeholder="RESERVATION_PLACEHOLDERS.description[$page.props.app.locale]
-            " type="textarea" />
-        </NFormItem>
-      </FormElement>
-      <FormElement :icon="Icons.RESOURCE">
-        <template #title>
-          {{
-            capitalize($tChoice("entities.resource.model", 2))
-          }}
-        </template>
-        <template #description>
-          <component :is="RESERVATION_DESCRIPTIONS.resources[$page.props.app.locale]" />
-          <a class="w-fit" target="_blank" :href="route('resources.index')">
-            <div class="inline-flex items-center gap-2">
-              <NIcon :component="Icons.RESOURCE" class="align-center" />
-              <strong class="underline">{{
-                $t("entities.meta.model_list", {
-                  model: capitalize($tChoice("entities.resource.model", 11)),
-                })
-              }}</strong>
-            </div>
+  <AdminForm :model="form" label-placement="top">
+    <FormElement>
+      <template #title>
+        {{ $t("forms.context.main_info") }}
+      </template>
+      <template #description>
+        <template v-if="$page.props.app.locale === 'lt'">
+          <a target="_blank" class="mb-4 flex items-center gap-1"
+            href="https://vustudentuatstovybe.sharepoint.com/:b:/s/vieningai/ERnxptqtoF5DmDiqAbpfBewBjV-z7QcgAZiZi5w5sS1ODQ?e=cP6Zsv">
+            <IFluentLink24Filled />
+            <strong class="underline">Rezervacijų atmintinė</strong>
           </a>
         </template>
-        <NFormItem required :label="capitalize($t('entities.reservation.period'))">
-          <NDatePicker v-model:value="date" :loading="resourceLoading" type="datetimerange" :first-day-of-week="0"
-            format="yyyy-MM-dd HH:mm" default-time="13:00:00" :time-picker-props="{
-              format: 'HH:mm',
-              minutes: 15,
-            }" @update:value="onDateChange" />
-        </NFormItem>
-        <NFormItem>
-          <template #label>
-            <span class="mb-2 inline-flex items-center gap-1">
-              <NIcon :component="Icons.RESOURCE" />
-              {{ $t("Pasirinkti ištekliai") }}
-            </span>
-          </template>
-          <NDynamicInput v-model:value="form.resources" :on-create="onCreate">
-            <template #default="{ value }">
-              <div class="flex w-full gap-2">
-                <NSelect v-model:value="value.id" filterable clearable value-field="id" label-field="name"
-                  :options="allResourceOptions" :placeholder="RESERVATION_PLACEHOLDERS.resource[$page.props.app.locale]
-                    " :render-label="handleRenderResourceLabel" :render-tag="handleRenderResourceTag"
-                  @update:value="value.quantity = 1" />
-                <NInputNumber v-model:value="value.quantity" :min="1" :max="getleftCapacity(value.id)"
-                  :default-value="1" />
-              </div>
-            </template>
-          </NDynamicInput>
-        </NFormItem>
-      </FormElement>
-      <FormElement>
-        <template #title>
-          {{ $t("forms.context.additional_info") }}
+        <template v-else>
+          <a target="_blank" class="mb-4 flex items-center gap-1"
+            href="https://vustudentuatstovybe.sharepoint.com/:b:/s/vieningai/ESPcgxR0HqNFj0TBAQL4hmQBLmE5RSN72cEFe9psis3gjg?e=wS2uKj">
+            <IFluentLink24Filled />
+            <strong class="underline">Reservation guide</strong>
+          </a>
         </template>
-        <NFormItem :show-label="false">
-          <NCheckbox v-model:checked="conditionAcquaintance">
-            <template v-if="$page.props.app.locale === 'lt'">
-              Sutinku įdėmiai sekti rezervacijos informaciją, išteklius pasiimti
-              ir grąžinti laiku.
-            </template>
-            <template v-else>
-              I agree to carefully follow the reservation information, take and
-              return the resources on time.
-            </template>
-          </NCheckbox>
-        </NFormItem>
-      </FormElement>
-    </div>
-    <div class="flex justify-end gap-2">
-      <!-- <DeleteModelButton
-        v-if="deleteModelRoute"
-        :form="form"
-        :model-route="deleteModelRoute"
-      /> -->
-      <!-- <UpsertModelButton :form="form" :model-route="modelRoute" /> -->
-      <NButton :disabled="!conditionAcquaintance" @click="submit">
+        <component :is="RESERVATION_DESCRIPTIONS.main_info[$page.props.app.locale]" />
+      </template>
+      <NFormItem :label="$t('forms.fields.title')" required>
+        <NInput v-model:value="form.name" :placeholder="RESERVATION_PLACEHOLDERS.name[$page.props.app.locale]" />
+      </NFormItem>
+      <NFormItem :label="$t('forms.fields.description')" required>
+        <NInput v-model:value="form.description" :placeholder="RESERVATION_PLACEHOLDERS.description[$page.props.app.locale]
+          " type="textarea" />
+      </NFormItem>
+    </FormElement>
+    <FormElement :icon="Icons.RESOURCE">
+      <template #title>
+        {{
+          capitalize($tChoice("entities.resource.model", 2))
+        }}
+      </template>
+      <template #description>
+        <component :is="RESERVATION_DESCRIPTIONS.resources[$page.props.app.locale]" />
+        <a class="w-fit" target="_blank" :href="route('resources.index')">
+          <div class="inline-flex items-center gap-2">
+            <NIcon :component="Icons.RESOURCE" class="align-center" />
+            <strong class="underline">{{
+              $t("entities.meta.model_list", {
+                model: capitalize($tChoice("entities.resource.model", 11)),
+              })
+            }}</strong>
+          </div>
+        </a>
+      </template>
+      <NFormItem required :label="capitalize($t('entities.reservation.period'))">
+        <NDatePicker v-model:value="date" :loading="resourceLoading" type="datetimerange" :first-day-of-week="0"
+          format="yyyy-MM-dd HH:mm" default-time="13:00:00" :time-picker-props="{
+            format: 'HH:mm',
+            minutes: 15,
+          }" @update:value="onDateChange" />
+      </NFormItem>
+      <NFormItem>
+        <template #label>
+          <span class="mb-2 inline-flex items-center gap-1">
+            <NIcon :component="Icons.RESOURCE" />
+            {{ $t("Pasirinkti ištekliai") }}
+          </span>
+        </template>
+        <NDynamicInput v-model:value="form.resources" :on-create="onCreate">
+          <template #default="{ value }">
+            <div class="flex w-full gap-2">
+              <NSelect v-model:value="value.id" filterable clearable value-field="id" label-field="name"
+                :options="allResourceOptions" :placeholder="RESERVATION_PLACEHOLDERS.resource[$page.props.app.locale]
+                  " :render-label="handleRenderResourceLabel" :render-tag="handleRenderResourceTag"
+                @update:value="value.quantity = 1" />
+              <NInputNumber v-model:value="value.quantity" :min="1" :max="getleftCapacity(value.id)"
+                :default-value="1" />
+            </div>
+          </template>
+        </NDynamicInput>
+      </NFormItem>
+    </FormElement>
+    <FormElement>
+      <template #title>
+        {{ $t("forms.context.additional_info") }}
+      </template>
+      <NFormItem :show-label="false">
+        <NCheckbox v-model:checked="conditionAcquaintance">
+          <template v-if="$page.props.app.locale === 'lt'">
+            Sutinku įdėmiai sekti rezervacijos informaciją, išteklius pasiimti
+            ir grąžinti laiku.
+          </template>
+          <template v-else>
+            I agree to carefully follow the reservation information, take and
+            return the resources on time.
+          </template>
+        </NCheckbox>
+      </NFormItem>
+    </FormElement>
+    <template #buttons>
+      <NButton type="primary" :disabled="!conditionAcquaintance" @click="submit">
         Pateikti
       </NButton>
-    </div>
-  </NForm>
+    </template>
+  </AdminForm>
 </template>
 
 <script setup lang="tsx">
-import { Link, router } from "@inertiajs/vue3";
+import { router } from "@inertiajs/vue3";
 import {
   NButton,
   NCheckbox,
   NDatePicker,
   NDynamicInput,
-  NForm,
   NFormItem,
   NIcon,
   NInput,
@@ -136,17 +129,17 @@ import FormElement from "./FormElement.vue";
 import Icons from "@/Types/Icons/regular";
 import type { ReservationCreationTemplate } from "@/Pages/Admin/Reservations/CreateReservation.vue";
 import type { ReservationEditType } from "@/Pages/Admin/Reservations/EditReservation.vue";
-// import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
+import AdminForm from "./AdminForm.vue";
 
 defineEmits<{
   (event: "update:value", value: number | null): void;
+  (event: "submit:form", form: unknown): void;
 }>();
 
 const props = defineProps<{
   reservation: ReservationCreationTemplate | ReservationEditType;
   allResources: App.Entities.Resource[];
   modelRoute: string;
-  deleteModelRoute?: string;
 }>();
 
 const resourceLoading = ref(false);

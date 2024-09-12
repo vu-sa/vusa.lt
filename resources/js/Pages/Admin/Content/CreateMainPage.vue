@@ -1,7 +1,8 @@
 <template>
   <PageContent title="Naujas pradinio puslapio mygtukas" :back-url="route('mainPage.index')">
-    <UpsertModelLayout :errors="$page.props.errors" :model="mainPage">
-      <MainPageForm :tenant-options :type-options :main-page model-route="mainPage.store" />
+    <UpsertModelLayout>
+      <MainPageForm :tenant-options :type-options :main-page
+        @submit:form="(form) => form.post(route('mainPage.store'))" />
     </UpsertModelLayout>
   </PageContent>
 </template>

@@ -1,7 +1,9 @@
 <template>
   <PageContent :title="relationship.name" :back-url="route('relationships.index')">
-    <UpsertModelLayout :errors="$page.props.errors" :model="relationship">
-      <RelationshipForm :relationship="relationship" model-route="relationships.update" />
+    <UpsertModelLayout>
+      <RelationshipForm :relationship
+        @submit:form="(form) => form.patch(route('relationships.update', relationship.id), { preserveScroll: true })"
+        @delete="() => router.delete(route('relationship.destroy', relationship.id))" />
     </UpsertModelLayout>
     <NButton @click="showModal = true">
       Sukurti ryšį

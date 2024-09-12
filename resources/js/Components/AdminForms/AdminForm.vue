@@ -1,19 +1,23 @@
 <template>
-  <NForm>
-    <slot />
+  <NForm v-bind="$attrs">
+    <div class="flex flex-col">
+      <slot />
+    </div>
     <div class="flex justify-end gap-5">
-      <NButton v-if="enableDelete" text type="error" @click="handleDelete">
-        <template #icon>
-          <IFluentDelete24Filled />
-        </template>
-        {{ $t('Ištrinti') }}
-      </NButton>
-      <NButton type="primary" @click="$emit('submit:form')">
-        <template #icon>
-          <IFluentSave24Filled />
-        </template>
-        {{ $t('Išsaugoti') }}
-      </NButton>
+      <slot name="buttons">
+        <NButton v-if="enableDelete" text type="error" @click="handleDelete">
+          <template #icon>
+            <IFluentDelete24Filled />
+          </template>
+          {{ $t('Ištrinti') }}
+        </NButton>
+        <NButton type="primary" @click="$emit('submit:form')">
+          <template #icon>
+            <IFluentSave24Filled />
+          </template>
+          {{ $t('Išsaugoti') }}
+        </NButton>
+      </slot>
     </div>
   </NForm>
 </template>

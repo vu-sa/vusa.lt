@@ -2,25 +2,19 @@
   <NForm ref="formRef" :rules="rules" :model="meetingForm">
     <NFormItem path="start_time" required>
       <template #label>
-        <span class="inline-flex items-center gap-1"
-          ><NIcon :component="Icons.DATE"></NIcon>
-          <span>{{ $t("forms.fields.date") }}</span></span
-        >
+        <span class="inline-flex items-center gap-1">
+          <NIcon :component="Icons.DATE" />
+          <span>{{ $t("forms.fields.date") }}</span>
+        </span>
       </template>
-      <NDatePicker
-        v-model:value="meetingForm.start_time"
-        :first-day-of-week="0"
-        :format="'yyyy-MM-dd HH:mm'"
+      <NDatePicker v-model:value="meetingForm.start_time" :first-day-of-week="0" :format="'yyyy-MM-dd HH:mm'"
         :time-picker-props="{
           format: 'HH:mm',
-        }"
-        type="datetime"
-        :placeholder="`${$t('Kada vyksta posėdis')}?`"
-        clearable
-        :actions="['confirm']"
-      />
+        }" type="datetime" :placeholder="`${$t('Kada vyksta posėdis')}?`" clearable :actions="['confirm']" />
     </NFormItem>
-    <NButton @click="handleSubmit">{{ $t("Toliau") }}...</NButton>
+    <NButton @click="handleSubmit">
+      {{ $t("Toliau") }}...
+    </NButton>
   </NForm>
 </template>
 

@@ -1,7 +1,8 @@
 <template>
   <PageContent title="Naujas padalinys" :heading-icon="Icons.TENANT">
-    <UpsertModelLayout :errors="$page.props.errors" :model="tenant">
-      <TenantForm model-route="tenants.update" :tenant :assignable-institutions />
+    <UpsertModelLayout>
+      <TenantForm :tenant :assignable-institutions
+        @submit:form="(form) => form.patch(route('tenants.update', tenant.id), { preserveScroll: true })" />
     </UpsertModelLayout>
   </PageContent>
 </template>

@@ -1,13 +1,7 @@
 <template>
-  <PageContent
-    title="Nauja kategorija"
-    :back-url="route('categories.index')"
-  >
-    <UpsertModelLayout :errors="$page.props.errors" :model="category">
-      <CategoryForm 
-      :category
-        model-route="categories.store"
-      />
+  <PageContent title="Nauja kategorija" :back-url="route('categories.index')">
+    <UpsertModelLayout>
+      <CategoryForm :category @submit:form="(form) => form.post(route('categories.store'))" />
     </UpsertModelLayout>
   </PageContent>
 </template>

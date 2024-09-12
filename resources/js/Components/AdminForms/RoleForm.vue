@@ -1,37 +1,27 @@
 <template>
-  <NForm :model="form" label-placement="top">
-    <NGrid cols="1 s:4 l:6" responsive="screen" :x-gap="24">
-      <NFormItemGi required :label="$t('forms.fields.title')" :span="2">
-        <NInput
-          v-model:value="form.name"
-          type="text"
-          placeholder="Turinio tipas"
-        />
-      </NFormItemGi>
-    </NGrid>
-    <div class="flex justify-end gap-2">
-      <DeleteModelButton
-        v-if="deleteModelRoute"
-        :form="form"
-        :model-route="deleteModelRoute"
-      />
-      <UpsertModelButton :form="form" :model-route="modelRoute" />
-    </div>
-  </NForm>
+  <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
+    <FormElement>
+      <NFormItem required :label="$t('forms.fields.title')" :span="2">
+        <NInput v-model:value="form.name" type="text" placeholder="Turinio tipas" />
+      </NFormItem>
+    </FormElement>
+  </AdminForm>
 </template>
 
 <script setup lang="ts">
-import { NForm, NFormItemGi, NGrid, NInput } from "naive-ui";
 import { useForm } from "@inertiajs/vue3";
 
-import DeleteModelButton from "@/Components/Buttons/DeleteModelButton.vue";
-import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
+import FormElement from "./FormElement.vue";
+import AdminForm from "./AdminForm.vue";
 
-const props = defineProps<{
+const { role } = defineProps<{
   role: App.Entities.Role;
-  modelRoute: string;
-  deleteModelRoute?: string;
 }>();
 
-const form = useForm("role", props.role);
+const form = useForm("role", role);
+
+defineEmits<{
+  (event: "submit:form", form: unknown): void;
+  (event: "delete"): void;
+}>();
 </script>

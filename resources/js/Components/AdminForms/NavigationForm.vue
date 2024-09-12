@@ -1,83 +1,75 @@
 <template>
-  <NForm :model="form" label-placement="top">
-    <div class="flex flex-col">
-      <FormElement>
-        <template #title>
-          Pagrindinė informacija
-        </template>
-        <div class="grid gap-3 lg:grid-cols-2">
-          <NFormItem required label="Pavadinimas">
-            <NInput v-model:value="form.name" type="text" placeholder="Įrašyti pavadinimą..." />
-          </NFormItem>
-          <NFormItem required label="Stulpelis">
-            <NSelect v-model:value="form.extra_attributes.column" :options="columnOptions" />
-          </NFormItem>
-          <NFormItem label="Tėvinis elementas">
-            <NSelect v-model:value="form.parent_id" filterable
-              :options="parentElements.map((element) => ({ value: element.id, label: element.name }))"
-              placeholder="Pasirinkti tėvinį elementą..." clearable />
-          </NFormItem>
-        </div>
-        <NFormItem :show-feedback="false" required label="Nuorodos stilius">
-          <NSelect v-model:value="form.extra_attributes.type" :options="linkStyles(value)"
-            placeholder="Pasirinkti nuorodos stilių..." />
-        </NFormItem>
-      </FormElement>
-      <FormElement>
-        <template #title>
-          Nuoroda
-        </template>
-
-        <div class="grid grid-cols-2 gap-2">
-          <NFormItem label="Nuorodos tipas">
-            <NSelect v-model:value="form.linkType" :options="mainPageType" :render-label="renderLabel"
-              @update:value="(changedValue) => handleTypeChange(changedValue)" />
-          </NFormItem>
-          <NFormItem v-if="form.linkType !== 'url'" label="Pasirinkite puslapį">
-            <NSelect v-model:value="form.pageSelection" filterable :options="typeOptions"
-              placeholder="Pasirinkti puslapį..."
-              @update:value="(changedValue, option) => createMainPageLink(changedValue, option)" />
-          </NFormItem>
-        </div>
-        <NFormItem required label="Nuoroda">
-          <NInputGroup>
-            <NInput v-model:value="form.url" :disabled="form.linkType !== 'url'" type="text" placeholder="" />
-            <!-- link to form.link -->
-            <NButton tag="a" :href="form.url" target="_blank">
-              <template #icon>
-                <IFluentOpen24Regular />
-              </template>
-            </NButton>
-          </NInputGroup>
-        </NFormItem>
-      </FormElement>
-      <template v-if="form.type !== 'divider'">
-        <FluentIconSelect :icon="form.extra_attributes.icon"
-          @update:icon="(value) => form.extra_attributes.icon = value" />
-        <NFormItem label="Aprašymas">
-          <NInput v-model:value="form.extra_attributes.description" type="textarea" placeholder="Įrašyti aprašymą..." />
-        </NFormItem>
-        <NFormItem label="Foninis paveikslėlis">
-          <img v-if="form.extra_attributes.image" class="mr-4 size-20 object-cover" :src="form.extra_attributes.image"
-            alt="image">
-          <NButtonGroup>
-            <TiptapImageButton v-model:show-modal="showModal" @submit="form.extra_attributes.image = $event" />
-            <!-- Remove image button -->
-            <NButton v-if="form.extra_attributes.image" type="error" size="small"
-              @click="form.extra_attributes.image = null">
-              Ištrinti paveikslėlį
-            </NButton>
-          </NButtonGroup>
-        </NFormItem>
+  <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
+    <FormElement>
+      <template #title>
+        Pagrindinė informacija
       </template>
-    </div>
-    <div class="flex justify-end gap-2">
-      <DeleteModelButton v-if="deleteModelRoute" :form="form" :model-route="deleteModelRoute" />
-      <UpsertModelButton :form="form" :model-route="modelRoute">
-        Sukurti
-      </UpsertModelButton>
-    </div>
-  </NForm>
+      <div class="grid gap-3 lg:grid-cols-2">
+        <NFormItem required label="Pavadinimas">
+          <NInput v-model:value="form.name" type="text" placeholder="Įrašyti pavadinimą..." />
+        </NFormItem>
+        <NFormItem required label="Stulpelis">
+          <NSelect v-model:value="form.extra_attributes.column" :options="columnOptions" />
+        </NFormItem>
+        <NFormItem label="Tėvinis elementas">
+          <NSelect v-model:value="form.parent_id" filterable
+            :options="parentElements.map((element) => ({ value: element.id, label: element.name }))"
+            placeholder="Pasirinkti tėvinį elementą..." clearable />
+        </NFormItem>
+      </div>
+      <NFormItem :show-feedback="false" required label="Nuorodos stilius">
+        <NSelect v-model:value="form.extra_attributes.type" :options="linkStyles(value)"
+          placeholder="Pasirinkti nuorodos stilių..." />
+      </NFormItem>
+    </FormElement>
+    <FormElement>
+      <template #title>
+        Nuoroda
+      </template>
+
+      <div class="grid grid-cols-2 gap-2">
+        <NFormItem label="Nuorodos tipas">
+          <NSelect v-model:value="form.linkType" :options="mainPageType" :render-label="renderLabel"
+            @update:value="(changedValue) => handleTypeChange(changedValue)" />
+        </NFormItem>
+        <NFormItem v-if="form.linkType !== 'url'" label="Pasirinkite puslapį">
+          <NSelect v-model:value="form.pageSelection" filterable :options="typeOptions"
+            placeholder="Pasirinkti puslapį..."
+            @update:value="(changedValue, option) => createMainPageLink(changedValue, option)" />
+        </NFormItem>
+      </div>
+      <NFormItem required label="Nuoroda">
+        <NInputGroup>
+          <NInput v-model:value="form.url" :disabled="form.linkType !== 'url'" type="text" placeholder="" />
+          <!-- link to form.link -->
+          <NButton tag="a" :href="form.url" target="_blank">
+            <template #icon>
+              <IFluentOpen24Regular />
+            </template>
+          </NButton>
+        </NInputGroup>
+      </NFormItem>
+    </FormElement>
+    <template v-if="form.type !== 'divider'">
+      <FluentIconSelect :icon="form.extra_attributes.icon"
+        @update:icon="(value) => form.extra_attributes.icon = value" />
+      <NFormItem label="Aprašymas">
+        <NInput v-model:value="form.extra_attributes.description" type="textarea" placeholder="Įrašyti aprašymą..." />
+      </NFormItem>
+      <NFormItem label="Foninis paveikslėlis">
+        <img v-if="form.extra_attributes.image" class="mr-4 size-20 object-cover" :src="form.extra_attributes.image"
+          alt="image">
+        <NButtonGroup>
+          <TiptapImageButton v-model:show-modal="showModal" @submit="form.extra_attributes.image = $event" />
+          <!-- Remove image button -->
+          <NButton v-if="form.extra_attributes.image" type="error" size="small"
+            @click="form.extra_attributes.image = null">
+            Ištrinti paveikslėlį
+          </NButton>
+        </NButtonGroup>
+      </NFormItem>
+    </template>
+  </AdminForm>
 </template>
 
 <script setup lang="tsx">
@@ -86,19 +78,21 @@ import { router, useForm, usePage } from "@inertiajs/vue3"
 
 import Link24Regular from "~icons/fluent/link24-regular";
 
-import DeleteModelButton from "../Buttons/DeleteModelButton.vue";
 import FluentIconSelect from "../FormItems/FluentIconSelect.vue";
 import FormElement from "./FormElement.vue";
 import Icons from "@/Types/Icons/regular";
 import TiptapImageButton from "@/Components/TipTap/TiptapImageButton.vue";
-import UpsertModelButton from "../Buttons/UpsertModelButton.vue";
+import AdminForm from "./AdminForm.vue";
 
 const props = defineProps<{
-  deleteModelRoute: string;
-  modelRoute: string;
   navigation: App.Entities.Navigation;
   parentElements: App.Entities.Navigation[];
   typeOptions: any
+}>();
+
+defineEmits<{
+  (event: "submit:form", form: unknown): void;
+  (event: "delete"): void;
 }>();
 
 const form = useForm("navigation", props.navigation);

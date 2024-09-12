@@ -14,13 +14,15 @@
       }" />
     </template>
     <UpsertModelLayout>
-      <InstitutionForm :assignable-tenants model-route="institutions.update" delete-model-route="institutions.destroy"
-        :institution :institution-types />
+      <InstitutionForm enable-delete :assignable-tenants :institution :institution-types
+        @submit:form="(form) => form.patch(route('institutions.update', institution.id), { preserveScroll: true })"
+        @delete="() => router.delete(route('institutions.destroy', institution.id))" />
     </UpsertModelLayout>
   </PageContent>
 </template>
 
 <script setup lang="ts">
+import { router } from "@inertiajs/vue3";
 
 import Icons from "@/Types/Icons/regular";
 import InstitutionForm from "@/Components/AdminForms/InstitutionForm.vue";
