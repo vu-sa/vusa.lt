@@ -59,10 +59,6 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('{newsString}', [Public\NewsController::class, 'newsArchive'])->name('newsArchive')->whereIn('newsString', ['naujienos', 'news']);
         Route::redirect('/admin', '/mano', 301);
 
-        Route::get('/apgyvendinimas', function () {
-            return Redirect::to(config('app.url').'/lt/bendrabuciai', 301);
-        });
-
         Route::get('kontaktai/id/{institution}', [Public\ContactController::class, 'institutionContacts'])->name('contacts.institution');
 
         Route::get('kontaktai/studentu-atstovai', [Public\ContactController::class, 'studentRepresentatives'])->name('contacts.studentRepresentatives');
