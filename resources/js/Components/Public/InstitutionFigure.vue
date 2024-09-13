@@ -3,7 +3,7 @@
     'md:grid-cols-[1fr_2fr]': institution.image_url && !onlyVertical,
   }">
     <img v-if="institution.image_url && !imageError" :src="institution.image_url" :alt="institution.name ?? ''"
-      class="h-56 w-full rounded-sm object-cover shadow-lg" :class="[imageError ? 'hidden' : '']"
+      class="h-56 w-full rounded-sm object-cover shadow-lg" :class="[imageError ? 'hidden' : '']" style="object-position: 50% 35%"
       @error="imageError = true">
     <div class="w-full" :class="[imageError ? 'col-span-full' : '']">
       <div>
