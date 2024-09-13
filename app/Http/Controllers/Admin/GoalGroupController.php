@@ -69,7 +69,7 @@ class GoalGroupController extends Controller
      */
     public function edit(GoalGroup $goalGroup)
     {
-        $this->authorize('update', GoalGroup::class);
+        $this->authorize('update', $goalGroup);
 
         return Inertia::render('Admin/Representation/EditGoalGroup', [
             'goalGroup' => $goalGroup,

@@ -72,7 +72,7 @@ class ContactController extends Controller
      */
     public function show(Contact $contact)
     {
-        $this->authorize('view', Contact::class);
+        $this->authorize('view', $contact);
 
         return Inertia::render('Admin/People/ShowContact', [
             'contact' => $contact->load('activities.causer', 'comments'),

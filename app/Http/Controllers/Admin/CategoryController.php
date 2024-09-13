@@ -60,6 +60,7 @@ class CategoryController extends Controller
      */
     public function edit(Category $category)
     {
+        // TODO: Should be proper authorization
         $this->authorize('update', Page::class);
 
         return Inertia::render('Admin/Content/EditCategory', [
