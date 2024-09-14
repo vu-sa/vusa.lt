@@ -6,12 +6,7 @@
 
         <title>@yield('title')</title>
 
-        <style>
-            body {
-                font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-            }
-        </style>
-    <script src="https://cdn.tailwindcss.com"></script>
+        @vite('resources/css/app.css')
     </head>
     <body class="antialiased">
         <div class="flex justify-center min-h-screen bg-zinc-50 items-center sm:pt-0">
