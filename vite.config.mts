@@ -30,7 +30,11 @@ export default defineConfig({
       appendTo: 'resources/js/app.ts'
     }),
     vueDocsPlugin,
-    laravel(["resources/js/app.ts"]),
+    laravel([
+      "resources/js/app.ts", 
+      // Also build .css, because it is used in minimal.blade.php
+      "resources/css/app.css"
+    ]),
     Markdown({
       markdownItOptions: {
         html: true,
