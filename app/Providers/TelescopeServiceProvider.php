@@ -33,6 +33,7 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
                 }
             } catch (\Exception $e) {
                 report($e);
+
                 return true;
             }
 
