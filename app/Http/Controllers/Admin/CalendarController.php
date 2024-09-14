@@ -3,18 +3,21 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCalendarRequest;
 use App\Http\Requests\UpdateCalendarRequest;
 use App\Models\Calendar;
 use App\Models\Category;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class CalendarController extends LaravelResourceController
+class CalendarController extends Controller
 {
+    public function __construct(public Authorizer $authorizer) {}
+
     /**
      * Display a listing of the resource.
      *
@@ -22,9 +25,9 @@ class CalendarController extends LaravelResourceController
      */
     public function index()
     {
-        $this->authorize('viewAny', [Calendar::class, $this->authorizer]);
+        $this->authorize('viewAny', Calendar::class);
 
-        $indexer = new ModelIndexer(new Calendar, request(), $this->authorizer);
+        $indexer = new ModelIndexer(new Calendar);
 
         $calendar = $indexer
             ->setEloquentQuery([fn ($query) => $query->with('category')])
@@ -45,10 +48,10 @@ class CalendarController extends LaravelResourceController
      */
     public function create()
     {
-        $this->authorize('create', [Calendar::class, $this->authorizer]);
+        $this->authorize('create', Calendar::class);
 
         return Inertia::render('Admin/Calendar/CreateCalendarEvent', [
-            'assignableTenants' => GetTenantsForUpserts::execute('calendar.create.all', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute('calendar.create.padalinys', $this->authorizer),
             'categories' => Category::all(),
         ]);
     }
@@ -76,7 +79,7 @@ class CalendarController extends LaravelResourceController
      */
     public function show(Calendar $calendar)
     {
-        $this->authorize('view', [Calendar::class, $calendar, $this->authorizer]);
+        $this->authorize('view', $calendar);
 
         return Inertia::render('Admin/Calendar/ShowCalendarEvent', [
             'calendar' => $calendar,
@@ -91,13 +94,13 @@ class CalendarController extends LaravelResourceController
      */
     public function edit(Calendar $calendar)
     {
-        $this->authorize('update', [Calendar::class, $calendar, $this->authorizer]);
+        $this->authorize('update', $calendar);
 
         return Inertia::render('Admin/Calendar/EditCalendarEvent', [
             'calendar' => $calendar->toFullArray(),
             'categories' => Category::all(),
             'images' => $calendar->getMedia('images'),
-            'assignableTenants' => GetTenantsForUpserts::execute('calendar.update.all', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute('calendar.update.padalinys', $this->authorizer),
         ]);
     }
 
@@ -136,7 +139,7 @@ class CalendarController extends LaravelResourceController
      */
     public function destroy(Calendar $calendar)
     {
-        $this->authorize('delete', [Calendar::class, $calendar, $this->authorizer]);
+        $this->authorize('delete', $calendar);
 
         $calendar->delete();
 
@@ -146,7 +149,7 @@ class CalendarController extends LaravelResourceController
     // TODO: something with this???
     public function destroyMedia(Calendar $calendar, Media $media)
     {
-        $this->authorize('update', [Calendar::class, $calendar, $this->authorizer]);
+        $this->authorize('update', $calendar);
 
         $calendar->getMedia('images')->where('id', '=', $media->id)->first()->delete();
 

@@ -82,7 +82,7 @@ Route::resource('documents', DocumentController::class)->except('create', 'edit'
 Route::post('documents/{document}/refresh', [DocumentController::class, 'refresh'])->name('documents.refresh');
 
 Route::resource('duties', DutyController::class);
-Route::resource('dutiables', DutiableController::class);
+Route::resource('dutiables', DutiableController::class)->except(['index', 'show']);
 Route::post('institutions/reorderDuties', [InstitutionController::class, 'reorderDuties'])->name('institutions.reorderDuties');
 Route::resource('institutions', InstitutionController::class);
 

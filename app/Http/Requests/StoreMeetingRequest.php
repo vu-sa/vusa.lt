@@ -3,8 +3,9 @@
 namespace App\Http\Requests;
 
 use App\Models\Meeting;
+use Illuminate\Foundation\Http\FormRequest;
 
-class StoreMeetingRequest extends ResourceRequest
+class StoreMeetingRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -13,7 +14,7 @@ class StoreMeetingRequest extends ResourceRequest
      */
     public function authorize()
     {
-        return $this->user()->can('create', [Meeting::class, $this->authorizer]);
+        return $this->user()->can('create', Meeting::class);
     }
 
     protected function prepareForValidation()

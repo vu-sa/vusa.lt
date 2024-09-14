@@ -6,7 +6,7 @@ use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
 use App\Models\Goal;
 use App\Models\User;
-use App\Services\ModelAuthorizer;
+use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Support\Str;
 
@@ -14,8 +14,10 @@ class GoalPolicy extends ModelPolicy
 {
     use HandlesAuthorization;
 
-    public function __construct()
+    public function __construct(public Authorizer $authorizer)
     {
+        parent::__construct($authorizer);
+
         $this->pluralModelName = Str::plural(ModelEnum::GOAL()->label);
     }
 
@@ -24,10 +26,8 @@ class GoalPolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Goal $goal, ModelAuthorizer $authorizer)
+    public function view(User $user, Goal $goal)
     {
-        $this->authorizer = $authorizer;
-
         if ($this->commonChecker($user, $goal, CRUDEnum::READ()->label, $this->pluralModelName)) {
             return true;
         }
@@ -40,10 +40,8 @@ class GoalPolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Goal $goal, ModelAuthorizer $authorizer)
+    public function update(User $user, Goal $goal)
     {
-        $this->authorizer = $authorizer;
-
         if ($this->commonChecker($user, $goal, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
             return true;
         }
@@ -56,10 +54,8 @@ class GoalPolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Goal $goal, ModelAuthorizer $authorizer)
+    public function delete(User $user, Goal $goal)
     {
-        $this->authorizer = $authorizer;
-
         if ($this->commonChecker($user, $goal, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
             return true;
         }

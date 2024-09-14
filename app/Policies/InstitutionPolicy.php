@@ -14,8 +14,10 @@ class InstitutionPolicy extends ModelPolicy
 {
     use HandlesAuthorization;
 
-    public function __construct()
+    public function __construct(public Authorizer $authorizer)
     {
+        parent::__construct($authorizer);
+
         $this->pluralModelName = Str::plural(ModelEnum::INSTITUTION()->label);
     }
 
@@ -24,10 +26,8 @@ class InstitutionPolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Institution $institution, Authorizer $authorizer)
+    public function view(User $user, Institution $institution)
     {
-        $this->authorizer = $authorizer;
-
         if ($this->commonChecker($user, $institution, CRUDEnum::READ()->label, 'institution', false)) {
             return true;
         }
@@ -40,10 +40,8 @@ class InstitutionPolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Institution $institution, Authorizer $authorizer)
+    public function update(User $user, Institution $institution)
     {
-        $this->authorizer = $authorizer;
-
         if ($this->commonChecker($user, $institution, CRUDEnum::UPDATE()->label, 'institution', false)) {
             return true;
         }
@@ -56,10 +54,8 @@ class InstitutionPolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Institution $institution, Authorizer $authorizer)
+    public function delete(User $user, Institution $institution)
     {
-        $this->authorizer = $authorizer;
-
         // Doesn't make sense to delete own institution
         if ($this->commonChecker($user, $institution, CRUDEnum::DELETE()->label, 'institution', false)) {
             return true;

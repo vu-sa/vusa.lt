@@ -14,16 +14,16 @@ class ModelPolicy
 {
     protected $pluralModelName;
 
-    protected $authorizer;
+    public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Determine whether the user can view any models.
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function viewAny(User $user, Authorizer $authorizer): bool
+    public function viewAny(User $user): bool
     {
-        return $authorizer->forUser($user)->check($this->pluralModelName.'.read.padalinys');
+        return $this->authorizer->forUser($user)->check($this->pluralModelName.'.read.padalinys');
     }
 
     /**
@@ -31,17 +31,13 @@ class ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function create(User $user, Authorizer $authorizer)
+    public function create(User $user)
     {
-        $this->authorizer = $authorizer;
-
         return $this->authorizer->forUser($user)->check($this->pluralModelName.'.create.padalinys');
     }
 
-    public function restore(User $user, Model $model, Authorizer $authorizer)
+    public function restore(User $user, Model $model)
     {
-        $this->authorizer = $authorizer;
-
         if ($this->commonChecker($user, $model, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
             return true;
         }

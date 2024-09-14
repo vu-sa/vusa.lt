@@ -3,8 +3,9 @@
 namespace App\Http\Requests;
 
 use App\Models\Pivots\AgendaItem;
+use Illuminate\Foundation\Http\FormRequest;
 
-class StoreAgendaItemsRequest extends ResourceRequest
+class StoreAgendaItemsRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -13,7 +14,7 @@ class StoreAgendaItemsRequest extends ResourceRequest
      */
     public function authorize()
     {
-        return $this->user()->can('create', [AgendaItem::class, $this->authorizer]);
+        return $this->user()->can('create', AgendaItem::class);
     }
 
     /**

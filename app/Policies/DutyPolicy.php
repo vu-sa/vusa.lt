@@ -14,8 +14,10 @@ class DutyPolicy extends ModelPolicy
 {
     use HandlesAuthorization;
 
-    public function __construct()
+    public function __construct(public Authorizer $authorizer)
     {
+        parent::__construct($authorizer);
+
         $this->pluralModelName = Str::plural(ModelEnum::DUTY()->label);
     }
 
@@ -24,10 +26,8 @@ class DutyPolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Duty $duty, Authorizer $authorizer)
+    public function view(User $user, Duty $duty)
     {
-        $this->authorizer = $authorizer;
-
         if ($this->commonChecker($user, $duty, CRUDEnum::READ()->label, $this->pluralModelName)) {
             return true;
         }
@@ -40,10 +40,8 @@ class DutyPolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Duty $duty, Authorizer $authorizer)
+    public function update(User $user, Duty $duty)
     {
-        $this->authorizer = $authorizer;
-
         if ($this->commonChecker($user, $duty, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
             return true;
         }
@@ -56,10 +54,8 @@ class DutyPolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Duty $duty, Authorizer $authorizer)
+    public function delete(User $user, Duty $duty)
     {
-        $this->authorizer = $authorizer;
-
         if ($this->commonChecker($user, $duty, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
             return true;
         }

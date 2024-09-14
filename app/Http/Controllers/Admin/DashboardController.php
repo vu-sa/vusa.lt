@@ -17,30 +17,32 @@ class DashboardController extends Controller
 {
     public function dashboard()
     {
-
         // load user duty institutions
         // TODO: need to make it current duty institutions.
-        $user = User::with('duties.institution.tenant', 'duties.institution.users:users.id,users.name,profile_photo_path,phone')->with(['doings' => function (Builder $query) {
+        $user = User::with('current_duties.institution.tenant', 'current_duties.institution.duties.current_users:users.id,users.name,profile_photo_path,phone')->with(['doings' => function (Builder $query) {
             $query->with('comments', 'tasks')->where('deleted_at', null)->orderBy('date', 'desc');
         }])->with('reservations')->find(auth()->user()->id);
 
-        $duties = $user->duties;
-
-        $institutions = $duties->pluck('institution')->flatten()->unique()->values();
+        $institutions = $user->current_duties->pluck('institution')->flatten()->unique()->values();
 
         // convert to eloquent collection
         $institutions = new EloquentCollection($institutions);
 
-        // load institutions with meetings where start_time is in the future
-        // ! The filter() is needed, because some duties may have no institutions and they are null here
+        // NOTE: The filter() is needed, because some duties may have no institutions and they are null here
         $institutions = $institutions->filter()->load(['meetings' => function ($query) {
+            // Load institutions with meetings where start_time is in the future.
             $query->where('start_time', '>', now())->with('comments', 'tasks', 'files');
-        }]);
+        }])->values();
 
         return Inertia::render('Admin/ShowDashboard', [
             'currentUser' => [
                 ...$user->toArray(),
-                'institutions' => $institutions->values(),
+                'institutions' => $institutions->map(function (Institution $institution) {
+                    return [
+                        ...$institution->toArray(),
+                        'users' => $institution->duties->pluck('current_users')->flatten()->unique()->values(),
+                    ];
+                }),
                 'doings' => $user->doings->sortBy('date')->values(),
             ],
         ]);

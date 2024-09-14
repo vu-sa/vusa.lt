@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetAttachableTypesForDuty;
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreDutyRequest;
 use App\Models\Duty;
 use App\Models\Role;
 use App\Models\Type;
 use App\Models\User;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use App\Services\ResourceServices\DutyService;
 use Illuminate\Database\Eloquent\Builder;
@@ -17,8 +18,10 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
-class DutyController extends LaravelResourceController
+class DutyController extends Controller
 {
+    public function __construct(public Authorizer $authorizer) {}
+
     /**
      * Display a listing of the resource.
      *
@@ -26,9 +29,9 @@ class DutyController extends LaravelResourceController
      */
     public function index(Request $request)
     {
-        $this->authorize('viewAny', [Duty::class, $this->authorizer]);
+        $this->authorize('viewAny', Duty::class);
 
-        $indexer = new ModelIndexer(new Duty, $request, $this->authorizer);
+        $indexer = new ModelIndexer(new Duty);
 
         $duties = $indexer
             ->setEloquentQuery([fn (Builder $query) => $query->with('institution')])
@@ -48,7 +51,7 @@ class DutyController extends LaravelResourceController
      */
     public function create()
     {
-        $this->authorize('create', [Duty::class, $this->authorizer]);
+        $this->authorize('create', Duty::class);
 
         return Inertia::render('Admin/People/CreateDuty', [
             'dutyTypes' => Type::where('model_type', Duty::class)->get(),
@@ -83,7 +86,7 @@ class DutyController extends LaravelResourceController
      */
     public function show(Duty $duty)
     {
-        $this->authorize('view', [Duty::class, $duty, $this->authorizer]);
+        $this->authorize('view', $duty);
 
         return Inertia::render('Admin/People/ShowDuty', [
             'duty' => $duty->load('institution', 'users', 'activities.causer'),
@@ -97,7 +100,7 @@ class DutyController extends LaravelResourceController
      */
     public function edit(Duty $duty)
     {
-        $this->authorize('update', [Duty::class, $duty, $this->authorizer]);
+        $this->authorize('update', $duty);
 
         $duty->load('institution', 'types', 'roles', 'current_users');
 
@@ -118,7 +121,7 @@ class DutyController extends LaravelResourceController
      */
     public function update(Request $request, Duty $duty)
     {
-        $this->authorize('update', [Duty::class, $duty, $this->authorizer]);
+        $this->authorize('update', $duty);
 
         $request->validate([
             'name' => 'required',
@@ -183,7 +186,7 @@ class DutyController extends LaravelResourceController
      */
     public function destroy(Duty $duty)
     {
-        $this->authorize('delete', [Duty::class, $duty, $this->authorizer]);
+        $this->authorize('delete', $duty);
 
         $duty->delete();
 
@@ -192,7 +195,7 @@ class DutyController extends LaravelResourceController
 
     public function restore(Duty $duty)
     {
-        $this->authorize('restore', [Duty::class, $duty, $this->authorizer]);
+        $this->authorize('restore', $duty);
 
         $duty->restore();
 

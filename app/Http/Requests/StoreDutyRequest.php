@@ -3,15 +3,16 @@
 namespace App\Http\Requests;
 
 use App\Models\Duty;
+use Illuminate\Foundation\Http\FormRequest;
 
-class StoreDutyRequest extends ResourceRequest
+class StoreDutyRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return $this->user()->can('create', [Duty::class, $this->authorizer]);
+        return $this->user()->can('create', Duty::class);
     }
 
     /**

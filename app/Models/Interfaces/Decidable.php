@@ -2,11 +2,9 @@
 
 namespace App\Models\Interfaces;
 
-use App\Services\ModelAuthorizer;
-
 interface Decidable
 {
-    public function decision($decision, ModelAuthorizer $authorizer);
+    public function decision($decision);
 
     public function decisionToProgress();
 

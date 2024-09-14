@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTaskRequest;
 use App\Models\Task;
+use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
-class TaskController extends LaravelResourceController
+class TaskController extends Controller
 {
+    public function __construct(public Authorizer $authorizer) {}
+
     /**
      * Store a newly created resource in storage.
      *
@@ -39,7 +42,7 @@ class TaskController extends LaravelResourceController
      */
     public function update(Request $request, Task $task)
     {
-        $this->authorize('update', [Task::class, $task, $this->authorizer]);
+        $this->authorize('update', $task);
 
         $validated = $request->validate([
             'name' => 'required',
@@ -61,7 +64,7 @@ class TaskController extends LaravelResourceController
      */
     public function destroy(Task $task)
     {
-        $this->authorize('delete', [Task::class, $task, $this->authorizer]);
+        $this->authorize('delete', $task);
 
         $task->delete();
 
@@ -70,7 +73,7 @@ class TaskController extends LaravelResourceController
 
     public function updateCompletionStatus(Request $request, Task $task)
     {
-        $this->authorize('update', [Task::class, $task, $this->authorizer]);
+        $this->authorize('update', $task);
 
         if ($request->completed == true) {
             $task->completed_at = now();

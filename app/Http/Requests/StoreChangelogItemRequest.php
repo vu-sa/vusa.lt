@@ -4,8 +4,9 @@ namespace App\Http\Requests;
 
 use App\Models\ChangelogItem;
 use Carbon\Carbon;
+use Illuminate\Foundation\Http\FormRequest;
 
-class StoreChangelogItemRequest extends ResourceRequest
+class StoreChangelogItemRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -14,7 +15,7 @@ class StoreChangelogItemRequest extends ResourceRequest
      */
     public function authorize()
     {
-        return $this->user()->can('create', [ChangelogItem::class, $this->authorizer]);
+        return $this->user()->can('create', ChangelogItem::class);
     }
 
     protected function prepareForValidation()

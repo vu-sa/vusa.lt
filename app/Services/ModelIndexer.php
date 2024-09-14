@@ -25,18 +25,20 @@ class ModelIndexer
 
     private array $callbacksArray = [];
 
-    private Authorizer $authorizer;
-
     private string $tenantRelationString;
 
-    public function __construct($indexable, $request, $authorizer)
+    public Authorizer $authorizer;
+
+    public function __construct($indexable)
     {
+        $request = request();
         $this->indexable = $indexable;
         $this->search = $request->input('text');
         $this->sorters = json_decode(base64_decode($request->input('sorters')), true);
         $this->filters = json_decode(base64_decode($request->input('filters')), true);
 
-        $this->authorizer = $authorizer;
+        // get authorizer singleton
+        $this->authorizer = app(Authorizer::class);
 
         $this->tenantRelationString = $indexable->whichUnitRelation();
 

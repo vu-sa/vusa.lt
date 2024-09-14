@@ -2,27 +2,29 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreDocumentRequest;
 use App\Http\Requests\UpdateDocumentRequest;
 use App\Models\Document;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use App\Services\SharepointGraphService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class DocumentController extends LaravelResourceController
+class DocumentController extends Controller
 {
+    public function __construct(public Authorizer $authorizer) {}
+
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index()
     {
-        $this->authorize('viewAny', [Document::class, $this->authorizer]);
+        $this->authorize('viewAny', Document::class);
 
-        $indexer = new ModelIndexer(new Document, $request, $this->authorizer);
+        $indexer = new ModelIndexer(new Document);
 
         $documents = $indexer
             ->setEloquentQuery([fn (Builder $query) => $query->with(['institution'])])
@@ -65,7 +67,7 @@ class DocumentController extends LaravelResourceController
 
     public function refresh(Document $document)
     {
-        $this->authorize('update', [Document::class, $document, $this->authorizer]);
+        $this->authorize('update', $document);
 
         $result = $document->refreshFromSharepoint();
 
@@ -97,7 +99,7 @@ class DocumentController extends LaravelResourceController
      */
     public function destroy(Document $document)
     {
-        $this->authorize('delete', [Document::class, $document, $this->authorizer]);
+        $this->authorize('delete', $document);
 
         $document->delete();
 

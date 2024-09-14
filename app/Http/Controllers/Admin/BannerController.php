@@ -3,15 +3,18 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Models\Banner;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
-class BannerController extends LaravelResourceController
+class BannerController extends Controller
 {
+    public function __construct(public Authorizer $authorizer) {}
+
     /**
      * Display a listing of the resource.
      *
@@ -19,9 +22,9 @@ class BannerController extends LaravelResourceController
      */
     public function index()
     {
-        $this->authorize('viewAny', [Banner::class, $this->authorizer]);
+        $this->authorize('viewAny', Banner::class);
 
-        $indexer = new ModelIndexer(new Banner, request(), $this->authorizer);
+        $indexer = new ModelIndexer(new Banner);
 
         $banners = $indexer
             ->setEloquentQuery()
@@ -41,7 +44,7 @@ class BannerController extends LaravelResourceController
      */
     public function create()
     {
-        $this->authorize('create', [Banner::class, $this->authorizer]);
+        $this->authorize('create', Banner::class);
 
         return Inertia::render('Admin/Content/CreateBanner');
     }
@@ -53,14 +56,14 @@ class BannerController extends LaravelResourceController
      */
     public function store(Request $request)
     {
-        $this->authorize('create', [Banner::class, $this->authorizer]);
+        $this->authorize('create', Banner::class);
 
         $request->validate([
             'title' => 'required',
             'image_url' => 'required',
         ]);
 
-        $tenants = GetTenantsForUpserts::execute('banners.create.all', $this->authorizer);
+        $tenants = GetTenantsForUpserts::execute('banners.create.padalinys', $this->authorizer);
 
         $banner = new Banner;
         // $banner->text = $request->text;
@@ -85,7 +88,7 @@ class BannerController extends LaravelResourceController
      */
     public function edit(Banner $banner)
     {
-        $this->authorize('update', [Banner::class, $banner, $this->authorizer]);
+        $this->authorize('update', $banner);
 
         return Inertia::render('Admin/Content/EditBanner', [
             'banner' => $banner,
@@ -99,7 +102,7 @@ class BannerController extends LaravelResourceController
      */
     public function update(Request $request, Banner $banner)
     {
-        $this->authorize('update', [Banner::class, $banner, $this->authorizer]);
+        $this->authorize('update', $banner);
 
         $banner->title = $request->title;
         $banner->is_active = $request->is_active;
@@ -119,7 +122,7 @@ class BannerController extends LaravelResourceController
      */
     public function destroy(Banner $banner)
     {
-        $this->authorize('delete', [Banner::class, $banner, $this->authorizer]);
+        $this->authorize('delete', $banner);
 
         $banner->delete();
 

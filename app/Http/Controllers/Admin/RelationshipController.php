@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller as Controller;
-use App\Http\Controllers\LaravelResourceController;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Relationship;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,8 +14,10 @@ use Inertia\Inertia;
 // Controller is used for the relationship object, which describes
 // content related relationships.
 
-class RelationshipController extends LaravelResourceController
+class RelationshipController extends Controller
 {
+    public function __construct(public Authorizer $authorizer) {}
+
     /**
      * Display a listing of the resource.
      *
@@ -23,7 +25,7 @@ class RelationshipController extends LaravelResourceController
      */
     public function index()
     {
-        $this->authorize('viewAny', [Relationship::class, $this->authorizer]);
+        $this->authorize('viewAny', Relationship::class);
 
         return Inertia::render('Admin/ModelMeta/IndexRelationships', [
             'relationships' => Relationship::all()->paginate(20),
@@ -37,7 +39,7 @@ class RelationshipController extends LaravelResourceController
      */
     public function create()
     {
-        $this->authorize('create', [Relationship::class, $this->authorizer]);
+        $this->authorize('create', Relationship::class);
 
         return Inertia::render('Admin/ModelMeta/CreateRelationship');
     }
@@ -49,7 +51,7 @@ class RelationshipController extends LaravelResourceController
      */
     public function store(Request $request)
     {
-        $this->authorize('create', [Relationship::class, $this->authorizer]);
+        $this->authorize('create', Relationship::class);
 
         $request->validate([
             'name' => 'required',
@@ -69,7 +71,7 @@ class RelationshipController extends LaravelResourceController
      */
     public function show(Relationship $relationship)
     {
-        $this->authorize('view', [Relationship::class, $relationship, $this->authorizer]);
+        $this->authorize('view', $relationship);
 
         return Inertia::render('Admin/ModelMeta/ShowRelationship', [
             'relationship' => $relationship,
@@ -83,7 +85,7 @@ class RelationshipController extends LaravelResourceController
      */
     public function edit(Relationship $relationship, Request $request)
     {
-        $this->authorize('update', [Relationship::class, $relationship, $this->authorizer]);
+        $this->authorize('update', $relationship);
 
         $validated = $request->validate([
             'modelType' => 'nullable|string',
@@ -114,7 +116,7 @@ class RelationshipController extends LaravelResourceController
      */
     public function update(Request $request, Relationship $relationship)
     {
-        $this->authorize('update', [Relationship::class, $relationship, $this->authorizer]);
+        $this->authorize('update', $relationship);
 
         $request->validate([
             'name' => 'required',
@@ -134,7 +136,7 @@ class RelationshipController extends LaravelResourceController
      */
     public function destroy(Relationship $relationship)
     {
-        $this->authorize('delete', [Relationship::class, $relationship, $this->authorizer]);
+        $this->authorize('delete', $relationship);
 
         DB::transaction(function () use ($relationship) {
             // remove all relationshipables
@@ -148,7 +150,7 @@ class RelationshipController extends LaravelResourceController
     // Store relationship between models
     public function storeModelRelationship(Request $request, Relationship $relationship)
     {
-        $this->authorize('create', [Relationshipable::class, $relationship, $this->authorizer]);
+        $this->authorize('create', $relationship);
 
         $request->validate([
             'model_id' => 'required',
@@ -166,7 +168,7 @@ class RelationshipController extends LaravelResourceController
 
     public function deleteModelRelationship(Relationshipable $relationshipable)
     {
-        $this->authorize('delete', [Relationshipable::class, $relationshipable, $this->authorizer]);
+        $this->authorize('delete', $relationshipable);
 
         $relationshipable->delete();
 

@@ -169,9 +169,9 @@ const createMainPageLink = (value: string, option) => {
   }
 
   let subdomain =
-    option.option.padalinys?.alias === "vusa"
+    option.option.tenant?.alias === "vusa"
       ? "www"
-      : option.option.padalinys?.alias;
+      : option.option.tenant?.alias;
 
   if (form.type === "page") {
     form.link = route("page", {

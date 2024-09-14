@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreDoingRequest;
 use App\Models\Doing;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use App\Services\ResourceServices\SharepointFileService;
 use Illuminate\Http\Request;
@@ -13,8 +14,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
-class DoingController extends LaravelResourceController
+class DoingController extends Controller
 {
+    public function __construct(public Authorizer $authorizer) {}
+
     /**
      * Display a listing of the resource.
      *
@@ -22,7 +25,7 @@ class DoingController extends LaravelResourceController
      */
     public function index()
     {
-        $this->authorize('viewAny', [Doing::class, $this->authorizer]);
+        $this->authorize('viewAny', Doing::class);
 
         $indexer = new ModelIndexer(new Doing, request(), $this->authorizer);
 
@@ -44,7 +47,7 @@ class DoingController extends LaravelResourceController
      */
     public function create()
     {
-        $this->authorize('create', [Doing::class, $this->authorizer]);
+        $this->authorize('create', Doing::class);
 
         return Inertia::render('Admin/Representation/CreateDoing');
     }
@@ -93,7 +96,7 @@ class DoingController extends LaravelResourceController
      */
     public function show(Doing $doing)
     {
-        $this->authorize('view', [Doing::class, $doing, $this->authorizer]);
+        $this->authorize('view', $doing);
 
         // if soft deleted, redirect to index
         if ($doing->trashed()) {
@@ -123,7 +126,7 @@ class DoingController extends LaravelResourceController
      */
     public function edit(Doing $doing)
     {
-        $this->authorize('update', [Doing::class, $doing, $this->authorizer]);
+        $this->authorize('update', $doing);
 
         return Inertia::render('Admin/Representation/EditDoing', [
             'doing' => $doing->load('types', 'users'),
@@ -137,7 +140,7 @@ class DoingController extends LaravelResourceController
      */
     public function update(Request $request, Doing $doing)
     {
-        $this->authorize('update', [Doing::class, $doing, $this->authorizer]);
+        $this->authorize('update', $doing);
 
         $request->validate([
             'title' => 'required',
@@ -160,7 +163,7 @@ class DoingController extends LaravelResourceController
      */
     public function destroy(Doing $doing)
     {
-        $this->authorize('delete', [Doing::class, $doing, $this->authorizer]);
+        $this->authorize('delete', $doing);
 
         // check if doing state is draft
         if (! ($doing->state instanceof \App\States\Doing\Draft)) {
@@ -197,10 +200,10 @@ class DoingController extends LaravelResourceController
      */
     public function restore(Doing $doing)
     {
-        $this->authorize('restore', [Doing::class, $doing, $this->authorizer]);
+        $this->authorize('restore', $doing);
 
         $doing->restore();
 
-        return back()->with('success', 'Veikla atkurtas!');
+        return back()->with('success', 'Veikla atkurta!');
     }
 }

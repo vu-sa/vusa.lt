@@ -3,16 +3,19 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetInstitutionManagers;
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAgendaItemsRequest;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TaskService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class AgendaItemController extends LaravelResourceController
+class AgendaItemController extends Controller
 {
+    public function __construct(public Authorizer $authorizer) {}
+
     /**
      * Store a newly created resource in storage.
      *
@@ -56,7 +59,7 @@ class AgendaItemController extends LaravelResourceController
      */
     public function show(AgendaItem $agendaItem)
     {
-        $this->authorize('view', [AgendaItem::class, $agendaItem, $this->authorizer]);
+        $this->authorize('view', $agendaItem);
 
         return Inertia::render('Admin/Representation/ShowAgendaItem', [
             'agendaItem' => $agendaItem,
@@ -71,7 +74,7 @@ class AgendaItemController extends LaravelResourceController
      */
     public function update(Request $request, AgendaItem $agendaItem)
     {
-        $this->authorize('update', [AgendaItem::class, $agendaItem, $this->authorizer]);
+        $this->authorize('update', $agendaItem);
 
         $validated = $request->validate([
             'title' => 'required|string',
@@ -90,7 +93,7 @@ class AgendaItemController extends LaravelResourceController
      */
     public function destroy(AgendaItem $agendaItem)
     {
-        $this->authorize('delete', [AgendaItem::class, $agendaItem, $this->authorizer]);
+        $this->authorize('delete', $agendaItem);
 
         $agendaItem->delete();
 

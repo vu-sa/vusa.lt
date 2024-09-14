@@ -3,34 +3,28 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreResourceRequest;
 use App\Http\Requests\UpdateResourceRequest;
 use App\Models\Resource;
 use App\Models\ResourceCategory;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
 use Inertia\Inertia;
 
-class ResourceController extends LaravelResourceController
+class ResourceController extends Controller
 {
-    public function __construct()
-    {
-        parent::__construct();
-
-        // TODO: precognition may not work well with file uploads, also when array is made of simple object and file upload
-        // $this->middleware([HandlePrecognitiveRequests::class])->only(['store', 'update']);
-    }
+    public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $this->authorize('viewAny', [Resource::class, $this->authorizer]);
+        $this->authorize('viewAny', Resource::class);
 
-        $indexer = new ModelIndexer(new Resource, request(), $this->authorizer);
+        $indexer = new ModelIndexer(new Resource);
 
         $resources = $indexer
             ->setEloquentQuery([fn (Builder $query) => $query->with(['media', 'category'])], false)
@@ -49,10 +43,10 @@ class ResourceController extends LaravelResourceController
      */
     public function create()
     {
-        $this->authorize('create', [Resource::class, $this->authorizer]);
+        $this->authorize('create', Resource::class);
 
         return Inertia::render('Admin/Reservations/CreateResource', [
-            'assignableTenants' => GetTenantsForUpserts::execute('resources.create.all', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute('resources.create.padalinys', $this->authorizer),
             'categories' => ResourceCategory::all(),
         ]);
     }
@@ -62,7 +56,7 @@ class ResourceController extends LaravelResourceController
      */
     public function store(StoreResourceRequest $request)
     {
-        $this->authorize('create', [Resource::class, $this->authorizer]);
+        $this->authorize('create', Resource::class);
 
         $resource = new Resource;
 
@@ -91,7 +85,7 @@ class ResourceController extends LaravelResourceController
      */
     public function edit(Resource $resource)
     {
-        $this->authorize('update', [Resource::class, $resource, $this->authorizer]);
+        $this->authorize('update', $resource);
 
         return Inertia::render('Admin/Reservations/EditResource', [
             'resource' => $resource->load('reservations.users')->toFullArray()
@@ -103,7 +97,7 @@ class ResourceController extends LaravelResourceController
                     'url' => $image->getUrl(),
                 ]),
                 ],
-            'assignableTenants' => GetTenantsForUpserts::execute('resources.update.all', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute('resources.update.padalinys', $this->authorizer),
             'categories' => ResourceCategory::all(),
         ]);
     }
@@ -113,8 +107,6 @@ class ResourceController extends LaravelResourceController
      */
     public function update(UpdateResourceRequest $request, Resource $resource)
     {
-        $this->authorize('update', [Resource::class, $resource, $this->authorizer]);
-
         $resource->fill($request->safe()->except('media'));
         $resource->save();
 
@@ -139,7 +131,7 @@ class ResourceController extends LaravelResourceController
      */
     public function destroy(Resource $resource)
     {
-        $this->authorize('delete', [Resource::class, $resource, $this->authorizer]);
+        $this->authorize('delete', $resource);
 
         $resource->delete();
 
@@ -152,7 +144,7 @@ class ResourceController extends LaravelResourceController
      */
     public function restore(Resource $resource)
     {
-        $this->authorize('restore', [Resource::class, $resource, $this->authorizer]);
+        $this->authorize('restore', $resource);
 
         $resource->restore();
 

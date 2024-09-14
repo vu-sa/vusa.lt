@@ -2,18 +2,21 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Models\Doing;
 use App\Models\Goal;
 use App\Models\Matter;
 use App\Models\Type;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class MatterController extends LaravelResourceController
+class MatterController extends Controller
 {
+    public function __construct(public Authorizer $authorizer) {}
+
     /**
      * Display a listing of the resource.
      *
@@ -21,9 +24,9 @@ class MatterController extends LaravelResourceController
      */
     public function index()
     {
-        $this->authorize('viewAny', [Matter::class, $this->authorizer]);
+        $this->authorize('viewAny', Matter::class);
 
-        $indexer = new ModelIndexer(new Matter, request(), $this->authorizer);
+        $indexer = new ModelIndexer(new Matter);
 
         $matters = $indexer
             ->setEloquentQuery([
@@ -45,7 +48,7 @@ class MatterController extends LaravelResourceController
      */
     public function store(Request $request)
     {
-        $this->authorize('create', [Matter::class, $this->authorizer]);
+        $this->authorize('create', Matter::class);
 
         $validated = $request->validate([
             'title' => 'required',
@@ -68,7 +71,7 @@ class MatterController extends LaravelResourceController
      */
     public function show(Matter $matter)
     {
-        $this->authorize('view', [Matter::class, $matter, $this->authorizer]);
+        $this->authorize('view', $matter);
 
         $matter = $matter->load('institutions', 'doings', 'goals', 'activities.causer');
 
@@ -86,7 +89,7 @@ class MatterController extends LaravelResourceController
      */
     public function destroy(Matter $matter)
     {
-        $this->authorize('delete', [Matter::class, $matter, $this->authorizer]);
+        $this->authorize('delete', $matter);
 
         // * Don't detach because of soft-deletes
         // delete doing_matter records
@@ -100,7 +103,7 @@ class MatterController extends LaravelResourceController
 
     public function restore(Matter $matter)
     {
-        $this->authorize('restore', [Matter::class, $matter, $this->authorizer]);
+        $this->authorize('restore', $matter);
 
         $matter->restore();
 
@@ -109,7 +112,7 @@ class MatterController extends LaravelResourceController
 
     public function attachGoal(Matter $matter, Request $request)
     {
-        $this->authorize('update', [Matter::class, $matter, $this->authorizer]);
+        $this->authorize('update', $matter);
 
         $validated = $request->validate([
             'goal_id' => 'required',

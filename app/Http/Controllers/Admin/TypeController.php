@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Models\Role;
 use App\Models\Type;
+use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
-class TypeController extends LaravelResourceController
+class TypeController extends Controller
 {
+    public function __construct(public Authorizer $authorizer) {}
+
     /**
      * Display a listing of the resource.
      *
@@ -18,7 +21,7 @@ class TypeController extends LaravelResourceController
      */
     public function index()
     {
-        $this->authorize('viewAny', [Type::class, $this->authorizer]);
+        $this->authorize('viewAny', Type::class);
 
         return Inertia::render('Admin/ModelMeta/IndexTypes', [
             'types' => Type::paginate(20),
@@ -32,7 +35,7 @@ class TypeController extends LaravelResourceController
      */
     public function create()
     {
-        $this->authorize('create', [Type::class, $this->authorizer]);
+        $this->authorize('create', Type::class);
 
         return Inertia::render('Admin/ModelMeta/CreateType', [
             'contentTypes' => Type::select('id', 'title', 'model_type')->get(),
@@ -47,7 +50,7 @@ class TypeController extends LaravelResourceController
      */
     public function store(Request $request)
     {
-        $this->authorize('create', [Type::class, $this->authorizer]);
+        $this->authorize('create', Type::class);
 
         $request->validate([
             'title.lt' => 'required|string',
@@ -79,7 +82,7 @@ class TypeController extends LaravelResourceController
      */
     public function show(Type $type)
     {
-        $this->authorize('view', [Type::class, $type, $this->authorizer]);
+        $this->authorize('view', $type);
 
         return Inertia::render('Admin/ModelMeta/ShowType', [
             'contentType' => $type->toArray(),
@@ -93,7 +96,7 @@ class TypeController extends LaravelResourceController
      */
     public function edit(Type $type)
     {
-        $this->authorize('update', [Type::class, $type, $this->authorizer]);
+        $this->authorize('update', $type);
 
         $modelType = Str::of($type->model_type)->afterLast('\\')->lower()->plural()->toString();
 
@@ -117,7 +120,7 @@ class TypeController extends LaravelResourceController
      */
     public function update(Request $request, Type $type)
     {
-        $this->authorize('update', [Type::class, $type, $this->authorizer]);
+        $this->authorize('update', $type);
 
         $request->validate([
             'title.lt' => 'required|string',
@@ -148,7 +151,7 @@ class TypeController extends LaravelResourceController
      */
     public function destroy(Type $type)
     {
-        $this->authorize('delete', [Type::class, $type, $this->authorizer]);
+        $this->authorize('delete', $type);
 
         $type->delete();
 
@@ -158,7 +161,7 @@ class TypeController extends LaravelResourceController
 
     public function restore(Type $type)
     {
-        $this->authorize('restore', [Type::class, $type, $this->authorizer]);
+        $this->authorize('restore', $type);
 
         $type->restore();
 

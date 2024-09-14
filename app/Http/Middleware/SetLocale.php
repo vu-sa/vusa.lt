@@ -8,10 +8,21 @@ class SetLocale
 {
     public function handle($request, Closure $next)
     {
-        // The main idea of this middleware is that it checks the first segment of the URL at first
-        // and then it checks the session (because /admin)
+        $this->setLocale($request);
 
-        $segment = $request->segment(1);
+        if ($this->shouldBypassLocale($request->segment(1))) {
+            return $next($request);
+        }
+
+        if (! $this->isLocaleSegment($request->segment(1))) {
+            return $this->redirectToLocale($request);
+        }
+
+        return $next($request);
+    }
+
+    protected function setLocale($request)
+    {
         $localeFromParam = $request->lang;
         $localeFromSession = session()->get('lang');
 
@@ -23,20 +34,25 @@ class SetLocale
         } else {
             app()->setLocale(config('app.locale'));
         }
+    }
 
-        // If the first segment is any of these, then process the request
-        if (in_array($segment, ['mano', 'auth', 'feedback', 'login', 'telescope', '_impersonate', 'feed'])) {
-            return $next($request);
-        }
+    protected function shouldBypassLocale($segment)
+    {
+        $bypassSegments = ['mano', 'auth', 'feedback', 'login', 'telescope', '_impersonate', 'feed'];
 
-        // Explicitly check if the first segment is not in the list of locales (instead of else statement)
-        if (! in_array($segment, config('app.locales'))) {
-            $segments = $request->segments();
-            array_unshift($segments, app()->getLocale());
+        return in_array($segment, $bypassSegments);
+    }
 
-            return redirect()->to(implode('/', $segments));
-        }
+    protected function isLocaleSegment($segment)
+    {
+        return in_array($segment, config('app.locales'));
+    }
 
-        return $next($request);
+    protected function redirectToLocale($request)
+    {
+        $segments = $request->segments();
+        array_unshift($segments, app()->getLocale());
+
+        return redirect()->to(implode('/', $segments), 301);
     }
 }

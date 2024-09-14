@@ -6,7 +6,7 @@ use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
 use App\Models\Document;
 use App\Models\User;
-use App\Services\ModelAuthorizer;
+use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Support\Str;
 
@@ -14,9 +14,11 @@ class DocumentPolicy extends ModelPolicy
 {
     use HandlesAuthorization;
 
-    public function __construct()
+    public function __construct(public Authorizer $authorizer)
     {
-        $this->pluralModelName = Str::plural(ModelEnum::document()->label);
+        parent::__construct($authorizer);
+
+        $this->pluralModelName = Str::plural(ModelEnum::DOCUMENT()->label);
     }
 
     /**
@@ -24,10 +26,8 @@ class DocumentPolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Document $document, ModelAuthorizer $authorizer)
+    public function view(User $user, Document $document)
     {
-        $this->authorizer = $authorizer;
-
         if ($this->commonChecker($user, $document, CRUDEnum::READ()->label, $this->pluralModelName)) {
             return true;
         }
@@ -40,10 +40,8 @@ class DocumentPolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Document $document, ModelAuthorizer $authorizer)
+    public function update(User $user, Document $document)
     {
-        $this->authorizer = $authorizer;
-
         if ($this->commonChecker($user, $document, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
             return true;
         }
@@ -56,10 +54,8 @@ class DocumentPolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Document $document, ModelAuthorizer $authorizer)
+    public function delete(User $user, Document $document)
     {
-        $this->authorizer = $authorizer;
-
         if ($this->commonChecker($user, $document, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
             return true;
         }

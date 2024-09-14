@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreMeetingRequest;
 use App\Models\Meeting as Meeting;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use App\Services\ResourceServices\SharepointFileService;
 use Carbon\Carbon;
@@ -12,8 +13,10 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class MeetingController extends LaravelResourceController
+class MeetingController extends Controller
 {
+    public function __construct(public Authorizer $authorizer) {}
+
     /**
      * Display a listing of the resource.
      *
@@ -21,9 +24,9 @@ class MeetingController extends LaravelResourceController
      */
     public function index()
     {
-        $this->authorize('viewAny', [Meeting::class, $this->authorizer]);
+        $this->authorize('viewAny', Meeting::class);
 
-        $indexer = new ModelIndexer(new Meeting, request(), $this->authorizer);
+        $indexer = new ModelIndexer(new Meeting);
 
         $meetings = $indexer
             ->setEloquentQuery([fn (Builder $query) => $query->with(['institutions', 'agendaItems'])])
@@ -74,7 +77,7 @@ class MeetingController extends LaravelResourceController
      */
     public function show(Meeting $meeting)
     {
-        $this->authorize('view', [Meeting::class, $meeting, $this->authorizer]);
+        $this->authorize('view', $meeting);
 
         $meeting->load('institutions', 'activities.causer', 'files', 'comments', 'agendaItems')->load(['tasks' => function ($query) {
             $query->with('users', 'taskable');
@@ -97,7 +100,7 @@ class MeetingController extends LaravelResourceController
      */
     public function edit(Meeting $meeting)
     {
-        $this->authorize('update', [Meeting::class, $meeting, $this->authorizer]);
+        $this->authorize('update', $meeting);
 
         return Inertia::render('Admin/Representation/EditMeeting', [
             'meeting' => $meeting,
@@ -111,7 +114,7 @@ class MeetingController extends LaravelResourceController
      */
     public function update(Request $request, Meeting $meeting)
     {
-        $this->authorize('update', [Meeting::class, $meeting, $this->authorizer]);
+        $this->authorize('update', $meeting);
 
         $validated = $request->validate([
             // 'title' => 'required|string',
@@ -134,7 +137,7 @@ class MeetingController extends LaravelResourceController
      */
     public function destroy(Meeting $meeting)
     {
-        $this->authorize('delete', [Meeting::class, $meeting, $this->authorizer]);
+        $this->authorize('delete', $meeting);
 
         // delete meeting
         $meeting->delete();
@@ -144,7 +147,7 @@ class MeetingController extends LaravelResourceController
 
     public function restore(Meeting $meeting)
     {
-        $this->authorize('restore', [Meeting::class, $meeting, $this->authorizer]);
+        $this->authorize('restore', $meeting);
 
         $meeting->restore();
 

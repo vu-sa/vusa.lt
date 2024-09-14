@@ -6,7 +6,7 @@ use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
 use App\Models\SharepointFile;
 use App\Models\User;
-use App\Services\ModelAuthorizer;
+use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Support\Str;
 
@@ -14,8 +14,10 @@ class SharepointFilePolicy extends ModelPolicy
 {
     use HandlesAuthorization;
 
-    public function __construct()
+    public function __construct(public Authorizer $authorizer)
     {
+        parent::__construct($authorizer);
+
         $this->pluralModelName = Str::plural(ModelEnum::SHAREPOINT_FILE()->label);
     }
 
@@ -24,10 +26,8 @@ class SharepointFilePolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, SharepointFile $sharepointFile, ModelAuthorizer $modelAuthorizer)
+    public function view(User $user, SharepointFile $sharepointFile)
     {
-        $this->authorizer = $modelAuthorizer;
-
         if ($this->commonChecker($user, $sharepointFile, CRUDEnum::READ()->label, $this->pluralModelName)) {
             return true;
         }
@@ -40,10 +40,8 @@ class SharepointFilePolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, SharepointFile $sharepointFile, ModelAuthorizer $modelAuthorizer)
+    public function update(User $user, SharepointFile $sharepointFile)
     {
-        $this->authorizer = $modelAuthorizer;
-
         if ($this->commonChecker($user, $sharepointFile, CRUDEnum::UPDATE()->label, $this->pluralModelName)) {
             return true;
         }
@@ -56,10 +54,8 @@ class SharepointFilePolicy extends ModelPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, SharepointFile $sharepointFile, ModelAuthorizer $modelAuthorizer)
+    public function delete(User $user, SharepointFile $sharepointFile)
     {
-        $this->authorizer = $modelAuthorizer;
-
         if ($this->commonChecker($user, $sharepointFile, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
             return true;
         }

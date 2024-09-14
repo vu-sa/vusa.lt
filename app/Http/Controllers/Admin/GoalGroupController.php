@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Models\GoalGroup;
+use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class GoalGroupController extends LaravelResourceController
+class GoalGroupController extends Controller
 {
+    public function __construct(public Authorizer $authorizer) {}
+
     /**
      * Display a listing of the resource.
      *
@@ -16,7 +19,7 @@ class GoalGroupController extends LaravelResourceController
      */
     public function index()
     {
-        $this->authorize('viewAny', [GoalGroup::class, $this->authorizer]);
+        $this->authorize('viewAny', GoalGroup::class);
 
         $goalGroups = GoalGroup::all()->paginate();
 
@@ -32,7 +35,7 @@ class GoalGroupController extends LaravelResourceController
      */
     public function create()
     {
-        $this->authorize('create', [GoalGroup::class, $this->authorizer]);
+        $this->authorize('create', GoalGroup::class);
 
         return Inertia::render('Admin/Representation/CreateGoalGroup');
     }
@@ -44,7 +47,7 @@ class GoalGroupController extends LaravelResourceController
      */
     public function store(Request $request)
     {
-        $this->authorize('create', [GoalGroup::class, $this->authorizer]);
+        $this->authorize('create', GoalGroup::class);
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -66,7 +69,7 @@ class GoalGroupController extends LaravelResourceController
      */
     public function edit(GoalGroup $goalGroup)
     {
-        $this->authorize('update', [GoalGroup::class, $goalGroup, $this->authorizer]);
+        $this->authorize('update', $goalGroup);
 
         return Inertia::render('Admin/Representation/EditGoalGroup', [
             'goalGroup' => $goalGroup,
@@ -80,7 +83,7 @@ class GoalGroupController extends LaravelResourceController
      */
     public function update(Request $request, GoalGroup $goalGroup)
     {
-        $this->authorize('update', [GoalGroup::class, $goalGroup, $this->authorizer]);
+        $this->authorize('update', $goalGroup);
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -102,7 +105,7 @@ class GoalGroupController extends LaravelResourceController
      */
     public function destroy(GoalGroup $goalGroup)
     {
-        $this->authorize('delete', [GoalGroup::class, $goalGroup, $this->authorizer]);
+        $this->authorize('delete', $goalGroup);
 
         $goalGroup->delete();
 
@@ -116,7 +119,7 @@ class GoalGroupController extends LaravelResourceController
      */
     public function restore(GoalGroup $goalGroup)
     {
-        $this->authorize('restore', [GoalGroup::class, $goalGroup, $this->authorizer]);
+        $this->authorize('restore', $goalGroup);
 
         $goalGroup->restore();
 

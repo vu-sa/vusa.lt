@@ -26,12 +26,24 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
                 return true;
             }
 
+            try {
+                // check if request is 404, if yes, return true
+                if ($entry->type === EntryType::REQUEST && $entry->content['response_status'] === 404) {
+                    return true;
+                }
+            } catch (\Exception $e) {
+                report($e);
+
+                return true;
+            }
+
             return $entry->isReportableException() ||
                 $entry->isFailedRequest() ||
                 $entry->isFailedJob() ||
                 $entry->isScheduledTask() ||
                 $entry->hasMonitoredTag() ||
                 $entry->isSlowQuery() ||
+                $entry->isLog() ||
                 $entry->type === EntryType::MAIL;
         });
     }

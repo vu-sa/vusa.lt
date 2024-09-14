@@ -2,16 +2,16 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Document;
+use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateDocumentRequest extends ResourceRequest
+class UpdateDocumentRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return $this->user()->can('create', [Document::class, $this->document, $this->authorizer]);
+        return $this->user()->can('create', $this->document);
     }
 
     /**

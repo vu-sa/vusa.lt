@@ -3,8 +3,9 @@
 namespace App\Http\Requests;
 
 use App\Models\Doing;
+use Illuminate\Foundation\Http\FormRequest;
 
-class StoreDoingRequest extends ResourceRequest
+class StoreDoingRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -13,7 +14,7 @@ class StoreDoingRequest extends ResourceRequest
      */
     public function authorize()
     {
-        return $this->user()->can('create', [Doing::class, $this->authorizer]);
+        return $this->user()->can('create', Doing::class);
     }
 
     protected function prepareForValidation()

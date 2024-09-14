@@ -2,33 +2,27 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\LaravelResourceController;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreResourceCategoryRequest;
 use App\Http\Requests\UpdateResourceCategoryRequest;
 use App\Models\Resource;
 use App\Models\ResourceCategory;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
-use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
 use Inertia\Inertia;
 
-class ResourceCategoryController extends LaravelResourceController
+class ResourceCategoryController extends Controller
 {
-    public function __construct()
-    {
-        parent::__construct();
-
-        // TODO: precognition may not work well with file uploads, also when array is made of simple object and file upload
-        // $this->middleware([HandlePrecognitiveRequests::class])->only(['store', 'update']);
-    }
+    public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $this->authorize('viewAny', [Resource::class, $this->authorizer]);
+        $this->authorize('viewAny', Resource::class);
 
-        $indexer = new ModelIndexer(new ResourceCategory, request(), $this->authorizer);
+        $indexer = new ModelIndexer(new ResourceCategory);
 
         $resourceCategories = $indexer
             ->setEloquentQuery()
@@ -46,7 +40,7 @@ class ResourceCategoryController extends LaravelResourceController
      */
     public function create()
     {
-        $this->authorize('create', [Resource::class, $this->authorizer]);
+        $this->authorize('create', Resource::class);
 
         return Inertia::render('Admin/Reservations/CreateResourceCategory');
     }
@@ -69,7 +63,7 @@ class ResourceCategoryController extends LaravelResourceController
      */
     public function edit(ResourceCategory $resourceCategory)
     {
-        $this->authorize('create', [Resource::class, $this->authorizer]);
+        $this->authorize('create', Resource::class);
 
         return Inertia::render('Admin/Reservations/EditResourceCategory', [
             'resourceCategory' => $resourceCategory->toFullArray(),
@@ -93,7 +87,7 @@ class ResourceCategoryController extends LaravelResourceController
      */
     public function destroy(ResourceCategory $resourceCategory)
     {
-        $this->authorize('create', [Resource::class, $this->authorizer]);
+        $this->authorize('create', Resource::class);
 
         $resourceCategory->delete();
 
