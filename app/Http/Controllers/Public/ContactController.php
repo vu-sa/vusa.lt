@@ -53,7 +53,7 @@ class ContactController extends PublicController
 
         $contacts = $institution->load('duties.current_users.current_duties')->duties->sortBy(function ($duty) {
             return $duty->order;
-        })->pluck('current_users')->flatten()->unique('id');
+        })->pluck('current_users')->flatten()->unique('id')->values();
 
         // make eloquent collection from array
         $contacts = new Collection($contacts);

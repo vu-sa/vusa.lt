@@ -165,20 +165,13 @@ const showAdditionalInfo = (duty) => {
 
 // ! TIK KURATORIAMS: nusprendžia, kurią nuotrauką imti, pagal tai, ar url turi "kuratoriai"
 const imageUrl = computed(() => {
-  const url = new URL(window.location.href);
-  if (url.pathname.includes("kuratoriai") && props.contact.duties) {
-    // check all duties for duties name which includes kuratorius
-    // iterate object simply because it may not be iterable
-    for (const duty of Object.keys(props.contact.duties)) {
-      if (
-        props.contact.duties?.[duty].name.toLowerCase().includes("kuratorius")
-      ) {
-        return (
-          props.contact.duties?.[duty].pivot.extra_attributes
-            ?.additional_photo ?? props.contact.profile_photo_path
-        );
-      }
-    }
+  // check all duties for duties name which includes kuratorius
+  // iterate object simply because it may not be iterable
+  for (const duty of Object.keys(props.contact.duties)) {
+    return (
+      props.contact.duties?.[duty].pivot.extra_attributes
+        ?.additional_photo ?? props.contact.profile_photo_path
+    );
   }
   return props.contact.profile_photo_path ?? "";
 });
