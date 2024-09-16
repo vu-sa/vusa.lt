@@ -38,15 +38,13 @@
         </NFormItem>
         <NFormItem label="Viešinimo auditorija">
           <div class="grid w-full grid-cols-2 gap-4">
-            <NButton strong :type="form.is_international ? 'primary' : 'default'"
-              @click="form.is_international = true">
+            <NButton strong :type="form.is_international ? 'primary' : 'default'" @click="form.is_international = true">
               Visi studentai
               <template #icon>
                 <IFluentGlobe20Regular width="16" />
               </template>
             </NButton>
-            <NButton :type="form.is_international ? 'default' : 'primary'"
-              @click="form.is_international = false">
+            <NButton :type="form.is_international ? 'default' : 'primary'" @click="form.is_international = false">
               Tik lietuviškai mokantys studentai
             </NButton>
           </div>
@@ -116,8 +114,7 @@
         <NFormItem label="Youtube video kodas">
           <NInputGroup>
             <NInput autosize value="https://www.youtube.com/embed/" :disabled="true" />
-            <NInput v-model:value="form.video_url" type="text"
-              placeholder="dQw4w9WgXcQ" />
+            <NInput v-model:value="form.video_url" type="text" placeholder="dQw4w9WgXcQ" />
           </NInputGroup>
         </NFormItem>
       </FormElement>
@@ -135,6 +132,12 @@
         </NFormItem>
 
         <NFormItem label="Aprašymas">
+          <template #label>
+            <div class="inline-flex items-center gap-2">
+              Aprašymas
+              <SimpleLocaleButton v-model:locale="locale" />
+            </div>
+          </template>
           <TipTap v-if="locale === 'lt'" v-model="form.description.lt" html />
           <TipTap v-else v-model="form.description.en" html />
         </NFormItem>
