@@ -1,6 +1,6 @@
 <template>
   <NSpin class="w-full" :show="loading">
-    <FileManager small class="w-full" :files="files" :directories="directories" :path="path" @update="handleUpdate" @back="handleBack"
+    <FileManager small class="w-full" :files :directories :path @update="handleUpdate" @back="handleBack"
       @change-directory="handleChangeDirectory" @file-selected="(path) => $emit('submit', path)" />
   </NSpin>
 </template>
@@ -62,7 +62,7 @@ async function getData(changedDirectory: string) {
     return { id: index, name: directoryName, path: directory };
   }) ?? [];
 
-  path.value = data.value?.path ?? "public/files";
+  path.value = data.value?.path ?? path.value;
 
   loading.value = false;
 }
