@@ -10,7 +10,7 @@
       Atstovavimas
     </NButton>
     </Link>
-    <Link :href="route('administration')">
+    <Link v-if="$page.props.auth?.can.index.page" :href="route('dashboard.svetaine')">
     <NButton quaternary text>
       <template #icon>
         <IFluentGlobe24Regular />

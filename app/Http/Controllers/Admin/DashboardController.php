@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\Controller as Controller;
 use App\Models\Institution;
+use App\Models\Page;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
@@ -60,6 +61,43 @@ class DashboardController extends Controller
         $user = User::query()->where('id', Auth::id())->with('current_duties.institution.meetings.institutions:id,name')->first();
 
         // Leave only tenants that are not 'pkp'
+        $tenants = collect(GetTenantsForUpserts::execute('pages.update.padalinys', $this->authorizer))->filter(function ($tenant) {
+            return $tenant['type'] !== 'pkp';
+        })->values();
+
+        // Check if selected tenant is in the list of tenants
+        if ($selectedTenant) {
+            $selectedTenant = $tenants->firstWhere('id', $selectedTenant);
+        } else {
+            // Check if there's tenant with type 'pagrindinis'
+            $selectedTenant = $tenants->firstWhere('type', 'pagrindinis');
+        }
+
+        // If not, select first tenant
+        if (! $selectedTenant) {
+            $selectedTenant = $tenants->first();
+        }
+
+        if (! $selectedTenant) {
+            $providedTenant = null;
+        } else {
+            $providedTenant = Tenant::query()->where('id', $selectedTenant['id'])->with('institutions:id,name,tenant_id', 'institutions.meetings:id,title,start_time', 'institutions.duties.current_users:id,name', 'institutions.duties.types:id,title,slug')->first();
+        }
+
+        return Inertia::render('Admin/Dashboard/ShowAtstovavimas', [
+            'user' => $user,
+            'tenants' => $tenants,
+            'providedTenant' => $providedTenant,
+        ]);
+    }
+
+    public function svetaine()
+    {
+        $this->authorize('viewAny', Page::class);
+
+        $selectedTenant = request()->input('tenant_id');
+
+        // Leave only tenants that are not 'pkp'
         $tenants = collect(GetTenantsForUpserts::execute('institutions.update.padalinys', $this->authorizer))->filter(function ($tenant) {
             return $tenant['type'] !== 'pkp';
         })->values();
@@ -77,16 +115,16 @@ class DashboardController extends Controller
             $selectedTenant = $tenants->first();
         }
 
-        // unhide last_action
-        
         if (! $selectedTenant) {
             $providedTenant = null;
         } else {
-            $providedTenant = Tenant::query()->where('id', $selectedTenant['id'])->with('institutions:id,name,tenant_id', 'institutions.meetings:id,title,start_time', 'institutions.duties.current_users:id,name', 'institutions.duties.types:id,title,slug')->first();
+            $providedTenant = Tenant::query()->where('id', $selectedTenant['id'])->with('pages', 'news', 'mainPages')->with(['calendar' => function ($query) {
+                // get only future and pasts event 12 months ago
+                $query->where('date', '>=', now()->subMonths(12))->orderBy('date', 'asc');
+            }])->first();
         }
 
-        return Inertia::render('Admin/Dashboard/ShowAtstovavimas', [
-            'user' => $user,
+        return Inertia::render('Admin/Dashboard/ShowSvetaine', [
             'tenants' => $tenants,
             'providedTenant' => $providedTenant,
         ]);

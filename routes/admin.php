@@ -8,6 +8,8 @@ Route::get('/', [DashboardController::class, 'dashboard'])->name('dashboard');
 Route::get('profile', [DashboardController::class, 'userSettings'])->name('profile');
 Route::inertia('administration', 'Admin/ShowAdministration')->name('administration');
 Route::get('dashboard/atstovavimas', [DashboardController::class, 'atstovavimas'])->name('dashboard.atstovavimas');
+Route::get('dashboard/svetaine', [DashboardController::class, 'svetaine'])->name('dashboard.svetaine');
+
 Route::patch('profile', [DashboardController::class, 'updateUserSettings'])->name('profile.update');
 Route::get('userTasks', [DashboardController::class, 'userTasks'])->name('userTasks');
 Route::get('institutionGraph', [DashboardController::class, 'institutionGraph'])->name('institutionGraph');

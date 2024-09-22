@@ -34,7 +34,7 @@
               <template #icon>
                 <Icons.MEETING />
               </template>
-              Rodyti visus
+              {{ $t('Rodyti visus') }}
             </NButton>
             <CardModal v-model:show="showAllMeetingModal" title="Visi susitikimai" @close="showAllMeetingModal = false">
               <NDataTable :data="meetings" :columns="allMeetingColumns" :pagination="{ pageSize: 7 }" />
@@ -72,7 +72,7 @@
             <template #icon>
               <Icons.INSTITUTION />
             </template>
-            Rodyti visas
+              {{ $t('Rodyti visas') }}
           </NButton>
           <CardModal v-model:show="showAllInstitutionModal" title="Visos institucijos"
             @close="showAllInstitutionModal = false">
@@ -138,7 +138,7 @@
               <template #icon>
                 <Icons.USER />
               </template>
-              Rodyti visus
+              {{ $t('Rodyti visus') }}
             </NButton>
             <CardModal class="max-w-5xl"  v-model:show="showAllDutyModal" title="Visos pareigybės" @close="showAllDutyModal = false">
               <NDataTable :max-height="450" :data="allDuties" :columns="allDutyColumns" :pagination="{ pageSize: 7 }" />
