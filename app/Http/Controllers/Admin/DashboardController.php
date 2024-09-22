@@ -82,7 +82,7 @@ class DashboardController extends Controller
         if (! $selectedTenant) {
             $providedTenant = null;
         } else {
-            $providedTenant = Tenant::query()->where('id', $selectedTenant['id'])->with('institutions.meetings:id,title,start_time', 'institutions.duties.current_users:id,name,last_action')->first()->makeVisible('last_action');
+            $providedTenant = Tenant::query()->where('id', $selectedTenant['id'])->with('institutions:id,name,tenant_id', 'institutions.meetings:id,title,start_time', 'institutions.duties.current_users:id,name', 'institutions.duties.types:id,title,slug')->first();
         }
 
         return Inertia::render('Admin/Dashboard/ShowAtstovavimas', [

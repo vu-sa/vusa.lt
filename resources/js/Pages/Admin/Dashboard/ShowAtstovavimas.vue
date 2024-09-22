@@ -31,6 +31,9 @@
             <NewMeetingButton @click="showMeetingModal = true" />
             <NewMeetingModal :show-modal="showMeetingModal" @close="showMeetingModal = false" />
             <NButton secondary size="small" @click="showAllMeetingModal = true">
+              <template #icon>
+                <Icons.MEETING />
+              </template>
               Rodyti visus
             </NButton>
             <CardModal v-model:show="showAllMeetingModal" title="Visi susitikimai" @close="showAllMeetingModal = false">
@@ -66,6 +69,9 @@
         </div>
         <template #footer>
           <NButton size="small" secondary @click="showAllInstitutionModal = true">
+            <template #icon>
+              <Icons.INSTITUTION />
+            </template>
             Rodyti visas
           </NButton>
           <CardModal v-model:show="showAllInstitutionModal" title="Visos institucijos"
@@ -100,13 +106,45 @@
     </div>
     <NDivider v-if="tenants.length > 0" />
     <section v-if="tenants.length > 0" class="mt-8">
-      <h3 class="mb-2">Atstovavimas padalinyje</h3>
-      <div class="w-48 mb-4">
-        <NSelect :value="providedTenant?.id"
-          :options="tenants.map(tenant => ({ label: tenant.shortname, value: tenant.id }))"
-          @update:value="handleTenantUpdateValue" />
+      <div class="mb-8 inline-flex items-center gap-6">
+        <h3 class="mb-0">
+          Atstovavimas padalinyje
+        </h3>
+        <div>
+          <NSelect :value="providedTenant?.id" filterable
+            :options="tenants.map(tenant => ({ label: tenant.shortname, value: tenant.id }))"
+            @update:value="handleTenantUpdateValue" />
+        </div>
       </div>
       <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+        <NCard>
+          <template #header>
+            <div class="inline-flex items-center gap-2">
+              <component :is="Icons.USER" />
+              Atstovai padalinyje
+            </div>
+          </template>
+          <div class="grid grid-cols-2 gap-2">
+            <p v-for="dutyType in dutyTypesWithUserCounts" :key="dutyType.title" class="mb-1">
+              {{ dutyType.title }}
+            </p>
+            <span v-for="dutyType in dutyTypesWithUserCounts" :key="dutyType.slug"
+              class="mb-4 inline-block text-4xl font-bold">
+              <NNumberAnimation :from="0" :to="dutyType.count" />
+            </span>
+          </div>
+          <template #footer>
+            <NButton size="small" secondary @click="showAllDutyModal = true">
+              <template #icon>
+                <Icons.USER />
+              </template>
+              Rodyti visus
+            </NButton>
+            <CardModal class="max-w-5xl"  v-model:show="showAllDutyModal" title="Visos pareigybės" @close="showAllDutyModal = false">
+              <NDataTable :max-height="450" :data="allDuties" :columns="allDutyColumns" :pagination="{ pageSize: 7 }" />
+            </CardModal>
+          </template>
+        </NCard>
         <NCard title="Visų susitikimų statistika">
           <div ref="wrapper" />
         </NCard>
@@ -161,6 +199,7 @@ const props = defineProps<{
 const showMeetingModal = ref(false);
 const showAllMeetingModal = ref(false);
 const showAllInstitutionModal = ref(false);
+const showAllDutyModal = ref(false);
 
 const isDark = useDark();
 
@@ -272,6 +311,12 @@ const tenantCalendarAttributes = computed(() => allTenantMeetings.value?.map((me
   return calendarAttrObject;
 }))
 
+tenantCalendarAttributes.value?.push({
+  dates: new Date(),
+  highlight: { color: "red", fillMode: "outline" },
+  order: 1,
+});
+
 const wrapper = ref(null);
 
 const generatePlot = () => plot({
@@ -295,6 +340,75 @@ watch(() => allTenantMeetings.value, () => {
     wrapper.value.appendChild(generatePlot())
   }
 });
+
+// check types of each duty, and duties.current_users amount
+const dutyTypesWithUserCounts = computed(() => props.providedTenant?.institutions?.reduce((acc, institution) => {
+  institution.duties?.forEach(duty => {
+    duty.types?.forEach(type => {
+      if (!type.title) {
+        return;
+      }
+
+      const existingType = acc.find(t => t.title === type.title);
+
+      if (existingType) {
+        existingType.count += duty.current_users?.length ?? 0;
+      } else {
+        acc.push({
+          title: type.title,
+          count: duty.current_users.length,
+          slug: type.slug
+        });
+      }
+
+      return acc;
+    });
+
+    return acc;
+  });
+
+  return acc;
+}, []).sort((a, b) => b.count - a.count).filter(type => type.count > 0 && type.slug !== 'kuratoriai').slice(0, 2))
+
+const allDuties = computed(() => props.providedTenant?.institutions?.map(institution => {
+  return institution.duties?.map(duty => {
+    return {
+      institution_id: institution.id,
+      institution: institution.name,
+      duty_id: duty.id,
+      title: duty.name,
+      users: duty.current_users?.map(user => user.name).join(', '),
+      type: duty.types?.map(type => type.title).join(', '),
+    }
+  })
+}).flat())
+
+const allDutyColumns = [
+  {
+    title: 'Pareigybė',
+    key: 'title',
+    sorter: (a, b) => a.title.localeCompare(b.title),
+    defaultSortOrder: 'ascend',
+    render(row) {
+      return h(Link, { href: route('duties.show', row.duty_id) }, row.title);
+    },
+  },
+  {
+    title: 'Institucija',
+    key: 'institution',
+    render(row) {
+      return h(Link, { href: route('institutions.show', row.institution_id) }, row.institution);
+    },
+  },
+  {
+    title: 'Vartotojai',
+    key: 'users',
+  },
+  {
+    title: 'Tipas',
+    key: 'type',
+  },
+];
 
 onMounted(() => {
   if (wrapper.value) {

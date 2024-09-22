@@ -7,35 +7,32 @@
       </p>
       <p class="mt-4">
         Būtent
-        <ModelChip
-          ><template #icon><NIcon :component="Icons.MEETING"></NIcon></template
-          >posėdžiai</ModelChip
-        >
+        <ModelChip>
+          <template #icon>
+            <NIcon :component="Icons.MEETING" />
+          </template>posėdžiai
+        </ModelChip>
         ir jų informacija yra labai svarbi – kad galėtume atstovauti studentams
         geriausiai, kaip tik tai įmanoma!
       </p>
-      <p class="mt-4"><strong>Pradėkim! 💪</strong></p>
+      <p class="mt-4">
+        <strong>Pradėkim! 💪</strong>
+      </p>
     </SuggestionAlert>
     <NFormItem>
       <template #label>
         <span class="flex items-center gap-1">
-          <NIcon :component="Icons.INSTITUTION"></NIcon>
+          <NIcon :component="Icons.INSTITUTION" />
           {{ $t("Institucija") }}
         </span>
       </template>
 
-      <NSelect
-        v-model:value="institution_id"
-        class="min-w-[260px]"
-        :options="institutions"
-        :placeholder="'VU studijų programos komitetas...'"
-      ></NSelect>
+      <NSelect filterable v-model:value="institution_id" class="min-w-[260px]" :options="institutions"
+        :placeholder="'VU studijų programos komitetas...'" />
     </NFormItem>
-    <NButton
-      :disabled="!institution_id"
-      @click="$emit('submit', institution_id)"
-      >{{ $t("Toliau") }}...</NButton
-    >
+    <NButton :disabled="!institution_id" @click="$emit('submit', institution_id)">
+      {{ $t("Toliau") }}...
+    </NButton>
   </NForm>
 </template>
 

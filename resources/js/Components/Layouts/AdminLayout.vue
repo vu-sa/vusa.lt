@@ -9,9 +9,9 @@
     </NDrawerContent>
   </NDrawer>
   <div
-    class="relative grid min-h-screen gap-4 bg-zinc-50 dark:bg-zinc-900 max-md:grid-rows-[7rem,_auto] md:grid-cols-[18rem,_auto]">
+    class="relative grid min-h-screen bg-zinc-50 dark:bg-zinc-900 max-md:grid-rows-[7rem,_auto] md:grid-cols-[18rem,_auto] md:gap-4">
     <div
-      class="sticky top-4 z-50 my-4 ml-4 grid grid-rows-[5rem,_1fr,_6rem] rounded-md border border-zinc-200/90 bg-gradient-to-b from-white to-zinc-100 shadow-inner dark:border-zinc-700 dark:from-zinc-900 dark:to-[#141416] max-md:mr-4 md:h-[calc(100vh-2rem)]">
+      class="sticky top-4 z-50 my-4 ml-4 grid grid-rows-[5rem,_1fr,_6rem] rounded-md border border-zinc-200/90 bg-gradient-to-b from-white to-zinc-100 shadow-inner dark:border-zinc-700 dark:from-zinc-900 dark:to-[#141416] max-md:mr-4 max-md:w-[calc(100vw-3rem)] md:h-[calc(100vh-2rem)]">
       <div class="flex items-center gap-2">
         <Link class="size-fit" :href="route('dashboard')">
         <AppLogo class="mr-auto w-36 p-4" />
@@ -32,7 +32,7 @@
       </div>
       <AdminMenu v-if="mdAndGreater" />
     </div>
-    <div class="p-4">
+    <div class="md:p-4">
       <NMessageProvider>
         <slot />
       </NMessageProvider>

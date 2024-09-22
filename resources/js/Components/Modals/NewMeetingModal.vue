@@ -1,66 +1,41 @@
 <template>
-  <CardModal
-    :show="showModal"
-    class="max-w-5xl"
-    display-directive="show"
-    :title="`${$t('Pranešti apie posėdį')}`"
-    @close="$emit('close')"
-  >
+  <CardModal :show="showModal" class="max-w-5xl" display-directive="show" :title="`${$t('Pranešti apie posėdį')}`"
+    @close="$emit('close')">
     <!-- <template #header-extra>
         <NButton v-if="current === 1" text
           ><template #icon
-            ><NIcon size="20" :component="PuzzlePiece20Regular" /></template
-        ></NButton>
-      </template> -->
+            ><NIcon size="20" :component="PuzzlePiece20Regular" /></template></NButton>
+</template> -->
     <div class="flex flex-col gap-8 md:flex-row">
-      <NSteps
-        vertical
-        class="h-fit w-fit border-zinc-300 p-4 pr-12 dark:border-zinc-500 md:border-r"
-        size="small"
-        :current="(current as number)"
-        :status="currentStatus"
-      >
+      <NSteps vertical class="size-fit border-zinc-300 p-4 dark:border-zinc-500 md:border-r" size="small"
+        :current="(current as number)" :status="currentStatus">
         <NStep :title="`1. ${$t('Pasirink instituciją')}`">
           <template #icon>
-            <NIcon :component="IconsRegular.INSTITUTION"></NIcon>
+            <NIcon :component="IconsRegular.INSTITUTION" />
           </template>
         </NStep>
         <NStep :title="`2. ${$t('Nurodyk posėdžio datą')}`">
           <template #icon>
-            <NIcon :component="IconsRegular.MEETING"></NIcon>
+            <NIcon :component="IconsRegular.MEETING" />
           </template>
         </NStep>
         <NStep :title="`3. ${$t('Įrašyk darbotvarkės klausimus')}`">
           <template #icon>
-            <NIcon :component="IconsRegular.AGENDA_ITEM"></NIcon>
+            <NIcon :component="IconsRegular.AGENDA_ITEM" />
           </template>
         </NStep>
       </NSteps>
       <FadeTransition mode="out-in">
-        <InstitutionSelectorForm
-          v-if="current === 1"
-          class="flex w-full flex-col items-start justify-center"
-          @submit="handleInstitutionSelect"
-        ></InstitutionSelectorForm>
-        <MeetingForm
-          v-else-if="current === 2"
-          class="flex w-full flex-col items-start justify-center"
-          :meeting="meetingTemplate"
-          @submit="handleMeetingFormSubmit"
-        ></MeetingForm>
-        <AgendaItemsForm
-          v-else-if="current === 3"
-          class="w-full"
-          :loading="loading"
-          @submit="handleAgendaItemsFormSubmit"
-        />
+        <InstitutionSelectorForm v-if="current === 1" class="flex w-full flex-col items-start justify-center"
+          @submit="handleInstitutionSelect" />
+        <MeetingForm v-else-if="current === 2" class="flex w-full flex-col items-start justify-center"
+          :meeting="meetingTemplate" @submit="handleMeetingFormSubmit" />
+        <AgendaItemsForm v-else-if="current === 3" class="w-full" :loading="loading"
+          @submit="handleAgendaItemsFormSubmit" />
       </FadeTransition>
     </div>
     <FadeTransition>
-      <ModalHelperButton
-        v-if="!showAlert && current === 3"
-        @click="showAlert = true"
-      />
+      <ModalHelperButton v-if="!showAlert && current === 3" @click="showAlert = true" />
     </FadeTransition>
   </CardModal>
 </template>

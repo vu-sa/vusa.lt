@@ -37,12 +37,9 @@ class AgendaItemController extends Controller
 
                 $institution = $meeting->institutions->first();
 
-                $institutionManagers = GetInstitutionManagers::execute($institution);
-                // get institution users and merge with institution managers
-                $institutionUsers = $institution->users;
-                $institutionAssociatedUsers = $institutionManagers->merge($institutionUsers);
+                $institutionUsers = $institution->load('duties.current_users')->duties->pluck('current_users')->flatten()->unique()->values();
 
-                TaskService::storeTask('Sutvarkyti darbotvarkės klausimus', $meeting, $institutionAssociatedUsers);
+                TaskService::storeTask('Sutvarkyti darbotvarkės klausimus', $meeting, $institutionUsers);
             }
         }
 
