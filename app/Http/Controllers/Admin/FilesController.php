@@ -158,11 +158,14 @@ class FilesController extends Controller
         $data = $request->file()['file'] ?? $request->image;
         $originalName = isset($request->file()['file']) ? $request->file()['file']->getClientOriginalName() : $request->name;
 
-        $image = Image::read($data);
+        $startingImage = Image::read($data);
 
-        $image->scaleDown(width: 1200);
+        $image = $startingImage->scaleDown(width: 1200)->toWebp();
 
         $path = (string) $request->input('path');
+
+        // get file name without extension
+        $originalName = pathinfo($originalName, PATHINFO_FILENAME).'.webp';
 
         // check if path exists
         if (! Storage::exists('public/'.$path)) {

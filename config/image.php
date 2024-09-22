@@ -16,6 +16,5 @@ return [
     |
     */
 
-    'driver' => \Intervention\Image\Drivers\Gd\Driver::class,
-
+    'driver' => \Intervention\Image\Drivers\Imagick\Driver::class,
 ];
