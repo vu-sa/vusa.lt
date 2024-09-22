@@ -62,6 +62,7 @@ class HandleInertiaRequests extends Middleware
             'auth' => is_null($user) ? null : [
                 'can' => fn () => [
                     'index' => fn () => $this->getIndexPermissions($user),
+                    'create' => fn () => $this->getCreatePermissions($user),
                 ],
                 'changes' => fn () => $this->getChangesForUser($user),
                 'user' => fn () => [
@@ -123,6 +124,23 @@ class HandleInertiaRequests extends Middleware
             return collect($labels)
                 ->mapWithKeys(function ($model) use ($user) {
                     return [$model => $user->can('viewAny', ['App\\Models\\'.ucfirst($model)])];
+                })->toArray();
+        });
+    }
+
+    private function getCreatePermissions(User $user)
+    {
+        return Cache::remember('create-permissions-'.$user->id, 1800, function () use ($user) {
+            $labels = ModelEnum::toLabels();
+
+            // remove where value is reservationResource
+            // TODO: maybe needs better solution
+            unset($labels[array_search('reservationResource', $labels)]);
+            unset($labels[array_search('file', $labels)]);
+
+            return collect($labels)
+                ->mapWithKeys(function ($model) use ($user) {
+                    return [$model => $user->can('create', ['App\\Models\\'.ucfirst($model)])];
                 })->toArray();
         });
     }

@@ -20,6 +20,7 @@ declare module "@inertiajs/core" {
     auth: {
       can: {
         index: { [str in ModelEnum]?: boolean };
+        create: { [str in ModelEnum]?: boolean };
       };
       changes: Array<{
         title: string;

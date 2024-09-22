@@ -1,11 +1,10 @@
 <template>
-  <NBadge dot processing :offset="[-1, -1]">
-    <NButton text @click="showModal = true">
-      <template #icon>
-        <IFluentPersonFeedback24Filled />
-      </template>
-    </NButton>
-  </NBadge>
+  <NButton v-bind="$attrs" @click="showModal = true">
+    <template #icon>
+      <IFluentPersonFeedback24Filled />
+    </template>
+    <slot />
+  </NButton>
   <CardModal :title="`${$t('Palik grįžtamąjį ryšį')}`" :show="showModal" @close="showModal = false">
     <template v-if="$page.props.app.locale === 'lt'">
       <p class="mb-4 text-xs">
@@ -36,13 +35,15 @@
         }" :placeholder="`${$t('Parašyk pastebėjimų, pasiūlymų')}...`" show-count class="mt-2" type="textarea" />
       </NFormItem>
       <NFormItem :show-feedback="false" :show-label="false">
-        <NCheckbox v-model:checked="form.anonymous">{{
-          $t("Siųsti anonimiškai")
-        }}</NCheckbox>
+        <NCheckbox v-model:checked="form.anonymous">
+          {{
+            $t("Siųsti anonimiškai")
+          }}
+        </NCheckbox>
       </NFormItem>
       <NFormItem :show-feedback="false">
-        <NButton :loading="loading" type="primary" :disabled="!form.feedback" @click="handleSend"><template #icon>
-            <NIcon :component="Send20Filled" />
+        <NButton :loading="loading" type="primary" :disabled="!form.feedback" @click="handleSend">
+          <template #icon>
             <IFluentSend24Filled />
           </template>{{ $t("forms.submit") }}
         </NButton>

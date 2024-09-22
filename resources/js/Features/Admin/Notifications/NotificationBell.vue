@@ -1,21 +1,25 @@
 <template>
   <NBadge :offset="[-2, -4]" :value="notifications?.length">
-    <NPopover trigger="click" title="Pranešimai" size="small" placement="bottom-end" :show-arrow="true" scrollable>
+    <NPopover trigger="click" title="Pranešimai" size="small" :show-arrow="true" scrollable>
       <template #trigger>
-        <NButton circle text><template #icon>
-            <NIcon :size="24" :component="Icons.NOTIFICATION" />
-          </template></NButton>
+        <NButton v-bind="$attrs">
+          <template #icon>
+            <NIcon :size="18" :component="Icons.NOTIFICATION" />
+          </template>
+        </NButton>
       </template>
       <template #header>
         <header class="flex justify-between gap-4">
           <span class="text-lg font-bold text-zinc-900 dark:text-zinc-50">{{
             $t("Pranešimai")
             }}</span>
-          <NButton :disabled="notifications.length === 0" size="tiny" :loading="loading" text @click="handleAllRead">{{
-            $t("Pažymėti visus")
+          <NButton :disabled="notifications.length === 0" size="tiny" :loading="loading" text @click="handleAllRead">
+            {{
+              $t("Pažymėti visus")
             }}<template #icon>
               <IFluentCheckmarkCircle24Regular />
-            </template></NButton>
+            </template>
+          </NButton>
         </header>
       </template>
       <div v-if="notifications.length > 0" class="max-h-96 max-w-xs overflow-auto pr-4 sm:max-w-lg">
@@ -42,7 +46,7 @@ import {
 } from "@vueuse/core";
 import { ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
-import Icons from "@/Types/Icons/filled";
+import Icons from "@/Types/Icons/regular";
 
 import { useAxios } from "@vueuse/integrations/useAxios";
 import NotificationItem from "./NotificationItem.vue";

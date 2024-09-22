@@ -1,8 +1,8 @@
 <template>
   <NButton size="small" text title="Tamsaus režimo perjungimas" @click="isDark = !isDark">
     <template #icon>
-      <IFluentWeatherMoon24Regular v-if="isDark" />
-      <IFluentWeatherSunny24Regular v-else />
+      <IFluentWeatherMoon24Filled v-if="isDark" />
+      <IFluentWeatherSunny24Filled v-else />
     </template>
   </NButton>
 </template>

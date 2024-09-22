@@ -1,7 +1,8 @@
 <template>
-  <NDropdown :options="options">
+  <NDropdown :options>
     <NButton text size="tiny">
-      <UserAvatar :size="28" :user="$page.props.auth?.user" />
+      <UserAvatar class="mr-2" :size="28" :user="$page.props.auth?.user" />
+      {{ $page.props.auth?.user ? $page.props.auth.user?.name : "" }}
     </NButton>
   </NDropdown>
 </template>

@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\Controller as Controller;
 use App\Models\Institution;
+use App\Models\Tenant;
 use App\Models\User;
+use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -15,6 +18,8 @@ use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
+    public function __construct(public Authorizer $authorizer) {}
+
     public function dashboard()
     {
         // load user duty institutions
@@ -45,6 +50,45 @@ class DashboardController extends Controller
                 }),
                 'doings' => $user->doings->sortBy('date')->values(),
             ],
+        ]);
+    }
+
+    public function atstovavimas()
+    {
+        $selectedTenant = request()->input('tenant_id');
+
+        $user = User::query()->where('id', Auth::id())->with('current_duties.institution.meetings.institutions:id,name')->first();
+
+        // Leave only tenants that are not 'pkp'
+        $tenants = collect(GetTenantsForUpserts::execute('institutions.update.padalinys', $this->authorizer))->filter(function ($tenant) {
+            return $tenant['type'] !== 'pkp';
+        })->values();
+
+        // Check if selected tenant is in the list of tenants
+        if ($selectedTenant) {
+            $selectedTenant = $tenants->firstWhere('id', $selectedTenant);
+        } else {
+            // Check if there's tenant with type 'pagrindinis'
+            $selectedTenant = $tenants->firstWhere('type', 'pagrindinis');
+        }
+
+        // If not, select first tenant
+        if (! $selectedTenant) {
+            $selectedTenant = $tenants->first();
+        }
+
+        // unhide last_action
+        
+        if (! $selectedTenant) {
+            $providedTenant = null;
+        } else {
+            $providedTenant = Tenant::query()->where('id', $selectedTenant['id'])->with('institutions.meetings:id,title,start_time', 'institutions.duties.current_users:id,name,last_action')->first()->makeVisible('last_action');
+        }
+
+        return Inertia::render('Admin/Dashboard/ShowAtstovavimas', [
+            'user' => $user,
+            'tenants' => $tenants,
+            'providedTenant' => $providedTenant,
         ]);
     }
 
@@ -93,19 +137,6 @@ class DashboardController extends Controller
             'institutions' => $institutions,
             'institutionRelationships' => RelationshipService::getAllRelatedInstitutions(),
         ]);
-    }
-
-    public function workspace(Request $request)
-    {
-        return Inertia::render('Admin/ShowWorkspace',
-            [
-                'institution' => fn () => $this->getInstitutionForWorkspace($request),
-                // get all institutions where has relationship with auth user
-                'userInstitutions' => Institution::whereHas('users', function ($query) {
-                    $query->where('users.id', auth()->user()->id);
-                })->with('users')->withCount('meetings')->get(),
-            ]
-        );
     }
 
     public function sendFeedback(Request $request)

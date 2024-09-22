@@ -36,7 +36,7 @@
           </div>
         </template>
         <div class="flex grow flex-col gap-1">
-          <NInput :value="form.permalink" type="text" placeholder="Sugeneruojama nuoroda" />
+          <NInput v-model:value="form.permalink" type="text" placeholder="Sugeneruojama nuoroda" />
           <InfoText>Atsargiai: pakeitus nuorodą, sena nuoroda nebeveiks!</InfoText>
         </div>
       </NFormItem>

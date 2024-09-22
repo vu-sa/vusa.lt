@@ -57,7 +57,7 @@ const columns = computed<DataTableColumns<App.Entities.Meeting>>(() => {
     {
       ...tenantColumn(filters, usePage().props.tenants),
       render(row) {
-        return row.tenants.length === 0
+        return row.tenants?.length === 0
           ? ""
           : $t(row.tenants?.map((tenant) => tenant.shortname).join(", "));
       },
