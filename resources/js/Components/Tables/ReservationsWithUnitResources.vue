@@ -1,58 +1,29 @@
 <template>
-  <IndexPageLayout :title="capitalize($tChoice('entities.reservation.model', 2))" model-name="reservations"
-    :icon="Icons.RESERVATION" :can-use-routes :columns :paginated-models="reservations">
-    <template #after-table>
-      <NCard class="mt-4">
-        <template #header>
-          {{ $t("Reservations with unit resources") }}
-        </template>
-        <ReservationsWithUnitResources :active-reservations />
-      </NCard>
-    </template>
-  </IndexPageLayout>
+  <NDataTable :columns="columnsWithActions" :data="activeReservations" size="small" :row-key="(row) => row.id" />
 </template>
 
 <script setup lang="tsx">
 import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
 import {
   type DataTableColumns,
-  type DataTableSortState,
   NButton,
   NIcon,
   NTag,
 } from "naive-ui";
 import { Link, usePage } from "@inertiajs/vue3";
-import { capitalize, computed, provide, ref } from "vue";
+import { capitalize, computed } from "vue";
 
 import ArrowForward20Filled from "~icons/fluent/arrow-forward20-filled";
 
 import { RESERVATION_DATE_TIME_FORMAT } from "@/Constants/DateTimeFormats";
 import { formatRelativeTime, formatStaticTime } from "@/Utils/IntlTime";
-import Icons from "@/Types/Icons/regular";
-import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 
 defineProps<{
-  reservations: PaginatedModels<App.Entities.Reservation>;
-  activeReservations: Array<App.Entities.Reservation>;
+  activeReservations: App.Entities.Reservation[];
 }>();
 
-const canUseRoutes = {
-  create: true,
-  show: true,
-  edit: false,
-  destroy: false,
-};
-
-const sorters = ref<Record<string, DataTableSortState["order"]>>({
-  name: false,
-  start_time: "descend",
-  end_time: false,
-});
-
-provide("sorters", sorters);
-
-// add columns
+// Reuses from IndexReservation, need to use for implementation in dashboard
 const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => {
   return [
     {

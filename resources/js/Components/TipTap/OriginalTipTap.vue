@@ -323,7 +323,6 @@ function handleUpdate() {
 
 <style>
 .tiptap {
-
   p,
   ul,
   ol,

@@ -24,13 +24,3 @@
     <img src="https://cataas.com/cat/cute">
   </div>
 </template>
-
-<style lang="scss">
-// make color scheme light
-@media (prefers-color-scheme: dark) {
-  body {
-    background-color: #fff;
-    color: #000;
-  }
-}
-</style>

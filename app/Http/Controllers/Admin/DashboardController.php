@@ -130,6 +130,47 @@ class DashboardController extends Controller
         ]);
     }
 
+    public function reservations()
+    {
+        $selectedTenant = request()->input('tenant_id');
+
+        $user = User::find(Auth::id());
+
+        $reservations = $user->reservations->load('resources')->append('isCompleted');
+
+        // Leave only tenants that are not 'pkp'
+        $tenants = collect(GetTenantsForUpserts::execute('reservations.update.padalinys', $this->authorizer));
+
+        // Check if selected tenant is in the list of tenants
+        if ($selectedTenant) {
+            $selectedTenant = $tenants->firstWhere('id', $selectedTenant);
+        } else {
+            // Check if there's tenant with type 'pagrindinis'
+            $selectedTenant = $tenants->firstWhere('type', 'pagrindinis');
+        }
+
+        // If not, select first tenant
+        if (! $selectedTenant) {
+            $selectedTenant = $tenants->first();
+        }
+
+        if (! $selectedTenant) {
+            $providedTenant = null;
+        } else {
+            $providedTenant = Tenant::query()->where('id', $selectedTenant['id'])->with('reservations.resources', 'resources')->first();
+        }
+
+        return Inertia::render('Admin/Dashboard/ShowReservations', [
+            'reservations' => $reservations,
+            'tenants' => $tenants,
+            'providedTenant' => [
+                ...$providedTenant->toArray(),
+                'reservations' => $providedTenant->reservations->load('resources.tenant', 'users')->append('isCompleted')->unique()->values(),
+                'activeReservations' => $providedTenant->resources->load('reservations.users')->pluck('reservations')->flatten()->unique()->values(),
+            ],
+        ]);
+    }
+
     public function userSettings()
     {
         $user = User::find(Auth::id());

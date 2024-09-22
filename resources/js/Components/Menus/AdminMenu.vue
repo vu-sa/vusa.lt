@@ -1,13 +1,13 @@
 <template>
   <!-- Dinaminės nuorodos į administravimo puslapius -->
   <div class="gap mt-4 flex flex-col px-6">
-    <span class="mb-2 text-xs uppercase text-zinc-500">Funkcijos</span>
+    <span class="mb-2 text-xs uppercase text-zinc-500">{{ $t('Funkcijos') }}</span>
     <Link :href="route('dashboard.atstovavimas')">
     <NButton quaternary text>
       <template #icon>
         <IFluentHatGraduation24Filled />
       </template>
-      Atstovavimas
+      {{ $t('Atstovavimas') }}
     </NButton>
     </Link>
     <Link v-if="$page.props.auth?.can.index.page" :href="route('dashboard.svetaine')">
@@ -15,24 +15,24 @@
       <template #icon>
         <IFluentGlobe24Regular />
       </template>
-      Svetainė
+      {{ $t('Svetainė') }}
     </NButton>
     </Link>
-    <Link :href="route('administration')">
+    <Link :href="route('dashboard.reservations')">
     <NButton quaternary text>
       <template #icon>
         <IFluentBookmark24Regular />
       </template>
-      Rezervacijos
+      {{ capitalize($tChoice('entities.reservation.model', 2)) }}
     </NButton>
     </Link>
-    <span class="mb-2 mt-4 text-xs uppercase text-zinc-500">Kita</span>
+    <span class="mb-2 mt-4 text-xs uppercase text-zinc-500">{{ $t('Kita') }}</span>
     <Link :href="route('administration')">
     <NButton quaternary text>
       <template #icon>
         <IFluentSettings24Filled />
       </template>
-      Administravimas
+      {{ $t('Administravimas') }}
     </NButton>
     </Link>
   </div>
@@ -64,6 +64,7 @@ import UserSettingsDropdown from './UserSettingsDropdown.vue';
 import { useStorage } from '@vueuse/core';
 import { watch } from 'vue';
 import { loadLanguageAsync } from 'laravel-vue-i18n';
+import { capitalize } from '@/Utils/String';
 
 const locale = useStorage("locale", usePage().props.app.locale);
 

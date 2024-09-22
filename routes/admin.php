@@ -9,6 +9,7 @@ Route::get('profile', [DashboardController::class, 'userSettings'])->name('profi
 Route::inertia('administration', 'Admin/ShowAdministration')->name('administration');
 Route::get('dashboard/atstovavimas', [DashboardController::class, 'atstovavimas'])->name('dashboard.atstovavimas');
 Route::get('dashboard/svetaine', [DashboardController::class, 'svetaine'])->name('dashboard.svetaine');
+Route::get('dashboard/reservations', [DashboardController::class, 'reservations'])->name('dashboard.reservations');
 
 Route::patch('profile', [DashboardController::class, 'updateUserSettings'])->name('profile.update');
 Route::get('userTasks', [DashboardController::class, 'userTasks'])->name('userTasks');
