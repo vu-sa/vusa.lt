@@ -1,8 +1,9 @@
 <template>
-  <NButton :title="$t('Paieška')" text @click="changeShowSearch">
+  <NButton v-bind="$attrs" :title="$t('Paieška')" text @click="changeShowSearch">
     <template #icon>
       <IFluentSearch20Filled />
     </template>
+    <slot />
   </NButton>
   <NModal v-model:show="showSearch">
     <div

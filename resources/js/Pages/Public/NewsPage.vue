@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-4">
+  <div>
     <NewsArticle>
       <template #tags>
         <template v-for="tag in article.tags" :key="tag.id">

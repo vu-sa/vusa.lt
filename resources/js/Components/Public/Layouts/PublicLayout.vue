@@ -25,7 +25,7 @@
       class="flex min-h-screen flex-col justify-between bg-zinc-50 text-zinc-800 antialiased dark:bg-zinc-900 dark:text-zinc-300">
       <MainNavigation :is-theme-dark="isDark" />
 
-      <main class="pb-8">
+      <main class="pt-12 pb-8">
         <!-- <Suspense> -->
         <div>
           <FadeTransition appear>
