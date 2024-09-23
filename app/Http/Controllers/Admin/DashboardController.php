@@ -6,12 +6,11 @@ use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\Controller as Controller;
 use App\Models\Institution;
 use App\Models\Page;
+use App\Models\Resource;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
-use Illuminate\Contracts\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -20,39 +19,6 @@ use Inertia\Inertia;
 class DashboardController extends Controller
 {
     public function __construct(public Authorizer $authorizer) {}
-
-    public function dashboard()
-    {
-        // load user duty institutions
-        // TODO: need to make it current duty institutions.
-        $user = User::with('current_duties.institution.tenant', 'current_duties.institution.duties.current_users:users.id,users.name,profile_photo_path,phone')->with(['doings' => function (Builder $query) {
-            $query->with('comments', 'tasks')->where('deleted_at', null)->orderBy('date', 'desc');
-        }])->with('reservations')->find(auth()->user()->id);
-
-        $institutions = $user->current_duties->pluck('institution')->flatten()->unique()->values();
-
-        // convert to eloquent collection
-        $institutions = new EloquentCollection($institutions);
-
-        // NOTE: The filter() is needed, because some duties may have no institutions and they are null here
-        $institutions = $institutions->filter()->load(['meetings' => function ($query) {
-            // Load institutions with meetings where start_time is in the future.
-            $query->where('start_time', '>', now())->with('comments', 'tasks', 'files');
-        }])->values();
-
-        return Inertia::render('Admin/ShowDashboard', [
-            'currentUser' => [
-                ...$user->toArray(),
-                'institutions' => $institutions->map(function (Institution $institution) {
-                    return [
-                        ...$institution->toArray(),
-                        'users' => $institution->duties->pluck('current_users')->flatten()->unique()->values(),
-                    ];
-                }),
-                'doings' => $user->doings->sortBy('date')->values(),
-            ],
-        ]);
-    }
 
     public function atstovavimas()
     {
@@ -162,6 +128,10 @@ class DashboardController extends Controller
 
         return Inertia::render('Admin/Dashboard/ShowReservations', [
             'reservations' => $reservations,
+            'resources' => [
+                'active' => Resource::where('is_reservable', true)->count(),
+                'sumOfCapacity' => Resource::where('is_reservable', true)->sum('capacity'),
+            ],
             'tenants' => $tenants,
             'providedTenant' => [
                 ...$providedTenant->toArray(),

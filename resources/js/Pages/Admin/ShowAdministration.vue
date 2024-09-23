@@ -5,12 +5,12 @@
         <h2 v-if="category.show" class="mb-4 text-xl font-semibold">
           {{ category.category }}
         </h2>
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           <template v-for="item in category.items">
             <Link v-if="item.show" :key="item.title" :href="item.href">
             <button
-              class="flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-gradient-to-br from-white to-white p-4 text-left text-base text-zinc-700 shadow-sm duration-100 hover:shadow-lg dark:border-zinc-800 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300">
-              <component :is="item.icon" width="32" height="32" />
+              class="flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-gradient-to-br from-white to-white p-4 text-left text-sm leading-4 text-zinc-700 shadow-sm duration-500 hover:shadow-lg dark:border-zinc-800 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300 dark:hover:shadow-white/20">
+              <component :is="item.icon" width="28" height="28" />
               {{ item.title }}
             </button>
             </Link>

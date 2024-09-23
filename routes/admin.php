@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [DashboardController::class, 'dashboard'])->name('dashboard');
+Route::inertia('/', 'Admin/ShowAdminHome')->name('dashboard');
 Route::get('profile', [DashboardController::class, 'userSettings'])->name('profile');
 Route::inertia('administration', 'Admin/ShowAdministration')->name('administration');
 Route::get('dashboard/atstovavimas', [DashboardController::class, 'atstovavimas'])->name('dashboard.atstovavimas');

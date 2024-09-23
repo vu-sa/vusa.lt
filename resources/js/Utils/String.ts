@@ -33,6 +33,20 @@ export const genitivize = (name: string | null) => {
     .replace(/ė$/, "ės");
 };
 
+export const addressivize = (name: string | null) => {
+  if (name === null) {
+    return "";
+  }
+
+  return name
+    .replace(/as$/, "ai")
+    .replace(/ė$/, "e")
+    .replace(/is$/, "i")
+    .replace(/us$/, "au")
+    .replace(/ys$/, "y")
+    .replace(/iai$/, "iai")
+}
+
 export const genitivizeEveryWord = (name: string | null) => {
   if (name === null) {
     return "";
@@ -139,10 +153,10 @@ export const changeDutyNameEndings = (
   // If no pronouns are set, try to guess based on the name
   if (!contact) {
     return dutyName;
-  } 
+  }
 
   const firstName = contact.name.split(" ")[0];
-  
+
   const namesToWomanize = ["Katrin"];
   if (namesToWomanize.includes(firstName)) {
     return womanizedTitle;

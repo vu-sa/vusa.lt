@@ -10,7 +10,7 @@
     <slot name="above-header" />
   </div>
 
-  <header v-if="title" class="z-10 col-span-2 m-4 flex max-w-6xl flex-row items-center gap-4 pr-8"
+  <header v-if="title" class="z-10 col-span-2 m-4 mt-8 flex max-w-6xl flex-row items-center gap-4 pr-8"
     :class="{ 'pb-2': title }">
     <NButton v-if="!isIndex && backUrl" style="margin-top: 0.1rem" quaternary size="small" @click="back">
       <template #icon>

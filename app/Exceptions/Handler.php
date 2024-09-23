@@ -57,7 +57,7 @@ class Handler extends ExceptionHandler
         }
 
         return back()->with([
-            'info' => $e->getMessage() ?? 'Neturite teisių atlikti šiam veiksmui.',
+            'info' => __($e->getMessage()) ?? 'Neturite teisių atlikti šiam veiksmui.',
             'statusCode' => $response->getStatusCode(),
         ]);
     }

@@ -10,7 +10,7 @@
       {{ $t('Atstovavimas') }}
     </NButton>
     </Link>
-    <Link v-if="$page.props.auth?.can.index.page" :href="route('dashboard.svetaine')">
+    <Link v-if="$page.props.auth?.can.create.page" :href="route('dashboard.svetaine')">
     <NButton quaternary text>
       <template #icon>
         <IFluentGlobe24Regular />
@@ -38,6 +38,14 @@
   </div>
   <!-- Nuorodos esančios visada -->
   <div class="flex flex-col items-start justify-end gap-5 px-6">
+    <a href="https://www.vusa.lt/docs" target="_blank">
+    <NButton quaternary text>
+      <template #icon>
+        <IFluentBookExclamationMark20Filled />
+      </template>
+      {{ $t('Dokumentacija') }}
+    </NButton>
+    </a>
     <UserSettingsDropdown />
     <div class="mb-4 flex items-center justify-center gap-6 overflow-hidden">
       <NButton text @click="changeLocale">

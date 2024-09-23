@@ -1,15 +1,22 @@
 <template>
   <AdminContentPage title="Atstovavimas">
-    <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
-      <NCard :segmented="{
+    <div ref="el" class="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+      <NCard key="card-1" :segmented="{
         footer: 'soft',
       }">
         <template #header>
           <div class="inline-flex items-center gap-2">
             <component :is="Icons.MEETING" />
-            Artėjantys susitikimai
+            Tavo artėjantys susitikimai
           </div>
         </template>
+        <!--        <template #header-extra>
+          <NButton class="handle" size="small" quaternary>
+            <template #icon>
+              <IFluentReOrderDotsVertical24Regular />
+            </template>
+</NButton>
+</template> -->
         <span class="mb-4 inline-block text-4xl font-bold">
           <NNumberAnimation :from="0" :to="upcomingMeetings.length" />
         </span>
@@ -42,15 +49,21 @@
           </div>
         </template>
       </NCard>
-      <NCard :segmented="{
+      <NCard key="card-2" :segmented="{
         footer: 'soft',
       }">
         <template #header>
           <div class="inline-flex items-center gap-2">
             <component :is="Icons.INSTITUTION" />
-            Institucijos
+            Tavo institucijos
           </div>
         </template>
+        <!--        <template #header-extra>
+          <NButton class="handle" size="small" quaternary>
+            <template #icon>
+              <IFluentReOrderDotsVertical24Regular />
+            </template>
+</template> -->
         <div class="grid grid-cols-2 gap-2">
           <div>
             <p class="mb-1">
@@ -72,7 +85,7 @@
             <template #icon>
               <Icons.INSTITUTION />
             </template>
-              {{ $t('Rodyti visas') }}
+            {{ $t('Rodyti visas') }}
           </NButton>
           <CardModal v-model:show="showAllInstitutionModal" title="Visos institucijos"
             @close="showAllInstitutionModal = false">
@@ -140,7 +153,8 @@
               </template>
               {{ $t('Rodyti visus') }}
             </NButton>
-            <CardModal class="max-w-5xl"  v-model:show="showAllDutyModal" title="Visos pareigybės" @close="showAllDutyModal = false">
+            <CardModal v-model:show="showAllDutyModal" class="max-w-5xl" title="Visos pareigybės"
+              @close="showAllDutyModal = false">
               <NDataTable :max-height="450" :data="allDuties" :columns="allDutyColumns" :pagination="{ pageSize: 7 }" />
             </CardModal>
           </template>
@@ -185,10 +199,12 @@ import { formatStaticTime } from '@/Utils/IntlTime';
 import { Link, router } from '@inertiajs/vue3';
 import { computed, h, onMounted, ref, watch } from 'vue';
 import { Calendar, PopoverRow } from "v-calendar";
-import { useDark } from "@vueuse/core";
+import { useDark, useStorage } from "@vueuse/core";
 import CardModal from "@/Components/Modals/CardModal.vue";
 import Icons from "@/Types/Icons/filled";
 import { barY, binX, groupX, plot, rectY } from "@observablehq/plot";
+import { useSortable } from "@vueuse/integrations/useSortable";
+import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
 
 const props = defineProps<{
   user: App.Entities.User;
@@ -208,6 +224,12 @@ const initialPage = {
   month: new Date().getMonth() + 1,
   day: new Date().getDate(),
 };
+
+//const el = ref(null);
+//
+//const cards = useStorage('dashboard-sortable-cards-atstovavimas-1', []);
+//
+//useSortable(el, cards, { handle: ".handle", animation: 100 });
 
 const institutions = props.user.current_duties.map(duty => {
 

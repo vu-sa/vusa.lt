@@ -11,7 +11,7 @@
             @update:value="handleTenantUpdateValue" />
         </div>
       </div>
-      <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+      <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
         <NCard :segmented="{
           footer: 'soft',
         }">
@@ -34,6 +34,9 @@
           <template #footer>
             <Link :href="route('pages.index')">
             <NButton size="small" secondary>
+              <template #icon>
+                <Icons.PAGE />
+              </template>
               {{ $t('Rodyti visus') }}
             </NButton>
             </Link>

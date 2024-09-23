@@ -1,13 +1,13 @@
 <template>
   <AdminContentPage title="Rezervacijos">
-    <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
       <NCard :segmented="{
         footer: 'soft',
       }">
         <template #header>
           <div class="inline-flex items-center gap-2">
             <component :is="Icons.RESERVATION" />
-            Rezervacijos
+            Tavo rezervacijos
           </div>
         </template>
         <div class="grid grid-cols-2 gap-2">
@@ -47,6 +47,38 @@
           </div>
         </template>
       </NCard>
+      <NCard :segmented="{
+        footer: 'soft',
+      }">
+        <template #header>
+          <div class="inline-flex items-center gap-2">
+            <component :is="Icons.RESERVATION" />
+            Skolinami daiktai
+          </div>
+        </template>
+        <div class="grid grid-cols-2 gap-2">
+          <p>Visi daiktai</p>
+          <p>Iš viso skirtingų daiktų</p>
+          <span class="inline-block text-4xl font-bold">
+            <NNumberAnimation :from="0" :to="resources.sumOfCapacity" />
+          </span>
+          <span class="inline-block text-4xl font-bold">
+            <NNumberAnimation :from="0" :to="resources.active" />
+          </span>
+        </div>
+        <template #footer>
+          <div class="flex items-center gap-2">
+            <Link :href="route('resources.index')">
+            <NButton size="small" secondary>
+              <template #icon>
+                <IFluentCube24Filled />
+              </template>
+              Peržiūrėti visus
+            </NButton>
+            </Link>
+          </div>
+        </template>
+      </NCard>
     </div>
     <NDivider v-if="tenants.length > 0" />
     <section v-if="tenants.length > 0" class="mt-8">
@@ -71,6 +103,7 @@
 </template>
 
 <script setup lang="ts">
+//import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import CardModal from '@/Components/Modals/CardModal.vue';
 import ReservationsWithUnitResources from '@/Components/Tables/ReservationsWithUnitResources.vue';
@@ -81,6 +114,10 @@ import { h, ref } from 'vue';
 
 const { reservations, tenants, providedTenant } = defineProps<{
   reservations: App.Entities.Reservation[];
+  resources: {
+    active: number;
+    sumOfCapacity: number;
+  };
   tenants: App.Entities.Tenant[];
   providedTenant: App.Entities.Tenant | null;
 }>();
