@@ -2,7 +2,7 @@
   <!-- Dinaminės nuorodos į administravimo puslapius -->
   <div class="gap mt-4 flex flex-col px-6">
     <span class="mb-2 text-xs uppercase text-zinc-500">{{ $t('Funkcijos') }}</span>
-    <Link :href="route('dashboard.atstovavimas')">
+    <Link v-if="$page.props.auth?.can.create.meeting" :href="route('dashboard.atstovavimas')">
     <NButton quaternary text>
       <template #icon>
         <IFluentHatGraduation24Filled />
