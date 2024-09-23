@@ -11,7 +11,7 @@
       {{ $t('Pasirink vieną iš veiksmų') }}:
     </p>
 
-    <div class="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+    <div class="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
       <Link v-if="$page.props.auth?.can.create.meeting" :href="route('dashboard.atstovavimas')">
       <button
         class="flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-gradient-to-br from-white to-white p-4 text-left text-base text-zinc-700 shadow-sm duration-500 hover:shadow-lg hover:shadow-vusa-red/20 dark:border-zinc-800 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300">
@@ -46,7 +46,7 @@
     <p class="mt-24 font-medium text-zinc-600">
       {{ $t('Kiti įrankiai') }}
     </p>
-    <div class="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+    <div class="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
       <Link :href="route('administration')">
       <button
         class="flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-gradient-to-br from-white to-white p-4 text-left text-base text-zinc-700 shadow-sm duration-500 hover:shadow-lg dark:border-zinc-800 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300 dark:hover:shadow-white/20">
@@ -117,7 +117,7 @@ const userNameAddress = computed(() => {
 
   const firstName = split[0];
 
-  return addressivize(firstName);
+  return usePage().props.app.locale === 'lt' ? addressivize(firstName) : firstName;
 });
 
 //const atstovaiPassword = import.meta.env.VITE_ATSTOVAI_PASSWORD ?? "";

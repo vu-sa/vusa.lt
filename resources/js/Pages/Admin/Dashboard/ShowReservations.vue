@@ -58,7 +58,7 @@
         </template>
         <div class="grid grid-cols-2 gap-2">
           <p>Visi daiktai</p>
-          <p>Iš viso skirtingų daiktų</p>
+          <p>Iš viso skirtingų išteklių</p>
           <span class="inline-block text-4xl font-bold">
             <NNumberAnimation :from="0" :to="resources.sumOfCapacity" />
           </span>
