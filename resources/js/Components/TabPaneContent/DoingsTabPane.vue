@@ -2,7 +2,11 @@
   <div>
     <div class="grid grid-cols-ramFill gap-x-4">
       <DoingCard v-for="doing in doings" :key="doing.id" :doing="doing" />
-      <NewGridItemButton v-if="matter" :icon="IFluentAddCircle24Filled" @click="showModal = true" />
+      <NewGridItemButton v-if="matter" @click="showModal = true">
+        <template #icon>
+          <IFluentAddCircle24Filled />
+        </template>
+      </NewGridItemButton>
     </div>
     <CardModal v-if="matter" v-model:show="showModal" title="Sukurti veiklą" @close="showModal = false">
       <DoingForm :doing="doingTemplate" @submit="handleDoingSubmit" />
