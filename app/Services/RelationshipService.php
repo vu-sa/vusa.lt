@@ -37,8 +37,8 @@ class RelationshipService
     public static function getRelatedInstitutionRelations(Institution $institution)
     {
         // first get direct relationships
-        $outgoingDirect = $institution->load('outgoingRelationships.pivot.related_model')->outgoingRelationships; // this gets relationshipables which may be figured out
-        $incomingDirect = $institution->load('incomingRelationships.pivot.relationshipable')->incomingRelationships; // this gets relationshipables which may be figured out
+        $outgoingDirect = $institution->load('outgoingRelationships.pivot.related_model.meetings')->outgoingRelationships; // this gets relationshipables which may be figured out
+        $incomingDirect = $institution->load('incomingRelationships.pivot.relationshipable.meetings')->incomingRelationships; // this gets relationshipables which may be figured out
 
         // now by type
         $outgoingDirectByType = $institution->load(['types.outgoingRelationships.pivot.related_model.institutions' => function ($query) use ($institution) {
@@ -73,7 +73,7 @@ class RelationshipService
         $incomingDirectByType = $relationships['incomingByType']->pluck('pivot.relationshipable.institutions')->flatten(1);
 
         // return eloquent collection of institutions unique
-        return $outgoingDirect->merge($incomingDirect)->merge($outgoingDirectByType)->merge($incomingDirectByType)->unique('id');
+        return $outgoingDirect->merge($incomingDirect)->merge((new Collection($outgoingDirectByType))->load('meetings'))->merge((new Collection($incomingDirectByType))->load('meetings'))->unique('id');
     }
 
     public static function getAllRelatedInstitutions()

@@ -51,7 +51,13 @@ class DashboardController extends Controller
         }
 
         return Inertia::render('Admin/Dashboard/ShowAtstovavimas', [
-            'user' => $user,
+            'user' => [ ...$user->toArray(), 
+                'current_duties' => $user->current_duties->map(function ($duty) {
+                return [
+                    ...$duty->toArray(),
+                    'institution' => $duty?->institution?->append('relatedInstitutions'),
+                ];
+            })],
             'tenants' => $tenants,
             'providedTenant' => $providedTenant,
         ]);
@@ -133,11 +139,11 @@ class DashboardController extends Controller
                 'sumOfCapacity' => Resource::where('is_reservable', true)->sum('capacity'),
             ],
             'tenants' => $tenants,
-            'providedTenant' => [
+            'providedTenant' => $providedTenant ? [
                 ...$providedTenant->toArray(),
                 'reservations' => $providedTenant->reservations->load('resources.tenant', 'users')->append('isCompleted')->unique()->values(),
                 'activeReservations' => $providedTenant->resources->load('reservations.users')->pluck('reservations')->flatten()->unique()->values(),
-            ],
+            ] : null
         ]);
     }
 

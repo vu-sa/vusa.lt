@@ -251,6 +251,23 @@ const hasUpcomingMeetingCount = computed(() => institutions.filter(institution =
 
 const meetings = institutions.map(institution => institution.meetings).flat();
 
+// get meetings from related institutions
+const relatedInstitutionsMeetingsCalendarAttributes = institutions.map(institution => {
+  return institution.relatedInstitutions?.map(relatedInstitution => {
+    return relatedInstitution.meetings?.map(meeting => {
+      return {
+        dates: new Date(meeting.start_time),
+        dot: 'blue',
+        popover: {
+          label: relatedInstitution.name,
+          isInteractive: true,
+        },
+        key: meeting.id,
+      };
+    });
+  }).flat();
+}).flat().filter(Boolean);
+
 const upcomingMeetings = meetings.filter(meeting => new Date(meeting.start_time) > new Date()).sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
 
 const calendarAttributes = meetings.map((meeting) => {
@@ -271,6 +288,10 @@ calendarAttributes.push({
   highlight: { color: "red", fillMode: "outline" },
   order: 1,
 });
+
+// push related institutions meetings to the calendar attributes
+calendarAttributes.push(...relatedInstitutionsMeetingsCalendarAttributes);
+
 
 const allMeetingColumns = [
   {
@@ -320,7 +341,8 @@ const allTenantMeetings = computed(() => props.providedTenant?.institutions.map(
   })
 }).flat())
 
-const tenantCalendarAttributes = computed(() => allTenantMeetings.value?.map((meeting) => {
+const tenantCalendarAttributes = computed(() => {
+  const meetings = allTenantMeetings.value?.map((meeting) => {
   let calendarAttrObject = {
     dates: meeting?.start_time,
     dot: 'red',
@@ -331,13 +353,16 @@ const tenantCalendarAttributes = computed(() => allTenantMeetings.value?.map((me
     key: meeting?.id,
   };
   return calendarAttrObject;
-}))
+  });
 
-tenantCalendarAttributes.value?.push({
-  dates: new Date(),
-  highlight: { color: "red", fillMode: "outline" },
-  order: 1,
-});
+  meetings?.push({
+    dates: new Date(),
+    highlight: { color: "red", fillMode: "outline" },
+    order: 1,
+  });
+
+  return meetings;
+})
 
 const wrapper = ref(null);
 
