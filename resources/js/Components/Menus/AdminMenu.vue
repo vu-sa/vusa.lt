@@ -35,16 +35,19 @@
       {{ $t('Administravimas') }}
     </NButton>
     </Link>
+    <!-- <template v-if="favoriteItems.length > 0">
+      <span class="mb-2 mt-4 text-xs uppercase text-zinc-500">{{ $t('Mėgstamiausi') }}</span>
+</template> -->
   </div>
   <!-- Nuorodos esančios visada -->
-  <div class="flex flex-col items-start justify-end gap-5 px-6">
+  <div class="mt-auto flex flex-col items-start justify-end gap-5 px-6">
     <a href="https://www.vusa.lt/docs" target="_blank">
-    <NButton quaternary text>
-      <template #icon>
-        <IFluentBookExclamationMark20Filled />
-      </template>
-      {{ $t('Dokumentacija') }}
-    </NButton>
+      <NButton quaternary text>
+        <template #icon>
+          <IFluentBookExclamationMark20Filled />
+        </template>
+        {{ $t('Dokumentacija') }}
+      </NButton>
     </a>
     <UserSettingsDropdown />
     <div class="mb-4 flex items-center justify-center gap-6 overflow-hidden">
@@ -73,8 +76,10 @@ import { useStorage } from '@vueuse/core';
 import { watch } from 'vue';
 import { loadLanguageAsync } from 'laravel-vue-i18n';
 import { capitalize } from '@/Utils/String';
+import entities from '@/entities';
 
 const locale = useStorage("locale", usePage().props.app.locale);
+const favoriteItems = useStorage('favoriteItems', []);
 
 const changeLocale = () => {
   locale.value = locale.value === "en" ? "lt" : "en";
@@ -87,5 +92,3 @@ watch(locale, (locale) => {
 });
 
 </script>
-
-<style scoped></style>

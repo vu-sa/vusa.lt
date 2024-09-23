@@ -9,9 +9,17 @@
           <template v-for="item in category.items">
             <Link v-if="item.show" :key="item.title" :href="item.href">
             <button
-              class="flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-gradient-to-br from-white to-white p-4 text-left text-sm leading-4 text-zinc-700 shadow-sm duration-500 hover:shadow-lg dark:border-zinc-800 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300 dark:hover:shadow-white/20">
+              class="group relative flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-gradient-to-br from-white to-white p-4 text-left text-sm leading-4 text-zinc-700 shadow-sm duration-500 hover:shadow-lg dark:border-zinc-800 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300 dark:hover:shadow-white/20">
               <component :is="item.icon" width="28" height="28" />
               {{ item.title }}
+              <!-- Add favorite button -->
+              <!-- <div class="absolute -right-1 -top-4 opacity-0 duration-300 group-hover:opacity-100">
+                <NButton tiny circle secondary @click.prevent="changeFavorite(item)">
+                  <template #icon>
+                    <IFluentStar16Filled />
+                  </template>
+                </NButton>
+</div> -->
             </button>
             </Link>
           </template>
@@ -26,6 +34,7 @@ import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import Icons from '@/Types/Icons/regular';
 import { capitalize } from '@/Utils/String';
 import { Link, usePage } from '@inertiajs/vue3';
+import { useStorage } from '@vueuse/core';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { computed, type Component } from 'vue';
 
@@ -42,6 +51,17 @@ type MenuItemsType = {
     show: boolean;
   }[];
   show: boolean;
+};
+
+const favoriteItems = useStorage('favoriteItems', []);
+
+const changeFavorite = (item: { title: string }) => {
+  const index = favoriteItems.value.indexOf(item.title);
+  if (index === -1) {
+    favoriteItems.value.push(item.title);
+  } else {
+    favoriteItems.value.splice(index, 1);
+  }
 };
 
 const menuItems: MenuItemsType = computed(() => [
