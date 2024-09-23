@@ -18,7 +18,7 @@ trait HasTranslations
 
             // If field is not selected, this makes it so nothing is returned, instead
             // of empty string
-            if (!isset($attributes[$field])) {
+            if (! isset($attributes[$field])) {
                 continue;
             }
 

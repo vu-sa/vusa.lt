@@ -8,7 +8,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Tenant extends Model
 {
-    use HasFactory, Searchable, HasRelationships;
+    use HasFactory, HasRelationships, Searchable;
 
     protected $guarded = [];
 

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Actions\GetInstitutionManagers;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAgendaItemsRequest;
 use App\Models\Meeting;
