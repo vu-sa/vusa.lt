@@ -37,7 +37,7 @@ test('simple user cant access all users in admin', function () {
 
     $this->followRedirects($response)
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/ShowDashboard')
+            ->component('Admin/ShowAdminHome')
             ->where('flash.statusCode', 403)
         );
 });
@@ -53,7 +53,7 @@ test('simple user cant create contact', function () {
 
     $this->followRedirects($response)
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/ShowDashboard')
+            ->component('Admin/ShowAdminHome')
             ->where('flash.statusCode', 403)
         );
 
@@ -66,7 +66,7 @@ test('simple user cant create contact', function () {
 
     $this->followRedirects($response)
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/ShowDashboard')
+            ->component('Admin/ShowAdminHome')
             ->where('flash.statusCode', 403)
         );
 
