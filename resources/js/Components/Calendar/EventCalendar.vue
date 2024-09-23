@@ -1,6 +1,6 @@
 <template>
   <div class="my-calendar">
-    <Calendar :initial-page="currentDay" :is-dark :attributes="calendarAttributes" :locale="{
+    <Calendar :initial-page :is-dark :attributes="calendarAttributes" :locale="{
       id: $page.props.app.locale,
       firstDayOfWeek: 2,
       masks: { weekdays: 'WW' },
@@ -45,7 +45,7 @@ const props = defineProps<{
   locale: string;
 }>();
 
-const currentDay: PageAddress = {
+const initialPage: PageAddress = {
   year: new Date().getFullYear(),
   month: new Date().getMonth() + 1,
   day: new Date().getDate(),

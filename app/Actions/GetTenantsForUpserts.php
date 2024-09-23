@@ -17,11 +17,12 @@ class GetTenantsForUpserts
         $authorizer->forUser(Auth::user())->checkAllRoleables($permission);
 
         if ($authorizer->isAllScope) {
-            return Tenant::query()->orderBy('shortname_vu')->get(['id', 'shortname'])->map(
+            return Tenant::query()->orderBy('shortname_vu')->get(['id', 'shortname', 'type'])->map(
                 function ($tenant) {
                     return [
                         'id' => $tenant->id,
                         'shortname' => __($tenant->shortname),
+                        'type' => $tenant->type,
                     ];
                 }
             );
@@ -36,6 +37,7 @@ class GetTenantsForUpserts
                 return [
                     'id' => $tenant->id,
                     'shortname' => __($tenant->shortname),
+                    'type' => $tenant->type,
                 ];
             }
         );

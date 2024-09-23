@@ -15,48 +15,48 @@ declare global {
       created_at: string
       updated_at: string
       // relations
-      tenant: Tenant
+      tenant?: Tenant
     }
 
     export interface Calendar {
       // columns
       id: number
-      title: string[]|null
-      description: string[]|null
-      location: string[]|null
-      organizer: string[]|null
-      cto_url: string[]|null
-      facebook_url: string|null
-      video_url: string|null
+      title?: string[]|null
+      description?: string[]|null
+      location?: string[]|null
+      organizer?: string[]|null
+      cto_url?: string[]|null
+      facebook_url?: string|null
+      video_url?: string|null
       is_draft: boolean
       is_all_day: boolean
       is_international: boolean
       date: string
-      end_date: string|null
-      category: string|null
+      end_date?: string|null
+      category?: string|null
       tenant_id: number
       created_at: string
       updated_at: string
-      registration_form_id: number|null
+      registration_form_id?: number|null
       // mutators
       translations: unknown
       // relations
-      tenant: Tenant
-      registration_form: RegistrationForm
-      media: Medium[]
+      tenant?: Tenant
+      registration_form?: RegistrationForm
+      media?: Medium[]
     }
 
     export interface Category {
       // columns
       id: number
-      alias: string|null
+      alias?: string|null
       name: string
-      description: string|null
+      description?: string|null
       created_at: string
       updated_at: string
       // relations
-      banners: Banner
-      pages: Page[]
+      banners?: Banner
+      pages?: Page[]
     }
 
     export interface ChangelogItem {
@@ -65,7 +65,7 @@ declare global {
       title: string[]
       date: string
       description: string[]
-      permission_id: string|null
+      permission_id?: string|null
       // mutators
       translations: unknown
     }
@@ -73,38 +73,38 @@ declare global {
     export interface Comment {
       // columns
       id: string
-      parent_id: string|null
+      parent_id?: string|null
       comment: string
-      decision: string|null
+      decision?: string|null
       user_id: string
       commentable_type: string
       commentable_id: string
       created_at: string
       updated_at: string
-      deleted_at: string|null
+      deleted_at?: string|null
       // relations
-      commentable: Comment
-      comments: Comment[]
-      user: User
-      activities: Activity[]
+      commentable?: Comment
+      comments?: Comment[]
+      user?: User
+      activities?: Activity[]
     }
 
     export interface Contact {
       // columns
       id: string
       name: string
-      email: string|null
-      phone: string|null
-      profile_photo_path: string|null
+      email?: string|null
+      phone?: string|null
+      profile_photo_path?: string|null
       created_at: string
       updated_at: string
-      deleted_at: string|null
-      extra_attributes: string[]|null
+      deleted_at?: string|null
+      extra_attributes?: string[]|null
       // relations
-      duties: Duty[]
-      commentable: Contact
-      comments: Comment[]
-      activities: Activity[]
+      duties?: Duty[]
+      commentable?: Contact
+      comments?: Comment[]
+      activities?: Activity[]
     }
 
     export interface Content {
@@ -113,7 +113,7 @@ declare global {
       created_at: string
       updated_at: string
       // relations
-      parts: ContentPart[]
+      parts?: ContentPart[]
     }
 
     export interface ContentPart {
@@ -122,12 +122,12 @@ declare global {
       content_id: number
       type: string
       json_content: string[]
-      options: string[]|null
+      options?: string[]|null
       order: number
       created_at: string
       updated_at: string
       // relations
-      content: Content
+      content?: Content
     }
 
     export interface Document {
@@ -137,69 +137,69 @@ declare global {
       title: string
       sharepoint_id?: string
       e_tag?: string|null
-      document_date: string|null
-      institution_id: string|null
-      content_type: string|null
-      language: string|null
-      summary: string|null
-      anonymous_url: string|null
+      document_date?: string|null
+      institution_id?: string|null
+      content_type?: string|null
+      language?: string|null
+      summary?: string|null
+      anonymous_url?: string|null
       is_active: boolean
       sharepoint_site_id?: string
       sharepoint_list_id?: string
       created_at?: string
-      checked_at: string|null
+      checked_at?: string|null
       updated_at?: string
       // relations
-      institution: Institution
+      institution?: Institution
     }
 
     export interface Doing {
       // columns
       id: string
       title: string
-      drive_item_name: string|null
+      drive_item_name?: string|null
       state: unknown
       date: string
-      extra_attributes: string|null
+      extra_attributes?: string|null
       created_at: string
       updated_at: string
-      deleted_at: string|null
+      deleted_at?: string|null
       // relations
-      goals: Goal[]
-      matters: Matter[]
-      types: Type[]
-      users: User[]
-      comments: Comment[]
-      commentable: Doing
-      files: SharepointFile[]
-      tasks: Task[]
-      activities: Activity[]
+      goals?: Goal[]
+      matters?: Matter[]
+      types?: Type[]
+      users?: User[]
+      comments?: Comment[]
+      commentable?: Doing
+      files?: SharepointFile[]
+      tasks?: Task[]
+      activities?: Activity[]
     }
 
     export interface Duty {
       // columns
       id: string
-      name: string[]|null
-      description: string[]|null
+      name?: string[]|null
+      description?: string[]|null
       institution_id: string
       order: number
-      email: string|null
-      places_to_occupy: number|null
+      email?: string|null
+      places_to_occupy?: number|null
       created_at: string
       updated_at: string
-      deleted_at: string|null
+      deleted_at?: string|null
       // mutators
       translations: unknown
       // relations
-      dutiables: Dutiable[]
-      users: User[]
-      contacts: Contact[]
-      types: Type[]
-      institution: Institution
-      roles: Role[]
-      permissions: Permission[]
-      activities: Activity[]
-      notifications: DatabaseNotification[]
+      dutiables?: Dutiable[]
+      users?: User[]
+      contacts?: Contact[]
+      types?: Type[]
+      institution?: Institution
+      roles?: Role[]
+      permissions?: Permission[]
+      activities?: Activity[]
+      notifications?: DatabaseNotification[]
     }
 
     export interface File {
@@ -208,130 +208,130 @@ declare global {
     export interface Goal {
       // columns
       id: string
-      group_id: string|null
+      group_id?: string|null
       tenant_id: number
       title: string
-      description: string|null
+      description?: string|null
       start_date: string
-      end_date: string|null
+      end_date?: string|null
       created_at: string
       updated_at: string
-      deleted_at: string|null
+      deleted_at?: string|null
       // relations
-      matters: Matter[]
-      doings: Doing[]
-      group: GoalGroup
-      tenant: Tenant
-      commentable: Goal
-      comments: Comment[]
-      files: SharepointFile[]
-      tasks: Task[]
-      activities: Activity[]
+      matters?: Matter[]
+      doings?: Doing[]
+      group?: GoalGroup
+      tenant?: Tenant
+      commentable?: Goal
+      comments?: Comment[]
+      files?: SharepointFile[]
+      tasks?: Task[]
+      activities?: Activity[]
     }
 
     export interface GoalGroup {
       // columns
       id: string
       title: string
-      description: string|null
+      description?: string|null
       created_at: string
       updated_at: string
-      deleted_at: string|null
+      deleted_at?: string|null
       // relations
-      goals: Goal[]
-      activities: Activity[]
+      goals?: Goal[]
+      activities?: Activity[]
     }
 
     export interface Institution {
       // columns
       id: string
-      name: string[]|null
-      short_name: string[]|null
+      name?: string[]|null
+      short_name?: string[]|null
       alias: string
-      description: string[]|null
-      address: string[]|null
-      phone: string|null
-      email: string|null
-      website: string|null
-      image_url: string|null
-      logo_url: string|null
-      facebook_url: string|null
-      instagram_url: string|null
-      tenant_id: number|null
+      description?: string[]|null
+      address?: string[]|null
+      phone?: string|null
+      email?: string|null
+      website?: string|null
+      image_url?: string|null
+      logo_url?: string|null
+      facebook_url?: string|null
+      instagram_url?: string|null
+      tenant_id?: number|null
       is_active: boolean
       created_at: string
       updated_at: string
-      deleted_at: string|null
+      deleted_at?: string|null
       // mutators
       translations: unknown
       // relations
-      duties: Duty[]
-      types: Type[]
-      tenant: Tenant
-      documents: Document[]
-      matters: Matter[]
-      meetings: Meeting[]
-      commentable: Institution
-      comments: Comment[]
-      outgoing_relationships: Relationship[]
-      incoming_relationships: Relationship[]
-      files: SharepointFile[]
-      activities: Activity[]
+      duties?: Duty[]
+      types?: Type[]
+      tenant?: Tenant
+      documents?: Document[]
+      matters?: Matter[]
+      meetings?: Meeting[]
+      commentable?: Institution
+      comments?: Comment[]
+      outgoing_relationships?: Relationship[]
+      incoming_relationships?: Relationship[]
+      files?: SharepointFile[]
+      activities?: Activity[]
     }
 
     export interface MainPage {
       // columns
       id: number
-      link: string|null
-      text: string|null
-      image: string|null
+      link?: string|null
+      text?: string|null
+      image?: string|null
       position: string
-      order: number|null
-      type: string|null
+      order?: number|null
+      type?: string|null
       is_active: boolean
       tenant_id: number
-      lang: string|null
+      lang?: string|null
       created_at: string
       updated_at: string
       // relations
-      tenant: Tenant
+      tenant?: Tenant
     }
 
     export interface Matter {
       // columns
       id: string
       title: string
-      description: string|null
+      description?: string|null
       created_at: string
       updated_at: string
-      deleted_at: string|null
+      deleted_at?: string|null
       // relations
-      institutions: Institution[]
-      meetings: Meeting[]
-      doings: Doing[]
-      goals: Goal[]
-      activities: Activity[]
+      institutions?: Institution[]
+      meetings?: Meeting[]
+      doings?: Doing[]
+      goals?: Goal[]
+      activities?: Activity[]
     }
 
     export interface Meeting {
       // columns
       id: string
       title: string
-      description: string|null
+      description?: string|null
       start_time: string
-      end_time: string|null
+      end_time?: string|null
       created_at: string
       updated_at: string
-      deleted_at: string|null
+      deleted_at?: string|null
       // relations
-      matters: Matter[]
-      agenda_items: AgendaItem[]
-      institutions: Institution[]
-      comments: Comment[]
-      commentable: Meeting
-      files: SharepointFile[]
-      tasks: Task[]
-      activities: Activity[]
+      matters?: Matter[]
+      agenda_items?: AgendaItem[]
+      institutions?: Institution[]
+      comments?: Comment[]
+      commentable?: Meeting
+      files?: SharepointFile[]
+      tasks?: Task[]
+      activities?: Activity[]
     }
 
     export interface Model {
@@ -347,60 +347,60 @@ declare global {
       url: string
       order: number
       is_active: boolean
-      extra_attributes: string[]|null
+      extra_attributes?: string[]|null
       created_at?: string
       updated_at?: string
       // relations
-      user: User
+      user?: User
     }
 
     export interface News {
       // columns
       id: number
       title: string
-      category_id: number|null
-      permalink: string|null
+      category_id?: number|null
+      permalink?: string|null
       short: string
       lang: string
-      other_lang_id: number|null
+      other_lang_id?: number|null
       content_id: number
-      image: string|null
-      image_author: string|null
+      image?: string|null
+      image_author?: string|null
       important: boolean
       tenant_id: number
-      publish_time: string|null
-      main_points: string|null
-      read_more: string|null
-      draft: boolean|null
+      publish_time?: string|null
+      main_points?: string|null
+      read_more?: string|null
+      draft?: boolean|null
       created_at: string
       updated_at: string
-      deleted_at: string|null
+      deleted_at?: string|null
       // relations
-      user: User
-      tenant: Tenant
-      other_language_news: News
-      tags: Tag[]
-      content: Content
+      user?: User
+      tenant?: Tenant
+      other_language_news?: News
+      tags?: Tag[]
+      content?: Content
     }
 
     export interface Page {
       // columns
       id: number
       title: string
-      permalink: string|null
+      permalink?: string|null
       lang: string
-      other_lang_id: number|null
+      other_lang_id?: number|null
       content_id: number
-      category_id: number|null
+      category_id?: number|null
       is_active: boolean
       tenant_id: number
       created_at: string
       updated_at: string
-      deleted_at: string|null
+      deleted_at?: string|null
       // relations
-      tenant: Tenant
-      category: Category
-      content: Content
+      tenant?: Tenant
+      category?: Category
+      content?: Content
     }
 
     export interface Permission {
@@ -408,28 +408,28 @@ declare global {
       id: string
       name: string
       guard_name: string
-      created_at: string|null
-      updated_at: string|null
+      created_at?: string|null
+      updated_at?: string|null
       // relations
-      roles: Role[]
-      users: User[]
-      permissions: Permission[]
+      roles?: Role[]
+      users?: User[]
+      permissions?: Permission[]
     }
 
     export interface AgendaItem {
       // columns
       id: string
       meeting_id: string
-      matter_id: string|null
+      matter_id?: string|null
       created_at: string
       updated_at: string
       title: string
-      start_time: string|null
-      outcome: string|null
+      start_time?: string|null
+      outcome?: string|null
       // relations
-      matter: Matter
-      meeting: Meeting
-      activities: Activity[]
+      matter?: Matter
+      meeting?: Meeting
+      activities?: Activity[]
     }
 
     export interface Doable {
@@ -440,8 +440,8 @@ declare global {
       created_at: string
       updated_at: string
       // relations
-      doing: Doing
-      user: User
+      doing?: Doing
+      user?: User
     }
 
     export interface Dutiable {
@@ -451,15 +451,15 @@ declare global {
       dutiable_id: string
       dutiable_type: string
       start_date: string
-      end_date: string|null
-      extra_attributes: Record<string, unknown>|null
+      end_date?: string|null
+      extra_attributes?: Record<string, unknown>|null
       created_at: string
       updated_at: string
       // relations
-      dutiable: Dutiable
-      duty: Duty
-      user: User
-      contact: Contact
+      dutiable?: Dutiable
+      duty?: Duty
+      user?: User
+      contact?: Contact
     }
 
     export interface GoalMatter {
@@ -469,8 +469,8 @@ declare global {
       created_at: string
       updated_at: string
       // relations
-      goal: Goal
-      matter: Matter
+      goal?: Goal
+      matter?: Matter
     }
 
     export interface Relationshipable {
@@ -483,9 +483,9 @@ declare global {
       created_at: string
       updated_at: string
       // relations
-      relationshipable: Relationshipable
-      related_model: Relationshipable
-      relationship: Relationship
+      relationshipable?: Relationshipable
+      related_model?: Relationshipable
+      relationship?: Relationship
     }
 
     export interface ReservationResource {
@@ -493,22 +493,22 @@ declare global {
       id: number
       reservation_id: string
       resource_id: string
-      start_time: string|null
-      end_time: string|null
+      start_time?: string|null
+      end_time?: string|null
       quantity: number
       state: unknown
-      returned_at: string|null
+      returned_at?: string|null
       created_at: string
       updated_at: string
-      deleted_at: string|null
+      deleted_at?: string|null
       // mutators
       approvable: bool
       state_properties: unknown
       // relations
-      reservation: Reservation
-      resource: Resource
-      commentable: ReservationResource
-      comments: Comment[]
+      reservation?: Reservation
+      resource?: Resource
+      commentable?: ReservationResource
+      comments?: Comment[]
     }
 
     export interface SharepointFileable {
@@ -519,10 +519,10 @@ declare global {
       created_at: string
       updated_at: string
       // relations
-      fileable: SharepointFileable
-      meeting: Meeting
-      institution: Institution
-      type: Type
+      fileable?: SharepointFileable
+      meeting?: Meeting
+      institution?: Institution
+      type?: Type
     }
 
     export interface Registration {
@@ -533,18 +533,18 @@ declare global {
       created_at: string
       updated_at: string
       // relations
-      registration_form: RegistrationForm
+      registration_form?: RegistrationForm
     }
 
     export interface RegistrationForm {
       // columns
       id: number
-      user_id: number|null
+      user_id?: number|null
       data: string
       created_at: string
       updated_at: string
       // relations
-      registrations: Registration[]
+      registrations?: Registration[]
     }
 
     export interface Relationship {
@@ -552,71 +552,71 @@ declare global {
       id: number
       name: string
       slug: string
-      description: string|null
-      type: string|null
+      description?: string|null
+      type?: string|null
       created_at: string
       updated_at: string
       // relations
-      institutions: Institution[]
-      relationshipables: Relationshipable[]
-      types: Type[]
+      institutions?: Institution[]
+      relationshipables?: Relationshipable[]
+      types?: Type[]
     }
 
     export interface Reservation {
       // columns
       id: string
       name: string
-      description: string|null
+      description?: string|null
       start_time: string
       end_time: string
-      completed_at: string|null
+      completed_at?: string|null
       created_at: string
       updated_at: string
-      deleted_at: string|null
+      deleted_at?: string|null
       // relations
-      resources: Resource[]
-      users: User[]
-      commentable: Reservation
-      comments: Comment[]
-      tasks: Task[]
-      activities: Activity[]
+      resources?: Resource[]
+      users?: User[]
+      commentable?: Reservation
+      comments?: Comment[]
+      tasks?: Task[]
+      activities?: Activity[]
     }
 
     export interface Resource {
       // columns
       id: string
-      identifier: string|null
+      identifier?: string|null
       name: string[]
-      description: string[]|null
-      resource_category_id: number|null
-      location: string|null
+      description?: string[]|null
+      resource_category_id?: number|null
+      location?: string|null
       capacity: number
       tenant_id: number
       is_reservable: boolean
       created_at: string
       updated_at: string
-      deleted_at: string|null
+      deleted_at?: string|null
       // mutators
       translations: unknown
       // relations
-      reservations: Reservation[]
-      tenant: Tenant
-      category: ResourceCategory
-      media: Medium[]
+      reservations?: Reservation[]
+      tenant?: Tenant
+      category?: ResourceCategory
+      media?: Medium[]
     }
 
     export interface ResourceCategory {
       // columns
       id: number
       name: string[]
-      description: string[]|null
-      icon: string|null
+      description?: string[]|null
+      icon?: string|null
       created_at: string
       updated_at: string
       // mutators
       translations: unknown
       // relations
-      resources: Resource[]
+      resources?: Resource[]
     }
 
     export interface Role {
@@ -624,14 +624,14 @@ declare global {
       id: string
       name: string
       guard_name: string
-      created_at: string|null
-      updated_at: string|null
+      created_at?: string|null
+      updated_at?: string|null
       // relations
-      duties: Duty[]
-      attachable_types: Type[]
-      types: Type[]
-      permissions: Permission[]
-      users: User[]
+      duties?: Duty[]
+      attachable_types?: Type[]
+      types?: Type[]
+      permissions?: Permission[]
+      users?: User[]
     }
 
     export interface RoleType {
@@ -639,11 +639,11 @@ declare global {
       id: number
       role_id: string
       type_id: number
-      created_at: string|null
-      updated_at: string|null
+      created_at?: string|null
+      updated_at?: string|null
       // relations
-      role: Role
-      type: Type
+      role?: Role
+      type?: Type
     }
 
     export interface SharepointFile {
@@ -651,20 +651,20 @@ declare global {
       sharepoint_id: string
       id: string
       // relations
-      fileables: SharepointFileable[]
-      types: Type[]
-      institutions: Institution[]
-      meetings: Meeting[]
-      commentable: SharepointFile
-      comments: Comment[]
+      fileables?: SharepointFileable[]
+      types?: Type[]
+      institutions?: Institution[]
+      meetings?: Meeting[]
+      commentable?: SharepointFile
+      comments?: Comment[]
     }
 
     export interface Tag {
       // columns
       id: number
-      alias: string|null
+      alias?: string|null
       name: string
-      description: string|null
+      description?: string|null
       created_at: string
       updated_at: string
     }
@@ -673,83 +673,83 @@ declare global {
       // columns
       id: string
       name: string
-      description: string|null
-      due_date: string|null
+      description?: string|null
+      due_date?: string|null
       taskable_type: string
       taskable_id: string
-      completed_at: string|null
+      completed_at?: string|null
       created_at: string
       updated_at: string
-      deleted_at: string|null
+      deleted_at?: string|null
       // relations
-      taskable: Task
-      users: User[]
+      taskable?: Task
+      users?: User[]
     }
 
     export interface Tenant {
       // columns
       id: number
-      type: string|null
+      type?: string|null
       fullname: string
       shortname: string
       alias: string
-      phone: string|null
-      email: string|null
-      address: string|null
-      shortname_vu: string|null
-      primary_institution_id: string|null
+      phone?: string|null
+      email?: string|null
+      address?: string|null
+      shortname_vu?: string|null
+      primary_institution_id?: string|null
       // relations
-      banners: Banner[]
-      calendar: Calendar[]
-      duties: Duty[]
-      institutions: Institution[]
-      news: News[]
-      pages: Page[]
-      resources: Resource[]
-      users: User[]
+      banners?: Banner[]
+      calendar?: Calendar[]
+      duties?: Duty[]
+      institutions?: Institution[]
+      news?: News[]
+      pages?: Page[]
+      resources?: Resource[]
+      users?: User[]
     }
 
     export interface Type {
       // columns
       id: number
-      parent_id: number|null
-      title: string[]|null
-      description: string[]|null
-      model_type: string|null
-      slug: string|null
+      parent_id?: number|null
+      title?: string[]|null
+      description?: string[]|null
+      model_type?: string|null
+      slug?: string|null
       created_at: string
       updated_at: string
-      deleted_at: string|null
+      deleted_at?: string|null
       // mutators
       translations: unknown
       // relations
-      institutions: Institution[]
-      duties: Duty[]
-      doings: Doing[]
-      roles: Role[]
-      descendants: Type[]
-      parent: Type
-      recursive_parent: Type
-      outgoing_relationships: Relationship[]
-      incoming_relationships: Relationship[]
-      files: SharepointFile[]
-      activities: Activity[]
+      institutions?: Institution[]
+      duties?: Duty[]
+      doings?: Doing[]
+      roles?: Role[]
+      descendants?: Type[]
+      parent?: Type
+      recursive_parent?: Type
+      outgoing_relationships?: Relationship[]
+      incoming_relationships?: Relationship[]
+      files?: SharepointFile[]
+      activities?: Activity[]
     }
 
     export interface Typeable {
       // relations
-      type: Type
-      typeable: Typeable
+      type?: Type
+      typeable?: Typeable
     }
 
     export interface User {
       // columns
       id: string
       email: string
-      phone: string|null
-      facebook_url: string|null
+      phone?: string|null
+      facebook_url?: string|null
       name: string
-      pronouns: string[]|null
+      pronouns?: string[]|null
       show_pronouns: boolean
       password?: string|null
       is_active: boolean
@@ -758,24 +758,24 @@ declare global {
       last_action?: string|null
       last_changelog_check?: string|null
       microsoft_token?: string|null
-      updated_at: string|null
+      updated_at?: string|null
       created_at: string
-      profile_photo_path: string|null
-      deleted_at: string|null
+      profile_photo_path?: string|null
+      deleted_at?: string|null
       // mutators
       translations: unknown
       // relations
-      banners: Banner[]
-      calendar: Calendar[]
-      doings: Doing[]
-      duties: Duty[]
-      dutiables: Dutiable[]
-      tasks: Task[]
-      reservations: Reservation[]
-      roles: Role[]
-      permissions: Permission[]
-      activities: Activity[]
-      notifications: DatabaseNotification[]
+      banners?: Banner[]
+      calendar?: Calendar[]
+      doings?: Doing[]
+      duties?: Duty[]
+      dutiables?: Dutiable[]
+      tasks?: Task[]
+      reservations?: Reservation[]
+      roles?: Role[]
+      permissions?: Permission[]
+      activities?: Activity[]
+      notifications?: DatabaseNotification[]
     }
 
   }

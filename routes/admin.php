@@ -4,13 +4,16 @@ namespace App\Http\Controllers\Admin;
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [DashboardController::class, 'dashboard'])->name('dashboard');
+Route::inertia('/', 'Admin/ShowAdminHome')->name('dashboard');
 Route::get('profile', [DashboardController::class, 'userSettings'])->name('profile');
+Route::inertia('administration', 'Admin/ShowAdministration')->name('administration');
+Route::get('dashboard/atstovavimas', [DashboardController::class, 'atstovavimas'])->name('dashboard.atstovavimas');
+Route::get('dashboard/svetaine', [DashboardController::class, 'svetaine'])->name('dashboard.svetaine');
+Route::get('dashboard/reservations', [DashboardController::class, 'reservations'])->name('dashboard.reservations');
+
 Route::patch('profile', [DashboardController::class, 'updateUserSettings'])->name('profile.update');
 Route::get('userTasks', [DashboardController::class, 'userTasks'])->name('userTasks');
-Route::get('workspace', [DashboardController::class, 'workspace'])->name('workspace');
 Route::get('institutionGraph', [DashboardController::class, 'institutionGraph'])->name('institutionGraph');
-Route::get('stats/representatives', [StatsController::class, 'representativesInTenant'])->name('stats.representativesInTenant');
 
 // Restore routes
 Route::patch('users/{user}/restore', [UserController::class, 'restore'])->name('users.restore')->withTrashed();

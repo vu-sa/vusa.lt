@@ -1,5 +1,5 @@
 <template>
-  <InstitutionContacts class="mt-16" :contacts :institution />
+  <InstitutionContacts class="mt-4" :contacts :institution />
 </template>
 
 <script setup lang="ts">

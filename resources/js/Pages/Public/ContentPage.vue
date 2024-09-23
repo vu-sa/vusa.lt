@@ -1,7 +1,6 @@
 <template>
-  <div class="mt-8">
-    <section class="pt-8 last:pb-2">
-      <!-- <header>
+  <section class="pt-8 last:pb-2">
+    <!-- <header>
         <NBreadcrumb v-if="navigationItemId != null" class="mb-4 flex w-full">
           <NBreadcrumbItem v-for="breadcrumb in breadcrumbTree" :key="breadcrumb?.parent_id" :clickable="false">
             {{ breadcrumb?.name }}
@@ -13,28 +12,27 @@
 </NBreadcrumbItem>
 </NBreadcrumb>
 </header> -->
-      <article class="grid grid-cols-1 gap-x-12" :class="{ 'lg:grid-cols-[1fr_250px]': anchorLinks }">
-        <h1 class="col-span-full col-start-1 inline-flex gap-4">
-          <span class="text-gray-900 dark:text-white">{{ page.title }}</span>
-        </h1>
-        <!-- eslint-disable-next-line vue/no-v-html -->
-        <div class="typography flex max-w-prose flex-col gap-2 py-4 text-base leading-7">
-          <RichContentParser :content="page.content?.parts" />
-        </div>
-        <aside v-if="anchorLinks" class="sticky top-48 hidden h-fit lg:block">
-          <NAnchor ignore-gap :bound="160">
-            <template v-for="link in anchorLinks" :key="link.href">
-              <NAnchorLink :title="link.title" :href="link.href" />
-              <template v-for="child in link.children" :key="child.href">
-                <NAnchorLink :title="child.title" :href="child.href" :indent="true" />
-              </template>
+    <article class="grid grid-cols-1 gap-x-12" :class="{ 'lg:grid-cols-[1fr_250px]': anchorLinks }">
+      <h1 class="col-span-full col-start-1 inline-flex gap-4">
+        <span class="text-gray-900 dark:text-white">{{ page.title }}</span>
+      </h1>
+      <!-- eslint-disable-next-line vue/no-v-html -->
+      <div class="typography flex max-w-prose flex-col gap-2 py-4 text-base leading-7">
+        <RichContentParser :content="page.content?.parts" />
+      </div>
+      <aside v-if="anchorLinks" class="sticky top-48 hidden h-fit lg:block">
+        <NAnchor ignore-gap :bound="160">
+          <template v-for="link in anchorLinks" :key="link.href">
+            <NAnchorLink :title="link.title" :href="link.href" />
+            <template v-for="child in link.children" :key="child.href">
+              <NAnchorLink :title="child.title" :href="child.href" :indent="true" />
             </template>
-          </NAnchor>
-        </aside>
-      </article>
-    </section>
-    <FeedbackPopover />
-  </div>
+          </template>
+        </NAnchor>
+      </aside>
+    </article>
+  </section>
+  <FeedbackPopover />
 </template>
 
 <script setup lang="ts">

@@ -85,6 +85,10 @@ class ModelPolicy
             if ($this->pluralModelName === 'institutions') {
                 $institutions = new Collection(RelationshipService::getRelatedInstitutions($model));
 
+                if ($institutions->isEmpty()) {
+                    return false;
+                }
+
                 // check if any element exists in relations array, then return true
                 // relations array consists of 4 collections of models, so we need to flatten it
                 if ($institutions->intersect((new Collection($permissableModels)))->isNotEmpty()) {

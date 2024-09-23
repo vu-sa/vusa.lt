@@ -100,25 +100,37 @@ class FilesController extends Controller
      */
     public function store(Request $request)
     {
-        $file = $request->file('file')['file'];
-
-        // limit file size to 50 MB
-        if ($file->getSize() > 50000000) {
-            return response()->json([
-                'error' => 'File is too large.',
-            ], 422);
-        }
-
+        $files = $request->file('files');
         $path = $request->input('path');
 
-        // Check if file exists, if so, add timestamp to filename
-        if (Storage::exists($path.'/'.$file->getClientOriginalName())) {
-            $file->storeAs($path, time().'_'.$file->getClientOriginalName());
-        } else {
-            $file->storeAs($path, $file->getClientOriginalName());
+        // Initialize an array to store any error messages
+        $errors = [];
+
+        // Check if file exists, if so, add a timestamp to the filename
+        // Limit file size to 50 MB
+        foreach ($files as $fileContainer) {
+            $file = $fileContainer['file'];
+            if ($file->getSize() > 50000000) {
+                $errors[] = "File {$file->getClientOriginalName()} is too large. Maximum file size is 50 MB.";
+            }
         }
 
-        // return redirect to files index
+        // If there are errors, return them
+        if (! empty($errors)) {
+            return response()->json(['errors' => $errors], 422);
+        }
+
+        foreach ($files as $fileContainer) {
+            $file = $fileContainer['file'];
+
+            if (Storage::exists($path.'/'.$file->getClientOriginalName())) {
+                $file->storeAs($path, time().'_'.$file->getClientOriginalName());
+            } else {
+                $file->storeAs($path, $file->getClientOriginalName());
+            }
+        }
+
+        // Return redirect to files index
         return back();
     }
 
@@ -146,11 +158,14 @@ class FilesController extends Controller
         $data = $request->file()['file'] ?? $request->image;
         $originalName = isset($request->file()['file']) ? $request->file()['file']->getClientOriginalName() : $request->name;
 
-        $image = Image::read($data);
+        $startingImage = Image::read($data);
 
-        $image->scaleDown(width: 1200);
+        $image = $startingImage->scaleDown(width: 1200)->toWebp();
 
         $path = (string) $request->input('path');
+
+        // get file name without extension
+        $originalName = pathinfo($originalName, PATHINFO_FILENAME).'.webp';
 
         // check if path exists
         if (! Storage::exists('public/'.$path)) {

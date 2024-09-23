@@ -1,7 +1,11 @@
 <template>
   <div class="grid grid-cols-ramFill gap-4">
     <MatterCard v-for="matter in matters" :key="matter.id" class="max-w-md" :matter="matter" />
-    <NewGridItemButton v-if="institution" :icon="IFluentAddCircle24Filled" @click="showModal = true" />
+    <NewGridItemButton v-if="institution" @click="showModal = true">
+      <template #icon>
+        <IFluentAddCircle24Filled />
+      </template>
+    </NewGridItemButton>
     <CardModal v-model:show="showModal" title="Sukurti klausimą" @close="showModal = false">
       <MatterForm :form="matterTemplate" :institution="institution" @submit="handleSubmit" />
     </CardModal>

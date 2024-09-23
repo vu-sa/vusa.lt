@@ -1,36 +1,26 @@
 <template>
-  <NForm ref="form" :model="model" :rules="rules">
-    <NGrid cols="1">
-      <NFormItemGi label="Klausimo pavadinimas" path="title" required>
-        <NInput
-          v-model:value="model.title"
-          placeholder="Studijų tinklelio peržiūra"
-        ></NInput>
-      </NFormItemGi>
-      <!-- <NFormItemGi label="Aprašymas" path="description">
-        <NInput
-          v-model:value="agendaItemForm.description"
-          type="textarea"
-          placeholder="Aprašykite klausimo kontekstą, jeigu to reikia..."
-        ></NInput>
-      </NFormItemGi> -->
-      <NFormItemGi :show-label="false"
-        ><NButton type="primary" @click="handleSubmit"
-          >Sukurti</NButton
-        ></NFormItemGi
-      >
-    </NGrid>
+  <NForm ref="form" :model :rules>
+    <NFormItem label="Klausimo pavadinimas" path="title" required>
+      <NInput v-model:value="model.title" placeholder="Studijų tinklelio peržiūra" />
+    </NFormItem>
+    <NFormItem label="Aprašymas" path="description">
+      <NInput v-model:value="model.description" type="textarea"
+        placeholder="Aprašykite klausimo kontekstą, svarstymą, pakomentuokite balsavimą..." />
+    </NFormItem>
+    <NFormItem :show-label="false">
+      <NButton type="primary" @click="handleSubmit">
+        Pateikti
+      </NButton>
+    </NFormItem>
   </NForm>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
 import {
   type FormInst,
   type FormRules,
   NButton,
   NForm,
-  NFormItemGi,
-  NGrid,
   NInput,
 } from "naive-ui";
 import { ref } from "vue";
@@ -53,6 +43,9 @@ const rules: FormRules = {
   title: {
     required: true,
     message: "Klausimo pavadinimas yra privalomas",
+  },
+  description: {
+    required: false,
   },
 };
 

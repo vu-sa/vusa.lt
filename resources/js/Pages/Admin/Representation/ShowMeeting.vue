@@ -1,48 +1,30 @@
 <template>
-  <ShowPageLayout :model="meeting" :breadcrumb-options="breadcrumbOptions" :title="meetingTitle"
-    :related-models="relatedModels" :current-tab="currentTab" @change:tab="currentTab = $event">
+  <ShowPageLayout :model="meeting" :breadcrumb-options="breadcrumbOptions" :related-models="relatedModels"
+    :title="`${mainInstitution?.name} (${meetingTitle})`" :current-tab="currentTab" @change:tab="currentTab = $event">
     <template #more-options>
       <MoreOptionsButton edit @edit-click="showMeetingModal = true" />
       <CardModal v-model:show="showMeetingModal" title="Redaguoti posėdžio datą" @close="showMeetingModal = false">
         <MeetingForm class="mt-2" :meeting="meeting" @submit="handleMeetingFormSubmit" />
       </CardModal>
     </template>
-    <NCard class="max-w-sm rounded-sm border bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-900" size="small"
-      :segmented="{ footer: 'soft' }">
-      <NDivider style="margin-top: 0rem; margin-bottom: 0rem">{{
-        $t("Darbotvarkė")
-      }}</NDivider>
-      <NScrollbar style="max-height: 35vh" trigger="none">
-        <ol v-if="meeting.agenda_items?.length > 0" class="pl-4">
-          <li v-for="(agenda_item, index) in meeting.agenda_items" :key="agenda_item.id" class="group flex gap-2">
-            <span>{{ index + 1 }}. {{ agenda_item.title }}</span>
-            <NButton size="tiny" class="invisible transition duration-200 group-hover:visible" strong text
-              @click="handleAgendaClick(agenda_item)"><template #icon>
-                <IFluentEdit24Filled />
-              </template>
-            </NButton>
-            <NButton size="tiny" class="invisible transition duration-200 group-hover:visible" text
-              @click="handleAgendaItemDelete(agenda_item)"><template #icon>
-                <IFluentDelete24Filled />
-              </template>
-            </NButton>
-          </li>
-        </ol>
-        <p v-else class="my-8 text-center text-sm text-zinc-500">
-          Darbotvarkės punktų nėra.
-        </p>
-      </NScrollbar>
-      <template #footer>
-        <NButton size="small" @click="showAgendaItemStoreModal = true">{{ $t("forms.add")
-          }}<template #icon>
-            <NIcon size="16" :component="Icons.AGENDA_ITEM" />
-          </template></NButton>
-        <CardModal v-model:show="showAgendaItemStoreModal" title="Pridėti darbotvarkės punktą" class="max-w-md"
-          :segmented="{ content: 'soft' }" @close="showAgendaItemStoreModal = false">
-          <AgendaItemForm :agenda-item="{ title: null }" @submit="handleAgendaItemStore" />
-        </CardModal>
-      </template>
-    </NCard>
+    <div class="my-4 flex items-center gap-4">
+      <NButton size="small" @click="showAgendaItemStoreModal = true">
+        {{ $t("forms.add")
+        }} klausimą<template #icon>
+          <NIcon size="16" :component="Icons.AGENDA_ITEM" />
+        </template>
+      </NButton>
+      <NDivider vertical style="background-color: lightgray;" />
+      <div class="flex items-center gap-2">
+        <NSwitch v-model:value="showVoteOptions" size="small" />
+        <label class="text-zinc-500 dark:text-zinc-400">{{ $t("Rodyti balsavimo parinktis") }}</label>
+      </div>
+    </div>
+    <NDataTable scroll-x="800" size="small" class="mt-4" :data="meeting.agenda_items" :columns />
+    <CardModal v-model:show="showAgendaItemStoreModal" title="Pridėti darbotvarkės punktą" class="max-w-md"
+      :segmented="{ content: 'soft' }" @close="showAgendaItemStoreModal = false">
+      <AgendaItemForm :agenda-item="{ title: null }" @submit="handleAgendaItemStore" />
+    </CardModal>
     <CardModal v-model:show="showAgendaItemUpdateModal" title="Redaguoti darbotvarkės punktą"
       :segmented="{ content: 'soft' }" @close="showAgendaItemUpdateModal = false">
       <AgendaItemForm v-if="selectedAgendaItem" :agenda-item="selectedAgendaItem" @submit="handleAgendaItemUpdate" />
@@ -73,6 +55,12 @@ import MoreOptionsButton from "@/Components/Buttons/MoreOptionsButton.vue";
 import ShowPageLayout from "@/Components/Layouts/ShowModel/ShowPageLayout.vue";
 import TaskManager from "@/Features/Admin/TaskManager/TaskManager.vue";
 import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
+import { DataTableProps, NButton, NTooltip } from "naive-ui";
+import TriStateButton from "@/Components/Buttons/TriStateButton.vue";
+
+import IMdiThumbsUpOutline from "~icons/mdi/thumbs-up-outline";
+import IMdiThumbsDownOutline from "~icons/mdi/thumbs-down-outline";
+import IMdiThumbsUpDownOutline from "~icons/mdi/thumbs-up-down-outline";
 
 const props = defineProps<{
   meeting: App.Entities.Meeting;
@@ -82,9 +70,12 @@ const showMeetingModal = ref(false);
 const showAgendaItemStoreModal = ref(false);
 const showAgendaItemUpdateModal = ref(false);
 const currentTab = useStorage("show-meeting-tab", "Failai");
+const showVoteOptions = useStorage("show-vote-options", false);
 
 // Used in FileUploader.vue
 provide<boolean>("keepFileable", true);
+
+console.log(props.meeting.agenda_items);
 
 const selectedAgendaItem = ref<App.Entities.AgendaItem | null>(null);
 
@@ -140,6 +131,74 @@ const breadcrumbOptions: BreadcrumbOption[] = [
     icon: Icons.MEETING,
   },
 ];
+
+const columns = [
+  { key: 'title', title: 'Pavadinimas', fixed: 'left', minWidth: 150 },
+  {
+    key: 'decision',
+    title: 'Sprendimas',
+    width: 110,
+    render(row: App.Entities.AgendaItem) {
+      return <TriStateButton state={row.decision} size="tiny" row={row} showOptions={showVoteOptions.value} onEnableOptions={() => showVoteOptions.value = true} onChangeState={(state) => {
+        row.decision = state;
+        handleAgendaItemUpdate(row);
+      }} />
+    }
+  },
+  {
+    key: 'student_vote', title: 'Kaip balsavo studentai?', width: 110,
+    render(row: App.Entities.AgendaItem) {
+      return <TriStateButton state={row.student_vote} size="tiny" row={row} showOptions={showVoteOptions.value} onEnableOptions={() => showVoteOptions.value = true}
+      onChangeState={(state) => {
+        row.student_vote = state;
+        handleAgendaItemUpdate(row);
+      }}
+      />
+    }
+  },
+  {
+    key: 'student_benefit', title: 'Ar palanku studentams?', width: 120,
+    render(row: App.Entities.AgendaItem) {
+      return <TriStateButton state={row.student_benefit} size="tiny" row={row} showOptions={showVoteOptions.value} positiveIcon={IMdiThumbsUpOutline} negativeIcon={IMdiThumbsDownOutline} neutralIcon={IMdiThumbsUpDownOutline} onEnableOptions={() => showVoteOptions.value = true}
+      onChangeState={(state) => {
+        row.student_benefit = state;
+        handleAgendaItemUpdate(row);
+      }}
+      >
+      </TriStateButton>
+    }
+  },
+  {
+    key: 'description', title: 'Aprašymas', width: 100,
+    render(row: App.Entities.AgendaItem) {
+      return <NTooltip trigger="hover" placement="top">
+        {{
+          trigger: () => <NButton size="tiny" color={!row.description ? 'gray' : undefined} quaternary onClick={() => handleAgendaClick(row)}>
+            {{
+              icon: () => <>{!row.description ? <IMdiFileDocumentPlus /> : <IMdiFileDocument />}</>,
+            }}
+          </NButton>,
+          default: () => !row.description ? 'Pridėti aprašymą' : row.description,
+        }}
+      </NTooltip>
+    }
+  },
+  {
+    key: 'actions', render(row) {
+      return <MoreOptionsButton
+        edit
+        delete
+        small
+        onEditClick={() => {
+          handleAgendaClick(row);
+        }}
+        onDeleteClick={() => {
+          handleAgendaItemDelete(row);
+        }}
+      ></MoreOptionsButton>
+    }
+  }
+]
 
 const handleAgendaItemStore = (agendaItem: App.Entities.AgendaItem) => {
   router.post(

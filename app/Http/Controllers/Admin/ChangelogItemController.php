@@ -61,4 +61,13 @@ class ChangelogItemController extends Controller
 
         return back()->with('success');
     }
+
+    public function destroy(ChangelogItem $changelogItem): RedirectResponse
+    {
+        $this->authorize('delete', $changelogItem);
+
+        $changelogItem->delete();
+
+        return back()->with('success', 'Pasikeitimas ištrintas.');
+    }
 }

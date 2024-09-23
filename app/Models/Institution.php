@@ -91,6 +91,11 @@ class Institution extends Model
         return RelationshipService::getRelatedInstitutionRelations($this);
     }
 
+    public function getRelatedInstitutionsAttribute()
+    {
+        return RelationshipService::getRelatedInstitutions($this);
+    }
+
     public function toSearchableArray()
     {
         return [

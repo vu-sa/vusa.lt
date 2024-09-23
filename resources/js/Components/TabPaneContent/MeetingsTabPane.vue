@@ -3,7 +3,11 @@
     <MeetingCard v-for="meeting in meetings" :key="meeting.id" class="max-w-sm" :meeting="meeting"
       @click="router.visit(route('meetings.show', meeting.id))" />
     <template v-if="institution">
-      <NewGridItemButton :icon="IFluentAddCircle24Filled" @click="showModal = true" />
+      <NewGridItemButton @click="showModal = true">
+        <template #icon>
+          <IFluentAddCircle24Filled />
+        </template>
+      </NewGridItemButton>
       <NewMeetingModal :institution="institution" :show-modal="showModal" @close="showModal = false" />
     </template>
   </div>

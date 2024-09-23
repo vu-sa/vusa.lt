@@ -1,17 +1,34 @@
 <template>
   <section class="fixed top-0 z-50 w-full">
-    <div class="group relative">
+    <div class="group relative mx-4 px-4 xl:px-8 2xl:px-12">
+      <nav>
+        <div class="flex justify-end gap-4 px-4 duration-300 ease-in-out group-hover:translate-y-0" :class="{
+          'translate-y-full': hasScrolledDown,
+        }">
+          <SearchButton size="tiny" text-color="#767875">
+            {{ $t('Paieška') }}
+          </SearchButton>
+          <a href="/login">
+            <NButton text size="tiny" text-color="#767875">
+              <template #icon>
+                <IFluentPerson24Filled v-if="$page.props.auth?.user" />
+                <IFluentPerson24Regular v-else />
+              </template>
+              {{ $page.props.auth?.user ? $page.props.auth.user?.name : $t('Prisijungti') }}
+            </NButton>
+          </a>
+        </div>
+      </nav>
       <nav
-        class="relative z-10 grid grid-cols-[120px,_1fr,_auto] bg-white px-6 text-zinc-800 shadow-sm dark:bg-zinc-800 dark:text-white max-md:h-16 max-md:gap-4 md:h-20 md:grid-cols-[auto,_1fr,_120px] md:gap-12 lg:px-12 xl:px-24 2xl:px-36">
+        class="relative z-10 grid grid-cols-[120px,_1fr,_auto] bg-white px-8 text-zinc-800 shadow-md transition-shadow duration-500 group-hover:rounded-t-lg dark:bg-zinc-800 dark:text-white max-lg:rounded-md max-md:h-16 max-md:gap-4 md:h-20 md:grid-cols-[auto,_1fr,_120px] md:gap-12 lg:rounded-t-lg lg:shadow-none"
+        :class="{
+          'lg:rounded-md lg:shadow-md': hasScrolledDown,
+        }">
         <div class="flex flex-row items-center space-x-4">
           <SmartLink title="Grįžti į pagrindinį puslapį" :href="`${$page.props.app.url}/${$page.props.app.locale}`"
             target="_self">
-            <AppLogo :is-theme-dark="isThemeDark" class="w-24 md:w-32" />
+            <AppLogo :is-theme-dark class="w-24 md:w-32" />
           </SmartLink>
-          <NButton v-if="$page.props.auth?.user" class="hidden lg:inline-flex" quaternary tag="a" circle size="small"
-            :href="route('dashboard')">
-            <IFluentAnimalTurtle24Filled />
-          </NButton>
         </div>
 
         <div class="flex w-full items-center gap-x-2 md:gap-x-4 lg:gap-x-12">
@@ -22,10 +39,6 @@
           </MainMenu>
           <div class="hidden max-lg:block">
             <PadalinysSelector :size="smallerThanSm ? 'tiny' : 'small'" />
-          </div>
-          <div class="hidden items-center gap-4 lg:flex">
-            <SearchButton />
-            <StartFM />
           </div>
         </div>
         <div class="my-auto justify-self-end">
@@ -46,9 +59,10 @@
       <SecondMenu v-if="
         $page.props.tenant?.links &&
         $page.props.tenant?.links.length > 0
-      " class="duration-300 ease-in-out group-hover:translate-y-0 max-lg:hidden" :class="{
-        '-translate-y-full': hasScrolledDown,
-      }" />
+      " class="bg-gradient-to-br from-stone-50 to-neutral-100 shadow-md duration-300 ease-in-out group-hover:translate-y-0 dark:from-zinc-800 dark:to-[rgb(23,_23,_25)] max-lg:hidden "
+        :class="{
+          '-translate-y-full shadow-sm': hasScrolledDown,
+        }" />
     </div>
     <NDrawer v-model:show="isDrawerActive" placement="left" :width="400">
       <NDrawerContent closable>
@@ -74,7 +88,6 @@ import PadalinysSelector from "../Nav/PadalinysSelector.vue";
 import SearchButton from "../Nav/SearchButton.vue";
 import SecondMenu from "../Nav/SecondMenu.vue";
 import SmartLink from "../SmartLink.vue";
-import StartFM from "@/Components/Public/Nav/StartFM.vue";
 
 import LineHorizontal320Filled from "~icons/fluent/line-horizontal-3-20-filled.vue";
 import MainMenuMobile from "../Nav/MainMenuMobile.vue";

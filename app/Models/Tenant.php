@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Scout\Searchable;
+use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Tenant extends Model
 {
-    use HasFactory, Searchable;
+    use HasFactory, HasRelationships, Searchable;
 
     protected $guarded = [];
 
@@ -43,6 +44,11 @@ class Tenant extends Model
         return $this->hasMany(Page::class);
     }
 
+    public function mainPages()
+    {
+        return $this->hasMany(MainPage::class);
+    }
+
     public function resources()
     {
         return $this->hasMany(Resource::class);
@@ -50,7 +56,12 @@ class Tenant extends Model
 
     public function users()
     {
-        return $this->hasMany(User::class);
+        return $this->hasManyDeepFromRelations($this->institutions(), (new Institution)->duties(), (new Duty)->current_users());
+    }
+
+    public function reservations()
+    {
+        return $this->hasManyDeepFromRelations($this->users(), (new User)->reservations());
     }
 
     public function tenant()

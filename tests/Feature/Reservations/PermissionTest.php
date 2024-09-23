@@ -80,7 +80,7 @@ describe('auth: simple user', function () {
 
         $this->followRedirects($response)
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/ShowDashboard')
+                ->component('Admin/ShowAdminHome')
                 ->whereNot('flash.statusCode', null)
                 ->where('flash.statusCode', 403)
             );
@@ -94,7 +94,7 @@ describe('auth: simple user', function () {
 
         $this->followRedirects($response)
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/ShowDashboard')
+                ->component('Admin/ShowAdminHome')
                 ->where('flash.success', __('messages.users_attached_to_reservation'))
             );
 

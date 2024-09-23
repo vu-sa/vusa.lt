@@ -10,12 +10,7 @@
     </template>
     <slot />
     <template #footer>
-      <div class="flex flex-row-reverse items-center justify-between">
-        <div class="ml-auto inline-flex size-fit">
-          <NButton size="small" text><template #icon>
-              <IFluentInfo24Regular />
-            </template></NButton>
-        </div>
+      <div class="flex flex-row items-center">
         <slot name="action-button" />
       </div>
     </template>

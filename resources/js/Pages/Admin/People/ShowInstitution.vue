@@ -1,6 +1,6 @@
 <template>
-  <ShowPageLayout :current-tab :title="institution.name" :breadcrumb-options
-    :model="institution" :related-models @change:tab="currentTab = $event">
+  <ShowPageLayout :current-tab :title="institution.name" :breadcrumb-options :model="institution" :related-models
+    @change:tab="currentTab = $event">
     <template #title>
       <span class="text-3xl">{{ institution.name }}</span>
     </template>

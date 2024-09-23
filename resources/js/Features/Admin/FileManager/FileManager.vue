@@ -45,16 +45,19 @@
     </div>
     <CardModal :show="showFileUploadModal" title="Pridėti failą" @close="showFileUploadModal = false">
       <NSpin :show="loading">
-        <NUpload :show-file-list="false" class="h-40 rounded-xl" @change="uploadFile">
+        <NUpload ref="upload" v-model:file-list="fileList" multiple class="rounded-xl">
           <NUploadDragger style="height: 100%">
             <div style="margin-bottom: 12px">
-              <IFluentArchive24Regular width="48" height="48" />
+              <IFluentArchive24Regular width="48" height="48" class="mx-auto" />
             </div>
             <p style="font-size: 16px">
               Paspausk arba įtempk failą
             </p>
           </NUploadDragger>
         </NUpload>
+        <NButton type="primary" style="margin-top: 1rem" @click="uploadFiles">
+          Įkelti
+        </NButton>
       </NSpin>
     </CardModal>
     <CardModal :show="showFolderUploadModal" title="Pridėti aplanką" @close="showFolderUploadModal = false">
@@ -110,10 +113,11 @@ const emit = defineEmits<{
   back: [],
   changeDirectory: [directory: string],
   fileSelected: [file: string],
-  update: [],
+  update: [path: string],
 }>()
 
 const message = useMessage();
+const fileList = ref([]);
 
 const showFileUploadModal = ref(false);
 const showFolderUploadModal = ref(false);
@@ -161,20 +165,19 @@ const shownDirectories = computed(() => {
   });
 });
 
-const uploadFile = (e) => {
-  const file = e.file;
+const uploadFiles = () => {
   loading.value = true;
   router.post(
     route("files.store"),
-    { file, path: props.path },
+    { files: fileList.value, path: props.path },
     {
       preserveScroll: true,
       preserveState: true,
       onSuccess: () => {
-        message.success("Failas įkeltas");
+        message.success("Failai įkelti");
         showFileUploadModal.value = false;
         loading.value = false;
-        emit("update");
+        emit("update", props.path);
       },
     },
   );
@@ -193,7 +196,7 @@ const createDirectory = () => {
         message.success("Aplankas sukurtas");
         showFolderUploadModal.value = false;
         loading.value = false;
-        emit("update");
+        emit("update", props.path);
       },
     },
   );
@@ -215,7 +218,7 @@ const deleteFileConfirmed = () => {
         message.success("Failas ištrintas");
         loading.value = false;
         showDeleteModal.value = false;
-        emit("update");
+        emit("update", props.path);
       },
     },
   );

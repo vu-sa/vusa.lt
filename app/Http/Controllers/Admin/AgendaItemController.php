@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Actions\GetInstitutionManagers;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAgendaItemsRequest;
 use App\Models\Meeting;
@@ -37,12 +36,9 @@ class AgendaItemController extends Controller
 
                 $institution = $meeting->institutions->first();
 
-                $institutionManagers = GetInstitutionManagers::execute($institution);
-                // get institution users and merge with institution managers
-                $institutionUsers = $institution->users;
-                $institutionAssociatedUsers = $institutionManagers->merge($institutionUsers);
+                $institutionUsers = $institution->load('duties.current_users')->duties->pluck('current_users')->flatten()->unique()->values();
 
-                TaskService::storeTask('Sutvarkyti darbotvarkės klausimus', $meeting, $institutionAssociatedUsers);
+                TaskService::storeTask('Sutvarkyti darbotvarkės klausimus', $meeting, $institutionUsers);
             }
         }
 
@@ -78,6 +74,10 @@ class AgendaItemController extends Controller
 
         $validated = $request->validate([
             'title' => 'required|string',
+            'description' => 'nullable|string',
+            'decision' => 'nullable|string',
+            'student_vote' => 'nullable|string',
+            'student_benefit' => 'nullable|string',
         ]);
 
         $agendaItem->fill($validated)->save();

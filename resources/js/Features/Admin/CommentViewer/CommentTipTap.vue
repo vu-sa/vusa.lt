@@ -99,93 +99,58 @@ onBeforeUnmount(() => {
 });
 </script>
 
-<style lang="scss" scoped>
-/* Basic editor styles */
-.ProseMirror {
-  >*+* {
-    margin-top: 0.75em;
-  }
-
+<style>
+.tiptap {
+  p,
   ul,
-  ol {
-    padding: 0 1rem;
+  ol,
+  blockquote {
+    margin: 0.4rem 0 0.4rem 0;
   }
 
-  h1,
+  ul {
+    list-style-type: disc;
+  }
+
+  ol {
+    list-style-type: decimal;
+  }
+
+  ul, ol {
+    padding-left: 1.5rem;
+  }
+
+  a {
+    color: #bd2835;
+    text-decoration: underline;
+    font-weight: 500;
+  }
+
+  blockquote {
+    padding-left: 1rem;
+    @apply border-l-4 border-gray-200;
+  }
+
+  /* For placeholder  */
+  p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    float: left;
+    color: #adb5bd;
+    pointer-events: none;
+    height: 0;
+  }
+
   h2,
   h3,
   h4,
   h5,
   h6 {
-    line-height: 1.1;
-  }
-
-  code {
-    background-color: rgba(#616161, 0.1);
-    color: #616161;
-  }
-
-  pre {
-    background: #0d0d0d;
-    color: #fff;
-    font-family: "JetBrainsMono", monospace;
-    padding: 0.75rem 1rem;
-    border-radius: 0.5rem;
-
-    code {
-      color: inherit;
-      padding: 0;
-      background: none;
-      font-size: 0.8rem;
-    }
-  }
-
-  img {
-    max-width: 100%;
-    height: auto;
-
-    &.ProseMirror-selectednode {
-      outline: 3px solid #68cef8;
-    }
-  }
-
-  blockquote {
-    padding-left: 1rem;
-    border-left: 2px solid rgba(#0d0d0d, 0.1);
-  }
-
-  hr {
-    border: none;
-    border-top: 2px solid rgba(#0d0d0d, 0.1);
-    margin: 2rem 0;
+    margin-bottom: 1rem;
   }
 
   table {
     border-collapse: collapse;
-    table-layout: fixed;
     width: 100%;
-    margin: 0;
-    overflow: hidden;
-
-    td,
-    th {
-      min-width: 1em;
-      border: 2px solid #ced4da;
-      padding: 3px 5px;
-      vertical-align: top;
-      box-sizing: border-box;
-      position: relative;
-
-      >* {
-        margin-bottom: 0;
-      }
-    }
-
-    th {
-      font-weight: bold;
-      text-align: left;
-      background-color: #f1f3f5;
-    }
 
     .selectedCell:after {
       z-index: 2;
@@ -195,77 +160,19 @@ onBeforeUnmount(() => {
       right: 0;
       top: 0;
       bottom: 0;
-      background: rgba(200, 200, 255, 0.4);
+      background: rgba(189, 40, 53, 0.08);
       pointer-events: none;
-    }
-
-    .column-resize-handle {
-      position: absolute;
-      right: -2px;
-      top: 0;
-      bottom: -2px;
-      width: 4px;
-      background-color: #adf;
-      pointer-events: none;
-    }
-
-    p {
-      margin: 0;
     }
   }
 
-  table {
-    border-collapse: collapse;
-    table-layout: fixed;
-    width: 100%;
-    margin: 0;
-    overflow: hidden;
+  th,
+  td {
+    border: 1px solid #e2e8f0;
+    position: relative;
+  }
 
-    td,
-    th {
-      min-width: 1em;
-      border: 2px solid #ced4da;
-      padding: 3px 5px;
-      vertical-align: top;
-      box-sizing: border-box;
-      position: relative;
-
-      >* {
-        margin-bottom: 0;
-      }
-    }
-
-    th {
-      font-weight: bold;
-      text-align: left;
-      background-color: #f1f3f5;
-    }
-
-    .selectedCell:after {
-      z-index: 2;
-      position: absolute;
-      content: "";
-      left: 0;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      background: rgba(200, 200, 255, 0.4);
-      pointer-events: none;
-    }
-
-    .column-resize-handle {
-      position: absolute;
-      right: -2px;
-      top: 0;
-      bottom: -2px;
-      width: 4px;
-      background-color: #adf;
-      pointer-events: none;
-    }
-
-    p {
-      margin: 0;
-    }
+  td {
+    padding: 0 0.4rem;
   }
 }
 </style>

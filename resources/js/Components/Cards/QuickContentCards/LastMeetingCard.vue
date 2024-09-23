@@ -14,13 +14,15 @@
         {{
           lastMeetinginFuture ? "Kitas posėdis vyks" : "Paskutinis posėdis vyko"
         }}
-        <Link :href="route('meetings.show', lastMeeting.id)" class="font-bold">{{
+        <Link :href="route('meetings.show', lastMeeting.id)" class="font-bold">
+        {{
           formatStaticTime(new Date(lastMeeting.start_time), {
             year: "numeric",
             month: "long",
             day: "2-digit",
           })
-        }}</Link>
+        }}
+        </Link>
       </p>
     </template>
     <p v-else>

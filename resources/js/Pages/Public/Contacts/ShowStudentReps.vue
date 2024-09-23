@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-8 flex flex-col gap-4">
+  <div class="mt-4 flex flex-col gap-4">
     <h1>{{ $t("Studentų atstovai") }}</h1>
     <div class="flex flex-row items-center gap-4">
       <NFormItem label="Padalinys">

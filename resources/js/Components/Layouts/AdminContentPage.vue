@@ -10,19 +10,17 @@
     <slot name="above-header" />
   </div>
 
-  <header v-if="title" class="z-10 col-span-2 m-4 flex max-w-6xl flex-row items-center gap-4 pr-8"
+  <header v-if="title" class="z-10 col-span-2 m-4 mt-8 flex max-w-6xl flex-row items-center gap-4 pr-8"
     :class="{ 'pb-2': title }">
     <NButton v-if="!isIndex && backUrl" style="margin-top: 0.1rem" quaternary size="small" @click="back">
       <template #icon>
         <IFluentChevronLeft24Filled />
       </template>
     </NButton>
-    <h1 class="my-0 inline-flex items-center gap-3 whitespace-nowrap">
+    <h1 class="my-0 inline-flex items-center gap-3">
       <NIcon v-if="headingIcon" :component="headingIcon" />
       <slot name="title">
-        <NEllipsis style="max-width: 60rem">
           {{ $t(title) }}
-        </NEllipsis>
       </slot>
     </h1>
     <slot name="create-button">
@@ -36,7 +34,7 @@
       </div>
       </Link>
     </slot>
-    <aside class="w-full">
+    <aside class="ml-6">
       <NScrollbar x-scrollable>
         <div class="flex flex-row items-center justify-between gap-2">
           <slot name="after-heading" />

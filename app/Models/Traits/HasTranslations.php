@@ -15,6 +15,13 @@ trait HasTranslations
     {
         $attributes = parent::toArray();
         foreach ($this->getTranslatableAttributes() as $field) {
+
+            // If field is not selected, this makes it so nothing is returned, instead
+            // of empty string
+            if (! isset($attributes[$field])) {
+                continue;
+            }
+
             $attributes[$field] = $this->getTranslation($field, app()->getLocale());
         }
 
