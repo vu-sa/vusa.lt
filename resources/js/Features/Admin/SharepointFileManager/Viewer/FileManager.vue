@@ -1,8 +1,8 @@
 <template>
   <div class="mt-4 rounded-md border border-zinc-200 p-8 shadow-sm dark:border-zinc-50/10">
     <template v-if="startingPath">
-      <div class="flex h-8">
-        <div class="flex w-fit gap-2">
+      <div class="flex flex-wrap h-8">
+        <div class="flex flex-wrap w-fit gap-2">
           <div class="w-96">
             <NSkeleton v-if="loading" size="medium" round />
             <FuzzySearcher v-else :data="files" @search:results="updateResults" />

@@ -29,3 +29,10 @@ const homeOption = computed(() => {
   };
 });
 </script>
+
+<style>
+.n-breadcrumb ul {
+  display: flex;
+  flex-wrap: wrap;
+}
+</style>

@@ -75,6 +75,10 @@ class AgendaItemController extends Controller
 
         $validated = $request->validate([
             'title' => 'required|string',
+            'description' => 'nullable|string',
+            'decision' => 'nullable|string',
+            'student_vote' => 'nullable|string',
+            'student_benefit' => 'nullable|string',
         ]);
 
         $agendaItem->fill($validated)->save();

@@ -4,7 +4,7 @@
     <NMessageProvider>
       <AdminLayout>
         <main
-          class="mb-4 mr-4 grid max-w-7xl grid-cols-[1fr_minmax(250px,_400px)] items-start overflow-auto pb-8 pl-4 pt-4">
+          class="mb-4 mr-4 grid max-w-7xl grid-cols-[1fr_auto] items-start overflow-auto pb-8 pl-4 pt-4">
           <slot />
         </main>
       </AdminLayout>
