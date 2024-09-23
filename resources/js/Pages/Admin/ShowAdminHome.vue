@@ -60,7 +60,7 @@
       <a href="https://www.vusa.lt/docs">
         <button
           class="flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-gradient-to-br from-white to-white p-4 text-left text-base text-zinc-700 shadow-sm duration-500 hover:shadow-lg dark:border-zinc-800 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300 dark:hover:shadow-white/20">
-          <IFluentSettings24Filled class="mb-1 mt-2" width="28" height="28" />
+          <IFluentBookExclamationMark20Filled class="mb-1 mt-2" width="28" height="28" />
           <span class="text-xl font-bold">Dokumentacija</span>
           <p class="text-sm leading-4 text-zinc-500">
             Instrukcijos apie vusa.lt/mano platformą ir naudotojų atsakomybes
