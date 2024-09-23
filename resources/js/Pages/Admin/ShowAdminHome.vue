@@ -3,12 +3,12 @@
 
     <Head :title="$t('Pradinis')" />
 
-    <p class="mt-16 text-3xl font-bold tracking-tight">
-      Labas, {{ userNameAddress }}!  👋
+    <p class="mt-16 text-4xl font-bold tracking-tight">
+      {{ $t('Labas') }}, {{ userNameAddress }}!  👋
     </p>
 
-    <p class="mb-2 mt-4 font-medium text-zinc-600">
-      Pasirink vieną iš veiksmų:
+    <p class="mb-2 mt-8 font-medium text-zinc-600">
+      {{ $t('Pasirink vieną iš veiksmų') }}:
     </p>
 
     <div class="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -16,9 +16,9 @@
       <button
         class="flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-gradient-to-br from-white to-white p-4 text-left text-base text-zinc-700 shadow-sm duration-500 hover:shadow-lg hover:shadow-vusa-red/20 dark:border-zinc-800 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300">
         <IFluentHatGraduation24Filled class="mb-1 mt-2" width="28" height="28" />
-        <span class="text-xl font-bold">Atstovavimas</span>
+        <span class="text-xl font-bold">{{ $t('Atstovavimas') }}</span>
         <p class="text-sm leading-4 text-zinc-500">
-          Informuok apie posėdžius ir įkelk dokumentus atstovavimo organuose
+          {{ $t('Informuok apie posėdžius ir įkelk dokumentus atstovavimo organuose') }}
         </p>
       </button>
       </Link>
@@ -26,9 +26,9 @@
       <button
         class="flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-gradient-to-br from-white to-white p-4 text-left text-base text-zinc-700 shadow-sm duration-500 hover:shadow-lg hover:shadow-vusa-yellow/20 dark:border-zinc-800 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300">
         <IFluentGlobe24Filled class="mb-1 mt-2" width="28" height="28" />
-        <span class="text-xl font-bold">Svetainė</span>
+        <span class="text-xl font-bold">{{ $t('Svetainė') }}</span>
         <p class="text-sm leading-4 text-zinc-500">
-          Valdyk savo padalinio svetainės naujienas, puslapius ir kt.
+          {{ $t('Valdyk savo padalinio svetainės naujienas, puslapius ir kt.') }}
         </p>
       </button>
       </Link>
@@ -36,24 +36,24 @@
       <button
         class="flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-gradient-to-br from-white to-white p-4 text-left text-base text-zinc-700 shadow-sm duration-500 hover:shadow-lg dark:border-zinc-800 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300 dark:hover:shadow-white/20">
         <IFluentBookmark24Filled class="mb-1 mt-2" width="28" height="28" />
-        <span class="text-xl font-bold">Rezervacijos</span>
+        <span class="text-xl font-bold">{{ $t('Rezervacijos') }}</span>
         <p class="text-sm leading-4 text-zinc-500">
-          Rezervuokis daiktus iš visų VU SA padalinių
+          {{ $t('Rezervuokis daiktus iš visų VU SA padalinių') }}
         </p>
       </button>
       </Link>
     </div>
     <p class="mt-24 font-medium text-zinc-600">
-      Kiti įrankiai:
+      {{ $t('Kiti įrankiai') }}
     </p>
     <div class="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
       <Link :href="route('administration')">
       <button
         class="flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-gradient-to-br from-white to-white p-4 text-left text-base text-zinc-700 shadow-sm duration-500 hover:shadow-lg dark:border-zinc-800 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300 dark:hover:shadow-white/20">
         <IFluentSettings24Filled class="mb-1 mt-2" width="28" height="28" />
-        <span class="text-xl font-bold">Administravimas</span>
+        <span class="text-xl font-bold">{{ $t('Administravimas') }}</span>
         <p class="text-sm leading-4 text-zinc-500">
-          Visos informacijos administravimo įrankiai ir lentelės
+          {{ $t('Visos informacijos administravimo įrankiai ir lentelės') }}
         </p>
       </button>
       </Link>
@@ -61,9 +61,9 @@
         <button
           class="flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-gradient-to-br from-white to-white p-4 text-left text-base text-zinc-700 shadow-sm duration-500 hover:shadow-lg dark:border-zinc-800 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300 dark:hover:shadow-white/20">
           <IFluentBookExclamationMark20Filled class="mb-1 mt-2" width="28" height="28" />
-          <span class="text-xl font-bold">Dokumentacija</span>
+          <span class="text-xl font-bold">{{ $t('Dokumentacija') }}</span>
           <p class="text-sm leading-4 text-zinc-500">
-            Instrukcijos apie vusa.lt/mano platformą ir naudotojų atsakomybes
+            {{ $t('Instrukcijos apie vusa.lt/mano platformą ir naudotojų atsakomybes') }}
           </p>
         </button>
       </a>

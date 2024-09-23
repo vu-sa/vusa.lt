@@ -33,7 +33,7 @@
       </div>
       <AdminMenu v-if="mdAndGreater" />
     </div>
-    <div class="md:p-4">
+    <div class="md:pr-4">
       <NMessageProvider>
         <slot />
       </NMessageProvider>
