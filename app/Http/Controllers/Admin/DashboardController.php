@@ -27,7 +27,7 @@ class DashboardController extends Controller
         $user = User::query()->where('id', Auth::id())->with('current_duties.institution.meetings.institutions:id,name')->first();
 
         // Leave only tenants that are not 'pkp'
-        $tenants = collect(GetTenantsForUpserts::execute('pages.update.padalinys', $this->authorizer))->filter(function ($tenant) {
+        $tenants = collect(GetTenantsForUpserts::execute('institutions.update.padalinys', $this->authorizer))->filter(function ($tenant) {
             return $tenant['type'] !== 'pkp';
         })->values();
 
@@ -46,6 +46,17 @@ class DashboardController extends Controller
 
         if (! $selectedTenant) {
             $providedTenant = null;
+        } else if ($this->authorizer->isAllScope && request()->input('tenant_id') === '0') {
+            $providedTenant = Tenant::query()->with('institutions:id,name,tenant_id', 'institutions.meetings:id,title,start_time', 'institutions.duties.current_users:id,name', 'institutions.duties.types:id,title,slug')->get();
+
+            $providedTenant = [
+                'id' => 0,
+                'name' => 'Visi padaliniai',
+                'institutions' => $providedTenant->map(function ($tenant) {
+                    return $tenant->institutions;
+                })->flatten(1),
+            ];
+       
         } else {
             $providedTenant = Tenant::query()->where('id', $selectedTenant['id'])->with('institutions:id,name,tenant_id', 'institutions.meetings:id,title,start_time', 'institutions.duties.current_users:id,name', 'institutions.duties.types:id,title,slug')->first();
         }
@@ -58,7 +69,9 @@ class DashboardController extends Controller
                         'institution' => $duty?->institution?->append('relatedInstitutions'),
                     ];
                 })],
-            'tenants' => $tenants,
+            'tenants' => $tenants->when($this->authorizer->isAllScope, function ($tenants) {
+                return $tenants->prepend(['id' => 0, 'shortname' => 'Visi padaliniai']);
+            }),
             'providedTenant' => $providedTenant,
         ]);
     }
@@ -70,7 +83,7 @@ class DashboardController extends Controller
         $selectedTenant = request()->input('tenant_id');
 
         // Leave only tenants that are not 'pkp'
-        $tenants = collect(GetTenantsForUpserts::execute('institutions.update.padalinys', $this->authorizer))->filter(function ($tenant) {
+        $tenants = collect(GetTenantsForUpserts::execute('pages.update.padalinys', $this->authorizer))->filter(function ($tenant) {
             return $tenant['type'] !== 'pkp';
         })->values();
 
