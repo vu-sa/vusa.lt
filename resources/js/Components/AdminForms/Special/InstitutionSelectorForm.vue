@@ -36,7 +36,7 @@
   </NForm>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
 import { NButton, NForm, NFormItem, NIcon, NSelect } from "naive-ui";
 import { computed, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
@@ -65,6 +65,10 @@ const institutions = computed(() => {
         value: duty.institution?.id,
       };
     })
-    .filter((institution) => institution !== undefined);
+    // filter unique
+    .filter((institution) => institution !== undefined).filter(
+      (value, index, self) =>
+        self.findIndex((t) => t?.value === value?.value) === index
+    );
 });
 </script>
