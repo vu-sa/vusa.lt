@@ -54,12 +54,12 @@ const institutionNameForTemplate = () => {
 
   let user = auth?.user;
 
-  if (!user?.duties) {
+  if (!user?.current_duties) {
     return null;
   }
 
   // check user.duties[].institution, and return only one if its not null
-  let institution = user.duties
+  let institution = user.current_duties
     .map((duty) => duty.institution)
     .filter((institution) => institution !== null)[0];
 

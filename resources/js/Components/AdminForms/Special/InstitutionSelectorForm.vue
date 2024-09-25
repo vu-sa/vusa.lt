@@ -55,7 +55,7 @@ const showAlert = ref(true);
 
 const institutions = computed(() => {
   return usePage()
-    .props.auth?.user?.duties?.map((duty) => {
+    .props.auth?.user?.current_duties?.map((duty) => {
       if (!duty.institution) {
         return;
       }

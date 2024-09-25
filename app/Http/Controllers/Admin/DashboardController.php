@@ -165,10 +165,10 @@ class DashboardController extends Controller
         $user = User::find(Auth::id());
 
         $user->load('roles:id,name',
-            'duties:id,name,institution_id',
-            'duties.roles:id,name', 'duties.roles.permissions:id,name',
-            'duties.institution:id,tenant_id',
-            'duties.institution.tenant:id,shortname');
+            'current_duties:id,name,institution_id',
+            'current_duties.roles:id,name', 'current_duties.roles.permissions:id,name',
+            'current_duties.institution:id,tenant_id',
+            'current_duties.institution.tenant:id,shortname');
 
         return Inertia::render('Admin/ShowUserSettings', [
             'user' => $user->toFullArray(),
