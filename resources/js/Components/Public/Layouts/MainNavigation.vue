@@ -20,7 +20,7 @@
         </div>
       </nav>
       <nav
-        class="relative z-10 grid grid-cols-[120px,_1fr,_auto] bg-white px-8 text-zinc-800 shadow-md transition-shadow duration-500 group-hover:rounded-t-lg dark:bg-zinc-800 dark:text-white max-lg:rounded-md max-md:h-16 max-md:gap-4 md:h-20 md:grid-cols-[auto,_1fr,_120px] md:gap-12 lg:rounded-t-lg lg:shadow-none"
+        class="relative z-10 flex bg-white px-3 text-zinc-800 shadow-md transition-shadow duration-500 group-hover:rounded-t-lg dark:bg-zinc-800 dark:text-white max-lg:rounded-md max-md:h-16 max-md:gap-2 md:grid md:h-20 md:grid-cols-[auto,_1fr,_120px] md:gap-12 md:px-10 lg:rounded-t-lg lg:shadow-none"
         :class="{
           'lg:rounded-md lg:shadow-md': hasScrolledDown,
         }">
