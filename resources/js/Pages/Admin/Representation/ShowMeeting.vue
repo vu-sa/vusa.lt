@@ -133,6 +133,7 @@ const breadcrumbOptions: BreadcrumbOption[] = [
 ];
 
 const columns = [
+  { key: 'index', title: 'Nr.', width: 40, render(row, index) { return index + 1; } },
   { key: 'title', title: 'Pavadinimas', fixed: 'left', minWidth: 150 },
   {
     key: 'decision',
