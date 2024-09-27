@@ -61,7 +61,7 @@ class ModelPolicy
             return true;
         }
 
-        // Check for .padalinys
+        // Check for own
         if ($this->authorizer->forUser($user)->check($this->pluralModelName.'.'.$ability.'.'.PermissionScopeEnum::OWN()->label)) {
 
             // Since a user can have multiple duties, we need to get all of them.
@@ -84,10 +84,6 @@ class ModelPolicy
             // TODO
             if ($this->pluralModelName === 'institutions') {
                 $institutions = new Collection(RelationshipService::getRelatedInstitutions($model));
-
-                if ($institutions->isEmpty()) {
-                    return false;
-                }
 
                 // check if any element exists in relations array, then return true
                 // relations array consists of 4 collections of models, so we need to flatten it
