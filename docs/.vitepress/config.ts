@@ -28,16 +28,16 @@ export default defineConfig({
       {
         text: 'Specifinės funkcijos',
         items: [
-          { text: 'Informacijos administravimas', link: '/informacijos-administravimas' },
           { text: 'Atstovavimo vykdymas (ViSAK)', link: '/visak' },
+          { text: 'Informacijos administravimas', link: '/informacijos-administravimas' },
           { text: 'Rezervacijų sistema', link: '/rezervaciju-sistema' }
         ]
       },
       {
         text: 'Atsakomybės',
         items: [
-          { text: 'Komunikacijai', link: '/atsakomybes/komunikacijai' },
           { text: 'Studentų atstovams (-ėms)', link: '/atsakomybes/studentu-atstovams' },
+          { text: 'Komunikacijai', link: '/atsakomybes/komunikacijai' },
           { text: 'Administratoriams', link: '/atsakomybes/administratoriams' }
         ]
       },
