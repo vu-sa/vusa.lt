@@ -9,8 +9,8 @@
     </template>
     <div class="my-4 flex items-center gap-4">
       <NButton size="small" @click="showAgendaItemStoreModal = true">
-        {{ $t("forms.add")
-        }} klausimą<template #icon>
+        {{ $t("Pridėti klausimą") }}
+        <template #icon>
           <NIcon size="16" :component="Icons.AGENDA_ITEM" />
         </template>
       </NButton>
@@ -57,6 +57,7 @@ import TaskManager from "@/Features/Admin/TaskManager/TaskManager.vue";
 import type { BreadcrumbOption } from "@/Components/Layouts/ShowModel/Breadcrumbs/AdminBreadcrumbDisplayer.vue";
 import { DataTableProps, NButton, NTooltip } from "naive-ui";
 import TriStateButton from "@/Components/Buttons/TriStateButton.vue";
+import { trans as $t } from "laravel-vue-i18n";
 
 import IMdiThumbsUpOutline from "~icons/mdi/thumbs-up-outline";
 import IMdiThumbsDownOutline from "~icons/mdi/thumbs-down-outline";
@@ -133,11 +134,25 @@ const breadcrumbOptions: BreadcrumbOption[] = [
 ];
 
 const columns = [
-  { key: 'index', title: 'Nr.', width: 40, render(row, index) { return index + 1; } },
-  { key: 'title', title: 'Pavadinimas', fixed: 'left', minWidth: 150 },
+  {
+    key: 'index',
+    title() {
+      return $t('No.');
+    },
+    width: 40, render(row, index) { return index + 1; }
+  },
+  {
+    key: 'title',
+    title() {
+      return $t('forms.fields.title');
+    },
+    fixed: 'left', minWidth: 150
+  },
   {
     key: 'decision',
-    title: 'Sprendimas',
+    title() {
+      return $t('Sprendimas');
+    },
     width: 110,
     render(row: App.Entities.AgendaItem) {
       return <TriStateButton state={row.decision} size="tiny" row={row} showOptions={showVoteOptions.value} onEnableOptions={() => showVoteOptions.value = true} onChangeState={(state) => {
@@ -147,30 +162,42 @@ const columns = [
     }
   },
   {
-    key: 'student_vote', title: 'Kaip balsavo studentai?', width: 110,
+    key: 'student_vote',
+    title() {
+      return $t('Kaip balsavo studentai');
+    },
+    width: 110,
     render(row: App.Entities.AgendaItem) {
       return <TriStateButton state={row.student_vote} size="tiny" row={row} showOptions={showVoteOptions.value} onEnableOptions={() => showVoteOptions.value = true}
-      onChangeState={(state) => {
-        row.student_vote = state;
-        handleAgendaItemUpdate(row);
-      }}
+        onChangeState={(state) => {
+          row.student_vote = state;
+          handleAgendaItemUpdate(row);
+        }}
       />
     }
   },
   {
-    key: 'student_benefit', title: 'Ar palanku studentams?', width: 120,
+    key: 'student_benefit',
+    title() {
+      return $t('Ar palanku studentams') + '?';
+    },
+    width: 120,
     render(row: App.Entities.AgendaItem) {
       return <TriStateButton state={row.student_benefit} size="tiny" row={row} showOptions={showVoteOptions.value} positiveIcon={IMdiThumbsUpOutline} negativeIcon={IMdiThumbsDownOutline} neutralIcon={IMdiThumbsUpDownOutline} onEnableOptions={() => showVoteOptions.value = true}
-      onChangeState={(state) => {
-        row.student_benefit = state;
-        handleAgendaItemUpdate(row);
-      }}
+        onChangeState={(state) => {
+          row.student_benefit = state;
+          handleAgendaItemUpdate(row);
+        }}
       >
       </TriStateButton>
     }
   },
   {
-    key: 'description', title: 'Aprašymas', width: 100,
+    key: 'description',
+    title() {
+      return $t('forms.fields.description');
+    },
+    width: 100,
     render(row: App.Entities.AgendaItem) {
       return <NTooltip trigger="hover" placement="top">
         {{
@@ -179,7 +206,7 @@ const columns = [
               icon: () => <>{!row.description ? <IMdiFileDocumentPlus /> : <IMdiFileDocument />}</>,
             }}
           </NButton>,
-          default: () => !row.description ? 'Pridėti aprašymą' : row.description,
+          default: () => !row.description ? $t('Pridėti aprašymą') : row.description,
         }}
       </NTooltip>
     }

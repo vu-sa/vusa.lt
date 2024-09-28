@@ -64,10 +64,17 @@ const stateRef = ref(state);
 
 const emit = defineEmits<{
   enableOptions: [void];
-  changeState: ['positive' | 'neutral' | 'negative'];
+  changeState: ['positive' | 'neutral' | 'negative' | null];
 }>();
 
 const handleClick = (button: 'positive' | 'neutral' | 'negative') => {
+
+  if (stateRef.value === button) {
+    stateRef.value = null;
+    emit('changeState', null);
+    return;
+  }
+
   stateRef.value = button;
   emit('changeState', button);
 };

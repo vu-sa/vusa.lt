@@ -3,24 +3,24 @@
     <template v-if="lastMeeting">
       <div class="inline-flex items-center gap-2">
         <IFluentCalendarClock24Filled />
-        <span v-if="daysDifference === 0" class="text-3xl font-bold">šiandien</span>
+        <span v-if="daysDifference === 0" class="text-3xl font-bold">{{ $t('šiandien') }}</span>
         <span v-else class="text-3xl font-bold">
-          {{ lastMeetinginFuture ? "po" : "prieš" }}
+          {{ lastMeetinginFuture ? $t("po") : $t("prieš") }}
           <NNumberAnimation :from="0" :to="Math.abs(daysDifference ?? 0)" />
           d.
         </span>
       </div>
       <p class="mt-4">
         {{
-          lastMeetinginFuture ? "Kitas posėdis vyks" : "Paskutinis posėdis vyko"
+          lastMeetinginFuture ? $t("Kitas posėdis vyks") : $t("Paskutinis posėdis vyko")
         }}
         <Link :href="route('meetings.show', lastMeeting.id)" class="font-bold">
         {{
           formatStaticTime(new Date(lastMeeting.start_time), {
-            year: "numeric",
-            month: "long",
-            day: "2-digit",
-          })
+        year: "numeric",
+        month: "long",
+        day: "2-digit",
+        }, $page.props.app.locale)
         }}
         </Link>
       </p>

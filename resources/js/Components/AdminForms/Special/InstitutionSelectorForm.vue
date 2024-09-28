@@ -1,22 +1,31 @@
 <template>
   <NForm>
     <SuggestionAlert :show-alert="showAlert" @alert-closed="showAlert = false">
-      <p>
+      <p v-if="$page.props.app.locale === 'lt'">
         Viena svarbiausių veiklų atstovavime yra
         <strong>dalinimasis informacija</strong>, tada kai ji pasirodo!
       </p>
+      <p v-else>
+        One of the most important activities in representation is
+        <strong>sharing information</strong> when it appears!
+      </p>
       <p class="mt-4">
-        Būtent
+        {{ $t('Būtent') }}
         <ModelChip>
           <template #icon>
             <NIcon :component="Icons.MEETING" />
-          </template>posėdžiai
+          </template>{{ $t('posėdžiai') }}
         </ModelChip>
-        ir jų informacija yra labai svarbi – kad galėtume atstovauti studentams
-        geriausiai, kaip tik tai įmanoma!
+        <template v-if="$page.props.app.locale === 'lt'">
+"
+          ir jų informacija yra labai svarbi – kad galėtume atstovauti studentams geriausiai, kaip tik tai įmanoma!
+        </template>
+        <template v-else>
+          and their information is very important – so we can represent students as best as possible!
+        </template>
       </p>
       <p class="mt-4">
-        <strong>Pradėkim! 💪</strong>
+        <strong>{{ $t('Pradėkim') }}! 💪</strong>
       </p>
     </SuggestionAlert>
     <NFormItem>
@@ -27,7 +36,7 @@
         </span>
       </template>
 
-      <NSelect filterable v-model:value="institution_id" class="min-w-[260px]" :options="institutions"
+      <NSelect v-model:value="institution_id" filterable class="min-w-[260px]" :options="institutions"
         :placeholder="'VU studijų programos komitetas...'" />
     </NFormItem>
     <NButton :disabled="!institution_id" @click="$emit('submit', institution_id)">

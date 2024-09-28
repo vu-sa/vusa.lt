@@ -7,7 +7,7 @@
         <template #header>
           <div class="inline-flex items-center gap-2">
             <component :is="Icons.MEETING" />
-            Tavo artėjantys susitikimai
+            {{ $t('Tavo artėjantys susitikimai') }}
           </div>
         </template>
         <!--        <template #header-extra>
@@ -31,7 +31,7 @@
           </Link> ({{ upcomingMeetings[0].institutions?.[0].name }})
         </p>
         <p v-else>
-          Artėjančių susitikimų nėra! Nepamiršk, kad gali sukurti susitikimą į priekį! 🎉
+          {{ $t('Artėjančių susitikimų nėra! Nepamiršk, kad gali sukurti susitikimą į priekį!') }} 🎉
         </p>
         <template #footer>
           <div class="flex items-center gap-2">
@@ -55,7 +55,7 @@
         <template #header>
           <div class="inline-flex items-center gap-2">
             <component :is="Icons.INSTITUTION" />
-            Tavo institucijos
+            {{ $t('Tavo institucijos') }}
           </div>
         </template>
         <!--        <template #header-extra>
@@ -67,11 +67,14 @@
         <div class="grid grid-cols-2 gap-2">
           <div>
             <p class="mb-1">
-              Visos institucijos
+              {{ $t('Visos institucijos') }}
             </p>
           </div>
-          <p class="leading-tight">
+          <p v-if="$page.props.app.locale === 'lt'" class="leading-tight">
             Institucijos su <strong>artėjančiais</strong> posėdžiais
+          </p>
+          <p v-else class="leading-tight">
+            Institutions with <strong>upcoming</strong> meetings
           </p>
           <span class="mb-4 inline-block text-4xl font-bold">
             <NNumberAnimation :from="0" :to="institutions.length" />
@@ -87,7 +90,7 @@
             </template>
             {{ $t('Rodyti visas') }}
           </NButton>
-          <CardModal v-model:show="showAllInstitutionModal" title="Visos institucijos"
+          <CardModal v-model:show="showAllInstitutionModal" :title="$t('Visos institucijos')"
             @close="showAllInstitutionModal = false">
             <NDataTable :data="institutions" :columns="allInstitutionColumns" :pagination="{ pageSize: 7 }" />
           </CardModal>
@@ -205,6 +208,7 @@ import Icons from "@/Types/Icons/filled";
 import { barY, binX, groupX, plot, rectY } from "@observablehq/plot";
 import { useSortable } from "@vueuse/integrations/useSortable";
 import UserAvatar from "@/Components/Avatars/UserAvatar.vue";
+import { trans as $t } from "laravel-vue-i18n";
 
 const props = defineProps<{
   user: App.Entities.User;
@@ -295,14 +299,18 @@ calendarAttributes.push(...relatedInstitutionsMeetingsCalendarAttributes);
 
 const allMeetingColumns = [
   {
-    title: 'Institucija',
+    title() {
+      return $t('Institucija');
+    },
     key: 'institution.title',
     render(row) {
       return h(Link, { href: route('institutions.show', row.institutions[0].id), }, row.institutions[0].name);
     },
   },
   {
-    title: 'Susitikimo pradžia',
+    title() {
+      return $t('Susitikimo pradžia');
+    },
     key: 'start_time',
     render: (row) => h(Link, { href: route('meetings.show', row.id) }, formatStaticTime(new Date(row.start_time), { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' })),
     sorter: (a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime(),
@@ -312,14 +320,18 @@ const allMeetingColumns = [
 
 const allInstitutionColumns = [
   {
-    title: 'Pavadinimas',
+    title() {
+      return $t('forms.fields.title');
+    },
     key: 'name',
     render(row) {
       return h(Link, { href: route('institutions.show', row.id) }, row.name);
     },
   },
   {
-    title: 'Artėjantys posėdžiai',
+    title() {
+      return $t('Artėjantys posėdžiai');
+    },
     key: 'meetings',
     render(row) {
       return row.hasUpcomingMeetings ? 'Taip' : 'Ne';
@@ -343,16 +355,16 @@ const allTenantMeetings = computed(() => props.providedTenant?.institutions.map(
 
 const tenantCalendarAttributes = computed(() => {
   const meetings = allTenantMeetings.value?.map((meeting) => {
-  let calendarAttrObject = {
-    dates: meeting?.start_time,
-    dot: 'red',
-    popover: {
-      label: meeting?.institution,
-      isInteractive: true,
-    },
-    key: meeting?.id,
-  };
-  return calendarAttrObject;
+    let calendarAttrObject = {
+      dates: meeting?.start_time,
+      dot: 'red',
+      popover: {
+        label: meeting?.institution,
+        isInteractive: true,
+      },
+      key: meeting?.id,
+    };
+    return calendarAttrObject;
   });
 
   meetings?.push({

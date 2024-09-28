@@ -82,7 +82,7 @@ class AgendaItemController extends Controller
 
         $agendaItem->fill($validated)->save();
 
-        return back()->with(['success' => 'Darbotvarkės punktas atnaujintas sėkmingai!']);
+        return back()->with(['success' => __('Darbotvarkės punktas atnaujintas sėkmingai!')]);
     }
 
     /**

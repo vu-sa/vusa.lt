@@ -1,22 +1,25 @@
 <template>
   <div class="mt-4 rounded-md border border-zinc-200 p-8 shadow-sm dark:border-zinc-50/10">
     <template v-if="startingPath">
-      <div class="flex flex-wrap h-8">
-        <div class="flex flex-wrap w-fit gap-2">
+      <div class="flex h-8 flex-wrap">
+        <div class="flex w-fit flex-wrap gap-2">
           <div class="w-96">
             <NSkeleton v-if="loading" size="medium" round />
             <FuzzySearcher v-else :data="files" @search:results="updateResults" />
           </div>
           <NSkeleton v-if="loading" size="medium" circle />
-          <NButton v-else circle @click="showFileUploader = true"><template #icon>
+          <NButton v-else circle @click="showFileUploader = true">
+            <template #icon>
               <IFluentDocumentAdd24Regular />
-            </template></NButton>
+            </template>
+          </NButton>
         </div>
         <div class="ml-auto inline-flex items-center gap-4">
           <!-- <NSwitch v-model:value="showThumbnail" :disabled="loading">
             <template #icon><NIcon :component="Image24Regular"></NIcon></template>
           </NSwitch> -->
-          <NButton :disabled="loading" circle quaternary @click="refreshFiles"><template #icon>
+          <NButton :disabled="loading" circle quaternary @click="refreshFiles">
+            <template #icon>
               <IFluentArrowClockwise24Filled />
             </template>
           </NButton>

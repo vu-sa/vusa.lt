@@ -14,7 +14,7 @@
                 <IFluentPerson24Filled v-if="$page.props.auth?.user" />
                 <IFluentPerson24Regular v-else />
               </template>
-              {{ $page.props.auth?.user ? $page.props.auth.user?.name : $t('Prisijungti') }}
+              {{ $page.props.auth?.user ? $page.props.auth.user?.name : $t('auth.login') }}
             </NButton>
           </a>
         </div>

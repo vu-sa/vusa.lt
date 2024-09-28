@@ -1,6 +1,6 @@
 <template>
   <NForm ref="formRef" :model="model" :rules="rules">
-    <NFormItem label="Tipas" path="typeValue">
+    <NFormItem :label="$t('forms.fields.type')" path="typeValue">
       <NSelect v-model:value="model.typeValue" :disabled="!!model.uploadValue" placeholder="Pasirink failo tipą..."
         :options="sharepointFileTypeOptions" />
     </NFormItem>
@@ -12,10 +12,10 @@
           tag
         ></NSelect
       ></NFormItem> -->
-    <NFormItem label="Dokumento data" path="datetimeValue">
+    <NFormItem :label="$t('Dokumento data')" path="datetimeValue">
       <NDatePicker v-model:value="model.datetimeValue" placeholder="2022-12-01" type="date" />
     </NFormItem>
-    <NFormItem label="Aprašymas" path="descriptionValue">
+    <NFormItem :label="$t('forms.fields.description')" path="descriptionValue">
       <NInput v-model:value="model.description0Value" type="textarea" placeholder="Šis dokumentas yra skirtas..." />
     </NFormItem>
     <NFormItem v-if="model.typeValue" label="Įkelti failą" path="uploadValue">
@@ -39,10 +39,11 @@
       </NInputGroup>
     </NFormItem>
 
-    <NButton type="primary" :disabled="!model.uploadValue" :loading="loading" @click="handleValidateClick"><template
-        #icon>
+    <NButton type="primary" :disabled="!model.uploadValue" :loading="loading" @click="handleValidateClick">
+      <template #icon>
         <IFluentDocumentAdd24Regular />
-      </template>Įkelti failą</NButton>
+      </template>{{ $t('Įkelti failą') }}
+    </NButton>
   </NForm>
 </template>
 

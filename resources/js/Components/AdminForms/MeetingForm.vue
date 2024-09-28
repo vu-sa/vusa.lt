@@ -10,6 +10,7 @@
       <NDatePicker v-model:value="meetingForm.start_time" :first-day-of-week="0" :format="'yyyy-MM-dd HH:mm'"
         :time-picker-props="{
           format: 'HH:mm',
+          minutes: 5,
         }" type="datetime" :placeholder="`${$t('Kada vyksta posėdis')}?`" clearable :actions="['confirm']" />
     </NFormItem>
     <NButton @click="handleSubmit">
