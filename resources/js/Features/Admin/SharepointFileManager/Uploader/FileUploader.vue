@@ -1,12 +1,12 @@
 <template>
-  <CardModal :show :title="`Įkelti naują failą`" @close="$emit('close')">
+  <CardModal :show :title="$t('Įkelti naują failą')" @close="$emit('close')">
     <NSteps class="my-2 py-2" :current="(current as number)" :status="'process'">
-      <NStep title="Į ką kelsi failą?">
+      <NStep :title="$t('Į ką kelsi failą?')">
         <template #icon>
           <IFluentDocumentTableSearch24Regular />
         </template>
       </NStep>
-      <NStep title="Failo įkėlimas" />
+      <NStep :title="$t('Failo įkėlimas')" />
     </NSteps>
     <FadeTransition>
       <FileableForm v-if="current === 1" :show-alert="showAlert" @close:alert="showAlert = false"
