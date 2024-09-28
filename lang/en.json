@@ -49,7 +49,7 @@
     "Vilniaus universiteto Studentų atstovybė Verslo mokykloje": "Vilnius University Students' Representation in Business School",
     "Studentų atstovai": "Student representatives",
     "Programos, klubai ir projektai": "Programs, clubs and projects",
-    "Sužinok kaip tai padaryti!" : "Find out how to do it!",
+    "Sužinok kaip tai padaryti!": "Find out how to do it!",
     "Chemijos ir geomokslų fakultete": "Faculty of Chemistry and Geosciences",
     "Ekonomikos ir verslo administravimo fakultete": "Faculty of Economics­ and Business Administration",
     "Filologijos fakultete": "Faculty of Philology",
@@ -96,8 +96,8 @@
     "Bendruomenė": "Community",
     "Strateginės kryptys": "Strategic directions",
     "Kokybiškos studijos ir joms pritaikyta aplinka": "High quality studies and their environment",
-    "Stipri organizacija" : "Strong organization",
-    "Darni universitetinė bendruomenė" : "Sustainable University community",
+    "Stipri organizacija": "Strong organization",
+    "Darni universitetinė bendruomenė": "Sustainable University community",
     "Padėka": "Acknowledgements",
     "Klausykis studentiško": "Listen to students'",
     "radijo": "radio",
@@ -261,7 +261,7 @@
     "Paslėpti": "Hide",
     "Rodyti": "Show",
     "Kategorijos": "Categories",
-    "Einame jo ieškoti... Taip pat pasižiūrėkite, ar nuoroda teisinga" : "We're going to look for it... Also, check if the link is correct",
+    "Einame jo ieškoti... Taip pat pasižiūrėkite, ar nuoroda teisinga": "We're going to look for it... Also, check if the link is correct",
     "Klaida buvo užfiksuota, einame jos tvarkyti! Jeigu problema išlieka, prašome susisiekti su VU SA IT administratoriumi": "The problem has been recorded, we're going to fix it! If the problem persists, please contact VU SR IT administrator",
     "Svetainė": "Website",
     "Vartotojai": "Users",
@@ -273,7 +273,7 @@
     "Kita": "Other",
     "Pasirink vieną iš veiksmų": "Choose one of the actions",
     "Informuok apie posėdžius ir įkelk dokumentus atstovavimo organuose": "Inform about meetings and upload documents in institutions",
-    "Valdyk savo padalinio svetainės naujienas, puslapius ir kt." : "Manage your unit's website news, pages, etc.",
+    "Valdyk savo padalinio svetainės naujienas, puslapius ir kt.": "Manage your unit's website news, pages, etc.",
     "Rezervuokis daiktus iš visų VU SA padalinių": "Reserve items from all VU SR units",
     "Visos informacijos administravimo įrankiai ir lentelės": "All information management tools and tables",
     "Dokumentacija": "Documentation",
@@ -304,6 +304,7 @@
     "prieš": "before",
     "Į ką kelsi failą?": "Where are you uploading the file?",
     "Failo įkėlimas": "File upload",
-    "Įkelti naują failą": "Upload a new file"
-
+    "Įkelti naują failą": "Upload a new file",
+    "Dokumento data": "Document date",
+    "Įkelti failą": "Upload file"
 }
