@@ -15,7 +15,7 @@
 
     <section v-for="institutionType in filteredTypesAndInstitutions" :key="institutionType.id">
       <template v-for="institution in institutionType.institutions" :key="institution.id">
-        <InstitutionContacts :institution="institution" :contacts="getContacts(institution)" />
+        <InstitutionContacts :institution :contacts="getContacts(institution)" />
         <!-- Add divider except for last element -->
         <NDivider v-if="
           institutionType.institutions[

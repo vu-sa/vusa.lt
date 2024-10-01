@@ -141,13 +141,14 @@ export const changeDutyNameEndings = (
     .replace(/rė$/, "rius")
     .replace(/kė$/, "kas");
 
-
-  if (splitPronouns[0] === "ji" || splitPronouns[0] === "she") {
-    return womanizedTitle;
-  } else if (splitPronouns[0] === "jie" || splitPronouns[0] === "they") {
-    return pluralizedTitle;
-  } else if (splitPronouns[0] === "jis" || splitPronouns[0] === "he") {
-    return masculinedTitle;
+  if (Array.isArray(splitPronouns) && splitPronouns.length > 1) {
+    if (splitPronouns[0] === "ji" || splitPronouns[0] === "she") {
+      return womanizedTitle;
+    } else if (splitPronouns[0] === "jie" || splitPronouns[0] === "they") {
+      return pluralizedTitle;
+    } else if (splitPronouns[0] === "jis" || splitPronouns[0] === "he") {
+      return masculinedTitle;
+    }
   }
 
   // If no pronouns are set, try to guess based on the name

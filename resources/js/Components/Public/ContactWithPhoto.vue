@@ -163,16 +163,28 @@ const showAdditionalInfo = (duty) => {
   return `(${duty.pivot.extra_attributes?.study_program})`;
 };
 
-// ! TIK KURATORIAMS: nusprendžia, kurią nuotrauką imti, pagal tai, ar url turi "kuratoriai"
+// NOTE: Nusprendžia, kurią nuotrauką imti, pagal tai, ar url turi "kuratoriai"
 const imageUrl = computed(() => {
   // check all duties for duties name which includes kuratorius
   // iterate object simply because it may not be iterable
+
   for (const duty of Object.keys(props.contact.duties)) {
+
+    // check if props.contact.duties?.[duty] has pivot
+    if (!props.contact.duties?.[duty].pivot) {
+      continue;
+    }
+
     return (
       props.contact.duties?.[duty].pivot.extra_attributes
         ?.additional_photo ?? props.contact.profile_photo_path
     );
   }
+
+  if (props.contact.pivot?.extra_attributes?.additional_photo) {
+    return props.contact.pivot?.extra_attributes?.additional_photo;
+  }
+
   return props.contact.profile_photo_path ?? "";
 });
 
