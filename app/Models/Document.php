@@ -80,10 +80,10 @@ class Document extends Model
 
             $this->anonymous_url = $anonymous_permission->getLink()->getWebUrl();
 
-            $this->anonymous_url_expiration_date = Carbon::parse($anonymous_permission->getExpirationDateTime());
+            /*$this->anonymous_url_expiration_date = Carbon::parse($anonymous_permission->getExpirationDateTime());*/
         } else {
             $this->anonymous_url = $anonymous_permission->getLink()->getWebUrl();
-            $this->anonymous_url_expiration_date = Carbon::parse($anonymous_permission->getExpirationDateTime());
+            /*$this->anonymous_url_expiration_date = Carbon::parse($anonymous_permission->getExpirationDateTime());*/
         }
 
         $this->checked_at = Carbon::now();
