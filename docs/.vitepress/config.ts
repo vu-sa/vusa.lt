@@ -44,7 +44,8 @@ export default defineConfig({
       {
         text: 'Kitos platformos',
         items: [
-          { text: 'Miro', link: '/kitos-platformos/miro' }
+          { text: 'Miro', link: '/kitos-platformos/miro' },
+          { text: 'Moodle (Narystės testas)', link: '/kitos-platformos/narystes-testas' }
         ]
       },
       {
