@@ -51,7 +51,7 @@ class CalendarController extends Controller
         $this->authorize('create', Calendar::class);
 
         return Inertia::render('Admin/Calendar/CreateCalendarEvent', [
-            'assignableTenants' => GetTenantsForUpserts::execute('calendar.create.padalinys', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute('calendars.create.padalinys', $this->authorizer),
             'categories' => Category::all(),
         ]);
     }
@@ -100,7 +100,7 @@ class CalendarController extends Controller
             'calendar' => $calendar->toFullArray(),
             'categories' => Category::all(),
             'images' => $calendar->getMedia('images'),
-            'assignableTenants' => GetTenantsForUpserts::execute('calendar.update.padalinys', $this->authorizer),
+            'assignableTenants' => GetTenantsForUpserts::execute('calendars.update.padalinys', $this->authorizer),
         ]);
     }
 
