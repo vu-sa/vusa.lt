@@ -83,3 +83,8 @@ html.dark {
   width: 100%;
   grid-column: 1 / 4;
 }
+
+/*This aligns form items to start, when MultiLocaleInput is present in the form.*/
+.n-form-item {
+  align-items: start;
+}
