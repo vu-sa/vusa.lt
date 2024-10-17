@@ -2,21 +2,23 @@
   <section class="fixed top-0 z-50 w-full">
     <div class="group relative mx-4 px-4 xl:px-8 2xl:px-12">
       <nav>
-        <div class="flex justify-end gap-4 px-4 duration-300 ease-in-out group-hover:translate-y-0" :class="{
+        <div class="flex justify-end px-4 duration-300 ease-in-out group-hover:translate-y-0" :class="{
           'translate-y-full': hasScrolledDown,
         }">
-          <SearchButton size="tiny" text-color="#767875">
-            {{ $t('Paieška') }}
-          </SearchButton>
-          <a href="/login">
-            <NButton text size="tiny" text-color="#767875">
-              <template #icon>
-                <IFluentPerson24Filled v-if="$page.props.auth?.user" />
-                <IFluentPerson24Regular v-else />
-              </template>
-              {{ $page.props.auth?.user ? $page.props.auth.user?.name : $t('auth.login') }}
-            </NButton>
-          </a>
+          <div class="flex w-fit gap-4 px-8">
+            <SearchButton size="tiny" text-color="#767875">
+              {{ $t('Paieška') }}
+            </SearchButton>
+            <a href="/login">
+              <NButton text size="tiny" text-color="#767875">
+                <template #icon>
+                  <IFluentPerson24Filled v-if="$page.props.auth?.user" />
+                  <IFluentPerson24Regular v-else />
+                </template>
+                {{ $page.props.auth?.user ? $page.props.auth.user?.name : $t('auth.login') }}
+              </NButton>
+            </a>
+          </div>
         </div>
       </nav>
       <nav

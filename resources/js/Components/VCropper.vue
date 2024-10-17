@@ -1,32 +1,40 @@
 <template>
   <div class="mb-4 flex items-center gap-2">
     <NButtonGroup>
-      <NButton @click="zoomImage(0.1)"><template #icon>
+      <NButton @click="zoomImage(0.1)">
+        <template #icon>
           <IFluentZoomIn16Regular />
-        </template>Priartinti</NButton>
-      <NButton @click="zoomImage(-0.1)"><template #icon>
+        </template>Priartinti
+      </NButton>
+      <NButton @click="zoomImage(-0.1)">
+        <template #icon>
           <IFluentZoomOut16Regular />
-        </template>Nutolinti</NButton>
+        </template>Nutolinti
+      </NButton>
     </NButtonGroup>
     <NButton @click="centerImage">
       <template #icon>
         <IFluentAlignCenterVertical16Regular />
       </template>Centruoti
     </NButton>
-    <NButton @click="rotateImage90"><template #icon>
-      <IFluentArrowRotateClockwise16Regular />
+    <NButton @click="rotateImage90">
+      <template #icon>
+        <IFluentArrowRotateClockwise16Regular />
       </template>Pasukti
-      90°</NButton>
-    <NButton type="primary" @click="handleImageCrop"><template #icon>
-      <IFluentCheckmarkCircle16Filled />
-      </template>Apkirpti</NButton>
+      90°
+    </NButton>
+    <NButton type="primary" @click="handleImageCrop">
+      <template #icon>
+        <IFluentCheckmarkCircle16Filled />
+      </template>Apkirpti
+    </NButton>
   </div>
 
   <cropper-canvas ref="canvas" v-bind="$attrs">
-    <cropper-image ref="image" :src="src" alt="Picture" />
+    <cropper-image ref="image" :src alt="Picture" rotatable scalable />
     <cropper-shade hidden />
-    <cropper-handle action="select" plain />
-    <cropper-selection ref="selection" initial-coverage="0.5" movable resizable zoomable>
+    <cropper-handle action="select" plain hidden />
+    <cropper-selection ref="selection" initial-coverage="0.5" movable resizable>
       <cropper-grid role="grid" covered />
       <cropper-crosshair centered />
       <cropper-handle action="move" theme-color="rgba(255, 255, 255, 0.35)" />
@@ -44,7 +52,7 @@
 
 <script setup lang="ts">
 import "cropperjs";
-import { computed, ref } from "vue";
+import { computed, useTemplateRef } from "vue";
 import { useAxios } from "@vueuse/integrations/useAxios";
 import type { CropperCanvas, CropperImage, CropperSelection } from "cropperjs";
 
@@ -58,9 +66,9 @@ const emit = defineEmits<{
 
 const src = defineModel<string>("src");
 
-const canvas = ref<CropperCanvas | null>(null);
-const image = ref<CropperImage | null>(null);
-const selection = ref<CropperSelection | null>(null);
+const canvas = useTemplateRef<CropperCanvas>("canvas");
+const image = useTemplateRef<CropperImage>("image");
+const selection = useTemplateRef<CropperSelection>("selection");
 
 const fileName = computed(() => {
   let name = src.value?.split("/").pop();
@@ -76,8 +84,7 @@ const fileName = computed(() => {
 const centerImage = () => {
   if (!canvas.value || !image.value) return;
 
-  image.value.$center();
-  selection.value?.$center();
+  image.value.$center('cover');
 };
 
 const zoomImage = (value: number) => {

@@ -25,7 +25,6 @@ class MainPageFactory extends Factory
     {
         return [
             'link' => $this->faker->url(),
-            'position' => '',
             'text' => $this->faker->word(),
             'tenant_id' => Tenant::factory(),
             'lang' => Arr::random(['lt', 'en']),
