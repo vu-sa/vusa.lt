@@ -1,5 +1,5 @@
 <template>
-  <section class="z-5 relative grid h-8 grid-cols-[min-content,_1fr,_40px] rounded-b-lg px-12">
+  <section class="z-5 relative grid grid-cols-[min-content,_1fr] rounded-b-lg pl-12">
     <SmartLink href="/"
       class="my-auto mr-6 whitespace-nowrap text-sm font-bold text-gray-900 dark:text-gray-200 dark:hover:text-vusa-red">
       {{
@@ -8,46 +8,15 @@
           : "VU SA"
       }}
     </SmartLink>
-    <nav ref="secondMenuScrollSection"
-      class="mr-2 inline-flex items-center gap-4 overflow-hidden whitespace-nowrap text-xs">
+    <nav class="relative inline-flex items-center gap-5 overflow-hidden whitespace-nowrap py-2 text-xs">
       <MainPageLink v-for="link in $page.props.tenant?.links" :key="link?.id" :main-page-link="link" />
+      <div
+        class="pointer-events-none absolute right-0 top-0 h-full w-16 rounded-br-md bg-gradient-to-r from-transparent to-zinc-100 dark:to-zinc-900" />
     </nav>
-    <div class="my-auto">
-      <FadeTransition appear>
-        <NButton v-if="arrivedState.right === false" quaternary circle size="tiny" class="right-0 top-0 my-auto"
-          @click="scrollSecondMenuToRight">
-          <template #icon>
-            <IFluentChevronRight16Regular />
-          </template>
-        </NButton>
-      </FadeTransition>
-    </div>
   </section>
 </template>
 
-<script setup lang="tsx">
-import { onMounted, ref } from "vue";
-import { useScroll } from "@vueuse/core";
-
-import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
+<script setup lang="ts">
 import MainPageLink from "./MainPageLink.vue";
 import SmartLink from "../SmartLink.vue";
-
-const secondMenuScrollSection = ref<HTMLElement | null>(null);
-
-const scrollSecondMenuToRight = () => {
-  secondMenuScrollSection.value?.scrollBy({
-    left: 150,
-    behavior: "smooth",
-  });
-};
-
-const { arrivedState, measure } = useScroll(secondMenuScrollSection);
-window.addEventListener("resize", measure);
-
-onMounted(() => {
-  setTimeout(() => {
-    measure();
-  }, 100);
-});
 </script>

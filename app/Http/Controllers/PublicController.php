@@ -54,7 +54,7 @@ class PublicController extends Controller
 
     protected function getTenantLinks()
     {
-        $mainPage = MainPage::query()->where([['tenant_id', $this->tenant->id], ['lang', app()->getLocale()]])->orderBy('order')->get(['id', 'link', 'text']);
+        $mainPage = MainPage::query()->where([['tenant_id', $this->tenant->id], ['lang', app()->getLocale()]])->orderBy('order')->get(['id', 'link', 'text', 'icon', 'is_important']);
 
         Inertia::share('tenant.links', $mainPage);
     }
