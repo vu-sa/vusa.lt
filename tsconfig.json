@@ -1,14 +1,36 @@
 {
+  // Some options used in: https://www.totaltypescript.com/tsconfig-cheat-sheet
   "compilerOptions": {
+    // Base options
+    "esModuleInterop": true,
+    "target": "ES2017",
+    "allowJs": false,
+    "resolveJsonModule": true,
+    "moduleDetection": "force",
+    "isolatedModules": true, // specified in vue.js docs
+    "verbatimModuleSyntax": true,
+
+    // Strictness
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitAny": true,
+    "noImplicitOverride": true,
+
+    // Transpiling
     "outDir": "dist",
     "module": "esnext",
-    "target": "ES2017",
-    "strict": true,
     "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "allowJs": false,
+    "lib": [
+      "es2022",
+      "dom",
+      "dom.iterable"
+    ],
+
+    // JSX
     "jsx": "preserve",
     "jsxImportSource": "vue",
+
+    // Other
     "paths": {
       "@/*": [
         "./resources/js/*"
@@ -24,16 +46,9 @@
       "vitest/globals",
       "unplugin-icons/types/vue"
     ],
-    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "baseUrl": ".",
-    "noImplicitAny": true,
-    "isolatedModules": true, // specified in vue.js docs
-    "lib": [
-      "esnext",
-      "dom"
-    ],
     // For `<script setup>`
     // See <https://devblogs.microsoft.com/typescript/announcing-typescript-4-5-beta/#preserve-value-imports>
     "preserveValueImports": true,
