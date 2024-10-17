@@ -100,11 +100,11 @@ const breakpoints = useBreakpoints(breakpointsTailwind);
 const smallerThanSm = breakpoints.smaller("sm");
 
 const isDrawerActive = ref(false);
-
 const hasScrolledDown = ref(false);
 
 const currentPath = computed(() => usePage().props.app.path);
 
+// When the route changes, close the drawer
 watch(
   () => currentPath.value,
   () => {
@@ -112,8 +112,8 @@ watch(
   },
 );
 
+// When scrolling down, hide the second menu only when scrolled down 50px from the top
 window.addEventListener(
-  // when scrolling down, hide only when scrolled down 50px from previous scroll up
   "scroll",
   () => {
     if (window.scrollY > 50) {
