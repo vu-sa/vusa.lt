@@ -160,7 +160,7 @@ class FilesController extends Controller
 
         $startingImage = Image::read($data);
 
-        $image = $startingImage->scaleDown(width: 1200)->toWebp();
+        $image = $startingImage->scaleDown(width: 1600)->toWebp();
 
         $path = (string) $request->input('path');
 
@@ -178,7 +178,7 @@ class FilesController extends Controller
             $originalName = time().'_'.$originalName;
         }
 
-        $image->save(storage_path('app/public/'.$path.'/'.$originalName), 80);
+        $image->save(storage_path('app/public/'.$path.'/'.$originalName), 85);
 
         // return xhr response with image path
         return response()->json([
