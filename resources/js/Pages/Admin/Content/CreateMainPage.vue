@@ -22,5 +22,6 @@ const mainPage = {
   link: "",
   lang: "lt",
   icon: "",
+  is_important: false,
 };
 </script>
