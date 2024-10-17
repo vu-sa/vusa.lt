@@ -5,8 +5,8 @@
           href="https://icon-sets.iconify.design/fluent/">čia</a>. Suradę reikiamą ikoną pasirinkite iš
         sąrašo. </span>
     </template>
-    <NSelect v-model:value="iconRef" placeholder="Pasirinkti..." :render-tag filterable clearable :options="iconOptions ?? []"
-      @change="($event) => $emit('update:icon', $event)">
+    <NSelect v-model:value="iconRef" placeholder="Pasirinkti..." :render-tag filterable clearable
+      :options="iconOptions ?? []" @change="($event) => $emit('update:icon', $event)">
       <template v-if="iconRef" #prefix>
         <Icon :icon="`fluent:${iconRef}`" />
       </template>
@@ -19,7 +19,7 @@ import { Icon } from '@iconify/vue';
 import { computed, ref } from 'vue';
 
 const props = defineProps<{
-  icon: string;
+  icon: string | null;
 }>();
 
 defineEmits<{

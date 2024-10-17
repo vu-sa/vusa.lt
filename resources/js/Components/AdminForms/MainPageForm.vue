@@ -7,6 +7,12 @@
       <NFormItem label="Mygtuko tekstas">
         <NInput v-model:value="form.text" type="text" placeholder="Įrašyti tekstą..." />
       </NFormItem>
+      <Suspense>
+        <FluentIconSelect :icon="form.icon" @update:icon="(value) => form.icon = value" />
+      </Suspense>
+      <NFormItem label="Ar svarbus?">
+        <NSwitch v-model:value="form.is_important" />
+      </NFormItem>
       <NFormItem>
         <template #label>
           <div class="inline-flex items-center gap-2">
@@ -41,7 +47,7 @@
         <NSelect v-model:value="form.type" :options="mainPageType" :render-label="renderLabel"
           @update:value="handleTypeChange" />
       </NFormItem>
-      <NFormItem v-if="form.type !== 'url'" :show-feedback="false" label="Pasirinkite puslapį">
+      <NFormItem v-if="form.type !== 'url'" label="Pasirinkite puslapį">
         <NSelect v-model:value="pageSelection" filterable :options="typeOptions" placeholder="Pasirinkti puslapį..."
           @update:value="createMainPageLink" />
       </NFormItem>
@@ -69,6 +75,7 @@ import Link24Regular from "~icons/fluent/link24-regular"
 import AdminForm from "./AdminForm.vue";
 import FormElement from "./FormElement.vue";
 import Icons from "@/Types/Icons/regular";
+import FluentIconSelect from "../FormItems/FluentIconSelect.vue";
 
 const props = defineProps<{
   mainPage: App.Entities.MainPage;

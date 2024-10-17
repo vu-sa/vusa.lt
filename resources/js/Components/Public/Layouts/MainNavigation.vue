@@ -2,21 +2,23 @@
   <section class="fixed top-0 z-50 w-full">
     <div class="group relative mx-4 px-4 xl:px-8 2xl:px-12">
       <nav>
-        <div class="flex justify-end gap-4 px-4 duration-300 ease-in-out group-hover:translate-y-0" :class="{
+        <div class="flex justify-end px-4 duration-300 ease-in-out group-hover:translate-y-0" :class="{
           'translate-y-full': hasScrolledDown,
         }">
-          <SearchButton size="tiny" text-color="#767875">
-            {{ $t('Paieška') }}
-          </SearchButton>
-          <a href="/login">
-            <NButton text size="tiny" text-color="#767875">
-              <template #icon>
-                <IFluentPerson24Filled v-if="$page.props.auth?.user" />
-                <IFluentPerson24Regular v-else />
-              </template>
-              {{ $page.props.auth?.user ? $page.props.auth.user?.name : $t('auth.login') }}
-            </NButton>
-          </a>
+          <div class="flex w-fit gap-4 px-8">
+            <SearchButton size="tiny" text-color="#767875">
+              {{ $t('Paieška') }}
+            </SearchButton>
+            <a href="/login">
+              <NButton text size="tiny" text-color="#767875">
+                <template #icon>
+                  <IFluentPerson24Filled v-if="$page.props.auth?.user" />
+                  <IFluentPerson24Regular v-else />
+                </template>
+                {{ $page.props.auth?.user ? $page.props.auth.user?.name : $t('auth.login') }}
+              </NButton>
+            </a>
+          </div>
         </div>
       </nav>
       <nav
@@ -100,11 +102,11 @@ const breakpoints = useBreakpoints(breakpointsTailwind);
 const smallerThanSm = breakpoints.smaller("sm");
 
 const isDrawerActive = ref(false);
-
 const hasScrolledDown = ref(false);
 
 const currentPath = computed(() => usePage().props.app.path);
 
+// When the route changes, close the drawer
 watch(
   () => currentPath.value,
   () => {
@@ -112,8 +114,8 @@ watch(
   },
 );
 
+// When scrolling down, hide the second menu only when scrolled down 50px from the top
 window.addEventListener(
-  // when scrolling down, hide only when scrolled down 50px from previous scroll up
   "scroll",
   () => {
     if (window.scrollY > 50) {

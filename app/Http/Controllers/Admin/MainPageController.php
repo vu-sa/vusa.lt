@@ -80,11 +80,11 @@ class MainPageController extends Controller
 
         DB::transaction(function () use ($request, $tenant_id) {
             $mainPage = new MainPage;
-
             $mainPage->text = $request->text;
             $mainPage->link = $request->link;
             $mainPage->lang = $request->lang;
-            $mainPage->position = '';
+            $mainPage->icon = $request->icon;
+            $mainPage->is_important = $request->is_important;
             $mainPage->tenant()->associate($tenant_id);
             $mainPage->save();
         });
@@ -143,7 +143,7 @@ class MainPageController extends Controller
         ]);
 
         DB::transaction(function () use ($request, $mainPage) {
-            $mainPage->update($request->only('text', 'link', 'lang'));
+            $mainPage->update($request->only('text', 'link', 'lang', 'icon', 'is_important'));
         });
 
         return back()->with('success', 'Sėkmingai atnaujinta greitoji nuoroda!');

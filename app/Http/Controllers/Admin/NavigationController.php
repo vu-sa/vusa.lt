@@ -64,6 +64,9 @@ class NavigationController extends Controller
 
         $navigation->order = Navigation::where('parent_id', $navigation->parent_id)->max('order') + 1;
 
+        // The parent navigation element doesn't always exist
+        $navigation->lang = Navigation::where('id', $navigation->parent_id)->first()?->lang ?? app()->getLocale();
+
         $navigation->save();
 
         Cache::forget('mainNavigation-'.app()->getLocale());

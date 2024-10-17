@@ -6,7 +6,8 @@
         <NavigationForm :navigation="navigationElement" :parent-elements :type-options
           @submit:form="(form) => form.post(route('navigation.store'))" />
       </Suspense>
-      <NavigationParentForm v-else model-route="navigation.store" :navigation="navigationElement" />
+      <NavigationParentForm v-else model-route="navigation.store"
+        :navigation="navigationElement" @submit:form="(form) => form.post(route('navigation.store'))" />
     </UpsertModelLayout>
   </PageContent>
 </template>
@@ -19,7 +20,7 @@ import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 const props = defineProps<{
-  parent_id: number;
+  parent_id: number | string;
   parentElements?: App.Entities.Navigation[];
   typeOptions?: any;
 }>();
