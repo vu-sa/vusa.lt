@@ -8,6 +8,7 @@ use App\Models\SharepointFile;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 
 class SharepointFilePolicy extends ModelPolicy
@@ -56,11 +57,12 @@ class SharepointFilePolicy extends ModelPolicy
      */
     public function delete(User $user, SharepointFile $sharepointFile)
     {
-        if ($this->commonChecker($user, $sharepointFile, CRUDEnum::DELETE()->label, $this->pluralModelName)) {
-            return true;
-        }
+        $fileable = $sharepointFile->fileables->first()->fileable;
 
-        return false;
+        // Authorize by fileable
+        Gate::authorize('delete', $fileable);
+
+        return true;
     }
 
     /**
