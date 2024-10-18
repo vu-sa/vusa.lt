@@ -96,7 +96,7 @@ class SharepointFileController extends Controller
     {
         $this->authorize('delete', $sharepointFile);
 
-        $sharepointFileService = new SharepointGraphService();
+        $sharepointFileService = new SharepointGraphService;
 
         $sharepointFileService->deleteDriveItem($sharepointFile->sharepoint_id);
 
