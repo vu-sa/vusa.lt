@@ -16,7 +16,7 @@ class DuplicateNewsAction
         // Modify the replicated news item
         $newNews->title .= ' (kopija)';
         // Create url friendly 8 letter string
-        $newNews->permalink .= '-' . Str::random(8);
+        $newNews->permalink .= '-'.Str::random(8);
         $newNews->draft = 1;
         $newNews->publish_time = null;
 
