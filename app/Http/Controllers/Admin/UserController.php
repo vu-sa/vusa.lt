@@ -293,6 +293,11 @@ class UserController extends Controller
         if ($duty) {
             //# TEST: if only current users from duty are allowed to login
             $user = $duty->current_users()->first();
+
+            if (! $user) {
+                return redirect()->route('home', ['subdomain' => 'www', 'lang' => app()->getLocale()])->with('error', 'Nepavyko prisijungti, nes pareigybinis paštas neturi aktyvausvartotojo. Bandykite ištrinti slapukus arba naudoti naršyklės privatų rėžimą.');
+            }
+
             $user->microsoft_token = $microsoftUser->token;
 
             $user->save();
