@@ -6,7 +6,7 @@
 ## {{ __('mail.confirmRegistration2') }}
 
 - {{ __('mail.confirmRegistration3') }}: {{ $registerLocation }}
-- {{ __('mail.confirmRegistration4') }}: [{{ $chairPerson->name ?? $chairPerson->email }}](mailto:{{ $chairPerson->email }})
+- {{ __('mail.confirmRegistration4') }}: [{{ $chairPerson?->name ?? $chairPerson?->email }}](mailto:{{ $chairPerson?->email }})
 
 {{ __('mail.confirmRegistration5') }}
 
