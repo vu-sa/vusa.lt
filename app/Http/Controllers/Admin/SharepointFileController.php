@@ -96,11 +96,11 @@ class SharepointFileController extends Controller
     {
         $this->authorize('delete', $sharepointFile);
 
-        /*$sharepointFileService = new SharepointGraphService();*/
-        /**/
-        /*$sharepointFileService->deleteDriveItem($sharepointFile->sharepoint_id);*/
+        $sharepointFileService = new SharepointGraphService;
 
-        return back()->with('info', 'Failo ištrinimo funkcija bus įgyvendinta vėliau.');
+        $sharepointFileService->deleteDriveItem($sharepointFile->sharepoint_id);
+
+        return back()->with('info', 'Failas ištrintas.');
     }
 
     // get potential fileables, usually when none specified

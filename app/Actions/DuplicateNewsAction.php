@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Models\Content;
 use App\Models\News;
+use Illuminate\Support\Str;
 
 class DuplicateNewsAction
 {
@@ -14,7 +15,8 @@ class DuplicateNewsAction
 
         // Modify the replicated news item
         $newNews->title .= ' (kopija)';
-        $newNews->permalink .= '-kopija';
+        // Create url friendly 8 letter string
+        $newNews->permalink .= '-'.Str::random(8);
         $newNews->draft = 1;
         $newNews->publish_time = null;
 
