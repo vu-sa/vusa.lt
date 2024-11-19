@@ -18,7 +18,7 @@ class UpdateNewsRequest extends FormRequest
     {
         $this->merge([
             'publish_time' => is_string(
-                $this->input('publish_time')) ? 
+                $this->input('publish_time')) ?
                 strtotime($this->input('publish_time')) :
                 $this->input('publish_time') / 1000,
         ]);
