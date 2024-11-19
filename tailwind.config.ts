@@ -1,6 +1,7 @@
-/** @type {import('tailwindcss').Config} */
+import type { Config } from 'tailwindcss'
+import tailwindcssAnimate from 'tailwindcss-animate'
 
-module.exports = {
+export default {
   content: [
     "./vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php",
     "./storage/framework/views/*.php",
@@ -64,5 +65,5 @@ module.exports = {
     },
   },
 
-  plugins: [require("tailwindcss-animate")]
-}
+  plugins: [tailwindcssAnimate]
+} satisfies Config
