@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\DuplicateNewsAction;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UpdateNewsRequest;
 use App\Models\Content;
 use App\Models\ContentPart;
 use App\Models\News;
@@ -157,19 +158,11 @@ class NewsController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, News $news)
+    public function update(UpdateNewsRequest $request, News $news)
     {
-        $this->authorize('update', $news);
-
         $other_lang_page = News::find($news->other_lang_id);
 
-        $news->update($request->only('title', 'lang', 'other_lang_id', 'draft', 'short', 'image', 'image_author'));
-
-        if (is_string($request->publish_time)) {
-            $news->publish_time = strtotime($request->publish_time);
-        } else {
-            $news->publish_time = $request->publish_time / 1000;
-        }
+        $news->update($request->validated());
 
         $news->save();
 
@@ -194,6 +187,12 @@ class NewsController extends Controller
 
         // update other lang id page
         if ($request->other_lang_id) {
+
+            // find page that has other lang id
+            $current_other_lang_page = News::where('other_lang_id', $news->id)->first();
+            $current_other_lang_page->other_lang_id = null;
+            $current_other_lang_page->save();
+
             // overwrite other lang id page
             $other_lang_page = News::find($request->other_lang_id);
             $other_lang_page->other_lang_id = $news->id;
