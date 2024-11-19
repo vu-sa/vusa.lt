@@ -32,27 +32,26 @@ return new class extends Migration
         $dutiables = \App\Models\Pivots\Dutiable::all();
 
         foreach ($dutiables as $dutiable) {
-            
+
             $extra_attributes = json_decode($dutiable->extra_attributes);
 
-            if (isset($extra_attributes?->study_program))
-            {
+            if (isset($extra_attributes?->study_program)) {
                 $studyProgram = \App\Models\StudyProgram::where('name->lt', $extra_attributes->study_program)->first();
 
-                echo $studyProgram . '\n';
+                echo $studyProgram.'\n';
                 echo $extra_attributes->study_program;
 
                 if ($studyProgram) {
                     $dutiable->study_program_id = $studyProgram->id;
-                    echo $studyProgram->id . ' old' . '\n';
+                    echo $studyProgram->id.' old'.'\n';
                 } else {
-                    $studyProgram = new \App\Models\StudyProgram();
+                    $studyProgram = new \App\Models\StudyProgram;
                     $studyProgram->setTranslation('name', 'lt', $extra_attributes->study_program);
                     $studyProgram->degree = 'BA';
                     $studyProgram->tenant_id = $dutiable->duty->institution->tenant_id;
                     $studyProgram->save();
 
-                    echo $studyProgram->id . ' new' . '\n';
+                    echo $studyProgram->id.' new'.'\n';
 
                     $dutiable->study_program_id = $studyProgram->id;
                 }

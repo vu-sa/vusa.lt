@@ -32,7 +32,7 @@ class HandleDutiableChange implements ShouldQueue
         if (! $event->dutiable->user) {
             return;
         }
-        
+
         Cache::forget('index-permissions-'.$event->dutiable->user->id);
     }
 }
