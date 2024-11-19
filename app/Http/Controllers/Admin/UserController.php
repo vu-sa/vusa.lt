@@ -47,8 +47,10 @@ class UserController extends Controller
             ->sortAllColumns()
             ->builder->paginate(20);
 
+        $collection = $users->getCollection()->makeVisible(['last_action']);
+
         return Inertia::render('Admin/People/IndexUser', [
-            'users' => $users,
+            'users' => $users->setCollection($collection),
         ]);
     }
 
