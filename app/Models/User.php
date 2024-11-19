@@ -132,7 +132,7 @@ class User extends Authenticatable
     {
         return $this->morphToMany(Duty::class, 'dutiable')
             ->using(Dutiable::class)
-            ->withPivot(['id', 'extra_attributes', 'start_date', 'end_date']);
+            ->withPivot(['id', 'start_date', 'end_date', 'additional_photo', 'additional_email', 'use_original_duty_name', 'description']);
     }
 
     public function previous_duties()

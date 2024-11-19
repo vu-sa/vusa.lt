@@ -263,6 +263,7 @@ declare global {
       updated_at: string
       deleted_at?: string|null
       // mutators
+      related_institutions: unknown
       translations: unknown
       // relations
       duties?: Duty[]
@@ -284,11 +285,10 @@ declare global {
       id: number
       link?: string|null
       text?: string|null
-      image?: string|null
-      position: string
+      icon?: string|null
       order?: number|null
-      type?: string|null
       is_active: boolean
+      is_important: boolean
       tenant_id: number
       lang?: string|null
       created_at: string
@@ -424,8 +424,11 @@ declare global {
       created_at: string
       updated_at: string
       title: string
+      description?: string|null
+      student_vote?: string|null
+      decision?: string|null
+      student_benefit?: string|null
       start_time?: string|null
-      outcome?: string|null
       // relations
       matter?: Matter
       meeting?: Meeting
@@ -452,9 +455,15 @@ declare global {
       dutiable_type: string
       start_date: string
       end_date?: string|null
-      extra_attributes?: Record<string, unknown>|null
+      study_program_id?: string|null
+      additional_email?: string|null
+      additional_photo?: string|null
+      description?: string[]|null
+      use_original_duty_name: boolean
       created_at: string
       updated_at: string
+      // mutators
+      translations: unknown
       // relations
       dutiable?: Dutiable
       duty?: Duty
@@ -573,6 +582,8 @@ declare global {
       created_at: string
       updated_at: string
       deleted_at?: string|null
+      // mutators
+      is_completed: unknown
       // relations
       resources?: Resource[]
       users?: User[]
@@ -659,6 +670,17 @@ declare global {
       comments?: Comment[]
     }
 
+    export interface StudyProgram {
+      // columns
+      id: string
+      name: string[]
+      degree: string
+      created_at: string
+      updated_at: string
+      // mutators
+      translations: unknown
+    }
+
     export interface Tag {
       // columns
       id: number
@@ -705,8 +727,8 @@ declare global {
       institutions?: Institution[]
       news?: News[]
       pages?: Page[]
+      main_pages?: MainPage[]
       resources?: Resource[]
-      users?: User[]
     }
 
     export interface Type {

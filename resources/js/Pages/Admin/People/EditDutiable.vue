@@ -2,7 +2,7 @@
   <PageContent :title="`${dutiable.duty.name} (${dutiable.dutiable.name})`"
     :back-url="route('users.edit', dutiable.dutiable.id)" :heading-icon="Icons.DUTY">
     <UpsertModelLayout>
-      <DutiableForm :dutiable enable-delete
+      <DutiableForm :dutiable :study-programs enable-delete
         @submit:form="(form) => form.patch(route('dutiables.update', dutiable.id), { preserveScroll: true })"
         @delete="() => router.delete(route('dutiables.destroy', dutiable.id))" />
     </UpsertModelLayout>
@@ -19,6 +19,7 @@ import UpsertModelLayout from "@/Components/Layouts/FormUpsertLayout.vue";
 
 const props = defineProps<{
   dutiable: App.Entities.Dutiable;
+  studyPrograms: App.Entities.StudyProgram[];
 }>();
 
 const dutiable = {

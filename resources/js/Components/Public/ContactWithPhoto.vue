@@ -22,7 +22,7 @@
           <template v-for="duty in duties" :key="duty.id">
             <p class="my-1">
               {{ changeDutyNameEndings(contact, duty.name, $page.props.app.locale, contact.pronouns,
-                duty.pivot?.extra_attributes?.use_original_duty_name) }}
+                duty.pivot?.use_original_duty_name) }}
               {{ showAdditionalInfo(duty) }}
               <span v-if="duty.description && duty.description !== '<p></p>'" class="align-middle">
                 <InfoPopover style="max-width: 400px" trigger="hover" color="gray">
@@ -124,43 +124,29 @@ const dutyDescription = (duty) => {
 
   if (locale === "en") {
     return (
-      duty.pivot?.extra_attributes?.info_text ??
+      duty.pivot?.description ??
       duty.description
     );
   }
 
-  return duty.pivot?.extra_attributes?.info_text ?? duty.description;
+  return duty.pivot?.description ?? duty.description;
 };
 
+// Some users have multiple duties, so we need to show all of their emails AND duty name
+// alongside the email
 const shownContactEmail = computed(() => {
-  let dutiesHaveEmail = props.duties.some((duty) => duty.email);
-
-  if (dutiesHaveEmail) {
-    return props.duties.reduce((acc, duty) => {
-      if (duty.email) {
-        acc.push({ name: duty.name, email: duty.email });
-      }
-      return acc;
-    }, []);
-  } else {
-    return [{ name: props.contact.name, email: props.contact.email }];
-  }
+  return props.duties.reduce((acc, duty) => {
+    acc.push({ name: duty.name, email: duty.pivot?.additional_email ?? duty.email ?? props.contact.email });
+    return acc;
+  }, []);
 });
 
 const showAdditionalInfo = (duty) => {
-  if (!duty.pivot?.extra_attributes?.study_program) {
+  if (!duty.pivot?.study_program) {
     return null;
   }
 
-  const locale = usePage().props.app.locale;
-
-  if (locale === "en") {
-    return duty.pivot.extra_attributes?.en?.study_program == null
-      ? `(${duty.pivot.extra_attributes?.study_program})`
-      : `(${duty.pivot.extra_attributes?.en?.study_program})`;
-  }
-
-  return `(${duty.pivot.extra_attributes?.study_program})`;
+  return `(${duty.pivot.study_program?.name})`;
 };
 
 // NOTE: Nusprendžia, kurią nuotrauką imti, pagal tai, ar url turi "kuratoriai"
@@ -176,13 +162,12 @@ const imageUrl = computed(() => {
     }
 
     return (
-      props.contact.duties?.[duty].pivot.extra_attributes
-        ?.additional_photo ?? props.contact.profile_photo_path
+      props.contact.duties?.[duty].pivot.additional_photo ?? props.contact.profile_photo_path
     );
   }
 
-  if (props.contact.pivot?.extra_attributes?.additional_photo) {
-    return props.contact.pivot?.extra_attributes?.additional_photo;
+  if (props.contact.pivot?.additional_photo) {
+    return props.contact.pivot?.additional_photo;
   }
 
   return props.contact.profile_photo_path ?? "";

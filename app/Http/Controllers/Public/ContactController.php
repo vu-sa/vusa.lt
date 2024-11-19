@@ -23,7 +23,7 @@ class ContactController extends PublicController
 
         $institutions = Institution::query()->with('tenant', 'types:id,title,model_type,slug')
             ->whereHas('tenant', fn ($query) => $query->whereIn('id', $tenants)->select(['id', 'shortname', 'alias'])
-            )->withCount('duties')->orderBy('name')->get()->makeHidden(['created_at', 'updated_at', 'deleted_at', 'extra_attributes']);
+            )->withCount('duties')->orderBy('name')->get()->makeHidden(['created_at', 'updated_at', 'deleted_at']);
 
         $seo = $this->shareAndReturnSEOObject(
             title: __('Kontaktų paieška').' - '.$this->tenant->shortname,

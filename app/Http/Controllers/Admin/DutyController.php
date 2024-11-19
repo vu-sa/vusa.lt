@@ -133,7 +133,7 @@ class DutyController extends Controller
         ]);
 
         DB::transaction(function () use ($request, $duty) {
-            $duty->update($request->only('name', 'description', 'email', 'places_to_occupy', 'extra_attributes'));
+            $duty->update($request->only('name', 'description', 'email', 'places_to_occupy'));
 
             $this->handleUsersUpdate(new Collection($duty->current_users->pluck('id')), new Collection($request->current_users), $duty);
 
