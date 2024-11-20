@@ -155,7 +155,7 @@ const columns = [
     },
     width: 110,
     render(row: App.Entities.AgendaItem) {
-      return <TriStateButton state={row.decision} size="tiny" row={row} showOptions={showVoteOptions.value} onEnableOptions={() => showVoteOptions.value = true} onChangeState={(state) => {
+      return <TriStateButton state={row.decision} size="tiny" positiveText="Sprendimas priimtas / klausimas patvirtintas" negativeText="Klausimui / sprendimui nepritarta" neutralText="Joks sprendimas (teigiamas ar neigiamas) nepriimtas / susilaikyta" row={row} showOptions={showVoteOptions.value} onEnableOptions={() => showVoteOptions.value = true} onChangeState={(state) => {
         row.decision = state;
         handleAgendaItemUpdate(row);
       }} />
@@ -168,7 +168,7 @@ const columns = [
     },
     width: 110,
     render(row: App.Entities.AgendaItem) {
-      return <TriStateButton state={row.student_vote} size="tiny" row={row} showOptions={showVoteOptions.value} onEnableOptions={() => showVoteOptions.value = true}
+      return <TriStateButton state={row.student_vote} size="tiny" row={row} showOptions={showVoteOptions.value} positiveText="Visi pritarė" negativeText="Visi nepritarė" neutralText="Visi susilaikė" onEnableOptions={() => showVoteOptions.value = true}
         onChangeState={(state) => {
           row.student_vote = state;
           handleAgendaItemUpdate(row);
@@ -183,7 +183,7 @@ const columns = [
     },
     width: 120,
     render(row: App.Entities.AgendaItem) {
-      return <TriStateButton state={row.student_benefit} size="tiny" row={row} showOptions={showVoteOptions.value} positiveIcon={IMdiThumbsUpOutline} negativeIcon={IMdiThumbsDownOutline} neutralIcon={IMdiThumbsUpDownOutline} onEnableOptions={() => showVoteOptions.value = true}
+      return <TriStateButton state={row.student_benefit} size="tiny" row={row} showOptions={showVoteOptions.value} positiveIcon={IMdiThumbsUpOutline} negativeIcon={IMdiThumbsDownOutline} neutralIcon={IMdiThumbsUpDownOutline} onEnableOptions={() => showVoteOptions.value = true} positiveText="Palanku" negativeText="Nepalanku" neutralText="Sprendimas neturi tiesioginės ar netiesioginės įtakos studentams"
         onChangeState={(state) => {
           row.student_benefit = state;
           handleAgendaItemUpdate(row);
