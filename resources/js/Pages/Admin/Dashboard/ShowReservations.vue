@@ -92,12 +92,55 @@
             @update:value="handleTenantUpdateValue" />
         </div>
       </div>
-      <h4> Rezervacijos su padalinio ištekliais </h4>
-      <ReservationsWithUnitResources :pagination="{ pageSize: 8 }"
-        :active-reservations="providedTenant?.activeReservations" />
-      <h4> Padalinio žmonių sukurtos rezervacijos </h4>
-      <ReservationsWithUnitResources :pagination="{ pageSize: 8 }"
-        :active-reservations="providedTenant?.reservations" />
+      <NCard :segmented="{
+        footer: 'soft',
+      }">
+        <template #header>
+          <div class="inline-flex items-center gap-2">
+            <component :is="Icons.RESERVATION" />
+            Aktyvios rezervacijos
+          </div>
+        </template>
+        <div class="grid grid-cols-2 gap-2">
+          <p>Padalinio daiktų</p>
+          <p>Tos, kurias sukūrė padalinio žmonės</p>
+          <span class="inline-block text-4xl font-bold">
+            <NNumberAnimation :from="0"
+              :to="providedTenant?.activeReservations?.filter(reservation => !reservation.isCompleted).length" />
+          </span>
+          <span class="inline-block text-4xl font-bold">
+            <NNumberAnimation :from="0" :to="providedTenant?.reservations?.filter(reservation => !reservation.isCompleted).length" />
+          </span>
+        </div>
+        <template #footer>
+          <div class="flex items-center gap-2">
+            <NButton size="small" @click="showTenantReservationsModal = true">
+              <template #icon>
+                <Icons.RESERVATION />
+              </template>
+              Peržiūrėti aktyvias
+            </NButton>
+            <NButton size="small" secondary @click="showTenantUsersReservationsModal = true">
+              <template #icon>
+                <Icons.TENANT />
+              </template>
+              Ką skolinasi padalinys?
+            </NButton>
+          </div>
+          <CardModal v-model:show="showTenantReservationsModal" class="max-w-6xl" title="Visos rezervacijos"
+            @close="showTenantReservationsModal = false">
+            <h4> Rezervacijos su padalinio ištekliais </h4>
+            <ReservationsWithUnitResources show-if-completed :pagination="{ pageSize: 8 }"
+              :active-reservations="providedTenant?.activeReservations" />
+          </CardModal>
+          <CardModal v-model:show="showTenantUsersReservationsModal" class="max-w-6xl" title="Visos rezervacijos"
+            @close="showTenantUsersReservationsModal = false">
+            <h4> Padalinio žmonių sukurtos rezervacijos </h4>
+            <ReservationsWithUnitResources show-if-completed :pagination="{ pageSize: 8 }"
+              :active-reservations="providedTenant?.reservations" />
+          </CardModal>
+        </template>
+      </NCard>
     </section>
   </AdminContentPage>
 </template>
@@ -122,9 +165,9 @@ const { reservations, tenants, providedTenant } = defineProps<{
   providedTenant: App.Entities.Tenant | null;
 }>();
 
-console.log(reservations, providedTenant);
-
 const showReservationsModal = ref(false);
+const showTenantReservationsModal = ref(false);
+const showTenantUsersReservationsModal = ref(false);
 
 const handleTenantUpdateValue = (value) => {
   router.reload({ data: { tenant_id: value } });
@@ -154,6 +197,4 @@ const reservationColumns = [
     render: (row: App.Entities.Reservation) => row.isCompleted ? 'Taip' : 'Ne',
   },
 ];
-
-console.log(reservations);
 </script>
