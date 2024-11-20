@@ -1,13 +1,6 @@
 <template>
-  <IndexPageLayout
-    title="Renginiai"
-    model-name="calendar"
-    :can-use-routes="canUseRoutes"
-    :columns="columns"
-    :paginated-models="calendar"
-    :icon="Icons.CALENDAR"
-  >
-  </IndexPageLayout>
+  <IndexPageLayout title="Renginiai" model-name="calendar" :can-use-routes :columns
+    :paginated-models="calendar" :icon="Icons.CALENDAR" />
 </template>
 
 <script setup lang="tsx">
@@ -44,7 +37,7 @@ const filters = ref<Record<string, any>>({
   "padalinys.id": [],
 });
 
-watch(filters, (newFilters) => {}, { deep: true });
+watch(filters, (newFilters) => { }, { deep: true });
 
 provide("filters", filters);
 
@@ -86,6 +79,13 @@ const columns = computed(() => {
       }),
       render(row: App.Entities.Calendar) {
         return row.category?.name;
+      },
+    },
+    {
+      title: "Ar rodomas?",
+      key: "is_draft",
+      render(row: App.Entities.Calendar) {
+        return row.is_draft ? "❌ Ne" : "✅ Taip";
       },
     },
     {

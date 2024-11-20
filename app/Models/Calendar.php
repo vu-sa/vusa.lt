@@ -23,6 +23,7 @@ class Calendar extends Model implements HasMedia
         'end_date' => 'datetime:Y-m-d H:i',
         'updated_at' => 'datetime:Y-m-d H:i:s',
         'created_at' => 'datetime:Y-m-d H:i:s',
+        'is_draft' => 'boolean',
     ];
 
     public $translatable = [
