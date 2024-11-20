@@ -51,12 +51,12 @@ class PublicPageController extends PublicController
     {
         if (app()->getLocale() === 'en') {
             return Cache::remember('calendar_en', 60 * 30, function () {
-                return Calendar::where('is_international', true)
+                return Calendar::where('is_international', true)->where('is_draft', false)
                     ->orderBy('date', 'desc')->take(100)->get();
             });
         } else {
             return Cache::remember('calendar_lt', 60 * 30, function () {
-                return Calendar::orderBy('date', 'desc')->take(100)->get();
+                return Calendar::query()->where('is_draft', false)->orderBy('date', 'desc')->take(100)->get();
             });
         }
     }
