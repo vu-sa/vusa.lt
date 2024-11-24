@@ -75,7 +75,7 @@ import AppLogo from "@/Components/AppLogo.vue";
 import CardModal from "../Modals/CardModal.vue";
 import NotificationBell from "@/Features/Admin/Notifications/NotificationBell.vue";
 import TaskIndicatorButton from "../../Features/Admin/TaskManager/TaskIndicatorButton.vue";
-import LineHorizontal320Filled from "~icons/fluent/line-horizontal-3-20-filled.vue";
+import LineHorizontal320Filled from "~icons/fluent/line-horizontal-3-20-filled";
 
 defineProps<{
   title?: string;
