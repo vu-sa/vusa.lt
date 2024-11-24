@@ -33,6 +33,8 @@ jobs:
       - name: Install Dependencies
         run: |
           composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+      - name: Generate key
+        run: php artisan key:generate
   phpstan:
     runs-on: "ubuntu-latest"
     name: PHP Static Analysis
@@ -57,4 +59,4 @@ jobs:
           restore-keys: composer-
       - name: "Running Static Analysis"
         run: |
-          vendor/phpstan/phpstan/phpstan --no-progress --memory-limit=256M analyze app
+          vendor/phpstan/phpstan/phpstan --no-progress --memory-limit=256M analyze
