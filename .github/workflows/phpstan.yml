@@ -9,9 +9,9 @@ on:
     - 'dependabot/composer/*'
 
 jobs:
-  composer_install:
+  phpstan:
     runs-on: "ubuntu-latest"
-    name: Installing Dependencies
+    name: PHP Static Analysis
     steps:
       - uses: actions/checkout@v4
       - name: Get Composer Cache Directory
@@ -37,28 +37,6 @@ jobs:
           composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
       - name: Generate key
         run: php artisan key:generate
-  phpstan:
-    runs-on: "ubuntu-latest"
-    name: PHP Static Analysis
-    needs: composer_install
-    steps:
-      - uses: actions/checkout@v4
-      - name: setup php
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: 8.3
-          extensions: dom, curl, libxml, mbstring, zip, fileinfo
-      - name: Get Composer Cache Directory
-        id: composer-cache
-        run: |
-          echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-      - uses: actions/cache@v4
-        with:
-          path: |
-            ${{ steps.composer-cache.outputs.dir }}
-            ./vendor
-          key: composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: composer-
       - name: "Running Static Analysis"
         run: |
           vendor/phpstan/phpstan/phpstan --no-progress --memory-limit=256M analyze
