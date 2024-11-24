@@ -14,7 +14,7 @@
         "inertiajs/inertia-laravel": "^1.0",
         "intervention/image": "^3.0",
         "intervention/image-laravel": "^1.2",
-        "laravel/framework": "^11.0",
+        "laravel/framework": "11.32.0",
         "laravel/scout": "^10.0",
         "laravel/telescope": "^5.0",
         "laravel/tinker": "^2.7",
@@ -53,7 +53,7 @@
         "pestphp/pest": "^3.0",
         "pestphp/pest-plugin-laravel": "^3.0",
         "phpmd/phpmd": "^2.15",
-        "phpstan/phpstan": "^1.10",
+        "phpstan/phpstan": "^2.0",
         "spatie/laravel-ignition": "^2.0",
         "spatie/laravel-typescript-transformer": "^2.1"
     },
