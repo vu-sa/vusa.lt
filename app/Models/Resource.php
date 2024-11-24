@@ -9,6 +9,8 @@ use App\Models\Traits\HasTranslations;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Scout\Searchable;
 use Spatie\MediaLibrary\HasMedia;
@@ -38,12 +40,12 @@ class Resource extends Model implements HasMedia
         ];
     }
 
-    public function reservations()
+    public function reservations(): BelongsToMany
     {
         return $this->belongsToMany(Reservation::class)->using(ReservationResource::class)->withPivot(['state', 'start_time', 'end_time', 'quantity']);
     }
 
-    public function active_reservations()
+    public function active_reservations(): BelongsToMany
     {
         return $this->reservations()->wherePivotIn('state', ['created', 'reserved', 'lent']);
     }
@@ -53,12 +55,12 @@ class Resource extends Model implements HasMedia
         return GetResourceManagers::execute($this);
     }
 
-    public function tenant()
+    public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
-    public function category()
+    public function category(): BelongsTo
     {
         return $this->belongsTo(ResourceCategory::class, 'resource_category_id');
     }

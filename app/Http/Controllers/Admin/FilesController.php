@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreFilesRequest;
 use App\Models\File;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\Request;
@@ -98,10 +99,12 @@ class FilesController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreFilesRequest $request)
     {
-        $files = $request->file('files');
-        $path = $request->input('path');
+        $validated = $request->validated();
+
+        $files = $validated['files'];
+        $path = $validated['path'];
 
         // Initialize an array to store any error messages
         $errors = [];

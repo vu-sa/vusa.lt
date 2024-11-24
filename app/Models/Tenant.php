@@ -3,7 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Laravel\Scout\Searchable;
+use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Tenant extends Model
@@ -14,52 +17,52 @@ class Tenant extends Model
 
     public $timestamps = false;
 
-    public function banners()
+    public function banners(): HasMany
     {
         return $this->hasMany(Banner::class);
     }
 
-    public function calendar()
+    public function calendar(): HasMany
     {
         return $this->hasMany(Calendar::class);
     }
 
-    public function duties()
+    public function duties(): HasManyThrough
     {
         return $this->hasManyThrough(Duty::class, Institution::class, 'tenant_id', 'institution_id');
     }
 
-    public function institutions()
+    public function institutions(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Institution::class);
     }
 
-    public function news()
+    public function news(): HasMany
     {
         return $this->hasMany(News::class);
     }
 
-    public function pages()
+    public function pages(): HasMany
     {
         return $this->hasMany(Page::class);
     }
 
-    public function mainPages()
+    public function mainPages(): HasMany
     {
         return $this->hasMany(MainPage::class);
     }
 
-    public function resources()
+    public function resources(): HasMany
     {
         return $this->hasMany(Resource::class);
     }
 
-    public function users()
+    public function users(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->institutions(), (new Institution)->duties(), (new Duty)->current_users());
     }
 
-    public function reservations()
+    public function reservations(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->users(), (new User)->reservations());
     }

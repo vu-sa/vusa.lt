@@ -7,6 +7,7 @@ use App\Models\Traits\HasTranslations;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
@@ -46,15 +47,15 @@ class Duty extends Model implements AuthorizableContract
         return $this->hasMany(Dutiable::class);
     }
 
-    public function users()
+    public function users(): \Illuminate\Database\Eloquent\Relations\MorphToMany
     {
         return $this->morphedByMany(User::class, 'dutiable')
             ->using(Dutiable::class)
-            ->withPivot(['extra_attributes', 'start_date', 'end_date']);
+            ->withPivot(['start_date', 'end_date', 'additional_photo', 'additional_email', 'use_original_duty_name', 'description']);
     }
 
     // TODO: use current_duties as an example for current_users
-    public function current_users()
+    public function current_users(): \Illuminate\Database\Eloquent\Relations\MorphToMany
     {
         return $this->users()
             ->where(function ($query) {
@@ -64,7 +65,7 @@ class Duty extends Model implements AuthorizableContract
             ->withTimestamps();
     }
 
-    public function previous_users()
+    public function previous_users(): \Illuminate\Database\Eloquent\Relations\MorphToMany
     {
         return $this->users()
             ->where(function ($query) {
@@ -76,7 +77,7 @@ class Duty extends Model implements AuthorizableContract
 
     public function contacts()
     {
-        return $this->morphedByMany(Contact::class, 'dutiable')->using(Dutiable::class)->withPivot(['extra_attributes', 'start_date'])->withTimestamps();
+        return $this->morphedByMany(Contact::class, 'dutiable')->using(Dutiable::class)->withTimestamps();
     }
 
     public function matters()
@@ -89,7 +90,7 @@ class Duty extends Model implements AuthorizableContract
         return $this->morphToMany(Type::class, 'typeable')->using(Typeable::class)->withPivot(['typeable_type']);
     }
 
-    public function institution()
+    public function institution(): BelongsTo
     {
         return $this->belongsTo(Institution::class);
     }

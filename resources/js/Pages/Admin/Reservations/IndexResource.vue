@@ -42,6 +42,7 @@ provide("sorters", sorters);
 const filters = ref<Record<string, any>>({
   'padalinys.id': [],
   'category.id': [],
+  'is_reservable': [],
 });
 
 provide("filters", filters);
@@ -98,6 +99,19 @@ const columns = computed<DataTableColumns<App.Entities.Resource>>(() => [
       }
       return <div class="flex items-center gap-2"><Icon icon={`fluent:${row.category.icon}`} />{row.category.name}</div>;
     },
+  },
+  {
+    title: "Ar skolinamas?",
+    key: "is_reservable",
+    filter: true,
+    filterOptionValues: filters.value["is_reservable"],
+    filterOptions: [
+      { label: "Taip", value: true },
+      { label: "Ne", value: false },
+    ],
+    render(row) {
+      return row.is_reservable ? "✅ Taip" : "❌ Ne";
+    }
   },
   {
     title() {

@@ -51,12 +51,12 @@ class PublicPageController extends PublicController
     {
         if (app()->getLocale() === 'en') {
             return Cache::remember('calendar_en', 60 * 30, function () {
-                return Calendar::where('is_international', true)
+                return Calendar::where('is_international', true)->where('is_draft', false)
                     ->orderBy('date', 'desc')->take(100)->get();
             });
         } else {
             return Cache::remember('calendar_lt', 60 * 30, function () {
-                return Calendar::orderBy('date', 'desc')->take(100)->get();
+                return Calendar::query()->where('is_draft', false)->orderBy('date', 'desc')->take(100)->get();
             });
         }
     }
@@ -164,7 +164,7 @@ class PublicPageController extends PublicController
             abort(404);
         }
 
-        $navigation_item = Navigation::query()->where('name', $page->title)->get()->first();
+        $navigation_item = Navigation::query()->where('name', $page->title)->first();
         $other_lang_page = $page->getOtherLanguage();
 
         Inertia::share('otherLangURL', $other_lang_page ? route(
@@ -398,7 +398,7 @@ class PublicPageController extends PublicController
         return Inertia::render('Public/ShowDocuments', [
             'documents' => $documents->where('is_active', true)->get(),
             // Filter null values from content_type
-            'allContentTypes' => Document::query()->select('content_type')->whereNotNull('content_type')->distinct()->get()->pluck('content_type')->sort()->values(),
+            'allContentTypes' => Document::query()->select('content_type')->whereNotNull('content_type')->distinct()->pluck('content_type')->sort()->values(),
         ])->withViewData([
             'SEOData' => $seo,
         ]);

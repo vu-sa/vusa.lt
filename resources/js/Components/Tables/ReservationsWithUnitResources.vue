@@ -19,13 +19,14 @@ import { RESERVATION_DATE_TIME_FORMAT } from "@/Constants/DateTimeFormats";
 import { formatRelativeTime, formatStaticTime } from "@/Utils/IntlTime";
 import UsersAvatarGroup from "@/Components/Avatars/UsersAvatarGroup.vue";
 
-defineProps<{
+const { showIfCompleted } = defineProps<{
   activeReservations: App.Entities.Reservation[];
+  showIfCompleted?: boolean;
 }>();
 
 // Reuses from IndexReservation, need to use for implementation in dashboard
 const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => {
-  return [
+  let columns = [
     {
       type: "expand",
       renderExpand(row) {
@@ -70,6 +71,13 @@ const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => {
       maxWidth: 300,
       ellipsis: {
         tooltip: true,
+      },
+      render(row) {
+        return (
+          <Link href={route("reservations.show", row.id)}>
+            {row.name}
+          </Link>
+        );
       },
     },
     {
@@ -138,6 +146,26 @@ const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => {
       },
     },
   ];
+
+  if (showIfCompleted) {
+    columns.push({
+      title: "Ar užbaigta",
+      key: "isCompleted",
+      filter(value, row) {
+        return row.isCompleted === value;
+      },
+      filterOptions: [
+        { label: "Taip", value: true },
+        { label: "Ne", value: false },
+      ],
+      defaultFilterOptionValues: [false],
+      render(row) {
+        return row.isCompleted ? "✅ Taip" : "❌ Ne";
+      },
+    });
+  }
+
+  return columns;
 });
 
 const columnsWithActions = computed(() => {

@@ -11,6 +11,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -143,6 +144,10 @@ class DashboardController extends Controller
             $providedTenant = null;
         } else {
             $providedTenant = Tenant::query()->where('id', $selectedTenant['id'])->with('reservations.resources', 'resources')->first();
+
+            $tenantResourceReservations = $providedTenant->resources->load('reservations.users')->pluck('reservations')->flatten()->unique('id')->values();
+
+            $tenantResourceReservations = new Collection($tenantResourceReservations);
         }
 
         return Inertia::render('Admin/Dashboard/ShowReservations', [
@@ -154,8 +159,8 @@ class DashboardController extends Controller
             'tenants' => $tenants,
             'providedTenant' => $providedTenant ? [
                 ...$providedTenant->toArray(),
-                'reservations' => $providedTenant->reservations->load('resources.tenant', 'users')->append('isCompleted')->unique()->values(),
-                'activeReservations' => $providedTenant->resources->load('reservations.users')->pluck('reservations')->flatten()->unique()->values(),
+                'reservations' => $providedTenant->reservations->load('resources.tenant', 'users')->append('isCompleted')->unique('id')->values(),
+                'activeReservations' => $tenantResourceReservations->append('isCompleted'),
             ] : null,
         ]);
     }

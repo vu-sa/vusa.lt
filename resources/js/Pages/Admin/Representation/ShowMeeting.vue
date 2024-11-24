@@ -9,7 +9,7 @@
     </template>
     <div class="my-4 flex items-center gap-4">
       <NButton size="small" @click="showAgendaItemStoreModal = true">
-        {{ $t("Pridėti klausimą") }}
+        {{ $t("Pridėti klausimų") }}
         <template #icon>
           <NIcon size="16" :component="Icons.AGENDA_ITEM" />
         </template>
@@ -21,9 +21,9 @@
       </div>
     </div>
     <NDataTable scroll-x="800" size="small" class="mt-4" :data="meeting.agenda_items" :columns />
-    <CardModal v-model:show="showAgendaItemStoreModal" title="Pridėti darbotvarkės punktą" class="max-w-md"
+    <CardModal v-model:show="showAgendaItemStoreModal" title="Pridėti darbotvarkės punktus"
       :segmented="{ content: 'soft' }" @close="showAgendaItemStoreModal = false">
-      <AgendaItemForm :agenda-item="{ title: null }" @submit="handleAgendaItemStore" />
+      <AgendaItemsForm class="w-full" :loading @submit="handleAgendaItemsFormSubmit" />
     </CardModal>
     <CardModal v-model:show="showAgendaItemUpdateModal" title="Redaguoti darbotvarkės punktą"
       :segmented="{ content: 'soft' }" @close="showAgendaItemUpdateModal = false">
@@ -40,7 +40,7 @@
 
 <script setup lang="tsx">
 import { computed, provide, ref } from "vue";
-import { router } from "@inertiajs/vue3";
+import { router, useForm } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
 
 import { formatStaticTime } from "@/Utils/IntlTime";
@@ -62,6 +62,7 @@ import { trans as $t } from "laravel-vue-i18n";
 import IMdiThumbsUpOutline from "~icons/mdi/thumbs-up-outline";
 import IMdiThumbsDownOutline from "~icons/mdi/thumbs-down-outline";
 import IMdiThumbsUpDownOutline from "~icons/mdi/thumbs-up-down-outline";
+import AgendaItemsForm from "@/Components/AdminForms/Special/AgendaItemsForm.vue";
 
 const props = defineProps<{
   meeting: App.Entities.Meeting;
@@ -72,11 +73,16 @@ const showAgendaItemStoreModal = ref(false);
 const showAgendaItemUpdateModal = ref(false);
 const currentTab = useStorage("show-meeting-tab", "Failai");
 const showVoteOptions = useStorage("show-vote-options", false);
+const loading = ref(false);
+
+const meetingAgendaForm = useForm({
+  meeting: props.meeting.id,
+  // TODO: Shouldn't be an array
+  agendaItems: [],
+});
 
 // Used in FileUploader.vue
 provide<boolean>("keepFileable", true);
-
-console.log(props.meeting.agenda_items);
 
 const selectedAgendaItem = ref<App.Entities.AgendaItem | null>(null);
 
@@ -155,7 +161,7 @@ const columns = [
     },
     width: 110,
     render(row: App.Entities.AgendaItem) {
-      return <TriStateButton state={row.decision} size="tiny" row={row} showOptions={showVoteOptions.value} onEnableOptions={() => showVoteOptions.value = true} onChangeState={(state) => {
+      return <TriStateButton state={row.decision} size="tiny" positiveText="Sprendimas priimtas / klausimas patvirtintas" negativeText="Klausimui / sprendimui nepritarta" neutralText="Joks sprendimas (teigiamas ar neigiamas) nepriimtas / susilaikyta" row={row} showOptions={showVoteOptions.value} onEnableOptions={() => showVoteOptions.value = true} onChangeState={(state) => {
         row.decision = state;
         handleAgendaItemUpdate(row);
       }} />
@@ -168,7 +174,7 @@ const columns = [
     },
     width: 110,
     render(row: App.Entities.AgendaItem) {
-      return <TriStateButton state={row.student_vote} size="tiny" row={row} showOptions={showVoteOptions.value} onEnableOptions={() => showVoteOptions.value = true}
+      return <TriStateButton state={row.student_vote} size="tiny" row={row} showOptions={showVoteOptions.value} positiveText="Visi pritarė" negativeText="Visi nepritarė" neutralText="Visi susilaikė" onEnableOptions={() => showVoteOptions.value = true}
         onChangeState={(state) => {
           row.student_vote = state;
           handleAgendaItemUpdate(row);
@@ -183,7 +189,7 @@ const columns = [
     },
     width: 120,
     render(row: App.Entities.AgendaItem) {
-      return <TriStateButton state={row.student_benefit} size="tiny" row={row} showOptions={showVoteOptions.value} positiveIcon={IMdiThumbsUpOutline} negativeIcon={IMdiThumbsDownOutline} neutralIcon={IMdiThumbsUpDownOutline} onEnableOptions={() => showVoteOptions.value = true}
+      return <TriStateButton state={row.student_benefit} size="tiny" row={row} showOptions={showVoteOptions.value} positiveIcon={IMdiThumbsUpOutline} negativeIcon={IMdiThumbsDownOutline} neutralIcon={IMdiThumbsUpDownOutline} onEnableOptions={() => showVoteOptions.value = true} positiveText="Palanku" negativeText="Nepalanku" neutralText="Sprendimas neturi tiesioginės ar netiesioginės įtakos studentams"
         onChangeState={(state) => {
           row.student_benefit = state;
           handleAgendaItemUpdate(row);
@@ -228,18 +234,6 @@ const columns = [
   }
 ]
 
-const handleAgendaItemStore = (agendaItem: App.Entities.AgendaItem) => {
-  router.post(
-    route("agendaItems.store"),
-    { agendaItemTitles: [agendaItem.title], meeting_id: props.meeting.id },
-    {
-      onSuccess: () => {
-        showAgendaItemStoreModal.value = false;
-      },
-    }
-  );
-};
-
 const handleAgendaItemUpdate = (agendaItem: App.Entities.AgendaItem) => {
   router.patch(route("agendaItems.update", agendaItem.id), agendaItem, {
     onSuccess: () => {
@@ -259,4 +253,25 @@ const relatedModels = [
     count: props.meeting.tasks?.length,
   },
 ];
+
+// NOTE: Duplicated in NewMeetingModal.vue
+const handleAgendaItemsFormSubmit = (agendaItems: Record<string, any>) => {
+  loading.value = true;
+
+  meetingAgendaForm
+    .transform((data) => ({
+      meeting_id: props.meeting.id,
+      ...agendaItems,
+    }))
+    .post(route("agendaItems.store"), {
+      // after success, redirect to meeting
+      onSuccess: () => {
+        meetingAgendaForm.reset();
+        showAgendaItemStoreModal.value = false;
+      },
+      onFinish: () => {
+        loading.value = false;
+      },
+    });
+};
 </script>

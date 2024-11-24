@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Models\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Laravel\Scout\Searchable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -23,6 +22,7 @@ class Calendar extends Model implements HasMedia
         'end_date' => 'datetime:Y-m-d H:i',
         'updated_at' => 'datetime:Y-m-d H:i:s',
         'created_at' => 'datetime:Y-m-d H:i:s',
+        'is_draft' => 'boolean',
     ];
 
     public $translatable = [
@@ -33,7 +33,7 @@ class Calendar extends Model implements HasMedia
         'cto_url',
     ];
 
-    public function tenant()
+    public function tenant(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
@@ -41,7 +41,7 @@ class Calendar extends Model implements HasMedia
     //# Undefined property: App\Models\Calendar::$category, when generating types
     // "@php artisan model:typer --global > resources/js/Types/models.d.ts"
     // sail artisan model:typer --optional-relations --optional-nullables --global > resources/js/Types/models.d.ts
-    public function category(): BelongsTo
+    public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Category::class, 'category', 'alias', 'category');
     }

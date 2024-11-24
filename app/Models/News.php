@@ -20,15 +20,16 @@ class News extends Model implements Feedable
     protected $casts = [
         'updated_at' => 'datetime:Y-m-d H:i:s',
         'created_at' => 'datetime:Y-m-d H:i:s',
+        // TODO: convert to datetime in database
         'publish_time' => 'datetime',
     ];
 
-    public function user()
+    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function tenant()
+    public function tenant(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
@@ -43,7 +44,7 @@ class News extends Model implements Feedable
         return $this->belongsToMany(Tag::class, 'posts_tags', 'news_id', 'tag_id');
     }
 
-    public function content()
+    public function content(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Content::class);
     }

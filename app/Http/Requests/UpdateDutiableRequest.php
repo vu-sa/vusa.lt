@@ -38,7 +38,11 @@ class UpdateDutiableRequest extends FormRequest
         return [
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after:start_date',
-            'extra_attributes' => 'nullable|array',
+            'description' => 'nullable|array',
+            'study_program_id' => 'nullable|ulid|exists:study_programs,id',
+            'additional_email' => 'nullable|email',
+            'additional_phone' => 'nullable|string',
+            'use_original_duty_name' => 'nullable|boolean',
         ];
     }
 }

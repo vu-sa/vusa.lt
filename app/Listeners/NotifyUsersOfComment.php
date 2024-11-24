@@ -30,6 +30,12 @@ class NotifyUsersOfComment implements ShouldQueue
     {
         $commentable = $event->comment->commentable;
 
+        // NOTE: in some cases, $commentable can be null, so we need to check if it's null
+        // TODO: check in database for those cases (maybe it shouldn't return, but still post)
+        if (! $commentable) {
+            return;
+        }
+
         // let's assume for now, that the subject will always be an user
         $user = $event->comment->user;
 

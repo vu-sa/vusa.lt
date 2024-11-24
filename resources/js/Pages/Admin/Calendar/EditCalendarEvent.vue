@@ -1,5 +1,15 @@
 <template>
   <PageContent :title="calendar.title.lt" :back-url="route('calendar.index')" :heading-icon="Icons.CALENDAR">
+    <template #create-button>
+      <NButton round size="tiny" :theme-overrides="{ border: '1.2px solid' }"
+        @click="() => duplicateCalendar(calendar.id)">
+        <template #icon>
+          <IFluentCopyAdd24Regular />
+        </template>
+        Duplikuoti
+      </NButton>
+    </template>
+
     <UpsertModelLayout>
       <CalendarForm model-route="calendar.update" delete-model-route="calendar.destroy" :calendar :categories :images
         :assignable-tenants />
@@ -9,6 +19,7 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
+import { router } from "@inertiajs/vue3";
 
 import CalendarForm from "@/Components/AdminForms/CalendarForm.vue";
 import Icons from "@/Types/Icons/regular";
@@ -23,4 +34,11 @@ const props = defineProps<{
 }>();
 
 const calendar = ref(props.calendar);
+
+function duplicateCalendar(id: number) {
+  router.post(route("calendar.duplicate", { id }), {}, { onSuccess: () => window.location.reload() });
+
+  // reload page
+
+}
 </script>

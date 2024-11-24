@@ -71,7 +71,7 @@
 
           <div v-else class="flex flex-col items-start gap-2">
             <NInput v-model:value="questionInputInTextArea" type="textarea" class="w-full" rows="5"
-              :placeholder="$page.props.app.locale === 'lt' ? 'Kiekvienas klausimas turi būti iš naujos eilutės, pvz.:\n\nKlausimas nr. 1\nKlausimas nr. 2' : 'Every question must begin from new line, e.g.\n\nQuestion no. 1\nQuestion no.2'" />
+              :placeholder="$page.props.app.locale === 'lt' ? 'Kiekvienas klausimas turi būti iš naujos eilutės, pvz.:\n\nKlausimas nr. 1\nKlausimas nr. 2' : 'Every question must begin from new line, e.g.\n\nQuestion no. 1\nQuestion no. 2'" />
             <div class="flex w-full justify-between gap-2">
               <NButton size="small" @click="showQuestionInputInTextArea = false">
                 {{ $t('Grįžti') }}
@@ -102,7 +102,7 @@
         <NCheckbox v-model:checked="agendaItemsForm.moreAgendaItemsUndefined">
           <span class="whitespace-nowrap">{{
             $t("Vėliau gali atsirasti papildomų darbotvarkės klausimų")
-            }}</span>
+          }}</span>
         </NCheckbox>
       </NFormItem>
       <NFormItem :show-label="false">

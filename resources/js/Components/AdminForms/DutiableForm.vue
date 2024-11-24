@@ -23,23 +23,11 @@
       <NFormItem>
         <template #label>
           <span class="inline-flex gap-1">
-            <span> Papildomas tekstas </span>
-            <InfoPopover>Šalia pareigybės skliausteliuose atsiranda šis papildomas
-              tekstas.</InfoPopover>
+            <span> Papildomas paštas </span>
+            <InfoPopover>Rodomas šis paštas vietoje vartotojo pašto</InfoPopover>
           </span>
         </template>
-        <NInput v-if="locale === 'lt'" v-model:value="form.extra_attributes.study_program" type="text"
-          placeholder="Įrašyti tekstą...">
-          <template #suffix>
-            <SimpleLocaleButton v-model:locale="locale" />
-          </template>
-        </NInput>
-        <NInput v-else-if="locale === 'en'" v-model:value="form.extra_attributes.en.study_program" type="text"
-          placeholder="Add text...">
-          <template #suffix>
-            <SimpleLocaleButton v-model:locale="locale" />
-          </template>
-        </NInput>
+        <NInput v-model:value="form.additional_email" placeholder="petras.petraitis@vusa.lt" />
       </NFormItem>
       <NFormItem>
         <template #label>
@@ -53,8 +41,18 @@
           </div>
         </template>
         <NMessageProvider>
-          <UploadImageWithCropper v-model:url="form.extra_attributes.additional_photo" folder="contacts" />
+          <UploadImageWithCropper v-model:url="form.additional_photo" folder="contacts" />
         </NMessageProvider>
+      </NFormItem>
+      <NFormItem>
+        <template #label>
+          <span class="inline-flex gap-1">
+            <span> Studijų programa </span>
+            <InfoPopover>Kai aktualu, galima pasirinkti studijų programą, kurią rodo prie įrašo</InfoPopover>
+          </span>
+        </template>
+        <NSelect filterable v-model:value="form.study_program_id" :render-label="renderStudyProgramLabel" :options="studyPrograms"
+          value-field="id" placeholder="Studijų programa" />
       </NFormItem>
       <NFormItem>
         <template #label>
@@ -63,8 +61,8 @@
             <SimpleLocaleButton v-model:locale="locale" />
           </div>
         </template>
-        <TipTap v-if="locale === 'lt'" v-model="form.extra_attributes.info_text" html />
-        <TipTap v-else-if="locale === 'en'" v-model="form.extra_attributes.en.info_text" html />
+        <TipTap v-if="locale === 'lt'" v-model="form.description.lt" html />
+        <TipTap v-else-if="locale === 'en'" v-model="form.description.en" html />
       </NFormItem>
     </FormElement>
     <FormElement>
@@ -95,7 +93,7 @@
               pavadinimas.</InfoPopover>
           </span>
         </template>
-        <NSwitch v-model:value="form.extra_attributes.use_original_duty_name" />
+        <NSwitch v-model:value="form.use_original_duty_name" />
       </NFormItem>
     </FormElement>
   </AdminForm>
@@ -108,9 +106,12 @@ import {
   NFormItem,
   NInput,
   NMessageProvider,
+  NSelect,
   NSwitch,
+  NTag,
+  type SelectOption,
 } from "naive-ui";
-import { computed, ref } from "vue";
+import { computed, h, ref } from "vue";
 import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
 
 import { changeDutyNameEndings } from "@/Utils/String";
@@ -122,6 +123,7 @@ import AdminForm from "./AdminForm.vue";
 
 const props = defineProps<{
   dutiable: App.Entities.Dutiable;
+  studyPrograms: App.Entities.StudyProgram[];
 }>();
 
 defineEmits<{
@@ -131,37 +133,26 @@ defineEmits<{
 
 const form = useForm("dutiable", props.dutiable);
 
+if (Array.isArray(form.description)) {
+  form.description = { lt: "", en: "" };
+}
+
 const locale = ref("lt");
+
+// Show study program name simply but add "degree" in a tag
+const renderStudyProgramLabel = (option: SelectOption) => {
+  return h("div", { class: "flex items-center gap-2" },
+    [
+      option.name,
+      option?.degree ? h(NTag, { size: "tiny" }, `${option?.degree}`) : null,
+    ]);
+};
 
 const shownDutyName = computed(() => {
   return changeDutyNameEndings(props.dutiable.dutiable,
     props.dutiable.duty.name,
-    usePage().props.app.locale, props.dutiable.dutiable.pronouns, form.extra_attributes?.use_original_duty_name)
+    usePage().props.app.locale, props.dutiable.dutiable.pronouns, form.use_original_duty_name)
 }
 );
 
-if (!form.extra_attributes || form.extra_attributes.length === 0) {
-  form.extra_attributes = {};
-}
-
-if (!form.extra_attributes.study_program) {
-  form.extra_attributes.study_program = "";
-}
-
-if (!form.extra_attributes.info_text) {
-  form.extra_attributes.info_text = "";
-}
-
-if (!form.extra_attributes.additional_photo) {
-  form.extra_attributes.additional_photo = "";
-}
-
-if (!form.extra_attributes.en) {
-  form.extra_attributes.en = {};
-}
-
-// if form.extra_attributes.en is empty array then create empty object
-if (form.extra_attributes.en.length === 0) {
-  form.extra_attributes.en = {};
-}
 </script>

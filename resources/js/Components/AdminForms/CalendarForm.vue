@@ -32,6 +32,9 @@
             <MultiLocaleInput v-model:input="form.location" />
           </NFormItem>
         </div>
+        <NFormItem label="Ar šablonas?" required>
+          <NSwitch v-model:value="form.is_draft" />
+        </NFormItem>
         <NFormItem label="Kategorija">
           <NSelect v-model:value="form.category" :options="categoryOptions" placeholder="Pasirinkti kategoriją..."
             clearable />
@@ -166,6 +169,7 @@ import InfoPopover from "../Buttons/InfoPopover.vue";
 import TipTap from "@/Components/TipTap/OriginalTipTap.vue";
 import UpsertModelButton from "@/Components/Buttons/UpsertModelButton.vue";
 import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
+import SimpleLocaleButton from "../Buttons/SimpleLocaleButton.vue";
 
 const props = defineProps<{
   calendar: CalendarEventForm;

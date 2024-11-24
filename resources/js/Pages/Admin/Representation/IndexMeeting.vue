@@ -4,14 +4,12 @@
 </template>
 
 <script setup lang="tsx">
-import { trans as $t, transChoice as $tChoice } from "laravel-vue-i18n";
+import { transChoice as $tChoice } from "laravel-vue-i18n";
 import { computed, provide, ref } from "vue";
-import { usePage } from "@inertiajs/vue3";
 import type { DataTableColumns, DataTableSortState } from "naive-ui";
 
 import { capitalize } from "@/Utils/String";
 import { formatStaticTime } from "@/Utils/IntlTime";
-import { tenantColumn } from "@/Composables/dataTableColumns";
 import Icons from "@/Types/Icons/regular";
 import IndexPageLayout from "@/Components/Layouts/IndexModel/IndexPageLayout.vue";
 
@@ -32,12 +30,6 @@ const sorters = ref<Record<string, DataTableSortState["order"]>>({
 
 provide("sorters", sorters);
 
-const filters = ref<Record<string, any>>({
-  "tenants.id": [],
-});
-
-provide("filters", filters);
-
 const columns = computed<DataTableColumns<App.Entities.Meeting>>(() => {
   return [
     {
@@ -52,14 +44,6 @@ const columns = computed<DataTableColumns<App.Entities.Meeting>>(() => {
           month: "long",
           day: "2-digit",
         });
-      },
-    },
-    {
-      ...tenantColumn(filters, usePage().props.tenants),
-      render(row) {
-        return row.tenants?.length === 0
-          ? ""
-          : $t(row.tenants?.map((tenant) => tenant.shortname).join(", "));
       },
     },
     {

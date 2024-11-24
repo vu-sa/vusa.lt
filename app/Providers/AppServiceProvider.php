@@ -3,11 +3,14 @@
 namespace App\Providers;
 
 use App\Http\Middleware\TrimStrings;
+use App\Models\User;
 use App\Services\ModelAuthorizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Pulse\Facades\Pulse;
 use RalphJSmit\Laravel\SEO\Facades\SEOManager;
 use RalphJSmit\Laravel\SEO\Support\Tag;
 use RalphJSmit\Laravel\SEO\TagCollection;
@@ -57,6 +60,16 @@ class AppServiceProvider extends ServiceProvider
 
             return $tags;
         });
+
+        Gate::define('viewPulse', function (User $user) {
+            return $user->isSuperAdmin();
+        });
+
+        Pulse::user(fn ($user) => [
+            'name' => $user->name,
+            'extra' => $user->email,
+            'avatar' => $user->profile_photo_url,
+        ]);
     }
 
     private function addInertiaAttribute($tag)

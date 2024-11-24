@@ -91,12 +91,19 @@ class PublicController extends Controller
         // NOTE: seo() modifies the object in place, so we need to clone it
         Inertia::share('seo.tags', $associatedArray);
 
-        if (substr($seoData->image, 0, 4) == 'http') {
-            $image = $seoData->image;
-        } elseif (isset($seoData->image)) {
-            $image = Storage::get(str_replace('uploads', 'public', $seoData->image)) === null ? config('seo.image.fallback') : $seoData->image;
-        } else {
-            $image = config('app.url').config('seo.image.fallback');
+        $image = config('app.url').config('seo.image.fallback');
+
+        if (! empty($seoData->image)) {
+            if (substr($seoData->image, 0, 4) === 'http') {
+                $image = $seoData->image;
+            } else {
+                $storedImage = Storage::get(str_replace('uploads', 'public', $seoData->image));
+                if ($storedImage !== null) {
+                    $image = $seoData->image;
+                } else {
+                    $image = config('seo.image.fallback');
+                }
+            }
         }
 
         // HACK: Share image separately, because it's hard to consume directly

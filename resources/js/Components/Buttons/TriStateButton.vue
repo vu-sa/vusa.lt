@@ -1,35 +1,25 @@
 <template>
   <NButtonGroup v-if="showOptions">
-    <NButton v-for="button in buttons" :key="button.type" secondary :type="state === button.type ? 'primary' : 'default'"
-      :color="state === button.type ? button.color : undefined" @click="handleClick(button.type)">
-      <template #icon>
-        <component :is="button.icon" />
-      </template>
-    </NButton>
-    <!-- <NButton secondary :type="state === 'positive' ? 'primary' : 'default'"
-      :color="state === 'positive' ? '#02bb0f' : undefined" @click="handleClick('positive')">
-      <template #icon>
-        <slot name="positiveIcon">
-          <IFluentCheckmark24Filled />
-        </slot>
-      </template>
-    </NButton>
-    <NButton secondary :type="state === 'negative' ? 'primary' : 'default'"
-      :color="state === 'negative' ? '#bb020f' : undefined" @click="handleClick('negative')">
-      <template #icon>
-        <slot name="negativeIcon">
-          <IMdiClose />
-        </slot>
-      </template>
-    </NButton>
-    <NButton secondary :type="state === 'neutral' ? 'primary' : 'default'"
-      :color="state === 'neutral' ? '#333333' : undefined" @click="handleClick('neutral')">
-      <template #icon>
-        <slot name="neutralIcon">
-          <IMdiCheckboxIndeterminateOutline />
-        </slot>
-      </template>
-</NButton> -->
+    <template v-for="button in buttons" :key="button.type">
+      <NTooltip v-if="button.text" trigger="hover">
+        <template #trigger>
+          <NButton secondary :type="state === button.type ? 'primary' : 'default'"
+            :color="state === button.type ? button.color : undefined" @click="handleClick(button.type)">
+            <template #icon>
+              <component :is="button.icon" />
+            </template>
+          </NButton>
+        </template>
+        {{ button.text }}
+      </NTooltip>
+      <!-- Repeated button element -->
+      <NButton v-else secondary :type="state === button.type ? 'primary' : 'default'"
+        :color="state === button.type ? button.color : undefined" @click="handleClick(button.type)">
+        <template #icon>
+          <component :is="button.icon" />
+        </template>
+      </NButton>
+    </template>
   </NButtonGroup>
   <NButton v-else-if="['positive', 'negative', 'neutral'].includes(state)" secondary type="primary"
     :color="buttons.find(button => button.type === state)?.color">
@@ -47,17 +37,21 @@
 
 <script setup lang="ts">
 import { type Component, ref } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
 import IMdiClose from "~icons/mdi/close";
 import IMdiCheckboxIndeterminateOutline from "~icons/mdi/checkbox-indeterminate-outline";
 import IFluentCheckmark24Filled from "~icons/fluent/checkmark-24-filled";
 
-const { positiveIcon, negativeIcon, neutralIcon, state } = defineProps<{
+const { positiveIcon, negativeIcon, neutralIcon, state, positiveText, negativeText, neutralText } = defineProps<{
   row: Record<string, any>;
   showOptions: boolean;
   state: 'positive' | 'neutral' | 'negative' | null;
   positiveIcon?: Component;
   negativeIcon?: Component;
   neutralIcon?: Component;
+  positiveText?: string;
+  negativeText?: string;
+  neutralText?: string;
 }>();
 
 const stateRef = ref(state);
@@ -84,16 +78,19 @@ const buttons = [
     icon: positiveIcon || IFluentCheckmark24Filled,
     color: '#02bb0f',
     type: 'positive',
+    text: positiveText,
   },
   {
     icon: negativeIcon || IMdiClose,
     color: '#bb020f',
     type: 'negative',
+    text: negativeText,
   },
   {
     icon: neutralIcon || IMdiCheckboxIndeterminateOutline,
     color: '#333333',
     type: 'neutral',
+    text: neutralText,
   },
 ];
 </script>

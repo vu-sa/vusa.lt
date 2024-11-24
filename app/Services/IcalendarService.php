@@ -67,9 +67,9 @@ class IcalendarService
         $lang = request()->lang;
 
         if ($lang === 'en') {
-            $calendars = CalendarModel::query()->where('is_international', true)->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'description', 'facebook_url')->take(250)->get();
+            $calendars = CalendarModel::query()->where('is_international', true)->where('is_draft', false)->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'description', 'facebook_url')->take(250)->get();
         } else {
-            $calendars = CalendarModel::query()->orderBy('date', 'desc')->select('id', 'date', 'end_date', 'title', 'description', 'facebook_url')->take(250)->get();
+            $calendars = CalendarModel::query()->orderBy('date', 'desc')->where('is_draft', false)->select('id', 'date', 'end_date', 'title', 'description', 'facebook_url')->take(250)->get();
         }
 
         // get last calendar models

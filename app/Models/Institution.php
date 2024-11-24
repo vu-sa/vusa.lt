@@ -11,10 +11,12 @@ use App\Models\Traits\HasTranslations;
 use App\Services\RelationshipService;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 class Institution extends Model
@@ -42,7 +44,7 @@ class Institution extends Model
         return $this->morphToMany(Type::class, 'typeable');
     }
 
-    public function tenant()
+    public function tenant(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
@@ -62,7 +64,7 @@ class Institution extends Model
         return $this->belongsToMany(Matter::class, 'institutions_matters', 'institution_id', 'matter_id');
     }
 
-    public function meetings()
+    public function meetings(): BelongsToMany
     {
         return $this->belongsToMany(Meeting::class);
     }
@@ -74,7 +76,7 @@ class Institution extends Model
             ?? $this->meetings()->where('start_time', '<', now())->orderBy('start_time', 'desc')->first();
     }
 
-    public function users()
+    public function users(): HasManyDeep
     {
         /*report('Institution::users() is deprecated. Use Institution::duties()->users() instead.');*/
 

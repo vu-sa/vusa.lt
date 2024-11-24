@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\DuplicateCalendarAction;
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCalendarRequest;
@@ -130,6 +131,15 @@ class CalendarController extends Controller
         });
 
         return back()->with('success', 'Kalendoriaus įvykis sėkmingai atnaujintas!');
+    }
+
+    public function duplicate(Calendar $calendar)
+    {
+        $this->authorize('create', Calendar::class);
+
+        $newCalendar = DuplicateCalendarAction::execute($calendar);
+
+        return redirect()->route('calendar.edit', $newCalendar->id);
     }
 
     /**

@@ -38,7 +38,7 @@ class SetLocale
 
     protected function shouldBypassLocale($segment)
     {
-        $bypassSegments = ['mano', 'auth', 'feedback', 'login', 'telescope', '_impersonate', 'feed'];
+        $bypassSegments = ['mano', 'auth', 'feedback', 'login', 'telescope', '_impersonate', 'feed', 'pulse', 'livewire'];
 
         return in_array($segment, $bypassSegments);
     }

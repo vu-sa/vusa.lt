@@ -100,6 +100,13 @@ const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => {
       ellipsis: {
         tooltip: true,
       },
+      render(row) {
+        return (
+          <Link href={route("reservations.show", row.id)}>
+            {row.name}
+          </Link>
+        );
+      },
     },
     {
       title() {
@@ -166,6 +173,21 @@ const columns = computed<DataTableColumns<App.Entities.Reservation>>(() => {
         );
       },
     },
+//{
+//      title: "Ar užbaigta",
+//      key: "isCompleted",
+//      filter(value, row) {
+//        return row.isCompleted === value;
+//      },
+//      filterOptions: [
+//        { label: "Taip", value: true },
+//        { label: "Ne", value: false },
+//      ],
+//      defaultFilterOptionValue: false,
+//      render(row) {
+//        return row.isCompleted ? "✅ Taip" : "❌ Ne";
+//      },
+//    }
   ];
 });
 

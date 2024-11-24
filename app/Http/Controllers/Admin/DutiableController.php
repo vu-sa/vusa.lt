@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateDutiableRequest;
 use App\Models\Pivots\Dutiable;
+use App\Models\StudyProgram;
 use App\Services\ModelAuthorizer as Authorizer;
 use Inertia\Inertia;
 
@@ -22,7 +23,8 @@ class DutiableController extends Controller
         $this->authorize('update', $dutiable->duty);
 
         return Inertia::render('Admin/People/EditDutiable', [
-            'dutiable' => $dutiable->load('duty', 'dutiable'),
+            'dutiable' => $dutiable->load('duty', 'dutiable')->toFullArray(),
+            'studyPrograms' => StudyProgram::all(),
         ]);
     }
 

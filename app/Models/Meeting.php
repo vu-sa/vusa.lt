@@ -9,6 +9,7 @@ use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTasks;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
@@ -47,7 +48,7 @@ class Meeting extends Model
         return $this->hasMany(AgendaItem::class);
     }
 
-    public function institutions()
+    public function institutions(): BelongsToMany
     {
         return $this->belongsToMany(Institution::class);
     }

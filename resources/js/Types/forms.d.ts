@@ -9,7 +9,6 @@ declare global {
       | "description"
       | "category"
       | "url"
-      | "extra_attributes"
       | "location"
     > {
     id?: number;

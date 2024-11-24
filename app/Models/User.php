@@ -128,14 +128,14 @@ class User extends Authenticatable
         return $this->belongsToMany(Doing::class);
     }
 
-    public function duties()
+    public function duties(): \Illuminate\Database\Eloquent\Relations\MorphToMany
     {
         return $this->morphToMany(Duty::class, 'dutiable')
             ->using(Dutiable::class)
-            ->withPivot(['id', 'extra_attributes', 'start_date', 'end_date']);
+            ->withPivot(['id', 'start_date', 'end_date', 'additional_photo', 'additional_email', 'use_original_duty_name', 'description']);
     }
 
-    public function previous_duties()
+    public function previous_duties(): \Illuminate\Database\Eloquent\Relations\MorphToMany
     {
         return $this->duties()
             ->where(function ($query) {
@@ -147,7 +147,7 @@ class User extends Authenticatable
 
     // this needs more debugging. don't use with withWhereHas
     // TODO: implement current_duties where appropriate
-    public function current_duties()
+    public function current_duties(): \Illuminate\Database\Eloquent\Relations\MorphToMany
     {
         return $this->duties()
             ->where(function ($query) {
@@ -180,5 +180,11 @@ class User extends Authenticatable
     public function reservations()
     {
         return $this->belongsToMany(Reservation::class)->withTimestamps();
+    }
+
+    // TODO: refactor to use the new method
+    public function isSuperAdmin(): bool
+    {
+        return $this->hasRole(config('permission.super_admin_role_name'));
     }
 }

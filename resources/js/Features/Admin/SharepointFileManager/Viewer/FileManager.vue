@@ -1,17 +1,18 @@
 <template>
   <div class="mt-4 rounded-md border border-zinc-200 p-8 shadow-sm dark:border-zinc-50/10">
     <template v-if="startingPath">
-      <div class="flex h-8 flex-wrap">
-        <div class="flex w-fit flex-wrap gap-2">
+      <div class="flex flex-wrap gap-4">
+        <div class="flex w-fit flex-wrap items-center gap-2">
           <div class="w-96">
             <NSkeleton v-if="loading" size="medium" round />
             <FuzzySearcher v-else :data="files" @search:results="updateResults" />
           </div>
           <NSkeleton v-if="loading" size="medium" circle />
-          <NButton v-else circle @click="showFileUploader = true">
+          <NButton v-else round @click="showFileUploader = true">
             <template #icon>
               <IFluentDocumentAdd24Regular />
             </template>
+            {{ $t('forms.add') }}
           </NButton>
         </div>
         <div class="ml-auto inline-flex items-center gap-4">
