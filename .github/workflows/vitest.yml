@@ -28,7 +28,7 @@ jobs:
     - name: Execute tests via Vitest with coverage
       run: LARAVEL_BYPASS_ENV_CHECK=1 npm run coverage
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       with:
         verbose: true
         files: ./coverage/clover.xml
