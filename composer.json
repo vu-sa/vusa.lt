@@ -15,6 +15,7 @@
         "intervention/image": "^3.0",
         "intervention/image-laravel": "^1.2",
         "laravel/framework": "11.32.0",
+        "laravel/pulse": "^1.2",
         "laravel/scout": "^10.0",
         "laravel/telescope": "^5.0",
         "laravel/tinker": "^2.7",

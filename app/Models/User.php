@@ -181,4 +181,10 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Reservation::class)->withTimestamps();
     }
+
+    // TODO: refactor to use the new method
+    public function isSuperAdmin(): bool
+    {
+        return $this->hasRole(config('permission.super_admin_role_name'));
+    }
 }
