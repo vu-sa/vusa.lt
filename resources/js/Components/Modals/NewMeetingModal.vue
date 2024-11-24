@@ -71,6 +71,7 @@ const showAlert = useStorage("new-meeting-button-alert", true);
 
 const meetingAgendaForm = useForm({
   meeting: {},
+  // TODO: Shouldn't be an array
   agendaItems: [],
 });
 
