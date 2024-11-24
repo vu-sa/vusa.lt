@@ -45,7 +45,6 @@ class NotifyUsersOfComment implements ShouldQueue
             'image' => $user->profile_photo_path,
         ];
 
-
         $objectClassName = class_basename(get_class($commentable));
         $objectName = optional($commentable)->name ?: optional($commentable)->title ?: null;
 
