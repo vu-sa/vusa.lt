@@ -21,15 +21,15 @@ class TaskService
             'due_date' => $due_date,
         ]);
 
-        return DB::transaction(function () use ($task, $users) {
-
+        DB::transaction(function () use ($task, $users) {
             $task->save();
-
             $task->users()->sync($users->pluck('id'));
-
-            event(new TaskCreated($task));
-
-            return $task;
         });
+
+        $task->refresh();
+
+        event(new TaskCreated($task));
+
+        return $task;
     }
 }
