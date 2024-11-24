@@ -164,7 +164,7 @@ class PublicPageController extends PublicController
             abort(404);
         }
 
-        $navigation_item = Navigation::query()->where('name', $page->title)->get()->first();
+        $navigation_item = Navigation::query()->where('name', $page->title)->first();
         $other_lang_page = $page->getOtherLanguage();
 
         Inertia::share('otherLangURL', $other_lang_page ? route(
@@ -398,7 +398,7 @@ class PublicPageController extends PublicController
         return Inertia::render('Public/ShowDocuments', [
             'documents' => $documents->where('is_active', true)->get(),
             // Filter null values from content_type
-            'allContentTypes' => Document::query()->select('content_type')->whereNotNull('content_type')->distinct()->get()->pluck('content_type')->sort()->values(),
+            'allContentTypes' => Document::query()->select('content_type')->whereNotNull('content_type')->distinct()->pluck('content_type')->sort()->values(),
         ])->withViewData([
             'SEOData' => $seo,
         ]);

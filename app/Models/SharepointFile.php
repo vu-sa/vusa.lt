@@ -7,6 +7,7 @@ use App\Models\Traits\HasComments;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SharepointFile extends Model
 {
@@ -16,7 +17,7 @@ class SharepointFile extends Model
 
     protected $guarded = [];
 
-    public function fileables()
+    public function fileables(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(SharepointFileable::class, 'sharepoint_file_id', 'id');
     }
