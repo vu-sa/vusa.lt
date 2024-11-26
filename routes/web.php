@@ -34,7 +34,6 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
     Route::domain('www.'.explode('.', config('app.url'), 2)[1])->group(function () {
 
         Route::get('nariu-registracija', [Public\PublicPageController::class, 'memberRegistration'])->name('memberRegistration');
-        Route::get('kuratoriu-registracija', [Public\PublicPageController::class, 'curatorRegistration'])->name('curatorRegistration');
 
         Route::get('kalendorius/renginys/{calendar}', [Public\PublicPageController::class, 'calendarEventMain'])->name('calendar.event');
         Route::get('pirmakursiu-stovyklos/{year?}', [Public\PublicPageController::class, 'summerCamps'])->name('pirmakursiuStovyklos')->whereNumber('year');

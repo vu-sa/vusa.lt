@@ -10,7 +10,6 @@ use App\Models\Navigation;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Tenant;
-use App\Services\CuratorRegistrationService;
 use App\Services\ResourceServices\InstitutionService;
 use Datetime;
 use Illuminate\Database\Eloquent\Builder;
@@ -120,24 +119,6 @@ class PublicPageController extends PublicController
                     'images' => $calendar->getMedia('images'),
                 ];
             }),
-        ])->withViewData([
-            'SEOData' => $seo,
-        ]);
-    }
-
-    public function curatorRegistration()
-    {
-        $this->getBanners();
-        $this->getTenantLinks();
-        $this->shareOtherLangURL('curatorRegistration');
-
-        $seo = $this->shareAndReturnSEOObject(
-            title: 'Kuratoriaus registracija - VU SA',
-            description: 'Kuratorių registracija - VU SA'
-        );
-
-        return Inertia::render('Public/CuratorRegistration', [
-            'curatorTenants' => (new CuratorRegistrationService)->getRegistrationTenantsWithData(),
         ])->withViewData([
             'SEOData' => $seo,
         ]);
