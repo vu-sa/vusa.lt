@@ -46,6 +46,10 @@ const input = defineModel<{ lt: string; en: string }>("input", {
   default: { lt: "", en: "" },
 });
 
+if (Array.isArray(input.value)) {
+  input.value = { lt: "", en: "" };
+}
+
 const placeholders = computed(() => {
   if (!props.placeholder) {
     return { lt: "", en: "" };

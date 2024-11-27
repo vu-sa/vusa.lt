@@ -42,7 +42,6 @@ declare global {
       translations: unknown
       // relations
       tenant?: Tenant
-      registration_form?: RegistrationForm
       media?: Medium[]
     }
 
@@ -193,6 +192,8 @@ declare global {
       // relations
       dutiables?: Dutiable[]
       users?: User[]
+      current_users?: User[]
+      previous_users?: User[]
       contacts?: Contact[]
       types?: Type[]
       institution?: Institution
@@ -202,7 +203,54 @@ declare global {
       notifications?: DatabaseNotification[]
     }
 
+    export interface FieldResponse {
+      // columns
+      id: number
+      registration_id: number
+      form_field_id: number
+      response: string
+      created_at: string
+      updated_at: string
+    }
+
     export interface File {
+    }
+
+    export interface Form {
+      // columns
+      id: number
+      name: string[]
+      description?: string[]|null
+      user_id?: string|null
+      path?: string[]|null
+      created_at: string
+      updated_at: string
+      // mutators
+      translations: unknown
+      // relations
+      form_fields?: FormField[]
+      user?: User
+    }
+
+    export interface FormField {
+      // columns
+      id: number
+      form_id: number
+      label: string[]
+      description?: string[]|null
+      type: string
+      subtype?: string|null
+      options?: string[]|null
+      is_required: boolean
+      order: number
+      default_value?: string|null
+      placeholder?: string[]|null
+      created_at: string
+      updated_at: string
+      // mutators
+      translations: unknown
+      // relations
+      form?: Form
     }
 
     export interface Goal {
@@ -272,6 +320,7 @@ declare global {
       documents?: Document[]
       matters?: Matter[]
       meetings?: Meeting[]
+      users?: User
       commentable?: Institution
       comments?: Comment[]
       outgoing_relationships?: Relationship[]
@@ -467,6 +516,7 @@ declare global {
       // relations
       dutiable?: Dutiable
       duty?: Duty
+      study_program?: StudyProgram
       user?: User
       contact?: Contact
     }
@@ -537,23 +587,10 @@ declare global {
     export interface Registration {
       // columns
       id: number
-      registration_form_id: number
-      data: string[]
+      user_id?: string|null
+      form_id: number
       created_at: string
       updated_at: string
-      // relations
-      registration_form?: RegistrationForm
-    }
-
-    export interface RegistrationForm {
-      // columns
-      id: number
-      user_id?: number|null
-      data: string
-      created_at: string
-      updated_at: string
-      // relations
-      registrations?: Registration[]
     }
 
     export interface Relationship {
@@ -611,6 +648,7 @@ declare global {
       translations: unknown
       // relations
       reservations?: Reservation[]
+      active_reservations?: Reservation[]
       tenant?: Tenant
       category?: ResourceCategory
       media?: Medium[]
@@ -675,6 +713,7 @@ declare global {
       id: string
       name: string[]
       degree: string
+      tenant_id: number
       created_at: string
       updated_at: string
       // mutators
@@ -729,6 +768,8 @@ declare global {
       pages?: Page[]
       main_pages?: MainPage[]
       resources?: Resource[]
+      users?: User
+      reservations?: Reservation
     }
 
     export interface Type {
@@ -791,6 +832,8 @@ declare global {
       calendar?: Calendar[]
       doings?: Doing[]
       duties?: Duty[]
+      previous_duties?: Duty[]
+      current_duties?: Duty[]
       dutiables?: Dutiable[]
       tasks?: Task[]
       reservations?: Reservation[]

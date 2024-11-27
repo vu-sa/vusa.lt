@@ -31,10 +31,10 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         $this->call(CategoriesSeeder::class);
-        // $this->call(RegistrationFormsSeeder::class);
         $this->call(AdminSeeder::class);
         $this->call(TenantSeeder::class);
         $this->call(TypeSeeder::class);
+        $this->call(MemberRegistrationFormSeeder::class);
 
         $tenants = Tenant::all();
 

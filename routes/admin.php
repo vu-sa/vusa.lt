@@ -60,7 +60,6 @@ Route::resource('contacts', ContactController::class);
 Route::resource('calendar', CalendarController::class);
 Route::post('calendar/{calendar}/media/{media}', [CalendarController::class, 'destroyMedia'])->name('calendar.destroyMedia');
 Route::post('calendar/{calendar}/duplicate', [CalendarController::class, 'duplicate'])->name('calendar.duplicate');
-Route::resource('registrationForms', RegistrationFormController::class)->only(['store', 'show', 'index']);
 
 Route::resource('matters', MatterController::class)->except(['edit', 'update']);
 Route::resource('goals', GoalController::class);
@@ -91,6 +90,8 @@ Route::post('institutions/reorderDuties', [InstitutionController::class, 'reorde
 Route::resource('institutions', InstitutionController::class);
 
 Route::resource('tenants', TenantController::class);
+
+Route::resource('forms', FormController::class);
 
 Route::resource('types', TypeController::class);
 Route::resource('relationships', RelationshipController::class);

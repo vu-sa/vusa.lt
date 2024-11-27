@@ -46,11 +46,6 @@ class Calendar extends Model implements HasMedia
         return $this->belongsTo(Category::class, 'category', 'alias', 'category');
     }
 
-    public function registrationForm()
-    {
-        return $this->belongsTo(RegistrationForm::class, 'registration_form_id', 'id');
-    }
-
     public function registerMediaCollections(): void
     {
         $this

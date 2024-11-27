@@ -6,6 +6,7 @@ use App\Http\Controllers\PublicController;
 use App\Models\Calendar;
 use App\Models\Category;
 use App\Models\Document;
+use App\Models\Form;
 use App\Models\Navigation;
 use App\Models\News;
 use App\Models\Page;
@@ -327,22 +328,23 @@ class PublicPageController extends PublicController
             );
     }
 
-    public function memberRegistration()
-    {
+    public function registrationPage($lang, $registrationString, string $registrationForm) {
+
         $this->getBanners();
         $this->getTenantLinks();
-        $this->shareOtherLangURL('memberRegistration');
 
-        $tenants = Tenant::select('id', 'fullname', 'shortname')->where('shortname', '!=', 'VU SA')->where('type', 'padalinys')->
-            orderBy('shortname')->get();
+        $form = Form::query()->whereJsonContains('path->'.$lang, $registrationForm)->with('formFields')->first();
+
+        $otherLocale = app()->getLocale() === 'lt' ? 'en' : 'lt';
+
+        Inertia::share('otherLangURL', route('registrationPage', ['lang' => $otherLocale, 'registrationString' => $otherLocale === 'lt' ? 'registracija' : 'registration', 'registrationForm' => $form->getTranslation('path', $otherLocale)]));
 
         $seo = $this->shareAndReturnSEOObject(
-            title: __('Prašymas tapti VU SA (arba VU SA PKP) nariu').' - VU SA',
-            description: app()->getLocale() === 'lt' ? 'Tapti VU SA nariu gali kiekvienas Vilniaus universiteto studentas, kuris nori aktyviai dalyvauti studentų atstovybės veikloje.' : 'Every Vilnius University student who wants to actively participate in the activities of the student representation can become a member of VU SR.',
+            title: $form->name.' - '.$this->tenant->shortname,
         );
 
-        return Inertia::render('Public/MemberRegistration', [
-            'tenantOptions' => $tenants,
+        return Inertia::render('Public/RegistrationPage', [
+            'form' => $form,
         ])->withViewData([
             'SEOData' => $seo,
         ]);

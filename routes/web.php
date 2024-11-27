@@ -33,7 +33,7 @@ Route::post('feedback', [Public\MainController::class, 'sendFeedback'])->name('f
 Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware' => ['main']], function () {
     Route::domain('www.'.explode('.', config('app.url'), 2)[1])->group(function () {
 
-        Route::get('nariu-registracija', [Public\PublicPageController::class, 'memberRegistration'])->name('memberRegistration');
+        Route::get('{registrationString}/{registrationForm}', [Public\PublicPageController::class, 'registrationPage'])->name('registrationPage')->whereIn('registrationString', ['registracija', 'registration']);;
 
         Route::get('kalendorius/renginys/{calendar}', [Public\PublicPageController::class, 'calendarEventMain'])->name('calendar.event');
         Route::get('pirmakursiu-stovyklos/{year?}', [Public\PublicPageController::class, 'summerCamps'])->name('pirmakursiuStovyklos')->whereNumber('year');
@@ -51,6 +51,7 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         // Redirect reports to external subdomains
         Route::redirect('ataskaita-2022', 'https://ataskaita2022.vusa.lt', 301);
         Route::redirect('ataskaita-2023', 'https://ataskaita2023.vusa.lt', 301);
+        Route::redirect('nariu-registracija', 'https://www.vusa.lt/registracija/nariu-registracija', 301);
     });
 
     Route::domain('{subdomain}.'.explode('.', config('app.url'), 2)[1])->group(function () {
