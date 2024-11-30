@@ -17,7 +17,8 @@
       <IndexDataTable v-bind="$attrs" :paginated-models :columns :model-name
         :show-route="canUseRoutes.show ? `${modelName}.show` : undefined"
         :edit-route="canUseRoutes.edit ? `${modelName}.edit` : undefined" :destroy-route="canUseRoutes.destroy ? `${modelName}.destroy` : undefined
-          " />
+          " :duplicate-route="canUseRoutes.duplicate ? `${modelName}.duplicate` : undefined" />
+      />
     </NCard>
     <slot name="after-table" />
   </PageContent>
@@ -43,6 +44,7 @@ const props = defineProps<{
     create: boolean;
     show: boolean;
     edit: boolean;
+    duplicate: boolean;
     destroy: boolean;
   };
   icon?: Component;
