@@ -139,10 +139,12 @@ class MeetingController extends Controller
     {
         $this->authorize('delete', $meeting);
 
+        $redirect_url = request()->redirect_to ?? back()->getTargetUrl();
+
         // delete meeting
         $meeting->delete();
 
-        return back()->with('success', 'Posėdis ištrintas sėkmingai!');
+        return redirect($redirect_url)->with('success', 'Posėdis ištrintas sėkmingai!');
     }
 
     public function restore(Meeting $meeting)

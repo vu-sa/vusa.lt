@@ -2,7 +2,7 @@
   <ShowPageLayout :model="meeting" :breadcrumb-options="breadcrumbOptions" :related-models="relatedModels"
     :title="`${mainInstitution?.name} (${meetingTitle})`" :current-tab="currentTab" @change:tab="currentTab = $event">
     <template #more-options>
-      <MoreOptionsButton edit @edit-click="showMeetingModal = true" />
+      <MoreOptionsButton edit delete @edit-click="showMeetingModal = true" @delete-click="handleMeetingDelete" />
       <CardModal v-model:show="showMeetingModal" title="Redaguoti posėdžio datą" @close="showMeetingModal = false">
         <MeetingForm class="mt-2" :meeting="meeting" @submit="handleMeetingFormSubmit" />
       </CardModal>
@@ -189,7 +189,7 @@ const columns = [
     },
     width: 120,
     render(row: App.Entities.AgendaItem) {
-      return <TriStateButton state={row.student_benefit} size="tiny" row={row} showOptions={showVoteOptions.value} positiveIcon={IMdiThumbsUpOutline} negativeIcon={IMdiThumbsDownOutline} neutralIcon={IMdiThumbsUpDownOutline} onEnableOptions={() => showVoteOptions.value = true} positiveText="Palanku" negativeText="Nepalanku" neutralText="Sprendimas neturi tiesioginės ar netiesioginės įtakos studentams"
+      return <TriStateButton state={row.student_benefit} size="tiny" row={row} showOptions={showVoteOptions.value} positiveIcon={IMdiThumbsUpOutline} negativeIcon={IMdiThumbsDownOutline} neutralIcon={IMdiThumbsUpDownOutline} onEnableOptions={() => showVoteOptions.value = true} positiveText="Palanku" negativeText="Nepalanku" neutralText="Sprendimas neturi tiesioginės ar netiesioginės įtakos studentams / dar nėra aišku"
         onChangeState={(state) => {
           row.student_benefit = state;
           handleAgendaItemUpdate(row);
@@ -273,5 +273,9 @@ const handleAgendaItemsFormSubmit = (agendaItems: Record<string, any>) => {
         loading.value = false;
       },
     });
+};
+
+const handleMeetingDelete = () => {
+  router.delete(route("meetings.destroy", props.meeting.id ), { data: { redirect_to: route('institutions.show', mainInstitution.id) } });
 };
 </script>
