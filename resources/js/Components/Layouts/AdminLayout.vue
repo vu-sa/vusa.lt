@@ -34,9 +34,9 @@
       <AdminMenu v-if="mdAndGreater" />
     </div>
     <div class="md:pr-4">
-      <NMessageProvider>
+      <!-- <NMessageProvider> -->
         <slot />
-      </NMessageProvider>
+      <!-- </NMessageProvider> -->
     </div>
   </div>
   <CardModal :title="`⭐️ ${$t('vusa.lt atsinaujino')}!`" :show="showChanges" @close="approveChanges">

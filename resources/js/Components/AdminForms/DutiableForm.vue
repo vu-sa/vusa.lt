@@ -40,9 +40,7 @@
             </InfoPopover>
           </div>
         </template>
-        <NMessageProvider>
-          <UploadImageWithCropper v-model:url="form.additional_photo" folder="contacts" />
-        </NMessageProvider>
+        <UploadImageWithCropper v-model:url="form.additional_photo" folder="contacts" />
       </NFormItem>
       <NFormItem>
         <template #label>
@@ -51,8 +49,8 @@
             <InfoPopover>Kai aktualu, galima pasirinkti studijų programą, kurią rodo prie įrašo</InfoPopover>
           </span>
         </template>
-        <NSelect filterable v-model:value="form.study_program_id" :render-label="renderStudyProgramLabel" :options="studyPrograms"
-          value-field="id" placeholder="Studijų programa" />
+        <NSelect v-model:value="form.study_program_id" filterable :render-label="renderStudyProgramLabel"
+          :options="studyPrograms" value-field="id" placeholder="Studijų programa" />
       </NFormItem>
       <NFormItem>
         <template #label>
@@ -105,7 +103,6 @@ import {
   NDatePicker,
   NFormItem,
   NInput,
-  NMessageProvider,
   NSelect,
   NSwitch,
   NTag,

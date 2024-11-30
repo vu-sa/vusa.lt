@@ -1,5 +1,5 @@
 <template>
-  <ShowPageLayout :model="meeting" :breadcrumb-options="breadcrumbOptions" :related-models="relatedModels"
+  <ShowPageLayout :model="meeting" :breadcrumb-options :related-models
     :title="`${mainInstitution?.name} (${meetingTitle})`" :current-tab="currentTab" @change:tab="currentTab = $event">
     <template #more-options>
       <MoreOptionsButton edit delete @edit-click="showMeetingModal = true" @delete-click="handleMeetingDelete" />
