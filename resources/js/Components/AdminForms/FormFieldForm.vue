@@ -7,19 +7,19 @@
       <MultiLocaleInput v-model:input="model.description" />
     </NFormItem>
     <NFormItem label="Tipas" path="type" required>
-      <NSelect v-model:value="model.type" :options />
+      <NSelect :disabled="hasRegistrations" v-model:value="model.type" :options />
     </NFormItem>
     <NFormItem v-if="subtypeOptions.length > 0" label="Subtipas" path="subtype">
-      <NSelect v-model:value="model.subtype" :options="subtypeOptions" />
+      <NSelect :disabled="hasRegistrations" v-model:value="model.subtype" :options="subtypeOptions" />
     </NFormItem>
     <NFormItem v-if="model.type === 'enum'" label="Reikšmės" path="options">
-      <NDynamicInput v-model:value="model.options" @create="onCreate">
+      <NDynamicInput :disabled="hasRegistrations" v-model:value="model.options" @create="onCreate">
         <template #default="{ value }">
           <div class="mt-4 flex flex-row items-center gap-2">
             <NFormItem :show-feedback="false" label="Reikšmė" path="value" required class="self-start">
-              <NInput v-model:value="value.value" />
+              <NInput :disabled="hasRegistrations" v-model:value="value.value" />
             </NFormItem>
-            <NFormItem class="pb-4" :show-feedback="false" label="Pavadinimas" path="label" required>
+            <NFormItem :disabled="hasRegistrations" class="pb-4" :show-feedback="false" label="Pavadinimas" path="label" required>
               <MultiLocaleInput v-model:input="value.label" />
             </NFormItem>
           </div>
@@ -61,6 +61,7 @@ const emit = defineEmits<{
 
 const props = defineProps<{
   formField: App.Entities.FormField | Record<string, any>;
+  hasRegistrations?: boolean;
 }>();
 
 const form = ref<FormInst | null>(null);

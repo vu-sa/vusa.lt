@@ -40,4 +40,9 @@ class FormField extends Model
     {
         return $this->belongsTo(Form::class);
     }
+
+    public function fieldResponses()
+    {
+        return $this->hasMany(FieldResponse::class);
+    }
 }

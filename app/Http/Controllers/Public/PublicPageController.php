@@ -335,7 +335,7 @@ class PublicPageController extends PublicController
 
         $form = Form::query()->whereJsonContains('path->'.$lang, $registrationForm)->with(['formFields' => function ($query) {
             $query->orderBy('order');
-        }])->first();
+        }])->firstOrFail();
 
         $otherLocale = app()->getLocale() === 'lt' ? 'en' : 'lt';
 

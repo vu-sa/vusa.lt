@@ -30,12 +30,12 @@ Route::post('login', [Admin\UserController::class, 'authenticate'])->middleware(
 
 Route::post('feedback', [Public\MainController::class, 'sendFeedback'])->name('feedback.send');
 
+Route::post('registration/{form}', [RegistrationController::class, 'store'])->name('registrations.store');
+
 Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware' => ['main']], function () {
     Route::domain('www.'.explode('.', config('app.url'), 2)[1])->group(function () {
 
         Route::get('{registrationString}/{registrationForm}', [Public\PublicPageController::class, 'registrationPage'])->name('registrationPage')->whereIn('registrationString', ['registracija', 'registration']);
-
-        Route::post('registracija', [RegistrationController::class, 'store'])->name('registration.store');
 
         Route::get('kalendorius/renginys/{calendar}', [Public\PublicPageController::class, 'calendarEventMain'])->name('calendar.event');
         Route::get('pirmakursiu-stovyklos/{year?}', [Public\PublicPageController::class, 'summerCamps'])->name('pirmakursiuStovyklos')->whereNumber('year');

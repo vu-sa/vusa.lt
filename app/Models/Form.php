@@ -38,6 +38,11 @@ class Form extends Model
         return $this->hasMany(FormField::class);
     }
 
+    public function registrations()
+    {
+        return $this->hasMany(Registration::class);
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

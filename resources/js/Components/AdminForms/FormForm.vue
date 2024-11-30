@@ -45,6 +45,7 @@
       <template #title>
         Formos elementai
       </template>
+      Registracijų skaičius: {{ form.registrations_count }}
       <SortableFormFieldsTable v-model="form.form_fields" class="mt-2">
         <template #default="{ model }">
           <div class="grid grid-cols-[20px_,22px,_1fr,_80px] items-center gap-1 pr-2 text-zinc-700 dark:text-zinc-200">
@@ -65,7 +66,7 @@
                   <IFluentEdit24Filled />
                 </template>
               </NButton>
-              <NButton size="tiny" @click="handleDeleteFormField(model)">
+              <NButton size="tiny" @click="handleDeleteFormField(model)" :disabled="hasRegistrations">
                 <template #icon>
                   <IFluentDelete24Filled color="red" />
                 </template>
@@ -75,7 +76,7 @@
         </template>
       </SortableFormFieldsTable>
       <div class="mt-4">
-        <NButton type="primary" @click="handleNewFormFieldCreate">
+        <NButton type="primary" @click="handleNewFormFieldCreate" :disabled="hasRegistrations">
           <template #icon>
             <IFluentAdd24Filled />
           </template>
@@ -84,14 +85,14 @@
       </div>
     </FormElement>
     <CardModal v-model:show="showFormFieldModal" title="Formos laukelis" @close="showFormFieldModal = false">
-      <FormFieldForm :form-field="selectedFormField" @submit="handleFormFieldSubmitted" />
+      <FormFieldForm :has-registrations :form-field="selectedFormField" @submit="handleFormFieldSubmitted" />
     </CardModal>
   </AdminForm>
 </template>
 
 <script setup lang="ts">
 import { useForm } from "@inertiajs/vue3";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 import { formFieldTemplate } from "@/Types/formTemplates";
 import FormElement from "./FormElement.vue";
@@ -120,6 +121,8 @@ const showFormFieldModal = ref(false);
 const selectedFormField = ref(formFieldTemplate);
 
 const form = useForm("registrationForm", props.form);
+
+const hasRegistrations = computed(() => form?.registrations_count > 0);
 
 function handleNewFormFieldCreate() {
   selectedFormField.value = formFieldTemplate;

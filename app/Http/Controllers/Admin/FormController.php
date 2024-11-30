@@ -76,7 +76,7 @@ class FormController extends Controller
     {
         $this->authorize('view', $form);
 
-        $form->load('formFields', 'registrations');
+        $form->load('formFields', 'registrations.fieldResponses.formField');
 
         return Inertia::render('Admin/Forms/ShowForm', [
             'form' => $form
@@ -94,6 +94,7 @@ class FormController extends Controller
             'form' => [
                 ...$form->toFullArray(),
                 'form_fields' => $form->formFields()->orderBy('order')->get()->map->toFullArray(),
+                'registrations_count' => $form->registrations()->count(),
             ],
             'assignableTenants' => GetTenantsForUpserts::execute('calendars.update.padalinys', $this->authorizer),
         ]);
@@ -110,6 +111,24 @@ class FormController extends Controller
         // First, compare which form fields were removed
 
         $form->formFields->whereNotIn('id', collect($request->form_fields)->pluck('id'))->each->delete();
+
+        if ($form->registrations->count() > 0) {
+            collect($request->only('form_fields')['form_fields'])->each(function ($formField) use ($form) {
+                $formFieldFromDb = FormField::query()->find($formField['id']);
+
+                // Don't update type
+                $formFieldFromDb->update([
+                    'label' => $formField['label'],
+                    'description' => $formField['type'],
+                    'options' => $formField['options'],
+                    'is_required' => $formField['is_required'],
+                    'default_value' => $formField['default_value'],
+                    'placeholder' => $formField['placeholder'],
+                    'order' => $formField['order'],
+                ]);
+
+            });
+        }
 
         // Then, update or create the remaining form fields
         collect($request->only('form_fields')['form_fields'])->each(function ($formField) use ($form) {
