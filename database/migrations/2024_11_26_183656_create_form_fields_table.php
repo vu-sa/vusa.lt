@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('form_fields', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('form_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('form_id')->constrained()->cascadeOnDelete();
             $table->json('label');
             $table->json('description')->nullable();
             $table->string('type');

@@ -3,14 +3,15 @@
 namespace App\Models;
 
 use App\Models\Traits\HasTranslations;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Scout\Searchable;
 
 class Form extends Model
 {
     /** @use HasFactory<\Database\Factories\FormFactory> */
-    use HasFactory, HasTranslations, SoftDeletes;
+    use HasFactory, HasTranslations, HasUlids, SoftDeletes, Searchable;
 
     protected $fillable = [
         'name',
@@ -24,6 +25,14 @@ class Form extends Model
         'path',
     ];
 
+    public function toSearchableArray()
+    {
+        return [
+            'name->'.app()->getLocale() => $this->getTranslation('name', app()->getLocale()),
+            'path->'.app()->getLocale() => $this->getTranslation('path', app()->getLocale()),
+        ];
+    }
+
     public function formFields()
     {
         return $this->hasMany(FormField::class);
@@ -32,5 +41,10 @@ class Form extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
     }
 }

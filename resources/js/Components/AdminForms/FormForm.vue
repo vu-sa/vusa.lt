@@ -35,6 +35,10 @@
         </template>
         <MultiLocaleInput v-model:input="form.path" />
       </NFormItem>
+      <NFormItem label="Padalinys">
+        <NSelect v-model:value="form.tenant_id" :options="assignableTenants" label-field="shortname" value-field="id"
+          placeholder="VU SA ..." :default-value="assignableTenants[0].id ?? ''" />
+      </NFormItem>
     </FormElement>
 
     <FormElement>
@@ -105,9 +109,9 @@ defineEmits<{
   (event: "delete"): void;
 }>();
 
-
 const props = defineProps<{
   form: any;
+  assignableTenants: any[];
 }>();
 
 const locale = ref("lt");
@@ -120,6 +124,7 @@ const form = useForm("registrationForm", props.form);
 function handleNewFormFieldCreate() {
   selectedFormField.value = formFieldTemplate;
   // add string id to the form field
+  // NOTE: in backend, the string length is checked to know if the ID is generated or not
   selectedFormField.value.id = Math.random().toString(36).substring(7);
   showFormFieldModal.value = true;
 }

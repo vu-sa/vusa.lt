@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreFormRequest;
 use App\Http\Requests\UpdateFormRequest;
 use App\Models\Form;
 use App\Models\FormField;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\ModelIndexer;
 use Inertia\Inertia;
 
 class FormController extends Controller
@@ -21,8 +23,16 @@ class FormController extends Controller
     {
         $this->authorize('viewAny', Form::class);
 
+        $indexer = new ModelIndexer(new Form);
+
+        $forms = $indexer
+            ->setEloquentQuery()
+            ->filterAllColumns()
+            ->sortAllColumns()
+            ->builder->paginate(15);
+
         return Inertia::render('Admin/Forms/IndexForm', [
-            'forms' => Form::paginate(20),
+            'forms' => $forms,
         ]);
     }
 
@@ -33,7 +43,9 @@ class FormController extends Controller
     {
         $this->authorize('create', Form::class);
 
-        return Inertia::render('Admin/Forms/CreateForm');
+        return Inertia::render('Admin/Forms/CreateForm', [
+            'assignableTenants' => GetTenantsForUpserts::execute('calendars.create.padalinys', $this->authorizer),
+        ]);
     }
 
     /**
@@ -43,7 +55,7 @@ class FormController extends Controller
     {
         $form = new Form;
 
-        $form->fill($request->only('name', 'description', 'path'));
+        $form->fill($request->only('name', 'description', 'path', 'tenant_id'));
 
         $form->save();
 
@@ -77,6 +89,7 @@ class FormController extends Controller
                 ...$form->toFullArray(),
                 'form_fields' => $form->formFields->map->toFullArray(),
             ],
+            'assignableTenants' => GetTenantsForUpserts::execute('calendars.update.padalinys', $this->authorizer),
         ]);
     }
 
@@ -85,7 +98,7 @@ class FormController extends Controller
      */
     public function update(UpdateFormRequest $request, Form $form)
     {
-        $form->update($request->only('name', 'description', 'path'));
+        $form->update($request->only('name', 'description', 'path', 'tenant_id'));
 
         // Update form fields
         // First, compare which form fields were removed
@@ -95,8 +108,8 @@ class FormController extends Controller
         // Then, update or create the remaining form fields
         collect($request->only('form_fields')['form_fields'])->each(function ($formField) use ($form) {
 
-            // In frontend, the ID is a string if the form field is new
-            if (is_string($formField['id'])) {
+            // In frontend, the ID is a 7-length string if the form field is new
+            if (strlen($formField['id']) === 7) {
                 unset($formField['id']);
             }
 

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Tenant;
 use Illuminate\Database\Seeder;
 
 class MemberRegistrationFormSeeder extends Seeder
@@ -18,6 +19,7 @@ class MemberRegistrationFormSeeder extends Seeder
         $form->setTranslation('description', 'en', '<p><strong>Every VU student can become a member of VU SA!<strong> register and wait for an invitation from the division team!</p><p>You can also register for our programs, clubs and projects (PKP)!</p>');
         $form->setTranslation('path', 'lt', 'nariu-registracija');
         $form->setTranslation('path', 'en', 'member-registration');
+        $form->tenant()->associate(Tenant::query()->where('type', 'pagrindinis')->first());
         $form->save();
 
         $nameField = new \App\Models\FormField;

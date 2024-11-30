@@ -30,6 +30,7 @@ class StoreFormRequest extends FormRequest
             'description.lt' => 'nullable|string',
             'description.en' => 'nullable|string',
             'path' => 'required|array',
+            'tenant_id' => 'required|id|exists:tenants,id',
             'form_fields' => 'array',
         ];
     }

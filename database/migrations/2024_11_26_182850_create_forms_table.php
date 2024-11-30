@@ -15,11 +15,13 @@ return new class extends Migration
         Schema::drop('registration_forms');
 
         Schema::create('forms', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->json('name');
             $table->json('description')->nullable();
             // TODO: don't forget to implement
             $table->foreignUlid('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->unsignedInteger('tenant_id');
+            $table->foreign('tenant_id')->references('id')->on('tenants')->cascadeOnDelete();
             // create field to add url for visible forms
             $table->json('path')->nullable()->comment('URL path for visible forms');
             $table->timestamp('created_at')->useCurrent();
