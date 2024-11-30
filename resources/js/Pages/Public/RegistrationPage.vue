@@ -1,10 +1,12 @@
 <template>
-  <article class="typography gap-y-4 pt-8 last:pb-2">
+  <article class="gap-y-4 pt-8 last:pb-2">
     <h1>
       {{ $t(form.name) }}
     </h1>
-    <div v-html="form.description" />
-    <div class="max-w-prose space-y-2 text-base">
+    <div class="typography">
+      <div v-html="form.description" />
+    </div>
+    <div class="mt-8 max-w-prose text-base">
       <AutoForm class="space-y-6" :schema="formSchema" :field-config="formFieldConfig" @submit="onSubmit">
         <NButton attr-type="submit" type="primary">
           {{ $t("Pateikti") }}
@@ -55,6 +57,12 @@ form.form_fields.forEach((field: Record<string, any>) => {
 
   if (!field.is_required) {
     fieldSchema = fieldSchema.optional();
+  }
+
+  console.log(field.default_value);
+
+  if (field.default_value) {
+    fieldSchema = fieldSchema.default(field.default_value);
   }
 
   schema[field.label] = fieldSchema;
