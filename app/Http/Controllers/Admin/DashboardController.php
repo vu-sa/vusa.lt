@@ -173,7 +173,7 @@ class DashboardController extends Controller
             'current_duties:id,name,institution_id',
             'current_duties.roles:id,name', 'current_duties.roles.permissions:id,name',
             'current_duties.institution:id,tenant_id',
-            'current_duties.institution.tenant:id,shortname')->makeVisible('name_was_changed');
+            'current_duties.institution.tenant:id,shortname')->makeVisible(['name_was_changed', 'show_pronouns']);
 
         return Inertia::render('Admin/ShowUserSettings', [
             'user' => $user->toFullArray(),

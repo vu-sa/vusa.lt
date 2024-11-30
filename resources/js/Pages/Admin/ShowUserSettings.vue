@@ -104,6 +104,7 @@ const form = useForm("userSettings", {
   picture: props.user.profile_photo_path,
   profile_photo_path: props.user.profile_photo_path,
   pronouns: props.user.pronouns,
+  show_pronouns: props.user.show_pronouns,
 });
 
 const handleSubmit = () => {
