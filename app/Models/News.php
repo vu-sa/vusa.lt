@@ -5,9 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Scout\Searchable;
 use Spatie\Feed\Feedable;
 use Spatie\Feed\FeedItem;
+use Spatie\SchemaOrg\NewsArticle;
+use Spatie\SchemaOrg\Organization;
 
 class News extends Model implements Feedable
 {
@@ -62,6 +65,32 @@ class News extends Model implements Feedable
             // image with hostname
             ->link('naujiena/'.$this->permalink)
             ->authorName($this->tenant->shortname);
+    }
+
+    public function getImageUrl()
+    {
+        if (substr($this->image, 0, 4) === 'http') {
+            return $this->image;
+        } else {
+            return Storage::get(str_replace('uploads', 'public', $this->image)) === null ? '/images/icons/naujienu_foto.png' : $this->image;
+        }
+    }
+
+    public function toNewsArticleSchema()
+    {
+        $schema = new NewsArticle();
+
+        $schema = $schema->image(!substr($this->image, 0, 4) === 'http' ? url($this->getImageUrl()) : $this->getImageUrl());
+
+        $schema = $schema->datePublished($this->publish_time);
+
+        $schema = $schema->dateModified($this->updated_at);
+
+        $schema = $schema->headline($this->title);
+
+        $schema->author((new Organization)->name($this->tenant->shortname));
+
+        return $schema;
     }
 
     public static function getFeedItems()
