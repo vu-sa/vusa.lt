@@ -43,9 +43,10 @@ form.form_fields.forEach((field: Record<string, any>) => {
     case 'enum':
       const options = field.options.map((option: Record<string, any>) => String(option.label[usePage().props.app.locale]))
 
-      console.log(options);
-
       fieldSchema = z.enum(options);
+      break;
+    case 'date':
+      fieldSchema = z.coerce.date();
       break;
     case 'boolean':
       fieldSchema = z.boolean();
@@ -59,19 +60,17 @@ form.form_fields.forEach((field: Record<string, any>) => {
     fieldSchema = fieldSchema.optional();
   }
 
-  console.log(field.default_value);
-
   if (field.default_value) {
     fieldSchema = fieldSchema.default(field.default_value);
   }
 
-  schema[field.label] = fieldSchema;
+  schema['form-field-' + field.id] = fieldSchema.describe(field.label);
 });
 
 const formSchema = z.object(schema);
 
 const formFieldConfig = form.form_fields.reduce((acc, field: Record<string, any>) => {
-  acc[field.label] = {
+  acc['form-field-' + field.id] = {
     description: field.description,
   };
 

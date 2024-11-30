@@ -23,10 +23,12 @@ class FormField extends Model
         'label',
         'description',
         'type',
+        'subtype',
         'options',
         'is_required',
         'default_value',
         'placeholder',
+        'order',
     ];
 
     protected $casts = [

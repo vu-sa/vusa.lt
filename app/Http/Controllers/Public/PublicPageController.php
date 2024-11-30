@@ -333,7 +333,9 @@ class PublicPageController extends PublicController
         $this->getBanners();
         $this->getTenantLinks();
 
-        $form = Form::query()->whereJsonContains('path->'.$lang, $registrationForm)->with('formFields')->first();
+        $form = Form::query()->whereJsonContains('path->'.$lang, $registrationForm)->with(['formFields' => function ($query) {
+            $query->orderBy('order');
+        }])->first();
 
         $otherLocale = app()->getLocale() === 'lt' ? 'en' : 'lt';
 

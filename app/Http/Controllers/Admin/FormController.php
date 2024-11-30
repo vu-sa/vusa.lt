@@ -74,7 +74,13 @@ class FormController extends Controller
      */
     public function show(Form $form)
     {
-        //
+        $this->authorize('view', $form);
+
+        $form->load('formFields', 'registrations');
+
+        return Inertia::render('Admin/Forms/ShowForm', [
+            'form' => $form
+        ]);
     }
 
     /**
@@ -87,7 +93,7 @@ class FormController extends Controller
         return Inertia::render('Admin/Forms/EditForm', [
             'form' => [
                 ...$form->toFullArray(),
-                'form_fields' => $form->formFields->map->toFullArray(),
+                'form_fields' => $form->formFields()->orderBy('order')->get()->map->toFullArray(),
             ],
             'assignableTenants' => GetTenantsForUpserts::execute('calendars.update.padalinys', $this->authorizer),
         ]);
@@ -108,8 +114,8 @@ class FormController extends Controller
         // Then, update or create the remaining form fields
         collect($request->only('form_fields')['form_fields'])->each(function ($formField) use ($form) {
 
-            // In frontend, the ID is a 7-length string if the form field is new
-            if (strlen($formField['id']) === 7) {
+            // In frontend, the ID is a 6-length string if the form field is new
+            if (strlen($formField['id']) === 6) {
                 unset($formField['id']);
             }
 

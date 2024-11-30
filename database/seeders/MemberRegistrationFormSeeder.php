@@ -15,8 +15,8 @@ class MemberRegistrationFormSeeder extends Seeder
         $form = new \App\Models\Form;
         $form->setTranslation('name', 'lt', 'Prašymas tapti VU SA (arba VU SA PKP) nariu');
         $form->setTranslation('name', 'en', 'Application to become a member of VU SA (or VU SA PKP)');
-        $form->setTranslation('description', 'lt', '<p><strong>Kiekvienas VU studentas gali tapti VU SA nariu!<strong> užsiregistruok ir lauk pakvietimo iš padalinio komandos!</p><p>Taip pat gali registruotis ir į mūsų programas, klubus ir projektus (PKP)!</p>');
-        $form->setTranslation('description', 'en', '<p><strong>Every VU student can become a member of VU SA!<strong> register and wait for an invitation from the division team!</p><p>You can also register for our programs, clubs and projects (PKP)!</p>');
+        $form->setTranslation('description', 'lt', '<p>Kiekvienas VU studentas gali tapti VU SA nariu! Užsiregistruok ir lauk pakvietimo iš padalinio komandos!</p><p>Taip pat gali registruotis ir į mūsų programas, klubus ir projektus (PKP)!</p>');
+        $form->setTranslation('description', 'en', '<p>Every VU student can become a member of VU SA! Register and wait for an invitation from the division team!</p><p>You can also register for our programs, clubs and projects (PKP)!</p>');
         $form->setTranslation('path', 'lt', 'nariu-registracija');
         $form->setTranslation('path', 'en', 'member-registration');
         $form->tenant()->associate(Tenant::query()->where('type', 'pagrindinis')->first());

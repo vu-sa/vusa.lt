@@ -27,7 +27,7 @@ const vueDocsPlugin = {
 export default defineConfig({
   plugins: [
     vueDevTools({
-      appendTo: 'resources/js/app.ts'
+      appendTo: 'resources/js/app.ts',
     }),
     vueDocsPlugin,
     laravel([

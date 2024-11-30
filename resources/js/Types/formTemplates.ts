@@ -64,13 +64,14 @@ export const formTemplate: Pick<
 };
 
 
-export const formFieldTemplate: Pick<App.Entities.FormField, "label" | "description" | "default_value" | "placeholder" | "type" | "is_required">
+export const formFieldTemplate: Pick<App.Entities.FormField, "label" | "description" | "default_value" | "placeholder" | "type" | "subtype" | "is_required">
   = {
   label: { lt: "" },
   description: { lt: "" },
   default_value: { lt: "" },
   placeholder: { lt: "" },
   type: "string",
+  subtype: null,
   is_required: false,
 };
 

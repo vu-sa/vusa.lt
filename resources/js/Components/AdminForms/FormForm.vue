@@ -126,6 +126,7 @@ function handleNewFormFieldCreate() {
   // add string id to the form field
   // NOTE: in backend, the string length is checked to know if the ID is generated or not
   selectedFormField.value.id = Math.random().toString(36).substring(7);
+  selectedFormField.value.order = form.form_fields.length + 1;
   showFormFieldModal.value = true;
 }
 

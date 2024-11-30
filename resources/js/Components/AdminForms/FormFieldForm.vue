@@ -9,6 +9,9 @@
     <NFormItem label="Tipas" path="type" required>
       <NSelect v-model:value="model.type" :options />
     </NFormItem>
+    <NFormItem v-if="subtypeOptions.length > 0" label="Subtipas" path="subtype">
+      <NSelect v-model:value="model.subtype" :options="subtypeOptions" />
+    </NFormItem>
     <NFormItem v-if="model.type === 'enum'" label="Reikšmės" path="options">
       <NDynamicInput v-model:value="model.options" @create="onCreate">
         <template #default="{ value }">
@@ -46,7 +49,7 @@ import {
   NButton,
   NForm,
 } from "naive-ui";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
 
@@ -85,6 +88,18 @@ const options = [
     label: "Data",
   },
 ];
+
+const subtypeOptions = computed(() => {
+  if (model.type === "string") {
+    return [
+      {
+        value: "email",
+        label: "El. paštas",
+      },
+    ];
+  }
+  return [];
+});
 
 function onCreate() {
   return {
