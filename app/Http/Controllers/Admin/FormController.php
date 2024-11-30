@@ -79,7 +79,7 @@ class FormController extends Controller
         $form->load('formFields', 'registrations.fieldResponses.formField');
 
         return Inertia::render('Admin/Forms/ShowForm', [
-            'form' => $form
+            'form' => $form,
         ]);
     }
 
@@ -113,7 +113,7 @@ class FormController extends Controller
         $form->formFields->whereNotIn('id', collect($request->form_fields)->pluck('id'))->each->delete();
 
         if ($form->registrations->count() > 0) {
-            collect($request->only('form_fields')['form_fields'])->each(function ($formField) use ($form) {
+            collect($request->only('form_fields')['form_fields'])->each(function ($formField) {
                 $formFieldFromDb = FormField::query()->find($formField['id']);
 
                 // Don't update type

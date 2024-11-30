@@ -11,7 +11,7 @@ use Laravel\Scout\Searchable;
 class Form extends Model
 {
     /** @use HasFactory<\Database\Factories\FormFactory> */
-    use HasFactory, HasTranslations, HasUlids, SoftDeletes, Searchable;
+    use HasFactory, HasTranslations, HasUlids, Searchable, SoftDeletes;
 
     protected $fillable = [
         'name',

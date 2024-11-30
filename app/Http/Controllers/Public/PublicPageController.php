@@ -10,7 +10,6 @@ use App\Models\Form;
 use App\Models\Navigation;
 use App\Models\News;
 use App\Models\Page;
-use App\Models\Tenant;
 use App\Services\ResourceServices\InstitutionService;
 use Datetime;
 use Illuminate\Database\Eloquent\Builder;
@@ -328,7 +327,8 @@ class PublicPageController extends PublicController
             );
     }
 
-    public function registrationPage($lang, $registrationString, string $registrationForm) {
+    public function registrationPage($lang, $registrationString, string $registrationForm)
+    {
 
         $this->getBanners();
         $this->getTenantLinks();

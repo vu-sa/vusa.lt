@@ -24,7 +24,7 @@ class MainController extends PublicController
     }
 
     // TODO: redo
-    
+
     /*public function storeMemberRegistration()*/
     /*{*/
     /*    // store registration*/

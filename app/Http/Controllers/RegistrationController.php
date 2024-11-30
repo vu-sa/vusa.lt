@@ -41,7 +41,7 @@ class RegistrationController extends Controller
             } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
                 return back()->with('error', 'Įvyko nenumatyta klaida. Bandykite dar kartą.');
             }
-            
+
             $fieldResponse = $formField->fieldResponses()->make([
                 'response' => $value,
             ]);

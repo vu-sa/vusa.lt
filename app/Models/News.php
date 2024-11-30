@@ -78,9 +78,9 @@ class News extends Model implements Feedable
 
     public function toNewsArticleSchema()
     {
-        $schema = new NewsArticle();
+        $schema = new NewsArticle;
 
-        $schema = $schema->image(!substr($this->image, 0, 4) === 'http' ? url($this->getImageUrl()) : $this->getImageUrl());
+        $schema = $schema->image(! substr($this->image, 0, 4) === 'http' ? url($this->getImageUrl()) : $this->getImageUrl());
 
         $schema = $schema->datePublished($this->publish_time);
 
