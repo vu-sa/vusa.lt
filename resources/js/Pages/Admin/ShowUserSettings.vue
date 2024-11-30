@@ -11,6 +11,14 @@
             <template #description>
               Kitus nustatymus gali tvarkyti komunikacijos ir atstovų koordinatoriai.
             </template>
+            <NFormItem :label="$t('forms.fields.name_and_surname')">
+              <div class="flex grow flex-col gap-1">
+                <NInput v-model:value="form.name" :disabled="user.name_was_changed" />
+                <InfoText v-if="!user.name_was_changed">
+                  Paskyros vardą galima pakeisti tik VIENĄ kartą!
+                </InfoText>
+              </div>
+            </NFormItem>
             <div class="grid gap-4 lg:grid-cols-2">
               <NFormItem :label="$t('forms.fields.phone')">
                 <NInput v-model:value="form.phone" placeholder="+370 612 34 567" />
@@ -81,6 +89,7 @@ import FormElement from "@/Components/AdminForms/FormElement.vue";
 import MultiLocaleInput from "@/Components/FormItems/MultiLocaleInput.vue";
 import PageContent from "@/Components/Layouts/AdminContentPage.vue";
 import UploadImageWithCropper from "@/Components/Buttons/UploadImageWithCropper.vue";
+import InfoText from "@/Components/SmallElements/InfoText.vue";
 
 const props = defineProps<{
   user: App.Entities.User;
@@ -89,19 +98,13 @@ const props = defineProps<{
 const loading = ref(false);
 
 const form = useForm("userSettings", {
+  name: props.user.name,
   phone: props.user.phone,
   facebook_url: props.user.facebook_url,
   picture: props.user.profile_photo_path,
   profile_photo_path: props.user.profile_photo_path,
   pronouns: props.user.pronouns,
 });
-
-if (Array.isArray(form.pronouns)) {
-  form.pronouns = {
-    lt: "",
-    en: ""
-  };
-}
 
 const handleSubmit = () => {
   loading.value = true;

@@ -49,11 +49,13 @@ class User extends Authenticatable
         'last_changelog_check',
         'last_action',
         'microsoft_token',
+        'name_was_changed',
     ];
 
     protected $casts = [
         'last_action' => 'datetime',
         'show_pronouns' => 'boolean',
+        'name_was_changed' => 'boolean',
     ];
 
     public function getActivitylogOptions(): LogOptions
