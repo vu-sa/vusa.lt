@@ -83,6 +83,8 @@ class MemberRegistrationFormSeeder extends Seeder
         $registrationField->form()->associate($form);
         $registrationField->save();
 
+        // TODO: Add field of activity field
+
         $gdprField = new \App\Models\FormField;
 
         $gdprField->setTranslation('label', 'lt', 'Susipažinau su Asmens duomenų tvarkymo Vilniaus universiteto Studentų atstovybėje tvarkos aprašu ir sutinku');

@@ -67,7 +67,7 @@ Route::post('matters/{matter}/attach', [MatterController::class, 'attachGoal'])-
 Route::resource('goalGroups', GoalGroupController::class)->except(['show']);
 Route::resource('doings', DoingController::class);
 Route::resource('agendaItems', AgendaItemController::class)->except(['index', 'create']);
-Route::resource('meetings', MeetingController::class);
+Route::resource('meetings', MeetingController::class)->except(['create']);
 
 Route::resource('resources', ResourceController::class);
 Route::resource('resourceCategories', ResourceCategoryController::class);

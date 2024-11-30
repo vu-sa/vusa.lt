@@ -91,7 +91,7 @@ import SearchButton from "../Nav/SearchButton.vue";
 import SecondMenu from "../Nav/SecondMenu.vue";
 import SmartLink from "../SmartLink.vue";
 
-import LineHorizontal320Filled from "~icons/fluent/line-horizontal-3-20-filled.vue";
+import LineHorizontal320Filled from "~icons/fluent/line-horizontal-3-20-filled";
 import MainMenuMobile from "../Nav/MainMenuMobile.vue";
 
 defineProps<{

@@ -243,7 +243,7 @@ declare global {
       options?: string[]|null
       is_required: boolean
       order: number
-      default_value?: string|null
+      default_value?: string[]|null
       placeholder?: string[]|null
       created_at: string
       updated_at: string
@@ -845,4 +845,3 @@ declare global {
 
   }
 }
-
