@@ -5,15 +5,17 @@ namespace App\Models;
 use App\Models\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Form extends Model
 {
     /** @use HasFactory<\Database\Factories\FormFactory> */
-    use HasFactory, HasTranslations;
+    use HasFactory, HasTranslations, SoftDeletes;
 
     protected $fillable = [
         'name',
         'description',
+        'path',
     ];
 
     public $translatable = [

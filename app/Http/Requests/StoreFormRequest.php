@@ -2,16 +2,17 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Form;
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateFormRequest extends FormRequest
+class StoreFormRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return $this->user()->can('update', $this->form);
+        return $this->user()->can('create', Form::class);
     }
 
     /**

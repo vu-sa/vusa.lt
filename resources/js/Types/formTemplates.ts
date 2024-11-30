@@ -13,7 +13,7 @@ export const calendarTemplate: Omit<App.Entities.Calendar, "created_at" | "updat
   is_draft: false,
   is_all_day: false,
   is_international: false,
-}; 
+};
 
 export const changelogItemTemplate: Pick<App.Entities.ChangelogItem, "date"> & {
   title: Record<"lt" | "en", string>;
@@ -51,6 +51,27 @@ export const doingTemplate: Pick<
   type_id: null,
   status: "Sukurtas",
   date: new Date().toISOString().split("T").join(" ").slice(0, 16) + ":00",
+};
+
+export const formTemplate: Pick<
+  App.Entities.Form,
+  "name" | "description" | "path" | "form_fields"
+> = {
+  name: { lt: '', en: '' },
+  description: { lt: '', en: '' },
+  path: { lt: '', en: '' },
+  form_fields: [],
+};
+
+
+export const formFieldTemplate: Pick<App.Entities.FormField, "label" | "description" | "default_value" | "placeholder" | "type" | "is_required">
+  = {
+  label: { lt: "" },
+  description: { lt: "" },
+  default_value: { lt: "" },
+  placeholder: { lt: "" },
+  type: "string",
+  is_required: false,
 };
 
 export const matterTemplate: Pick<

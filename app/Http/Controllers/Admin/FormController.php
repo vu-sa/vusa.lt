@@ -31,7 +31,9 @@ class FormController extends Controller
      */
     public function create()
     {
-        //
+        $this->authorize('create', Form::class);
+
+        return Inertia::render('Admin/Forms/CreateForm');
     }
 
     /**
@@ -39,7 +41,20 @@ class FormController extends Controller
      */
     public function store(StoreFormRequest $request)
     {
-        //
+        $form = new Form;
+
+        $form->fill($request->only('name', 'description', 'path'));
+
+        $form->save();
+
+        // Then, update or create the remaining form fields
+        collect($request->only('form_fields')['form_fields'])->each(function ($formField) use ($form) {
+
+            unset($formField['id']);
+            $form->formFields()->create($formField);
+        });
+
+        return redirect()->route('forms.index')->with('success', 'Form created.');
     }
 
     /**
@@ -85,8 +100,9 @@ class FormController extends Controller
                 unset($formField['id']);
             }
 
-            if (!isset($formField['id'])) {
+            if (! isset($formField['id'])) {
                 $form->formFields()->create($formField);
+
                 return;
             }
 

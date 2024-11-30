@@ -21,6 +21,7 @@ use Spatie\Enum\Laravel\Enum;
  * @method static self DUTY()
  *                            File is not a model, but it's used for generating file permissions
  * @method static self FILE()
+ * @method static self FORM()
  * @method static self GOAL_GROUP()
  * @method static self GOAL()
  * @method static self INSTITUTION()

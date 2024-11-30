@@ -89,6 +89,7 @@
 import { useForm } from "@inertiajs/vue3";
 import { ref } from "vue";
 
+import { formFieldTemplate } from "@/Types/formTemplates";
 import FormElement from "./FormElement.vue";
 import Icons from "@/Types/Icons/filled";
 import MultiLocaleInput from "../FormItems/MultiLocaleInput.vue";
@@ -104,11 +105,6 @@ defineEmits<{
   (event: "delete"): void;
 }>();
 
-const formFieldTemplate = {
-  label: { lt: "" },
-  type: "string",
-  is_required: false,
-};
 
 const props = defineProps<{
   form: any;

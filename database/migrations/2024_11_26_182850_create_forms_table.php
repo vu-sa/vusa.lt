@@ -24,6 +24,7 @@ return new class extends Migration
             $table->json('path')->nullable()->comment('URL path for visible forms');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+            $table->softDeletes();
         });
     }
 
