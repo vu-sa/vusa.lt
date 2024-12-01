@@ -252,6 +252,9 @@ declare global {
       order: number
       default_value?: string[]|null
       placeholder?: string[]|null
+      use_model_options: boolean
+      options_model?: string|null
+      options_model_field?: string|null
       created_at: string
       updated_at: string
       // mutators

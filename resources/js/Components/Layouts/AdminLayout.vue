@@ -1,6 +1,5 @@
 <template>
-
-  <Head :title="title" />
+<Head :title="title" />
 
   <NDrawer v-model:show="isDrawerActive" :width="325" placement="left">
     <NDrawerContent closable>
@@ -19,9 +18,7 @@
         </Link>
         <TaskIndicatorButton size="small" />
         <NNotificationProvider placement="bottom-right">
-          <NMessageProvider>
-            <NotificationBell size="small" />
-          </NMessageProvider>
+          <NotificationBell size="small" />
         </NNotificationProvider>
         <div v-if="!mdAndGreater" class="ml-auto mr-4 w-fit">
           <NButton class="ml-auto" size="small" @click="isDrawerActive = !isDrawerActive">
@@ -34,9 +31,7 @@
       <AdminMenu v-if="mdAndGreater" />
     </div>
     <div class="md:pr-4">
-      <!-- <NMessageProvider> -->
-        <slot />
-      <!-- </NMessageProvider> -->
+      <slot />
     </div>
   </div>
   <CardModal :title="`⭐️ ${$t('vusa.lt atsinaujino')}!`" :show="showChanges" @close="approveChanges">
