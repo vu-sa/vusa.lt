@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('registration_id')->constrained()->cascadeOnDelete();
             $table->foreignId('form_field_id')->constrained()->cascadeOnDelete();
-            $table->text('response');
+            $table->json('response');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });

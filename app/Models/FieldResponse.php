@@ -14,6 +14,10 @@ class FieldResponse extends Model
         'response',
     ];
 
+    protected $casts = [
+        'response' => 'array',
+    ];
+
     public function registration()
     {
         return $this->belongsTo(Registration::class);

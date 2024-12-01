@@ -208,9 +208,12 @@ declare global {
       id: number
       registration_id: number
       form_field_id: number
-      response: string
+      response: string[]
       created_at: string
       updated_at: string
+      // relations
+      registration?: Registration
+      form_field?: FormField
     }
 
     export interface File {
@@ -218,24 +221,28 @@ declare global {
 
     export interface Form {
       // columns
-      id: number
+      id: string
       name: string[]
       description?: string[]|null
       user_id?: string|null
+      tenant_id: number
       path?: string[]|null
       created_at: string
       updated_at: string
+      deleted_at?: string|null
       // mutators
       translations: unknown
       // relations
       form_fields?: FormField[]
+      registrations?: Registration[]
       user?: User
+      tenant?: Tenant
     }
 
     export interface FormField {
       // columns
       id: number
-      form_id: number
+      form_id: string
       label: string[]
       description?: string[]|null
       type: string
@@ -251,6 +258,7 @@ declare global {
       translations: unknown
       // relations
       form?: Form
+      field_responses?: FieldResponse[]
     }
 
     export interface Goal {
@@ -588,9 +596,12 @@ declare global {
       // columns
       id: number
       user_id?: string|null
-      form_id: number
+      form_id: string
       created_at: string
       updated_at: string
+      // relations
+      form?: Form
+      field_responses?: FieldResponse[]
     }
 
     export interface Relationship {
@@ -825,6 +836,7 @@ declare global {
       created_at: string
       profile_photo_path?: string|null
       deleted_at?: string|null
+      name_was_changed?: boolean
       // mutators
       translations: unknown
       // relations
@@ -845,3 +857,4 @@ declare global {
 
   }
 }
+

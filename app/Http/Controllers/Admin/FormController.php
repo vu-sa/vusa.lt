@@ -8,6 +8,7 @@ use App\Http\Requests\StoreFormRequest;
 use App\Http\Requests\UpdateFormRequest;
 use App\Models\Form;
 use App\Models\FormField;
+use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use Inertia\Inertia;
@@ -55,7 +56,9 @@ class FormController extends Controller
     {
         $form = new Form;
 
-        $form->fill($request->only('name', 'description', 'path', 'tenant_id'));
+        $form->fill($request->only('name', 'description', 'path'));
+
+        $form->tenant()->associate($request->tenant_id);
 
         $form->save();
 
@@ -97,6 +100,13 @@ class FormController extends Controller
                 'registrations_count' => $form->registrations()->count(),
             ],
             'assignableTenants' => GetTenantsForUpserts::execute('calendars.update.padalinys', $this->authorizer),
+            'fieldModelOptions' => [
+                ['label' => 'Tenant', 'value' => Tenant::class]
+            ],
+            'fieldModelFields' => [
+                ['label' => 'Pilnas pavadinimas', 'value' => 'fullname'],
+                ['label' => 'Trumpas pavadinimas', 'value' => 'shortname'], 
+            ]
         ]);
     }
 
@@ -105,11 +115,14 @@ class FormController extends Controller
      */
     public function update(UpdateFormRequest $request, Form $form)
     {
-        $form->update($request->only('name', 'description', 'path', 'tenant_id'));
+        $form->update($request->only('name', 'description', 'path'));
+
+        $form->tenant()->associate($request->tenant_id);
+
+        $form->save();
 
         // Update form fields
         // First, compare which form fields were removed
-
         $form->formFields->whereNotIn('id', collect($request->form_fields)->pluck('id'))->each->delete();
 
         if ($form->registrations->count() > 0) {
@@ -132,9 +145,8 @@ class FormController extends Controller
 
         // Then, update or create the remaining form fields
         collect($request->only('form_fields')['form_fields'])->each(function ($formField) use ($form) {
-
             // In frontend, the ID is a 6-length string if the form field is new
-            if (strlen($formField['id']) === 6) {
+            if (is_string($formField['id'])) {
                 unset($formField['id']);
             }
 

@@ -346,7 +346,26 @@ class PublicPageController extends PublicController
         );
 
         return Inertia::render('Public/RegistrationPage', [
-            'form' => $form,
+            'form' => [
+                ...$form->toArray(),
+                'form_fields' => $form->formFields->map(function ($field) {
+                    $options = $field->options;
+
+                    if ($field->use_model_options) {
+                        $options = $field->options_model::all()->map(function ($model) use ($field) {
+                            return [
+                                'value' => $model->id,
+                                'label' => $model->{$field->options_model_field},
+                            ];
+                        });
+                    }
+
+                    return [
+                        ...$field->toArray(),
+                        'options' => $options,
+                    ];
+                }),
+            ],
         ])->withViewData([
             'SEOData' => $seo,
         ]);

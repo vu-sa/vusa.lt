@@ -45,7 +45,9 @@
       <template #title>
         Formos elementai
       </template>
-      Registracijų skaičius: {{ form.registrations_count }}
+      <template #description>
+        Registracijų skaičius: {{ form.registrations_count ?? 0 }}
+      </template>
       <SortableFormFieldsTable v-model="form.form_fields" class="mt-2">
         <template #default="{ model }">
           <div class="grid grid-cols-[20px_,22px,_1fr,_80px] items-center gap-1 pr-2 text-zinc-700 dark:text-zinc-200">
@@ -85,7 +87,7 @@
       </div>
     </FormElement>
     <CardModal v-model:show="showFormFieldModal" title="Formos laukelis" @close="showFormFieldModal = false">
-      <FormFieldForm :has-registrations :form-field="selectedFormField" @submit="handleFormFieldSubmitted" />
+      <FormFieldForm :field-models="fieldModelOptions" :field-model-attributes="fieldModelFields" :has-registrations :form-field="selectedFormField" @submit="handleFormFieldSubmitted" />
     </CardModal>
   </AdminForm>
 </template>
@@ -113,6 +115,8 @@ defineEmits<{
 const props = defineProps<{
   form: any;
   assignableTenants: any[];
+  fieldModelOptions?: { value: string; label: string }[];
+  fieldModelFields?: { value: string; label: string }[];
 }>();
 
 const locale = ref("lt");

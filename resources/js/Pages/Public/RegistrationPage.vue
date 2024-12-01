@@ -35,8 +35,13 @@ const schema = {}
 
 const removeInertiaBeforeEventListener = ref<VoidFunction | null>(null);
 
+const checkIfFieldIsLocalized = (field: Record<string, any>) => {
+  return field.options?.[0].label?.lt || field.options?.[0].label?.en;
+}
+
 form.form_fields.forEach((field: Record<string, any>) => {
-  let fieldSchema: any;
+  let fieldSchema: z.ZodType;
+  let options: string[] = [];
 
   switch (field.type) {
     case 'string':
@@ -46,7 +51,12 @@ form.form_fields.forEach((field: Record<string, any>) => {
       fieldSchema = z.number();
       break;
     case 'enum':
-      const options = field.options.map((option: Record<string, any>) => String(option.label[usePage().props.app.locale]))
+      // check if options are really localized, contains lt or en
+      if (checkIfFieldIsLocalized(field)) {
+        options = field.options.map((option: Record<string, any>) => String(option.label[usePage().props.app.locale]))
+      } else {
+        options = field.options?.map((option: Record<string, any>) => String(option.label))
+      }
 
       fieldSchema = z.enum(options);
       break;
@@ -55,6 +65,12 @@ form.form_fields.forEach((field: Record<string, any>) => {
       break;
     case 'boolean':
       fieldSchema = z.boolean();
+
+      if (field.is_required) {
+        fieldSchema = fieldSchema.refine(value => value, {
+          message: 'You must accept to proceed.',
+        })
+      }
   }
 
   if (field.subtype === 'email') {
@@ -69,7 +85,7 @@ form.form_fields.forEach((field: Record<string, any>) => {
     fieldSchema = fieldSchema.default(field.default_value);
   }
 
-  schema['form-field-' + field.id] = fieldSchema.describe(field.label);
+  schema['form-field-' + field.id] = fieldSchema;
 });
 
 const formSchema = z.object(schema);
@@ -77,7 +93,12 @@ const formSchema = z.object(schema);
 const formFieldConfig = form.form_fields.reduce((acc, field: Record<string, any>) => {
   acc['form-field-' + field.id] = {
     description: field.description,
+    label: field.label,
   };
+
+  if (field.subtype === 'textarea') {
+    acc['form-field-' + field.id].component = 'textarea';
+  }
 
   return acc;
 }, {});
@@ -110,8 +131,34 @@ const onSubmit = (data: Record<string, any>) => {
   // remove form-field- prefix
 
   const transformedData = Object.keys(data).reduce((acc, key) => {
+    let fieldData = data[key];
+
+    const formField = form.form_fields.find((field: Record<string, any>) => String(field.id) === key.replace('form-field-', ''));
+
+    if (formField?.type === 'enum') {
+      // get value, from selected label
+
+      if (checkIfFieldIsLocalized(formField)) {
+        const selectedOption = formField.options.find((option: Record<string, any>) => option.label[usePage().props.app.locale] === fieldData);
+
+        if (selectedOption) {
+          fieldData = selectedOption.value;
+        }
+      } else {
+        const selectedOption = formField.options.find((option: Record<string, any>) => option.label === fieldData);
+
+        if (selectedOption) {
+          fieldData = selectedOption.value;
+        }
+      }
+    }
+
     const fieldId = key.replace('form-field-', '');
-    acc[fieldId] = data[key];
+
+    acc[fieldId] = {
+      value: fieldData,
+    };
+
     return acc;
   }, {});
 

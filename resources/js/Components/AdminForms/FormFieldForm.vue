@@ -10,22 +10,39 @@
       <NSelect :disabled="hasRegistrations" v-model:value="model.type" :options />
     </NFormItem>
     <NFormItem v-if="subtypeOptions.length > 0" label="Subtipas" path="subtype">
-      <NSelect :disabled="hasRegistrations" v-model:value="model.subtype" :options="subtypeOptions" />
+      <NSelect clearable :disabled="hasRegistrations" v-model:value="model.subtype" :options="subtypeOptions" />
     </NFormItem>
-    <NFormItem v-if="model.type === 'enum'" label="Reikšmės" path="options">
-      <NDynamicInput :disabled="hasRegistrations" v-model:value="model.options" @create="onCreate">
-        <template #default="{ value }">
-          <div class="mt-4 flex flex-row items-center gap-2">
-            <NFormItem :show-feedback="false" label="Reikšmė" path="value" required class="self-start">
-              <NInput :disabled="hasRegistrations" v-model:value="value.value" />
-            </NFormItem>
-            <NFormItem :disabled="hasRegistrations" class="pb-4" :show-feedback="false" label="Pavadinimas" path="label" required>
-              <MultiLocaleInput v-model:input="value.label" />
-            </NFormItem>
-          </div>
-        </template>
-      </NDynamicInput>
-    </NFormItem>
+    <template v-if="model.type === 'enum'">
+      <NFormItem label="Reikšmės" path="options" v-if="!model.use_model_options">
+        <NDynamicInput :disabled="hasRegistrations" v-model:value="model.options" @create="onCreate">
+          <template #default="{ value }">
+            <div class="mt-4 flex flex-row items-center gap-2">
+              <NFormItem :show-feedback="false" label="Reikšmė" path="value" required class="self-start">
+                <NInput :disabled="hasRegistrations" v-model:value="value.value" />
+              </NFormItem>
+              <NFormItem :disabled="hasRegistrations" class="pb-4" :show-feedback="false" label="Pavadinimas"
+                path="label" required>
+                <MultiLocaleInput v-model:input="value.label" />
+              </NFormItem>
+            </div>
+          </template>
+        </NDynamicInput>
+      </NFormItem>
+      <NCollapse class="mb-6">
+        <NCollapseItem title="Advanced" name="1">
+          <NFormItem label="Naudoti iš duombazės?" path="use_model_options" required>
+            <NSwitch v-model:value="model.use_model_options" />
+          </NFormItem>
+          <NFormItem label="Modelio pavadinimas" path="model_name">
+            <NSelect :disabled="!model.use_model_options" v-model:value="model.options_model" :options="fieldModels" />
+          </NFormItem>
+          <NFormItem label="Modelio laukas" path="model_field">
+            <NSelect :disabled="!model.use_model_options" v-model:value="model.options_model_field"
+              :options="fieldModelAttributes" />
+          </NFormItem>
+        </NCollapseItem>
+      </NCollapse>
+    </template>
     <NFormItem label="Ar būtinas?" path="is_required" required>
       <NSwitch v-model:value="model.is_required" />
     </NFormItem>
@@ -62,6 +79,8 @@ const emit = defineEmits<{
 const props = defineProps<{
   formField: App.Entities.FormField | Record<string, any>;
   hasRegistrations?: boolean;
+  fieldModels?: { value: string; label: string }[];
+  fieldModelAttributes?: { value: string; label: string }[];
 }>();
 
 const form = ref<FormInst | null>(null);
@@ -96,6 +115,10 @@ const subtypeOptions = computed(() => {
       {
         value: "email",
         label: "El. paštas",
+      },
+      {
+        value: "textarea",
+        label: "Ilgo teksto laukas",
       },
     ];
   }

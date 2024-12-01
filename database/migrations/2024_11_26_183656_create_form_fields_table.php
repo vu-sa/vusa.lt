@@ -23,6 +23,9 @@ return new class extends Migration
             $table->integer('order')->default(0);
             $table->json('default_value')->nullable();
             $table->json('placeholder')->nullable();
+            $table->boolean('use_model_options')->default(false);
+            $table->string('options_model')->nullable();
+            $table->string('options_model_field')->nullable();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });

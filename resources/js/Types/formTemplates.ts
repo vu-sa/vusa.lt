@@ -61,6 +61,7 @@ export const formTemplate: Pick<
   description: { lt: '', en: '' },
   path: { lt: '', en: '' },
   form_fields: [],
+  tenant_id: null,
 };
 
 

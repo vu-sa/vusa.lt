@@ -29,11 +29,15 @@ class FormField extends Model
         'default_value',
         'placeholder',
         'order',
+        'use_model_options',
+        'options_model',
+        'options_model_field',
     ];
 
     protected $casts = [
         'options' => 'array',
         'is_required' => 'boolean',
+        'use_model_options' => 'boolean',
     ];
 
     public function form()
