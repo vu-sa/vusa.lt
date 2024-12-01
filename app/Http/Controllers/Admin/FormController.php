@@ -101,12 +101,12 @@ class FormController extends Controller
             ],
             'assignableTenants' => GetTenantsForUpserts::execute('calendars.update.padalinys', $this->authorizer),
             'fieldModelOptions' => [
-                ['label' => 'Tenant', 'value' => Tenant::class]
+                ['label' => 'Tenant', 'value' => Tenant::class],
             ],
             'fieldModelFields' => [
                 ['label' => 'Pilnas pavadinimas', 'value' => 'fullname'],
-                ['label' => 'Trumpas pavadinimas', 'value' => 'shortname'], 
-            ]
+                ['label' => 'Trumpas pavadinimas', 'value' => 'shortname'],
+            ],
         ]);
     }
 
