@@ -8,10 +8,9 @@ use App\Http\Requests\StoreMembershipRequest;
 use App\Http\Requests\UpdateMembershipRequest;
 use App\Imports\MembershipUsersImport;
 use App\Models\Membership;
-use Inertia\Inertia;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
-use Illuminate\Http\Client\Request;
+use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
 
 class MembershipController extends Controller

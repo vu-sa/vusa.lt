@@ -4,7 +4,6 @@ namespace App\Imports;
 
 use App\Models\Membership;
 use Illuminate\Support\Collection;
-use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
 class MembershipUsersImport implements WithMultipleSheets
