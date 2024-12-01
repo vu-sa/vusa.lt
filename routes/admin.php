@@ -56,6 +56,8 @@ Route::post('notification/{id}/markAsRead', [UserNotificationsController::class,
 Route::post('notification/markAllAsRead', [UserNotificationsController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
 
 Route::resource('contacts', ContactController::class);
+Route::resource('memberships', MembershipController::class);
+Route::post('memberships/{membership}/users/import', [MembershipController::class, 'importUsers'])->name('membershipUsers.import');
 
 Route::resource('calendar', CalendarController::class);
 Route::post('calendar/{calendar}/media/{media}', [CalendarController::class, 'destroyMedia'])->name('calendar.destroyMedia');

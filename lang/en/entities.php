@@ -32,4 +32,7 @@ return [
         'model_list' => ':model list',
         'help' => 'How :model work?',
     ],
+    'membership' => [
+        'model' => '{1} membership|[2,*] memberships',
+    ],
 ];

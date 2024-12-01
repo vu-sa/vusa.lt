@@ -45,6 +45,7 @@ declare namespace App.Entities {
   // }
 
   export type Meeting = models.Meeting;
+  export type Membership = models.Membership;
 
   export type Navigation = models.Navigation;
   export type News = models.News;

@@ -92,6 +92,12 @@ const menuItems: MenuItemsType = computed(() => [
         href: route('contacts.index'),
         show: auth?.can.create.contact
       },
+      {
+        title: $t('Narystės'),
+        icon: Icons.CONTACT,
+        href: route('memberships.index'),
+        show: true
+      },
     ],
     show: auth?.can.create.user || auth?.can.create.duty || auth?.can.create.institution || auth?.can.create.contact
   },

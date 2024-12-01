@@ -1,13 +1,6 @@
 <template>
-  <IndexPageLayout
-    :title="capitalize($tChoice('entities.duty.model', 2))"
-    model-name="duties"
-    :can-use-routes="canUseRoutes"
-    :columns="columns"
-    :paginated-models="duties"
-    :icon="Icons.DUTY"
-  >
-  </IndexPageLayout>
+  <IndexPageLayout :title="capitalize($tChoice('entities.duty.model', 2))" model-name="duties"
+    :can-use-routes="canUseRoutes" :columns="columns" :paginated-models="duties" :icon="Icons.DUTY" />
 </template>
 
 <script setup lang="tsx">
@@ -21,7 +14,6 @@ import {
   NTag,
 } from "naive-ui";
 import { computed, provide, ref } from "vue";
-import { router } from "@inertiajs/vue3";
 
 import { capitalize } from "@/Utils/String";
 import Icons from "@/Types/Icons/regular";

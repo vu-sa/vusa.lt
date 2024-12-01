@@ -28,6 +28,7 @@ use Spatie\Enum\Laravel\Enum;
  * @method static self MAIN_PAGE()
  * @method static self MATTER()
  * @method static self MEETING()
+ * @method static self MEMBERSHIP()
  * @method static self NAVIGATION()
  * @method static self NEWS()
  * @method static self PAGE()

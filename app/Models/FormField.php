@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Models\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
 class FormField extends Model
 {

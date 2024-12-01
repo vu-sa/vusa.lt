@@ -394,6 +394,20 @@ declare global {
       activities?: Activity[]
     }
 
+    export interface Membership {
+      // columns
+      id: number
+      name: string[]
+      tenant_id: number
+      created_at: string
+      updated_at: string
+      // mutators
+      translations: unknown
+      // relations
+      tenant?: Tenant
+      users?: User[]
+    }
+
     export interface Model {
     }
 
@@ -852,6 +866,7 @@ declare global {
       dutiables?: Dutiable[]
       tasks?: Task[]
       reservations?: Reservation[]
+      memberships?: Membership[]
       roles?: Role[]
       permissions?: Permission[]
       activities?: Activity[]

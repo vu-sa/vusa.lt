@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Pivots\Dutiable;
+use App\Models\Pivots\MembershipUser;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\HasUnitRelation;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -182,6 +183,11 @@ class User extends Authenticatable
     public function reservations()
     {
         return $this->belongsToMany(Reservation::class)->withTimestamps();
+    }
+
+    public function memberships()
+    {
+        return $this->belongsToMany(Membership::class)->using(MembershipUser::class)->withTimestamps()->withPivot('start_date', 'end_date');
     }
 
     // TODO: refactor to use the new method
