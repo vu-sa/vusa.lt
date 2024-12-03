@@ -33,15 +33,16 @@ declare global {
       is_international: boolean
       date: string
       end_date?: string|null
-      category?: string|null
       tenant_id: number
       created_at: string
       updated_at: string
       registration_form_id?: number|null
+      category_id?: number|null
       // mutators
       translations: unknown
       // relations
       tenant?: Tenant
+      category?: Category
       media?: Medium[]
     }
 
@@ -54,8 +55,9 @@ declare global {
       created_at: string
       updated_at: string
       // relations
-      banners?: Banner
       pages?: Page[]
+      news?: News[]
+      calendars?: Calendar[]
     }
 
     export interface ChangelogItem {
@@ -85,24 +87,6 @@ declare global {
       commentable?: Comment
       comments?: Comment[]
       user?: User
-      activities?: Activity[]
-    }
-
-    export interface Contact {
-      // columns
-      id: string
-      name: string
-      email?: string|null
-      phone?: string|null
-      profile_photo_path?: string|null
-      created_at: string
-      updated_at: string
-      deleted_at?: string|null
-      extra_attributes?: string[]|null
-      // relations
-      duties?: Duty[]
-      commentable?: Contact
-      comments?: Comment[]
       activities?: Activity[]
     }
 
@@ -194,7 +178,6 @@ declare global {
       users?: User[]
       current_users?: User[]
       previous_users?: User[]
-      contacts?: Contact[]
       types?: Type[]
       institution?: Institution
       roles?: Role[]
@@ -543,7 +526,6 @@ declare global {
       duty?: Duty
       study_program?: StudyProgram
       user?: User
-      contact?: Contact
     }
 
     export interface GoalMatter {
@@ -555,6 +537,21 @@ declare global {
       // relations
       goal?: Goal
       matter?: Matter
+    }
+
+    export interface MembershipUser {
+      // columns
+      id: number
+      membership_id: number
+      user_id: string
+      start_date: string
+      end_date?: string|null
+      status: string
+      created_at: string
+      updated_at: string
+      // relations
+      membership?: Membership
+      user?: User
     }
 
     export interface Relationshipable {
@@ -857,8 +854,6 @@ declare global {
       // mutators
       translations: unknown
       // relations
-      banners?: Banner[]
-      calendar?: Calendar[]
       doings?: Doing[]
       duties?: Duty[]
       previous_duties?: Duty[]
@@ -875,4 +870,3 @@ declare global {
 
   }
 }
-

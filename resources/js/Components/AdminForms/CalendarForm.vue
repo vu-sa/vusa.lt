@@ -36,7 +36,7 @@
       </NFormItem>
       <NFormItem label="Kategorija">
         <NSelect v-model:value="form.category" :options="categories" placeholder="Pasirinkti kategoriją..."
-          label-field="name" value-field="alias" clearable />
+          label-field="name" value-field="id" clearable />
       </NFormItem>
       <NFormItem label="Viešinimo auditorija">
         <div class="grid w-full grid-cols-2 gap-4">

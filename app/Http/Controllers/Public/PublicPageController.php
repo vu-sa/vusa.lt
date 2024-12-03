@@ -50,12 +50,12 @@ class PublicPageController extends PublicController
     {
         if (app()->getLocale() === 'en') {
             return Cache::remember('calendar_en', 60 * 30, function () {
-                return Calendar::where('is_international', true)->where('is_draft', false)
+                return Calendar::query()->with('category')->where('is_international', true)->where('is_draft', false)
                     ->orderBy('date', 'desc')->take(100)->get();
             });
         } else {
             return Cache::remember('calendar_lt', 60 * 30, function () {
-                return Calendar::query()->where('is_draft', false)->orderBy('date', 'desc')->take(100)->get();
+                return Calendar::query()->with('category')->where('is_draft', false)->orderBy('date', 'desc')->take(100)->get();
             });
         }
     }
@@ -79,7 +79,7 @@ class PublicPageController extends PublicController
             return $event->end_date ? $event->end_date > date('Y-m-d H:i:s') : $event->date > date('Y-m-d H:i:s');
         })->sortBy(function ($event) {
             return $event->date;
-        }, SORT_DESC)->take(8)->values()->load('tenant:id,alias,fullname,shortname');
+        }, SORT_DESC)->take(8)->values();
 
         $seo = $this->shareAndReturnSEOObject(title: __('Pagrindinis puslapis').' - '.$this->tenant->shortname);
 
