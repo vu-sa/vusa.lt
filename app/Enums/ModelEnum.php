@@ -14,7 +14,6 @@ use Spatie\Enum\Laravel\Enum;
  * @method static self CATEGORY()
  * @method static self CHANGELOG_ITEM()
  * @method static self COMMENT()
- * @method static self CONTACT()
  * @method static self DOCUMENT()
  * @method static self DOING()
  * @method static self DUTIABLE()

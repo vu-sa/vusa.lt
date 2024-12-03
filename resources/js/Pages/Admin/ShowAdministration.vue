@@ -87,19 +87,13 @@ const menuItems: MenuItemsType = computed(() => [
         show: auth?.can.create.institution
       },
       {
-        title: $t('Kontaktai'),
-        icon: Icons.CONTACT,
-        href: route('contacts.index'),
-        show: auth?.can.create.contact
-      },
-      {
         title: $t('Narystės'),
-        icon: Icons.CONTACT,
+        icon: Icons.INSTITUTION,
         href: route('memberships.index'),
         show: true
       },
     ],
-    show: auth?.can.create.user || auth?.can.create.duty || auth?.can.create.institution || auth?.can.create.contact
+    show: auth?.can.create.user || auth?.can.create.duty || auth?.can.create.institution
   },
   {
     category: $t('Svetainė'),

@@ -55,7 +55,6 @@ Route::resource('users.comments', CommentController::class)->only(['store', 'upd
 Route::post('notification/{id}/markAsRead', [UserNotificationsController::class, 'markAsRead'])->name('notifications.markAsRead');
 Route::post('notification/markAllAsRead', [UserNotificationsController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
 
-Route::resource('contacts', ContactController::class);
 Route::resource('memberships', MembershipController::class);
 Route::post('memberships/{membership}/users/import', [MembershipController::class, 'importUsers'])->name('membershipUsers.import');
 

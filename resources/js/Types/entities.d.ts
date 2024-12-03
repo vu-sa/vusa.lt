@@ -5,9 +5,6 @@ declare namespace App.Entities {
   export type Category = models.Category;
   export type ChangelogItem = models.ChangelogItem;
   export type Comment = models.Comment;
-  export interface Contact extends models.Contact {
-    comments: Array<models.Comment>;
-  }
 
   export type Document = Omit<models.Document, "sharepoint_id" | "eTag" | "public_url_created_at" | "sharepoint_site_id" | "sharepoint_list_id" | "created_at" | "updated_at">
 

@@ -30,19 +30,6 @@ export const changelogItemTemplate: Pick<App.Entities.ChangelogItem, "date"> & {
   date: null,
 };
 
-export const contactTemplate: Pick<
-  App.Entities.Contact,
-  "name" | "email" | "phone" | "extra_attributes"
-> = {
-  name: "",
-  email: "",
-  phone: null,
-  extra_attributes: {
-    degree: null,
-    pedagogical_name: null,
-  },
-};
-
 export const doingTemplate: Pick<
   App.Entities.Doing,
   "title" | "type_id" | "status" | "date"

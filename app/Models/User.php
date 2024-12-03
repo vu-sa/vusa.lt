@@ -116,16 +116,6 @@ class User extends Authenticatable
         return $this->email;
     }
 
-    public function banners()
-    {
-        return $this->hasMany(Banner::class, 'user_id', 'id');
-    }
-
-    public function calendar()
-    {
-        return $this->hasMany(Calendar::class, 'user_id', 'id');
-    }
-
     public function doings()
     {
         return $this->belongsToMany(Doing::class);

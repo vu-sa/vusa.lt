@@ -85,11 +85,6 @@ export default [
     key: pluralizeModels(ModelEnum.GOAL),
   },
   {
-    title: "Kontaktai",
-    icon: Icons.CONTACT,
-    key: pluralizeModels(ModelEnum.CONTACT),
-  },
-  {
     title: "Rezervacijos",
     icon: Icons.RESERVATION,
     key: pluralizeModels(ModelEnum.RESERVATION),
