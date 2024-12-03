@@ -26,6 +26,7 @@ return new class extends Migration
             $table->foreignUlid('user_id')->constrained()->cascadeOnDelete();
             $table->date('start_date');
             $table->date('end_date')->nullable();
+            $table->string('status')->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
