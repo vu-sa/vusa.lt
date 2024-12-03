@@ -1,6 +1,6 @@
 import { defineConfig } from "vitest/config";
 import { NaiveUiResolver, VueUseComponentsResolver } from 'unplugin-vue-components/resolvers'
-import { codecovVitePlugin } from "@codecov/vite-plugin";
+//import { codecovVitePlugin } from "@codecov/vite-plugin";
 import Components from 'unplugin-vue-components/vite'
 import Icons from 'unplugin-icons/vite'
 import IconsResolver from 'unplugin-icons/resolver'
@@ -71,11 +71,11 @@ export default defineConfig({
     vueJsx({
       // options are passed on to @vue/babel-plugin-jsx
     }),
-    codecovVitePlugin({
-      enableBundleAnalysis: token !== undefined,
-      bundleName: "Application",
-      uploadToken: token,
-    }),
+    //codecovVitePlugin({
+    //  enableBundleAnalysis: token !== undefined,
+    //  bundleName: "Application",
+    //  uploadToken: token,
+    //}),
   ],
   test: {
     globals: true,
