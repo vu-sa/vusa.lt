@@ -7,18 +7,18 @@
       <MultiLocaleInput v-model:input="model.description" />
     </NFormItem>
     <NFormItem label="Tipas" path="type" required>
-      <NSelect :disabled="hasRegistrations" v-model:value="model.type" :options />
+      <NSelect v-model:value="model.type" :disabled="hasRegistrations" :options />
     </NFormItem>
     <NFormItem v-if="subtypeOptions.length > 0" label="Subtipas" path="subtype">
-      <NSelect clearable :disabled="hasRegistrations" v-model:value="model.subtype" :options="subtypeOptions" />
+      <NSelect v-model:value="model.subtype" clearable :disabled="hasRegistrations" :options="subtypeOptions" />
     </NFormItem>
     <template v-if="model.type === 'enum'">
-      <NFormItem label="Reikšmės" path="options" v-if="!model.use_model_options">
-        <NDynamicInput :disabled="hasRegistrations" v-model:value="model.options" @create="onCreate">
+      <NFormItem v-if="!model.use_model_options" label="Reikšmės" path="options">
+        <NDynamicInput v-model:value="model.options" :disabled="hasRegistrations" @create="onCreate">
           <template #default="{ value }">
             <div class="mt-4 flex flex-row items-center gap-2">
               <NFormItem :show-feedback="false" label="Reikšmė" path="value" required class="self-start">
-                <NInput :disabled="hasRegistrations" v-model:value="value.value" />
+                <NInput v-model:value="value.value" :disabled="hasRegistrations" />
               </NFormItem>
               <NFormItem :disabled="hasRegistrations" class="pb-4" :show-feedback="false" label="Pavadinimas"
                 path="label" required>
@@ -34,10 +34,10 @@
             <NSwitch v-model:value="model.use_model_options" />
           </NFormItem>
           <NFormItem label="Modelio pavadinimas" path="model_name">
-            <NSelect :disabled="!model.use_model_options" v-model:value="model.options_model" :options="fieldModels" />
+            <NSelect v-model:value="model.options_model" :disabled="!model.use_model_options" :options="fieldModels" />
           </NFormItem>
           <NFormItem label="Modelio laukas" path="model_field">
-            <NSelect :disabled="!model.use_model_options" v-model:value="model.options_model_field"
+            <NSelect v-model:value="model.options_model_field" :disabled="!model.use_model_options"
               :options="fieldModelAttributes" />
           </NFormItem>
         </NCollapseItem>
