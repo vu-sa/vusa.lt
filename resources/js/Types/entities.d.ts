@@ -58,7 +58,6 @@ declare namespace App.Entities {
     updated_at: string;
   }
 
-  export type Tenant = models.Tenant;
   export type Page = models.Page;
   export type Permission = models.Permission;
   export type Registration = models.Registration;
@@ -93,6 +92,8 @@ declare namespace App.Entities {
   export type StudyProgram = models.StudyProgram;
   export type Tag = models.Tag;
   export type Task = models.Task;
+  export type Tenant = models.Tenant;
+  export type Training = models.Training;
   export type Type = models.Type;
 
   export type User =

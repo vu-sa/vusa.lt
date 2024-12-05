@@ -35,7 +35,7 @@
         </template>
         <MultiLocaleInput v-model:input="form.path" />
       </NFormItem>
-      <NFormItem label="Padalinys">
+      <NFormItem v-if="assignableTenants && assignableTenants.length > 0" label="Padalinys">
         <NSelect v-model:value="form.tenant_id" :options="assignableTenants" label-field="shortname" value-field="id"
           placeholder="VU SA ..." :default-value="assignableTenants[0].id ?? ''" />
       </NFormItem>
@@ -68,7 +68,7 @@
                   <IFluentEdit24Filled />
                 </template>
               </NButton>
-              <NButton size="tiny" @click="handleDeleteFormField(model)" :disabled="hasRegistrations">
+              <NButton size="tiny" :disabled="hasRegistrations" @click="handleDeleteFormField(model)">
                 <template #icon>
                   <IFluentDelete24Filled color="red" />
                 </template>
@@ -78,7 +78,7 @@
         </template>
       </SortableFormFieldsTable>
       <div class="mt-4">
-        <NButton type="primary" @click="handleNewFormFieldCreate" :disabled="hasRegistrations">
+        <NButton type="primary" :disabled="hasRegistrations" @click="handleNewFormFieldCreate">
           <template #icon>
             <IFluentAdd24Filled />
           </template>
@@ -87,7 +87,8 @@
       </div>
     </FormElement>
     <CardModal v-model:show="showFormFieldModal" title="Formos laukelis" @close="showFormFieldModal = false">
-      <FormFieldForm :field-models="fieldModelOptions" :field-model-attributes="fieldModelFields" :has-registrations :form-field="selectedFormField" @submit="handleFormFieldSubmitted" />
+      <FormFieldForm :field-models="fieldModelOptions" :field-model-attributes="fieldModelFields" :has-registrations
+        :form-field="selectedFormField" @submit="handleFormFieldSubmitted" />
     </CardModal>
   </AdminForm>
 </template>

@@ -92,6 +92,12 @@ const menuItems: MenuItemsType = computed(() => [
         href: route('memberships.index'),
         show: true
       },
+      {
+        title: $t('Mokymai'),
+        icon: Icons.TRAINING,
+        href: route('trainings.index'),
+        show: true
+      },
     ],
     show: auth?.can.create.user || auth?.can.create.duty || auth?.can.create.institution
   },

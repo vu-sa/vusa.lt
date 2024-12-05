@@ -43,6 +43,7 @@ use Spatie\Enum\Laravel\Enum;
  * @method static self TAG()
  * @method static self TASK()
  * @method static self TENANT()
+ * @method static self TRAINING()
  * @method static self TYPE()
  * @method static self USER()
  */

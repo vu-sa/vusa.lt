@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateFormRequest;
 use App\Models\Form;
 use App\Models\FormField;
 use App\Models\Tenant;
+use App\Models\Training;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use Inertia\Inertia;
@@ -62,6 +63,14 @@ class FormController extends Controller
 
         $form->save();
 
+        if ($request->training_id) {
+            $training = Training::query()->find($request->training_id);
+
+            $training->form()->associate($form);
+
+            $training->save();
+        }
+
         // Then, update or create the remaining form fields
         collect($request->only('form_fields')['form_fields'])->each(function ($formField) use ($form) {
 
@@ -69,7 +78,9 @@ class FormController extends Controller
             $form->formFields()->create($formField);
         });
 
-        return redirect()->route('forms.index')->with('success', 'Form created.');
+        $redirect_url = request()->redirect_to ?? route('forms.index');
+
+        return redirect($redirect_url)->with('success', 'Form created.');
     }
 
     /**

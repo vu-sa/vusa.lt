@@ -52,4 +52,9 @@ class Form extends Model
     {
         return $this->belongsTo(Tenant::class);
     }
+
+    public function training()
+    {
+        return $this->belongsTo(Training::class);
+    }
 }

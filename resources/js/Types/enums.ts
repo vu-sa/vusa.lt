@@ -56,6 +56,7 @@ export enum ModelEnum {
   "TAG" = "tag",
   "TASK" = "task",
   "TENANT" = "tenant",
+  "TRAINING" = "training",
   "TYPE" = "type",
   "USER" = "user",
 }

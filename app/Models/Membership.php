@@ -4,13 +4,14 @@ namespace App\Models;
 
 use App\Models\Pivots\MembershipUser;
 use App\Models\Traits\HasTranslations;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Scout\Searchable;
 
 class Membership extends Model
 {
     /** @use HasFactory<\Database\Factories\MembershipFactory> */
-    use HasFactory, HasTranslations, Searchable;
+    use HasFactory, HasTranslations, Searchable, HasUlids;
 
     public $translatable = [
         'name',

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('memberships', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->json('name');
             $table->unsignedInteger('tenant_id');
             $table->foreign('tenant_id')->references('id')->on('tenants')->cascadeOnDelete();
@@ -22,7 +22,7 @@ return new class extends Migration
 
         Schema::create('membership_user', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('membership_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('membership_id')->constrained()->cascadeOnDelete();
             $table->foreignUlid('user_id')->constrained()->cascadeOnDelete();
             $table->date('start_date');
             $table->date('end_date')->nullable();

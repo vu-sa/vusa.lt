@@ -22,8 +22,8 @@ return new class extends Migration
             $table->foreignUlid('user_id')->nullable()->constrained()->nullOnDelete();
             $table->unsignedInteger('tenant_id');
             $table->foreign('tenant_id')->references('id')->on('tenants')->cascadeOnDelete();
-            // create field to add url for visible forms
             $table->json('path')->nullable()->comment('URL path for visible forms');
+            $table->dateTime('publish_time')->nullable();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
             $table->softDeletes();

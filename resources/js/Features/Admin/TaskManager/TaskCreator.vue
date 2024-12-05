@@ -31,7 +31,8 @@
               :max-tag-count="8" clearable virtual-scroll :show-path="false" />
           </NFormItemGi>
           <NFormItemGi :show-label="false">
-            <NCheckbox v-model:checked="model.separate_tasks">Ar individualios užduotys?
+            <NCheckbox v-model:checked="model.separate_tasks">
+              Ar individualios užduotys?
             </NCheckbox>
           </NFormItemGi>
           <NFormItemGi :show-label="false" :show-feedback="false">

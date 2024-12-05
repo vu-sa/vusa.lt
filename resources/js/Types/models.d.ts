@@ -210,6 +210,7 @@ declare global {
       user_id?: string|null
       tenant_id: number
       path?: string[]|null
+      publish_time?: string|null
       created_at: string
       updated_at: string
       deleted_at?: string|null
@@ -379,7 +380,7 @@ declare global {
 
     export interface Membership {
       // columns
-      id: number
+      id: string
       name: string[]
       tenant_id: number
       created_at: string
@@ -542,7 +543,7 @@ declare global {
     export interface MembershipUser {
       // columns
       id: number
-      membership_id: number
+      membership_id: string
       user_id: string
       start_date: string
       end_date?: string|null
@@ -604,6 +605,42 @@ declare global {
       meeting?: Meeting
       institution?: Institution
       type?: Type
+    }
+
+    export interface TaskTraining {
+      // columns
+      id: number
+      task_id: string
+      training_id: string
+      name: string[]
+      description: string[]
+      due_date: string
+      created_at: string
+      updated_at: string
+      // mutators
+      translations: unknown
+      // relations
+      tasks?: Task
+      user?: Training
+    }
+
+    export interface Trainingable {
+      // columns
+      id: number
+      training_id: string
+      trainingable_type: string
+      trainingable_id: number
+      tenant_id?: number|null
+      quota?: number|null
+      created_at: string
+      updated_at: string
+      // relations
+      trainingable?: Trainingable
+      user?: User
+      duty?: Duty
+      institution?: Institution
+      membership?: Membership
+      tenant?: Tenant
     }
 
     export interface Registration {
@@ -797,6 +834,34 @@ declare global {
       reservations?: Reservation
     }
 
+    export interface Training {
+      // columns
+      id: string
+      name: string[]
+      description: string[]
+      address?: string[]|null
+      location_url?: string|null
+      image?: string|null
+      status: string
+      start_time: string
+      end_time?: string|null
+      organizer_id: string
+      institution_id: string
+      form_id?: string|null
+      capacity?: number|null
+      is_online: boolean
+      is_hybrid: boolean
+      created_at: string
+      updated_at: string
+      // mutators
+      translations: unknown
+      // relations
+      organizer?: User
+      users?: User[]
+      institution?: Institution
+      tenant?: Tenant
+    }
+
     export interface Type {
       // columns
       id: number
@@ -846,7 +911,7 @@ declare global {
       last_action?: string|null
       last_changelog_check?: string|null
       microsoft_token?: string|null
-      updated_at?: string|null
+      updated_at: string
       created_at: string
       profile_photo_path?: string|null
       deleted_at?: string|null
