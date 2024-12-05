@@ -11,7 +11,7 @@ use Laravel\Scout\Searchable;
 class Membership extends Model
 {
     /** @use HasFactory<\Database\Factories\MembershipFactory> */
-    use HasFactory, HasTranslations, Searchable, HasUlids;
+    use HasFactory, HasTranslations, HasUlids, Searchable;
 
     public $translatable = [
         'name',

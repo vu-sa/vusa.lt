@@ -32,7 +32,7 @@ class StoreFormRequest extends FormRequest
             'path' => 'required|array',
             'tenant_id' => 'required|exists:tenants,id',
             'form_fields' => 'array',
-            'training_id' => 'nullable|exists:trainings,id'
+            'training_id' => 'nullable|exists:trainings,id',
         ];
     }
 }

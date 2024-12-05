@@ -23,7 +23,7 @@ class StoreTrainingRequest extends FormRequest
         }
 
         $this->merge([
-            'start_time' => Carbon::parse($this->input('start_time') / 1000)->setTimezone('Europe/Vilnius')->toDateTimeString()
+            'start_time' => Carbon::parse($this->input('start_time') / 1000)->setTimezone('Europe/Vilnius')->toDateTimeString(),
         ]);
     }
 
