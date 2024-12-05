@@ -85,8 +85,23 @@
         <NInputNumber v-model:value="form.max_participants" clearable :min="0" />
       </NFormItem>
     </FormElement>
-    <NTabs type="segment" animated default-value="programa">
-      <NTabPane class="my-4 rounded-xl border border-zinc-500" name="registracija" tab="Registracija">
+    <NTabs type="segment" animated>
+      <NTabPane name="dalyviai" tab="Kas gali dalyvauti?">
+        <NDynamicInput v-model:value="form.trainingables" class="mt-4" @create="onTrainingablesCreate">
+          <template #default="{ value }">
+            <div class="flex gap-4 w-full">
+              <NFormItem label="Tipas">
+                <NSelect v-model:value="value.trainingable_type" class="min-w-40" :options="trainingableTypeOptions" />
+              </NFormItem>
+              <NFormItem v-if="value.trainingable_type" label="Pasirinkimas" class="min-w-80">
+                <NSelect v-model:value="value.trainingable_id" filterable :options="trainingableTypes[value.trainingable_type].values"
+                  value-field="id" :label-field="value.trainingable_type === 'App\\Models\\Type' ? 'title' : 'name'" />
+              </NFormItem>
+            </div>
+          </template>
+        </NDynamicInput>
+      </NTabPane>
+      <NTabPane class="my-4 rounded-xl border border-zinc-500" name="registracija" tab="Registracijos forma">
         <div class="m-4">
           <FormForm :form="formTemplate" @submit:form="handleFormFormSubmit" />
         </div>
@@ -100,6 +115,11 @@
 </NButton> -->
         <ProgrammePlanner :start-time="new Date(form.start_time)" :show="showProgrammePlanner"
           @close="showProgrammePlanner = false" />
+      </NTabPane>
+      <NTabPane name="uzduotys" tab="Užduotys">
+        <div class="m-4">
+          Užduotys
+        </div>
       </NTabPane>
     </NTabs>
     <template #buttons>
@@ -134,10 +154,24 @@ import UploadImageWithCropper from "../Buttons/UploadImageWithCropper.vue";
 import FormForm from "./FormForm.vue";
 import UserPopover from "../Avatars/UserPopover.vue";
 import ProgrammePlanner from "@/Features/Admin/ProgrammePlaner/ProgrammePlanner.vue";
-import { useDebounce, useDebounceFn } from "@vueuse/core";
 
-const { training } = defineProps<{
-  training: App.Entities.Membership;
+interface TrainingableType<T> {
+  type: T;
+  name: string;
+  values: Array<{ id: number; name: string }>;
+}
+
+interface TrainingableTypes {
+  'App\\Models\\User': TrainingableType<App.Entities.User>;
+  'App\\Models\\Duty': TrainingableType<App.Entities.Duty>;
+  'App\\Models\\Institution': TrainingableType<App.Entities.Institution>;
+  'App\\Models\\Membership': TrainingableType<App.Entities.Membership>;
+  'App\\Models\\Type': TrainingableType<{ id: number; title: string }>;
+}
+
+const { training, trainingableTypes } = defineProps<{
+  training: App.Entities.Training;
+  trainingableTypes: TrainingableTypes
 }>();
 
 const emit = defineEmits<{
@@ -146,6 +180,21 @@ const emit = defineEmits<{
 }>();
 
 const form = useForm("training", training);
+
+const trainingableTypeOptions = computed(() => {
+  return Object.keys(trainingableTypes).map((key) => ({
+    label: trainingableTypes[key].name,
+    value: key,
+  }));
+});
+
+const onTrainingablesCreate = () => {
+  return {
+    trainingable_type: null,
+    trainingable_id: null
+  };
+};
+
 const showProgrammePlanner = ref(false);
 
 form.start_time = new Date(form.start_time).getTime();
@@ -202,16 +251,4 @@ const handleFormFormSubmit = (form: unknown) => {
     });
   }
 };
-
-const autosaveFn = useDebounceFn(() => {
-  emit('submit:form', form);
-}, 5000);
-
-
-watch(() => form.isDirty, () => {
-  console.log(form)
-  if (form.isDirty) {
-    autosaveFn();
-  }
-}, { deep: true });
 </script>

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Pivots\Trainingable;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\HasUnitRelation;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -43,6 +44,11 @@ class Training extends Model
         return [
             'name->'.app()->getLocale() => $this->getTranslation('name', app()->getLocale()),
         ];
+    }
+
+    public function trainingables()
+    {
+        return $this->hasMany(Trainingable::class);
     }
 
     public function organizer()

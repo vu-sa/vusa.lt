@@ -221,6 +221,7 @@ declare global {
       registrations?: Registration[]
       user?: User
       tenant?: Tenant
+      training?: Training
     }
 
     export interface FormField {
@@ -839,8 +840,8 @@ declare global {
       id: string
       name: string[]
       description: string[]
-      address?: string[]|null
-      location_url?: string|null
+      address?: string|null
+      meeting_url?: string|null
       image?: string|null
       status: string
       start_time: string
@@ -848,7 +849,7 @@ declare global {
       organizer_id: string
       institution_id: string
       form_id?: string|null
-      capacity?: number|null
+      max_participants?: number|null
       is_online: boolean
       is_hybrid: boolean
       created_at: string
@@ -856,10 +857,11 @@ declare global {
       // mutators
       translations: unknown
       // relations
+      trainingables?: Trainingable[]
       organizer?: User
       users?: User[]
       institution?: Institution
-      tenant?: Tenant
+      form?: Form
     }
 
     export interface Type {

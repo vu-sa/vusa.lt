@@ -5,7 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTrainingRequest;
 use App\Http\Requests\UpdateTrainingRequest;
+use App\Models\Duty;
+use App\Models\Institution;
+use App\Models\Membership;
 use App\Models\Training;
+use App\Models\Type;
+use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ModelIndexer;
 use Inertia\Inertia;
@@ -71,7 +76,7 @@ class TrainingController extends Controller
      */
     public function edit(Training $training)
     {
-        $training->load('form', 'tenant', 'organizer');
+        $training->load('form', 'tenant', 'organizer', 'trainingables');
 
         return Inertia::render('Admin/People/EditTraining', [
 
@@ -82,6 +87,14 @@ class TrainingController extends Controller
                     'form_fields' => $training->form?->formFields()->orderBy('order')->get()->map->toFullArray(),
                 ],
             ],
+            'trainingableTypes' => [
+                User::class => ['type' => User::class, 'name' => 'Narys', 'values' => User::query()->get(['id', 'name'])],
+                Duty::class => ['type' => Duty::class, 'name' => 'Pareiga', 'values' => Duty::query()->get(['id', 'name'])],
+                Institution::class => ['type' => Institution::class, 'name' => 'Institucija', 'values' => Institution::query()->get(['id', 'name'])],
+                Membership::class => ['type' => Membership::class, 'name' => 'Narystė', 'values' => Membership::query()->get(['id', 'name'])],
+                // TODO: Implement later (can't because id isn't ulid)
+                /*Type::class => ['type' => Type::class, 'name' => 'Tipas', 'values' => Type::query()->where('model_type', 'App\Models\Duty')->orWhere('model_type', 'App\Models\Institution')->get(['id', 'title'])],*/
+            ],
         ]);
     }
 
@@ -90,7 +103,11 @@ class TrainingController extends Controller
      */
     public function update(UpdateTrainingRequest $request, Training $training)
     {
-        $training->update($request->validated());
+        $training->update($request->except('trainingables'));
+
+        $training->trainingables()->delete();
+
+        $training->trainingables()->createMany($request->trainingables);
 
         return back()->with('success', 'Mokymų šablonas atnaujintas');
     }

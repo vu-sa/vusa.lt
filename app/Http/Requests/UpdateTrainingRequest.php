@@ -54,7 +54,7 @@ class UpdateTrainingRequest extends FormRequest
             'institution_id' => 'required|exists:institutions,id',
             'start_time' => 'required|date',
             'end_time' => 'nullable|date|after:start_time',
-            'max_participants' => 'required|integer',
+            'max_participants' => 'nullable|integer',
             'is_online' => 'required|boolean',
             'is_hybrid' => 'required|boolean',
         ];

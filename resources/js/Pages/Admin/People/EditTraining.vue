@@ -1,7 +1,7 @@
 <template>
   <PageContent :title="training.name.lt" :heading-icon="Icons.CONTACT">
     <UpsertModelLayout>
-      <TrainingUpdateForm :training
+      <TrainingUpdateForm :training :trainingable-types
         @submit:form="(form) => form.patch(route('trainings.update', form.id), { preserveScroll: true })" />
     </UpsertModelLayout>
   </PageContent>
@@ -17,7 +17,12 @@ import TrainingUpdateForm from "@/Components/AdminForms/TrainingUpdateForm.vue";
 
 defineProps<{
   training: Array<App.Entities.Training>;
+  trainingableTypes: {
+    type: string,
+    name: string,
+    values: { value: string, name: string }[]
+  }[];
 }>();
 
-provide("autosave", ref(true));
+//provide("autosave", ref(true));
 </script>

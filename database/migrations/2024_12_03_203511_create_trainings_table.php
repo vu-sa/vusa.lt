@@ -38,7 +38,8 @@ return new class extends Migration
         Schema::create('trainingables', function (Blueprint $table) {
             $table->id();
             $table->foreignUlid('training_id')->references('id')->on('trainings');
-            $table->morphs('trainingable');
+            $table->string('trainingable_type');
+            $table->ulid('trainingable_id');
             $table->unsignedInteger('tenant_id')->nullable();
             $table->foreign('tenant_id')->references('id')->on('tenants');
             $table->integer('quota')->nullable();
